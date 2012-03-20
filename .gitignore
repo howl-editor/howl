@@ -1,0 +1,3 @@
+src/deps/*
+src/*.o
+src/vilu
