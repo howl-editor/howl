@@ -1,6 +1,7 @@
 #include "vilu.h"
 
 lua_State *L;
+gchar *app_root;
 
 void do_lua(void)
 {
@@ -20,13 +21,29 @@ void do_lua(void)
     }
 }
 
+gchar *get_app_root(const gchar *invocation_path)
+{
+  gchar *cwd, *relative_path, *root;
+
+  cwd = g_get_current_dir();
+  relative_path = g_path_get_dirname(invocation_path);
+  root = g_build_filename(cwd, relative_path, NULL);
+  g_free(cwd);
+  g_free(relative_path);
+  return root;
+}
+
 int main(int argc, char *argv[])
 {
   int status;
 
+  app_root = get_app_root(argv[0]);
   L = luaL_newstate();
   luaL_openlibs(L);
   status = ui_run(argc, argv, L, do_lua);
   lua_close(L);
+
+  g_free(app_root);
+
   return status;
 }
