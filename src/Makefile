@@ -11,6 +11,7 @@ LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
 SCINTILLA_VER = scintilla304
 SCINTILLA_URL = http://prdownloads.sourceforge.net/scintilla/$(SCINTILLA_VER).tgz?download
 SCINTILLA = deps/$(SCINTILLA_VER)
+SCINTILLA_IFACE = $(SCINTILLA)/include/Scintilla.iface
 SCINTILLA_CFLAGS = -I$(SCINTILLA)/include -DGTK=1
 SCINTILLA_ARCHIVE = $(SCINTILLA)/bin/scintilla.a
 SCINTILLA_DEFS = GTK=1 GTK3=1 LEXOBJS=
@@ -24,6 +25,9 @@ SCINTILLUA = deps/$(SCINTILLUA_VER)
 SCINTILLUA_SRC = $(SCINTILLUA)/LexLPeg.cxx
 SCINTILLUA_LEXER = $(SCINTILLUA)/LexLPeg.o
 SCINTILLUA_URL = http://foicica.com/scintillua/download/$(SCINTILLUA_VER).zip
+
+SCI_GEN = tools/sci_gen.lua
+SCI_GEN_TARGET = ../lib/core/scintilla.lua
 
 CFLAGS = -Wall -O2 $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
 ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE)
@@ -71,3 +75,6 @@ deps: scintilla-build luajit-build lpeg-build scintillua-build
 
 clean:
 	  -rm -f ${OBJECTS}
+
+scigen: luajit-build
+	  $(LUAJIT)/src/luajit $(SCI_GEN) $(SCINTILLA_IFACE) $(SCI_GEN_TARGET)
