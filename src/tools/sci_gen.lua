@@ -50,21 +50,24 @@ local function scan(iface)
         end
       elseif op == 'fun' or op == 'set' or op == 'get' then
         local ret, name, number, p_string = rest:match('(%S+)%s(%S+)=(%d+)%(([^)]+)%)')
-        params = {}
-        local t, n = p_string:match('(%w+)%s+(%w+),')
-        if t then params.first = { what = t, name = adjust_name(n) } end
-        t, n = p_string:match('(%w+)%s+(%w+)$')
-        if t then params.second = { what = t, name = adjust_name(n) } end
-
         if ret then
-          name = adjust_name(name)
+          local params = {}
+          local t, n = p_string:match('(%w+)%s+(%w+),')
+          if t then params.first = { what = t, name = adjust_name(n) } end
+          t, n = p_string:match('(%w+)%s+(%w+)$')
+          if t then params.second = { what = t, name = adjust_name(n) } end
+
           methods[#methods + 1] = {
-            name = name,
+            name = adjust_name(name),
             ret = ret,
             number = number,
             params = params,
             doc = cur_doc
           }
+
+          -- Recreate the SCI_* constants as well
+          constants[#constants + 1] = { name = 'SCI_' .. name:upper(), value = number }
+
         end
       end
     end
