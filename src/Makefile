@@ -25,7 +25,7 @@ SCINTILLUA_SRC = $(SCINTILLUA)/LexLPeg.cxx
 SCINTILLUA_LEXER = $(SCINTILLUA)/LexLPeg.o
 SCINTILLUA_URL = http://foicica.com/scintillua/download/$(SCINTILLUA_VER).zip
 
-CFLAGS = -Wall $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
+CFLAGS = -Wall -O2 $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
 ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E
@@ -33,7 +33,7 @@ OBJECTS = gtk_ui.o main.o
 DEP_OBJECTS = $(LPEG)/lpeg.o $(SCINTILLUA_LEXER)
 
 vilu: ${OBJECTS} vilu.h $(DEP_OBJECTS)
-	  ${CC} -g -o vilu ${CFLAGS} ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
+	  ${CC} -o vilu ${CFLAGS} ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
 
 ${OBJECTS}: %.o : %.c vilu.h
 	  ${CC} -c $< ${CFLAGS}
