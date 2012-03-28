@@ -8,27 +8,18 @@
 static gchar *lexer_dir;
 static int window_count = 0;
 
-const char *load_file(const char *path) {
-  FILE *f;
-  char *buf;
-  buf  = (char *)malloc(10000);
-  f = fopen(path, "r");
-  fread(buf, 10000, 1, f);
-  fclose(f);
-  return buf;
-}
+#define ss(sci, number, arg1, arg2) \
+  scintilla_send_message(sci, number, (uptr_t)(arg1), (sptr_t)(arg2))
 
 static void initialize_scintilla(ScintillaObject *sci)
 {
-  scintilla_send_message(sci, SCI_STYLESETBACK, 32, 0x880000);
-  scintilla_send_message(sci, SCI_STYLESETFORE, 32, 0x00bbbb);
-  scintilla_send_message(sci, SCI_STYLECLEARALL, 0, 0);
-  scintilla_send_message(sci, SCI_SETCARETFORE, 0xffffff, 0);
-  scintilla_send_message(sci, SCI_GRABFOCUS, 0, 0);
+  ss(sci, SCI_STYLESETBACK, 32, 0x880000);
+  ss(sci, SCI_STYLESETFORE, 32, 0x00bbbb);
+  ss(sci, SCI_STYLECLEARALL, 0, 0);
+  ss(sci, SCI_SETCARETFORE, 0xffffff, 0);
 
-  scintilla_send_message(sci, SCI_SETLEXERLANGUAGE, 0, "lpeg");
-  scintilla_send_message(sci, SCI_SETPROPERTY, "lexer.lpeg.home", lexer_dir);
-  scintilla_send_message(sci, SCI_SETPROPERTY, "lexer.lpeg.color.theme", "dark");
+  ss(sci, SCI_SETLEXERLANGUAGE, 0, "lpeg");
+  ss(sci, SCI_SETPROPERTY, "lexer.lpeg.home", lexer_dir);
 }
 
 static void on_window_closed(GtkWidget *widget, gpointer data)
@@ -59,15 +50,6 @@ void * text_view_new(void *ptr)
   gtk_widget_show_all(sci);
 
   initialize_scintilla((ScintillaObject *)sci);
-
-  SciFnDirect pSciMsg = (SciFnDirect)scintilla_send_message(sci, SCI_GETDIRECTFUNCTION, 0, 0);
-  sptr_t dp = (sptr_t)scintilla_send_message(sci, SCI_GETDIRECTPOINTER, 0, 0);
-  scintilla_send_message(sci, SCI_PRIVATELEXERCALL, SCI_GETDIRECTFUNCTION, pSciMsg);
-  scintilla_send_message(sci, SCI_PRIVATELEXERCALL, SCI_SETDOCPOINTER, dp);
-  scintilla_send_message(sci, SCI_PRIVATELEXERCALL, SCI_SETLEXERLANGUAGE, "ruby");
-  const char * file = load_file("/tmp/test.rb");
-  scintilla_send_message(sci, SCI_SETTEXT, 0, file);
-
   return (void *)sci;
 }
 
