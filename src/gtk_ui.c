@@ -5,10 +5,8 @@
 #include <Scintilla.h>
 #include <ScintillaWidget.h>
 
-static GtkApplication *app;
 static gchar *lexer_dir;
-
-void on_activate(GtkWidget *widget, gpointer callback_data );
+static int window_count = 0;
 
 const char *load_file(const char *path) {
   FILE *f;
@@ -33,17 +31,24 @@ static void initialize_scintilla(ScintillaObject *sci)
   scintilla_send_message(sci, SCI_SETPROPERTY, "lexer.lpeg.color.theme", "dark");
 }
 
-void * _ui_window_new()
+static void on_window_closed(GtkWidget *widget, gpointer data)
+{
+  if (--window_count == 0)
+    gtk_main_quit();
+}
+
+void * window_new()
 {
   GtkWidget *window;
-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_application_add_window (GTK_APPLICATION(app), GTK_WINDOW (window));
+  window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
-  gtk_widget_show_all (window);
+  gtk_widget_show_all(window);
+  g_signal_connect (window, "destroy", G_CALLBACK(on_window_closed), NULL);
+  window_count++;
   return (void *)window;
 }
 
-void * _ui_view_new(void *ptr)
+void * text_view_new(void *ptr)
 {
   GtkWidget *window;
   GtkWidget *sci;
@@ -66,19 +71,16 @@ void * _ui_view_new(void *ptr)
   return (void *)sci;
 }
 
-void on_activate(GtkWidget *app, gpointer callback)
-{
-  ((ViluCallback)callback)();
+intptr_t text_view_sci(void *view, int message, intptr_t wParam, intptr_t lParam) {
+  return scintilla_send_message((ScintillaObject *)view, message, wParam, lParam);
 }
 
 int ui_run(int argc, char *argv[], lua_State *L, ViluCallback callback)
 {
-  int status;
-
-  lexer_dir = g_build_filename(app_root, "..", "lexers", NULL);
-  app = gtk_application_new("org.nordman.vilu", 0);
-  g_signal_connect( app, "activate", G_CALLBACK(on_activate), callback);
-  status = g_application_run (G_APPLICATION (app), argc, argv);
+  lexer_dir = g_build_filename(app_root, "lexers", NULL);
+  gtk_init(&argc, &argv);
+  callback();
+  gtk_main();
   g_free(lexer_dir);
-  return status;
+  return 0;
 }

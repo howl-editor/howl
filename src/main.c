@@ -3,22 +3,36 @@
 lua_State *L;
 gchar *app_root;
 
-void do_lua(void)
+static int _argc;
+static char **_argv;
+
+void lua_start(void)
 {
-    int status;
+  gchar *start_script;
+  int status, i;
 
-    status = luaL_loadfile(L, "script.lua");
-    if (status) {
-        fprintf(stderr, "Couldn't load file: %s\n", lua_tostring(L, -1));
-        exit(1);
-    }
+  start_script = g_build_filename(app_root, "lib", "core", "init.lua", NULL);
 
-    /* Ask Lua to run our little script */
-    status = lua_pcall(L, 0, LUA_MULTRET, 0);
-    if (status) {
-        fprintf(stderr, "Failed to run script: %s\n", lua_tostring(L, -1));
-        exit(1);
-    }
+  status = luaL_loadfile(L, start_script);
+  if (status) {
+    fprintf(stderr, "Couldn't load file: %s\n", lua_tostring(L, -1));
+    exit(1);
+  }
+
+  g_free(start_script);
+
+  lua_pushstring(L, (char *)app_root);
+  lua_newtable(L);
+  for(i = 0; i < _argc; ++i) {
+    lua_pushnumber(L, i + 1);
+    lua_pushstring(L, _argv[i]);
+    lua_settable(L, -3);
+  }
+  status = lua_pcall(L, 2, 0, 0);
+  if (status) {
+      fprintf(stderr, "Failed to run script: %s\n", lua_tostring(L, -1));
+      exit(1);
+  }
 }
 
 gchar *get_app_root(const gchar *invocation_path)
@@ -27,7 +41,7 @@ gchar *get_app_root(const gchar *invocation_path)
 
   cwd = g_get_current_dir();
   relative_path = g_path_get_dirname(invocation_path);
-  root = g_build_filename(cwd, relative_path, NULL);
+  root = g_build_filename(cwd, relative_path, "..", NULL);
   g_free(cwd);
   g_free(relative_path);
   return root;
@@ -37,10 +51,12 @@ int main(int argc, char *argv[])
 {
   int status;
 
+  _argc = argc;
+  _argv = argv;
   app_root = get_app_root(argv[0]);
   L = luaL_newstate();
   luaL_openlibs(L);
-  status = ui_run(argc, argv, L, do_lua);
+  status = ui_run(argc, argv, L, lua_start);
   lua_close(L);
 
   g_free(app_root);
