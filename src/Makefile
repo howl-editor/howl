@@ -26,6 +26,11 @@ SCINTILLUA_SRC = $(SCINTILLUA)/LexLPeg.cxx
 SCINTILLUA_LEXER = $(SCINTILLUA)/LexLPeg.o
 SCINTILLUA_URL = http://foicica.com/scintillua/download/$(SCINTILLUA_VER).zip
 
+LFS_VER = luafilesystem-1.5.0
+LFS_URL = https://github.com/downloads/keplerproject/luafilesystem/$(LFS_VER).tar.gz
+LFS = deps/$(LFS_VER)
+LFS_OBJECT = deps/$(LFS_VER)/src/lfs.o
+
 SCI_GEN = tools/sci_gen.lua
 SCI_GEN_TARGET = ../lib/core/scintilla.lua
 
@@ -34,7 +39,7 @@ ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E
 OBJECTS = gtk_ui.o main.o
-DEP_OBJECTS = $(LPEG)/lpeg.o $(SCINTILLUA_LEXER)
+DEP_OBJECTS = $(LPEG)/lpeg.o $(SCINTILLUA_LEXER) $(LFS_OBJECT)
 
 vilu: ${OBJECTS} vilu.h $(DEP_OBJECTS)
 	  ${CC} -o vilu ${CFLAGS} ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
@@ -71,7 +76,13 @@ $(LUAJIT):
 luajit-build: $(LUAJIT)
 	  cd ${LUAJIT} && make
 
-deps: scintilla-build luajit-build lpeg-build scintillua-build
+$(LFS):
+	  wget -q -O - $(LFS_URL) | tar xzf - -C deps
+
+$(LFS_OBJECT): $(LFS)
+	  cd ${LFS} && make LUA_INC=../../$(LUAJIT)/src
+
+deps: scintilla-build luajit-build lpeg-build scintillua-build $(LFS_OBJECT)
 
 clean:
 	  -rm -f ${OBJECTS}

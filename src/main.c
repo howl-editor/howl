@@ -6,7 +6,7 @@ gchar *app_root;
 static int _argc;
 static char **_argv;
 
-void lua_start(void)
+static void lua_start(void)
 {
   gchar *start_script;
   int status, i;
@@ -34,7 +34,7 @@ void lua_start(void)
   }
 }
 
-gchar *get_app_root(const gchar *invocation_path)
+static gchar *get_app_root(const gchar *invocation_path)
 {
   gchar *cwd, *relative_path, *root;
 
@@ -46,6 +46,15 @@ gchar *get_app_root(const gchar *invocation_path)
   return root;
 }
 
+static lua_State *open_lua_state(void)
+{
+  lua_State *l = luaL_newstate();
+  luaL_openlibs(l);
+  luaopen_lpeg(l);
+  luaopen_lfs(l);
+  return l;
+}
+
 int main(int argc, char *argv[])
 {
   int status;
@@ -53,8 +62,7 @@ int main(int argc, char *argv[])
   _argc = argc;
   _argv = argv;
   app_root = get_app_root(argv[0]);
-  L = luaL_newstate();
-  luaL_openlibs(L);
+  L = open_lua_state();
   status = ui_run(argc, argv, L, lua_start);
   lua_close(L);
 

@@ -17,3 +17,6 @@ intptr_t text_view_sci(void *view, int message, intptr_t wParam, intptr_t lParam
 extern gchar *app_root;
 extern lua_State *L;
 
+/* External dependencies hookups */
+int luaopen_lpeg (lua_State *L);
+int luaopen_lfs (lua_State *L);
