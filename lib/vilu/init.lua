@@ -1,13 +1,13 @@
 local app_root, argv = ...
 
-print(app_root)
-
-for i, val in ipairs(argv) do
-  print(val)
+function prepend_app_path(path)
+  package.path = app_root .. '/' .. path .. ';' .. package.path
 end
 
-package.path = app_root .. '/lib/?.lua;' .. package.path
-print(package.path)
+prepend_app_path('lib/vilu/?/init.lua')
+prepend_app_path('lib/vilu/?.lua')
+
+_G.event = require('core.event')
 
 local ffi = require("ffi")
 local C = ffi.C

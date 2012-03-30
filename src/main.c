@@ -11,7 +11,7 @@ void lua_start(void)
   gchar *start_script;
   int status, i;
 
-  start_script = g_build_filename(app_root, "lib", "core", "init.lua", NULL);
+  start_script = g_build_filename(app_root, "lib", "vilu", "init.lua", NULL);
 
   status = luaL_loadfile(L, start_script);
   if (status) {
@@ -30,8 +30,7 @@ void lua_start(void)
   }
   status = lua_pcall(L, 2, 0, 0);
   if (status) {
-      fprintf(stderr, "Failed to run script: %s\n", lua_tostring(L, -1));
-      exit(1);
+      g_error("Failed to run script: %s\n", lua_tostring(L, -1));
   }
 }
 
