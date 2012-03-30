@@ -1,12 +1,18 @@
 local app_root, argv = ...
 
-function prepend_app_path(path)
-  package.path = app_root .. '/' .. path .. ';' .. package.path
+local function set_package_path(...)
+  local paths = {}
+  for _, path in ipairs({...}) do
+    paths[#paths + 1] = app_root .. '/' .. path .. '/?.lua'
+    paths[#paths + 1] = app_root .. '/' .. path .. '/?/init.lua'
+  end
+  package.path = table.concat(paths, ';')
 end
 
-prepend_app_path('lib/vilu/?/init.lua')
-prepend_app_path('lib/vilu/?.lua')
+set_package_path('lib/vilu', 'lib/vendor/moonscript')
+package.cpath = ''
 
+require('moonscript')
 _G.event = require('core.event')
 
 local ffi = require("ffi")
