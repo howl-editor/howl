@@ -54,7 +54,6 @@ static int setup_for_event(lua_State *l, gchar *name)
     lua_getfield(l, -1, "emit");
     if (lua_isfunction(l, -1)) {
       lua_pushstring(l, name);
-      lua_newtable(l);
       return top;
     }
   }
@@ -63,11 +62,11 @@ static int setup_for_event(lua_State *l, gchar *name)
   return -1;
 }
 
-static gboolean emit_event(lua_State *l, int top)
+static gboolean emit_event(lua_State *l, int nr_params, int top)
 {
   gboolean halt = FALSE;
 
-  if (lua_pcall(L, 2, 1, 0) == 0)
+  if (lua_pcall(L, nr_params + 1, 1, 0) == 0)
     halt = lua_toboolean(L, -1);
   else
     g_critical("Failed to invoke event.emit: %s", lua_tostring(L, -1));
@@ -99,6 +98,20 @@ static void explain_key_code(lua_State *l, int code)
   }
 }
 
+static gboolean on_sci_command(GtkWidget *widget, gint code, gpointer nil, gpointer null) {
+  code >>= 16;
+  if (code == SCEN_SETFOCUS || code == SCEN_KILLFOCUS) {
+    gchar *name = code == SCEN_SETFOCUS ? "view-focused" : "view-defocused";
+    int top = setup_for_event(L, name);
+
+    if (top < 0)
+      return FALSE;
+
+    return emit_event(L, 0, top);
+  }
+  return FALSE;
+}
+
 static gboolean on_sci_notify(GtkWidget *widget, gint ctrl_id, struct SCNotification *n, gpointer nil)
 {
   int code = n->nmhdr.code;
@@ -108,7 +121,8 @@ static gboolean on_sci_notify(GtkWidget *widget, gint ctrl_id, struct SCNotifica
   if (top < 0)
     return FALSE;
 
-    set_nfield(L, "code", code);
+  lua_newtable(L);
+  set_nfield(L, "code", code);
 
   if (code == SCN_PAINTED) {} /* fires a lot */
   else if (code == SCN_UPDATEUI) {
@@ -160,7 +174,7 @@ static gboolean on_sci_notify(GtkWidget *widget, gint ctrl_id, struct SCNotifica
       set_nfield(L, "y", n->y);
     }
   }
-  return emit_event(L, top);
+  return emit_event(L, 1, top);
 }
 
 static gboolean on_sci_key_press(GtkWidget *widget, GdkEventKey *key, gpointer nil)
@@ -170,6 +184,7 @@ static gboolean on_sci_key_press(GtkWidget *widget, GdkEventKey *key, gpointer n
   if (top < 0)
     return FALSE;
 
+  lua_newtable(L);
   explain_key_code(L, key->keyval);
   set_bfield(L, "shift", key->state & GDK_SHIFT_MASK);
   set_bfield(L, "control", key->state & GDK_CONTROL_MASK);
@@ -177,7 +192,7 @@ static gboolean on_sci_key_press(GtkWidget *widget, GdkEventKey *key, gpointer n
   set_bfield(L, "super", key->state & GDK_SUPER_MASK);
   set_bfield(L, "meta", key->state & GDK_META_MASK);
 
-  return emit_event(L, top);
+  return emit_event(L, 1, top);
 }
 
 void * window_new()
@@ -201,6 +216,7 @@ void * text_view_new(void *ptr)
   gtk_container_add (GTK_CONTAINER (window), sci);
   g_signal_connect(sci, "key-press-event", G_CALLBACK(on_sci_key_press), NULL);
   g_signal_connect(sci, SCINTILLA_NOTIFY, G_CALLBACK(on_sci_notify), NULL);
+  g_signal_connect(sci, "command", G_CALLBACK(on_sci_command), NULL);
   gtk_widget_show_all(sci);
 
   initialize_scintilla((ScintillaObject *)sci);
