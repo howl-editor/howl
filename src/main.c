@@ -12,14 +12,13 @@ static void lua_start(void)
   int status, i;
 
   start_script = g_build_filename(app_root, "lib", "vilu", "init.lua", NULL);
-
   status = luaL_loadfile(L, start_script);
+  g_free(start_script);
+
   if (status) {
     fprintf(stderr, "Couldn't load file: %s\n", lua_tostring(L, -1));
     exit(1);
   }
-
-  g_free(start_script);
 
   lua_pushstring(L, (char *)app_root);
   lua_newtable(L);
