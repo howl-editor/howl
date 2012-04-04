@@ -124,7 +124,7 @@ static gboolean on_sci_notify(GtkWidget *widget, gint ctrl_id, struct SCNotifica
   lua_newtable(L);
   set_nfield(L, "code", code);
 
-  if (code == SCN_PAINTED) {} /* fires a lot */
+  if (code == SCN_PAINTED) { return FALSE; } /* fires a lot */
   else if (code == SCN_UPDATEUI) {
     set_nfield(L, "updated", n->updated);
   }
