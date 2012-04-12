@@ -1,10 +1,12 @@
 GTK = gtk+-3.0
 GTK_CFLAGS := $(shell pkg-config --cflags ${GTK})
-GTK_LIBS := $(shell pkg-config --libs ${GTK})
+GTK_LIBS := $(shell pkg-config --libs ${GTK} gobject-introspection-1.0)
 
 LUAJIT_VER = LuaJIT-2.0.0-beta9
 LUAJIT = deps/$(LUAJIT_VER)
-LUAJIT_CFLAGS = -I$(LUAJIT)/src
+LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
+#LUAJIT_CFLAGS = -I$(LUAJIT)/src
+LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
 LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
 
@@ -32,17 +34,24 @@ LFS_URL = https://github.com/downloads/keplerproject/luafilesystem/$(LFS_VER).ta
 LFS = deps/$(LFS_VER)
 LFS_OBJECT = deps/$(LFS_VER)/src/lfs.o
 
+#LGI_VER = lgi-0.4
+#LGI_URL = https://github.com/downloads/pavouk/lgi/$(LGI_VER).tar.gz
+LGI_VER = lgi-0.4-x
+LGI_URL = http://nordman.org/download/$(LGI_VER).tgz
+LGI = deps/$(LGI_VER)
+LGI_ARCHIVE = deps/$(LGI_VER)/lgi/lgi.a
+
 SCI_GEN = tools/sci_gen.lua
 SCI_GEN_TARGET = ../lib/vilu/core/scintilla.lua
 
 CFLAGS = -Wall -O2 $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
-ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE)
+ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE) $(LGI_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E
-OBJECTS = gtk_ui.o main.o
+OBJECTS = main.o sci.o
 DEP_OBJECTS = $(LPEG)/lpeg.o $(SCINTILLUA_LEXER) $(LFS_OBJECT)
 
-vilu: ${OBJECTS} vilu.h $(DEP_OBJECTS) $(ARCHIVES)
+vilu: ${OBJECTS} vilu.h $(DEP_OBJECTS) $(ARCHIVES) Makefile
 	  ${CC} -o vilu ${CFLAGS} ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
 
 ${OBJECTS}: %.o : %.c vilu.h
@@ -83,10 +92,17 @@ $(LFS):
 $(LFS_OBJECT): $(LFS)
 	  cd ${LFS} && make LUA_INC=../../$(LUAJIT)/src
 
+$(LGI):
+	  wget -q -O - $(LGI_URL) | tar xzf - -C deps
+
+$(LGI_ARCHIVE): $(LGI)
+	  cd ${LGI}/lgi && make LUA_CFLAGS=$(LUAJIT_CFLAGS)
+	  ar rs $(LGI_ARCHIVE) ${LGI}/lgi/*.o
+
 deps: scintilla-build luajit-build lpeg-build scintillua-build $(LFS_OBJECT)
 
 clean:
 	  -rm -f ${OBJECTS}
 
-scigen: luajit-build
+scigen: $(LUAJIT_ARCHIVE)
 	  $(LUAJIT)/src/luajit $(SCI_GEN) $(SCINTILLA_IFACE) $(SCI_GEN_TARGET)

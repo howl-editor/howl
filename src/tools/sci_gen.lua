@@ -107,7 +107,7 @@ local function write_plain_method(m, out)
     out:write(p.second.name)
   end
   out:write(')\n')
-  out:write('  return self.send(' .. m.number .. ', ')
+  out:write('  return self:send(' .. m.number .. ', ')
 
   if p.first then out:write(p.first.name, ', ')
   else out:write('0, ') end

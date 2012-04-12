@@ -1,12 +1,6 @@
 #include "vilu.h"
 
-lua_State *L;
-gchar *app_root;
-
-static int _argc;
-static char **_argv;
-
-static void lua_start(void)
+static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 {
   gchar *start_script;
   int status, i;
@@ -22,14 +16,15 @@ static void lua_start(void)
 
   lua_pushstring(L, (char *)app_root);
   lua_newtable(L);
-  for(i = 0; i < _argc; ++i) {
+  for(i = 0; i < argc; ++i) {
     lua_pushnumber(L, i + 1);
-    lua_pushstring(L, _argv[i]);
+    lua_pushstring(L, argv[i]);
     lua_settable(L, -3);
   }
   status = lua_pcall(L, 2, 0, 0);
   if (status) {
-      g_error("Failed to run script: %s\n", lua_tostring(L, -1));
+      g_critical("Failed to run script: %s\n", lua_tostring(L, -1));
+      exit(1);
   }
 }
 
@@ -45,27 +40,42 @@ static gchar *get_app_root(const gchar *invocation_path)
   return root;
 }
 
-static lua_State *open_lua_state(void)
+static lua_State *open_lua_state(const gchar *app_root)
 {
   lua_State *l = luaL_newstate();
   luaL_openlibs(l);
+
+  /* lpeg */
   luaopen_lpeg(l);
+  lua_pop(l, 1);
+
+  /* lfs */
   luaopen_lfs(l);
+  lua_pop(l, 1);
+
+  /* lgi */
+  lua_getglobal(l, "package");
+  lua_getfield(l, -1, "loaded");
+  luaopen_lgi_corelgilua51(l);
+  lua_setfield(l, -2, "lgi.corelgilua51");
+  lua_pop(l, 2);
+
+  /* core bindings */
+  lua_newtable(l);
+  sci_init(l, app_root);
+  lua_setglobal(l, "_core");
+
   return l;
 }
 
 int main(int argc, char *argv[])
 {
-  int status;
-
-  _argc = argc;
-  _argv = argv;
-  app_root = get_app_root(argv[0]);
-  L = open_lua_state();
-  status = ui_run(argc, argv, L, lua_start);
+  gchar *app_root = get_app_root(argv[0]);
+  lua_State *L = open_lua_state(app_root);
+  gtk_init(&argc, &argv);
+  lua_run(argc, argv, app_root, L);
   lua_close(L);
-
   g_free(app_root);
-
-  return status;
+  sci_close();
+  return 0;
 }
