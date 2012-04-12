@@ -12,6 +12,8 @@ local lgi = require('lgi')
 local Gtk = lgi.Gtk
 local core = require 'lgi.core'
 
+local File = require('vilu.fs.file')
+
 local app = {}
 local _ENV = app
 if setfenv then setfenv(1, _ENV) end
