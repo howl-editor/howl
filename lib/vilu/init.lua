@@ -6,20 +6,20 @@ local function set_package_path(...)
     paths[#paths + 1] = app_root .. '/' .. path .. '/?.lua'
     paths[#paths + 1] = app_root .. '/' .. path .. '/?/init.lua'
   end
-  package.path = package.path .. ';' .. table.concat(paths, ';')
+  package.path = table.concat(paths, ';')
 end
 
-set_package_path('lib', 'lib/vilu', 'lib/vendor', 'lib/vendor/moonscript')
+set_package_path('lib', 'lib/vendor', 'lib/vendor/moonscript')
 package.cpath = ''
 
 require('moonscript')
 
 -- set up globals (lpeg/lfs already setup from C)
-event = require('core.event')
+event = require('vilu.core.event')
 lgi = require('lgi')
 vilu = {
   fs = require('vilu.fs'),
 }
 
-vilu.app = require('core.app').new(vilu.fs.File(app_root), argv)
+vilu.app = require('vilu.application')(vilu.fs.File(app_root), argv)
 vilu.app:run()
