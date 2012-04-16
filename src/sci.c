@@ -4,23 +4,10 @@
 #include <Scintilla.h>
 #include <ScintillaWidget.h>
 
-static gchar *lexer_dir;
-
 #define ss(sci, number, arg1, arg2) \
   scintilla_send_message(sci, number, (uptr_t)(arg1), (sptr_t)(arg2))
 
 intptr_t sci_send(void *sci, int message, intptr_t wParam, intptr_t lParam);
-
-static void initialize_scintilla(ScintillaObject *sci)
-{
-  ss(sci, SCI_STYLESETBACK, 32, 0x880000);
-  ss(sci, SCI_STYLESETFORE, 32, 0x00bbbb);
-  ss(sci, SCI_STYLECLEARALL, 0, 0);
-  ss(sci, SCI_SETCARETFORE, 0xffffff, 0);
-
-  ss(sci, SCI_SETLEXERLANGUAGE, 0, "lpeg");
-  ss(sci, SCI_SETPROPERTY, "lexer.lpeg.home", lexer_dir);
-}
 
 static void set_bfield(lua_State *L, const gchar *name, gboolean value)
 {
@@ -195,7 +182,6 @@ static int sci_new(lua_State *L)
   g_signal_connect(sci, "key-press-event", G_CALLBACK(on_sci_key_press), L);
   g_signal_connect(sci, SCINTILLA_NOTIFY, G_CALLBACK(on_sci_notify), L);
   g_signal_connect(sci, "command", G_CALLBACK(on_sci_command), L);
-  initialize_scintilla((ScintillaObject *)sci);
   lua_pushlightuserdata(L, sci);
   return 1;
 }
@@ -211,8 +197,6 @@ static struct luaL_Reg sci_reg[] = {
 
 void sci_init(lua_State *L, const gchar *app_root)
 {
-  lexer_dir = g_build_filename(app_root, "lexers", NULL);
-
   lua_pushstring(L, "sci");
   lua_newtable(L);
   luaL_register(L, NULL, sci_reg);
@@ -221,6 +205,5 @@ void sci_init(lua_State *L, const gchar *app_root)
 
 void sci_close()
 {
-  g_free(lexer_dir);
   scintilla_release_resources();
 }

@@ -10,9 +10,9 @@ class File
       .__div= self.join
       .__concat = (op1, op2) ->
         if getmetatable(op1) != getmetatable(self)
-          return op1 .. op2\to_string!
+          op1 .. op2\to_string!
         else
-          return op1\join(op2)
+          op1\join(op2)
 
   basename: => @gfile\get_basename!
   path: => @gfile\get_path!
@@ -29,6 +29,9 @@ class File
       root = root\get_child(child)
 
     return File(root)
+
+  read_all: =>
+    return tostring(@gfile\load_contents!)
 
   to_string: =>
     self\path! or self\uri!
