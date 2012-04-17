@@ -15,6 +15,7 @@ local Gdk = lgi.Gdk
 
 -- Take over internal GDK synchronization lock.
 core.registerlock('Gdk', 'gdk_threads_set_lock_functions')
+Gdk.threads_init()
 
 -- Gdk.Rectangle does not exist at all, beacuse it is aliased to
 -- cairo.RectangleInt.  Make sure that we have it exists, because it
@@ -23,6 +24,7 @@ Gdk.Rectangle = lgi.cairo.RectangleInt
 
 -- Declare GdkAtoms which are #define'd in Gdk sources and not
 -- introspected in gir.
+local _ = Gdk.KEY_0
 for name, val in pairs {
    SELECTION_PRIMARY = 1,
    SELECTION_SECONDARY = 2,
@@ -40,7 +42,4 @@ for name, val in pairs {
    SELECTION_TYPE_PIXMAP = 20,
    SELECTION_TYPE_WINDOW = 33,
    SELECTION_TYPE_STRING = 31,
-} do Gdk[name] = core.record.new(core.gi.Gdk.Atom, val) end
-
--- Make sure that Gdk is initialized with threads.
-Gdk.threads_init()
+} do Gdk._constant[name] = Gdk.Atom(val) end

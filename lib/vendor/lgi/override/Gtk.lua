@@ -52,15 +52,20 @@ function Gtk.Widget._attribute.style:get()
    return setmetatable({ _widget = self }, widget_style_mt)
 end
 
+-- Get widget from Gdk.Window
+function Gdk.Window:get_widget()
+   return core.object.new(self:get_user_data(), false)
+end
+
 -------------------------------- Gtk.Buildable overrides.
 Gtk.Buildable._attribute = { id = {}, child = {} }
 
 -- Create custom 'id' property, mapped to buildable name.
 function Gtk.Buildable._attribute.id:set(id)
-   Gtk.Buildable.set_name(self, id)
+   core.object.env(self).id = id
 end
 function Gtk.Buildable._attribute.id:get()
-   return Gtk.Buildable.get_name(self)
+   return core.object.env(self).id
 end
 
 -- Custom 'child' property, which returns widget in the subhierarchy
@@ -124,6 +129,7 @@ function container_property_item_mt:__newindex(name, val)
 end
 local container_property_mt = {}
 function container_property_mt:__index(child)
+   if type(child) == 'string' then child = self._container.child[child] end
    return setmetatable({ _container = self._container, _child = child },
 		       container_property_item_mt)
 end
@@ -137,7 +143,7 @@ end
 Gtk.Container._attribute.child = {}
 local container_child_mt = {}
 function container_child_mt:__index(id)
-   local found = (Gtk.Buildable.get_name(self._container) == id
+   local found = (core.object.env(self._container).id == id
 	       and self._container)
    if not found then
       for _, child in ipairs(self) do
@@ -224,7 +230,11 @@ end
 -- instance values with iterators.
 local tree_model_element = Gtk.TreeModel._element
 function Gtk.TreeModel:_element(model, key)
-   if Gtk.TreeIter:is_type_of(key) then return key, '_iter' end
+   if Gtk.TreeIter:is_type_of(key) then
+      return key, '_iter'
+   elseif Gtk.TreePath:is_type_of(key) then
+      return model:get_iter(key), '_iter'
+   end
    return tree_model_element(self, model, key)
 end
 function Gtk.TreeModel:_access_iter(model, iter, ...)
@@ -235,13 +245,35 @@ function Gtk.TreeModel:_access_iter(model, iter, ...)
       return setmetatable({ _model = model, _iter = iter }, tree_model_item_mt)
    end
 end
-function Gtk.TreeModel:set(iter, values)
-   -- Set all values provided by the table
+
+local function treemodel_prepare_values(model, values)
+   local cols, vals = {}, {}
    for column, value in pairs(values) do
       column = column - 1
-      self:set_value(iter, column,
-		     GObject.Value(self:get_column_type(column), value))
+      cols[#cols + 1] = column
+      vals[#vals + 1] = GObject.Value(model:get_column_type(column), value)
    end
+   return cols, vals
+end
+function Gtk.TreeModel:set(iter, values)
+   -- Set all values provided by the table
+   if Gtk.TreePath:is_type_of(iter) then iter = self:get_iter(iter) end
+   self:set_values(iter, treemodel_prepare_values(self, values))
+end
+
+-- Implement iteration protocol for model.
+function Gtk.TreeModel:next(iter)
+   if not iter or type(iter) == 'table' then
+      -- Start iteration.
+      iter = self:iter_children(iter and iter[1])
+   else
+      -- Continue to the next child.
+      if not self:iter_next(iter) then iter = nil end
+   end
+   return iter, iter and Gtk.TreeModel:_access_iter(self, iter)
+end
+function Gtk.TreeModel:pairs(parent)
+   return Gtk.TreeModel.next, self, parent and { parent }
 end
 
 -- Redirect 'set' method to our one inherited from TreeModel, it is
@@ -251,13 +283,27 @@ Gtk.ListStore._method.set = nil
 
 -- Allow insert() and append() to handle also 'with_values' case.
 function Gtk.ListStore:insert(position, values)
-   local iter = Gtk.ListStore._method.insert(self, position)
-   if values then self:set(iter, values) end
+   local iter
+   if not values then
+      iter = Gtk.ListStore._method.insert(self, position)
+   else
+      iter = Gtk.ListStore._method.insert_with_valuesv(
+	 self, position, treemodel_prepare_values(self, values))
+   end
    return iter
 end
+if not Gtk.ListStore._method.insert_with_values then
+   Gtk.ListStore._method.insert_with_values =
+      Gtk.ListStore._method.insert_with_valuesv
+end
 function Gtk.ListStore:append(values)
-   local iter = Gtk.ListStore._method.append(self)
-   if values then self:set(iter, values) end
+   local iter
+   if not values then
+      iter = Gtk.ListStore._method.append(self)
+   else
+      iter = Gtk.ListStore._method.insert_with_values(
+	 self, -1, treemodel_prepare_values(self, values))
+   end
    return iter
 end
 
@@ -265,22 +311,53 @@ end
 Gtk.TreeStore._method.set_values = Gtk.TreeStore.set
 Gtk.TreeStore._method.set = nil
 function Gtk.TreeStore:insert(parent, position, values)
-   local iter = Gtk.TreeStore._method.insert(self, parent, position)
-   if values then self:set(iter, values) end
+   local iter
+   if not values then
+      iter = Gtk.TreeStore._method.insert(self, parent, position)
+   else
+      iter = Gtk.TreeStore._method.insert_with_values(
+	 self, parent, position, treemodel_prepare_values(self, values))
+   end
    return iter
 end
 function Gtk.TreeStore:append(parent, values)
-   local iter = Gtk.TreeStore._method.append(self, parent)
-   if values then self:set(iter, values) end
+   local iter
+   if not values then
+      iter = Gtk.TreeStore._method.append(self, parent)
+   else
+      iter = Gtk.TreeStore._method.insert_with_values(
+	 self, parent, -1, treemodel_prepare_values(self, values))
+   end
    return iter
 end
+
+-- Add missing constants, defined as anonymous enums in C headers, which
+-- is not supported by GIR yet.
+Gtk.TreeSortable.DEFAULT_SORT_COLUMN_ID = -1
+Gtk.TreeSortable.UNSORTED_SORT_COLUMN_ID = -2
 
 -------------------------------- Gtk.TreeView and support.
 -- Array part in constructor specifies columns to add.
 Gtk.TreeView._container_add = Gtk.TreeView.append_column
 
+-- Allow looking up tree column as child of the tree.
+Gtk.TreeView._attribute = {
+   child = { set = Gtk.TreeView._parent._attribute.child.set }
+}
+local treeview_child_mt = {}
+function treeview_child_mt:__index(id)
+   if self._view.id == id then return self._view end
+   for _, column in ipairs(self._view:get_columns()) do
+      local child = column.child[id]
+      if child then return child end
+   end
+end
+function Gtk.TreeView._attribute.child:get()
+   return setmetatable({ _view = self }, treeview_child_mt)
+end
+
 -- Sets attributes for specified cell.
-function Gtk.TreeViewColumn:set(cell, data)
+function Gtk.CellLayout:set(cell, data)
    if type(data) == 'table' then
       for attr, column in pairs(data) do
 	 self:add_attribute(cell, attr, column - 1)
@@ -291,17 +368,149 @@ function Gtk.TreeViewColumn:set(cell, data)
 end
 
 -- Adds new cellrenderer with full definition into the column.
-function Gtk.TreeViewColumn:add(def)
+function Gtk.CellLayout:add(def)
    if def.align == 'start' then
       self:pack_start(def[1], def.expand)
    else
       self:pack_end(def[1], def.expand)
    end
-   
+
    -- Set attributes.
    self:set(def[1], def[2])
+   if def.data_func then self:set_cell_data_func(def[1], def.data_func) end
 end
+
+-- Unfortunately, CellView is interface often implemented by descendants
+-- of Gtk.Container, so we cannot reuse generic _container_add here,
+-- because it is already occupied by implementing container's ctor.  So
+-- instead add attribute 'cells' which can be assigned the list of cell
+-- data definitions.
+Gtk.CellLayout._attribute = { cells = {}, child = {} }
+function Gtk.CellLayout._attribute.cells:set(cells)
+   for _, data in ipairs(cells) do Gtk.CellLayout.add(self, data) end
+end
+
+-- Allow lookuing up rendereres by assigned id.
+Gtk.CellRenderer._attribute = { id = Gtk.Buildable._attribute.id }
+local celllayout_child_mt = {}
+function celllayout_child_mt:__index(id)
+   if id == self._layout.id then return self._layout end
+   for _, renderer in ipairs(self._layout:get_cells()) do
+      if renderer.id == id then return renderer end
+   end
+end
+function Gtk.CellLayout._attribute.child:get()
+   return setmetatable({ _layout = self }, celllayout_child_mt)
+end
+
 Gtk.TreeViewColumn._container_add = Gtk.TreeViewColumn.add
+
+-------------------------------- Gtk.Action and relatives
+function Gtk.ActionGroup:add(action)
+   if type(action) == 'table' then
+      if action.accelerator then
+	 -- Add with an accelerator.
+	 self:add_action_with_accel(action[1], action.accelerator)
+	 return action[1]
+      end
+
+      -- Go through all actions in the table and add them.
+      local first_radio
+      for i = 1, #action do
+	 local added = self:add(action[i])
+	 if Gtk.RadioAction:is_type_of(added) then
+	    if not first_radio then
+	       first_radio = added
+	    else
+	       added:join_group(first_radio)
+	    end
+	 end
+      end
+      -- Install callback for on_activate.
+      if first_radio and action.on_change then
+	 local on_change = action.on_change
+	 function first_radio:on_changed(current) on_change(current) end
+      end
+   else
+      -- Add plain action.
+      self:add_action(action)
+      return action
+   end
+end
+Gtk.ActionGroup._container_add = Gtk.ActionGroup.add
+
+Gtk.ActionGroup._attribute = { action = {} }
+local action_group_mt = {}
+function action_group_mt:__index(name)
+   return self._group:get_action(name)
+end
+function Gtk.ActionGroup._attribute.action:get()
+   return setmetatable({ _group = self }, action_group_mt)
+end
+
+-------------------------------- Gtk.Assistant
+Gtk.Assistant._attribute = { property = {} }
+
+function Gtk.Assistant._method:add(child)
+   if type(child) == 'table' then
+      local widget = child[1]
+      self:append_page(widget)
+      for name, value in pairs(child) do
+	 if type(name) == 'string' then
+	    self['set_page_' .. name](self, widget, value)
+	 end
+      end
+   else
+      self:append_page(widget)
+   end
+end
+Gtk.Assistant._container_add = Gtk.Assistant.add
+
+local assistant_property_mt = {}
+function assistant_property_mt:__newindex(property_name, value)
+   self._assistant['set_page_' .. property_name](
+      self._assistant, self._page, value)
+end
+function assistant_property_mt:__index(property_name)
+   return self._assistant['get_page_' .. property_name](
+      self._assistant, self._page)
+end
+local assistant_properties_mt = {}
+function assistant_properties_mt:__index(page)
+   if type(page) == 'string' then page = self._assistant.child[page] end
+   return setmetatable({ _assistant = self._assistant, _page = page },
+		       assistant_property_mt)
+end
+function Gtk.Assistant._attribute.property:get()
+   return setmetatable({ _assistant = self }, assistant_properties_mt)
+end
+
+-------------------------------- Gtk.Dialog
+Gtk.Dialog._attribute = { buttons = {} }
+
+function Gtk.Dialog._attribute.buttons:set(buttons)
+   for _, button in ipairs(buttons) do
+      self:add_button(button[1], button[2])
+   end
+end
+
+-------------------------------- Gtk.InfoBar
+Gtk.InfoBar._attribute = { buttons = Gtk.Dialog._attribute.buttons }
+
+-------------------------------- Gtk.Menu
+if not Gtk.Menu.popup then
+   Gtk.Menu._method.popup = Gtk.Menu.popup_for_device
+end
+
+-------------------------------- Gtk.EntryCompletion
+
+-- Workaround for bug in GTK+; text_column accessors don't do an extra
+-- needed work which is done properly in
+-- gtk_entry_completion_{set/get}_text_column
+Gtk.EntryCompletion._attribute = {
+   text_column = { get = Gtk.EntryCompletion.get_text_column,
+		   set = Gtk.EntryCompletion.set_text_column }
+}
 
 -- Initialize GTK.
 Gtk.init()

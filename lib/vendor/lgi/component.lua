@@ -2,7 +2,7 @@
 --
 --  LGI Basic repo type component implementation
 --
---  Copyright (c) 2010, 2011 Pavel Holejsovsky
+--  Copyright (c) 2010, 2011, 2012 Pavel Holejsovsky
 --  Licensed under the MIT license:
 --  http://www.opensource.org/licenses/mit-license.php
 --
@@ -275,7 +275,7 @@ function component.create(info, mt)
    if info.gtype then
       -- Bind component in repo, make the relation using GType.
       component._gtype = info.gtype
-      core.repo[info.gtype] = component
+      core.index[info.gtype] = component
    end
    return setmetatable(component, mt)
 end

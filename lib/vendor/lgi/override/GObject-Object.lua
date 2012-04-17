@@ -33,14 +33,32 @@ else
    -- implemented C version.
    object_new = core.object.new
 end
-function Object:_new(args)
+
+-- Generic construction method.
+function Object:_construct(gtype, param, owns)
+   local object
+   if type(param) == 'userdata' then
+      -- Wrap existing GObject instance in the lgi proxy.
+      object = core.object.new(param, owns)
+      gtype = core.object.query(object, 'gtype')
+   end
+
+   -- Check that gtype fits.
+   if not Type.is_a(gtype, self._gtype) then
+      error(("`%s' is not subtype of `%s'"):format(
+	       Type.name(gtype), self._name), 3)
+   end
+
+   -- In 'wrap' mode, just return the created object.
+   if object then return object end
+
    -- Process 'args' table, separate properties from other fields.
-   local params, others, safe = {}, {}, {}
-   for name, arg in pairs(args or {}) do
+   local parameters, others, safe = {}, {}, {}
+   for name, arg in pairs(param or {}) do
       if type(name) == 'string' then
 	 local argtype = self[name]
 	 if gi.isinfo(argtype) and argtype.is_property then
-	    local param = core.record.new(parameter_info)
+	    local parameter = core.record.new(parameter_info)
 	    name = argtype.name
 
 	    -- Store the name string in some safe Lua place ('safe'
@@ -50,12 +68,12 @@ function Object:_new(args)
 	    -- instance.
 	    safe[#safe + 1] = name
 
-	    param.name = name
+	    parameter.name = name
 	    local gtype = Type.from_typeinfo(argtype.typeinfo)
-	    Value.init(param.value, gtype)
+	    Value.init(parameter.value, gtype)
 	    local marshaller = Value.find_marshaller(gtype, argtype.typeinfo)
-	    marshaller(param.value, nil, arg)
-	    params[#params + 1] = param
+	    marshaller(parameter.value, nil, arg)
+	    parameters[#parameters + 1] = parameter
 	 else
 	    others[name] = arg
 	 end
@@ -63,7 +81,7 @@ function Object:_new(args)
    end
 
    -- Create the object.
-   local object = object_new(self._gtype, params)
+   object = object_new(gtype, parameters)
 
    -- Attach arguments previously filtered out from creation.
    for name, value in pairs(others) do
@@ -73,26 +91,39 @@ function Object:_new(args)
    -- In case that type has _container_add() method, use it to process
    -- array part of the args.
    local add = self._container_add
-   if add and args then
-      for i = 1, #args do add(object, args[i]) end
+   if add and param then
+      for i = 1, #param do add(object, param[i]) end
    end
    return object
+end
+
+function Object:_new(...)
+   -- Invoke object's construct method which does the work.
+   return self:_construct(self._gtype, ...)
+end
+
+-- Override normal 'new' constructor, to allow creating objects with
+-- specified GType.
+function Object.new(gtype, params, owns)
+   -- Find proper repo instance for gtype.
+   local self = core.repotype(gtype)
+   return self:_construct(gtype, params, owns)
 end
 
 -- Initially unowned creation is similar to normal GObject creation,
 -- but we have to ref_sink newly created object.
 local InitiallyUnowned = repo.GObject.InitiallyUnowned
-function InitiallyUnowned:_new(args)
-   local object = Object._new(self, args)
+function InitiallyUnowned:_construct(...)
+   local object = Object._construct(self, ...)
    return Object.ref_sink(object)
 end
 
 -- Reading 'class' yields real instance of the object class.
-Object._attribute = { class = {}, type = {} }
+Object._attribute = { class = {}, _type = {} }
 function Object._attribute.class:get()
    return core.object.query(self, 'class')
 end
-function Object._attribute.type:get()
+function Object._attribute._type:get()
    return core.object.query(self, 'repo')
 end
 

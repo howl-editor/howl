@@ -37,6 +37,9 @@ function record.mt:_element(instance, symbol)
    local element, category = component.mt._element(self, instance, symbol)
    if element then return element, category end
 
+   -- Special handling of '_native' attribute.
+   if symbol == '_native' then return symbol, '_internal' end
+
    -- If the record has parent struct, try it there.
    local parent = rawget(self, '_parent')
    if parent then
@@ -76,6 +79,12 @@ function record.mt:_access_field(instance, element, ...)
    end
 end
 
+-- Add accessor for 'internal' fields handling.
+function record.mt:_access_internal(instance, element, ...)
+   if select('#', ...) ~= 0 or element ~= '_native' then return end
+   return core.record.query(instance, 'addr')
+end
+
 -- Add accessor for accessing inherited elements.
 function record.mt:_access_inherited(instance, element, ...)
    -- Cast instance to inherited type.
@@ -87,9 +96,9 @@ function record.mt:_access_inherited(instance, element, ...)
 end
 
 -- Create structure instance and initialize it with given fields.
-function record.mt:_new(fields)
+function record.mt:_new(param, owns)
    -- Find baseinfo of requested record.
-   local info
+   local info, struct
    if self._gtype then
       -- Try to lookup info by gtype.
       info = gi[self._gtype]
@@ -100,11 +109,18 @@ function record.mt:_new(fields)
       info = assert(gi[ns][name])
    end
 
-   -- Create the structure instance.
-   local struct = core.record.new(info)
+   if type(param) == 'userdata' or type(param) == 'number' then
+      -- Wrap existing pointer.
+      struct = core.record.new(info, param, owns)
+   else
+      -- Create the structure instance.
+      struct = core.record.new(info)
 
-   -- Set values of fields.
-   for name, value in pairs(fields or {}) do struct[name] = value end
+      -- Set values of fields.
+      for name, value in pairs(param or {}) do
+	 struct[name] = value
+      end
+   end
    return struct
 end
 

@@ -115,6 +115,9 @@ function class.class_mt:_element(instance, symbol)
    local element, category = component.mt._element(self, instance, symbol)
    if element then return element, category end
 
+   -- Special handling of '_native' attribute.
+   if symbol == '_native' then return symbol, '_internal' end
+
    -- Check parent and all implemented interfaces.
    local parent = rawget(self, '_parent')
    if parent then
@@ -128,6 +131,13 @@ function class.class_mt:_element(instance, symbol)
    end
 end
 
+-- Add accessor for 'internal' fields handling.
+function class.class_mt:_access_internal(instance, element, ...)
+   if select('#', ...) ~= 0 or element ~= '_native' then return end
+   return core.object.query(instance, 'addr')
+end
+
+-- Object constructor, does not accept any arguments.  Overriden later
 -- Implementation of field accessor.  Note that compound fields are
 -- not supported in classes (because they are not seen in the wild and
 -- I'm lazy).
@@ -151,23 +161,6 @@ function class.class_mt:_access_virtual(instance, vfunc, ...)
    -- Resolve the field of the typestruct with the virtual name.  This
    -- returns callback to the virtual, which can be directly called.
    return core.record.field(typestruct, self._class[vfunc.name])
-end
-
--- Object constructor, does not accept any arguments.  Overriden later
--- for GObject which accepts properties table to initialize object
--- with.
-local object_new = gi.require('GObject').Object.methods.new
-if object_new then
-   object_new = core.callable.new(object_new)
-else
-   -- Unfortunately, older GI (<1.30) does not export g_object_newv()
-   -- in the typelib, so we have to workaround here with manually
-   -- implemented C version.
-   object_new = core.object.new
-end
-function class.class_mt:_new()
-   -- Create the object.
-   return object_new(self._gtype, {})
 end
 
 function class.load_interface(namespace, info)

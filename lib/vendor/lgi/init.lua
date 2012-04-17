@@ -10,7 +10,6 @@
 
 local assert, require, pcall, setmetatable, pairs
    = assert, require, pcall, setmetatable, pairs
-local math = require 'math'
 local package = require 'package'
 
 -- Require core lgi utilities, used during bootstrap.
@@ -35,7 +34,6 @@ lgi.log = require 'lgi.log'
 
 -- For the rest of bootstrap, prepare logging to lgi domain.
 local log = lgi.log.domain('lgi')
-log.message('gobject-introspection binding for Lua, ' .. lgi._VERSION)
 
 -- Repository, table with all loaded namespaces.  Its metatable takes care of
 -- loading on-demand.  Created by C-side bootstrap.

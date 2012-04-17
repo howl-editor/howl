@@ -13,36 +13,7 @@ local core = require 'lgi.core'
 local gi = core.gi
 local component = require 'lgi.component'
 
--- Prepare needed bit operations.  Prefer bit32 C module if available,
--- but if it is not, use poor-man Lua-only variants.
-local bor, has_bit
-local ok, bitlib = pcall(require, 'bit32')
-if ok then
-   -- Lua 5.2 style bit operations.
-   bor, has_bit = bitlib.bor, bitlib.btest
-else
-   ok, bitlib = pcall(require, 'bit')
-   if ok then
-      -- LuaBitOp package.
-      bor, has_bit = bitlib.bor, bitlib.band
-   else
-      -- Poor-man's Lua-only implementation, slow but out-of-the-box
-      -- for any kind of Lua.
-      function has_bit(value, bitmask)
-	 return value % (2 * bitmask) >= bitmask
-      end
-      function bor(o1, o2)
-	 local res, bit = 0, 1
-	 while bit <= o1 or bit <= o2 do
-	    if has_bit(o1, bit) or has_bit(o2, bit) then
-	       res = res + bit
-	    end
-	    bit = bit * 2
-	 end
-	 return res
-      end
-   end
-end
+local band, bor = core.band, core.bor
 
 local enum = {
    enum_mt = component.mt:clone { '_method' },
@@ -101,7 +72,8 @@ function enum.bitflags_mt:_element(instance, value)
    if type(value) == 'number' then
       local result, remainder = {}, value
       for name, flag in pairs(self) do
-	 if type(flag) == 'number' and has_bit(value, flag) then
+	 if type(flag) == 'number' and name:sub(1, 1) ~= '_' and
+	    band(value, flag) == flag then
 	    result[name] = true
 	    remainder = remainder - flag
 	 end

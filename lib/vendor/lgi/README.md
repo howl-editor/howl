@@ -41,6 +41,19 @@ markdown processor if you want to read it in HTML.
 
 ## History
 
+### 0.5 (15-Apr-2012)
+
+- Port gtk3-demo to Lua code.  Try running 'lua samples/gtk-demo/main.lua'
+- Finish override set for Gtk
+- Extend and document features for interfacing LGI with external
+  libraries (exporting and importing objects and structures via
+  lightuserdata pointers).
+- Fix: a few bugs with resolving bitflags values
+- Fix: a few bugs in coroutines-as-callbacks feature
+- Fix: workaround for crashing bug in gobject-introspection 1.32.0
+- Fix: don't try to squeeze GType into lua_Number any more; this could
+  cause crashes on some 64bit arches.
+
 ### 0.4 (4-Jan-2012)
 
 - Changed handling of enums and bitflags, switched from marshaling
