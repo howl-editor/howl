@@ -5,7 +5,6 @@ GTK_LIBS := $(shell pkg-config --libs ${GTK} gobject-introspection-1.0)
 LUAJIT_VER = LuaJIT-2.0.0-beta9
 LUAJIT = deps/$(LUAJIT_VER)
 LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
-#LUAJIT_CFLAGS = -I$(LUAJIT)/src
 LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
 LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
@@ -82,19 +81,19 @@ $(LUAJIT):
 	  wget -q -O - $(LUAJIT_URL) | tar xzf - -C deps
 
 $(LUAJIT_ARCHIVE): $(LUAJIT)
-	  cd ${LUAJIT} && make
+	  cd ${LUAJIT} && $(MAKE) XCFLAGS=-DLUAJIT_ENABLE_LUA52COMPAT
 
 $(LFS):
 	  wget -q -O - $(LFS_URL) | tar xzf - -C deps
 
 $(LFS_OBJECT): $(LFS)
-	  cd ${LFS} && make LUA_INC=../../$(LUAJIT)/src
+	  cd ${LFS} && $(MAKE) LUA_INC=../../$(LUAJIT)/src
 
 $(LGI):
 	  wget -q -O - $(LGI_URL) | tar xzf - -C deps
 
 $(LGI_ARCHIVE): $(LGI)
-	  cd ${LGI}/lgi && make LUA_CFLAGS=$(LUAJIT_CFLAGS)
+	  cd ${LGI}/lgi && $(MAKE) LUA_CFLAGS=$(LUAJIT_CFLAGS)
 	  ar rs $(LGI_ARCHIVE) ${LGI}/lgi/*.o
 
 deps: scintilla-build luajit-build lpeg-build scintillua-build $(LFS_OBJECT)
