@@ -34,9 +34,10 @@ class Application
 
   open_file: (file, view) =>
     buffer = self\new_buffer!
-    buffer\set_text file\read_all!
-    buffer\set_lexer 'ruby'
+    buffer.text = file\read_all!
+    buffer.lexer = 'ruby'
     view\set_buffer buffer
+    _G.print(buffer.text)
 
   run: =>
     window = self\new_window!

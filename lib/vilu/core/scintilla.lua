@@ -67,6 +67,7 @@ end
 function sci:send_with_stringresult(message, arg1)
   length = self:send(message, arg1, nil)
   buffer = cbuf(length + 1)
+  if not arg1 then arg1 = length end
   self:send(message, arg1, buffer)
   return ffi.string(buffer, length)
 end

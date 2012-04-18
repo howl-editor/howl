@@ -1,21 +1,25 @@
 Scintilla = require('vilu.core.scintilla')
+import PropertyObject from vilu.aux.moon
 
 background_sci = Scintilla!
 background_buffer = nil
 
-class Buffer
+class Buffer extends PropertyObject
   new: =>
+    super!
     @doc = background_sci\create_document!
     @views = {}
 
-  set_text: (text) =>
-    with self\connected_sci!
-      \set_text text
+  self\property text:
+    get: => self\connected_sci!\get_text!
+    set: (text) => self\connected_sci!\set_text text
 
-  set_lexer: (name) =>
-    self.lexer = name
-    if name and @sci
-      @sci\private_lexer_call(Scintilla.SCI_SETLEXERLANGUAGE, name)
+  self\property lexer:
+      get: => @_lexer
+      set: (name) =>
+        @_lexer = name
+        if name and @sci
+          @sci\private_lexer_call(Scintilla.SCI_SETLEXERLANGUAGE, name)
 
   connected_sci: =>
     if @sci then return @sci
@@ -29,7 +33,7 @@ class Buffer
   add_view_ref: (view) =>
     @views[view] = true
     @sci = view.sci
-    self\set_lexer self.lexer
+    @lexer = @_lexer
 
   remove_view_ref: (view) =>
     @views[view] = nil

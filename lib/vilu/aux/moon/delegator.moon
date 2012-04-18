@@ -1,5 +1,5 @@
 forwarding_table = (target, base) ->
-  return {
+  return setmetatable {
     __index: (key) =>
       val = base[key]
       return val if val
@@ -11,7 +11,7 @@ forwarding_table = (target, base) ->
 
     __newindex: (key, value) =>
       target[key] = value
-  }
+  }, base
 
 class Delegator
   new: (target) =>
