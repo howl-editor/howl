@@ -60,11 +60,6 @@ static lua_State *open_lua_state(const gchar *app_root)
   lua_setfield(l, -2, "lgi.corelgilua51");
   lua_pop(l, 2);
 
-  /* core bindings */
-  lua_newtable(l);
-  sci_init(l, app_root);
-  lua_setglobal(l, "_core");
-
   return l;
 }
 
@@ -76,6 +71,5 @@ int main(int argc, char *argv[])
   lua_run(argc, argv, app_root, L);
   lua_close(L);
   g_free(app_root);
-  sci_close();
   return 0;
 }

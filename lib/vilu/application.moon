@@ -3,6 +3,7 @@
 -- @license MIT (see LICENSE)
 
 import Gtk from lgi
+import GtkSource from lgi
 import Window, TextView from vilu.ui
 import Buffer from vilu
 import File from vilu.fs
@@ -14,6 +15,10 @@ class Application
     @args = args
     @windows = {}
     @buffers = {}
+
+    @style_mgr = GtkSource.StyleSchemeManager.get_default!
+    @style_scheme = @style_mgr\get_scheme 'cobalt'
+    @lang_mgr = GtkSource.LanguageManager.get_default!
 
   new_window: (properties) =>
     props =
@@ -28,21 +33,24 @@ class Application
     window
 
   new_buffer: =>
-    buffer = Buffer!
+    buffer = Buffer @style_scheme
     table.insert(@buffers, buffer)
     buffer
 
   open_file: (file, view) =>
-    buffer = self\new_buffer!
-    buffer.text = file\read_all!
-    buffer.lexer = 'ruby'
-    view\set_buffer buffer
-    _G.print(buffer.text)
+    buffer = view.buffer
+    buffer.text = file.contents
+    iter = buffer\get_iter_at_line 0
+    buffer\place_cursor iter
+    lang = @lang_mgr\guess_language file\tostring!
+--    buffer.language = @lang_mgr\get_language('lua')
+    buffer.language = lang
+    buffer.style_scheme = @style_scheme
 
   run: =>
-    window = self\new_window!
     buffer = self\new_buffer!
     view = TextView buffer
+    window = self\new_window!
     window\add_view view
     window\show_all!
 

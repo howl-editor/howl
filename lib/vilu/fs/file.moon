@@ -1,26 +1,38 @@
 GFile = lgi.Gio.File
+import PropertyObject from vilu.aux.moon
 
-class File
+class File extends PropertyObject
 
   new: (path) =>
+    super!
+
     @gfile = if type(path) == 'string' then GFile.new_for_path path else path
 
     with getmetatable(self)
-      .__tostring = self.to_string
+      .__tostring = self.tostring
       .__div= self.join
       .__concat = (op1, op2) ->
         if getmetatable(op1) != getmetatable(self)
-          op1 .. op2\to_string!
+          op1 .. op2\tostring!
         else
           op1\join(op2)
 
-  basename: => @gfile\get_basename!
-  path: => @gfile\get_path!
-  uri: => @gfile\get_uri!
+  self\property basename:
+    get: => @gfile\get_basename!
 
-  parent: =>
-    parent = @gfile\get_parent!
-    return if parent then File(parent) else nil
+  self\property path:
+    get: => @gfile\get_path!
+
+  self\property uri:
+    get: => @gfile\get_uri!
+
+  self\property contents:
+    get: => tostring(@gfile\load_contents!)
+
+  self\property parent:
+    get: =>
+      parent = @gfile\get_parent!
+      return if parent then File(parent) else nil
 
   join: (...) =>
     root = @gfile
@@ -30,10 +42,6 @@ class File
 
     return File(root)
 
-  read_all: =>
-    return tostring(@gfile\load_contents!)
-
-  to_string: =>
-    self\path! or self\uri!
+  tostring: => self.path or self.uri
 
 return File

@@ -7,7 +7,7 @@ class Window extends Delegator
 
   add_view: (view) =>
     mt = getmetatable view
-    widget = if mt and mt.__towidget then mt.__towidget(view) else view
-    self\add(widget)
+    view = if mt and mt.__to_gobject then mt.__to_gobject(view) else view
+    self\add(view)
 
 return Window
