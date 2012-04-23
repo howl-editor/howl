@@ -20,6 +20,9 @@ class File extends PropertyObject
   self\property basename:
     get: => @gfile\get_basename!
 
+  self\property extension:
+    get: => self.basename\match('%.(%w+)$')
+
   self\property path:
     get: => @gfile\get_path!
 
