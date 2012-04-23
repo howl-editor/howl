@@ -1,12 +1,6 @@
 import Gdk, GLib from lgi
-
-ffi = require 'ffi'
-C = ffi.C
-cbuf = ffi.new 'char[?]', 6
-
-ffi.cdef[[
-int g_unichar_to_utf8 (unsigned char c, char *outbuf);
-]]
+bytes = require 'bytes'
+cbuf = bytes.new(6)
 
 return {
   process: (buffer, event) ->
@@ -18,7 +12,7 @@ return {
     utf8 = nil
 
     if unicode_char > 0
-      length = C.g_unichar_to_utf8 unicode_char, cbuf
-      utf8 = ffi.string(cbuf, length)
+      len = GLib.unichar_to_utf8(unicode_char, cbuf)
+      utf8 = tostring(cbuf)\sub(1, len)
       _G.print("utf8 = " .. _G.tostring(utf8))
 }
