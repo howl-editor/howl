@@ -8,11 +8,20 @@ require "moonscript.compile"
 import parse, compile from moonscript
 import File from vilu.fs
 
-telescope.make_assertion 'table_equal', "'%s' to be equal to '%s'", (a,b) ->
-  return false if type(b) != 'table' or #a != #b
-  for k,v in pairs a
-    return false if v != b[k]
-  true
+format_table = (t) ->
+  if t == nil
+    'nil'
+  else
+   '{' .. table.concat(t, ', ') .. '}'
+
+telescope.make_assertion 'table_equal',
+  (_, a, b) ->
+    "Assert failed: expected " .. format_table(a) .. ' to be equal to ' .. format_table(b),
+  (a,b) ->
+    return false if type(b) != 'table' or #a != #b
+    for k,v in pairs a
+      return false if v != b[k]
+    true
 
 class Runner
   new: (paths) =>

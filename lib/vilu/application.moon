@@ -39,15 +39,17 @@ class Application
 
   open_file: (file, view) =>
     buffer = view.buffer
-    buffer.text = file.contents
-    iter = buffer\get_iter_at_line 0
-    buffer\place_cursor iter
+    sb = buffer.sbuf
+    sb.text = file.contents
+    iter = sb\get_iter_at_line 0
+    sb\place_cursor iter
     lang = @lang_mgr\guess_language file\tostring!
---    buffer.language = @lang_mgr\get_language('lua')
-    buffer.language = lang
-    buffer.style_scheme = @style_scheme
+    sb.language = @lang_mgr\get_language('lua')
+    sb.language = lang
+    sb.style_scheme = @style_scheme
 
   run: =>
+--     Gtk.init @args
     buffer = self\new_buffer!
     view = TextView buffer
     window = self\new_window!

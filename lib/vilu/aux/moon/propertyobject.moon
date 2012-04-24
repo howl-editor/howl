@@ -1,6 +1,7 @@
 property_lookup_table = (obj) ->
   base = getmetatable obj
   properties = base.__properties
+  return base if not properties
 
   return {
     __index: (key) =>

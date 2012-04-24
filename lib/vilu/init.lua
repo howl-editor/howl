@@ -37,6 +37,7 @@ require('moonscript')
 -- set up globals (lpeg/lfs already setup from C)
 lgi = require('lgi')
 vilu = lazily_loaded_module('vilu')
+moon = require('moon')
 
 if #argv > 1 and argv[2] == '--spec' then
   set_package_path('lib/ext/telescope')
