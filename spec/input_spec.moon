@@ -1,42 +1,32 @@
-import Gdk from lgi
 import Spy from vilu.spec
 input = vilu.input
-
-key_code = (key) -> Gdk.keyval_from_name key
-
-event_for = (key, modifiers = {}) ->
-  {
-    keyval: key_code(key),
-    state:
-      SHIFT_MASK: modifiers.shift
-      MOD1_MASK: modifiers.alt
-      CONTROL_MASK: modifiers.control
-  }
 
 describe 'Input', ->
 
   describe 'translate_key(event)', ->
 
     context 'for ordinary characters', ->
-      it 'returns a table with utf8-string, key name and key code string', ->
-        tr = input.translate_key event_for 'A'
-        assert_table_equal tr, { 'A', 'A', tostring key_code 'A' }
+      it 'returns a table with the character, key name and key code string', ->
+        tr = input.translate_key character: 'A', key_name: 'A', key_code: 65
+        assert_table_equal tr, { 'A', 'A', '65' }
 
-    context 'for control characters', ->
-      it 'returns a table with lower case key name and key code string', ->
-        tr = input.translate_key event_for 'Down'
-        assert_table_equal tr, { 'down', tostring key_code 'Down' }
+    context 'when character is missing', ->
+      it 'returns a table with key name and key code string', ->
+        tr = input.translate_key key_name: 'down', key_code: 123
+        assert_table_equal tr, { 'down', '123' }
 
-    context 'for unknown key codes', ->
+    context 'when only the code is available', ->
       it 'returns a table with the key code string', ->
-        tr = input.translate_key keyval: 0xdeadbeef, state: {}
-        assert_table_equal tr, { tostring 0xdeadbeef }
+        tr = input.translate_key key_code: 123
+        assert_table_equal tr, { '123' }
 
     context 'with modifiers', ->
       it 'prepends a modifier string representation to all translations', ->
-        tr = input.translate_key event_for 'A', shift: true, control: true, alt: true
+        tr = input.translate_key
+          character: 'A', key_name: 'A', key_code: 65,
+          shift: true, control: true, alt: true
         mods = 'ctrl+shift+alt+'
-        assert_table_equal tr, { mods .. 'A', mods .. 'A', mods .. tostring key_code 'A' }
+        assert_table_equal tr, { mods .. 'A', mods .. 'A', mods .. '65' }
 
   describe 'process(buffer, event)', ->
 
@@ -44,11 +34,11 @@ describe 'Input', ->
 
       it 'tries each translated key in order for a given keymap', ->
         buffer = keymap: Spy!, mode: {}
-        input.process buffer, event_for 'A'
-        assert_table_equal buffer.keymap.reads, { 'A', 'A', tostring key_code 'A' }
+        input.process buffer, character: 'A', key_name: 'A', key_code: 65
+        assert_table_equal buffer.keymap.reads, { 'A', 'A', '65' }
 
       it 'searches the buffer keymap -> the mode keymap -> global keymap', ->
-        event = event_for 'A'
+        key_args = character: 'A', key_name: 'A', key_code: 65
         buffer_map = Spy!
         mode_map = Spy!
         input.keymap = Spy!
@@ -58,7 +48,7 @@ describe 'Input', ->
           mode:
             keymap: mode_map
 
-        input.process buffer, event
+        input.process buffer, key_args
         assert_equal #input.keymap.reads, 3
         assert_table_equal input.keymap.reads, mode_map.reads
         assert_table_equal mode_map.reads, buffer_map.reads
@@ -69,7 +59,7 @@ describe 'Input', ->
         buffer =
           keymap: { k: (...) -> received = {...} }
           mode: {}
-        input.process buffer, event_for 'k'
+        input.process buffer, character: 'k', key_code: 65
         assert_table_equal received, { buffer }
 
       it 'returns early with true if a handler returns true', ->
@@ -79,13 +69,13 @@ describe 'Input', ->
           mode:
             keymap:
               k: mode_handler
-        input.process buffer, event_for 'k'
+        input.process buffer, key_code: 65
         assert_false mode_handler.called
 
       it 'returns true if a handler raises an error', ->
         buffer =
           keymap: { k: -> error 'BOOM!' }
           mode: {}
-        assert_true input.process buffer, event_for 'k'
+        assert_true input.process buffer, character: 'k', key_code: 65
 
       it 'signals an error if a handler raises an error', true

@@ -1,4 +1,4 @@
-new = ->
+new = (options = {}) ->
   spy =
     called: false
     reads: {}
@@ -7,7 +7,7 @@ new = ->
   setmetatable spy,
     __call: ->
       spy.called = true
-      nil
+      options.with_return
 
     __index: (t,k) ->
       table.insert spy.reads, k
@@ -17,4 +17,4 @@ new = ->
       spy.writes[k] = v
   spy
 
-return setmetatable {}, __call: -> new!
+return setmetatable {}, __call: (_, options) -> new options

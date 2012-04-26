@@ -1,30 +1,48 @@
-import Gtk, GtkSource, Pango from lgi
-import Delegator from vilu.aux.moon
+import Gtk from lgi
+import Scintilla from vilu
 
 input_process = vilu.input.process
 
-class TextView extends Delegator
+class TextView
 
   new: (buffer) =>
     error('Missing argument #1 (buffer)', 2) if not buffer
+
+    @sci = Scintilla!
+    @sci.on_keypress = self\on_keypress
+    self\set_buffer buffer
+    self\_set_appearance!
+
+    getmetatable(self).__to_gobject = => @sci\get_gobject!
+
+  set_buffer: (buffer) =>
+    if @buffer
+      @buffer\remove_view_ref self
+
     @buffer = buffer
-    mt = getmetatable buffer
-    source_buffer = if mt and mt.__to_gobject then mt.__to_gobject(buffer) else buffer
-    @sv = GtkSource.View
-      buffer: source_buffer
-      wrap_mode: 'NONE'
-      highlight_current_line: true
-      show_line_numbers: true
-      show_line_marks: true
-      auto_indent: true
+    @sci\set_doc_pointer(buffer.doc)
+    self._init_scintillua @sci
 
-    @sv.on_key_press_event = self\on_keypress
-    @sv\override_font Pango.FontDescription.from_string 'Monospace'
-    @scrolled_window = Gtk.ScrolledWindow { @sv }
-    getmetatable(self).__to_gobject = => @scrolled_window
-    super(@sv)
+    buffer\add_view_ref self
 
-  on_keypress: (_, event) =>
-    input_process self.buffer, event
+  grab_focus: =>
+    @sci\grab_focus!
+
+  _set_appearance: =>
+    @sci\set_caret_fore(0xffffff)
+
+  _init_scintillua: (sci) ->
+    lexer_home = vilu.app.root_dir / 'lexers'
+    with sci
+      \set_lexer_language 'lpeg'
+      \set_property('lexer.lpeg.home', tostring(lexer_home))
+      \set_property('lexer.lpeg.color.theme', 'dark')
+      dir_f = \get_direct_function!
+      dir_p = \get_direct_pointer!
+      \private_lexer_call(Scintilla.SCI_GETDIRECTFUNCTION, dir_f)
+      \private_lexer_call(Scintilla.SCI_SETDOCPOINTER, dir_p)
+
+  on_keypress: (args) =>
+    input_process self.buffer, args
 
 return TextView

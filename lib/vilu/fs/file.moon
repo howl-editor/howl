@@ -5,7 +5,6 @@ class File extends PropertyObject
 
   new: (path) =>
     super!
-
     @gfile = if type(path) == 'string' then GFile.new_for_path path else path
 
     with getmetatable(self)

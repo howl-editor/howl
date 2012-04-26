@@ -4,14 +4,13 @@ forwarding_table = (target, base) ->
       val = base[key]
       return val if val
       val = target[key]
-      return nil if not val
       t = type(val)
-      mt = getmetatable(val)
-      return val if t != 'function' and (not mt or not mt.__call)
+      return val if t != 'function' and t != 'userdata'
       return (self, ...) ->
         val(target, ...)
 
-    __newindex: target
+    __newindex: (key, value) =>
+      target[key] = value
   }, base
 
 class Delegator
