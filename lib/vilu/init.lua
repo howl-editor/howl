@@ -32,7 +32,7 @@ package.path = ''
 set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
 package.cpath = ''
 
-require('moonscript')
+moonscript = require('moonscript')
 
 -- set up globals (lpeg/lfs already setup from C)
 lgi = require('lgi')

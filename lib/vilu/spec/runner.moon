@@ -2,9 +2,6 @@ status, telescope = pcall require, 'telescope'
 error 'telescope not installed' if not status
 export telescope
 
-require "moonscript.parse"
-require "moonscript.compile"
-
 import parse, compile from moonscript
 import File from vilu.fs
 
@@ -41,11 +38,7 @@ class Runner
 
   load_spec: (file) ->
     if file.extension == 'moon'
-      tree, err = parse.string file.contents
-      error "Parse error: " .. err if not tree
-      lua_code, err, pos = compile.tree tree
-      error compile.format_error err, pos, moon_code if not lua_code
-      load(lua_code)
+      moonscript.loadfile file.path
     else
       loadfile file
 
