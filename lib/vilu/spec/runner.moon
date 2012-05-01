@@ -2,9 +2,6 @@ status, telescope = pcall require, 'telescope'
 error 'telescope not installed' if not status
 export telescope
 
-import parse, compile from moonscript
-import File from vilu.fs
-
 format_table = (t) ->
   if t == nil
     'nil'
@@ -25,8 +22,7 @@ class Runner
     @paths = paths
 
   run: =>
-    files = [File(path) for path in *@paths]
-    functions = [self.load_spec(file) for file in *files]
+    functions = [loadfile(path) for path in *@paths]
     contexts = {}
     for f in *functions
       telescope.load_contexts f, contexts
@@ -35,11 +31,5 @@ class Runner
     print telescope.test_report contexts, results
     print (telescope.summary_report contexts, results)
     print telescope.error_report contexts, results
-
-  load_spec: (file) ->
-    if file.extension == 'moon'
-      moonscript.loadfile file.path
-    else
-      loadfile file
 
 return Runner

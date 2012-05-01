@@ -34,6 +34,15 @@ package.cpath = ''
 
 moonscript = require('moonscript')
 
+lua_loadfile = loadfile
+loadfile = function(filename, mode, env)
+  if (filename:match('%.moon$')) then
+    return moonscript.loadfile(filename)
+  else
+    return lua_loadfile(filename, mode, env)
+  end
+end
+
 -- set up globals (lpeg/lfs already setup from C)
 lgi = require('lgi')
 vilu = lazily_loaded_module('vilu')

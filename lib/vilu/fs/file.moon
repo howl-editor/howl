@@ -3,6 +3,9 @@ import PropertyObject from vilu.aux.moon
 
 class File extends PropertyObject
 
+  tmpfile: ->
+    File os.tmpname!
+
   new: (path) =>
     super!
     @gfile = if type(path) == 'string' then GFile.new_for_path path else path
@@ -29,7 +32,11 @@ class File extends PropertyObject
     get: => @gfile\get_uri!
 
   self\property contents:
-    get: => tostring(@gfile\load_contents!)
+    get: => tostring self\_assert @gfile\load_contents!
+    set: (contents) =>
+      with self\_assert io.open self.path, 'w'
+        \write contents
+        \close!
 
   self\property parent:
     get: =>
@@ -44,6 +51,14 @@ class File extends PropertyObject
 
     return File(root)
 
+  delete: =>
+    self\_assert @gfile\delete!
+
   tostring: => self.path or self.uri
+
+  _assert: (...) =>
+   status, msg = ...
+   error self.path .. ' :' .. msg, 3 if not status
+   ...
 
 return File

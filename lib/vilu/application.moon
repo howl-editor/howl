@@ -3,7 +3,7 @@
 -- @license MIT (see LICENSE)
 
 import Gtk from lgi
-import Window, TextView from vilu.ui
+import Window, TextView, theme from vilu.ui
 import Buffer from vilu
 import File from vilu.fs
 
@@ -38,6 +38,7 @@ class Application
     buffer.lexer = 'lua'
 
   run: =>
+    self\_load_themes!
     window = self\new_window!
     buffer = self\new_buffer!
     view = TextView buffer
@@ -48,5 +49,10 @@ class Application
       self\open_file(File(path), view) for path in *@args[2,]
 
     Gtk.main!
+
+  _load_themes: =>
+    themes_root = @root_dir / 'themes'
+    theme.load themes_root / 'blue.moon'
+    theme.current = theme.available['Blue']
 
 return Application
