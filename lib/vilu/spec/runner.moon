@@ -6,16 +6,20 @@ format_table = (t) ->
   if t == nil
     'nil'
   else
-   '{' .. table.concat(t, ', ') .. '}'
+    t2 = {}
+    for k,v in ipairs t
+      if type(v) == 'table'
+        t2[k] = format_table(v)
+      else
+        t2[k] = v
+    return '{' .. table.concat(t2, ', ') .. '}'
 
 telescope.make_assertion 'table_equal',
   (_, a, b) ->
-    "Assert failed: expected " .. format_table(a) .. ' to be equal to ' .. format_table(b),
+    "Assert failed: expected `" .. format_table(a) .. '` to be equal to `' .. format_table(b) .. '`',
   (a,b) ->
     return false if type(b) != 'table' or #a != #b
-    for k,v in pairs a
-      return false if v != b[k]
-    true
+    return format_table(a) == format_table(b)
 
 class Runner
   new: (paths) =>

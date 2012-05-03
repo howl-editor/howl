@@ -36,6 +36,7 @@ moonscript = require('moonscript')
 
 lua_loadfile = loadfile
 loadfile = function(filename, mode, env)
+  filename = type(filename) == 'string' and filename or tostring(filename)
   if (filename:match('%.moon$')) then
     return moonscript.loadfile(filename)
   else
@@ -48,10 +49,11 @@ lgi = require('lgi')
 vilu = lazily_loaded_module('vilu')
 moon = require('moon')
 
+vilu.app = vilu.Application(vilu.fs.File(app_root), argv)
+
 if #argv > 1 and argv[2] == '--spec' then
   set_package_path('lib/ext/telescope')
   vilu.spec.Runner({select(3, unpack(argv))}):run()
 else
-  vilu.app = vilu.Application(vilu.fs.File(app_root), argv)
   vilu.app:run()
 end
