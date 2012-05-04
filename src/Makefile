@@ -40,7 +40,7 @@ LGI = deps/$(LGI_VER)
 LGI_ARCHIVE = deps/$(LGI_VER)/lgi/lgi.a
 
 SCI_GEN = tools/sci_gen.lua
-SCI_GEN_TARGET = ../lib/vilu/core/scintilla.lua
+SCI_GEN_TARGET = ../lib/vilu/scintilla.lua
 
 CFLAGS = -Wall -O2 $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
 ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE) $(LGI_ARCHIVE)
@@ -102,5 +102,5 @@ deps: scintilla-build luajit-build lpeg-build scintillua-build $(LFS_OBJECT)
 clean:
 	  -rm -f ${OBJECTS}
 
-scigen: $(LUAJIT_ARCHIVE)
+scigen: $(LUAJIT_ARCHIVE) $(SCINTILLUA)
 	  $(LUAJIT)/src/luajit $(SCI_GEN) $(SCINTILLA_IFACE) $(SCI_GEN_TARGET)

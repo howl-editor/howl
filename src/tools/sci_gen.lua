@@ -69,6 +69,11 @@ local function scan(iface)
           constants[#constants + 1] = { name = 'SCI_' .. name:upper(), value = number }
 
         end
+      elseif op == 'evt' then
+        name, number = rest:match('%w+%s(%S+)=(%d+)')
+        if name then
+          constants[#constants + 1] = { name = 'SCN_' .. name:upper(), value = number }
+        end
       end
     end
   end
