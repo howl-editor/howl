@@ -80,7 +80,6 @@ local function scan(iface)
   return constants, methods
 end
 
-
 local function write_outdata_method(m, out)
   local p = m.params
   local what = p.second.what
@@ -103,6 +102,12 @@ local function write_outdata_method(m, out)
   out:write('end\n')
 end
 
+local function return_with_cast(expr, ret_type)
+  if ret_type == 'void' then return expr
+  elseif ret_type == 'bool' then return 'return 0 ~= ' .. expr
+  else return 'return tonumber(' .. expr .. ')' end
+end
+
 local function write_plain_method(m, out)
   local p = m.params
   out:write('function sci:' .. m.name .. '(')
@@ -112,15 +117,17 @@ local function write_plain_method(m, out)
     out:write(p.second.name)
   end
   out:write(')\n')
-  out:write('  return self:send(' .. m.number .. ', ')
+  inv = 'self:send(' .. m.number .. ', '
 
-  if p.first then out:write(p.first.name, ', ')
-  else out:write('0, ') end
+  if p.first then inv = inv .. p.first.name .. ', '
+  else inv = inv .. '0, ' end
 
-  if p.second then out:write(p.second.name)
-  else out:write('0') end
+  if p.second then inv = inv .. p.second.name
+  else inv = inv .. '0' end
 
-  out:write(')\n')
+  inv = inv .. ')'
+
+  out:write('  ' .. return_with_cast(inv, m.ret) .. '\n')
   out:write('end\n')
 end
 
