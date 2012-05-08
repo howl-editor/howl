@@ -87,5 +87,5 @@ deps: scintilla-build luajit-build lpeg-build scintillua-build $(LFS_OBJECT)
 clean:
 	  -rm -f ${OBJECTS}
 
-scigen: $(LUAJIT_ARCHIVE) $(SCINTILLUA)
+scigen: $(LUAJIT_ARCHIVE) $(SCINTILLA)
 	  $(LUAJIT)/src/luajit $(SCI_GEN) $(SCINTILLA_IFACE) $(SCI_GEN_TARGET)
