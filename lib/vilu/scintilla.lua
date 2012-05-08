@@ -749,6 +749,10 @@ SCI_SETWHITESPACECHARS = 2443
 SCI_SETCHARSDEFAULT = 2444
 SCI_AUTOCGETCURRENT = 2445
 SCI_AUTOCGETCURRENTTEXT = 2610
+SC_CASEINSENSITIVEBEHAVIOUR_RESPECTCASE = 0
+SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE = 1
+SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR = 2634
+SCI_AUTOCGETCASEINSENSITIVEBEHAVIOUR = 2635
 SCI_ALLOCATE = 2446
 SCI_TARGETASUTF8 = 2447
 SCI_SETLENGTHFORENCODE = 2448
@@ -897,6 +901,9 @@ SC_TECHNOLOGY_DIRECTWRITE = 1
 SCI_SETTECHNOLOGY = 2630
 SCI_GETTECHNOLOGY = 2631
 SCI_CREATELOADER = 2632
+SCI_FINDINDICATORSHOW = 2640
+SCI_FINDINDICATORFLASH = 2641
+SCI_FINDINDICATORHIDE = 2642
 SCI_STARTRECORD = 3001
 SCI_STOPRECORD = 3002
 SCI_SETLEXER = 4001
@@ -3533,6 +3540,16 @@ function sci:auto_cget_current_text()
   return self:send_with_stringresult(2610)
 end
 
+-- Set auto-completion case insensitive behaviour to either prefer case-sensitive matches or have no preference.
+function sci:auto_cset_case_insensitive_behaviour(behaviour)
+  return self:send(2634, behaviour, 0)
+end
+
+-- Get auto-completion case insensitive behaviour.
+function sci:auto_cget_case_insensitive_behaviour()
+  return self:send(2635, 0, 0)
+end
+
 -- Enlarge the document to a particular size of text bytes.
 function sci:allocate(bytes)
   return self:send(2446, bytes, 0)
@@ -4165,6 +4182,21 @@ end
 -- Create an ILoader*.
 function sci:create_loader(bytes)
   return self:send(2632, bytes, 0)
+end
+
+-- On OS X, show a find indicator.
+function sci:find_indicator_show(start_pos, end_pos)
+  return self:send(2640, start_pos, end_pos)
+end
+
+-- On OS X, flash a find indicator, then fade out.
+function sci:find_indicator_flash(start_pos, end_pos)
+  return self:send(2641, start_pos, end_pos)
+end
+
+-- On OS X, hide the find indicator.
+function sci:find_indicator_hide()
+  return self:send(2642, 0, 0)
 end
 
 -- Start notifying the container of all key presses and commands.
