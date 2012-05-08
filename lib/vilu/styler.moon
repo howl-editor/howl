@@ -1,57 +1,27 @@
-package.path ..= ';/home/nino/prog/vilu/lexers/?.lua'
+import style from vilu.ui
 
-_G.print(package.path)
+ffi = require('ffi')
+C = ffi.C
+cbuf = ffi.typeof('char[?]')
+style_buf = nil
+style_buf_length = 0
 
-lpeg = require('lpeg')
+style_text = (sci, buffer, end_pos, lexer) ->
+  start_pos = sci\get_end_styled!
+  start_line = sci\line_from_position start_pos
+  start_pos = sci\position_from_line start_line
+  text = sci\get_text_range start_pos, end_pos
+  style_buf = cbuf(#text) if style_buf_length < #text
+  tokens = lexer\lex text
+  pos = 0
+  for token in *tokens
+    style_number = style.number_for token[1], buffer, sci
+    end_pos = token[2] - 1
+    while pos < end_pos
+      style_buf[pos] = style_number
+      pos += 1
+  with sci
+    \start_styling start_pos, 0xff
+    \set_styling_ex #text, style_buf
 
--- env = {k, v for k,v in pairs(_G) when type(v) == 'function'}
-env = {k, v for k,v in pairs(_G)}
-lexer = loadfile '/home/nino/prog/vilu/lexers/lexer.lua'
-setfenv lexer, env
-lexer = lexer!
-env.lexer = lexer
-
-
--- lexer = require 'lexer'
---
--- env = :lexer
--- env.lexer = lexer
--- _G.print("env.lexer = " .. _G.tostring(env.lexer))
--- setfenv(lexer.load, env)
-
-load_lexer = (lexer_name) ->
---   env = :lexer
---   env[k] = v for k,v in pairs _G
---   setfenv(lexer.lo, env)
-  file = '/home/nino/prog/vilu/lexers/' .. lexer_name .. '.lua'
-  l = loadfile file
-  setfenv l, env
-  _G.print("env.lexer = " .. _G.tostring(env.lexer))
-  env.require = (name) -> name == lexer_name and l! or require name
-  lexer.load lexer_name
-
-class Theme
-
-  parse: (content) ->
-    _G.print(content)
-    _G._LEXER = load_lexer 'css'
-    lexer.lex content, 32
-
-
-tokens = Theme.parse [[
-
-editor {
-  background-color: #931232;
-  color: #343434;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 13px;
-}
-
-]]
-
-for t in *tokens
-  for k,v in pairs t
-    print k .. ' = ' .. tostring(v)
-  print '--'
-
-return Theme
+return :style_text

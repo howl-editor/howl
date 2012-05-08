@@ -1,19 +1,27 @@
-import Scintilla from vilu
+import Scintilla, styler from vilu
+import style from vilu.ui
 import PropertyObject from vilu.aux.moon
 
 background_sci = Scintilla!
 background_buffer = nil
 
 class Buffer extends PropertyObject
-  new: =>
+  new: (mode) =>
+    error('Missing argument #1 (mode)', 2) if not mode
     super!
     @doc = background_sci\create_document!
+    @mode = mode
     @views = {}
-    @mode = {}
+
+  self\property mode:
+    get: => @_mode
+    set: (mode) => @_mode = mode
 
   self\property text:
     get: => self\connected_sci!\get_text!
-    set: (text) => self\connected_sci!\set_text text
+    set: (text) =>
+      self\connected_sci!\set_text text
+      self\lex #text - 1
 
   self\property lexer:
       get: => @_lexer
@@ -42,5 +50,9 @@ class Buffer extends PropertyObject
     for view, _ in pairs @views
       @sci = view.sci
       break
+
+  lex: (end_pos) =>
+    if @_mode and @_mode.lexer
+      styler.style_text self\connected_sci!, self, end_pos, @_mode.lexer
 
 return Buffer

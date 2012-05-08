@@ -4,7 +4,7 @@
 
 import Gtk from lgi
 import Window, TextView, theme from vilu.ui
-import Buffer from vilu
+import Buffer, mode from vilu
 import File from vilu.fs
 
 class Application
@@ -27,20 +27,20 @@ class Application
     table.insert(@windows, window)
     window
 
-  new_buffer: =>
-    buffer = Buffer!
+  new_buffer: (mode) =>
+    buffer = Buffer mode
     table.insert(@buffers, buffer)
     buffer
 
   open_file: (file, view) =>
-    buffer = view.buffer
-    buffer.text = file.contents
-    buffer.lexer = 'lua'
+    view.buffer.text = file.contents
 
   run: =>
-    self\_load_themes!
+    self\_init_themes!
+    vilu.bundle.init @root_dir / 'bundle'
+
     window = self\new_window!
-    buffer = self\new_buffer!
+    buffer = self\new_buffer mode.by_name 'Lua'
     view = TextView buffer
     window\add_view view
     window\show_all!
@@ -50,7 +50,7 @@ class Application
 
     Gtk.main!
 
-  _load_themes: =>
+  _init_themes: =>
     themes_root = @root_dir / 'themes'
     theme.load themes_root / 'blue.moon'
     theme.current = theme.available['Blue']

@@ -50,20 +50,22 @@ local find_text = ffi.typeof('find_text')
 
 setmetatable(sci, {
   __call = function()
-    instance = setmetatable({ sci_ptr = _G._core.sci.new() }, { __index = sci })
-    sci_map[instance.sci_ptr] = instance
-    return instance
+    obj = setmetatable({ sci_ptr = _G._core.sci.new() }, { __index = sci })
+    sci_map[obj.sci_ptr] = obj
+    return obj
   end
 })
 
 function sci.dispatch(sci_ptr, event, args)
   instance = sci_map[sci_ptr]
   if event == 'key-press' then
-    if instance.on_keypress then
-      return instance.on_keypress(args)
-    end
+    if instance.on_keypress then return instance.on_keypress(args) end
   elseif event == 'sci' then
-    _G.print("args.code = " .. _G.tostring(args.code))
+    code = args.code
+    if code == SCN_STYLENEEDED then
+      if instance.on_style_needed then return instance.on_style_needed(args.position) end
+    end
+--    _G.print("args.code = " .. _G.tostring(args.code))
   end
   return false
 end
