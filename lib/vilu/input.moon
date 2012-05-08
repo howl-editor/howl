@@ -1,7 +1,6 @@
 _G = _G
-t_append = table.insert
-t_concat = table.concat
-tostring, pcall = tostring, pcall
+import tostring, pcall from _G
+t_append, t_concat = table.insert, table.concat
 
 _ENV = {}
 setfenv(1, _ENV) if setfenv
@@ -21,7 +20,7 @@ export translate_key = (args) ->
   [mod_string .. t for t in *translations]
 
 find_handlers = (buffer, translations) ->
-  maps = { buffer.keymap, buffer.mode.keymap, keymap }
+  maps = { buffer.keymap, buffer.mode and buffer.mode.keymap, keymap }
   handlers = {}
   for map in *maps
     if map

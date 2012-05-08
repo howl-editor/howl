@@ -53,6 +53,14 @@ describe 'Input', ->
         assert_table_equal input.keymap.reads, mode_map.reads
         assert_table_equal mode_map.reads, buffer_map.reads
 
+      it 'skips any keymaps not present', ->
+        key_args = character: 'A', key_name: 'A', key_code: 65
+        input.keymap = Spy!
+
+        buffer = {}
+        assert_true (pcall input.process, buffer, key_args)
+        assert_equal #input.keymap.reads, 3
+
     context 'when invoking handlers', ->
       it 'passes the buffer as the sole argument', ->
         received = {}
