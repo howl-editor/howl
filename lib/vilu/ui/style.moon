@@ -14,6 +14,7 @@ default_style_numbers =
   ['function']: 12
   class: 13
   type: 14
+  longstring: 15
   default: 32
   line_number: 33
   bracelight: 34

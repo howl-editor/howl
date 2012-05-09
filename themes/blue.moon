@@ -22,6 +22,10 @@ return {
       font: italic: true
       color: '#4080c0'
 
+    longstring:
+      font: italic: true
+      color: '#4080c0'
+
     char:
       color: '#4080c0'
 
