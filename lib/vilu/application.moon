@@ -33,7 +33,9 @@ class Application
     buffer
 
   open_file: (file, view) =>
-    view.buffer.text = file.contents
+    buffer = self\new_buffer mode.for_file file
+    buffer.text = file.contents
+    view.buffer = buffer
 
   run: =>
     self\_init_themes!
