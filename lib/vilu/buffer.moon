@@ -21,7 +21,6 @@ class Buffer extends PropertyObject
     get: => self\connected_sci!\get_text!
     set: (text) =>
       self\connected_sci!\set_text text
-      self\lex #text
 
   self\property lexer:
       get: => @_lexer
