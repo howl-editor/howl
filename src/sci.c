@@ -73,9 +73,11 @@ static void explain_key_code(lua_State *l, int code)
 
   set_nfield(l, "key_code", code);
 
-  cptr = g_ascii_strdown(key_name, -1);
-  set_sfield(l, "key_name", cptr);
-  g_free(cptr);
+  if (key_name != NULL) {
+    cptr = g_ascii_strdown(key_name, -1);
+    set_sfield(l, "key_name", cptr);
+    g_free(cptr);
+  }
 
   if (nr_utf8 > 0) {
     lua_pushlstring(l, utf8, nr_utf8);
