@@ -39,8 +39,8 @@ class Application
     view.buffer = buffer
 
   run: =>
-    self\_init_themes!
     vilu.bundle.init @root_dir / 'bundles'
+    self\_set_theme!
 
     window = self\new_window!
     buffer = self\new_buffer mode.by_name 'Lua'
@@ -53,9 +53,7 @@ class Application
 
     Gtk.main!
 
-  _init_themes: =>
-    themes_root = @root_dir / 'themes'
-    theme.load themes_root / 'default.moon'
-    theme.current = theme.available['Default']
+  _set_theme: =>
+    theme.current = 'Default'
 
 return Application
