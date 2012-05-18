@@ -40,7 +40,7 @@ class Application
 
   run: =>
     self\_init_themes!
-    vilu.bundle.init @root_dir / 'bundle'
+    vilu.bundle.init @root_dir / 'bundles'
 
     window = self\new_window!
     buffer = self\new_buffer mode.by_name 'Lua'
