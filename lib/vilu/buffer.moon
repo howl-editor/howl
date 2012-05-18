@@ -9,39 +9,36 @@ class Buffer extends PropertyObject
   new: (mode) =>
     error('Missing argument #1 (mode)', 2) if not mode
     super!
+    @_ = {}
     @doc = background_sci\create_document!
     @mode = mode
     @views = {}
 
   self\property mode:
-    get: => @_mode
-    set: (mode) => @_mode = mode
+    get: => @_.mode
+    set: (mode) => @_.mode = mode
+
+  self\property title:
+    get: => @_.title or 'Untitled'
+    set: (title) => @_.title = title
 
   self\property text:
-    get: => self\connected_sci!\get_text!
-    set: (text) =>
-      self\connected_sci!\set_text text
+    get: => @sci\get_text!
+    set: (text) => @sci\set_text text
 
-  self\property lexer:
-      get: => @_lexer
-      set: (name) =>
-        @_lexer = name
-        if name and @sci
-          @sci\private_lexer_call(Scintilla.SCI_SETLEXERLANGUAGE, name)
+  self\property sci:
+    get: =>
+      if @_.sci then return @_.sci
 
-  connected_sci: =>
-    if @sci then return @sci
+      if background_buffer != self
+        background_sci\set_doc_pointer self.doc
+        background_buffer = self
 
-    if background_buffer != self
-      background_sci\set_doc_pointer self.doc
-      background_buffer = self
-
-    return background_sci
+      background_sci
 
   add_view_ref: (view) =>
     @views[view] = true
-    @sci = view.sci
-    @lexer = @_lexer
+    @_.sci = view.sci
 
   remove_view_ref: (view) =>
     @views[view] = nil
@@ -51,7 +48,7 @@ class Buffer extends PropertyObject
       break
 
   lex: (end_pos) =>
-    if @_mode and @_mode.lexer
-      styler.style_text self\connected_sci!, self, end_pos, @_mode.lexer
+    if @_.mode and @_.mode.lexer
+      styler.style_text @sci, self, end_pos, @_.mode.lexer
 
 return Buffer
