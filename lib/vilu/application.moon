@@ -18,8 +18,8 @@ class Application
   new_window: (properties) =>
     props =
       title: 'Vilu zen'
-      default_width: 640
-      default_height: 480
+      default_width: 800
+      default_height: 600
       on_destroy: Gtk.main_quit
 
     props[k] = v for k, v in pairs(properties or {})
@@ -34,6 +34,7 @@ class Application
 
   open_file: (file, view) =>
     buffer = self\new_buffer mode.for_file file
+    buffer.title = file.basename
     buffer.text = file.contents
     view.buffer = buffer
 
