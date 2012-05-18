@@ -6,9 +6,13 @@ class File extends PropertyObject
   tmpfile: ->
     File os.tmpname!
 
+  is_absolute: (path) ->
+    path\match '^/' or path\match '^%a:\\'
+
   new: (path) =>
     super!
     @gfile = if type(path) == 'string' then GFile.new_for_path path else path
+    @path = @gfile\get_path!
 
     with getmetatable(self)
       .__tostring = self.tostring
@@ -21,7 +25,6 @@ class File extends PropertyObject
 
   self\property basename: get: => @gfile\get_basename!
   self\property extension: get: => @basename\match('%.(%w+)$')
-  self\property path: get: => @gfile\get_path!
   self\property uri: get: => @gfile\get_uri!
   self\property is_directory: get: => @file_type == 'directory'
   self\property is_link: get: => @file_type == 'symbolic_link'
@@ -47,7 +50,7 @@ class File extends PropertyObject
   self\property contents:
     get: => tostring self\_assert @gfile\load_contents!
     set: (contents) =>
-      with self\_assert io.open self.path, 'w'
+      with self\_assert io.open @path, 'w'
         \write contents
         \close!
 
@@ -77,11 +80,11 @@ class File extends PropertyObject
   delete: =>
     self\_assert @gfile\delete!
 
-  tostring: => self.path or self.uri
+  tostring: => @path or self.uri
 
   _assert: (...) =>
    status, msg = ...
-   error self.path .. ' :' .. msg, 3 if not status
+   error self\tostring! .. ' :' .. msg, 3 if not status
    ...
 
 return File
