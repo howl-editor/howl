@@ -55,7 +55,7 @@ class Application
 
   _init_themes: =>
     themes_root = @root_dir / 'themes'
-    theme.load themes_root / 'blue.moon'
-    theme.current = theme.available['Blue']
+    theme.load themes_root / 'default.moon'
+    theme.current = theme.available['Default']
 
 return Application

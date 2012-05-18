@@ -1,11 +1,41 @@
+background = '#f0f0f3'
+
 return {
-  name: 'Blue'
+  name: 'Default'
+
+  window:
+    background: 'default_back.png'
+
+  view:
+    border_color: '#000000'
+
+    header:
+      background: [[
+        -gtk-gradient (
+          linear,
+          left top, right top,
+          from(#eee),to(#999))
+        ]]
+      border_color: '#000000'
+      border_width: 1
+
+      title:
+        color: 'darkgrey'
+        font:
+          name: 'Liberation Mono'
+          size: 12
+          bold: true
+          italic: true
+
+    caret:
+      color: '#222222'
+      width: 2
 
   styles:
 
     default:
-      background: '#00002d'
-      color: '#999999'
+      :background
+      color: '#241f1c'
       font:
         name: '!Liberation Mono'
         size: 11
@@ -30,7 +60,7 @@ return {
       color: '#4080c0'
 
     keyword:
-      color: '#006400'
+      color: '#000099'
 
     class:
       color: '#4080c0'
@@ -74,7 +104,7 @@ return {
 
     line_number:
       color: '#4d4d4d'
-      background: '#00002d'
+      :background
       font: italic: true
 
     bracelight:

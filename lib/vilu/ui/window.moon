@@ -3,11 +3,21 @@ import Delegator from vilu.aux.moon
 
 class Window extends Delegator
   new: (properties) =>
-    super Gtk.Window properties
+    props = { }
+
+    props[k] = v for k,v in pairs properties
+    @bin = Gtk.Alignment
+      top_padding: 10,
+      left_padding: 10,
+      right_padding: 10,
+      bottom_padding: 20
+    @win = Gtk.Window props
+    @win\add(@bin)
+    super @win
 
   add_view: (view) =>
     mt = getmetatable view
     gobject = if mt and mt.__to_gobject then mt.__to_gobject(view) else view
-    self\add(gobject)
+    @bin\add(gobject)
 
 return Window

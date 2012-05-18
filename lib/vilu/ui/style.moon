@@ -66,4 +66,4 @@ define_styles = (sci, buffer) ->
     if style.number
       define_style sci, style.number, style
 
-return :set_for_theme, :number_for, :define_styles
+return :set_for_theme, :number_for, :define_styles, :string_to_color
