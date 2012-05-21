@@ -5,11 +5,26 @@ import style, theme from vilu.ui
 
 input_process = vilu.input.process
 
+indicators = {}
+indicator_placements =
+  top_left: true
+  top_right: true
+  bottom_left: true
+  bottom_right: true
+
 class TextView extends PropertyObject
+
+  define_indicator: (id, placement = 'bottom_right') ->
+    if not indicator_placements[placement]
+      error('Illegal placement "' .. placement .. '"', 2)
+
+    indicators[id] = :id, :placement
 
   new: (buffer) =>
     error('Missing argument #1 (buffer)', 2) if not buffer
     super!
+
+    @indicator = setmetatable {}, __index: self\_create_indicator
 
     @sci = Scintilla!
     style.define_styles @sci
@@ -26,9 +41,10 @@ class TextView extends PropertyObject
           Gtk.EventBox {
             id: 'header'
             Gtk.Box {
+              id: 'header_box'
               orientation: 'HORIZONTAL'
               border_width: 3
-              Gtk.Label id: 'title'
+              spacing: 10
             },
           },
           {
@@ -44,8 +60,8 @@ class TextView extends PropertyObject
         }
       }
     }
+    @header_box = @bin.child.header_box
     @bin.child.header\get_style_context!\add_class 'header'
-    @bin.child.title\get_style_context!\add_class 'title'
     @bin\get_style_context!\add_class 'view'
     @bin.child.sci_box\get_style_context!\add_class 'sci_box'
 
@@ -61,7 +77,7 @@ class TextView extends PropertyObject
         @_buf\remove_view_ref self
 
       @_buf = buffer
-      @bin.child.title.label = buffer.title
+      @indicator.title.label = buffer.title
       @sci\set_doc_pointer(buffer.doc)
       @sci.on_style_needed = buffer\lex
       @sci\set_style_bits 8
@@ -81,7 +97,18 @@ class TextView extends PropertyObject
     @sci\set_caret_fore style.string_to_color color
     @sci\set_caret_width width
 
+  _create_indicator: (indics, id) =>
+    label = Gtk.Label single_line_mode: true
+    label\get_style_context!\add_class 'indic_' .. id
+    @header_box\add label
+    indics[id] = label
+    label
+
   on_keypress: (args) =>
     input_process @buffer, args
+
+-- Default indicators
+with TextView
+  .define_indicator 'title', 'top_left'
 
 return TextView

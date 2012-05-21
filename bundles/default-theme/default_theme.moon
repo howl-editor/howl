@@ -17,15 +17,20 @@ return {
           from(#eee),to(#999))
         ]]
       border_color: '#000000'
-      border_width: 1
+      color: 'darkgrey'
+      font:
+        name: 'Liberation Mono'
+        size: 11
+        bold: true
 
-      title:
-        color: 'darkgrey'
-        font:
-          name: 'Liberation Mono'
-          size: 12
-          bold: true
-          italic: true
+      indicators:
+
+        title:
+          font:
+            name: 'Liberation Mono'
+            size: 12
+            bold: true
+            italic: true
 
     caret:
       color: '#222222'

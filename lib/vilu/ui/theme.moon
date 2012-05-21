@@ -25,12 +25,9 @@ GtkWindow {
 
 .view .header {
   ${header_background};
+  color: ${header_color};
+  font: ${header_font};
   border-width: 0px;
-}
-
-.view .header .title {
-  color: ${title_color};
-  font: ${title_font};
 }
 ]]
 
@@ -59,18 +56,31 @@ parse_font = (font) ->
   desc ..= ' ' .. font.size if font.size
   desc
 
+indicator_css = (indicators) ->
+  css = ''
+  for id, def in pairs indicators
+    clazz = '.indic_' .. id
+    indic_css = clazz .. ' { '
+    if def.color then indic_css ..= 'color: ' .. def.color .. '; '
+    if def.font then indic_css ..= 'font: ' .. parse_font(def.font).. '; '
+    indic_css ..= ' }\n'
+    css ..= indic_css
+  css
+
 theme_css = (theme, file) ->
   dir = file.parent
   hdr = theme.view.header
   tv_title = hdr.title
+  indicators = hdr.indicators
   values =
     window_background: parse_background(theme.window.background, dir)
     view_border_color: theme.view.border_color
     header_background: parse_background(hdr.background, dir)
+    header_color: hdr.color
+    header_font: parse_font hdr.font
     header_border_color: hdr.border_color
-    title_color: tv_title.color
-    title_font: parse_font(tv_title.font)
-  css_template\gsub '%${([%a_]+)}', values
+  css = css_template\gsub '%${([%a_]+)}', values
+  css .. indicator_css indicators
 
 set_theme = (name) ->
   file = theme_files[name]
