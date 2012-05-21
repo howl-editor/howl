@@ -23,7 +23,7 @@ GtkWindow {
   background-color: ${header_border_color};
 }
 
-.view .header {
+.header {
   ${header_background};
   color: ${header_color};
   font: ${header_font};
