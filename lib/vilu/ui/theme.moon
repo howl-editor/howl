@@ -19,7 +19,7 @@ GtkWindow {
   background-color: ${view_border_color};
 }
 
-.header_box {
+.sci_box {
   background-color: ${header_border_color};
 }
 

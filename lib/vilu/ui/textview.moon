@@ -34,7 +34,7 @@ class TextView extends PropertyObject
           {
             expand: true
             Gtk.EventBox {
-              id: 'hbox'
+              id: 'sci_box'
               Gtk.Alignment {
                 top_padding: 1
                 @sci\get_gobject!
@@ -47,7 +47,7 @@ class TextView extends PropertyObject
     @bin.child.header\get_style_context!\add_class 'header'
     @bin.child.title\get_style_context!\add_class 'title'
     @bin\get_style_context!\add_class 'view'
-    @bin.child.hbox\get_style_context!\add_class 'header_box'
+    @bin.child.sci_box\get_style_context!\add_class 'sci_box'
 
     @buffer = buffer
     self\_set_appearance!
