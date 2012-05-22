@@ -101,7 +101,8 @@ set_theme = (name) ->
   css = theme_css theme, file
   status = css_provider\load_from_data css
   error 'Error loading theme "' .. name .. '"' if not status
-  current_theme = name
+  theme.name = name
+  current_theme = theme
   style.set_for_theme theme
 
 export register = (name, file) ->

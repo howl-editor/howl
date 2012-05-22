@@ -41,7 +41,7 @@ return {
         bold: true
 
     caret:
-      color: '#222222'
+      color: '#555555'
       width: 2
 
   styles:
