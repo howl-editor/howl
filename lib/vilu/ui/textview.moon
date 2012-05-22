@@ -1,7 +1,7 @@
 import Gtk from lgi
 import Scintilla from vilu
 import PropertyObject from vilu.aux.moon
-import style, theme from vilu.ui
+import style, theme, IndicatorBar from vilu.ui
 
 input_process = vilu.input.process
 
@@ -30,6 +30,8 @@ class TextView extends PropertyObject
     style.define_styles @sci
     @sci.on_keypress = self\on_keypress
 
+    @header = IndicatorBar 'header', 3
+
     @bin = Gtk.EventBox {
       Gtk.Alignment {
         top_padding: 1,
@@ -38,15 +40,7 @@ class TextView extends PropertyObject
         bottom_padding: 3,
         Gtk.Box {
           orientation: 'VERTICAL',
-          Gtk.EventBox {
-            id: 'header'
-            Gtk.Box {
-              id: 'header_box'
-              orientation: 'HORIZONTAL'
-              border_width: 3
-              spacing: 10
-            },
-          },
+          @header\get_gobject!
           {
             expand: true
             Gtk.EventBox {
@@ -60,8 +54,6 @@ class TextView extends PropertyObject
         }
       }
     }
-    @header_box = @bin.child.header_box
-    @bin.child.header\get_style_context!\add_class 'header'
     @bin\get_style_context!\add_class 'view'
     @bin.child.sci_box\get_style_context!\add_class 'sci_box'
 
@@ -98,9 +90,12 @@ class TextView extends PropertyObject
     @sci\set_caret_width width
 
   _create_indicator: (indics, id) =>
+    def = indicators[id]
+    error 'Invalid indicator id "' .. id .. '"', 2 if not def
     label = Gtk.Label single_line_mode: true
     label\get_style_context!\add_class 'indic_' .. id
-    @header_box\add label
+    position = def.placement\match('_(%w+)$')
+    @header\add position, label
     indics[id] = label
     label
 
