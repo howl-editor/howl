@@ -16,7 +16,7 @@ class IndicatorBar
     @box = @container.child.box
     getmetatable(self).__to_gobject = => @container
 
-  add: (position, indicator) =>
+  add: (position, id) =>
     pack = nil
     switch position
       when 'left'
@@ -25,8 +25,16 @@ class IndicatorBar
         pack = @box\pack_end
       else error 'Illegal indicator position "' .. position .. '"', 2
 
+    indicator = self._create_indicator id
     pack indicator, false, false, 0
+    indicator
 
   get_gobject: => @container
+
+  _create_indicator: (id) ->
+    label = Gtk.Label single_line_mode: true
+    label\get_style_context!\add_class 'indic_' .. id
+    label\show!
+    label
 
 return IndicatorBar

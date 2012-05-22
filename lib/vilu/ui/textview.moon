@@ -101,13 +101,10 @@ class TextView extends PropertyObject
     def = indicators[id]
     error 'Invalid indicator id "' .. id .. '"', 2 if not def
     y, x = def.placement\match('^(%w+)_(%w+)$')
-    label = Gtk.Label single_line_mode: true
-    label\get_style_context!\add_class 'indic_' .. id
     bar = y == 'top' and @header or @footer
-    bar\add x, label
-    label\show!
-    indics[id] = label
-    label
+    indic = bar\add x, id
+    indics[id] = indic
+    indic
 
   _on_keypress: (args) =>
     input_process @buffer, args
