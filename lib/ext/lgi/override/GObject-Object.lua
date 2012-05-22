@@ -23,7 +23,7 @@ local Object = repo.GObject.Object
 
 -- Object constructor, 'param' contains table with properties/signals
 -- to initialize.
-local parameter_info = gi.GObject.Parameter
+local parameter_repo = repo.GObject.Parameter
 local object_new = gi.GObject.Object.methods.new
 if object_new then
    object_new = core.callable.new(object_new)
@@ -58,7 +58,7 @@ function Object:_construct(gtype, param, owns)
       if type(name) == 'string' then
 	 local argtype = self[name]
 	 if gi.isinfo(argtype) and argtype.is_property then
-	    local parameter = core.record.new(parameter_info)
+	    local parameter = core.record.new(parameter_repo)
 	    name = argtype.name
 
 	    -- Store the name string in some safe Lua place ('safe'

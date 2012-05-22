@@ -8,19 +8,50 @@
 --
 ------------------------------------------------------------------------------
 
-local select, type, pairs, ipairs, unpack, setmetatable, error
-   = select, type, pairs, ipairs, unpack, setmetatable, error
+local select, type, pairs, ipairs, unpack, setmetatable, error, next
+   = select, type, pairs, ipairs, unpack, setmetatable, error, next
 local lgi = require 'lgi'
 local core = require 'lgi.core'
 local Gtk = lgi.Gtk
 local Gdk = lgi.Gdk
 local GObject = lgi.GObject
+local cairo = lgi.cairo
+
+-- Initialize GTK.
+Gtk.init()
 
 -- Gtk.Allocation is just an alias to Gdk.Rectangle.
 Gtk.Allocation = Gdk.Rectangle
 
 -------------------------------- Gtk.Widget overrides.
-Gtk.Widget._attribute = {}
+Gtk.Widget._attribute = {
+   width = { get = Gtk.Widget.get_allocated_width },
+   height = { get = Gtk.Widget.get_allocated_height },
+   events = {},
+   style = {},
+}
+
+-- Add widget attributes for some get/set method combinations not covered by
+-- native widget properties.
+for _, name in pairs { 'allocation', 'direction', 'settings', 'realized',
+		       'mapped', 'display', 'screen', 'window', 'root_window',
+		       'has_window', 'style_context' } do
+   if not Gtk.Widget._property[name] then
+      local attr = { get = Gtk.Widget['get_' ..name],
+		     set = Gtk.Widget['set_' .. name] }
+      if next(attr) then
+	 Gtk.Widget._attribute[name] = attr
+      end
+   end
+end
+
+function Gtk.Widget._attribute.width:set(width)
+   self.width_request = width
+end
+
+function Gtk.Widget._attribute.height:set(height)
+   self.height_request = height
+end
 
 -- gtk_widget_intersect is missing an (out caller-allocates) annotation
 if core.gi.Gtk.Widget.methods.intersect.args[2].direction == 'in' then
@@ -32,10 +63,17 @@ if core.gi.Gtk.Widget.methods.intersect.args[2].direction == 'in' then
    end
 end
 
+function Gtk.Widget._attribute.events:get()
+   return Gdk.EventMask(self:get_events())
+end
+
+function Gtk.Widget._attribute.events:set(events)
+   self:set_events(Gdk.EventMask[events])
+end
+
 -- Accessing style properties is preferrably done by accessing 'style'
 -- property.  In case that caller wants deprecated 'style' property, it
 -- must be accessed by '_property_style' name.
-Gtk.Widget._attribute.style = {}
 local widget_style_mt = {}
 function widget_style_mt:__index(name)
    name = name:gsub('_', '-')
@@ -507,10 +545,17 @@ end
 -- Workaround for bug in GTK+; text_column accessors don't do an extra
 -- needed work which is done properly in
 -- gtk_entry_completion_{set/get}_text_column
-Gtk.EntryCompletion._attribute = {
-   text_column = { get = Gtk.EntryCompletion.get_text_column,
-		   set = Gtk.EntryCompletion.set_text_column }
-}
+if Gtk.get_major_version == 3 and Gtk.get_minor_version() < 4 then
+   Gtk.EntryCompletion._attribute = {
+      text_column = { get = Gtk.EntryCompletion.get_text_column,
+		      set = Gtk.EntryCompletion.set_text_column }
+   }
+end
 
--- Initialize GTK.
-Gtk.init()
+-------------------------------- Gtk.PrintSettings
+Gtk._constant = Gtk._constant or {}
+Gtk._constant.PRINT_OUTPUT_FILE_FORMAT = 'output-file-format'
+Gtk._constant.PRINT_OUTPUT_URI = 'output-uri'
+
+-- Gtk-cairo integration helpers.
+cairo.Context._method.should_draw_window = Gtk.cairo_should_draw_window

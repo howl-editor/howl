@@ -19,14 +19,13 @@ local Type = repo.GObject.Type
 -- Value is constructible from any kind of source Lua value, and the
 -- type of the value can be hinted by type name.
 local Value = repo.GObject.Value
-local value_info = gi.GObject.Value
 
 local log = lgi.log.domain('Lgi')
 
 -- Workaround for incorrect annotations - g_value_set_xxx are missing
 -- (allow-none) annotations in glib < 2.30.
 for _, name in pairs { 'set_object', 'set_variant', 'set_string' } do
-   if not value_info.methods[name].args[1].optional then
+   if not gi.GObject.Value.methods[name].args[1].optional then
       log.message("g_value_%s() is missing (allow-none)", name)
       local setter = Value[name]
       Value._method[name] =
@@ -50,7 +49,7 @@ function Value._attribute.gtype.set(value, newtype)
    if gtype then
       if newtype then
 	 -- Try converting old value to new one.
-	 local dest = core.record.new(value_info)
+	 local dest = core.record.new(Value)
 	 Value.init(dest, newtype)
 	 if not Value.transform(value, dest) then
 	    error(("GObject.Value: cannot convert `%s' to `%s'"):format(
@@ -87,11 +86,11 @@ value_marshallers[Type.INTERFACE] = value_marshallers[Type.OBJECT]
 -- instead of target boxed type.
 value_marshallers[Type.BOXED] =
 function(value, params, ...)
-   local gtype = core.record.field(value, value_field_gtype)
+   local repotype = core.repotype(core.record.field(value, value_field_gtype))
    if select('#', ...) > 0 then
-      Value.set_boxed(value, core.record.query((...), 'addr', gtype))
+      Value.set_boxed(value, core.record.query((...), 'addr', repotype))
    else
-      return core.record.new(gi[core.gtype(gtype)], Value.get_boxed(value))
+      return core.record.new(repotype, Value.get_boxed(value))
    end
 end
 
@@ -155,11 +154,11 @@ function Value._method.find_marshaller(gtype, typeinfo, transfer)
 	 end
 
 	 -- Do GValue<->record transfer.
-	 local record_info = typeinfo.interface
+	 local record_repo = core.repotype(typeinfo.interface)
 	 if select('#', ...) > 0 then
-	    set(value, core.record.query((...), 'addr', record_info))
+	    set(value, core.record.query((...), 'addr', record_repo))
 	 else
-	    return core.record.new(record_info, get(value))
+	    return core.record.new(record_repo, get(value))
 	 end
       end
       return marshal_record_no_gtype
@@ -193,7 +192,7 @@ end
 -- initialization is important, and standard record intializer cannot
 -- enforce the order.
 function Value:_new(gtype, value)
-   local v = core.record.new(value_info)
+   local v = core.record.new(Value)
    if gtype then v.gtype = gtype end
    if value then v.value = value end
    return v

@@ -16,8 +16,8 @@ local component = require 'lgi.component'
 local band, bor = core.band, core.bor
 
 local enum = {
-   enum_mt = component.mt:clone { '_method' },
-   bitflags_mt = component.mt:clone { '_method' }
+   enum_mt = component.mt:clone('enum', { '_method' }),
+   bitflags_mt = component.mt:clone('flags', { '_method' }),
 }
 
 function enum.load(info, meta)

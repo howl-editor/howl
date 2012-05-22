@@ -19,12 +19,12 @@ local record = require 'lgi.record'
 
 -- Implementation of class and interface component loading.
 local class = {
-   class_mt = component.mt:clone {
-      '_virtual', '_property', '_signal', '_method', '_constant', '_field'
-   },
-   interface_mt = component.mt:clone {
-      '_virtual', '_property', '_signal', '_method', '_constant'
-   },
+   class_mt = component.mt:clone(
+      'class', { '_virtual', '_property', '_signal',
+		 '_method', '_constant', '_field' }),
+   interface_mt = component.mt:clone(
+      'interface', { '_virtual', '_property', '_signal',
+		     '_method', '_constant' }),
 }
 
 -- Checks whether given argument is type of this class.

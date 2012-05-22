@@ -120,9 +120,10 @@ end
 
 -- Creates new component table by cloning all contents and setting
 -- categories table.
-function component.mt:clone(categories)
+function component.mt:clone(type, categories)
    local new_component = {}
    for key, value in pairs(self) do new_component[key] = value end
+   new_component._type = type
    if categories then
       table.insert(categories, 1, '_attribute')
       new_component._categories = categories
@@ -269,13 +270,21 @@ end
 
 -- Creates new component and sets up common parts according to given
 -- info.
-function component.create(info, mt)
+function component.create(info, mt, name)
+   local gtype
+   if core.gi.isinfo(info) then
+      gtype = info.gtype
+      name = info.fullname
+   else
+      gtype = info and core.gtype(info)
+   end
+
    -- Fill in meta of the compound.
-   local component = { _name = info.fullname }
-   if info.gtype then
+   local component = { _name = name }
+   if gtype then
       -- Bind component in repo, make the relation using GType.
-      component._gtype = info.gtype
-      core.index[info.gtype] = component
+      component._gtype = gtype
+      core.index[gtype] = component
    end
    return setmetatable(component, mt)
 end

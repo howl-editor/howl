@@ -27,9 +27,8 @@ LFS_URL = https://github.com/downloads/keplerproject/luafilesystem/$(LFS_VER).ta
 LFS = deps/$(LFS_VER)
 LFS_OBJECT = deps/$(LFS_VER)/src/lfs.o
 
-LGI_VER = lgi-0.5x
-#LGI_URL = https://github.com/downloads/pavouk/lgi/$(LGI_VER).tar.gz
-LGI_URL = http://nordman.org/download/$(LGI_VER).tgz
+LGI_VER = lgi-0.6
+LGI_URL = https://github.com/downloads/pavouk/lgi/$(LGI_VER).tar.gz
 LGI = deps/$(LGI_VER)
 LGI_ARCHIVE = deps/$(LGI_VER)/lgi/lgi.a
 
