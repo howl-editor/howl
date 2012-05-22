@@ -28,7 +28,8 @@ class TextView extends PropertyObject
 
     @sci = Scintilla!
     style.define_styles @sci
-    @sci.on_keypress = self\on_keypress
+    @sci.on_keypress = self\_on_keypress
+    @sci.on_update_ui = self\_update_position
 
     @header = IndicatorBar 'header', 3
     @footer = IndicatorBar 'footer', 3
@@ -65,6 +66,10 @@ class TextView extends PropertyObject
 
     getmetatable(self).__to_gobject = => @bin
 
+  self\property position: get: => @sci\get_current_pos!
+  self\property line: get: => 1 + @sci\line_from_position @position
+  self\property column: get: => 1 + @sci\get_column @position
+
   self\property buffer:
     get: => @_buf
     set: (buffer) =>
@@ -95,18 +100,25 @@ class TextView extends PropertyObject
   _create_indicator: (indics, id) =>
     def = indicators[id]
     error 'Invalid indicator id "' .. id .. '"', 2 if not def
+    y, x = def.placement\match('^(%w+)_(%w+)$')
     label = Gtk.Label single_line_mode: true
     label\get_style_context!\add_class 'indic_' .. id
-    position = def.placement\match('_(%w+)$')
-    @header\add position, label
+    bar = y == 'top' and @header or @footer
+    bar\add x, label
+    label\show!
     indics[id] = label
     label
 
-  on_keypress: (args) =>
+  _on_keypress: (args) =>
     input_process @buffer, args
+
+  _update_position: () =>
+    pos = @line .. ':' .. @column
+    @indicator.position.label = pos
 
 -- Default indicators
 with TextView
   .define_indicator 'title', 'top_left'
+  .define_indicator 'position', 'bottom_right'
 
 return TextView

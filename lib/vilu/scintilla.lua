@@ -58,14 +58,16 @@ setmetatable(sci, {
 
 function sci.dispatch(sci_ptr, event, args)
   instance = sci_map[sci_ptr]
-  if event == 'key-press' then
-    if instance.on_keypress then return instance.on_keypress(args) end
-  elseif event == 'sci' then
+  if event == 'sci' then
+--    _G.print("args.code = " .. _G.tostring(args.code))
     code = args.code
     if code == SCN_STYLENEEDED then
       if instance.on_style_needed then return instance.on_style_needed(args.position) end
+    elseif code == SCN_UPDATEUI then
+      if instance.on_update_ui then return instance.on_update_ui(args.updated) end
     end
---    _G.print("args.code = " .. _G.tostring(args.code))
+  elseif event == 'key-press' then
+    if instance.on_keypress then return instance.on_keypress(args) end
   end
   return false
 end

@@ -34,7 +34,7 @@ return {
 
     footer:
       background: '#dddddd'
-      color: 'darkgrey'
+      color: '#777777'
       font:
         name: 'Liberation Mono'
         size: 11
