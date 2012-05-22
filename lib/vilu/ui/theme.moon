@@ -29,6 +29,13 @@ GtkWindow {
   font: ${header_font};
   border-width: 0px;
 }
+
+.footer {
+  ${footer_background};
+  color: ${footer_color};
+  font: ${footer_font};
+  border-width: 0px;
+}
 ]]
 
 _ENV = {}
@@ -71,6 +78,7 @@ theme_css = (theme, file) ->
   dir = file.parent
   view = theme.view
   hdr = view.header
+  footer = view.footer
   tv_title = hdr.title
   indicators = hdr.indicators
   values =
@@ -80,6 +88,9 @@ theme_css = (theme, file) ->
     header_background: parse_background(hdr.background, dir)
     header_color: hdr.color
     header_font: parse_font hdr.font
+    footer_background: parse_background(footer.background, dir)
+    footer_color: footer.color
+    footer_font: parse_font footer.font
   css = css_template\gsub '%${([%a_]+)}', values
   css .. indicator_css indicators
 

@@ -31,6 +31,7 @@ class TextView extends PropertyObject
     @sci.on_keypress = self\on_keypress
 
     @header = IndicatorBar 'header', 3
+    @footer = IndicatorBar 'footer', 3
 
     @bin = Gtk.EventBox {
       Gtk.Alignment {
@@ -47,10 +48,12 @@ class TextView extends PropertyObject
               id: 'sci_box'
               Gtk.Alignment {
                 top_padding: 1
+                bottom_padding: 1
                 @sci\get_gobject!
               }
             }
           }
+          @footer\get_gobject!
         }
       }
     }

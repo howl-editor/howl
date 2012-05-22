@@ -32,6 +32,14 @@ return {
             bold: true
             italic: true
 
+    footer:
+      background: '#dddddd'
+      color: 'darkgrey'
+      font:
+        name: 'Liberation Mono'
+        size: 11
+        bold: true
+
     caret:
       color: '#222222'
       width: 2
