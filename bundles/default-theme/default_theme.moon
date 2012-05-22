@@ -8,6 +8,7 @@ return {
 
   view:
     border_color: '#000000'
+    divider_color: '#000000'
 
     header:
       background: [[
@@ -16,7 +17,6 @@ return {
           left top, right top,
           from(#eee),to(#999))
         ]]
-      border_color: '#000000'
       color: 'darkgrey'
       font:
         name: 'Liberation Mono'

@@ -20,7 +20,7 @@ GtkWindow {
 }
 
 .sci_box {
-  background-color: ${header_border_color};
+  background-color: ${view_divider_color};
 }
 
 .header {
@@ -69,16 +69,17 @@ indicator_css = (indicators) ->
 
 theme_css = (theme, file) ->
   dir = file.parent
-  hdr = theme.view.header
+  view = theme.view
+  hdr = view.header
   tv_title = hdr.title
   indicators = hdr.indicators
   values =
     window_background: parse_background(theme.window.background, dir)
-    view_border_color: theme.view.border_color
+    view_border_color: view.border_color
+    view_divider_color: view.divider_color
     header_background: parse_background(hdr.background, dir)
     header_color: hdr.color
     header_font: parse_font hdr.font
-    header_border_color: hdr.border_color
   css = css_template\gsub '%${([%a_]+)}', values
   css .. indicator_css indicators
 
