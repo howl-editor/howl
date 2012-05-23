@@ -4,10 +4,12 @@ import PropertyObject from vilu.aux.moon
 class File extends PropertyObject
 
   tmpfile: ->
-    File os.tmpname!
+    file = File os.tmpname!
+    file.touch if not file.exists
+    file
 
   is_absolute: (path) ->
-    path\match '^/' or path\match '^%a:\\'
+    (path\match('^/') or path\match('^%a:\\\\')) != nil
 
   new: (path) =>
     super!
@@ -16,7 +18,7 @@ class File extends PropertyObject
 
     with getmetatable(self)
       .__tostring = self.tostring
-      .__div= self.join
+      .__div = self.join
       .__concat = (op1, op2) ->
         if getmetatable(op1) != getmetatable(self)
           op1 .. op2\tostring!
@@ -77,14 +79,21 @@ class File extends PropertyObject
 
     return File(root)
 
-  delete: =>
-    self\_assert @gfile\delete!
+  mkdir: => self\_assert @gfile\make_directory!
+  mkdir_p: => self\_assert @gfile\make_directory_with_parents!
+  delete: => self\_assert @gfile\delete!
+  touch: => @contents = '' if not @exists
+
+  find: (depth = 4, filter) =>
+    error "Can't invoke find on a non-directory", 2 if not @is_directory
+    error "`filter` must be a function", 2 if not type(filter) == 'function'
+    files = {}
 
   tostring: => @path or self.uri
 
   _assert: (...) =>
-   status, msg = ...
-   error self\tostring! .. ' :' .. msg, 3 if not status
-   ...
+    status, msg = ...
+    error self\tostring! .. ' :' .. msg, 3 if not status
+    ...
 
 return File

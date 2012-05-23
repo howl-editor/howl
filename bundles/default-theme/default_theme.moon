@@ -24,7 +24,6 @@ return {
         bold: true
 
       indicators:
-
         title:
           font:
             name: 'Liberation Mono'
@@ -45,7 +44,6 @@ return {
       width: 2
 
   styles:
-
     default:
       :background
       color: '#241f1c'
