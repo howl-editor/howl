@@ -28,13 +28,13 @@ describe 'Input', ->
         mods = 'ctrl+shift+alt+'
         assert_table_equal tr, { mods .. 'A', mods .. 'A', mods .. '65' }
 
-  describe 'process(buffer, event)', ->
+  describe 'process(view, buffer, event)', ->
 
     context 'when looking up handlers', ->
 
       it 'tries each translated key in order for a given keymap', ->
         buffer = keymap: Spy!, mode: {}
-        input.process buffer, character: 'A', key_name: 'A', key_code: 65
+        input.process {}, buffer, character: 'A', key_name: 'A', key_code: 65
         assert_table_equal buffer.keymap.reads, { 'A', 'A', '65' }
 
       it 'searches the buffer keymap -> the mode keymap -> global keymap', ->
@@ -48,7 +48,7 @@ describe 'Input', ->
           mode:
             keymap: mode_map
 
-        input.process buffer, key_args
+        input.process {}, buffer, key_args
         assert_equal #input.keymap.reads, 3
         assert_table_equal input.keymap.reads, mode_map.reads
         assert_table_equal mode_map.reads, buffer_map.reads
@@ -58,17 +58,18 @@ describe 'Input', ->
         input.keymap = Spy!
 
         buffer = {}
-        assert_true (pcall input.process, buffer, key_args)
+        assert_true (pcall input.process, {}, buffer, key_args)
         assert_equal #input.keymap.reads, 3
 
     context 'when invoking handlers', ->
-      it 'passes the buffer as the sole argument', ->
+      it 'passes the view and buffer as arguments', ->
         received = {}
         buffer =
           keymap: { k: (...) -> received = {...} }
           mode: {}
-        input.process buffer, character: 'k', key_code: 65
-        assert_table_equal received, { buffer }
+        view = {}
+        input.process view, buffer, character: 'k', key_code: 65
+        assert_table_equal received, { view, buffer }
 
       it 'returns early with true if a handler returns true', ->
         mode_handler = Spy!
@@ -77,13 +78,13 @@ describe 'Input', ->
           mode:
             keymap:
               k: mode_handler
-        input.process buffer, key_code: 65
+        input.process {}, buffer, key_code: 65
         assert_false mode_handler.called
 
       it 'returns true if a handler raises an error', ->
         buffer =
           keymap: { k: -> error 'BOOM!' }
           mode: {}
-        assert_true input.process buffer, character: 'k', key_code: 65
+        assert_true input.process {}, buffer, character: 'k', key_code: 65
 
       it 'signals an error if a handler raises an error', true

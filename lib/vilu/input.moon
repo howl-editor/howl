@@ -31,11 +31,12 @@ find_handlers = (buffer, translations) ->
           break
   handlers
 
-export process = (buffer, args) ->
+export process = (view, buffer, args) ->
   translations = translate_key args
   handlers = find_handlers buffer, translations
   for handler in *handlers
-    status, ret = pcall handler, buffer
+    status, ret = pcall handler, view, buffer
+    _G.print 'key error: ' .. ret if not status
     return true if not status or (status and ret)
 
 export keymap = {}

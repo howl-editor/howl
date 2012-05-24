@@ -107,7 +107,7 @@ class TextView extends PropertyObject
     indic
 
   _on_keypress: (args) =>
-    input_process @buffer, args
+    input_process self, @buffer, args
 
   _update_position: () =>
     pos = @line .. ':' .. @column
