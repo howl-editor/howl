@@ -15,6 +15,9 @@ class Application
     @windows = {}
     @buffers = {}
 
+    vilu.bundle.init @root_dir / 'bundles'
+    self\_set_theme!
+
   new_window: (properties) =>
     props =
       title: 'Vilu zen'
@@ -39,9 +42,6 @@ class Application
     view.buffer = buffer
 
   run: =>
-    vilu.bundle.init @root_dir / 'bundles'
-    self\_set_theme!
-
     window = self\new_window!
     buffer = self\new_buffer mode.by_name 'Lua'
     view = TextView buffer
