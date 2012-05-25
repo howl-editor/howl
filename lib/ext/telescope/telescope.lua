@@ -230,7 +230,7 @@ end
 make_assertion("blank",        "'%s' to be blank",                         function(a) return a == '' or a == nil end)
 make_assertion("empty",        "'%s' to be an empty table",                function(a) return not next(a) end)
 make_assertion("equal",        "'%s' to be equal to '%s'",                 function(a, b) return a == b end)
-make_assertion("error",        "result to be an error",                    function(f) return not pcall(f) end)
+make_assertion("error",        "'%s' to raise an error",                   function(f) return not pcall(f) end)
 make_assertion("false",        "'%s' to be false",                         function(a) return a == false end)
 make_assertion("greater_than", "'%s' to be greater than '%s'",             function(a, b) return a > b end)
 make_assertion("gte",          "'%s' to be greater than or equal to '%s'", function(a, b) return a >= b end)
