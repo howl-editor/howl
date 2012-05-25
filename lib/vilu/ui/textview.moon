@@ -1,7 +1,7 @@
 import Gtk from lgi
 import Scintilla from vilu
 import PropertyObject from vilu.aux.moon
-import style, theme, IndicatorBar from vilu.ui
+import style, theme, IndicatorBar, Cursor from vilu.ui
 
 input_process = vilu.input.process
 
@@ -30,6 +30,7 @@ class TextView extends PropertyObject
     style.define_styles @sci
     @sci.on_keypress = self\_on_keypress
     @sci.on_update_ui = self\_update_position
+    @cursor = Cursor @sci
 
     @header = IndicatorBar 'header', 3
     @footer = IndicatorBar 'footer', 3
@@ -66,9 +67,7 @@ class TextView extends PropertyObject
 
     getmetatable(self).__to_gobject = => @bin
 
-  self\property position: get: => @sci\get_current_pos!
-  self\property line: get: => 1 + @sci\line_from_position @position
-  self\property column: get: => 1 + @sci\get_column @position
+  to_gobject: => @bin
 
   self\property buffer:
     get: => @_buf
@@ -110,7 +109,7 @@ class TextView extends PropertyObject
     input_process self, @buffer, args
 
   _update_position: () =>
-    pos = @line .. ':' .. @column
+    pos = @cursor.line .. ':' .. @cursor.column
     @indicator.position.label = pos
 
 -- Default indicators
