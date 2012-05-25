@@ -35,6 +35,7 @@ class Buffer extends PropertyObject
         background_buffer = self
 
       background_sci
+    set: => @_.sci = nil
 
   add_view_ref: (view) =>
     @views[view] = true

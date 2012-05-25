@@ -13,8 +13,11 @@ property_lookup_table = (obj) ->
 
     __newindex: (key, value) =>
       prop = properties[key]
-      if prop and prop.set
-        prop.set obj, value
+      if prop
+        if prop.set
+          prop.set obj, value
+        else
+          error 'Attempt to set read-only property "' .. key .. '"', 1
       else
         rawset obj, key, value
   }
