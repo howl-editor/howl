@@ -36,8 +36,25 @@ describe 'PropertyObject', ->
 
     assert_not_equal getmetatable(Test1!), getmetatable(Test2!)
 
-  it 'meta methods are done by specifying them directly in the class', ->
+  it 'meta methods are defined directly in the class', ->
     class Test extends PropertyObject
       __add: (o1, o2) -> 3 + o2
 
     assert_equal 5, Test! + 2
+
+  it 'supports inheriting from a PropertyObject', ->
+    class Parent extends PropertyObject
+      self\property foo:
+        get: => @_foo
+        set: (v) => @_foo = v
+
+    class SubClass extends Parent
+      self\property bar:
+        get: => @_bar
+        set: (v) => @_bar = v
+
+    s = SubClass!
+    s.foo = 'hello'
+    assert_equal s.foo, 'hello'
+    s.bar = 'world'
+    assert_equal s.bar, 'world'
