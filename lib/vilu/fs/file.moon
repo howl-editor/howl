@@ -82,15 +82,40 @@ class File extends PropertyObject
 
     return File(root)
 
+  relative_to: (parent) =>
+    parent.gfile\get_relative_path @gfile
+
   mkdir: => self\_assert @gfile\make_directory!
   mkdir_p: => self\_assert @gfile\make_directory_with_parents!
   delete: => self\_assert @gfile\delete!
+  delete_all: =>
+    if @is_directory
+      entries = self\find!
+      entry\delete! for entry in *entries when not entry.is_directory
+      directories = [f for f in *entries when f.is_directory]
+      table.sort directories, (a,b) -> a.path > b.path
+      dir\delete! for dir in *directories
+
+    self\delete!
+
   touch: => @contents = '' if not @exists
 
-  find: (depth = 4, filter) =>
-    error "Can't invoke find on a non-directory", 2 if not @is_directory
-    error "`filter` must be a function", 2 if not type(filter) == 'function'
+  find: (options = {}) =>
+    error "Can't invoke find on a non-directory", 1 if not @is_directory
     files = {}
+    directories = {}
+    dir = self
+    while dir
+      for entry in *dir.children
+        if entry.is_directory
+          table.insert(directories, 1, entry)
+        else
+          table.insert files, entry
+
+      dir = table.remove directories
+      table.insert(files, dir) if dir
+
+    files
 
   tostring: => @path or @uri
 
@@ -98,5 +123,9 @@ class File extends PropertyObject
     status, msg = ...
     error self\tostring! .. ' :' .. msg, 3 if not status
     ...
+
+File.rm = File.delete
+File.unlink = File.delete
+File.rm_r = File.delete_all
 
 return File
