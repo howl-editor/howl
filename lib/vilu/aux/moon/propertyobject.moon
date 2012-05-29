@@ -1,39 +1,28 @@
-lookup_tables = setmetatable {}, __mode: 'k'
+init_properties = (base) ->
+  base.__properties = {}
 
-property_lookup_table = (obj) ->
-  base = getmetatable obj
-  properties = base.__properties
-  return base if not properties
-  t = lookup_tables[base]
-  return t if t
+  base.__index = (key) =>
+    val = base[key]
+    return val if val
+    prop = base.__properties[key]
+    return nil if not prop or not prop.get
+    prop.get self
 
-  t = {
-    __index: (key) =>
-      val = base[key]
-      return val if val
-      prop = properties[key]
-      return nil if not prop or not prop.get
-      prop.get self
-
-    __newindex: (key, value) =>
-      prop = properties[key]
-      if prop
-        if prop.set
-          prop.set self, value
-        else
-          error 'Attempt to set read-only property "' .. key .. '"', 1
+  base.__newindex = (key, value) =>
+    prop = base.__properties[key]
+    if prop
+      if prop.set
+        prop.set self, value
       else
-        rawset self, key, value
-  }
-  lookup_tables[base] = t
-  t
+        error 'Attempt to set read-only property "' .. key .. '"', 1
+    else
+      rawset self, key, value
+
+  base.__properties
 
 class PropertyObject
-  new: =>
-    setmetatable self, property_lookup_table(self)
-
   property: (cls, tbl) ->
-    cls.__base.__properties = cls.__base.__properties or {}
-    cls.__base.__properties[k] = v for k,v in pairs tbl
+    properties = cls.__base.__properties or init_properties(cls.__base)
+    properties[k] = v for k,v in pairs tbl
 
 return PropertyObject

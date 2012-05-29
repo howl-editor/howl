@@ -35,3 +35,9 @@ describe 'PropertyObject', ->
       self\property foo: get: => 'foo'
 
     assert_not_equal getmetatable(Test1!), getmetatable(Test2!)
+
+  it 'meta methods are done by specifying them directly in the class', ->
+    class Test extends PropertyObject
+      __add: (o1, o2) -> 3 + o2
+
+    assert_equal 5, Test! + 2
