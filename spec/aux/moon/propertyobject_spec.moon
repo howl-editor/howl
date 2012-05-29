@@ -1,7 +1,7 @@
 import PropertyObject from vilu.aux.moon
 
 describe 'PropertyObject', ->
-  it 'allows specifing a getter and setter using get and set', ->
+  it 'allows specifying a getter and setter using get and set', ->
     value = 'hello'
     class Test extends PropertyObject
       self\property foo:

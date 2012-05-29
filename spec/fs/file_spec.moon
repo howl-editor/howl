@@ -97,3 +97,17 @@ describe 'File', ->
       file = File '/no/does/not/exist'
       file\delete! if file.exists
       assert_error -> file\touch!
+
+  describe 'meta methods', ->
+    it '/ and .. joins the file with the specified argument', ->
+      file = File('/bin')
+      assert_equal (file / 'ls').path, '/bin/ls'
+      assert_equal (file .. 'ls').path, '/bin/ls'
+
+    it 'tostring returns the result of File.tostring', ->
+      file = File '/bin/ls'
+      assert_equal file\tostring!, tostring file
+
+    it '== returns true if the files point to the same path', ->
+      assert_equal File('/bin/ls'), File('/bin/ls')
+

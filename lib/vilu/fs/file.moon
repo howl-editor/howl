@@ -24,6 +24,9 @@ class File extends PropertyObject
           op1 .. op2\tostring!
         else
           op1\join(op2)
+      .__eq = (op1, op2) ->
+        op1 = File op1 if getmetatable(op1) != getmetatable(self)
+        op1\tostring! == op2\tostring!
 
   self\property basename: get: => @gfile\get_basename!
   self\property extension: get: => @basename\match('%.(%w+)$')
@@ -89,7 +92,7 @@ class File extends PropertyObject
     error "`filter` must be a function", 2 if not type(filter) == 'function'
     files = {}
 
-  tostring: => @path or self.uri
+  tostring: => @path or @uri
 
   _assert: (...) =>
     status, msg = ...
