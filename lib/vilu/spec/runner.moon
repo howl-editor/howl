@@ -2,6 +2,8 @@ status, telescope = pcall require, 'telescope'
 error 'telescope not installed' if not status
 export telescope
 
+import File from vilu.fs
+
 format_table = (t) ->
   if t == nil
     'nil'
@@ -23,10 +25,10 @@ telescope.make_assertion 'table_equal',
 
 class Runner
   new: (paths) =>
-    @paths = paths
+    @paths = [File(path) for path in *paths]
 
   run: =>
-    functions = [loadfile(path) for path in *@paths]
+    functions = [loadfile(file) for file in *self\_spec_files!]
     contexts = {}
     for f in *functions
       telescope.load_contexts f, contexts
@@ -35,5 +37,15 @@ class Runner
     print telescope.test_report contexts, results
     print (telescope.summary_report contexts, results)
     print telescope.error_report contexts, results
+
+  _spec_files: =>
+    files = {}
+    for path in *@paths
+      if path.is_directory
+        for spec in *[spec for spec in *path\find! when spec.basename\match '_spec%.%a+$']
+          table.insert files, spec
+      else
+        table.insert files, path
+    files
 
 return Runner
