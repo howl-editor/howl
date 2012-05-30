@@ -12,21 +12,8 @@ class File extends PropertyObject
     (path\match('^/') or path\match('^%a:\\\\')) != nil
 
   new: (path) =>
-    super!
     @gfile = if type(path) == 'string' then GFile.new_for_path path else path
     @path = @gfile\get_path!
-
-    with getmetatable(self)
-      .__tostring = self.tostring
-      .__div = self.join
-      .__concat = (op1, op2) ->
-        if getmetatable(op1) != getmetatable(self)
-          op1 .. op2\tostring!
-        else
-          op1\join(op2)
-      .__eq = (op1, op2) ->
-        op1 = File op1 if getmetatable(op1) != getmetatable(self)
-        op1\tostring! == op2\tostring!
 
   self\property basename: get: => @gfile\get_basename!
   self\property extension: get: => @basename\match('%.(%w+)$')
@@ -76,11 +63,8 @@ class File extends PropertyObject
 
   join: (...) =>
     root = @gfile
-
-    for child in *{...}
-      root = root\get_child(child)
-
-    return File(root)
+    root = root\get_child(child) for child in *{...}
+    File root
 
   relative_to: (parent) =>
     parent.gfile\get_relative_path @gfile
@@ -118,6 +102,20 @@ class File extends PropertyObject
     files
 
   tostring: => @path or @uri
+
+  __tostring: => self\tostring!
+
+  __div: (op) => self\join op
+
+  __concat: (op1, op2) ->
+    if op1.__class == File
+      op1\join(op2)
+    else
+      tostring(op1) .. tostring(op2)
+
+  __eq: (op1, op2) ->
+    op1 = File op1 if getmetatable(op1) != getmetatable(op2)
+    op1\tostring! == op2\tostring!
 
   _assert: (...) =>
     status, msg = ...
