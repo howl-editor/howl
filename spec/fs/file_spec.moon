@@ -70,6 +70,11 @@ describe 'File', ->
   expect 'join returns a new file representing the specified child', ->
     assert_equal File('/bin')\join('ls').path, '/bin/ls'
 
+  it 'relative_to_parent returns a path relative to the specified parent', ->
+    parent = File '/bin'
+    file = File '/bin/ls'
+    assert_equal 'ls', file\relative_to_parent(parent)
+
   describe 'mkdir', ->
     it 'creates a directory for the path specified by the file', ->
       with_tmpfile (file) ->
@@ -154,7 +159,7 @@ describe 'File', ->
         with_populated_dir (dir) ->
           files = dir\find!
           table.sort files, (a,b) -> a.path < b.path
-          normalized = [f\relative_to dir for f in *files]
+          normalized = [f\relative_to_parent dir for f in *files]
           assert_table_equal normalized, {
             'child1',
             'child1/sandwich.lua',

@@ -66,7 +66,7 @@ class File extends PropertyObject
     root = root\get_child(child) for child in *{...}
     File root
 
-  relative_to: (parent) =>
+  relative_to_parent: (parent) =>
     parent.gfile\get_relative_path @gfile
 
   mkdir: => self\_assert @gfile\make_directory!
