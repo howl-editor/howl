@@ -167,6 +167,13 @@ describe 'File', ->
             'child1/sub_dir',
             'child2'
           }
+    context 'when name: is passed as an option', ->
+      it 'only returns files whose paths matches the specified value', ->
+        with_populated_dir (dir) ->
+          files = dir\find name: 'sub_[cd]'
+          names = [f.basename for f in *files]
+          table.sort names
+          assert_table_equal names, { 'sub_child.txt', 'sub_dir' }
 
   describe 'meta methods', ->
     it '/ and .. joins the file with the specified argument', ->

@@ -86,6 +86,11 @@ class File extends PropertyObject
 
   find: (options = {}) =>
     error "Can't invoke find on a non-directory", 1 if not @is_directory
+
+    filters = {}
+    if options.name then table.insert filters, (entry) -> not entry\tostring!\match options.name
+    filter = (entry) -> for f in *filters do return true if f entry
+
     files = {}
     directories = {}
     dir = self
@@ -94,10 +99,10 @@ class File extends PropertyObject
         if entry.is_directory
           table.insert(directories, 1, entry)
         else
-          table.insert files, entry
+          table.insert files, entry if not filter entry
 
       dir = table.remove directories
-      table.insert(files, dir) if dir
+      table.insert(files, dir) if dir and not filter dir
 
     files
 
