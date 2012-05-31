@@ -42,7 +42,7 @@ class Runner
     files = {}
     for path in *@paths
       if path.is_directory
-        for spec in *[spec for spec in *path\find! when spec.basename\match '_spec%.%a+$']
+        for spec in *path\find name: '_spec%.%a+$'
           table.insert files, spec
       else
         table.insert files, path
