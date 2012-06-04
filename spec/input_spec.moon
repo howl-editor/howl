@@ -21,19 +21,25 @@ describe 'Input', ->
         assert_table_equal tr, { '123' }
 
     context 'with modifiers', ->
-      it 'prepends a modifier string representation to all translations', ->
+      it 'prepends a modifier string representation to all translations for ctrl and alt', ->
         tr = input.translate_key
-          character: 'A', key_name: 'A', key_code: 65,
-          shift: true, control: true, alt: true
-        mods = 'ctrl+shift+alt+'
-        assert_table_equal tr, { mods .. 'A', mods .. 'A', mods .. '65' }
+          character: 'a', key_name: 'a', key_code: 123,
+          control: true, alt: true
+        mods = 'ctrl+alt+'
+        assert_table_equal tr, { mods .. 'a', mods .. 'a', mods .. '123' }
+
+      it 'emits the shift modifier if the character is known', ->
+        tr = input.translate_key
+          character: 'A', key_name: 'a', key_code: 123,
+          control: true, shift: true
+        assert_table_equal tr, { 'ctrl+A', 'ctrl+shift+a', 'ctrl+shift+123' }
 
   describe 'process(view, buffer, event)', ->
 
     context 'when looking up handlers', ->
 
       it 'tries each translated key in order for a given keymap', ->
-        buffer = keymap: Spy!, mode: {}
+        buffer = keymap: Spy!
         input.process {}, buffer, character: 'A', key_name: 'A', key_code: 65
         assert_table_equal buffer.keymap.reads, { 'A', 'A', '65' }
 
@@ -64,27 +70,30 @@ describe 'Input', ->
     context 'when invoking handlers', ->
       it 'passes the view and buffer as arguments', ->
         received = {}
-        buffer =
-          keymap: { k: (...) -> received = {...} }
-          mode: {}
+        buffer = keymap: { k: (...) -> received = {...} }
         view = {}
         input.process view, buffer, character: 'k', key_code: 65
         assert_table_equal received, { view, buffer }
 
-      it 'returns early with true if a handler returns true', ->
+      it 'returns early with true unless a handler explicitly returns false', ->
         mode_handler = Spy!
         buffer =
-          keymap: { k: (...) -> true }
+          keymap: { k: -> nil }
           mode:
             keymap:
               k: mode_handler
-        input.process {}, buffer, key_code: 65
+        assert_true input.process({}, buffer, character: 'k', key_code: 65)
         assert_false mode_handler.called
 
+        buffer.keymap.k = -> false
+        assert_true input.process({}, buffer, character: 'k', key_code: 65)
+        assert_true mode_handler.called
+
       it 'returns true if a handler raises an error', ->
-        buffer =
-          keymap: { k: -> error 'BOOM!' }
-          mode: {}
+        buffer = keymap: { k: -> error 'BOOM!' }
         assert_true input.process {}, buffer, character: 'k', key_code: 65
+
+      it 'returns false if no handlers are found', ->
+        assert_false input.process {}, {}, character: 'k', key_code: 65
 
       it 'signals an error if a handler raises an error', true
