@@ -26,6 +26,8 @@ class Buffer extends PropertyObject
     get: => @sci\get_text!
     set: (text) => @sci\set_text text
 
+  self\property size: get: => @sci\get_text_length!
+
   self\property sci:
     get: =>
       if @_.sci then return @_.sci
