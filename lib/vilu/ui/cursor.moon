@@ -24,7 +24,7 @@ class Cursor extends PropertyObject
     up:               'line_up'
     left:             'char_left'
     right:            'char_right'
-    word_left:        'word_right'
+    word_left:        'word_left'
     word_left_end:    'word_left_end'
     word_part_left:   'word_part_left'
     word_right:       'word_right'
