@@ -23,6 +23,14 @@ telescope.make_assertion 'table_equal',
     return false if type(b) != 'table' or #a != #b
     return format_table(a) == format_table(b)
 
+telescope.make_assertion 'includes',
+  (_, table, b) ->
+    "Assert failed: expected `" .. format_table(table) .. '` to include `' .. tostring(b) .. '`',
+  (t,b) ->
+    error 'Not a table', 1 if type(t) != 'table'
+    for v in *t do return true if v == b
+    return false
+
 class Runner
   new: (paths) =>
     @paths = [File(path) for path in *paths]
