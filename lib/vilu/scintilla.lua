@@ -117,6 +117,7 @@ SCI_ADDTEXT = 2001
 SCI_ADDSTYLEDTEXT = 2002
 SCI_INSERTTEXT = 2003
 SCI_CLEARALL = 2004
+SCI_DELETERANGE = 2645
 SCI_CLEARDOCUMENTSTYLE = 2005
 SCI_GETLENGTH = 2006
 SCI_GETCHARAT = 2007
@@ -526,6 +527,7 @@ SCI_GETWRAPMODE = 2269
 SC_WRAPVISUALFLAG_NONE = 0x0000
 SC_WRAPVISUALFLAG_END = 0x0001
 SC_WRAPVISUALFLAG_START = 0x0002
+SC_WRAPVISUALFLAG_MARGIN = 0x0004
 SCI_SETWRAPVISUALFLAGS = 2460
 SCI_GETWRAPVISUALFLAGS = 2461
 SC_WRAPVISUALFLAGLOC_DEFAULT = 0x0000
@@ -793,6 +795,8 @@ SCI_SETPOSITIONCACHE = 2514
 SCI_GETPOSITIONCACHE = 2515
 SCI_COPYALLOWLINE = 2519
 SCI_GETCHARACTERPOINTER = 2520
+SCI_GETRANGEPOINTER = 2643
+SCI_GETGAPPOSITION = 2644
 SCI_SETKEYSUNICODE = 2521
 SCI_GETKEYSUNICODE = 2522
 SCI_INDICSETALPHA = 2523
@@ -1084,6 +1088,8 @@ SCLEX_COFFEESCRIPT = 102
 SCLEX_TCMD = 103
 SCLEX_AVS = 104
 SCLEX_ECL = 105
+SCLEX_OSCRIPT = 106
+SCLEX_VISUALPROLOG = 107
 SCLEX_AUTOMATIC = 1000
 SCN_STYLENEEDED = 2000
 SCN_CHARADDED = 2001
@@ -1134,6 +1140,11 @@ end
 -- Delete all text in the document.
 function sci:clear_all()
   self:send(2004, 0, 0)
+end
+
+-- Delete a range of text in the document.
+function sci:delete_range(pos, delete_length)
+  self:send(2645, pos, delete_length)
 end
 
 -- Set all style bytes to 0, remove all folding information.
@@ -3701,6 +3712,19 @@ end
 -- characters in the document.
 function sci:get_character_pointer()
   return tonumber(self:send(2520, 0, 0))
+end
+
+-- Return a read-only pointer to a range of characters in the document.
+-- May move the gap so that the range is contiguous, but will only move up
+-- to rangeLength bytes.
+function sci:get_range_pointer(position, range_length)
+  return tonumber(self:send(2643, position, range_length))
+end
+
+-- Return a position which, to avoid performance costs, should not be within
+-- the range of a call to GetRangePointer.
+function sci:get_gap_position()
+  return tonumber(self:send(2644, 0, 0))
 end
 
 -- Always interpret keyboard input as Unicode
