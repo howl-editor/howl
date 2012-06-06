@@ -1,4 +1,5 @@
 #include "vilu.h"
+#include <gio/gio.h>
 
 static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 {
@@ -30,14 +31,19 @@ static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 
 static gchar *get_app_root(const gchar *invocation_path)
 {
-  gchar *cwd, *relative_path, *root;
+  gchar *cwd, *relative_path, *path;
+  GFile *root;
 
   cwd = g_get_current_dir();
   relative_path = g_path_get_dirname(invocation_path);
-  root = g_build_filename(cwd, relative_path, "..", NULL);
+  path = g_build_filename(cwd, relative_path, "..", NULL);
   g_free(cwd);
   g_free(relative_path);
-  return root;
+  root = g_file_new_for_path(path);
+  g_free(path);
+  path = g_file_get_path(root);
+  g_object_unref(root);
+  return path;
 }
 
 static lua_State *open_lua_state(const gchar *app_root)
@@ -70,6 +76,7 @@ static lua_State *open_lua_state(const gchar *app_root)
 
 int main(int argc, char *argv[])
 {
+  g_type_init();
   gchar *app_root = get_app_root(argv[0]);
   lua_State *L = open_lua_state(app_root);
   gtk_init(&argc, &argv);
