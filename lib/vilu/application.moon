@@ -4,7 +4,7 @@
 
 import Gtk from lgi
 import Window, TextView, theme from vilu.ui
-import Buffer, mode from vilu
+import Buffer, mode, bundle, input, keymap from vilu
 import File from vilu.fs
 
 class Application
@@ -15,7 +15,8 @@ class Application
     @windows = {}
     @buffers = {}
 
-    vilu.bundle.init @root_dir / 'bundles'
+    input.keymap = keymap
+    bundle.init @root_dir / 'bundles'
     self\_set_theme!
 
   new_window: (properties) =>
