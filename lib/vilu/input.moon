@@ -1,5 +1,6 @@
 _G = _G
 import tostring, pcall from _G
+import signal from vilu
 t_append, t_concat = table.insert, table.concat
 
 _ENV = {}
@@ -33,7 +34,10 @@ export process = (view, buffer, args) ->
   handlers = find_handlers buffer, translations
   for handler in *handlers
     status, ret = pcall handler, view, buffer
-    _G.print 'key error: ' .. ret if not status
+
+    if not status
+      signal.emit 'error', 'Error invoking input handler: ' .. ret
+
     return true if not status or (status and ret != false)
 
   false

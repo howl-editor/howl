@@ -1,5 +1,5 @@
 import Spy from vilu.spec
-input = vilu.input
+import input, signal from vilu
 
 describe 'Input', ->
 
@@ -89,11 +89,19 @@ describe 'Input', ->
         assert_true input.process({}, buffer, character: 'k', key_code: 65)
         assert_true mode_handler.called
 
-      it 'returns true if a handler raises an error', ->
-        buffer = keymap: { k: -> error 'BOOM!' }
-        assert_true input.process {}, buffer, character: 'k', key_code: 65
+      context 'when a handler raises an error', ->
+        it 'returns true', ->
+          buffer = keymap: { k: -> error 'BOOM!' }
+          assert_true input.process {}, buffer, character: 'k', key_code: 65
+
+        it 'signals an error', ->
+          handler = Spy!
+          signal.connect 'error', handler
+          buffer = keymap: { k: -> error 'BOOM!' }
+          input.process {}, buffer, character: 'k', key_code: 65
+          assert_true handler.called
 
       it 'returns false if no handlers are found', ->
         assert_false input.process {}, {}, character: 'k', key_code: 65
 
-      it 'signals an error if a handler raises an error', true
+
