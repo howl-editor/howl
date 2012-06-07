@@ -1,5 +1,5 @@
 import Gtk from lgi
-import Scintilla from vilu
+import Scintilla, signal from vilu
 import PropertyObject from vilu.aux.moon
 import style, theme, IndicatorBar, Cursor from vilu.ui
 
@@ -30,6 +30,8 @@ class TextView extends PropertyObject
     style.define_styles @sci
     @sci.on_keypress = self\_on_keypress
     @sci.on_update_ui = self\_update_position
+    @sci.on_focus = self\_on_focus
+    @sci.on_focus_lost = self\_on_focus_lost
     @cursor = Cursor @sci
 
     @header = IndicatorBar 'header', 3
@@ -111,6 +113,12 @@ class TextView extends PropertyObject
   _update_position: () =>
     pos = @cursor.line .. ':' .. @cursor.column
     @indicator.position.label = pos
+
+  _on_focus: (args) =>
+    signal.emit 'view-focused', self
+
+  _on_focus_lost: (args) =>
+    signal.emit 'view-defocused', self
 
 -- Default indicators
 with TextView

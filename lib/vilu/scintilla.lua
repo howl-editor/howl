@@ -68,6 +68,10 @@ function sci.dispatch(sci_ptr, event, args)
     end
   elseif event == 'key-press' then
     if instance.on_keypress then return instance.on_keypress(args) end
+  elseif event == 'focused' then
+    if instance.on_focus then return instance.on_focus(args) end
+  elseif event == 'defocused' then
+    if instance.on_focus_lost then return instance.on_focus_lost(args) end
   end
   return false
 end

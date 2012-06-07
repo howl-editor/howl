@@ -88,7 +88,7 @@ static void explain_key_code(lua_State *l, int code)
 static gboolean on_sci_command(GtkWidget *widget, gint code, gpointer nil, lua_State *L) {
   code >>= 16;
   if (code == SCEN_SETFOCUS || code == SCEN_KILLFOCUS) {
-    gchar *name = code == SCEN_SETFOCUS ? "view-focused" : "view-defocused";
+    gchar *name = code == SCEN_SETFOCUS ? "focused" : "defocused";
     int top = setup_for_event(L, widget, name);
 
     if (top < 0)
