@@ -1,9 +1,7 @@
 import Gdk, Gtk from lgi
 import File from vilu.fs
 import style from vilu.ui
-import moon from _G
-import error, type, print, loadfile, pairs, setmetatable, rawset from _G
-_G = _G
+import PropertyTable from vilu.aux
 
 css_provider = Gtk.CssProvider\get_default!
 screen = Gdk.Screen\get_default!
@@ -38,15 +36,11 @@ GtkWindow {
 }
 ]]
 
-_ENV = {}
-setfenv(1, _ENV) if setfenv
-
-export available = {}
+available = {}
 theme_files = {}
 current_theme = nil
 
 parse_background = (value, theme_dir) ->
-  true
   if value\match '^%s*#%x+%s*$'
     'background-color: ' .. value
   elseif value\find '-gtk-gradient', 1, true
@@ -105,17 +99,21 @@ set_theme = (name) ->
   current_theme = theme
   style.set_for_theme theme
 
-export register = (name, file) ->
+register = (name, file) ->
   error 'name not specified for theme', 2 if not name
   error 'file not specified for theme', 2 if not file
   available[#available + 1] = name
   theme_files[name] = file
 
-setmetatable _ENV,
-  __newindex: (t, k, v)->
-    if k == 'current' then set_theme v
-    else rawset t, k, v
-  __index: (t, k) ->
-    if k == 'current' then current_theme
+mod = PropertyTable {
+  current:
+    get: -> current_theme
+    set: (_, theme) -> set_theme theme
 
-return _ENV
+  available:
+    get: -> available
+}
+
+mod.register = register
+
+return mod
