@@ -1,17 +1,6 @@
 import File from vilu.fs
 
 describe 'File', ->
-  with_tmpfile = (f) ->
-    file = File.tmpfile!
-    status, err = pcall f, file
-    file\delete_all! if file.exists
-    error err if not status
-
-  with_tmpdir = (f) ->
-    dir = File.tmpdir!
-    status, err = pcall f, dir
-    dir\delete_all! if dir.exists
-    error err if not status
 
   describe '.tmpfile', ->
     it 'returns a file instance pointing to an existing file', ->

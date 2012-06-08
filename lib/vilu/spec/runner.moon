@@ -31,6 +31,18 @@ telescope.make_assertion 'includes',
     for v in *t do return true if v == b
     return false
 
+export with_tmpfile = (f) ->
+  file = File.tmpfile!
+  status, err = pcall f, file
+  file\delete_all! if file.exists
+  error err if not status
+
+export with_tmpdir = (f) ->
+  dir = File.tmpdir!
+  status, err = pcall f, dir
+  dir\delete_all! if dir.exists
+  error err if not status
+
 class Runner
   new: (paths) =>
     @paths = [File(path) for path in *paths]
