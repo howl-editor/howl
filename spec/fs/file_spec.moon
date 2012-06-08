@@ -8,16 +8,23 @@ describe 'File', ->
     error err if not status
 
   with_tmpdir = (f) ->
-    with_tmpfile (file) ->
-      file\delete!
-      file\mkdir!
-      f file
+    dir = File.tmpdir!
+    status, err = pcall f, dir
+    dir\delete_all! if dir.exists
+    error err if not status
 
   describe '.tmpfile', ->
     it 'returns a file instance pointing to an existing file', ->
       file = File.tmpfile!
       assert_true file.exists
       file\delete!
+
+  describe '.tmpdir', ->
+    it 'returns a file instance pointing to an existing directory', ->
+      file = File.tmpdir!
+      assert_true file.exists
+      assert_true file.is_directory
+      file\delete_all!
 
   describe '.is_absolute', ->
     it 'returns true if the given path is absolute', ->

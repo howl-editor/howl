@@ -4,9 +4,14 @@ import PropertyObject from vilu.aux.moon
 class File extends PropertyObject
 
   tmpfile: ->
-    file = File os.tmpname!
+    file = File assert os.tmpname!
     file.touch if not file.exists
     file
+
+  tmpdir: ->
+    with File assert os.tmpname!
+      \delete! if .exists
+      \mkdir!
 
   is_absolute: (path) ->
     (path\match('^/') or path\match('^%a:\\\\')) != nil
