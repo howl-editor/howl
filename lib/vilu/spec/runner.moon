@@ -31,6 +31,18 @@ telescope.make_assertion 'includes',
     for v in *t do return true if v == b
     return false
 
+assert_raises_error = nil
+telescope.make_assertion 'raises',
+  (_, pattern, f) ->
+    "Assert failed: expected function to fail with error matching '" .. pattern .. "', got '" .. tostring(assert_raises_error) .. "'",
+  (pattern, f) ->
+    error 'Not a function', 1 if type(f) != 'function'
+    status, assert_raises_error = pcall f
+    if status
+      assert_raises_error = nil
+      return false
+    return type(assert_raises_error) == 'string' and assert_raises_error\match pattern
+
 export with_tmpfile = (f) ->
   file = File.tmpfile!
   status, err = pcall f, file
