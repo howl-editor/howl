@@ -16,7 +16,7 @@ local function lazily_loaded_module(name)
       local req_name = name .. '.' .. key:lower()
       local status, mod = pcall(require, req_name)
       if not status then
-        if mod:find('not found') then
+        if mod:match('module.*not found') then
           mod = lazily_loaded_module(req_name)
         else
           error(mod)
