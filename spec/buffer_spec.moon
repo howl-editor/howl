@@ -15,6 +15,23 @@ describe 'Buffer', ->
     b.text = 'hello'
     assert_equal b.size, 5
 
+  it 'the .dirty property indicates and allows setting the modified status', ->
+    b = Buffer {}
+    assert_false b.dirty
+    b.text = 'hello'
+    assert_true b.dirty
+    b.dirty = false
+    assert_false b.dirty
+    b.dirty = true
+    assert_true b.dirty
+    assert_equal b.text, 'hello' -- toggling should not have changed text
+
+  it 'append appends the specified text', ->
+    b = Buffer {}
+    b.text = 'hello'
+    b\append ' world'
+    assert_equal b.text, 'hello world'
+
   it 'delete deletes the specified number of characters', ->
     b = Buffer {}
     b.text = 'hello'

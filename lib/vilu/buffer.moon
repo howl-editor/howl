@@ -26,9 +26,18 @@ class Buffer extends PropertyObject
     get: => @sci\get_text!
     set: (text) => @sci\set_text text
 
+  self\property dirty:
+    get: => @sci\get_modify!
+    set: (status) =>
+      if not status then @sci\set_save_point!
+      else -- there's no specific message for marking as dirty
+        self\append ' '
+        self\delete @size, 1
+
   self\property size: get: => @sci\get_text_length!
 
   delete: (pos, length) => @sci\delete_range pos - 1, length
+  append: (text) => @sci\append_text #text, text
   undo: => @sci\undo!
 
   self\property sci:
