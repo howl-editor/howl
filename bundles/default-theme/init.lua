@@ -1,4 +1,12 @@
-local mod_name = ...
-local theme_file = vilu.bundle.file_for(mod_name, 'default_theme.moon')
+local theme_file = bundle_file('default_theme.moon')
 
 vilu.ui.theme.register('Default', theme_file)
+
+return {
+  info = {
+    name = 'default_theme',
+    author = 'Copyright 2012 Nils Nordman <nino at nordman.org>',
+    description = 'The default theme',
+    license = 'MIT',
+  }
+}
