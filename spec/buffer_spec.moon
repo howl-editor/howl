@@ -26,6 +26,13 @@ describe 'Buffer', ->
     assert_true b.dirty
     assert_equal b.text, 'hello' -- toggling should not have changed text
 
+  it 'clear_undo_history clears all undo history', ->
+    b = Buffer {}
+    b.text = 'hello'
+    b\clear_undo_history!
+    b\undo!
+    assert_equal b.text, 'hello'
+
   it 'append appends the specified text', ->
     b = Buffer {}
     b.text = 'hello'

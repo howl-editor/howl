@@ -41,6 +41,7 @@ class Application
     buffer.title = file.basename
     buffer.text = file.contents
     buffer.dirty = false
+    buffer\clear_undo_history!
     view.buffer = buffer
 
   run: =>

@@ -39,6 +39,7 @@ class Buffer extends PropertyObject
   delete: (pos, length) => @sci\delete_range pos - 1, length
   append: (text) => @sci\append_text #text, text
   undo: => @sci\undo!
+  clear_undo_history: => @sci\empty_undo_buffer!
 
   self\property sci:
     get: =>
