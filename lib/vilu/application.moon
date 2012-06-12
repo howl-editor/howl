@@ -40,6 +40,7 @@ class Application
     buffer = self\new_buffer mode.for_file file
     buffer.title = file.basename
     buffer.text = file.contents
+    buffer.dirty = false
     view.buffer = buffer
 
   run: =>
