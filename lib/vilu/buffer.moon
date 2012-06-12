@@ -28,6 +28,9 @@ class Buffer extends PropertyObject
 
   self\property size: get: => @sci\get_text_length!
 
+  delete: (pos, length) => @sci\delete_range pos - 1, length
+  undo: => @sci\undo!
+
   self\property sci:
     get: =>
       if @_.sci then return @_.sci

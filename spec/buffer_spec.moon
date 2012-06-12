@@ -14,3 +14,18 @@ describe 'Buffer', ->
     b = Buffer {}
     b.text = 'hello'
     assert_equal b.size, 5
+
+  it 'delete deletes the specified number of characters', ->
+    b = Buffer {}
+    b.text = 'hello'
+    b\delete 2, 2
+    assert_equal b.text, 'hlo'
+
+  it 'undo undoes the last operation', ->
+    b = Buffer {}
+    b.text = 'hello'
+    b\delete 1, 1
+    b\undo!
+    assert_equal b.text, 'hello'
+
+
