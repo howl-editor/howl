@@ -20,8 +20,7 @@ describe 'theme', ->
 
     describe 'assigning to .current', ->
       it "raises an error if there's an error loading the theme", ->
-        tmpfile = File.tmpfile!
-        tmpfile.contents = "error('cantload')"
-        theme.register 'error', tmpfile
-        assert_error ->
-          theme.current = 'error'
+        with_tmpfile (file) ->
+          file.contents = "error('cantload')"
+          theme.register 'error', file
+          assert_error -> theme.current = 'error'
