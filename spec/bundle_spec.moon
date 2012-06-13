@@ -66,6 +66,31 @@ describe 'bundle', ->
         bundle.load dir
         assert_equal bundles.test.file, dir / 'bundle_aux.lua'
 
+    it 'exposes a bundle_load function for cached loading of bundle files', ->
+      with_bundle_dir 'load', (dir) ->
+        dir\join('aux.lua').contents = [[
+          _G.load_count = _G.load_count or 0
+          _G.load_count = _G.load_count + 1
+          return 'foo' .. _G.load_count
+        ]]
+        dir\join('aux2.moon').contents = 'return "yay"'
+        dir\join('init.lua').contents = [[
+          bundle_load('aux.lua')
+          return {
+            info = {
+              name = 'test',
+              author = 'spec',
+              description = 'desc',
+              license = 'MIT',
+            },
+            aux = bundle_load('aux.lua'),
+            aux2 = bundle_load('aux2.moon')
+          }
+        ]]
+        bundle.load dir
+        assert_equal bundles.load.aux, 'foo1'
+        assert_equal bundles.load.aux2, 'yay'
+
     it 'raises an error upon implicit global writes', ->
       with_tmpdir (dir) ->
         dir\join('init.lua').contents = [[

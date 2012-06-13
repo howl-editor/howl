@@ -23,12 +23,23 @@ verify_bundle = (bundle, init) ->
   for field in *{ 'name', 'description', 'license', 'author' }
     error init.path .. ': missing field "' .. field .. '"' if not info[field]
 
+bundle_env = (dir) ->
+  loaded = {}
+  {
+    bundle_file: (rel_path) -> dir / rel_path
+    bundle_load: (rel_path) ->
+      return loaded[rel_path] if loaded[rel_path]
+      path = dir / rel_path
+      mod = loadfile(path)!
+      loaded[rel_path] = mod
+      mod
+  }
+
 load = (dir) ->
   error 'Not a directory: ' .. dir if not dir.is_directory
   init = find_bundle_init dir
   chunk = assert loadfile init
-  env = bundle_file: (rel_path) -> dir / rel_path
-  box = Sandbox env, no_implicit_globals: true
+  box = Sandbox bundle_env(dir), no_implicit_globals: true
   bundle = box chunk
   verify_bundle bundle, init
   bundles[module_name dir.basename] = bundle
