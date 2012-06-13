@@ -4,8 +4,7 @@ import File from vilu.fs
 serpent = require 'serpent'
 
 spec_theme = {
-  window:
-    background: '#000000'
+  window: background: '#000000'
 
   view:
     border_color: '#000000'
@@ -14,30 +13,16 @@ spec_theme = {
     header:
       background: '#000000'
       color: 'darkgrey'
-      font:
-        name: 'Liberation Mono'
-        size: 11
-        bold: true
+      font: name: 'Liberation Mono', size: 11, bold: true
 
       indicators:
         title:
-          font:
-            name: 'Liberation Mono'
-            size: 12
-            bold: true
-            italic: true
+          font: name: 'Liberation Mono',  size: 12,  bold: true, italic: true
 
     footer:
       background: '#dddddd'
       color: '#777777'
-      font:
-        name: 'Liberation Mono'
-        size: 11
-        bold: true
-
-    caret:
-      color: '#555555'
-      width: 2
+      font: name: 'Liberation Mono', size: 11, bold: true
 
   styles: {}
 }
@@ -81,3 +66,12 @@ describe 'theme', ->
           theme.register 'foo', file
           theme.current = 'foo'
           assert_nil spec_global
+
+      it 'allows the use of named colors', ->
+       with_tmpfile (file) ->
+          theme_string = serpent.dump spec_theme
+          theme_string = theme_string\gsub '"#777777"', 'violet' -- footer.color
+          file.contents = theme_string
+          theme.register 'colors', file
+          theme.current = 'colors'
+          assert_equal theme.current.view.footer.color, '#ee82ee'

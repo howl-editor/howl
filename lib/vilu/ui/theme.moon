@@ -1,6 +1,6 @@
 import Gdk, Gtk from lgi
 import File from vilu.fs
-import style from vilu.ui
+import style, colors from vilu.ui
 import PropertyTable, Sandbox from vilu.aux
 
 css_provider = Gtk.CssProvider\get_default!
@@ -90,7 +90,7 @@ theme_css = (theme, file) ->
 
 load_theme = (file) ->
   chunk = loadfile(file.path)
-  box = Sandbox!
+  box = Sandbox colors
   box chunk
 
 set_theme = (name) ->
