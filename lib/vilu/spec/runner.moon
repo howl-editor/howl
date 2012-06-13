@@ -2,28 +2,16 @@ status, telescope = pcall require, 'telescope'
 error 'telescope not installed' if not status
 export telescope
 
+serpent = require 'serpent'
+
 import File from vilu.fs
 
 format_table = (t) ->
-  if t == nil
-    'nil'
-  else
-    t2 = {}
-    for k,v in pairs t
-      if type(v) == 'table'
-        t2[k] = format_table(v)
-      else
-        t2[k] = v
-    s = '{' .. table.concat(t2, ', ')
-    s ..= ', ' if #t2 > 0
-    k_vs = [k .. '="' .. tostring(v) .. '"' for k,v in pairs t2 when type(k) != 'number']
-    table.sort k_vs
-    s ..= table.concat k_vs, ','
-    s
+  serpent.block t, comment: false
 
 telescope.make_assertion 'table_equal',
   (_, a, b) ->
-    "Assert failed: expected `" .. format_table(a) .. '` to be equal to `' .. format_table(b) .. '`',
+    "Assert failed: expected `" .. format_table(a) .. '`\nto be equal to \n`' .. format_table(b) .. '`',
   (a,b) ->
     return false if type(b) != type(a)
     return false if type(b) != 'table' or #a != #b
