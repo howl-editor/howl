@@ -1,6 +1,47 @@
 import theme from vilu.ui
 import File from vilu.fs
 
+serpent = require 'serpent'
+
+spec_theme = {
+  window:
+    background: '#000000'
+
+  view:
+    border_color: '#000000'
+    divider_color: '#000000'
+
+    header:
+      background: '#000000'
+      color: 'darkgrey'
+      font:
+        name: 'Liberation Mono'
+        size: 11
+        bold: true
+
+      indicators:
+        title:
+          font:
+            name: 'Liberation Mono'
+            size: 12
+            bold: true
+            italic: true
+
+    footer:
+      background: '#dddddd'
+      color: '#777777'
+      font:
+        name: 'Liberation Mono'
+        size: 11
+        bold: true
+
+    caret:
+      color: '#555555'
+      width: 2
+
+  styles: {}
+}
+
 describe 'theme', ->
   describe '.register(name, file)', ->
     it "adds name to .available", ->
@@ -24,3 +65,19 @@ describe 'theme', ->
           file.contents = "error('cantload')"
           theme.register 'error', file
           assert_error -> theme.current = 'error'
+
+      it "assigns the loaded theme to .current and sets .name", ->
+        with_tmpfile (file) ->
+          file.contents = serpent.dump spec_theme
+          theme.register 'foo', file
+          theme.current = 'foo'
+          expected = moon.copy spec_theme
+          expected.name = 'foo'
+          assert_table_equal theme.current, expected
+
+      it 'does not propagate global assignments to the global environment', ->
+        with_tmpfile (file) ->
+          file.contents = 'spec_global = "noo!"\n' .. serpent.dump spec_theme
+          theme.register 'foo', file
+          theme.current = 'foo'
+          assert_nil spec_global

@@ -1,8 +1,6 @@
 background = '#f0f0f3'
 
 return {
-  name: 'Default'
-
   window:
     background: 'default_back.png'
 

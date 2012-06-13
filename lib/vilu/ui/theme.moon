@@ -1,7 +1,7 @@
 import Gdk, Gtk from lgi
 import File from vilu.fs
 import style from vilu.ui
-import PropertyTable from vilu.aux
+import PropertyTable, Sandbox from vilu.aux
 
 css_provider = Gtk.CssProvider\get_default!
 screen = Gdk.Screen\get_default!
@@ -88,10 +88,15 @@ theme_css = (theme, file) ->
   css = css_template\gsub '%${([%a_]+)}', values
   css .. indicator_css indicators
 
+load_theme = (file) ->
+  chunk = loadfile(file.path)
+  box = Sandbox!
+  box chunk
+
 set_theme = (name) ->
   file = theme_files[name]
   error 'No theme found with name "' .. name .. '"' if not file
-  theme = loadfile(file.path)!
+  theme = load_theme file
   css = theme_css theme, file
   status = css_provider\load_from_data css
   error 'Error loading theme "' .. name .. '"' if not status
