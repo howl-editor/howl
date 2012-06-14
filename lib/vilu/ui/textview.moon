@@ -88,15 +88,23 @@ class TextView extends PropertyObject
 
   _set_appearance: =>
     v = theme.current.view
-    color = '#000000'
-    width = 1
+
+    -- caret
+    c_color = '#000000'
+    c_width = 1
 
     if v and v.caret
-      color = v.caret.color if v.caret.color
-      width = v.caret.width if v.caret.width
+      c_color = v.caret.color if v.caret.color
+      c_width = v.caret.width if v.caret.width
 
-    @sci\set_caret_fore style.string_to_color color
-    @sci\set_caret_width width
+    @sci\set_caret_fore style.string_to_color c_color
+    @sci\set_caret_width c_width
+
+    -- selection
+    if v and v.selection
+      sel = v.selection
+      @sci\set_sel_back true, style.string_to_color sel.background if sel.background
+      @sci\set_sel_fore true, style.string_to_color sel.color if sel.color
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
