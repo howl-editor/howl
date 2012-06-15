@@ -11,6 +11,8 @@ aqua = '#99ffff'
 blue = '#bbdaff'
 purple = '#ebbbff'
 
+font = 'Liberation Mono'
+
 return {
   window:
     background: 'dark_back.png'
@@ -28,7 +30,7 @@ return {
         ]]
       color: blue
       font:
-        name: 'Liberation Mono'
+        name: font
         size: 11
         bold: true
 
@@ -36,16 +38,23 @@ return {
       background: '#002471'
       color: blue
       font:
-        name: 'Liberation Mono'
+        name: font
         size: 11
 
     indicators:
       title:
         font:
-          name: 'Liberation Mono'
+          name: font
           size: 11
           bold: true
           italic: true
+
+      vi:
+        color: purple
+        font:
+          name: font
+          size: 10
+          bold: true
 
     caret:
       color: lightgray
