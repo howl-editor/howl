@@ -28,7 +28,7 @@ class Application
 
     props[k] = v for k, v in pairs(properties or {})
     window = Window props
-    table.insert(@windows, window)
+    table.insert @windows, window
     window
 
   new_buffer: (mode) =>
@@ -55,6 +55,6 @@ class Application
     Gtk.main!
 
   _set_theme: =>
-    theme.current = 'Default'
+    theme.current = 'Tomorrow Night Blue'
 
 return Application

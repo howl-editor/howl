@@ -87,21 +87,40 @@ class TextView extends PropertyObject
       buffer\add_view_ref self
 
   _set_appearance: =>
+    self\_set_theme_settings!
+    self\_set_config_settings!
+
+  _set_config_settings: =>
+    -- todo: read from upcoming variables
+    with @sci
+      \set_caret_line_visible true
+
+      -- Line Number Margin.
+      \set_margin_width_n 0, 4 + 4 * \text_width(.STYLE_LINENUMBER, '9')
+      \set_margin_width_n 1, 5 -- fold margin
+
+      \set_hscroll_bar false
+
+  _set_theme_settings: =>
     v = theme.current.view
 
     -- caret
     c_color = '#000000'
     c_width = 1
 
-    if v and v.caret
+    if v.caret
       c_color = v.caret.color if v.caret.color
       c_width = v.caret.width if v.caret.width
 
     @sci\set_caret_fore style.string_to_color c_color
     @sci\set_caret_width c_width
 
+    current_line = v.current_line
+    if current_line.background
+      @sci\set_caret_line_back style.string_to_color current_line.background
+
     -- selection
-    if v and v.selection
+    if v.selection
       sel = v.selection
       @sci\set_sel_back true, style.string_to_color sel.background if sel.background
       @sci\set_sel_fore true, style.string_to_color sel.color if sel.color
