@@ -32,20 +32,20 @@ return {
         size: 11
         bold: true
 
-      indicators:
-        title:
-          font:
-            name: 'Liberation Mono'
-            size: 11
-            bold: true
-            italic: true
-
     footer:
       background: '#002471'
       color: blue
       font:
         name: 'Liberation Mono'
         size: 11
+
+    indicators:
+      title:
+        font:
+          name: 'Liberation Mono'
+          size: 11
+          bold: true
+          italic: true
 
     caret:
       color: lightgray

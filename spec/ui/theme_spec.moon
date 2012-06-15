@@ -15,14 +15,14 @@ spec_theme = {
       color: 'darkgrey'
       font: name: 'Liberation Mono', size: 11, bold: true
 
-      indicators:
-        title:
-          font: name: 'Liberation Mono',  size: 12,  bold: true, italic: true
-
     footer:
       background: '#dddddd'
       color: '#777777'
       font: name: 'Liberation Mono', size: 11, bold: true
+
+    indicators:
+      title:
+        font: name: 'Liberation Mono',  size: 12,  bold: true, italic: true
 
   styles: {}
 }

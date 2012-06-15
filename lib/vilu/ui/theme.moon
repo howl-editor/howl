@@ -74,7 +74,7 @@ theme_css = (theme, file) ->
   hdr = view.header
   footer = view.footer
   tv_title = hdr.title
-  indicators = hdr.indicators
+  indicators = view.indicators
   values =
     window_background: parse_background(theme.window.background, dir)
     view_border_color: view.border_color

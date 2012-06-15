@@ -21,14 +21,6 @@ return {
         size: 11
         bold: true
 
-      indicators:
-        title:
-          font:
-            name: 'Liberation Mono'
-            size: 12
-            bold: true
-            italic: true
-
     footer:
       background: '#dddddd'
       color: '#777777'
@@ -36,6 +28,14 @@ return {
         name: 'Liberation Mono'
         size: 11
         bold: true
+
+    indicators:
+      title:
+        font:
+          name: 'Liberation Mono'
+          size: 12
+          bold: true
+          italic: true
 
     caret:
       color: '#555555'
