@@ -5,6 +5,11 @@ describe 'Sandbox(env, options)', ->
     box = Sandbox foo: -> 'bar!'
     assert_equal 'bar!', box -> return foo!
 
+  it '.put allows modifiying the environment', ->
+    box = Sandbox!
+    box\put what: -> 'bar!'
+    assert_equal 'bar!', box -> return what!
+
   it 'allows global access by default', ->
     box = Sandbox!
     assert_equal table, box -> return table

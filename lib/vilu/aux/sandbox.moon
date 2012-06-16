@@ -10,8 +10,11 @@ sand_box = (env, options = {}) ->
       else
         exports[k] = v
         rawset t, k, v
-  setmetatable { :exports },
-    __call: (_, f) ->
+  setmetatable {
+      :exports
+      put: (t) => rawset env, k, v for k,v in pairs t
+    },
+    __call: (f) =>
       setfenv f, env
       f!
 
