@@ -73,7 +73,7 @@ describe 'bundle', ->
           _G.load_count = _G.load_count + 1
           return 'foo' .. _G.load_count
         ]]
-        dir\join('aux2.moon').contents = 'return "yay"'
+        dir\join('aux2.moon').contents = 'return bundle_load("aux.lua")'
         dir\join('init.lua').contents = [[
           bundle_load('aux.lua')
           return {
@@ -89,7 +89,7 @@ describe 'bundle', ->
         ]]
         bundle.load dir
         assert_equal bundles.load.aux, 'foo1'
-        assert_equal bundles.load.aux2, 'yay'
+        assert_equal bundles.load.aux2, 'foo1'
 
     it 'raises an error upon implicit global writes', ->
       with_tmpdir (dir) ->
