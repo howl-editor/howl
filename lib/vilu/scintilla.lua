@@ -88,11 +88,15 @@ end
 function sci:send_with_stringresult(message, arg1)
   length = self:send(message, arg1, nil)
   buffer = cbuf(length + 1)
-  -- for the cases where the addition argument isn't specified,
+  -- for the cases where the additional argument isn't specified,
   -- we should send the length as computed above
   if not arg1 then arg1 = length end
   self:send(message, arg1, buffer)
-  return ffi.string(buffer, length - 1) -- -1 to skip the trailing zero
+
+  -- don't include the trailing zero in the lua string if there is one
+  if buffer[length - 1] == 0 then length = length -1 end
+
+  return ffi.string(buffer, length)
 end
 
 function sci:send_with_textrange(message, start_pos, end_pos)
