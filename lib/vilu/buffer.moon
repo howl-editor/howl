@@ -35,8 +35,10 @@ class Buffer extends PropertyObject
         self\delete @size, 1
 
   self\property size: get: => @sci\get_text_length!
+  self\property lines: get: => BufferLines @sci
 
   delete: (pos, length) => @sci\delete_range pos - 1, length
+  insert: (text, pos) => @sci\insert_text pos - 1, text
   append: (text) => @sci\append_text #text, text
   undo: => @sci\undo!
   clear_undo_history: => @sci\empty_undo_buffer!
