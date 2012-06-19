@@ -34,7 +34,7 @@ describe 'Input', ->
           control: true, shift: true
         assert_table_equal tr, { 'ctrl+A', 'ctrl+shift+a', 'ctrl+shift+123' }
 
-  describe 'process(view, buffer, event)', ->
+  describe 'process(editor, buffer, event)', ->
 
     context 'when looking up handlers', ->
 
@@ -68,12 +68,12 @@ describe 'Input', ->
         assert_equal #input.keymap.reads, 3
 
     context 'when invoking handlers', ->
-      it 'passes the view and buffer as arguments', ->
+      it 'passes the editor and buffer as arguments', ->
         received = {}
         buffer = keymap: { k: (...) -> received = {...} }
-        view = {}
-        input.process view, buffer, character: 'k', key_code: 65
-        assert_table_equal received, { view, buffer }
+        editor = {}
+        input.process editor, buffer, character: 'k', key_code: 65
+        assert_table_equal received, { editor, buffer }
 
       it 'returns early with true unless a handler explicitly returns false', ->
         mode_handler = Spy!
@@ -96,7 +96,7 @@ describe 'Input', ->
 
         it 'signals an error', ->
           handler = Spy!
-          signal.connect 'error', handler
+          signal.connect_first 'error', handler
           buffer = keymap: { k: -> error 'BOOM!' }
           input.process {}, buffer, character: 'k', key_code: 65
           assert_true handler.called

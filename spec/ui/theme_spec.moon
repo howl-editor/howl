@@ -6,7 +6,7 @@ serpent = require 'serpent'
 spec_theme = {
   window: background: '#000000'
 
-  view:
+  editor:
     border_color: '#000000'
     divider_color: '#000000'
 
@@ -74,4 +74,4 @@ describe 'theme', ->
           file.contents = theme_string
           theme.register 'colors', file
           theme.current = 'colors'
-          assert_equal theme.current.view.footer.color, '#ee82ee'
+          assert_equal theme.current.editor.footer.color, '#ee82ee'

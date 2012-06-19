@@ -1,6 +1,6 @@
 import Gtk from lgi
 import Buffer from vilu
-import TextView, theme from vilu.ui
+import Editor, theme from vilu.ui
 
 text = [[
 Line 1 of text
@@ -11,7 +11,7 @@ And finally a third line
 describe 'Cursor', ->
   buffer = Buffer {}
   buffer.text = text
-  view = TextView buffer
+  view = Editor buffer
   cursor = view.cursor
 
   describe '.pos', ->

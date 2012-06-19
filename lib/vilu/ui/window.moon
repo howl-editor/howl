@@ -2,7 +2,7 @@ import Gtk from lgi
 import Delegator from vilu.aux.moon
 
 class Window extends Delegator
-  new: (properties) =>
+  new: (properties = {}) =>
     props = { }
 
     props[k] = v for k,v in pairs properties
@@ -16,8 +16,7 @@ class Window extends Delegator
     super @win
 
   add_view: (view) =>
-    mt = getmetatable view
-    gobject = if mt and mt.__to_gobject then mt.__to_gobject(view) else view
+    gobject = if view.to_gobject then view\to_gobject! else view
     @bin\add(gobject)
 
 return Window

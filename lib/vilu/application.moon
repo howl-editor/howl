@@ -3,8 +3,8 @@
 -- @license MIT (see LICENSE)
 
 import Gtk from lgi
-import Window, TextView, theme from vilu.ui
-import Buffer, mode, bundle, input, keymap from vilu
+import Window, Editor, theme from vilu.ui
+import Buffer, mode, bundle, input, keymap, signal from vilu
 import File from vilu.fs
 
 class Application
@@ -15,6 +15,7 @@ class Application
     @windows = {}
     @buffers = {}
 
+    signal.connect 'error', (e) -> print e
     input.keymap = keymap
     bundle.init @root_dir / 'bundles'
     self\_set_theme!
@@ -36,23 +37,23 @@ class Application
     table.insert(@buffers, buffer)
     buffer
 
-  open_file: (file, view) =>
+  open_file: (file, editor) =>
     buffer = self\new_buffer mode.for_file file
     buffer.title = file.basename
     buffer.text = file.contents
     buffer.dirty = false
     buffer\clear_undo_history!
-    view.buffer = buffer
+    editor.buffer = buffer
 
   run: =>
     window = self\new_window!
     buffer = self\new_buffer mode.by_name 'Lua'
-    view = TextView buffer
-    window\add_view view
+    editor = Editor buffer
+    window\add_view editor
     window\show_all!
 
     if #@args > 1
-      self\open_file(File(path), view) for path in *@args[2,]
+      self\open_file(File(path), editor) for path in *@args[2,]
 
     Gtk.main!
 

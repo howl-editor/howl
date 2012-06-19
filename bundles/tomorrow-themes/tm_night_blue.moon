@@ -17,7 +17,7 @@ return {
   window:
     background: 'dark_back.png'
 
-  view:
+  editor:
     border_color: '#333333'
     divider_color: darkblue
 

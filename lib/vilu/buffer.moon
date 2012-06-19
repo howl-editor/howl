@@ -1,4 +1,4 @@
-import Scintilla, styler from vilu
+import Scintilla, styler, BufferLines from vilu
 import style from vilu.ui
 import PropertyObject from vilu.aux.moon
 
@@ -12,7 +12,7 @@ class Buffer extends PropertyObject
     @_ = {}
     @doc = background_sci\create_document!
     @mode = mode
-    @views = {}
+    @editors = {}
 
   self\property mode:
     get: => @_.mode
@@ -54,15 +54,15 @@ class Buffer extends PropertyObject
       background_sci
     set: => @_.sci = nil
 
-  add_view_ref: (view) =>
-    @views[view] = true
-    @_.sci = view.sci
+  add_editor_ref: (editor) =>
+    @editors[editor] = true
+    @_.sci = editor.sci
 
-  remove_view_ref: (view) =>
-    @views[view] = nil
+  remove_editor_ref: (editor) =>
+    @editors[editor] = nil
     @sci = nil
-    for view, _ in pairs @views
-      @sci = view.sci
+    for editor, _ in pairs @editors
+      @sci = editor.sci
       break
 
   lex: (end_pos) =>

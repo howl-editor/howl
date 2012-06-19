@@ -4,7 +4,7 @@ return {
   window:
     background: 'default_back.png'
 
-  view:
+  editor:
     border_color: '#000000'
     divider_color: '#000000'
 

@@ -29,11 +29,11 @@ find_handlers = (buffer, translations) ->
           break
   handlers
 
-export process = (view, buffer, args) ->
+export process = (editor, buffer, args) ->
   translations = translate_key args
   handlers = find_handlers buffer, translations
   for handler in *handlers
-    status, ret = pcall handler, view, buffer
+    status, ret = pcall handler, editor, buffer
 
     if not status
       signal.emit 'error', 'Error invoking input handler: ' .. ret

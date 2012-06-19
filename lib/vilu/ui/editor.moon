@@ -12,7 +12,7 @@ indicator_placements =
   bottom_left: true
   bottom_right: true
 
-class TextView extends PropertyObject
+class Editor extends PropertyObject
 
   define_indicator: (id, placement = 'bottom_right') ->
     if not indicator_placements[placement]
@@ -61,13 +61,11 @@ class TextView extends PropertyObject
         }
       }
     }
-    @bin\get_style_context!\add_class 'view'
+    @bin\get_style_context!\add_class 'editor'
     @bin.child.sci_box\get_style_context!\add_class 'sci_box'
 
     @buffer = buffer
     self\_set_appearance!
-
-    getmetatable(self).__to_gobject = => @bin
 
   to_gobject: => @bin
 
@@ -75,7 +73,7 @@ class TextView extends PropertyObject
     get: => @_buf
     set: (buffer) =>
       if @_buf
-        @_buf\remove_view_ref self
+        @_buf\remove_editor_ref self
 
       @_buf = buffer
       @indicator.title.label = buffer.title
@@ -84,7 +82,19 @@ class TextView extends PropertyObject
       @sci\set_style_bits 8
       @sci\set_lexer Scintilla.SCLEX_CONTAINER
 
-      buffer\add_view_ref self
+      buffer\add_editor_ref self
+
+  new_line: => @sci\new_line!
+  delete_line: => @sci\line_delete!
+
+  join_lines: =>
+    cur_line = @cursor.line
+    @cursor\line_end!
+    target_pos = @cursor.pos
+    content_start = @buffer.lines[cur_line + 1]\find('[^%s]') or 1
+    line_start = @sci\position_from_line cur_line
+    @buffer\delete target_pos, (line_start + content_start) - target_pos
+    @buffer\insert ' ', @cursor.pos
 
   _set_appearance: =>
     self\_set_theme_settings!
@@ -102,7 +112,7 @@ class TextView extends PropertyObject
       \set_hscroll_bar false
 
   _set_theme_settings: =>
-    v = theme.current.view
+    v = theme.current.editor
 
     -- caret
     c_color = '#000000'
@@ -142,14 +152,14 @@ class TextView extends PropertyObject
     @indicator.position.label = pos
 
   _on_focus: (args) =>
-    signal.emit 'view-focused', self
+    signal.emit 'editor-focused', self
 
   _on_focus_lost: (args) =>
-    signal.emit 'view-defocused', self
+    signal.emit 'editor-defocused', self
 
 -- Default indicators
-with TextView
+with Editor
   .define_indicator 'title', 'top_left'
   .define_indicator 'position', 'bottom_right'
 
-return TextView
+return Editor

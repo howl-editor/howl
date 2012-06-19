@@ -12,13 +12,13 @@ GtkWindow {
   ${window_background};
 }
 
-.view {
+.editor {
   border-width: 1px 3px 3px 1px;
-  background-color: ${view_border_color};
+  background-color: ${editor_border_color};
 }
 
 .sci_box {
-  background-color: ${view_divider_color};
+  background-color: ${editor_divider_color};
 }
 
 .header {
@@ -70,15 +70,15 @@ indicator_css = (indicators) ->
 
 theme_css = (theme, file) ->
   dir = file.parent
-  view = theme.view
-  hdr = view.header
-  footer = view.footer
+  editor = theme.editor
+  hdr = editor.header
+  footer = editor.footer
   tv_title = hdr.title
-  indicators = view.indicators
+  indicators = editor.indicators
   values =
     window_background: parse_background(theme.window.background, dir)
-    view_border_color: view.border_color
-    view_divider_color: view.divider_color
+    editor_border_color: editor.border_color
+    editor_divider_color: editor.divider_color
     header_background: parse_background(hdr.background, dir)
     header_color: hdr.color
     header_font: parse_font hdr.font
