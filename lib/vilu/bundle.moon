@@ -23,19 +23,23 @@ verify_bundle = (bundle, init) ->
   for field in *{ 'name', 'description', 'license', 'author' }
     error init.path .. ': missing field "' .. field .. '"' if not info[field]
 
-load_file = (file, sandbox) ->
+load_file = (file, sandbox, ...) ->
   chunk = assert loadfile file
-  sandbox chunk
+  sandbox chunk, ...
 
 bundle_sandbox = (dir) ->
   loaded = {}
+  loading = {}
   box = Sandbox {}, no_implicit_globals: true
   box\put {
     bundle_file: (rel_path) -> dir / rel_path
-    bundle_load: (rel_path) ->
+    bundle_load: (rel_path, ...) ->
+      error 'Cyclic dependency in ' .. dir / rel_path if loading[rel_path]
       return loaded[rel_path] if loaded[rel_path]
+      loading[rel_path] = true
       path = dir / rel_path
-      mod = load_file path, box
+      mod = load_file path, box, ...
+      loading[rel_path] = false
       loaded[rel_path] = mod
       mod
   }

@@ -66,30 +66,65 @@ describe 'bundle', ->
         bundle.load dir
         assert_equal bundles.test.file, dir / 'bundle_aux.lua'
 
-    it 'exposes a bundle_load function for cached loading of bundle files', ->
-      with_bundle_dir 'load', (dir) ->
-        dir\join('aux.lua').contents = [[
-          _G.load_count = _G.load_count or 0
-          _G.load_count = _G.load_count + 1
-          return 'foo' .. _G.load_count
-        ]]
-        dir\join('aux2.moon').contents = 'return bundle_load("aux.lua")'
-        dir\join('init.lua').contents = [[
-          bundle_load('aux.lua')
-          return {
-            info = {
-              name = 'test',
-              author = 'spec',
-              description = 'desc',
-              license = 'MIT',
-            },
-            aux = bundle_load('aux.lua'),
-            aux2 = bundle_load('aux2.moon')
-          }
-        ]]
-        bundle.load dir
-        assert_equal bundles.load.aux, 'foo1'
-        assert_equal bundles.load.aux2, 'foo1'
+    describe 'bundle_load', ->
+      it 'allows for cached loading of bundle files using relative paths', ->
+        with_bundle_dir 'load', (dir) ->
+          dir\join('aux.lua').contents = [[
+            _G.load_count = _G.load_count or 0
+            _G.load_count = _G.load_count + 1
+            return 'foo' .. _G.load_count
+          ]]
+          dir\join('aux2.moon').contents = 'return bundle_load("aux.lua")'
+          dir\join('init.lua').contents = [[
+            bundle_load('aux.lua')
+            return {
+              info = {
+                name = 'test',
+                author = 'spec',
+                description = 'desc',
+                license = 'MIT',
+              },
+              aux = bundle_load('aux.lua'),
+              aux2 = bundle_load('aux2.moon')
+            }
+          ]]
+          bundle.load dir
+          assert_equal bundles.load.aux, 'foo1'
+          assert_equal bundles.load.aux2, 'foo1'
+
+      it 'signals an error upon cyclic dependencies', ->
+        with_bundle_dir 'cyclic', (dir) ->
+          dir\join('aux.lua').contents = 'bundle_load("aux2.lua")'
+          dir\join('aux2.lua').contents = 'bundle_load("aux.lua")'
+          dir\join('init.lua').contents = [[
+            bundle_load('aux.lua')
+            return {
+              info = {
+                name = 'test',
+                author = 'spec',
+                description = 'desc',
+                license = 'MIT',
+              },
+            }
+          ]]
+          assert_raises 'Cyclic dependency', -> bundle.load dir
+
+      it 'allows passing parameters to the loaded file', ->
+        with_bundle_dir 'load', (dir) ->
+          dir\join('aux.lua').contents = 'return ...'
+          dir\join('init.lua').contents = [[
+            return {
+              info = {
+                name = 'test',
+                author = 'spec',
+                description = 'desc',
+                license = 'MIT',
+              },
+              aux = bundle_load('aux.lua', 123),
+            }
+          ]]
+          bundle.load dir
+          assert_equal bundles.load.aux, 123
 
     it 'raises an error upon implicit global writes', ->
       with_tmpdir (dir) ->
