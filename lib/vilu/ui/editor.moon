@@ -88,13 +88,14 @@ class Editor extends PropertyObject
   delete_line: => @sci\line_delete!
 
   join_lines: =>
-    cur_line = @cursor.line
-    @cursor\line_end!
-    target_pos = @cursor.pos
-    content_start = @buffer.lines[cur_line + 1]\find('[^%s]') or 1
-    line_start = @sci\position_from_line cur_line
-    @buffer\delete target_pos, (line_start + content_start) - target_pos
-    @buffer\insert ' ', @cursor.pos
+    @buffer\as_one_undo ->
+      cur_line = @cursor.line
+      @cursor\line_end!
+      target_pos = @cursor.pos
+      content_start = @buffer.lines[cur_line + 1]\find('[^%s]') or 1
+      line_start = @sci\position_from_line cur_line
+      @buffer\delete target_pos, (line_start + content_start) - target_pos
+      @buffer\insert ' ', @cursor.pos
 
   _set_appearance: =>
     self\_set_theme_settings!
