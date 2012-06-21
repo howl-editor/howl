@@ -5,6 +5,11 @@ describe 'Sandbox(env, options)', ->
     box = Sandbox foo: -> 'bar!'
     assert_equal 'bar!', box -> return foo!
 
+  it 'allows passing parameters to the function', ->
+    box = Sandbox!
+    f = (...) -> return ...
+    assert_equal 'bar!', box(f, 'bar!')
+
   it '.put allows modifiying the environment', ->
     box = Sandbox!
     box\put what: -> 'bar!'

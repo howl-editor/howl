@@ -14,8 +14,8 @@ sand_box = (env, options = {}) ->
       :exports
       put: (t) => rawset env, k, v for k,v in pairs t
     },
-    __call: (f) =>
+    __call: (f, ...) =>
       setfenv f, env
-      f!
+      f ...
 
 return setmetatable {}, __call: (_, env, options) -> sand_box env, options
