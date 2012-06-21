@@ -61,12 +61,6 @@ describe 'Buffer', ->
           collected[#collected + 1] = line
         assert_table_equal collected, { 'one', 'two', 'three' }
 
-  it 'clear_undo_history clears all undo history', ->
-    b = buffer 'hello'
-    b\clear_undo_history!
-    b\undo!
-    assert_equal b.text, 'hello'
-
   it 'insert(text, pos) inserts text at pos', ->
     b = buffer 'heo'
     b\insert 'll', 3
@@ -87,3 +81,34 @@ describe 'Buffer', ->
     b\delete 1, 1
     b\undo!
     assert_equal b.text, 'hello'
+
+  describe 'as_one_undo(f)', ->
+    it 'allows for grouping actions as one undo', ->
+      b = buffer 'hello'
+      b\as_one_undo ->
+        b\delete 1, 1
+        b\append 'foo'
+      b\undo!
+      assert_equal b.text, 'hello'
+
+    context 'when f raises an error', ->
+      it 'propagates the error', ->
+        b = buffer 'hello'
+        assert_raises 'oh my',  ->
+          b\as_one_undo -> error 'oh my'
+
+      it 'ends the undo transaction', ->
+        b = buffer 'hello'
+        assert_error -> b\as_one_undo ->
+          b\delete 1, 1
+          error 'oh noes what happened?!?'
+        b\append 'foo'
+        b\undo!
+        assert_equal b.text, 'ello'
+
+  it 'clear_undo_history clears all undo history', ->
+    b = buffer 'hello'
+    b\clear_undo_history!
+    b\undo!
+    assert_equal b.text, 'hello'
+
