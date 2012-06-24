@@ -1,7 +1,7 @@
 import Gtk from lgi
 import Scintilla, signal from vilu
 import PropertyObject from vilu.aux.moon
-import style, theme, IndicatorBar, Cursor from vilu.ui
+import style, theme, IndicatorBar, Cursor, Selection from vilu.ui
 
 input_process = vilu.input.process
 
@@ -33,6 +33,7 @@ class Editor extends PropertyObject
     @sci.on_focus = self\_on_focus
     @sci.on_focus_lost = self\_on_focus_lost
     @cursor = Cursor @sci
+    @selection = Selection @sci
 
     @header = IndicatorBar 'header', 3
     @footer = IndicatorBar 'footer', 3
