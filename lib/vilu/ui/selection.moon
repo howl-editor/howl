@@ -16,12 +16,18 @@ class Selection extends PropertyObject
     get: => if @empty then nil else @sci\get_sel_text!
     set: (text) =>
       error 'Cannot replace empty selection' if @empty
-      @sci\delete_range @sci\get_anchor!, @sci\get_current_pos!
-      @sci\insert_text @sci\get_current_pos!, text
+      @sci\replace_sel text
 
   set: (anchor, cursor) => @sci\set_sel anchor - 1, cursor - 1
-  remove: => @sci\set_empty_selection 0
-  copy: => @sci\copy!
-  cut: => @sci\cut!
+  remove: => @sci\set_empty_selection @sci\get_current_pos!
+
+  copy: =>
+    @sci\copy!
+    @persistent = false
+    self\remove!
+
+  cut: =>
+    @sci\cut!
+    @persistent = false
 
 return Selection

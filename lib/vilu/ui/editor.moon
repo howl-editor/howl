@@ -32,8 +32,8 @@ class Editor extends PropertyObject
     @sci.on_update_ui = self\_update_position
     @sci.on_focus = self\_on_focus
     @sci.on_focus_lost = self\_on_focus_lost
-    @cursor = Cursor @sci
     @selection = Selection @sci
+    @cursor = Cursor @sci, @selection
 
     @header = IndicatorBar 'header', 3
     @footer = IndicatorBar 'footer', 3
@@ -115,7 +115,6 @@ class Editor extends PropertyObject
 
   _set_theme_settings: =>
     v = theme.current.editor
-
     -- caret
     c_color = '#000000'
     c_width = 1

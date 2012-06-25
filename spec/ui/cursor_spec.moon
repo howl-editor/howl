@@ -11,8 +11,8 @@ And finally a third line
 describe 'Cursor', ->
   buffer = Buffer {}
   buffer.text = text
-  view = Editor buffer
-  cursor = view.cursor
+  editor = Editor buffer
+  cursor = editor.cursor
 
   describe '.pos', ->
     it 'reading returns the current position', ->
@@ -62,3 +62,24 @@ describe 'Cursor', ->
     cursor.pos = 3
     cursor\left!
     assert_equal cursor.pos, 2
+
+  context 'when passing true for extended_selection to movement commands', ->
+    it 'the selection is extended along with moving the cursor', ->
+      sel = editor.selection
+      cursor.pos = 1
+      cursor\right true
+      assert_equal sel.text, 'L'
+      cursor\down true
+      assert_equal sel.text, 'Line 1 of text\nA'
+      cursor\left true
+      assert_equal sel.text, 'Line 1 of text\n'
+      cursor\up true
+      assert_true sel.empty
+
+  context 'when the editor selection is marked as persistent', ->
+    it 'the selection is extended along with moving the cursor', ->
+      sel = editor.selection
+      sel.persistent = true
+      cursor.pos = 1
+      cursor\right!
+      assert_equal sel.text, 'L'

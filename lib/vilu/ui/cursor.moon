@@ -1,9 +1,11 @@
 import PropertyObject from vilu.aux.moon
+import Scintilla from vilu
 
 class Cursor extends PropertyObject
-  new: (sci) =>
+  new: (sci, selection) =>
     super!
     @sci = sci
+    @selection = selection
 
   self\property pos:
     get: => 1 + @sci\get_current_pos!
@@ -46,6 +48,13 @@ class Cursor extends PropertyObject
     para_up:          'para_up'
   }
   for name, cmd in pairs key_commands
-    self.__base[name] = => @sci[cmd] @sci
+    plain = Scintilla[cmd]
+    extended = Scintilla[cmd .. '_extend']
+
+    self.__base[name] = (extend_selection) =>
+      if extend_selection or @selection.persistent
+        extended @sci
+      else
+        plain @sci
 
 return Cursor

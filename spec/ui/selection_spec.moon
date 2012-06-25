@@ -2,21 +2,18 @@ import Gtk from lgi
 import Buffer from vilu
 import Editor, theme from vilu.ui
 
-text = [[
-Line 1 of text
-And here's line two
-And finally a third line
-]]
+text = 'Line 1 of text'
 
 describe 'Selection', ->
 
   buffer = Buffer {}
-  buffer.text = text
   view = Editor buffer
   selection = view.selection
   cursor = view.cursor
 
-  before -> selection.sci\set_empty_selection 0
+  before ->
+    buffer.text = text
+    selection.sci\set_empty_selection 0
 
   it '.anchor returns nil if nothing is selected', ->
     assert_nil selection.anchor
@@ -36,11 +33,50 @@ describe 'Selection', ->
     selection\set 1, 5
     assert_equal selection.text, 'Line'
 
-  it 'remove removes the selection, but not the selected text', ->
-    selection\set 1, 5
-    selection\remove!
-    assert_true selection.empty
-    assert_equal buffer.text, text
+  describe 'remove', ->
+    it 'removes the selection', ->
+      selection\set 2, 5
+      selection\remove!
+      assert_true selection.empty
+
+    it 'does not remove the selected text', ->
+      selection\set 2, 5
+      selection\remove!
+      assert_equal buffer.text, text
+
+    it 'does not change the cursor position', ->
+      selection\set 2, 5
+      selection\remove!
+      assert_equal cursor.pos, 5
+
+  describe 'cut', ->
+    it 'removes the selected text', ->
+      selection\set 1, 5
+      selection\cut!
+      assert_equal buffer.text, ' 1 of text'
+
+    it 'removes the selection', ->
+      selection\set 2, 5
+      selection\cut!
+      assert_true selection.empty
+
+    it 'clears the persistent flag', ->
+      selection\set 1, 5
+      selection.persistent = true
+      selection\cut!
+      assert_false selection.persistent
+
+  describe 'copy', ->
+    it 'removes the selection', ->
+      selection\set 1, 5
+      selection\copy!
+      assert_true selection.empty
+
+    it 'clears the persistent flag', ->
+      selection\set 1, 5
+      selection.persistent = true
+      selection\copy!
+      assert_false selection.persistent
 
   describe '.text', ->
     it 'returns nil if nothing is selected', ->
@@ -54,7 +90,7 @@ describe 'Selection', ->
       it 'replaces the selection with <text> and removes the selection', ->
         selection\set 1, 3
         selection.text = 'Shi'
-        assert_equal buffer.text, text\gsub('^Li', 'Shi')
+        assert_equal buffer.text, 'Shine 1 of text'
         assert_true selection.empty
 
       it 'raises an error if the selection is empty', ->
