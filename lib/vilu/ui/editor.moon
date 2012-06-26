@@ -87,6 +87,8 @@ class Editor extends PropertyObject
 
   new_line: => @sci\new_line!
   delete_line: => @sci\line_delete!
+  paste: => @sci\paste!
+  insert: (text) => @sci\add_text #text, text
 
   join_lines: =>
     @buffer\as_one_undo ->

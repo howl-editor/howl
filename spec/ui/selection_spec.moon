@@ -7,9 +7,12 @@ text = 'Line 1 of text'
 describe 'Selection', ->
 
   buffer = Buffer {}
-  view = Editor buffer
-  selection = view.selection
-  cursor = view.cursor
+  editor = Editor buffer
+  selection = editor.selection
+  cursor = editor.cursor
+  window = Gtk.OffscreenWindow!
+  window\add editor\to_gobject!
+  window\show_all!
 
   before ->
     buffer.text = text
