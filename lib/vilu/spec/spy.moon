@@ -5,8 +5,9 @@ new = (options = {}) ->
     writes: {}
 
   setmetatable spy,
-    __call: ->
+    __call: (_, ...) ->
       spy.called = true
+      rawset spy, 'called_with', {...}
       options.with_return
 
     __index: (t,k) ->

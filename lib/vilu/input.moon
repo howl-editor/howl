@@ -1,5 +1,5 @@
 _G = _G
-import tostring, pcall from _G
+import tostring, pcall, callable from _G
 import signal from vilu
 t_append, t_concat = table.insert, table.concat
 
@@ -22,11 +22,16 @@ find_handlers = (buffer, translations) ->
   handlers = {}
   for map in *maps
     if map
+      handler = nil
       for t in *translations
         handler = map[t]
-        if handler
-          t_append handlers, handler
-          break
+        break if handler
+
+      if not handler and callable map.on_unhandled
+        handler = map.on_unhandled translations
+
+      t_append handlers, handler if handler
+
   handlers
 
 export process = (editor, buffer, args) ->

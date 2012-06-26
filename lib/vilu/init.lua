@@ -48,6 +48,7 @@ end
 lgi = require('lgi')
 vilu = lazily_loaded_module('vilu')
 moon = require('moon')
+require('vilu.globals')
 
 vilu.app = vilu.Application(vilu.fs.File(app_root), argv)
 

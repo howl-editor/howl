@@ -38,10 +38,10 @@ describe 'Input', ->
 
     context 'when looking up handlers', ->
 
-      it 'tries each translated key in order for a given keymap', ->
+      it 'tries each translated key, and .on_unhandled in order for a given keymap', ->
         buffer = keymap: Spy!
         input.process {}, buffer, character: 'A', key_name: 'A', key_code: 65
-        assert_table_equal buffer.keymap.reads, { 'A', 'A', '65' }
+        assert_table_equal buffer.keymap.reads, { 'A', 'A', '65', 'on_unhandled' }
 
       it 'searches the buffer keymap -> the mode keymap -> global keymap', ->
         key_args = character: 'A', key_name: 'A', key_code: 65
@@ -55,9 +55,19 @@ describe 'Input', ->
             keymap: mode_map
 
         input.process {}, buffer, key_args
-        assert_equal #input.keymap.reads, 3
+        assert_equal #input.keymap.reads, 4
         assert_table_equal input.keymap.reads, mode_map.reads
         assert_table_equal mode_map.reads, buffer_map.reads
+
+      context 'when .on_unhandled is defined and keys are not found in a keymap', ->
+        it 'is called with the translations and any return is used as the handler', ->
+          handler = Spy!
+          on_unhandled = Spy with_return: handler
+          buffer = keymap: { :on_unhandled }
+          input.process {}, buffer, character: 'A', key_name: 'A', key_code: 65
+          assert_true handler.called
+          assert_true on_unhandled.called
+          assert_table_equal on_unhandled.called_with, { { 'A', 'A', '65' } }
 
       it 'skips any keymaps not present', ->
         key_args = character: 'A', key_name: 'A', key_code: 65
@@ -65,7 +75,7 @@ describe 'Input', ->
 
         buffer = {}
         assert_true (pcall input.process, {}, buffer, key_args)
-        assert_equal #input.keymap.reads, 3
+        assert_equal #input.keymap.reads, 4
 
     context 'when invoking handlers', ->
       it 'passes the editor and buffer as arguments', ->
