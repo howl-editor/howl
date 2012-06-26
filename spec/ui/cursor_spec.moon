@@ -40,6 +40,12 @@ describe 'Cursor', ->
       cursor.column = 2
       assert_equal cursor.pos, 2
 
+  it '.at_end_of_line returns true if cursor is at the end of the line', ->
+    cursor.pos = 1
+    assert_false cursor.at_end_of_line
+    cursor.column = 15
+    assert_true cursor.at_end_of_line
+
   it 'down! moves the cursor one line down, respecting the current column', ->
     cursor.pos = 4
     cursor\down!
