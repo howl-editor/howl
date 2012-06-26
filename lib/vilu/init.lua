@@ -29,7 +29,7 @@ local function lazily_loaded_module(name)
 end
 
 package.path = ''
-set_package_path('lib', 'lib/ext', 'lib/ext/moonscript', 'bundles')
+set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
 package.cpath = ''
 
 moonscript = require('moonscript')
