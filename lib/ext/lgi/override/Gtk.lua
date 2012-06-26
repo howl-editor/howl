@@ -17,6 +17,8 @@ local Gdk = lgi.Gdk
 local GObject = lgi.GObject
 local cairo = lgi.cairo
 
+local log = lgi.log.domain('lgi.Gtk')
+
 -- Initialize GTK.
 Gtk.init()
 
@@ -235,6 +237,31 @@ function builder_objects_mt:__index(name)
 end
 function Gtk.Builder._attribute.objects:get()
    return setmetatable({ _builder = self }, builder_objects_mt)
+end
+
+-- Implementation of connect_signals() method.
+function Gtk.Builder._method:connect_signals(handlers)
+   local unconnected
+   self:connect_signals_full(
+      function(builder, object, signal, handler, connect_object, flags)
+	 signal = 'on_' .. signal:gsub('%-', '_')
+	 local target = handlers[handler]
+	 if not target then
+	    unconnected = unconnected or {}
+	    unconnected[#unconnected + 1] = handler
+	    log.warning("%s: failed to connect to `%s' handler",
+			signal, handler)
+	    return
+	 end
+	 local fun
+	 if connect_object then
+	    fun = function(_, ...) return target(connect_object, ...) end
+	 else
+	    fun = target
+	 end
+	 object[signal]:connect(fun, nil, flags.AFTER)
+      end)
+   return unconnected
 end
 
 -------------------------------- Gtk.TextTagTable overrides.
@@ -545,7 +572,7 @@ end
 -- Workaround for bug in GTK+; text_column accessors don't do an extra
 -- needed work which is done properly in
 -- gtk_entry_completion_{set/get}_text_column
-if Gtk.get_major_version == 3 and Gtk.get_minor_version() < 4 then
+if Gtk.get_major_version() == 3 and Gtk.get_minor_version() < 4 then
    Gtk.EntryCompletion._attribute = {
       text_column = { get = Gtk.EntryCompletion.get_text_column,
 		      set = Gtk.EntryCompletion.set_text_column }

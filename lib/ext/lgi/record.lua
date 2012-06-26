@@ -40,7 +40,9 @@ function record.struct_mt:_element(instance, symbol)
    if element then return element, category end
 
    -- Special handling of '_native' attribute.
-   if symbol == '_native' then return symbol, '_internal' end
+   if symbol == '_native' then return symbol, '_internal'
+   elseif symbol == '_type' then return symbol, '_internal'
+   end
 
    -- If the record has parent struct, try it there.
    local parent = rawget(self, '_parent')
@@ -93,8 +95,12 @@ end
 
 -- Add accessor for 'internal' fields handling.
 function record.struct_mt:_access_internal(instance, element, ...)
-   if select('#', ...) ~= 0 or element ~= '_native' then return end
-   return core.record.query(instance, 'addr')
+   if select('#', ...) ~= 0 then return end
+   if element == '_native' then
+      return core.record.query(instance, 'addr')
+   elseif element == '_type' then
+      return core.record.query(instance, 'repo')
+   end
 end
 
 -- Add accessor for accessing inherited elements.
@@ -109,22 +115,16 @@ end
 
 -- Create structure instance and initialize it with given fields.
 function record.struct_mt:_new(param, owns)
-   -- Find baseinfo of requested record.
-   local info, struct
-   if self._gtype then
-      -- Try to lookup info by gtype.
-      info = gi[self._gtype]
-   end
-   if not info then
-      -- GType is not available, so lookup info by name.
-      local ns, name = self._name:match('^(.-)%.(.+)$')
-      info = assert(gi[ns][name])
-   end
-
+   local struct
    if type(param) == 'userdata' or type(param) == 'number' then
       -- Wrap existing pointer.
       struct = core.record.new(self, param, owns)
    else
+      -- Check that we are allowed to create the record.
+      if not self._size then
+	 error(("%s: not directly instantiable"):format(self._name), 2)
+      end
+
       -- Create the structure instance.
       struct = core.record.new(self)
 

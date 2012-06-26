@@ -8,7 +8,8 @@
 --
 ------------------------------------------------------------------------------
 
-local select, type, pairs = select, type, pairs
+local select, type, pairs, setmetatable, error
+   = select, type, pairs, setmetatable, error
 local lgi = require 'lgi'
 local core = require 'lgi.core'
 local Clutter = lgi.Clutter
@@ -31,10 +32,9 @@ function Clutter.Container._attribute.meta:get()
    return setmetatable({ _container = self }, container_child_meta_mt)
 end
 
--- Take over internal Clutter synchronization lock.
-core.registerlock('Clutter', 'clutter_threads_set_lock_functions')
-
--- Initialize clutter with threading.
+-- Take over internal Clutter synchronization lock and initialize
+-- Clutter's threading.
+core.registerlock(core.gi.Clutter.resolve.clutter_threads_set_lock_functions)
 Clutter.threads_init()
 
 -- Automatically initialize clutter, avoid continuing if

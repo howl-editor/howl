@@ -2,11 +2,13 @@
 --
 --  LGI Gst override module.
 --
---  Copyright (c) 2010, 2011 Pavel Holejsovsky
+--  Copyright (c) 2010, 2011, 2012 Pavel Holejsovsky
 --  Licensed under the MIT license:
 --  http://www.opensource.org/licenses/mit-license.php
 --
 ------------------------------------------------------------------------------
+
+local ipairs = ipairs
 
 local lgi = require 'lgi'
 local gi = require('lgi.core').gi
@@ -17,12 +19,36 @@ local Gst = lgi.Gst
 -- is aware of it, otherwise refcounting is screwed.
 Gst.Object._refsink = gi.Gst.Object.methods.ref_sink
 
+-- Gst.Element; GstElement uses ugly macro accessors instead of proper
+-- GObject properties, so add attributes for assorted Gst.Element
+-- properties.
+Gst.Element._attribute = {}
+for _, name in ipairs {
+   'name', 'parent', 'bus', 'clock', 'base_time', 'start_time',
+   'factory', 'index', 'state' } do
+   Gst.Element._attribute[name] = {
+      get = Gst.Element['get_' .. name],
+      set = Gst.Element['set_' .. name],
+   }
+end
+
+function Gst.Element._method:link_many(...)
+   local target = self
+   for _, source in ipairs {...} do
+      if not target:link(source) then
+	 return false
+      end
+      target = source
+   end
+   return true
+end
+
 -- Gst.Bin adjustments
-function Gst.Bus:add_watch(callback)
+function Gst.Bus._method:add_watch(callback)
    return self:add_watch_full(GLib.PRIORITY_DEFAULT, callback)
 end
 
-function Gst.Bin:add_many(...)
+function Gst.Bin._method:add_many(...)
    local args = {...}
    for i = 1, #args do self:add(args[i]) end
 end

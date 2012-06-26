@@ -15,6 +15,7 @@ local lgi = require 'lgi'
 local Pango = lgi.Pango
 
 local core = require 'lgi.core'
+local gi = core.gi
 local ffi = require 'lgi.ffi'
 local ti = ffi.types
 local record = require 'lgi.record'
@@ -58,6 +59,10 @@ local pango_layout_set_text = Pango.Layout.set_text
 function Pango.Layout._method:set_text(text, len)
    pango_layout_set_text(self, text, len or -1)
 end
+local pango_layout_set_markup = Pango.Layout.set_markup
+function Pango.Layout._method:set_markup(text, len)
+   pango_layout_set_markup(self, text, len or -1)
+end
 
 -- Add attributes simulating logically missing properties in Pango classes.
 for compound, attrs in pairs {
@@ -65,7 +70,8 @@ for compound, attrs in pairs {
       'attributes', 'font_description', 'width', 'height', 'wrap', 'context',
       'is_wrapped', 'ellipsize', 'is_ellipsized', 'indent', 'spacing',
       'justify', 'auto_dir', 'alignment', 'tabs', 'single_paragraph_mode',
-      'baseline', 'line_count', 'lines', 'log_attrs', 'text',
+      'baseline', 'line_count', 'lines', 'log_attrs', 'character_count',
+      'text', 'markup',
    },
    [Pango.Context] = {
       'base_dir', 'base_gravity', 'font_description', 'font_map', 'gravity',
@@ -130,4 +136,19 @@ for _, name in pairs { 'insert', 'insert_before', 'change' } do
       raw_method(list, attr)
       core.record.set(attr, false)
    end
+end
+
+-- Pango.Layout:move_cursor_visually() is missing an (out) annotation
+-- in older Pango releases.  Work around this limitation by creating
+-- custom ffi definition for this method.
+if gi.Pango.Layout.methods.move_cursor_visually.args[6].direction ~= 'out' then
+   local _ = Pango.Layout.move_cursor_visually
+   Pango.Layout._method.move_cursor_visually = core.callable.new {
+      addr = core.gi.Pango.resolve.pango_layout_move_cursor_visually,
+      name = 'Pango.Layout.move_cursor_visually',
+      ret = ti.void,
+      gi.Pango.Layout.methods.new.return_type,
+      ti.boolean, ti.int, ti.int, ti.int,
+      { ti.int, dir = 'out' }, { ti.int, dir = 'out' },
+   }
 end

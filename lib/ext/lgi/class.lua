@@ -116,7 +116,9 @@ function class.class_mt:_element(instance, symbol)
    if element then return element, category end
 
    -- Special handling of '_native' attribute.
-   if symbol == '_native' then return symbol, '_internal' end
+   if symbol == '_native' then return symbol, '_internal'
+   elseif symbol == '_type' then return symbol, '_internal'
+   end
 
    -- Check parent and all implemented interfaces.
    local parent = rawget(self, '_parent')
@@ -133,8 +135,12 @@ end
 
 -- Add accessor for 'internal' fields handling.
 function class.class_mt:_access_internal(instance, element, ...)
-   if select('#', ...) ~= 0 or element ~= '_native' then return end
-   return core.object.query(instance, 'addr')
+   if select('#', ...) ~= 0 then return end
+   if element == '_native' then
+      return core.object.query(instance, 'addr')
+   elseif element == '_type' then
+      return core.object.query(instance, 'repo')
+   end
 end
 
 -- Object constructor, does not accept any arguments.  Overriden later

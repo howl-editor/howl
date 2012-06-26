@@ -20,8 +20,8 @@ local record = require 'lgi.record'
 local enum = require 'lgi.enum'
 local ti = ffi.types
 
-cairo._module = core.module('cairo') or core.module('cairo-2')
-cairo._module_gobject = core.gi.cairo.resolve
+cairo._module = core.module('cairo', 2)
+local module_gobject = core.gi.cairo.resolve
 
 -- Load some constants.
 cairo._constant = {
@@ -42,8 +42,7 @@ for _, name in pairs {
 } do
    local lower = name:gsub('([%l%d])([%u])', '%1_%2'):lower()
    local gtype = ffi.load_gtype(
-      cairo._module_gobject,
-      'cairo_gobject_' .. lower .. '_get_type')
+      module_gobject, 'cairo_gobject_' .. lower .. '_get_type')
    if gtype then
       cairo._enum[name] = ffi.load_enum(gtype, 'cairo.' .. name)
    else
@@ -61,8 +60,7 @@ for _, struct in pairs {
 } do
    local lower = struct:gsub('([%l%d])([%u])', '%1_%2'):lower()
    local gtype = ffi.load_gtype(
-      cairo._module_gobject,
-      'cairo_gobject_' .. lower .. '_get_type')
+      module_gobject, 'cairo_gobject_' .. lower .. '_get_type')
    local obj = component.create(gtype, record.struct_mt, 'cairo.' .. struct)
    cairo._struct[struct] = obj
 end
@@ -245,12 +243,14 @@ for _, info in ipairs {
 	 set_matrix = { cairo.Matrix },
 	 get_matrix = { cairo.Matrix },
 	 identity_matrix = {},
-	 user_to_device = { { ti.double, dir = 'out' },
-			    { ti.double, dir = 'out' } },
-	 device_to_user = { { ti.double, dir = 'out' },
-			    { ti.double, dir = 'out' } },
-	 device_to_user_distance = { { ti.double, dir = 'out' },
-				     { ti.double, dir = 'out' } },
+	 user_to_device = { { ti.double, dir = 'inout' },
+			    { ti.double, dir = 'inout' } },
+	 user_to_device_distance = { { ti.double, dir = 'inout' },
+				     { ti.double, dir = 'inout' } },
+	 device_to_user = { { ti.double, dir = 'inout' },
+			    { ti.double, dir = 'inout' } },
+	 device_to_user_distance = { { ti.double, dir = 'inout' },
+				     { ti.double, dir = 'inout' } },
 
 	 select_font_face = { ti.utf8, cairo.FontSlant, cairo.FontWeight },
 	 set_font_size = { ti.double },

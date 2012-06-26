@@ -16,7 +16,7 @@ local Gdk = lgi.Gdk
 local cairo = lgi.cairo
 
 -- Take over internal GDK synchronization lock.
-core.registerlock('Gdk', 'gdk_threads_set_lock_functions')
+core.registerlock(core.gi.Gdk.resolve.gdk_threads_set_lock_functions)
 Gdk.threads_init()
 
 -- Gdk.Rectangle does not exist at all, because it is aliased to

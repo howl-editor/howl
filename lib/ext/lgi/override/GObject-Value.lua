@@ -39,6 +39,10 @@ end
 local value_field_gtype = Value._field.g_type
 Value._field = nil
 
+-- Register _uninit function, to avoid memory leaks from values which
+-- are inline-allocated by core.record.new.
+Value._uninit = core.record.unset_value
+
 -- 'type' property controls gtype of the property.
 Value._attribute = { gtype = {} }
 function Value._attribute.gtype.get(value)
