@@ -149,6 +149,7 @@ static gboolean on_sci_notify(GtkWidget *widget, gint ctrl_id, struct SCNotifica
       set_nfield(L, "lines-added", n->linesAdded);
       set_nfield(L, "fold-level-now", n->foldLevelNow);
       set_nfield(L, "fold-level-previous", n->foldLevelPrev);
+      set_nfield(L, "token", n->token);
     }
     else if (code == SCN_USERLISTSELECTION) {
       set_nfield(L, "list-type", n->listType);
