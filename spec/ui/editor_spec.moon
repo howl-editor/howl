@@ -36,6 +36,19 @@ describe 'Editor', ->
     editor\delete_line!
     assert_equal buffer.text, 'world!'
 
+  it 'copy_line copies the current line', ->
+    buffer.text = 'hello\n'
+    editor.cursor.pos = 1
+    editor\copy_line!
+    editor\paste!
+    assert_equal buffer.text, 'hello\nhello\n'
+
+  it 'delete_to_end_of_line deletes text from cursor up to end of line', ->
+    buffer.text = 'hello world!'
+    editor.cursor.pos = 6
+    editor\delete_to_end_of_line!
+    assert_equal buffer.text, 'hello'
+
   it 'join_lines joins the current line with the one after', ->
     buffer.text = 'hello\n    world!'
     editor.cursor.pos = 1
