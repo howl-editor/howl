@@ -17,7 +17,8 @@ export translate_key = (args) ->
   t_append translations, ctrl .. shift .. alt .. args.key_code
   translations
 
-find_handlers = (buffer, translations) ->
+find_handlers = (editor, translations, event) ->
+  buffer = editor.buffer
   maps = { buffer.keymap, buffer.mode and buffer.mode.keymap, keymap }
   handlers = {}
   for map in *maps
@@ -28,17 +29,17 @@ find_handlers = (buffer, translations) ->
         break if handler
 
       if not handler and callable map.on_unhandled
-        handler = map.on_unhandled translations
+        handler = map.on_unhandled event, translations
 
       t_append handlers, handler if handler
 
   handlers
 
-export process = (editor, buffer, args) ->
-  translations = translate_key args
-  handlers = find_handlers buffer, translations
+export process = (editor, event) ->
+  translations = translate_key event
+  handlers = find_handlers editor, translations, event
   for handler in *handlers
-    status, ret = pcall handler, editor, buffer
+    status, ret = pcall handler, editor
 
     if not status
       signal.emit 'error', 'Error invoking input handler: ' .. ret

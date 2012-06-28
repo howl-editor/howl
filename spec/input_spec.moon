@@ -40,7 +40,7 @@ describe 'Input', ->
 
       it 'tries each translated key, and .on_unhandled in order for a given keymap', ->
         buffer = keymap: Spy!
-        input.process {}, buffer, character: 'A', key_name: 'A', key_code: 65
+        input.process :buffer, { character: 'A', key_name: 'A', key_code: 65 }
         assert_table_equal buffer.keymap.reads, { 'A', 'A', '65', 'on_unhandled' }
 
       it 'searches the buffer keymap -> the mode keymap -> global keymap', ->
@@ -54,36 +54,40 @@ describe 'Input', ->
           mode:
             keymap: mode_map
 
-        input.process {}, buffer, key_args
+        input.process :buffer, key_args
         assert_equal #input.keymap.reads, 4
         assert_table_equal input.keymap.reads, mode_map.reads
         assert_table_equal mode_map.reads, buffer_map.reads
 
       context 'when .on_unhandled is defined and keys are not found in a keymap', ->
-        it 'is called with the translations and any return is used as the handler', ->
-          handler = Spy!
-          on_unhandled = Spy with_return: handler
+        it 'is called with the event and translations', ->
+          on_unhandled = Spy!
           buffer = keymap: { :on_unhandled }
-          input.process {}, buffer, character: 'A', key_name: 'A', key_code: 65
+          event = character: 'A', key_name: 'A', key_code: 65
+          input.process :buffer, event
+          assert_table_equal on_unhandled.called_with, { event, { 'A', 'A', '65' } }
+
+        it 'any return is used as the handler', ->
+          handler = Spy!
+          buffer = keymap: { on_unhandled: -> handler }
+          input.process :buffer, { character: 'A', key_name: 'A', key_code: 65 }
           assert_true handler.called
-          assert_true on_unhandled.called
-          assert_table_equal on_unhandled.called_with, { { 'A', 'A', '65' } }
 
       it 'skips any keymaps not present', ->
         key_args = character: 'A', key_name: 'A', key_code: 65
         input.keymap = Spy!
 
         buffer = {}
-        assert_true (pcall input.process, {}, buffer, key_args)
+        assert_true (pcall input.process, :buffer, key_args)
         assert_equal #input.keymap.reads, 4
 
     context 'when invoking handlers', ->
-      it 'passes the editor and buffer as arguments', ->
+      it 'passes the editor as argument', ->
         received = {}
         buffer = keymap: { k: (...) -> received = {...} }
-        editor = {}
-        input.process editor, buffer, character: 'k', key_code: 65
-        assert_table_equal received, { editor, buffer }
+        editor = :buffer
+        input.process editor, character: 'k', key_code: 65
+        assert_table_equal received, { editor }
 
       it 'returns early with true unless a handler explicitly returns false', ->
         mode_handler = Spy!
@@ -92,26 +96,26 @@ describe 'Input', ->
           mode:
             keymap:
               k: mode_handler
-        assert_true input.process({}, buffer, character: 'k', key_code: 65)
+        assert_true input.process :buffer, { character: 'k', key_code: 65 }
         assert_false mode_handler.called
 
         buffer.keymap.k = -> false
-        assert_true input.process({}, buffer, character: 'k', key_code: 65)
+        assert_true input.process :buffer, { character: 'k', key_code: 65 }
         assert_true mode_handler.called
 
       context 'when a handler raises an error', ->
         it 'returns true', ->
           buffer = keymap: { k: -> error 'BOOM!' }
-          assert_true input.process {}, buffer, character: 'k', key_code: 65
+          assert_true input.process :buffer, { character: 'k', key_code: 65 }
 
         it 'signals an error', ->
           handler = Spy!
           signal.connect_first 'error', handler
           buffer = keymap: { k: -> error 'BOOM!' }
-          input.process {}, buffer, character: 'k', key_code: 65
+          input.process :buffer, { character: 'k', key_code: 65 }
           assert_true handler.called
 
       it 'returns false if no handlers are found', ->
-        assert_false input.process {}, {}, character: 'k', key_code: 65
+        assert_false input.process buffer: {}, { character: 'k', key_code: 65 }
 
 

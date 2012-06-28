@@ -150,7 +150,7 @@ class Editor extends PropertyObject
     indic
 
   _on_keypress: (args) =>
-    input_process self, @buffer, args
+    input_process self, args
 
   _update_position: () =>
     pos = @cursor.line .. ':' .. @cursor.column
