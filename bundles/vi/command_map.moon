@@ -52,6 +52,10 @@ d = (editor) ->
 
 D = (editor) -> apply editor, -> editor\delete_to_end_of_line!
 
+G = (editor) -> apply editor, ->
+  if state.count then editor.cursor.line = state.count
+  else editor.cursor\eof!
+
 i = (editor) -> state.change_mode editor, 'insert'
 
 J = (editor) -> apply editor, -> editor\join_lines!
