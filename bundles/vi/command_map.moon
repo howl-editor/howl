@@ -33,9 +33,8 @@ A = (editor) ->
 c = (editor) ->
   if state.change then apply editor, ->
     editor\copy_line!
-    editor.cursor.column = 1
+    editor.cursor\home!
     editor\delete_to_end_of_line!
-    state.reset!
     to_insert editor
   else
     state.change = true
@@ -48,7 +47,6 @@ d = (editor) ->
   if state.delete then apply editor, ->
     editor\copy_line!
     editor\delete_line!
-    state.reset!
   else
     state.delete = true
 
@@ -74,16 +72,15 @@ p = (editor) -> apply editor, ->
 
 P = (editor) -> apply editor, -> editor\paste!
 
-u = (editor, buffer) -> buffer\undo!
+u = (editor) -> editor.buffer\undo!
 
 v = (editor) -> state.change_mode editor, 'visual'
 
-x = (editor, buffer) -> apply editor, -> buffer\delete editor.cursor.pos, 1
+x = (editor) -> apply editor, -> editor.buffer\delete editor.cursor.pos, 1
 
 y = (editor) ->
   if state.yank
-    editor\copy_line!
-    state.reset!
+    apply editor, -> editor\copy_line!
   else
     state.yank = true
 
