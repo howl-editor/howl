@@ -9,7 +9,8 @@ emit = (name, ...) ->
     status, ret = pcall handler, ...
     if not status and name != 'error'
       emit 'error', 'Error invoking handler for "' .. name .. '": ' .. ret
-    return true if not status or ret
+    return true if status and ret
+  false
 
 connect = (name, handler, index) ->
   list = handlers_for name

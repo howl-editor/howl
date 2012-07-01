@@ -46,7 +46,7 @@ describe 'signal', ->
         signal.emit 'fubar'
         assert_true err_handler.called
 
-      it 'but it doesn not emit an "error" signal when processing "error" handlers', ->
+      it 'but it does not emit an "error" signal when processing "error" handlers', ->
         invocations = 0
         signal.connect 'error', ->
           invocations += 1
@@ -54,9 +54,12 @@ describe 'signal', ->
         signal.emit 'error'
         assert_equal invocations, 1
 
-      it 'skips invoking subsequent handlers', ->
+      it 'continues processing subsequent handlers', ->
         handler2 = Spy!
         signal.connect 'fubar', -> error 'BOOM'
         signal.connect 'fubar', handler2
         signal.emit 'fubar'
-        assert_false handler2.called
+        assert_true handler2.called
+
+    it 'returns false if no handlers returned true', ->
+      assert_false signal.emit 'no-such-signal'
