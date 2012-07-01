@@ -3,8 +3,14 @@ import File from vilu.fs
 
 serpent = require 'serpent'
 
+font = name: 'Liberation Mono', size: 11, bold: true
+
 spec_theme = {
-  window: background: '#000000'
+  window:
+    background: '#000000'
+    status:
+      :font
+      color: '#0000ff'
 
   editor:
     border_color: '#000000'
@@ -13,16 +19,15 @@ spec_theme = {
     header:
       background: '#000000'
       color: 'darkgrey'
-      font: name: 'Liberation Mono', size: 11, bold: true
+      :font
 
     footer:
       background: '#dddddd'
       color: '#777777'
-      font: name: 'Liberation Mono', size: 11, bold: true
+      :font
 
     indicators:
-      title:
-        font: name: 'Liberation Mono',  size: 12,  bold: true, italic: true
+      title: :font
 
   styles: {}
 }

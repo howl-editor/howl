@@ -50,10 +50,12 @@ class Application
     buffer = self\new_buffer mode.by_name 'Lua'
     editor = Editor buffer
     window\add_view editor
-    window\show_all!
 
     if #@args > 1
       self\open_file(File(path), editor) for path in *@args[2,]
+
+    window.status\info 'Vilu 0.0 ready.'
+    window\show_all!
 
     Gtk.main!
 

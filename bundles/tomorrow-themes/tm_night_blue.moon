@@ -16,6 +16,12 @@ font = 'Liberation Mono'
 return {
   window:
     background: 'dark_back.png'
+    status:
+      font: name: font, size: 10, bold: true, italic: true
+      color: grey
+
+      warning: color: orange
+      ['error']: color: red
 
   editor:
     border_color: '#333333'
@@ -29,10 +35,7 @@ return {
           from(#000022),to(#003080))
         ]]
       color: blue
-      font:
-        name: font
-        size: 11
-        bold: true
+      font: name: font, size: 11, bold: true
 
     footer:
       background: '#002471'
@@ -43,18 +46,11 @@ return {
 
     indicators:
       title:
-        font:
-          name: font
-          size: 11
-          bold: true
-          italic: true
+        font: name: font, size: 11, bold: true, italic: true
 
       vi:
         color: purple
-        font:
-          name: font
-          size: 10
-          bold: true
+        font: name: font, size: 10, bold: true
 
     caret:
       color: lightgray
@@ -69,10 +65,7 @@ return {
     default:
       :background
       color: foreground
-      font:
-        name: '!Liberation Mono'
-        size: 11
-        bold: true
+      font: name: '!Liberation Mono', size: 11, bold: true
 
     comment:
       font: italic: true

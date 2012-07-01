@@ -34,11 +34,26 @@ GtkWindow {
   font: ${footer_font};
   border-width: 0px;
 }
+
+.status {
+  font: ${status_font};
+  color: ${status_color};
+}
+]]
+
+status_template = [[
+.status_${name} {
+  font: ${font};
+  color: ${color};
+}
 ]]
 
 available = {}
 theme_files = {}
 current_theme = nil
+
+interpolate = (content, values) ->
+  content\gsub '%${([%a_]+)}', values
 
 parse_background = (value, theme_dir) ->
   if value\match '^%s*#%x+%s*$'
@@ -68,15 +83,32 @@ indicator_css = (indicators) ->
     css ..= indic_css
   css
 
+status_css = (status) ->
+  css = ''
+  for level in *{'info', 'warning', 'error'}
+    values = status[level]
+    if values
+      font = values.font or status.font
+      color = values.color or status.color
+      css ..= interpolate status_template,
+        name: level
+        font: parse_font font
+        color: color
+  css
+
 theme_css = (theme, file) ->
   dir = file.parent
+  window = theme.window
+  status = window.status
   editor = theme.editor
   hdr = editor.header
   footer = editor.footer
   tv_title = hdr.title
   indicators = editor.indicators
   values =
-    window_background: parse_background(theme.window.background, dir)
+    window_background: parse_background(window.background, dir)
+    status_font: parse_font status.font
+    status_color: status.color
     editor_border_color: editor.border_color
     editor_divider_color: editor.divider_color
     header_background: parse_background(hdr.background, dir)
@@ -85,8 +117,9 @@ theme_css = (theme, file) ->
     footer_background: parse_background(footer.background, dir)
     footer_color: footer.color
     footer_font: parse_font footer.font
-  css = css_template\gsub '%${([%a_]+)}', values
-  css .. indicator_css indicators
+  css = interpolate css_template, values
+  css ..= indicator_css indicators
+  css ..= status_css status
 
 load_theme = (file) ->
   chunk = loadfile(file.path)
