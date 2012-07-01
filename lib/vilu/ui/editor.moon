@@ -29,7 +29,7 @@ class Editor extends PropertyObject
     @sci = Scintilla!
     style.define_styles @sci
     @sci.on_keypress = self\_on_keypress
-    @sci.on_update_ui = self\_update_position
+    @sci.on_update_ui = self\_on_update_ui
     @sci.on_focus = self\_on_focus
     @sci.on_focus_lost = self\_on_focus_lost
     @selection = Selection @sci
@@ -152,7 +152,11 @@ class Editor extends PropertyObject
   _on_keypress: (args) =>
     input_process self, args
 
-  _update_position: () =>
+  _on_update_ui: =>
+    self\_update_position!
+    signal.emit 'editor-changed', self
+
+  _update_position: =>
     pos = @cursor.line .. ':' .. @cursor.column
     @indicator.position.label = pos
 
