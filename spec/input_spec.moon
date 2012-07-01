@@ -35,6 +35,39 @@ describe 'Input', ->
         assert_table_equal tr, { 'ctrl+A', 'ctrl+shift+a', 'ctrl+shift+123' }
 
   describe 'process(editor, buffer, event)', ->
+    context 'when firing the key-press signal', ->
+      it 'passes the event and translations', ->
+        event = character: 'A', key_name: 'A', key_code: 65
+        buffer = keymap: {}
+        signal_handler = Spy!
+        signal.connect 'key-press', signal_handler
+
+        status, ret = pcall input.process :buffer, event
+        signal.disconnect 'key-press', signal_handler
+        assert_table_equal signal_handler.called_with, { event, { 'A', 'A', '65' } }
+
+      it 'returns early with true if the handler does', ->
+        buffer = keymap: Spy!
+        signal_handler = Spy with_return: true
+        signal.connect 'key-press', signal_handler
+
+        status, ret = pcall input.process, :buffer, { character: 'A', key_name: 'A', key_code: 65 }
+        signal.disconnect 'key-press', signal_handler
+
+        assert_equal #buffer.keymap.reads, 0
+        assert_true signal_handler.called
+        assert_true ret
+
+      it 'continues processing keymaps if the handler returns false', ->
+        keymap_handler = Spy!
+        buffer = keymap: A: keymap_handler
+        signal_handler = Spy with_return: false
+        signal.connect 'key-press', signal_handler
+
+        status, ret = pcall input.process, :buffer, { character: 'A', key_name: 'A', key_code: 65 }
+        signal.disconnect 'key-press', signal_handler
+
+        assert_true keymap_handler.called
 
     context 'when looking up handlers', ->
 

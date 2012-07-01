@@ -37,6 +37,7 @@ find_handlers = (editor, translations, event) ->
 
 export process = (editor, event) ->
   translations = translate_key event
+  return true if signal.emit 'key-press', event, translations
   handlers = find_handlers editor, translations, event
   for handler in *handlers
     status, ret = pcall handler, editor
