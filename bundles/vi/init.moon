@@ -12,6 +12,7 @@ maps = {
 
 state.init maps, 'command'
 signal.connect 'editor-focused', (editor) -> state.change_mode editor, state.mode
+signal.connect 'editor-defocused', (editor) -> editor.indicator.vi.label = ''
 
 info = {
   name: 'vi',
