@@ -1,9 +1,7 @@
 import Gtk from lgi
-import Scintilla, signal from vilu
+import Scintilla, signal, keyhandler from vilu
 import PropertyObject from vilu.aux.moon
 import style, theme, IndicatorBar, Cursor, Selection from vilu.ui
-
-input_process = vilu.input.process
 
 indicators = {}
 indicator_placements =
@@ -151,7 +149,7 @@ class Editor extends PropertyObject
     indic
 
   _on_keypress: (args) =>
-    input_process self, args
+    keyhandler.process self, args
 
   _on_update_ui: =>
     self\_update_position!

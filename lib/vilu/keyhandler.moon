@@ -43,7 +43,7 @@ export process = (editor, event) ->
     status, ret = pcall handler, editor
 
     if not status
-      signal.emit 'error', 'Error invoking input handler: ' .. ret
+      signal.emit 'error', 'Error invoking key handler: ' .. ret
 
     return true if not status or (status and ret != false)
 

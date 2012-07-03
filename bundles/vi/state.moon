@@ -1,4 +1,4 @@
-import input from vilu
+import keyhandler from vilu
 import getmetatable, setfenv from _G
 
 _G = _G
@@ -27,7 +27,7 @@ export change_mode = (editor, to) ->
   error 'Invalid mode "' .. to .. '"' if not map
   editor.indicator.vi.label = '-- ' .. map.name .. ' --' if editor
   mode = to
-  input.keymap = map
+  keyhandler.keymap = map
   mt = getmetatable map
   map editor if mt.__call
 

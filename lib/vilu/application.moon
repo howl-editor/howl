@@ -4,7 +4,7 @@
 
 import Gtk from lgi
 import Window, Editor, theme from vilu.ui
-import Buffer, mode, bundle, input, keymap, signal from vilu
+import Buffer, mode, bundle, keyhandler, keymap, signal from vilu
 import File from vilu.fs
 
 class Application
@@ -16,7 +16,7 @@ class Application
     @buffers = {}
 
     signal.connect 'error', (e) -> print e
-    input.keymap = keymap
+    keyhandler.keymap = keymap
     bundle.init @root_dir / 'bundles'
     self\_set_theme!
 
