@@ -85,6 +85,7 @@ class Editor extends PropertyObject
 
       buffer\add_editor_ref self
 
+  focus: => @sci\grab_focus!
   new_line: => @sci\new_line!
   delete_line: => @sci\line_delete!
   delete_to_end_of_line: => @sci\del_line_right!
