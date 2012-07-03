@@ -36,7 +36,7 @@ describe 'keyhandler', ->
 
   describe 'process(editor, buffer, event)', ->
     context 'when firing the key-press signal', ->
-      it 'passes the event and translations', ->
+      it 'passes the event', ->
         event = character: 'A', key_name: 'A', key_code: 65
         buffer = keymap: {}
         signal_handler = Spy!
@@ -44,7 +44,7 @@ describe 'keyhandler', ->
 
         status, ret = pcall keyhandler.process :buffer, event
         signal.disconnect 'key-press', signal_handler
-        assert_table_equal signal_handler.called_with, { event, { 'A', 'A', '65' } }
+        assert_table_equal signal_handler.called_with, { event }
 
       it 'returns early with true if the handler does', ->
         buffer = keymap: Spy!

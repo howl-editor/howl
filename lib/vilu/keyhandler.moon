@@ -6,22 +6,20 @@ t_append, t_concat = table.insert, table.concat
 _ENV = {}
 setfenv(1, _ENV) if setfenv
 
-export translate_key = (args) ->
-  ctrl = (args.control and 'ctrl+') or ''
-  shift = (args.shift and 'shift+') or ''
-  alt = (args.alt and 'alt+') or ''
+export translate_key = (event) ->
+  ctrl = (event.control and 'ctrl+') or ''
+  shift = (event.shift and 'shift+') or ''
+  alt = (event.alt and 'alt+') or ''
 
   translations = {}
-  t_append translations, ctrl .. alt .. args.character if args.character
-  t_append translations, ctrl .. shift .. alt .. args.key_name if args.key_name
-  t_append translations, ctrl .. shift .. alt .. args.key_code
+  t_append translations, ctrl .. alt .. event.character if event.character
+  t_append translations, ctrl .. shift .. alt .. event.key_name if event.key_name
+  t_append translations, ctrl .. shift .. alt .. event.key_code
   translations
 
-find_handlers = (editor, translations, event) ->
-  buffer = editor.buffer
-  maps = { buffer.keymap, buffer.mode and buffer.mode.keymap, keymap }
+find_handlers = (translations, event, keymaps) ->
   handlers = {}
-  for map in *maps
+  for map in *keymaps
     if map
       handler = nil
       for t in *translations
@@ -35,12 +33,11 @@ find_handlers = (editor, translations, event) ->
 
   handlers
 
-export process = (editor, event) ->
+export dispatch = (event, keymaps, ...) ->
   translations = translate_key event
-  return true if signal.emit 'key-press', event, translations
-  handlers = find_handlers editor, translations, event
+  handlers = find_handlers translations, event, keymaps
   for handler in *handlers
-    status, ret = pcall handler, editor
+    status, ret = pcall handler, ...
 
     if not status
       signal.emit 'error', 'Error invoking key handler: ' .. ret
@@ -48,6 +45,14 @@ export process = (editor, event) ->
     return true if not status or (status and ret != false)
 
   false
+
+export process = (editor, event) ->
+  translations = translate_key event
+  buffer = editor.buffer
+  maps = { buffer.keymap, buffer.mode and buffer.mode.keymap, keymap }
+
+  return true if signal.emit 'key-press', event
+  dispatch event, maps, editor
 
 export keymap = {}
 
