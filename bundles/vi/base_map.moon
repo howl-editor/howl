@@ -1,7 +1,10 @@
 state = bundle_load 'state.moon'
 import apply from state
+import keyhandler from vilu
 _G = _G
 import tonumber from _G
+
+default_map = keyhandler.keymap
 
 cursor_home = (editor) -> apply editor, -> editor.cursor\home!
 
@@ -31,6 +34,7 @@ on_unhandled = (event) ->
     elseif char\match '^%w$'
       state.reset!
 
-  -> true
+    return -> true
+  (editor) -> keyhandler.dispatch event, { default_map }, editor
 
 return map
