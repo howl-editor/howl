@@ -9,18 +9,17 @@ class Buffer extends PropertyObject
   new: (mode) =>
     error('Missing argument #1 (mode)', 2) if not mode
     super!
-    @_ = {}
     @doc = background_sci\create_document!
     @mode = mode
     @scis = {}
 
   @property mode:
-    get: => @_.mode
-    set: (mode) => @_.mode = mode
+    get: => @_mode
+    set: (mode) => @_mode = mode
 
   @property title:
-    get: => @_.title or 'Untitled'
-    set: (title) => @_.title = title
+    get: => @_title or 'Untitled'
+    set: (title) => @_title = title
 
   @property text:
     get: => @sci\get_text!
@@ -52,7 +51,7 @@ class Buffer extends PropertyObject
 
   @property sci:
     get: =>
-      if @_.sci then return @_.sci
+      if @_sci then return @_sci
 
       if background_buffer != self
         background_sci\set_doc_pointer self.doc
@@ -60,21 +59,19 @@ class Buffer extends PropertyObject
 
       background_sci
 
-    set: => @_.sci = nil
-
   add_sci_ref: (sci) =>
     @scis[sci] = true
-    @_.sci = sci
+    @_sci = sci
 
   remove_sci_ref: (sci) =>
     @scis[sci] = nil
-    @sci = nil
+    @_sci = nil
     for sci, _ in pairs @scis
-      @sci = sci
+      @_sci = sci
       break
 
   lex: (end_pos) =>
-    if @_.mode and @_.mode.lexer
-      styler.style_text @sci, self, end_pos, @_.mode.lexer
+    if @_mode and @_mode.lexer
+      styler.style_text @sci, self, end_pos, @_mode.lexer
 
 return Buffer
