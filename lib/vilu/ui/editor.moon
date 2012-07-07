@@ -72,7 +72,7 @@ class Editor extends PropertyObject
     get: => @_buf
     set: (buffer) =>
       if @_buf
-        @_buf\remove_editor_ref self
+        @_buf\remove_sci_ref @sci
 
       @_buf = buffer
       @indicator.title.label = buffer.title
@@ -81,7 +81,7 @@ class Editor extends PropertyObject
       @sci\set_style_bits 8
       @sci\set_lexer Scintilla.SCLEX_CONTAINER
 
-      buffer\add_editor_ref self
+      buffer\add_sci_ref @sci
 
   focus: => @sci\grab_focus!
   new_line: => @sci\new_line!

@@ -12,7 +12,7 @@ class Buffer extends PropertyObject
     @_ = {}
     @doc = background_sci\create_document!
     @mode = mode
-    @editors = {}
+    @scis = {}
 
   self\property mode:
     get: => @_.mode
@@ -59,17 +59,18 @@ class Buffer extends PropertyObject
         background_buffer = self
 
       background_sci
+
     set: => @_.sci = nil
 
-  add_editor_ref: (editor) =>
-    @editors[editor] = true
-    @_.sci = editor.sci
+  add_sci_ref: (sci) =>
+    @scis[sci] = true
+    @_.sci = sci
 
-  remove_editor_ref: (editor) =>
-    @editors[editor] = nil
+  remove_sci_ref: (sci) =>
+    @scis[sci] = nil
     @sci = nil
-    for editor, _ in pairs @editors
-      @sci = editor.sci
+    for sci, _ in pairs @scis
+      @sci = sci
       break
 
   lex: (end_pos) =>
