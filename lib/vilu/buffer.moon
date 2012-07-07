@@ -14,19 +14,19 @@ class Buffer extends PropertyObject
     @mode = mode
     @scis = {}
 
-  self\property mode:
+  @property mode:
     get: => @_.mode
     set: (mode) => @_.mode = mode
 
-  self\property title:
+  @property title:
     get: => @_.title or 'Untitled'
     set: (title) => @_.title = title
 
-  self\property text:
+  @property text:
     get: => @sci\get_text!
     set: (text) => @sci\set_text text
 
-  self\property dirty:
+  @property dirty:
     get: => @sci\get_modify!
     set: (status) =>
       if not status then @sci\set_save_point!
@@ -34,8 +34,8 @@ class Buffer extends PropertyObject
         self\append ' '
         self\delete @size, 1
 
-  self\property size: get: => @sci\get_text_length!
-  self\property lines: get: => BufferLines @sci
+  @property size: get: => @sci\get_text_length!
+  @property lines: get: => BufferLines @sci
 
   delete: (pos, length) => @sci\delete_range pos - 1, length
   insert: (text, pos) => @sci\insert_text pos - 1, text
@@ -50,7 +50,7 @@ class Buffer extends PropertyObject
   undo: => @sci\undo!
   clear_undo_history: => @sci\empty_undo_buffer!
 
-  self\property sci:
+  @property sci:
     get: =>
       if @_.sci then return @_.sci
 
