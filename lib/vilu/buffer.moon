@@ -8,7 +8,7 @@ background_buffer = nil
 class Buffer extends PropertyObject
   new: (mode) =>
     error('Missing argument #1 (mode)', 2) if not mode
-    super!
+
     @doc = background_sci\create_document!
     @mode = mode
     @scis = {}
