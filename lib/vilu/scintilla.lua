@@ -65,6 +65,8 @@ function sci.dispatch(sci_ptr, event, args)
       if instance.on_style_needed then return instance.on_style_needed(args.position) end
     elseif code == SCN_UPDATEUI then
       if instance.on_update_ui then return instance.on_update_ui(args.updated) end
+    elseif code == SCN_CHARADDED then
+      if instance.on_char_added then return instance.on_char_added(args) end
     end
   elseif event == 'key-press' then
     if instance.on_keypress then return instance.on_keypress(args) end
