@@ -6,8 +6,16 @@ describe 'Buffer', ->
     b.text = text
     b
 
-  it 'Buffer(mode) raises an error if mode is not given', ->
-    assert_error -> Buffer!
+  describe 'creation', ->
+    it 'Buffer(mode) raises an error if mode is not given', ->
+      assert_error -> Buffer!
+
+    context 'when sci parameter is specified', ->
+      it 'attaches .sci and .doc to the Scintilla instance', ->
+        sci = get_doc_pointer: -> 'docky'
+        b = Buffer {}, sci
+        assert_equal b.doc, 'docky'
+        assert_equal b.sci, sci
 
   it 'the .text property allows setting and retrieving the buffer text', ->
     b = Buffer {}

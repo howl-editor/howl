@@ -6,10 +6,15 @@ background_sci = Scintilla!
 background_buffer = nil
 
 class Buffer extends PropertyObject
-  new: (mode) =>
+  new: (mode, sci) =>
     error('Missing argument #1 (mode)', 2) if not mode
 
-    @doc = background_sci\create_document!
+    if sci
+      @_sci = sci
+      @doc = sci\get_doc_pointer!
+    else
+      @doc = background_sci\create_document!
+
     @mode = mode
     @scis = {}
 
