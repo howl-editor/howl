@@ -42,7 +42,7 @@ describe 'Buffer', ->
       b = buffer 'hello\n  world\nagain!'
       assert_equal #b.lines, 3
 
-    describe '[] operator', ->
+    describe '[nr]', ->
       it 'returns the text of the specified line, sans linebreak', ->
         b = buffer 'hello\n  world\nagain!'
         lines = b.lines
@@ -55,19 +55,39 @@ describe 'Buffer', ->
         assert_nil b.lines[2]
         assert_nil b.lines[0]
 
-      it 'supports iterating using ipairs', ->
-        b = buffer 'one\ntwo\nthree'
-        collected = {}
-        for i, line in ipairs b.lines
-          collected[#collected + 1] = line
-        assert_table_equal collected, { 'one', 'two', 'three' }
+    describe '[nr] = <value>', ->
+      it 'replaces the specified line with the specified value', ->
+        b = buffer 'hello\nworld'
+        b.lines[1] = 'hola'
+        assert_equal b.text, 'hola\nworld'
 
-      it 'supports iterating using pairs', ->
-        b = buffer 'one\ntwo\nthree'
-        collected = {}
-        for i, line in pairs b.lines
-          collected[#collected + 1] = line
-        assert_table_equal collected, { 'one', 'two', 'three' }
+      it 'removes the entire line if value is nil', ->
+        b = buffer 'hello\nworld'
+        b.lines[1] = nil
+        assert_equal b.text, 'world'
+
+      it 'raises an error if the line number is invalid', ->
+        b = buffer 'hello!'
+        assert_raises 'Invalid index', -> b.lines['foo'] = 'bar'
+
+    it 'delete(start, end) deletes the the lines [start, end)', ->
+        b = buffer 'hello\nworld\nagain!'
+        b.lines\delete 1, 3
+        assert_equal b.text, 'again!'
+
+    it 'supports iterating using ipairs', ->
+      b = buffer 'one\ntwo\nthree'
+      collected = {}
+      for i, line in ipairs b.lines
+        collected[#collected + 1] = line
+      assert_table_equal collected, { 'one', 'two', 'three' }
+
+    it 'supports iterating using pairs', ->
+      b = buffer 'one\ntwo\nthree'
+      collected = {}
+      for i, line in pairs b.lines
+        collected[#collected + 1] = line
+      assert_table_equal collected, { 'one', 'two', 'three' }
 
   it 'insert(text, pos) inserts text at pos', ->
     b = buffer 'heo'
