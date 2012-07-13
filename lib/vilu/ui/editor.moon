@@ -130,7 +130,7 @@ class Editor extends PropertyObject
     @sci\set_caret_width c_width
 
     current_line = v.current_line
-    if current_line.background
+    if current_line and current_line.background
       @sci\set_caret_line_back style.string_to_color current_line.background
 
     -- selection

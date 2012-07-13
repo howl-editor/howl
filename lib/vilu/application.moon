@@ -16,9 +16,6 @@ class Application
     @buffers = {}
 
     signal.connect 'error', (e) -> print e
-    keyhandler.keymap = keymap
-    bundle.init @root_dir / 'bundles'
-    self\_set_theme!
 
   new_window: (properties) =>
     props =
@@ -46,6 +43,10 @@ class Application
     editor.buffer = buffer
 
   run: =>
+    keyhandler.keymap = keymap
+    bundle.init @root_dir / 'bundles'
+    self\_set_theme!
+
     window = self\new_window!
     buffer = self\new_buffer mode.by_name 'Lua'
     editor = Editor buffer

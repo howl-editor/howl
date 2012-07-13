@@ -5,6 +5,7 @@ export telescope
 serpent = require 'serpent'
 
 import File from vilu.fs
+import theme from vilu.ui
 
 format_table = (t) ->
   serpent.block t, comment: false
@@ -54,7 +55,8 @@ class Runner
     @paths = [File(path) for path in *paths]
 
   run: =>
-    functions = [loadfile(file) for file in *self\_spec_files!]
+    @_setup_env!
+    functions = [loadfile(file) for file in *@_spec_files!]
     contexts = {}
     for f in *functions
       telescope.load_contexts f, contexts
@@ -73,5 +75,11 @@ class Runner
       else
         table.insert files, path
     files
+
+  _setup_env: =>
+    root = vilu.app.root_dir
+    support_files = root / 'spec' / 'support'
+    theme.register('spec_theme', support_files / 'spec_theme.moon')
+    theme.current = 'spec_theme'
 
 return Runner
