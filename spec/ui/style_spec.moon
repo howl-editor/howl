@@ -7,7 +7,9 @@ describe 'style', ->
     assert_equal style.string_to_color('ffeedd'), 0xddeeff
 
   it 'styles can be accessed using direct indexing', ->
-    assert_equal style.default.color, theme.current.styles.default.color
+    t = styles: default: color: '#998877'
+    style.set_for_theme t
+    assert_equal style.default.color, t.styles.default.color
 
   it '.define_style(name, style) allows defining custom styles', ->
     style.define 'custom', color: '#334455'
