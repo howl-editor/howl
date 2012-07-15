@@ -81,6 +81,7 @@ class Editor extends PropertyObject
       @sci\set_style_bits 8
       @sci\set_lexer Scintilla.SCLEX_CONTAINER
 
+      style.set_for_buffer @sci, buffer
       buffer\add_sci_ref @sci
 
   focus: => @sci\grab_focus!
