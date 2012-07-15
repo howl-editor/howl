@@ -25,7 +25,7 @@ class Editor extends PropertyObject
     @indicator = setmetatable {}, __index: self\_create_indicator
 
     @sci = Scintilla!
-    style.define_styles @sci
+    style.register_sci @sci
     @sci.on_keypress = self\_on_keypress
     @sci.on_update_ui = self\_on_update_ui
     @sci.on_focus = self\_on_focus

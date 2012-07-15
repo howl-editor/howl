@@ -46,14 +46,14 @@ describe 'style', ->
     it 'returns the default style number if the style is not defined', ->
       assert_equal style.number_for('foo', {}, sci), style.number_for('default', {}, {})
 
-  it '.define_styles(sci, buffer) defines the default styles in the specified sci', ->
+  it '.register_sci(sci, buffer) defines the default styles in the specified sci', ->
     t = theme.current
     t.styles.keyword = color: '#112233'
     style.set_for_theme t
     sci = Scintilla!
     number = style.number_for 'keyword', {}, sci
     old = sci\style_get_fore number
-    style.define_styles sci, {}
+    style.register_sci sci, {}
     new = sci\style_get_fore number
     assert_not_equal new, old
     assert_equal new, style.string_to_color '#112233'

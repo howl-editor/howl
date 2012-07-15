@@ -61,7 +61,7 @@ set_style = (sci, number, style) ->
     \style_set_changeable number, not style.read_only if style.read_only != nil
     \style_set_visible number, style.visible if style.visible != nil
 
-define_styles = (sci, buffer) ->
+register_sci = (sci, buffer) ->
   set_style sci, default_style_numbers.default, styles.default
   sci\style_clear_all!
 
@@ -107,7 +107,7 @@ set_for_theme = (theme) ->
 return setmetatable {
   :set_for_theme
   :number_for
-  :define_styles
+  :register_sci
   :set_for_buffer
   :define
   :string_to_color
