@@ -26,6 +26,6 @@ return {
 
   styles:
     default:
-      color: black
+      color: blue
       :font
 }
