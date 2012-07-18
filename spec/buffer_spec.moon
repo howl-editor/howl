@@ -89,10 +89,15 @@ describe 'Buffer', ->
         collected[#collected + 1] = line
       assert_table_equal collected, { 'one', 'two', 'three' }
 
-  it 'insert(text, pos) inserts text at pos', ->
-    b = buffer 'heo'
-    b\insert 'll', 3
-    assert_equal b.text, 'hello'
+  describe 'insert(text, pos)', ->
+    it 'inserts text at pos', ->
+      b = buffer 'heo'
+      b\insert 'll', 3
+      assert_equal b.text, 'hello'
+
+    it 'returns the position right after the inserted text', ->
+      b = buffer ''
+      assert_equal b\insert('hej', 1), 4
 
   it 'append(text) appends the specified text', ->
     b = buffer 'hello'

@@ -43,7 +43,11 @@ class Buffer extends PropertyObject
   @property lines: get: => BufferLines @sci
 
   delete: (pos, length) => @sci\delete_range pos - 1, length
-  insert: (text, pos) => @sci\insert_text pos - 1, text
+
+  insert: (text, pos) =>
+    @sci\insert_text pos - 1, text
+    pos + #text
+
   append: (text) => @sci\append_text #text, text
 
   as_one_undo: (f) =>
