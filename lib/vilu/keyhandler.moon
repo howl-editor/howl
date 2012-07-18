@@ -7,9 +7,9 @@ _ENV = {}
 setfenv(1, _ENV) if setfenv
 
 export translate_key = (event) ->
-  ctrl = (event.control and 'ctrl+') or ''
-  shift = (event.shift and 'shift+') or ''
-  alt = (event.alt and 'alt+') or ''
+  ctrl = (event.control and 'ctrl_') or ''
+  shift = (event.shift and 'shift_') or ''
+  alt = (event.alt and 'alt_') or ''
 
   translations = {}
   t_append translations, ctrl .. alt .. event.character if event.character

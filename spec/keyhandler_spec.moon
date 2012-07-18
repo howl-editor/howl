@@ -25,14 +25,14 @@ describe 'keyhandler', ->
         tr = keyhandler.translate_key
           character: 'a', key_name: 'a', key_code: 123,
           control: true, alt: true
-        mods = 'ctrl+alt+'
+        mods = 'ctrl_alt_'
         assert_table_equal tr, { mods .. 'a', mods .. 'a', mods .. '123' }
 
       it 'emits the shift modifier if the character is known', ->
         tr = keyhandler.translate_key
           character: 'A', key_name: 'a', key_code: 123,
           control: true, shift: true
-        assert_table_equal tr, { 'ctrl+A', 'ctrl+shift+a', 'ctrl+shift+123' }
+        assert_table_equal tr, { 'ctrl_A', 'ctrl_shift_a', 'ctrl_shift_123' }
 
   describe 'process(editor, buffer, event)', ->
     context 'when firing the key-press signal', ->
