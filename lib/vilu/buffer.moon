@@ -8,6 +8,7 @@ background_buffer = nil
 class Buffer extends PropertyObject
   new: (mode, sci) =>
     error('Missing argument #1 (mode)', 2) if not mode
+    super!
 
     if sci
       @_sci = sci

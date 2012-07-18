@@ -19,6 +19,7 @@ class File extends PropertyObject
   new: (path) =>
     @gfile = if type(path) == 'string' then GFile.new_for_path path else path
     @path = @gfile\get_path!
+    super!
 
   self\property basename: get: => @gfile\get_basename!
   self\property extension: get: => @basename\match('%.(%w+)$')
@@ -113,19 +114,21 @@ class File extends PropertyObject
 
   tostring: => @path or @uri
 
-  __tostring: => self\tostring!
+  @meta {
+    __tostring: => self\tostring!
 
-  __div: (op) => self\join op
+    __div: (op) => self\join op
 
-  __concat: (op1, op2) ->
-    if op1.__class == File
-      op1\join(op2)
-    else
-      tostring(op1) .. tostring(op2)
+    __concat: (op1, op2) ->
+      if op1.__class == File
+        op1\join(op2)
+      else
+        tostring(op1) .. tostring(op2)
 
-  __eq: (op1, op2) ->
-    op1 = File op1 if getmetatable(op1) != getmetatable(op2)
-    op1\tostring! == op2\tostring!
+    __eq: (op1, op2) ->
+      op1 = File op1 if getmetatable(op1) != getmetatable(op2)
+      op1\tostring! == op2\tostring!
+  }
 
   _assert: (...) =>
     status, msg = ...
