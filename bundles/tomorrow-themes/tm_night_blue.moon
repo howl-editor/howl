@@ -73,9 +73,7 @@ return {
 
     constant: color: orange
 
-    string:
-      font: italic: true
-      color: green
+    string: color: green
 
     longstring:
       font: italic: true
