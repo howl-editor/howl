@@ -73,7 +73,7 @@ describe 'theme', ->
           assert_nil spec_global
 
       it 'allows the use of named colors', ->
-       with_tmpfile (file) ->
+        with_tmpfile (file) ->
           theme_string = serpent.dump spec_theme
           theme_string = theme_string\gsub '"#777777"', 'violet' -- footer.color
           file.contents = theme_string
