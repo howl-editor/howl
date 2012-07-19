@@ -13,11 +13,12 @@ class Buffer extends PropertyObject
     if sci
       @_sci = sci
       @doc = sci\get_doc_pointer!
+      @scis = { [sci]: true }
     else
       @doc = background_sci\create_document!
+      @scis = {}
 
     @mode = mode
-    @scis = {}
 
   @property mode:
     get: => @_mode
