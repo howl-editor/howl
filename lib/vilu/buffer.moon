@@ -84,4 +84,6 @@ class Buffer extends PropertyObject
     if @_mode and @_mode.lexer
       styler.style_text @sci, self, end_pos, @_mode.lexer
 
+  __len: => @size
+
 return Buffer
