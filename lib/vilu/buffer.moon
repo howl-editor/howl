@@ -71,7 +71,6 @@ class Buffer extends PropertyObject
     error ret if not status
 
   undo: => @sci\undo!
-  clear_undo_history: => @sci\empty_undo_buffer!
 
   @property sci:
     get: =>

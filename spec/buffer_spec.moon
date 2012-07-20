@@ -192,12 +192,6 @@ describe 'Buffer', ->
         b\undo!
         assert_equal b.text, 'ello'
 
-  it 'clear_undo_history clears all undo history', ->
-    b = buffer 'hello'
-    b\clear_undo_history!
-    b\undo!
-    assert_equal b.text, 'hello'
-
   it '#buffer returns the same as buffer.size', ->
     b = buffer 'hello'
     assert_equal #b, b.size
