@@ -20,6 +20,15 @@ class Buffer extends PropertyObject
 
     @mode = mode
 
+  @property file:
+    get: => @_file
+    set: (file) =>
+      @_file = file
+      @title = file.basename
+      @text = file.contents
+      @dirty = false
+      @can_undo = false
+
   @property mode:
     get: => @_mode
     set: (mode) => @_mode = mode

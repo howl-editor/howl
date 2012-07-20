@@ -89,6 +89,33 @@ describe 'Buffer', ->
         collected[#collected + 1] = line
       assert_table_equal collected, { 'one', 'two', 'three' }
 
+  describe '.file = <file>', ->
+    b = buffer ''
+
+    it 'sets the title to the basename of the file', ->
+      with_tmpfile (file) ->
+        b.file = file
+        assert_equal b.title, file.basename
+
+    it 'sets the buffer text to the contents of the file', ->
+      b.text = 'foo'
+      with_tmpfile (file) ->
+        file.contents = 'yes sir'
+        b.file = file
+        assert_equal b.text, 'yes sir'
+
+    it 'marks the buffer as not dirty', ->
+      b.dirty = true
+      with_tmpfile (file) ->
+        b.file = file
+        assert_false b.dirty
+
+    it 'clears the undo history', ->
+      b.text = 'foo'
+      with_tmpfile (file) ->
+        b.file = file
+        assert_false b.can_undo
+
   describe 'insert(text, pos)', ->
     it 'inserts text at pos', ->
       b = buffer 'heo'

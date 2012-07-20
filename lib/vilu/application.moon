@@ -36,10 +36,7 @@ class Application
 
   open_file: (file, editor) =>
     buffer = self\new_buffer mode.for_file file
-    buffer.title = file.basename
-    buffer.text = file.contents
-    buffer.dirty = false
-    buffer\clear_undo_history!
+    buffer.file = file
     editor.buffer = buffer
 
   run: =>
