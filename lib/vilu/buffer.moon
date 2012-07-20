@@ -40,6 +40,10 @@ class Buffer extends PropertyObject
         self\append ' '
         self\delete @size, 1
 
+  @property can_undo:
+    get: => @sci\can_undo!
+    set: (value) => @sci\empty_undo_buffer! if not value
+
   @property size: get: => @sci\get_text_length!
   @property lines: get: => BufferLines @sci
 

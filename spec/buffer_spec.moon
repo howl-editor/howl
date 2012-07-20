@@ -115,6 +115,32 @@ describe 'Buffer', ->
     b\undo!
     assert_equal b.text, 'hello'
 
+  it '.can_undo returns true if undo is possible, and false otherwise', ->
+    b = Buffer {}
+    assert_false b.can_undo
+    b.text = 'bar'
+    assert_true b.can_undo
+    b\undo!
+    assert_false b.can_undo
+
+  describe '.can_undo = <bool>', ->
+    it 'setting it to false removes any undo history', ->
+      b = buffer 'hello'
+      assert_true b.can_undo
+      b.can_undo = false
+      assert_false b.can_undo
+      b\undo!
+      assert_equal b.text, 'hello'
+
+    it 'setting it to true is a no-op', ->
+      b = buffer 'hello'
+      assert_true b.can_undo
+      b.can_undo = true
+      assert_true b.can_undo
+      b\undo!
+      b.can_undo = true
+      assert_false b.can_undo
+
   describe 'as_one_undo(f)', ->
     it 'allows for grouping actions as one undo', ->
       b = buffer 'hello'
