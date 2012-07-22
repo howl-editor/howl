@@ -1,15 +1,15 @@
 by_extension = {}
 modes = {}
 
+by_name = (name) ->
+  return modes[name].create!
+
 for_file = (file) ->
   return by_name 'default' if not file
   ext = file.extension
   mode = by_extension[ext]
   mode or by_name 'default'
   mode.create!
-
-by_name = (name) ->
-  return modes[name].create!
 
 register = (mode) ->
   extensions = mode.extensions
