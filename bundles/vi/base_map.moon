@@ -25,7 +25,8 @@ map['$'] = (editor) -> apply editor, -> editor.cursor\line_end!
 
 on_unhandled = (event) ->
   char = event.character
-  if char
+  modifiers = event.control or event.alt
+  if char and not modifiers
     if char\match '^%d$'
       -- we need to special case '0' here as that's a valid command in its own
       -- right, unless it's part of a numerical prefix
@@ -35,6 +36,7 @@ on_unhandled = (event) ->
       state.reset!
 
     return -> true
+
   (editor) -> keyhandler.dispatch event, { default_map }, editor
 
 return map
