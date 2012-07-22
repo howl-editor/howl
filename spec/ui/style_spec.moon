@@ -1,4 +1,4 @@
-import style, theme from vilu.ui
+import style, theme, ActionBuffer from vilu.ui
 import Scintilla from vilu
 
 describe 'style', ->
@@ -48,6 +48,15 @@ describe 'style', ->
     it 'returns the default style number if the style is not defined', ->
       assert_equal style.number_for('foo', {}, sci), style.number_for('default', {}, {})
 
+  it '.name_for(number, buffer, sci) returns the style name for number', ->
+    assert_equal style.name_for(5, {}, {}), 'keyword' -- default keyword number
+
+    style.define 'whats_in_a_name', color: '#334455'
+    sci = Scintilla!
+    buffer = {}
+    style_num = style.number_for 'whats_in_a_name', buffer, sci
+    assert_equal style.name_for(style_num, buffer), 'whats_in_a_name'
+
   it '.register_sci(sci, buffer) defines the default styles in the specified sci', ->
     t = theme.current
     t.styles.keyword = color: '#112233'
@@ -74,3 +83,19 @@ describe 'style', ->
 
     new_number = style.number_for 'style_foo', buffer, sci2
     assert_equal new_number, prev_number
+
+  it '.at_pos(sci, buffer, pos) returns name and style definition at pos', ->
+    style.define 'stylish', color: '#101010'
+    sci = Scintilla!
+    buffer = ActionBuffer sci
+    buffer\insert 'super ', 1, 'keyword'
+    buffer\insert 'stylish', 7, 'stylish'
+
+    name, def = style.at_pos(sci, buffer, 6)
+    assert_equal name, 'keyword'
+    assert_table_equal def, style.keyword
+
+    name, def = style.at_pos(sci, buffer, 7)
+    assert_equal name, 'stylish'
+    assert_table_equal def, style.stylish
+

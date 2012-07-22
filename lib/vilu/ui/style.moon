@@ -1,5 +1,5 @@
 default_style_numbers =
-  nothing: 0
+  unstyled: 0
   whitespace: 1
   comment: 2
   string: 3
@@ -22,6 +22,8 @@ default_style_numbers =
   controlchar: 36
   indentguide: 37
   calltip: 38
+
+default_style_numbers[num] = name for name, num in pairs moon.copy default_style_numbers
 
 CUSTOM_START = 16
 PREDEF_START = 32
@@ -86,6 +88,9 @@ next_style_number = (from_num, buffer) ->
   error 'Out of style numbers for ' .. tostring(buffer.title) if num > STYLE_MAX
   num
 
+name_for = (number, buffer) ->
+  default_style_numbers[number] or get_buffer_styles(buffer)[number]
+
 number_for = (style_name, buffer, sci) ->
   style = styles[style_name]
   if not style
@@ -98,17 +103,25 @@ number_for = (style_name, buffer, sci) ->
   style_num = b_styles._next_number
   set_style sci, style_num, style
   b_styles[style_name] = style_num
+  b_styles[style_num] = style_name
   b_styles._next_number = next_style_number style_num, buffer
   style_num
 
 set_for_theme = (theme) ->
   define name, def for name, def in pairs theme.styles
 
+at_pos = (sci, buffer, pos) ->
+  style_num = sci\get_style_at pos - 1
+  name = default_style_numbers[style_num] or get_buffer_styles(buffer)[style_num]
+  name, styles[name]
+
 return setmetatable {
   :set_for_theme
   :number_for
+  :name_for
   :register_sci
   :set_for_buffer
   :define
   :string_to_color
+  :at_pos
 }, __index: styles
