@@ -16,6 +16,8 @@ class File extends PropertyObject
   is_absolute: (path) ->
     (path\match('^/') or path\match('^%a:\\\\')) != nil
 
+  separator: jit.os == 'Windows' and '\\' or '/'
+
   new: (path) =>
     @gfile = if type(path) == 'string' then GFile.new_for_path path else path
     @path = @gfile\get_path!
