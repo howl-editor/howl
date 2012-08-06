@@ -7,7 +7,11 @@ describe 'List', ->
 
   before -> buf.text = ''
 
-  describe 'rendering', ->
+  it '# returns the number of items', ->
+    list = List {'one', 'two', 'three'}
+    assert_equal #list, 3
+
+  describe '.render(buffer, pos, start_item, last_item)', ->
     it 'renders single column items each on one line', ->
       list = List {'one', 'two', 'three'}
       list\render buf, 1
@@ -31,6 +35,12 @@ second item two
 Column 1 Column 2
 first    item one
 ]]
+
+    context 'when first_item and last_item is given', ->
+      it 'renders only items within the range [first_item, last_item)', ->
+        list = List {'one', 'two', 'three'}
+        list\render buf, 1, 2, 2
+        assert_equal buf.text, 'two\n'
 
     it 'does not change the cursor position for the underlying scintilla', ->
       buf.text = 'hello'

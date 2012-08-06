@@ -42,7 +42,10 @@ class List extends PropertyObject
       @_headers = headers
       @_widths = nil
 
-  render: (buffer, pos) =>
+  render: (buffer, pos, start_item, end_item) =>
+    start_item = start_item or 1
+    end_item = end_item or #@items
+
     if not @_widths
       @_widths = calculate_column_widths @items, @headers
       @_multi_column = @_widths != nil
@@ -55,7 +58,8 @@ class List extends PropertyObject
 
       pos = buffer\insert '\n', pos
 
-    for row, item in ipairs @items
+    for row = start_item, end_item
+      item = @items[row]
       if @_multi_column
         for column, field in ipairs item
           padding = column_padding field, column, @_widths
@@ -65,6 +69,10 @@ class List extends PropertyObject
         pos = buffer\insert item, pos, @_column_style item, row, 1
 
       pos = buffer\insert '\n', pos
+
+    pos
+
+  __len: => #@items
 
   _column_style: (item, row, column) =>
     if callable @column_styles then return self.column_styles(item, row, column)
