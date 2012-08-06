@@ -136,6 +136,11 @@ describe 'File', ->
       file = File '/no/does/not/exist'
       assert_error -> file\touch!
 
+  describe 'tostring', ->
+    it 'returns a string containing the path', ->
+      with_tmpfile (file) ->
+        assert_equal file\tostring!, file.path
+
   describe 'find', ->
     with_populated_dir = (f) ->
       with_tmpdir (dir) ->
