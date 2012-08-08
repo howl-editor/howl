@@ -21,12 +21,13 @@ describe 'style', ->
 
     it 'automatically assigns a style number and defines the style in sci if necessary', ->
       sci = Scintilla!
+      buffer = {}
       style.define 'my_style_a', color: '#334455'
       style.define 'my_style_b', color: '#334455'
-      style_num = style.number_for 'my_style_a', {}, sci
+      style_num = style.number_for 'my_style_a', buffer, sci
       set_fore = sci\style_get_fore style_num
       assert_equal set_fore, 0x554433
-      assert_not_equal style.number_for('my_style_b', {}, sci), style_num0
+      assert_not_equal style.number_for('my_style_b', buffer, sci), style_num
 
     it 'remembers the style number used for a particular style', ->
       sci = Scintilla!
