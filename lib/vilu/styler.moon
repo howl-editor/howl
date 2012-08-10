@@ -36,7 +36,7 @@ style_text = (sci, buffer, end_pos, lexer) ->
   tokens = lexer\lex text
   pos = 0
   for token in *tokens
-    style_number = style.number_for token[1], buffer, sci
+    style_number = style.number_for token[1], buffer
     end_token = token[2] - 1
     while pos < end_token
       style_buf[pos] = style_number

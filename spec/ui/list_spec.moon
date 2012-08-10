@@ -75,20 +75,20 @@ three    four
     it 'headers are styled using the list_header style', ->
       list = List { { 'first' } }, { 'Column 1' }
       list\render buf, 1
-      assert_equal style.at_pos(sci, buf, 1), 'list_header'
+      assert_equal style.at_pos(buf, 1), 'list_header'
 
     it 'columns are styled using the styles specified in .column_styles', ->
       list = List { { 'first', 'second' } }
       list.column_styles = { 'whitespace', 'identifier' }
       list\render buf, 1
-      assert_equal style.at_pos(sci, buf, 1), 'whitespace'
-      assert_equal style.at_pos(sci, buf, 7), 'identifier'
+      assert_equal style.at_pos(buf, 1), 'whitespace'
+      assert_equal style.at_pos(buf, 7), 'identifier'
 
     it 'column styles default to List.column_styles', ->
       list = List { { 'first', 'second' } }
       list\render buf, 1
-      assert_equal style.at_pos(sci, buf, 1), List.column_styles[1]
-      assert_equal style.at_pos(sci, buf, 7), List.column_styles[2]
+      assert_equal style.at_pos(buf, 1), List.column_styles[1]
+      assert_equal style.at_pos(buf, 7), List.column_styles[2]
 
     context 'when .column_styles is a function', ->
       it 'it is called with the item, row and column and the returned style is used', ->
@@ -101,5 +101,5 @@ three    four
         list = List { item }
         list.column_styles = style_func
         list\render buf, 1
-        assert_equal style.at_pos(sci, buf, 5), 'line_number'
-        assert_equal style.at_pos(sci, buf, 7), 'bracelight'
+        assert_equal style.at_pos(buf, 5), 'line_number'
+        assert_equal style.at_pos(buf, 7), 'bracelight'

@@ -1,3 +1,5 @@
+import string_to_color from vilu.Scintilla
+
 default_style_numbers =
   unstyled: 0
   whitespace: 1
@@ -31,13 +33,8 @@ PREDEF_END = 39
 STYLE_MAX = 255
 
 styles = {}
+scis = setmetatable {}, __mode: 'v'
 buffer_styles = setmetatable {}, __mode: 'k'
-
-string_to_color = (rgb) ->
-  if not rgb then return nil
-  r, g, b = rgb\match('^#?(%x%x)(%x%x)(%x%x)$')
-  if not r then error("Invalid color specification '" .. rgb .. "'", 2)
-  return tonumber(b .. g .. r, 16)
 
 get_buffer_styles = (buffer) ->
   b_styles = buffer_styles[buffer]
@@ -63,12 +60,14 @@ set_style = (sci, number, style) ->
     \style_set_changeable number, not style.read_only if style.read_only != nil
     \style_set_visible number, style.visible if style.visible != nil
 
-register_sci = (sci, buffer) ->
+register_sci = (sci) ->
   set_style sci, default_style_numbers.default, styles.default
   sci\style_clear_all!
 
   for name, style in pairs styles
       set_style sci, style.number, style if style.number
+
+  append scis, sci
 
 set_for_buffer = (sci, buffer) ->
   b_styles = get_buffer_styles buffer
@@ -80,7 +79,15 @@ define = (name, attributes) ->
   style = moon.copy attributes
   style.number = default_style_numbers[name]
   styles[name] = style
-  -- todo: redefine for existing scis
+
+  -- redefine for existing scis
+
+  if style.number -- default style, set for all scis
+    set_style sci, style.number, style for sci in *scis
+  else
+    for buffer, styles in pairs buffer_styles
+      if styles[name]
+        set_style sci, styles[name], style for sci in *buffer.scis
 
 next_style_number = (from_num, buffer) ->
   num = from_num + 1
@@ -91,7 +98,7 @@ next_style_number = (from_num, buffer) ->
 name_for = (number, buffer) ->
   default_style_numbers[number] or get_buffer_styles(buffer)[number]
 
-number_for = (style_name, buffer, sci) ->
+number_for = (style_name, buffer) ->
   style = styles[style_name]
   if not style
     return default_style_numbers[style_name] or default_style_numbers['default']
@@ -101,7 +108,7 @@ number_for = (style_name, buffer, sci) ->
   if b_styles[style_name] then return b_styles[style_name]
 
   style_num = b_styles._next_number
-  set_style sci, style_num, style
+  set_style sci, style_num, style for sci in *buffer.scis
   b_styles[style_name] = style_num
   b_styles[style_num] = style_name
   b_styles._next_number = next_style_number style_num, buffer
@@ -110,8 +117,8 @@ number_for = (style_name, buffer, sci) ->
 set_for_theme = (theme) ->
   define name, def for name, def in pairs theme.styles
 
-at_pos = (sci, buffer, pos) ->
-  style_num = sci\get_style_at pos - 1
+at_pos = (buffer, pos) ->
+  style_num = buffer.sci\get_style_at pos - 1
   name = default_style_numbers[style_num] or get_buffer_styles(buffer)[style_num]
   name, styles[name]
 
