@@ -56,6 +56,13 @@ setmetatable(sci, {
   end
 })
 
+function sci.string_to_color(rgb)
+  if not rgb then return nil end
+  local r, g, b = rgb:match('^#?(%x%x)(%x%x)(%x%x)$')
+  if not r then error("Invalid color specification '" .. rgb .. "'", 2) end
+  return tonumber(b .. g .. r, 16)
+end
+
 function sci.dispatch(sci_ptr, event, args)
   instance = sci_map[sci_ptr]
   if event == 'sci' then
