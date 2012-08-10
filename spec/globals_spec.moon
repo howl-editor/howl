@@ -3,3 +3,6 @@ describe 'Globals', ->
     assert_true callable -> true
     t = setmetatable {}, __call: -> true
     assert_true callable t
+
+  it 'append is an alias for table.insert', ->
+    assert_equal append, table.insert
