@@ -13,7 +13,7 @@ class Buffer extends PropertyObject
     if sci
       @_sci = sci
       @doc = sci\get_doc_pointer!
-      @scis = { [sci]: true }
+      @scis = { sci }
     else
       @doc = background_sci\create_document!
       @scis = {}
@@ -83,15 +83,12 @@ class Buffer extends PropertyObject
       background_sci
 
   add_sci_ref: (sci) =>
-    @scis[sci] = true
+    append @scis, sci
     @_sci = sci
 
   remove_sci_ref: (sci) =>
-    @scis[sci] = nil
-    @_sci = nil
-    for sci, _ in pairs @scis
-      @_sci = sci
-      break
+    @scis = [s for s in *@scis when s != sci]
+    @_sci = @scis[1] if sci == @_sci
 
   lex: (end_pos) =>
     if @_mode and @_mode.lexer

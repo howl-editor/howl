@@ -2,9 +2,8 @@ import Buffer from vilu
 
 describe 'Buffer', ->
   buffer = (text) ->
-    b = Buffer {}
-    b.text = text
-    b
+    with Buffer {}
+      .text = text
 
   describe 'creation', ->
     it 'Buffer(mode) raises an error if mode is not given', ->
@@ -195,3 +194,34 @@ describe 'Buffer', ->
   it '#buffer returns the same as buffer.size', ->
     b = buffer 'hello'
     assert_equal #b, b.size
+
+  describe '.add_sci_ref(sci)', ->
+    it 'adds the specified sci to .scis', ->
+      sci = {}
+      b = buffer ''
+      b\add_sci_ref sci
+      assert_table_equal b.scis, { sci }
+
+    it 'sets .sci to the specified sci', ->
+      sci = {}
+      b = buffer ''
+      b\add_sci_ref sci
+      assert_equal b.sci, sci
+
+  describe '.remove_sci_ref(sci)', ->
+    it 'removes the specified sci from .scis', ->
+      sci = {}
+      b = buffer ''
+      b\add_sci_ref sci
+      b\remove_sci_ref sci
+      assert_table_equal b.scis, {}
+
+    it 'sets .sci to some other sci if they were previously the same', ->
+      sci = {}
+      sci2 = {}
+      b = buffer ''
+      b\add_sci_ref sci
+      b\add_sci_ref sci2
+      assert_equal b.sci, sci2
+      b\remove_sci_ref sci2
+      assert_equal b.sci, sci
