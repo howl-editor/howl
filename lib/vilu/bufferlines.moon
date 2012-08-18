@@ -1,10 +1,23 @@
 BufferLines = (sci) ->
   setmetatable {
       :sci
+
       delete: (start_line, end_line) =>
-        start = @sci\position_from_line start_line - 1
-        end_pos = @sci\position_from_line end_line - 1
-        @sci\delete_range start, end_pos - start
+        start_pos = @pos_for start_line
+        end_pos = @pos_for end_line
+        @sci\delete_range start_pos - 1, end_pos - start_pos
+
+      range: (start_line, end_line) =>
+        lines = {}
+        for line = start_line, end_line - 1
+          append lines, self[line]
+        lines
+
+      pos_for: (line) =>
+        @sci\position_from_line(line - 1) + 1
+
+      nr_at_pos: (pos) =>
+        @sci\line_from_position(pos - 1) + 1
     },
       __len: => @sci\get_line_count!
 

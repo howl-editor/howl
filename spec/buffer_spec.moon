@@ -61,7 +61,9 @@ describe 'Buffer', ->
         assert_equal b.text, 'hola\nworld'
 
       it 'removes the entire line if value is nil', ->
-        b = buffer 'hello\nworld'
+        b = buffer 'goodbye\ncruel\nworld'
+        b.lines[2] = nil
+        assert_equal b.text, 'goodbye\nworld'
         b.lines[1] = nil
         assert_equal b.text, 'world'
 
@@ -87,6 +89,22 @@ describe 'Buffer', ->
       for i, line in pairs b.lines
         collected[#collected + 1] = line
       assert_table_equal collected, { 'one', 'two', 'three' }
+
+    it 'pos_for(nr) returns the position for the start of <line>', ->
+      b = buffer 'one\ntwo\nthree'
+      assert_equal b.lines\pos_for(2), 5
+
+    it 'nr_at_pos(pos) returns the line nr at <pos>', ->
+      b = buffer 'one\ntwo\nthree'
+      assert_equal b.lines\nr_at_pos(1), 1
+      assert_equal b.lines\nr_at_pos(3), 1
+      assert_equal b.lines\nr_at_pos(4), 1
+      assert_equal b.lines\nr_at_pos(5), 2
+      assert_equal b.lines\nr_at_pos(9), 3
+
+    it 'range(start, end) returns a table with lines [start, end)', ->
+      b = buffer 'one\ntwo\nthree'
+      assert_table_equal b.lines\range(1, 3), { 'one', 'two' }
 
   describe '.file = <file>', ->
     b = buffer ''
