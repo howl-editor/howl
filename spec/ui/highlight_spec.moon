@@ -85,3 +85,13 @@ describe 'highlight', ->
     highlight.apply 'highlight_bar', buffer, 1, 4
     assert_table_equal highlight.at_pos(buffer, 1), { 'highlight_bar' }
     assert_table_equal highlight.at_pos(buffer, 5), { }
+
+  it '.remove_all(name, buffer) removes all highlights with <name> in <buffer>', ->
+    highlight.define 'foo', color: '#334455'
+    buffer = Buffer {}
+    buffer.text = 'one two'
+    highlight.apply 'foo', buffer, 1, 3
+    highlight.apply 'foo', buffer, 5, 3
+    highlight.remove_all 'foo', buffer
+    assert_table_equal highlight.at_pos(buffer, 1), { }
+    assert_table_equal highlight.at_pos(buffer, 5), { }
