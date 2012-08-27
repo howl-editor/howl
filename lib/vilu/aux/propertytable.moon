@@ -2,14 +2,22 @@ property_table = (properties) ->
   setmetatable {},
     __index: (t, key) ->
       prop = properties[key]
-      if prop and prop.get then return prop.get t
+      if prop
+        if type(prop) == 'table' and prop.get
+          return prop.get t
+        else
+          return prop
       nil
 
     __newindex: (t, key, value) ->
       prop = properties[key]
       if prop
-        if prop.set then prop.set t, value
-        else error 'Attempt to write to a read-only property "' .. key .. '"'
+        if prop.set
+          prop.set t, value
+        else if prop.get
+          error 'Attempt to write to a read-only property "' .. key .. '"'
+        else
+          rawset t, key, value
       else
         rawset t, key, value
 
