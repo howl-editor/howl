@@ -1,7 +1,7 @@
 import Gtk from lgi
 import Scintilla, signal, keyhandler from vilu
 import PropertyObject from vilu.aux.moon
-import style, theme, IndicatorBar, Cursor, Selection from vilu.ui
+import style, highlight, theme, IndicatorBar, Cursor, Selection from vilu.ui
 import string_to_color from Scintilla
 
 indicators = {}
@@ -83,6 +83,7 @@ class Editor extends PropertyObject
       @sci\set_lexer Scintilla.SCLEX_CONTAINER
 
       style.set_for_buffer @sci, buffer
+      highlight.set_for_buffer @sci, buffer
       buffer\add_sci_ref @sci
 
   focus: => @sci\grab_focus!
