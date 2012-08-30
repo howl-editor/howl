@@ -47,6 +47,7 @@ class Application
   run: =>
     keyhandler.keymap = keymap
     @_load_variables!
+    @_load_commands!
     bundle.init @root_dir / 'bundles'
     self\_set_theme!
 
@@ -71,5 +72,10 @@ class Application
 
   _load_variables: =>
     require 'vilu.variables.core_variables'
+
+  _load_commands: =>
+    require 'vilu.inputs.file'
+    require 'vilu.commands.file_commands'
+    require 'vilu.commands.app_commands'
 
 return Application
