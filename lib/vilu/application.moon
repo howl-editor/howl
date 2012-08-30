@@ -39,7 +39,7 @@ class Application
     table.insert(@buffers, buffer)
     buffer
 
-  open_file: (file, editor) =>
+  open_file: (file, editor = _G.editor) =>
     buffer = self\new_buffer mode.for_file file
     buffer.file = file
     editor.buffer = buffer
