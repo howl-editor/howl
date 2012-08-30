@@ -3,10 +3,7 @@ import signal from vilu
 
 class Status
   new: =>
-    @label = Gtk.Label {
-      use_markup: true
-      xalign: 0
-    }
+    @label = Gtk.Label xalign: 0
     @label\get_style_context!\add_class 'status'
     @level = nil
     signal.connect 'key-press', self\clear
@@ -22,6 +19,8 @@ class Status
       @text = nil
 
   to_gobject: => @label
+  hide: => @label.visible = false
+  show: => @label.visible = true
 
   _set: (level, text) =>
     @label\get_style_context!\add_class 'status_' .. level

@@ -46,6 +46,7 @@ class Application
 
   run: =>
     keyhandler.keymap = keymap
+    @_load_variables!
     bundle.init @root_dir / 'bundles'
     self\_set_theme!
 
@@ -67,5 +68,8 @@ class Application
 
   _set_theme: =>
     theme.current = 'Tomorrow Night Blue'
+
+  _load_variables: =>
+    require 'vilu.variables.core_variables'
 
 return Application
