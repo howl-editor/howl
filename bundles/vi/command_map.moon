@@ -1,6 +1,7 @@
 state = ...
 base_map = bundle_load 'base_map.moon'
 import move, apply, repeat_last from state
+import command from vilu
 
 _G = _G
 
@@ -91,5 +92,6 @@ y = (editor) ->
 Y = (editor) -> editor\copy_line!
 
 map['.'] = (editor) -> repeat_last editor
+map[':'] = (editor) -> command.run!
 
 return map
