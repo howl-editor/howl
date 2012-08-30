@@ -1,20 +1,34 @@
 _G = _G
-import tostring, pcall, callable from _G
-import signal from vilu
-t_append, t_concat = table.insert, table.concat
+import tostring, pcall, callable, type, append from _G
+import signal, command from vilu
 
 _ENV = {}
 setfenv(1, _ENV) if setfenv
+
+alternate_translation = (event) ->
+  alternate_names = {
+    kp_up: 'up'
+    kp_down: 'down'
+    kp_left: 'left'
+    kp_right: 'right'
+    kp_page_up: 'page_up'
+    kp_page_down: 'page_down'
+    iso_left_tab: 'shift_tab'
+  }
+  name = event.key_name
+  return alternate_names[name] if name
 
 export translate_key = (event) ->
   ctrl = (event.control and 'ctrl_') or ''
   shift = (event.shift and 'shift_') or ''
   alt = (event.alt and 'alt_') or ''
+  alternate = alternate_translation event
 
   translations = {}
-  t_append translations, ctrl .. alt .. event.character if event.character
-  t_append translations, ctrl .. shift .. alt .. event.key_name if event.key_name
-  t_append translations, ctrl .. shift .. alt .. event.key_code
+  append translations, ctrl .. alt .. event.character if event.character
+  append translations, ctrl .. shift .. alt .. event.key_name if event.key_name
+  append translations, ctrl .. shift .. alt .. event.key_code
+  append translations, alternate if alternate
   translations
 
 find_handlers = (translations, event, keymaps) ->
@@ -29,7 +43,7 @@ find_handlers = (translations, event, keymaps) ->
       if not handler and callable map.on_unhandled
         handler = map.on_unhandled event, translations
 
-      t_append handlers, handler if handler
+      append handlers, handler if handler
 
   handlers
 

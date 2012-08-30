@@ -34,6 +34,21 @@ describe 'keyhandler', ->
           control: true, shift: true
         assert_table_equal tr, { 'ctrl_A', 'ctrl_shift_a', 'ctrl_shift_123' }
 
+    it 'adds special case translations for certain common keys', ->
+      for_keynames = {
+        kp_up: 'up'
+        kp_down: 'down'
+        kp_left: 'left'
+        kp_right: 'right'
+        kp_page_up: 'page_up'
+        kp_page_down: 'page_down'
+        iso_left_tab: 'shift_tab'
+      }
+
+      for name, alternative in pairs for_keynames
+        translations = keyhandler.translate_key key_code: 123, key_name: name
+        assert_includes translations, alternative
+
   describe 'process(editor, buffer, event)', ->
     context 'when firing the key-press signal', ->
       it 'passes the event', ->
