@@ -3,6 +3,7 @@ new = (options = {}) ->
     called: false
     reads: {}
     writes: {}
+    called_with: {}
 
   setmetatable spy,
     __call: (_, ...) ->
@@ -12,7 +13,11 @@ new = (options = {}) ->
 
     __index: (t,k) ->
       table.insert spy.reads, k
-      nil
+      if options.as_null_object
+        sub = new options
+        rawset spy, k, sub
+        return sub
+      spy.writes[k]
 
     __newindex: (t,k,v) ->
       spy.writes[k] = v
