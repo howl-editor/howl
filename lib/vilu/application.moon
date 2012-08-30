@@ -58,9 +58,12 @@ class Application
       self\open_file(File(path), editor) for path in *@args[2,]
 
     window.status\info 'Vilu 0.0 ready.'
+    editor\focus!
     window\show_all!
-
     Gtk.main!
+
+  quit: =>
+    win\destroy! for win in * moon.copy @windows
 
   _set_theme: =>
     theme.current = 'Tomorrow Night Blue'
