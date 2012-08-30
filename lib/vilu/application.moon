@@ -22,7 +22,12 @@ class Application
       title: 'Vilu zen'
       default_width: 800
       default_height: 600
-      on_destroy: Gtk.main_quit
+      on_destroy: (window) ->
+        for k, win in ipairs @windows
+          if win\to_gobject! == window
+            @windows[k] = nil
+
+        Gtk.main_quit! if #@windows == 0
 
     props[k] = v for k, v in pairs(properties or {})
     window = Window props
