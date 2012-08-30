@@ -39,6 +39,11 @@ GtkWindow {
   font: ${status_font};
   color: ${status_color};
 }
+
+.readline_box {
+  border-width: 1px 3px 3px 1px;
+  background-color: ${editor_border_color};
+}
 ]]
 
 status_template = [[
@@ -137,21 +142,17 @@ set_theme = (name) ->
   current_theme = theme
   style.set_for_theme theme
 
-register = (name, file) ->
-  error 'name not specified for theme', 2 if not name
-  error 'file not specified for theme', 2 if not file
-  available[#available + 1] = name
-  theme_files[name] = file
-
-mod = PropertyTable {
+return PropertyTable {
   current:
     get: -> current_theme
     set: (_, theme) -> set_theme theme
 
   available:
     get: -> available
+
+  register: (name, file) ->
+    error 'name not specified for theme', 2 if not name
+    error 'file not specified for theme', 2 if not file
+    available[#available + 1] = name
+    theme_files[name] = file
 }
-
-mod.register = register
-
-return mod
