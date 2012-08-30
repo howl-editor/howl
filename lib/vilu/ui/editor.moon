@@ -163,6 +163,7 @@ class Editor extends PropertyObject
     @indicator.position.label = pos
 
   _on_focus: (args) =>
+    _G.editor = self
     signal.emit 'editor-focused', self
 
   _on_focus_lost: (args) =>
