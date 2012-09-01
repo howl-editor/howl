@@ -31,17 +31,15 @@ static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 
 static gchar *get_app_root(const gchar *invocation_path)
 {
-  gchar *cwd, *relative_path, *path;
-  GFile *root;
+  gchar *path;
+  GFile *root, *app, *parent;
 
-  cwd = g_get_current_dir();
-  relative_path = g_path_get_dirname(invocation_path);
-  path = g_build_filename(cwd, relative_path, "..", NULL);
-  g_free(cwd);
-  g_free(relative_path);
-  root = g_file_new_for_path(path);
-  g_free(path);
+  app = g_file_new_for_path(invocation_path);
+  parent = g_file_get_parent(app);
+  root = g_file_get_parent(parent);
   path = g_file_get_path(root);
+  g_object_unref(app);
+  g_object_unref(parent);
   g_object_unref(root);
   return path;
 }
