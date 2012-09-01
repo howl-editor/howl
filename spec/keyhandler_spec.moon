@@ -130,38 +130,61 @@ describe 'keyhandler', ->
         assert_equal #keyhandler.keymap.reads, 4
 
     context 'when invoking handlers', ->
-      it 'passes the editor as argument', ->
-        received = {}
-        buffer = keymap: { k: (...) -> received = {...} }
-        editor = :buffer
-        keyhandler.process editor, character: 'k', key_code: 65
-        assert_table_equal received, { editor }
+      context 'when the handler is a function', ->
+        it 'passes the editor as argument', ->
+          received = {}
+          buffer = keymap: { k: (...) -> received = {...} }
+          editor = :buffer
+          keyhandler.process editor, character: 'k', key_code: 65
+          assert_table_equal received, { editor }
 
-      it 'returns early with true unless a handler explicitly returns false', ->
-        mode_handler = Spy!
-        buffer =
-          keymap: { k: -> nil }
-          mode:
-            keymap:
-              k: mode_handler
-        assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
-        assert_false mode_handler.called
-
-        buffer.keymap.k = -> false
-        assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
-        assert_true mode_handler.called
-
-      context 'when a handler raises an error', ->
-        it 'returns true', ->
-          buffer = keymap: { k: -> error 'BOOM!' }
+        it 'returns early with true unless a handler explicitly returns false', ->
+          mode_handler = Spy!
+          buffer =
+            keymap: { k: -> nil }
+            mode:
+              keymap:
+                k: mode_handler
           assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
+          assert_false mode_handler.called
 
-        it 'signals an error', ->
+          buffer.keymap.k = -> false
+          assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
+          assert_true mode_handler.called
+
+        context 'when the handler raises an error', ->
+          it 'returns true', ->
+            buffer = keymap: { k: -> error 'BOOM!' }
+            assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
+
+          it 'signals an error', ->
+            handler = Spy!
+            signal.connect_first 'error', handler
+            buffer = keymap: { k: -> error 'BOOM!' }
+            keyhandler.process :buffer, { character: 'k', key_code: 65 }
+            assert_true handler.called
+
+      context 'when the handler is a string', ->
+        it 'runs the corresponding command and returns true', ->
           handler = Spy!
-          signal.connect_first 'error', handler
-          buffer = keymap: { k: -> error 'BOOM!' }
-          keyhandler.process :buffer, { character: 'k', key_code: 65 }
+          vilu.command.register name: 'spy', description: 'no', :handler
+          buffer = keymap: { k: 'spy' }
+          status = keyhandler.process :buffer, { character: 'k', key_code: 65 }
+          vilu.command.unregister 'spy'
+          assert_true status
           assert_true handler.called
+
+        context 'when the command specified does not exist', ->
+          it 'returns true', ->
+            buffer = keymap: { k: 'o_brother_where_art_thou?' }
+            assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
+
+          it 'signals an error', ->
+            handler = Spy!
+            signal.connect_first 'error', handler
+            buffer = keymap: { k: 'Alles verloren' }
+            keyhandler.process :buffer, { character: 'k', key_code: 65 }
+            assert_true handler.called
 
       it 'returns false if no handlers are found', ->
         assert_false keyhandler.process buffer: {}, { character: 'k', key_code: 65 }

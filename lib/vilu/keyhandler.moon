@@ -51,7 +51,15 @@ export dispatch = (event, keymaps, ...) ->
   translations = translate_key event
   handlers = find_handlers translations, event, keymaps
   for handler in *handlers
-    status, ret = pcall handler, ...
+    status, ret = true, true
+    if type(handler) == 'string'
+      cmd = command[handler]
+      if cmd then cmd!
+      else
+        status = false
+        ret = 'Command "' .. handler .. '" not found'
+    else
+      status, ret = pcall handler, ...
 
     if not status
       signal.emit 'error', 'Error invoking key handler: ' .. ret
