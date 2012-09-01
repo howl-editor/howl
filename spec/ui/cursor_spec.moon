@@ -1,6 +1,6 @@
 import Gtk from lgi
-import Buffer from vilu
-import Editor, theme from vilu.ui
+import Buffer from lunar
+import Editor, theme from lunar.ui
 
 text = [[
 Line 1 of text

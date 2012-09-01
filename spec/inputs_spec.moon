@@ -1,4 +1,4 @@
-import inputs from vilu
+import inputs from lunar
 
 describe 'inputs', ->
   after -> inputs.unregister 'foo'

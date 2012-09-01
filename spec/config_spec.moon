@@ -1,5 +1,5 @@
-import config, signal from vilu
-import Spy from vilu.spec
+import config, signal from lunar
+import Spy from lunar.spec
 
 describe 'config', ->
   before -> config.reset!

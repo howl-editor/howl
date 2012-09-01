@@ -1,4 +1,4 @@
-import Buffer from vilu
+import Buffer from lunar
 
 describe 'Buffer', ->
   buffer = (text) ->

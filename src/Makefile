@@ -33,7 +33,7 @@ LGI = deps/$(LGI_VER)
 LGI_ARCHIVE = deps/$(LGI_VER)/lgi/lgi.a
 
 SCI_GEN = tools/sci_gen.lua
-SCI_GEN_TARGET = ../lib/vilu/scintilla.lua
+SCI_GEN_TARGET = ../lib/lunar/scintilla.lua
 
 CFLAGS = -Wall -O2 $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
 ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE) $(LGI_ARCHIVE)
@@ -42,10 +42,10 @@ LD_FLAGS = -Wl,-E
 OBJECTS = main.o sci.o
 DEP_OBJECTS = $(LPEG)/lpeg.o $(SCINTILLUA_LEXER) $(LFS_OBJECT)
 
-vilu: ${OBJECTS} vilu.h $(DEP_OBJECTS) $(ARCHIVES) Makefile
-	  ${CC} -o vilu ${CFLAGS} ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
+lunar: ${OBJECTS} lunar.h $(DEP_OBJECTS) $(ARCHIVES) Makefile
+	  ${CC} -o lunar ${CFLAGS} ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
 
-${OBJECTS}: %.o : %.c vilu.h $(SCINTILLA) $(LUAJIT)
+${OBJECTS}: %.o : %.c lunar.h $(SCINTILLA) $(LUAJIT)
 	  ${CC} -c $< ${CFLAGS}
 
 $(LPEG):

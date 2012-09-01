@@ -1,4 +1,4 @@
-import PropertyTable from vilu.aux
+import PropertyTable from lunar.aux
 
 describe 'PropertyTable(table)', ->
   it 'returns a table with the properties in the passed table', ->

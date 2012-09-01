@@ -1,6 +1,6 @@
 local theme_file = bundle_file('default_theme.moon')
 
-vilu.ui.theme.register('Default', theme_file)
+lunar.ui.theme.register('Default', theme_file)
 
 return {
   info = {

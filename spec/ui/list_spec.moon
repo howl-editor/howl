@@ -1,5 +1,5 @@
-import List, Cursor, style, highlight, ActionBuffer from vilu.ui
-import Buffer, Scintilla from vilu
+import List, Cursor, style, highlight, ActionBuffer from lunar.ui
+import Buffer, Scintilla from lunar
 
 describe 'List', ->
   sci = Scintilla!

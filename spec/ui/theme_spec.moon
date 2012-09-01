@@ -1,5 +1,5 @@
-import theme from vilu.ui
-import File from vilu.fs
+import theme from lunar.ui
+import File from lunar.fs
 
 serpent = require 'serpent'
 

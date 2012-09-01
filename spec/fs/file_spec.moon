@@ -1,4 +1,4 @@
-import File from vilu.fs
+import File from lunar.fs
 
 describe 'File', ->
 

@@ -1,4 +1,4 @@
-import Matcher from vilu.completion
+import Matcher from lunar.completion
 
 describe 'Matcher', ->
   context 'when matching at the start with case sensitive, non-fuzzy set', ->

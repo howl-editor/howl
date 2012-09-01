@@ -1,4 +1,4 @@
-import Sandbox from vilu.aux
+import Sandbox from lunar.aux
 
 describe 'Sandbox(env, options)', ->
   it 'allows running a function with a specified environment', ->

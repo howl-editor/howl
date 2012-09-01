@@ -1,5 +1,5 @@
-import Spy from vilu.spec
-import keyhandler, signal from vilu
+import Spy from lunar.spec
+import keyhandler, signal from lunar
 
 describe 'keyhandler', ->
 
@@ -167,10 +167,10 @@ describe 'keyhandler', ->
       context 'when the handler is a string', ->
         it 'runs the corresponding command and returns true', ->
           handler = Spy!
-          vilu.command.register name: 'spy', description: 'no', :handler
+          lunar.command.register name: 'spy', description: 'no', :handler
           buffer = keymap: { k: 'spy' }
           status = keyhandler.process :buffer, { character: 'k', key_code: 65 }
-          vilu.command.unregister 'spy'
+          lunar.command.unregister 'spy'
           assert_true status
           assert_true handler.called
 

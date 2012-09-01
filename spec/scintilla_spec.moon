@@ -1,5 +1,5 @@
-import Spy from vilu.spec
-import Scintilla from vilu
+import Spy from lunar.spec
+import Scintilla from lunar
 
 describe 'Scintilla', ->
 

@@ -1,5 +1,5 @@
-import ActionBuffer, style from vilu.ui
-import Scintilla from vilu
+import ActionBuffer, style from lunar.ui
+import Scintilla from lunar
 
 describe 'ActionBuffer', ->
   sci = Scintilla!

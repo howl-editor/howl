@@ -1,4 +1,4 @@
-import PropertyObject from vilu.aux.moon
+import PropertyObject from lunar.aux.moon
 
 describe 'PropertyObject', ->
   it 'allows specifying a getter and setter using get and set', ->

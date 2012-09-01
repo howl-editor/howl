@@ -1,7 +1,7 @@
 import Gtk from lgi
 
-import Buffer from vilu
-import Window, Editor from vilu.ui
+import Buffer from lunar
+import Window, Editor from lunar.ui
 
 describe 'Editor', ->
   buffer = Buffer {}

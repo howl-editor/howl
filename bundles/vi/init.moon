@@ -1,6 +1,6 @@
-import signal from vilu
+import signal from lunar
 
-vilu.ui.Editor.define_indicator 'vi', 'bottom_left'
+lunar.ui.Editor.define_indicator 'vi', 'bottom_left'
 
 state = bundle_load 'state.moon'
 

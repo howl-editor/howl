@@ -1,5 +1,5 @@
-import command, inputs, config from vilu
-import Spy from vilu.spec
+import command, inputs, config from lunar
+import Spy from lunar.spec
 
 describe 'command', ->
   cmd = nil

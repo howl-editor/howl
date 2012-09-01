@@ -1,5 +1,5 @@
-import style, theme, ActionBuffer from vilu.ui
-import Scintilla, Buffer from vilu
+import style, theme, ActionBuffer from lunar.ui
+import Scintilla, Buffer from lunar
 
 describe 'style', ->
   it 'styles can be accessed using direct indexing', ->

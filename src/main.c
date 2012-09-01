@@ -1,4 +1,4 @@
-#include "vilu.h"
+#include "lunar.h"
 #include <gio/gio.h>
 
 static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
@@ -6,7 +6,7 @@ static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
   gchar *start_script;
   int status, i;
 
-  start_script = g_build_filename(app_root, "lib", "vilu", "init.lua", NULL);
+  start_script = g_build_filename(app_root, "lib", "lunar", "init.lua", NULL);
   status = luaL_loadfile(L, start_script);
   g_free(start_script);
 

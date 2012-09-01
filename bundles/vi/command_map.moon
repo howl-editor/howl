@@ -1,7 +1,7 @@
 state = ...
 base_map = bundle_load 'base_map.moon'
 import move, apply, repeat_last from state
-import command from vilu
+import command from lunar
 
 _G = _G
 

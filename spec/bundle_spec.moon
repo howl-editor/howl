@@ -1,5 +1,5 @@
-import bundle from vilu
-import File from vilu.fs
+import bundle from lunar
+import File from lunar.fs
 
 describe 'bundle', ->
 

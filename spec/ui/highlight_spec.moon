@@ -1,5 +1,5 @@
-import highlight, theme, ActionBuffer from vilu.ui
-import Scintilla, Buffer from vilu
+import highlight, theme, ActionBuffer from lunar.ui
+import Scintilla, Buffer from lunar
 
 describe 'highlight', ->
   indicator_on = (buffer, pos, number) ->
