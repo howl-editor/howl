@@ -67,7 +67,7 @@ class File extends PropertyObject
         info, err = enum\next_file!
         return files if not info and not err
         error(err) if not info
-        table.insert files, File @gfile\get_child info\get_name!
+        append files, File @gfile\get_child info\get_name!
 
   join: (...) =>
     root = @gfile
@@ -96,7 +96,7 @@ class File extends PropertyObject
     error "Can't invoke find on a non-directory", 1 if not @is_directory
 
     filters = {}
-    if options.name then table.insert filters, (entry) -> not entry\tostring!\match options.name
+    if options.name then append filters, (entry) -> not entry\tostring!\match options.name
     filter = (entry) -> for f in *filters do return true if f entry
 
     files = {}
@@ -105,12 +105,12 @@ class File extends PropertyObject
     while dir
       for entry in *dir.children
         if entry.is_directory
-          table.insert(directories, 1, entry)
+          append(directories, 1, entry)
         else
-          table.insert files, entry if not filter entry
+          append files, entry if not filter entry
 
       dir = table.remove directories
-      table.insert(files, dir) if dir and not filter dir
+      append(files, dir) if dir and not filter dir
 
     files
 

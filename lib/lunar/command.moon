@@ -19,7 +19,7 @@ unregister = (name) ->
 
   aliases = {}
   for name, target in pairs commands
-    table.insert aliases, name if target == cmd
+    append aliases, name if target == cmd
 
   commands[alias] = nil for alias in *aliases
 
@@ -58,7 +58,7 @@ complete_for_command = (state, text, readline) ->
     input_factory = inputs[input_type]
     if not input_factory then error 'Could not find input for `' .. input_type .. '`'
     input = input_factory readline
-    table.insert state.inputs, input
+    append state.inputs, input
     state.current_input = input
 
   return input\complete arguments[#arguments], readline
@@ -81,7 +81,7 @@ load_input = (state, input_index, readline) ->
     input_factory = inputs[input_type]
     if not input_factory then error 'Could not find input for `' .. input_type .. '`'
     input = input_factory readline
-    table.insert state.inputs, input
+    append state.inputs, input
     state.current_input = input
 
   true

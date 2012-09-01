@@ -16,7 +16,7 @@ connect = (name, handler, index) ->
   list = handlers_for name
   if not index or index > #list + 1 then index = #list + 1
   else if index < 1 then index = 1
-  table.insert list, index, handler
+  append list, index, handler
 
 connect_first = (name, handler) ->
   connect name, handler, 1

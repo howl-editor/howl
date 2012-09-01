@@ -12,7 +12,7 @@ new = (options = {}) ->
       options.with_return
 
     __index: (t,k) ->
-      table.insert spy.reads, k
+      append spy.reads, k
       if options.as_null_object
         sub = new options
         rawset spy, k, sub

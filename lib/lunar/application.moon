@@ -31,12 +31,12 @@ class Application
 
     props[k] = v for k, v in pairs(properties or {})
     window = Window props
-    table.insert @windows, window
+    append @windows, window
     window
 
   new_buffer: (mode) =>
     buffer = Buffer mode
-    table.insert(@buffers, buffer)
+    append(@buffers, buffer)
     buffer
 
   open_file: (file, editor = _G.editor) =>
