@@ -7,21 +7,21 @@ class Cursor extends PropertyObject
     @sci = sci
     @selection = selection
 
-  self\property pos:
+  @property pos:
     get: => 1 + @sci\get_current_pos!
     set: (pos) =>
       @sci\goto_pos pos - 1
       @sci\choose_caret_x!
 
-  self\property line:
+  @property line:
     get: => 1 + @sci\line_from_position @pos - 1
     set: (line) => @pos = 1 + @sci\position_from_line(line - 1)
 
-  self\property column:
+  @property column:
     get: => 1 + @sci\get_column @pos - 1
     set: (col) => @pos = 1 + @sci\find_column @line - 1, col - 1
 
-  self\property at_end_of_line:
+  @property at_end_of_line:
     get: =>
       cur_pos = @pos
       @sci\get_line_end_position(@line - 1) == cur_pos - 1

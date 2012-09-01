@@ -5,14 +5,14 @@ class Selection extends PropertyObject
     super!
     @sci = sci
 
-  self\property empty:
+  @property empty:
     get: => @sci\get_selection_end! - @sci\get_selection_start! == 0
 
-  self\property anchor:
+  @property anchor:
     get: => if @empty then nil else @sci\get_anchor! + 1
     set: (pos) => @sci\set_anchor pos - 1
 
-  self\property text:
+  @property text:
     get: => if @empty then nil else @sci\get_sel_text!
     set: (text) =>
       error 'Cannot replace empty selection' if @empty

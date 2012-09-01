@@ -69,7 +69,7 @@ class Editor extends PropertyObject
 
   to_gobject: => @bin
 
-  self\property buffer:
+  @property buffer:
     get: => @_buf
     set: (buffer) =>
       if @_buf
