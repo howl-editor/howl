@@ -39,6 +39,7 @@ class Cursor extends PropertyObject
     word_part_right:  'word_part_right'
     home:             'home'
     home_vc:          'vchome'
+    home_vc_display:  'vchome_display'
     home_display:     'home_display'
     home_wrap:        'home_wrap'
     home_vc_wrap:     'vchome_wrap'

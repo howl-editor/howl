@@ -6,7 +6,7 @@ class Selection extends PropertyObject
     @sci = sci
 
   @property empty:
-    get: => @sci\get_selection_end! - @sci\get_selection_start! == 0
+    get: => @sci\get_selection_empty!
 
   @property anchor:
     get: => if @empty then nil else @sci\get_anchor! + 1

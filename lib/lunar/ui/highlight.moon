@@ -12,7 +12,7 @@ setfenv 1, _ENV
 
 -- Highlight styles
 export PLAIN       = Scintilla.INDIC_PLAIN
-export SQUIGGLE    = Scintilla.INDIC_SQUIGGLE
+export SQUIGGLE    = Scintilla.INDIC_SQUIGGLEPIXMAP
 export TT          = Scintilla.INDIC_TT
 export DIAGONAL    = Scintilla.INDIC_DIAGONAL
 export STRIKE      = Scintilla.INDIC_STRIKE

@@ -332,6 +332,7 @@ SCI_STYLESETVISIBLE = 2074
 SCI_GETCARETPERIOD = 2075
 SCI_SETCARETPERIOD = 2076
 SCI_SETWORDCHARS = 2077
+SCI_GETWORDCHARS = 2646
 SCI_BEGINUNDOACTION = 2078
 SCI_ENDUNDOACTION = 2079
 INDIC_PLAIN = 0
@@ -347,6 +348,7 @@ INDIC_DASH = 9
 INDIC_DOTS = 10
 INDIC_SQUIGGLELOW = 11
 INDIC_DOTBOX = 12
+INDIC_SQUIGGLEPIXMAP = 13
 INDIC_MAX = 31
 INDIC_CONTAINER = 8
 INDIC0_MASK = 0x20
@@ -770,6 +772,9 @@ SCI_WORDLEFTENDEXTEND = 2440
 SCI_WORDRIGHTEND = 2441
 SCI_WORDRIGHTENDEXTEND = 2442
 SCI_SETWHITESPACECHARS = 2443
+SCI_GETWHITESPACECHARS = 2647
+SCI_SETPUNCTUATIONCHARS = 2648
+SCI_GETPUNCTUATIONCHARS = 2649
 SCI_SETCHARSDEFAULT = 2444
 SCI_AUTOCGETCURRENT = 2445
 SCI_AUTOCGETCURRENTTEXT = 2610
@@ -869,6 +874,7 @@ SCI_GETADDITIONALCARETSBLINK = 2568
 SCI_SETADDITIONALCARETSVISIBLE = 2608
 SCI_GETADDITIONALCARETSVISIBLE = 2609
 SCI_GETSELECTIONS = 2570
+SCI_GETSELECTIONEMPTY = 2650
 SCI_CLEARSELECTIONS = 2571
 SCI_SETSELECTION = 2572
 SCI_ADDSELECTION = 2573
@@ -918,6 +924,7 @@ SCI_SETIDENTIFIER = 2622
 SCI_GETIDENTIFIER = 2623
 SCI_RGBAIMAGESETWIDTH = 2624
 SCI_RGBAIMAGESETHEIGHT = 2625
+SCI_RGBAIMAGESETSCALE = 2651
 SCI_MARKERDEFINERGBAIMAGE = 2626
 SCI_REGISTERRGBAIMAGE = 2627
 SCI_SCROLLTOSTART = 2628
@@ -930,6 +937,8 @@ SCI_CREATELOADER = 2632
 SCI_FINDINDICATORSHOW = 2640
 SCI_FINDINDICATORFLASH = 2641
 SCI_FINDINDICATORHIDE = 2642
+SCI_VCHOMEDISPLAY = 2652
+SCI_VCHOMEDISPLAYEXTEND = 2653
 SCI_STARTRECORD = 3001
 SCI_STOPRECORD = 3002
 SCI_SETLEXER = 4001
@@ -1695,6 +1704,12 @@ end
 -- First sets defaults like SetCharsDefault.
 function sci:set_word_chars(characters)
   self:send(2077, 0, characters)
+end
+
+-- Get the set of characters making up words for when moving or selecting by word.
+-- Retuns the number of characters
+function sci:get_word_chars()
+  return self:send_with_stringresult(2646)
 end
 
 -- Start a sequence of actions that is undone and redone as a unit.
@@ -3318,12 +3333,12 @@ function sci:del_line_right()
   self:send(2396, 0, 0)
 end
 
--- Get and Set the xOffset (ie, horizonal scroll position).
+-- Get and Set the xOffset (ie, horizontal scroll position).
 function sci:set_xoffset(new_offset)
   self:send(2397, new_offset, 0)
 end
 
--- Get and Set the xOffset (ie, horizonal scroll position).
+-- Get and Set the xOffset (ie, horizontal scroll position).
 function sci:get_xoffset()
   return tonumber(self:send(2398, 0, 0))
 end
@@ -3338,7 +3353,7 @@ function sci:grab_focus()
   self:send(2400, 0, 0)
 end
 
--- Set the way the caret is kept visible when going sideway.
+-- Set the way the caret is kept visible when going sideways.
 -- The exclusion zone is given in pixels.
 function sci:set_xcaret_policy(caret_policy, caret_slop)
   self:send(2402, caret_policy, caret_slop)
@@ -3557,6 +3572,22 @@ function sci:set_whitespace_chars(characters)
   self:send(2443, 0, characters)
 end
 
+-- Get the set of characters making up whitespace for when moving or selecting by word.
+function sci:get_whitespace_chars()
+  return self:send_with_stringresult(2647)
+end
+
+-- Set the set of characters making up punctuation characters
+-- Should be called after SetWordChars.
+function sci:set_punctuation_chars(characters)
+  self:send(2648, 0, characters)
+end
+
+-- Get the set of characters making up punctuation characters
+function sci:get_punctuation_chars()
+  return self:send_with_stringresult(2649)
+end
+
 -- Reset the set of characters for whitespace and word characters to the defaults.
 function sci:set_chars_default()
   self:send(2444, 0, 0)
@@ -3678,7 +3709,7 @@ function sci:set_indicator_value(value)
   self:send(2502, value, 0)
 end
 
--- Get the current indicator vaue
+-- Get the current indicator value
 function sci:get_indicator_value()
   return tonumber(self:send(2503, 0, 0))
 end
@@ -3978,6 +4009,11 @@ function sci:get_selections()
   return tonumber(self:send(2570, 0, 0))
 end
 
+-- Is every selected range empty?
+function sci:get_selection_empty()
+  return 0 ~= self:send(2650, 0, 0)
+end
+
 -- Clear selections to a single empty stream selection
 function sci:clear_selections()
   self:send(2571, 0, 0)
@@ -4046,8 +4082,8 @@ function sci:get_selection_nstart(selection)
 end
 
 -- Sets the position that ends the selection - this becomes the currentPosition.
-function sci:set_selection_nend(selection)
-  self:send(2586, selection, 0)
+function sci:set_selection_nend(selection, pos)
+  self:send(2586, selection, pos)
 end
 
 -- Returns the position at the end of the selection.
@@ -4193,6 +4229,11 @@ function sci:rgbaimage_set_height(height)
   self:send(2625, height, 0)
 end
 
+-- Set the scale factor in percent for future RGBA image data.
+function sci:rgbaimage_set_scale(scale_percent)
+  self:send(2651, scale_percent, 0)
+end
+
 -- Define a marker from RGBA data.
 -- It has the width and height from RGBAImageSetWidth/Height
 function sci:marker_define_rgbaimage(marker_number, pixels)
@@ -4215,7 +4256,7 @@ function sci:scroll_to_end()
   self:send(2629, 0, 0)
 end
 
--- Set the technolgy used.
+-- Set the technology used.
 function sci:set_technology(technology)
   self:send(2630, technology, 0)
 end
@@ -4243,6 +4284,17 @@ end
 -- On OS X, hide the find indicator.
 function sci:find_indicator_hide()
   self:send(2642, 0, 0)
+end
+
+-- Move caret to before first visible character on display line.
+-- If already there move to first character on display line.
+function sci:vchome_display()
+  self:send(2652, 0, 0)
+end
+
+-- Like VCHomeDisplay but extending selection to new caret position.
+function sci:vchome_display_extend()
+  self:send(2653, 0, 0)
 end
 
 -- Start notifying the container of all key presses and commands.
