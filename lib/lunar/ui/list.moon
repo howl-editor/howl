@@ -178,7 +178,9 @@ class List extends PropertyObject
     @end_pos = pos
     pos
 
-  __len: => #@items
+  @meta {
+    __len: => #@items
+  }
 
   _column_style: (item, row, column) =>
     if callable @column_styles then return self.column_styles(item, row, column)
