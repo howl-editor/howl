@@ -213,6 +213,11 @@ describe 'Buffer', ->
     b = buffer 'hello'
     assert_equal #b, b.size
 
+  it 'tostring(buffer) returns the buffer title', ->
+    b = buffer 'hello'
+    b.title = 'foo'
+    assert_equal tostring(b), 'foo'
+
   describe '.add_sci_ref(sci)', ->
     it 'adds the specified sci to .scis', ->
       sci = {}

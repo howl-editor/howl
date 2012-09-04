@@ -96,6 +96,7 @@ class Buffer extends PropertyObject
 
   @meta {
     __len: => @size
+    __tostring: => @title
   }
 
 return Buffer
