@@ -1,9 +1,26 @@
 import Scintilla, styler, BufferLines from lunar
+import File from lunar.fs
 import style from lunar.ui
 import PropertyObject from lunar.aux.moon
 
 background_sci = Scintilla!
 background_buffer = nil
+buffer_titles = setmetatable {}, __mode: 'v'
+title_counters = {}
+
+file_title = (file) ->
+  title = file.basename
+  while buffer_titles[title]
+    file = file.parent
+    return title if not file
+    title = file.basename .. File.separator .. title
+
+  title
+
+title_counter = (title) ->
+  title_counters[title] = 1 if not title_counters[title]
+  title_counters[title] += 1
+  title_counters[title]
 
 class Buffer extends PropertyObject
   new: (mode, sci) =>
@@ -24,7 +41,7 @@ class Buffer extends PropertyObject
     get: => @_file
     set: (file) =>
       @_file = file
-      @title = file.basename
+      @title = file_title file
       @text = file.contents
       @dirty = false
       @can_undo = false
@@ -35,7 +52,10 @@ class Buffer extends PropertyObject
 
   @property title:
     get: => @_title or 'Untitled'
-    set: (title) => @_title = title
+    set: (title) =>
+      title ..= '<' .. title_counter(title) .. '>' if buffer_titles[title]
+      @_title = title
+      buffer_titles[title] = self
 
   @property text:
     get: => @sci\get_text!

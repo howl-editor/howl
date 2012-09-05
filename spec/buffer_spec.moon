@@ -1,4 +1,5 @@
 import Buffer from lunar
+import File from lunar.fs
 
 describe 'Buffer', ->
   buffer = (text) ->
@@ -248,3 +249,37 @@ describe 'Buffer', ->
       assert_equal b.sci, sci2
       b\remove_sci_ref sci2
       assert_equal b.sci, sci
+
+  describe 'ensuring that buffer titles are globally unique', ->
+    context 'when setting a file for a buffer', ->
+      it 'prepends to the title as many parent directories as needed for uniqueness', ->
+        b1 = Buffer {}
+        b2 = Buffer {}
+        b3 = Buffer {}
+        with_tmpdir (dir) ->
+          sub1 = dir\join('sub1')
+          sub1\mkdir!
+          sub2 = dir\join('sub2')
+          sub2\mkdir!
+          f1 = sub1\join('file.foo')
+          f2 = sub2\join('file.foo')
+          f1\touch!
+          f2\touch!
+          b1.file = f1
+          b2.file = f2
+          assert_equal b2.title, 'sub2' .. File.separator .. 'file.foo'
+
+          sub_sub = sub1\join('sub2')
+          sub_sub\mkdir!
+          f3 = sub_sub\join('file.foo')
+          f3\touch!
+          b3.file = f3
+          assert_equal b3.title, 'sub1' .. File.separator .. b2.title
+
+    context 'when setting the title explicitly', ->
+      it 'appends a counter number in the format <number> to the title', ->
+        b1 = Buffer {}
+        b2 = Buffer {}
+        b1.title = 'Title'
+        b2.title = 'Title'
+        assert_equal b2.title, 'Title<2>'
