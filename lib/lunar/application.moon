@@ -75,6 +75,7 @@ class Application
 
   _load_commands: =>
     require 'lunar.inputs.file'
+    require 'lunar.inputs.buffer'
     require 'lunar.commands.file_commands'
     require 'lunar.commands.app_commands'
 
