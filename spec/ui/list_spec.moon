@@ -116,6 +116,18 @@ Column 1 Column 2
 three    four
 ]]
 
+  context 'when items are not strings', ->
+    it 'automatically converts items to strings using tostring before displaying', ->
+      list.items = { 1, 2 }
+      list\show!
+      assert_equal buf.text, '1\n2\n'
+
+    it 'the selection is still the raw item', ->
+      list.selection_enabled = true
+      list.items = { 1, 2 }
+      list\show!
+      assert_equal list.selection, 1
+
   describe 'styling', ->
     it 'headers are styled using the list_header style', ->
       list.items = { { 'first' } }

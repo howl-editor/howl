@@ -15,11 +15,11 @@ calculate_column_widths = (items, headers) ->
     for item in *items
       if type(item) != 'table' then return nil
       for i, col in ipairs item
-        widths[i] = math.max(widths[i] or 0, #tostring col)
+        widths[i] = math.max(widths[i] or 0, #tostring(col))
 
     if headers and #headers > 0
       for i, col in ipairs headers
-        widths[i] = math.max(widths[i] or 0, #tostring col)
+        widths[i] = math.max(widths[i] or 0, #tostring(col))
 
     widths
 
@@ -158,10 +158,10 @@ class List extends PropertyObject
       if @_multi_column
         for column, field in ipairs item
           padding = column_padding field, column, @_widths
-          pos = buffer\insert field, pos, @_column_style item, row, column
+          pos = buffer\insert tostring(field), pos, @_column_style item, row, column
           pos = buffer\insert padding, pos
       else
-        pos = buffer\insert item, pos, @_column_style item, row, 1
+        pos = buffer\insert tostring(item), pos, @_column_style item, row, 1
 
       pos = buffer\insert '\n', pos
 
