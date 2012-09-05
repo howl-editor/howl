@@ -36,11 +36,11 @@ class Application
 
   new_buffer: (mode) =>
     buffer = Buffer mode
-    append(@buffers, buffer)
+    append @buffers, buffer
     buffer
 
   open_file: (file, editor = _G.editor) =>
-    buffer = self\new_buffer mode.for_file file
+    buffer = @new_buffer mode.for_file file
     buffer.file = file
     editor.buffer = buffer
 
@@ -49,15 +49,15 @@ class Application
     @_load_variables!
     @_load_commands!
     bundle.init @root_dir / 'bundles'
-    self\_set_theme!
+    @_set_theme!
 
-    window = self\new_window!
-    buffer = self\new_buffer mode.by_name 'Lua'
+    window = @new_window!
+    buffer = @new_buffer mode.by_name 'Lua'
     editor = Editor buffer
     window\add_view editor
 
     if #@args > 1
-      self\open_file(File(path), editor) for path in *@args[2,]
+      @open_file(File(path), editor) for path in *@args[2,]
 
     window.status\info 'Lunar 0.0 ready.'
     editor\focus!
