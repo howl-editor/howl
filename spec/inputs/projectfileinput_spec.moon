@@ -1,7 +1,7 @@
 import inputs, Project from lunar
 import File from lunar.fs
 
-require 'lunar.inputs.projectfile'
+require 'lunar.inputs.projectfile_input'
 
 describe 'ProjectFile', ->
 

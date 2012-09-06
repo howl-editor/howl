@@ -75,9 +75,9 @@ class Application
     require 'lunar.variables.core_variables'
 
   _load_commands: =>
-    require 'lunar.inputs.projectfile'
-    require 'lunar.inputs.file'
-    require 'lunar.inputs.buffer'
+    require 'lunar.inputs.projectfile_input'
+    require 'lunar.inputs.file_input'
+    require 'lunar.inputs.buffer_input'
     require 'lunar.commands.file_commands'
     require 'lunar.commands.app_commands'
 

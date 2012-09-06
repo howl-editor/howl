@@ -26,7 +26,7 @@ sort_paths = (paths) ->
     return a_count < b_count if a_count != b_count
     a < b
 
-class ProjectFile
+class ProjectFileInput
   new: =>
     if editor
       file = editor.buffer.file
@@ -55,5 +55,5 @@ class ProjectFile
 
   value_for: (path) => if @root then return @root / path
 
-lunar.inputs.register 'project_file', ProjectFile
-return ProjectFile
+lunar.inputs.register 'project_file', ProjectFileInput
+return ProjectFileInput

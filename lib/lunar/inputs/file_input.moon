@@ -8,7 +8,7 @@ display_name = (file) ->
   name ..= separator if file.is_directory
   name
 
-class File
+class FileInput
   new: (readline) =>
     @readline = readline
     @base_prompt = readline.prompt .. readline.text
@@ -59,5 +59,5 @@ class File
     prompt ..= separator if not prompt\match separator .. '$'
     @readline.prompt = prompt
 
-lunar.inputs.register 'file', File
-return File
+lunar.inputs.register 'file', FileInput
+return FileInput

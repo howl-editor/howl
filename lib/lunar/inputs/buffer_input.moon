@@ -4,7 +4,7 @@ import Matcher from lunar.completion
 buffer_dir = (buffer) ->
   buffer.file and tostring(buffer.file.parent) or '(none)'
 
-class Buffer
+class BufferInput
   new: (input) =>
     buffers = [ { b.title, buffer_dir(b) } for b in *app.buffers ]
     @matcher = Matcher buffers, true, true, true
@@ -19,5 +19,5 @@ class Buffer
     for buffer in *app.buffers
       return buffer if buffer.title == title
 
-lunar.inputs.register 'buffer', Buffer
-return Buffer
+lunar.inputs.register 'buffer', BufferInput
+return BufferInput
