@@ -1,7 +1,8 @@
 import GLib from lgi
+import File from lunar.fs
 import Matcher from lunar.completion
 
-separator = lunar.fs.File.separator
+separator = File.separator
 
 display_name = (file) ->
   name = file.basename
@@ -12,7 +13,7 @@ class FileInput
   new: (readline) =>
     @readline = readline
     @base_prompt = readline.prompt .. readline.text
-    directory = GLib.get_current_dir!
+    directory = File GLib.get_current_dir!
 
     if editor
       file = editor.buffer.file
