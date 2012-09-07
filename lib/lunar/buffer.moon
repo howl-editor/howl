@@ -84,6 +84,11 @@ class Buffer extends PropertyObject
 
   append: (text) => @sci\append_text #text, text
 
+  save: =>
+    if @file
+      @file.contents = @text
+      @dirty = false
+
   as_one_undo: (f) =>
     @sci\begin_undo_action!
     status, ret = pcall f

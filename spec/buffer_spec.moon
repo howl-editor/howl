@@ -210,6 +210,26 @@ describe 'Buffer', ->
         b\undo!
         assert_equal b.text, 'ello'
 
+  describe 'save()', ->
+    context 'when a file is assigned', ->
+      it 'stores the contents of the buffer in the assigned file', ->
+        text = 'line1\nline2♥\nåäö'
+        b = buffer text
+        with_tmpfile (file) ->
+          b.file = file
+          b.text = text
+          b\save!
+          assert_equal file.contents, text
+
+      it 'clears the dirty flag', ->
+        with_tmpfile (file) ->
+          b = buffer 'foo'
+          b.file = file
+          b\append ' bar'
+          assert_true b.dirty
+          b\save!
+          assert_false b.dirty
+
   it '#buffer returns the same as buffer.size', ->
     b = buffer 'hello'
     assert_equal #b, b.size
