@@ -27,6 +27,9 @@ ntype = function(node)
     return node[1]
   end
 end
+value_is_singular = function(node)
+  return type(node) ~= "table" or node[1] ~= "exp" or #node == 2
+end
 is_slice = function(node)
   return ntype(node) == "chain" and ntype(node[#node]) == "slice"
 end
@@ -183,6 +186,16 @@ build = setmetatable({
   table = function(tbl)
     if tbl == nil then
       tbl = { }
+    end
+    local _list_0 = tbl
+    for _index_0 = 1, #_list_0 do
+      local tuple = _list_0[_index_0]
+      if type(tuple[1]) == "string" then
+        tuple[1] = {
+          "key_literal",
+          tuple[1]
+        }
+      end
     end
     return {
       "table",

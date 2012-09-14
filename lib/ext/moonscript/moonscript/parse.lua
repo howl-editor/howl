@@ -179,7 +179,7 @@ local function flatten_func(callee, args)
 	return {"chain", callee, args}
 end
 
--- wraps a statement that has a line decorator
+-- transforms a statement that has a line decorator
 local function wrap_decorator(stm, dec)
 	if not dec then return stm end
 
@@ -189,6 +189,12 @@ local function wrap_decorator(stm, dec)
 		local _, cond, fail = unpack(dec)
 		if fail then fail = {"else", {fail}} end
 		stm = {"if", cond, {stm}, fail}
+	elseif dec[1] == "unless" then
+		stm = {
+			"if",
+			{"not", {"parens", dec[2]}},
+			{stm}
+		}
 	elseif dec[1] == "comprehension" then
 		local _, clauses = unpack(dec)
 		stm = {"comprehension", stm, clauses}
@@ -213,7 +219,7 @@ end
 
 -- :name in table literal
 local function self_assign(name)
-	return {name, name}
+	return {{"key_literal", name}, name}
 end
 
 local err_msg = "Failed to parse:\n [%d] >>    %s (%d)"
@@ -260,15 +266,19 @@ local build_grammar = wrap_env(function()
 		return patt
 	end
 
-	local SimpleName = Name -- for table key
-
 	-- make sure name is not a keyword
 	local Name = Cmt(Name, function(str, pos, name)
 		if keywords[name] then return false end
 		return true
 	end) / trim
 
-	local Name = sym"@" * Name / mark"self" + Name + Space * "..." / trim
+	local SelfName = Space * "@" * (
+		"@" * (_Name / mark"self_class" + Cc"self.__class") +
+		_Name / mark"self" + Cc"self")
+
+	local KeyName = SelfName + Space * _Name / mark"key_literal"
+
+	local Name = SelfName + Name + Space * "..." / trim
 
 	local g = lpeg.P{
 		File,
@@ -277,10 +287,14 @@ local build_grammar = wrap_env(function()
 		CheckIndent = Cmt(Indent, check_indent), -- validates line is in correct indent
 		Line = (CheckIndent * Statement + Space * #Stop),
 
-		Statement = (Import + While + With + For + ForEach + Switch + Return
-			+ ClassDecl + Export + BreakLoop + Ct(ExpList) / flatten_or_mark"explist" * Space) * ((
+		Statement = (
+				Import + While + With + For + ForEach + Switch + Return + ClassDecl +
+				Export + BreakLoop + Assign + Update +
+				Ct(ExpList) / flatten_or_mark"explist"
+			) * Space * ((
 				-- statement decorators
 				key"if" * Exp * (key"else" * Exp)^-1 * Space / mark"if" +
+				key"unless" * Exp / mark"unless" +
 				CompInner / mark"comprehension"
 			) * Space)^-1 / wrap_decorator,
 
@@ -319,7 +333,7 @@ local build_grammar = wrap_env(function()
 		For = key"for" * (Name * sym"=" * Ct(Exp * sym"," * Exp * (sym"," * Exp)^-1)) *
 			key"do"^-1 * Body / mark"for",
 
-		ForEach = key"for" * Ct(NameList) * key"in" * (sym"*" * Exp / mark"unpack" + Exp) * key"do"^-1 * Body / mark"foreach",
+		ForEach = key"for" * Ct(NameList) * key"in" * Ct(sym"*" * Exp / mark"unpack" + ExpList) * key"do"^-1 * Body / mark"foreach",
 
 		Comprehension = sym"[" * Exp * CompInner * sym"]" / mark"comprehension",
 
@@ -355,7 +369,7 @@ local build_grammar = wrap_env(function()
 			TblComprehension +
 			TableLit +
 			Comprehension +
-			Assign + Update + FunLit + String +
+			FunLit + String +
 			Num,
 
 		ChainValue = -- a function call or an object access
@@ -434,6 +448,7 @@ local build_grammar = wrap_env(function()
 			Ct(ClassLine * (SpaceBreak^1 * ClassLine)^0) *  PopIndent,
 		ClassLine = CheckIndent * ((
 				KeyValueList / mark"props" +
+				(Assign + Update) / mark"stm" +
 				Exp / mark"stm"
 			) * sym","^-1),
 
@@ -442,7 +457,7 @@ local build_grammar = wrap_env(function()
 			op"*" + op"^" +
 			Ct(NameList) * (sym"=" * Ct(ExpListLow))^-1) / mark"export",
 
-		KeyValue = (sym":" * Name) / self_assign + Ct((SimpleName + sym"[" * Exp * sym"]") * symx":" * (Exp + TableBlock)),
+		KeyValue = (sym":" * Name) / self_assign + Ct((KeyName + sym"[" * Exp * sym"]" + DoubleString + SingleString) * symx":" * (Exp + TableBlock)),
 		KeyValueList = KeyValue * (sym"," * KeyValue)^0,
 		KeyValueLine = CheckIndent * KeyValueList * sym","^-1,
 

@@ -274,7 +274,8 @@ Block = (function()
     _insert_breaks = function(self)
       for i = 1, #self._lines - 1 do
         local left, right = self._lines[i], self._lines[i + 1]
-        if left:sub(-1) == ")" and right:sub(1, 1) == "(" then
+        local lc = left:sub(-1)
+        if (lc == ")" or lc == "]") and right:sub(1, 1) == "(" then
           self._lines[i] = self._lines[i] .. ";"
         end
       end
@@ -450,7 +451,6 @@ Block = (function()
   _base_0.__class = _class_0
   return _class_0
 end)()
-local RootBlock
 RootBlock = (function()
   local _parent_0 = Block
   local _base_0 = {
@@ -515,8 +515,11 @@ value = function(value)
   end
   return out
 end
-tree = function(tree)
-  local scope = RootBlock()
+tree = function(tree, scope)
+  if scope == nil then
+    scope = RootBlock()
+  end
+  assert(tree, "missing tree")
   local runner = coroutine.create(function()
     local _list_0 = tree
     for _index_0 = 1, #_list_0 do

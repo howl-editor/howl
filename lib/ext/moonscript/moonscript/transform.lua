@@ -3,7 +3,7 @@ local types = require("moonscript.types")
 local util = require("moonscript.util")
 local data = require("moonscript.data")
 local reversed = util.reversed
-local ntype, build, smart_node, is_slice = types.ntype, types.build, types.smart_node, types.is_slice
+local ntype, build, smart_node, is_slice, value_is_singular = types.ntype, types.build, types.smart_node, types.is_slice, types.value_is_singular
 local insert = table.insert
 LocalName = (function()
   local _parent_0 = nil
@@ -205,6 +205,42 @@ is_singular = function(body)
     return true
   end
 end
+local find_assigns
+find_assigns = function(body, out)
+  if out == nil then
+    out = { }
+  end
+  local _list_0 = body
+  for _index_0 = 1, #_list_0 do
+    local thing = _list_0[_index_0]
+    local _exp_0 = thing[1]
+    if "group" == _exp_0 then
+      find_assigns(thing[2], out)
+    elseif "assign" == _exp_0 then
+      table.insert(out, thing[2])
+    end
+  end
+  return out
+end
+local hoist_declarations
+hoist_declarations = function(body, rules)
+  local assigns = { }
+  local _list_0 = find_assigns(body)
+  for _index_0 = 1, #_list_0 do
+    local names = _list_0[_index_0]
+    local _list_1 = names
+    for _index_0 = 1, #_list_1 do
+      local name = _list_1[_index_0]
+      if type(name) == "string" then
+        table.insert(assigns, name)
+      end
+    end
+  end
+  return table.insert(body, 1, {
+    "declare",
+    assigns
+  })
+end
 local constructor_name = "new"
 local Transformer
 Transformer = (function()
@@ -279,7 +315,9 @@ construct_comprehension = function(inner, clauses)
       current_stms = {
         "foreach",
         names,
-        iter,
+        {
+          iter
+        },
         current_stms
       }
     elseif t == "when" then
@@ -358,6 +396,12 @@ Statement = Transformer({
     local op_final = op:match("^(.+)=$")
     if not op_final then
       error("Unknown op: " .. op)
+    end
+    if not (value_is_singular(exp)) then
+      exp = {
+        "parens",
+        exp
+      }
     end
     return build.assign_one(name, {
       "exp",
@@ -491,8 +535,9 @@ Statement = Transformer({
   end,
   foreach = function(self, node)
     smart_node(node)
-    if ntype(node.iter) == "unpack" then
-      local list = node.iter[2]
+    local source = unpack(node.iter)
+    if ntype(source) == "unpack" then
+      local list = source[2]
       local index_name = NameProxy("index")
       local list_name = NameProxy("list")
       local slice_var = nil
@@ -616,7 +661,11 @@ Statement = Transformer({
         local _list_1 = item
         for _index_0 = 2, #_list_1 do
           local tuple = _list_1[_index_0]
-          insert(properties, tuple)
+          if ntype(tuple[1]) == "self" then
+            insert(statements, build.assign_one(unpack(tuple)))
+          else
+            insert(properties, tuple)
+          end
         end
       end
     end
@@ -627,8 +676,9 @@ Statement = Transformer({
       local _list_1 = properties
       for _index_0 = 1, #_list_1 do
         local tuple = _list_1[_index_0]
+        local key = tuple[1]
         local _value_0
-        if tuple[1] == constructor_name then
+        if key[1] == "key_literal" and key[2] == constructor_name then
           constructor = tuple[2]
           _value_0 = nil
         else
@@ -792,7 +842,7 @@ Statement = Transformer({
     local value = nil
     do
       local _with_0 = build
-      value = _with_0.block_exp({
+      local out_body = {
         Run(function(self)
           return self:set("super", function(block, chain)
             if chain then
@@ -825,16 +875,17 @@ Statement = Transformer({
                     unpack(head[2])
                   }
                 }
-                local act
-                if ntype(calling_name) ~= "value" then
-                  act = "index"
+                if ntype(calling_name) == "key_literal" then
+                  insert(new_chain, {
+                    "dot",
+                    calling_name[2]
+                  })
                 else
-                  act = "dot"
+                  insert(new_chain, {
+                    "index",
+                    calling_name
+                  })
                 end
-                insert(new_chain, {
-                  act,
-                  calling_name
-                })
               elseif "colon" == _exp_0 then
                 local call = head[3]
                 insert(new_chain, {
@@ -899,8 +950,26 @@ Statement = Transformer({
             return { }
           end
         end)()),
+        build["if"]({
+          cond = {
+            "exp",
+            parent_cls_name,
+            "and",
+            parent_cls_name:chain("__inherited")
+          },
+          ["then"] = {
+            parent_cls_name:chain("__inherited", {
+              "call",
+              {
+                parent_cls_name,
+                cls_name
+              }
+            })
+          }
+        }),
         cls_name
-      })
+      }
+      hoist_declarations(out_body)
       value = _with_0.group({
         _with_0.declare({
           names = {
@@ -912,7 +981,7 @@ Statement = Transformer({
             name
           },
           values = {
-            value
+            _with_0.block_exp(out_body)
           }
         })
       })
@@ -1021,12 +1090,18 @@ default_accumulator = function(self, node)
 end
 local implicitly_return
 implicitly_return = function(scope)
+  local is_top = true
   local fn
   fn = function(stm)
     local t = ntype(stm)
     if types.manual_return[t] or not types.is_value(stm) then
-      return stm
+      if is_top and t == "return" and stm[2] == "" then
+        return nil
+      else
+        return stm
+      end
     elseif types.cascading[t] then
+      is_top = false
       return scope.transform.statement(stm, fn)
     else
       if t == "comprehension" and not types.comprehension_has_value(stm) then
