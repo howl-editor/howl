@@ -1,7 +1,14 @@
 import File from lunar.fs
 import Sandbox from lunar.aux
 
-export bundles = {}
+import assert, error, loadfile, type, _G from _G
+
+_G.bundles = {}
+
+bundle = {}
+setfenv 1, bundle
+
+export dirs = {}
 
 find_bundle_init = (dir) ->
   for f in *{'init.moon', 'init.lua'}
@@ -45,17 +52,27 @@ bundle_sandbox = (dir) ->
   }
   box
 
-load = (dir) ->
+export load_from_dir = (dir) ->
   error 'Not a directory: ' .. dir if not dir.is_directory
   init = find_bundle_init dir
   sandbox = bundle_sandbox dir
   bundle = load_file init, sandbox
   verify_bundle bundle, init
-  bundles[module_name dir.basename] = bundle
+  _G.bundles[module_name dir.basename] = bundle
 
-init = (dir) ->
-  for c in *dir.children
-    if c.is_directory and not c.is_hidden
-      load c
+export load_by_name = (name) ->
+  for dir in *dirs
+    for c in *dir.children
+      if c.is_directory and not c.is_hidden and module_name(c.basename) == name
+        load_from_dir c
+        return
 
-return :init, :load
+  error 'bundle "' .. name .. '" was not found', 2
+
+export load_all = ->
+  for dir in *dirs
+    for c in *dir.children
+      if c.is_directory and not c.is_hidden
+        load_from_dir c
+
+return bundle

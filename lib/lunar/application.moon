@@ -48,7 +48,8 @@ class Application
     keyhandler.keymap = keymap
     @_load_variables!
     @_load_commands!
-    bundle.init @root_dir / 'bundles'
+    bundle.dirs = { @root_dir / 'bundles' }
+    bundle.load_all!
     @_set_theme!
 
     window = @new_window!
