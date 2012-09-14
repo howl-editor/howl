@@ -56,7 +56,7 @@ class Runner
 
   run: =>
     @_setup_env!
-    functions = [loadfile(file) for file in *@_spec_files!]
+    functions = [assert loadfile(file) for file in *@_spec_files!]
     contexts = {}
     for f in *functions
       telescope.load_contexts f, contexts
