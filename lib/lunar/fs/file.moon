@@ -77,6 +77,7 @@ class File extends PropertyObject
   relative_to_parent: (parent) =>
     parent.gfile\get_relative_path @gfile
 
+  is_below: (dir) => @relative_to_parent(dir) != nil
   mkdir: => self\_assert @gfile\make_directory!
   mkdir_p: => self\_assert @gfile\make_directory_with_parents!
   delete: => self\_assert @gfile\delete!

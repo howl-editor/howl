@@ -71,6 +71,12 @@ describe 'File', ->
     file = File '/bin/ls'
     assert_equal 'ls', file\relative_to_parent(parent)
 
+  it 'is_below(dir) returns true if the file is located beneath <dir>', ->
+    parent = File '/bin'
+    assert_true File('/bin/ls')\is_below parent
+    assert_true File('/bin/sub/ls')\is_below parent
+    assert_false File('/usr/bin/ls')\is_below parent
+
   describe 'mkdir', ->
     it 'creates a directory for the path specified by the file', ->
       with_tmpfile (file) ->
