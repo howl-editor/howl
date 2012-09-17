@@ -15,6 +15,7 @@ class Application
     @windows = {}
     @buffers = {}
 
+    bundle.dirs = { @root_dir / 'bundles' }
     signal.connect 'error', (e) -> print e
 
   new_window: (properties) =>
@@ -48,7 +49,6 @@ class Application
     keyhandler.keymap = keymap
     @_load_variables!
     @_load_commands!
-    bundle.dirs = { @root_dir / 'bundles' }
     bundle.load_all!
     @_set_theme!
 
