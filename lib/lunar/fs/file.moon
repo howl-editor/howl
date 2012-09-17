@@ -98,15 +98,19 @@ class File extends PropertyObject
 
     filters = {}
     if options.name then append filters, (entry) -> not entry\tostring!\match options.name
+    if options.filter then append filters, options.filter
     filter = (entry) -> for f in *filters do return true if f entry
 
     files = {}
     directories = {}
     dir = self
     while dir
-      for entry in *dir.children
+      children = dir.children
+      if options.sort then table.sort children, (a,b) -> a.basename < b.basename
+
+      for entry in *children
         if entry.is_directory
-          append(directories, 1, entry)
+          append directories, 1, entry
         else
           append files, entry if not filter entry
 

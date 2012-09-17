@@ -152,6 +152,7 @@ describe 'File', ->
       with_tmpdir (dir) ->
         dir\join('child1')\mkdir!
         dir\join('child1/sub_dir')\mkdir!
+        dir\join('child1/sub_dir/deep.lua')\touch!
         dir\join('child1/sub_child.txt')\touch!
         dir\join('child1/sandwich.lua')\touch!
         dir\join('child2')\touch!
@@ -162,7 +163,7 @@ describe 'File', ->
       assert_error -> file\find!
 
     context 'with no parameters given', ->
-      it 'returns a table with all sub entries', ->
+      it 'returns a list of all sub entries', ->
         with_populated_dir (dir) ->
           files = dir\find!
           table.sort files, (a,b) -> a.path < b.path
@@ -172,15 +173,37 @@ describe 'File', ->
             'child1/sandwich.lua',
             'child1/sub_child.txt',
             'child1/sub_dir',
+            'child1/sub_dir/deep.lua',
             'child2'
           }
+
+    context 'when the sort parameter is given', ->
+      it 'returns a list of all sub entries in a pleasing order', ->
+        with_populated_dir (dir) ->
+          files = dir\find sort: true
+          normalized = [f\relative_to_parent dir for f in *files]
+          assert_table_equal normalized, {
+            'child2',
+            'child1',
+            'child1/sandwich.lua',
+            'child1/sub_child.txt',
+            'child1/sub_dir',
+            'child1/sub_dir/deep.lua',
+          }
+
     context 'when name: is passed as an option', ->
       it 'only returns files whose paths matches the specified value', ->
         with_populated_dir (dir) ->
           files = dir\find name: 'sub_[cd]'
           names = [f.basename for f in *files]
           table.sort names
-          assert_table_equal names, { 'sub_child.txt', 'sub_dir' }
+          assert_table_equal names, { 'deep.lua', 'sub_child.txt', 'sub_dir' }
+
+    context 'when filter: is passed as an option', ->
+      it 'excludes files for which <filter(file)> returns true', ->
+        with_populated_dir (dir) ->
+          files = dir\find filter: (file) -> file.basename != 'sandwich.lua'
+          assert_table_equal [f.basename for f in *files], { 'sandwich.lua' }
 
   describe 'meta methods', ->
     it '/ and .. joins the file with the specified argument', ->
