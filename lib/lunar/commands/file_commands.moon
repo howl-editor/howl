@@ -22,5 +22,8 @@ command.register
     buffer = _G.editor.buffer
     if buffer.file
       buffer\save!
+      nr_lines = #buffer.lines
+      log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
+        nr_lines, #buffer
 
 command.alias 'save', 'w'
