@@ -8,7 +8,7 @@ describe 'inputs', ->
       assert_raises 'name', -> inputs.register nil, -> true
       assert_raises 'func', -> inputs.register 'foo'
 
-  it '.<name> allows direct indexing of commands', ->
+  it '.<name> allows direct indexing of inputs', ->
     func = -> true
     inputs.register 'foo', func
     assert_equal inputs.foo, func
