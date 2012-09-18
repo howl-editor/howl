@@ -51,6 +51,7 @@ moon = require('moon')
 require('lunar.globals')
 
 lunar.app = lunar.Application(lunar.fs.File(app_root), argv)
+_G.log = require('lunar.log')
 
 if #argv > 1 and argv[2] == '--spec' then
   set_package_path('lib/ext/telescope')
