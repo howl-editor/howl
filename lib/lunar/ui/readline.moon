@@ -76,7 +76,6 @@ class Readline extends PropertyObject
         .selection_enabled = true
         \show!
       @_adjust_height!
-      @_submit! if force and count == 1
 
   _adjust_height: =>
     @gsci.height = @sci\text_height(0) * #@buffer.lines
