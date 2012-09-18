@@ -8,9 +8,9 @@ class Status
     @level = nil
     signal.connect 'key-press', self\clear
 
-  info: (text) => self\_set 'info', text
-  warning: (text) => self\_set 'warning', text
-  error: (text) => self\_set 'error', text
+  info: (text) => @_set 'info', text
+  warning: (text) => @_set 'warning', text
+  error: (text) => @_set 'error', text
 
   clear: =>
     if @text

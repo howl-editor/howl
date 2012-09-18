@@ -66,8 +66,8 @@ class Buffer extends PropertyObject
     set: (status) =>
       if not status then @sci\set_save_point!
       else -- there's no specific message for marking as dirty
-        self\append ' '
-        self\delete @size, 1
+        @append ' '
+        @delete @size, 1
 
   @property can_undo:
     get: => @sci\can_undo!

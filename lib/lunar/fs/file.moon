@@ -48,9 +48,9 @@ class File extends PropertyObject
     @f_info
 
   @property contents:
-    get: => tostring self\_assert @gfile\load_contents!
+    get: => tostring @_assert @gfile\load_contents!
     set: (contents) =>
-      with self\_assert io.open @path, 'w'
+      with @_assert io.open @path, 'w'
         \write contents
         \close!
 
@@ -78,18 +78,18 @@ class File extends PropertyObject
     parent.gfile\get_relative_path @gfile
 
   is_below: (dir) => @relative_to_parent(dir) != nil
-  mkdir: => self\_assert @gfile\make_directory!
-  mkdir_p: => self\_assert @gfile\make_directory_with_parents!
-  delete: => self\_assert @gfile\delete!
+  mkdir: => @_assert @gfile\make_directory!
+  mkdir_p: => @_assert @gfile\make_directory_with_parents!
+  delete: => @_assert @gfile\delete!
   delete_all: =>
     if @is_directory
-      entries = self\find!
+      entries = @find!
       entry\delete! for entry in *entries when not entry.is_directory
       directories = [f for f in *entries when f.is_directory]
       table.sort directories, (a,b) -> a.path > b.path
       dir\delete! for dir in *directories
 
-    self\delete!
+    @delete!
 
   touch: => @contents = '' if not @exists
 
@@ -122,9 +122,9 @@ class File extends PropertyObject
   tostring: => @path or @uri
 
   @meta {
-    __tostring: => self\tostring!
+    __tostring: => @tostring!
 
-    __div: (op) => self\join op
+    __div: (op) => @join op
 
     __concat: (op1, op2) ->
       if op1.__class == File
@@ -139,7 +139,7 @@ class File extends PropertyObject
 
   _assert: (...) =>
     status, msg = ...
-    error self\tostring! .. ' :' .. msg, 3 if not status
+    error @tostring! .. ' :' .. msg, 3 if not status
     ...
 
 File.rm = File.delete

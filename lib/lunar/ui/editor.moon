@@ -65,7 +65,7 @@ class Editor extends PropertyObject
     @bin.child.sci_box\get_style_context!\add_class 'sci_box'
 
     @buffer = buffer
-    self\_set_appearance!
+    @_set_appearance!
 
   to_gobject: => @bin
 
@@ -105,8 +105,8 @@ class Editor extends PropertyObject
       @buffer\insert ' ', @cursor.pos
 
   _set_appearance: =>
-    self\_set_theme_settings!
-    self\_set_config_settings!
+    @_set_theme_settings!
+    @_set_config_settings!
 
   _set_config_settings: =>
     -- todo: read from upcoming variables
@@ -155,7 +155,7 @@ class Editor extends PropertyObject
     keyhandler.process self, args
 
   _on_update_ui: =>
-    self\_update_position!
+    @_update_position!
     signal.emit 'editor-changed', self
 
   _update_position: =>
