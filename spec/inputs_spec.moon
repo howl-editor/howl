@@ -21,5 +21,5 @@ describe 'inputs', ->
 
   it 'allows iterating through inputs using pairs()', ->
     inputs.register 'foo', -> true
-    names = [name for name, func in pairs inputs]
+    names = [name for name, func in pairs inputs when name == 'foo']
     assert_table_equal names, { 'foo' }
