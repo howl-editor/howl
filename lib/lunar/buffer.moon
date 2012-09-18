@@ -59,7 +59,9 @@ class Buffer extends PropertyObject
 
   @property text:
     get: => @sci\get_text!
-    set: (text) => @sci\set_text text
+    set: (text) =>
+      @sci\clear_all!
+      @sci\add_text #text, text
 
   @property dirty:
     get: => @sci\get_modify!
