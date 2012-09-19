@@ -5,7 +5,7 @@ describe 'command', ->
   cmd = nil
 
   before -> cmd = name: 'foo', description: 'desc', handler: -> true
-  after -> command.unregister 'foo'
+  after -> command.unregister name for name in *command.names!
 
   describe '.register(command)', ->
     it 'raises an error if any of the mandatory fields are missing', ->
@@ -48,6 +48,23 @@ describe 'command', ->
     assert_nil command.foo
     assert_nil command.bar
     assert_table_equal command.names!, {}
+
+  context 'when command name is a non-lua identifier', ->
+    before -> cmd.name = 'foo-cmd:bar'
+
+    it 'register() adds accessible aliases for the direct indexing', ->
+      command.register cmd
+      assert_equal command['foo-cmd:bar'].handler, cmd.handler
+      assert_equal command.foo_cmd_bar.handler, cmd.handler
+
+    it 'the accessible alias is not part of names()', ->
+      command.register cmd
+      assert_table_equal command.names!, { 'foo-cmd:bar' }
+
+    it 'unregister() removes the accessible name as well', ->
+      command.register cmd
+      command.unregister 'foo-cmd:bar'
+      assert_nil command.foo_cmd_bar
 
   describe '.run()', ->
     it 'invokes _G.window.readline with a ":" prompt', ->

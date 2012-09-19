@@ -1,7 +1,11 @@
 import inputs, config from lunar
 import Matcher from lunar.completion
 
+accessible_name = (name) ->
+  name\lower!\gsub '[%s%p]+', '_'
+
 commands = {}
+accessible_names = {}
 
 register = (spec) ->
   for field in *{'name', 'description', 'handler'}
@@ -11,6 +15,8 @@ register = (spec) ->
     __call: (...) => spec.handler ...
 
   commands[spec.name] = c
+  sane_name = accessible_name spec.name
+  accessible_names[sane_name] = c if sane_name != spec.name
 
 unregister = (name) ->
   cmd = commands[name]
@@ -22,6 +28,8 @@ unregister = (name) ->
     append aliases, name if target == cmd
 
   commands[alias] = nil for alias in *aliases
+  sane_name = accessible_name name
+  accessible_names[sane_name] = nil if sane_name != name
 
 alias = (target, name) ->
   error 'Target ' .. target .. 'does not exist' if not commands[target]
@@ -35,7 +43,7 @@ parse_arguments = (text) ->
   [ part for part in text\gmatch '%S+' ]
 
 parse_cmd = (text) ->
-  cmd_start, cmd_end, cmd, rest = text\find '^%s*([%w_]+)[^%w_](.*)$'
+  cmd_start, cmd_end, cmd, rest = text\find '^%s*([^%s]+)[^%w_](.*)$'
   if cmd then return commands[cmd], rest
 
 complete_for_command = (state, text, readline) ->
@@ -156,5 +164,5 @@ run = ->
     return false
 
 return setmetatable { :register, :unregister, :alias, :run, :names, :get}, {
-  __index: (key) => commands[key]
+  __index: (key) => commands[key] or accessible_names[key]
 }
