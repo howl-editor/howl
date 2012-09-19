@@ -9,7 +9,7 @@ command.register
 command.alias 'open', 'e'
 
 command.register
-  name: 'project_open',
+  name: 'project-open',
   description: 'Open project file'
   inputs: { 'project_file' }
   handler: (file) -> lunar.app\open_file file

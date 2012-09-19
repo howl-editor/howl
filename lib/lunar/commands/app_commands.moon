@@ -9,7 +9,7 @@ command.register
 command.alias 'q', 'quit'
 
 command.register
-  name: 'switch_buffer',
+  name: 'switch-buffer',
   description: 'Switches to another buffer'
   inputs: { 'buffer' }
   handler: (buffer) ->
