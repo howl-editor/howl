@@ -2,7 +2,6 @@ import Gtk from lgi
 import Scintilla, signal, keyhandler from lunar
 import PropertyObject from lunar.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from lunar.ui
-import string_to_color from Scintilla
 
 indicators = {}
 indicator_placements =
@@ -129,18 +128,18 @@ class Editor extends PropertyObject
       c_color = v.caret.color if v.caret.color
       c_width = v.caret.width if v.caret.width
 
-    @sci\set_caret_fore string_to_color c_color
+    @sci\set_caret_fore c_color
     @sci\set_caret_width c_width
 
     current_line = v.current_line
     if current_line and current_line.background
-      @sci\set_caret_line_back string_to_color current_line.background
+      @sci\set_caret_line_back current_line.background
 
     -- selection
     if v.selection
       sel = v.selection
-      @sci\set_sel_back true, string_to_color sel.background if sel.background
-      @sci\set_sel_fore true, string_to_color sel.color if sel.color
+      @sci\set_sel_back true, sel.background if sel.background
+      @sci\set_sel_fore true, sel.color if sel.color
 
   _create_indicator: (indics, id) =>
     def = indicators[id]

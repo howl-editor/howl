@@ -2,7 +2,6 @@ import Gtk from lgi
 import Scintilla, keyhandler, config from lunar
 import PropertyObject from lunar.aux.moon
 import style, theme, Cursor, Selection, ActionBuffer, List from lunar.ui
-import string_to_color from Scintilla
 
 completion_text = (item) ->
   type(item) == 'table' and item[1] or item
@@ -145,7 +144,7 @@ class Readline extends PropertyObject
       c_color = v.caret.color if v.caret.color
       c_width = v.caret.width if v.caret.width
 
-    @sci\set_caret_fore string_to_color c_color
+    @sci\set_caret_fore c_color
     @sci\set_caret_width c_width
 
   _select_next: => @completion_list and @completion_list\select_next!

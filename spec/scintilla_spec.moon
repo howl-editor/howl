@@ -13,9 +13,10 @@ describe 'Scintilla', ->
       _core.sci.new = sci_new
       assert_true spy.called
 
-  it '.string_to_color(color) returns a GBR representation of the color', ->
-    assert_equal Scintilla.string_to_color('#ffeedd'), 0xddeeff
-    assert_equal Scintilla.string_to_color('ffeedd'), 0xddeeff
+  it 'automatically converts color values to strings', ->
+    sci = Scintilla!
+    sci\style_set_fore 1, '#112233'
+    assert_equal sci\style_get_fore(1), '#112233'
 
   describe '.dispatch', ->
     context 'for key-press event', ->

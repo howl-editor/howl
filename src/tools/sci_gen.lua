@@ -104,8 +104,14 @@ end
 
 local function return_with_cast(expr, ret_type)
   if ret_type == 'void' then return expr
+  elseif ret_type == 'colour' then return 'return color_to_string(' .. expr .. ')'
   elseif ret_type == 'bool' then return 'return 0 ~= ' .. expr
   else return 'return tonumber(' .. expr .. ')' end
+end
+
+local function convert_param(p)
+  if p.what == 'colour' then return 'string_to_color(' .. p.name .. ')'
+  else return p.name end
 end
 
 local function write_plain_method(m, out)
@@ -119,10 +125,10 @@ local function write_plain_method(m, out)
   out:write(')\n')
   inv = 'self:send(' .. m.number .. ', '
 
-  if p.first then inv = inv .. p.first.name .. ', '
+  if p.first then inv = inv .. convert_param(p.first) .. ', '
   else inv = inv .. '0, ' end
 
-  if p.second then inv = inv .. p.second.name
+  if p.second then inv = inv .. convert_param(p.second)
   else inv = inv .. '0' end
 
   inv = inv .. ')'

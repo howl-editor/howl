@@ -21,7 +21,7 @@ describe 'highlight', ->
       highlight.define 'custom', color: '#665544'
 
       set_fore = buffer.sci\indic_get_fore number
-      assert_equal set_fore, 0x445566
+      assert_equal set_fore, '#665544'
 
   describe '.apply(name, buffer, pos, length)', ->
     it 'activates the highlight for the specified range', ->
@@ -43,7 +43,7 @@ describe 'highlight', ->
       highlight.define 'my_highlight_b', color: '#334455'
       highlight_num = highlight.number_for 'my_highlight_a', buffer
       set_fore = buffer.sci\indic_get_fore highlight_num
-      assert_equal set_fore, 0x554433
+      assert_equal set_fore, '#334455'
       assert_not_equal highlight.number_for('my_highlight_b', buffer), highlight_num
 
     it 'remembers the highlight number used for a particular highlight', ->
@@ -75,7 +75,7 @@ describe 'highlight', ->
     highlight.set_for_buffer sci, buffer
 
     defined_fore = sci\indic_get_fore number
-    assert_equal defined_fore, 0x554433
+    assert_equal defined_fore, '#334455'
 
   it '.at_pos(buffer, pos) returns a list of the active highlights at pos', ->
     highlight.define 'highlight_bar', color: '#334455'

@@ -4,7 +4,7 @@ import style from lunar.ui
 class ActionBuffer extends Buffer
   new: (sci) =>
     super {}, sci
-    sci\set_lexer Scintilla.SCLEX_NULL
+    @sci\set_lexer Scintilla.SCLEX_NULL
 
   insert: (text, pos, style_name) =>
     pos_after = super text, pos

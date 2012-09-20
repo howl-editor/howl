@@ -26,10 +26,10 @@ describe 'style', ->
       style.define 'custom', color: '#776655'
 
       keyword_fore = sci\style_get_fore keyword_number
-      assert_equal keyword_fore, 0x445566
+      assert_equal keyword_fore, '#665544'
 
       custom_fore = sci\style_get_fore custom_number
-      assert_equal custom_fore, 0x556677
+      assert_equal custom_fore, '#776655'
 
   describe '.number_for(name, buffer)', ->
     it 'returns the assigned style number for name in sci', ->
@@ -42,7 +42,7 @@ describe 'style', ->
       style.define 'my_style_b', color: '#334455'
       style_num = style.number_for 'my_style_a', buffer
       set_fore = sci\style_get_fore style_num
-      assert_equal set_fore, 0x554433
+      assert_equal set_fore, '#334455'
       assert_not_equal style.number_for('my_style_b', buffer, sci), style_num
 
     it 'remembers the style number used for a particular style', ->
@@ -85,7 +85,7 @@ describe 'style', ->
     style.register_sci sci
     new = sci\style_get_fore number
     assert_not_equal new, old
-    assert_equal new, style.string_to_color '#112233'
+    assert_equal new, t.styles.keyword.color
 
   it '.set_for_buffer(sci, buffer) initializes any previously used buffer styles', ->
     sci = Scintilla!
@@ -97,7 +97,7 @@ describe 'style', ->
     style.set_for_buffer sci2, buffer
 
     defined_fore = sci2\style_get_fore prev_number
-    assert_equal defined_fore, 0x554433
+    assert_equal defined_fore, '#334455'
 
     new_number = style.number_for 'style_foo', buffer, sci2
     assert_equal new_number, prev_number

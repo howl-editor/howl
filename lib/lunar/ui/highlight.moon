@@ -1,7 +1,6 @@
 import Scintilla from lunar
 _G = _G
 import error, pairs, append from _G
-import string_to_color from Scintilla
 bit = require 'bit'
 
 highlights = {}
@@ -35,7 +34,7 @@ set_highlight = (num, def, sci) ->
     \indic_set_alpha num, def.alpha if def.alpha
     \indic_set_outline_alpha num, def.outline_alpha if def.outline_alpha
     \indic_set_under num, def.under if def.under
-    \indic_set_fore num, string_to_color(def.color) if def.color
+    \indic_set_fore num, def.color if def.color
 
 export number_for = (name, buffer) ->
   b_highlights = get_buffer_highlights buffer

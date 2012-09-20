@@ -1,5 +1,3 @@
-import string_to_color from lunar.Scintilla
-
 default_style_numbers =
   unstyled: 0
   whitespace: 1
@@ -54,8 +52,8 @@ set_style = (sci, number, style) ->
       \style_set_weight number, font.weight if font.weight != nil
 
     \style_set_underline number, style.underline if style.underline != nil
-    \style_set_fore number, string_to_color style.color if style.color != nil
-    \style_set_back number, string_to_color style.background if style.background != nil
+    \style_set_fore number, style.color if style.color != nil
+    \style_set_back number, style.background if style.background != nil
     \style_set_eolfilled number, style.eol_filled if style.eol_filled != nil
     \style_set_changeable number, not style.read_only if style.read_only != nil
     \style_set_visible number, style.visible if style.visible != nil
@@ -129,6 +127,5 @@ return setmetatable {
   :register_sci
   :set_for_buffer
   :define
-  :string_to_color
   :at_pos
 }, __index: styles
