@@ -80,5 +80,6 @@ class Application
     require 'lunar.inputs.buffer_input'
     require 'lunar.commands.file_commands'
     require 'lunar.commands.app_commands'
+    require 'lunar.commands.ui_commands'
 
 return Application
