@@ -72,9 +72,9 @@ describe 'Buffer', ->
         b = buffer 'hello!'
         assert_raises 'Invalid index', -> b.lines['foo'] = 'bar'
 
-    it 'delete(start, end) deletes the the lines [start, end)', ->
+    it 'delete(start, end) deletes the the lines [start, end]', ->
         b = buffer 'hello\nworld\nagain!'
-        b.lines\delete 1, 3
+        b.lines\delete 1, 2
         assert_equal b.text, 'again!'
 
     it 'supports iterating using ipairs', ->
@@ -103,9 +103,9 @@ describe 'Buffer', ->
       assert_equal b.lines\nr_at_pos(5), 2
       assert_equal b.lines\nr_at_pos(9), 3
 
-    it 'range(start, end) returns a table with lines [start, end)', ->
+    it 'range(start, end) returns a table with lines [start, end]', ->
       b = buffer 'one\ntwo\nthree'
-      assert_table_equal b.lines\range(1, 3), { 'one', 'two' }
+      assert_table_equal b.lines\range(1, 2), { 'one', 'two' }
 
   describe '.file = <file>', ->
     b = buffer ''

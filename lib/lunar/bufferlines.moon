@@ -4,12 +4,12 @@ BufferLines = (sci) ->
 
       delete: (start_line, end_line) =>
         start_pos = @pos_for start_line
-        end_pos = @pos_for end_line
+        end_pos = @pos_for end_line + 1
         @sci\delete_range start_pos - 1, end_pos - start_pos
 
       range: (start_line, end_line) =>
         lines = {}
-        for line = start_line, end_line - 1
+        for line = start_line, end_line
           append lines, self[line]
         lines
 
