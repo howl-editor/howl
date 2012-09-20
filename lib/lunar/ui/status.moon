@@ -3,7 +3,10 @@ import signal from lunar
 
 class Status
   new: =>
-    @label = Gtk.Label xalign: 0
+    @label = Gtk.Label {
+      xalign: 0
+      wrap: true
+    }
     @label\get_style_context!\add_class 'status'
     @level = nil
     signal.connect 'key-press', self\clear
