@@ -33,6 +33,9 @@ class Window extends Delegator
     @win = Gtk.Window props
     @win.on_set_focus = -> _G.window = self
     @win\add alignment
+
+    @is_fullscreen = false
+
     super @win
 
   to_gobject: => @win
@@ -42,5 +45,17 @@ class Window extends Delegator
     gobject.hexpand = true
     @grid\add gobject
     gobject\show_all!
+
+  fullscreen: =>
+    @win\fullscreen!
+    @is_fullscreen = true
+
+  unfullscreen: =>
+    @win\unfullscreen!
+    @is_fullscreen = false
+
+  toggle_fullscreen: =>
+    if @is_fullscreen then @unfullscreen!
+    else @fullscreen!
 
 return Window
