@@ -38,6 +38,7 @@ class Readline extends PropertyObject
     @input = input
     @callback = callback
     @text = ''
+    @_complete!
 
   to_gobject: => @bin
 
@@ -61,7 +62,10 @@ class Readline extends PropertyObject
   _complete: (force) =>
     @_remove_completions!
     text = @text
-    should_complete = force or config.complete == 'always' or @input.should_complete and @input\should_complete text, self
+    return if @completion_unwanted
+    config_says_complete = config.complete == 'always'
+    input_says_complete = @input.should_complete and @input\should_complete text, self
+    should_complete = force or config_says_complete or input_says_complete
 
     completions, options = if should_complete and @input.complete then @input\complete text, self
     count = completions and #completions or 0
@@ -178,8 +182,11 @@ class Readline extends PropertyObject
 
   keymap: {
     escape: =>
-      if @completion_list then @_remove_completions!
-      else @hide!
+      if @completion_list
+        @_remove_completions!
+        @completion_unwanted = true
+      else
+        @hide!
 
     left: => @cursor\left! if not @_at_start!
     right: => @cursor\right!
@@ -211,7 +218,9 @@ class Readline extends PropertyObject
 
     tab: =>
       if @completion_list then @_next_page!
-      else @_complete true
+      else
+        @completion_unwanted = false
+        @_complete true
 
     shift_tab: => @_prev_page!
   }
