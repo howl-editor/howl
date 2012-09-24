@@ -5,7 +5,7 @@ buffer_dir = (buffer) ->
   buffer.file and tostring(buffer.file.parent) or '(none)'
 
 class BufferInput
-  new: (input) =>
+  new: (readline) =>
     buffers = [ { b.title, buffer_dir(b) } for b in *app.buffers ]
     @matcher = Matcher buffers, true, true, true
 
