@@ -94,6 +94,7 @@ describe 'command', ->
     after ->
       inputs.unregister 'test_first'
       inputs.unregister 'test_second'
+      _G.window = nil
 
     context 'when <cmd_string> is empty or missing', ->
       it 'invokes _G.window.readline with a ":" prompt', ->
