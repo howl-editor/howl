@@ -66,21 +66,76 @@ describe 'command', ->
       command.unregister 'foo-cmd:bar'
       assert_nil command.foo_cmd_bar
 
-  describe '.run()', ->
-    it 'invokes _G.window.readline with a ":" prompt', ->
-      readline = Spy as_null_object: true
-      _G.window = :readline
-      command.run!
-      assert_true readline.read.called
-      _, prompt = unpack readline.read.called_with
-      assert_equal prompt, ':'
+  describe '.run(cmd_string)', ->
+    first_input = nil
+    second_input = nil
+
+    before ->
+      inputs.register 'test_first', ->
+        first_input = {
+          complete: -> 'completions'
+          should_complete: -> 'perhaps'
+          value_for: -> 123
+          on_completed: Spy!
+          go_back: Spy!
+        }
+        first_input
+
+      inputs.register 'test_second', ->
+        second_input = {
+          complete: -> 'other completions'
+          should_complete: -> 'oh yes'
+          value_for: -> 321
+          on_completed: Spy!
+          go_back: Spy!
+        }
+        second_input
+
+    after ->
+      inputs.unregister 'test_first'
+      inputs.unregister 'test_second'
+
+    context 'when <cmd_string> is empty or missing', ->
+      it 'invokes _G.window.readline with a ":" prompt', ->
+        readline = Spy as_null_object: true
+        _G.window = :readline
+        command.run!
+        assert_true readline.read.called
+        _, prompt = unpack readline.read.called_with
+        assert_equal prompt, ':'
+
+    context 'when <cmd_string> is given', ->
+      context 'and it matches a simple command without parameters', ->
+        it 'that command is invoked direcly', ->
+          cmd.handler = Spy!
+          command.register cmd
+          command.run cmd.name
+          assert_true cmd.handler.called
+
+      context 'when it specifies a command with all required parameters', ->
+        it 'that command is invoked directly with converted values', ->
+          cmd.handler = Spy!
+          cmd.inputs = { 'test_first' }
+          command.register cmd
+          command.run cmd.name .. ' foo'
+          assert_table_equal cmd.handler.called_with, { first_input.value_for! }
+
+      context 'when it specifies a command without all required parameters', ->
+        it 'invokes _G.window.readline with the prompt set to the given string', ->
+          readline = Spy as_null_object: true
+          _G.window = :readline
+          cmd.inputs = { 'test_first', 'test_second' }
+          command.register cmd
+          command.run cmd.name .. ' arg'
+          assert_true readline.read.called
+          _, prompt = unpack readline.read.called_with
+          assert_equal prompt, ':' .. cmd.name .. ' arg '
 
     context 'interacting with readline', ->
       input = nil
       callback = nil
       readline = nil
-      first_input = nil
-      second_input = nil
+      handler = nil
 
       before ->
         readline = read: (prompt, i, c) =>
@@ -90,37 +145,16 @@ describe 'command', ->
           @text = ''
         _G.window = :readline
 
-        inputs.register 'test_first', ->
-          first_input = {
-            complete: -> 'completions'
-            should_complete: -> 'perhaps'
-            value_for: -> 123
-            on_completed: Spy!
-            go_back: Spy!
-          }
-          first_input
-
-        inputs.register 'test_second', ->
-          second_input = {
-            complete: -> 'other completions'
-            should_complete: -> 'oh yes'
-            value_for: -> 321
-            on_completed: Spy!
-            go_back: Spy!
-          }
-          second_input
+        handler = Spy!
 
         command.register {
           name: 'p_cmd',
           description: 'desc',
-          handler: -> true
+          :handler
           inputs: { 'test_first', 'test_second' }
         }
 
-      after ->
-        inputs.unregister 'test_first'
-        inputs.unregister 'test_second'
-        command.unregister name for name in *command.names!
+      after -> command.unregister name for name in *command.names!
 
       context 'when entering a command', ->
         it 'should_complete(..) returns false', ->
@@ -132,9 +166,6 @@ describe 'command', ->
           completions = input\complete '', readline
           assert_table_equal completions, { { 'p_cmd', 'desc' } }
 
-        it 'value_for(..) returns the value as is', ->
-          assert_equal input\value_for(123), 123
-
       context 'when entering command arguments', ->
         it 'delegates all input methods to the current corresponding input', ->
           command.run!
@@ -142,7 +173,6 @@ describe 'command', ->
           assert_not_nil first_input
           assert_equal input\complete(readline.text, readline), first_input.complete!
           assert_equal input\should_complete(readline.text, readline), first_input.should_complete!
-          assert_equal input\value_for(readline.text), first_input.value_for!
 
           input\on_completed(readline.text, readline)
           assert_true first_input.on_completed.called
@@ -155,13 +185,28 @@ describe 'command', ->
           assert_not_nil second_input
           assert_equal input\complete(readline.text, readline), second_input.complete!
           assert_equal input\should_complete(readline.text, readline), second_input.should_complete!
-          assert_equal input\value_for(readline.text), second_input.value_for!
 
           input\on_completed(readline.text, readline)
           assert_true second_input.on_completed.called
 
           input\go_back(readline)
           assert_true second_input.go_back.called
+
+        it 'updates the readline prompt to include arguments when they are finished', ->
+          command.run!
+          input\update 'p_cmd first', readline
+          assert_match 'p_cmd $', readline.prompt
+          readline.text ..= ' second'
+          input\update readline.text, readline
+          assert_match 'p_cmd first $', readline.prompt
+
+        it 'runs the command when the user submits', ->
+          command.run!
+          readline.text = 'p_cmd first final'
+          input\update readline.text, readline
+          readline.text = 'final'
+          assert_true callback readline.text, readline
+          assert_true handler.called
 
       context 'when the user submits an unknown command', ->
         it 'the callback returns false to keep readline open', ->

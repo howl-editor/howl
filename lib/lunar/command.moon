@@ -1,11 +1,89 @@
 import inputs, config from lunar
 import Matcher from lunar.completion
 
-accessible_name = (name) ->
-  name\lower!\gsub '[%s%p]+', '_'
-
 commands = {}
 accessible_names = {}
+
+-- command state
+parse_arguments = (text) ->
+  [ part for part in text\gmatch '(%S+)%s' ]
+
+parse_cmd = (text) ->
+  cmd_start, cmd_end, cmd, rest = text\find '^%s*([^%s]+)%s+(.*)$'
+  if cmd then return commands[cmd], cmd, rest
+  else return nil, nil, text
+
+class State
+  new: =>
+    @inputs = {}
+    @arguments = {}
+
+  update: (text, readline) =>
+    if not @cmd
+      @cmd, name, text = parse_cmd text
+      return if not @cmd
+      if readline
+        readline.prompt ..= name .. ' '
+        readline.text = text or ''
+
+    for index, arg in ipairs parse_arguments text
+      break if not @_load_input #@arguments + 1, readline, arg
+      append @arguments, arg
+      readline.prompt ..= arg .. ' ' if readline
+
+    if #@inputs <= #@arguments
+      @_load_input #@arguments + 1, readline
+
+  should_complete: (text, readline) =>
+    if @current_input and @current_input.should_complete
+      return self.current_input\should_complete text, readline
+
+    return config.complete == 'always'
+
+  complete: (text, readline) =>
+    return self.current_input\complete(text, readline) if @current_input
+
+  submit: (value) =>
+    cmd = @cmd or commands[value]
+    return false if not cmd
+
+    if #@arguments >= #cmd.inputs
+      values = {}
+      for i = 1, #@arguments
+        append values, @inputs[i]\value_for @arguments[i]
+
+      cmd table.unpack values
+      return true
+
+    return false
+
+  to_string: =>
+    return '' if not @cmd
+    s = @cmd.name
+    if #@arguments > 0
+      s ..= ' ' .. table.concat @arguments, ' '
+    s .. ' '
+
+  _load_input: (input_index, readline) =>
+    input = @inputs[input_index]
+
+    if not input
+      @current_input = nil
+      return false if not @cmd.inputs
+      input_type = @cmd.inputs[input_index]
+      return false if not input_type
+      input_factory = inputs[input_type]
+      if not input_factory then error 'Could not find input for `' .. input_type .. '`'
+      input = input_factory readline
+      append @inputs, input
+      @current_input = input
+
+    true
+
+-- command interface
+
+accessible_name = (name) ->
+  name\lower!\gsub '[%s%p]+', '_'
 
 register = (spec) ->
   for field in *{'name', 'description', 'handler'}
@@ -13,6 +91,7 @@ register = (spec) ->
 
   c = setmetatable moon.copy(spec),
     __call: (...) => spec.handler ...
+  c.inputs = c.inputs or {}
 
   commands[spec.name] = c
   sane_name = accessible_name spec.name
@@ -39,93 +118,23 @@ get = (name) -> commands[name]
 
 names = -> [name for name in pairs commands]
 
-parse_arguments = (text) ->
-  [ part for part in text\gmatch '%S+' ]
-
-parse_cmd = (text) ->
-  cmd_start, cmd_end, cmd, rest = text\find '^%s*([^%s]+)[^%w_](.*)$'
-  if cmd then return commands[cmd], rest
-
-complete_for_command = (state, text, readline) ->
-  if state.current_input
-    return state.current_input\complete text, readline
-  else
-    return if true
-
-  cmd = state.cmd
-
-  arguments = parse_arguments text
-  input_index = math.max #arguments, 1
-  input = state.inputs[input_index]
-
-  if not input
-    state.current_input = nil
-    if not cmd.inputs then return {}
-    input_type = cmd.inputs[input_index]
-    if not input_type then return {}
-    input_factory = inputs[input_type]
-    if not input_factory then error 'Could not find input for `' .. input_type .. '`'
-    input = input_factory readline
-    append state.inputs, input
-    state.current_input = input
-
-  return input\complete arguments[#arguments], readline
-
 complete_available_commands = (text, matcher) ->
   completion_options = list: headers: { 'Command', 'Description' }
   candidates = matcher text
   completions = [{name, commands[name].description} for name in *candidates]
   return completions, completion_options
 
-load_input = (state, input_index, readline) ->
-  cmd = state.cmd
-  input = state.inputs[input_index]
-
-  if not input
-    state.current_input = nil
-    return false if not cmd.inputs
-    input_type = cmd.inputs[input_index]
-    return false if not input_type
-    input_factory = inputs[input_type]
-    if not input_factory then error 'Could not find input for `' .. input_type .. '`'
-    input = input_factory readline
-    append state.inputs, input
-    state.current_input = input
-
-  true
-
-update_state = (state, text, readline) ->
-  if not state.cmd
-    state.cmd, text = parse_cmd text
-    return if not state.cmd
-    readline.prompt ..= readline.text
-    readline.text = text or ''
-
-  args = parse_arguments text
-  count = #args
-  if count <= 1 and not state.current_input
-    load_input state, 1, readline
-  else
-    for index, arg in ipairs args
-      break if not load_input state, #state.arguments + 1, readline
-      append state.arguments, arg if index != count
-
-run = ->
+run = (cmd_string = nil) ->
   cmd_matcher = nil
-  state = inputs: {}, arguments: {}
+  state = State!
 
   cmd_input =
-    should_complete: (_, text, readline) ->
-      input = state.current_input
-      if input and input.should_complete then return input\should_complete text, readline
-      return config.complete == 'agressive'
-
-    update: (_, text, readline) ->
-      update_state state, text, readline
+    should_complete: (_, text, readline) -> state\should_complete!
+    update: (_, text, readline) -> state\update text, readline
 
     complete: (_, text, readline) ->
       if state.cmd
-        return complete_for_command state, text, readline
+        return state\complete(text, readline)
       else
         cmd_matcher = cmd_matcher or Matcher names!, true, true, true
         return complete_available_commands text, cmd_matcher
@@ -138,28 +147,17 @@ run = ->
       input = state.current_input
       if input and input.go_back then input\go_back!
 
-    value_for: (_, text) ->
-      input = state.current_input
-      if input and input.value_for
-        input\value_for text
-      else
-        text
+  prompt = ':'
 
-  window.readline\read ':', cmd_input, (value, readline) ->
-    cmd = state.cmd
-    if cmd
-      append state.arguments, value
-    else
-      cmd = commands[value]
+  if cmd_string and #cmd_string > 0
+    state\update cmd_string .. ' '
+    return if state\submit!
+    prompt ..= state\to_string!
 
-    return false if not cmd
-
-    if #state.arguments >= #cmd.inputs
-      cmd table.unpack state.arguments
+  window.readline\read prompt, cmd_input, (value, readline) ->
+    state\update readline.text .. ' ', readline
+    if state\submit value
       return true
-    else
-      readline.text ..= ' '
-      update_state state, readline.text, readline
 
     return false
 
