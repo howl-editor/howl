@@ -1,5 +1,5 @@
 import Spy from lunar.spec
-import keyhandler, signal from lunar
+import keyhandler, signal, command from lunar
 
 describe 'keyhandler', ->
 
@@ -157,34 +157,22 @@ describe 'keyhandler', ->
             buffer = keymap: { k: -> error 'BOOM!' }
             assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
 
-          it 'signals an error', ->
-            handler = Spy!
-            signal.connect_first 'error', handler
-            buffer = keymap: { k: -> error 'BOOM!' }
+          it 'logs an error to the log', ->
+            buffer = keymap: { k: -> error 'a to the k log' }
             keyhandler.process :buffer, { character: 'k', key_code: 65 }
-            assert_true handler.called
+            assert_gte #log.entries, 1
+            assert_equal log.entries[#log.entries].message, 'a to the k log'
 
       context 'when the handler is a string', ->
-        it 'runs the corresponding command and returns true', ->
-          handler = Spy!
-          lunar.command.register name: 'spy', description: 'no', :handler
+        it 'runs the command with command.run() and returns true', ->
+          cmd_run = Spy!
+          orig_run = command.run
+          command.run = cmd_run
           buffer = keymap: { k: 'spy' }
           status = keyhandler.process :buffer, { character: 'k', key_code: 65 }
-          lunar.command.unregister 'spy'
+          command.run = orig_run
           assert_true status
-          assert_true handler.called
-
-        context 'when the command specified does not exist', ->
-          it 'returns true', ->
-            buffer = keymap: { k: 'o_brother_where_art_thou?' }
-            assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
-
-          it 'signals an error', ->
-            handler = Spy!
-            signal.connect_first 'error', handler
-            buffer = keymap: { k: 'Alles verloren' }
-            keyhandler.process :buffer, { character: 'k', key_code: 65 }
-            assert_true handler.called
+          assert_table_equal cmd_run.called_with, { 'spy' }
 
       it 'returns false if no handlers are found', ->
         assert_false keyhandler.process buffer: {}, { character: 'k', key_code: 65 }

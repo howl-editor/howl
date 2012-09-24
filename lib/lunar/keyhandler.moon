@@ -53,16 +53,12 @@ export dispatch = (event, keymaps, ...) ->
   for handler in *handlers
     status, ret = true, true
     if type(handler) == 'string'
-      cmd = command[handler]
-      if cmd then cmd!
-      else
-        status = false
-        ret = 'Command "' .. handler .. '" not found'
+      status, ret = pcall, command.run handler
     else
       status, ret = pcall handler, ...
 
     if not status
-      signal.emit 'error', 'Error invoking key handler: ' .. ret
+      _G.log.error ret
 
     return true if not status or (status and ret != false)
 
