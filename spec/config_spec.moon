@@ -14,7 +14,8 @@ describe 'config', ->
   it '.definitions is a table of the current definitions, keyed by name', ->
     var = name: 'foo', description: 'foo variable'
     config.define var
-    assert_table_equal config.definitions, foo: var
+    assert_equal type(config.definitions), 'table'
+    assert_table_equal config.definitions.foo, var
 
   describe 'set(name, value)', ->
     it 'sets <name> globally to <value>', ->
