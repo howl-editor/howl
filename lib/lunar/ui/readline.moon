@@ -163,7 +163,7 @@ class Readline extends PropertyObject
       item = @completion_list.selection
       @_remove_completions!
       value = completion_text item
-      @text = value
+      @text = @text\gsub('%a+$', '') .. value
       @_update_input!
       if @input.on_completed and @input\on_completed(item) == false
         @_complete!
