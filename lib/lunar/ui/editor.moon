@@ -1,5 +1,5 @@
 import Gtk from lgi
-import Scintilla, signal, keyhandler, config from lunar
+import Scintilla, signal, keyhandler, config, command from lunar
 import PropertyObject from lunar.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from lunar.ui
 
@@ -252,5 +252,23 @@ with config
     { 'backspace_unindents', 'set_back_space_un_indents' }
   }
     .watch live_update[1], (_, value) -> apply_variable live_update[2], value
+
+-- Commands
+for cmd_spec in *{
+  { 'editor:new_line', 'Breaks the line at the current position', 'new_line' }
+  { 'editor:delete_line', 'Deletes the current line', 'delete_line' }
+  { 'editor:delete_to_end_of_line', 'Deletes to the end of line', 'delete_to_end_of_line' }
+  { 'editor:copy_line', 'Copies the current line to the clipboard', 'copy_line' }
+  { 'editor:paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
+  { 'editor:tab', 'Simulates a tab key press', 'tab' }
+  { 'editor:backspace', 'Simulates a backspace key press', 'backspace' }
+  { 'editor:indent', 'Indents the selected lines, or the current line', 'indent' }
+  { 'editor:unindent', 'Unindents the selected lines, or the current line', 'unindent' }
+  { 'editor:join_lines', 'Joins the current line with the line below', 'join_lines' }
+}
+  command.register
+    name: cmd_spec[1]
+    description: cmd_spec[2]
+    handler: -> _G.editor[cmd_spec[3]] _G.editor
 
 return Editor
