@@ -50,7 +50,10 @@ class State
     if #@arguments >= #cmd.inputs
       values = {}
       for i = 1, #@arguments
-        append values, @inputs[i]\value_for @arguments[i]
+        input = @inputs[i]
+        value = @arguments[i]
+        value = input\value_for(value) if input.value_for
+        append values, value
 
       cmd table.unpack values
       return true

@@ -85,7 +85,6 @@ describe 'command', ->
         second_input = {
           complete: -> 'other completions'
           should_complete: -> 'oh yes'
-          value_for: -> 321
           on_completed: Spy!
           go_back: Spy!
         }
