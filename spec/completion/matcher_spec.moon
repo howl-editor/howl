@@ -1,6 +1,12 @@
 import Matcher from lunar.completion
 
 describe 'Matcher', ->
+  it 'by default it searches anywhere, disregards case and is fuzzy', ->
+    m = Matcher {}
+    assert_true m.anywhere
+    assert_true m.case_insensitive
+    assert_true m.fuzzy
+
   context 'when matching at the start with case sensitive, non-fuzzy set', ->
     it 'matches strictly left to right and respects case', ->
       c = { 'one', 'Overlook', 'two', 'overflow' }

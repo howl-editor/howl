@@ -37,7 +37,7 @@ class ProjectFileInput
           files = project\files!
           paths = [display_name f, @root for f in *files]
           sort_paths paths
-          @matcher = Matcher paths, true, true, true
+          @matcher = Matcher paths
 
   should_complete: => true
 

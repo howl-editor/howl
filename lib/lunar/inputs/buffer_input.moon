@@ -7,7 +7,7 @@ buffer_dir = (buffer) ->
 class BufferInput
   new: (readline) =>
     buffers = [ { b.title, buffer_dir(b) } for b in *app.buffers ]
-    @matcher = Matcher buffers, true, true, true
+    @matcher = Matcher buffers
 
   should_complete: => true
 

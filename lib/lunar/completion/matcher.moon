@@ -20,7 +20,7 @@ fuzzy_search_pattern = (search) ->
   pattern
 
 class Matcher
-  new: (candidates, anywhere, case_insensitive, fuzzy) =>
+  new: (candidates, anywhere = true, case_insensitive = true, fuzzy = true) =>
     @candidates = candidates
     @anywhere = anywhere
     @case_insensitive = case_insensitive

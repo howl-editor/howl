@@ -54,7 +54,7 @@ class FileInput
       f1.path < f2.path
 
     names = [display_name c for c in *children]
-    @matcher = Matcher names, true, true, true
+    @matcher = Matcher names
     @directory = directory
     prompt = @base_prompt .. tostring directory
     prompt ..= separator if not prompt\match separator .. '$'
