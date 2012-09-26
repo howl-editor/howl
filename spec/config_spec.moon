@@ -27,6 +27,13 @@ describe 'config', ->
     it 'an error is raised if <name> is not defined', ->
       assert_raises 'Undefined', -> config.set 'que', 'si'
 
+    it 'setting a value of nil clears the value', ->
+      var = name: 'foo', description: 'foo variale'
+      config.define var
+      config.set 'foo', 'bar'
+      config.set 'foo', nil
+      assert_nil config.foo
+
   describe 'get(name, [buffer])', ->
     before -> config.define name: 'var', description: 'test variable'
 
@@ -57,7 +64,13 @@ describe 'config', ->
       buffer = {}
       _G.editor = :buffer
       config.set_local 'local', 'local'
-      assert_equal config.get('local'), 'local'
+      assert_equal config.get('local', buffer), 'local'
+
+    it 'setting a value of nil clears the value', ->
+      buffer = {}
+      config.set_local 'local', 'local', buffer
+      config.set_local 'local', nil, buffer
+      assert_nil config.get 'local', buffer
 
     it 'raises an exception if G.editor.buffer is not available and buffer is not specified', ->
       _G.editor = nil
@@ -104,6 +117,49 @@ describe 'config', ->
       config.set 'validated', 'foo2'
       assert_equal config.get('validated'), 'foo2'
 
+    it 'the function is not called when clearing a value by setting it to nil', ->
+      validate = Spy!
+      config.define name: 'validated', description: 'test', :validate
+      config.set 'validated', nil
+      assert_false validate.called
+
+  context 'when a convert function is provided', ->
+    it 'is called with the value to be set and the return value is used instead', ->
+      config.define name: 'converted', description: 'test', convert: -> 'wanted'
+      config.set 'converted', 'requested'
+      assert_equal config.converted, 'wanted'
+
+  context 'when options is provided', ->
+    before ->
+      config.define
+        name: 'with_options'
+        description: 'test'
+        options: { 'one', 'two' }
+
+    it 'an error is raised if the to-be set value is not a valid option', ->
+      assert_raises 'option', -> config.set 'with_options', 'three'
+
+    it 'an error is not raised if the to-be set value is a valid option', ->
+      config.set 'with_options', 'one'
+
+    it 'options can be a function returning a table', ->
+      config.define name: 'with_options_func', description: 'test', options: ->
+        { 'one', 'two' }
+
+      assert_raises 'option', -> config.set 'with_options_func', 'three'
+      config.set 'with_options_func', 'one'
+
+    it 'options can be a table of tables containg values and descriptions', ->
+      options = {
+        { 'one', 'description for one' }
+        { 'two', 'description for two' }
+      }
+
+      config.define name: 'with_options_desc', description: 'test', :options
+
+      assert_raises 'option', -> config.set 'with_options_desc', 'three'
+      config.set 'with_options_desc', 'one'
+
   context 'when scope is provided', ->
     it 'raises an error if it is not "local" or "global"', ->
       assert_raises 'scope', -> config.define name: 'bla', description: 'foo', scope: 'blarg'
@@ -117,6 +173,53 @@ describe 'config', ->
       it 'an error is raised when trying to set the local value of the variable', ->
         config.define name: 'global', description: 'test', scope: 'global'
         assert_error -> config.set_local 'global', 'foo', {}
+
+  context 'when type_of is provided', ->
+    it 'raises an error if the type is not recognized', ->
+      assert_raises 'type', -> config.define name: 'bla', description: 'foo', type_of: 'blarg'
+
+    context 'and is "boolean"', ->
+      def = nil
+      before ->
+        config.define name: 'bool', description: 'foo', type_of: 'boolean'
+        def = config.definitions.bool
+
+      it 'options are {true, false}', ->
+        assert_table_equal def.options, { true, false }
+
+      it 'convert handles boolean types and "true" and "false"', ->
+        assert_equal def.convert(true), true
+        assert_equal def.convert(false), false
+        assert_equal def.convert('true'), true
+        assert_equal def.convert('false'), false
+        assert_equal def.convert('blargh'), 'blargh'
+
+      it 'converts to boolean upon assignment', ->
+        config.bool = 'false'
+        assert_equal config.bool, false
+
+    context 'and is "number"', ->
+      def = nil
+      before ->
+        config.define name: 'number', description: 'foo', type_of: 'number'
+        def = config.definitions.number
+
+      it 'convert handles numbers and string numbers', ->
+        assert_equal def.convert(1), 1
+        assert_equal def.convert('1'), 1
+        assert_equal def.convert(0.5), 0.5
+        assert_equal def.convert('0.5'), 0.5
+        assert_equal def.convert('blargh'), 'blargh'
+
+      it 'validate returns true for numbers only', ->
+        assert_true def.validate 1
+        assert_true def.validate 1.2
+        assert_false def.validate '1'
+        assert_false def.validate 'blargh'
+
+      it 'converts to number upon assignment', ->
+        config.number = '1'
+        assert_equal config.number, 1
 
   context 'watching', ->
     before -> config.define name: 'trigger', description: 'watchable'
