@@ -1,7 +1,14 @@
 import Gtk from lgi
-import Scintilla, signal, keyhandler from lunar
+import Scintilla, signal, keyhandler, config from lunar
 import PropertyObject from lunar.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from lunar.ui
+
+editors = setmetatable {}, __mode: 'v'
+
+apply_variable = (method, value) ->
+  for e in *editors
+    sci = e.sci
+    sci[method] sci, value
 
 indicators = {}
 indicator_placements =
@@ -65,6 +72,7 @@ class Editor extends PropertyObject
 
     @buffer = buffer
     @_set_appearance!
+    append editors, self
 
   to_gobject: => @bin
 
@@ -81,6 +89,7 @@ class Editor extends PropertyObject
       @sci\set_style_bits 8
       @sci\set_lexer Scintilla.SCLEX_CONTAINER
 
+      @_set_config_settings!
       style.set_for_buffer @sci, buffer
       highlight.set_for_buffer @sci, buffer
       buffer\add_sci_ref @sci
@@ -92,6 +101,31 @@ class Editor extends PropertyObject
   copy_line: => @sci\line_copy!
   paste: => @sci\paste!
   insert: (text) => @sci\add_text #text, text
+  tab: => @sci\tab!
+  backspace: => @sci\delete_back!
+
+  indent: =>
+    if @selection.empty
+      column = @cursor.column
+      line = @cursor.line - 1
+      current_indent = @sci\get_line_indentation line
+      new_indent = current_indent + config.indent
+      @sci\set_line_indentation line, new_indent
+      @cursor.column = column + config.indent
+    else
+      @sci\tab!
+
+  unindent: =>
+    if @selection.empty
+      column = @cursor.column
+      line = @cursor.line - 1
+      current_indent = @sci\get_line_indentation line
+      if current_indent > 0
+        new_indent = math.max(current_indent - config.indent, 0)
+        @sci\set_line_indentation line, new_indent
+        @cursor.column = math.max(column - config.indent, 0)
+    else
+      @sci\back_tab!
 
   join_lines: =>
     @buffer\as_one_undo ->
@@ -105,9 +139,9 @@ class Editor extends PropertyObject
 
   _set_appearance: =>
     @_set_theme_settings!
-    @_set_config_settings!
+    @_set_ui_config_settings!
 
-  _set_config_settings: =>
+  _set_ui_config_settings: =>
     -- todo: read from upcoming variables
     with @sci
       \set_caret_line_visible true
@@ -141,6 +175,14 @@ class Editor extends PropertyObject
       @sci\set_sel_back true, sel.background if sel.background
       @sci\set_sel_fore true, sel.color if sel.color
 
+  _set_config_settings: =>
+    with @sci
+      \set_tab_width config.tab_width
+      \set_use_tabs config.use_tabs
+      \set_indent config.indent
+      \set_tab_indents config.tab_indents
+      \set_back_space_un_indents config.backspace_unindents
+
   _create_indicator: (indics, id) =>
     def = indicators[id]
     error 'Invalid indicator id "' .. id .. '"', 2 if not def
@@ -169,8 +211,46 @@ class Editor extends PropertyObject
     signal.emit 'editor-defocused', self
 
 -- Default indicators
+
 with Editor
   .define_indicator 'title', 'top_left'
   .define_indicator 'position', 'bottom_right'
+
+-- Config variables
+
+with config
+  .define
+    name: 'tab_width'
+    description: 'The width of a tab, in number of characters'
+    default: 2
+
+  .define
+    name: 'use_tabs'
+    description: 'Whether to use tabs for indentation, and not only spaces'
+    default: false
+
+  .define
+    name: 'indent'
+    description: 'The number of characters to use for indentation'
+    default: 2
+
+  .define
+    name: 'tab_indents'
+    description: 'Whether tab indents within whitespace'
+    default: true
+
+  .define
+    name: 'backspace_unindents'
+    description: 'Whether backspace unindents within whitespace'
+    default: true
+
+  for live_update in *{
+    { 'tab_width', 'set_tab_width' }
+    { 'use_tabs', 'set_use_tabs' }
+    { 'indent', 'set_indent' }
+    { 'tab_indents', 'set_tab_indents' }
+    { 'backspace_unindents', 'set_back_space_un_indents' }
+  }
+    .watch live_update[1], (_, value) -> apply_variable live_update[2], value
 
 return Editor
