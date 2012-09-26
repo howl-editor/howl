@@ -26,6 +26,9 @@ map = {
   v: cancel
   s: substitute
   escape: cancel
+  i: (editor) ->
+    editor.selection.persistent = false
+    state.change_mode editor, 'insert'
 }
 
 setmetatable map, {
