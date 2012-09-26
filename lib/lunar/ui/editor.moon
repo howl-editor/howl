@@ -223,26 +223,31 @@ with config
     name: 'tab_width'
     description: 'The width of a tab, in number of characters'
     default: 2
+    type_of: 'number'
 
   .define
     name: 'use_tabs'
     description: 'Whether to use tabs for indentation, and not only spaces'
     default: false
+    type_of: 'boolean'
 
   .define
     name: 'indent'
     description: 'The number of characters to use for indentation'
     default: 2
+    type_of: 'number'
 
   .define
     name: 'tab_indents'
     description: 'Whether tab indents within whitespace'
     default: true
+    type_of: 'boolean'
 
   .define
     name: 'backspace_unindents'
     description: 'Whether backspace unindents within whitespace'
     default: true
+    type_of: 'boolean'
 
   for live_update in *{
     { 'tab_width', 'set_tab_width' }

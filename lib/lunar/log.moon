@@ -6,6 +6,7 @@ config.define
   name: 'max_log_entries'
   description: 'Maximum number of log entries to keep in memory'
   default: 1000
+  type_of: 'number'
 
 log = {}
 setfenv 1, log
