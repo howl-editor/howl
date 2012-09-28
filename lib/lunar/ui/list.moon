@@ -28,6 +28,16 @@ column_padding = (text, column, widths) ->
   return '' if not widths or column == #widths
   string.rep ' ', (widths[column] + 1) - #text
 
+line_count = (s) ->
+  count = -1
+  init = 0
+
+  while init
+    count += 1
+    _, init = s\find '\n', init + 1, true
+
+  count
+
 class List extends PropertyObject
   column_styles: { 'string', 'comment', 'operator' }
 
@@ -106,7 +116,7 @@ class List extends PropertyObject
     row = @_sel_row - 1
     row = #@items if row < 1
 
-    if row < @offset or row > @end_item
+    if row < @offset or row > @last_shown
       offset = row - @limit + 1
       @scroll_to math.max offset, 1
 
@@ -116,7 +126,7 @@ class List extends PropertyObject
     row = @_sel_row + 1
     row = 1 if row > #@items
 
-    if row < @offset or row > @end_item
+    if row < @offset or row > @last_shown
       @scroll_to row
 
     @select row
@@ -131,7 +141,7 @@ class List extends PropertyObject
     if @showing
       highlight.remove_all 'list_selection', @buffer
 
-      if row >= @offset and row <= @end_item
+      if row >= @offset and row <= @last_shown
         lines = @buffer.lines
         start_line = lines\nr_at_pos @start_pos
         sel_line = row - @offset + 1
@@ -146,11 +156,7 @@ class List extends PropertyObject
     @clear!
 
     total = #@items
-    @end_item = if @max_height
-        math.min @max_height + @offset - 1, total
-      else
-        total
-
+    lines_left = @max_height or math.huge
     pos = @start_pos
     buffer = @buffer
 
@@ -161,16 +167,23 @@ class List extends PropertyObject
     if @caption and lines_left > 0
       cap = @caption .. '\n'
       pos = buffer\insert cap, pos, 'list_caption'
+      lines_left -= line_count cap
 
-    if @headers and #@headers > 0
+    if @headers and #@headers > 0 and lines_left > 0
       for column, header in ipairs @headers
         padding = column_padding header, column, @_widths
         pos = buffer\insert header, pos, 'list_header'
         pos = buffer\insert padding, pos
 
       pos = buffer\insert '\n', pos
+      lines_left -= 1
 
-    for row = @offset, @end_item
+    @last_shown = if total > lines_left
+        math.min @offset + lines_left - 1, total
+      else
+       total
+
+    for row = @offset, @last_shown
       item = @items[row]
       start_pos = pos
       if @_multi_column
@@ -183,11 +196,11 @@ class List extends PropertyObject
 
       pos = buffer\insert '\n', pos
 
-    @nr_shown = @end_item - @offset + 1
+    @nr_shown = @last_shown - @offset + 1
 
-    if @nr_shown < total
+    if @nr_shown < total and lines_left > 0
       info = string.format '[..] (showing %d - %d out of %d)\n',
-        @offset, @end_item, total
+        @offset, @last_shown, total
       pos = @buffer\insert info, pos, 'comment'
 
     @_sel_row = @offset if not @_sel_row and @selection_enabled

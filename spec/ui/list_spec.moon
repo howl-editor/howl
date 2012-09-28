@@ -66,10 +66,10 @@ first    item one
     list\show!
     assert_equal list.offset, 1
 
-  it '.end_item is set to the index of the last item shown', ->
+  it '.last_shown is set to the index of the last item shown', ->
     list.items = {'one', 'two', 'three'}
     list\show!
-    assert_equal list.end_item, 3
+    assert_equal list.last_shown, 3
 
   context 'when .offset is set', ->
     it 'shows items starting from offset', ->
@@ -97,7 +97,7 @@ first    item one
     assert_equal sci\get_current_pos!, #buf.text
 
   context 'when .max_height is set', ->
-    it 'with no headers it shows only up to max_height items', ->
+    it 'with only .items set it shows only up to max_height items', ->
       list.items = {'one', 'two', 'three'}
       list.max_height = 2
       list\show!
@@ -107,6 +107,22 @@ first    item one
       list.max_height = math.huge
       list\show!
       assert_equal buf.text, 'one\ntwo\nthree\n'
+
+    it 'it takes caption into account when set', ->
+      list.items = {'one', 'two'}
+      list.caption = 'Two\nliner'
+      list.max_height = 3
+      list\show!
+      assert_match 'one', buf.text
+      assert_not_match 'two', buf.text
+
+    it 'it takes headers into account when set', ->
+      list.items = {'one', 'two'}
+      list.headers = { 'Takes up one line' }
+      list.max_height = 2
+      list\show!
+      assert_match 'one', buf.text
+      assert_not_match 'two', buf.text
 
     it 'displays info about the currently shown items', ->
       list.items = {'one', 'two', 'three'}
