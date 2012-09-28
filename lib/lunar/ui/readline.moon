@@ -38,6 +38,7 @@ class Readline extends PropertyObject
     @input = input
     @callback = callback
     @text = ''
+    @completion_unwanted = false
     @_complete!
 
   to_gobject: => @bin
