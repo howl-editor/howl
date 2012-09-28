@@ -36,6 +36,22 @@ first  item one
 second item two
 ]]
 
+  context 'when .caption is set', ->
+    it 'shows it above the items', ->
+      list.items = { 'first' }
+      list.caption = 'This is a fine list:'
+      list\show!
+      assert_equal buf.text, [[
+This is a fine list:
+first
+]]
+
+  it 'it is styled using the list_caption style', ->
+    list.items = { { 'first' } }
+    list.caption = 'Caption'
+    list\show!
+    assert_equal style.at_pos(buf, 1), 'list_caption'
+
   it 'shows headers, if given, above the items', ->
     list.items = { {'first', 'item one'} }
     list.headers = { 'Column 1', 'Column 2' }

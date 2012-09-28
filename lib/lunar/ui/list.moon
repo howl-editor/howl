@@ -2,6 +2,7 @@ import PropertyObject from lunar.aux.moon
 import style, highlight from lunar.ui
 
 style.define 'list_header', color: '#5E5E5E', underline: true
+style.define 'list_caption', {}
 
 highlight.define 'list_selection', {
   style: highlight.ROUNDBOX,
@@ -156,6 +157,10 @@ class List extends PropertyObject
     if not @_widths
       @_widths = calculate_column_widths @items, @headers
       @_multi_column = @_widths != nil
+
+    if @caption and lines_left > 0
+      cap = @caption .. '\n'
+      pos = buffer\insert cap, pos, 'list_caption'
 
     if @headers and #@headers > 0
       for column, header in ipairs @headers
