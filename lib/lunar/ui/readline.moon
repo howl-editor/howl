@@ -73,11 +73,11 @@ class Readline extends PropertyObject
     if count > 0
       @completion_list = List @buffer, 1
       list_options = options and options.list or {}
-      @completion_list[k] = v for k, v in pairs list_options
       with @completion_list
         .items = completions
         .max_height = @_max_list_lines!
         .selection_enabled = true
+        @completion_list[k] = v for k, v in pairs list_options
         \show!
       @_adjust_height!
 
