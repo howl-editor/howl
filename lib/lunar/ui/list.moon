@@ -51,8 +51,14 @@ class List extends PropertyObject
       @_widths = nil
 
   @property selection:
-    get: =>
-      @_sel_row and @items[@_sel_row] or nil
+    get: => @_sel_row and @items[@_sel_row] or nil
+    set: (sel_item) =>
+      for i, item in ipairs @items
+        if sel_item == item
+          @select i
+          return
+
+      error 'Could not set selection: ' .. tostring(sel_item) .. ' was not found', 2
 
   @property limit:
     get: =>
@@ -65,6 +71,9 @@ class List extends PropertyObject
     if @end_pos
       @buffer\delete @start_pos, @end_pos - @start_pos
       @end_pos = nil
+
+  @property showing:
+    get: => @end_pos != nil
 
   scroll_to: (row) =>
     error 'List is not shown', 2 if not @end_pos
@@ -117,16 +126,20 @@ class List extends PropertyObject
       error 'Row "' .. row .. '" out of range', 2
 
     @_sel_row = row
-    highlight.remove_all 'list_selection', @buffer
 
-    if row >= @offset and row <= @end_item
-      lines = @buffer.lines
-      start_line = lines\nr_at_pos @start_pos
-      sel_line = row - @offset + 1
-      sel_line += 1 if @headers and #@headers > 0
-      pos = lines\pos_for sel_line
-      length = #lines[sel_line]
-      highlight.apply 'list_selection', @buffer, pos, length
+    if @showing
+      highlight.remove_all 'list_selection', @buffer
+
+      if row >= @offset and row <= @end_item
+        lines = @buffer.lines
+        start_line = lines\nr_at_pos @start_pos
+        sel_line = row - @offset + 1
+        sel_line += 1 if @headers and #@headers > 0
+        pos = lines\pos_for sel_line
+        length = #lines[sel_line]
+        highlight.apply 'list_selection', @buffer, pos, length
+      else
+        @scroll_to row
 
   show: =>
     @clear!
@@ -173,9 +186,10 @@ class List extends PropertyObject
       pos = @buffer\insert info, pos, 'comment'
 
     @_sel_row = @offset if not @_sel_row and @selection_enabled
+    @end_pos = pos
+
     @select @_sel_row if @_sel_row
 
-    @end_pos = pos
     pos
 
   @meta {

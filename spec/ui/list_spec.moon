@@ -14,6 +14,12 @@ describe 'List', ->
     list.items = {'one', 'two', 'three'}
     assert_equal #list, 3
 
+  it '.showing() returns true if the list is currently showing', ->
+    assert_false list.showing
+    list.items = {'one'}
+    list\show!
+    assert_true list.showing
+
   it 'shows single column items each on one line', ->
     list.items = {'one', 'two', 'three'}
     list\show!
@@ -75,7 +81,7 @@ first    item one
     assert_equal sci\get_current_pos!, #buf.text
 
   context 'when .max_height is set', ->
-    it 'shows only up to max_shown items', ->
+    it 'with no headers it shows only up to max_height items', ->
       list.items = {'one', 'two', 'three'}
       list.max_height = 2
       list\show!
@@ -175,6 +181,20 @@ three    four
       assert_table_equal highlight.at_pos(buf, 1), { 'list_selection' }
       assert_table_equal highlight.at_pos(buf, 5), {}
 
+    describe '.selection = <item>', ->
+      it 'causes <item> to be selected', ->
+        list.selection = 'two'
+        assert_equal list.selection, 'two'
+
+      it 'raises an error if <item> can not be found', ->
+        assert_raises 'not found', -> list.selection = 'five'
+
+      it 'can be set before the list shown', ->
+        list\clear!
+        list.selection = 'two'
+        list\show!
+        assert_equal list.selection, 'two'
+
     describe 'select(row)', ->
       it 'selects the specified row', ->
         list\select 2
@@ -184,6 +204,20 @@ three    four
         list\select 2
         assert_table_equal highlight.at_pos(buf, 1), {}
         assert_table_equal highlight.at_pos(buf, 5), { 'list_selection' }
+
+      it 'scrolls the list if needed', ->
+        list.max_height = 2
+        list\show!
+        list\select 3
+        assert_match 'three', buf.text
+
+      it 'remembers the selected row if set before showing', ->
+        list\clear!
+        list.max_height = 2
+        list\select 3
+        list\show!
+        assert_equal list.selection, 'three'
+        assert_match 'three', buf.text
 
     describe 'select_next()', ->
       it 'selects the next item', ->
