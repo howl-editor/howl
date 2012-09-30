@@ -20,6 +20,7 @@ return {
       font: name: font, size: 10, bold: true, italic: true
       color: grey
 
+      info: color: blue
       warning: color: orange
       ['error']: color: red
 
