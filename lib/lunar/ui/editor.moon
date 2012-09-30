@@ -176,12 +176,13 @@ class Editor extends PropertyObject
       @sci\set_sel_fore true, sel.color if sel.color
 
   _set_config_settings: =>
+    buf = @buffer
     with @sci
-      \set_tab_width config.tab_width
-      \set_use_tabs config.use_tabs
-      \set_indent config.indent
-      \set_tab_indents config.tab_indents
-      \set_back_space_un_indents config.backspace_unindents
+      \set_tab_width config.get('tab_width', buf)
+      \set_use_tabs config.get('use_tabs', buf)
+      \set_indent config.get('indent', buf)
+      \set_tab_indents config.get('tab_indents', buf)
+      \set_back_space_un_indents config.get('backspace_unindents', buf)
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
