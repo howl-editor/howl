@@ -115,7 +115,7 @@ class Editor extends PropertyObject
             indentation += step
           elseif new_indent == '<-'
             indentation -= step
-        else
+        elseif new_indent
           indentation = new_indent
 
       if indentation

@@ -38,8 +38,14 @@ describe 'Editor', ->
         editor\new_line_and_indent!
         assert_equal buffer.text, 'line\n' .. string.rep(' ', 6)
 
-    context "when the buffer's mode is missing or does not provides .indent_after", ->
+    context "when the mode.indent_after is missing or returns nil", ->
       it 'uses the indentation of the current line', ->
+        buffer.text = '  line'
+        cursor.pos = 7
+        editor\new_line_and_indent!
+        assert_equal buffer.text, '  line\n  '
+
+        buffer.mode = indent_after: -> nil
         buffer.text = '  line'
         cursor.pos = 7
         editor\new_line_and_indent!
