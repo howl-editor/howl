@@ -131,6 +131,14 @@ describe 'command', ->
           _, prompt = unpack readline.read.called_with
           assert_equal prompt, ':' .. cmd.name .. ' arg '
 
+      context 'when it specifies a unknown command', ->
+        it 'invokes _G.window.readline with the text set to the given string', ->
+          readline = Spy as_null_object: true
+          _G.window = :readline
+          command.run 'what-the-heck now'
+          assert_true readline.read.called
+          assert_equal readline.writes.text, 'what-the-heck now'
+
     context 'interacting with readline', ->
       input = nil
       callback = nil

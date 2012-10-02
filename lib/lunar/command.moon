@@ -151,11 +151,13 @@ run = (cmd_string = nil) ->
       if input and input.go_back then input\go_back!
 
   prompt = ':'
+  text = nil
 
   if cmd_string and #cmd_string > 0
     state\update cmd_string .. ' '
     return if state\submit!
     prompt ..= state\to_string!
+    text = cmd_string if not state.cmd
 
   window.readline\read prompt, cmd_input, (value, readline) ->
     state\update readline.text .. ' ', readline
@@ -163,6 +165,8 @@ run = (cmd_string = nil) ->
       return true
 
     return false
+
+  window.readline.text = text if text
 
 return setmetatable { :register, :unregister, :alias, :run, :names, :get}, {
   __index: (key) => commands[key] or accessible_names[key]
