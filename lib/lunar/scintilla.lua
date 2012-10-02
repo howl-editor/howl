@@ -112,6 +112,7 @@ end
 
 function sci:send_with_stringresult(message, arg1)
   length = self:send(message, arg1, nil)
+  if length == 0 then return '' end
   buffer = cbuf(length + 1)
   -- for the cases where the additional argument isn't specified,
   -- we should send the length as computed above
