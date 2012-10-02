@@ -3,19 +3,69 @@ import Gtk from lgi
 import Buffer, config from lunar
 import Window, Editor from lunar.ui
 
+import Spy from lunar.spec
+
 describe 'Editor', ->
-  buffer = Buffer {}
-  editor = Editor buffer
+  buffer = nil
+  editor = Editor Buffer {}
   cursor = editor.cursor
   window = Gtk.OffscreenWindow!
   window\add editor\to_gobject!
   window\show_all!
 
-  it 'new_line adds a newline at the current position', ->
+  before ->
+    buffer = Buffer {}
+    editor.buffer = buffer
+
+  it '.current_line is a shortcut for the current buffer line', ->
+    buffer.text = 'hello\nworld'
+    cursor.pos = 2
+    assert_equal editor.current_line, buffer.lines[1]
+
+  it '.new_line() adds a newline at the current position', ->
     buffer.text = 'hello'
     cursor.pos = 2
     editor\new_line!
     assert_equal buffer.text, 'h\nello'
+
+  describe '.new_line_and_indent()', ->
+    context "when the buffer's mode provides an .indent_after", ->
+      it 'adds a new line and indents it by the amount returned by indent_after', ->
+        indent_after = (line, cur_indent, buffer) -> 6
+        buffer.mode = :indent_after
+        buffer.text = 'line'
+        cursor.pos = 5
+        editor\new_line_and_indent!
+        assert_equal buffer.text, 'line\n' .. string.rep(' ', 6)
+
+    context "when the buffer's mode is missing or does not provides .indent_after", ->
+      it 'uses the indentation of the current line', ->
+        buffer.text = '  line'
+        cursor.pos = 7
+        editor\new_line_and_indent!
+        assert_equal buffer.text, '  line\n  '
+
+    it 'passes the contents of the current line as <line>, up to the cursor', ->
+      indent_after = Spy with_return: 2
+      buffer.mode = :indent_after
+      buffer.text = 'line'
+      cursor.pos = 3
+      editor\new_line_and_indent!
+      assert_equal indent_after.called_with[1], 'li'
+
+    it 'does the whole shebang as a one undo', ->
+      buffer.text = '  line'
+      cursor.pos = 7
+      editor\new_line_and_indent!
+      editor.buffer\undo!
+      assert_equal buffer.text, '  line'
+
+    it 'positions the cursor at the end of the indentation', ->
+      buffer.text = '  line'
+      cursor.pos = 7
+      editor\new_line_and_indent!
+      assert_equal editor.cursor.line, 2
+      assert_equal editor.cursor.column, 3
 
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->
     buffer.text = 'hello'

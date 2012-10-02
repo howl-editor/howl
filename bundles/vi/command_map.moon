@@ -63,7 +63,7 @@ J = (editor) -> apply editor, -> editor\join_lines!
 
 o = (editor) -> apply editor, ->
   A editor
-  editor\new_line!
+  editor\new_line_and_indent!
 
 O = (editor) -> apply editor, ->
   editor.cursor\home!

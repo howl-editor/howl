@@ -94,8 +94,27 @@ class Editor extends PropertyObject
       highlight.set_for_buffer @sci, buffer
       buffer\add_sci_ref @sci
 
+  @property current_line: get: => @buffer.lines[@cursor.line]
+
   focus: => @sci\grab_focus!
   new_line: => @sci\new_line!
+
+  new_line_and_indent: =>
+    cur_line = @current_line
+    mode = @buffer.mode
+    indentation = cur_line.indentation
+
+    @buffer\as_one_undo ->
+      @new_line!
+
+      if mode and mode.indent_after
+        indentation = mode.indent_after cur_line.text
+
+      if indentation
+        @current_line.indentation = indentation
+        @cursor.column = indentation + 1
+
+
   delete_line: => @sci\line_delete!
   delete_to_end_of_line: => @sci\del_line_right!
   copy_line: => @sci\line_copy!
@@ -256,16 +275,17 @@ with config
 
 -- Commands
 for cmd_spec in *{
-  { 'editor:new_line', 'Breaks the line at the current position', 'new_line' }
-  { 'editor:delete_line', 'Deletes the current line', 'delete_line' }
-  { 'editor:delete_to_end_of_line', 'Deletes to the end of line', 'delete_to_end_of_line' }
-  { 'editor:copy_line', 'Copies the current line to the clipboard', 'copy_line' }
+  { 'editor:new-line', 'Adds a new line at the current position', 'new_line' }
+  { 'editor:new-line-and-indent', 'Adds a new indented line', 'new_line_and_indent' }
+  { 'editor:delete-line', 'Deletes the current line', 'delete_line' }
+  { 'editor:delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line' }
+  { 'editor:copy-line', 'Copies the current line to the clipboard', 'copy_line' }
   { 'editor:paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
   { 'editor:tab', 'Simulates a tab key press', 'tab' }
   { 'editor:backspace', 'Simulates a backspace key press', 'backspace' }
   { 'editor:indent', 'Indents the selected lines, or the current line', 'indent' }
   { 'editor:unindent', 'Unindents the selected lines, or the current line', 'unindent' }
-  { 'editor:join_lines', 'Joins the current line with the line below', 'join_lines' }
+  { 'editor:join-lines', 'Joins the current line with the line below', 'join_lines' }
 }
   command.register
     name: cmd_spec[1]
