@@ -65,7 +65,6 @@ export dispatch = (event, keymaps, ...) ->
   false
 
 export process = (editor, event) ->
-  translations = translate_key event
   buffer = editor.buffer
   maps = { buffer.keymap, buffer.mode and buffer.mode.keymap, keymap }
 
