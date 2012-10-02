@@ -78,6 +78,20 @@ class Buffer extends PropertyObject
   @property size: get: => @sci\get_text_length!
   @property lines: get: => BufferLines @sci
 
+  @property eol:
+    get: =>
+      switch @sci\get_eolmode!
+        when Scintilla.SC_EOL_LF then '\n'
+        when Scintilla.SC_EOL_CRLF then '\r\n'
+        when Scintilla.SC_EOL_CR then '\r'
+    set: (eol) =>
+      s_mode = switch eol
+        when '\n' then Scintilla.SC_EOL_LF
+        when '\r\n' then Scintilla.SC_EOL_CRLF
+        when '\r' then Scintilla.SC_EOL_CR
+        else error 'Unknown eol mode'
+      @sci\set_eolmode s_mode
+
   delete: (pos, length) => @sci\delete_range pos - 1, length
 
   insert: (text, pos) =>

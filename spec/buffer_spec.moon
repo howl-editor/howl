@@ -1,4 +1,4 @@
-import Buffer from lunar
+import Buffer, Scintilla from lunar
 import File from lunar.fs
 
 describe 'Buffer', ->
@@ -17,16 +17,16 @@ describe 'Buffer', ->
         assert_equal b.doc, 'docky'
         assert_equal b.sci, sci
 
-  it 'the .text property allows setting and retrieving the buffer text', ->
+  it '.text allows setting and retrieving the buffer text', ->
     b = Buffer {}
     assert_blank b.text
     b.text = 'Ipsum'
     assert_equal b.text, 'Ipsum'
 
-  it 'the .size property returns the size of the buffer text, in bytes', ->
+  it '.size returns the size of the buffer text, in bytes', ->
     assert_equal buffer('hello').size, 5
 
-  it 'the .dirty property indicates and allows setting the modified status', ->
+  it '.dirty indicates and allows setting the modified status', ->
     b = Buffer {}
     assert_false b.dirty
     b.text = 'hello'
@@ -133,6 +133,36 @@ describe 'Buffer', ->
       with_tmpfile (file) ->
         b.file = file
         assert_false b.can_undo
+
+  it '.eol returns the current line ending', ->
+    b = buffer ''
+
+    b.sci\set_eolmode Scintilla.SC_EOL_CRLF
+    assert_equal b.eol, '\r\n'
+
+    b.sci\set_eolmode Scintilla.SC_EOL_LF
+    assert_equal b.eol, '\n'
+
+    b.sci\set_eolmode Scintilla.SC_EOL_CR
+    assert_equal b.eol, '\r'
+
+  describe '.eol = <string>', ->
+    it 'set the the current line ending', ->
+      b = buffer ''
+
+      b.eol = '\n'
+      assert_equal b.sci\get_eolmode!, Scintilla.SC_EOL_LF
+
+      b.eol = '\r\n'
+      assert_equal b.sci\get_eolmode!, Scintilla.SC_EOL_CRLF
+
+      b.eol = '\r'
+      assert_equal b.sci\get_eolmode!, Scintilla.SC_EOL_CR
+
+    it 'raises an error if the eol is unknown', ->
+      assert_raises 'Unknown', -> buffer('').eol = 'foo'
+
+  it '.line_ending allows retrieving and setting current line ending', ->
 
   describe 'insert(text, pos)', ->
     it 'inserts text at pos', ->
