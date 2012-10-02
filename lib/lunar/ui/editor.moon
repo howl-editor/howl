@@ -126,7 +126,7 @@ class Editor extends PropertyObject
   indent: =>
     if @selection.empty
       column = @cursor.column
-      @buffer.lines[@cursor.line]\indent!
+      @current_line\indent!
       @cursor.column = column + config.get 'indent', @buffer
     else
       @sci\tab!
@@ -134,9 +134,8 @@ class Editor extends PropertyObject
   unindent: =>
     if @selection.empty
       column = @cursor.column
-      cur_line = @buffer.lines[@cursor.line]
-      if cur_line.indentation > 0
-        cur_line\unindent!
+      if @current_line.indentation > 0
+        @current_line\unindent!
         @cursor.column = math.max(column - config.get('indent', @buffer), 0)
     else
       @sci\back_tab!
