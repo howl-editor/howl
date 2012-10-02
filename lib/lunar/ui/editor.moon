@@ -108,7 +108,15 @@ class Editor extends PropertyObject
       @new_line!
 
       if mode and mode.indent_after
-        indentation = mode.indent_after cur_line.text
+        new_indent = mode\indent_after cur_line.text, self
+        if type(new_indent) == 'string'
+          step = config.get 'indent', @buffer
+          if new_indent == '->'
+            indentation += step
+          elseif new_indent == '<-'
+            indentation -= step
+        else
+          indentation = new_indent
 
       if indentation
         @current_line.indentation = indentation
