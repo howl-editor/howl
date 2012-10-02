@@ -165,7 +165,7 @@ describe 'bundle', ->
         bundle.load_all!
         assert_table_equal [name for name, _ in pairs _G.bundles], {}
 
-  describe 'load(name)', ->
+  describe 'load_by_name(name)', ->
     it 'loads the bundle with the specified name', ->
       with_tmpdir (dir) ->
         bundle.dirs = {dir}

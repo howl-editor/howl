@@ -61,9 +61,12 @@ export load_from_dir = (dir) ->
   _G.bundles[module_name dir.basename] = bundle
 
 export load_by_name = (name) ->
+  mod_name = module_name name
+
   for dir in *dirs
     for c in *dir.children
-      if c.is_directory and not c.is_hidden and module_name(c.basename) == name
+      is_candidate = c.is_directory and not c.is_hidden
+      if is_candidate and module_name(c.basename) == mod_name or c.basename == name
         load_from_dir c
         return
 
