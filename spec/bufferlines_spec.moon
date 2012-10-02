@@ -1,4 +1,4 @@
-import Buffer from lunar
+import Buffer, config from lunar
 
 describe 'BufferLines', ->
   buffer = (text) ->
@@ -49,6 +49,25 @@ describe 'BufferLines', ->
 
     it '.end_pos returns the end position for line', ->
       assert_equal lines[1].end_pos, 6
+
+    it '.indent() indents the line by <config.indent>', ->
+      config.indent = 2
+      buf.lines[1]\indent!
+      assert_equal buf.text, '  hello\n  world\nagain!'
+
+      config.set_local 'indent', 1, buf
+      buf.lines[3]\indent!
+      assert_equal buf.text, '  hello\n  world\n again!'
+
+    it '.unindent() unindents the line by <config.indent>', ->
+      buf.text = '  first\n  second'
+      config.indent = 2
+      buf.lines[1]\unindent!
+      assert_equal buf.text, 'first\n  second'
+
+      config.set_local 'indent', 1, buf
+      buf.lines[2]\unindent!
+      assert_equal buf.text, 'first\n second'
 
     it '#line returns the length of the line', ->
       assert_equal #lines[1], 5

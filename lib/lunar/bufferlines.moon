@@ -1,3 +1,5 @@
+import config from lunar
+
 line_mt =
   __index: (k) =>
     getter = @_getters[k]
@@ -19,13 +21,19 @@ line_mt =
   __len: => #@text
   __eq: (op1, op2) -> tostring(op1) == tostring(op2)
 
-Line = (nr, sci) ->
+Line = (nr, buffer, sci) ->
   text = ->
     contents = sci\get_line nr - 1
     (contents\gsub '[\n\r]*$', '')
 
   setmetatable {
     :nr
+    indent: => @indentation += config.get 'indent', buffer
+    unindent: =>
+      new_indent = @indentation - config.get 'indent', buffer
+      if new_indent >= 0
+        @indentation = new_indent
+
     _getters:
       text: => text!
       start_pos: => sci\position_from_line(nr - 1) + 1
@@ -85,7 +93,7 @@ BufferLines = (buffer, sci) ->
       __index: (key) =>
         if type(key) == 'number'
           return nil if key < 1 or key > #self
-          Line key, @sci
+          Line key, @buffer, @sci
 
       __newindex: (key, value) =>
         if type(key) != 'number' or (key < 1) or (key > #self)
