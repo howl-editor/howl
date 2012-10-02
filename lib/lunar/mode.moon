@@ -3,16 +3,24 @@ class DefaultMode
 
 by_extension = {}
 modes = {}
+live = setmetatable {}, __mode: 'k'
+
+instance_for_mode = (m) ->
+  return live[m] if live[m]
+  instance = m.create!
+  live[m] = instance
+  instance
 
 by_name = (name) ->
-  modes[name] and modes[name].create!
+  modes[name] and instance_for_mode modes[name]
 
 for_file = (file) ->
   return by_name('Default') if not file
   ext = file.extension
-  mode = by_extension[ext] or modes['Default']
-  error 'No mode available for "' .. file .. '"' if not mode
-  mode.create!
+  m = by_extension[ext] or modes['Default']
+  instance = m and instance_for_mode(m)
+  error 'No mode available for "' .. file .. '"' if not instance
+  instance
 
 register = (mode = {}) ->
   error 'Missing field `name` for mode', 2 if not mode.name

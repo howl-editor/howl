@@ -31,6 +31,10 @@ describe 'mode', ->
         file = File 'test.blargh'
         assert_equal mode.for_file(file), instance
 
+  it 'mode instances are memoized', ->
+    mode.register name: 'same', extensions: 'again', create: -> {}
+    assert_equal mode.by_name('same'), mode.for_file File 'once.again'
+
   it '.unregister(name) removes the mode specified by <name>', ->
     mode.register name: 'mode', extensions: 'zen', create: -> {}
     mode.unregister 'mode'
