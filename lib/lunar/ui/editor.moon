@@ -107,23 +107,18 @@ class Editor extends PropertyObject
   indent: =>
     if @selection.empty
       column = @cursor.column
-      line = @cursor.line - 1
-      current_indent = @sci\get_line_indentation line
-      new_indent = current_indent + config.indent
-      @sci\set_line_indentation line, new_indent
-      @cursor.column = column + config.indent
+      @buffer.lines[@cursor.line]\indent!
+      @cursor.column = column + config.get 'indent', @buffer
     else
       @sci\tab!
 
   unindent: =>
     if @selection.empty
       column = @cursor.column
-      line = @cursor.line - 1
-      current_indent = @sci\get_line_indentation line
-      if current_indent > 0
-        new_indent = math.max(current_indent - config.indent, 0)
-        @sci\set_line_indentation line, new_indent
-        @cursor.column = math.max(column - config.indent, 0)
+      cur_line = @buffer.lines[@cursor.line]
+      if cur_line.indentation > 0
+        cur_line\unindent!
+        @cursor.column = math.max(column - config.get('indent', @buffer), 0)
     else
       @sci\back_tab!
 
