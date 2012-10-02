@@ -143,9 +143,9 @@ class List extends PropertyObject
 
       if row >= @offset and row <= @last_shown
         lines = @buffer.lines
-        start_line = lines\nr_at_pos @item_start_pos
+        start_line = lines\at_pos(@item_start_pos).nr
         sel_line = start_line + (row - @offset)
-        pos = lines\pos_for sel_line
+        pos = lines[sel_line].start_pos
         length = #lines[sel_line]
         highlight.apply 'list_selection', @buffer, pos, length
       else

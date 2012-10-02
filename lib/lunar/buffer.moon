@@ -76,7 +76,7 @@ class Buffer extends PropertyObject
     set: (value) => @sci\empty_undo_buffer! if not value
 
   @property size: get: => @sci\get_text_length!
-  @property lines: get: => BufferLines @sci
+  @property lines: get: => BufferLines self, @sci
 
   @property eol:
     get: =>
