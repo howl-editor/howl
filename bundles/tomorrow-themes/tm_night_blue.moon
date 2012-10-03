@@ -100,6 +100,8 @@ return {
 
     preproc: color: purple
 
+    special: color: purple
+
     tag: color: purple
 
     type: color: red
@@ -107,6 +109,8 @@ return {
     variable:
       color: red,
       font: italic: true
+
+    member: color: blue
 
     embedded: color: purple
 
@@ -128,4 +132,5 @@ return {
       :background
       color: foreground
 
+    key: color: red
 }

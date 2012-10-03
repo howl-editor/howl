@@ -15,6 +15,8 @@ default_style_numbers =
   class: 13
   type: 14
   longstring: 15
+  key: 16
+  member: 17
   default: 32
   line_number: 33
   bracelight: 34
