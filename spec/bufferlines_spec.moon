@@ -50,6 +50,14 @@ describe 'BufferLines', ->
     it '.end_pos returns the end position for line', ->
       assert_equal lines[1].end_pos, 6
 
+    it '.previous return the line above this one, or nil if none', ->
+      assert_equal lines[2].previous, lines[1]
+      assert_nil lines[1].previous
+
+    it '.next return the line below this one, or nil if none', ->
+      assert_equal lines[1].next, lines[2]
+      assert_nil lines[3].next
+
     it '.indent() indents the line by <config.indent>', ->
       config.indent = 2
       buf.lines[1]\indent!
@@ -125,14 +133,20 @@ describe 'BufferLines', ->
     assert_equal range[1], lines[1]
     assert_equal range[2], lines[2]
 
-  it 'append(text) appends <text> with the necessary newlines', ->
-    b = buffer 'one\ntwo'
-    b.lines\append 'three'
-    assert_equal b.text, 'one\ntwo\nthree\n'
+  describe 'append(text)', ->
+    it 'append(text) appends <text> with the necessary newlines', ->
+      b = buffer 'one\ntwo'
+      b.lines\append 'three'
+      assert_equal b.text, 'one\ntwo\nthree\n'
 
-    b = buffer 'one\ntwo\n'
-    b.lines\append 'three'
-    assert_equal b.text, 'one\ntwo\nthree\n'
+      b = buffer 'one\ntwo\n'
+      b.lines\append 'three'
+      assert_equal b.text, 'one\ntwo\nthree\n'
+
+    it 'returns a line object for the newly appended line', ->
+      b = buffer 'line'
+      line = b.lines\append 'omega'
+      assert_equal line, b.lines[2]
 
   describe 'insert(line_nr, text)', ->
     it 'inserts a new line at <nr> with <text>', ->
@@ -147,6 +161,11 @@ describe 'BufferLines', ->
       b = buffer 'first\nsecond'
       assert_raises 'Invalid', -> b.lines\insert 0, 'foo'
       assert_raises 'Invalid', -> b.lines\insert 3, 'foo'
+
+    it 'returns a line object for the newly inserted line', ->
+      b = buffer 'line'
+      line = b.lines\insert 1, 'alpha'
+      assert_equal line, b.lines[1]
 
   it 'supports iterating using ipairs', ->
     b = buffer 'one\ntwo\nthree'

@@ -39,6 +39,8 @@ Line = (nr, buffer, sci) ->
       start_pos: => sci\position_from_line(nr - 1) + 1
       end_pos: => sci\position_from_line(nr)
       indentation: =>  sci\get_line_indentation nr - 1
+      previous: => if nr > 1 then Line nr - 1, buffer, sci
+      next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
 
     _setters:
       text: (value) =>
@@ -78,6 +80,7 @@ BufferLines = (buffer, sci) ->
         error('Invalid line number "' .. line_nr .. '"', 2) if not cur_line
         text ..= @buffer.eol if not text\match '[\r\n]$'
         @buffer\insert text, cur_line.start_pos
+        self[line_nr]
 
       append: (line_text) =>
         line_text ..= @buffer.eol if not line_text\match '[\r\n]$'
@@ -87,6 +90,7 @@ BufferLines = (buffer, sci) ->
           line_text = @buffer.eol .. line_text
 
         @buffer\append line_text
+        self[#self - 1]
     },
       __len: => @sci\get_line_count!
 
