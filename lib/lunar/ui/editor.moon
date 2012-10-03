@@ -99,29 +99,19 @@ class Editor extends PropertyObject
   focus: => @sci\grab_focus!
   newline: => @sci\new_line!
 
-  newline_and_indent: =>
+  smart_newline: =>
     cur_line = @current_line
     mode = @buffer.mode
     indentation = cur_line.indentation
 
     @buffer\as_one_undo ->
       @newline!
+      @current_line.indentation = indentation
 
-      if mode and mode.indent_after
-        new_indent = mode\indent_after cur_line.text, self
-        if type(new_indent) == 'string'
-          step = config.get 'indent', @buffer
-          if new_indent == '->'
-            indentation += step
-          elseif new_indent == '<-'
-            indentation -= step
-        elseif new_indent
-          indentation = new_indent
+      if mode and mode.after_newline
+        mode\after_newline @current_line, self
 
-      if indentation
-        @current_line.indentation = indentation
-        @cursor.column = indentation + 1
-
+      @cursor.column = @current_line.indentation + 1
 
   delete_line: => @sci\line_delete!
   delete_to_end_of_line: => @sci\del_line_right!
@@ -283,7 +273,7 @@ with config
 -- Commands
 for cmd_spec in *{
   { 'editor:newline', 'Adds a new line at the current position', 'newline' }
-  { 'editor:newline-and-indent', 'Adds a new indented line', 'newline_and_indent' }
+  { 'editor:smart-newline', 'Adds a new line, and format as needed', 'smart_newline' }
   { 'editor:delete-line', 'Deletes the current line', 'delete_line' }
   { 'editor:delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line' }
   { 'editor:copy-line', 'Copies the current line to the clipboard', 'copy_line' }

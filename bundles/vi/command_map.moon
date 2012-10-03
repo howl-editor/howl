@@ -57,19 +57,22 @@ G = (editor) -> apply editor, ->
   if state.count then editor.cursor.line = state.count
   else editor.cursor\eof!
 
-i = (editor) -> state.change_mode editor, 'insert'
+i = to_insert
 
 J = (editor) -> apply editor, -> editor\join_lines!
 
 o = (editor) -> apply editor, ->
   A editor
-  editor\newline_and_indent!
+  editor\smart_newline!
 
 O = (editor) -> apply editor, ->
+  current_indent = editor.current_line.indentation
   editor.cursor\home!
-  editor\new_line!
+  editor\newline!
   editor.cursor\up!
-  insert_mode editor
+  editor.current_line.indentation = current_indent
+  editor.cursor.column = current_indent + 1
+  to_insert editor
 
 p = (editor) -> apply editor, ->
   one_right editor

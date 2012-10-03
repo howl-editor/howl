@@ -28,66 +28,38 @@ describe 'Editor', ->
     editor\newline!
     assert_equal buffer.text, 'h\nello'
 
-  describe '.newline_and_indent()', ->
-    context "when the buffer's mode provides an .indent_after", ->
-      it 'adds a new line and indents it by the amount returned by indent_after', ->
-        indent_after = -> 6
-        buffer.mode = :indent_after
-        buffer.text = 'line'
-        cursor.pos = 5
-        editor\newline_and_indent!
-        assert_equal buffer.text, 'line\n' .. string.rep(' ', 6)
-
-    context "when the mode.indent_after is missing or returns nil", ->
-      it 'uses the indentation of the current line', ->
-        buffer.text = '  line'
-        cursor.pos = 7
-        editor\newline_and_indent!
-        assert_equal buffer.text, '  line\n  '
-
-        buffer.mode = indent_after: -> nil
-        buffer.text = '  line'
-        cursor.pos = 7
-        editor\newline_and_indent!
-        assert_equal buffer.text, '  line\n  '
+  describe '.smart_newline()', ->
+    it 'adds a newline and sets the indentation to that of the previous line', ->
+      buffer.text = '  line'
+      cursor.pos = 7
+      editor\smart_newline!
+      assert_equal buffer.text, '  line\n  '
 
     it 'does the whole shebang as a one undo', ->
       buffer.text = '  line'
       cursor.pos = 7
-      editor\newline_and_indent!
+      editor\smart_newline!
       editor.buffer\undo!
       assert_equal buffer.text, '  line'
 
     it 'positions the cursor at the end of the indentation', ->
       buffer.text = '  line'
       cursor.pos = 7
-      editor\newline_and_indent!
+      editor\smart_newline!
       assert_equal editor.cursor.line, 2
       assert_equal editor.cursor.column, 3
 
-    it 'passes (mode, line-up-to-break, editor) to indent_after', ->
-      indent_after = Spy with_return: 2
-      buffer.mode = :indent_after
-      buffer.text = 'line'
-      cursor.pos = 3
-      editor\newline_and_indent!
-      called_with = indent_after.called_with
-      assert_equal called_with[1], buffer.mode
-      assert_equal called_with[2], 'li'
-      assert_equal called_with[3], editor
-
-    it 'indent_after return values "->" and "<-" means indent and unindent, relatively', ->
-      config.set 'indent', 2, buffer
-      buffer.text = 'line'
-      cursor.pos = 5
-
-      buffer.mode = indent_after: -> '->'
-      editor\newline_and_indent!
-      assert_equal buffer.text, 'line\n  '
-
-      buffer.mode = indent_after: -> '<-'
-      editor\newline_and_indent!
-      assert_equal buffer.text, 'line\n  \n'
+    context "when the buffer's mode provides an .after_newline", ->
+      it 'is called with (mode, current-line, editor)', ->
+        after_newline = Spy!
+        buffer.mode = :after_newline
+        buffer.text = 'line'
+        cursor.pos = 3
+        editor\smart_newline!
+        called_with = after_newline.called_with
+        assert_equal called_with[1], buffer.mode
+        assert_equal called_with[2], buffer.lines[2]
+        assert_equal called_with[3], editor
 
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->
     buffer.text = 'hello'
