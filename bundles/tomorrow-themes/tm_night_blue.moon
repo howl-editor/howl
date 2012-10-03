@@ -110,7 +110,7 @@ return {
       color: red,
       font: italic: true
 
-    member: color: blue
+    member: color: green
 
     embedded: color: purple
 
