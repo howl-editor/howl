@@ -22,46 +22,46 @@ describe 'Editor', ->
     cursor.pos = 2
     assert_equal editor.current_line, buffer.lines[1]
 
-  it '.new_line() adds a newline at the current position', ->
+  it '.newline() adds a newline at the current position', ->
     buffer.text = 'hello'
     cursor.pos = 2
-    editor\new_line!
+    editor\newline!
     assert_equal buffer.text, 'h\nello'
 
-  describe '.new_line_and_indent()', ->
+  describe '.newline_and_indent()', ->
     context "when the buffer's mode provides an .indent_after", ->
       it 'adds a new line and indents it by the amount returned by indent_after', ->
         indent_after = -> 6
         buffer.mode = :indent_after
         buffer.text = 'line'
         cursor.pos = 5
-        editor\new_line_and_indent!
+        editor\newline_and_indent!
         assert_equal buffer.text, 'line\n' .. string.rep(' ', 6)
 
     context "when the mode.indent_after is missing or returns nil", ->
       it 'uses the indentation of the current line', ->
         buffer.text = '  line'
         cursor.pos = 7
-        editor\new_line_and_indent!
+        editor\newline_and_indent!
         assert_equal buffer.text, '  line\n  '
 
         buffer.mode = indent_after: -> nil
         buffer.text = '  line'
         cursor.pos = 7
-        editor\new_line_and_indent!
+        editor\newline_and_indent!
         assert_equal buffer.text, '  line\n  '
 
     it 'does the whole shebang as a one undo', ->
       buffer.text = '  line'
       cursor.pos = 7
-      editor\new_line_and_indent!
+      editor\newline_and_indent!
       editor.buffer\undo!
       assert_equal buffer.text, '  line'
 
     it 'positions the cursor at the end of the indentation', ->
       buffer.text = '  line'
       cursor.pos = 7
-      editor\new_line_and_indent!
+      editor\newline_and_indent!
       assert_equal editor.cursor.line, 2
       assert_equal editor.cursor.column, 3
 
@@ -70,7 +70,7 @@ describe 'Editor', ->
       buffer.mode = :indent_after
       buffer.text = 'line'
       cursor.pos = 3
-      editor\new_line_and_indent!
+      editor\newline_and_indent!
       called_with = indent_after.called_with
       assert_equal called_with[1], buffer.mode
       assert_equal called_with[2], 'li'
@@ -82,11 +82,11 @@ describe 'Editor', ->
       cursor.pos = 5
 
       buffer.mode = indent_after: -> '->'
-      editor\new_line_and_indent!
+      editor\newline_and_indent!
       assert_equal buffer.text, 'line\n  '
 
       buffer.mode = indent_after: -> '<-'
-      editor\new_line_and_indent!
+      editor\newline_and_indent!
       assert_equal buffer.text, 'line\n  \n'
 
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->

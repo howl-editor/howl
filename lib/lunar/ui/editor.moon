@@ -97,15 +97,15 @@ class Editor extends PropertyObject
   @property current_line: get: => @buffer.lines[@cursor.line]
 
   focus: => @sci\grab_focus!
-  new_line: => @sci\new_line!
+  newline: => @sci\new_line!
 
-  new_line_and_indent: =>
+  newline_and_indent: =>
     cur_line = @current_line
     mode = @buffer.mode
     indentation = cur_line.indentation
 
     @buffer\as_one_undo ->
-      @new_line!
+      @newline!
 
       if mode and mode.indent_after
         new_indent = mode\indent_after cur_line.text, self
@@ -282,8 +282,8 @@ with config
 
 -- Commands
 for cmd_spec in *{
-  { 'editor:new-line', 'Adds a new line at the current position', 'new_line' }
-  { 'editor:new-line-and-indent', 'Adds a new indented line', 'new_line_and_indent' }
+  { 'editor:newline', 'Adds a new line at the current position', 'newline' }
+  { 'editor:newline-and-indent', 'Adds a new indented line', 'newline_and_indent' }
   { 'editor:delete-line', 'Deletes the current line', 'delete_line' }
   { 'editor:delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line' }
   { 'editor:copy-line', 'Copies the current line to the clipboard', 'copy_line' }
