@@ -3,7 +3,7 @@ import File from lunar.fs
 import style, colors from lunar.ui
 import PropertyTable, Sandbox from lunar.aux
 
-css_provider = Gtk.CssProvider\get_default!
+css_provider = Gtk.CssProvider!
 screen = Gdk.Screen\get_default!
 Gtk.StyleContext.add_provider_for_screen screen, css_provider, 600
 
