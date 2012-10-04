@@ -8,7 +8,7 @@ screen = Gdk.Screen\get_default!
 Gtk.StyleContext.add_provider_for_screen screen, css_provider, 600
 
 css_template = [[
-GtkWindow {
+GtkWindow.main {
   ${window_background};
 }
 

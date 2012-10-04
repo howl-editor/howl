@@ -33,6 +33,7 @@ class Window extends Delegator
     @win = Gtk.Window props
     @win.on_set_focus = -> _G.window = self
     @win\add alignment
+    @win\get_style_context!\add_class 'main'
 
     @is_fullscreen = false
 
