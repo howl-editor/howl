@@ -41,6 +41,8 @@ Line = (nr, buffer, sci) ->
       indentation: =>  sci\get_line_indentation nr - 1
       previous: => if nr > 1 then Line nr - 1, buffer, sci
       next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
+      empty: => #text! == 0
+      blank: => @match('^%s*$') != nil
 
     _setters:
       text: (value) =>

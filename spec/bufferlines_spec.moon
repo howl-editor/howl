@@ -20,6 +20,18 @@ describe 'BufferLines', ->
     it '.nr holds the line number', ->
       assert_equal lines[1].nr, 1
 
+    it '.empty returns true if the line is empty', ->
+      assert_false lines[1].empty
+      lines[1] = ''
+      assert_true lines[1].empty
+
+    it '.blank returns true if the line is empty or contains just whitespace', ->
+      assert_false lines[1].blank
+      lines[1] = ''
+      assert_true lines[1].blank
+      lines[1] = '  \t '
+      assert_true lines[1].blank
+
     it '.text returns the text of the specified line, sans linebreak', ->
       assert_equal lines[1].text, 'hello'
       assert_equal lines[2].text, '  world'
