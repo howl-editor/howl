@@ -137,7 +137,6 @@ class Readline extends PropertyObject
     with @sci
       \set_hscroll_bar false
       \set_vscroll_bar false
-      \set_margin_width_n 1, 0 -- fold margin
       @gsci.height = \text_height(0)
 
     v = theme.current.editor

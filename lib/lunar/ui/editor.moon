@@ -159,7 +159,6 @@ class Editor extends PropertyObject
 
       -- Line Number Margin.
       \set_margin_width_n 0, 4 + 4 * \text_width(.STYLE_LINENUMBER, '9')
-      \set_margin_width_n 1, 5 -- fold margin
 
       \set_hscroll_bar false
 
