@@ -1,4 +1,3 @@
-import Spy from lunar.spec
 import config from lunar
 
 describe 'log', ->

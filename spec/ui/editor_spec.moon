@@ -3,8 +3,6 @@ import Gtk from lgi
 import Buffer, config from lunar
 import Window, Editor from lunar.ui
 
-import Spy from lunar.spec
-
 describe 'Editor', ->
   buffer = nil
   editor = Editor Buffer {}

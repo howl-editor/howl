@@ -1,4 +1,3 @@
-import Spy from lunar.spec
 import keyhandler, signal, command from lunar
 
 describe 'keyhandler', ->

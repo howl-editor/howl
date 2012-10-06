@@ -1,5 +1,4 @@
 import config, signal from lunar
-import Spy from lunar.spec
 
 describe 'config', ->
   before -> config.reset!

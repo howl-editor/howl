@@ -1,5 +1,4 @@
 import command, inputs, config from lunar
-import Spy from lunar.spec
 
 describe 'command', ->
   cmd = nil

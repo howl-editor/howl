@@ -1,4 +1,3 @@
-import Spy from lunar.spec
 import Scintilla from lunar
 
 describe 'Scintilla', ->

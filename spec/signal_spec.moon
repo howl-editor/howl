@@ -1,5 +1,4 @@
 import signal from lunar
-import Spy from lunar.spec
 
 describe 'signal', ->
   it 'allows name based signals to be broadcasted to any number of handlers', ->

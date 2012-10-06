@@ -6,6 +6,9 @@ serpent = require 'serpent'
 
 import File from lunar.fs
 import theme from lunar.ui
+import Spy from lunar.spec
+
+_G.Spy = Spy
 
 format_table = (t) ->
   serpent.block t, comment: false
