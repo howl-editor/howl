@@ -109,6 +109,34 @@ describe 'Buffer', ->
     b\append ' world'
     assert_equal b.text, 'hello world'
 
+  describe 'destroy()', ->
+    context 'when no sci is passed and a doc is created', ->
+      it 'releases the scintilla document', ->
+        b = buffer 'reap_me'
+        rawset b, 'sci', Spy as_null_object: true
+        b\destroy!
+        assert_true b.sci.release_document.called
+
+    context 'when a sci is passed and a doc is provided', ->
+      it 'does not release the scintilla document', ->
+        sci = get_doc_pointer: (-> 'doc'), release_document: Spy!
+        b = Buffer {}, sci
+        b\destroy!
+        assert_false sci.release_document.called
+
+    it 'a destroyed buffer raises an error upon subsequent operations', ->
+      b = buffer 'reap_me'
+      b\destroy!
+      assert_raises 'destroyed', -> b.size
+      assert_raises 'destroyed', -> b.lines
+      assert_raises 'destroyed', -> b\append 'foo'
+
+  it '.destroyed is true if the buffer is destroyed and false otherwise', ->
+    b = buffer 'shoot_me'
+    assert_false b.destroyed
+    b\destroy!
+    assert_true b.destroyed
+
   it 'delete deletes the specified number of characters', ->
     b = buffer 'hello'
     b\delete 2, 2
@@ -263,3 +291,23 @@ describe 'Buffer', ->
         b1.title = 'Title'
         b2.title = 'Title'
         assert_equal b2.title, 'Title<2>'
+
+  describe 'resource management', ->
+    it 'scintilla documents are released whenever the buffer is garbage collected', ->
+      release = Spy!
+      orig_release = Scintilla.release_document
+      Scintilla.release_document = release
+      b = Buffer {}
+      doc = b.doc
+      b = nil
+      collectgarbage!
+      Scintilla.release_document = orig_release
+      assert_equal release.called_with[2], doc
+
+    it 'buffers are collected as they should', ->
+      b = Buffer {}
+      bufs = setmetatable {}, __mode: 'v'
+      append bufs, b
+      b = nil
+      collectgarbage!
+      assert_nil bufs[1]

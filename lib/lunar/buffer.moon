@@ -2,9 +2,10 @@ import Scintilla, styler, BufferLines from lunar
 import File from lunar.fs
 import style from lunar.ui
 import PropertyObject from lunar.aux.moon
+import destructor from lunar.aux
 
 background_sci = Scintilla!
-background_buffer = nil
+background_buffer = setmetatable {}, __mode: 'v'
 buffer_titles = setmetatable {}, __mode: 'v'
 title_counters = {}
 
@@ -33,6 +34,7 @@ class Buffer extends PropertyObject
       @scis = { sci }
     else
       @doc = background_sci\create_document!
+      @destructor = destructor background_sci\release_document, @doc
       @scis = {}
 
     @mode = mode
@@ -92,6 +94,18 @@ class Buffer extends PropertyObject
         else error 'Unknown eol mode'
       @sci\set_eolmode s_mode
 
+  @property destroyed: get: => @doc == nil
+
+  destroy: =>
+    return if @destroyed
+
+    if @destructor
+      @destructor.defuse!
+      @sci\release_document @doc
+      @destructor = nil
+
+    @doc = nil
+
   delete: (pos, length) => @sci\delete_range pos - 1, length
 
   insert: (text, pos) =>
@@ -115,11 +129,12 @@ class Buffer extends PropertyObject
 
   @property sci:
     get: =>
+      error 'Attempt to invoke operation on destroyed buffer', 2 if @destroyed
       if @_sci then return @_sci
 
-      if background_buffer != self
+      if background_buffer[1] != self
         background_sci\set_doc_pointer self.doc
-        background_buffer = self
+        background_buffer[1] = self
 
       background_sci
 
