@@ -21,3 +21,10 @@ describe 'destructor(callback, ...)', ->
     collectgarbage!
     assert_true callback.called
     assert_true other_callback.called
+
+  it 'defuse() disables the destructor', ->
+    callback = Spy!
+    d = destructor callback
+    d.defuse!
+    collectgarbage!
+    assert_false callback.called
