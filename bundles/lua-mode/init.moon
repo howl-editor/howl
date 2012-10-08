@@ -3,7 +3,7 @@ create = ->
   lexer: lunar.aux.ScintilluaLexer 'lua', lua_lexer
 
 mode_reg =
-  name: 'Lua'
+  name: 'lua'
   extensions: 'lua'
   :create
 

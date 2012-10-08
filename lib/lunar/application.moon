@@ -53,7 +53,7 @@ class Application
     @_set_theme!
 
     window = @new_window!
-    buffer = @new_buffer mode.by_name 'Lua'
+    buffer = @new_buffer mode.by_name 'lua'
     editor = Editor buffer
     window\add_view editor
 
