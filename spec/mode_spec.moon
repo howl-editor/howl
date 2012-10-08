@@ -25,9 +25,9 @@ describe 'mode', ->
         assert_equal mode.for_file(file), instance
 
     context 'when the file extension is not registered with any mode', ->
-      it 'returns an instance of the mode "Default"', ->
+      it 'returns an instance of the mode "default"', ->
         instance = {}
-        mode.register name: 'Default', create: -> instance
+        mode.register name: 'default', create: -> instance
         file = File 'test.blargh'
         assert_equal mode.for_file(file), instance
 
@@ -35,13 +35,25 @@ describe 'mode', ->
     mode.register name: 'same', extensions: 'again', create: -> {}
     assert_equal mode.by_name('same'), mode.for_file File 'once.again'
 
-  it '.unregister(name) removes the mode specified by <name>', ->
-    mode.register name: 'mode', extensions: 'zen', create: -> {}
-    mode.unregister 'mode'
-    assert_nil mode.by_name 'mode'
-    assert_raises 'No mode available', -> mode.for_file(File('test.zen'))
+  it 'mode instances automatically have their .name set', ->
+    mode.register name: 'named', extensions: 'again', create: -> {}
+    assert_equal mode.by_name('named').name, 'named'
 
-  it 'allows iterating through modes using pairs()', ->
+  describe '.unregister(name)', ->
+    it '.unregister(name) removes the mode specified by <name>', ->
+      mode.register name: 'mode', extensions: 'zen', create: -> {}
+      mode.unregister 'mode'
+      assert_nil mode.by_name 'mode'
+      assert_equal mode.for_file(File('test.zen')), mode.by_name 'default'
+
+    it 'removes any memoized instance', ->
+      mode.register name: 'memo', extensions: 'memo', create: -> {}
+      mode.unregister 'memo'
+      instance = {}
+      mode.register name: 'memo', extensions: 'memo', create: -> instance
+      assert_equal mode.by_name('memo'), instance
+
+  it '.names contains all registered mode names', ->
     mode.register name: 'needle', create: -> {}
-    names = [name for name, func in pairs mode when name == 'needle']
+    names = [name for name in *mode.names when name == 'needle']
     assert_table_equal names, { 'needle' }

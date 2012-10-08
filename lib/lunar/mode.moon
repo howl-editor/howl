@@ -1,3 +1,5 @@
+import PropertyTable from lunar.aux
+
 class DefaultMode
   true
 
@@ -8,6 +10,7 @@ live = setmetatable {}, __mode: 'k'
 instance_for_mode = (m) ->
   return live[m] if live[m]
   instance = m.create!
+  rawset instance, 'name', m.name
   live[m] = instance
   instance
 
@@ -17,7 +20,7 @@ by_name = (name) ->
 for_file = (file) ->
   return by_name('Default') if not file
   ext = file.extension
-  m = by_extension[ext] or modes['Default']
+  m = by_extension[ext] or modes['default']
   instance = m and instance_for_mode(m)
   error 'No mode available for "' .. file .. '"' if not instance
   instance
@@ -37,9 +40,14 @@ unregister = (name) ->
     modes[name] = nil
     exts = [ext for ext, m in pairs by_extension when m == mode]
     by_extension[ext] = nil for ext in *exts
+    live[mode] = nil
 
-register name: 'Default', create: DefaultMode
+register name: 'default', create: DefaultMode
 
-return setmetatable { :for_file, :by_name, :register, :unregister }, {
-  __pairs: => (_, index) -> return next modes, index
+return PropertyTable {
+  :for_file
+  :by_name
+  :register
+  :unregister
+  names: get: -> [name for name in pairs modes]
 }
