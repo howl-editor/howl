@@ -25,7 +25,7 @@ title_counter = (title) ->
 
 class Buffer extends PropertyObject
   new: (mode, sci) =>
-    error('Missing argument #1 (mode)', 2) if not mode
+    error('Missing argument #1 (mode)', 3) if not mode
     super!
 
     if sci
