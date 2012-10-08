@@ -4,6 +4,7 @@ sl_lexer = root_dir\join('lib/ext/scintillua/lexer.lua').contents
 class ScintilluaLexer
   new: (lexer_name, file) =>
     env = {k, v for k,v in pairs _G}
+    env._G = env
     lexer = loadstring sl_lexer
     setfenv lexer, env
     @lexer = lexer!
