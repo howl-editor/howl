@@ -60,11 +60,12 @@ set_style = (sci, number, style) ->
     \style_set_changeable number, not style.read_only if style.read_only != nil
     \style_set_visible number, style.visible if style.visible != nil
 
-register_sci = (sci) ->
-  set_style sci, default_style_numbers.default, styles.default
+register_sci = (sci, default_style) ->
+  set_style sci, default_style_numbers.default, default_style or styles.default
   sci\style_clear_all!
 
   for name, style in pairs styles
+    if name != 'default'
       set_style sci, style.number, style if style.number
 
   append scis, sci

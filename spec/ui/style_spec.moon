@@ -73,19 +73,30 @@ describe 'style', ->
     style_num = style.number_for 'whats_in_a_name', buffer
     assert_equal style.name_for(style_num, buffer), 'whats_in_a_name'
 
-  it '.register_sci(sci) defines the default styles in the specified sci', ->
-    t = theme.current
-    t.styles.keyword = color: '#112233'
-    style.set_for_theme t
+  describe '.register_sci(sci, default_style)', ->
+    it 'defines the default styles in the specified sci', ->
+      t = theme.current
+      t.styles.keyword = color: '#112233'
+      style.set_for_theme t
 
-    sci = Scintilla!
-    buffer = Buffer {}
-    number = style.number_for 'keyword', buffer
-    old = sci\style_get_fore number
-    style.register_sci sci
-    new = sci\style_get_fore number
-    assert_not_equal new, old
-    assert_equal new, t.styles.keyword.color
+      sci = Scintilla!
+      buffer = Buffer {}
+      number = style.number_for 'keyword', buffer
+      old = sci\style_get_fore number
+      style.register_sci sci
+      new = sci\style_get_fore number
+      assert_not_equal new, old
+      assert_equal new, t.styles.keyword.color
+
+    it 'allows specifying a different default style through <default_style>', ->
+      t = theme.current
+      t.styles.keyword = color: '#223344'
+      style.set_for_theme t
+
+      sci = Scintilla!
+      style.register_sci sci, style.keyword
+      def_fore = sci\style_get_fore style.number_for 'default', {}
+      assert_equal def_fore, t.styles.keyword.color
 
   it '.set_for_buffer(sci, buffer) initializes any previously used buffer styles', ->
     sci = Scintilla!
