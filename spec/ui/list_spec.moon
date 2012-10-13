@@ -303,11 +303,19 @@ three    four
       assert_match 'two', buf.text
       assert_match 'showing 2 %- 2 out of 3', buf.text
 
-    it 'adjust the actual offset to always show the same number of items', ->
-      list.max_height = 2
-      list\show!
-      list\scroll_to 3
-      assert_match 'two\nthree\n', buf.text
+    context 'when the remaining numbers are fewer than the max nr of visible items', ->
+      it 'adjust the actual offset to always show the same number of items', ->
+        list.max_height = 2
+        list\show!
+        list\scroll_to 3
+        assert_match 'two\nthree', buf.text
+
+      it 'accounts for headers when determining the new offset', ->
+        list.headers = { 'foo' }
+        list.max_height = 2
+        list\show!
+        list\scroll_to 3
+        assert_match '^foo\nthree', buf.text
 
     it 'selects <row> if selection is enabled', ->
       list.selection_enabled = true

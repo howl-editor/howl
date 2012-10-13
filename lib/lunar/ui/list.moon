@@ -87,15 +87,15 @@ class List extends PropertyObject
     get: => @end_pos != nil
 
   scroll_to: (row) =>
-    error 'List is not shown', 2 if not @end_pos
+    error 'List is not shown', 2 if not @showing
 
     total = #@items
-    return if not @max_height or total < @max_height
+    max_item_lines = (@last_shown - @offset) + 1
     @offset = row
     if @offset < 1
       @offset = 1
-    elseif @offset > total or total - @offset < @max_height
-      @offset = total - @max_height + 1
+    elseif @offset > total or (total - @offset) + 1 < max_item_lines
+      @offset = (total - max_item_lines) + 1
 
     @show!
     @select row if @selection_enabled
