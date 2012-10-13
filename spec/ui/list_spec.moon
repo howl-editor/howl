@@ -36,6 +36,12 @@ first  item one
 second item two
 ]]
 
+  it 'skips the trailing newline if .trailing_newline is false', ->
+    list.items = {'one', 'two'}
+    list.trailing_newline = false
+    list\show!
+    assert_equal buf.text, 'one\ntwo'
+
   context 'when .caption is set', ->
     it 'shows it above the items', ->
       list.items = { 'first' }

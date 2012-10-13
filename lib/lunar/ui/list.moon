@@ -47,6 +47,7 @@ class List extends PropertyObject
     @max_height = nil
     @offset = 1
     @selection_enabled = false
+    @trailing_newline = true
     super!
 
   @property items:
@@ -194,15 +195,17 @@ class List extends PropertyObject
       else
         pos = buffer\insert tostring(item), pos, @_column_style item, row, 1
 
-      pos = buffer\insert '\n', pos
+      if row != @last_shown
+        pos = buffer\insert '\n', pos
 
     @nr_shown = @last_shown - @offset + 1
 
     if @nr_shown < total and lines_left > 0
-      info = string.format '[..] (showing %d - %d out of %d)\n',
+      info = string.format '\n[..] (showing %d - %d out of %d)',
         @offset, @last_shown, total
       pos = @buffer\insert info, pos, 'comment'
 
+    pos = @buffer\insert '\n', pos if @trailing_newline
     @_sel_row = @offset if not @_sel_row and @selection_enabled
     @end_pos = pos
 
