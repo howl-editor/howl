@@ -17,6 +17,7 @@ default_style_numbers =
   longstring: 15
   key: 16
   member: 17
+  popup: 18
   default: 32
   line_number: 33
   bracelight: 34
@@ -27,7 +28,7 @@ default_style_numbers =
 
 default_style_numbers[num] = name for name, num in pairs moon.copy default_style_numbers
 
-CUSTOM_START = 16
+CUSTOM_START = 19
 PREDEF_START = 32
 PREDEF_END = 39
 STYLE_MAX = 255

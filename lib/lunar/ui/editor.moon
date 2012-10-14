@@ -148,6 +148,32 @@ class Editor extends PropertyObject
       @buffer\delete target_pos, (line_start + content_start) - target_pos
       @buffer\insert ' ', @cursor.pos
 
+  show_popup: (popup, options = {}) =>
+    char_width = @sci\text_width 32, ' '
+    char_height = @sci\text_height 0
+
+    x_adjust = 0
+    pos = options.position
+    if not pos
+      pos = @cursor.pos
+      if @cursor.at_end_of_line
+        pos -= 1
+        x_adjust = char_width
+
+    x = @sci\point_xfrom_position(pos) + x_adjust
+    y = @sci\point_yfrom_position pos
+
+    x -= char_width
+    y += char_height + 2
+
+    popup\show @sci\get_gobject!, :x, :y
+    @popup = window: popup, :options
+
+  remove_popup: =>
+    if @popup
+      @popup.window\close!
+      @popup = nil
+
   _set_appearance: =>
     @_set_theme_settings!
     @_set_ui_config_settings!
@@ -203,8 +229,16 @@ class Editor extends PropertyObject
     indics[id] = indic
     indic
 
-  _on_keypress: (args) =>
-    keyhandler.process self, args
+  _on_keypress: (event) =>
+    @remove_popup! if event.key_name == 'escape'
+
+    if @popup
+      if @popup.window.keymap
+        return true if keyhandler.dispatch event, { @popup.window.keymap }, @popup.window
+
+      @remove_popup! if not @popup.options.persistent
+
+    keyhandler.process self, event
 
   _on_update_ui: =>
     @_update_position!
@@ -219,6 +253,7 @@ class Editor extends PropertyObject
     signal.emit 'editor-focused', self
 
   _on_focus_lost: (args) =>
+    @remove_popup!
     signal.emit 'editor-defocused', self
 
 -- Default indicators

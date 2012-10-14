@@ -68,6 +68,11 @@ return {
       color: foreground
       font: name: '!Liberation Mono', size: 11, bold: true
 
+    popup:
+      background: '#00346e'
+      color: foreground
+      font: name: '!Liberation Mono', size: 11, bold: true
+
     comment:
       font: italic: true
       color: comment
