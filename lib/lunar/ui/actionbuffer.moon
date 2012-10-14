@@ -2,7 +2,7 @@ import Buffer, Scintilla from lunar
 import style from lunar.ui
 
 class ActionBuffer extends Buffer
-  new: (sci) =>
+  new: (sci = nil) =>
     super {}, sci
     @sci\set_lexer Scintilla.SCLEX_NULL
 
