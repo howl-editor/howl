@@ -14,6 +14,7 @@ alternate_translation = (event) ->
     kp_page_up: 'page_up'
     kp_page_down: 'page_down'
     iso_left_tab: 'shift_tab'
+    return: 'enter'
   }
   name = event.key_name
   return alternate_names[name] if name
@@ -28,7 +29,7 @@ export translate_key = (event) ->
   append translations, ctrl .. alt .. event.character if event.character
   append translations, ctrl .. shift .. alt .. event.key_name if event.key_name
   append translations, ctrl .. shift .. alt .. event.key_code
-  append translations, alternate if alternate
+  append translations, ctrl .. shift .. alt .. alternate if alternate
   translations
 
 find_handlers = (translations, event, keymaps) ->

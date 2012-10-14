@@ -42,6 +42,7 @@ describe 'keyhandler', ->
         kp_page_up: 'page_up'
         kp_page_down: 'page_down'
         iso_left_tab: 'shift_tab'
+        return: 'enter'
       }
 
       for name, alternative in pairs for_keynames
