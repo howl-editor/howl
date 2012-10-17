@@ -209,7 +209,7 @@ class List extends PropertyObject
     @_sel_row = @offset if not @_sel_row and @selection_enabled
     @end_pos = pos
 
-    @select @_sel_row if @_sel_row
+    @select @_sel_row if @_sel_row and #@items > 0
 
     pos
 

@@ -36,6 +36,11 @@ first  item one
 second item two
 ]]
 
+  it 'shows nothing for an empty list', ->
+    list.items = {}
+    list\show!
+    assert_equal buf.text, '\n'
+
   it 'skips the trailing newline if .trailing_newline is false', ->
     list.items = {'one', 'two'}
     list.trailing_newline = false
@@ -214,6 +219,11 @@ three    four
 
     it 'selects the first item by default', ->
       assert_equal list.selection, 'one'
+
+    it '.selection is nil for an empty list', ->
+      list.items = {}
+      list\show!
+      assert_nil list.selection
 
     it 'highlights the selected item with list_selection', ->
       assert_table_equal highlight.at_pos(buf, 1), { 'list_selection' }
