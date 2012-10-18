@@ -7,17 +7,17 @@ describe 'keyhandler', ->
     context 'for ordinary characters', ->
       it 'returns a table with the character, key name and key code string', ->
         tr = keyhandler.translate_key character: 'A', key_name: 'A', key_code: 65
-        assert_table_equal tr, { 'A', 'A', '65' }
+        assert.same tr, { 'A', 'A', '65' }
 
     context 'when character is missing', ->
       it 'returns a table with key name and key code string', ->
         tr = keyhandler.translate_key key_name: 'down', key_code: 123
-        assert_table_equal tr, { 'down', '123' }
+        assert.same tr, { 'down', '123' }
 
     context 'when only the code is available', ->
       it 'returns a table with the key code string', ->
         tr = keyhandler.translate_key key_code: 123
-        assert_table_equal tr, { '123' }
+        assert.same tr, { '123' }
 
     context 'with modifiers', ->
       it 'prepends a modifier string representation to all translations for ctrl and alt', ->
@@ -25,13 +25,13 @@ describe 'keyhandler', ->
           character: 'a', key_name: 'a', key_code: 123,
           control: true, alt: true
         mods = 'ctrl_alt_'
-        assert_table_equal tr, { mods .. 'a', mods .. 'a', mods .. '123' }
+        assert.same tr, { mods .. 'a', mods .. 'a', mods .. '123' }
 
       it 'emits the shift modifier if the character is known', ->
         tr = keyhandler.translate_key
           character: 'A', key_name: 'a', key_code: 123,
           control: true, shift: true
-        assert_table_equal tr, { 'ctrl_A', 'ctrl_shift_a', 'ctrl_shift_123' }
+        assert.same tr, { 'ctrl_A', 'ctrl_shift_a', 'ctrl_shift_123' }
 
     it 'adds special case translations for certain common keys', ->
       for_keynames = {
@@ -47,7 +47,7 @@ describe 'keyhandler', ->
 
       for name, alternative in pairs for_keynames
         translations = keyhandler.translate_key key_code: 123, key_name: name
-        assert_includes translations, alternative
+        assert.includes translations, alternative
 
   describe 'process(editor, buffer, event)', ->
     context 'when firing the key-press signal', ->
@@ -59,7 +59,7 @@ describe 'keyhandler', ->
 
         status, ret = pcall keyhandler.process :buffer, event
         signal.disconnect 'key-press', signal_handler
-        assert_table_equal signal_handler.called_with, { event }
+        assert.same signal_handler.called_with, { event }
 
       it 'returns early with true if the handler does', ->
         buffer = keymap: Spy!
@@ -69,9 +69,9 @@ describe 'keyhandler', ->
         status, ret = pcall keyhandler.process, :buffer, { character: 'A', key_name: 'A', key_code: 65 }
         signal.disconnect 'key-press', signal_handler
 
-        assert_equal #buffer.keymap.reads, 0
-        assert_true signal_handler.called
-        assert_true ret
+        assert.equal #buffer.keymap.reads, 0
+        assert.is_true signal_handler.called
+        assert.is_true ret
 
       it 'continues processing keymaps if the handler returns false', ->
         keymap_handler = Spy!
@@ -82,14 +82,14 @@ describe 'keyhandler', ->
         status, ret = pcall keyhandler.process, :buffer, { character: 'A', key_name: 'A', key_code: 65 }
         signal.disconnect 'key-press', signal_handler
 
-        assert_true keymap_handler.called
+        assert.is_true keymap_handler.called
 
     context 'when looking up handlers', ->
 
       it 'tries each translated key, and .on_unhandled in order for a given keymap', ->
         buffer = keymap: Spy!
         keyhandler.process :buffer, { character: 'A', key_name: 'A', key_code: 65 }
-        assert_table_equal buffer.keymap.reads, { 'A', 'A', '65', 'on_unhandled' }
+        assert.same buffer.keymap.reads, { 'A', 'A', '65', 'on_unhandled' }
 
       it 'searches the buffer keymap -> the mode keymap -> global keymap', ->
         key_args = character: 'A', key_name: 'A', key_code: 65
@@ -103,9 +103,9 @@ describe 'keyhandler', ->
             keymap: mode_map
 
         keyhandler.process :buffer, key_args
-        assert_equal #keyhandler.keymap.reads, 4
-        assert_table_equal keyhandler.keymap.reads, mode_map.reads
-        assert_table_equal mode_map.reads, buffer_map.reads
+        assert.equal #keyhandler.keymap.reads, 4
+        assert.same keyhandler.keymap.reads, mode_map.reads
+        assert.same mode_map.reads, buffer_map.reads
 
       context 'when .on_unhandled is defined and keys are not found in a keymap', ->
         it 'is called with the event and translations', ->
@@ -113,21 +113,21 @@ describe 'keyhandler', ->
           buffer = keymap: { :on_unhandled }
           event = character: 'A', key_name: 'A', key_code: 65
           keyhandler.process :buffer, event
-          assert_table_equal on_unhandled.called_with, { event, { 'A', 'A', '65' } }
+          assert.same on_unhandled.called_with, { event, { 'A', 'A', '65' } }
 
         it 'any return is used as the handler', ->
           handler = Spy!
           buffer = keymap: { on_unhandled: -> handler }
           keyhandler.process :buffer, { character: 'A', key_name: 'A', key_code: 65 }
-          assert_true handler.called
+          assert.is_true handler.called
 
       it 'skips any keymaps not present', ->
         key_args = character: 'A', key_name: 'A', key_code: 65
         keyhandler.keymap = Spy!
 
         buffer = {}
-        assert_true (pcall keyhandler.process, :buffer, key_args)
-        assert_equal #keyhandler.keymap.reads, 4
+        assert.is_true (pcall keyhandler.process, :buffer, key_args)
+        assert.equal #keyhandler.keymap.reads, 4
 
     context 'when invoking handlers', ->
       context 'when the handler is a function', ->
@@ -136,7 +136,7 @@ describe 'keyhandler', ->
           buffer = keymap: { k: (...) -> received = {...} }
           editor = :buffer
           keyhandler.process editor, character: 'k', key_code: 65
-          assert_table_equal received, { editor }
+          assert.same received, { editor }
 
         it 'returns early with true unless a handler explicitly returns false', ->
           mode_handler = Spy!
@@ -145,23 +145,23 @@ describe 'keyhandler', ->
             mode:
               keymap:
                 k: mode_handler
-          assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
-          assert_false mode_handler.called
+          assert.is_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
+          assert.is_false mode_handler.called
 
           buffer.keymap.k = -> false
-          assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
-          assert_true mode_handler.called
+          assert.is_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
+          assert.is_true mode_handler.called
 
         context 'when the handler raises an error', ->
           it 'returns true', ->
             buffer = keymap: { k: -> error 'BOOM!' }
-            assert_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
+            assert.is_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
 
           it 'logs an error to the log', ->
             buffer = keymap: { k: -> error 'a to the k log' }
             keyhandler.process :buffer, { character: 'k', key_code: 65 }
-            assert_gte #log.entries, 1
-            assert_equal log.entries[#log.entries].message, 'a to the k log'
+            assert.is_not.equal #log.entries, 0
+            assert.equal log.entries[#log.entries].message, 'a to the k log'
 
       context 'when the handler is a string', ->
         it 'runs the command with command.run() and returns true', ->
@@ -171,10 +171,10 @@ describe 'keyhandler', ->
           buffer = keymap: { k: 'spy' }
           status = keyhandler.process :buffer, { character: 'k', key_code: 65 }
           command.run = orig_run
-          assert_true status
-          assert_table_equal cmd_run.called_with, { 'spy' }
+          assert.is_true status
+          assert.same cmd_run.called_with, { 'spy' }
 
       it 'returns false if no handlers are found', ->
-        assert_false keyhandler.process buffer: {}, { character: 'k', key_code: 65 }
+        assert.is_false keyhandler.process buffer: {}, { character: 'k', key_code: 65 }
 
 

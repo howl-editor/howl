@@ -16,7 +16,6 @@ class Application
     @buffers = {}
 
     bundle.dirs = { @root_dir / 'bundles' }
-    signal.connect 'error', (e) -> print e
 
   new_window: (properties) =>
     props =

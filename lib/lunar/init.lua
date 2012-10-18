@@ -28,7 +28,7 @@ local function lazily_loaded_module(name)
     end})
 end
 
-package.path = ''
+--package.path = ''
 set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
 package.cpath = ''
 
@@ -53,9 +53,12 @@ require('lunar.globals')
 lunar.app = lunar.Application(lunar.fs.File(app_root), argv)
 _G.log = require('lunar.log')
 
-if #argv > 1 and argv[2] == '--spec' then
-  set_package_path('lib/ext/telescope')
-  lunar.spec.Runner({select(3, unpack(argv))}):run()
+if os.getenv('BUSTED') then
+  local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
+  support()
+  local busted = assert(loadfile(argv[2]))
+  arg = {table.unpack(argv, 3, #argv)}
+  busted()
 else
   lunar.app:run()
 end

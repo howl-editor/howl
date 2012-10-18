@@ -22,7 +22,7 @@ describe 'ScintilluaLexer', ->
     lexer = ScintilluaLexer 'spec', tmpfile
     tmpfile\delete!
     lexed = lexer\lex 'awesome stuff'
-    assert_table_equal lexed, {
+    assert.same lexed, {
       {'keyword', 8},
       {'spec_whitespace', 9},
       {'keyword', 14}

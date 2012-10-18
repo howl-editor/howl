@@ -10,12 +10,12 @@ describe 'Scintilla', ->
       _core.sci.new = spy
       pcall Scintilla
       _core.sci.new = sci_new
-      assert_true spy.called
+      assert.is_true spy.called
 
   it 'automatically converts color values to strings', ->
     sci = Scintilla!
     sci\style_set_fore 1, '#112233'
-    assert_equal sci\style_get_fore(1), '#112233'
+    assert.equal sci\style_get_fore(1), '#112233'
 
   describe '.dispatch', ->
     context 'for key-press event', ->
@@ -23,4 +23,4 @@ describe 'Scintilla', ->
         sci = Scintilla!
         sci.on_keypress = Spy!
         sci.dispatch sci.sci_ptr, 'key-press', {}
-        assert_true sci.on_keypress.called
+        assert.is_true sci.on_keypress.called

@@ -2,7 +2,7 @@ import bundle from lunar
 import File from lunar.fs
 
 describe 'bundle', ->
-  after ->
+  after_each ->
     _G.bundles = {}
     bundle.dirs = {}
 
@@ -22,31 +22,31 @@ describe 'bundle', ->
 
   describe 'load_from_dir(dir)', ->
     it 'raises an error if dir is not a directory', ->
-      assert_raises 'directory', -> bundle.load_from_dir File '/not-a-directory'
+      assert.raises 'directory', -> bundle.load_from_dir File '/not-a-directory'
 
     it 'raises an error if the bundle init file is missing or incomplete', ->
       with_tmpdir (dir) ->
-        assert_raises 'bundle init', -> bundle.load_from_dir dir
+        assert.raises 'bundle init', -> bundle.load_from_dir dir
         init = dir / 'init.lua'
         init\touch!
-        assert_raises 'Incorrect bundle', -> bundle.load_from_dir dir
+        assert.raises 'Incorrect bundle', -> bundle.load_from_dir dir
         init.contents = 'return {}'
-        assert_raises 'info missing', -> bundle.load_from_dir dir
+        assert.raises 'info missing', -> bundle.load_from_dir dir
         init.contents = 'return { info = {} }'
-        assert_raises 'missing field', -> bundle.load_from_dir dir
+        assert.raises 'missing field', -> bundle.load_from_dir dir
 
     it 'assigns the returned bundle table to bundles using the dir basename', ->
       mod = name: 'bundle_test', author: 'bundle_spec', description: 'spec_bundle', license: 'MIT'
       with_bundle_dir 'foo', (dir) ->
         dir\join('init.lua').contents = bundle_init mod
         bundle.load_from_dir dir
-        assert_table_equal bundles.foo, info: mod
+        assert.same bundles.foo, info: mod
 
     it 'massages the assigned module name to fit with naming standards if necessary', ->
       with_bundle_dir 'Test-hello 2', (dir) ->
         dir\join('init.lua').contents = bundle_init!
         bundle.load_from_dir dir
-        assert_not_nil bundles.test_hello_2
+        assert.not_nil bundles.test_hello_2
 
     context 'exposed bundle helpers', ->
       it 'bundle_file provides access to bundle files', ->
@@ -64,7 +64,7 @@ describe 'bundle', ->
             }
           ]]
           bundle.load_from_dir dir
-          assert_equal bundles.test.file, dir / 'bundle_aux.lua'
+          assert.equal bundles.test.file, dir / 'bundle_aux.lua'
 
       describe 'bundle_load', ->
         it 'allows for cached loading of bundle files using relative paths', ->
@@ -89,8 +89,8 @@ describe 'bundle', ->
               }
             ]]
             bundle.load_from_dir dir
-            assert_equal bundles.load.aux, 'foo1'
-            assert_equal bundles.load.aux2, 'foo1'
+            assert.equal bundles.load.aux, 'foo1'
+            assert.equal bundles.load.aux2, 'foo1'
 
         it 'signals an error upon cyclic dependencies', ->
           with_bundle_dir 'cyclic', (dir) ->
@@ -107,7 +107,7 @@ describe 'bundle', ->
                 },
               }
             ]]
-            assert_raises 'Cyclic dependency', -> bundle.load_from_dir dir
+            assert.raises 'Cyclic dependency', -> bundle.load_from_dir dir
 
         it 'allows passing parameters to the loaded file', ->
           with_bundle_dir 'load', (dir) ->
@@ -124,7 +124,7 @@ describe 'bundle', ->
               }
             ]]
             bundle.load_from_dir dir
-            assert_equal bundles.load.aux, 123
+            assert.equal bundles.load.aux, 123
 
     it 'raises an error upon implicit global writes', ->
       with_tmpdir (dir) ->
@@ -140,7 +140,7 @@ describe 'bundle', ->
             file = file
           }
         ]]
-        assert_raises 'implicit global', -> bundle.load_from_dir dir
+        assert.raises 'implicit global', -> bundle.load_from_dir dir
 
   describe 'load_all()', ->
     it 'loads all found bundles in all directories in bundle.dirs', ->
@@ -152,8 +152,8 @@ describe 'bundle', ->
           b_dir\join('init.lua').contents = bundle_init :name
 
         bundle.load_all!
-        assert_not_nil bundles.foo
-        assert_not_nil bundles.bar
+        assert.not_nil bundles.foo
+        assert.not_nil bundles.bar
 
     it 'skips any hidden entries', ->
       with_tmpdir (dir) ->
@@ -163,7 +163,7 @@ describe 'bundle', ->
         b_dir\join('init.lua').contents = bundle_init name: 'hidden'
 
         bundle.load_all!
-        assert_table_equal [name for name, _ in pairs _G.bundles], {}
+        assert.same [name for name, _ in pairs _G.bundles], {}
 
   describe 'load_by_name(name)', ->
     it 'loads the bundle with the specified name', ->
@@ -174,7 +174,7 @@ describe 'bundle', ->
         b_dir\join('init.lua').contents = bundle_init name: 'named'
 
         bundle.load_by_name 'named'
-        assert_not_nil _G.bundles.named
+        assert.not_nil _G.bundles.named
 
     it 'raises an error if the bundle could not be found', ->
-      assert_raises 'not found', -> bundle.load_by_name 'oh_bundle_where_art_thouh'
+      assert.raises 'not found', -> bundle.load_by_name 'oh_bundle_where_art_thouh'

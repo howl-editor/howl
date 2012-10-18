@@ -11,41 +11,41 @@ describe 'Editor', ->
   window\add editor\to_gobject!
   window\show_all!
 
-  before ->
+  before_each ->
     buffer = Buffer {}
     editor.buffer = buffer
 
   it '.current_line is a shortcut for the current buffer line', ->
     buffer.text = 'hello\nworld'
     cursor.pos = 2
-    assert_equal editor.current_line, buffer.lines[1]
+    assert.equal editor.current_line, buffer.lines[1]
 
   it '.newline() adds a newline at the current position', ->
     buffer.text = 'hello'
     cursor.pos = 2
     editor\newline!
-    assert_equal buffer.text, 'h\nello'
+    assert.equal buffer.text, 'h\nello'
 
   describe '.smart_newline()', ->
     it 'adds a newline and sets the indentation to that of the previous line', ->
       buffer.text = '  line'
       cursor.pos = 7
       editor\smart_newline!
-      assert_equal buffer.text, '  line\n  '
+      assert.equal buffer.text, '  line\n  '
 
     it 'does the whole shebang as a one undo', ->
       buffer.text = '  line'
       cursor.pos = 7
       editor\smart_newline!
       editor.buffer\undo!
-      assert_equal buffer.text, '  line'
+      assert.equal buffer.text, '  line'
 
     it 'positions the cursor at the end of the indentation', ->
       buffer.text = '  line'
       cursor.pos = 7
       editor\smart_newline!
-      assert_equal editor.cursor.line, 2
-      assert_equal editor.cursor.column, 3
+      assert.equal editor.cursor.line, 2
+      assert.equal editor.cursor.column, 3
 
     context "when the buffer's mode provides an .after_newline", ->
       it 'is called with (mode, current-line, editor)', ->
@@ -55,66 +55,66 @@ describe 'Editor', ->
         cursor.pos = 3
         editor\smart_newline!
         called_with = after_newline.called_with
-        assert_equal called_with[1], buffer.mode
-        assert_equal called_with[2], buffer.lines[2]
-        assert_equal called_with[3], editor
+        assert.equal called_with[1], buffer.mode
+        assert.equal called_with[2], buffer.lines[2]
+        assert.equal called_with[3], editor
 
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->
     buffer.text = 'hello'
     cursor.pos = 6
     editor\insert ' world'
-    assert_equal buffer.text, 'hello world'
-    assert_equal cursor.pos, 12
+    assert.equal buffer.text, 'hello world'
+    assert.equal cursor.pos, 12
 
   it 'paste pastes the contents of the clipboard at the current position', ->
     buffer.text = 'hello'
     editor.selection\set 1, 2
     editor.selection\copy!
     editor\paste!
-    assert_equal buffer.text, 'hhello'
+    assert.equal buffer.text, 'hhello'
 
   it 'delete_line deletes the current line', ->
     buffer.text = 'hello\nworld!'
     cursor.pos = 1
     editor\delete_line!
-    assert_equal buffer.text, 'world!'
+    assert.equal buffer.text, 'world!'
 
   it 'copy_line copies the current line', ->
     buffer.text = 'hello\n'
     cursor.pos = 1
     editor\copy_line!
     editor\paste!
-    assert_equal buffer.text, 'hello\nhello\n'
+    assert.equal buffer.text, 'hello\nhello\n'
 
   it 'delete_to_end_of_line deletes text from cursor up to end of line', ->
     buffer.text = 'hello world!'
     cursor.pos = 6
     editor\delete_to_end_of_line!
-    assert_equal buffer.text, 'hello'
+    assert.equal buffer.text, 'hello'
 
   it 'join_lines joins the current line with the one after', ->
     buffer.text = 'hello\n    world!'
     cursor.pos = 1
     editor\join_lines!
-    assert_equal buffer.text, 'hello world!'
-    assert_equal cursor.pos, 6
+    assert.equal buffer.text, 'hello world!'
+    assert.equal cursor.pos, 6
 
   context 'indentation, tabs, spaces and backspace', ->
 
     it 'defines a "tab_width" config variable, defaulting to 2', ->
-      assert_equal config.tab_width, 2
+      assert.equal config.tab_width, 2
 
     it 'defines a "use_tabs" config variable, defaulting to false', ->
-      assert_equal config.use_tabs, false
+      assert.equal config.use_tabs, false
 
     it 'defines a "indent" config variable, defaulting to 2', ->
-      assert_equal config.indent, 2
+      assert.equal config.indent, 2
 
     it 'defines a "tab_indents" config variable, defaulting to true', ->
-      assert_equal config.tab_indents, true
+      assert.equal config.tab_indents, true
 
     it 'defines a "backspace_unindents" config variable, defaulting to true', ->
-      assert_equal config.backspace_unindents, true
+      assert.equal config.backspace_unindents, true
 
     describe '.tab()', ->
       it 'inserts a tab character if use_tabs is true', ->
@@ -122,21 +122,21 @@ describe 'Editor', ->
         buffer.text = 'hello'
         cursor.pos = 2
         editor\tab!
-        assert_equal buffer.text, 'h\tello'
+        assert.equal buffer.text, 'h\tello'
 
       it 'inserts spaces to move to the next tab if use_tabs is false', ->
         config.use_tabs = false
         buffer.text = 'hello'
         cursor.pos = 1
         editor\tab!
-        assert_equal buffer.text, string.rep(' ', config.tab_width) .. 'hello'
+        assert.equal buffer.text, string.rep(' ', config.tab_width) .. 'hello'
 
       it 'inserts a tab move to the next tab if use_tabs is true', ->
         config.use_tabs = true
         buffer.text = 'hello'
         cursor.pos = 1
         editor\tab!
-        assert_equal buffer.text, '\thello'
+        assert.equal buffer.text, '\thello'
 
       it 'indents the current line if in whitespace and tab_indents is true', ->
         config.use_tabs = false
@@ -145,14 +145,14 @@ describe 'Editor', ->
         buffer.text = indent .. 'hello'
         cursor.pos = 2
         editor\tab!
-        assert_equal buffer.text, string.rep(indent, 2) .. 'hello'
+        assert.equal buffer.text, string.rep(indent, 2) .. 'hello'
 
     describe '.backspace()', ->
       it 'deletes back by one character', ->
         buffer.text = 'hello'
         cursor.pos = 2
         editor\backspace!
-        assert_equal buffer.text, 'ello'
+        assert.equal buffer.text, 'ello'
 
       it 'unindents if in whitespace and backspace_unindents is true', ->
         config.indent = 2
@@ -160,7 +160,7 @@ describe 'Editor', ->
         cursor.pos = 3
         config.backspace_unindents = true
         editor\backspace!
-        assert_equal buffer.text, 'hello'
+        assert.equal buffer.text, 'hello'
 
       it 'deletes back if in whitespace and backspace_unindents is false', ->
         config.indent = 2
@@ -168,7 +168,7 @@ describe 'Editor', ->
         cursor.pos = 3
         config.backspace_unindents = false
         editor\backspace!
-        assert_equal buffer.text, ' hello'
+        assert.equal buffer.text, ' hello'
 
     describe '.indent()', ->
       it 'indents the lines included in a selection if any', ->
@@ -176,15 +176,15 @@ describe 'Editor', ->
         buffer.text = 'hello\nselected\nworld!'
         editor.selection\set 2, 10
         editor\indent!
-        assert_equal buffer.text, '  hello\n  selected\nworld!'
+        assert.equal buffer.text, '  hello\n  selected\nworld!'
 
       it 'indents the current line when nothing is selected, remembering column', ->
         config.indent = 2
         buffer.text = 'hello\nworld!'
         cursor.pos = 3
         editor\indent!
-        assert_equal buffer.text, '  hello\nworld!'
-        assert_equal cursor.pos, 5
+        assert.equal buffer.text, '  hello\nworld!'
+        assert.equal cursor.pos, 5
 
     describe '.unindent()', ->
       it 'unindents the lines included in a selection if any', ->
@@ -192,12 +192,12 @@ describe 'Editor', ->
         buffer.text = '  hello\n  selected\nworld!'
         editor.selection\set 4, 12
         editor\unindent!
-        assert_equal buffer.text, 'hello\nselected\nworld!'
+        assert.equal buffer.text, 'hello\nselected\nworld!'
 
       it 'unindents the current line when nothing is selected, remembering column', ->
         config.indent = 2
         buffer.text = '    hello\nworld!'
         cursor.pos = 4
         editor\unindent!
-        assert_equal buffer.text, '  hello\nworld!'
-        assert_equal cursor.pos, 2
+        assert.equal buffer.text, '  hello\nworld!'
+        assert.equal cursor.pos, 2
