@@ -1,4 +1,4 @@
-import Scintilla, styler, BufferLines from lunar
+import Scintilla, styler, BufferLines, Chunk from lunar
 import File from lunar.fs
 import style from lunar.ui
 import PropertyObject from lunar.aux.moon
@@ -105,6 +105,8 @@ class Buffer extends PropertyObject
       @destructor = nil
 
     @doc = nil
+
+  chunk: (pos, length) => Chunk self, pos, pos + length - 1
 
   delete: (pos, length) => @sci\delete_range pos - 1, length
 

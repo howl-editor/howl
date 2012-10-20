@@ -92,7 +92,10 @@ describe 'Buffer', ->
     it 'raises an error if the eol is unknown', ->
       assert.raises 'Unknown', -> buffer('').eol = 'foo'
 
-  it '.line_ending allows retrieving and setting current line ending', ->
+  it '.chunk(start_pos, length) returns a chunk for the specified range', ->
+    b = buffer 'chunky bacon'
+    chunk = b\chunk(8, 3)
+    assert.equal 'bac', chunk.text
 
   describe 'insert(text, pos)', ->
     it 'inserts text at pos', ->
