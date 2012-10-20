@@ -97,6 +97,16 @@ describe 'Buffer', ->
     chunk = b\chunk(8, 3)
     assert.equal 'bac', chunk.text
 
+  it '.word_at(pos) returns a chunk for the word at <pos>', ->
+    b = buffer '"Hello", said Mr.Bacon'
+    assert.equal '', b\word_at(1).text
+    assert.equal 'Hello', b\word_at(2).text
+    assert.equal 'Hello', b\word_at(6).text
+    assert.equal 'Hello', b\word_at(4).text
+    assert.equal '', b\word_at(8).text
+    assert.equal 'Mr', b\word_at(16).text
+    assert.equal 'Bacon', b\word_at(19).text
+
   describe 'insert(text, pos)', ->
     it 'inserts text at pos', ->
       b = buffer 'heo'

@@ -108,6 +108,11 @@ class Buffer extends PropertyObject
 
   chunk: (pos, length) => Chunk self, pos, pos + length - 1
 
+  word_at: (pos) =>
+    start_pos = @sci\word_start_position pos - 1, true
+    end_pos = @sci\word_end_position pos - 1, true
+    return Chunk self, start_pos + 1, end_pos
+
   delete: (pos, length) => @sci\delete_range pos - 1, length
 
   insert: (text, pos) =>
