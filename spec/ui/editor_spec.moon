@@ -20,6 +20,14 @@ describe 'Editor', ->
     cursor.pos = 2
     assert.equal editor.current_line, buffer.lines[1]
 
+  it '.current_word returns the word chunk at the current position', ->
+    buffer.text = 'hello\nworld'
+    cursor.pos = 2
+    word = editor.current_word
+    assert.equal 'hello', word.text
+    assert.equal 1, word.start_pos
+    assert.equal 5, word.end_pos
+
   it '.newline() adds a newline at the current position', ->
     buffer.text = 'hello'
     cursor.pos = 2

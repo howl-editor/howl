@@ -95,6 +95,7 @@ class Editor extends PropertyObject
       buffer\add_sci_ref @sci
 
   @property current_line: get: => @buffer.lines[@cursor.line]
+  @property current_word: get: => @buffer\word_at @cursor.pos
 
   focus: => @sci\grab_focus!
   newline: => @sci\new_line!
