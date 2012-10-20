@@ -127,6 +127,9 @@ function sci:send_with_stringresult(message, arg1)
 end
 
 function sci:send_with_textrange(message, start_pos, end_pos)
+  if end_pos < start_pos then
+    _G.error('Invalid range: end_pos < start_pos', 3)
+  end
   length = end_pos - start_pos
   -- in case of style bytes we actually need two bytes per pos so double up
   buffer = cbuf((length * 2) + 2)
