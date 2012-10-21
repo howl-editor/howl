@@ -85,11 +85,11 @@ define = (name, attributes) ->
   -- redefine for existing scis
 
   if style.number -- default style, set for all scis
-    set_style sci, style.number, style for sci in *scis
+    set_style sci, style.number, style for sci in *scis when sci
   else
     for buffer, styles in pairs buffer_styles
       if styles[name]
-        set_style sci, styles[name], style for sci in *buffer.scis
+        set_style sci, styles[name], style for sci in *buffer.scis when sci
 
 next_style_number = (from_num, buffer) ->
   num = from_num + 1
@@ -103,7 +103,7 @@ name_for = (number, buffer) ->
 number_for = (style_name, buffer) ->
   style = styles[style_name]
   if not style
-    return default_style_numbers[style_name] or default_style_numbers['default']
+    return default_style_numbers[style_name] or default_style_numbers.default
   return style.number if style.number
 
   b_styles = get_buffer_styles buffer
