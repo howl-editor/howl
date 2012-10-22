@@ -1,11 +1,11 @@
 import Gtk from lgi
-import Delegator from lunar.aux.moon
+import PropertyObject from lunar.aux.moon
 
 screen_size = (widget) ->
   screen = widget\get_screen!
   width: screen\get_width!, height: screen\get_height!
 
-class Popup extends Delegator
+class Popup extends PropertyObject
   comfort_zone: 10
 
   new: (child, properties = {}) =>
@@ -20,19 +20,25 @@ class Popup extends Delegator
       { expand: true, child }
     }
     @window\add box
-    super @window
+    @showing = false
+    super!
 
   show: (widget, options = position: 'center') =>
     @transient_for = widget\get_toplevel!
-    @realize!
+    @window\realize!
 
     if options.x
-      @window_position = 'NONE'
+      @window.window_position = 'NONE'
       @move_to widget, options.x, options.y
     else
       @center widget
 
-    @show_all!
+    @window\show_all!
+    @showing = true
+
+  close: =>
+    @window\hide!
+    @showing = false
 
   move_to: (widget, x, y) =>
     w_x, w_y = widget\get_toplevel!.window\get_position!
@@ -41,13 +47,13 @@ class Popup extends Delegator
     y = w_y + t_y
 
     screen = screen_size widget
-    if x + @width > (screen.width - @comfort_zone)
-      @width = screen.width - x - @comfort_zone
+    if x + @window.width > (screen.width - @comfort_zone)
+      @window.width = screen.width - x - @comfort_zone
 
-    if y + @height > (screen.height - @comfort_zone)
-      @height = screen.height - y - @comfort_zone
+    if y + @window.height > (screen.height - @comfort_zone)
+      @window.height = screen.height - y - @comfort_zone
 
-    @move x, y
+    @window\move x, y
 
   center: (widget) =>
     height = @height
@@ -80,10 +86,8 @@ class Popup extends Delegator
       y = win_v_center - (height / 2)
 
     -- now it's all good
-    @height = height
-    @width = width
-    @move x, y
-
-  close: => @window\hide!
+    @window.height = height
+    @window.width = width
+    @window\move x, y
 
 return Popup
