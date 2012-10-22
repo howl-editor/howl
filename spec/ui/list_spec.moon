@@ -227,7 +227,11 @@ three    four
 
     it 'highlights the selected item with list_selection', ->
       assert.same highlight.at_pos(buf, 1), { 'list_selection' }
-      assert.same highlight.at_pos(buf, 5), {}
+      assert.same highlight.at_pos(buf, buf.lines[2].start_pos), {}
+
+    it 'pads lines if neccessary to achieve a uniform selection highlight', ->
+      assert.equal 5, #buf.lines[1]
+      assert.equal 5, #buf.lines[3]
 
     describe '.selection = <item>', ->
       it 'causes <item> to be selected', ->
@@ -251,7 +255,7 @@ three    four
       it 'highlights the new selection and clears any old highlight', ->
         list\select 2
         assert.same highlight.at_pos(buf, 1), {}
-        assert.same highlight.at_pos(buf, 5), { 'list_selection' }
+        assert.same highlight.at_pos(buf, buf.lines[2].start_pos), { 'list_selection' }
 
       it 'scrolls the list if needed', ->
         list.max_height = 2

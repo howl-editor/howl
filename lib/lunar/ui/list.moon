@@ -14,7 +14,7 @@ calculate_column_widths = (items, headers) ->
     widths = {}
 
     for item in *items
-      if type(item) != 'table' then return nil
+      item = { item } if type(item) != 'table'
       for i, col in ipairs item
         widths[i] = math.max(widths[i] or 0, #tostring(col))
 
@@ -25,8 +25,8 @@ calculate_column_widths = (items, headers) ->
     widths
 
 column_padding = (text, column, widths) ->
-  return '' if not widths or column == #widths
-  string.rep ' ', (widths[column] + 1) - #text
+  return '' if column == #widths
+  string.rep ' ', (widths[column] - #text) + 1
 
 line_count = (s) ->
   count = -1
@@ -162,7 +162,7 @@ class List extends PropertyObject
 
     if not @_widths
       @_widths = calculate_column_widths @items, @headers
-      @_multi_column = @_widths != nil
+      @_multi_column = #@_widths > 1
 
     if @caption and lines_left > 0
       cap = @caption .. '\n'
@@ -184,6 +184,9 @@ class List extends PropertyObject
        total
 
     @item_start_pos = pos
+    total_length = 0
+    total_length += width for width in *@_widths
+    total_length += #@_widths if @_multi_column
     for row = @offset, @last_shown
       item = @items[row]
       start_pos = pos
@@ -194,6 +197,12 @@ class List extends PropertyObject
           pos = buffer\insert padding, pos
       else
         pos = buffer\insert tostring(item), pos, @_column_style item, row, 1
+
+      if @selection_enabled
+        extra_spaces = total_length - (pos - start_pos)
+        if extra_spaces > 0
+          padding = string.rep ' ', extra_spaces
+          pos = buffer\insert padding, pos
 
       if row != @last_shown
         pos = buffer\insert '\n', pos
