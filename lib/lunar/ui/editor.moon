@@ -155,11 +155,14 @@ class Editor extends PropertyObject
 
     x_adjust = 0
     pos = options.position
-    if not pos
-      pos = @cursor.pos
-      if @cursor.at_end_of_line
-        pos -= 1
-        x_adjust = char_width
+    pos = @cursor.pos if not pos
+
+    line = @sci\line_from_position pos - 1
+    at_eol = @sci\get_line_end_position(line) == pos - 1
+
+    if at_eol
+      pos -= 1
+      x_adjust = char_width
 
     x = @sci\point_xfrom_position(pos) + x_adjust
     y = @sci\point_yfrom_position pos
