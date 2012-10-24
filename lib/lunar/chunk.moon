@@ -14,6 +14,7 @@ class Chunk extends PropertyObject
       @buffer\as_one_undo ->
         @delete!
         @buffer\insert text, @start_pos
+        @end_pos = @start_pos + #text - 1
 
   delete: => @buffer\delete @start_pos, @end_pos - @start_pos + 1
 
