@@ -104,6 +104,7 @@ describe 'Buffer', ->
     assert.equal 'Hello', b\word_at(6).text
     assert.equal 'Hello', b\word_at(4).text
     assert.equal '', b\word_at(8).text
+    assert.equal 'said', b\word_at(14).text
     assert.equal 'Mr', b\word_at(16).text
     assert.equal 'Bacon', b\word_at(19).text
 
