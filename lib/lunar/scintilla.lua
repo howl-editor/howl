@@ -57,7 +57,7 @@ local function string_to_color(rgb)
 end
 
 local function color_to_string(color)
-  local hex = string_format('%.6x', color)
+  local hex = string_format('%.6x', tonumber(color))
   local b, g, r = hex:match('^(%x%x)(%x%x)(%x%x)$')
   if not r then error('Illegal color returned from scintilla: ' .. color) end
   return '#' .. r .. g .. b
