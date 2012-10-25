@@ -66,8 +66,12 @@ end
 setmetatable(sci, {
   __call = function()
     obj = setmetatable({ sci_ptr = _G._core.sci.new() }, { __index = sci })
+
+    -- set up defaults
     obj:set_code_page(SC_CP_UTF8)
     obj:set_margin_width_n(1, 0) -- no fold margin
+
+    -- store in registry
     sci_map[obj.sci_ptr] = obj
     return obj
   end

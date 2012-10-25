@@ -27,12 +27,16 @@ class BufferPopup extends Popup
     -- annoying flashes of the default window background color when closing
     @bin\override_background_color 0, background
 
-    super @bin, @_window_properties!
+    super @bin, @_get_dimensions!
     @window\override_background_color 0, background
 
   close: =>
     @buffer\remove_sci_ref @sci
     super!
+
+  resize: =>
+    dimensions = @_get_dimensions!
+    super dimensions.width, dimensions.height
 
   keymap: {
     down: => @sci\line_scroll_down!
@@ -59,7 +63,7 @@ class BufferPopup extends Popup
     buffer\add_sci_ref sci
     sci
 
-  _window_properties: =>
+  _get_dimensions: =>
     char_width = @sci\text_width 32, ' '
     char_height = @sci\text_height 0
     height = (char_height * #@buffer.lines) + 6

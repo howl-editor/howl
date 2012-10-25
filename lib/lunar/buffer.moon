@@ -37,6 +37,7 @@ class Buffer extends PropertyObject
       @destructor = destructor background_sci\release_document, @doc
       @scis = {}
 
+    @completers = {}
     @mode = mode
 
   @property file:

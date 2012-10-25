@@ -1,7 +1,7 @@
 import Gtk from lgi
-import Scintilla, signal, keyhandler, config, command from lunar
+import Scintilla, Completer, signal, keyhandler, config, command from lunar
 import PropertyObject from lunar.aux.moon
-import style, highlight, theme, IndicatorBar, Cursor, Selection from lunar.ui
+import style, highlight, theme, IndicatorBar, Cursor, Selection, CompletionPopup from lunar.ui
 
 editors = setmetatable {}, __mode: 'v'
 
@@ -37,6 +37,7 @@ class Editor extends PropertyObject
     @sci.on_update_ui = self\_on_update_ui
     @sci.on_focus = self\_on_focus
     @sci.on_focus_lost = self\_on_focus_lost
+    @sci.on_char_added = self\_on_char_added
     @selection = Selection @sci
     @cursor = Cursor @sci, @selection
 
@@ -178,6 +179,11 @@ class Editor extends PropertyObject
       @popup.window\close!
       @popup = nil
 
+  complete: =>
+    completion = CompletionPopup self, @cursor.pos
+    if not completion.empty
+      @show_popup completion, position: completion.position, persistent: true
+
   _set_appearance: =>
     @_set_theme_settings!
     @_set_ui_config_settings!
@@ -201,7 +207,6 @@ class Editor extends PropertyObject
     if v.caret
       c_color = v.caret.color if v.caret.color
       c_width = v.caret.width if v.caret.width
-
     @sci\set_caret_fore c_color
     @sci\set_caret_width c_width
 
@@ -237,10 +242,13 @@ class Editor extends PropertyObject
     @remove_popup! if event.key_name == 'escape'
 
     if @popup
-      if @popup.window.keymap
-        return true if keyhandler.dispatch event, { @popup.window.keymap }, @popup.window
+      if not @popup.window.showing
+        @remove_popup!
+      else
+        if @popup.window.keymap
+          return true if keyhandler.dispatch event, { @popup.window.keymap }, @popup.window
 
-      @remove_popup! if not @popup.options.persistent
+        @remove_popup! if not @popup.options.persistent
 
     keyhandler.process self, event
 
@@ -259,6 +267,12 @@ class Editor extends PropertyObject
   _on_focus_lost: (args) =>
     @remove_popup!
     signal.emit 'editor-defocused', self
+
+  _on_char_added: (args) =>
+    if @popup
+      @popup.window\on_char_added self, args if @popup.window.on_char_added
+
+    signal.emit 'char-added', self
 
 -- Default indicators
 
@@ -321,6 +335,7 @@ for cmd_spec in *{
   { 'editor:indent', 'Indents the selected lines, or the current line', 'indent' }
   { 'editor:unindent', 'Unindents the selected lines, or the current line', 'unindent' }
   { 'editor:join-lines', 'Joins the current line with the line below', 'join_lines' }
+  { 'editor:complete', 'Starts completion at cursor', 'complete' }
 }
   command.register
     name: cmd_spec[1]
