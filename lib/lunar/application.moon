@@ -47,6 +47,7 @@ class Application
   run: =>
     keyhandler.keymap = keymap
     @_load_variables!
+    @_load_completions!
     @_load_commands!
     bundle.load_all!
     @_set_theme!
@@ -72,6 +73,9 @@ class Application
 
   _load_variables: =>
     require 'lunar.variables.core_variables'
+
+  _load_completions: =>
+    require 'lunar.completion.samebuffercompleter'
 
   _load_commands: =>
     require 'lunar.inputs.projectfile_input'
