@@ -2,6 +2,7 @@ class MoonscriptMode
   new: =>
     lexer_file = bundle_file 'moonscript_lexer.lua'
     @lexer = lunar.aux.ScintilluaLexer 'moon', lexer_file
+    @completers = { 'same_buffer' }
 
   after_newline: (line, editor) =>
     indent_patterns = {
