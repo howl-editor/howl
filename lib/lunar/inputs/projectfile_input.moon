@@ -1,5 +1,5 @@
 import Project from lunar
-import Matcher from lunar.completion
+import Matcher from lunar.util
 
 separator = lunar.fs.File.separator
 

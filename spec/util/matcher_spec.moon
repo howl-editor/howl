@@ -1,4 +1,4 @@
-import Matcher from lunar.completion
+import Matcher from lunar.util
 
 describe 'Matcher', ->
   it 'by default it searches anywhere, disregards case and is fuzzy', ->

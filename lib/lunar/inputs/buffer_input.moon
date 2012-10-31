@@ -1,5 +1,5 @@
 import app from lunar
-import Matcher from lunar.completion
+import Matcher from lunar.util
 
 buffer_dir = (buffer) ->
   buffer.file and tostring(buffer.file.parent) or '(none)'

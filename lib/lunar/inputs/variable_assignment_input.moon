@@ -1,4 +1,4 @@
-import Matcher from lunar.completion
+import Matcher from lunar.util
 import config from lunar
 
 parse_assignment = (text) ->

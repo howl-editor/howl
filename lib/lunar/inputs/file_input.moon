@@ -1,6 +1,6 @@
 import GLib from lgi
 import File from lunar.fs
-import Matcher from lunar.completion
+import Matcher from lunar.util
 
 separator = File.separator
 

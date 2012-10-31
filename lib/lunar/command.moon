@@ -1,5 +1,5 @@
 import inputs, config from lunar
-import Matcher from lunar.completion
+import Matcher from lunar.util
 
 commands = {}
 accessible_names = {}
