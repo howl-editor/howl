@@ -269,10 +269,12 @@ class Editor extends PropertyObject
     signal.emit 'editor-defocused', self
 
   _on_char_added: (args) =>
+    handled = signal.emit 'char-added', self
+
     if @popup
       @popup.window\on_char_added self, args if @popup.window.on_char_added
-
-    signal.emit 'char-added', self
+    elseif not handled and #@current_word >= config.completion_popup_after
+      @complete!
 
 -- Default indicators
 
@@ -312,6 +314,12 @@ with config
     description: 'Whether backspace unindents within whitespace'
     default: true
     type_of: 'boolean'
+
+  .define
+    name: 'completion_popup_after'
+    description: 'Show completion after this many characters'
+    default: 2
+    type_of: 'number'
 
   for live_update in *{
     { 'tab_width', 'set_tab_width' }
