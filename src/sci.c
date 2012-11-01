@@ -23,7 +23,15 @@ static void set_nfield(lua_State *L, const gchar *name, lua_Number value)
 
 static void set_sfield(lua_State *L, const gchar *name, const gchar *value)
 {
+  if (value == NULL) return;
   lua_pushstring(L, value);
+  lua_setfield(L, -2, name);
+}
+
+static void set_sfield_l(lua_State *L, const gchar *name, const gchar *value, size_t len)
+{
+  if (value == NULL || len == 0) return;
+  lua_pushlstring(L, value, len);
   lua_setfield(L, -2, name);
 }
 
@@ -80,8 +88,7 @@ static void explain_key_code(lua_State *l, int code)
   }
 
   if (nr_utf8 > 0) {
-    lua_pushlstring(l, utf8, nr_utf8);
-    lua_setfield(l, -2, "character");
+    set_sfield_l(l, "character", utf8, nr_utf8);
   }
 }
 
@@ -137,7 +144,7 @@ static gboolean on_sci_notify(GtkWidget *widget, gint ctrl_id, struct SCNotifica
 
     if (code == SCN_MODIFIED || code == SCN_USERLISTSELECTION ||
         code == SCN_AUTOCSELECTION || code == SCN_URIDROPPED) {
-      set_sfield(L, "text", n->text);
+      set_sfield_l(L, "text", n->text, n->length);
     }
 
     if (code == SCN_CHARADDED || code == SCN_KEY) {
