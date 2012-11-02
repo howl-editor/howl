@@ -14,6 +14,7 @@ local _G = _G
 local setmetatable, tonumber = setmetatable, tonumber
 local string_format = string.format
 local ffi = require('ffi')
+local bit = require('bit')
 local C = ffi.C
 local lgi_core = require 'lgi.core'
 
@@ -70,6 +71,7 @@ setmetatable(sci, {
     -- set up defaults
     obj:set_code_page(SC_CP_UTF8)
     obj:set_margin_width_n(1, 0) -- no fold margin
+    obj:set_mod_event_mask(bit.bor(SC_MOD_INSERTTEXT, SC_MOD_DELETETEXT))
 
     -- store in registry
     sci_map[obj.sci_ptr] = obj
@@ -87,7 +89,6 @@ end
 function sci.dispatch(sci_ptr, event, args)
   instance = sci_map[sci_ptr]
   if event == 'sci' then
---    _G.print("args.code = " .. _G.tostring(args.code))
     code = args.code
     if code == SCN_STYLENEEDED then
       if instance.on_style_needed then return instance.on_style_needed(args.position) end
@@ -95,6 +96,20 @@ function sci.dispatch(sci_ptr, event, args)
       if instance.on_update_ui then return instance.on_update_ui(args.updated) end
     elseif code == SCN_CHARADDED then
       if instance.on_char_added then return instance.on_char_added(args) end
+    elseif code == SCN_MODIFIED then
+      local inserted = bit.band(args.type, SC_MOD_INSERTTEXT) ~= 0
+      local deleted = bit.band(args.type, SC_MOD_DELETETEXT) ~= 0
+      local params = {
+        at_pos = args.position,
+        text = args.text,
+        lines_affected = args.lines_affected
+      }
+      if inserted then
+        if instance.on_text_inserted then return instance.on_text_inserted(params) end
+      elseif deleted then
+        if instance.on_text_deleted then return instance.on_text_deleted(params) end
+      end
+
     end
   elseif event == 'key-press' then
     if instance.on_keypress then return instance.on_keypress(args) end

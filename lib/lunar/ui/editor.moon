@@ -38,6 +38,8 @@ class Editor extends PropertyObject
     @sci.on_focus = self\_on_focus
     @sci.on_focus_lost = self\_on_focus_lost
     @sci.on_char_added = self\_on_char_added
+    @sci.on_text_inserted = self\_on_text_inserted
+    @sci.on_text_deleted = self\_on_text_deleted
     @selection = Selection @sci
     @cursor = Cursor @sci, @selection
 
@@ -269,12 +271,24 @@ class Editor extends PropertyObject
     signal.emit 'editor-defocused', self
 
   _on_char_added: (args) =>
-    handled = signal.emit 'char-added', self
+    handled = signal.emit 'char-added', self, args
 
     if @popup
       @popup.window\on_char_added self, args if @popup.window.on_char_added
     elseif not handled and #@current_word >= config.completion_popup_after
       @complete!
+
+  _on_text_inserted: (args) =>
+    handled = signal.emit 'text-inserted', self, args
+
+    if @popup
+      @popup.window\on_text_inserted self, args if @popup.window.on_text_inserted
+
+  _on_text_deleted: (args) =>
+    handled = signal.emit 'text-deleted', self, args
+
+    if @popup
+      @popup.window\on_text_deleted self, args if @popup.window.on_text_deleted
 
 -- Default indicators
 

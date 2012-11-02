@@ -25,6 +25,11 @@ class CompletionPopup extends MenuPopup
     else
       @items = items
 
+  on_text_deleted: (editor, args) =>
+    if args.at_pos < @completer.start_pos or editor.current_line != @completer.line
+      @close!
+      return
+
   set_completions: (items) =>
     @list.items = items
     @list\show!
