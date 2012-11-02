@@ -33,13 +33,17 @@ class Editor extends PropertyObject
 
     @sci = Scintilla!
     style.register_sci @sci
-    @sci.on_keypress = self\_on_keypress
-    @sci.on_update_ui = self\_on_update_ui
-    @sci.on_focus = self\_on_focus
-    @sci.on_focus_lost = self\_on_focus_lost
-    @sci.on_char_added = self\_on_char_added
-    @sci.on_text_inserted = self\_on_text_inserted
-    @sci.on_text_deleted = self\_on_text_deleted
+    listener =
+      on_style_needed: self\_on_style_needed
+      on_keypress: self\_on_keypress
+      on_update_ui: self\_on_update_ui
+      on_focus: self\_on_focus
+      on_focus_lost: self\_on_focus_lost
+      on_char_added: self\_on_char_added
+      on_text_inserted: self\_on_text_inserted
+      on_text_deleted: self\_on_text_deleted
+    @sci.listener = listener
+
     @selection = Selection @sci
     @cursor = Cursor @sci, @selection
 
@@ -88,7 +92,6 @@ class Editor extends PropertyObject
       @_buf = buffer
       @indicator.title.label = buffer.title
       @sci\set_doc_pointer(buffer.doc)
-      @sci.on_style_needed = buffer\lex
       @sci\set_style_bits 8
       @sci\set_lexer Scintilla.SCLEX_CONTAINER
 
@@ -239,6 +242,9 @@ class Editor extends PropertyObject
     indic = bar\add x, id
     indics[id] = indic
     indic
+
+  _on_style_needed: (...) =>
+    @buffer\lex ...
 
   _on_keypress: (event) =>
     @remove_popup! if event.key_name == 'escape'

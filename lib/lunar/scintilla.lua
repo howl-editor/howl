@@ -87,37 +87,38 @@ function sci.string_to_color(rgb)
 end
 
 function sci.dispatch(sci_ptr, event, args)
-  instance = sci_map[sci_ptr]
+  local instance = sci_map[sci_ptr]
+  local listener = instance.listener
+  if not listener then return end
+  local handler
   if event == 'sci' then
     code = args.code
     if code == SCN_STYLENEEDED then
-      if instance.on_style_needed then return instance.on_style_needed(args.position) end
-    elseif code == SCN_UPDATEUI then
-      if instance.on_update_ui then return instance.on_update_ui(args.updated) end
-    elseif code == SCN_CHARADDED then
-      if instance.on_char_added then return instance.on_char_added(args) end
+      handler = 'on_style_needed'
+      args = args.position
+    elseif code == SCN_UPDATEUI then handler = 'on_update_ui'
+    elseif code == SCN_CHARADDED then handler = 'on_char_added'
     elseif code == SCN_MODIFIED then
       local inserted = bit.band(args.type, SC_MOD_INSERTTEXT) ~= 0
       local deleted = bit.band(args.type, SC_MOD_DELETETEXT) ~= 0
-      local params = {
+      args = {
         at_pos = args.position,
         text = args.text,
         lines_affected = args.lines_affected
       }
-      if inserted then
-        if instance.on_text_inserted then return instance.on_text_inserted(params) end
-      elseif deleted then
-        if instance.on_text_deleted then return instance.on_text_deleted(params) end
+      if inserted then handler = 'on_text_inserted'
+      elseif deleted then handler = 'on_text_deleted'
       end
-
     end
-  elseif event == 'key-press' then
-    if instance.on_keypress then return instance.on_keypress(args) end
-  elseif event == 'focused' then
-    if instance.on_focus then return instance.on_focus(args) end
-  elseif event == 'defocused' then
-    if instance.on_focus_lost then return instance.on_focus_lost(args) end
+  elseif event == 'key-press' then handler = 'on_keypress'
+  elseif event == 'focused' then handler = 'on_focus'
+  elseif event == 'defocused' then handler = 'on_focus_lost'
   end
+
+  if handler then
+    if listener[handler] then return listener[handler](args) end
+  end
+
   return false
 end
 

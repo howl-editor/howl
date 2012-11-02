@@ -128,8 +128,9 @@ class Readline extends PropertyObject
     @_set_appearance!
     @bin\add @box
 
-    @sci.on_keypress = self\_on_keypress
-    @sci.on_char_added = self\_on_char_added
+    @sci.listener =
+      on_keypress: self\_on_keypress
+      on_char_added: self\_on_char_added
 
   _set_appearance: =>
     style.register_sci @sci

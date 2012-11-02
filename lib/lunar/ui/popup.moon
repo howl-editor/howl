@@ -24,9 +24,11 @@ class Popup extends PropertyObject
     super!
 
   show: (widget, options = position: 'center') =>
+    error('Missing argument #1: widget', 2) if not widget
     @transient_for = widget\get_toplevel!
     @window\realize!
     @widget = widget
+    @showing = true
 
     if options.x
       @window.window_position = 'NONE'
@@ -35,7 +37,6 @@ class Popup extends PropertyObject
       @center!
 
     @window\show_all!
-    @showing = true
 
   close: =>
     @window\hide!
@@ -43,6 +44,7 @@ class Popup extends PropertyObject
     @widget = nil
 
   move_to: (x, y) =>
+    error('Attempt to move a closed popup', 2) if not @showing
     w_x, w_y = @widget\get_toplevel!.window\get_position!
     t_x, t_y = @widget\translate_coordinates(@widget\get_toplevel!, x, y)
     x = w_x + t_x
@@ -53,6 +55,7 @@ class Popup extends PropertyObject
     @resize @window.width, @window.height
 
   resize: (width, height) =>
+    error('Attempt to resize a closed popup', 2) if not @showing
     screen = screen_size @widget
 
     if @x + width > (screen.width - @comfort_zone)
@@ -66,7 +69,7 @@ class Popup extends PropertyObject
     @window\resize width, height
 
   center: =>
-    error 'Can not center popup when widget is unset', 2 if not @widget
+    error('Attempt to center a closed popup', 2) if not @showing
     height = @height
     width = @width
 
