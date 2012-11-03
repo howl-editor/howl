@@ -7,6 +7,20 @@ class Cursor extends PropertyObject
     @sci = sci
     @selection = selection
 
+  @property blink_interval:
+    get: => @sci\get_caret_period!
+    set: (interval) => @sci\set_caret_period interval
+
+  @property style:
+    get: =>
+      cur_style = @sci\get_caret_style!
+      if cur_style == Scintilla.CARETSTYLE_BLOCK then return 'block'
+      elseif cur_style == Scintilla.CARETSTYLE_LINE then return 'line'
+    set: (style) =>
+      if style == 'block' then @sci\set_caret_style Scintilla.CARETSTYLE_BLOCK
+      elseif style == 'line' then @sci\set_caret_style Scintilla.CARETSTYLE_LINE
+      else error 'Invalid style ' .. style, 2
+
   @property pos:
     get: => 1 + @sci\get_current_pos!
     set: (pos) =>

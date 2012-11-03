@@ -14,6 +14,15 @@ describe 'Cursor', ->
   editor = Editor buffer
   cursor = editor.cursor
 
+  describe '.style', ->
+    it 'is "line" by default', ->
+      assert.equal 'line', cursor.style
+
+    it 'raises an error if set to anything else than "block" or "line"', ->
+      cursor.style = 'block'
+      cursor.style = 'line'
+      assert.raises 'foo', -> cursor.style = 'foo'
+
   describe '.pos', ->
     it 'reading returns the current position in one based index', ->
       editor.sci\goto_pos 0
