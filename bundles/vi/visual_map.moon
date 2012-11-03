@@ -20,6 +20,7 @@ substitute = (editor) ->
 
 map = {
   name: 'VISUAL'
+
   d: cut
   x: cut
   y: copy

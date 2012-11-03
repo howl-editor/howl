@@ -1,5 +1,5 @@
 import keyhandler from lunar
-import getmetatable, setfenv from _G
+import getmetatable, setfenv, pairs from _G
 
 _G = _G
 _ENV = {}
@@ -25,7 +25,11 @@ export add_number = (number) ->
 export change_mode = (editor, to) ->
   map = maps[to]
   error 'Invalid mode "' .. to .. '"' if not map
-  editor.indicator.vi.label = '-- ' .. map.name .. ' --' if editor
+
+  if editor
+    editor.indicator.vi.label = '-- ' .. map.name .. ' --'
+    editor.cursor[k] = v for k,v in pairs map.cursor_properties
+
   mode = to
   keyhandler.keymap = map
   mt = getmetatable map

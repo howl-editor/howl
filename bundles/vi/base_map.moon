@@ -13,6 +13,8 @@ setfenv 1, map
 
 export *
 
+cursor_properties = style: 'block'
+
 j = (editor) -> apply editor, -> editor.cursor\down!
 k = (editor) -> apply editor, -> editor.cursor\up!
 h = (editor) -> apply editor, -> editor.cursor\left!
