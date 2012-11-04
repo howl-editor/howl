@@ -24,7 +24,10 @@ class Cursor extends PropertyObject
   @property pos:
     get: => 1 + @sci\get_current_pos!
     set: (pos) =>
-      @sci\goto_pos pos - 1
+      if @selection.persistent
+        @selection\set @selection.anchor, pos
+      else
+        @sci\goto_pos pos - 1
       @sci\choose_caret_x!
 
   @property line:

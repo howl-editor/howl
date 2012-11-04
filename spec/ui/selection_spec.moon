@@ -18,8 +18,9 @@ describe 'Selection', ->
     buffer.text = text
     selection.sci\set_empty_selection 0
 
-  it '.anchor returns nil if nothing is selected', ->
-    assert.is_nil selection.anchor
+  it '.anchor returns the current position if nothing is selected', ->
+    cursor.pos = 3
+    assert.equal 3, selection.anchor
 
   it '.anchor = <pos> sets the selection to the text range [pos..<cursor>)', ->
     cursor.pos = 3

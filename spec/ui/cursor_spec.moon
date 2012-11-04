@@ -13,6 +13,9 @@ describe 'Cursor', ->
   buffer.text = text
   editor = Editor buffer
   cursor = editor.cursor
+  selection = editor.selection
+
+  before_each -> selection.persistent = false
 
   describe '.style', ->
     it 'is "line" by default', ->
@@ -32,6 +35,13 @@ describe 'Cursor', ->
       cursor.pos = 4
       assert.equal cursor.pos, 4
 
+    it 'setting adjusts the selection if it is persistent', ->
+      selection\set 1, 2
+      selection.persistent = true
+      cursor.pos = 5
+      assert.equal cursor.pos, 5
+      assert.equals 'Line', selection.text
+
   describe '.line', ->
     it 'returns the current line', ->
       cursor.pos = 1
@@ -41,11 +51,17 @@ describe 'Cursor', ->
       cursor.line = 2
       assert.equal cursor.pos, 16
 
-    it 'adjusts out-of-bounds values automatically', ->
+    it 'assignment adjusts out-of-bounds values automatically', ->
       cursor.line = -1
       assert.equal 1, cursor.pos
       cursor.line = 100
       assert.equal #buffer + 1, cursor.pos
+
+    it 'assignment adjusts the selection if it is persistent', ->
+      cursor.pos = 1
+      selection.persistent = true
+      cursor.line = 2
+      assert.equals 'Line 1 of text\n', selection.text
 
   describe '.column', ->
     it 'returns the current column', ->
@@ -55,6 +71,12 @@ describe 'Cursor', ->
     it 'setting moves the cursor to the specified column', ->
       cursor.column = 2
       assert.equal cursor.pos, 2
+
+    it 'setting adjusts the selection if it is persistent', ->
+      cursor.pos = 1
+      selection.persistent = true
+      cursor.column = 2
+      assert.equals 'L', selection.text
 
   it '.at_end_of_line returns true if cursor is at the end of the line', ->
     cursor.pos = 1
@@ -105,3 +127,5 @@ describe 'Cursor', ->
       cursor.pos = 1
       cursor\right!
       assert.equal sel.text, 'L'
+      cursor.line = 2
+      assert.equal sel.text, 'Line 1 of text\n'

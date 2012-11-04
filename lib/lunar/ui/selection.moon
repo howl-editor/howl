@@ -1,3 +1,4 @@
+import Scintilla from lunar
 import PropertyObject from lunar.aux.moon
 
 class Selection extends PropertyObject
@@ -9,7 +10,7 @@ class Selection extends PropertyObject
     get: => @sci\get_selection_empty!
 
   @property anchor:
-    get: => if @empty then nil else @sci\get_anchor! + 1
+    get: => @sci\get_anchor! + 1
     set: (pos) => @sci\set_anchor pos - 1
 
   @property text:
