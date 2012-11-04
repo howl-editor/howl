@@ -22,7 +22,19 @@ l = (editor) -> apply editor, -> editor.cursor\right!
 e = (editor) -> apply editor, -> editor.cursor\word_right_end!
 w = (editor) -> apply editor, -> editor.cursor\word_right!
 b = (editor) -> apply editor, -> editor.cursor\word_left!
-G = (editor) -> apply editor, -> editor.cursor\eof!
+
+g = (editor) ->
+  if state.go
+    editor.cursor\start!
+    state.reset!
+  else
+    state.go = true
+
+G = (editor) ->
+  if state.count then editor.cursor.line = state.count
+  else editor.cursor\eof!
+  state.reset!
+
 map['$'] = (editor) -> apply editor, -> editor.cursor\line_end!
 
 on_unhandled = (event) ->

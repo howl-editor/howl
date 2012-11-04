@@ -6,7 +6,7 @@ _ENV = {}
 setfenv 1, _ENV
 
 export mode
-export delete, change, yank
+export delete, change, yank, go
 export count
 
 maps = nil
@@ -17,6 +17,7 @@ export reset = ->
   change = false
   yank = false
   count = nil
+  go = nil
 
 export add_number = (number) ->
   count = count or 0
