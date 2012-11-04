@@ -29,7 +29,10 @@ class Cursor extends PropertyObject
 
   @property line:
     get: => 1 + @sci\line_from_position @pos - 1
-    set: (line) => @pos = 1 + @sci\position_from_line(line - 1)
+    set: (line) =>
+      if line < 1 then @start!
+      elseif line > @sci\get_line_count! then @eof!
+      else @pos = 1 + @sci\position_from_line(line - 1)
 
   @property column:
     get: => 1 + @sci\get_column @pos - 1

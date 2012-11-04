@@ -41,6 +41,12 @@ describe 'Cursor', ->
       cursor.line = 2
       assert.equal cursor.pos, 16
 
+    it 'adjusts out-of-bounds values automatically', ->
+      cursor.line = -1
+      assert.equal 1, cursor.pos
+      cursor.line = 100
+      assert.equal #buffer + 1, cursor.pos
+
   describe '.column', ->
     it 'returns the current column', ->
       cursor.pos = 4
