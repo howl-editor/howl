@@ -2,7 +2,7 @@ import Gtk from lgi
 import Buffer from lunar
 import Editor, theme from lunar.ui
 
-text = 'Line 1 of text'
+text = 'Line 1 of text\nLine 2 of text'
 
 describe 'Selection', ->
 
@@ -36,6 +36,13 @@ describe 'Selection', ->
     selection\set 1, 5
     assert.equal selection.text, 'Line'
 
+  describe '.persistent', ->
+    it 'causes the selection to be extended with movement when true', ->
+      cursor.pos = 1
+      selection.persistent = true
+      cursor\down!
+      assert.equal 'Line 1 of text\n', selection.text
+
   describe 'remove', ->
     it 'removes the selection', ->
       selection\set 2, 5
@@ -56,7 +63,7 @@ describe 'Selection', ->
     it 'removes the selected text', ->
       selection\set 1, 5
       selection\cut!
-      assert.equal buffer.text, ' 1 of text'
+      assert.equal buffer.lines[1].text, ' 1 of text'
 
     it 'removes the selection', ->
       selection\set 2, 5
@@ -93,7 +100,7 @@ describe 'Selection', ->
       it 'replaces the selection with <text> and removes the selection', ->
         selection\set 1, 3
         selection.text = 'Shi'
-        assert.equal buffer.text, 'Shine 1 of text'
+        assert.equal buffer.lines[1].text, 'Shine 1 of text'
         assert.is_true selection.empty
 
       it 'raises an error if the selection is empty', ->
