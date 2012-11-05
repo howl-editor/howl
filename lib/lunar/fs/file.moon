@@ -132,9 +132,9 @@ class File extends PropertyObject
       else
         tostring(op1) .. tostring(op2)
 
-    __eq: (op1, op2) ->
-      op1 = File op1 if getmetatable(op1) != getmetatable(op2)
-      op1\tostring! == op2\tostring!
+    __eq: (op1, op2) -> op1\tostring! == op2\tostring!
+    __lt: (op1, op2) -> op1\tostring! < op2\tostring!
+    __le: (op1, op2) -> op1\tostring! <= op2\tostring!
   }
 
   _assert: (...) =>
