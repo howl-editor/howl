@@ -21,6 +21,6 @@ describe 'Scintilla', ->
     context 'for key-press event', ->
       it 'calls the on_keypress handler if present', ->
         sci = Scintilla!
-        sci.on_keypress = Spy!
+        sci.listener = on_keypress: Spy!
         sci.dispatch sci.sci_ptr, 'key-press', {}
-        assert.is_true sci.on_keypress.called
+        assert.is_true sci.listener.on_keypress.called

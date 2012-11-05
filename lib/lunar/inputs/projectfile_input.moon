@@ -53,7 +53,7 @@ class ProjectFileInput
     matches = @matcher and self.matcher(text) or {}
     return matches, completion_options
 
-  value_for: (path) => if @root then return @root / path
+  value_for: (path) => @root and (@root / path) or nil
 
 lunar.inputs.register 'project_file', ProjectFileInput
 return ProjectFileInput
