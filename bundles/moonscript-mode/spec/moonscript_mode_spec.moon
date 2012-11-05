@@ -8,10 +8,10 @@ describe 'moonscript-mode', ->
   m = mode.by_name 'moonscript'
 
   it 'registers a mode', ->
-    assert_not_nil m
+    assert.not_nil m
 
   it 'handles .moon files', ->
-    assert_equal mode.for_file(File 'test.moon'), m
+    assert.equal mode.for_file(File 'test.moon'), m
 
   describe '.after_newline()', ->
     buffer = Buffer m
@@ -43,14 +43,14 @@ describe 'moonscript-mode', ->
           buffer.text = code .. '\n'
           editor.cursor.line = 2
           m\after_newline(buffer.lines[2], editor)
-          assert_equal buffer.lines[2].text, '  '
+          assert.equal buffer.lines[2].text, '  '
 
     context 'when splitting brackets', ->
       it 'moves the closing bracket to its own line', ->
         buffer.text = '{\n}'
         editor.cursor.line = 2
         m\after_newline(buffer.lines[2], editor)
-        assert_equal buffer.text, '{\n  \n}'
+        assert.equal buffer.text, '{\n  \n}'
 
     it 'does nothing for other statements', ->
       for code in *{
@@ -63,4 +63,4 @@ describe 'moonscript-mode', ->
         buffer.text = orig_text
         editor.cursor.line = 2
         m\after_newline(buffer.lines[2], editor)
-        assert_equal buffer.text, orig_text
+        assert.equal buffer.text, orig_text

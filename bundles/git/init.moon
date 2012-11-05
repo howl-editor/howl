@@ -32,6 +32,7 @@ find = (file) ->
     if git_dir.exists
       return Git file, git_dir
     file = file.parent
+  nil
 
 VC.register 'git', :find
 config.define name: 'git_path', description: 'Path to git executable'
