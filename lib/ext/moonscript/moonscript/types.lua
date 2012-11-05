@@ -10,8 +10,11 @@ manual_return = data.Set({
 })
 cascading = data.Set({
   "if",
+  "unless",
   "with",
-  "switch"
+  "switch",
+  "class",
+  "do"
 })
 is_value = function(stm)
   local compile, transform = moonscript.compile, moonscript.transform
@@ -21,10 +24,13 @@ comprehension_has_value = function(comp)
   return is_value(comp[2])
 end
 ntype = function(node)
-  if type(node) ~= "table" then
-    return "value"
-  else
+  local _exp_0 = type(node)
+  if "nil" == _exp_0 then
+    return "nil"
+  elseif "table" == _exp_0 then
     return node[1]
+  else
+    return "value"
   end
 end
 value_is_singular = function(node)
@@ -73,7 +79,7 @@ local node_types = {
     },
     {
       "body",
-      { }
+      t
     }
   },
   ["for"] = {
@@ -82,6 +88,16 @@ local node_types = {
     },
     {
       "bounds",
+      t
+    },
+    {
+      "body",
+      t
+    }
+  },
+  ["while"] = {
+    {
+      "cond",
       t
     },
     {
@@ -119,13 +135,13 @@ local node_types = {
 local build_table
 build_table = function()
   local key_table = { }
-  for name, args in pairs(node_types) do
+  for node_name, args in pairs(node_types) do
     local index = { }
     for i, tuple in ipairs(args) do
-      local name = tuple[1]
-      index[name] = i + 1
+      local prop_name = tuple[1]
+      index[prop_name] = i + 1
     end
-    key_table[name] = index
+    key_table[node_name] = index
   end
   return key_table
 end
@@ -162,6 +178,9 @@ end
 build = nil
 build = setmetatable({
   group = function(body)
+    if body == nil then
+      body = { }
+    end
     return {
       "group",
       body
@@ -248,3 +267,4 @@ smart_node = function(node)
     end
   })
 end
+return nil

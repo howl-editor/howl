@@ -125,6 +125,7 @@ theme_css = (theme, file) ->
   css = interpolate css_template, values
   css ..= indicator_css indicators
   css ..= status_css status
+  css
 
 load_theme = (file) ->
   chunk = loadfile(file.path)

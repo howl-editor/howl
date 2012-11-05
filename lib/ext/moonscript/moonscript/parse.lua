@@ -4,6 +4,8 @@ local util = require"moonscript.util"
 
 require"lpeg"
 
+local debug_grammar = false
+
 local data = require"moonscript.data"
 local types = require"moonscript.types"
 
@@ -66,14 +68,47 @@ end
 -- auto declare Proper variables with lpeg.V
 local function wrap_env(fn)
 	local env = getfenv(fn)
+	local wrap_name = V
+
+	if debug_grammar then
+		local indent = 0
+		local indent_char = "  "
+
+		local function iprint(...)
+			local args = {...}
+			for i=1,#args do
+				args[i] = tostring(args[i])
+			end
+
+			io.stdout:write(indent_char:rep(indent) .. table.concat(args, ", ") .. "\n")
+		end
+
+		wrap_name = function(name)
+			local v = V(name)
+			v = Cmt("", function()
+				iprint("* " .. name)
+				indent = indent + 1
+				return true
+			end) * Cmt(v, function(str, pos, ...)
+				iprint(name, true)
+				indent = indent - 1
+				return true, ...
+			end) + Cmt("", function()
+				iprint(name, false)
+				indent = indent - 1
+				return false
+			end)
+			return v
+		end
+	end
 
 	return setfenv(fn, setmetatable({}, {
 		__index = function(self, name)
-			local value = env[name] 
+			local value = env[name]
 			if value ~= nil then return value end
 
 			if name:match"^[A-Z][A-Za-z0-9]*$" then
-				local v = V(name)
+				local v = wrap_name(name)
 				rawset(self, name, v)
 				return v
 			end
@@ -130,14 +165,50 @@ local function flatten_or_mark(name)
 end
 
 -- makes sure the last item in a chain is an index
-local _assignable = { index = true, dot = true, slice = true }
+local _chain_assignable = { index = true, dot = true, slice = true }
+
+local function is_assignable(node)
+	local t = ntype(node)
+	return t == "self" or t == "value" or t == "self_class" or
+		t == "chain" and _chain_assignable[ntype(node[#node])]
+end
+
 local function check_assignable(str, pos, value)
-	if ntype(value) == "chain" and _assignable[ntype(value[#value])]
-		or type(value) == "string"
-	then
+	if is_assignable(value) then
 		return true, value
 	end
 	return false
+end
+
+local flatten_explist = flatten_or_mark"explist"
+local function format_assign(lhs_exps, assign)
+	if not assign then
+		return flatten_explist(lhs_exps)
+	end
+
+	for _, assign_exp in ipairs(lhs_exps) do
+		if not is_assignable(assign_exp) then
+			error {assign_exp, "left hand expression is not assignable"}
+		end
+	end
+
+	local t = ntype(assign)
+	if t == "assign" then
+		return {"assign", lhs_exps, unpack(assign, 2)}
+	elseif t == "update" then
+		return {"update", lhs_exps[1], unpack(assign, 2)}
+	end
+
+	error "unknown assign expression"
+end
+
+-- the if statement only takes a single lhs, so we wrap in table to git to
+-- "assign" tuple format
+local function format_single_assign(lhs, assign)
+	if assign then
+		return format_assign({lhs}, assign)
+	end
+	return lhs
 end
 
 local function sym(chars)
@@ -148,10 +219,17 @@ local function symx(chars)
 	return chars
 end
 
-local function simple_string(delim, x)
-	return C(symx(delim)) * C((P('\\'..delim) +
-		"\\\\" +
-		(1 - S('\r\n'..delim)))^0) * sym(delim) / mark"string"
+local function simple_string(delim, allow_interpolation)
+	local inner = P('\\'..delim) + "\\\\" + (1 - S('\r\n'..delim))
+	if allow_interpolation then
+		inter = symx"#{" * V"Exp" * sym"}"
+		inner = (C((inner - inter)^1) + inter / mark"interpolate")^0
+	else
+		inner = C(inner^0)
+	end
+
+	return C(symx(delim)) *
+		inner * sym(delim) / mark"string"
 end
 
 local function wrap_func_arg(value)
@@ -179,28 +257,15 @@ local function flatten_func(callee, args)
 	return {"chain", callee, args}
 end
 
+local function flatten_string_chain(str, chain, args)
+	if not chain then return str end
+	return flatten_func({"chain", str, unpack(chain)}, args)
+end
+
 -- transforms a statement that has a line decorator
 local function wrap_decorator(stm, dec)
 	if not dec then return stm end
-
-	local arg = {stm, dec}
-
-	if dec[1] == "if" then
-		local _, cond, fail = unpack(dec)
-		if fail then fail = {"else", {fail}} end
-		stm = {"if", cond, {stm}, fail}
-	elseif dec[1] == "unless" then
-		stm = {
-			"if",
-			{"not", {"parens", dec[2]}},
-			{stm}
-		}
-	elseif dec[1] == "comprehension" then
-		local _, clauses = unpack(dec)
-		stm = {"comprehension", stm, clauses}
-	end
-
-	return stm
+	return { "decorated", stm, dec }
 end
 
 -- wrap if statement if there is a conditional decorator
@@ -222,10 +287,11 @@ local function self_assign(name)
 	return {{"key_literal", name}, name}
 end
 
-local err_msg = "Failed to parse:\n [%d] >>    %s (%d)"
+local err_msg = "Failed to parse:%s\n [%d] >>    %s"
 
 local build_grammar = wrap_env(function()
 	local _indent = Stack(0) -- current indent
+	local _do_stack = Stack(0)
 
 	local last_pos = 0 -- used to know where to report error
 	local function check_indent(str, pos, indent)
@@ -250,6 +316,34 @@ local build_grammar = wrap_env(function()
 		if not _indent:pop() then error("unexpected outdent") end
 		return true
 	end
+
+
+	local function check_do(str, pos, do_node)
+		local top = _do_stack:top()
+		if top == nil or top then
+			return true, do_node
+		end
+		return false
+	end
+
+	local function disable_do(str_pos)
+		_do_stack:push(false)
+		return true
+	end
+
+	local function enable_do(str_pos)
+		_do_stack:push(true)
+		return true
+	end
+
+	local function pop_do(str, pos)
+		if nil == _do_stack:pop() then error("unexpected do pop") end
+		return true
+	end
+
+	local DisableDo = Cmt("", disable_do)
+	local EnableDo = Cmt("", enable_do)
+	local PopDo = Cmt("", pop_do)
 
 	local keywords = {}
 	local function key(chars)
@@ -287,10 +381,10 @@ local build_grammar = wrap_env(function()
 		CheckIndent = Cmt(Indent, check_indent), -- validates line is in correct indent
 		Line = (CheckIndent * Statement + Space * #Stop),
 
-		Statement = (
-				Import + While + With + For + ForEach + Switch + Return + ClassDecl +
-				Export + BreakLoop + Assign + Update +
-				Ct(ExpList) / flatten_or_mark"explist"
+		Statement = pos(
+				Import + While + With + For + ForEach + Switch + Return +
+				Local + Export + BreakLoop +
+				Ct(ExpList) * (Update + Assign)^-1 / format_assign
 			) * Space * ((
 				-- statement decorators
 				key"if" * Exp * (key"else" * Exp)^-1 * Space / mark"if" +
@@ -306,45 +400,55 @@ local build_grammar = wrap_env(function()
 		PopIndent = Cmt("", pop_indent),
 		InBlock = Advance * Block * PopIndent,
 
-		Import = key"import" *  Ct(ImportNameList) * key"from" * Exp / mark"import", 
+		Local = key"local" * Ct(NameList) / mark"declare_with_shadows",
+
+		Import = key"import" *  Ct(ImportNameList) * key"from" * Exp / mark"import",
 		ImportName = (sym"\\" * Ct(Cc"colon_stub" * Name) + Name),
 		ImportNameList = ImportName * (sym"," * ImportName)^0,
 
 		NameList = Name * (sym"," * Name)^0,
 
-		BreakLoop = Ct(key"break"/trim),
+		BreakLoop = Ct(key"break"/trim) + Ct(key"continue"/trim),
 
 		Return = key"return" * (ExpListLow/mark"explist" + C"") / mark"return",
 
-		With = key"with" * Exp * key"do"^-1 * Body / mark"with",
+		WithExp = Ct(ExpList) * Assign^-1 / format_assign,
+		With = key"with" * DisableDo * ensure(WithExp, PopDo) * key"do"^-1 * Body / mark"with",
 
-		Switch = key"switch" * Exp * key"do"^-1 * Space^-1 * Break * SwitchBlock / mark"switch",
+		Switch = key"switch" * DisableDo * ensure(Exp, PopDo) * key"do"^-1 * Space^-1 * Break * SwitchBlock / mark"switch",
 
 		SwitchBlock = EmptyLine^0 * Advance * Ct(SwitchCase * (Break^1 * SwitchCase)^0 * (Break^1 * SwitchElse)^-1) * PopIndent,
 		SwitchCase = key"when" * Exp * key"then"^-1 * Body / mark"case",
 		SwitchElse = key"else" * Body / mark"else",
 
-		If = key"if" * Exp * key"then"^-1 * Body *
-			((Break * CheckIndent)^-1 * EmptyLine^0 * key"elseif" * Exp * key"then"^-1 * Body / mark"elseif")^0 *
+		IfCond = Exp * Assign^-1 / format_single_assign,
+
+		If = key"if" * IfCond * key"then"^-1 * Body *
+			((Break * CheckIndent)^-1 * EmptyLine^0 * key"elseif" * pos(IfCond) * key"then"^-1 * Body / mark"elseif")^0 *
 			((Break * CheckIndent)^-1 * EmptyLine^0 * key"else" * Body / mark"else")^-1 / mark"if",
 
-		While = key"while" * Exp * key"do"^-1 * Body / mark"while",
+		Unless = key"unless" * IfCond * key"then"^-1 * Body *
+			((Break * CheckIndent)^-1 * EmptyLine^0 * key"else" * Body / mark"else")^-1 / mark"unless",
 
-		For = key"for" * (Name * sym"=" * Ct(Exp * sym"," * Exp * (sym"," * Exp)^-1)) *
+		While = key"while" * DisableDo * ensure(Exp, PopDo) * key"do"^-1 * Body / mark"while",
+
+		For = key"for" * DisableDo * ensure(Name * sym"=" * Ct(Exp * sym"," * Exp * (sym"," * Exp)^-1), PopDo) *
 			key"do"^-1 * Body / mark"for",
 
-		ForEach = key"for" * Ct(NameList) * key"in" * Ct(sym"*" * Exp / mark"unpack" + ExpList) * key"do"^-1 * Body / mark"foreach",
+		ForEach = key"for" * Ct(NameList) * key"in" * DisableDo * ensure(Ct(sym"*" * Exp / mark"unpack" + ExpList), PopDo) * key"do"^-1 * Body / mark"foreach",
+
+		Do = key"do" * Body / mark"do",
 
 		Comprehension = sym"[" * Exp * CompInner * sym"]" / mark"comprehension",
 
-		TblComprehension = sym"{" * Exp * (sym"," * Exp)^-1 * CompInner * sym"}" / mark"tblcomprehension",
+		TblComprehension = sym"{" * Ct(Exp * (sym"," * Exp)^-1) * CompInner * sym"}" / mark"tblcomprehension",
 
 		CompInner = Ct(CompFor * CompClause^0),
 		CompFor = key"for" * Ct(NameList) * key"in" * (sym"*" * Exp / mark"unpack" + Exp) / mark"for",
 		CompClause = CompFor + key"when" * Exp / mark"when",
 
-		Assign = Ct(AssignableList) * sym"=" * (Ct(With + If + Switch) + Ct(TableBlock + ExpListLow)) / mark"assign",
-		Update = Assignable * ((sym"..=" + sym"+=" + sym"-=" + sym"*=" + sym"/=" + sym"%=")/trim) * Exp / mark"update",
+		Assign = sym"=" * (Ct(With + If + Switch) + Ct(TableBlock + ExpListLow)) / mark"assign",
+		Update = ((sym"..=" + sym"+=" + sym"-=" + sym"*=" + sym"/=" + sym"%=" + sym"or=" + sym"and=") / trim) * Exp / mark"update",
 
 		-- we can ignore precedence for now
 		OtherOps = op"or" + op"and" + op"<=" + op">=" + op"~=" + op"!=" + op"==" + op".." + op"<" + op">",
@@ -359,20 +463,23 @@ local build_grammar = wrap_env(function()
 		-- Term = Ct(Value * (TermOp * Value)^0) / flatten_or_mark"exp",
 
 		SimpleValue =
-			If +
+			If + Unless +
 			Switch +
 			With +
+			ClassDecl +
 			ForEach + For + While +
+			Cmt(Do, check_do) +
 			sym"-" * -SomeSpace * Exp / mark"minus" +
 			sym"#" * Exp / mark"length" +
 			key"not" * Exp / mark"not" +
 			TblComprehension +
 			TableLit +
 			Comprehension +
-			FunLit + String +
+			FunLit +
 			Num,
 
 		ChainValue = -- a function call or an object access
+			StringChain +
 			((Chain + DotChain + Callable) * Ct(InvokeArgs^-1)) / flatten_func,
 
 		Value = pos(
@@ -382,13 +489,16 @@ local build_grammar = wrap_env(function()
 
 		SliceValue = SimpleValue + ChainValue,
 
+		StringChain = String *
+			(Ct((ColonCall + ColonSuffix) * ChainTail^-1) * Ct(InvokeArgs^-1))^-1 / flatten_string_chain,
+
 		String = Space * DoubleString + Space * SingleString + LuaString,
 		SingleString = simple_string("'"),
-		DoubleString = simple_string('"'),
+		DoubleString = simple_string('"', true),
 
 		LuaString = Cg(LuaStringOpen, "string_open") * Cb"string_open" * Break^-1 *
 			C((1 - Cmt(C(LuaStringClose) * Cb"string_open", check_lua_string))^0) *
-			C(LuaStringClose) / mark"string",
+			LuaStringClose / mark"string",
 
 		LuaStringOpen = sym"[" * P"="^0 * "[" / trim,
 		LuaStringClose = "]" * P"="^0 * "]",
@@ -398,10 +508,10 @@ local build_grammar = wrap_env(function()
 
 		FnArgs = symx"(" * Ct(ExpList^-1) * sym")" + sym"!" * -P"=" * Ct"",
 
-		ChainTail = (ChainItem^1 * ColonSuffix^-1 + ColonSuffix),
+		ChainTail = ChainItem^1 * ColonSuffix^-1 + ColonSuffix,
 
-		-- a list of funcalls and indexs on a callable
-		Chain = Callable * (ChainItem^1 * ColonSuffix^-1 + ColonSuffix) / mark"chain",
+		-- a list of funcalls and indexes on a callable
+		Chain = Callable * ChainTail / mark"chain",
 
 		-- shorthand dot call for use in with statement
 		DotChain =
@@ -411,8 +521,8 @@ local build_grammar = wrap_env(function()
 				(_Name / mark"colon_stub")
 			)) / mark"chain",
 
-		ChainItem = 
-			Invoke + 
+		ChainItem =
+			Invoke +
 			Slice +
 			symx"[" * Exp/mark"index" * sym"]" +
 			symx"." * _Name/mark"dot" +
@@ -442,13 +552,13 @@ local build_grammar = wrap_env(function()
 		TableBlockInner = Ct(KeyValueLine * (SpaceBreak^1 * KeyValueLine)^0),
 		TableBlock = SpaceBreak^1 * Advance * ensure(TableBlockInner, PopIndent) / mark"table",
 
-		ClassDecl = key"class" * Name * (key"extends" * PreventIndent * ensure(Exp, PopIndent) + C"")^-1 * ClassBlock / mark"class",
+		ClassDecl = key"class" * (Assignable + Cc(nil)) * (key"extends" * PreventIndent * ensure(Exp, PopIndent) + C"")^-1 * (ClassBlock + Ct("")) / mark"class",
 
 		ClassBlock = SpaceBreak^1 * Advance *
-			Ct(ClassLine * (SpaceBreak^1 * ClassLine)^0) *  PopIndent,
+			Ct(ClassLine * (SpaceBreak^1 * ClassLine)^0) * PopIndent,
 		ClassLine = CheckIndent * ((
 				KeyValueList / mark"props" +
-				(Assign + Update) / mark"stm" +
+				Statement / mark"stm" +
 				Exp / mark"stm"
 			) * sym","^-1),
 
@@ -494,21 +604,35 @@ local build_grammar = wrap_env(function()
 			end
 
 			local tree
-			local args = {...}
-			local pass, err = assert(pcall(function()
-				tree = self._g:match(str, unpack(args))
-			end))
+			local pass, err = pcall(function(...)
+				tree = self._g:match(str, ...)
+			end, ...)
+
+			-- regular error, let it bubble up
+			if type(err) == "string" then
+				error(err)
+			end
 
 			if not tree then
-				local line_no = pos_to_line(last_pos)
+				local pos = last_pos
+				local msg
+
+				if err then
+					local node
+					node, msg = unpack(err)
+					msg = msg and " " .. msg
+					pos = node[-1]
+				end
+
+				local line_no = pos_to_line(pos)
 				local line_str = get_line(line_no) or ""
-				
-				return nil, err_msg:format(line_no, trim(line_str), _indent:top())
+
+				return nil, err_msg:format(msg or "", line_no, trim(line_str))
 			end
 			return tree
 		end
 	}
-	
+
 end)
 
 -- parse a string
