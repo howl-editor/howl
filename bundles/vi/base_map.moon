@@ -8,6 +8,18 @@ default_map = keyhandler.keymap
 
 cursor_home = (editor) -> apply editor, -> editor.cursor\home!
 
+forward_to_char = (event, translations, editor) ->
+  if event.character
+    apply editor, -> editor\forward_to_match event.character
+  else
+    return false
+
+back_to_char = (event, translations, editor) ->
+  if event.character
+    apply editor, -> editor\backward_to_match event.character
+  else
+    return false
+
 map = {}
 setfenv 1, map
 
@@ -34,6 +46,9 @@ G = (editor) ->
   if state.count then editor.cursor.line = state.count
   else editor.cursor\eof!
   state.reset!
+
+f = (editor) -> keyhandler.capture forward_to_char
+F = (editor) -> keyhandler.capture back_to_char
 
 map['$'] = (editor) -> apply editor, -> editor.cursor\line_end!
 
