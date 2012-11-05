@@ -155,6 +155,16 @@ class Editor extends PropertyObject
       @buffer\delete target_pos, (line_start + content_start) - target_pos
       @buffer\insert ' ', @cursor.pos
 
+  forward_to_match: (str) =>
+    pos = @current_line\find str, @cursor.column, true
+    @cursor.column = pos if pos
+
+  backward_to_match: (str) =>
+    rev_line = @current_line\reverse!
+    start = (#rev_line - @cursor.column + 1)
+    pos = rev_line\find str, start, true
+    @cursor.column = (#rev_line - pos) + 1 if pos
+
   show_popup: (popup, options = {}) =>
     char_width = @sci\text_width 32, ' '
     char_height = @sci\text_height 0
