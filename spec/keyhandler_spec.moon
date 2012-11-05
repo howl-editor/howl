@@ -51,15 +51,15 @@ describe 'keyhandler', ->
 
   describe 'process(editor, buffer, event)', ->
     context 'when firing the key-press signal', ->
-      it 'passes the event', ->
+      it 'passes the event, translations and editor', ->
         event = character: 'A', key_name: 'A', key_code: 65
-        buffer = keymap: {}
+        editor = buffer: keymap: {}
         signal_handler = Spy!
         signal.connect 'key-press', signal_handler
 
-        status, ret = pcall keyhandler.process :buffer, event
+        status, ret = pcall keyhandler.process editor, event
         signal.disconnect 'key-press', signal_handler
-        assert.same signal_handler.called_with, { event }
+        assert.same { event, { 'A', 'A', '65' }, editor }, signal_handler.called_with
 
       it 'returns early with true if the handler does', ->
         buffer = keymap: Spy!
@@ -177,4 +177,24 @@ describe 'keyhandler', ->
       it 'returns false if no handlers are found', ->
         assert.is_false keyhandler.process buffer: {}, { character: 'k', key_code: 65 }
 
+  describe 'capture(function)', ->
+    it 'causes <function> to be called exclusively with the next key event', ->
+      event = character: 'A', key_name: 'A', key_code: 65
+      thief = spy.new!
+      handler = spy.new!
+      keyhandler.capture thief
+      editor = buffer: keymap: A: handler
+      keyhandler.process editor, event
+      assert.spy(handler).was_not.called!
+      assert.spy(thief).was.called_with(event, { 'A', 'A', '65' }, editor)
 
+    it '<function> continues to capture events as long as it returns false', ->
+      ret = false
+      event = character: 'A', key_name: 'A', key_code: 65
+      thief = spy.new -> return ret
+      keyhandler.capture thief
+      keyhandler.process buffer: {}, event
+      ret = nil
+      keyhandler.process buffer: {}, event
+      keyhandler.process buffer: {}, event
+      assert.spy(thief).was.called(2)

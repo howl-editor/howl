@@ -19,6 +19,8 @@ alternate_translation = (event) ->
   name = event.key_name
   return alternate_names[name] if name
 
+capture_handler = nil
+
 export translate_key = (event) ->
   ctrl = (event.control and 'ctrl_') or ''
   shift = (event.shift and 'shift_') or ''
@@ -48,8 +50,19 @@ find_handlers = (translations, event, keymaps) ->
 
   handlers
 
+process_capture = (event, translations, ...) ->
+  if capture_handler
+    status, ret = pcall capture_handler, event, translations, ...
+    if not status or ret != false
+      capture_handler = nil
+    return true
+
 export dispatch = (event, keymaps, ...) ->
   translations = translate_key event
+
+  return true if process_capture event, translations, ...
+  return true if signal.emit 'key-press', event, translations, ...
+
   handlers = find_handlers translations, event, keymaps
   for handler in *handlers
     status, ret = true, true
@@ -69,8 +82,10 @@ export process = (editor, event) ->
   buffer = editor.buffer
   maps = { buffer.keymap, buffer.mode and buffer.mode.keymap, keymap }
 
-  return true if signal.emit 'key-press', event
   dispatch event, maps, editor
+
+export capture = (handler) ->
+  capture_handler = handler
 
 export keymap = {}
 
