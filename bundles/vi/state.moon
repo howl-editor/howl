@@ -1,5 +1,5 @@
 import keyhandler from lunar
-import getmetatable, setfenv, pairs from _G
+import getmetatable, setfenv, pairs, callable from _G
 
 _G = _G
 _ENV = {}
@@ -23,7 +23,7 @@ export add_number = (number) ->
   count = count or 0
   count = (count * 10) + number
 
-export change_mode = (editor, to) ->
+export change_mode = (editor, to, ...) ->
   map = maps[to]
   error 'Invalid mode "' .. to .. '"' if not map
 
@@ -33,8 +33,7 @@ export change_mode = (editor, to) ->
 
   mode = to
   keyhandler.keymap = map
-  mt = getmetatable map
-  map editor if mt.__call
+  map(editor, ...) if callable map
 
 export apply = (editor, f) ->
   _delete, _change, _yank, _count = delete, change, yank, count
