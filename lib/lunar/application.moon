@@ -62,13 +62,19 @@ class Application
     if #@args > 1
       @open_file(File(path), editor) for path in *@args[2,]
 
-    window.status\info 'Lunar 0.0 ready.'
     editor\focus!
     window\show_all!
+    @_set_initial_status window
     Gtk.main!
 
   quit: =>
     win\destroy! for win in * moon.copy @windows
+
+  _set_initial_status: (window) =>
+    if log.last_error
+      window.status\error log.last_error.message
+    else
+      window.status\info 'Lunar 0.0 ready.'
 
   _set_theme: =>
     theme.current = 'Tomorrow Night Blue'
