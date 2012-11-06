@@ -27,21 +27,24 @@ class State
         readline.text = text or ''
 
     for index, arg in ipairs parse_arguments text
-      break if not @_load_input #@arguments + 1, readline, arg
+      break unless @_ensure_input_loaded #@arguments + 1
       append @arguments, arg
       readline.prompt ..= arg .. ' ' if readline
 
     if #@inputs <= #@arguments
-      @_load_input #@arguments + 1, readline
+      @_ensure_input_loaded #@arguments + 1, readline
 
   should_complete: (text, readline) =>
-    if @current_input and @current_input.should_complete
-      return self.current_input\should_complete text, readline
+    should = @_dispatch 'should_complete', text, readline
+    return should != nil and should or config.complete == 'always'
 
-    return config.complete == 'always'
+  complete: (text, readline) => @_dispatch 'complete', text, readline
+  on_completed: (text, readline) => @_dispatch 'on_completed', text, readline
+  go_back: (readline) => @_dispatch 'go_back', readline
 
-  complete: (text, readline) =>
-    return self.current_input\complete(text, readline) if @current_input
+  _dispatch: (handler, ...) =>
+    if @current_input and @current_input[handler]
+      return self.current_input[handler] @current_input, ...
 
   submit: (value) =>
     cmd = @cmd or commands[value]
@@ -67,7 +70,7 @@ class State
       s ..= ' ' .. table.concat @arguments, ' '
     s .. ' '
 
-  _load_input: (input_index, readline) =>
+  _ensure_input_loaded: (input_index) =>
     input = @inputs[input_index]
 
     if not input
@@ -77,7 +80,7 @@ class State
       return false if not input_type
       input_factory = inputs[input_type]
       if not input_factory then error 'Could not find input for `' .. input_type .. '`'
-      input = input_factory readline
+      input = input_factory!
       append @inputs, input
       @current_input = input
 
@@ -134,6 +137,9 @@ run = (cmd_string = nil) ->
   cmd_input =
     should_complete: (_, text, readline) -> state\should_complete!
     update: (_, text, readline) -> state\update text, readline
+    on_completed: (_, text, readline) -> state\on_completed text, readline
+    go_back: (_, readline) -> state\go_back readline
+
 
     complete: (_, text, readline) ->
       if state.cmd
@@ -143,14 +149,6 @@ run = (cmd_string = nil) ->
         table.sort cmd_names
         cmd_matcher = cmd_matcher or Matcher cmd_names, true, true, true
         return complete_available_commands text, cmd_matcher
-
-    on_completed: (_, text, readline) ->
-      input = state.current_input
-      if input and input.on_completed then input\on_completed text, readline
-
-    go_back: (_, readline) ->
-      input = state.current_input
-      if input and input.go_back then input\go_back!
 
   prompt = ':'
   text = nil

@@ -10,24 +10,22 @@ display_name = (file) ->
   name
 
 class FileInput
-  new: (readline) =>
-    @readline = readline
-    @base_prompt = readline.prompt .. readline.text
-    directory = File GLib.get_current_dir!
+  new: =>
+    @directory = File GLib.get_current_dir!
 
     if editor
       file = editor.buffer.file
-      directory = file.parent if file
-
-    @_chdir directory
+      @directory = file.parent if file
 
   should_complete: => true
 
-  complete: (text) =>
+  complete: (text, readline) =>
+    @_chdir(@directory, readline) unless @matcher
+
     completion_options = list: column_styles: (name, row, column) ->
       file = @directory / name
       file.is_directory and 'keyword' or 'string'
-    return self.matcher(text), completion_options
+    return @matcher(text), completion_options
 
   on_completed: (value) =>
     path = @directory / value
@@ -35,13 +33,13 @@ class FileInput
       @_chdir path
       return false
 
-  go_back: =>
+  go_back: (readline) =>
     parent = @directory.parent
-    @_chdir parent if parent
+    @_chdir(parent, readline) if parent
 
   value_for: (basename) => @directory / basename
 
-  _chdir: (directory) =>
+  _chdir: (directory, readline) =>
     children = directory.children
 
     table.sort children, (f1, f2) ->
@@ -56,9 +54,10 @@ class FileInput
     names = [display_name c for c in *children]
     @matcher = Matcher names
     @directory = directory
+    @base_prompt = readline.prompt .. readline.text unless @base_prompt
     prompt = @base_prompt .. tostring directory
     prompt ..= separator if not prompt\match separator .. '$'
-    @readline.prompt = prompt
+    readline.prompt = prompt
 
 lunar.inputs.register 'file', FileInput
 return FileInput

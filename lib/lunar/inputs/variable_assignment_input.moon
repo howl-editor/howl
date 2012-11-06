@@ -38,8 +38,7 @@ options_list_options = (options, def) ->
   return list: :caption, :headers, :selection
 
 class VariableAssignmentInput
-  new: (readline) =>
-    @readline = readline
+  new: =>
     vars = [{name, def.description} for name, def in pairs config.definitions]
     table.sort vars, (a, b) -> a[1] < b[1]
     @matcher = Matcher vars
@@ -60,10 +59,10 @@ class VariableAssignmentInput
     completion_options = list: headers: { 'Variable', 'Description' }
     return self.matcher(text), completion_options
 
-  on_completed: (text) =>
-    name, val = parse_assignment @readline.text
+  on_completed: (_, readline) =>
+    name, val = parse_assignment readline.text
     return true if val
-    @readline.text ..= '='
+    readline.text ..= '='
     return false
 
   value_for: (text) =>
