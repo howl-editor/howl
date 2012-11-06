@@ -32,17 +32,7 @@ end
 set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
 package.cpath = ''
 
-moonscript = require('moonscript')
-
-lua_loadfile = loadfile
-loadfile = function(filename, mode, env)
-  filename = type(filename) == 'string' and filename or tostring(filename)
-  if (filename:match('%.moon$')) then
-    return moonscript.loadfile(filename)
-  else
-    return lua_loadfile(filename, mode, env)
-  end
-end
+require 'lunar.moonscript_support'
 
 -- set up globals (lpeg/lfs already setup from C)
 lgi = require('lgi')
