@@ -11,10 +11,9 @@ config.define
 log = {}
 setfenv 1, log
 
-export entries = {}
-
 dispatch = (level, message) ->
-  append entries, :message, :level
+  entry = :message, :level
+  append entries, entry
   if _G.window
     status = _G.window.status
     status[level] status, message
@@ -22,9 +21,16 @@ dispatch = (level, message) ->
   while #entries > config.max_log_entries and #entries > 0
     table.remove entries, 1
 
+  entry
+
+export entries = {}
+export last_error = nil
+
 export info = (message) -> dispatch 'info', message
 export warning = (message) -> dispatch 'warning', message
-export error = (message) -> dispatch 'error', message
-export clear = -> entries = {}
+export error = (message) -> last_error = dispatch 'error', message
+export clear = ->
+  entries = {}
+  last_error = nil
 
 return log

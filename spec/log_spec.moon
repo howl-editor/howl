@@ -26,6 +26,13 @@ describe 'log', ->
         level: 'error'
       }
 
+    it '.last_error points to the last error logged', ->
+      assert.is_nil log.last_error
+      log.error 'foo'
+      assert.equal 'foo', log.last_error.message
+      log.error 'bar'
+      assert.equal 'bar', log.last_error.message
+
     it 'defines a "max_log_entries" config variable, defaulting to 1000', ->
       assert.not_nil config.definitions.max_log_entries
       assert.equal config.max_log_entries, 1000
