@@ -142,8 +142,8 @@ class File extends PropertyObject
     error @tostring! .. ' :' .. msg, 3 if not status
     ...
 
-File.rm = File.delete
-File.unlink = File.delete
-File.rm_r = File.delete_all
+File.__base.rm = File.delete
+File.__base.unlink = File.delete
+File.__base.rm_r = File.delete_all
 
 return File
