@@ -4,7 +4,7 @@
 
 import Gtk from lgi
 import Window, Editor, theme from lunar.ui
-import Buffer, mode, bundle, keyhandler, keymap, signal from lunar
+import Buffer, Settings, mode, bundle, keyhandler, keymap, signal from lunar
 import File from lunar.fs
 
 class Application
@@ -46,11 +46,13 @@ class Application
 
   run: =>
     keyhandler.keymap = keymap
+    @settings = Settings!
     @_load_variables!
     @_load_completions!
     @_load_commands!
     bundle.load_all!
     @_set_theme!
+    @settings\load_user!
 
     window = @new_window!
     buffer = @new_buffer mode.by_name 'lua'
