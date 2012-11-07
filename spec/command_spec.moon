@@ -77,6 +77,7 @@ describe 'command', ->
           value_for: -> 123
           on_completed: Spy!
           go_back: Spy!
+          on_cancelled: Spy!
         }
         first_input
 
@@ -86,6 +87,7 @@ describe 'command', ->
           should_complete: -> 'oh yes'
           on_completed: Spy!
           go_back: Spy!
+          on_cancelled: Spy!
         }
         second_input
 
@@ -198,6 +200,13 @@ describe 'command', ->
 
           input\go_back(readline)
           assert.is_true second_input.go_back.called
+
+        it 'calls on_cancelled on all instantiated inputs when the user cancels', ->
+          command.run!
+          input\update 'p_cmd first', readline
+          callback nil, readline
+          assert.is_true first_input.on_cancelled.called
+          assert.is_false second_input.on_cancelled.called
 
         it 'updates the readline prompt to include arguments when they are finished', ->
           command.run!

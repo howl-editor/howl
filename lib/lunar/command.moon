@@ -41,6 +41,10 @@ class State
   complete: (text, readline) => @_dispatch 'complete', text, readline
   on_completed: (text, readline) => @_dispatch 'on_completed', text, readline
   go_back: (readline) => @_dispatch 'go_back', readline
+  on_cancelled: (readline) =>
+    for input in *@inputs
+      if input.on_cancelled
+        input\on_cancelled readline
 
   _dispatch: (handler, ...) =>
     if @current_input and @current_input[handler]
@@ -135,11 +139,10 @@ run = (cmd_string = nil) ->
   state = State!
 
   cmd_input =
-    should_complete: (_, text, readline) -> state\should_complete!
+    should_complete: (_, text, readline) -> state\should_complete text, readline
     update: (_, text, readline) -> state\update text, readline
     on_completed: (_, text, readline) -> state\on_completed text, readline
     go_back: (_, readline) -> state\go_back readline
-
 
     complete: (_, text, readline) ->
       if state.cmd
@@ -160,6 +163,10 @@ run = (cmd_string = nil) ->
     text = cmd_string if not state.cmd
 
   window.readline\read prompt, cmd_input, (value, readline) ->
+    if not value
+      state\on_cancelled readline
+      return
+
     state\update readline.text .. ' ', readline
     if state\submit value
       return true

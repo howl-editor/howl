@@ -166,7 +166,7 @@ class Readline extends PropertyObject
       value = completion_text item
       @text = @text\gsub('%a+$', '') .. value
       @_update_input!
-      if @input.on_completed and @input\on_completed(item) == false
+      if @input.on_completed and @input\on_completed(item, self) == false
         @_complete!
         return
 
@@ -187,7 +187,9 @@ class Readline extends PropertyObject
         @_remove_completions!
         @completion_unwanted = true
       else
+        status, err = pcall self.callback, nil, self
         @hide!
+        error(err) if not status
 
     left: => @cursor\left! if not @_at_start!
     right: => @cursor\right!
