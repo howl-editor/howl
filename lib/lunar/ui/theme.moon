@@ -1,6 +1,6 @@
 import Gdk, Gtk from lgi
 import File from lunar.fs
-import style, colors from lunar.ui
+import style, colors, highlight from lunar.ui
 import PropertyTable, Sandbox from lunar.aux
 
 css_provider = Gtk.CssProvider!
@@ -130,6 +130,7 @@ theme_css = (theme, file) ->
 load_theme = (file) ->
   chunk = loadfile(file.path)
   box = Sandbox colors
+  box\put :highlight
   box chunk
 
 set_theme = (name) ->
@@ -142,6 +143,7 @@ set_theme = (name) ->
   theme.name = name
   current_theme = theme
   style.set_for_theme theme
+  highlight.set_for_theme theme
 
 return PropertyTable {
   current:

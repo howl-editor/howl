@@ -117,7 +117,7 @@ number_for = (style_name, buffer) ->
   style_num
 
 set_for_theme = (theme) ->
-  define name, def for name, def in pairs theme.styles
+  define name, def for name, def in pairs(theme.styles or {})
 
 at_pos = (buffer, pos) ->
   style_num = buffer.sci\get_style_at pos - 1

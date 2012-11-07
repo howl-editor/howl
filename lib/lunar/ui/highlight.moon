@@ -112,5 +112,8 @@ export remove_in_range = (name, buffer, start_pos, end_pos) ->
     sci\indicator_clear_range start_pos, end_pos - start_pos
     start_pos = end_pos + 1
 
+export set_for_theme = (theme) ->
+  define name, def for name, def in pairs(theme.highlights or {})
+
 return _ENV
 
