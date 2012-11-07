@@ -49,6 +49,8 @@ G = (editor) ->
 
 f = (editor) -> keyhandler.capture forward_to_char
 F = (editor) -> keyhandler.capture back_to_char
+map['/'] = 'search-forward'
+n = 'repeat-search'
 
 map['$'] = (editor) -> apply editor, -> editor.cursor\line_end!
 
