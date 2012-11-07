@@ -11,12 +11,14 @@ config.define
 log = {}
 setfenv 1, log
 
+first_line_of = (s) -> s\match '[^\n\r]*'
+
 dispatch = (level, message) ->
   entry = :message, :level
   append entries, entry
   if _G.window
     status = _G.window.status
-    status[level] status, message
+    status[level] status, first_line_of message
 
   while #entries > config.max_log_entries and #entries > 0
     table.remove entries, 1

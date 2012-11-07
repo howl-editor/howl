@@ -11,11 +11,16 @@ describe 'log', ->
   for m in *{'info', 'warning', 'error'}
     describe m .. '(text)', ->
       it 'propages the message to _G.window.status\\' .. m .. '() if available', ->
-        _G.window = status: [m]: Spy!
+        method = spy.new!
+        _G.window = status: [m]: method
         log[m] 'message'
-        parameters = _G.window.status[m].called_with
-        assert.equal parameters[1], _G.window.status
-        assert.equal parameters[2], 'message'
+        assert.spy(method).was.called_with _G.window.status, 'message'
+
+      it 'only propagates the first line of the message', ->
+        method = spy.new!
+        _G.window = status: [m]: method
+        log[m] 'message\nline2\nline3'
+        assert.spy(method).was.called_with _G.window.status, 'message'
 
   describe 'book keeping', ->
     it '.entries is a list of the last log entries', ->
