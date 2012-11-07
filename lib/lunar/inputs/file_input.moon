@@ -25,7 +25,8 @@ class FileInput
     completion_options = list: column_styles: (name, row, column) ->
       file = @directory / name
       file.is_directory and 'keyword' or 'string'
-    return @matcher(text), completion_options
+
+    return self.matcher(text), completion_options
 
   on_completed: (value) =>
     path = @directory / value
