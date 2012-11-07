@@ -1,7 +1,7 @@
 import Gtk from lgi
 
 import Buffer, config from lunar
-import Window, Editor from lunar.ui
+import Editor from lunar.ui
 
 describe 'Editor', ->
   buffer = nil
@@ -10,6 +10,8 @@ describe 'Editor', ->
   window = Gtk.OffscreenWindow!
   window\add editor\to_gobject!
   window\show_all!
+
+  teardown -> window\destroy!
 
   before_each ->
     buffer = Buffer {}
