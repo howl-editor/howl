@@ -63,6 +63,10 @@ export define = (name, definition) ->
     if hls[name]
       set_highlight hls[name], definition, sci for sci in *buffer.scis
 
+export define_default = (name, definition) ->
+  return if highlights[name]
+  define name, definition
+
 export apply = (name, buffer, pos, length) ->
   num = number_for name, buffer
   with buffer.sci

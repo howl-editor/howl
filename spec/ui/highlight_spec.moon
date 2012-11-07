@@ -23,6 +23,13 @@ describe 'highlight', ->
       set_fore = buffer.sci\indic_get_fore number
       assert.equal set_fore, '#665544'
 
+  describe 'define_default(name, definition)', ->
+    it 'defines the highlight only if it is not already defined', ->
+      highlight.define_default 'new_one', color: '#334455'
+      assert.equal highlight.new_one.color, '#334455'
+      highlight.define_default 'new_one', color: '#101010'
+      assert.equal highlight.new_one.color, '#334455'
+
   describe '.apply(name, buffer, pos, length)', ->
     it 'activates the highlight for the specified range', ->
       buffer = Buffer {}
