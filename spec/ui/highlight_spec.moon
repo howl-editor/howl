@@ -86,12 +86,39 @@ describe 'highlight', ->
     assert.same highlight.at_pos(buffer, 1), { 'highlight_bar' }
     assert.same highlight.at_pos(buffer, 5), { }
 
-  it '.remove_all(name, buffer) removes all highlights with <name> in <buffer>', ->
-    highlight.define 'foo', color: '#334455'
-    buffer = Buffer {}
-    buffer.text = 'one two'
-    highlight.apply 'foo', buffer, 1, 3
-    highlight.apply 'foo', buffer, 5, 3
-    highlight.remove_all 'foo', buffer
-    assert.same highlight.at_pos(buffer, 1), { }
-    assert.same highlight.at_pos(buffer, 5), { }
+  describe '.remove_all(name, buffer)', ->
+    it 'removes all highlights with <name> in <buffer>', ->
+      highlight.define 'foo', color: '#334455'
+      buffer = Buffer {}
+      buffer.text = 'one two'
+      highlight.apply 'foo', buffer, 1, 3
+      highlight.apply 'foo', buffer, 5, 3
+      highlight.remove_all 'foo', buffer
+      assert.same highlight.at_pos(buffer, 1), { }
+      assert.same highlight.at_pos(buffer, 4), { }
+      assert.same highlight.at_pos(buffer, 5), { }
+      assert.same highlight.at_pos(buffer, 8), { }
+
+    it 'does nothing when no highlights have been set', ->
+      highlight.define 'foo', color: '#334455'
+      buffer = Buffer {}
+      buffer.text = 'one two'
+      highlight.remove_all 'foo', buffer
+
+  describe '.remove_in_range(name, buffer, start_pos, end_pos)', ->
+    it 'removes all highlights with <name> in <buffer> in the range specified (inclusive)', ->
+      highlight.define 'foo', color: '#334455'
+      buffer = Buffer {}
+      buffer.text = 'one two'
+      highlight.apply 'foo', buffer, 1, 3
+      highlight.apply 'foo', buffer, 5, 3
+      highlight.remove_in_range 'foo', buffer, 4, 7
+      assert.same highlight.at_pos(buffer, 3), { 'foo' }
+      assert.same highlight.at_pos(buffer, 5), { }
+      assert.same highlight.at_pos(buffer, 8), { }
+
+    it 'does nothing when no highlights have been set', ->
+      highlight.define 'foo', color: '#334455'
+      buffer = Buffer {}
+      buffer.text = 'one two'
+      highlight.remove_in_range 'foo', buffer, 1, #buffer

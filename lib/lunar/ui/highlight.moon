@@ -89,16 +89,24 @@ export at_pos = (buffer, pos) ->
 
 export remove_all = (name, buffer) ->
   num = number_for name, buffer
-  pos = 0
+  with buffer.sci
+    \set_indicator_current num
+    \indicator_clear_range 0, #buffer
+
+export remove_in_range = (name, buffer, start_pos, end_pos) ->
+  num = number_for name, buffer
   sci = buffer.sci
   sci\set_indicator_current num
-  while true
-    start_pos = sci\indicator_start num, pos
-    break if not start_pos or start_pos < 0
+  loop = 0
+  while start_pos < end_pos
+    loop += 1
+    break if loop > 3
+    start_pos = sci\indicator_start num, start_pos
+    break if start_pos < 0
     end_pos = sci\indicator_end num, start_pos
     break if start_pos == end_pos
     sci\indicator_clear_range start_pos, end_pos - start_pos
-    pos = end_pos + 1
+    start_pos = end_pos + 1
 
 return _ENV
 
