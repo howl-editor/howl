@@ -6,7 +6,8 @@ style.define 'list_caption', {}
 
 highlight.define_default 'list_selection', {
   style: highlight.ROUNDBOX,
-  color: '#ffffff'
+  color: '#888888'
+  alpha: 50
   outline_alpha: 100
 }
 
