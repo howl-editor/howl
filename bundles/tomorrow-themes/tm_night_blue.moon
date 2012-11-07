@@ -62,6 +62,18 @@ return {
 
     selection: background: selection
 
+  highlights:
+    search:
+      style: highlight.ROUNDBOX
+      color: white
+      alpha: 80
+      outline_alpha: 100
+
+    list_selection:
+      style: highlight.ROUNDBOX
+      color: white
+      outline_alpha: 100
+
   styles:
     default:
       :background

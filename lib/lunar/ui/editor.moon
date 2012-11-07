@@ -1,7 +1,8 @@
 import Gtk from lgi
 import Scintilla, Completer, signal, keyhandler, config, command from lunar
 import PropertyObject from lunar.aux.moon
-import style, highlight, theme, IndicatorBar, Cursor, Selection, CompletionPopup from lunar.ui
+import style, highlight, theme, IndicatorBar, Cursor, Selection from lunar.ui
+import Searcher, CompletionPopup from lunar.ui
 
 editors = setmetatable {}, __mode: 'v'
 
@@ -42,10 +43,12 @@ class Editor extends PropertyObject
       on_char_added: self\_on_char_added
       on_text_inserted: self\_on_text_inserted
       on_text_deleted: self\_on_text_deleted
+      on_error: log.error
     @sci.listener = listener
 
     @selection = Selection @sci
     @cursor = Cursor @sci, @selection
+    @searcher = Searcher self
 
     @header = IndicatorBar 'header', 3
     @footer = IndicatorBar 'footer', 3
@@ -267,6 +270,8 @@ class Editor extends PropertyObject
           return true if keyhandler.dispatch event, { @popup.window.keymap }, @popup.window
 
         @remove_popup! if not @popup.options.persistent
+    else
+      @searcher\cancel!
 
     keyhandler.process self, event
 
