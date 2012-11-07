@@ -4,7 +4,7 @@ import style, highlight from lunar.ui
 style.define 'list_header', color: '#5E5E5E', underline: true
 style.define 'list_caption', {}
 
-highlight.define 'list_selection', {
+highlight.define_default 'list_selection', {
   style: highlight.ROUNDBOX,
   color: '#ffffff'
   outline_alpha: 100
