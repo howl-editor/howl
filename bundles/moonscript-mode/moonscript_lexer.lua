@@ -35,11 +35,11 @@ local number = token(l.NUMBER, l.float + l.integer)
 
 -- Keywords.
 local keyword = token(l.KEYWORD, word_match {
-	'return', 'break', 'for', 'while',
+	'return', 'break', 'local', 'for', 'while',
 	'if', 'else', 'elseif', 'then', 'export',
 	'import', 'from', 'with', 'in', 'and',
 	'or', 'not', 'class', 'extends', 'super', 'do',
-	'using', 'switch', 'when',
+	'using', 'switch', 'when', 'unless'
 })
 
 local special = token("special", word_match { "true", "false", "nil" })
