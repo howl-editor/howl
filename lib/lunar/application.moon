@@ -55,7 +55,7 @@ class Application
     @settings\load_user!
 
     window = @new_window!
-    buffer = @new_buffer mode.by_name 'lua'
+    buffer = @new_buffer mode.by_name 'default'
     editor = Editor buffer
     window\add_view editor
 
