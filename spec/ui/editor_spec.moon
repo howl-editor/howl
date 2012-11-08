@@ -85,14 +85,15 @@ describe 'Editor', ->
 
   it 'delete_line deletes the current line', ->
     buffer.text = 'hello\nworld!'
-    cursor.pos = 1
+    cursor.pos = 3
     editor\delete_line!
     assert.equal buffer.text, 'world!'
 
   it 'copy_line copies the current line', ->
     buffer.text = 'hello\n'
-    cursor.pos = 1
+    cursor.pos = 3
     editor\copy_line!
+    cursor.pos = 1
     editor\paste!
     assert.equal buffer.text, 'hello\nhello\n'
 
