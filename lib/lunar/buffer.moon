@@ -157,6 +157,8 @@ class Buffer extends PropertyObject
   lex: (end_pos) =>
     if @_mode and @_mode.lexer
       styler.style_text @sci, self, end_pos, @_mode.lexer
+    else
+      styler.mark_as_styled @sci, self
 
   @meta {
     __len: => @size
