@@ -1,9 +1,10 @@
 state = ...
 base_map = bundle_load 'base_map.moon'
-import move, apply, repeat_last from state
+import apply, record, repeat_last from state
 import command from lunar
 
 _G = _G
+import math from _G
 
 map = setmetatable {}, __index: base_map
 setfenv 1, map
@@ -40,16 +41,28 @@ c = (editor) ->
   else
     state.change = true
 
-C = (editor) -> apply editor, ->
+C = (editor) -> apply editor, (editor) ->
   editor\delete_to_end_of_line!
   to_insert editor
 
 d = (editor) ->
-  if state.delete then apply editor, ->
-    editor\copy_line!
-    editor\delete_line!
-  else
+  if not state.delete
     state.delete = true
+    return
+
+  -- dd
+  count = state.count or 1
+
+  record editor, (editor) ->
+    current_line = editor.current_line
+    lines = editor.buffer.lines
+    start_pos = current_line.start_pos
+    end_line = lines[current_line.nr + count]
+    end_pos = end_line and end_line.start_pos or #editor.buffer + 1
+
+    with editor.selection
+      \set start_pos, end_pos
+      \cut!
 
 D = (editor) -> apply editor, -> editor\delete_to_end_of_line!
 

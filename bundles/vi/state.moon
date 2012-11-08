@@ -55,6 +55,11 @@ export apply = (editor, f) ->
   op editor
   last_op = op if _delete or _change
 
+export record = (editor, op) ->
+  op editor
+  reset!
+  last_op = op
+
 export repeat_last = (editor) ->
   if last_op then last_op editor
 
