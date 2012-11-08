@@ -59,7 +59,7 @@ describe 'BufferLines', ->
     it '.start_pos returns the start position for line', ->
       assert.equal lines[2].start_pos, 7
 
-    it '.end_pos returns the end position for line', ->
+    it '.end_pos returns the end position for line, right before the newline', ->
       assert.equal lines[1].end_pos, 6
 
     it '.previous return the line above this one, or nil if none', ->
