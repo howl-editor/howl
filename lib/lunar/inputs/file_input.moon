@@ -28,10 +28,10 @@ class FileInput
 
     return self.matcher(text), completion_options
 
-  on_completed: (value) =>
+  on_completed: (value, readline) =>
     path = @directory / value
     if path.is_directory
-      @_chdir path
+      @_chdir path, readline
       return false
 
   go_back: (readline) =>
