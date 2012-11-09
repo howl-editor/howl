@@ -22,11 +22,6 @@ LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
 LPEG_URL = http://www.inf.puc-rio.br/~roberto/lpeg/$(LPEG_VER).tar.gz
 
-LFS_VER = luafilesystem-1.5.0
-LFS_URL = https://github.com/downloads/keplerproject/luafilesystem/$(LFS_VER).tar.gz
-LFS = deps/$(LFS_VER)
-LFS_OBJECT = deps/$(LFS_VER)/src/lfs.o
-
 LGI_VER = lgi-0.6.2
 LGI_URL = https://github.com/downloads/pavouk/lgi/$(LGI_VER).tar.gz
 LGI = deps/$(LGI_VER)
@@ -40,7 +35,7 @@ ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE) $(LGI_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E
 OBJECTS = main.o sci.o
-DEP_OBJECTS = $(LPEG)/lpeg.o $(SCINTILLUA_LEXER) $(LFS_OBJECT)
+DEP_OBJECTS = $(LPEG)/lpeg.o $(SCINTILLUA_LEXER)
 
 lunar: ${OBJECTS} lunar.h $(DEP_OBJECTS) $(ARCHIVES) Makefile
 	  ${CC} -o lunar ${CFLAGS} ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}

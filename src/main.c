@@ -53,10 +53,6 @@ static lua_State *open_lua_state(const gchar *app_root)
   luaopen_lpeg(l);
   lua_pop(l, 1);
 
-  /* lfs */
-  luaopen_lfs(l);
-  lua_pop(l, 1);
-
   /* lgi */
   lua_getglobal(l, "package");
   lua_getfield(l, -1, "loaded");
