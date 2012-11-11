@@ -1,5 +1,6 @@
 moonscript = require('moonscript')
 moonscript.errors = require "moonscript.errors"
+moon = require('moon')
 
 lua_loadfile = loadfile
 

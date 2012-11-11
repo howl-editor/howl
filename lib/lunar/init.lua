@@ -9,7 +9,7 @@ local function set_package_path(...)
   package.path = table.concat(paths, ';') .. ';' .. package.path
 end
 
-local function lazily_loaded_module(name)
+local function auto_module(name)
   return setmetatable(
     {},
     { __index = function (t, key)
@@ -17,7 +17,7 @@ local function lazily_loaded_module(name)
       local status, mod = pcall(require, req_name)
       if not status then
         if mod:match('module.*not found') then
-          mod = lazily_loaded_module(req_name)
+          mod = auto_module(req_name)
         else
           error(mod)
         end
@@ -28,20 +28,19 @@ local function lazily_loaded_module(name)
     end})
 end
 
---package.path = ''
 set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
-package.cpath = ''
 
 require 'lunar.moonscript_support'
-
--- set up globals (lpeg/lfs already setup from C)
 lgi = require('lgi')
-lunar = lazily_loaded_module('lunar')
-moon = require('moon')
+lunar = auto_module('lunar')
+
+local code_cache = require('lunar.code_cache')(app_root .. '/lib')
+table.insert(package.loaders, 2, code_cache.loader)
+
 require('lunar.globals')
+_G.log = require('lunar.log')
 
 lunar.app = lunar.Application(lunar.fs.File(app_root), argv)
-_G.log = require('lunar.log')
 
 if os.getenv('BUSTED') then
   local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
@@ -52,3 +51,5 @@ if os.getenv('BUSTED') then
 else
   lunar.app:run()
 end
+
+code_cache.save()
