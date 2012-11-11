@@ -63,6 +63,34 @@ describe 'File', ->
       table.sort kids, (a,b) -> a.path < b.path
       assert.same [v.basename for v in *kids], { 'child1', 'child2' }
 
+  it '.writeable is true if the file represents a entry that can be written to', ->
+    with_tmpdir (dir) ->
+      assert.is_true dir.writeable
+      file = dir / 'file.txt'
+      assert.is_true file.writeable
+      file\touch!
+      assert.is_true file.writeable
+
+    assert.is_false File('/no/such/directory/orfile.txt').writeable
+
+  it '.readable is true if the file represents a entry that can be read', ->
+    with_tmpdir (dir) ->
+      assert.is_true dir.readable
+      file = dir / 'file.txt'
+      assert.is_false file.readable
+      file\touch!
+      assert.is_true file.readable
+
+  it '.etag is a string that can be used to check for modification', ->
+    with_tmpfile (file) ->
+      assert.is.not_nil file.etag
+      assert.equal type(file.etag), 'string'
+
+  it '.modified_at is a the unix time when the file was last modified', ->
+    with_tmpfile (file) ->
+      assert.is.not_nil file.modified_at
+      assert.equal type(file.modified_at), 'number'
+
   it 'join returns a new file representing the specified child', ->
     assert.equal File('/bin')\join('ls').path, '/bin/ls'
 

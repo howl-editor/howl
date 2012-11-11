@@ -21,6 +21,7 @@ class File extends PropertyObject
   new: (path) =>
     @gfile = if type(path) == 'string' then GFile.new_for_path path else path
     @path = @gfile\get_path!
+    @_stats = {}
     super!
 
   @property basename: get: => @gfile\get_basename!
@@ -32,20 +33,23 @@ class File extends PropertyObject
   @property is_regular: get: => @file_type == 'regular'
   @property is_shortcut: get: => @file_type == 'shortcut'
   @property is_mountable: get: => @file_type == 'mountable'
-  @property is_hidden: get: => @info\get_is_hidden!
-  @property is_backup: get: => @info\get_is_backup!
-  @property size: get: => @info\get_size!
+  @property is_hidden: get: => @_info!\get_is_hidden!
+  @property is_backup: get: => @_info!\get_is_backup!
+  @property size: get: => @_info!\get_size!
   @property exists: get: => @gfile\query_exists!
+  @property readable: get: => @exists and @_info('access')\get_attribute_boolean 'access::can-read'
+  @property etag: get: => @exists and @_info('etag')\get_etag!
+  @property modified_at: get: => @exists and @_info('time')\get_attribute_uint64 'time::modified'
+
+  @property writeable: get: =>
+    if @exists
+      return @_info('access')\get_attribute_boolean 'access::can-write'
+    else
+      return @parent.exists and @parent.writeable
 
   @property file_type: get: =>
-    @ft = @ft or @info\get_file_type!\lower!
+    @ft = @ft or @_info!\get_file_type!\lower!
     @ft
-
-  @property info: get: =>
-    if not @f_info
-      @f_info, err = @gfile\query_info 'standard::*', 'NONE'
-      error(err) if not @f_info
-    @f_info
 
   @property contents:
     get: => tostring @_assert @gfile\load_contents!
@@ -53,6 +57,8 @@ class File extends PropertyObject
       with @_assert io.open @path, 'w'
         \write contents
         \close!
+
+      @_stats.time = nil
 
   @property parent:
     get: =>
@@ -120,6 +126,20 @@ class File extends PropertyObject
     files
 
   tostring: => @path or @uri
+
+  _info: (namespace) =>
+    if namespace
+      namespace = namespace .. '::*'
+    else
+      namespace = 'standard::*'
+
+    ns = @_stats[namespace]
+    return ns if ns
+
+    ns, err = @gfile\query_info namespace, 'NONE'
+    error(err) if not ns
+    @_stats[namespace] = ns
+    ns
 
   @meta {
     __tostring: => @tostring!
