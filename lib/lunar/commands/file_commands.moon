@@ -16,7 +16,7 @@ command.register
 
 command.register
   name: 'save',
-  description: 'Save file'
+  description: 'Saves current buffer to file'
   inputs: {}
   handler: ->
     buffer = _G.editor.buffer
@@ -25,5 +25,13 @@ command.register
       nr_lines = #buffer.lines
       log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
         nr_lines, #buffer
+
+command.register
+  name: 'close',
+  description: 'Closes the current buffer'
+  inputs: {}
+  handler: ->
+    buffer = _G.editor.buffer
+    lunar.app\close_buffer buffer
 
 command.alias 'save', 'w'
