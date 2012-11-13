@@ -16,24 +16,40 @@ describe 'moonscript-mode', ->
   describe '.after_newline()', ->
     buffer = Buffer m
     editor = Editor buffer
+    lines = buffer.lines
     config.set 'indent', 2, buffer
 
     indents = {
-      ['pending function definitions']: {
+      'pending function definitions': {
         'foo: =>',
         'foo: -> '
       }
-      ['pending class declarations']: {
+      'pending class declarations': {
         'class Frob',
         'class Frob  ',
       }
-      ['hanging assignments']: {
+      'hanging assignments': {
         'var = ',
         'var: ',
       }
-      ['open table definitions']: {
+      'open table definitions': {
         'var = { ',
         'var = {',
+      },
+      'open conditionals': {
+        'if foo and bar',
+        'unless bar',
+      }
+    }
+
+    non_indents = {
+      'closed conditionals': {
+        'if foo then bar',
+        'unless foo then bar',
+      },
+      'statement modifiers': {
+        'foo! if bar',
+        'foo! unless bar',
       }
     }
 
@@ -43,7 +59,15 @@ describe 'moonscript-mode', ->
           buffer.text = code .. '\n'
           editor.cursor.line = 2
           m\after_newline(buffer.lines[2], editor)
-          assert.equal buffer.lines[2].text, '  '
+          assert.equal 2, buffer.lines[2].indentation
+
+    for desc in pairs non_indents
+      it 'does not indent after ' .. desc, ->
+        for code in *non_indents[desc]
+          buffer.text = code .. '\n'
+          editor.cursor.line = 2
+          m\after_newline(buffer.lines[2], editor)
+          assert.equal 0, buffer.lines[2].indentation
 
     context 'when splitting brackets', ->
       it 'moves the closing bracket to its own line', ->

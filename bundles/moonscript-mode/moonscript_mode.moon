@@ -8,12 +8,22 @@ class MoonscriptMode
     indent_patterns = {
       '[-=]>%s*$',
       '[{:=]%s*$',
+      { '^%s*if%s+', 'then' },
+      { '^%s*unless%s+', 'then' },
       'class%s+%a+%s*$',
     }
     prev_line = line.previous
     for p in *indent_patterns
-      if prev_line\match p
-        line\indent!
+      negative = nil
+      positive = p
+
+      if type(p) == 'table'
+        positive = p[1]
+        negative = p[2]
+
+      if prev_line\match positive
+        if not negative or not prev_line\match negative
+          line\indent!
 
     if line\match '^%s*}%s*$'
       wanted_indent = line.indentation
