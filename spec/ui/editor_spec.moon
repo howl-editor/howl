@@ -130,6 +130,19 @@ describe 'Editor', ->
     editor\backward_to_match 'w'
     assert.equal 1, cursor.pos
 
+  context 'buffer switching', ->
+    it 'remembers the position for different buffers', ->
+      buffer.text = 'hello\n    world!'
+      cursor.pos = 8
+      buffer2 = Buffer {}
+      buffer2.text = 'a whole different whale'
+      editor.buffer = buffer2
+      cursor.pos = 15
+      editor.buffer = buffer
+      assert.equal 8, cursor.pos
+      editor.buffer = buffer2
+      assert.equal 15, cursor.pos
+
   context 'indentation, tabs, spaces and backspace', ->
 
     it 'defines a "tab_width" config variable, defaulting to 2', ->

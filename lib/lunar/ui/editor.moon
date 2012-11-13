@@ -90,6 +90,7 @@ class Editor extends PropertyObject
     get: => @_buf
     set: (buffer) =>
       if @_buf
+        @_buf.properties.position = @cursor.pos
         @_buf\remove_sci_ref @sci
 
       @_buf = buffer
@@ -102,6 +103,8 @@ class Editor extends PropertyObject
       style.set_for_buffer @sci, buffer
       highlight.set_for_buffer @sci, buffer
       buffer\add_sci_ref @sci
+      with buffer.properties
+        @cursor.pos = .position if .position
 
   @property current_line: get: => @buffer.lines[@cursor.line]
   @property current_word: get: => @buffer\word_at @cursor.pos

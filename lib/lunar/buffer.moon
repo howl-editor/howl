@@ -39,6 +39,7 @@ class Buffer extends PropertyObject
 
     @completers = {}
     @mode = mode
+    @properties = {}
 
   @property file:
     get: => @_file

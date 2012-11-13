@@ -92,6 +92,9 @@ describe 'Buffer', ->
     it 'raises an error if the eol is unknown', ->
       assert.raises 'Unknown', -> buffer('').eol = 'foo'
 
+  it '.properties is a table', ->
+    assert.equal 'table', type buffer('').properties
+
   it '.chunk(start_pos, length) returns a chunk for the specified range', ->
     b = buffer 'chunky bacon'
     chunk = b\chunk(8, 3)
