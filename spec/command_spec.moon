@@ -1,10 +1,16 @@
 import command, inputs, config from lunar
 
 describe 'command', ->
-  cmd = nil
+  local cmd, readline
 
-  before_each -> cmd = name: 'foo', description: 'desc', handler: -> true
-  after_each -> command.unregister name for name in *command.names!
+  before_each ->
+    readline = Spy as_null_object: true
+    _G.window = :readline
+    cmd = name: 'foo', description: 'desc', handler: spy.new -> true
+
+  after_each ->
+    command.unregister name for name in *command.names!
+    _G.window = nil
 
   describe '.register(command)', ->
     it 'raises an error if any of the mandatory fields are missing', ->
@@ -66,8 +72,7 @@ describe 'command', ->
       assert.is_nil command.foo_cmd_bar
 
   describe '.run(cmd_string)', ->
-    first_input = nil
-    second_input = nil
+    local first_input, second_input
 
     before_each ->
       inputs.register 'test_first', ->
@@ -94,12 +99,9 @@ describe 'command', ->
     after_each ->
       inputs.unregister 'test_first'
       inputs.unregister 'test_second'
-      _G.window = nil
 
     context 'when <cmd_string> is empty or missing', ->
       it 'invokes _G.window.readline with a ":" prompt', ->
-        readline = Spy as_null_object: true
-        _G.window = :readline
         command.run!
         assert.is_true readline.read.called
         _, prompt = unpack readline.read.called_with
@@ -123,8 +125,6 @@ describe 'command', ->
 
       context 'when it specifies a command without all required parameters', ->
         it 'invokes _G.window.readline with the prompt set to the given string', ->
-          readline = Spy as_null_object: true
-          _G.window = :readline
           cmd.inputs = { 'test_first', 'test_second' }
           command.register cmd
           command.run cmd.name .. ' arg'
@@ -134,11 +134,36 @@ describe 'command', ->
 
       context 'when it specifies a unknown command', ->
         it 'invokes _G.window.readline with the text set to the given string', ->
-          readline = Spy as_null_object: true
-          _G.window = :readline
           command.run 'what-the-heck now'
           assert.is_true readline.read.called
           assert.equal readline.writes.text, 'what-the-heck now'
+
+    context 'parameter parsing', ->
+      before_each ->
+        inputs.register 'dummy', -> {}
+
+      it 'separates arguments on whitespace', ->
+        cmd.inputs = { 'dummy', 'dummy' }
+        command.register cmd
+        command.run "#{cmd.name} first second"
+        assert.spy(cmd.handler).was.called_with('first', 'second')
+        command.run "#{cmd.name} tab1\ttab2"
+        assert.spy(cmd.handler).was.called_with('tab1', 'tab2')
+
+      it 'treats the input as a #wildcard input if it is prefixed with "*"', ->
+        cmd.inputs = { 'dummy', '*dummy' }
+        command.register cmd
+        command.run "#{cmd.name} first second / third"
+        assert.spy(cmd.handler).was.called_with('first',  'second / third')
+
+        cmd.inputs = { '*dummy' }
+        command.register cmd
+        command.run "#{cmd.name} first second / third"
+        assert.spy(cmd.handler).was.called_with('first second / third')
+
+      it 'only allows the last input to be a wildcard', ->
+        cmd.inputs = { '*dummy', 'dummy' }
+        assert.raises 'Wildcard', -> command.register cmd
 
     context 'interacting with readline', ->
       input = nil

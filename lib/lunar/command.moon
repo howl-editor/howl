@@ -5,9 +5,6 @@ commands = {}
 accessible_names = {}
 
 -- command state
-parse_arguments = (text) ->
-  [ part for part in text\gmatch '(%S+)%s' ]
-
 parse_cmd = (text) ->
   cmd_start, cmd_end, cmd, rest = text\find '^%s*([^%s]+)%s+(.*)$'
   if cmd then return commands[cmd], cmd, rest
@@ -26,13 +23,25 @@ class State
         readline.prompt ..= name .. ' '
         readline.text = text or ''
 
-    for index, arg in ipairs parse_arguments text
-      break unless @_ensure_input_loaded #@arguments + 1
-      append @arguments, arg
-      readline.prompt ..= arg .. ' ' if readline
+    @_parse_arguments text, readline
 
-    if #@inputs <= #@arguments
-      @_ensure_input_loaded #@arguments + 1, readline
+    -- we always want the next input loaded, since we might be on the next
+    -- incomplete argument
+    @_ensure_input_loaded #@arguments + 1
+
+  _parse_arguments: (text, readline) =>
+    args = [ part for part in text\gmatch '(%S+)%s' ]
+
+    for index, arg in ipairs args
+      current_input = @inputs[#@inputs]
+
+      if #@arguments > 0 and current_input and current_input.wildcard
+        @arguments[#@arguments] ..= ' ' .. arg
+      else
+        current_input = @_ensure_input_loaded #@arguments + 1
+        return unless current_input
+        append @arguments, arg
+        readline.prompt ..= arg .. ' ' if readline and not current_input.wildcard
 
   should_complete: (text, readline) =>
     should = @_dispatch 'should_complete', text, readline
@@ -43,12 +52,13 @@ class State
   go_back: (readline) => @_dispatch 'go_back', readline
   on_cancelled: (readline) =>
     for input in *@inputs
-      if input.on_cancelled
-        input\on_cancelled readline
+      if input.target.on_cancelled
+        input.target\on_cancelled readline
 
   _dispatch: (handler, ...) =>
-    if @current_input and @current_input[handler]
-      return self.current_input[handler] @current_input, ...
+    current_input = @inputs[#@inputs]
+    if current_input and current_input.target[handler]
+      return current_input.target[handler] current_input.target, ...
 
   submit: (value) =>
     cmd = @cmd or commands[value]
@@ -57,9 +67,9 @@ class State
     if #@arguments >= #cmd.inputs
       values = {}
       for i = 1, #@arguments
-        input = @inputs[i]
+        target = @inputs[i].target
         value = @arguments[i]
-        value = input\value_for(value) if input.value_for
+        value = target\value_for(value) if target.value_for
         append values, value
 
       cmd table.unpack values
@@ -78,31 +88,44 @@ class State
     input = @inputs[input_index]
 
     if not input
-      @current_input = nil
-      return false if not @cmd.inputs
-      input_type = @cmd.inputs[input_index]
-      return false if not input_type
-      input_factory = inputs[input_type]
-      if not input_factory then error 'Could not find input for `' .. input_type .. '`'
-      input = input_factory!
-      append @inputs, input
-      @current_input = input
+      return nil if not @cmd.inputs
+      input_spec = @cmd.inputs[input_index]
+      return nil if not input_spec
+      input_factory = inputs[input_spec.name]
+      if not input_factory then error 'Could not find input for `' .. input_spec.name .. '`'
+      target = input_factory!
+      input = :target, wildcard: input_spec.wildcard
+      table.insert @inputs, input_index, input
 
-    true
+    input
 
 -- command interface
 
 accessible_name = (name) ->
   name\lower!\gsub '[%s%p]+', '_'
 
+parse_inputs = (inputs = {}) ->
+  iputs = {}
+  for i = 1, #inputs
+    input = inputs[i]
+    wildcard = false
+
+    name = input
+    match = name\match '^%*(.+)$'
+    if match
+      error('Wildcard input only allowed as last input') if i != #inputs
+      name = match
+      wildcard = true
+
+    append iputs, :name, :wildcard
+  iputs
+
 register = (spec) ->
   for field in *{'name', 'description', 'handler'}
     error 'Missing field for command: "' .. field .. '"' if not spec[field]
 
-  c = setmetatable moon.copy(spec),
-    __call: (...) => spec.handler ...
-  c.inputs = c.inputs or {}
-
+  c = setmetatable moon.copy(spec), __call: (...) => spec.handler ...
+  c.inputs = parse_inputs spec.inputs
   commands[spec.name] = c
   sane_name = accessible_name spec.name
   accessible_names[sane_name] = c if sane_name != spec.name
