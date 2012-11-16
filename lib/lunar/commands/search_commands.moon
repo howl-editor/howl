@@ -3,7 +3,7 @@ import command from lunar
 command.register
   name: 'search-forward',
   description: 'Starts an interactive forward search'
-  inputs: { 'forward_search' }
+  inputs: { '*forward_search' }
   handler: -> editor.searcher\commit!
 
 command.register
