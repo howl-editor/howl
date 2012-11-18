@@ -110,21 +110,25 @@ describe 'Editor', ->
     assert.equal buffer.text, 'hello world!'
     assert.equal cursor.pos, 6
 
-  it 'forward_to_match(string) moves the cursor to <string> if found in the line', ->
+  it 'forward_to_match(string) moves the cursor to next occurence of <string>, if found in the line', ->
     buffer.text = 'hello\n    world!'
     cursor.pos = 1
     editor\forward_to_match 'l'
     assert.equal 3, cursor.pos
+    editor\forward_to_match 'l'
+    assert.equal 4, cursor.pos
     editor\forward_to_match 'o'
     assert.equal 5, cursor.pos
     editor\forward_to_match 'w'
     assert.equal 5, cursor.pos
 
-  it 'backward_to_match(string) moves the cursor back to <string> if found in the line', ->
+  it 'backward_to_match(string) moves the cursor back to previous occurence of <string>, if found in the line', ->
     buffer.text = 'hello\n    world!'
     cursor.pos = 5
-    editor\backward_to_match 'e'
-    assert.equal 2, cursor.pos
+    editor\backward_to_match 'l'
+    assert.equal 4, cursor.pos
+    editor\backward_to_match 'l'
+    assert.equal 3, cursor.pos
     editor\backward_to_match 'h'
     assert.equal 1, cursor.pos
     editor\backward_to_match 'w'

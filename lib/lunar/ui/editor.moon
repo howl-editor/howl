@@ -162,13 +162,13 @@ class Editor extends PropertyObject
       @buffer\insert ' ', @cursor.pos
 
   forward_to_match: (str) =>
-    pos = @current_line\find str, @cursor.column, true
+    pos = @current_line\find str, @cursor.column + 1, true
     @cursor.column = pos if pos
 
   backward_to_match: (str) =>
     rev_line = @current_line\reverse!
-    start = (#rev_line - @cursor.column + 1)
-    pos = rev_line\find str, start, true
+    cur_column = (#rev_line - @cursor.column + 1)
+    pos = rev_line\find str, cur_column + 1, true
     @cursor.column = (#rev_line - pos) + 1 if pos
 
   show_popup: (popup, options = {}) =>
