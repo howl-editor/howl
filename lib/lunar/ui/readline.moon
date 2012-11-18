@@ -156,7 +156,7 @@ class Readline extends PropertyObject
   _select_prev: => @completion_list and @completion_list\select_prev!
   _next_page: => @completion_list and @completion_list\next_page!
   _prev_page: => @completion_list and @completion_list\prev_page!
-
+  
   _submit: =>
     value = @text
 
@@ -181,15 +181,19 @@ class Readline extends PropertyObject
     else
       @_complete!
 
+  _cancel: =>
+    if @completion_list
+      @_remove_completions!
+      @completion_unwanted = true
+    else
+      status, err = pcall self.callback, nil, self
+      @hide!
+      error(err) if not status
+
   keymap: {
-    escape: =>
-      if @completion_list
-        @_remove_completions!
-        @completion_unwanted = true
-      else
-        status, err = pcall self.callback, nil, self
-        @hide!
-        error(err) if not status
+    escape: => @_cancel!
+    ctrl_c: => @_cancel!
+    ctrl_g: => @_cancel!
 
     left: => @cursor\left! if not @_at_start!
     right: => @cursor\right!
