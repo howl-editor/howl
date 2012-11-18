@@ -17,6 +17,9 @@ class Status
 
   clear: =>
     if @text
+      if @level
+        @label\get_style_context!\remove_class 'status_' .. @level 
+        
       @label.label = ''
       @level = nil
       @text = nil
@@ -26,8 +29,11 @@ class Status
   show: => @label.visible = true
 
   _set: (level, text) =>
+    if @level and level != @level
+        @label\get_style_context!\remove_class 'status_' .. @level if @level
+    
     @label\get_style_context!\add_class 'status_' .. level
-    @label\get_style_context!\remove_class 'status_' .. @level if @level
+    
     @label.label = text
     @text = text
     @level = level
