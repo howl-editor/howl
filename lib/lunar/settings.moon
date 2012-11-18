@@ -1,3 +1,5 @@
+serpent = require 'serpent'
+
 import File from lunar.fs
 
 default_dir = ->
@@ -14,6 +16,8 @@ class Settings
         return
 
     @dir = dir
+    @sysdir = @dir / 'system'
+    @sysdir\mkdir! unless @sysdir.exists
 
   load_user: =>
     return unless @dir
@@ -24,3 +28,14 @@ class Settings
         unless status
           log.error "Error loading #{init}: #{ret}"
         break
+
+  save_system: (name, t) =>
+    file = @sysdir\join(name .. '.lua')
+    file.contents = serpent.dump t
+    
+    
+  load_system: (name) =>
+    file = @sysdir\join(name .. '.lua')
+    return nil unless file.exists
+    loadfile(file)!
+    

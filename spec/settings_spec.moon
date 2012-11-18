@@ -2,11 +2,13 @@ import Settings from lunar
 import File from lunar.fs
 
 describe 'Settings', ->
-  local tmpdir
+  local tmpdir, sysdir
   settings = nil
 
   before_each ->
     tmpdir = File.tmpdir!
+    sysdir = tmpdir / 'system'
+    sysdir\mkdir!
     settings = Settings tmpdir
 
   after_each ->
@@ -55,3 +57,18 @@ describe 'Settings', ->
       Settings(tmpdir)\load_user!
       assert.is_not.equal #log.entries, 0
       assert.match log.entries[#log.entries].message, 'init.moon'
+      
+  describe 'load_system(name)', ->
+   it 'returns the loaded contents of a file named system/<name>.lua', ->
+      sysdir\join('foo.lua').contents = 'return { a = "bar" }'
+      assert.same {a: 'bar'}, settings\load_system 'foo'
+      
+   it 'returns nil if the the file does not exist', ->
+      assert.is_nil settings\load_system 'no_such_file'
+      
+  describe 'save_system(name, table)', ->
+    it 'saves the table to a loadeable file system/<name>.lua', ->
+      settings\save_system 'saved', a: 'bar'
+      file = tmpdir / 'system/saved.lua'
+      assert.is_true file.exists
+      assert.same {a: 'bar'}, loadfile(file)!    
