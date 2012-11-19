@@ -1,7 +1,7 @@
 state = ...
 base_map = bundle_load 'base_map.moon'
 import apply, record, repeat_last from state
-import command from lunar
+import command, keyhandler from lunar
 
 _G = _G
 import math from _G
@@ -19,6 +19,14 @@ export *
 
 to_insert = (editor) -> state.change_mode editor, 'insert'
 
+replace_char = (event, translations, editor) ->
+  if event.character
+    apply editor, -> 
+      editor.buffer\delete editor.cursor.pos, 1
+      editor.buffer\insert event.character, editor.cursor.pos, 1
+  else
+    return false
+    
 name = 'VI'
 
 escape = (editor) ->
@@ -88,6 +96,8 @@ p = (editor) -> apply editor, ->
   editor\paste!
 
 P = (editor) -> apply editor, -> editor\paste!
+
+r = (editor) ->  keyhandler.capture replace_char
 
 u = (editor) -> editor.buffer\undo!
 

@@ -21,4 +21,4 @@ info = {
   license: 'MIT',
 }
 
-return :info, :maps
+return :info, :maps, :state
