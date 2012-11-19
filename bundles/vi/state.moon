@@ -18,6 +18,7 @@ export reset = ->
   yank = false
   count = nil
   go = nil
+  keyhandler.cancel_capture!
 
 export add_number = (number) ->
   count = count or 0
