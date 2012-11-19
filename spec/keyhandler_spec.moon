@@ -198,3 +198,10 @@ describe 'keyhandler', ->
       keyhandler.process buffer: {}, event
       keyhandler.process buffer: {}, event
       assert.spy(thief).was.called(2)
+
+  it 'cancel_capture cancels any currently set capture', ->
+      thief = spy.new -> return ret
+      keyhandler.capture thief
+      keyhandler.cancel_capture!
+      keyhandler.process { buffer: {} }, { character: 'A', key_name: 'A', key_code: 65 }
+      assert.spy(thief).was_not.called!

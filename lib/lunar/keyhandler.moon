@@ -87,6 +87,9 @@ export process = (editor, event) ->
 export capture = (handler) ->
   capture_handler = handler
 
+export cancel_capture = ->
+  capture_handler = nil
+
 export keymap = {}
 
 return _ENV
