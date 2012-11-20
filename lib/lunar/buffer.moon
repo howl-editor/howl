@@ -66,6 +66,7 @@ class Buffer extends PropertyObject
     set: (text) =>
       @sci\clear_all!
       @sci\add_text #text, text
+      @sci\set_code_page Scintilla.SC_CP_UTF8
 
   @property dirty:
     get: => @sci\get_modify!
