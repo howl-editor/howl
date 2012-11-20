@@ -1,4 +1,4 @@
-import Buffer, Scintilla from lunar
+import Buffer, Scintilla, config from lunar
 import File from lunar.fs
 
 describe 'Buffer', ->
@@ -126,6 +126,22 @@ describe 'Buffer', ->
     b\append ' world'
     assert.equal b.text, 'hello world'
 
+  describe '#replace(pattern, replacement)', ->
+    it 'replaces all occurences of pattern with replacement', ->
+      b = buffer 'hello\nworld\n'
+      b\replace '[lo]', ''
+      assert.equal 'he\nwrd\n', b.text
+
+    context 'when pattern contains a grouping', ->
+      it 'replaces only the match within pattern with replacement', ->
+        b = buffer 'hello\nworld\n'
+        b\replace '(hel)lo', ''
+        assert.equal 'lo\nworld\n', b.text
+
+    it 'returns the number of occurences replaced', ->
+      b = buffer 'hello\nworld\n'
+      assert.equal 1, b\replace('world', 'editor')
+
   describe 'destroy()', ->
     context 'when no sci is passed and a doc is created', ->
       it 'releases the scintilla document', ->
@@ -224,7 +240,7 @@ describe 'Buffer', ->
           b.file = file
           b.text = text
           b\save!
-          assert.equal file.contents, text
+          assert.equal text, file.contents
 
       it 'clears the dirty flag', ->
         with_tmpfile (file) ->
@@ -234,6 +250,28 @@ describe 'Buffer', ->
           assert.is_true b.dirty
           b\save!
           assert.is_false b.dirty
+
+      context 'when config.strip_trailing_whitespace is false', ->
+        it 'does not strip trailing whitespace before saving', ->
+          with_tmpfile (file) ->
+            config.strip_trailing_whitespace = false
+            b = buffer ''
+            b.file = file
+            b.text = 'blank  \n\nfoo '
+            b\save!
+            assert.equal 'blank  \n\nfoo ', b.text
+            assert.equal file.contents, b.text
+
+      context 'when config.strip_trailing_whitespace is true', ->
+        it 'strips trailing whitespace at the end of lines before saving', ->
+          with_tmpfile (file) ->
+            config.strip_trailing_whitespace = true
+            b = buffer ''
+            b.file = file
+            b.text = 'blank  \n\nfoo '
+            b\save!
+            assert.equal 'blank\n\nfoo', b.text
+            assert.equal file.contents, b.text
 
   it '#buffer returns the same as buffer.size', ->
     b = buffer 'hello'

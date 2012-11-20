@@ -1,4 +1,4 @@
-import Scintilla, styler, BufferLines, Chunk from lunar
+import Scintilla, styler, BufferLines, Chunk, config from lunar
 import File from lunar.fs
 import style from lunar.ui
 import PropertyObject from lunar.aux.moon
@@ -124,8 +124,37 @@ class Buffer extends PropertyObject
 
   append: (text) => @sci\append_text #text, text
 
+  replace: (pattern, replacement) =>
+    matches = {}
+    pos = 1
+    text = @text
+
+    while pos < @size
+      start_pos, end_pos, match = text\find pattern, pos
+      break unless start_pos
+
+      -- only replace the match within pattern if present
+      end_pos = match and (start_pos + #match - 1) or end_pos
+
+      append matches, :start_pos, :end_pos
+      pos = end_pos + 1
+
+    for i = #matches, 1, -1
+      match = matches[i]
+      with @sci
+        \set_target_start match.start_pos - 1
+        \set_target_end match.end_pos
+        \replace_target -1, replacement
+
+    #matches
+
   save: =>
     if @file
+      if config.get 'strip_trailing_whitespace', self
+        ws = '[\t ]'
+        @replace "(#{ws}+)#{@eol}", ''
+        @replace "(#{ws}+)$", ''
+
       @file.contents = @text
       @dirty = false
 
@@ -166,5 +195,14 @@ class Buffer extends PropertyObject
     __len: => @size
     __tostring: => @title
   }
+
+-- Config variables
+
+with config
+  .define
+    name: 'strip_trailing_whitespace'
+    description: 'Whether trailing whitespace will be removed upon save'
+    default: true
+    type_of: 'boolean'
 
 return Buffer
