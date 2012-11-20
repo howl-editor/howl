@@ -15,7 +15,6 @@ class Application
     @windows = {}
     @editors = {}
     @buffers = {}
-
     bundle.dirs = { @root_dir / 'bundles' }
 
   new_window: (properties) =>
@@ -28,7 +27,7 @@ class Application
           if win\to_gobject! == window
             @windows[k] = nil
 
-        Gtk.main_quit! if #@windows == 0
+        @_on_quit! if #@windows == 0
 
     props[k] = v for k, v in pairs(properties or {})
     window = Window props
@@ -49,7 +48,6 @@ class Application
 
   close_buffer: (buffer) =>
     @buffers = [b for b in *@buffers when b != buffer]
-
     shown_buffers = {}
     for editor in *@editors
       shown_buffers[editor.buffer] = true
@@ -71,7 +69,6 @@ class Application
 
     buffer\destroy!
 
-
   open_file: (file, editor = _G.editor) =>
     buffer = @new_buffer mode.for_file file
     buffer.file = file
@@ -79,6 +76,8 @@ class Application
       editor.buffer = buffer
     else
       @new_editor buffer
+
+    buffer
 
   run: =>
     keyhandler.keymap = keymap
@@ -89,14 +88,13 @@ class Application
     bundle.load_all!
     @_set_theme!
     @settings\load_user!
-
     window = @new_window!
     _G.window = window
 
     if #@args > 1
       @open_file(File(path)) for path in *@args[2,]
     else
-      @new_editor @new_buffer!, window
+      @_restore_session!
 
     @editors[1]\focus!
     window\show_all!
@@ -105,6 +103,35 @@ class Application
 
   quit: =>
     win\destroy! for win in * moon.copy @windows
+
+  _on_quit: =>
+    @_save_session!
+    Gtk.main_quit!
+
+  _save_session: =>
+    session = version: 1, buffers: {}
+
+    for b in *@buffers
+      continue unless b.file
+      append session.buffers, {
+        file: b.file.path
+        properties: b.properties
+      }
+
+    @settings\save_system 'session', session
+
+  _restore_session: =>
+    session = @settings\load_system 'session'
+    local buffer
+
+    if session and session.version == 1
+      for entry in *session.buffers
+        file = File(entry.file)
+        buffer = @new_buffer mode.for_file file
+        buffer.file = file
+        buffer.properties = entry.properties
+
+    @new_editor buffer or @new_buffer!
 
   _set_initial_status: (window) =>
     if log.last_error
