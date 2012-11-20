@@ -31,7 +31,8 @@ class Settings
 
   save_system: (name, t) =>
     file = @sysdir\join(name .. '.lua')
-    file.contents = serpent.dump t
+    options = indent: '  ', fatal: true
+    file.contents = serpent.dump t, options
     
     
   load_system: (name) =>
