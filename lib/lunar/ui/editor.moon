@@ -11,6 +11,9 @@ apply_variable = (method, value) ->
     sci = e.sci
     sci[method] sci, value
 
+apply_property = (name, value) ->
+  e[name] = value for e in *editors
+
 indicators = {}
 indicator_placements =
   top_left: true
@@ -108,6 +111,22 @@ class Editor extends PropertyObject
 
   @property current_line: get: => @buffer.lines[@cursor.line]
   @property current_word: get: => @buffer\word_at @cursor.pos
+  @property indentation_guides:
+    get: =>
+      sci_val = @sci\get_indentation_guides!
+      switch sci_val
+        when Scintilla.SC_IV_NONE then 'none'
+        when Scintilla.SC_IV_REAL then 'real'
+        when Scintilla.SC_IV_LOOKBOTH then 'on'
+        else '(unknown)'
+
+    set: (value) =>
+      sci_value = switch value
+        when 'none' then Scintilla.SC_IV_NONE
+        when 'real' then Scintilla.SC_IV_REAL
+        when 'on' then Scintilla.SC_IV_LOOKBOTH
+      error "Unknown value for indentation_guides: #{value}", 2 unless sci_value
+      @sci\set_indentation_guides sci_value
 
   focus: => @sci\grab_focus!
   newline: => @sci\new_line!
@@ -250,6 +269,8 @@ class Editor extends PropertyObject
       \set_tab_indents config.get('tab_indents', buf)
       \set_back_space_un_indents config.get('backspace_unindents', buf)
 
+    @indentation_guides = config.get('indentation_guides', buf)
+
   _create_indicator: (indics, id) =>
     def = indicators[id]
     error 'Invalid indicator id "' .. id .. '"', 2 if not def
@@ -358,6 +379,19 @@ with config
     description: 'Show completion after this many characters'
     default: 2
     type_of: 'number'
+
+  .define
+    name: 'indentation_guides'
+    description: 'Controls how indentation guides are shown'
+    default: 'on'
+    options: {
+      { 'none', 'No indentation guides are shown' }
+      { 'real', 'Indentation guides are shown inside real indentation white space' }
+      { 'on', 'Indentation guides are shown' }
+    }
+
+  .watch 'indentation_guides', (_, value) ->
+    apply_property 'indentation_guides', value
 
   for live_update in *{
     { 'tab_width', 'set_tab_width' }
