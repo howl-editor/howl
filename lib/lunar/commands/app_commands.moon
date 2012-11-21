@@ -3,7 +3,6 @@ import command, config from lunar
 command.register
   name: 'q',
   description: 'Quits the application'
-  inputs: {}
   handler: -> lunar.app\quit!
 
 command.alias 'q', 'quit'
@@ -14,6 +13,17 @@ command.register
   inputs: { 'buffer' }
   handler: (buffer) ->
     _G.editor.buffer = buffer
+
+command.register
+  name: 'switch-to-last-hidden-buffer',
+  description: 'Switches to the last active hidden buffer'
+  handler: ->
+    for buffer in *lunar.app.buffers
+      if not buffer.showing
+        _G.editor.buffer = buffer
+        return
+
+    _G.log.error 'No hidden buffer found'
 
 command.register
   name: 'set',
