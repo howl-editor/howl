@@ -97,10 +97,13 @@ class Buffer extends PropertyObject
         else error 'Unknown eol mode'
       @sci\set_eolmode s_mode
 
+  @property showing: get: => #@scis > 0
+  @property last_shown: get: => #@scis > 0 and os.time! or @_last_shown
   @property destroyed: get: => @doc == nil
 
   destroy: =>
     return if @destroyed
+    error 'Cannot destroy a currently showing buffer', 2 if @showing
 
     if @destructor
       @destructor.defuse!
@@ -184,6 +187,7 @@ class Buffer extends PropertyObject
   remove_sci_ref: (sci) =>
     @scis = [s for s in *@scis when s != sci]
     @_sci = @scis[1] if sci == @_sci
+    @_last_shown = os.time! if #@scis == 0
 
   lex: (end_pos) =>
     if @_mode and @_mode.lexer

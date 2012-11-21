@@ -95,6 +95,22 @@ describe 'Buffer', ->
   it '.properties is a table', ->
     assert.equal 'table', type buffer('').properties
 
+  it '.showing is true if the buffer is currently referenced in any sci', ->
+    b = buffer ''
+    assert.false b.showing
+    b\add_sci_ref {}
+    assert.true b.showing
+
+  it '.last_shown returns a timestamp indicating when it was last shown', ->
+    b = buffer ''
+    sci = {}
+    assert.is_nil b.last_shown
+    ts = os.time!
+    b\add_sci_ref sci
+    assert.is_true b.last_shown >= ts
+    b\remove_sci_ref sci
+    assert.is_true b.last_shown <= os.time!
+
   it '.chunk(start_pos, length) returns a chunk for the specified range', ->
     b = buffer 'chunky bacon'
     chunk = b\chunk(8, 3)
@@ -143,19 +159,24 @@ describe 'Buffer', ->
       assert.equal 1, b\replace('world', 'editor')
 
   describe 'destroy()', ->
-    context 'when no sci is passed and a doc is created', ->
+    context 'when no sci is passed and a doc is created in the constructor', ->
       it 'releases the scintilla document', ->
         b = buffer 'reap_me'
         rawset b, 'sci', Spy as_null_object: true
         b\destroy!
         assert.is_true b.sci.release_document.called
 
-    context 'when a sci is passed and a doc is provided', ->
-      it 'does not release the scintilla document', ->
+    context 'when a sci is passed and a doc is provided in the constructor', ->
+      it 'an error is raised since the buffer is considered as currently showing', ->
         sci = get_doc_pointer: (-> 'doc'), release_document: Spy!
         b = Buffer {}, sci
-        b\destroy!
+        assert.raises 'showing', -> b\destroy!
         assert.is_false sci.release_document.called
+
+    it 'raises an error if the buffer is currently showing', ->
+      b = buffer 'not yet'
+      b\add_sci_ref {}
+      assert.raises 'showing', -> b\destroy!
 
     it 'a destroyed buffer raises an error upon subsequent operations', ->
       b = buffer 'reap_me'
