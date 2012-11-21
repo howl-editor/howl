@@ -45,12 +45,19 @@ describe 'Buffer', ->
         b.file = file
         assert.equal b.title, file.basename
 
-    it 'sets the buffer text to the contents of the file', ->
+    it 'sets the buffer text to the contents of the file if it exists', ->
       b.text = 'foo'
       with_tmpfile (file) ->
         file.contents = 'yes sir'
         b.file = file
         assert.equal b.text, 'yes sir'
+
+    it 'sets the buffer text to empty if the file does not exist', ->
+      b.text = 'foo'
+      with_tmpfile (file) ->
+        file\delete!
+        b.file = file
+        assert.equal b.text, ''
 
     it 'marks the buffer as not dirty', ->
       b.dirty = true

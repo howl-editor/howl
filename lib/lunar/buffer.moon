@@ -46,7 +46,7 @@ class Buffer extends PropertyObject
     set: (file) =>
       @_file = file
       @title = file_title file
-      @text = file.contents
+      @text = file.exists and file.contents or ''
       @dirty = false
       @can_undo = false
 
