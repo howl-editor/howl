@@ -11,12 +11,18 @@ maps = {
 }
 
 state.init maps, 'command'
+
 signal.connect 'editor-focused', (editor) -> state.change_mode editor, state.mode
 signal.connect 'editor-defocused', (editor) -> editor.indicator.vi.label = ''
+signal.connect 'after-buffer-switch', (editor) -> state.change_mode editor, 'command'
+
+signal.connect 'buffer-saved', (buffer) ->
+  if _G.editor.buffer == buffer
+    state.change_mode _G.editor, 'command'
 
 info = {
   name: 'vi',
-  author: 'Copyright 2012 Nils Nordman <nino at nordman.org>',
+  author: 'Nils Nordman <nino at nordman.org>',
   description: 'VI bundle',
   license: 'MIT',
 }
