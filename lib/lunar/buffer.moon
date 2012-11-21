@@ -1,4 +1,4 @@
-import Scintilla, styler, BufferLines, Chunk, config from lunar
+import Scintilla, styler, BufferLines, Chunk, config, signal from lunar
 import File from lunar.fs
 import style from lunar.ui
 import PropertyObject from lunar.aux.moon
@@ -160,6 +160,7 @@ class Buffer extends PropertyObject
 
       @file.contents = @text
       @dirty = false
+      signal.emit 'buffer-saved', self
 
   as_one_undo: (f) =>
     @sci\begin_undo_action!

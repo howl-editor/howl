@@ -92,6 +92,8 @@ class Editor extends PropertyObject
   @property buffer:
     get: => @_buf
     set: (buffer) =>
+      signal.emit 'before-buffer-switch', self, @_buf, buffer
+
       if @_buf
         @_buf.properties.position = @cursor.pos
         @_buf\remove_sci_ref @sci
@@ -108,6 +110,8 @@ class Editor extends PropertyObject
       buffer\add_sci_ref @sci
       with buffer.properties
         @cursor.pos = .position if .position
+
+      signal.emit 'after-buffer-switch', self, buffer, @_buf
 
   @property current_line: get: => @buffer.lines[@cursor.line]
   @property current_word: get: => @buffer\word_at @cursor.pos
