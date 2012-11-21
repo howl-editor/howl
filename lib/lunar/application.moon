@@ -6,16 +6,32 @@ import Gtk from lgi
 import Window, Editor, theme from lunar.ui
 import Buffer, Settings, mode, bundle, keyhandler, keymap, signal from lunar
 import File from lunar.fs
+import PropertyObject from lunar.aux.moon
 
-class Application
+sort_buffers = (buffers) ->
+  table.sort buffers, (a, b) ->
+    return true if a.showing and not b.showing
+    return false if b.showing and not a.showing
+    ls_a = a.last_shown or 0
+    ls_b = b.last_shown or 0
+    return ls_a > ls_b if ls_a != ls_b
+    a.title < b.title
+
+class Application extends PropertyObject
 
   new: (root_dir, args) =>
     @root_dir = root_dir
     @args = args
     @windows = {}
     @editors = {}
-    @buffers = {}
+    @_buffers = {}
     bundle.dirs = { @root_dir / 'bundles' }
+    super!
+
+  @property buffers: get: =>
+    buffers = { table.unpack @_buffers }
+    sort_buffers buffers
+    buffers
 
   new_window: (properties) =>
     props =
@@ -37,7 +53,7 @@ class Application
   new_buffer: (buffer_mode) =>
     buffer_mode or= mode.by_name 'default'
     buffer = Buffer buffer_mode
-    append @buffers, buffer
+    append @_buffers, buffer
     buffer
 
   new_editor: (buffer, window = _G.window) =>
@@ -47,12 +63,9 @@ class Application
     editor
 
   close_buffer: (buffer) =>
-    @buffers = [b for b in *@buffers when b != buffer]
-    shown_buffers = {}
-    for editor in *@editors
-      shown_buffers[editor.buffer] = true
-
-    hidden_buffers = [b for b in *@buffers when not shown_buffers[b]]
+    @_buffers = [b for b in *@_buffers when b != buffer]
+    shown_buffers = [b for b in *@_buffers when b.showing]
+    hidden_buffers = [b for b in *@_buffers when not b.showing]
 
     if #shown_buffers == 0 and #hidden_buffers == 0
       append hidden_buffers, @new_buffer!
@@ -111,7 +124,7 @@ class Application
   _save_session: =>
     session = version: 1, buffers: {}
 
-    for b in *@buffers
+    for b in *@_buffers
       continue unless b.file
       append session.buffers, {
         file: b.file.path
