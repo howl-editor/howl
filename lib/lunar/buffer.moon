@@ -98,7 +98,11 @@ class Buffer extends PropertyObject
       @sci\set_eolmode s_mode
 
   @property showing: get: => #@scis > 0
-  @property last_shown: get: => #@scis > 0 and os.time! or @_last_shown
+
+  @property last_shown:
+    get: => #@scis > 0 and os.time! or @_last_shown
+    set: (timestamp) => @_last_shown = timestamp
+
   @property destroyed: get: => @doc == nil
 
   destroy: =>

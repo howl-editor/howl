@@ -125,10 +125,11 @@ class Application extends PropertyObject
   _save_session: =>
     session = version: 1, buffers: {}
 
-    for b in *@_buffers
+    for b in *@buffers
       continue unless b.file
       append session.buffers, {
         file: b.file.path
+        last_shown: b.last_shown
         properties: b.properties
       }
 
@@ -136,16 +137,16 @@ class Application extends PropertyObject
 
   _restore_session: =>
     session = @settings\load_system 'session'
-    local buffer
 
     if session and session.version == 1
       for entry in *session.buffers
         file = File(entry.file)
         buffer = @new_buffer mode.for_file file
         buffer.file = file
+        buffer.last_shown = entry.last_shown
         buffer.properties = entry.properties
 
-    @new_editor buffer or @new_buffer!
+    @new_editor @_buffers[1] or @new_buffer!
 
   _set_initial_status: (window) =>
     if log.last_error
