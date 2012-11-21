@@ -64,6 +64,7 @@ class Application extends PropertyObject
 
   close_buffer: (buffer) =>
     @_buffers = [b for b in *@_buffers when b != buffer]
+    sort_buffers @_buffers
     shown_buffers = [b for b in *@_buffers when b.showing]
     hidden_buffers = [b for b in *@_buffers when not b.showing]
 
