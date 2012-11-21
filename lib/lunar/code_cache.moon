@@ -41,7 +41,7 @@ loader = (source_dir) ->
     if bc and bc.modified_at >= source.modified_at
       return loadstring bc.bytecode
 
-    f = loadfile source
+    f = assert loadfile source
     bytecode = string.dump f, true
     cache[rel_path] = :bytecode, modified_at: source.modified_at
     dirty = true
