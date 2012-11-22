@@ -108,9 +108,8 @@ class Editor extends PropertyObject
       style.set_for_buffer @sci, buffer
       highlight.set_for_buffer @sci, buffer
       buffer\add_sci_ref @sci
-      with buffer.properties
-        @cursor.pos = .position if .position
 
+      @cursor.pos = buffer.properties.position or 1
       signal.emit 'after-buffer-switch', self, buffer, @_buf
 
   @property current_line: get: => @buffer.lines[@cursor.line]
@@ -313,6 +312,7 @@ class Editor extends PropertyObject
 
   _on_focus: (args) =>
     _G.editor = self
+    @cursor.pos = @cursor.pos -- this ensures cursor is visible
     signal.emit 'editor-focused', self
 
   _on_focus_lost: (args) =>
