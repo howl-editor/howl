@@ -4,6 +4,7 @@ import Buffer, keyhandler, bundle from lunar
 import Editor from lunar.ui
 
 bundle.load_by_name 'vi'
+state = bundles.vi.state
 
 text = [[
 Line 1
@@ -25,7 +26,7 @@ describe 'VI', ->
     lines = buffer.lines
     editor.buffer = buffer
     cursor.line = 2
-    bundles.vi.state.reset!
+    state.reset!
 
   press = (...) ->
     for key in *{...}
@@ -56,10 +57,25 @@ describe 'VI', ->
   it '<r><character> replaces the current character with <character>', ->
     press 'r', 'F'
     assert.equal 'Fine two', lines[2].text
-    
+
   describe '<d><d>', ->
     it 'removes the entire current line regardless of the current column', ->
       cursor.column = 4
       press 'd', 'd'
       assert.equal 'Line 1\nAnd third line\n', buffer.text
 
+  context 'insert mode', ->
+    before_each -> press 'i'
+
+    describe 'escape', ->
+      it 'exits insert mode and enters command mode', ->
+        press 'escape'
+        assert.equal 'command', state.mode
+
+      it 'moves the cursor one back unless at the start of the line', ->
+        cursor.column = 2
+        press 'escape'
+        assert.equal 1, cursor.column
+        press 'i'
+        press 'escape'
+        assert.equal 1, cursor.column
