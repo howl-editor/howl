@@ -114,6 +114,7 @@ class Editor extends PropertyObject
 
   @property current_line: get: => @buffer.lines[@cursor.line]
   @property current_word: get: => @buffer\word_at @cursor.pos
+
   @property indentation_guides:
     get: =>
       sci_val = @sci\get_indentation_guides!
@@ -130,6 +131,24 @@ class Editor extends PropertyObject
         when 'on' then Scintilla.SC_IV_LOOKBOTH
       error "Unknown value for indentation_guides: #{value}", 2 unless sci_value
       @sci\set_indentation_guides sci_value
+
+  @property caret_line_highlighted:
+    get: => @sci\get_caret_line_visible!
+    set: (flag) => @sci\set_caret_line_visible flag
+
+  @property horizontal_scrollbar:
+    get: => @sci\get_hscroll_bar!
+    set: (flag) => @sci\set_hscroll_bar flag
+
+  @property vertical_scrollbar:
+    get: => @sci\get_vscroll_bar!
+    set: (flag) => @sci\set_vscroll_bar flag
+
+  @property line_numbers:
+    get: => @sci\get_margin_width_n(0) > 0
+    set: (flag) =>
+      width = flag and 4 + 4 * @sci\text_width(Scintilla.STYLE_LINENUMBER, '9') or 0
+      @sci\set_margin_width_n 0, width
 
   focus: => @sci\grab_focus!
   newline: => @sci\new_line!
@@ -229,17 +248,12 @@ class Editor extends PropertyObject
 
   _set_appearance: =>
     @_set_theme_settings!
-    @_set_ui_config_settings!
 
-  _set_ui_config_settings: =>
-    -- todo: read from upcoming variables
-    with @sci
-      \set_caret_line_visible true
-
-      -- Line Number Margin.
-      \set_margin_width_n 0, 4 + 4 * \text_width(.STYLE_LINENUMBER, '9')
-
-      \set_hscroll_bar false
+    with config
+      @horizontal_scrollbar = .get 'horizontal_scrollbar', @buffer
+      @vertical_scrollbar = .get 'vertical_scrollbar', @buffer
+      @caret_line_highlighted = .get 'caret_line_highlighted', @buffer
+      @line_numbers = .get 'line_numbers', @buffer
 
   _set_theme_settings: =>
     v = theme.current.editor
@@ -394,8 +408,38 @@ with config
       { 'on', 'Indentation guides are shown' }
     }
 
-  .watch 'indentation_guides', (_, value) ->
-    apply_property 'indentation_guides', value
+  .define
+    name: 'horizontal_scrollbar'
+    description: 'Whether horizontal scrollbars are shown'
+    default: false
+    type_of: 'boolean'
+
+  .define
+    name: 'vertical_scrollbar'
+    description: 'Whether vertical scrollbars are shown'
+    default: true
+    type_of: 'boolean'
+
+  .define
+    name: 'caret_line_highlighted'
+    description: 'Whether the caret line is highlighted'
+    default: true
+    type_of: 'boolean'
+
+  .define
+    name: 'line_numbers'
+    description: 'Whether line numbers are shown'
+    default: true
+    type_of: 'boolean'
+
+  for watched_property in *{
+   'indentation_guides',
+   'horizontal_scrollbar',
+   'vertical_scrollbar',
+   'caret_line_highlighted',
+   'line_numbers'
+  }
+    .watch watched_property, apply_property
 
   for live_update in *{
     { 'tab_width', 'set_tab_width' }
