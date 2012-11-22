@@ -14,6 +14,7 @@ setfenv 1, log
 first_line_of = (s) -> s\match '[^\n\r]*'
 
 dispatch = (level, message) ->
+  _G.print(message) if not _G._TEST
   entry = :message, :level
   append entries, entry
   if _G.window
