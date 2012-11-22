@@ -39,6 +39,7 @@ class Readline extends PropertyObject
     @callback = callback
     @text = ''
     @completion_unwanted = false
+    @seen_interaction = false
     @_complete!
 
   to_gobject: => @bin
@@ -103,6 +104,7 @@ class Readline extends PropertyObject
     return event.character == nil or event.ctrl or event.alt
 
   _on_char_added: (event) =>
+    @seen_interaction = true
     @_update_input!
     @_complete @completion_list != nil
 
@@ -156,7 +158,7 @@ class Readline extends PropertyObject
   _select_prev: => @completion_list and @completion_list\select_prev!
   _next_page: => @completion_list and @completion_list\next_page!
   _prev_page: => @completion_list and @completion_list\prev_page!
-  
+
   _submit: =>
     value = @text
 
@@ -185,10 +187,11 @@ class Readline extends PropertyObject
     if @completion_list
       @_remove_completions!
       @completion_unwanted = true
-    else
-      status, err = pcall self.callback, nil, self
-      @hide!
-      error(err) if not status
+      return if @seen_interaction
+
+    status, err = pcall self.callback, nil, self
+    @hide!
+    error(err) if not status
 
   keymap: {
     escape: => @_cancel!
