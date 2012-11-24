@@ -50,48 +50,61 @@ class Application extends PropertyObject
     append @windows, window
     window
 
-  new_buffer: (buffer_mode) =>
-    buffer_mode or= mode.by_name 'default'
-    buffer = Buffer buffer_mode
-    append @_buffers, buffer
-    buffer
-
   new_editor: (buffer, window = _G.window) =>
     editor = Editor buffer
     window\add_view editor
     append @editors, editor
     editor
 
+  new_buffer: (buffer_mode) =>
+    buffer_mode or= mode.by_name 'default'
+    buffer = Buffer buffer_mode
+    append @_buffers, buffer
+    buffer
+
+  add_buffer: (buffer, show = true) =>
+    append @_buffers, buffer
+    _G.editor.buffer = buffer if show
+    buffer
+
   close_buffer: (buffer) =>
     @_buffers = [b for b in *@_buffers when b != buffer]
-    sort_buffers @_buffers
-    shown_buffers = [b for b in *@_buffers when b.showing]
-    hidden_buffers = [b for b in *@_buffers when not b.showing]
 
-    if #shown_buffers == 0 and #hidden_buffers == 0
-      append hidden_buffers, @new_buffer!
+    if buffer.showing
+      sort_buffers @_buffers
+      shown_buffers = [b for b in *@_buffers when b.showing]
+      hidden_buffers = [b for b in *@_buffers when not b.showing]
 
-    for editor in *@editors
-      if editor.buffer == buffer
-        candidate = table.remove hidden_buffers, 1
-        if candidate
-          append shown_buffers, candidate
-        else
-          candidate = shown_buffers[1]
+      if #shown_buffers == 0 and #hidden_buffers == 0
+        append hidden_buffers, @new_buffer!
 
-        editor.buffer = candidate
+      for editor in *@editors
+        if editor.buffer == buffer
+          candidate = table.remove hidden_buffers, 1
+          if candidate
+            append shown_buffers, candidate
+          else
+            candidate = shown_buffers[1]
+
+          editor.buffer = candidate
 
     buffer\destroy!
 
   open_file: (file, editor = _G.editor) =>
     buffer = @new_buffer mode.for_file file
-    buffer.file = file
-    if editor
-      editor.buffer = buffer
-    else
-      @new_editor buffer
+    status, err = pcall ->
+      buffer.file = file
+      if editor
+        editor.buffer = buffer
+      else
+        @new_editor buffer
 
-    buffer
+    if not status
+      @close_buffer buffer
+      log.error "Failed to open #{file}: #{err}"
+      nil
+    else
+      buffer
 
   run: =>
     keyhandler.keymap = keymap
@@ -109,6 +122,9 @@ class Application extends PropertyObject
       @open_file(File(path)) for path in *@args[2,]
     else
       @_restore_session!
+
+    if #@editors == 0 -- failed to load any files above for some reason
+      @new_editor @new_buffer!
 
     @editors[1]\focus!
     window\show_all!
