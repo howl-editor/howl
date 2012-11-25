@@ -55,6 +55,7 @@ class BufferPopup extends Popup
     with sci
       \set_doc_pointer buffer.doc
       \set_style_bits 8
+      \set_code_page Scintilla.SC_CP_UTF8
       \set_hscroll_bar false
 
     style.register_sci sci, style.popup
