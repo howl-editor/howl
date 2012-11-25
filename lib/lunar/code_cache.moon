@@ -42,7 +42,7 @@ loader = (source_dir) ->
       return loadstring bc.bytecode
 
     f = assert loadfile source
-    bytecode = string.dump f, true
+    bytecode = string.dump f, false
     cache[rel_path] = :bytecode, modified_at: source.modified_at
     dirty = true
 
