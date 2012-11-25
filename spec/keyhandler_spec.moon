@@ -6,8 +6,12 @@ describe 'keyhandler', ->
 
     context 'for ordinary characters', ->
       it 'returns a table with the character, key name and key code string', ->
-        tr = keyhandler.translate_key character: 'A', key_name: 'A', key_code: 65
-        assert.same tr, { 'A', 'A', '65' }
+        tr = keyhandler.translate_key character: 'A', key_name: 'a', key_code: 65
+        assert.same tr, { 'A', 'a', '65' }
+
+      it 'skips the translation for key name if it is the same as for character', ->
+        tr = keyhandler.translate_key character: 'a', key_name: 'a', key_code: 65
+        assert.same tr, { 'a', '65' }
 
     context 'when character is missing', ->
       it 'returns a table with key name and key code string', ->
@@ -22,10 +26,10 @@ describe 'keyhandler', ->
     context 'with modifiers', ->
       it 'prepends a modifier string representation to all translations for ctrl and alt', ->
         tr = keyhandler.translate_key
-          character: 'a', key_name: 'a', key_code: 123,
+          character: 'A', key_name: 'a', key_code: 123,
           control: true, alt: true
         mods = 'ctrl_alt_'
-        assert.same tr, { mods .. 'a', mods .. 'a', mods .. '123' }
+        assert.same tr, { mods .. 'A', mods .. 'a', mods .. '123' }
 
       it 'emits the shift modifier if the character is known', ->
         tr = keyhandler.translate_key
@@ -52,14 +56,14 @@ describe 'keyhandler', ->
   describe 'process(editor, buffer, event)', ->
     context 'when firing the key-press signal', ->
       it 'passes the event, translations and editor', ->
-        event = character: 'A', key_name: 'A', key_code: 65
+        event = character: 'A', key_name: 'a', key_code: 65
         editor = buffer: keymap: {}
         signal_handler = Spy!
         signal.connect 'key-press', signal_handler
 
         status, ret = pcall keyhandler.process editor, event
         signal.disconnect 'key-press', signal_handler
-        assert.same { event, { 'A', 'A', '65' }, editor }, signal_handler.called_with
+        assert.same { event, { 'A', 'a', '65' }, editor }, signal_handler.called_with
 
       it 'returns early with true if the handler does', ->
         buffer = keymap: Spy!
@@ -88,11 +92,11 @@ describe 'keyhandler', ->
 
       it 'tries each translated key, and .on_unhandled in order for a given keymap', ->
         buffer = keymap: Spy!
-        keyhandler.process :buffer, { character: 'A', key_name: 'A', key_code: 65 }
-        assert.same buffer.keymap.reads, { 'A', 'A', '65', 'on_unhandled' }
+        keyhandler.process :buffer, { character: 'A', key_name: 'a', key_code: 65 }
+        assert.same buffer.keymap.reads, { 'A', 'a', '65', 'on_unhandled' }
 
       it 'searches the buffer keymap -> the mode keymap -> global keymap', ->
-        key_args = character: 'A', key_name: 'A', key_code: 65
+        key_args = character: 'A', key_name: 'a', key_code: 65
         buffer_map = Spy!
         mode_map = Spy!
         keyhandler.keymap = Spy!
@@ -111,9 +115,9 @@ describe 'keyhandler', ->
         it 'is called with the event and translations', ->
           on_unhandled = Spy!
           buffer = keymap: { :on_unhandled }
-          event = character: 'A', key_name: 'A', key_code: 65
+          event = character: 'A', key_name: 'a', key_code: 65
           keyhandler.process :buffer, event
-          assert.same on_unhandled.called_with, { event, { 'A', 'A', '65' } }
+          assert.same on_unhandled.called_with, { event, { 'A', 'a', '65' } }
 
         it 'any return is used as the handler', ->
           handler = Spy!
@@ -122,7 +126,7 @@ describe 'keyhandler', ->
           assert.is_true handler.called
 
       it 'skips any keymaps not present', ->
-        key_args = character: 'A', key_name: 'A', key_code: 65
+        key_args = character: 'A', key_name: 'a', key_code: 65
         keyhandler.keymap = Spy!
 
         buffer = {}
@@ -179,14 +183,14 @@ describe 'keyhandler', ->
 
   describe 'capture(function)', ->
     it 'causes <function> to be called exclusively with the next key event', ->
-      event = character: 'A', key_name: 'A', key_code: 65
+      event = character: 'A', key_name: 'a', key_code: 65
       thief = spy.new!
       handler = spy.new!
       keyhandler.capture thief
       editor = buffer: keymap: A: handler
       keyhandler.process editor, event
       assert.spy(handler).was_not.called!
-      assert.spy(thief).was.called_with(event, { 'A', 'A', '65' }, editor)
+      assert.spy(thief).was.called_with(event, { 'A', 'a', '65' }, editor)
 
     it '<function> continues to capture events as long as it returns false', ->
       ret = false

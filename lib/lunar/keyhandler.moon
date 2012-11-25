@@ -29,9 +29,12 @@ export translate_key = (event) ->
 
   translations = {}
   append translations, ctrl .. alt .. event.character if event.character
-  append translations, ctrl .. shift .. alt .. event.key_name if event.key_name
-  append translations, ctrl .. shift .. alt .. event.key_code
+
+  if event.key_name and event.key_name != event.character
+    append translations, ctrl .. shift .. alt .. event.key_name
+
   append translations, ctrl .. shift .. alt .. alternate if alternate
+  append translations, ctrl .. shift .. alt .. event.key_code
   translations
 
 find_handlers = (translations, event, keymaps) ->
@@ -55,6 +58,9 @@ process_capture = (event, translations, ...) ->
     status, ret = pcall capture_handler, event, translations, ...
     if not status or ret != false
       capture_handler = nil
+
+    _G.log.error ret unless status
+
     return true
 
 export dispatch = (event, keymaps, ...) ->
@@ -71,8 +77,7 @@ export dispatch = (event, keymaps, ...) ->
     else
       status, ret = pcall handler, ...
 
-    if not status
-      _G.log.error ret
+    _G.log.error ret unless status
 
     return true if not status or (status and ret != false)
 
