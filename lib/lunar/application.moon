@@ -64,8 +64,9 @@ class Application extends PropertyObject
 
   add_buffer: (buffer, show = true) =>
     append @_buffers, buffer
-    _G.editor.buffer = buffer if show
-    buffer
+    if show
+      _G.editor.buffer = buffer
+      _G.editor
 
   close_buffer: (buffer) =>
     @_buffers = [b for b in *@_buffers when b != buffer]
