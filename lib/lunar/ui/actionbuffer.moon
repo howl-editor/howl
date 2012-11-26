@@ -10,9 +10,7 @@ class ActionBuffer extends Buffer
     pos_after = super text, pos
 
     if style_name
-      style_num = style.number_for style_name, self
-      @sci\start_styling pos - 1, 0xff
-      @sci\set_styling pos_after - pos, style_num
+      @style pos, pos_after - 1, style_name
 
     pos_after
 
@@ -20,9 +18,11 @@ class ActionBuffer extends Buffer
     start_pos = @size
     super text
     if style_name
-      end_pos = @size
-      style_num = style.number_for style_name, self
-      @sci\start_styling start_pos, 0xff
-      @sci\set_styling end_pos - start_pos, style_num
+      @style start_pos + 1, @size, style_name
+
+  style: (start_pos, end_pos, style_name) =>
+    style_num = style.number_for style_name, self
+    @sci\start_styling start_pos - 1, 0xff
+    @sci\set_styling (end_pos + 1) - start_pos, style_num
 
 return ActionBuffer

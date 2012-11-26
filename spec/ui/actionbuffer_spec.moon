@@ -58,3 +58,12 @@ describe 'ActionBuffer', ->
       it 'styles the text with the default style if the style is unknown', ->
         buf\append 'again', 'what?'
         assert.equal style.at_pos(buf, buf.size - 1), 'default'
+
+  describe 'style(start_pos, end_pos, style)', ->
+    it 'applies <style> for inclusive the text range given', ->
+      buf.text = 'hello'
+      buf\style 2, 4, 'keyword'
+      assert.equal style.at_pos(buf, 1), 'unstyled'
+      assert.equal style.at_pos(buf, 2), 'keyword'
+      assert.equal style.at_pos(buf, 4), 'keyword'
+      assert.equal style.at_pos(buf, 5), 'unstyled'
