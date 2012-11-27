@@ -168,6 +168,26 @@ class Editor extends PropertyObject
 
       @cursor.column = @current_line.indentation + 1
 
+  comment: =>
+    prefix = @buffer.mode.short_comment_prefix
+    return unless prefix
+    lines = if @selection.empty
+      { @current_line }
+    else
+      @buffer.lines\for_text_range @selection.anchor, @cursor.pos
+
+    min_indent = math.huge
+    min_indent = math.min(min_indent, l.indentation) for l in *lines
+    prefix ..= ' '
+    current_column = @cursor.column
+
+    @buffer\as_one_undo ->
+      for line in *lines
+        new_text = line\sub(1, min_indent) .. prefix .. line\sub(min_indent + 1)
+        line.text = new_text
+
+      @cursor.column = current_column + #prefix unless current_column == 1
+
   delete_line: => @sci\line_delete!
   delete_to_end_of_line: => @sci\del_line_right!
   copy_line: => @sci\line_copy!
@@ -455,6 +475,7 @@ with config
 for cmd_spec in *{
   { 'editor:newline', 'Adds a new line at the current position', 'newline' }
   { 'editor:smart-newline', 'Adds a new line, and format as needed', 'smart_newline' }
+  { 'editor:comment', 'Comments the selection or current line', 'comment' }
   { 'editor:delete-line', 'Deletes the current line', 'delete_line' }
   { 'editor:delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line' }
   { 'editor:copy-line', 'Copies the current line to the clipboard', 'copy_line' }

@@ -4,9 +4,10 @@ import Buffer, config from lunar
 import Editor from lunar.ui
 
 describe 'Editor', ->
-  buffer = nil
+  local buffer, lines
   editor = Editor Buffer {}
   cursor = editor.cursor
+  selection = editor.selection
   window = Gtk.OffscreenWindow!
   window\add editor\to_gobject!
   window\show_all!
@@ -15,6 +16,7 @@ describe 'Editor', ->
 
   before_each ->
     buffer = Buffer {}
+    lines = buffer.lines
     editor.buffer = buffer
 
   it '.current_line is a shortcut for the current buffer line', ->
@@ -68,6 +70,47 @@ describe 'Editor', ->
         assert.equal called_with[1], buffer.mode
         assert.equal called_with[2], buffer.lines[2]
         assert.equal called_with[3], editor
+
+  describe 'comment support', ->
+    text = [[
+  line 1
+    line 2
+    line 3
+]]
+    before_each ->
+      buffer.text = text
+      selection\set 1, lines[3].start_pos
+
+    context 'when mode does not provide .short_comment_prefix', ->
+      it 'does nothing', ->
+        editor\comment!
+        assert.equal text, buffer.text
+
+    context 'when mode provides .short_comment_prefix', ->
+      before_each -> buffer.mode = short_comment_prefix: '--'
+
+      it 'it prefixes the selected lines with the prefix and a space, at the minimum indentation level', ->
+        editor\comment!
+        assert.equal [[
+  -- line 1
+  --   line 2
+    line 3
+]], buffer.text
+
+      it 'comments the current line if nothing is selected', ->
+        selection\remove!
+        cursor.pos = 1
+        editor\comment!
+        assert.equal [[
+  -- line 1
+    line 2
+    line 3
+]], buffer.text
+
+      it 'keeps the cursor position', ->
+        editor.selection.cursor = lines[2].start_pos + 2
+        editor\comment!
+        assert.equal 6, cursor.column
 
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->
     buffer.text = 'hello'
@@ -222,7 +265,7 @@ describe 'Editor', ->
       it 'indents the lines included in a selection if any', ->
         config.indent = 2
         buffer.text = 'hello\nselected\nworld!'
-        editor.selection\set 2, 10
+        selection\set 2, 10
         editor\indent!
         assert.equal buffer.text, '  hello\n  selected\nworld!'
 
@@ -238,7 +281,7 @@ describe 'Editor', ->
       it 'unindents the lines included in a selection if any', ->
         config.indent = 2
         buffer.text = '  hello\n  selected\nworld!'
-        editor.selection\set 4, 12
+        selection\set 4, 12
         editor\unindent!
         assert.equal buffer.text, 'hello\nselected\nworld!'
 
