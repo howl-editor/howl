@@ -20,17 +20,18 @@ option_completions = (options) ->
 
   options
 
-options_list_options = (options, def) ->
+options_list_options = (options, def, set_selection) ->
   selection = nil
   headers = { 'Option' }
   caption = def.name .. ': ' .. def.description .. '\n'
 
-  cur_val = config.get def.name
-  if cur_val
-    cur_val = tostring(cur_val)
-    for option in *options
-      if option == cur_val or type(option) == 'table' and option[1] == cur_val
-        selection = option
+  if set_selection
+    cur_val = config.get def.name
+    if cur_val
+      cur_val = tostring(cur_val)
+      for option in *options
+        if option == cur_val or type(option) == 'table' and option[1] == cur_val
+          selection = option
 
   if type(options[1]) == 'table'
     append headers, 'Description'
@@ -52,7 +53,7 @@ class VariableAssignmentInput
       options = def and def.options
       return {} if not options
       completions = option_completions options
-      list_options = options_list_options completions, def
+      list_options = options_list_options completions, def, not val
       matcher = Matcher(completions)
       return matcher(val or ''), list_options
 
