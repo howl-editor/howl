@@ -4,6 +4,8 @@ class MoonscriptMode
     @lexer = lunar.aux.ScintilluaLexer 'moon', lexer_file
     @completers = { 'same_buffer' }
 
+  short_comment_prefix: '--'
+
   after_newline: (line, editor) =>
     indent_patterns = {
       '[-=]>%s*$',
