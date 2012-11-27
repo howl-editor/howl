@@ -18,24 +18,44 @@ describe 'Selection', ->
     buffer.text = text
     selection.sci\set_empty_selection 0
 
-  it '.anchor returns the current position if nothing is selected', ->
-    cursor.pos = 3
-    assert.equal 3, selection.anchor
+  it 'set(anchor, pos) sets the anchor and cursor at the same time', ->
+    selection\set 1, 5
+    assert.equal selection.text, 'Line'
 
-  it '.anchor = <pos> sets the selection to the text range [pos..<cursor>)', ->
-    cursor.pos = 3
-    selection.anchor = 1
-    assert.equal selection.anchor, 1
-    assert.equal selection.text, 'Li'
+  describe '.anchor', ->
+    it 'returns the current position if nothing is selected', ->
+      cursor.pos = 3
+      assert.equal 3, selection.anchor
+
+    it 'returns the start position of the selection with a selection active', ->
+      selection\set 2, 5
+      assert.equal 2, selection.anchor
+
+    it 'setting it to <pos> sets the selection to the text range [pos..<cursor>)', ->
+      cursor.pos = 3
+      selection.anchor = 1
+      assert.equal selection.anchor, 1
+      assert.equal selection.text, 'Li'
+
+  describe '.cursor', ->
+    it 'returns the current position if nothing is selected', ->
+      cursor.pos = 3
+      assert.equal 3, selection.cursor
+
+    it 'returns the end position of the selection with a selection active', ->
+      selection\set 2, 5
+      assert.equal 5, selection.cursor
+
+    it 'setting it to <pos> sets the selection to the text range [<anchor>..<pos>)', ->
+      selection.anchor = 3
+      selection.cursor = 5
+      assert.equal 5, selection.cursor
+      assert.equal 'ne', selection.text
 
   it '.empty returns whether any selection exists', ->
     assert.is_true selection.empty
     selection\set 1, 3
     assert.is_false selection.empty
-
-  it 'set(anchor, pos) sets the anchor and cursor at the same time', ->
-    selection\set 1, 5
-    assert.equal selection.text, 'Line'
 
   describe '.persistent', ->
     it 'causes the selection to be extended with movement when true', ->

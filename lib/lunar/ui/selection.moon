@@ -13,6 +13,10 @@ class Selection extends PropertyObject
     get: => @sci\get_anchor! + 1
     set: (pos) => @sci\set_anchor pos - 1
 
+  @property cursor:
+    get: => @sci\get_current_pos! + 1
+    set: (pos) => @set @anchor, pos
+
   @property text:
     get: => if @empty then nil else @sci\get_sel_text!
     set: (text) =>
