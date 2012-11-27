@@ -62,16 +62,28 @@ BufferLines = (buffer, sci) ->
       :sci
 
       delete: (start_line, end_line) =>
-        -- zero based indexes below
         start_pos = sci\position_from_line(start_line - 1)
         end_pos = sci\position_from_line(end_line)
         @sci\delete_range start_pos, end_pos - start_pos
 
       range: (start_line, end_line) =>
+        s = math.min start_line, end_line
+        e = math.max start_line, end_line
         lines = {}
-        for line = start_line, end_line
+        for line = s, e
           append lines, self[line]
         lines
+
+      for_text_range: (start_pos, end_pos) =>
+        s = math.min start_pos, end_pos
+        e = math.max start_pos, end_pos
+        start_line = @at_pos s
+        return { start_line } if s == e
+        end_line = @at_pos e
+
+        start_line = start_line.next if start_line.end_pos == s
+        end_line = end_line.previous if end_line.start_pos == e
+        @range start_line.nr, end_line.nr
 
       at_pos: (pos) =>
         nr = @sci\line_from_position(pos - 1) + 1

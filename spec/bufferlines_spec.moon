@@ -138,12 +138,32 @@ describe 'BufferLines', ->
     line = lines\at_pos 6
     assert.equal line.text, 'two'
 
-  it 'range(start, end) returns a table with lines [start, end]', ->
-    lines = buffer('one\ntwo\nthree').lines
-    range = lines\range(1, 2)
-    assert.equal #range, 2
-    assert.equal range[1], lines[1]
-    assert.equal range[2], lines[2]
+  describe 'range(start, end)', ->
+    it 'returns a table with lines [start, end]', ->
+      lines = buffer('one\ntwo\nthree').lines
+      range = lines\range 1, 2
+      assert.same { lines[1], lines[2] }, range
+
+    it 'start can be greater than end', ->
+      lines = buffer('one\ntwo\nthree').lines
+      range = lines\range 2, 1
+      assert.same { lines[1], lines[2] }, range
+
+  describe 'for_text_range(start_pos, end_pos)', ->
+    it 'returns a table with lines between [start_pos, end_pos]', ->
+      lines = buffer('one\ntwo\nthree').lines
+      range = lines\for_text_range 2, 6
+      assert.same { lines[1], lines[2] }, range
+
+    it 'start_pos can be greater than end_pos', ->
+      lines = buffer('one\ntwo\nthree').lines
+      range = lines\for_text_range 6, 1
+      assert.same { lines[1], lines[2] }, range
+
+    it 'does not include lines only touched at the start or end positions', ->
+      lines = buffer('one\ntwo\nthree').lines
+      range = lines\for_text_range lines[1].end_pos, lines[3].start_pos
+      assert.same { lines[2] }, range
 
   describe 'append(text)', ->
     it 'append(text) appends <text> with the necessary newlines', ->
