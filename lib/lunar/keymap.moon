@@ -4,4 +4,5 @@ return {
   return: 'editor:smart-newline'
   alt_f11: 'toggle-fullscreen'
   ctrl_space: 'editor:complete'
+  ctrl_slash: 'editor:comment'
 }
