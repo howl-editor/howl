@@ -1,5 +1,6 @@
 state = ...
 base_map = bundle_load 'base_map.moon'
+import command from lunar
 
 cancel = (editor, mode = 'command') ->
   editor.selection.persistent = false
@@ -30,6 +31,7 @@ map = {
   i: (editor) ->
     editor.selection.persistent = false
     state.change_mode editor, 'insert'
+  ':': -> command.run!
 }
 
 setmetatable map, {
