@@ -71,7 +71,7 @@ describe 'Editor', ->
         assert.equal called_with[2], buffer.lines[2]
         assert.equal called_with[3], editor
 
-  describe 'comment support', ->
+  describe 'comment()', ->
     text = [[
   line 1
     line 2
@@ -89,7 +89,7 @@ describe 'Editor', ->
     context 'when mode provides .short_comment_prefix', ->
       before_each -> buffer.mode = short_comment_prefix: '--'
 
-      it 'it prefixes the selected lines with the prefix and a space, at the minimum indentation level', ->
+      it 'prefixes the selected lines with the prefix and a space, at the minimum indentation level', ->
         editor\comment!
         assert.equal [[
   -- line 1
@@ -111,6 +111,67 @@ describe 'Editor', ->
         editor.selection.cursor = lines[2].start_pos + 2
         editor\comment!
         assert.equal 6, cursor.column
+
+  describe 'uncomment()', ->
+    text = [[
+  -- line 1
+    -- -- line 2
+    line 3
+]]
+    before_each ->
+      buffer.text = text
+      selection\set 1, lines[3].start_pos
+
+    context 'when mode does not provide .short_comment_prefix', ->
+      it 'does nothing', ->
+        editor\comment!
+        assert.equal text, buffer.text
+
+    context 'when mode provides .short_comment_prefix', ->
+      before_each -> buffer.mode = short_comment_prefix: '--'
+
+      it 'removes the first instance of the comment prefix from each line', ->
+        editor\uncomment!
+        assert.equal [[
+  line 1
+    -- line 2
+    line 3
+]], buffer.text
+
+      it 'uncomments the current line if nothing is selected', ->
+        selection\remove!
+        cursor.line = 2
+        editor\uncomment!
+        assert.equal [[
+  -- line 1
+    -- line 2
+    line 3
+]], buffer.text
+
+      it 'keeps the cursor position', ->
+        editor.selection.cursor = lines[2].start_pos + 6
+        editor\uncomment!
+        assert.equal 4, cursor.column
+
+  describe 'toggle_comment()', ->
+    context 'when mode does not provide .short_comment_prefix', ->
+      it 'does nothing', ->
+        buffer.text = '-- foo'
+        editor\toggle_comment!
+        assert.equal '-- foo', buffer.text
+
+    context 'when mode provides .short_comment_prefix', ->
+      before_each -> buffer.mode = short_comment_prefix: '--'
+
+      it 'it uncomments if the first line starts with the comment prefix', ->
+        buffer.text = '  -- foo'
+        editor\toggle_comment!
+        assert.equal '  foo', buffer.text
+
+      it 'comments if the first line do no start with the comment prefix', ->
+        buffer.text = 'foo'
+        editor\toggle_comment!
+        assert.equal '-- foo', buffer.text
 
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->
     buffer.text = 'hello'

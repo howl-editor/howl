@@ -5,6 +5,12 @@ import style, highlight, theme, IndicatorBar, Cursor, Selection from lunar.ui
 import Searcher, CompletionPopup from lunar.ui
 
 editors = setmetatable {}, __mode: 'v'
+indicators = {}
+indicator_placements =
+  top_left: true
+  top_right: true
+  bottom_left: true
+  bottom_right: true
 
 apply_variable = (method, value) ->
   for e in *editors
@@ -14,12 +20,9 @@ apply_variable = (method, value) ->
 apply_property = (name, value) ->
   e[name] = value for e in *editors
 
-indicators = {}
-indicator_placements =
-  top_left: true
-  top_right: true
-  bottom_left: true
-  bottom_right: true
+short_comment_prefix = (buffer) ->
+  prefix = buffer.mode.short_comment_prefix
+  prefix and prefix .. ' ' or nil
 
 class Editor extends PropertyObject
 
@@ -151,6 +154,12 @@ class Editor extends PropertyObject
       width = flag and 4 + 4 * @sci\text_width(Scintilla.STYLE_LINENUMBER, '9') or 0
       @sci\set_margin_width_n 0, width
 
+  @property active_lines: get: =>
+    return if @selection.empty
+      { @current_line }
+    else
+      @buffer.lines\for_text_range @selection.anchor, @cursor.pos
+
   focus: => @sci\grab_focus!
   newline: => @sci\new_line!
 
@@ -168,25 +177,47 @@ class Editor extends PropertyObject
 
       @cursor.column = @current_line.indentation + 1
 
-  comment: =>
-    prefix = @buffer.mode.short_comment_prefix
-    return unless prefix
-    lines = if @selection.empty
-      { @current_line }
-    else
-      @buffer.lines\for_text_range @selection.anchor, @cursor.pos
+  transform_active_lines: (f) =>
+    lines = @active_lines
+    @buffer\as_one_undo -> f lines
 
-    min_indent = math.huge
-    min_indent = math.min(min_indent, l.indentation) for l in *lines
-    prefix ..= ' '
+  comment: =>
+    prefix = short_comment_prefix @buffer
+    return unless prefix
     current_column = @cursor.column
 
-    @buffer\as_one_undo ->
+    @transform_active_lines (lines) ->
+      min_indent = math.huge
+      min_indent = math.min(min_indent, l.indentation) for l in *lines
+
       for line in *lines
         new_text = line\sub(1, min_indent) .. prefix .. line\sub(min_indent + 1)
         line.text = new_text
 
       @cursor.column = current_column + #prefix unless current_column == 1
+
+  uncomment: =>
+    prefix = short_comment_prefix @buffer
+    return unless prefix
+    current_column = @cursor.column
+
+    @transform_active_lines (lines) ->
+      for line in *lines
+        start_pos, end_pos = line\find prefix, 1, true
+        if start_pos
+          new_text = line\sub(1, start_pos - 1) .. line\sub(end_pos + 1)
+          line.text = new_text
+
+      @cursor.column = math.max 1, current_column - #prefix
+
+  toggle_comment: =>
+    prefix = short_comment_prefix @buffer
+    return unless prefix
+
+    if @active_lines[1]\find prefix, 1, true
+      @uncomment!
+    else
+      @comment!
 
   delete_line: => @sci\line_delete!
   delete_to_end_of_line: => @sci\del_line_right!
@@ -476,6 +507,8 @@ for cmd_spec in *{
   { 'editor:newline', 'Adds a new line at the current position', 'newline' }
   { 'editor:smart-newline', 'Adds a new line, and format as needed', 'smart_newline' }
   { 'editor:comment', 'Comments the selection or current line', 'comment' }
+  { 'editor:uncomment', 'Uncomments the selection or current line', 'uncomment' }
+  { 'editor:toggle_comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
   { 'editor:delete-line', 'Deletes the current line', 'delete_line' }
   { 'editor:delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line' }
   { 'editor:copy-line', 'Copies the current line to the clipboard', 'copy_line' }
