@@ -1,3 +1,13 @@
+indent_patterns = {
+  '[-=]>%s*$',
+  '[{:=]%s*$',
+  { '^%s*if%s+', 'then' },
+  { '^%s*else%s*$', 'then' },
+  { '^%s*while%s+', 'then' },
+  { '^%s*unless%s+', 'then' },
+  'class%s+%a+',
+}
+
 class MoonscriptMode
   new: =>
     lexer_file = bundle_file 'moonscript_lexer.lua'
@@ -6,15 +16,13 @@ class MoonscriptMode
 
   short_comment_prefix: '--'
 
-  after_newline: (line, editor) =>
-    indent_patterns = {
-      '[-=]>%s*$',
-      '[{:=]%s*$',
-      { '^%s*if%s+', 'then' },
-      { '^%s*unless%s+', 'then' },
-      'class%s+%a+%s*$',
-    }
+  indent_for: (line, editor) =>
     prev_line = line.previous
+    while prev_line and prev_line.empty
+      prev_line = prev_line.previous
+
+    return unless prev_line
+
     for p in *indent_patterns
       negative = nil
       positive = p
@@ -25,8 +33,11 @@ class MoonscriptMode
 
       if prev_line\match positive
         if not negative or not prev_line\match negative
-          line\indent!
+          return '->'
 
+    nil
+
+  after_newline: (line, editor) =>
     if line\match '^%s*}%s*$'
       wanted_indent = line.indentation
       editor\unindent!

@@ -13,7 +13,7 @@ describe 'moonscript-mode', ->
   it 'handles .moon files', ->
     assert.equal mode.for_file(File 'test.moon'), m
 
-  describe '.after_newline()', ->
+  describe '.indent_for(line, editor)', ->
     buffer = Buffer m
     editor = Editor buffer
     lines = buffer.lines
@@ -27,6 +27,7 @@ describe 'moonscript-mode', ->
       'pending class declarations': {
         'class Frob',
         'class Frob  ',
+        'class Frob extends Bar ',
       }
       'hanging assignments': {
         'var = ',
@@ -38,6 +39,8 @@ describe 'moonscript-mode', ->
       },
       'open conditionals': {
         'if foo and bar',
+        'else',
+        'while foo',
         'unless bar',
       }
     }
@@ -54,24 +57,42 @@ describe 'moonscript-mode', ->
     }
 
     for desc in pairs indents
-      it 'indents after ' .. desc, ->
+      it 'returns "->" for a line after ' .. desc, ->
         for code in *indents[desc]
           buffer.text = code .. '\n'
           editor.cursor.line = 2
-          m\after_newline(buffer.lines[2], editor)
-          assert.equal 2, buffer.lines[2].indentation
+          assert.equal '->', m\indent_for(buffer.lines[2], editor)
+
+    it 'disregards empty lines above when determining indent', ->
+      for desc in pairs indents
+        for code in *indents[desc]
+          buffer.text = code .. '\n\n'
+          editor.cursor.line = 3
+          assert.equal '->', m\indent_for(buffer.lines[3], editor)
+
+    it 'does not disregard blank lines above when determining indent', ->
+      for desc in pairs indents
+        for code in *indents[desc]
+          buffer.text = code .. '\n  \n'
+          editor.cursor.line = 3
+          assert.is_nil m\indent_for(buffer.lines[3], editor)
 
     for desc in pairs non_indents
-      it 'does not indent after ' .. desc, ->
+      it 'returns nil (same indent) for a line after ' .. desc, ->
         for code in *non_indents[desc]
           buffer.text = code .. '\n'
           editor.cursor.line = 2
-          m\after_newline(buffer.lines[2], editor)
-          assert.equal 0, buffer.lines[2].indentation
+          assert.is_nil m\indent_for(buffer.lines[2], editor)
 
-    context 'when splitting brackets', ->
+  describe '.after_newline()', ->
+    buffer = Buffer m
+    editor = Editor buffer
+    lines = buffer.lines
+    config.set 'indent', 2, buffer
+
+    context 'splitting brackets', ->
       it 'moves the closing bracket to its own line', ->
-        buffer.text = '{\n}'
+        buffer.text = '{\n  }'
         editor.cursor.line = 2
         m\after_newline(buffer.lines[2], editor)
         assert.equal buffer.text, '{\n  \n}'
