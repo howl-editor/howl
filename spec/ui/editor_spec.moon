@@ -16,6 +16,7 @@ describe 'Editor', ->
 
   before_each ->
     buffer = Buffer {}
+    config.set 'indent', 2, buffer
     lines = buffer.lines
     editor.buffer = buffer
 
@@ -59,17 +60,32 @@ describe 'Editor', ->
       assert.equal editor.cursor.line, 2
       assert.equal editor.cursor.column, 3
 
+    context "when the buffer's mode provides an .indent_for", ->
+
+      it 'is called with (mode, current-line, editor)', ->
+        indent_for = spy.new!
+        buffer.mode = :indent_for
+        buffer.text = 'line'
+        cursor.pos = 3
+        editor\smart_newline!
+        assert.spy(indent_for).was.called_with buffer.mode, buffer.lines[2], editor
+
+      it 'the line is indented one level if the function returns "->"', ->
+        indent_for = spy.new -> '->'
+        buffer.mode = :indent_for
+        buffer.text = 'line'
+        cursor.pos = 3
+        editor\smart_newline!
+        assert.equal 'li\n  ne', buffer.text
+
     context "when the buffer's mode provides an .after_newline", ->
       it 'is called with (mode, current-line, editor)', ->
-        after_newline = Spy!
+        after_newline = spy.new!
         buffer.mode = :after_newline
         buffer.text = 'line'
         cursor.pos = 3
         editor\smart_newline!
-        called_with = after_newline.called_with
-        assert.equal called_with[1], buffer.mode
-        assert.equal called_with[2], buffer.lines[2]
-        assert.equal called_with[3], editor
+        assert.spy(after_newline).was.called_with buffer.mode, buffer.lines[2], editor
 
   describe 'comment()', ->
     text = [[

@@ -172,7 +172,12 @@ class Editor extends PropertyObject
       @newline!
       @current_line.indentation = indentation
 
-      if mode and mode.after_newline
+      if mode.indent_for
+        action = mode\indent_for @current_line, self
+        if action == '->'
+          @current_line.indentation += config.get 'indent', @buffer
+
+      if mode.after_newline
         mode\after_newline @current_line, self
 
       @cursor.column = @current_line.indentation + 1
