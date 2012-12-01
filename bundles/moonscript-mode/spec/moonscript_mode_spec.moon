@@ -13,11 +13,12 @@ describe 'moonscript-mode', ->
   it 'handles .moon files', ->
     assert.equal mode.for_file(File 'test.moon'), m
 
-  describe '.indent_for(line, editor)', ->
+  describe '.indent_for(line, indent_level, editor)', ->
     buffer = Buffer m
     editor = Editor buffer
     lines = buffer.lines
-    config.set 'indent', 2, buffer
+    indent_level = 2
+    config.set 'indent', indent_level, buffer
 
     indents = {
       'pending function definitions': {
@@ -57,32 +58,32 @@ describe 'moonscript-mode', ->
     }
 
     for desc in pairs indents
-      it 'returns "->" for a line after ' .. desc, ->
+      it 'returns a one leve indent for a line after ' .. desc, ->
         for code in *indents[desc]
           buffer.text = code .. '\n'
           editor.cursor.line = 2
-          assert.equal '->', m\indent_for(buffer.lines[2], editor)
+          assert.equal indent_level, m\indent_for(buffer.lines[2], indent_level, editor)
 
     it 'disregards empty lines above when determining indent', ->
       for desc in pairs indents
         for code in *indents[desc]
           buffer.text = code .. '\n\n'
           editor.cursor.line = 3
-          assert.equal '->', m\indent_for(buffer.lines[3], editor)
+          assert.equal indent_level, m\indent_for(buffer.lines[3], indent_level, editor)
 
     it 'does not disregard blank lines above when determining indent', ->
       for desc in pairs indents
         for code in *indents[desc]
           buffer.text = code .. '\n  \n'
           editor.cursor.line = 3
-          assert.is_nil m\indent_for(buffer.lines[3], editor)
+          assert.is_nil m\indent_for(buffer.lines[3], indent_level, editor)
 
     for desc in pairs non_indents
       it 'returns nil (same indent) for a line after ' .. desc, ->
         for code in *non_indents[desc]
           buffer.text = code .. '\n'
           editor.cursor.line = 2
-          assert.is_nil m\indent_for(buffer.lines[2], editor)
+          assert.is_nil m\indent_for(buffer.lines[2], indent_level, editor)
 
   describe '.after_newline()', ->
     buffer = Buffer m

@@ -171,16 +171,41 @@ class Editor extends PropertyObject
     @buffer\as_one_undo ->
       @newline!
       @current_line.indentation = indentation
-
-      if mode.indent_for
-        action = mode\indent_for @current_line, self
-        if action == '->'
-          @current_line.indentation += config.get 'indent', @buffer
+      @indent!
 
       if mode.after_newline
         mode\after_newline @current_line, self
 
       @cursor.column = @current_line.indentation + 1
+
+  shift_right: =>
+    if @selection.empty
+      column = @cursor.column
+      @current_line\indent!
+      @cursor.column = column + config.get 'indent', @buffer
+    else
+      @sci\tab!
+
+  shift_left: =>
+    if @selection.empty
+      column = @cursor.column
+      if @current_line.indentation > 0
+        @current_line\unindent!
+        @cursor.column = math.max(column - config.get('indent', @buffer), 0)
+    else
+      @sci\back_tab!
+
+  indent: =>
+    mode = @buffer.mode
+    return unless mode.indent_for
+    indent_level = config.get 'indent', @buffer
+
+    @transform_active_lines (lines) ->
+      for line in *lines
+        indent = mode\indent_for line, indent_level, self
+        line.indentation = indent if indent and indent != line.indentation
+
+      @cursor.column = @current_line.indentation + 1 if @cursor.column < @current_line.indentation
 
   transform_active_lines: (f) =>
     lines = @active_lines
@@ -231,23 +256,6 @@ class Editor extends PropertyObject
   insert: (text) => @sci\add_text #text, text
   tab: => @sci\tab!
   backspace: => @sci\delete_back!
-
-  indent: =>
-    if @selection.empty
-      column = @cursor.column
-      @current_line\indent!
-      @cursor.column = column + config.get 'indent', @buffer
-    else
-      @sci\tab!
-
-  unindent: =>
-    if @selection.empty
-      column = @cursor.column
-      if @current_line.indentation > 0
-        @current_line\unindent!
-        @cursor.column = math.max(column - config.get('indent', @buffer), 0)
-    else
-      @sci\back_tab!
 
   join_lines: =>
     @buffer\as_one_undo ->
@@ -520,8 +528,9 @@ for cmd_spec in *{
   { 'editor:paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
   { 'editor:tab', 'Simulates a tab key press', 'tab' }
   { 'editor:backspace', 'Simulates a backspace key press', 'backspace' }
+  { 'editor:shift_right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
+  { 'editor:shift_left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
   { 'editor:indent', 'Indents the selected lines, or the current line', 'indent' }
-  { 'editor:unindent', 'Unindents the selected lines, or the current line', 'unindent' }
   { 'editor:join-lines', 'Joins the current line with the line below', 'join_lines' }
   { 'editor:complete', 'Starts completion at cursor', 'complete' }
 }

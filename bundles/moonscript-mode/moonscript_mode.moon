@@ -16,7 +16,7 @@ class MoonscriptMode
 
   short_comment_prefix: '--'
 
-  indent_for: (line, editor) =>
+  indent_for: (line, indent_level, editor) =>
     prev_line = line.previous
     while prev_line and prev_line.empty
       prev_line = prev_line.previous
@@ -33,14 +33,14 @@ class MoonscriptMode
 
       if prev_line\match positive
         if not negative or not prev_line\match negative
-          return '->'
+          return prev_line.indentation + indent_level
 
     nil
 
   after_newline: (line, editor) =>
     if line\match '^%s*}%s*$'
       wanted_indent = line.indentation
-      editor\unindent!
+      editor\shift_left!
       new_line = editor.buffer.lines\insert line.nr, ''
       new_line.indentation = wanted_indent
 

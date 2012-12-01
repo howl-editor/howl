@@ -2,9 +2,7 @@ state = ...
 base_map = bundle_load 'base_map.moon'
 import apply, record, repeat_last from state
 import command, keyhandler from lunar
-
-_G = _G
-import math from _G
+import _G, math from _G
 
 map = setmetatable {}, __index: base_map
 setfenv 1, map
