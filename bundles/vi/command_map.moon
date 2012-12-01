@@ -21,12 +21,12 @@ to_insert = (editor) -> state.change_mode editor, 'insert'
 
 replace_char = (event, translations, editor) ->
   if event.character
-    apply editor, -> 
+    apply editor, ->
       editor.buffer\delete editor.cursor.pos, 1
       editor.buffer\insert event.character, editor.cursor.pos, 1
   else
     return false
-    
+
 name = 'VI'
 
 escape = (editor) ->
@@ -80,7 +80,7 @@ J = (editor) -> apply editor, -> editor\join_lines!
 
 o = (editor) -> apply editor, ->
   A editor
-  editor\smart_newline!
+  editor\newline_and_format!
 
 O = (editor) -> apply editor, ->
   current_indent = editor.current_line.indentation

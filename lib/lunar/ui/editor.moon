@@ -163,7 +163,7 @@ class Editor extends PropertyObject
   focus: => @sci\grab_focus!
   newline: => @sci\new_line!
 
-  smart_newline: =>
+  newline_and_format: =>
     cur_line = @current_line
     mode = @buffer.mode
     indentation = cur_line.indentation
@@ -510,7 +510,7 @@ with config
 -- Commands
 for cmd_spec in *{
   { 'editor:newline', 'Adds a new line at the current position', 'newline' }
-  { 'editor:smart-newline', 'Adds a new line, and format as needed', 'smart_newline' }
+  { 'editor:newline-and-format', 'Adds a new line, and formats as needed', 'newline_and_format' }
   { 'editor:comment', 'Comments the selection or current line', 'comment' }
   { 'editor:uncomment', 'Uncomments the selection or current line', 'uncomment' }
   { 'editor:toggle_comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }

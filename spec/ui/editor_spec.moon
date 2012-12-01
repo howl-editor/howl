@@ -39,24 +39,24 @@ describe 'Editor', ->
     editor\newline!
     assert.equal buffer.text, 'h\nello'
 
-  describe '.smart_newline()', ->
+  describe '.newline_and_format()', ->
     it 'adds a newline and sets the indentation to that of the previous line', ->
       buffer.text = '  line'
       cursor.pos = 7
-      editor\smart_newline!
+      editor\newline_and_format!
       assert.equal buffer.text, '  line\n  '
 
     it 'does the whole shebang as a one undo', ->
       buffer.text = '  line'
       cursor.pos = 7
-      editor\smart_newline!
+      editor\newline_and_format!
       editor.buffer\undo!
       assert.equal buffer.text, '  line'
 
     it 'positions the cursor at the end of the indentation', ->
       buffer.text = '  line'
       cursor.pos = 7
-      editor\smart_newline!
+      editor\newline_and_format!
       assert.equal editor.cursor.line, 2
       assert.equal editor.cursor.column, 3
 
@@ -67,7 +67,7 @@ describe 'Editor', ->
         buffer.mode = :indent_for
         buffer.text = 'line'
         cursor.pos = 3
-        editor\smart_newline!
+        editor\newline_and_format!
         assert.spy(indent_for).was.called_with buffer.mode, buffer.lines[2], editor
 
       it 'the line is indented one level if the function returns "->"', ->
@@ -75,7 +75,7 @@ describe 'Editor', ->
         buffer.mode = :indent_for
         buffer.text = 'line'
         cursor.pos = 3
-        editor\smart_newline!
+        editor\newline_and_format!
         assert.equal 'li\n  ne', buffer.text
 
     context "when the buffer's mode provides an .after_newline", ->
@@ -84,7 +84,7 @@ describe 'Editor', ->
         buffer.mode = :after_newline
         buffer.text = 'line'
         cursor.pos = 3
-        editor\smart_newline!
+        editor\newline_and_format!
         assert.spy(after_newline).was.called_with buffer.mode, buffer.lines[2], editor
 
   describe 'comment()', ->
