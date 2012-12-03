@@ -6,17 +6,17 @@ import tonumber from _G
 
 default_map = keyhandler.keymap
 
-cursor_home = (editor) -> apply editor, -> editor.cursor\home!
+cursor_home = (editor) -> apply editor, (editor) -> editor.cursor\home!
 
 forward_to_char = (event, translations, editor) ->
   if event.character
-    apply editor, -> editor\forward_to_match event.character
+    apply editor, (editor) -> editor\forward_to_match event.character
   else
     return false
 
 back_to_char = (event, translations, editor) ->
   if event.character
-    apply editor, -> editor\backward_to_match event.character
+    apply editor, (editor) -> editor\backward_to_match event.character
   else
     return false
 
@@ -27,13 +27,18 @@ export *
 
 cursor_properties = style: 'block'
 
-j = (editor) -> apply editor, -> editor.cursor\down!
-k = (editor) -> apply editor, -> editor.cursor\up!
-h = (editor) -> apply editor, -> editor.cursor\left!
-l = (editor) -> apply editor, -> editor.cursor\right!
-e = (editor) -> apply editor, -> editor.cursor\word_right_end!
-w = (editor) -> apply editor, -> editor.cursor\word_right!
-b = (editor) -> apply editor, -> editor.cursor\word_left!
+j = (editor) -> apply editor, (editor) -> editor.cursor\down!
+k = (editor) -> apply editor, (editor) -> editor.cursor\up!
+h = (editor) -> apply editor, (editor) -> editor.cursor\left!
+l = (editor) -> apply editor, (editor) -> editor.cursor\right!
+e = (editor) -> apply editor, (editor) -> editor.cursor\word_right_end!
+w = (editor) -> apply editor, (editor, _state) ->
+  if _state.change
+    editor.cursor\word_right_end!
+  else
+    editor.cursor\word_right!
+
+b = (editor) -> apply editor, (editor) -> editor.cursor\word_left!
 
 g = (editor) ->
   if state.go
@@ -52,7 +57,7 @@ F = (editor) -> keyhandler.capture back_to_char
 map['/'] = 'search-forward'
 n = 'repeat-search'
 
-map['$'] = (editor) -> apply editor, -> editor.cursor\line_end!
+map['$'] = (editor) -> apply editor, (editor) -> editor.cursor\line_end!
 
 on_unhandled = (event) ->
   char = event.character

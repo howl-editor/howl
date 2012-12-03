@@ -54,6 +54,19 @@ describe 'VI', ->
     press 'l'
     assert.equal 3, cursor.line
 
+  it '<w> moves one word to the right', ->
+    press 'w'
+    assert.equal 6, cursor.column
+    cursor\line_end!
+    press 'w'
+    assert.equal 3, cursor.line
+    assert.equal 1, cursor.column
+
+  it '<cw> deletes to the end of word and enters insert', ->
+    press 'c', 'w'
+    assert.equal ' two', editor.current_line.text
+    assert.equal 'insert', state.mode
+
   it '<r><character> replaces the current character with <character>', ->
     press 'r', 'F'
     assert.equal 'Fine two', lines[2].text

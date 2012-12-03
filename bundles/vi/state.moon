@@ -37,24 +37,24 @@ export change_mode = (editor, to, ...) ->
   map(editor, ...) if callable map
 
 export apply = (editor, f) ->
-  _delete, _change, _yank, _count = delete, change, yank, count
+  state = :delete, :change, :yank, :count
   op = (editor) -> editor.buffer\as_one_undo ->
     start_pos = editor.cursor.pos
-    for i = 1, count or 1 do f editor
-    if _delete or _change or _yank
+    for i = 1, count or 1 do f editor, state
+    if state.delete or state.change or state.yank
       cur_pos = editor.cursor.pos
       if start_pos != cur_pos
         with editor.selection
           \set cur_pos, start_pos
-          if _yank then \copy!
-          else if _delete then \cut!
-          else if _change then
+          if state.yank then \copy!
+          else if state.delete then \cut!
+          else if state.change then
             \cut!
             change_mode editor, 'insert'
     reset!
 
   op editor
-  last_op = op if _delete or _change
+  last_op = op if state.delete or state.change
 
 export record = (editor, op) ->
   op editor
