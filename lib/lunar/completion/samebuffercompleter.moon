@@ -2,7 +2,7 @@ parse = (buffer, line) ->
   line_pos = line.start_pos
   tokens = {}
 
-  for pos, token in buffer.text\gmatch '()([%a_][%w_]+)'
+  for pos, token in buffer.text\gmatch '()([%a_][%w_-]+)'
     rank = math.abs line_pos - pos
     info = tokens[token]
     rank = math.min info.rank, rank if info
