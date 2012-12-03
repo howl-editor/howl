@@ -34,16 +34,24 @@ describe 'moonscript-mode', ->
         'var = ',
         'var: ',
       }
-      'open table definitions': {
+      'open bracket statements': {
         'var = { ',
         'var = {',
+        'other: {',
+        'some(',
+        '{'
       },
       'open conditionals': {
         'if foo and bar',
         'else',
         'while foo',
         'unless bar',
+      },
+      'block statements': {
+        'switch foo!'
+        'do'
       }
+
     }
 
     non_indents = {
@@ -55,14 +63,21 @@ describe 'moonscript-mode', ->
         'foo! if bar',
         'foo! unless bar',
       }
+      'miscellaneous non-indenting statements': {
+        'foo = bar',
+        'foo = bar frob zed'
+        'foo = not bar(frob zed)'
+        'foo! unless bar',
+      }
     }
 
     for desc in pairs indents
-      it 'returns a one leve indent for a line after ' .. desc, ->
+      context 'returns a one level indent for a line after ' .. desc, ->
         for code in *indents[desc]
-          buffer.text = code .. '\n'
-          editor.cursor.line = 2
-          assert.equal indent_level, m\indent_for(buffer.lines[2], indent_level, editor)
+          it "e.g. '#{code}'", ->
+            buffer.text = code .. '\n'
+            editor.cursor.line = 2
+            assert.equal indent_level, m\indent_for(buffer.lines[2], indent_level, editor)
 
     it 'disregards empty lines above when determining indent', ->
       for desc in pairs indents
@@ -76,14 +91,15 @@ describe 'moonscript-mode', ->
         for code in *indents[desc]
           buffer.text = code .. '\n  \n'
           editor.cursor.line = 3
-          assert.is_nil m\indent_for(buffer.lines[3], indent_level, editor)
+          assert.equal 2, m\indent_for(buffer.lines[3], indent_level, editor)
 
     for desc in pairs non_indents
-      it 'returns nil (same indent) for a line after ' .. desc, ->
+      it 'returns the same indent for a line after ' .. desc, ->
         for code in *non_indents[desc]
-          buffer.text = code .. '\n'
-          editor.cursor.line = 2
-          assert.is_nil m\indent_for(buffer.lines[2], indent_level, editor)
+          it "e.g. '#{code}'", ->
+            buffer.text = "  #{code}\n"
+            editor.cursor.line = 2
+            assert.equal 2, m\indent_for(buffer.lines[2], indent_level, editor)
 
   describe '.after_newline()', ->
     buffer = Buffer m

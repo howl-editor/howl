@@ -1,10 +1,12 @@
 indent_patterns = {
   '[-=]>%s*$',
-  '[{:=]%s*$',
+  '[{([:=]%s*$',
   { '^%s*if%s+', 'then' },
   { '^%s*else%s*$', 'then' },
   { '^%s*while%s+', 'then' },
   { '^%s*unless%s+', 'then' },
+  { '^%s*switch%s+' },
+  { '^%s*do%s*' },
   'class%s+%a+',
 }
 
@@ -21,7 +23,7 @@ class MoonscriptMode
     while prev_line and prev_line.empty
       prev_line = prev_line.previous
 
-    return unless prev_line
+    return line.indentation unless prev_line
 
     for p in *indent_patterns
       negative = nil
@@ -35,7 +37,7 @@ class MoonscriptMode
         if not negative or not prev_line\match negative
           return prev_line.indentation + indent_level
 
-    nil
+    return prev_line.indentation
 
   after_newline: (line, editor) =>
     if line\match '^%s*}%s*$'
