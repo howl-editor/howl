@@ -1,5 +1,3 @@
-import signal from lunar
-
 values = {}
 local_values = setmetatable {}, __mode: 'k'
 defs = {}
@@ -25,7 +23,7 @@ broadcast = (name, value, is_local) ->
     for callback in *callbacks
       status, ret = pcall callback, name, value, is_local
       if not status
-        signal.emit 'error', 'Error invoking config watcher: ' .. ret
+        log.error 'Error invoking config watcher: ' .. ret
 
 get_def = (name) ->
   def = defs[name]

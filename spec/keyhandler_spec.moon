@@ -58,12 +58,12 @@ describe 'keyhandler', ->
       it 'passes the event, translations and editor', ->
         event = character: 'A', key_name: 'a', key_code: 65
         editor = buffer: keymap: {}
-        signal_handler = Spy!
+        signal_handler = spy.new!
         signal.connect 'key-press', signal_handler
 
         status, ret = pcall keyhandler.process editor, event
         signal.disconnect 'key-press', signal_handler
-        assert.same { event, { 'A', 'a', '65' }, editor }, signal_handler.called_with
+        assert.spy(signal_handler).was.called_with :event, :editor, translations: { 'A', 'a', '65' }
 
       it 'returns early with true if the handler does', ->
         buffer = keymap: Spy!

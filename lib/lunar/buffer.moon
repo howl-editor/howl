@@ -164,7 +164,7 @@ class Buffer extends PropertyObject
 
       @file.contents = @text
       @dirty = false
-      signal.emit 'buffer-saved', self
+      signal.emit 'buffer-saved', buffer: self
 
   as_one_undo: (f) =>
     @sci\begin_undo_action!
@@ -213,5 +213,12 @@ with config
     description: 'Whether trailing whitespace will be removed upon save'
     default: true
     type_of: 'boolean'
+
+-- Signals
+
+signal.register 'buffer-saved',
+  description: 'Signaled right after a buffer was saved',
+  parameters:
+    buffer: 'The buffer that was saved'
 
 return Buffer

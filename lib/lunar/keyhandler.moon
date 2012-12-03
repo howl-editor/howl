@@ -2,6 +2,16 @@ _G = _G
 import tostring, pcall, callable, type, append from _G
 import signal, command from lunar
 
+signal.register 'key-press',
+  description: [[Signaled whenever a key is pressed.
+If any handler returns true, the key press is considered to be handled, and any subsequent
+processing is skipped.
+]]
+  parameters:
+    editor: 'The editor for which the key press occured'
+    event: 'The event for the key press'
+    translations: 'A list of readable translations for the key event'
+
 _ENV = {}
 setfenv(1, _ENV) if setfenv
 
@@ -65,11 +75,8 @@ process_capture = (event, translations, ...) ->
 
 export dispatch = (event, keymaps, ...) ->
   translations = translate_key event
-
-  return true if process_capture event, translations, ...
-  return true if signal.emit 'key-press', event, translations, ...
-
   handlers = find_handlers translations, event, keymaps
+
   for handler in *handlers
     status, ret = true, true
     if type(handler) == 'string'
@@ -84,8 +91,12 @@ export dispatch = (event, keymaps, ...) ->
   false
 
 export process = (editor, event) ->
+  translations = translate_key event
   buffer = editor.buffer
   maps = { buffer.keymap, buffer.mode and buffer.mode.keymap, keymap }
+
+  return true if process_capture event, translations, editor
+  return true if signal.emit 'key-press', :event, :translations, :editor
 
   dispatch event, maps, editor
 

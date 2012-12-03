@@ -12,12 +12,12 @@ maps = {
 
 state.init maps, 'command'
 
-signal.connect 'editor-focused', (editor) -> state.change_mode editor, state.mode
-signal.connect 'editor-defocused', (editor) -> editor.indicator.vi.label = ''
-signal.connect 'after-buffer-switch', (editor) -> state.change_mode editor, 'command'
+signal.connect 'editor-focused', (args) -> state.change_mode args.editor, state.mode
+signal.connect 'editor-defocused', (args) -> args.editor.indicator.vi.label = ''
+signal.connect 'after-buffer-switch', (args) -> state.change_mode args.editor, 'command'
 
-signal.connect 'buffer-saved', (buffer) ->
-  if _G.editor.buffer == buffer
+signal.connect 'buffer-saved', (args) ->
+  if _G.editor.buffer == args.buffer
     state.change_mode _G.editor, 'command'
 
 info = {

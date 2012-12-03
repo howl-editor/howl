@@ -1,64 +1,88 @@
 import signal from lunar
 
 describe 'signal', ->
-  it 'allows name based signals to be broadcasted to any number of handlers', ->
-    handler1 = Spy!
-    handler2 = Spy!
-    signal.connect 'foo', handler1
-    signal.connect 'foo', handler2
-    signal.emit 'foo'
-    assert.is_true handler1.called
-    assert.is_true handler2.called
+  describe '.register(name, options)', ->
+    it 'raises an error if mandatory fields are missing', ->
+      assert.raises 'description', -> signal.register 'foo'
 
-  it 'allows connecting handlers before existing handlers', ->
-    value = nil
-    signal.connect 'foo', -> value = 'first'
-    signal.connect_first 'foo', -> value = 'second'
-    signal.emit 'foo'
-    assert.equal value, 'first'
+  it '.all contains all registered signals', ->
+    signal.register 'foo', description: 'bar'
+    assert.same description: 'bar', signal.all.foo
 
-  it 'allows disconnecting handlers', ->
-    handler = Spy!
-    signal.connect 'foo', handler
-    signal.disconnect 'foo', handler
-    signal.emit 'foo'
-    assert.is_false handler.called
+  describe '.unregister(name)', ->
+    it 'unregisters the specified signal', ->
+      signal.register 'frob', description: 'bar'
+      signal.unregister 'frob'
+      assert.is_nil signal.all.frob
 
-  describe '.emit', ->
-    context 'when a handler returns true', ->
-      it 'skips invoking subsequent handlers', ->
-        handler2 = Spy!
-        signal.connect 'foo', -> true
-        signal.connect 'foo', handler2
-        signal.emit 'foo'
-        assert.is_false handler2.called
+  context 'trying to use a non-registered signal', ->
+    it 'emit raises an error', ->
+      assert.raises 'none', -> signal.emit 'none'
 
-      it 'returns true', ->
-        signal.connect 'foo', -> true
-        assert.is_true signal.emit 'foo'
+    it 'connect raises an error', ->
+      assert.raises 'none', -> signal.connect 'none', -> true
 
-    context 'when a handler raises an error', ->
-      it 'emits an "error" signal', ->
-        err_handler = Spy!
-        signal.connect 'error', err_handler
-        signal.connect 'fubar', -> error 'BOOM'
-        signal.emit 'fubar'
-        assert.is_true err_handler.called
+    it 'connect_first raises an error', ->
+      assert.raises 'none', -> signal.connect_first 'none', -> true
 
-      it 'but it does not emit an "error" signal when processing "error" handlers', ->
-        invocations = 0
-        signal.connect 'error', ->
-          invocations += 1
-          error 'ERROR BOOM'
-        signal.emit 'error'
-        assert.equal invocations, 1
+  context 'with a registered signal', ->
+    before_each -> signal.register 'foo', description: 'bar'
+    after_each -> signal.unregister 'foo'
 
-      it 'continues processing subsequent handlers', ->
-        handler2 = Spy!
-        signal.connect 'fubar', -> error 'BOOM'
-        signal.connect 'fubar', handler2
-        signal.emit 'fubar'
-        assert.is_true handler2.called
+    it 'allows name based signals to be broadcasted to any number of handlers', ->
+      handler1 = spy.new!
+      handler2 = spy.new!
+      signal.connect 'foo', handler1
+      signal.connect 'foo', handler2
+      signal.emit 'foo'
+      assert.spy(handler1).was_called
+      assert.spy(handler2).was_called
 
-    it 'returns false if no handlers returned true', ->
-      assert.is_false signal.emit 'no-such-signal'
+    it 'allows connecting handlers before existing handlers', ->
+      value = nil
+      signal.connect 'foo', -> value = 'first'
+      signal.connect_first 'foo', -> value = 'second'
+      signal.emit 'foo'
+      assert.equal value, 'first'
+
+    it 'allows disconnecting handlers', ->
+      handler = spy.new!
+      signal.connect 'foo', handler
+      signal.disconnect 'foo', handler
+      signal.emit 'foo'
+      assert.spy(handler).was.not_called
+
+    describe '.emit', ->
+      it 'raises an error when called with more than two parameters', ->
+        assert.raises 'parameter', -> signal.emit 'foo', {}, 2
+
+      it 'raises an error when the second parameter is not a table', ->
+        assert.raises 'table', -> signal.emit 'foo', 2
+
+      context 'when a handler returns true', ->
+        it 'skips invoking subsequent handlers', ->
+          handler2 = spy.new!
+          signal.connect 'foo', -> true
+          signal.connect 'foo', handler2
+          signal.emit 'foo'
+          assert.spy(handler2).was.not_called
+
+        it 'returns true', ->
+          signal.connect 'foo', -> true
+          assert.is_true signal.emit 'foo'
+
+      context 'when a handler raises an error', ->
+        it 'logs an error message', ->
+          signal.connect 'foo', -> error 'BOOM'
+          signal.emit 'foo'
+          assert.match log.last_error.message, 'BOOM'
+
+        it 'continues processing subsequent handlers', ->
+          handler2 = spy.new!
+          signal.connect 'foo', -> error 'BOOM'
+          signal.connect 'foo', handler2
+          signal.emit 'foo'
+          assert.spy(handler2).was_called
+
+      it 'returns false if no handlers returned true', ->
+        assert.is_false signal.emit 'foo'

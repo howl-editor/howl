@@ -95,7 +95,7 @@ class Editor extends PropertyObject
   @property buffer:
     get: => @_buf
     set: (buffer) =>
-      signal.emit 'before-buffer-switch', self, @_buf, buffer
+      signal.emit 'before-buffer-switch', editor: self, current_buffer: @_buf, new_buffer: buffer
 
       if @_buf
         @_buf.properties.position = @cursor.pos
@@ -114,7 +114,7 @@ class Editor extends PropertyObject
       buffer\add_sci_ref @sci
 
       @cursor.pos = buffer.properties.position or 1
-      signal.emit 'after-buffer-switch', self, buffer, prev_buffer
+      signal.emit 'after-buffer-switch', editor: self, current_buffer: buffer, old_buffer: prev_buffer
 
   @property current_line: get: => @buffer.lines[@cursor.line]
   @property current_word: get: => @buffer\word_at @cursor.pos
@@ -383,7 +383,7 @@ class Editor extends PropertyObject
 
   _on_update_ui: =>
     @_update_position!
-    signal.emit 'editor-changed', self
+    signal.emit 'editor-changed', editor: self
 
   _update_position: =>
     pos = @cursor.line .. ':' .. @cursor.column
@@ -392,28 +392,36 @@ class Editor extends PropertyObject
   _on_focus: (args) =>
     _G.editor = self
     @cursor.pos = @cursor.pos -- this ensures cursor is visible
-    signal.emit 'editor-focused', self
+    signal.emit 'editor-focused', editor: self
 
   _on_focus_lost: (args) =>
     @remove_popup!
-    signal.emit 'editor-defocused', self
+    signal.emit 'editor-defocused', editor: self
 
   _on_char_added: (args) =>
-    handled = signal.emit 'char-added', self, args
+    signal_params = moon.copy args
+    signal_params.editor = self
+    handled = signal.emit 'character-added', signal_params
 
     if @popup
-      @popup.window\on_char_added self, args if @popup.window.on_char_added
+      @popup.window\on_char_added self, signal_params if @popup.window.on_char_added
     elseif not handled and #@current_word >= config.completion_popup_after
       @complete!
 
   _on_text_inserted: (args) =>
-    handled = signal.emit 'text-inserted', self, args
+    signal_params = moon.copy args
+    signal_params.editor = self
+    signal_params.lines_added = args.lines_affected
+    handled = signal.emit 'text-inserted', signal_params
 
     if @popup
-      @popup.window\on_text_inserted self, args if @popup.window.on_text_inserted
+      @popup.window\on_text_inserted self, signal_params if @popup.window.on_text_inserted
 
   _on_text_deleted: (args) =>
-    handled = signal.emit 'text-deleted', self, args
+    signal_params = moon.copy args
+    signal_params.editor = self
+    signal_params.lines_deleted = args.lines_affected
+    handled = signal.emit 'text-deleted', signal_params
 
     if @popup
       @popup.window\on_text_deleted self, args if @popup.window.on_text_deleted
@@ -538,5 +546,70 @@ for cmd_spec in *{
     name: cmd_spec[1]
     description: cmd_spec[2]
     handler: -> _G.editor[cmd_spec[3]] _G.editor
+
+-- signals
+
+signal.register 'editor-changed',
+  description: [[Signaled when the editor has been changed in some way.
+This could be the result of the text, or the styling of the text being changed,
+or it could also be that the selection or scroll position has changed.
+]]
+  parameters:
+    editor: 'The editor for which the change occurred'
+
+signal.register 'before-buffer-switch',
+  description: 'Signaled right before a buffer is set for an editor'
+  parameters:
+    editor: 'The editor for which the buffer is being set'
+    current_buffer: 'The current buffer for the editor'
+    new_buffer: 'The new buffer that will be set for the editor'
+
+signal.register 'after-buffer-switch',
+  description: 'Signaled right after a buffer has been set for an editor'
+  parameters:
+    editor: 'The editor for which the buffer was set'
+    current_buffer: 'The new buffer that was set for the editor'
+    old_buffer: 'The buffer that was previously set for the editor'
+
+signal.register 'editor-focused',
+  description: 'Signaled right after an editor has recieved focus'
+  parameters:
+    editor: 'The editor that recieved focus'
+
+signal.register 'editor-defocused',
+  description: 'Signaled right after an editor has lost focus'
+  parameters:
+    editor: 'The editor that lost focus'
+
+signal.register 'character-added',
+  description: 'Signaled when a character has been typed into an editor'
+  parameters:
+    editor: 'The editor that received the character'
+    key_code: 'The unique numeric code for the key pressed'
+    key_name: "A string representation of the key's name, if available"
+    character: 'A string representation of the key pressed, if available'
+    control: 'A boolean indicating whether the control key was held down'
+    shift: 'A boolean indicating whether the shift key was held down'
+    alt: 'A boolean indicating whether the alt key was held down'
+    super: 'A boolean indicating whether the super key was held down'
+    meta: 'A boolean indicating whether the meta key was held down'
+
+signal.register 'text-inserted',
+  description: 'Signaled right after text has been inserted into an editor'
+  parameters:
+    editor: 'The editor for which the text was inserted'
+    position: 'The start position of the inserted text'
+    length: 'The number of characters in the inserted text'
+    text: 'The text that was inserted'
+    lines_added: 'The number of lines that were added'
+
+signal.register 'text-deleted',
+  description: 'Signaled right after text was deleted from the editor'
+  parameters:
+    editor: 'The editor for which the text was inserted'
+    position: 'The start position of the deleted text'
+    length: 'The number of characters that was deleted'
+    text: 'The text that was deleted'
+    lines_deleted: 'The number of lines that were deleted'
 
 return Editor

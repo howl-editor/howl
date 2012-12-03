@@ -250,8 +250,6 @@ describe 'config', ->
         config.set 'trigger', 'value'
         assert.is_true callback.called
 
-      it 'an error is signaled', ->
-        handler = Spy!
-        signal.connect_first 'error', handler
+      it 'an error is logged', ->
         config.set 'trigger', 'value'
-        assert.is_true handler.called
+        assert.match log.last_error.message, 'watcher'
