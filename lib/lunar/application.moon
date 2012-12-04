@@ -92,6 +92,11 @@ class Application extends PropertyObject
     buffer\destroy!
 
   open_file: (file, editor = _G.editor) =>
+    for b in *@buffers
+      if b.file == file
+        editor.buffer = b
+        return b
+
     buffer = @new_buffer mode.for_file file
     status, err = pcall ->
       buffer.file = file

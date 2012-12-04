@@ -1,5 +1,6 @@
 import File from lunar.fs
-import Application, mode from lunar
+import Application, Buffer, mode from lunar
+import Editor from lunar.ui
 
 describe 'Application', ->
   local root_dir, application
@@ -23,6 +24,36 @@ describe 'Application', ->
     it 'registers the new buffer in .buffers', ->
       buffer = application\new_buffer!
       assert.same { buffer }, application.buffers
+
+  describe 'open_file(file, editor)', ->
+    editor = Editor Buffer {}
+
+    it 'opens the file in the specified editor if given', ->
+      with_tmpfile (file) ->
+        file.contents = 'well hello there'
+        application\open_file file, editor
+        assert.equal file.contents, editor.buffer.text
+
+    it 'returns the newly created buffer', ->
+      with_tmpfile (file) ->
+        buffer = application\open_file file, editor
+        assert.equal buffer, editor.buffer
+
+    it 'adds the buffer to @buffers', ->
+      with_tmpfile (file) ->
+        buffer = application\open_file file, editor
+        assert.same { buffer }, application.buffers
+
+    context 'when <file> is already open', ->
+      it 'switches to editor to the existing buffer instead of creating a new one', ->
+        with_tmpdir (dir) ->
+          a = dir / 'a.foo'
+          b = dir / 'b.foo'
+          buffer = application\open_file a, editor
+          application\open_file b, editor
+          application\open_file a, editor
+          assert.equal 2, #application.buffers
+          assert.equal buffer, editor.buffer
 
   it '.buffers are sorted by visibility status and last_shown', ->
     sci = {}
