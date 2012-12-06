@@ -67,6 +67,12 @@ describe 'VI', ->
     assert.equal 3, cursor.line
     assert.equal 1, cursor.column
 
+  it '<e> moves to the last character of the current word', ->
+    press 'e'
+    assert.equal 4, cursor.column
+    press 'e'
+    assert.equal 8, cursor.column
+
   it '<cw> deletes to the end of word and enters insert', ->
     press 'c', 'w'
     assert.equal ' two', editor.current_line.text
@@ -124,5 +130,5 @@ describe 'VI', ->
       it 'always includes the starting position in the selection', ->
         press 'h'
         assert.equal 'in', selection.text
-        press 'e'
-        assert.equal 'ne', selection.text
+        press 'w'
+        assert.equal 'ne ', selection.text

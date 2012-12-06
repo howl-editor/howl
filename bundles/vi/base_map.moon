@@ -31,7 +31,14 @@ j = (editor) -> apply editor, (editor) -> editor.cursor\down!
 k = (editor) -> apply editor, (editor) -> editor.cursor\up!
 h = (editor) -> apply editor, (editor) -> editor.cursor\left!
 l = (editor) -> apply editor, (editor) -> editor.cursor\right!
-e = (editor) -> apply editor, (editor) -> editor.cursor\word_right_end!
+
+e = (editor) -> apply editor, (editor) ->
+  with editor.cursor
+    current_pos = .pos
+    \word_right_end!
+    \word_right_end! if .pos == current_pos + 1
+    \left!
+
 w = (editor) -> apply editor, (editor, _state) ->
   if _state.change
     editor.cursor\word_right_end!
