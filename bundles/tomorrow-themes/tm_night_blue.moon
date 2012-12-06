@@ -1,6 +1,6 @@
 background = '#002451'
 current = '#00346e'
-selection = '#003f8e'
+selection = '#0066cc'
 foreground = '#ffffff'
 comment = '#7285b7'
 red = '#ff9da4'
