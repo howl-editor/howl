@@ -24,7 +24,9 @@ class Selection extends PropertyObject
       @sci\replace_sel text
 
   set: (anchor, cursor) => @sci\set_sel anchor - 1, cursor - 1
-  remove: => @sci\set_empty_selection @sci\get_current_pos!
+  remove: =>
+    @sci\set_empty_selection @sci\get_current_pos!
+    @persistent = false
 
   copy: =>
     @sci\copy!

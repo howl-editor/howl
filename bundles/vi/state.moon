@@ -40,7 +40,7 @@ export apply = (editor, f) ->
   state = :delete, :change, :yank, :count
   op = (editor) -> editor.buffer\as_one_undo ->
     start_pos = editor.cursor.pos
-    for i = 1, count or 1 do f editor, state
+    for i = 1, state.count or 1 do f editor, state
     if state.delete or state.change or state.yank
       cur_pos = editor.cursor.pos
       if start_pos != cur_pos
@@ -51,9 +51,9 @@ export apply = (editor, f) ->
           else if state.change then
             \cut!
             change_mode editor, 'insert'
-    reset!
 
   op editor
+  reset!
   last_op = op if state.delete or state.change
 
 export record = (editor, op) ->
@@ -63,6 +63,7 @@ export record = (editor, op) ->
 
 export repeat_last = (editor) ->
   if last_op then last_op editor
+  reset!
 
 export init = (keymaps, start_mode) ->
   maps = keymaps

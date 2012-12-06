@@ -16,6 +16,7 @@ describe 'VI', ->
   local buffer, lines
   editor = Editor Buffer {}
   cursor = editor.cursor
+  selection = editor.selection
   window = Gtk.OffscreenWindow!
   window\add editor\to_gobject!
   window\show_all!
@@ -26,7 +27,11 @@ describe 'VI', ->
     lines = buffer.lines
     editor.buffer = buffer
     cursor.line = 2
+    _G.editor = editor
+
+  after_each ->
     state.reset!
+    _G.editor = nil
 
   press = (...) ->
     for key in *{...}
@@ -92,3 +97,32 @@ describe 'VI', ->
         press 'i'
         press 'escape'
         assert.equal 1, cursor.column
+
+  context 'visual mode', ->
+    before_each ->
+      cursor.column = 3
+      press 'v'
+      assert.equal 'visual', state.mode
+
+    after_each -> press 'escape'
+
+    it 'escape leaves visual mode and enters command mode', ->
+      press 'escape'
+      assert.equal 'command', state.mode
+
+    it 'sets an persistent selection', ->
+      assert.is_true selection.persistent
+
+    context 'movement', ->
+      it 'ordinary movement extends the selection', ->
+        press 'l'
+        assert.is_false selection.empty
+        assert.equal 'n', selection.text
+        press 'j'
+        assert.equal 'ne two\nAnd', selection.text
+
+      it 'always includes the starting position in the selection', ->
+        press 'h'
+        assert.equal 'in', selection.text
+        press 'e'
+        assert.equal 'ne', selection.text
