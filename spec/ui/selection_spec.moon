@@ -20,7 +20,7 @@ describe 'Selection', ->
 
   it 'set(anchor, pos) sets the anchor and cursor at the same time', ->
     selection\set 1, 5
-    assert.equal selection.text, 'Line'
+    assert.equal 'Line', selection.text
 
   describe '.anchor', ->
     it 'returns the current position if nothing is selected', ->
@@ -34,8 +34,8 @@ describe 'Selection', ->
     it 'setting it to <pos> sets the selection to the text range [pos..<cursor>)', ->
       cursor.pos = 3
       selection.anchor = 1
-      assert.equal selection.anchor, 1
-      assert.equal selection.text, 'Li'
+      assert.equal 1, selection.anchor
+      assert.equal 'Li', selection.text
 
   describe '.cursor', ->
     it 'returns the current position if nothing is selected', ->
@@ -46,7 +46,6 @@ describe 'Selection', ->
       selection\set 2, 5
       assert.equal 5, selection.cursor
 
-    it 'setting it to <pos> sets the selection to the text range [<anchor>..<pos>)', ->
       selection.anchor = 3
       selection.cursor = 5
       assert.equal 5, selection.cursor
@@ -64,6 +63,17 @@ describe 'Selection', ->
       cursor\down!
       assert.equal 'Line 1 of text\n', selection.text
 
+  it 'range() returns the [start, stop) range of the selection in ascending order', ->
+    selection\set 2, 5
+    start, stop = selection\range!
+    assert.equal 2, start
+    assert.equal 5, stop
+
+    selection\set 5, 2
+    start, stop = selection\range!
+    assert.equal 2, start
+    assert.equal 5, stop
+
   describe 'remove', ->
     it 'removes the selection', ->
       selection\set 2, 5
@@ -73,18 +83,18 @@ describe 'Selection', ->
     it 'does not remove the selected text', ->
       selection\set 2, 5
       selection\remove!
-      assert.equal buffer.text, text
+      assert.equal text, buffer.text
 
     it 'does not change the cursor position', ->
       selection\set 2, 5
       selection\remove!
-      assert.equal cursor.pos, 5
+      assert.equal 5, cursor.pos
 
   describe 'cut', ->
     it 'removes the selected text', ->
       selection\set 1, 5
       selection\cut!
-      assert.equal buffer.lines[1].text, ' 1 of text'
+      assert.equal ' 1 of text', buffer.lines[1].text
 
     it 'removes the selection', ->
       selection\set 2, 5
@@ -96,6 +106,12 @@ describe 'Selection', ->
       selection.persistent = true
       selection\cut!
       assert.is_false selection.persistent
+
+    it 'places the contents on the clipboard, ready for pasting', ->
+      selection\set 1, 5
+      selection\cut!
+      editor\paste!
+      assert.equal 'Line 1 of text', buffer.lines[1].text
 
   describe 'copy', ->
     it 'removes the selection', ->
@@ -109,20 +125,63 @@ describe 'Selection', ->
       selection\copy!
       assert.is_false selection.persistent
 
+    it 'places the contents on the clipboard, ready for pasting', ->
+      selection\set 1, 5
+      selection\copy!
+      editor\paste!
+      assert.equal 'LineLine 1 of text', buffer.lines[1].text
+
   describe '.text', ->
     it 'returns nil if nothing is selected', ->
       assert.is_nil selection.text
 
     it 'returns the currently selected text when the selection is not empty', ->
       selection\set 1, 3
-      assert.equal selection.text, 'Li'
+      assert.equal 'Li', selection.text
 
     describe '.text = <text>', ->
       it 'replaces the selection with <text> and removes the selection', ->
         selection\set 1, 3
         selection.text = 'Shi'
-        assert.equal buffer.lines[1].text, 'Shine 1 of text'
+        assert.equal 'Shine 1 of text', buffer.lines[1].text
         assert.is_true selection.empty
 
       it 'raises an error if the selection is empty', ->
         assert.raises 'empty', -> selection.text = 'Yowser!'
+
+  describe 'when .includes_cursor is set to true', ->
+    before_each -> selection.includes_cursor = true
+    after_each -> selection.includes_cursor = false
+
+    it '.text includes the current character', ->
+      selection\set 1, 4
+      selection.includes_cursor = true
+      assert.equal 'Line', selection.text
+
+    it '.text = <text> replaces the current character as well', ->
+      selection\set 1, 2
+      selection.text = 'Shi'
+      assert.equal 'Shine 1 of text', buffer.lines[1].text
+
+    it 'range() includes the cursor position if needed', ->
+      selection\set 2, 5
+      start, stop = selection\range!
+      assert.equal 2, start
+      assert.equal 6, stop
+
+      selection\set 5, 2
+      start, stop = selection\range!
+      assert.equal 2, start
+      assert.equal 5, stop
+
+    it 'cut() removes the current character as well', ->
+      selection\set 1, 5
+      selection\cut!
+      assert.equal '1 of text', buffer.lines[1].text
+
+    it 'copy() copies the current character as well', ->
+      selection\set 1, 4
+      selection\copy!
+      cursor.column = 1
+      editor\paste!
+      assert.equal 'LineLine 1 of text', buffer.lines[1].text

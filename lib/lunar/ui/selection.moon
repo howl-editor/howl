@@ -2,12 +2,11 @@ import Scintilla from lunar
 import PropertyObject from lunar.aux.moon
 
 class Selection extends PropertyObject
-  new: (sci) =>
+  new: (@sci) =>
     super!
-    @sci = sci
 
   @property empty:
-    get: => @sci\get_selection_empty!
+    get: => @range! == nil
 
   @property anchor:
     get: => @sci\get_anchor! + 1
@@ -18,23 +17,53 @@ class Selection extends PropertyObject
     set: (pos) => @set @anchor, pos
 
   @property text:
-    get: => if @empty then nil else @sci\get_sel_text!
+    get: =>
+      if @empty then nil
+      else
+        start_pos, end_pos = @range!
+        @sci\get_text_range start_pos - 1, end_pos - 1
+
     set: (text) =>
-      error 'Cannot replace empty selection' if @empty
-      @sci\replace_sel text
+      error 'Cannot replace empty selection', 2 if @empty
+      start_pos, end_pos = @range!
+
+      with @sci
+        \set_target_start start_pos - 1
+        \set_target_end end_pos - 1
+        \replace_target -1, text
+
+  @property persistent:
+    get: => @persistent_anchor != nil
+    set: (state) =>
+      @persistent_anchor = state and @anchor or nil
 
   set: (anchor, cursor) => @sci\set_sel anchor - 1, cursor - 1
+
+  range: =>
+    cursor, anchor = @cursor, @anchor
+    return cursor, anchor if cursor < anchor
+    if cursor > anchor or (@persistent and @includes_cursor)
+      return anchor, cursor + 1 if @includes_cursor
+      return anchor, cursor
+
+    nil
+
   remove: =>
     @sci\set_empty_selection @sci\get_current_pos!
     @persistent = false
 
   copy: =>
-    @sci\copy!
+    start_pos, end_pos = @range!
+    return unless start_pos
+    @sci\copy_range start_pos - 1, end_pos - 1
     @persistent = false
-    self\remove!
+    @remove!
 
   cut: =>
-    @sci\cut!
+    start_pos, end_pos = @range!
+    return unless start_pos
+    @sci\copy_range start_pos - 1, end_pos - 1
+    @sci\delete_range start_pos - 1, end_pos - start_pos
     @persistent = false
 
 return Selection

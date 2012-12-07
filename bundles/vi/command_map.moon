@@ -64,7 +64,7 @@ d = (editor) ->
     lines = editor.buffer.lines
     start_pos = current_line.start_pos
     end_line = lines[current_line.nr + count]
-    end_pos = end_line and end_line.start_pos or #editor.buffer + 1
+    end_pos = end_line and end_line.start_pos - 1 or #editor.buffer + 1
 
     with editor.selection
       \set start_pos, end_pos

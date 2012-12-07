@@ -17,8 +17,12 @@ class Cursor extends PropertyObject
       if cur_style == Scintilla.CARETSTYLE_BLOCK then return 'block'
       elseif cur_style == Scintilla.CARETSTYLE_LINE then return 'line'
     set: (style) =>
-      if style == 'block' then @sci\set_caret_style Scintilla.CARETSTYLE_BLOCK
-      elseif style == 'line' then @sci\set_caret_style Scintilla.CARETSTYLE_LINE
+      if style == 'block'
+        @sci\set_caret_style Scintilla.CARETSTYLE_BLOCK
+        @selection.includes_cursor = true
+      elseif style == 'line'
+        @sci\set_caret_style Scintilla.CARETSTYLE_LINE
+        @selection.includes_cursor = false
       else error 'Invalid style ' .. style, 2
 
   @property pos:
@@ -45,6 +49,12 @@ class Cursor extends PropertyObject
     get: =>
       cur_pos = @pos
       @sci\get_line_end_position(@line - 1) == cur_pos - 1
+
+  _adjust_persistent_selection_if_needed: =>
+    return unless @selection.persistent and @selection.includes_cursor
+    selection_start = @selection.persistent_anchor
+    correct_anchor = @selection.cursor < selection_start and selection_start + 1 or selection_start
+    @selection.anchor = correct_anchor if @selection.anchor != correct_anchor
 
   key_commands = {
     down:             'line_down'
@@ -80,6 +90,7 @@ class Cursor extends PropertyObject
     self.__base[name] = (extend_selection) =>
       if extend_selection or @selection.persistent
         extended @sci
+        @_adjust_persistent_selection_if_needed!
       else
         plain @sci
 

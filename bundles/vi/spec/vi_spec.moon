@@ -123,12 +123,12 @@ describe 'VI', ->
       it 'ordinary movement extends the selection', ->
         press 'l'
         assert.is_false selection.empty
-        assert.equal 'n', selection.text
+        assert.equal 'ne', selection.text
         press 'j'
-        assert.equal 'ne two\nAnd', selection.text
+        assert.equal 'ne two\nAnd ', selection.text
 
       it 'always includes the starting position in the selection', ->
         press 'h'
         assert.equal 'in', selection.text
         press 'w'
-        assert.equal 'ne ', selection.text
+        assert.equal 'ne t', selection.text
