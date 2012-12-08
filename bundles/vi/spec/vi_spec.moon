@@ -91,6 +91,12 @@ describe 'VI', ->
     press 'd', 'd'
     assert.equal 'Line 1\nAnd third line\n', buffer.text
 
+    -- empty lines
+    buffer.text = '\n\n'
+    cursor.pos = 1
+    press 'd', 'd'
+    assert.equal '\n', buffer.text
+
   it '<d><w> deletes to the start of next word', ->
     press 'd', 'w'
     assert.equal 'two', editor.current_line.text
