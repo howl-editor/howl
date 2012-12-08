@@ -19,6 +19,20 @@ back_to_char = (event, translations, editor) ->
   else
     return false
 
+end_of_word = (cursor) ->
+  with cursor
+    current_pos = .pos
+    \word_right_end!
+    \word_right_end! if .pos == current_pos + 1
+    \left!
+
+before_next_word = (cursor) ->
+  with cursor
+    current_pos = .pos
+    \word_right!
+    \left!
+
+
 map = {}
 setfenv 1, map
 
@@ -31,16 +45,11 @@ k = (editor) -> apply editor, (editor) -> editor.cursor\up!
 h = (editor) -> apply editor, (editor) -> editor.cursor\left!
 l = (editor) -> apply editor, (editor) -> editor.cursor\right!
 
-e = (editor) -> apply editor, (editor) ->
-  with editor.cursor
-    current_pos = .pos
-    \word_right_end!
-    \word_right_end! if .pos == current_pos + 1
-    \left!
+e = (editor) -> apply editor, (editor) -> end_of_word editor.cursor
 
 w = (editor) -> apply editor, (editor, _state) ->
-  if _state.change
-    editor.cursor\word_right_end!
+  if _state.change then end_of_word editor.cursor
+  elseif _state.delete then before_next_word editor.cursor
   else
     editor.cursor\word_right!
 

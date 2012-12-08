@@ -77,20 +77,51 @@ describe 'VI', ->
     press '$'
     assert.equal #buffer.lines[2], cursor.column
 
-  it '<cw> deletes to the end of word and enters insert', ->
-    press 'c', 'w'
-    assert.equal ' two', editor.current_line.text
-    assert.equal 'insert', state.mode
-
   it '<r><character> replaces the current character with <character>', ->
     press 'r', 'F'
     assert.equal 'Fine two', lines[2].text
 
-  describe '<d><d>', ->
-    it 'removes the entire current line regardless of the current column', ->
-      cursor.column = 4
-      press 'd', 'd'
-      assert.equal 'Line 1\nAnd third line\n', buffer.text
+  it '<c><w> deletes to the end of word and enters insert', ->
+    press 'c', 'w'
+    assert.equal ' two', editor.current_line.text
+    assert.equal 'insert', state.mode
+
+  it '<d><d> removes the entire current line regardless of the current column', ->
+    cursor.column = 4
+    press 'd', 'd'
+    assert.equal 'Line 1\nAnd third line\n', buffer.text
+
+  it '<d><w> deletes to the start of next word', ->
+    press 'd', 'w'
+    assert.equal 'two', editor.current_line.text
+
+  describe 'movement with destructive modifiers', ->
+    for mod, check in pairs {
+      d: -> true
+      c: -> assert.equal 'insert', state.mode
+    }
+
+      it "<#{mod}><$> removes the line up until line break", ->
+        press mod, '$'
+        assert.equal 'Line 1\n\nAnd third line\n', buffer.text
+        check!
+
+      it "<#{mod}><0> removes back until start of line, not including current position", ->
+        cursor.column = 4
+        press mod, '0'
+        assert.equal 'e two', editor.current_line.text
+        check!
+
+      it "<#{mod}><e> removes the current word", ->
+        press mod, 'e'
+        assert.equal ' two', editor.current_line.text
+        check!
+
+      it "<#{mod}><b> removes the current word backwards, not including current position", ->
+        cursor.column = 4
+        press mod, 'b'
+        assert.equal 'e two', editor.current_line.text
+        check!
 
   context 'insert mode', ->
     before_each -> press 'i'
