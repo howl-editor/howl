@@ -1,8 +1,7 @@
 state = bundle_load 'state.moon'
 import apply from state
 import keyhandler from lunar
-_G = _G
-import tonumber from _G
+import math, tonumber, print, _G from _G
 
 default_map = keyhandler.keymap
 
@@ -64,7 +63,8 @@ F = (editor) -> keyhandler.capture back_to_char
 map['/'] = 'search-forward'
 n = 'repeat-search'
 
-map['$'] = (editor) -> apply editor, (editor) -> editor.cursor\line_end!
+map['$'] = (editor) -> apply editor, (editor) ->
+  editor.cursor.column = math.max(1, #editor.current_line)
 
 on_unhandled = (event) ->
   char = event.character

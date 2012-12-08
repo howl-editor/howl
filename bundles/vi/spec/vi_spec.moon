@@ -73,6 +73,10 @@ describe 'VI', ->
     press 'e'
     assert.equal 8, cursor.column
 
+  it '<$> moves to the last character of the current line', ->
+    press '$'
+    assert.equal #buffer.lines[2], cursor.column
+
   it '<cw> deletes to the end of word and enters insert', ->
     press 'c', 'w'
     assert.equal ' two', editor.current_line.text
