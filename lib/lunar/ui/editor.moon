@@ -90,6 +90,9 @@ class Editor extends PropertyObject
     @_set_appearance!
     append editors, self
 
+    signal.connect 'buffer-saved', (args) ->
+      @remove_popup! if @buffer == args.buffer
+
   to_gobject: => @bin
 
   @property buffer:
