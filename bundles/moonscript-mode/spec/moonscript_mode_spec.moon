@@ -44,12 +44,15 @@ describe 'moonscript-mode', ->
       'open conditionals': {
         'if foo and bar',
         'else',
+        'elseif (foo and bar) or frob',
+        'elseif true',
         'while foo',
         'unless bar',
       },
       'block statements': {
         'switch foo!'
-        'do'
+        'do',
+        'with some.object'
       }
 
     }

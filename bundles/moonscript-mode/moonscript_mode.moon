@@ -3,10 +3,12 @@ indent_patterns = {
   '[{([:=]%s*$',
   { '^%s*if%s+', 'then' },
   { '^%s*else%s*$', 'then' },
+  { '^%s*elseif%s+', 'then' },
   { '^%s*while%s+', 'then' },
   { '^%s*unless%s+', 'then' },
   { '^%s*switch%s+' },
   { '^%s*do%s*' },
+  { '^%s*with%s+' },
   'class%s+%a+',
 }
 
