@@ -44,15 +44,13 @@ export apply = (editor, f) ->
     start_pos = editor.cursor.pos
     for i = 1, state.count or 1 do f editor, state
     if state.delete or state.change or state.yank
-      cur_pos = editor.cursor.pos
-      if start_pos != cur_pos
-        with editor.selection
-          \set start_pos, cur_pos
-          if state.yank then \copy!
-          else if state.delete then \cut!
-          else if state.change then
-            \cut!
-            change_mode editor, 'insert'
+      with editor.selection
+        \set start_pos, editor.cursor.pos
+        if state.yank then \copy!
+        else if state.delete then \cut!
+        else if state.change
+          \cut!
+          change_mode editor, 'insert'
 
   op editor
   reset!

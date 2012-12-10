@@ -32,7 +32,6 @@ before_next_word = (cursor) ->
     \word_right!
     \left!
 
-
 map = {}
 setfenv 1, map
 
@@ -48,7 +47,7 @@ l = (editor) -> apply editor, (editor) -> editor.cursor\right!
 e = (editor) -> apply editor, (editor) -> end_of_word editor.cursor
 
 w = (editor) -> apply editor, (editor, _state) ->
-  if _state.change then end_of_word editor.cursor
+  if _state.change  or _state.yank then end_of_word editor.cursor
   elseif _state.delete then before_next_word editor.cursor
   else
     editor.cursor\word_right!

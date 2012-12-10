@@ -42,7 +42,8 @@ class Selection extends PropertyObject
   range: =>
     cursor, anchor = @cursor, @anchor
     return cursor, anchor if cursor < anchor
-    if cursor > anchor or (@persistent and @includes_cursor)
+    buffer_size = @sci\get_text_length!
+    if cursor > anchor or @includes_cursor and cursor <= buffer_size
       return anchor, cursor + 1 if @includes_cursor
       return anchor, cursor
 

@@ -185,3 +185,10 @@ describe 'Selection', ->
       cursor.column = 1
       editor\paste!
       assert.equal 'LineLine 1 of text', buffer.lines[1].text
+
+    it '.empty is only false at eof', ->
+      assert.is_false selection.empty
+      cursor\eof!
+      assert.is_true selection.empty
+      cursor\left!
+      assert.is_false selection.empty

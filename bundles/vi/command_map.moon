@@ -67,11 +67,8 @@ d = (editor) ->
     end_pos = end_line and end_line.start_pos - 1 or #editor.buffer + 1
 
     with editor.selection
-      -- need to set persistent for empty lines since that would be an empty selection otherwise
-      .persistent = true
       \set start_pos, end_pos
       \cut!
-      .persistent = false
 
 D = (editor) -> apply editor, (editor) -> editor\delete_to_end_of_line!
 

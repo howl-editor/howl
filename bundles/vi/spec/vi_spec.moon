@@ -101,6 +101,11 @@ describe 'VI', ->
     press 'd', 'w'
     assert.equal 'two', editor.current_line.text
 
+    buffer.text = 'a.word'
+    cursor.pos = 1
+    press 'd', 'w'
+    assert.equal '.word', buffer.text
+
   describe 'movement with destructive modifiers', ->
     for mod, check in pairs {
       d: -> true
