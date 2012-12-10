@@ -173,6 +173,7 @@ class Buffer extends PropertyObject
     error ret if not status
 
   undo: => @sci\undo!
+  redo: => @sci\redo!
 
   @property sci:
     get: =>

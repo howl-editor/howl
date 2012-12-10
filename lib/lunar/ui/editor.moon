@@ -314,6 +314,9 @@ class Editor extends PropertyObject
     if not completion.empty
       @show_popup completion, position: completion.position, persistent: true
 
+  undo: => @buffer\undo!
+  redo: => @buffer\redo!
+
   _set_appearance: =>
     @_set_theme_settings!
 
@@ -544,6 +547,8 @@ for cmd_spec in *{
   { 'editor:indent', 'Indents the selected lines, or the current line', 'indent' }
   { 'editor:join-lines', 'Joins the current line with the line below', 'join_lines' }
   { 'editor:complete', 'Starts completion at cursor', 'complete' }
+  { 'editor:undo', 'Undo last edit for the current editor', 'undo' }
+  { 'editor:redo', 'Redo last undo for the current editor', 'redo' }
 }
   command.register
     name: cmd_spec[1]
