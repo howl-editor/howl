@@ -100,7 +100,8 @@ P = (editor) -> apply editor, -> editor\paste!
 
 r = (editor) ->  keyhandler.capture replace_char
 
-u = (editor) -> editor.buffer\undo!
+u = 'editor:undo'
+ctrl_r = 'editor:redo'
 
 v = (editor) -> state.change_mode editor, 'visual'
 
