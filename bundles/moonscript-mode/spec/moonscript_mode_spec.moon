@@ -70,14 +70,18 @@ describe 'moonscript-mode', ->
         'foo = bar',
         'foo = bar frob zed'
         'foo = not bar(frob zed)'
-        'foo! unless bar',
+        'ado',
+        'fortwith bar'
+        'motif some'
+        'iffy!'
+        'dojo_style foo'
       }
     }
 
     for desc in pairs indents
       context 'returns a one level indent for a line after ' .. desc, ->
         for code in *indents[desc]
-          it "e.g. '#{code}'", ->
+          it "e.g. indents for '#{code}'", ->
             buffer.text = code .. '\n'
             editor.cursor.line = 2
             assert.equal indent_level, m\indent_for(buffer.lines[2], indent_level, editor)
@@ -97,9 +101,9 @@ describe 'moonscript-mode', ->
           assert.equal 2, m\indent_for(buffer.lines[3], indent_level, editor)
 
     for desc in pairs non_indents
-      it 'returns the same indent for a line after ' .. desc, ->
+      context 'returns the same indent for a line after ' .. desc, ->
         for code in *non_indents[desc]
-          it "e.g. '#{code}'", ->
+          it "e.g. does not indent for '#{code}'", ->
             buffer.text = "  #{code}\n"
             editor.cursor.line = 2
             assert.equal 2, m\indent_for(buffer.lines[2], indent_level, editor)

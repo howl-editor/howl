@@ -1,15 +1,18 @@
-indent_patterns = {
-  '[-=]>%s*$',
-  '[{([:=]%s*$',
-  { '^%s*if%s+', 'then' },
-  { '^%s*else%s*$', 'then' },
-  { '^%s*elseif%s+', 'then' },
-  { '^%s*while%s+', 'then' },
-  { '^%s*unless%s+', 'then' },
-  { '^%s*switch%s+' },
-  { '^%s*do%s*' },
-  { '^%s*with%s+' },
-  'class%s+%a+',
+lpeg = require 'lpeg'
+import lpegx from lunar
+import P, S, V from lpeg
+import space, eof from lpegx
+
+fdecl = S('-=') * '>' * space^0 * eof
+hanging_operators = S'([{:=' * space^0 * eof
+blocks = space^0 * P'class' + 'switch' + 'do' + 'with' * (eof + space)
+cond_keywords = P'elseif' + 'if' + 'else' + 'while' + 'unless'
+
+indent_pattern = P {
+  V('conditionals') + blocks + V('partial_matches')
+  partial_matches: hanging_operators + fdecl + (1 * V 'partial_matches')
+  conditionals: space^0 * cond_keywords * (eof + space * -V('then'))
+  then: space^1 * 'then' * space^1 + (1 * V 'then')
 }
 
 class MoonscriptMode
@@ -26,19 +29,7 @@ class MoonscriptMode
       prev_line = prev_line.previous
 
     return line.indentation unless prev_line
-
-    for p in *indent_patterns
-      negative = nil
-      positive = p
-
-      if type(p) == 'table'
-        positive = p[1]
-        negative = p[2]
-
-      if prev_line\match positive
-        if not negative or not prev_line\match negative
-          return prev_line.indentation + indent_level
-
+    return prev_line.indentation + indent_level if indent_pattern\match prev_line.text
     return prev_line.indentation
 
   after_newline: (line, editor) =>
