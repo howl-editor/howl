@@ -41,13 +41,17 @@ export apply = (editor, f) ->
   state.has_modifier = delete or change or yank
 
   op = (editor) -> editor.buffer\as_one_undo ->
-    start_pos = editor.cursor.pos
+    cursor = editor.cursor
+    start_pos = cursor.pos
     for i = 1, state.count or 1 do f editor, state
     if state.delete or state.change or state.yank
       with editor.selection
-        \set start_pos, editor.cursor.pos
-        if state.yank then \copy!
-        else if state.delete then \cut!
+        \set start_pos, cursor.pos
+        if state.yank
+          \copy!
+          cursor.pos = start_pos
+        else if state.delete
+          \cut!
         else if state.change
           \cut!
           change_mode editor, 'insert'
