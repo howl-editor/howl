@@ -173,7 +173,7 @@ run = (cmd_string = nil) ->
       else
         cmd_names = names!
         table.sort cmd_names
-        cmd_matcher = cmd_matcher or Matcher cmd_names, true, true, true
+        cmd_matcher = cmd_matcher or Matcher cmd_names
         return complete_available_commands text, cmd_matcher
 
   prompt = ':'

@@ -1,45 +1,58 @@
-match_score = (line, matchers) ->
-  score = 0
+lpeg = require 'lpeg'
+import P, V, S, Cp, Ct, Cc from lpeg
 
-  for matcher in *matchers
-    matcher_score = matcher line
-    if not matcher_score then return nil
-    score = score + matcher_score
+separator = S ' \t-_:/\\'
 
-  score
+match_pattern = (search) ->
+  fuzzy = Cc 'fuzzy'
+  boundary = Cc 'boundary'
+  exact = Cc('exact') * Cp! * P(search) * Cp!
 
-pattern_escapes = { c, '%' .. c for c in string.gmatch('^$()%.[]*+-?', '.') }
-
-fuzzy_search_pattern = (search) ->
-  pattern = ''
   for i = 1, #search do
-    c = search\sub(i, i)
-    c = pattern_escapes[c] or c
-    pattern = pattern .. c .. '.-'
+    c = P search\sub(i, i)
+    fuzzy *= (-c * P 1)^0 * Cp! * c
+    boundary_p = separator * c
+    boundary *= Cp! * c + (-boundary_p * P 1)^0 * Cp! * boundary_p
 
-  pattern
+  fuzzy *= Cp!
+  boundary *= Cp!
+
+  Ct P {
+    boundary + V('exact') + fuzzy
+    exact: exact + P(1) * V 'exact'
+  }
+
+do_match = (text, pattern, base_score) ->
+  match = pattern\match text
+  return nil unless match and #match > 0
+  start_pos = match[2]
+  end_pos = match[#match]
+  switch match[1]
+    when 'exact'
+      end_pos + base_score
+    when 'fuzzy'
+      (end_pos - start_pos) + base_score * 2
+    when 'boundary'
+      end_pos - start_pos
 
 class Matcher
-  new: (candidates, anywhere = true, case_insensitive = true, fuzzy = true) =>
+  new: (candidates) =>
     @candidates = candidates
-    @anywhere = anywhere
-    @case_insensitive = case_insensitive
-    @fuzzy = fuzzy
     @_load_candidates!
 
   __call: (search) =>
     return @candidates if not search or #search == 0
 
-    search = search\lower! if @case_insensitive
+    search = search\lower!
     matches = @cache.matches[search] or {}
     if #matches > 0 then return matches
 
     lines = @cache.lines[string.sub(search, 1, -2)] or @lines
-    matchers = @_matchers_for_search search
-
     matching_lines = {}
+    pattern = match_pattern search, @base_score
+
     for i, line in ipairs lines
-      score = match_score line.text, matchers
+      score = do_match line.text, pattern, @base_score
       if score then
         append matches, index: line.index, :score
         append matching_lines, line
@@ -56,34 +69,13 @@ class Matcher
 
     @cache = lines: {}, matches: {}
     @lines = {}
-    @fuzzy_score_penalty = 0
+    @base_score = 0
 
     for i, candidate in ipairs @candidates do
       text = candidate
       if type(candidate) == 'table' then text = table.concat candidate, ' '
-      if @case_insensitive then text = text\lower!
+      text = text\lower!
       append @lines, index: i, :text
-      @fuzzy_score_penalty = max @fuzzy_score_penalty, #text
-
-  _matchers_for_search: (search_string) =>
-    fuzzy = @fuzzy
-    fuzzy_penalty = @fuzzy_score_penalty
-
-    groups = [part for part in search_string\gmatch('%S+')]
-    matchers = {}
-
-    for search in *groups
-      fuzzy_pattern = fuzzy and fuzzy_search_pattern search
-      append matchers, (line) ->
-        start_pos, end_pos = line\find search, 1, true
-        score = start_pos
-        if not start_pos and fuzzy
-          start_pos, end_pos = line\find fuzzy_pattern
-          if start_pos then score = (end_pos - start_pos) + fuzzy_penalty
-
-        if score and (@anywhere or start_pos == 1)
-          return score + #line, start_pos, end_pos, search
-
-    return matchers
+      @base_score = max @base_score, #text
 
 return Matcher
