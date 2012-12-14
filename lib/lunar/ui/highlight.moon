@@ -1,6 +1,5 @@
 import Scintilla from lunar
-_G = _G
-import error, pairs, append from _G
+import _G, print, tostring, error, pairs, append from _G
 bit = require 'bit'
 
 highlights = {}
@@ -70,7 +69,7 @@ export define_default = (name, definition) ->
 export apply = (name, buffer, pos, length) ->
   num = number_for name, buffer
   with buffer.sci
-    \set_indicator_current number
+    \set_indicator_current num
     \indicator_fill_range pos - 1, length
 
 export set_for_buffer = (sci, buffer) ->
