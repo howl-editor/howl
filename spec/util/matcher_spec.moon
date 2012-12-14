@@ -37,3 +37,12 @@ describe 'Matcher', ->
     c = { 'Item 2. 1%w', 'Item 22 2a' }
     m = Matcher c
     assert.same { 'Item 2. 1%w' }, m('%w')
+
+  describe 'explain(search, text)', ->
+    it 'set .how to the type of match', ->
+      assert.equal 'exact', Matcher.explain('fu', 'snafu').how
+
+    it 'returns a list of positions indicating where search matched', ->
+      assert.same { how: 'exact', 4, 5 }, Matcher.explain 'fu', 'snafu'
+      assert.same { how: 'fuzzy', 2, 4, 6 }, Matcher.explain 'hit', 'christmas'
+      assert.same { how: 'boundary', 1, 4, 9, 10 }, Matcher.explain 'itso', 'is that so'

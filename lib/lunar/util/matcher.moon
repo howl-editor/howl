@@ -1,21 +1,18 @@
 lpeg = require 'lpeg'
-import P, V, S, Cp, Ct, Cc from lpeg
+import P, V, S, Cp, Ct, Cc, Cg from lpeg
 
 separator = S ' \t-_:/\\'
 
 match_pattern = (search) ->
-  fuzzy = Cc 'fuzzy'
-  boundary = Cc 'boundary'
-  exact = Cc('exact') * Cp! * P(search) * Cp!
+  fuzzy = Cg Cc('fuzzy'), 'how'
+  boundary = Cg Cc('boundary'), 'how'
+  exact = Cg(Cc('exact'), 'how') * Cp! * P(search)
 
   for i = 1, #search do
     c = P search\sub(i, i)
     fuzzy *= (-c * P 1)^0 * Cp! * c
-    boundary_p = separator * c
-    boundary *= Cp! * c + (-boundary_p * P 1)^0 * Cp! * boundary_p
-
-  fuzzy *= Cp!
-  boundary *= Cp!
+    boundary_p = separator * Cp! * c
+    boundary *= Cp! * c + (-boundary_p * P 1)^0 * boundary_p
 
   Ct P {
     boundary + V('exact') + fuzzy
@@ -24,12 +21,12 @@ match_pattern = (search) ->
 
 do_match = (text, pattern, base_score) ->
   match = pattern\match text
-  return nil unless match and #match > 0
-  start_pos = match[2]
+  return nil unless match
+  start_pos = match[1]
   end_pos = match[#match]
-  switch match[1]
+  switch match.how
     when 'exact'
-      end_pos + base_score
+      start_pos + base_score
     when 'fuzzy'
       (end_pos - start_pos) + base_score * 2
     when 'boundary'
@@ -49,7 +46,7 @@ class Matcher
 
     lines = @cache.lines[string.sub(search, 1, -2)] or @lines
     matching_lines = {}
-    pattern = match_pattern search, @base_score
+    pattern = match_pattern search
 
     for i, line in ipairs lines
       score = do_match line.text, pattern, @base_score
@@ -63,6 +60,14 @@ class Matcher
     matching_candidates = [@candidates[match.index] for match in *matches]
     @cache.matches[search] = matching_candidates
     matching_candidates
+
+  explain: (search, text) ->
+    pattern = match_pattern search
+    match = pattern\match text
+    return match unless match and match.how == 'exact'
+    for pos = match[1] + 1, match[1] + #search - 1
+      append match, pos
+    return match
 
   _load_candidates: =>
     max = math.max
