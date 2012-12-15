@@ -62,7 +62,7 @@ class Matcher
     matching_candidates
 
   explain: (search, text) ->
-    pattern = match_pattern search
+    pattern = match_pattern search\lower!
     match = pattern\match text
     return match unless match and match.how == 'exact'
     for pos = match[1] + 1, match[1] + #search - 1

@@ -46,3 +46,6 @@ describe 'Matcher', ->
       assert.same { how: 'exact', 4, 5 }, Matcher.explain 'fu', 'snafu'
       assert.same { how: 'fuzzy', 2, 4, 6 }, Matcher.explain 'hit', 'christmas'
       assert.same { how: 'boundary', 1, 4, 9, 10 }, Matcher.explain 'itso', 'is that so'
+
+    it 'lower-cases the search just as for matching', ->
+      assert.not_nil Matcher.explain 'FU', 'snafu'

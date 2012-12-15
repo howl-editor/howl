@@ -1,8 +1,10 @@
 import PropertyObject from lunar.aux.moon
 import style, highlight from lunar.ui
+import Matcher from lunar.util
 
-style.define 'list_header', color: '#5E5E5E', underline: true
-style.define 'list_caption', {}
+style.define_default 'list_header', color: '#5E5E5E', underline: true
+style.define_default 'list_caption', {}
+style.define_default 'list_highlight', color: '#ffffff', underline: true
 
 highlight.define_default 'list_selection', {
   style: highlight.ROUNDBOX,
@@ -191,13 +193,23 @@ class List extends PropertyObject
     for row = @offset, @last_shown
       item = @items[row]
       start_pos = pos
+      text = ''
       if @_multi_column
         for column, field in ipairs item
           padding = column_padding field, column, @_widths
           pos = buffer\insert tostring(field), pos, @_column_style item, row, column
           pos = buffer\insert padding, pos
+          text ..= tostring(field) .. padding
       else
-        pos = buffer\insert tostring(item), pos, @_column_style item, row, 1
+        text = tostring(item)
+        pos = buffer\insert text, pos, @_column_style item, row, 1
+
+      if @highlight_matches_for
+        positions = Matcher.explain @highlight_matches_for, text
+        if positions
+          for hl_pos in *positions
+            p = start_pos + hl_pos - 1
+            @buffer\style p, p, 'list_highlight'
 
       if @selection_enabled
         extra_spaces = total_length - (pos - start_pos)

@@ -151,14 +151,16 @@ get = (name) -> commands[name]
 
 names = -> [name for name in pairs commands]
 
-complete_available_commands = (text, matcher) ->
+command_completer = ->
   completion_options = list: headers: { 'Command', 'Description' }
-  candidates = matcher text
-  completions = [{name, commands[name].description} for name in *candidates]
-  return completions, completion_options
+  cmd_names = names!
+  table.sort cmd_names
+  items = [{name, commands[name].description} for name in *cmd_names]
+  matcher = Matcher items
+  (text) -> matcher(text), completion_options
 
 run = (cmd_string = nil) ->
-  cmd_matcher = nil
+  cmd_completer = nil
   state = State!
 
   cmd_input =
@@ -171,10 +173,8 @@ run = (cmd_string = nil) ->
       if state.cmd
         return state\complete(text, readline)
       else
-        cmd_names = names!
-        table.sort cmd_names
-        cmd_matcher = cmd_matcher or Matcher cmd_names
-        return complete_available_commands text, cmd_matcher
+        cmd_completer or= command_completer!
+        cmd_completer text
 
   prompt = ':'
   text = nil
@@ -198,6 +198,6 @@ run = (cmd_string = nil) ->
 
   window.readline.text = text if text
 
-return setmetatable { :register, :unregister, :alias, :run, :names, :get}, {
+return setmetatable { :register, :unregister, :alias, :run, :names, :get }, {
   __index: (key) => commands[key] or accessible_names[key]
 }
