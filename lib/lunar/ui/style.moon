@@ -11,7 +11,7 @@ default_style_numbers =
   preproc: 9
   constant: 10
   variable: 11
-  ['function']: 12
+  'function': 12
   class: 13
   type: 14
   longstring: 15
@@ -91,6 +91,9 @@ define = (name, attributes) ->
       if styles[name]
         set_style sci, styles[name], style for sci in *buffer.scis when sci
 
+define_default = (name, attributes) ->
+  define name, attributes unless styles[name]
+
 next_style_number = (from_num, buffer) ->
   num = from_num + 1
   if num == PREDEF_START then return PREDEF_END + 1
@@ -131,5 +134,6 @@ return setmetatable {
   :register_sci
   :set_for_buffer
   :define
+  :define_default
   :at_pos
 }, __index: styles

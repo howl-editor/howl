@@ -7,7 +7,7 @@ describe 'style', ->
     style.set_for_theme t
     assert.equal style.default.color, t.styles.default.color
 
-  describe '.define_style(name, style)', ->
+  describe '.define(name, definition)', ->
     it 'allows defining custom styles', ->
       style.define 'custom', color: '#334455'
       assert.equal style.custom.color, '#334455'
@@ -30,6 +30,14 @@ describe 'style', ->
 
       custom_fore = sci\style_get_fore custom_number
       assert.equal custom_fore, '#776655'
+
+  describe 'define_default(name, definition)', ->
+    it 'defines the style only if it is not already defined', ->
+      style.define_default 'preset', color: '#334455'
+      assert.equal style.preset.color, '#334455'
+
+      style.define_default 'preset', color: '#667788'
+      assert.equal style.preset.color, '#334455'
 
   describe '.number_for(name, buffer)', ->
     it 'returns the assigned style number for name in sci', ->
