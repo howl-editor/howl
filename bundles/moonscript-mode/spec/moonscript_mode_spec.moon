@@ -52,9 +52,9 @@ describe 'moonscript-mode', ->
       'block statements': {
         'switch foo!'
         'do',
+        'for i = 1,10'
         'with some.object'
       }
-
     }
 
     non_indents = {

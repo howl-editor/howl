@@ -5,7 +5,7 @@ import space, eof from lpegx
 
 fdecl = S('-=') * '>' * space^0 * eof
 hanging_operators = S'([{:=' * space^0 * eof
-blocks = space^0 * P'class' + 'switch' + 'do' + 'with' * (eof + space)
+blocks = space^0 * (P'class' + 'switch' + 'do' + 'with' + 'for') * (eof + space^1)
 cond_keywords = P'elseif' + 'if' + 'else' + 'while' + 'unless'
 
 indent_pattern = P {
