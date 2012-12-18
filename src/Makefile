@@ -63,12 +63,6 @@ $(LUAJIT):
 $(LUAJIT_ARCHIVE): $(LUAJIT)
 	  cd ${LUAJIT} && $(MAKE) XCFLAGS=-DLUAJIT_ENABLE_LUA52COMPAT
 
-$(LFS):
-	  wget -q -O - $(LFS_URL) | tar xzf - -C deps
-
-$(LFS_OBJECT): $(LFS)
-	  cd ${LFS} && $(MAKE) LUA_INC=../../$(LUAJIT)/src
-
 $(LGI):
 	  wget -q -O - $(LGI_URL) | tar xzf - -C deps
 
@@ -76,7 +70,10 @@ $(LGI_ARCHIVE): $(LGI)
 	  cd ${LGI}/lgi && $(MAKE) LUA_CFLAGS=$(LUAJIT_CFLAGS)
 	  ar rs $(LGI_ARCHIVE) ${LGI}/lgi/*.o
 
-deps: scintilla-build luajit-build lpeg-build scintillua-build $(LFS_OBJECT)
+deps: scintilla-build luajit-build lpeg-build scintillua-build
+
+deps-purge: 
+	rm -rf $(LGI) $(LUAJIT) $(LPEG) $(SCINTILLA)
 
 clean:
 	  -rm -f ${OBJECTS}
