@@ -24,13 +24,14 @@ do_match = (text, pattern, base_score) ->
   return nil unless match
   start_pos = match[1]
   end_pos = match[#match]
+  len = #text
   switch match.how
     when 'exact'
-      start_pos + base_score
+      len + (start_pos + base_score)
     when 'fuzzy'
-      (end_pos - start_pos) + base_score * 2
+      len + (end_pos - start_pos) + base_score * 2
     when 'boundary'
-      end_pos - start_pos
+      len + (end_pos - start_pos)
 
 class Matcher
   new: (candidates) =>
@@ -63,7 +64,7 @@ class Matcher
 
   explain: (search, text) ->
     pattern = match_pattern search\lower!
-    match = pattern\match text
+    match = pattern\match text\lower!
     return match unless match and match.how == 'exact'
     for pos = match[1] + 1, match[1] + #search - 1
       append match, pos
@@ -74,13 +75,15 @@ class Matcher
 
     @cache = lines: {}, matches: {}
     @lines = {}
-    @base_score = 0
+    max_len = 0
 
     for i, candidate in ipairs @candidates do
       text = candidate
       if type(candidate) == 'table' then text = table.concat candidate, ' '
       text = text\lower!
       append @lines, index: i, :text
-      @base_score = max @base_score, #text
+      max_len = max max_len, #text
+
+    @base_score = max_len * 3
 
 return Matcher

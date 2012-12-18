@@ -24,6 +24,15 @@ describe 'Matcher', ->
       'Two items to bind them tight'
     }, m('ni')
 
+  it 'prefers shorter matching candidates over longer ones', ->
+    c = { 'src/tools.sh', 'TODO' }
+    m = Matcher c
+    assert.same {
+      'TODO',
+      'src/tools.sh'
+    }, m('to')
+
+
   it 'prefers tighter matches to longer ones', ->
     c = { 'aa bb cc dd', 'zzzzzzzzzzzzzzz ad' }
 
@@ -47,5 +56,6 @@ describe 'Matcher', ->
       assert.same { how: 'fuzzy', 2, 4, 6 }, Matcher.explain 'hit', 'christmas'
       assert.same { how: 'boundary', 1, 4, 9, 10 }, Matcher.explain 'itso', 'is that so'
 
-    it 'lower-cases the search just as for matching', ->
+    it 'lower-cases the search and text just as for matching', ->
       assert.not_nil Matcher.explain 'FU', 'snafu'
+      assert.not_nil Matcher.explain 'fu', 'SNAFU'
