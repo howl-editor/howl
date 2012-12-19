@@ -17,7 +17,7 @@ return {
   window:
     background: 'dark_back.png'
     status:
-      font: name: font, size: 13, bold: true, italic: true
+      font: name: font, size: 12, bold: true, italic: true
       color: grey
 
       info: color: blue
@@ -36,23 +36,23 @@ return {
           from(#000022),to(#003080))
         ]]
       color: blue
-      font: name: font, size: 14, bold: true
+      font: name: font, size: 13, bold: true
 
     footer:
       background: '#002471'
       color: blue
-      font: name: font, size: 14, bold: true
+      font: name: font, size: 13, bold: true
 
     indicators:
       title:
         font: name: font, size: 13, bold: true, italic: true
 
       position:
-        font: name: font, size: 13
+        font: name: font, size: 12
 
       vi:
         color: purple
-        font: name: font, size: 13, bold: true
+        font: name: font, size: 12, bold: true
 
     caret:
       color: lightgray
@@ -79,12 +79,12 @@ return {
     default:
       :background
       color: foreground
-      font: name: '!Liberation Mono', size: 14, bold: true
+      font: name: '!Liberation Mono', size: 13, bold: true
 
     popup:
       background: '#00346e'
       color: foreground
-      font: name: '!Liberation Mono', size: 14, bold: true
+      font: name: '!Liberation Mono', size: 13, bold: true
 
     comment:
       font: italic: true
