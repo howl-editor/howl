@@ -54,6 +54,7 @@ describe 'moonscript-mode', ->
         'do',
         'for i = 1,10'
         'with some.object'
+        'when conditional'
       }
     }
 
