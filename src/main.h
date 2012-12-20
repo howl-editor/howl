@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include <glib.h>
+#include <gtk/gtk.h>
 
 #include <lua.h>
 #include <lauxlib.h>
