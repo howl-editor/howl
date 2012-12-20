@@ -42,6 +42,14 @@ class Readline extends PropertyObject
     @seen_interaction = false
     @_complete!
 
+  notify: (text, style) =>
+    @notification\delete! if @notification
+    start_pos = @completion_list and @completion_list.end_pos or 1
+    text ..= '\n' unless text\match '[\n\r]$'
+    @buffer\insert text, start_pos, style
+    @notification = @buffer\chunk start_pos, #text
+    @_adjust_height!
+
   to_gobject: => @bin
 
   @property prompt:
@@ -62,7 +70,7 @@ class Readline extends PropertyObject
   _at_start: => @cursor.column <= #@prompt + 1
 
   _complete: (force) =>
-    @_remove_completions!
+    @_show_only_cmd_line!
     text = @text
     return if @completion_unwanted
     config_says_complete = config.complete == 'always'
@@ -86,11 +94,16 @@ class Readline extends PropertyObject
   _adjust_height: =>
     @gsci.height = @sci\text_height(0) * #@buffer.lines
 
-  _remove_completions: =>
+  _show_only_cmd_line: =>
+    if @notification
+      @notification\delete!
+      @notification = nil
+
     if @completion_list
       @completion_list\clear!
-      @_adjust_height!
       @completion_list = nil
+
+    @_adjust_height!
 
   _update_input: =>
     if @input and @input.update then @input\update @text, self
@@ -165,7 +178,7 @@ class Readline extends PropertyObject
 
     if @completion_list
       item = @completion_list.selection
-      @_remove_completions!
+      @_show_only_cmd_line!
       value = completion_text item
       @text = @text\gsub('[^%s=]+$', '') .. value
       @_update_input!
@@ -186,7 +199,7 @@ class Readline extends PropertyObject
 
   _cancel: =>
     if @completion_list
-      @_remove_completions!
+      @_show_only_cmd_line!
       @completion_unwanted = true
       return if @seen_interaction
 
@@ -221,7 +234,7 @@ class Readline extends PropertyObject
         @_update_input!
         @_complete complete_again
       else if @input.go_back
-        @_remove_completions!
+        @_show_only_cmd_line!
         @input\go_back self
         @_complete complete_again
 

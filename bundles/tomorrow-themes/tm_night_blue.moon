@@ -90,47 +90,21 @@ return {
       font: italic: true
       color: comment
 
-    constant: color: orange
-
-    string: color: green
-
     longstring:
       font: italic: true
       color: green
-
-    char: color: green
-
-    keyword: color: purple
-
-    class: color: yellow
-
-    definition: color: yellow
 
     error:
       font: italic: true
       color: red
 
-    function: color: blue
-
-    number: color: orange
-
-    operator: color: aqua
-
-    preproc: color: purple
-
-    special: color: purple
-
-    tag: color: purple
-
-    type: color: red
+    warning:
+      font: italic: true
+      color: orange
 
     variable:
       color: red,
       font: italic: true
-
-    member: color: green
-
-    embedded: color: purple
 
     label:
       color: orange
@@ -151,4 +125,20 @@ return {
       color: foreground
 
     key: color: red
-}
+    char: color: green
+    keyword: color: purple
+    class: color: yellow
+    definition: color: yellow
+    function: color: blue
+    number: color: orange
+    operator: color: aqua
+    preproc: color: purple
+    special: color: purple
+    tag: color: purple
+    type: color: red
+    member: color: green
+    embedded: color: purple
+    info: color: blue
+    constant: color: orange
+    string: color: green
+ }
