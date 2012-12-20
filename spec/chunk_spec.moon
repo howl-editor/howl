@@ -1,4 +1,4 @@
-import Chunk, Buffer from lunar
+import Chunk, Buffer from howl
 
 describe 'Chunk', ->
 

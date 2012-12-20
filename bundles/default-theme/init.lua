@@ -1,6 +1,6 @@
 local theme_file = bundle_file('default_theme.moon')
 
-lunar.ui.theme.register('Default', theme_file)
+howl.ui.theme.register('Default', theme_file)
 
 return {
   info = {

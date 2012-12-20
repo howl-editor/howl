@@ -1,4 +1,4 @@
-import keyhandler from lunar
+import keyhandler from howl
 import getmetatable, setfenv, pairs, callable from _G
 
 _G = _G

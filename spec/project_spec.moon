@@ -1,4 +1,4 @@
-import Project, VC from lunar
+import Project, VC from howl
 
 describe 'Project', ->
   after_each ->

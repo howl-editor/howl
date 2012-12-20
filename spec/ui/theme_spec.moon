@@ -1,5 +1,5 @@
-import theme from lunar.ui
-import File from lunar.fs
+import theme from howl.ui
+import File from howl.fs
 
 serpent = require 'serpent'
 

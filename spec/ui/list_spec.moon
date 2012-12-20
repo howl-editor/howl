@@ -1,5 +1,5 @@
-import List, Cursor, style, highlight, ActionBuffer from lunar.ui
-import Buffer, Scintilla from lunar
+import List, Cursor, style, highlight, ActionBuffer from howl.ui
+import Buffer, Scintilla from howl
 
 describe 'List', ->
   sci = Scintilla!

@@ -1,5 +1,5 @@
 lpeg = require 'lpeg'
-import lpegx from lunar
+import lpegx from howl
 import P, S, V from lpeg
 import space, eof from lpegx
 
@@ -18,7 +18,7 @@ indent_pattern = P {
 class MoonscriptMode
   new: =>
     lexer_file = bundle_file 'moonscript_lexer.lua'
-    @lexer = lunar.aux.ScintilluaLexer 'moon', lexer_file
+    @lexer = howl.aux.ScintilluaLexer 'moon', lexer_file
     @completers = { 'same_buffer' }
 
   short_comment_prefix: '--'

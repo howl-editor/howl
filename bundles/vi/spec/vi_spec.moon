@@ -1,7 +1,7 @@
 import Gtk from lgi
 
-import Buffer, keyhandler, bundle from lunar
-import Editor from lunar.ui
+import Buffer, keyhandler, bundle from howl
+import Editor from howl.ui
 
 bundle.load_by_name 'vi'
 state = bundles.vi.state

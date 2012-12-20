@@ -1,5 +1,5 @@
-import ActionBuffer, style from lunar.ui
-import Scintilla from lunar
+import ActionBuffer, style from howl.ui
+import Scintilla from howl
 
 describe 'ActionBuffer', ->
   sci = Scintilla!

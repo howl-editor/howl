@@ -1,6 +1,6 @@
-import signal from lunar
+import signal from howl
 
-lunar.ui.Editor.define_indicator 'vi', 'bottom_left'
+howl.ui.Editor.define_indicator 'vi', 'bottom_left'
 
 state = bundle_load 'state.moon'
 

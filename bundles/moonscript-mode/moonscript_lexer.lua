@@ -1,6 +1,6 @@
 -- Copyright 2006-2011 Mitchell mitchell<att>caladbolg.net. See LICENSE.
 -- Moonscript lexer by leaf corcoran <http://leafo.net>
--- Modifications for Lunar by Nils Nordman <nino at nordman.org>
+-- Modifications for Howl by Nils Nordman <nino at nordman.org>
 
 local l = lexer
 local token, word_match = l.token, l.word_match

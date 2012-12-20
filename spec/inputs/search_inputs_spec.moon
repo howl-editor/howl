@@ -1,6 +1,6 @@
-import inputs from lunar
+import inputs from howl
 
-require 'lunar.inputs.search_inputs'
+require 'howl.inputs.search_inputs'
 
 describe 'search_inputs', ->
 

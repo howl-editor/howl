@@ -1,4 +1,4 @@
-import PropertyObject from lunar.aux.moon
+import PropertyObject from howl.aux.moon
 
 describe 'PropertyObject', ->
   it 'allows specifying a getter and setter using get and set', ->

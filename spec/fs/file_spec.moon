@@ -1,4 +1,4 @@
-import File from lunar.fs
+import File from howl.fs
 
 describe 'File', ->
 

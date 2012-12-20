@@ -1,4 +1,4 @@
-import Buffer, config from lunar
+import Buffer, config from howl
 
 describe 'BufferLines', ->
   buffer = (text) ->

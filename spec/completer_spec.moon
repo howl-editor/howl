@@ -1,5 +1,5 @@
-import Completer, Buffer, completion from lunar
-import Editor from lunar.ui
+import Completer, Buffer, completion from howl
+import Editor from howl.ui
 
 describe 'Completer', ->
   buffer = nil

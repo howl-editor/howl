@@ -1,4 +1,4 @@
-import completion from lunar
+import completion from howl
 
 describe 'completion', ->
   after_each -> completion.unregister 'foo'

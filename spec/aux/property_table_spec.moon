@@ -1,4 +1,4 @@
-import PropertyTable from lunar.aux
+import PropertyTable from howl.aux
 
 describe 'PropertyTable(table)', ->
   it 'returns a table with the properties in the passed table', ->

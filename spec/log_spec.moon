@@ -1,4 +1,4 @@
-import config from lunar
+import config from howl
 
 describe 'log', ->
   after_each ->

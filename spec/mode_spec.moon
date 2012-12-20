@@ -1,5 +1,5 @@
-import mode from lunar
-import File from lunar.fs
+import mode from howl
+import File from howl.fs
 
 describe 'mode', ->
   after_each -> for name in pairs mode do mode.unregister name

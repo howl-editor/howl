@@ -1,5 +1,5 @@
-import File from lunar.fs
-import ScintilluaLexer from lunar.aux
+import File from howl.fs
+import ScintilluaLexer from howl.aux
 
 describe 'ScintilluaLexer', ->
   it ':lex lexes text using the specified Scintillua lexer', ->

@@ -1,4 +1,4 @@
-import Matcher from lunar.util
+import Matcher from howl.util
 
 describe 'Matcher', ->
   it 'matches if all characters are present', ->

@@ -1,4 +1,4 @@
-import inputs from lunar
+import inputs from howl
 
 describe 'inputs', ->
   after_each -> inputs.unregister 'foo'

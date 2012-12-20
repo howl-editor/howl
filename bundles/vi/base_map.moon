@@ -1,6 +1,6 @@
 state = bundle_load 'state.moon'
 import apply from state
-import keyhandler from lunar
+import keyhandler from howl
 import math, tonumber, print, _G from _G
 
 default_map = keyhandler.keymap

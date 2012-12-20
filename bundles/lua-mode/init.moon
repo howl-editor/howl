@@ -1,13 +1,13 @@
 create = ->
   lua_lexer = bundle_file 'lua_lexer.lua'
-  lexer: lunar.aux.ScintilluaLexer 'lua', lua_lexer
+  lexer: howl.aux.ScintilluaLexer 'lua', lua_lexer
 
 mode_reg =
   name: 'lua'
   extensions: 'lua'
   :create
 
-lunar.mode.register mode_reg
+howl.mode.register mode_reg
 
 return info:
   name: 'lua_mode',

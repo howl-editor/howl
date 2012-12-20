@@ -1,4 +1,4 @@
-import config, signal from lunar
+import config, signal from howl
 
 describe 'config', ->
   before_each ->

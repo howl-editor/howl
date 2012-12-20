@@ -1,4 +1,4 @@
-import Scintilla from lunar
+import Scintilla from howl
 
 describe 'Scintilla', ->
 

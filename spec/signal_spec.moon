@@ -1,4 +1,4 @@
-import signal from lunar
+import signal from howl
 
 describe 'signal', ->
   describe '.register(name, options)', ->

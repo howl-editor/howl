@@ -1,6 +1,6 @@
-import inputs, config from lunar
+import inputs, config from howl
 
-require 'lunar.inputs.variable_assignment_input'
+require 'howl.inputs.variable_assignment_input'
 
 describe 'VariableAssignmentInput', ->
 

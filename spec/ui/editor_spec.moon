@@ -1,7 +1,7 @@
 import Gtk from lgi
 
-import Buffer, config from lunar
-import Editor from lunar.ui
+import Buffer, config from howl
+import Editor from howl.ui
 
 describe 'Editor', ->
   local buffer, lines

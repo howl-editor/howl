@@ -1,6 +1,6 @@
 import Gtk from lgi
-import Buffer from lunar
-import Editor, theme from lunar.ui
+import Buffer from howl
+import Editor, theme from howl.ui
 
 text = [[
 Line 1 of text

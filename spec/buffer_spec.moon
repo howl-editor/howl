@@ -1,5 +1,5 @@
-import Buffer, Scintilla, config from lunar
-import File from lunar.fs
+import Buffer, Scintilla, config from howl
+import File from howl.fs
 
 describe 'Buffer', ->
   buffer = (text) ->

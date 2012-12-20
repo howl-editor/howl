@@ -1,4 +1,4 @@
-import Sandbox from lunar.aux
+import Sandbox from howl.aux
 
 describe 'Sandbox(env, options)', ->
   it 'allows running a function with a specified environment', ->

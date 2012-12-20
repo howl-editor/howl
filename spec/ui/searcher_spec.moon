@@ -1,5 +1,5 @@
-import Buffer, config from lunar
-import Editor, highlight from lunar.ui
+import Buffer, config from howl
+import Editor, highlight from howl.ui
 
 describe 'Searcher', ->
   buffer = nil

@@ -1,7 +1,7 @@
-import inputs from lunar
-import File from lunar.fs
+import inputs from howl
+import File from howl.fs
 
-require 'lunar.inputs.file_input'
+require 'howl.inputs.file_input'
 
 describe 'FileInput', ->
 

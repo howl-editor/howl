@@ -1,5 +1,5 @@
-import bundle from lunar
-import File from lunar.fs
+import bundle from howl
+import File from howl.fs
 
 describe 'bundle', ->
   after_each ->

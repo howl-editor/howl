@@ -1,4 +1,4 @@
-import destructor from lunar.aux
+import destructor from howl.aux
 
 describe 'destructor(callback, ...)', ->
   it 'returns an object, for which <callback> is called when it is collected', ->

@@ -1,5 +1,5 @@
-import Settings from lunar
-import File from lunar.fs
+import Settings from howl
+import File from howl.fs
 
 describe 'Settings', ->
   local tmpdir, sysdir
@@ -24,12 +24,12 @@ describe 'Settings', ->
       Settings target
       assert.is_false target.exists
 
-    it 'defaults to "$HOME/.lunar" when <dir> is not provided', ->
+    it 'defaults to "$HOME/.howl" when <dir> is not provided', ->
       getenv = os.getenv
       os.getenv = -> tmpdir.path
       pcall Settings
       os.getenv = getenv
-      assert.is_true tmpdir\join('.lunar').exists
+      assert.is_true tmpdir\join('.howl').exists
 
   it '.dir is set to the settings directory if available', ->
     assert.equal tmpdir, Settings(tmpdir).dir

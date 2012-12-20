@@ -1,4 +1,4 @@
-#include "lunar.h"
+#include "main.h"
 
 #include <gtk/gtk.h>
 #include <Scintilla.h>
@@ -38,7 +38,7 @@ static void set_sfield_l(lua_State *L, const gchar *name, const gchar *value, si
 static int setup_for_event(lua_State *l, GtkWidget *sci, gchar *name)
 {
   int top = lua_gettop(l);
-  lua_getglobal(l, "lunar");
+  lua_getglobal(l, "howl");
   if (lua_istable(l, -1)) {
     lua_getfield(l, -1, "Scintilla");
     if (lua_istable(l, -1)) {
@@ -50,7 +50,7 @@ static int setup_for_event(lua_State *l, GtkWidget *sci, gchar *name)
       }
     }
   }
-  g_critical("Failed to lookup lunar.Scintilla.dispatch: not configured");
+  g_critical("Failed to lookup howl.Scintilla.dispatch: not configured");
   lua_settop(l, top);
   return -1;
 }
@@ -62,7 +62,7 @@ static gboolean emit_event(lua_State *L, int nr_params, int top)
   if (lua_pcall(L, nr_params + 2, 1, 0) == 0)
     halt = lua_toboolean(L, -1);
   else
-    g_critical("Failed to invoke lunar.Scintilla.dispatch: %s", lua_tostring(L, -1));
+    g_critical("Failed to invoke howl.Scintilla.dispatch: %s", lua_tostring(L, -1));
 
   lua_settop(L, top);
   return halt;

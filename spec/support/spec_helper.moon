@@ -1,9 +1,9 @@
 require 'busted'
 say = require('say')
-import File from lunar.fs
-import theme from lunar.ui
-import signal from lunar
-_G.Spy = require 'lunar.spec.spy'
+import File from howl.fs
+import theme from howl.ui
+import signal from howl
+_G.Spy = require 'howl.spec.spy'
 
 -- addition aliases
 export context = describe
@@ -56,7 +56,7 @@ export with_tmpdir = (f) ->
   dir\delete_all! if dir.exists
   error err if not status
 
-root = lunar.app.root_dir
+root = howl.app.root_dir
 support_files = root / 'spec' / 'support'
 
 -- load basic theme for specs

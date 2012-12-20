@@ -1,4 +1,4 @@
-import VC from lunar
+import VC from howl
 
 describe 'VC', ->
   after_each -> VC.unregister name for name in pairs VC.available

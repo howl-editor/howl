@@ -1,5 +1,5 @@
-import config, VC from lunar
-import File from lunar.fs
+import config, VC from howl
+import File from howl.fs
 
 class Git
   new: (root, git_dir) =>

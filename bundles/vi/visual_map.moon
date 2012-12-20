@@ -1,6 +1,6 @@
 state = ...
 base_map = bundle_load 'base_map.moon'
-import command from lunar
+import command from howl
 
 local selection_start
 

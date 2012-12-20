@@ -1,5 +1,5 @@
-import style, theme, ActionBuffer from lunar.ui
-import Scintilla, Buffer from lunar
+import style, theme, ActionBuffer from howl.ui
+import Scintilla, Buffer from howl
 
 describe 'style', ->
   it 'styles can be accessed using direct indexing', ->

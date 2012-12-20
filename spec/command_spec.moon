@@ -1,4 +1,4 @@
-import command, inputs, config from lunar
+import command, inputs, config from howl
 
 describe 'command', ->
   local cmd, readline

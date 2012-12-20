@@ -1,18 +1,17 @@
 #! /bin/sh
 
 ROOT=$(cd $(dirname $0)/.. && pwd)
-for lunar in $ROOT/bin/lunar $ROOT/src/lunar; do
-  if [ -e $lunar ]; then
-    LUNAR=$lunar
+for howl in $ROOT/bin/howl $ROOT/src/howl; do
+  if [ -e $howl ]; then
+    HOWL=$howl
     break
   fi
 done
 
-if [ -z "$LUNAR" ]; then
-  echo "Could not locate lunar executable"
+if [ -z "$HOWL" ]; then
+  echo "Could not locate howl executable"
   exit 1
 fi
 
 export BUSTED='yes'
-#echo busted -l $LUNAR --pattern=_spec.moon $*
-exec busted -l $LUNAR --pattern=_spec.moon $*
+exec busted -l $HOWL --pattern=_spec.moon $*

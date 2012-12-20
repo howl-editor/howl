@@ -1,6 +1,6 @@
-import bundle, mode, config, Buffer from lunar
-import File from lunar.fs
-import Editor from lunar.ui
+import bundle, mode, config, Buffer from howl
+import File from howl.fs
+import Editor from howl.ui
 
 bundle.load_by_name 'moonscript-mode'
 

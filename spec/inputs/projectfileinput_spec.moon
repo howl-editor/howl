@@ -1,7 +1,7 @@
-import inputs, Project from lunar
-import File from lunar.fs
+import inputs, Project from howl
+import File from howl.fs
 
-require 'lunar.inputs.projectfile_input'
+require 'howl.inputs.projectfile_input'
 
 describe 'ProjectFile', ->
 

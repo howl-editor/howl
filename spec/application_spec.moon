@@ -1,6 +1,6 @@
-import File from lunar.fs
-import Application, Buffer, mode from lunar
-import Editor from lunar.ui
+import File from howl.fs
+import Application, Buffer, mode from howl
+import Editor from howl.ui
 
 describe 'Application', ->
   local root_dir, application

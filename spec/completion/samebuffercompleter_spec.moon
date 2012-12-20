@@ -1,7 +1,7 @@
-import Buffer from lunar
-import completion from lunar
+import Buffer from howl
+import completion from howl
 
-require 'lunar.completion.samebuffercompleter'
+require 'howl.completion.samebuffercompleter'
 
 describe 'SameBufferCompleter.complete()', ->
   buffer = nil

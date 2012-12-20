@@ -1,6 +1,6 @@
 local night_blue = bundle_file('tm_night_blue.moon')
 
-lunar.ui.theme.register('Tomorrow Night Blue', night_blue)
+howl.ui.theme.register('Tomorrow Night Blue', night_blue)
 
 return {
   info = {
@@ -9,7 +9,7 @@ return {
     description = [[
       The Tomorrow themes designed by Chris Kempson.
 
-      Adapted for the lunar editor by Nils Nordman.
+      Adapted for the howl editor by Nils Nordman.
     ]],
     license = 'MIT',
   }

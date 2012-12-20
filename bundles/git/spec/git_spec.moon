@@ -1,6 +1,6 @@
-import bundle, config, VC from lunar
-import File from lunar.fs
-import Spy from lunar.spec
+import bundle, config, VC from howl
+import File from howl.fs
+import Spy from howl.spec
 
 bundle.load_by_name 'git'
 

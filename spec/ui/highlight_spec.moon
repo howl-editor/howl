@@ -1,5 +1,5 @@
-import highlight, theme, ActionBuffer from lunar.ui
-import Scintilla, Buffer from lunar
+import highlight, theme, ActionBuffer from howl.ui
+import Scintilla, Buffer from howl
 
 describe 'highlight', ->
   indicator_on = (buffer, pos, number) ->

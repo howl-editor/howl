@@ -3,7 +3,7 @@ mode_reg =
   extensions: 'moon'
   create: -> bundle_load('moonscript_mode.moon')!
 
-lunar.mode.register mode_reg
+howl.mode.register mode_reg
 
 return info:
   name: 'moonscript_mode',

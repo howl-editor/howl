@@ -1,4 +1,4 @@
-import keyhandler, signal, command from lunar
+import keyhandler, signal, command from howl
 
 describe 'keyhandler', ->
 
