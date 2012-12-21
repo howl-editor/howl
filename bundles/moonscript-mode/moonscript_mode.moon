@@ -15,6 +15,8 @@ indent_pattern = P {
   then: space^1 * 'then' * space^1 + (1 * V 'then')
 }
 
+dedent_pattern = space^0 * (P'elseif' + 'else' + '}') * (eof + space^1)
+
 class MoonscriptMode
   new: =>
     lexer_file = bundle_file 'moonscript_lexer.lua'
@@ -30,6 +32,7 @@ class MoonscriptMode
 
     return line.indentation unless prev_line
     return prev_line.indentation + indent_level if indent_pattern\match prev_line.text
+    return prev_line.indentation - indent_level if dedent_pattern\match line.text
     return prev_line.indentation
 
   after_newline: (line, editor) =>

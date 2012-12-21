@@ -79,6 +79,16 @@ describe 'moonscript-mode', ->
       }
     }
 
+    dedents = {
+      'block starters': {
+        'else',
+        'elseif foo',
+      }
+      'block enders': {
+        '}',
+      }
+    }
+
     for desc in pairs indents
       context 'returns a one level indent for a line after ' .. desc, ->
         for code in *indents[desc]
@@ -100,6 +110,14 @@ describe 'moonscript-mode', ->
           buffer.text = code .. '\n  \n'
           editor.cursor.line = 3
           assert.equal 2, m\indent_for(buffer.lines[3], indent_level, editor)
+
+    for desc in pairs dedents
+      context 'returns a one level dedent for a line containing ' .. desc, ->
+        for code in *dedents[desc]
+          it "e.g. dedents for '#{code}'", ->
+            buffer.text = '  foo\n  ' .. code
+            editor.cursor.line = 2
+            assert.equal 0, m\indent_for(buffer.lines[2], indent_level, editor)
 
     for desc in pairs non_indents
       context 'returns the same indent for a line after ' .. desc, ->
