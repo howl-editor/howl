@@ -172,6 +172,7 @@ class Editor extends PropertyObject
     indentation = cur_line.indentation
 
     @buffer\as_one_undo ->
+      @indent!
       @newline!
       @current_line.indentation = indentation
       @indent!

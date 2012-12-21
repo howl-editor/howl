@@ -88,12 +88,14 @@ describe 'Editor', ->
       assert.equal editor.cursor.line, 2
       assert.equal editor.cursor.column, 3
 
-    it "indents the line similarily to indent()", ->
-      buffer.mode = indent_for: -> 2
-      buffer.text = 'line'
-      cursor.pos = 3
-      editor\newline_and_format!
-      assert.equal 'li\n  ne', buffer.text
+    context "when the buffer's mode provides an .indent_for", ->
+     it "indents the current line and the next line according to the returned indent level", ->
+        buffer.mode = indent_for: (line) => line\match('else') and 0 or 2
+        buffer.text = '  line\n  else'
+        cursor.line = 2
+        cursor\line_end!
+        editor\newline_and_format!
+        assert.equal '  line\nelse\n  ', buffer.text
 
     context "when the buffer's mode provides an .after_newline", ->
       it 'is called with (mode, current-line, editor)', ->
