@@ -163,16 +163,23 @@ describe 'Selection', ->
       selection.text = 'Shi'
       assert.equal 'Shine 1 of text', buffer.lines[1].text
 
-    it 'range() includes the cursor position if needed', ->
-      selection\set 2, 5
-      start, stop = selection\range!
-      assert.equal 2, start
-      assert.equal 6, stop
+    describe 'range()', ->
+      it 'includes the cursor position if needed', ->
+        selection\set 2, 5
+        start, stop = selection\range!
+        assert.equal 2, start
+        assert.equal 6, stop
 
-      selection\set 5, 2
-      start, stop = selection\range!
-      assert.equal 2, start
-      assert.equal 5, stop
+        selection\set 5, 2
+        start, stop = selection\range!
+        assert.equal 2, start
+        assert.equal 5, stop
+
+      it 'does not include an position after eof however', ->
+        selection\set #buffer - 1, #buffer + 1
+        start, stop = selection\range!
+        assert.equal #buffer - 1, start
+        assert.equal #buffer + 1, stop
 
     it 'cut() removes the current character as well', ->
       selection\set 1, 5
