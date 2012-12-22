@@ -61,10 +61,9 @@ g = (editor) ->
   else
     state.go = true
 
-G = (editor) ->
-  if state.count then editor.cursor.line = state.count
+G = (editor) -> apply editor, (editor, _state) ->
+  if _state.count then editor.cursor.line = _state.count
   else editor.cursor\eof!
-  state.reset!
 
 f = (editor) -> keyhandler.capture forward_to_char
 F = (editor) -> keyhandler.capture back_to_char
