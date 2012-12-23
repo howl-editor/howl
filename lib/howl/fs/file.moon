@@ -55,7 +55,7 @@ class File extends PropertyObject
     get: => tostring @_assert @gfile\load_contents!
     set: (contents) =>
       with @_assert io.open @path, 'w'
-        \write contents
+        \write tostring contents
         \close!
 
       @_stats.time = nil

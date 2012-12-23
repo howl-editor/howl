@@ -1,5 +1,7 @@
 export *
 
+u = require('howl.ustring')
+
 callable = (o) ->
   return true if type(o) == 'function'
   mt = getmetatable o

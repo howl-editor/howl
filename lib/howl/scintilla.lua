@@ -15,8 +15,12 @@ local setmetatable, tonumber, pcall, error = setmetatable, tonumber, pcall, erro
 local string_format = string.format
 local ffi = require('ffi')
 local bit = require('bit')
-local C = ffi.C
+local cdefs = require('howl.cdefs')
 local lgi_core = require 'lgi.core'
+
+local C = ffi.C
+local char_arr = cdefs.char_arr
+local u = u
 
 local sci = {}
 local _ENV = sci
@@ -45,7 +49,6 @@ typedef struct {
 intptr_t sci_send(void *sci, int message, intptr_t wParam, intptr_t lParam);
 ]]
 
-local cbuf = ffi.typeof('char[?]')
 local char_range = ffi.typeof('char_range')
 local text_range = ffi.typeof('text_range')
 local find_text = ffi.typeof('find_text')
@@ -145,7 +148,7 @@ end
 function sci:send_with_stringresult(message, arg1)
   length = self:send(message, arg1, nil)
   if length == 0 then return '' end
-  buffer = cbuf(length + 1)
+  buffer = char_arr(length + 1)
   -- for the cases where the additional argument isn't specified,
   -- we should send the length as computed above
   if not arg1 then arg1 = length end
@@ -154,7 +157,7 @@ function sci:send_with_stringresult(message, arg1)
   -- don't include the trailing zero in the lua string if there is one
   if buffer[length - 1] == 0 then length = length -1 end
 
-  return ffi.string(buffer, length)
+  return u(buffer, length)
 end
 
 function sci:send_with_textrange(message, start_pos, end_pos)
@@ -163,17 +166,17 @@ function sci:send_with_textrange(message, start_pos, end_pos)
   end
   length = end_pos - start_pos
   -- in case of style bytes we actually need two bytes per pos so double up
-  buffer = cbuf((length * 2) + 2)
+  buffer = char_arr((length * 2) + 2)
   tr = text_range({ char_range(start_pos, end_pos), buffer })
   real_length = self:send(message, nil, ffi.cast('text_range *', tr))
   -- but always return a string of the right length
-  return ffi.string(buffer, real_length)
+  return u(buffer, real_length)
 end
 
 function sci:send_with_findtext(message, start_pos, end_pos, text)
-  cstring = cbuf(#text, text)
+  buffer = char_arr(#text, text)
   found_range = char_range()
-  ft = find_text({ char_range({start_pos, end_pos}), cstring, found_range })
+  ft = find_text({ char_range({start_pos, end_pos}), buffer, found_range })
   found_at = self:send(message, nil, ffi.cast('find_text *', ft))
   if found_at >= 0 then return found_at, found_at + #text end
 end

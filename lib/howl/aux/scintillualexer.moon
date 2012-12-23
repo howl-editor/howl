@@ -15,6 +15,6 @@ class ScintilluaLexer
     @lexer.load lexer_name
 
   lex: (text) =>
-    @lexer.lex text, 32
+    @lexer.lex tostring(text), 32
 
 return ScintilluaLexer
