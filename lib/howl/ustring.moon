@@ -9,26 +9,42 @@ ffi.cdef [[
   gchar * g_utf8_strup(const gchar *str, gssize len);
   gchar * g_utf8_strreverse(const gchar *str, gssize len);
   gint g_utf8_collate(const gchar *str1, const gchar *str2);
+  gchar * g_utf8_substring(const gchar *str, glong start_pos, glong end_pos);
   int strncmp(const char *s1, const char *s2, size_t n);
+  gchar * g_strndup(const gchar *str, gssize n);
   void g_free(gpointer mem);
   size_t strlen(const char *s);
 ]]
 
+DEALLOC_G_FREE = 1
+DEALLOC_FREE = 2
+
+deallocators = {
+  (u) -> C.g_free u.ptr
+  (u) -> C.free u.ptr
+}
+
 ustring = ffi.typeof [[
   struct {
-    const gchar *ptr;
-    size_t size;
-    size_t _len;
+    gchar *ptr;
+    signed long size;
+    signed long _len;
   }
 ]]
 
-u = (ptr_or_string, size) ->
+u = (ptr_or_string, size, len = -1, deallocator) ->
   if type(ptr_or_string) == 'string'
-    return ustring const_char_p(ptr_or_string), #ptr_or_string
-  else
-    return ustring ptr_or_string, size or C.strlen ptr_or_string
+    size = #ptr_or_string
+    ptr_or_string = C.g_strndup ptr_or_string, size
+    deallocator = DEALLOC_G_FREE
 
-gc_ptr = (ptr) -> ffi.gc ptr, C.g_free
+  us = ustring ptr_or_string, size or C.strlen(ptr_or_string), len
+
+  if deallocator
+    free_function = deallocators[deallocator]
+    ffi.gc us, free_function if free_function
+
+  us
 
 to_s = (u) -> ffi.string u.ptr, u.size
 
@@ -39,10 +55,25 @@ to_ptr = (s) ->
     s.ptr
 
 methods = {
-  lower: => u gc_ptr C.g_utf8_strdown @ptr, @size
-  upper: => u gc_ptr C.g_utf8_strup @ptr, @size
-  reverse: => u gc_ptr ffi.C.g_utf8_strreverse @ptr, @size
-  len: (...) => @size
+  lower: => u C.g_utf8_strdown(@ptr, @size), @size, @_len, DEALLOC_G_FREE
+  upper: => u C.g_utf8_strup(@ptr, @size), @size, @_len, DEALLOC_G_FREE
+  reverse: => u C.g_utf8_strreverse(@ptr, @size), @size, @_len, DEALLOC_G_FREE
+  match: (pattern, init) => string.match to_s(self), tostring(pattern), init
+  gmatch: (pattern) => string.gmatch to_s(self), tostring pattern
+
+  sub: (i, j = -1) =>
+    len = tonumber @len!
+    i += len + 1 if i < 0
+    j += len + 1 if j < 0
+    i = 1 if i < 1
+    j = len if j > len
+    return '' if j < i
+
+    u C.g_utf8_substring(@ptr, i - 1, j), nil, j - i + 1, DEALLOC_G_FREE
+
+  len: =>
+    @_len = C.g_utf8_strlen @ptr, @size unless @_len >= 0
+    @_len
 }
 
 for m in *{
@@ -50,17 +81,18 @@ for m in *{
   'format'
   'rep'
   'gsub'
-  'gmatch'
-  'match'
   'byte'
-  'sub'
 }
   methods[m] = (...) => string[m] to_s(self), ...
 
+properties = {
+}
+
 ffi.metatype ustring, {
   __tostring: => ffi.string @ptr, @size
-  __len: => @size
+  __len: => @len!
   __concat: (a, b) -> return u tostring(a) .. tostring(b)
+  __lt: (a, b) -> 0 >= C.g_utf8_collate to_ptr(a), to_ptr(b)
 
   __eq: (a, b) ->
     a, b = b, a if ffi.istype ustring, b
@@ -72,15 +104,13 @@ ffi.metatype ustring, {
 
     false
 
-  __lt: (a, b) ->
-    0 >= C.g_utf8_collate to_ptr(a), to_ptr(b)
-
   __index: (k) =>
-    if k == 'ulen'
-      @_len = C.g_utf8_strlen @ptr, @size unless @_len > 0
-      @_len
-    else
-      return methods[k]
+    return @sub k, k if type(k) == 'number'
+    return properties[k] self if properties[k]
+    return methods[k]
 }
 
-return u
+return setmetatable {
+  :DEALLOC_G_FREE,
+  :DEALLOC_FREE
+}, __call: (...) => u ...

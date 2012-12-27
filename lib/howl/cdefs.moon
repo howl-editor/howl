@@ -7,6 +7,7 @@ ffi.cdef [[
   typedef signed long gssize;
   typedef void* gpointer;
 
+  void *malloc(size_t size);
   void free(void *ptr);
 ]]
 

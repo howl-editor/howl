@@ -44,10 +44,10 @@ describe 'Completer', ->
       completer = Completer(buffer, 6)
 
       completer\complete 6
-      assert.spy(comp.complete).was.called_with comp, 'ca', 6
+      assert.spy(comp.complete).was.called_with comp, u'ca', 6
 
       completer\complete 7
-      assert.spy(comp.complete).was.called_with comp, 'cat', 7
+      assert.spy(comp.complete).was.called_with comp, u'cat', 7
 
   it '.start_pos holds the start position for completing', ->
     buffer.text = 'oh cruel word'

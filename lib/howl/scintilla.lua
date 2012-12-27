@@ -19,7 +19,7 @@ local cdefs = require('howl.cdefs')
 local lgi_core = require 'lgi.core'
 
 local C = ffi.C
-local char_arr = cdefs.char_arr
+local char_arr, char_p = cdefs.char_arr, cdefs.char_p
 local u = u
 
 local sci = {}
@@ -146,34 +146,35 @@ function sci:send(message, arg1, arg2)
 end
 
 function sci:send_with_stringresult(message, arg1)
-  length = self:send(message, arg1, nil)
-  if length == 0 then return '' end
-  buffer = char_arr(length + 1)
+  size = self:send(message, arg1, nil)
+  if size == 0 then return '' end
+  buffer = char_p(C.malloc(size + 1))
   -- for the cases where the additional argument isn't specified,
   -- we should send the length as computed above
-  if not arg1 then arg1 = length end
+  if not arg1 then arg1 = size end
   self:send(message, arg1, buffer)
 
   -- don't include the trailing zero in the lua string if there is one
-  if buffer[length - 1] == 0 then length = length -1 end
+  if buffer[size - 1] == 0 then size = size -1 end
 
-  return u(buffer, length)
+  return u(buffer, size, -1, u.DEALLOC_FREE)
 end
 
 function sci:send_with_textrange(message, start_pos, end_pos)
   if end_pos < start_pos then
     _G.error('Invalid range: end_pos < start_pos', 3)
   end
-  length = end_pos - start_pos
+  size = end_pos - start_pos
   -- in case of style bytes we actually need two bytes per pos so double up
-  buffer = char_arr((length * 2) + 2)
+  buffer = char_p(C.malloc((size * 2) + 2))
   tr = text_range({ char_range(start_pos, end_pos), buffer })
-  real_length = self:send(message, nil, ffi.cast('text_range *', tr))
-  -- but always return a string of the right length
-  return u(buffer, real_length)
+  real_size = self:send(message, nil, ffi.cast('text_range *', tr))
+  -- but always return a string of the right size
+  return u(buffer, real_size, -1, u.DEALLOC_FREE)
 end
 
 function sci:send_with_findtext(message, start_pos, end_pos, text)
+  text = tostring(text)
   buffer = char_arr(#text, text)
   found_range = char_range()
   ft = find_text({ char_range({start_pos, end_pos}), buffer, found_range })
