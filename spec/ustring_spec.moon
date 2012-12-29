@@ -1,5 +1,3 @@
-u = require 'howl.ustring'
-
 describe 'ustrings', ->
   it 'tostring(ustring) returns an ordinary string', ->
     assert.equal 'string', type tostring u'foo'

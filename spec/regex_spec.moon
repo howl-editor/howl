@@ -1,5 +1,3 @@
-r = require 'howl.regex'
-
 describe 'Regex', ->
   context 'creation', ->
     it 'raises an error if the pattern is invalid', ->
