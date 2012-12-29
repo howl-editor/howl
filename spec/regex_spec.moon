@@ -6,6 +6,9 @@ describe 'Regex', ->
     it 'returns a regex for a valid pattern', ->
       assert.is_not_nil r'foo()\\d+'
 
+    it 'accepts a regex as well', ->
+      assert.is_not_nil r r'foo()\\d+'
+
   it '.pattern holds the regex used for construction', ->
     assert.equal 'foo(bar)', r('foo(bar)').pattern
 

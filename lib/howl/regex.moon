@@ -103,13 +103,17 @@ methods = {
     return table.unpack matches
 }
 
-ffi.metatype 'GRegex', {
+regex = ffi.typeof 'GRegex'
+
+ffi.metatype regex, {
   __index: (k) =>
     return methods[k] if methods[k]
     return properties[k] self if properties[k]
 }
 
 r = (pattern) ->
+  return pattern if ffi.istype regex, pattern
+
   pattern = u pattern
   err = ffi.new 'GError *[1]'
   regex = C.g_regex_new pattern.ptr, 0, 0, err
