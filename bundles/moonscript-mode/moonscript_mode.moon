@@ -33,7 +33,7 @@ class MoonscriptMode
     return line.indentation unless prev_line
     return prev_line.indentation + indent_level if indent_pattern\match prev_line.text
     return prev_line.indentation - indent_level if dedent_pattern\match line.text
-    return prev_line.indentation
+    return line.indentation
 
   after_newline: (line, editor) =>
     if line\match '^%s*}%s*$'

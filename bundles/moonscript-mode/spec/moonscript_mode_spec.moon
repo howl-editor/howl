@@ -107,7 +107,7 @@ describe 'moonscript-mode', ->
     it 'does not disregard blank lines above when determining indent', ->
       for desc in pairs indents
         for code in *indents[desc]
-          buffer.text = code .. '\n  \n'
+          buffer.text = "  #{code}'\n  \n  "
           editor.cursor.line = 3
           assert.equal 2, m\indent_for(buffer.lines[3], indent_level, editor)
 
@@ -120,10 +120,10 @@ describe 'moonscript-mode', ->
             assert.equal 0, m\indent_for(buffer.lines[2], indent_level, editor)
 
     for desc in pairs non_indents
-      context 'returns the same indent for a line after ' .. desc, ->
+      context 'returns the current indent for a line after ' .. desc, ->
         for code in *non_indents[desc]
           it "e.g. does not indent for '#{code}'", ->
-            buffer.text = "  #{code}\n"
+            buffer.text = "  #{code}\n  "
             editor.cursor.line = 2
             assert.equal 2, m\indent_for(buffer.lines[2], indent_level, editor)
 
