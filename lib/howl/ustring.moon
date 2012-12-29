@@ -16,6 +16,7 @@ ffi.cdef [[
   size_t strlen(const char *s);
 ]]
 
+DEALLOC_NONE = 1
 DEALLOC_G_FREE = 1
 DEALLOC_FREE = 2
 
@@ -32,9 +33,8 @@ ustring = ffi.typeof [[
   }
 ]]
 
-u = (ptr_or_string, size, len = -1, deallocator) ->
-  if ffi.istype ustring, ptr_or_string
-    return ptr_or_string
+u = (ptr_or_string, size, len = -1, deallocator = DEALLOC_G_FREE) ->
+  return ptr_or_string if ffi.istype ustring, ptr_or_string
 
   if type(ptr_or_string) == 'string'
     size = #ptr_or_string
@@ -58,9 +58,9 @@ to_ptr = (s) ->
     s.ptr
 
 methods = {
-  lower: => u C.g_utf8_strdown(@ptr, @size), @size, @_len, DEALLOC_G_FREE
-  upper: => u C.g_utf8_strup(@ptr, @size), @size, @_len, DEALLOC_G_FREE
-  reverse: => u C.g_utf8_strreverse(@ptr, @size), @size, @_len, DEALLOC_G_FREE
+  lower: => u C.g_utf8_strdown(@ptr, @size), @size, @_len
+  upper: => u C.g_utf8_strup(@ptr, @size), @size, @_len
+  reverse: => u C.g_utf8_strreverse(@ptr, @size), @size, @_len
   match: (pattern, init) => string.match to_s(self), tostring(pattern), init
   gmatch: (pattern) => string.gmatch to_s(self), tostring pattern
 
@@ -72,7 +72,7 @@ methods = {
     j = len if j > len
     return '' if j < i
 
-    u C.g_utf8_substring(@ptr, i - 1, j), nil, j - i + 1, DEALLOC_G_FREE
+    u C.g_utf8_substring(@ptr, i - 1, j), nil, j - i + 1
 
   len: =>
     @_len = C.g_utf8_strlen @ptr, @size unless @_len >= 0
@@ -114,6 +114,7 @@ ffi.metatype ustring, {
 }
 
 return setmetatable {
+  :DEALLOC_NONE
   :DEALLOC_G_FREE,
   :DEALLOC_FREE
 }, __call: (...) => u ...

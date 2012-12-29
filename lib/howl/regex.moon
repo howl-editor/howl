@@ -87,7 +87,7 @@ methods = {
       for i = start, count - 1
         s_match = C.g_match_info_fetch(mi[0], i)
         error "Failed to fetch capture #{i}" if s_match == nil
-        match = u s_match, nil, nil, u.DEALLOC_G_FREE
+        match = u s_match
 
         if #match == 0
           start_pos = ffi.new 'gint[1]'
@@ -123,7 +123,7 @@ r = (pattern) ->
   return regex
 
 escape = (s) ->
-  u C.g_regex_escape_string(s, s.size or #s), nil, nil, u.DEALLOC_G_FREE
+  u C.g_regex_escape_string(s, s.size or #s)
 
 return setmetatable {
   :escape

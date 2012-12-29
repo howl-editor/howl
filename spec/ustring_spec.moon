@@ -89,4 +89,3 @@ describe 'ustrings', ->
     it 'the index can be negative similarily to sub()', ->
       s = u'aåäöx'
       assert.equal 'ä', s[-3]
-
