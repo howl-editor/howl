@@ -33,6 +33,9 @@ ustring = ffi.typeof [[
 ]]
 
 u = (ptr_or_string, size, len = -1, deallocator) ->
+  if ffi.istype ustring, ptr_or_string
+    return ptr_or_string
+
   if type(ptr_or_string) == 'string'
     size = #ptr_or_string
     ptr_or_string = C.g_strndup ptr_or_string, size

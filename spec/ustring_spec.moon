@@ -4,6 +4,10 @@ describe 'ustrings', ->
   it 'tostring(ustring) returns an ordinary string', ->
     assert.equal 'string', type tostring u'foo'
 
+  it 'creating an ustring from an ustring returns the same string', ->
+    s = u'abc'
+    assert.equal s.ptr, u(s).ptr
+
   it 'ustrings can be compared to ordinary lua strings', ->
     assert.equal 'abc', u'abc'
     assert.equal u'abc', 'abc'
