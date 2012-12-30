@@ -57,12 +57,36 @@ to_ptr = (s) ->
   else
     s.ptr
 
+transform_rets = (us, ...) ->
+  vals = {...}
+
+  for i = 1, #vals
+    val = vals[i]
+    t = type(val)
+
+    if t == 'string'
+      vals[i] = u val
+    elseif t == 'number'
+      pos_ptr = us.ptr + val - 1
+      char_offset = C.g_utf8_pointer_to_offset us.ptr, pos_ptr
+      vals[i] = tonumber char_offset + 1
+
+  table.unpack vals
+
 methods = {
   lower: => u C.g_utf8_strdown(@ptr, @size), @size, @_len
   upper: => u C.g_utf8_strup(@ptr, @size), @size, @_len
   reverse: => u C.g_utf8_strreverse(@ptr, @size), @size, @_len
-  match: (pattern, init) => string.match to_s(self), tostring(pattern), init
-  gmatch: (pattern) => string.gmatch to_s(self), tostring pattern
+
+  match: (pattern, init) =>
+    transform_rets self, string.match to_s(self), tostring(pattern), init
+
+  gmatch: (pattern) =>
+    gen = string.gmatch to_s(self), tostring pattern
+    -> transform_rets self, gen!
+
+  find: (pattern, init, plain) =>
+    transform_rets self, string.find to_s(self), tostring(pattern), init, plain
 
   sub: (i, j = -1) =>
     len = tonumber @len!
@@ -76,11 +100,10 @@ methods = {
 
   len: =>
     @_len = C.g_utf8_strlen @ptr, @size unless @_len >= 0
-    @_len
+    tonumber @_len
 }
 
 for m in *{
-  'find'
   'format'
   'rep'
   'gsub'
@@ -114,7 +137,7 @@ ffi.metatype ustring, {
 }
 
 return setmetatable {
-  :DEALLOC_NONE
+  :DEALLOC_NONE,
   :DEALLOC_G_FREE,
   :DEALLOC_FREE
 }, __call: (...) => u ...

@@ -87,3 +87,24 @@ describe 'ustrings', ->
     it 'the index can be negative similarily to sub()', ->
       s = u'aåäöx'
       assert.equal 'ä', s[-3]
+
+  it 'match(..) always returns ustrings for string captures', ->
+    assert.same { u'a', 2 }, { u'ab'\match '(%w)()' }
+
+  it 'gmatch(..) always returns ustrings for string captures', ->
+    s = u'foo bar'
+    gen = s\gmatch '()(%w+)'
+    rets = {}
+    while true
+      vals = { gen! }
+      break if #vals == 0
+      append rets, vals
+
+    assert.same { { 1, u'foo' }, { 5, u'bar' } }, rets
+
+  describe 'find(..)', ->
+    it 'returns character offsets instead of byte offsets', ->
+      assert.same {2, 4, 5}, { u'ä öx'\find '%s.+x()' }
+
+    it 'always returns ustrings for string captures', ->
+      assert.same {1, 1, u'a'}, { u'a'\find '(a)' }

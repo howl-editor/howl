@@ -3,6 +3,7 @@ parse = (buffer, line) ->
   tokens = {}
 
   for pos, token in buffer.text\gmatch '()([%a_][%w_-]+)'
+    token = tostring token
     rank = math.abs line_pos - pos
     info = tokens[token]
     rank = math.min info.rank, rank if info
@@ -18,7 +19,7 @@ class SameBufferCompleter
     pattern = '^' .. word .. '.'
     completions = {}
     for token in *@tokens
-      append completions, token if token.text\match pattern
+      append completions, token if token.text\match tostring pattern
 
     table.sort completions, (a, b) -> a.rank < b.rank
     [c.text for c in *completions]
