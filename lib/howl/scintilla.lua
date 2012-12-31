@@ -19,7 +19,7 @@ local cdefs = require('howl.cdefs')
 local lgi_core = require 'lgi.core'
 
 local C = ffi.C
-local char_arr, char_p = cdefs.char_arr, cdefs.char_p
+local char_arr, char_p, const_char_p = cdefs.char_arr, cdefs.char_p, cdefs.const_char_p
 local u = u
 
 local sci = {}
@@ -52,6 +52,10 @@ intptr_t sci_send(void *sci, int message, intptr_t wParam, intptr_t lParam);
 local char_range = ffi.typeof('char_range')
 local text_range = ffi.typeof('text_range')
 local find_text = ffi.typeof('find_text')
+
+local function string_ptr(s)
+  return s.ptr and s.ptr or const_char_p(s)
+end
 
 local function string_to_color(rgb)
   if not rgb then return nil end
@@ -1208,7 +1212,7 @@ SCI_SETUSEPALETTE = 2039
 
 -- Add text to the document at current position.
 function sci:add_text(length, text)
-  self:send(2001, length, text)
+  self:send(2001, length, string_ptr(text))
 end
 
 -- Add array of cells to document.
@@ -1218,7 +1222,7 @@ end
 
 -- Insert string at a position.
 function sci:insert_text(pos, text)
-  self:send(2003, pos, text)
+  self:send(2003, pos, string_ptr(text))
 end
 
 -- Delete all text in the document.
@@ -1470,7 +1474,7 @@ end
 
 -- Define a marker from a pixmap.
 function sci:marker_define_pixmap(marker_number, pixmap)
-  self:send(2049, marker_number, pixmap)
+  self:send(2049, marker_number, string_ptr(pixmap))
 end
 
 -- Add a set of markers to a line.
@@ -1565,7 +1569,7 @@ end
 
 -- Set the font of a style.
 function sci:style_set_font(style, font_name)
-  self:send(2056, style, font_name)
+  self:send(2056, style, string_ptr(font_name))
 end
 
 -- Set a style to have its end of line filled or not.
@@ -1737,7 +1741,7 @@ end
 
 -- Set the styles for a segment of the document.
 function sci:set_styling_ex(length, styles)
-  self:send(2073, length, styles)
+  self:send(2073, length, string_ptr(styles))
 end
 
 -- Set a style to be visible or not.
@@ -1758,7 +1762,7 @@ end
 -- Set the set of characters making up words for when moving or selecting by word.
 -- First sets defaults like SetCharsDefault.
 function sci:set_word_chars(characters)
-  self:send(2077, 0, characters)
+  self:send(2077, 0, string_ptr(characters))
 end
 
 -- Get the set of characters making up words for when moving or selecting by word.
@@ -1885,7 +1889,7 @@ end
 -- The lenEntered parameter indicates how many characters before
 -- the caret should be used to provide context.
 function sci:auto_cshow(len_entered, item_list)
-  self:send(2100, len_entered, item_list)
+  self:send(2100, len_entered, string_ptr(item_list))
 end
 
 -- Remove the auto-completion list from the screen.
@@ -1910,7 +1914,7 @@ end
 
 -- Define a set of character that when typed cancel the auto-completion list.
 function sci:auto_cstops(character_set)
-  self:send(2105, 0, character_set)
+  self:send(2105, 0, string_ptr(character_set))
 end
 
 -- Change the separator character in the string setting up an auto-completion list.
@@ -1926,7 +1930,7 @@ end
 
 -- Select the item in the auto-completion list that starts with a string.
 function sci:auto_cselect(text)
-  self:send(2108, 0, text)
+  self:send(2108, 0, string_ptr(text))
 end
 
 -- Should the auto-completion list be cancelled if the user backspaces to a
@@ -1943,7 +1947,7 @@ end
 -- Define a set of characters that when typed will cause the autocompletion to
 -- choose the selected item.
 function sci:auto_cset_fill_ups(character_set)
-  self:send(2112, 0, character_set)
+  self:send(2112, 0, string_ptr(character_set))
 end
 
 -- Should a single item auto-completion list automatically choose the item.
@@ -1968,7 +1972,7 @@ end
 
 -- Display a list of strings and send notification when user chooses one.
 function sci:user_list_show(list_type, item_list)
-  self:send(2117, list_type, item_list)
+  self:send(2117, list_type, string_ptr(item_list))
 end
 
 -- Set whether or not autocompletion is hidden automatically when nothing matches.
@@ -1995,7 +1999,7 @@ end
 
 -- Register an XPM image for use in autocompletion lists.
 function sci:register_image(type, xpm_data)
-  self:send(2405, type, xpm_data)
+  self:send(2405, type, string_ptr(xpm_data))
 end
 
 -- Clear all the registered XPM images.
@@ -2290,7 +2294,7 @@ end
 
 -- Replace the selected text with the argument text.
 function sci:replace_sel(text)
-  self:send(2170, 0, text)
+  self:send(2170, 0, string_ptr(text))
 end
 
 -- Set to read only or read write.
@@ -2345,7 +2349,7 @@ end
 
 -- Replace the contents of the document with the argument text.
 function sci:set_text(text)
-  self:send(2181, 0, text)
+  self:send(2181, 0, string_ptr(text))
 end
 
 -- Retrieve all the text in the document.
@@ -2416,7 +2420,7 @@ end
 -- Text is counted so it can contain NULs.
 -- Returns the length of the replacement text.
 function sci:replace_target(length, text)
-  return tonumber(self:send(2194, length, text))
+  return tonumber(self:send(2194, length, string_ptr(text)))
 end
 
 -- Replace the target text with the argument text after \d processing.
@@ -2426,14 +2430,14 @@ end
 -- Returns the length of the replacement text including any change
 -- caused by processing the \d patterns.
 function sci:replace_target_re(length, text)
-  return tonumber(self:send(2195, length, text))
+  return tonumber(self:send(2195, length, string_ptr(text)))
 end
 
 -- Search for a counted string in the target and set the target to the found
 -- range. Text is counted so it can contain NULs.
 -- Returns length of range or -1 for failure in which case target is not moved.
 function sci:search_in_target(length, text)
-  return tonumber(self:send(2197, length, text))
+  return tonumber(self:send(2197, length, string_ptr(text)))
 end
 
 -- Set the search flags used by SearchInTarget.
@@ -2448,7 +2452,7 @@ end
 
 -- Show a call tip containing a definition near position pos.
 function sci:call_tip_show(pos, definition)
-  self:send(2200, pos, definition)
+  self:send(2200, pos, string_ptr(definition))
 end
 
 -- Remove the call tip from the screen.
@@ -2708,7 +2712,7 @@ end
 -- NUL terminated text argument.
 -- Does not handle tab or control characters.
 function sci:text_width(style, text)
-  return tonumber(self:send(2276, style, text))
+  return tonumber(self:send(2276, style, string_ptr(text)))
 end
 
 -- Sets the scroll range so that maximum scroll position has
@@ -2741,7 +2745,7 @@ end
 
 -- Append a string to the end of the document without changing the selection.
 function sci:append_text(length, text)
-  self:send(2282, length, text)
+  self:send(2282, length, string_ptr(text))
 end
 
 -- Is drawing done in two phases with backgrounds drawn before faoregrounds?
@@ -3201,13 +3205,13 @@ end
 -- Find some text starting at the search anchor.
 -- Does not ensure the selection is visible.
 function sci:search_next(flags, text)
-  return tonumber(self:send(2367, flags, text))
+  return tonumber(self:send(2367, flags, string_ptr(text)))
 end
 
 -- Find some text starting at the search anchor and moving backwards.
 -- Does not ensure the selection is visible.
 function sci:search_prev(flags, text)
-  return tonumber(self:send(2368, flags, text))
+  return tonumber(self:send(2368, flags, string_ptr(text)))
 end
 
 -- Retrieves the number of lines completely visible.
@@ -3509,7 +3513,7 @@ end
 
 -- Copy argument text to the clipboard.
 function sci:copy_text(length, text)
-  self:send(2420, length, text)
+  self:send(2420, length, string_ptr(text))
 end
 
 -- Set the selection mode to stream (SC_SEL_STREAM) or rectangular (SC_SEL_RECTANGLE/SC_SEL_THIN) or
@@ -3624,7 +3628,7 @@ end
 -- Set the set of characters making up whitespace for when moving or selecting by word.
 -- Should be called after SetWordChars.
 function sci:set_whitespace_chars(characters)
-  self:send(2443, 0, characters)
+  self:send(2443, 0, string_ptr(characters))
 end
 
 -- Get the set of characters making up whitespace for when moving or selecting by word.
@@ -3635,7 +3639,7 @@ end
 -- Set the set of characters making up punctuation characters
 -- Should be called after SetWordChars.
 function sci:set_punctuation_chars(characters)
-  self:send(2648, 0, characters)
+  self:send(2648, 0, string_ptr(characters))
 end
 
 -- Get the set of characters making up punctuation characters
@@ -3890,7 +3894,7 @@ end
 
 -- Set the text in the text margin for a line
 function sci:margin_set_text(line, text)
-  self:send(2530, line, text)
+  self:send(2530, line, string_ptr(text))
 end
 
 -- Get the text in the text margin for a line
@@ -3910,7 +3914,7 @@ end
 
 -- Set the style in the text margin for a line
 function sci:margin_set_styles(line, styles)
-  self:send(2534, line, styles)
+  self:send(2534, line, string_ptr(styles))
 end
 
 -- Get the styles in the text margin for a line
@@ -3945,7 +3949,7 @@ end
 
 -- Set the annotation text for a line
 function sci:annotation_set_text(line, text)
-  self:send(2540, line, text)
+  self:send(2540, line, string_ptr(text))
 end
 
 -- Get the annotation text for a line
@@ -3965,7 +3969,7 @@ end
 
 -- Set the annotation styles for a line
 function sci:annotation_set_styles(line, styles)
-  self:send(2544, line, styles)
+  self:send(2544, line, string_ptr(styles))
 end
 
 -- Get the annotation styles for a line
@@ -4292,13 +4296,13 @@ end
 -- Define a marker from RGBA data.
 -- It has the width and height from RGBAImageSetWidth/Height
 function sci:marker_define_rgbaimage(marker_number, pixels)
-  self:send(2626, marker_number, pixels)
+  self:send(2626, marker_number, string_ptr(pixels))
 end
 
 -- Register an RGBA image for use in autocompletion lists.
 -- It has the width and height from RGBAImageSetWidth/Height
 function sci:register_rgbaimage(type, pixels)
-  self:send(2627, type, pixels)
+  self:send(2627, type, string_ptr(pixels))
 end
 
 -- Scroll to start of document.
@@ -4379,22 +4383,22 @@ end
 
 -- Set up a value that may be used by a lexer for some optional feature.
 function sci:set_property(key, value)
-  self:send(4004, key, value)
+  self:send(4004, string_ptr(key), string_ptr(value))
 end
 
 -- Set up the key words used by the lexer.
 function sci:set_key_words(keyword_set, key_words)
-  self:send(4005, keyword_set, key_words)
+  self:send(4005, keyword_set, string_ptr(key_words))
 end
 
 -- Set the lexing language of the document based on string name.
 function sci:set_lexer_language(language)
-  self:send(4006, 0, language)
+  self:send(4006, 0, string_ptr(language))
 end
 
 -- Load a lexer library (dll / so).
 function sci:load_lexer_library(path)
-  self:send(4007, 0, path)
+  self:send(4007, 0, string_ptr(path))
 end
 
 -- Retrieve a "property" value previously set with SetProperty.
@@ -4411,7 +4415,7 @@ end
 -- Retrieve a "property" value previously set with SetProperty,
 -- interpreted as an int AFTER any "$()" variable replacement.
 function sci:get_property_int(key)
-  return tonumber(self:send(4010, key, 0))
+  return tonumber(self:send(4010, string_ptr(key), 0))
 end
 
 -- Retrieve the number of bits the current lexer needs for styling.
@@ -4437,7 +4441,7 @@ end
 
 -- Retrieve the type of a property.
 function sci:property_type(name)
-  return tonumber(self:send(4015, name, 0))
+  return tonumber(self:send(4015, string_ptr(name), 0))
 end
 
 -- Describe a property.

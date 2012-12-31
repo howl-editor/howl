@@ -110,7 +110,8 @@ local function return_with_cast(expr, ret_type)
 end
 
 local function convert_param(p)
-  if p.what == 'colour' then return 'string_to_color(' .. p.name .. ')'
+  if p.what == 'string' then return 'string_ptr(' .. p.name .. ')'
+  elseif p.what == 'colour' then return 'string_to_color(' .. p.name .. ')'
   else return p.name end
 end
 
