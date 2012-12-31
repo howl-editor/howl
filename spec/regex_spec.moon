@@ -15,6 +15,11 @@ describe 'Regex', ->
   it '.capture_count holds the number of captures in the pattern', ->
     assert.equal 2, r('foo(bar) (\\w+)').capture_count
 
+  it 'r.is_instance(v) returns true if <v> is a regex', ->
+    assert.is_true r.is_instance r'foo'
+    assert.is_false r.is_instance 'foo'
+    assert.is_false r.is_instance {}
+
   describe 'match(string [, init])', ->
     it 'returns nil if the pattern does not match', ->
       assert.is_nil r'foo'\match 'bar'

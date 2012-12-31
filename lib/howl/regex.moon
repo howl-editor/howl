@@ -126,11 +126,9 @@ r = (pattern) ->
   ffi.gc regex, C.g_regex_unref
   return regex
 
-escape = (s) ->
-  u C.g_regex_escape_string(s, s.size or #s)
-
 return setmetatable {
-  :escape
+  escape: (s) -> u C.g_regex_escape_string(s, s.size or #s)
+  is_instance: (v) -> ffi.istype regex, v
 }, {
   __call: (...) => r ...
 }
