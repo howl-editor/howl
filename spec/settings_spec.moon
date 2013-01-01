@@ -26,7 +26,7 @@ describe 'Settings', ->
 
     it 'defaults to "$HOME/.howl" when <dir> is not provided', ->
       getenv = os.getenv
-      os.getenv = -> tmpdir.path
+      os.getenv = -> tostring tmpdir.path
       pcall Settings
       os.getenv = getenv
       assert.is_true tmpdir\join('.howl').exists
@@ -57,18 +57,18 @@ describe 'Settings', ->
       Settings(tmpdir)\load_user!
       assert.is_not.equal #log.entries, 0
       assert.match log.entries[#log.entries].message, 'init.moon'
-      
+
   describe 'load_system(name)', ->
    it 'returns the loaded contents of a file named system/<name>.lua', ->
       sysdir\join('foo.lua').contents = 'return { a = "bar" }'
       assert.same {a: 'bar'}, settings\load_system 'foo'
-      
+
    it 'returns nil if the the file does not exist', ->
       assert.is_nil settings\load_system 'no_such_file'
-      
+
   describe 'save_system(name, table)', ->
     it 'saves the table to a loadeable file system/<name>.lua', ->
       settings\save_system 'saved', a: 'bar'
       file = tmpdir / 'system/saved.lua'
       assert.is_true file.exists
-      assert.same {a: 'bar'}, loadfile(file)!    
+      assert.same {a: 'bar'}, loadfile(file)!

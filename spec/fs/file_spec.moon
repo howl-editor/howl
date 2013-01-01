@@ -15,6 +15,10 @@ describe 'File', ->
       assert.is_true file.is_directory
       file\delete_all!
 
+  it 'creation takes a path (string or ustring)', ->
+    File '/bin/ls'
+    File u'/bin/ls'
+
   describe '.is_absolute', ->
     it 'returns true if the given path is absolute', ->
       assert.is_true File.is_absolute '/bin/ls'
@@ -25,13 +29,16 @@ describe 'File', ->
       assert.is_false File.is_absolute 'bin\\ls'
 
   it '.basename returns the basename of the path', ->
-      assert.equal File('/foo/base.ext').basename, 'base.ext'
+    assert.equal File('/foo/base.ext').basename, 'base.ext'
 
   it '.extension returns the extension of the path', ->
-      assert.equal File('/foo/base.ext').extension, 'ext'
+    assert.equal File('/foo/base.ext').extension, 'ext'
+
+  it '.path returns the path of the file as a ustring', ->
+    assert.equal u'/foo/base.ext', File('/foo/base.ext').path
 
   it '.uri returns an URI representing the path', ->
-      assert.equal File('/foo.txt').uri, 'file:///foo.txt'
+    assert.equal File('/foo.txt').uri, 'file:///foo.txt'
 
   it '.exists returns true if the path exists', ->
     with_tmpfile (file) -> assert.is_true file.exists
@@ -93,6 +100,7 @@ describe 'File', ->
 
   it 'join returns a new file representing the specified child', ->
     assert.equal File('/bin')\join('ls').path, '/bin/ls'
+    assert.equal File('/bin')\join(u'ls').path, '/bin/ls'
 
   it 'relative_to_parent returns a path relative to the specified parent', ->
     parent = File '/bin'
@@ -173,7 +181,9 @@ describe 'File', ->
   describe 'tostring', ->
     it 'returns a string containing the path', ->
       with_tmpfile (file) ->
-        assert.equal file\tostring!, file.path
+        to_s = file\tostring!
+        assert.equal 'string', typeof to_s
+        assert.equal to_s, file.path
 
   describe 'find', ->
     with_populated_dir = (f) ->

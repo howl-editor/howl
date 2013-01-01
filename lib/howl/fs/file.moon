@@ -19,8 +19,9 @@ class File extends PropertyObject
   separator: jit.os == 'Windows' and '\\' or '/'
 
   new: (path) =>
-    @gfile = if type(path) == 'string' then GFile.new_for_path path else path
-    @path = @gfile\get_path!
+    t = typeof path
+    @gfile = if t == 'string' or t == 'ustring' then GFile.new_for_path tostring(path) else path
+    @path = u @gfile\get_path!
     @_stats = {}
     super!
 
@@ -77,7 +78,7 @@ class File extends PropertyObject
 
   join: (...) =>
     root = @gfile
-    root = root\get_child(child) for child in *{...}
+    root = root\get_child(tostring child) for child in *{...}
     File root
 
   relative_to_parent: (parent) =>
@@ -125,7 +126,7 @@ class File extends PropertyObject
 
     files
 
-  tostring: => @path or @uri
+  tostring: => tostring @path or @uri
 
   _info: (namespace) =>
     if namespace

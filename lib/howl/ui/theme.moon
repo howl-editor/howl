@@ -67,7 +67,7 @@ parse_background = (value, theme_dir) ->
     'background-image: ' .. value
   else
     if not File.is_absolute value
-      value = theme_dir\join(value).path
+      value = tostring theme_dir\join(value).path
     "background-image: url('" .. value .. "')"
 
 parse_font = (font) ->

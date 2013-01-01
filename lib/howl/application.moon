@@ -150,7 +150,8 @@ class Application extends PropertyObject
     for b in *@buffers
       continue unless b.file
       append session.buffers, {
-        file: b.file.path
+        -- todo: don't tostring the paths once serialization is fixed
+        file: tostring b.file.path
         last_shown: b.last_shown
         properties: b.properties
       }

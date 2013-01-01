@@ -5,7 +5,7 @@ moon = require('moon')
 lua_loadfile = loadfile
 
 loadfile = function(filename, mode, env)
-  filename = type(filename) == 'string' and filename or tostring(filename)
+  filename = tostring(filename)
   if (filename:match('%.moon$')) then
     return moonscript.loadfile(filename)
   else
