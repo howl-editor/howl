@@ -41,11 +41,13 @@ class Matcher
   __call: (search) =>
     return @candidates if not search or #search == 0
 
-    search = search\lower!
+    lower = search\lower!
+    prev_search = tostring lower\sub 1, -2
+    search = tostring lower
     matches = @cache.matches[search] or {}
     if #matches > 0 then return matches
 
-    lines = @cache.lines[string.sub(search, 1, -2)] or @lines
+    lines = @cache.lines[search\sub 1, -2] or @lines
     matching_lines = {}
     pattern = match_pattern search
 
@@ -63,7 +65,7 @@ class Matcher
     matching_candidates
 
   explain: (search, text) ->
-    pattern = match_pattern search\lower!
+    pattern = match_pattern tostring search\lower!
     match = pattern\match text\lower!
     return match unless match and match.how == 'exact'
     for pos = match[1] + 1, match[1] + #search - 1

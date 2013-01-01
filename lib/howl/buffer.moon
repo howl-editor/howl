@@ -134,7 +134,8 @@ class Buffer extends PropertyObject
   replace: (pattern, replacement) =>
     matches = {}
     pos = 1
-    text = @text
+    -- todo: don't to string, but convert char to byte positions
+    text = tostring @text
 
     while pos < @size
       start_pos, end_pos, match = text\find pattern, pos

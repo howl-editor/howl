@@ -6,3 +6,10 @@ describe 'Globals', ->
 
   it 'append is an alias for table.insert', ->
     assert.equal append, table.insert
+
+  it 'typeof(v) is like type(), but handles ustring, regexes and moonscript classes', ->
+    assert.equal 'ustring', typeof u'foo'
+    assert.equal 'regex', typeof r'foo'
+
+    class Bar
+    assert.equal 'Bar', typeof Bar!

@@ -33,11 +33,11 @@ set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
 require 'howl.moonscript_support'
 lgi = require('lgi')
 howl = auto_module('howl')
+require('howl.globals')
 
 local code_cache = require('howl.code_cache')(app_root .. '/lib')
 table.insert(package.loaders, 2, code_cache.loader)
 
-require('howl.globals')
 _G.log = require('howl.log')
 
 howl.app = howl.Application(howl.fs.File(app_root), argv)

@@ -5,7 +5,7 @@ line_mt =
     getter = @_getters[k]
     return getter self if getter
 
-    f = rawget string, k
+    f = rawget u, k
     if f
       return (_, ...) -> f @text, ...
 

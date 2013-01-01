@@ -34,9 +34,7 @@ describe 'ustrings', ->
     assert.is_true 'c' > u'b'
 
   it 'concatenation always returns a ustring', ->
-    us = u'ab'
-    result = us .. 'cd'
-    assert.equal getmetatable(us), getmetatable(result)
+    assert.equal 'ustring', typeof u'ab' .. 'cd'
 
   it 'the # operator.returns the number of characters in the string', ->
     assert.equal 3, #u('foo')
@@ -45,6 +43,11 @@ describe 'ustrings', ->
   it '.size contains the number of bytes in the string', ->
     assert.equal 3, u('foo').size
     assert.equal 6, u('åäö').size
+
+  it 'u.is_instance(v) returns true if <v> is an ustring', ->
+    assert.is_true u.is_instance u'foo'
+    assert.is_false u.is_instance 'foo'
+    assert.is_false u.is_instance {}
 
   it 'len() returns the number characters in the string', ->
     assert.equal 3, u('foo')\len!
@@ -88,7 +91,7 @@ describe 'ustrings', ->
       s = u'aåäöx'
       assert.equal 'ä', s[-3]
 
-  it 'match(..) always returns ustrings for string captures', ->
+  it 'match(..) returns ustrings for string captures', ->
     assert.same { u'a', 2 }, { u'ab'\match '(%w)()' }
 
   it 'gmatch(..) always returns ustrings for string captures', ->
@@ -108,3 +111,26 @@ describe 'ustrings', ->
 
     it 'always returns ustrings for string captures', ->
       assert.same {1, 1, u'a'}, { u'a'\find '(a)' }
+
+  it 'format(formatstring, ...) accepts and returns ustrings', ->
+    assert.equal 'ustring', typeof u'%d'\format 2
+
+  it 'rep(n, sep) accepts and returns ustrings', ->
+    ret = u'a'\rep 2, u'x'
+    assert.equal 'axa', ret
+    assert.equal 'ustring', typeof ret
+
+  it 'gsub(pattern, repl [, n]) accepts and returns ustrings', ->
+    s, count = u'foo bar'\gsub u'%w+', u'bork'
+    assert.equal 'bork bork', s
+    assert.equal 2, count
+    assert.equal 'ustring', typeof s
+
+  describe 'poor man system integration', ->
+    it 'lpeg.match accepts ustrings', ->
+      assert.is_not_nil lpeg.match lpeg.P'a', u'a'
+
+    it 'io.open accepts ustrings', ->
+      with_tmpfile (file) ->
+        f = assert io.open u file.path
+        f\close!

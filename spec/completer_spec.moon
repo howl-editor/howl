@@ -14,7 +14,7 @@ describe 'Completer', ->
       append buffer.completers, factory
       completer = Completer(buffer, 6)
       completer\complete 6
-      assert.spy(factory).was.called_with buffer, buffer.lines[1], 'mr.'
+      assert.spy(factory).was.called_with buffer, buffer.lines[1], u'mr.'
       completer\complete 6
       assert.spy(factory).was.called(1)
 

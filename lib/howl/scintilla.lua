@@ -54,7 +54,7 @@ local text_range = ffi.typeof('text_range')
 local find_text = ffi.typeof('find_text')
 
 local function string_ptr(s)
-  return s.ptr and s.ptr or const_char_p(s)
+  return u.is_instance(s) and s.ptr or const_char_p(s)
 end
 
 local function string_to_color(rgb)
@@ -151,7 +151,7 @@ end
 
 function sci:send_with_stringresult(message, arg1)
   size = self:send(message, arg1, nil)
-  if size == 0 then return '' end
+  if size == 0 then return u'' end
   buffer = char_p(C.malloc(size + 1))
   -- for the cases where the additional argument isn't specified,
   -- we should send the length as computed above

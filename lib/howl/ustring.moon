@@ -14,6 +14,12 @@ ffi.cdef [[
   gchar * g_strndup(const gchar *str, gssize n);
   void g_free(gpointer mem);
   size_t strlen(const char *s);
+
+  struct ustring {
+    gchar *ptr;
+    signed long size;
+    signed long _len;
+  };
 ]]
 
 DEALLOC_NONE = 1
@@ -25,13 +31,7 @@ deallocators = {
   (u) -> C.free u.ptr
 }
 
-ustring = ffi.typeof [[
-  struct {
-    gchar *ptr;
-    signed long size;
-    signed long _len;
-  }
-]]
+ustring = ffi.typeof 'struct ustring'
 
 u = (ptr_or_string, size, len = -1, deallocator = DEALLOC_G_FREE) ->
   return ptr_or_string if ffi.istype ustring, ptr_or_string
@@ -73,10 +73,18 @@ transform_rets = (us, ...) ->
 
   table.unpack vals
 
-methods = {
+mod = {
+  :DEALLOC_NONE,
+  :DEALLOC_G_FREE,
+  :DEALLOC_FREE
+
+  is_instance: (v) -> ffi.istype ustring, v
+
   lower: => u C.g_utf8_strdown(@ptr, @size), @size, @_len
   upper: => u C.g_utf8_strup(@ptr, @size), @size, @_len
   reverse: => u C.g_utf8_strreverse(@ptr, @size), @size, @_len
+  format: (...) => u string.format to_s(self), ...
+  byte: (...) => string.byte to_s(self), ...
 
   match: (pattern, init) =>
     transform_rets self, string.match to_s(self), tostring(pattern), init
@@ -101,15 +109,16 @@ methods = {
   len: =>
     @_len = C.g_utf8_strlen @ptr, @size unless @_len >= 0
     tonumber @_len
-}
 
-for m in *{
-  'format'
-  'rep'
-  'gsub'
-  'byte'
+  rep: (n, sep) =>
+    sep = tostring sep if sep
+    u string.rep to_s(self), n, sep
+
+  gsub: (pattern, repl, n) =>
+    repl = tostring(repl) if ffi.istype ustring, repl
+    s, count = string.gsub to_s(self), tostring(pattern), repl, n
+    return u(s), count
 }
-  methods[m] = (...) => string[m] to_s(self), ...
 
 properties = {
 }
@@ -118,7 +127,7 @@ ffi.metatype ustring, {
   __tostring: => ffi.string @ptr, @size
   __len: => @len!
   __concat: (a, b) -> return u tostring(a) .. tostring(b)
-  __lt: (a, b) -> 0 >= C.g_utf8_collate to_ptr(a), to_ptr(b)
+  __lt: (a, b) -> 0 > C.g_utf8_collate to_ptr(a), to_ptr(b)
 
   __eq: (a, b) ->
     a, b = b, a if ffi.istype ustring, b
@@ -133,11 +142,16 @@ ffi.metatype ustring, {
   __index: (k) =>
     return @sub k, k if type(k) == 'number'
     return properties[k] self if properties[k]
-    return methods[k]
+    return mod[k]
 }
 
-return setmetatable {
-  :DEALLOC_NONE,
-  :DEALLOC_G_FREE,
-  :DEALLOC_FREE
-}, __call: (...) => u ...
+-- poor man's system integration (in wait of more efficient runtime integration)
+fix_arg = (arg) -> ffi.istype(ustring, arg) and tostring(arg) or arg 
+
+lpeg_match = lpeg.match
+lpeg.match = (pattern, subject, init) ->  lpeg_match pattern, fix_arg(subject), init
+
+io_open = io.open
+io.open = (filename, mode) -> io_open fix_arg(filename), mode
+
+return setmetatable mod, __call: (...) => u ...

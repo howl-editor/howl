@@ -47,6 +47,11 @@ describe 'Matcher', ->
     m = Matcher c
     assert.same { 'Item 2. 1%w' }, m('%w')
 
+  it 'accepts ustring both for candidates and searches', ->
+    c = { u'one', u'two' }
+    m = Matcher c
+    assert.same { u'one', u'two' }, m(u'o')
+
   describe 'explain(search, text)', ->
     it 'set .how to the type of match', ->
       assert.equal 'exact', Matcher.explain('fu', 'snafu').how
@@ -59,3 +64,6 @@ describe 'Matcher', ->
     it 'lower-cases the search and text just as for matching', ->
       assert.not_nil Matcher.explain 'FU', 'snafu'
       assert.not_nil Matcher.explain 'fu', 'SNAFU'
+
+    it 'accepts ustring both for <search> and <text>', ->
+      assert.not_nil Matcher.explain u'FU', u'snafu'

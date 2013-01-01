@@ -33,10 +33,8 @@ class Settings
     file = @sysdir\join(name .. '.lua')
     options = indent: '  ', fatal: true
     file.contents = serpent.dump t, options
-    
-    
+
   load_system: (name) =>
     file = @sysdir\join(name .. '.lua')
     return nil unless file.exists
-    loadfile(file)!
-    
+    (assert loadfile(file))!

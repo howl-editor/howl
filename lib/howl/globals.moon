@@ -1,3 +1,5 @@
+import type from _G
+
 export *
 
 u = require('howl.ustring')
@@ -9,3 +11,14 @@ callable = (o) ->
   return (mt and mt.__call) != nil
 
 append = table.insert
+
+typeof = (v) ->
+  t = type v
+  if t == 'cdata'
+    return 'ustring' if u.is_instance v
+    return 'regex' if r.is_instance v
+  elseif t == 'table'
+    mt = getmetatable v
+    cls = rawget mt, '__class' if mt
+    return cls.__name if cls
+  t
