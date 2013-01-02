@@ -24,7 +24,7 @@ ffi.cdef [[
   };
 ]]
 
-DEALLOC_NONE = 1
+DEALLOC_NONE = 0
 DEALLOC_G_FREE = 1
 DEALLOC_FREE = 2
 
