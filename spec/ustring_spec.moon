@@ -136,6 +136,24 @@ describe 'ustrings', ->
     assert.equal 2, count
     assert.equal 'ustring', typeof s
 
+  describe 'byte_offset(...)', ->
+    it 'returns byte offsets for all character offsets passed as parameters', ->
+      assert.same {1, 3, 5}, { u'äåö'\byte_offset 1, 2, 3 }
+
+    it 'accepts non-increasing offsets', ->
+      assert.same {1, 1}, { u'ab'\byte_offset 1, 1 }
+
+    it 'raises an error for decreasing offsets', ->
+      assert.raises 'Decreasing offset', -> u'äåö'\byte_offset 2, 1
+
+    it 'raises error for out-of-bounds offsets', ->
+      assert.raises 'out of bounds', -> u'äåö'\byte_offset 1, 2, 4
+      assert.raises 'offset', -> u'äåö'\byte_offset 0
+      assert.raises 'offset', -> u'a'\byte_offset -1
+
+    it 'when parameters is a table, it returns a table for all offsets within that table', ->
+      assert.same {1, 3, 5}, u'äåö'\byte_offset { 1, 2, 3 }
+
   describe 'poor man system integration', ->
     it 'lpeg.match accepts ustrings', ->
       assert.is_not_nil lpeg.match lpeg.P'a', u'a'

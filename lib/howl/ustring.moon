@@ -139,6 +139,36 @@ mod = {
     repl = tostring(repl) if ffi.istype ustring, repl
     s, count = string.gsub to_s(self), tostring(pattern), repl, n
     return u(s), count
+
+  byte_offset: (...) =>
+    len = @len!
+    ptr = @ptr
+    cur_c_offset = 1
+    cur_b_offset = 1
+    args = {...}
+    offsets = {}
+    is_table = false
+
+    if type(args[1]) == 'table'
+      args = args[1]
+      is_table = true
+
+    for offset in *args
+      o = offset - cur_c_offset
+      if o == 0 then  append offsets, cur_b_offset
+      elseif o < 0 then error "Decreasing offset '#{offset}': must be greater than previous offset '#{cur_c_offset}'", 2
+      elseif o + cur_c_offset > len then error "Offset '#{offset}' out of bounds (length = #{len})", 2
+      else
+        next_ptr = C.g_utf8_offset_to_pointer ptr, o
+        cur_b_offset += next_ptr - ptr
+        append offsets, cur_b_offset
+        ptr = next_ptr
+        cur_c_offset = offset
+
+    return if is_table
+      offsets
+    else
+      table.unpack offsets
 }
 
 properties = {
