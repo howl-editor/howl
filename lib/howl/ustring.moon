@@ -157,7 +157,7 @@ mod = {
       o = offset - cur_c_offset
       if o == 0 then  append offsets, cur_b_offset
       elseif o < 0 then error "Decreasing offset '#{offset}': must be greater than previous offset '#{cur_c_offset}'", 2
-      elseif o + cur_c_offset > len then error "Offset '#{offset}' out of bounds (length = #{len})", 2
+      elseif o + cur_c_offset > len + 1 then error "Offset '#{offset}' out of bounds (length = #{len})", 2
       else
         next_ptr = C.g_utf8_offset_to_pointer ptr, o
         cur_b_offset += next_ptr - ptr

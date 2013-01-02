@@ -138,7 +138,7 @@ describe 'ustrings', ->
 
   describe 'byte_offset(...)', ->
     it 'returns byte offsets for all character offsets passed as parameters', ->
-      assert.same {1, 3, 5}, { u'äåö'\byte_offset 1, 2, 3 }
+      assert.same {1, 3, 5, 7}, { u'äåö'\byte_offset 1, 2, 3, 4 }
 
     it 'accepts non-increasing offsets', ->
       assert.same {1, 1}, { u'ab'\byte_offset 1, 1 }
@@ -147,7 +147,7 @@ describe 'ustrings', ->
       assert.raises 'Decreasing offset', -> u'äåö'\byte_offset 2, 1
 
     it 'raises error for out-of-bounds offsets', ->
-      assert.raises 'out of bounds', -> u'äåö'\byte_offset 1, 2, 4
+      assert.raises 'out of bounds', -> u'äåö'\byte_offset 5
       assert.raises 'offset', -> u'äåö'\byte_offset 0
       assert.raises 'offset', -> u'a'\byte_offset -1
 
