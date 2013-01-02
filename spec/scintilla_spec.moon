@@ -12,6 +12,12 @@ describe 'Scintilla', ->
       _core.sci.new = sci_new
       assert.is_true spy.called
 
+  it 'tmp_string() returns a temporary string for the entire document', ->
+    sci = Scintilla!
+    sci\add_text 3, 'foo'
+    assert.equal 'foo', sci\tmp_string!
+    assert.equal 3, #sci\tmp_string!
+
   it 'automatically converts color values to strings', ->
     sci = Scintilla!
     sci\style_set_fore 1, '#112233'
