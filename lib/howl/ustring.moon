@@ -1,6 +1,8 @@
 import const_char_p from howl.cdefs
 
 ffi = require 'ffi'
+bit = require 'bit'
+
 import C from ffi
 
 ffi.cdef [[
@@ -68,10 +70,27 @@ transform_rets = (us, ...) ->
       vals[i] = u val
     elseif t == 'number'
       pos_ptr = us.ptr + val - 1
+
+      -- position may be in the middle of a sequence here, so back up as needed
+      while pos_ptr != us.ptr and bit.band(pos_ptr[0], 0xc0) == 0x80
+        pos_ptr -= 1
+
       char_offset = C.g_utf8_pointer_to_offset us.ptr, pos_ptr
       vals[i] = tonumber char_offset + 1
 
   table.unpack vals
+
+char_to_byte_offset = (us, i) ->
+  return nil if i == nil
+
+  len = #us
+  if i < 0
+    i = len + i
+  elseif i > len
+    i = len
+
+  i = 1 if i < 1
+  (C.g_utf8_offset_to_pointer(us.ptr, i - 1) - us.ptr) + 1 -- convert to byte offset
 
 mod = {
   :DEALLOC_NONE,
@@ -87,6 +106,7 @@ mod = {
   byte: (...) => string.byte to_s(self), ...
 
   match: (pattern, init) =>
+    init = char_to_byte_offset self, init
     transform_rets self, string.match to_s(self), tostring(pattern), init
 
   gmatch: (pattern) =>
@@ -94,10 +114,11 @@ mod = {
     -> transform_rets self, gen!
 
   find: (pattern, init, plain) =>
+    init = char_to_byte_offset self, init
     transform_rets self, string.find to_s(self), tostring(pattern), init, plain
 
   sub: (i, j = -1) =>
-    len = tonumber @len!
+    len = @len!
     i += len + 1 if i < 0
     j += len + 1 if j < 0
     i = 1 if i < 1
@@ -146,7 +167,7 @@ ffi.metatype ustring, {
 }
 
 -- poor man's system integration (in wait of more efficient runtime integration)
-fix_arg = (arg) -> ffi.istype(ustring, arg) and tostring(arg) or arg 
+fix_arg = (arg) -> ffi.istype(ustring, arg) and tostring(arg) or arg
 
 lpeg_match = lpeg.match
 lpeg.match = (pattern, subject, init) ->  lpeg_match pattern, fix_arg(subject), init

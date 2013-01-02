@@ -91,8 +91,12 @@ describe 'ustrings', ->
       s = u'aåäöx'
       assert.equal 'ä', s[-3]
 
-  it 'match(..) returns ustrings for string captures', ->
-    assert.same { u'a', 2 }, { u'ab'\match '(%w)()' }
+  describe 'match(pattern [, init])', ->
+    it 'returns ustrings for string captures', ->
+      assert.same { u'a', 2 }, { u'ab'\match '(%w)()' }
+
+    it 'init specifies a character offset', ->
+      assert.same { u'ö', 4 }, { u'äåö'\match '(%S+)()', 3 }
 
   it 'gmatch(..) always returns ustrings for string captures', ->
     s = u'foo bar'
@@ -105,12 +109,18 @@ describe 'ustrings', ->
 
     assert.same { { 1, u'foo' }, { 5, u'bar' } }, rets
 
-  describe 'find(..)', ->
+  describe 'find(s, pattern [, init [, plain]])', ->
     it 'returns character offsets instead of byte offsets', ->
       assert.same {2, 4, 5}, { u'ä öx'\find '%s.+x()' }
 
+    it 'adjust middle-of-sequence position returns to character start', ->
+      assert.same {1, 1}, { u'äöx'\find '%S' }
+
     it 'always returns ustrings for string captures', ->
-      assert.same {1, 1, u'a'}, { u'a'\find '(a)' }
+      assert.same {1, 1, u'a'}, { u'ab'\find '(a)' }
+
+    it 'init specifies a character offset', ->
+      assert.same {3, 3, u'ö'}, { u'äåö'\find '(%S+)', 3 }
 
   it 'format(formatstring, ...) accepts and returns ustrings', ->
     assert.equal 'ustring', typeof u'%d'\format 2

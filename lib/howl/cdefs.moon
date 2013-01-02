@@ -19,6 +19,7 @@ ffi.cdef [[
   void free(void *ptr);
 
   glong g_utf8_pointer_to_offset(const gchar *str, const gchar *pos);
+  gchar * g_utf8_offset_to_pointer(const gchar *str, glong offset);
 ]]
 
 return {
