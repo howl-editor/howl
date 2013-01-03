@@ -169,6 +169,37 @@ mod = {
       offsets
     else
       table.unpack offsets
+
+  char_offset: (...) =>
+    len = @len!
+    size = @size
+    ptr = @ptr
+    cur_c_offset = 1
+    cur_b_offset = 1
+    args = {...}
+    offsets = {}
+    is_table = false
+
+    if type(args[1]) == 'table'
+      args = args[1]
+      is_table = true
+
+    for offset in *args
+      o = offset - cur_b_offset
+      if o == 0 then  append offsets, cur_c_offset
+      elseif o < 0 then error "Decreasing offset '#{offset}': must be greater than previous offset '#{cur_b_offset}'", 2
+      elseif o + cur_b_offset > size + 1 then error "Offset '#{offset}' out of bounds (size = #{size})", 2
+      else
+        next_ptr = ptr + o
+        cur_b_offset += next_ptr - ptr
+        cur_c_offset += tonumber C.g_utf8_pointer_to_offset ptr, next_ptr
+        append offsets, cur_c_offset
+        ptr = next_ptr
+
+    return if is_table
+      offsets
+    else
+      table.unpack offsets
 }
 
 properties = {

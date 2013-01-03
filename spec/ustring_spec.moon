@@ -154,6 +154,24 @@ describe 'ustrings', ->
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
       assert.same {1, 3, 5}, u'äåö'\byte_offset { 1, 2, 3 }
 
+  describe 'char_offset(...)', ->
+    it 'returns character offsets for all byte offsets passed as parameters', ->
+      assert.same {1, 2, 3, 4}, { u'äåö'\char_offset 1, 3, 5, 7 }
+
+    it 'accepts non-increasing offsets', ->
+      assert.same {2, 2}, { u'ab'\char_offset 2, 2 }
+
+    it 'raises an error for decreasing offsets', ->
+      assert.raises 'Decreasing offset', -> u'äåö'\char_offset 3, 1
+
+    it 'raises error for out-of-bounds offsets', ->
+      assert.raises 'out of bounds', -> u'ab'\char_offset 4
+      assert.raises 'offset', -> u'äåö'\char_offset 0
+      assert.raises 'offset', -> u'a'\char_offset -1
+
+    it 'when parameters is a table, it returns a table for all offsets within that table', ->
+      assert.same {1, 2, 3, 4}, u'äåö'\char_offset { 1, 3, 5, 7 }
+
   describe 'poor man system integration', ->
     it 'lpeg.match accepts ustrings', ->
       assert.is_not_nil lpeg.match lpeg.P'a', u'a'
