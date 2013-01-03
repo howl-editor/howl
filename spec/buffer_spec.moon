@@ -25,6 +25,7 @@ describe 'Buffer', ->
 
   it '.size returns the size of the buffer text, in bytes', ->
     assert.equal buffer('hello').size, 5
+    assert.equal buffer('åäö').size, 6
 
   it '.dirty indicates and allows setting the modified status', ->
     b = Buffer {}
@@ -119,30 +120,35 @@ describe 'Buffer', ->
     assert.is_true b.last_shown <= os.time!
 
   it '.chunk(start_pos, length) returns a chunk for the specified range', ->
-    b = buffer 'chunky bacon'
+    b = buffer 'chuñky bacon'
     chunk = b\chunk(8, 3)
     assert.equal 'bac', chunk.text
 
   it '.word_at(pos) returns a chunk for the word at <pos>', ->
-    b = buffer '"Hello", said Mr.Bacon'
+    b = buffer '"HƏllo", said Mr.Bačon'
     assert.equal '', b\word_at(1).text
-    assert.equal 'Hello', b\word_at(2).text
-    assert.equal 'Hello', b\word_at(6).text
-    assert.equal 'Hello', b\word_at(4).text
+    assert.equal 'HƏllo', b\word_at(2).text
+    assert.equal 'HƏllo', b\word_at(6).text
+    assert.equal 'HƏllo', b\word_at(4).text
     assert.equal '', b\word_at(8).text
     assert.equal 'said', b\word_at(14).text
     assert.equal 'Mr', b\word_at(16).text
-    assert.equal 'Bacon', b\word_at(19).text
+    assert.equal 'Bačon', b\word_at(19).text
+
+  it 'delete deletes the specified number of characters', ->
+    b = buffer 'ño örf'
+    b\delete 2, 3
+    assert.equal b.text, 'ñrf'
 
   describe 'insert(text, pos)', ->
     it 'inserts text at pos', ->
-      b = buffer 'heo'
-      b\insert 'll', 3
-      assert.equal b.text, 'hello'
+      b = buffer 'ño señor'
+      b\insert 'me gusta ', 4
+      assert.equal 'ño me gusta señor', b.text
 
     it 'returns the position right after the inserted text', ->
       b = buffer ''
-      assert.equal b\insert('hej', 1), 4
+      assert.equal 6, b\insert('Bačon', 1)
 
   it 'append(text) appends the specified text', ->
     b = buffer 'hello'
@@ -151,9 +157,9 @@ describe 'Buffer', ->
 
   describe '#replace(pattern, replacement)', ->
     it 'replaces all occurences of pattern with replacement', ->
-      b = buffer 'hello\nworld\n'
+      b = buffer 'hello\nuñi©ode\nworld\n'
       b\replace '[lo]', ''
-      assert.equal 'he\nwrd\n', b.text
+      assert.equal 'he\nuñi©de\nwrd\n', b.text
 
     context 'when pattern contains a grouping', ->
       it 'replaces only the match within pattern with replacement', ->
@@ -197,11 +203,6 @@ describe 'Buffer', ->
     assert.is_false b.destroyed
     b\destroy!
     assert.is_true b.destroyed
-
-  it 'delete deletes the specified number of characters', ->
-    b = buffer 'hello'
-    b\delete 2, 2
-    assert.equal b.text, 'hlo'
 
   it 'undo undoes the last operation', ->
     b = buffer 'hello'
@@ -301,9 +302,9 @@ describe 'Buffer', ->
             assert.equal 'blank\n\nfoo', b.text
             assert.equal file.contents, b.text
 
-  it '#buffer returns the same as buffer.size', ->
-    b = buffer 'hello'
-    assert.equal #b, b.size
+  it '#buffer returns the number of characters in the buffer', ->
+    assert.equal 5, #buffer('hello')
+    assert.equal 3, #buffer('åäö')
 
   it 'tostring(buffer) returns the buffer title', ->
     b = buffer 'hello'

@@ -14,7 +14,7 @@ describe 'BufferLines', ->
     lines = nil
 
     before_each ->
-      buf = buffer 'hello\n  world\nagain!'
+      buf = buffer 'hƏllØ\n  wØrld\nagain!'
       lines = buf.lines
 
     it '.nr holds the line number', ->
@@ -33,8 +33,8 @@ describe 'BufferLines', ->
       assert.is_true lines[1].blank
 
     it '.text returns the text of the specified line, sans linebreak', ->
-      assert.equal lines[1].text, 'hello'
-      assert.equal lines[2].text, '  world'
+      assert.equal lines[1].text, 'hƏllØ'
+      assert.equal lines[2].text, '  wØrld'
       assert.equal lines[3].text, 'again!'
 
     it 'tostring(line) gives the same as .text', ->
@@ -43,7 +43,7 @@ describe 'BufferLines', ->
     describe '.text = <content>', ->
       it 'replaces the line text with <content>', ->
         lines[1].text = 'Hola'
-        assert.equal buf.text, 'Hola\n  world\nagain!'
+        assert.equal buf.text, 'Hola\n  wØrld\nagain!'
 
       it 'raises an error if <content> is nil', ->
         assert.raises 'nil', -> lines[1].text = nil
@@ -54,7 +54,7 @@ describe 'BufferLines', ->
 
     it '.indentation = <nr> set the indentation for the line to <nr>', ->
       lines[3].indentation = 4
-      assert.equal buf.text, 'hello\n  world\n    again!'
+      assert.equal 'hƏllØ\n  wØrld\n    again!', buf.text
 
     it '.start_pos returns the start position for line', ->
       assert.equal lines[2].start_pos, 7
@@ -73,11 +73,11 @@ describe 'BufferLines', ->
     it '.indent() indents the line by <config.indent>', ->
       config.indent = 2
       buf.lines[1]\indent!
-      assert.equal buf.text, '  hello\n  world\nagain!'
+      assert.equal '  hƏllØ\n  wØrld\nagain!', buf.text
 
       config.set_local 'indent', 1, buf
       buf.lines[3]\indent!
-      assert.equal buf.text, '  hello\n  world\n again!'
+      assert.equal '  hƏllØ\n  wØrld\n again!', buf.text
 
     it '.unindent() unindents the line by <config.indent>', ->
       buf.text = '  first\n  second'
@@ -93,10 +93,10 @@ describe 'BufferLines', ->
       assert.equal #lines[1], 5
 
     it 'lines are equal if they have the same text', ->
-      lines[2] = 'hello'
+      lines[2] = 'hƏllØ'
       assert.equal lines[1], lines[2]
 
-    it 'string methods can be accessed directly on the object', ->
+    it 'ustring methods can be accessed directly on the object', ->
       line = lines[3]
       assert.equal line\sub(1,2), 'ag'
       assert.equal line\find('in'), 4

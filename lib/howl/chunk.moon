@@ -9,7 +9,7 @@ class Chunk extends PropertyObject
 
   @property text:
     get: =>
-      @buffer.sci\get_text_range @start_pos - 1, @end_pos
+      @buffer.sci\raw!\sub(@start_pos, @end_pos)
     set: (text) =>
       @buffer\as_one_undo ->
         @delete!
@@ -20,7 +20,7 @@ class Chunk extends PropertyObject
 
   @meta {
     __tostring: => @text
-    __len: => #@text
+    __len: => (@end_pos - @start_pos) + 1
   }
 
 return Chunk

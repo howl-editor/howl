@@ -119,14 +119,21 @@ class Buffer extends PropertyObject
   chunk: (pos, length) => Chunk self, pos, pos + length - 1
 
   word_at: (pos) =>
-    start_pos = @sci\word_start_position pos - 1, true
-    end_pos = @sci\word_end_position pos - 1, true
-    return Chunk self, start_pos + 1, end_pos
+    text = @sci\raw!
+    b_pos = text\byte_offset pos
+    start_pos = @sci\word_start_position b_pos - 1, true
+    end_pos = @sci\word_end_position b_pos - 1, true
+    start_pos, end_pos = text\char_offset start_pos + 1, end_pos + 1
+    return Chunk self, start_pos, end_pos - 1
 
-  delete: (pos, length) => @sci\delete_range pos - 1, length
+  delete: (pos, length) =>
+    start_pos, end_pos = @sci\raw!\byte_offset pos, pos + length
+    @sci\delete_range start_pos - 1, end_pos - start_pos
 
   insert: (text, pos) =>
-    @sci\insert_text pos - 1, text
+    text = u text
+    b_pos = @sci\raw!\byte_offset pos
+    @sci\insert_text b_pos - 1, text
     pos + #text
 
   append: (text) => @sci\append_text #text, text
@@ -134,8 +141,7 @@ class Buffer extends PropertyObject
   replace: (pattern, replacement) =>
     matches = {}
     pos = 1
-    -- todo: don't to string, but convert char to byte positions
-    text = tostring @text
+    text = @text
 
     while pos < @size
       start_pos, end_pos, match = text\find pattern, pos
@@ -144,17 +150,22 @@ class Buffer extends PropertyObject
       -- only replace the match within pattern if present
       end_pos = match and (start_pos + #match - 1) or end_pos
 
-      append matches, :start_pos, :end_pos
+      append matches, start_pos
+      append matches, end_pos
       pos = end_pos + 1
 
-    for i = #matches, 1, -1
-      match = matches[i]
+    b_offsets = text\byte_offset matches
+
+    for i = #b_offsets, 1, -2
+      start_pos = b_offsets[i - 1]
+      end_pos = b_offsets[i]
+
       with @sci
-        \set_target_start match.start_pos - 1
-        \set_target_end match.end_pos
+        \set_target_start start_pos - 1
+        \set_target_end end_pos
         \replace_target -1, replacement
 
-    #matches
+    #matches / 2
 
   save: =>
     if @file
@@ -203,7 +214,7 @@ class Buffer extends PropertyObject
       styler.mark_as_styled @sci, self
 
   @meta {
-    __len: => @size
+    __len: => @sci\count_characters 0, @size
     __tostring: => @title
   }
 
