@@ -26,8 +26,8 @@ describe 'ActionBuffer', ->
     context 'with style specified', ->
 
       it 'styles the text with the specified style', ->
-        buf.text = '||'
-        buf\insert 'hello', 2, 'keyword'
+        buf.text = '˫˫'
+        buf\insert 'hƏllo', 2, 'keyword'
         assert.equal style.at_pos(buf, 1), 'unstyled'
         assert.equal style.at_pos(buf, 2), 'keyword'
         assert.equal style.at_pos(buf, 6), 'keyword'
@@ -49,19 +49,19 @@ describe 'ActionBuffer', ->
     context 'with style specified', ->
 
       it 'styles the text with the specified style', ->
-        buf.text = '|'
-        buf\append 'hello', 'keyword'
+        buf.text = '˫'
+        buf\append 'hƏllo', 'keyword'
         assert.equal style.at_pos(buf, 1), 'unstyled'
         assert.equal style.at_pos(buf, 2), 'keyword'
         assert.equal style.at_pos(buf, 6), 'keyword'
 
       it 'styles the text with the default style if the style is unknown', ->
         buf\append 'again', 'what?'
-        assert.equal style.at_pos(buf, buf.size - 1), 'default'
+        assert.equal 'default', (style.at_pos(buf, buf.length - 1))
 
   describe 'style(start_pos, end_pos, style)', ->
-    it 'applies <style> for inclusive the text range given', ->
-      buf.text = 'hello'
+    it 'applies <style> for the inclusive text range given', ->
+      buf.text = 'hƏllo'
       buf\style 2, 4, 'keyword'
       assert.equal style.at_pos(buf, 1), 'unstyled'
       assert.equal style.at_pos(buf, 2), 'keyword'

@@ -123,7 +123,8 @@ set_for_theme = (theme) ->
   define name, def for name, def in pairs(theme.styles or {})
 
 at_pos = (buffer, pos) ->
-  style_num = buffer.sci\get_style_at pos - 1
+  b_pos = buffer.sci\raw!\byte_offset pos
+  style_num = buffer.sci\get_style_at b_pos - 1
   name = default_style_numbers[style_num] or get_buffer_styles(buffer)[style_num]
   name, styles[name]
 

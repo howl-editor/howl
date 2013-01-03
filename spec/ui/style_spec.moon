@@ -124,14 +124,14 @@ describe 'style', ->
   it '.at_pos(buffer, pos) returns name and style definition at pos', ->
     style.define 'stylish', color: '#101010'
     buffer = ActionBuffer!
-    buffer\insert 'super ', 1, 'keyword'
-    buffer\insert 'stylish', 7, 'stylish'
+    buffer\insert 'hƏllo', 1, 'keyword'
+    buffer\insert 'Bačon', 6, 'stylish'
 
-    name, def = style.at_pos(buffer, 6)
+    name, def = style.at_pos(buffer, 5)
     assert.equal name, 'keyword'
     assert.same def, style.keyword
 
-    name, def = style.at_pos(buffer, 7)
+    name, def = style.at_pos(buffer, 6)
     assert.equal name, 'stylish'
     assert.same def, style.stylish
 
