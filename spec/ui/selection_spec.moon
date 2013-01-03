@@ -2,7 +2,7 @@ import Gtk from lgi
 import Buffer from howl
 import Editor, theme from howl.ui
 
-text = 'Line 1 of text\nLine 2 of text'
+text = 'Liñe 1 ʘf tƏxt\nLiñe 1 ʘf tƏxt'
 
 describe 'Selection', ->
 
@@ -20,7 +20,7 @@ describe 'Selection', ->
 
   it 'set(anchor, pos) sets the anchor and cursor at the same time', ->
     selection\set 1, 5
-    assert.equal 'Line', selection.text
+    assert.equal 'Liñe', selection.text
 
   describe '.anchor', ->
     it 'returns the current position if nothing is selected', ->
@@ -49,7 +49,7 @@ describe 'Selection', ->
       selection.anchor = 3
       selection.cursor = 5
       assert.equal 5, selection.cursor
-      assert.equal 'ne', selection.text
+      assert.equal 'ñe', selection.text
 
   it '.empty returns whether any selection exists', ->
     assert.is_true selection.empty
@@ -61,7 +61,7 @@ describe 'Selection', ->
       cursor.pos = 1
       selection.persistent = true
       cursor\down!
-      assert.equal 'Line 1 of text\n', selection.text
+      assert.equal 'Liñe 1 ʘf tƏxt\n', selection.text
 
   it 'range() returns the [start, stop) range of the selection in ascending order', ->
     selection\set 2, 5
@@ -94,7 +94,7 @@ describe 'Selection', ->
     it 'removes the selected text', ->
       selection\set 1, 5
       selection\cut!
-      assert.equal ' 1 of text', buffer.lines[1].text
+      assert.equal ' 1 ʘf tƏxt', buffer.lines[1].text
 
     it 'removes the selection', ->
       selection\set 2, 5
@@ -111,7 +111,7 @@ describe 'Selection', ->
       selection\set 1, 5
       selection\cut!
       editor\paste!
-      assert.equal 'Line 1 of text', buffer.lines[1].text
+      assert.equal 'Liñe 1 ʘf tƏxt', buffer.lines[1].text
 
   describe 'copy', ->
     it 'removes the selection', ->
@@ -129,7 +129,7 @@ describe 'Selection', ->
       selection\set 1, 5
       selection\copy!
       editor\paste!
-      assert.equal 'LineLine 1 of text', buffer.lines[1].text
+      assert.equal 'LiñeLiñe 1 ʘf tƏxt', buffer.lines[1].text
 
   describe '.text', ->
     it 'returns nil if nothing is selected', ->
@@ -143,7 +143,7 @@ describe 'Selection', ->
       it 'replaces the selection with <text> and removes the selection', ->
         selection\set 1, 3
         selection.text = 'Shi'
-        assert.equal 'Shine 1 of text', buffer.lines[1].text
+        assert.equal 'Shiñe 1 ʘf tƏxt', buffer.lines[1].text
         assert.is_true selection.empty
 
       it 'raises an error if the selection is empty', ->
@@ -153,15 +153,15 @@ describe 'Selection', ->
     before_each -> selection.includes_cursor = true
     after_each -> selection.includes_cursor = false
 
-    it '.text includes the current character', ->
-      selection\set 1, 4
+    it '.text #includes the current character', ->
+      selection\set 1, 3
       selection.includes_cursor = true
-      assert.equal 'Line', selection.text
+      assert.equal 'Liñ', selection.text
 
     it '.text = <text> replaces the current character as well', ->
       selection\set 1, 2
       selection.text = 'Shi'
-      assert.equal 'Shine 1 of text', buffer.lines[1].text
+      assert.equal 'Shiñe 1 ʘf tƏxt', buffer.lines[1].text
 
     describe 'range()', ->
       it 'includes the cursor position if needed', ->
@@ -184,14 +184,14 @@ describe 'Selection', ->
     it 'cut() removes the current character as well', ->
       selection\set 1, 5
       selection\cut!
-      assert.equal '1 of text', buffer.lines[1].text
+      assert.equal '1 ʘf tƏxt', buffer.lines[1].text
 
     it 'copy() copies the current character as well', ->
       selection\set 1, 4
       selection\copy!
       cursor.column = 1
       editor\paste!
-      assert.equal 'LineLine 1 of text', buffer.lines[1].text
+      assert.equal 'LiñeLiñe 1 ʘf tƏxt', buffer.lines[1].text
 
     it '.empty is only false at eof', ->
       assert.is_false selection.empty

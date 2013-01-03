@@ -3,9 +3,9 @@ import Buffer from howl
 import Editor, theme from howl.ui
 
 text = [[
-Line 1 of text
-And here's line two
-And finally a third line
+Liñe 1 ʘf tƏxt
+And hƏre's line twʘ
+And finally a ƫhird line
 ]]
 
 describe 'Cursor', ->
@@ -40,7 +40,7 @@ describe 'Cursor', ->
       selection.persistent = true
       cursor.pos = 5
       assert.equal cursor.pos, 5
-      assert.equals 'Line', selection.text
+      assert.equals 'Liñe', selection.text
 
   describe '.line', ->
     it 'returns the current line', ->
@@ -61,7 +61,7 @@ describe 'Cursor', ->
       cursor.pos = 1
       selection.persistent = true
       cursor.line = 2
-      assert.equals 'Line 1 of text\n', selection.text
+      assert.equals 'Liñe 1 ʘf tƏxt\n', selection.text
 
   describe '.column', ->
     it 'returns the current column', ->
@@ -75,8 +75,8 @@ describe 'Cursor', ->
     it 'setting adjusts the selection if it is persistent', ->
       cursor.pos = 1
       selection.persistent = true
-      cursor.column = 2
-      assert.equals 'L', selection.text
+      cursor.column = 5
+      assert.equals 'Liñe', selection.text
 
   it '.at_end_of_line returns true if cursor is at the end of the line', ->
     cursor.pos = 1
@@ -90,12 +90,12 @@ describe 'Cursor', ->
     assert.equal cursor.line, 2
     assert.equal cursor.column, 4
 
-  it 'up! moves the cursor one line down, respecting the current column', ->
+  it 'up! moves the cursor one line up, respecting the current column', ->
     cursor.line = 2
     cursor.column = 3
     cursor\up!
-    assert.equal cursor.line, 1
-    assert.equal cursor.column, 3
+    assert.equal 1, cursor.line
+    assert.equal 3, cursor.column
 
   it 'right! moves the cursor one char right', ->
     cursor.pos = 1
@@ -112,11 +112,11 @@ describe 'Cursor', ->
       sel = editor.selection
       cursor.pos = 1
       cursor\right true
-      assert.equal sel.text, 'L'
+      assert.equal 'L', sel.text
       cursor\down true
-      assert.equal sel.text, 'Line 1 of text\nA'
+      assert.equals 'Liñe 1 ʘf tƏxt\nA', sel.text
       cursor\left true
-      assert.equal sel.text, 'Line 1 of text\n'
+      assert.equals 'Liñe 1 ʘf tƏxt\n', sel.text
       cursor\up true
       assert.is_true sel.empty
 
@@ -126,6 +126,6 @@ describe 'Cursor', ->
       sel.persistent = true
       cursor.pos = 1
       cursor\right!
-      assert.equal sel.text, 'L'
+      assert.equal 'L', sel.text
       cursor.line = 2
-      assert.equal sel.text, 'Line 1 of text\n'
+      assert.equals 'Liñe 1 ʘf tƏxt\n', sel.text

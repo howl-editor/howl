@@ -18,8 +18,9 @@ ffi.cdef [[
   void *malloc(size_t size);
   void free(void *ptr);
 
-  glong g_utf8_pointer_to_offset(const gchar *str, const gchar *pos);
+  glong   g_utf8_pointer_to_offset(const gchar *str, const gchar *pos);
   gchar * g_utf8_offset_to_pointer(const gchar *str, glong offset);
+  gchar * g_utf8_find_next_char   (const gchar *p, const gchar *end);
 ]]
 
 return {

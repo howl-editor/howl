@@ -26,29 +26,29 @@ class Cursor extends PropertyObject
       else error 'Invalid style ' .. style, 2
 
   @property pos:
-    get: => 1 + @sci\get_current_pos!
+    get: => @sci\raw!\char_offset 1 + @sci\get_current_pos!
     set: (pos) =>
       if @selection.persistent
         @selection\set @selection.anchor, pos
       else
-        @sci\goto_pos pos - 1
+        b_pos = @sci\raw!\byte_offset pos
+        @sci\goto_pos b_pos - 1
+
       @sci\choose_caret_x!
 
   @property line:
-    get: => 1 + @sci\line_from_position @pos - 1
+    get: => 1 + @sci\line_from_position @sci\get_current_pos!
     set: (line) =>
       if line < 1 then @start!
       elseif line > @sci\get_line_count! then @eof!
-      else @pos = 1 + @sci\position_from_line(line - 1)
+      else @pos = @sci\raw!\char_offset 1 + @sci\position_from_line(line - 1)
 
   @property column:
-    get: => 1 + @sci\get_column @pos - 1
-    set: (col) => @pos = 1 + @sci\find_column @line - 1, col - 1
+    get: => 1 + @sci\get_column @sci\get_current_pos!
+    set: (col) => @pos = @sci\raw!\char_offset 1 + @sci\find_column @line - 1, col - 1
 
   @property at_end_of_line:
-    get: =>
-      cur_pos = @pos
-      @sci\get_line_end_position(@line - 1) == cur_pos - 1
+    get: => @sci\get_line_end_position(@line - 1) == @sci\get_current_pos!
 
   _adjust_persistent_selection_if_needed: =>
     return unless @selection.persistent and @selection.includes_cursor
