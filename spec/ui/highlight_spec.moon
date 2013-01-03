@@ -3,7 +3,8 @@ import Scintilla, Buffer from howl
 
 describe 'highlight', ->
   indicator_on = (buffer, pos, number) ->
-    on = buffer.sci\indicator_all_on_for pos - 1
+    b_pos = buffer.sci\raw!\byte_offset pos
+    on = buffer.sci\indicator_all_on_for b_pos - 1
     return on and bit.band(on, number + 1) != 0
 
   describe '.define(name, definition)', ->
@@ -33,7 +34,7 @@ describe 'highlight', ->
   describe '.apply(name, buffer, pos, length)', ->
     it 'activates the highlight for the specified range', ->
       buffer = Buffer {}
-      buffer.text = 'hello'
+      buffer.text = 'hƏllo'
       highlight.define 'custom', color: '#334455'
       number = highlight.number_for 'custom', buffer
       highlight.apply 'custom', buffer, 2, 2
@@ -88,7 +89,7 @@ describe 'highlight', ->
     highlight.define 'highlight_bar', color: '#334455'
     highlight.define 'highlight_foo', color: '#334455'
     buffer = Buffer {}
-    buffer.text = 'hello'
+    buffer.text = 'hƏllo'
     highlight.apply 'highlight_bar', buffer, 1, 4
     assert.same highlight.at_pos(buffer, 1), { 'highlight_bar' }
     assert.same highlight.at_pos(buffer, 5), { }
@@ -97,7 +98,7 @@ describe 'highlight', ->
     it 'removes all highlights with <name> in <buffer>', ->
       highlight.define 'foo', color: '#334455'
       buffer = Buffer {}
-      buffer.text = 'one two'
+      buffer.text = 'ʘne twʘ'
       highlight.apply 'foo', buffer, 1, 3
       highlight.apply 'foo', buffer, 5, 3
       highlight.remove_all 'foo', buffer
@@ -116,7 +117,7 @@ describe 'highlight', ->
     it 'removes all highlights with <name> in <buffer> in the range specified (inclusive)', ->
       highlight.define 'foo', color: '#334455'
       buffer = Buffer {}
-      buffer.text = 'one two'
+      buffer.text = 'ʘne twʘ'
       highlight.apply 'foo', buffer, 1, 3
       highlight.apply 'foo', buffer, 5, 3
       highlight.remove_in_range 'foo', buffer, 4, 7
@@ -127,5 +128,5 @@ describe 'highlight', ->
     it 'does nothing when no highlights have been set', ->
       highlight.define 'foo', color: '#334455'
       buffer = Buffer {}
-      buffer.text = 'one two'
+      buffer.text = 'ʘne twʘ'
       highlight.remove_in_range 'foo', buffer, 1, #buffer

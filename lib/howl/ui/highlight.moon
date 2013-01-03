@@ -68,9 +68,11 @@ export define_default = (name, definition) ->
 
 export apply = (name, buffer, pos, length) ->
   num = number_for name, buffer
+  end_pos = pos + length
+  pos, end_pos = buffer.sci\raw!\byte_offset pos, end_pos
   with buffer.sci
     \set_indicator_current num
-    \indicator_fill_range pos - 1, length
+    \indicator_fill_range pos - 1, end_pos - pos
 
 export set_for_buffer = (sci, buffer) ->
   b_highlights = get_buffer_highlights buffer
@@ -79,7 +81,8 @@ export set_for_buffer = (sci, buffer) ->
     set_highlight num, highlight, sci if highlight
 
 export at_pos = (buffer, pos) ->
-  on = buffer.sci\indicator_all_on_for pos - 1
+  b_pos = buffer.sci\raw!\byte_offset pos
+  on = buffer.sci\indicator_all_on_for b_pos - 1
   active = {}
 
   if on != 0
@@ -94,9 +97,10 @@ export remove_all = (name, buffer) ->
   num = number_for name, buffer
   with buffer.sci
     \set_indicator_current num
-    \indicator_clear_range 0, #buffer
+    \indicator_clear_range 0, buffer.size
 
 export remove_in_range = (name, buffer, start_pos, end_pos) ->
+  start_pos, end_pos = buffer.sci\raw!\byte_offset start_pos, end_pos
   num = number_for name, buffer
   sci = buffer.sci
   sci\set_indicator_current num
@@ -115,4 +119,3 @@ export set_for_theme = (theme) ->
   define name, def for name, def in pairs(theme.highlights or {})
 
 return _ENV
-
