@@ -186,7 +186,7 @@ function sci:send_with_findtext(message, start_pos, end_pos, text)
   if found_at >= 0 then return found_at, found_at + #text end
 end
 
-function sci:tmp_string()
+function sci:raw()
   size = self:get_text_length()
   ptr = self:send(2520, 0, 0)
   return u(ffi.cast(char_p, ptr), size, nil, u.DEALLOC_NONE)
