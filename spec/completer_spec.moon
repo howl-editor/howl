@@ -19,10 +19,11 @@ describe 'Completer', ->
       assert.spy(factory).was.called(1)
 
     it 'lookups completers in completion when they are specified as strings', ->
+      buffer.text = 'yowser'
       factory = spy.new -> nil
       completion.register name: 'comp-name', :factory
       append buffer.completers, 'comp-name'
-      completer = Completer(buffer, 6)
+      completer = Completer(buffer, 3)
       assert.spy(factory).was.called
 
     it 'returns completions for completers in buffer and mode', ->
