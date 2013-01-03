@@ -81,6 +81,7 @@ class Buffer extends PropertyObject
     set: (value) => @sci\empty_undo_buffer! if not value
 
   @property size: get: => @sci\get_text_length!
+  @property length: get: => @sci\count_characters 0, @size
   @property lines: get: => BufferLines self, @sci
 
   @property eol:
@@ -214,7 +215,7 @@ class Buffer extends PropertyObject
       styler.mark_as_styled @sci, self
 
   @meta {
-    __len: => @sci\count_characters 0, @size
+    __len: => @length
     __tostring: => @title
   }
 

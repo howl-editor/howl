@@ -27,6 +27,10 @@ describe 'Buffer', ->
     assert.equal buffer('hello').size, 5
     assert.equal buffer('åäö').size, 6
 
+  it '.length returns the size of the buffer text, in characters', ->
+    assert.equal buffer('hello').length, 5
+    assert.equal buffer('åäö').length, 3
+
   it '.dirty indicates and allows setting the modified status', ->
     b = Buffer {}
     assert.is_false b.dirty
