@@ -113,30 +113,30 @@ describe 'BufferLines', ->
 
   describe '[nr] = <value>', ->
     it 'replaces the text of the specified line with <value>', ->
-      b = buffer 'hello\nworld'
-      b.lines[1] = 'hola'
-      assert.equal b.text, 'hola\nworld'
+      b = buffer 'hellØ\nwØrld'
+      b.lines[1] = 'hØla'
+      assert.equal b.text, 'hØla\nwØrld'
 
     it 'removes the entire line if value is nil', ->
-      b = buffer 'goodbye\ncruel\nworld'
+      b = buffer 'gØØdbye\ncruel\nwØrld'
       b.lines[2] = nil
-      assert.equal b.text, 'goodbye\nworld'
+      assert.equal 'gØØdbye\nwØrld', b.text
       b.lines[1] = nil
-      assert.equal b.text, 'world'
+      assert.equal 'wØrld' ,b.text
 
     it 'raises an error if the line number is invalid', ->
       b = buffer 'hello!'
       assert.raises 'Invalid index', -> b.lines['foo'] = 'bar'
 
   it 'delete(start, end) deletes the the lines [start, end]', ->
-      b = buffer 'hello\nworld\nagain!'
+      b = buffer 'hellØ\nwØrld\nagain!'
       b.lines\delete 1, 2
       assert.equal b.text, 'again!'
 
   it 'at_pos(pos) returns the line at <pos>', ->
-    lines = buffer('one\ntwo\nthree').lines
-    line = lines\at_pos 6
-    assert.equal line.text, 'two'
+    lines = buffer('Øne\ntwØ\nthree').lines
+    line = lines\at_pos 5
+    assert.equal 'twØ', line.text
 
   describe 'range(start, end)', ->
     it 'returns a table with lines [start, end]', ->

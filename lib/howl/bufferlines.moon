@@ -86,7 +86,8 @@ BufferLines = (buffer, sci) ->
         @range start_line.nr, end_line.nr
 
       at_pos: (pos) =>
-        nr = @sci\line_from_position(pos - 1) + 1
+        b_pos = @sci\raw!\byte_offset pos
+        nr = @sci\line_from_position(b_pos - 1) + 1
         self[nr]
 
       insert: (line_nr, text) =>
@@ -115,13 +116,14 @@ BufferLines = (buffer, sci) ->
 
       __newindex: (key, value) =>
         if type(key) != 'number' or (key < 1) or (key > #self)
-          error 'Invalid index: "' .. key .. '"'
+          error 'Invalid index: "' .. key .. '"', 2
 
-        line = self[key]
         if value
-          line.text = value
+          self[key].text = value
         else
-          @sci\delete_range line.start_pos - 1, (line.end_pos - line.start_pos) + 1
+          start_pos = @sci\position_from_line(key - 1)
+          end_pos = @sci\position_from_line(key)
+          @sci\delete_range start_pos, (end_pos - start_pos)
 
       __ipairs: =>
         iterator = (lines, index) ->
