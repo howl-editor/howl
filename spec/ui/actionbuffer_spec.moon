@@ -61,7 +61,7 @@ describe 'ActionBuffer', ->
 
   describe 'style(start_pos, end_pos, style)', ->
     it 'applies <style> for the inclusive text range given', ->
-      buf.text = 'hƏllo'
+      buf.text = 'hƏlɩo'
       buf\style 2, 4, 'keyword'
       assert.equal style.at_pos(buf, 1), 'unstyled'
       assert.equal style.at_pos(buf, 2), 'keyword'

@@ -22,8 +22,9 @@ class ActionBuffer extends Buffer
 
   style: (start_pos, end_pos, style_name) =>
     style_num = style.number_for style_name, self
-    start_pos, end_pos = @sci\raw!\byte_offset start_pos, end_pos
+    start_pos, end_pos = @sci\raw!\byte_offset start_pos, end_pos + 1
     @sci\start_styling start_pos - 1, 0xff
-    @sci\set_styling (end_pos + 1) - start_pos, style_num
+    @sci\set_styling end_pos - start_pos, style_num
+
 
 return ActionBuffer
