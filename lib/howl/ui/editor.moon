@@ -263,13 +263,14 @@ class Editor extends PropertyObject
 
   join_lines: =>
     @buffer\as_one_undo ->
-      cur_line = @cursor.line
+      cur_line = @current_line
+      next_line = cur_line.next
+      return unless next_line
       @cursor\line_end!
       target_pos = @cursor.pos
-      content_start = @buffer.lines[cur_line + 1]\find('[^%s]') or 1
-      line_start = @sci\position_from_line cur_line
-      @buffer\delete target_pos, (line_start + content_start) - target_pos
-      @buffer\insert ' ', @cursor.pos
+      content_start = next_line\find('[^%s]') or 1
+      @buffer\delete target_pos, (next_line.start_pos + content_start - 1) - target_pos
+      @buffer\insert ' ', target_pos
 
   forward_to_match: (str) =>
     pos = @current_line\find str, @cursor.column + 1, true
@@ -288,6 +289,7 @@ class Editor extends PropertyObject
     x_adjust = 0
     pos = options.position
     pos = @cursor.pos if not pos
+    pos = @sci\raw!\byte_offset pos
 
     line = @sci\line_from_position pos - 1
     at_eol = @sci\get_line_end_position(line) == pos - 1
