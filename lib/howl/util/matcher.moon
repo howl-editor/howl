@@ -6,10 +6,10 @@ separator = S ' \t-_:/\\'
 match_pattern = (search) ->
   fuzzy = Cg Cc('fuzzy'), 'how'
   boundary = Cg Cc('boundary'), 'how'
-  exact = Cg(Cc('exact'), 'how') * Cp! * P(search)
+  exact = Cg(Cc('exact'), 'how') * Cp! * P(tostring search)
 
   for i = 1, #search do
-    c = P search\sub(i, i)
+    c = P tostring search\sub(i, i)
     fuzzy *= (-c * P 1)^0 * Cp! * c
     boundary_p = separator * Cp! * c
     boundary *= Cp! * c + (-boundary_p * P 1)^0 * boundary_p
@@ -41,13 +41,12 @@ class Matcher
   __call: (search) =>
     return @candidates if not search or #search == 0
 
-    lower = search\lower!
-    prev_search = tostring lower\sub 1, -2
-    search = tostring lower
-    matches = @cache.matches[search] or {}
+    search = search\lower!
+    prev_search = tostring search\sub 1, -2
+    matches = @cache.matches[tostring search] or {}
     if #matches > 0 then return matches
 
-    lines = @cache.lines[search\sub 1, -2] or @lines
+    lines = @cache.lines[tostring search\sub 1, -2] or @lines
     matching_lines = {}
     pattern = match_pattern search
 
@@ -65,12 +64,18 @@ class Matcher
     matching_candidates
 
   explain: (search, text) ->
-    pattern = match_pattern tostring search\lower!
+    text = u text
+    search = u search
+    pattern = match_pattern search\lower!
     match = pattern\match text\lower!
-    return match unless match and match.how == 'exact'
-    for pos = match[1] + 1, match[1] + #search - 1
-      append match, pos
-    return match
+    return nil unless match
+    if match.how == 'exact'
+      for pos = match[1] + 1, match[1] + #search - 1
+        append match, pos
+
+    char_match = text\char_offset match
+    char_match.how = match.how
+    return char_match
 
   _load_candidates: =>
     max = math.max

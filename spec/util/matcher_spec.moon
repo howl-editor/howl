@@ -56,13 +56,13 @@ describe 'Matcher', ->
     it 'set .how to the type of match', ->
       assert.equal 'exact', Matcher.explain('fu', 'snafu').how
 
-    it 'returns a list of positions indicating where search matched', ->
-      assert.same { how: 'exact', 4, 5 }, Matcher.explain 'fu', 'snafu'
-      assert.same { how: 'fuzzy', 2, 4, 6 }, Matcher.explain 'hit', 'christmas'
-      assert.same { how: 'boundary', 1, 4, 9, 10 }, Matcher.explain 'itso', 'is that so'
+    it 'returns a list of character offsets indicating where <search> matched', ->
+      assert.same { how: 'exact', 4, 5, 6 }, Matcher.explain 'ƒlu', 'sñaƒlux'
+      assert.same { how: 'fuzzy', 2, 4, 6 }, Matcher.explain 'hiʈ', 'Čhriʂʈmas'
+      assert.same { how: 'boundary', 1, 4, 9, 10 }, Matcher.explain 'itʂo', 'iʂ that ʂo'
 
     it 'lower-cases the search and text just as for matching', ->
-      assert.not_nil Matcher.explain 'FU', 'snafu'
+      assert.not_nil Matcher.explain 'FU', 'ʂnafu'
       assert.not_nil Matcher.explain 'fu', 'SNAFU'
 
     it 'accepts ustring both for <search> and <text>', ->
