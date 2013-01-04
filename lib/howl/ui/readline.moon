@@ -198,7 +198,7 @@ class Readline extends PropertyObject
       @_complete!
 
   _cancel: =>
-    if @completion_list
+    if @completion_list or @notification
       @_show_only_cmd_line!
       @completion_unwanted = true
       return if @seen_interaction
