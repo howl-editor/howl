@@ -22,6 +22,15 @@ describe 'Selection', ->
     selection\set 1, 5
     assert.equal 'Liñe', selection.text
 
+  it 'select(anchor, pos) adjusts the selection to include the specifed range', ->
+    selection\select 1, 4
+    assert.equal 5, selection.cursor
+    assert.equal 'Liñe', selection.text
+
+    selection\select 4, 2
+    assert.equal 5, selection.anchor
+    assert.equal 'iñe', selection.text
+
   describe '.anchor', ->
     it 'returns the current position if nothing is selected', ->
       cursor.pos = 3
@@ -152,6 +161,15 @@ describe 'Selection', ->
   describe 'when .includes_cursor is set to true', ->
     before_each -> selection.includes_cursor = true
     after_each -> selection.includes_cursor = false
+
+    it 'select(anchor, pos) adjusts pos if needed to only point at the end of selection', ->
+      selection\select 1, 4
+      assert.equal 4, selection.cursor
+      assert.equal 'Liñe', selection.text
+
+      selection\select 4, 2
+      assert.equal 5, selection.anchor
+      assert.equal 'iñe', selection.text
 
     it '.text #includes the current character', ->
       selection\set 1, 3

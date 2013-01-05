@@ -48,20 +48,13 @@ class Selection extends PropertyObject
 
     @sci\set_sel anchor - 1, cursor - 1
 
-  _brange: =>
-    cursor = @sci\get_current_pos! + 1
-    anchor = @sci\get_anchor! + 1
-    return cursor, anchor if cursor < anchor
-    raw = @sci\raw!
-    if cursor > anchor or @includes_cursor and cursor <= raw.size
-      if @includes_cursor -- bump end offset to start of next character
-        offset_ptr = raw.ptr + cursor - 1
-        ptr = C.g_utf8_find_next_char offset_ptr, nil
-        return anchor, cursor + (ptr - offset_ptr)
+  select: (start_pos, end_pos) =>
+    if end_pos > start_pos
+      end_pos += 1 unless @includes_cursor
+    elseif end_pos < start_pos
+      start_pos += 1
 
-      return anchor, cursor
-
-    nil
+    @set start_pos, end_pos
 
   range: =>
     start_pos, end_pos = @_brange!
@@ -85,5 +78,20 @@ class Selection extends PropertyObject
     @sci\copy_range start_pos - 1, end_pos - 1
     @sci\delete_range start_pos - 1, end_pos - start_pos
     @persistent = false
+
+  _brange: =>
+    cursor = @sci\get_current_pos! + 1
+    anchor = @sci\get_anchor! + 1
+    return cursor, anchor if cursor < anchor
+    raw = @sci\raw!
+    if cursor > anchor or @includes_cursor and cursor <= raw.size
+      if @includes_cursor -- bump end offset to start of next character
+        offset_ptr = raw.ptr + cursor - 1
+        ptr = C.g_utf8_find_next_char offset_ptr, nil
+        return anchor, cursor + (ptr - offset_ptr)
+
+      return anchor, cursor
+
+    nil
 
 return Selection
