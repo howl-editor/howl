@@ -12,7 +12,9 @@ describe 'Editor', ->
   window\add editor\to_gobject!
   window\show_all!
 
-  teardown -> window\destroy!
+  teardown ->
+    -- teardown broken in busted it seems
+    -- window\destroy!
 
   before_each ->
     buffer = Buffer {}
@@ -238,11 +240,22 @@ describe 'Editor', ->
     editor\paste!
     assert.equal buffer.text, 'hƏllo\nhƏllo\n'
 
-  it 'delete_to_end_of_line deletes text from cursor up to end of line', ->
-    buffer.text = 'hƏllo world!'
-    cursor.pos = 6
-    editor\delete_to_end_of_line!
-    assert.equal buffer.text, 'hƏllo'
+  describe 'delete_to_end_of_line(no_copy)', ->
+    it 'cuts text from cursor up to end of line', ->
+      buffer.text = 'hƏllo world!\nnext'
+      cursor.pos = 6
+      editor\delete_to_end_of_line!
+      assert.equal buffer.text, 'hƏllo\nnext'
+      editor\paste!
+      assert.equal 'hƏllo world!\nnext', buffer.text
+
+    it 'deletes without copying if no_copy is specified', ->
+      buffer.text = 'hƏllo world!'
+      cursor.pos = 3
+      editor\delete_to_end_of_line true
+      assert.equal buffer.text, 'hƏ'
+      editor\paste!
+      assert.not_equal 'hƏllo world!', buffer.text
 
   it 'join_lines joins the current line with the one after', ->
     buffer.text = 'hƏllo\n    world!'

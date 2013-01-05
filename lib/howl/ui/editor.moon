@@ -254,7 +254,17 @@ class Editor extends PropertyObject
       @comment!
 
   delete_line: => @sci\line_delete!
-  delete_to_end_of_line: => @sci\del_line_right!
+
+  delete_to_end_of_line: (no_copy) =>
+    if no_copy
+      @sci\del_line_right!
+    else
+      cur_line = @current_line
+      end_pos = cur_line.end_pos
+      end_pos -= 1 if cur_line.next
+      @selection\select @cursor.pos, end_pos
+      @selection\cut!
+
   copy_line: => @sci\line_copy!
   paste: => @sci\paste!
   insert: (text) => @sci\add_text #text, text
@@ -540,7 +550,8 @@ for cmd_spec in *{
   { 'editor:uncomment', 'Uncomments the selection or current line', 'uncomment' }
   { 'editor:toggle_comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
   { 'editor:delete-line', 'Deletes the current line', 'delete_line' }
-  { 'editor:delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line' }
+  { 'editor:cut-to-end-of-line', 'Cuts to the end of line', 'delete_to_end_of_line' }
+  { 'editor:delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line', true }
   { 'editor:copy-line', 'Copies the current line to the clipboard', 'copy_line' }
   { 'editor:paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
   { 'editor:tab', 'Simulates a tab key press', 'tab' }
@@ -553,10 +564,11 @@ for cmd_spec in *{
   { 'editor:undo', 'Undo last edit for the current editor', 'undo' }
   { 'editor:redo', 'Redo last undo for the current editor', 'redo' }
 }
+  args = { select 4, table.unpack cmd_spec }
   command.register
     name: cmd_spec[1]
     description: cmd_spec[2]
-    handler: -> _G.editor[cmd_spec[3]] _G.editor
+    handler: -> _G.editor[cmd_spec[3]] _G.editor, table.unpack args
 
 -- signals
 
