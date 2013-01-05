@@ -10,12 +10,14 @@ And finally a ƫhird line
 
 describe 'Cursor', ->
   buffer = Buffer {}
-  buffer.text = text
   editor = Editor buffer
   cursor = editor.cursor
   selection = editor.selection
 
-  before_each -> selection.persistent = false
+  before_each ->
+    buffer.text = text
+    cursor.pos = 1
+    selection.persistent = false
 
   describe '.style', ->
     it 'is "line" by default', ->
@@ -70,7 +72,7 @@ describe 'Cursor', ->
 
     it 'setting moves the cursor to the specified column', ->
       cursor.column = 2
-      assert.equal cursor.pos, 2
+      assert.equal 2, cursor.pos
 
     it 'setting adjusts the selection if it is persistent', ->
       cursor.pos = 1
