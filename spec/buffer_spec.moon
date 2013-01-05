@@ -123,21 +123,48 @@ describe 'Buffer', ->
     b\remove_sci_ref sci
     assert.is_true b.last_shown <= os.time!
 
+  describe 'context_at(pos)', ->
+    b = buffer '"HƏllo", said Mr.Bačon'
+
+    it '.word holds the current word', ->
+      assert.equal '', b\context_at(1).word.text
+      assert.equal 'HƏllo', b\context_at(2).word.text
+      assert.equal 'HƏllo', b\context_at(4).word.text
+      assert.equal 'HƏllo', b\context_at(6).word.text
+      assert.equal '', b\context_at(8).word.text
+      assert.equal 'said', b\context_at(14).word.text
+      assert.equal 'Mr', b\context_at(16).word.text
+      assert.equal 'Bačon', b\context_at(19).word.text
+
+    it ".word_prefix holds the words's text up until pos", ->
+      assert.equal '', b\context_at(2).word_prefix
+      assert.equal 'HƏ', b\context_at(4).word_prefix
+
+    it ".word_suffix holds the words's text after and including pos", ->
+      assert.equal 'HƏllo', b\context_at(2).word_suffix
+      assert.equal 'llo', b\context_at(4).word_suffix
+
+    it ".prefix holds the line's text up until pos", ->
+      assert.equal '', b\context_at(1).prefix
+      assert.equal '"HƏllo", said Mr.Bačon', b\context_at(#b + 1).prefix
+      assert.equal '"H', b\context_at(3).prefix
+
+    it ".suffix holds the line's text after and including pos", ->
+      assert.equal '', b\context_at(#b + 1).suffix
+      assert.equal '"HƏllo", said Mr.Bačon', b\context_at(1).suffix
+      assert.equal 'Mr.Bačon', b\context_at(15).suffix
+
+    it '.line holds the current line object', ->
+      assert.equal b.lines[1], b\context_at(1).line
+
+    it 'contexts are equal for the same buffer and pos', ->
+      assert.equal b\context_at(2), b\context_at(2)
+      assert.not_equal b\context_at(2), b\context_at(4)
+
   it '.chunk(start_pos, length) returns a chunk for the specified range', ->
     b = buffer 'chuñky bacon'
     chunk = b\chunk(8, 3)
     assert.equal 'bac', chunk.text
-
-  it '.word_at(pos) returns a chunk for the word at <pos>', ->
-    b = buffer '"HƏllo", said Mr.Bačon'
-    assert.equal '', b\word_at(1).text
-    assert.equal 'HƏllo', b\word_at(2).text
-    assert.equal 'HƏllo', b\word_at(6).text
-    assert.equal 'HƏllo', b\word_at(4).text
-    assert.equal '', b\word_at(8).text
-    assert.equal 'said', b\word_at(14).text
-    assert.equal 'Mr', b\word_at(16).text
-    assert.equal 'Bačon', b\word_at(19).text
 
   it 'delete deletes the specified number of characters', ->
     b = buffer 'ño örf'

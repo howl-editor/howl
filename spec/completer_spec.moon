@@ -8,13 +8,13 @@ describe 'Completer', ->
 
   describe '.complete()', ->
 
-    it 'instantiates completers once with (buffer, line, line-up-to-word)', ->
+    it 'instantiates completers once with (buffer, context)', ->
       buffer.text = 'mr.cat'
       factory = spy.new -> nil
       append buffer.completers, factory
       completer = Completer(buffer, 6)
       completer\complete 6
-      assert.spy(factory).was.called_with buffer, buffer.lines[1], u'mr.'
+      assert.spy(factory).was.called_with buffer, buffer\context_at 6
       completer\complete 6
       assert.spy(factory).was.called(1)
 

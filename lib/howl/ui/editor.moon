@@ -120,7 +120,7 @@ class Editor extends PropertyObject
       signal.emit 'after-buffer-switch', editor: self, current_buffer: buffer, old_buffer: prev_buffer
 
   @property current_line: get: => @buffer.lines[@cursor.line]
-  @property current_word: get: => @buffer\word_at @cursor.pos
+  @property current_context: get: => @buffer\context_at @cursor.pos
 
   @property indentation_guides:
     get: =>
@@ -424,7 +424,7 @@ class Editor extends PropertyObject
 
     if @popup
       @popup.window\on_char_added self, signal_params if @popup.window.on_char_added
-    elseif not handled and #@current_word >= config.completion_popup_after
+    elseif not handled and #@current_context.word_prefix >= config.completion_popup_after
       @complete!
 
   _on_text_inserted: (args) =>

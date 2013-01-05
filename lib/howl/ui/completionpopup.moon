@@ -36,7 +36,7 @@ class CompletionPopup extends MenuPopup
     @resize_for_content!
 
   _on_completed: (item) =>
-    cur_word = @editor.current_word
+    cur_word = @editor.current_context.word
     cur_word.text = item
     @editor.cursor.pos = cur_word.end_pos + 1
     true

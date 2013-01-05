@@ -23,7 +23,7 @@ Hello there
   }
 ]]
     line = buffer.lines[5]
-    completer = factory(buffer, line, '       ')
+    completer = factory buffer, buffer\context_at line.end_pos
     comps = completer\complete 's', line.end_pos
     table.sort comps
     assert.same { 'saphire', 'say_it', 'sion', 'some', 'symbol' }, comps
@@ -34,7 +34,7 @@ text
 te
 ]]
     line = buffer.lines[2]
-    completer = factory(buffer, line, '')
+    completer = factory buffer, buffer\context_at line.end_pos
     comps = completer\complete 'te', line.end_pos
     assert.same { 'text' }, comps
 
@@ -49,6 +49,6 @@ twice
 twitter
 ]]
     line = buffer.lines[3]
-    completer = factory(buffer, line, '')
+    completer = factory buffer, buffer\context_at line.end_pos
     comps = completer\complete 'tw', line.end_pos
     assert.same { 'twitter', 'two', 'twice' }, comps

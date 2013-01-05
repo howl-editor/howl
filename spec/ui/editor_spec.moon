@@ -27,15 +27,12 @@ describe 'Editor', ->
     cursor.pos = 2
     assert.equal editor.current_line, buffer.lines[1]
 
-  it '.current_word returns the word chunk at the current position', ->
+  it '.current_context returns the buffer context at the current position', ->
     buffer.text = 'hƏllo\nwʘrld'
     cursor.pos = 2
-    word = editor.current_word
-    assert.equal 'hƏllo', word.text
-    assert.equal 1, word.start_pos
-    assert.equal 5, word.end_pos
-    cursor.pos = 7
-    assert.equal 'wʘrld', editor.current_word.text
+    context = editor.current_context
+    assert.equal 'Context', typeof context
+    assert.equal 2, context.pos
 
   it '.newline() adds a newline at the current position', ->
     buffer.text = 'hƏllo'

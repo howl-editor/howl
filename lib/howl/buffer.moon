@@ -23,6 +23,34 @@ title_counter = (title) ->
   title_counters[title] += 1
   title_counters[title]
 
+class Context extends PropertyObject
+  new: (@buffer, @pos) => super!
+
+  @property word: get: =>
+    return @_word if @_word
+    sci = @buffer.sci
+    text = sci\raw!
+    b_pos = text\byte_offset @pos
+    start_pos = sci\word_start_position b_pos - 1, true
+    end_pos = sci\word_end_position b_pos - 1, true
+    start_pos, end_pos = text\char_offset start_pos + 1, end_pos + 1
+    @_word = Chunk @buffer, start_pos, end_pos - 1
+    @_word
+
+  @property line: get: =>
+    @_line or= @buffer.lines\at_pos @pos
+    @_line
+
+  @property word_prefix: get: => @word.text\sub 1, @pos - @word.start_pos
+  @property word_suffix: get: => @word.text\sub (@pos - @word.start_pos) + 1
+  @property prefix: get: => @line\sub 1, (@pos - @line.start_pos)
+  @property suffix: get: => @line\sub (@pos - @line.start_pos) + 1
+  @meta {
+    __eq: (a, b) ->
+      t = typeof a
+      t == 'Context' and t == typeof(b) and a.buffer == b.buffer and a.pos == b.pos
+  }
+
 class Buffer extends PropertyObject
   new: (mode, sci) =>
     error('Missing argument #1 (mode)', 3) if not mode
@@ -119,13 +147,7 @@ class Buffer extends PropertyObject
 
   chunk: (pos, length) => Chunk self, pos, pos + length - 1
 
-  word_at: (pos) =>
-    text = @sci\raw!
-    b_pos = text\byte_offset pos
-    start_pos = @sci\word_start_position b_pos - 1, true
-    end_pos = @sci\word_end_position b_pos - 1, true
-    start_pos, end_pos = text\char_offset start_pos + 1, end_pos + 1
-    return Chunk self, start_pos, end_pos - 1
+  context_at: (pos) => Context self, pos
 
   delete: (pos, length) =>
     start_pos, end_pos = @sci\raw!\byte_offset pos, pos + length

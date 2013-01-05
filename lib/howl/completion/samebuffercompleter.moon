@@ -12,8 +12,8 @@ parse = (buffer, line) ->
   [token for _, token in pairs tokens]
 
 class SameBufferCompleter
-  new: (buffer, line, up_to_word) =>
-    @tokens = parse buffer, line
+  new: (buffer, context) =>
+    @tokens = parse buffer, context.line
 
   complete: (word, pos) =>
     pattern = '^' .. word .. '.'
