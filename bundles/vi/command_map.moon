@@ -70,7 +70,12 @@ d = (editor) ->
       \set start_pos, end_pos
       \cut!
 
-D = (editor) -> apply editor, (editor) -> editor\delete_to_end_of_line!
+D = (editor) ->
+  if state.has_modifier!
+    state.reset!
+    return
+
+  apply editor, (editor) -> editor\delete_to_end_of_line!
 
 i = to_insert
 

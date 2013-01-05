@@ -7,9 +7,9 @@ bundle.load_by_name 'vi'
 state = bundles.vi.state
 
 text = [[
-Line 1
-Line two
-And third line
+LinƏ 1
+LinƏ two
+And third linƏ
 ]]
 
 describe 'VI', ->
@@ -79,7 +79,7 @@ describe 'VI', ->
 
   it '<r><character> replaces the current character with <character>', ->
     press 'r', 'F'
-    assert.equal 'Fine two', lines[2].text
+    assert.equal 'FinƏ two', lines[2].text
 
   it '<c><w> deletes to the end of word and enters insert', ->
     press 'c', 'w'
@@ -89,7 +89,7 @@ describe 'VI', ->
   it '<d><d> removes the entire current line regardless of the current column', ->
     cursor.column = 4
     press 'd', 'd'
-    assert.equal 'Line 1\nAnd third line\n', buffer.text
+    assert.equal 'LinƏ 1\nAnd third linƏ\n', buffer.text
 
     -- empty lines
     buffer.text = '\n\n'
@@ -106,6 +106,11 @@ describe 'VI', ->
     press 'd', 'w'
     assert.equal '.word', buffer.text
 
+  it '<D> deletes to the end of line', ->
+    cursor.column = 5
+    press 'D'
+    assert.equal 'LinƏ', editor.current_line.text
+
   describe 'movement with destructive modifiers', ->
     for mod, check in pairs {
       d: -> true
@@ -114,13 +119,13 @@ describe 'VI', ->
 
       it "<#{mod}><$> removes the line up until line break", ->
         press mod, '$'
-        assert.equal 'Line 1\n\nAnd third line\n', buffer.text
+        assert.equal 'LinƏ 1\n\nAnd third linƏ\n', buffer.text
         check!
 
       it "<#{mod}><0> removes back until start of line, not including current position", ->
         cursor.column = 4
         press mod, '0'
-        assert.equal 'e two', editor.current_line.text
+        assert.equal 'Ə two', editor.current_line.text
         check!
 
       it "<#{mod}><e> removes the current word", ->
@@ -131,7 +136,7 @@ describe 'VI', ->
       it "<#{mod}><b> removes the current word backwards, not including current position", ->
         cursor.column = 4
         press mod, 'b'
-        assert.equal 'e two', editor.current_line.text
+        assert.equal 'Ə two', editor.current_line.text
         check!
 
   context 'insert mode', ->
@@ -169,12 +174,12 @@ describe 'VI', ->
       it 'ordinary movement extends the selection', ->
         press 'l'
         assert.is_false selection.empty
-        assert.equal 'ne', selection.text
+        assert.equal 'nƏ', selection.text
         press 'j'
-        assert.equal 'ne two\nAnd ', selection.text
+        assert.equal 'nƏ two\nAnd ', selection.text
 
       it 'always includes the starting position in the selection', ->
         press 'h'
         assert.equal 'in', selection.text
         press 'w'
-        assert.equal 'ne t', selection.text
+        assert.equal 'nƏ t', selection.text

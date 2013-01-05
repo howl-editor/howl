@@ -12,6 +12,8 @@ export count
 maps = nil
 last_op = nil
 
+export has_modifier = -> delete or change or yank or go
+
 export reset = ->
   delete = false
   change = false
