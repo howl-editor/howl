@@ -15,11 +15,11 @@ class SameBufferCompleter
   new: (buffer, context) =>
     @tokens = parse buffer, context.line
 
-  complete: (word, pos) =>
-    pattern = '^' .. word .. '.'
+  complete: (context) =>
+    pattern = '^' .. context.word_prefix .. '.'
     completions = {}
     for token in *@tokens
-      append completions, token if token.text\match tostring pattern
+      append completions, token if token.text\match(tostring pattern) and token.text != context.word.text
 
     table.sort completions, (a, b) -> a.rank < b.rank
     [c.text for c in *completions]

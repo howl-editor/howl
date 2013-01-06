@@ -26,13 +26,12 @@ class Completer
     @completers = load_completers buffer, @context
 
   complete: (pos) =>
-    word = @buffer\chunk @start_pos, pos - @start_pos
-    up_to_pos = word.text\sub 1, pos - @start_pos
+    context = @context.start_pos == pos and @context or @buffer\context_at pos
 
     completions = {}
 
     for completer in *@completers
-      comps = completer\complete up_to_pos, pos
+      comps = completer\complete context
       if comps
         append completions, comp for comp in *comps
 

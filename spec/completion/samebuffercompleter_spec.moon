@@ -23,19 +23,21 @@ Hello there
   }
 ]]
     line = buffer.lines[5]
-    completer = factory buffer, buffer\context_at line.end_pos
-    comps = completer\complete 's', line.end_pos
+    context = buffer\context_at line.end_pos
+    completer = factory buffer, context
+    comps = completer\complete context
     table.sort comps
     assert.same { 'saphire', 'say_it', 'sion', 'some', 'symbol' }, comps
 
   it 'does not include the token being completed itself', ->
     buffer.text = [[
 text
-te
+ter
 ]]
     line = buffer.lines[2]
-    completer = factory buffer, buffer\context_at line.end_pos
-    comps = completer\complete 'te', line.end_pos
+    context = buffer\context_at line.end_pos - 1
+    completer = factory buffer, context
+    comps = completer\complete context
     assert.same { 'text' }, comps
 
   it 'favours matches close to the current position', ->
@@ -49,6 +51,7 @@ twice
 twitter
 ]]
     line = buffer.lines[3]
-    completer = factory buffer, buffer\context_at line.end_pos
-    comps = completer\complete 'tw', line.end_pos
+    context = buffer\context_at line.end_pos
+    completer = factory buffer, context
+    comps = completer\complete context
     assert.same { 'twitter', 'two', 'twice' }, comps

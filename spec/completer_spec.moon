@@ -38,17 +38,17 @@ describe 'Completer', ->
       buffer.mode = mode
       assert.same Completer(buffer, 1)\complete(1), { 'mode' }
 
-    it 'calls <completer.complete()> with (completer, word-up-to-pos, position)', ->
+    it 'calls <completer.complete()> with (completer, context)', ->
       buffer.text = 'mr.cat'
       comp = complete: spy.new -> {}
       append buffer.completers, -> comp
       completer = Completer(buffer, 6)
 
       completer\complete 6
-      assert.spy(comp.complete).was.called_with comp, u'ca', 6
+      assert.spy(comp.complete).was.called_with comp, buffer\context_at 6
 
       completer\complete 7
-      assert.spy(comp.complete).was.called_with comp, u'cat', 7
+      assert.spy(comp.complete).was.called_with comp, buffer\context_at 7
 
   it '.start_pos holds the start position for completing', ->
     buffer.text = 'oh cruel word'

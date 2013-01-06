@@ -36,6 +36,6 @@ describe 'Chunk', ->
     chunk = Chunk(buffer, 3, 6)
     assert.equal chunk.text, tostring(chunk)
 
-  it '#chunk returns the size of the chunk', ->
+  it '#chunk returns the length of the chunk', ->
     chunk = Chunk(buffer, 3, 6)
     assert.equal 4, #chunk
