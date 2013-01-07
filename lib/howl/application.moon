@@ -164,6 +164,7 @@ class Application extends PropertyObject
     if session and session.version == 1
       for entry in *session.buffers
         file = File(entry.file)
+        continue unless file.exists
         buffer = @new_buffer mode.for_file file
         buffer.file = file
         buffer.last_shown = entry.last_shown
