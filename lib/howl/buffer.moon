@@ -29,11 +29,10 @@ class Context extends PropertyObject
   @property word: get: =>
     return @_word if @_word
     sci = @buffer.sci
-    text = sci\raw!
-    b_pos = text\byte_offset @pos
+    b_pos = @buffer\byte_offset @pos
     start_pos = sci\word_start_position b_pos - 1, true
     end_pos = sci\word_end_position b_pos - 1, true
-    start_pos, end_pos = text\char_offset start_pos + 1, end_pos + 1
+    start_pos, end_pos = @buffer\char_offset start_pos + 1, end_pos + 1
     @_word = Chunk @buffer, start_pos, end_pos - 1
     @_word
 
@@ -150,12 +149,12 @@ class Buffer extends PropertyObject
   context_at: (pos) => Context self, pos
 
   delete: (pos, length) =>
-    start_pos, end_pos = @sci\raw!\byte_offset pos, pos + length
+    start_pos, end_pos = @byte_offset pos, pos + length
     @sci\delete_range start_pos - 1, end_pos - start_pos
 
   insert: (text, pos) =>
     text = u text
-    b_pos = @sci\raw!\byte_offset pos
+    b_pos = @byte_offset pos
     @sci\insert_text b_pos - 1, text
     pos + #text
 
@@ -177,7 +176,7 @@ class Buffer extends PropertyObject
       append matches, end_pos
       pos = end_pos + 1
 
-    b_offsets = text\byte_offset matches
+    b_offsets = @byte_offset matches
 
     for i = #b_offsets, 1, -2
       start_pos = b_offsets[i - 1]
@@ -209,6 +208,9 @@ class Buffer extends PropertyObject
 
   undo: => @sci\undo!
   redo: => @sci\redo!
+
+  char_offset: (...) => @sci\raw!\char_offset ...
+  byte_offset: (...) => @sci\raw!\byte_offset ...
 
   @property sci:
     get: =>

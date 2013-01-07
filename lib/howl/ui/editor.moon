@@ -299,7 +299,7 @@ class Editor extends PropertyObject
     x_adjust = 0
     pos = options.position
     pos = @cursor.pos if not pos
-    pos = @sci\raw!\byte_offset pos
+    pos = @buffer\byte_offset pos
 
     line = @sci\line_from_position pos - 1
     at_eol = @sci\get_line_end_position(line) == pos - 1
@@ -401,8 +401,10 @@ class Editor extends PropertyObject
     keyhandler.process self, event
 
   _on_update_ui: =>
+    print 'upd ui'
     @_update_position!
     signal.emit 'editor-changed', editor: self
+    print 'upd ui end'
 
   _update_position: =>
     pos = @cursor.line .. ':' .. @cursor.column

@@ -333,6 +333,42 @@ describe 'Buffer', ->
             assert.equal 'blank\n\nfoo', b.text
             assert.equal file.contents, b.text
 
+  describe 'byte_offset(...)', ->
+    it 'returns byte offsets for all character offsets passed as parameters', ->
+      assert.same {1, 3, 5, 7}, { buffer'äåö'\byte_offset 1, 2, 3, 4 }
+
+    it 'accepts non-increasing offsets', ->
+      assert.same {1, 1}, { buffer'ab'\byte_offset 1, 1 }
+
+    it 'raises an error for decreasing offsets', ->
+      assert.raises 'Decreasing offset', -> buffer'äåö'\byte_offset 2, 1
+
+    it 'raises error for out-of-bounds offsets', ->
+      assert.raises 'out of bounds', -> buffer'äåö'\byte_offset 5
+      assert.raises 'offset', -> buffer'äåö'\byte_offset 0
+      assert.raises 'offset', -> buffer'a'\byte_offset -1
+
+    it 'when parameters is a table, it returns a table for all offsets within that table', ->
+      assert.same {1, 3, 5}, buffer'äåö'\byte_offset { 1, 2, 3 }
+
+  describe 'char_offset(...)', ->
+    it 'returns character offsets for all byte offsets passed as parameters', ->
+      assert.same {1, 2, 3, 4}, { buffer'äåö'\char_offset 1, 3, 5, 7 }
+
+    it 'accepts non-increasing offsets', ->
+      assert.same {2, 2}, { buffer'ab'\char_offset 2, 2 }
+
+    it 'raises an error for decreasing offsets', ->
+      assert.raises 'Decreasing offset', -> buffer'äåö'\char_offset 3, 1
+
+    it 'raises error for out-of-bounds offsets', ->
+      assert.raises 'out of bounds', -> buffer'ab'\char_offset 4
+      assert.raises 'offset', -> buffer'äåö'\char_offset 0
+      assert.raises 'offset', -> buffer'a'\char_offset -1
+
+    it 'when parameters is a table, it returns a table for all offsets within that table', ->
+      assert.same {1, 2, 3, 4}, buffer'äåö'\char_offset { 1, 3, 5, 7 }
+
   it '#buffer returns the number of characters in the buffer', ->
     assert.equal 5, #buffer('hello')
     assert.equal 3, #buffer('åäö')

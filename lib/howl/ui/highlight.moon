@@ -69,7 +69,7 @@ export define_default = (name, definition) ->
 export apply = (name, buffer, pos, length) ->
   num = number_for name, buffer
   end_pos = pos + length
-  pos, end_pos = buffer.sci\raw!\byte_offset pos, end_pos
+  pos, end_pos = buffer\byte_offset pos, end_pos
   with buffer.sci
     \set_indicator_current num
     \indicator_fill_range pos - 1, end_pos - pos
@@ -81,7 +81,7 @@ export set_for_buffer = (sci, buffer) ->
     set_highlight num, highlight, sci if highlight
 
 export at_pos = (buffer, pos) ->
-  b_pos = buffer.sci\raw!\byte_offset pos
+  b_pos = buffer\byte_offset pos
   on = buffer.sci\indicator_all_on_for b_pos - 1
   active = {}
 
@@ -100,7 +100,7 @@ export remove_all = (name, buffer) ->
     \indicator_clear_range 0, buffer.size
 
 export remove_in_range = (name, buffer, start_pos, end_pos) ->
-  start_pos, end_pos = buffer.sci\raw!\byte_offset start_pos, end_pos
+  start_pos, end_pos = buffer\byte_offset start_pos, end_pos
   num = number_for name, buffer
   sci = buffer.sci
   sci\set_indicator_current num

@@ -36,8 +36,8 @@ Line = (nr, buffer, sci) ->
 
     _getters:
       text: => text!
-      start_pos: => sci\raw!\char_offset sci\position_from_line(nr - 1) + 1
-      end_pos: => sci\raw!\char_offset sci\position_from_line(nr)
+      start_pos: => buffer\char_offset sci\position_from_line(nr - 1) + 1
+      end_pos: => buffer\char_offset sci\position_from_line(nr)
       indentation: =>  sci\get_line_indentation nr - 1
       previous: => if nr > 1 then Line nr - 1, buffer, sci
       next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
@@ -86,7 +86,7 @@ BufferLines = (buffer, sci) ->
         @range start_line.nr, end_line.nr
 
       at_pos: (pos) =>
-        b_pos = @sci\raw!\byte_offset pos
+        b_pos = buffer\byte_offset pos
         nr = @sci\line_from_position(b_pos - 1) + 1
         self[nr]
 
