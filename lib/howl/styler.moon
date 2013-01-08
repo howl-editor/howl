@@ -28,9 +28,13 @@ style_text = (sci, buffer, end_pos, lexer) ->
   start_pos = sci\get_end_styled!
   start_line = sci\line_from_position start_pos
   start_pos = sci\position_from_line start_line
-  start_pos = find_style_start(sci, start_pos)
+  start_pos = find_style_start sci, start_pos
   text = sci\get_text_range start_pos, end_pos
-  style_buf = char_arr(text.size) if style_buf_length < text.size
+
+  if style_buf_length < text.size
+    style_buf = char_arr(text.size)
+    style_buf_length = text.size
+
   tokens = lexer\lex text
   pos = 0
   for token in *tokens
@@ -41,7 +45,7 @@ style_text = (sci, buffer, end_pos, lexer) ->
       pos += 1
   with sci
     \start_styling start_pos, 0xff
-    \set_styling_ex #text, style_buf
+    \set_styling_ex text.size, style_buf
 
 mark_as_styled = (sci, buffer) ->
   default_style_number = style.number_for 'default', buffer
