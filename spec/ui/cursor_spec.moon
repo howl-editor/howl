@@ -29,9 +29,9 @@ describe 'Cursor', ->
       assert.raises 'foo', -> cursor.style = 'foo'
 
   describe '.pos', ->
-    it 'reading returns the current position in one based index', ->
-      editor.sci\goto_pos 0
-      assert.equal cursor.pos, 1
+    it 'reading returns the current character position in one based index', ->
+      editor.sci\goto_pos 4 -- raw zero-based sci access, really at 'e'
+      assert.equal 4, cursor.pos
 
     it 'setting sets the current position', ->
       cursor.pos = 4

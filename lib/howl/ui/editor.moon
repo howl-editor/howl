@@ -53,7 +53,7 @@ class Editor extends PropertyObject
     @sci.listener = listener
 
     @selection = Selection @sci
-    @cursor = Cursor @sci, @selection
+    @cursor = Cursor self, @selection
     @searcher = Searcher self
 
     @header = IndicatorBar 'header', 3

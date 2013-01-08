@@ -2,10 +2,9 @@ import PropertyObject from howl.aux.moon
 import Scintilla from howl
 
 class Cursor extends PropertyObject
-  new: (sci, selection) =>
+  new: (@container, @selection) =>
+    @sci = container.sci
     super!
-    @sci = sci
-    @selection = selection
 
   @property blink_interval:
     get: => @sci\get_caret_period!
@@ -26,12 +25,12 @@ class Cursor extends PropertyObject
       else error 'Invalid style ' .. style, 2
 
   @property pos:
-    get: => @sci\raw!\char_offset 1 + @sci\get_current_pos!
+    get: => @container.buffer\char_offset 1 + @sci\get_current_pos!
     set: (pos) =>
       if @selection.persistent
         @selection\set @selection.anchor, pos
       else
-        b_pos = @sci\raw!\byte_offset pos
+        b_pos = @container.buffer\byte_offset pos
         @sci\goto_pos b_pos - 1
 
       @sci\choose_caret_x!
@@ -41,11 +40,11 @@ class Cursor extends PropertyObject
     set: (line) =>
       if line < 1 then @start!
       elseif line > @sci\get_line_count! then @eof!
-      else @pos = @sci\raw!\char_offset 1 + @sci\position_from_line(line - 1)
+      else @pos = @container.buffer\char_offset 1 + @sci\position_from_line(line - 1)
 
   @property column:
     get: => 1 + @sci\get_column @sci\get_current_pos!
-    set: (col) => @pos = @sci\raw!\char_offset 1 + @sci\find_column @line - 1, col - 1
+    set: (col) => @pos = @container.buffer\char_offset 1 + @sci\find_column @line - 1, col - 1
 
   @property at_end_of_line:
     get: => @sci\get_line_end_position(@line - 1) == @sci\get_current_pos!

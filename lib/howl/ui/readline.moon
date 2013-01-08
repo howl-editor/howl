@@ -126,7 +126,7 @@ class Readline extends PropertyObject
     @sci = Scintilla!
     @sci\set_style_bits 8
     @sci\set_lexer Scintilla.SCLEX_NULL
-    @cursor = Cursor @sci, Selection @sci
+    @cursor = Cursor self, Selection @sci
     @buffer = ActionBuffer @sci
     @gsci = @sci\get_gobject!
     @box = Gtk.EventBox {
@@ -187,6 +187,7 @@ class Readline extends PropertyObject
         return
 
     value = @input\value_for value if @input.value_for
+    @_show_only_cmd_line!
     status, ret = pcall self.callback, value, self
     if not status
       @hide!
