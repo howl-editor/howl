@@ -123,6 +123,22 @@ describe 'Buffer', ->
     b\remove_sci_ref sci
     assert.is_true b.last_shown <= os.time!
 
+  describe '.multibyte', ->
+    it 'returns #true if the buffer contains multibyte characters', ->
+      assert.is_false buffer('vanilla').multibyte
+      assert.is_true buffer('HƏllo').multibyte
+
+    it 'is updated whenever text is #inserted', ->
+      b = buffer 'vanilla'
+      b\append 'Bačon'
+      assert.is_true b.multibyte
+
+    it 'is unset whenever a previously multibyte buffer has its length calculated', ->
+      b = buffer('HƏllo')
+      b\delete 2, 1
+      b.length
+      assert.is_false b.multibyte
+
   describe 'context_at(pos)', ->
     b = buffer '"HƏllo", said Mr.Bačon'
 
@@ -344,9 +360,9 @@ describe 'Buffer', ->
       assert.raises 'Decreasing offset', -> buffer'äåö'\byte_offset 2, 1
 
     it 'raises error for out-of-bounds offsets', ->
-      assert.raises 'out of bounds', -> buffer'äåö'\byte_offset 5
-      assert.raises 'offset', -> buffer'äåö'\byte_offset 0
-      assert.raises 'offset', -> buffer'a'\byte_offset -1
+      assert.has_error -> buffer'äåö'\byte_offset 5
+      assert.has_error -> buffer'äåö'\byte_offset 0
+      assert.has_error -> buffer'a'\byte_offset -1
 
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
       assert.same {1, 3, 5}, buffer'äåö'\byte_offset { 1, 2, 3 }
@@ -362,9 +378,9 @@ describe 'Buffer', ->
       assert.raises 'Decreasing offset', -> buffer'äåö'\char_offset 3, 1
 
     it 'raises error for out-of-bounds offsets', ->
-      assert.raises 'out of bounds', -> buffer'ab'\char_offset 4
-      assert.raises 'offset', -> buffer'äåö'\char_offset 0
-      assert.raises 'offset', -> buffer'a'\char_offset -1
+      assert.has_error -> buffer'ab'\char_offset 4
+      assert.has_error -> buffer'äåö'\char_offset 0
+      assert.has_error -> buffer'a'\char_offset -1
 
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
       assert.same {1, 2, 3, 4}, buffer'äåö'\char_offset { 1, 3, 5, 7 }

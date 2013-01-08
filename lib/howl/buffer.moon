@@ -67,6 +67,10 @@ class Buffer extends PropertyObject
     @completers = {}
     @mode = mode
     @properties = {}
+    @multibyte_from = nil
+    @sci_listener =
+      on_text_inserted: self\_on_text_inserted
+      on_text_deleted: self\_on_text_deleted
 
   @property file:
     get: => @_file
@@ -91,9 +95,11 @@ class Buffer extends PropertyObject
   @property text:
     get: => @sci\get_text!
     set: (text) =>
+      text = u text
       @sci\clear_all!
-      @sci\add_text #text, text
+      @sci\add_text text.size, text
       @sci\set_code_page Scintilla.SC_CP_UTF8
+      @multibyte_from = text.multibyte and 0 or nil
 
   @property dirty:
     get: => @sci\get_modify!
@@ -108,7 +114,11 @@ class Buffer extends PropertyObject
     set: (value) => @sci\empty_undo_buffer! if not value
 
   @property size: get: => @sci\get_text_length!
-  @property length: get: => @sci\count_characters 0, @size
+  @property length: get: =>
+    len = @sci\count_characters 0, @size
+    @multibyte_from = nil if len == @size
+    len
+
   @property lines: get: => BufferLines self, @sci
 
   @property eol:
@@ -132,6 +142,8 @@ class Buffer extends PropertyObject
     set: (timestamp) => @_last_shown = timestamp
 
   @property destroyed: get: => @doc == nil
+
+  @property multibyte: get: => @multibyte_from != nil
 
   destroy: =>
     return if @destroyed
@@ -176,6 +188,7 @@ class Buffer extends PropertyObject
       append matches, end_pos
       pos = end_pos + 1
 
+    return if #matches == 0
     b_offsets = @byte_offset matches
 
     for i = #b_offsets, 1, -2
@@ -208,9 +221,8 @@ class Buffer extends PropertyObject
 
   undo: => @sci\undo!
   redo: => @sci\redo!
-
-  char_offset: (...) => @sci\raw!\char_offset ...
-  byte_offset: (...) => @sci\raw!\byte_offset ...
+  char_offset: (...) => @_offset u.char_offset, ...
+  byte_offset: (...) => @_offset u.byte_offset, ...
 
   @property sci:
     get: =>
@@ -220,12 +232,15 @@ class Buffer extends PropertyObject
       if background_buffer[1] != self
         background_sci\set_doc_pointer self.doc
         background_buffer[1] = self
+        background_sci.listener = @sci_listener
 
       background_sci
 
   add_sci_ref: (sci) =>
     append @scis, sci
     @_sci = sci
+    if background_buffer[1] == self
+      background_sci.listener = nil
 
   remove_sci_ref: (sci) =>
     @scis = [s for s in *@scis when s != sci]
@@ -237,6 +252,39 @@ class Buffer extends PropertyObject
       styler.style_text @sci, self, end_pos, @_mode.lexer
     else
       styler.mark_as_styled @sci, self
+
+  _on_text_inserted: (args) =>
+    if args.text.multibyte
+      @multibyte_from = @multibyte_from and math.min(@multibyte_from, args.at_pos) or args.at_pos
+
+  _on_text_deleted: (args) =>
+    if @multibyte and args.at_pos < @multibyte_from
+      @multibyte_from = args.at_pos
+
+  _offset: (f, ...) =>
+    args = {...}
+    is_table = type(args[1]) == 'table'
+    arg_offsets = is_table and args[1] or args
+    local offsets
+
+    if @multibyte and arg_offsets[#arg_offsets] >= @multibyte_from
+      offsets = f @sci\raw!, arg_offsets
+      for i = #offsets,1,-1
+        res = offsets[i]
+        arg = arg_offsets[i]
+        if res == arg
+          @multibyte_from = res
+          break
+    else
+      offsets = {}
+      size = @size
+      for offset in *arg_offsets
+        if offset < 1 or offset > size + 1
+          error "Offset '#{offset}' out of bounds (size = #{size})", 2
+        append offsets, offset
+
+    return offsets if is_table
+    return table.unpack offsets
 
   @meta {
     __len: => @length

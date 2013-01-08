@@ -401,10 +401,8 @@ class Editor extends PropertyObject
     keyhandler.process self, event
 
   _on_update_ui: =>
-    print 'upd ui'
     @_update_position!
     signal.emit 'editor-changed', editor: self
-    print 'upd ui end'
 
   _update_position: =>
     pos = @cursor.line .. ':' .. @cursor.column
@@ -430,6 +428,7 @@ class Editor extends PropertyObject
       @complete!
 
   _on_text_inserted: (args) =>
+    @buffer.sci_listener.on_text_inserted args
     signal_params = moon.copy args
     signal_params.editor = self
     signal_params.lines_added = args.lines_affected
@@ -439,6 +438,7 @@ class Editor extends PropertyObject
       @popup.window\on_text_inserted self, signal_params if @popup.window.on_text_inserted
 
   _on_text_deleted: (args) =>
+    @buffer.sci_listener.on_text_deleted args
     signal_params = moon.copy args
     signal_params.editor = self
     signal_params.lines_deleted = args.lines_affected
