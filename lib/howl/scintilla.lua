@@ -110,7 +110,7 @@ function sci.dispatch(sci_ptr, event, args)
       local deleted = bit.band(args.type, SC_MOD_DELETETEXT) ~= 0
       args = {
         at_pos = args.position,
-        text = args.text,
+        text = u(args.text),
         lines_affected = args.lines_affected
       }
       if inserted then handler = 'on_text_inserted'
