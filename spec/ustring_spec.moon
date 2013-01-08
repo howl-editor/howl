@@ -44,6 +44,10 @@ describe 'ustrings', ->
     assert.equal 3, u('foo').size
     assert.equal 6, u('åäö').size
 
+  it '.multibyte is true if the string contains multibyte characters', ->
+    assert.is_false u('foo').multibyte
+    assert.is_true u('åäö').multibyte
+
   it 'u.is_instance(v) returns true if <v> is an ustring', ->
     assert.is_true u.is_instance u'foo'
     assert.is_false u.is_instance 'foo'

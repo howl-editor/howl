@@ -158,6 +158,7 @@ mod = {
       if o == 0 then  append offsets, cur_b_offset
       elseif o < 0 then error "Decreasing offset '#{offset}': must be >= than previous offset '#{cur_c_offset}'", 2
       elseif o + cur_c_offset > len + 1 then error "Offset '#{offset}' out of bounds (length = #{len})", 2
+      elseif not @multibyte then append offsets, offset
       else
         next_ptr = C.g_utf8_offset_to_pointer ptr, o
         cur_b_offset += next_ptr - ptr
@@ -171,7 +172,6 @@ mod = {
       table.unpack offsets
 
   char_offset: (...) =>
-    len = @len!
     size = @size
     ptr = @ptr
     cur_c_offset = 1
@@ -189,6 +189,7 @@ mod = {
       if o == 0 then  append offsets, cur_c_offset
       elseif o < 0 then error "Decreasing offset '#{offset}': must be >= than previous offset '#{cur_b_offset}'", 2
       elseif o + cur_b_offset > size + 1 then error "Offset '#{offset}' out of bounds (size = #{size})", 2
+      elseif not @multibyte then append offsets, offset
       else
         next_ptr = ptr + o
         cur_b_offset += next_ptr - ptr
@@ -203,6 +204,7 @@ mod = {
 }
 
 properties = {
+  multibyte: => @len! != @size
 }
 
 ffi.metatype ustring, {
@@ -215,7 +217,7 @@ ffi.metatype ustring, {
     a, b = b, a if ffi.istype ustring, b
 
     if ffi.istype ustring, b
-      return a.size == b.size and 0 == C.strncmp a.ptr, b.ptr, a.size
+      return a.ptr == b.ptr or a.size == b.size and 0 == C.strncmp a.ptr, b.ptr, a.size
     elseif type(b) == 'string'
       return a.size == #b and 0 == C.strncmp a.ptr, const_char_p(b), a.size
 
