@@ -147,6 +147,8 @@ class Readline extends PropertyObject
     @sci.listener =
       on_keypress: self\_on_keypress
       on_char_added: self\_on_char_added
+      on_text_inserted: @buffer\_on_text_inserted
+      on_text_deleted: @buffer\_on_text_deleted
 
   _set_appearance: =>
     style.register_sci @sci
