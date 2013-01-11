@@ -344,9 +344,9 @@ describe 'Buffer', ->
             config.strip_trailing_whitespace = true
             b = buffer ''
             b.file = file
-            b.text = 'blank  \n\nfoo '
+            b.text = 'åäö  \n\nfoo  \n  '
             b\save!
-            assert.equal 'blank\n\nfoo', b.text
+            assert.equal 'åäö\n\nfoo\n', b.text
             assert.equal file.contents, b.text
 
   describe 'byte_offset(...)', ->

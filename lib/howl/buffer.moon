@@ -177,7 +177,7 @@ class Buffer extends PropertyObject
     pos = 1
     text = @text
 
-    while pos < @size
+    while pos < @length
       start_pos, end_pos, match = text\find pattern, pos
       break unless start_pos
 
