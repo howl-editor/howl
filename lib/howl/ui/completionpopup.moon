@@ -9,7 +9,8 @@ class CompletionPopup extends MenuPopup
     @completer = Completer @editor.buffer, pos
     comp_style = style.at_pos(@editor.buffer, @completer.start_pos) or style.default
     column_styles = { comp_style, style.comment }
-    super @completer\complete(pos), self\_on_completed, :column_styles
+    items, search = @completer\complete pos
+    super items, self\_on_completed, :column_styles, highlight_matches_for: search
 
   @property position: get: => @completer.start_pos
   @property empty: get: => #@list.items == 0
@@ -19,21 +20,17 @@ class CompletionPopup extends MenuPopup
       @close!
       return
 
-    items = @completer\complete @editor.cursor.pos
+    items, search = @completer\complete @editor.cursor.pos
     if #items == 0
       @close!
     else
+      @list.highlight_matches_for = search
       @items = items
 
   on_text_deleted: (editor, args) =>
     if args.at_pos < @completer.start_pos or editor.current_line != @completer.line
       @close!
       return
-
-  set_completions: (items) =>
-    @list.items = items
-    @list\show!
-    @resize_for_content!
 
   _on_completed: (item) =>
     cur_word = @editor.current_context.word
