@@ -33,10 +33,18 @@ describe 'Completer', ->
       completions = Completer(buffer, 1)\complete 1
       assert.same completions, { 'buffer', 'mode' }
 
-    it 'runs completions for mode even if buffer has no completers', ->
+    it 'returns completions for mode even if buffer has no completers', ->
       mode = completers: { -> complete: -> { 'mode' } }
       buffer.mode = mode
       assert.same Completer(buffer, 1)\complete(1), { 'mode' }
+
+    it 'returns the search string after the completions', ->
+      mode = completers: { -> complete: -> { 'prefix' } }
+      buffer.text = 'pre'
+      buffer.mode = mode
+      append buffer.completers,  -> complete: -> { 'buffer' }
+      _, search = Completer(buffer, 4)\complete 4
+      assert.same search, 'pre'
 
     it 'calls <completer.complete()> with (completer, context)', ->
       buffer.text = 'mr.cat'

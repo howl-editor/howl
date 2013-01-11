@@ -35,6 +35,6 @@ class Completer
       if comps
         append completions, comp for comp in *comps
 
-    return completions
+    return completions, context.word_prefix
 
 return Completer
