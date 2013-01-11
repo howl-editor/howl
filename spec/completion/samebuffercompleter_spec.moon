@@ -8,18 +8,18 @@ describe 'SameBufferCompleter.complete()', ->
   factory = completion.same_buffer.factory
   before_each -> buffer = Buffer {}
 
-  it 'returns completions for local matches in the buffer', ->
+  it 'returns strict and fuzzy completions for local matches in the buffer', ->
     buffer.text = [[
 Hello there
   some symbol (foo) {
-    if yikes {
+    if yike {
       say_it = 'blarg'
       s
     }
   }
 
   other sion (arg) {
-    saphire = 'this too'
+    saphire = 'that too'
   }
 ]]
     line = buffer.lines[5]
@@ -55,3 +55,17 @@ twitter
     completer = factory buffer, context
     comps = completer\complete context
     assert.same { 'twitter', 'two', 'twice' }, comps
+
+  it 'offers "smart" completions after the local ones', ->
+    buffer.text = [[
+two
+twitter
+fatwa
+tw
+the_water
+]]
+    line = buffer.lines[4]
+    context = buffer\context_at line.end_pos
+    completer = factory buffer, context
+    comps = completer\complete context
+    assert.same { 'twitter', 'two', 'the_water', 'fatwa' }, comps
