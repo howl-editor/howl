@@ -1,4 +1,4 @@
-import Buffer, Scintilla, config from howl
+import Buffer, Scintilla, config, signal from howl
 import File from howl.fs
 
 describe 'Buffer', ->
@@ -478,3 +478,24 @@ describe 'Buffer', ->
       b = nil
       collectgarbage!
       assert.is_nil bufs[1]
+
+  describe 'signals', ->
+    it 'buffer-saved is fired whenever a buffer is saved', ->
+      handler = spy.new -> true
+      signal.connect 'buffer-saved', handler
+      b = buffer 'foo'
+      with_tmpfile (file) ->
+        b.file = file
+        b\save!
+
+      signal.disconnect 'buffer-saved', handler
+      assert.spy(handler).was_called!
+
+    it 'buffer-modified is fired whenever a buffer is modified', ->
+      handler = spy.new -> true
+      b = buffer 'foo'
+      signal.connect 'buffer-modified', handler
+      b\append 'bar'
+      b\delete 1, 2
+      signal.disconnect 'buffer-modified', handler
+      assert.spy(handler).was_called 2

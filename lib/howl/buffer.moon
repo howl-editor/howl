@@ -257,9 +257,13 @@ class Buffer extends PropertyObject
     if args.text.multibyte
       @multibyte_from = @multibyte_from and math.min(@multibyte_from, args.at_pos) or args.at_pos
 
+    signal.emit 'buffer-modified', buffer: self
+
   _on_text_deleted: (args) =>
     if @multibyte and args.at_pos < @multibyte_from
       @multibyte_from = args.at_pos
+
+    signal.emit 'buffer-modified', buffer: self
 
   _offset: (f, ...) =>
     args = {...}
@@ -306,5 +310,10 @@ signal.register 'buffer-saved',
   description: 'Signaled right after a buffer was saved',
   parameters:
     buffer: 'The buffer that was saved'
+
+signal.register 'buffer-modified',
+  description: 'Signaled right after a buffer was modified',
+  parameters:
+    buffer: 'The buffer that was modified'
 
 return Buffer
