@@ -30,8 +30,8 @@ describe 'signal', ->
     after_each -> signal.unregister 'foo'
 
     it 'allows name based signals to be broadcasted to any number of handlers', ->
-      handler1 = spy.new!
-      handler2 = spy.new!
+      handler1 = spy.new -> true
+      handler2 = spy.new -> true
       signal.connect 'foo', handler1
       signal.connect 'foo', handler2
       signal.emit 'foo'
@@ -46,7 +46,7 @@ describe 'signal', ->
       assert.equal value, 'first'
 
     it 'allows disconnecting handlers', ->
-      handler = spy.new!
+      handler = spy.new -> true
       signal.connect 'foo', handler
       signal.disconnect 'foo', handler
       signal.emit 'foo'
@@ -61,7 +61,7 @@ describe 'signal', ->
 
       context 'when a handler returns true', ->
         it 'skips invoking subsequent handlers', ->
-          handler2 = spy.new!
+          handler2 = spy.new -> true
           signal.connect 'foo', -> true
           signal.connect 'foo', handler2
           signal.emit 'foo'
@@ -78,7 +78,7 @@ describe 'signal', ->
           assert.match log.last_error.message, 'BOOM'
 
         it 'continues processing subsequent handlers', ->
-          handler2 = spy.new!
+          handler2 = spy.new -> true
           signal.connect 'foo', -> error 'BOOM'
           signal.connect 'foo', handler2
           signal.emit 'foo'

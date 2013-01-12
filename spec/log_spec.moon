@@ -11,13 +11,13 @@ describe 'log', ->
   for m in *{'info', 'warning', 'error'}
     describe m .. '(text)', ->
       it 'propages the message to _G.window.status\\' .. m .. '() if available', ->
-        method = spy.new!
+        method = spy.new -> true
         _G.window = readline: {}, status: [m]: method
         log[m] 'message'
         assert.spy(method).was.called_with _G.window.status, 'message'
 
       it 'only propagates the first line of the message', ->
-        method = spy.new!
+        method = spy.new -> true
         _G.window = readline: {}, status: [m]: method
         log[m] 'message\nline2\nline3'
         assert.spy(method).was.called_with _G.window.status, 'message'

@@ -58,7 +58,7 @@ describe 'keyhandler', ->
       it 'passes the event, translations and editor', ->
         event = character: 'A', key_name: 'a', key_code: 65
         editor = buffer: keymap: {}
-        signal_handler = spy.new!
+        signal_handler = spy.new -> true
         signal.connect 'key-press', signal_handler
 
         status, ret = pcall keyhandler.process editor, event
@@ -184,8 +184,8 @@ describe 'keyhandler', ->
   describe 'capture(function)', ->
     it 'causes <function> to be called exclusively with the next key event', ->
       event = character: 'A', key_name: 'a', key_code: 65
-      thief = spy.new!
-      handler = spy.new!
+      thief = spy.new -> true
+      handler = spy.new -> true
       keyhandler.capture thief
       editor = buffer: keymap: A: handler
       keyhandler.process editor, event

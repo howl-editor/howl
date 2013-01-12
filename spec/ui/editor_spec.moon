@@ -43,7 +43,7 @@ describe 'Editor', ->
   describe '.indent()', ->
     context "when the buffer's mode provides an .indent_for", ->
       it 'is called with (mode, line, indent_level, editor)', ->
-        indent_for = spy.new!
+        indent_for = spy.new -> true
         buffer.mode = :indent_for
         editor\indent!
         assert.spy(indent_for).was.called_with buffer.mode, editor.current_line, 2, editor
@@ -100,7 +100,7 @@ describe 'Editor', ->
 
     context "when the buffer's mode provides an .after_newline", ->
       it 'is called with (mode, current-line, editor)', ->
-        after_newline = spy.new!
+        after_newline = spy.new -> true
         buffer.mode = :after_newline
         buffer.text = 'line'
         cursor.pos = 3
