@@ -19,7 +19,7 @@ to_insert = (editor) -> state.change_mode editor, 'insert'
 
 replace_char = (event, translations, editor) ->
   if event.character
-    apply editor, ->
+    apply editor, (editor) ->
       editor.buffer\delete editor.cursor.pos, 1
       editor.buffer\insert event.character, editor.cursor.pos, 1
   else
@@ -39,7 +39,7 @@ A = (editor) ->
   to_insert editor
 
 c = (editor) ->
-  if state.change then apply editor, ->
+  if state.change then apply editor, (editor) ->
     editor\copy_line!
     editor.cursor\home!
     editor\delete_to_end_of_line!
@@ -79,13 +79,13 @@ D = (editor) ->
 
 i = to_insert
 
-J = (editor) -> apply editor, -> editor\join_lines!
+J = (editor) -> apply editor, (editor) -> editor\join_lines!
 
-o = (editor) -> apply editor, ->
+o = (editor) -> apply editor, (editor) ->
   A editor
   editor\newline_and_format!
 
-O = (editor) -> apply editor, ->
+O = (editor) -> apply editor, (editor) ->
   current_indent = editor.current_line.indentation
   editor.cursor\home!
   editor\newline!
@@ -94,11 +94,11 @@ O = (editor) -> apply editor, ->
   editor.cursor.column = current_indent + 1
   to_insert editor
 
-p = (editor) -> apply editor, ->
+p = (editor) -> apply editor, (editor) ->
   one_right editor
   editor\paste!
 
-P = (editor) -> apply editor, -> editor\paste!
+P = (editor) -> apply editor, (editor) -> editor\paste!
 
 r = (editor) ->  keyhandler.capture replace_char
 
@@ -107,11 +107,15 @@ ctrl_r = 'editor:redo'
 
 v = (editor) -> state.change_mode editor, 'visual'
 
-x = (editor) -> apply editor, -> editor.buffer\delete editor.cursor.pos, 1
+x = (editor) ->
+  state.delete = true
+  apply editor, (editor, _state) ->
+    editor.cursor.pos += _state.count - 1
+    true
 
 y = (editor) ->
   if state.yank
-    apply editor, -> editor\copy_line!
+    apply editor, (editor) -> editor\copy_line!
   else
     state.yank = true
 

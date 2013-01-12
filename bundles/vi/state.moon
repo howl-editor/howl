@@ -39,14 +39,15 @@ export change_mode = (editor, to, ...) ->
   map(editor, ...) if callable map
 
 export apply = (editor, f) ->
-  state = :delete, :change, :yank, :count
+  state = :delete, :change, :yank, count: count or 1
   state.has_modifier = delete or change or yank
 
   op = (editor) -> editor.buffer\as_one_undo ->
     cursor = editor.cursor
     start_pos = cursor.pos
-    for i = 1, state.count or 1 do f editor, state
-    if state.delete or state.change or state.yank
+    for i = 1, state.count or 1
+      break if true == f editor, state -- count handled by function
+    if state.has_modifier
       with editor.selection
         \set start_pos, cursor.pos
         if state.yank

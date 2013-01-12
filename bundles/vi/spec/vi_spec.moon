@@ -139,6 +139,26 @@ describe 'VI', ->
         assert.equal 'Ə two', editor.current_line.text
         check!
 
+  describe 'commands with counts', ->
+    it 'x deletes <count> characters', ->
+      buffer.text = 'hello'
+      cursor.pos = 1
+      press '2', 'x'
+      assert.equal 'llo', buffer.text
+
+    it 'dw deletes <count> words', ->
+      buffer.text = 'hello brave new world'
+      cursor.pos = 1
+      press '2', 'd', 'w'
+      assert.equal 'new world', buffer.text
+
+    it 'l moves <count> characters right', ->
+      buffer.text = 'åäö'
+      cursor.pos = 1
+      press '2', 'l'
+      assert.equal 3, cursor.pos
+
+
   context 'insert mode', ->
     before_each -> press 'i'
 
@@ -154,6 +174,21 @@ describe 'VI', ->
         press 'i'
         press 'escape'
         assert.equal 1, cursor.column
+
+  context 'repeated commands via "."', ->
+    it '. repeats the last operation', ->
+      buffer.text = 'hello brave new world'
+      cursor.pos = 1
+      press 'd', 'w'
+      press '.'
+      assert.equal 'new world', buffer.text
+
+    it 'includes the applied count', ->
+      buffer.text = 'hello world'
+      cursor.pos = 1
+      press '2', 'x'
+      press '.'
+      assert.equal 'o world', buffer.text
 
   context 'visual mode', ->
     before_each ->
