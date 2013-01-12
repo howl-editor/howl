@@ -1,11 +1,11 @@
 import Buffer from howl
 import completion from howl
 
-require 'howl.completion.samebuffercompleter'
+require 'howl.completion.inbuffercompleter'
 
-describe 'SameBufferCompleter.complete()', ->
+describe 'InBufferCompleter.complete()', ->
   buffer = nil
-  factory = completion.same_buffer.factory
+  factory = completion.in_buffer.factory
   before_each -> buffer = Buffer {}
 
   it 'returns strict and fuzzy completions for local matches in the buffer', ->

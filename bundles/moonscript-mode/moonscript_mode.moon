@@ -21,7 +21,7 @@ class MoonscriptMode
   new: =>
     lexer_file = bundle_file 'moonscript_lexer.lua'
     @lexer = howl.aux.ScintilluaLexer 'moon', lexer_file
-    @completers = { 'same_buffer' }
+    @completers = { 'in_buffer' }
 
   short_comment_prefix: '--'
 

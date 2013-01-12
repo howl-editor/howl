@@ -185,7 +185,7 @@ class Application extends PropertyObject
     require 'howl.variables.core_variables'
 
   _load_completions: =>
-    require 'howl.completion.samebuffercompleter'
+    require 'howl.completion.inbuffercompleter'
 
   _load_commands: =>
     require 'howl.inputs.projectfile_input'

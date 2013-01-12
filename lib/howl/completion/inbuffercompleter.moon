@@ -22,7 +22,7 @@ near_tokens = (part, context) ->
 
   [token for _, token in pairs tokens]
 
-class SameBufferCompleter
+class InBufferCompleter
   new: (buffer, context) =>
     @near_tokens = near_tokens context.word_prefix, context
     all_tokens = parse buffer
@@ -50,4 +50,4 @@ class SameBufferCompleter
 
     completions
 
-howl.completion.register name: 'same_buffer', factory: SameBufferCompleter
+howl.completion.register name: 'in_buffer', factory: InBufferCompleter
