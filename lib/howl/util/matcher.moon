@@ -12,7 +12,7 @@ match_pattern = (search) ->
     c = P tostring search\sub(i, i)
     fuzzy *= (-c * P 1)^0 * Cp! * c
     boundary_p = separator * Cp! * c
-    boundary *= Cp! * c + (-boundary_p * P 1)^0 * boundary_p
+    boundary *= Cp! * c + (-boundary_p * -separator * P 1)^0 * boundary_p
 
   Ct P {
     boundary + V('exact') + fuzzy

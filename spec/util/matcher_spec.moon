@@ -6,7 +6,7 @@ describe 'Matcher', ->
     m = Matcher c
     assert.same { 'One', 'Green Fields' }, m('ne')
 
-  it 'prefers #boundary matches over straight ones over fuzzy ones', ->
+  it 'prefers boundary matches over straight ones over fuzzy ones', ->
     c = { 'kiss her', 'some/stuff/here', 'openssh', 'sss hhh' }
     m = Matcher c
     assert.same {
@@ -67,3 +67,8 @@ describe 'Matcher', ->
 
     it 'accepts ustring both for <search> and <text>', ->
       assert.not_nil Matcher.explain u'FU', u'snafu'
+
+  it 'boundary matches can not skip separators', ->
+    assert.equal 'boundary', Matcher.explain('sk', 'nih/says/knights').how
+    assert.not_equal 'boundary', Matcher.explain('nk', 'nih/says/knights').how
+
