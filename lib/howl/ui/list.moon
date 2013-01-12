@@ -106,13 +106,14 @@ class List extends PropertyObject
 
   prev_page: =>
     return if not @max_height
-    row = @offset - @max_height
-    row = #@items if row < 1
+    row = @offset - (@last_shown - @offset) - 1
+    if row < 1
+      row = @offset == 1 and #@items or 1
     @scroll_to row
 
   next_page: =>
     return if not @max_height
-    row = @offset + @max_height
+    row = @last_shown + 1
     row = 1 if row > #@items
     @scroll_to row
 

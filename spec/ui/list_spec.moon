@@ -350,7 +350,7 @@ three    four
       list.max_height = 1
       list\show!
       list\next_page!
-      assert.equal list.offset, 2
+      assert.equal 2, list.offset
 
     it 'scrolls to the first page if at the end of the list', ->
       list.items = {'one', 'two', 'three'}
@@ -358,7 +358,7 @@ three    four
       list\show!
       list\scroll_to 3
       list\next_page!
-      assert.equal list.offset, 1
+      assert.equal 1, list.offset
 
   describe '.prev_page', ->
     it 'scrolls to the previous page', ->
