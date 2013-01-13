@@ -68,6 +68,7 @@ class Buffer extends PropertyObject
     @mode = mode
     @properties = {}
     @multibyte_from = nil
+    @_len = nil
     @sci_listener =
       on_text_inserted: self\_on_text_inserted
       on_text_deleted: self\_on_text_deleted
@@ -115,9 +116,9 @@ class Buffer extends PropertyObject
 
   @property size: get: => @sci\get_text_length!
   @property length: get: =>
-    len = @sci\count_characters 0, @size
-    @multibyte_from = nil if len == @size
-    len
+    @_len or= @sci\count_characters 0, @size
+    @multibyte_from = nil if @_len == @size
+    @_len
 
   @property lines: get: => BufferLines self, @sci
 
@@ -257,12 +258,14 @@ class Buffer extends PropertyObject
     if args.text.multibyte
       @multibyte_from = @multibyte_from and math.min(@multibyte_from, args.at_pos) or args.at_pos
 
+    @_len = nil
     signal.emit 'buffer-modified', buffer: self
 
   _on_text_deleted: (args) =>
     if @multibyte and args.at_pos < @multibyte_from
       @multibyte_from = args.at_pos
 
+    @_len = nil
     signal.emit 'buffer-modified', buffer: self
 
   _offset: (f, ...) =>

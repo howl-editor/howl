@@ -4,6 +4,7 @@ import Scintilla from howl
 describe 'ActionBuffer', ->
   sci = Scintilla!
   buf = ActionBuffer sci
+  sci.listener = buf.sci_listener
 
   it 'initialization takes an optional sci parameter', ->
     assert.not_error -> ActionBuffer!
