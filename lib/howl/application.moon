@@ -165,10 +165,13 @@ class Application extends PropertyObject
       for entry in *session.buffers
         file = File(entry.file)
         continue unless file.exists
-        buffer = @new_buffer mode.for_file file
-        buffer.file = file
-        buffer.last_shown = entry.last_shown
-        buffer.properties = entry.properties
+        status, err = pcall ->
+          buffer = @new_buffer mode.for_file file
+          buffer.file = file
+          buffer.last_shown = entry.last_shown
+          buffer.properties = entry.properties
+
+        log.error "Failed to load #{file}: #{err}" unless status
 
     @new_editor @_buffers[1] or @new_buffer!
 
