@@ -44,6 +44,16 @@ describe 'Cursor', ->
       assert.equal cursor.pos, 5
       assert.equals 'Liñe', selection.text
 
+    it 'out-of-bounds values are automatically corrected', ->
+      cursor.pos = 0
+      assert.equal 1, cursor.pos
+      cursor.pos = -1
+      assert.equal 1, cursor.pos
+      cursor.pos = math.huge
+      assert.equal #buffer + 1, cursor.pos
+      cursor.pos = #buffer + 2
+      assert.equal #buffer + 1, cursor.pos
+
   describe '.line', ->
     it 'returns the current line', ->
       cursor.pos = 1

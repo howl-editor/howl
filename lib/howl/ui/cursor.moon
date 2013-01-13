@@ -27,6 +27,9 @@ class Cursor extends PropertyObject
   @property pos:
     get: => @container.buffer\char_offset 1 + @sci\get_current_pos!
     set: (pos) =>
+      pos = #@container.buffer + 1 if pos > #@container.buffer + 1
+      pos = 1 if pos < 1
+
       if @selection.persistent
         @selection\set @selection.anchor, pos
       else

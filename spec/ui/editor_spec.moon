@@ -73,7 +73,7 @@ describe 'Editor', ->
       buffer.text = '  line'
       cursor.pos = 7
       editor\newline_and_format!
-      assert.equal buffer.text, '  line\n  '
+      assert.equal '  line\n  ', buffer.text
 
     it 'does the whole shebang as a one undo', ->
       buffer.text = '  line'
@@ -213,8 +213,8 @@ describe 'Editor', ->
     buffer.text = 'hƏllo'
     cursor.pos = 6
     editor\insert ' world'
-    assert.equal buffer.text, 'hƏllo world'
-    assert.equal cursor.pos, 12
+    assert.equal 'hƏllo world', buffer.text
+    assert.equal 12, cursor.pos, 12
 
   it 'paste pastes the contents of the clipboard at the current position', ->
     buffer.text = 'hƏllo'
