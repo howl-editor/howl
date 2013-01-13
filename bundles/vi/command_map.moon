@@ -15,7 +15,9 @@ one_right = (editor) ->
 
 export *
 
-to_insert = (editor) -> state.change_mode editor, 'insert'
+to_insert = (editor) ->
+  state.change_mode editor, 'insert'
+  state.record editor, ->
 
 replace_char = (event, translations, editor) ->
   if event.character
@@ -110,7 +112,7 @@ v = (editor) -> state.change_mode editor, 'visual'
 x = (editor) ->
   state.delete = true
   apply editor, (editor, _state) ->
-    editor.cursor.pos += _state.count - 1
+    editor.cursor.pos += (_state.count or 1) - 1
     true
 
 y = (editor) ->

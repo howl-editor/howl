@@ -1,5 +1,5 @@
 import keyhandler from howl
-import getmetatable, setfenv, pairs, callable from _G
+import getmetatable, setfenv, pairs, callable, print, tostring from _G
 
 _G = _G
 _ENV = {}
@@ -7,10 +7,9 @@ setfenv 1, _ENV
 
 export mode
 export delete, change, yank, go
-export count
+export count, insert_edit
 
-maps = nil
-last_op = nil
+local maps, last_op
 
 export has_modifier = -> delete or change or yank or go
 
@@ -39,7 +38,7 @@ export change_mode = (editor, to, ...) ->
   map(editor, ...) if callable map
 
 export apply = (editor, f) ->
-  state = :delete, :change, :yank, count: count or 1
+  state = :delete, :change, :yank, :count
   state.has_modifier = delete or change or yank
 
   op = (editor) -> editor.buffer\as_one_undo ->
@@ -61,15 +60,25 @@ export apply = (editor, f) ->
 
   op editor
   reset!
-  last_op = op if state.delete or state.change
+
+  if state.delete or state.change
+    last_op = op
+    insert_edit = nil
 
 export record = (editor, op) ->
   op editor
   reset!
   last_op = op
+  insert_edit = nil
 
 export repeat_last = (editor) ->
-  if last_op then last_op editor
+  if last_op
+    for i = 1, count or 1
+      last_op editor
+      if insert_edit
+        insert_edit editor
+        change_mode editor, 'command'
+
   reset!
 
 export init = (keymaps, start_mode) ->

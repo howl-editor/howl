@@ -190,6 +190,27 @@ describe 'VI', ->
       press '.'
       assert.equal 'o world', buffer.text
 
+    context 'when the command has an associated edit', ->
+      it 'that is repeated and command mode is re-entered', ->
+        buffer.text = '\nhello world'
+        cursor.pos = 2
+        press 'c', 'w'
+        editor\insert 'bork'
+        press 'escape'
+        press 'w', '.'
+        assert.equal 'command', state.mode
+        assert.equal '\nbork bork', buffer.text
+
+      it 'just entering insert is considered a command', ->
+        buffer.text = 'hello world'
+        cursor.pos = 7
+        press 'i'
+        editor\insert 'ba'
+        press 'escape'
+        press 'l', '.'
+        assert.equal 'command', state.mode
+        assert.equal 'hello babaworld', buffer.text
+
   context 'visual mode', ->
     before_each ->
       cursor.column = 3
