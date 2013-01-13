@@ -16,6 +16,7 @@ describe 'moonscript-mode', ->
   describe '.indent_for(line, indent_level, editor)', ->
     buffer = Buffer m
     editor = Editor buffer
+    cursor = editor.cursor
     lines = buffer.lines
     indent_level = 2
     config.set 'indent', indent_level, buffer
@@ -60,7 +61,7 @@ describe 'moonscript-mode', ->
 
     non_indents = {
       'closed conditionals': {
-        'if foo then bar',
+        'if foo then bar', 'elseif foo then bar',
         'unless foo then bar',
       },
       'statement modifiers': {
@@ -94,21 +95,21 @@ describe 'moonscript-mode', ->
         for code in *indents[desc]
           it "e.g. indents for '#{code}'", ->
             buffer.text = code .. '\n'
-            editor.cursor.line = 2
+            cursor.line = 2
             assert.equal indent_level, m\indent_for(buffer.lines[2], indent_level, editor)
 
     it 'disregards empty lines above when determining indent', ->
       for desc in pairs indents
         for code in *indents[desc]
           buffer.text = code .. '\n\n'
-          editor.cursor.line = 3
+          cursor.line = 3
           assert.equal indent_level, m\indent_for(buffer.lines[3], indent_level, editor)
 
     it 'does not disregard blank lines above when determining indent', ->
       for desc in pairs indents
         for code in *indents[desc]
           buffer.text = "  #{code}'\n  \n  "
-          editor.cursor.line = 3
+          cursor.line = 3
           assert.equal 2, m\indent_for(buffer.lines[3], indent_level, editor)
 
     for desc in pairs dedents
@@ -116,7 +117,7 @@ describe 'moonscript-mode', ->
         for code in *dedents[desc]
           it "e.g. dedents for '#{code}'", ->
             buffer.text = '  foo\n  ' .. code
-            editor.cursor.line = 2
+            cursor.line = 2
             assert.equal 0, m\indent_for(buffer.lines[2], indent_level, editor)
 
     for desc in pairs non_indents
@@ -124,19 +125,28 @@ describe 'moonscript-mode', ->
         for code in *non_indents[desc]
           it "e.g. does not indent for '#{code}'", ->
             buffer.text = "  #{code}\n  "
-            editor.cursor.line = 2
+            cursor.line = 2
             assert.equal 2, m\indent_for(buffer.lines[2], indent_level, editor)
+
+    it 'returns a corrected indent for lines that are on incorrect indentation', ->
+      buffer.text = '  bar\n one_column_offset'
+      assert.equal 2, m\indent_for(buffer.lines[2], indent_level, editor)
+
+    it 'returns the indent for the previous line for a line with a non-motivated indent', ->
+      buffer.text = 'bar\n  foo'
+      assert.equal 0, m\indent_for(buffer.lines[2], indent_level, editor)
 
   describe '.after_newline()', ->
     buffer = Buffer m
     editor = Editor buffer
+    cursor = editor.cursor
     lines = buffer.lines
     config.set 'indent', 2, buffer
 
     context 'splitting brackets', ->
       it 'moves the closing bracket to its own line', ->
         buffer.text = '{\n  }'
-        editor.cursor.line = 2
+        cursor.line = 2
         m\after_newline(buffer.lines[2], editor)
         assert.equal buffer.text, '{\n  \n}'
 
@@ -149,6 +159,6 @@ describe 'moonscript-mode', ->
       }
         orig_text = code .. '\n'
         buffer.text = orig_text
-        editor.cursor.line = 2
+        cursor.line = 2
         m\after_newline(buffer.lines[2], editor)
         assert.equal buffer.text, orig_text

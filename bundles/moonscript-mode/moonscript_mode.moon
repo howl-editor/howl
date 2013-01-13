@@ -30,10 +30,15 @@ class MoonscriptMode
     while prev_line and prev_line.empty
       prev_line = prev_line.previous
 
-    return line.indentation unless prev_line
-    return prev_line.indentation + indent_level if indent_pattern\match prev_line.text
-    return prev_line.indentation - indent_level if dedent_pattern\match line.text
-    return line.indentation
+    if prev_line
+      return prev_line.indentation + indent_level if indent_pattern\match prev_line.text
+      if dedent_pattern\match line.text
+        unless r('\\bthen\\b')\match prev_line.text
+          return prev_line.indentation - indent_level
+      return prev_line.indentation if line.indentation > prev_line.indentation
+
+    alignment_adjustment = line.indentation % indent_level
+    return line.indentation + alignment_adjustment
 
   after_newline: (line, editor) =>
     if line\match '^%s*}%s*$'
