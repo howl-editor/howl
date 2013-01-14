@@ -26,7 +26,7 @@ broadcast = (name, value, is_local) ->
         log.error 'Error invoking config watcher: ' .. ret
 
 get_def = (name) ->
-  def = defs[name]
+  def = defs[tostring name]
   error 'Undefined variable "' .. name .. '"', 2 if not def
   def
 
@@ -51,7 +51,10 @@ convert = (def, value) ->
   value
 
 config = {
-  definitions: defs
+  definitions: setmetatable {},
+    __index: (_, k) -> defs[tostring k]
+    __newindex: -> error 'Attempt to write to read-only table `.definitions`'
+    __pairs: -> pairs defs
 
   define: (var = {}) ->
     for field in *{'name', 'description'}
@@ -66,9 +69,10 @@ config = {
       error('Unknown type"' .. var.type_of .. '"', 2) if not predef
       var[k] = v for k,v in pairs predef
 
-    defs[var.name] = var
+    defs[tostring var.name] = var
 
   set: (name, value) ->
+    name = tostring name
     def = get_def name
 
     if def.scope and def.scope == 'local'
@@ -81,6 +85,7 @@ config = {
     broadcast name, value, false
 
   set_local: (name, value, buffer) ->
+    name = tostring name
     def = get_def name
 
     if def.scope and def.scope == 'global'
@@ -105,6 +110,7 @@ config = {
     broadcast name, value, true
 
   get: (name, buffer) ->
+    name = tostring name
     buffer = _G.editor.buffer if not buffer and _G.editor
 
     if buffer
@@ -120,6 +126,7 @@ config = {
   reset: -> values = {}
 
   watch: (name, callback) ->
+    name = tostring name
     list = watchers[name]
     if not list
       list = {}

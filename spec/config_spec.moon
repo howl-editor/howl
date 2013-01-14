@@ -12,11 +12,20 @@ describe 'config', ->
     it 'raises an error if the description option is missing', ->
       assert.raises 'description', -> config.define name: 'foo'
 
-  it '.definitions is a table of the current definitions, keyed by name', ->
-    var = name: 'foo', description: 'foo variable'
-    config.define var
-    assert.equal type(config.definitions), 'table'
-    assert.same config.definitions.foo, var
+  describe '.definitions', ->
+    it 'is a table of the current definitions, keyed by name', ->
+      var = name: 'foo', description: 'foo variable'
+      config.define var
+      assert.equal type(config.definitions), 'table'
+      assert.same var, config.definitions.foo
+
+    it 'can be indexed by ustrings', ->
+      var = name: 'foo', description: 'foo variable'
+      config.define var
+      assert.same var, config.definitions[u'foo']
+
+    it 'writing directly to it raises an error', ->
+      assert.has_error -> config.definitions.frob = 'crazy'
 
   describe 'set(name, value)', ->
     it 'sets <name> globally to <value>', ->
@@ -42,6 +51,10 @@ describe 'config', ->
       it 'get(name) returns the global value of <name>', ->
         config.set 'var', 'hello'
         assert.equal config.get('var'), 'hello'
+
+      it '<name> can be a ustring', ->
+        config.set 'var', 'hello'
+        assert.equal config.get(u'var'), 'hello'
 
     context 'when buffer is specified and has a local variable set', ->
       it 'get(name) returns the local value of <name>', ->
