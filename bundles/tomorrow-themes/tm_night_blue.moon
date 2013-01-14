@@ -114,7 +114,9 @@ return {
       color: comment
       :background
 
-    bracelight: color: blue
+    bracelight:
+      color: foreground
+      background: '#0064b1'
 
     bracebad:
       color: red

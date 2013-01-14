@@ -116,7 +116,9 @@ class Editor extends PropertyObject
       highlight.set_for_buffer @sci, buffer
       buffer\add_sci_ref @sci
 
-      @cursor.pos = buffer.properties.position or 1
+      pos = buffer.properties.position or 1
+      pos = math.max 1, math.min pos, #buffer
+      @cursor.pos = pos
       signal.emit 'after-buffer-switch', editor: self, current_buffer: buffer, old_buffer: prev_buffer
 
   @property current_line: get: => @buffer.lines[@cursor.line]
@@ -402,7 +404,24 @@ class Editor extends PropertyObject
 
   _on_update_ui: =>
     @_update_position!
+    @_brace_highlight!
     signal.emit 'editor-changed', editor: self
+
+  _brace_highlight: =>
+    should_highlight = config.get 'matching_braces_highlighted', @buffer
+
+    if should_highlight
+      current_pos = @sci\get_current_pos!
+      matching_pos = @sci\brace_match current_pos
+
+      if matching_pos >= 0
+        @sci\brace_highlight current_pos, matching_pos
+        @_brace_highlighted = true
+        return
+
+    if @_brace_highlighted
+      @sci\brace_highlight -1, -1
+      @_brace_highlighted = false
 
   _update_position: =>
     pos = @cursor.line .. ':' .. @cursor.column
@@ -517,6 +536,12 @@ with config
   .define
     name: 'caret_line_highlighted'
     description: 'Whether the caret line is highlighted'
+    default: true
+    type_of: 'boolean'
+
+  .define
+    name: 'matching_braces_highlighted'
+    description: 'Whether matching braces are highlighted'
     default: true
     type_of: 'boolean'
 
