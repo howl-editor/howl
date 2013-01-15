@@ -13,7 +13,9 @@ local function auto_module(name)
   return setmetatable(
     {},
     { __index = function (t, key)
-      local req_name = name .. '.' .. key:lower()
+      local req_name = name .. '.' .. key:gsub('%l%u', function(match)
+        return match:gsub('%u', function(upper) return '_' .. upper:lower() end)
+      end):lower()
       local status, mod = pcall(require, req_name)
       if not status then
         if mod:match('module.*not found') then
