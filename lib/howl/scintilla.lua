@@ -16,6 +16,7 @@ local string_format = string.format
 local ffi = require('ffi')
 local bit = require('bit')
 local cdefs = require('howl.cdefs')
+local colors = require('howl.ui.colors')
 local lgi_core = require 'lgi.core'
 
 local C = ffi.C
@@ -57,10 +58,11 @@ local function string_ptr(s)
   return u.is_instance(s) and s.ptr or const_char_p(s)
 end
 
-local function string_to_color(rgb)
-  if not rgb then return nil end
-  local r, g, b = rgb:match('^#?(%x%x)(%x%x)(%x%x)$')
-  if not r then error("Invalid color specification '" .. rgb .. "'", 2) end
+local function string_to_color(spec)
+  if not spec then return nil end
+  spec = colors[spec] or spec
+  local r, g, b = spec:match('^#?(%x%x)(%x%x)(%x%x)$')
+  if not r then error("Invalid color specification '" .. spec .. "'", 3) end
   return tonumber(b .. g .. r, 16)
 end
 
@@ -68,7 +70,8 @@ local function color_to_string(color)
   local hex = string_format('%.6x', tonumber(color))
   local b, g, r = hex:match('^(%x%x)(%x%x)(%x%x)$')
   if not r then error('Illegal color returned from scintilla: ' .. color) end
-  return '#' .. r .. g .. b
+  local rgb = '#' .. r .. g .. b
+  return colors.reverse[rgb] or rgb
 end
 
 setmetatable(sci, {

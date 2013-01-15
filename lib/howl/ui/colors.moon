@@ -1,4 +1,4 @@
-return {
+defs = {
   aliceblue: '#f0f8ff'
   antiquewhite: '#faebd7'
   aqua: '#00ffff'
@@ -147,3 +147,7 @@ return {
   yellow: '#ffff00'
   yellowgreen: '#9acd32'
 }
+
+defs.reverse = {v, k for k,v in pairs defs }
+
+return defs
