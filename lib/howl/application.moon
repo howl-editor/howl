@@ -36,8 +36,8 @@ class Application extends PropertyObject
   new_window: (properties) =>
     props =
       title: 'Howl'
-      default_width: 640
-      default_height: 480
+      width: 800
+      height: 640
       on_destroy: (window) ->
         for k, win in ipairs @windows
           if win\to_gobject! == window
