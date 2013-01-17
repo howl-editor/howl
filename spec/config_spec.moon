@@ -247,6 +247,12 @@ describe 'config', ->
       config.set 'trigger', 'value'
       assert.same callback.called_with, { 'trigger', 'value', false }
 
+    it 'define(..) invokes watchers with <name>, <default-value> and false', ->
+      callback = spy.new ->
+      config.watch 'undefined', callback
+      config.define name: 'undefined', description: 'springs into life', default: 123
+      assert.spy(callback).was_called_with 'undefined', 123, false
+
     it 'set_local invokes watchers with <name>, <value> and true', ->
       callback = Spy!
       buffer = {}

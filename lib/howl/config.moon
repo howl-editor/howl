@@ -70,6 +70,7 @@ config = {
       var[k] = v for k,v in pairs predef
 
     defs[tostring var.name] = var
+    broadcast tostring(var.name), var.default, false
 
   set: (name, value) ->
     name = tostring name
