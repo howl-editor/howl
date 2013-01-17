@@ -28,6 +28,8 @@ class Readline extends PropertyObject
       @showing = false
       @buffer.text = ''
       @_adjust_height!
+      @completion_list = nil
+      @notification = nil
       @window.status\show!
       @last_focused\grab_focus! if @last_focused
 
@@ -122,6 +124,8 @@ class Readline extends PropertyObject
     @_update_input!
     @_complete @completion_list != nil
 
+  _on_error: (err) => @notify err, 'error'
+
   _instantiate: =>
     @sci = Scintilla!
     @sci\set_style_bits 8
@@ -149,6 +153,7 @@ class Readline extends PropertyObject
       on_char_added: self\_on_char_added
       on_text_inserted: @buffer\_on_text_inserted
       on_text_deleted: @buffer\_on_text_deleted
+      on_error: self\_on_error
 
   _set_appearance: =>
     style.register_sci @sci
