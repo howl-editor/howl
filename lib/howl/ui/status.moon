@@ -35,7 +35,7 @@ class Status
 
     @label\get_style_context!\add_class 'status_' .. level
 
-    @label.label = text
+    @label.label = tostring text
     @text = text
     @level = level
 
