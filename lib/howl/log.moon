@@ -19,10 +19,8 @@ dispatch = (level, message) ->
   if _G.window
     status = _G.window.status
     readline = _G.window.readline
-    if readline.showing
-      readline\notify message, level
-    else
-      status[level] status, first_line_of message
+    status[level] status, first_line_of message
+    readline\notify message, level if readline.showing
 
   while #entries > config.max_log_entries and #entries > 0
     table.remove entries, 1
