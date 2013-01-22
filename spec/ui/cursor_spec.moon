@@ -99,8 +99,8 @@ describe 'Cursor', ->
   it 'down! moves the cursor one line down, respecting the current column', ->
     cursor.pos = 4
     cursor\down!
-    assert.equal cursor.line, 2
-    assert.equal cursor.column, 4
+    assert.equal 2, cursor.line
+    assert.equal 4, cursor.column
 
   it 'up! moves the cursor one line up, respecting the current column', ->
     cursor.line = 2

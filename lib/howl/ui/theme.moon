@@ -1,5 +1,6 @@
 import Gdk, Gtk from lgi
 import File from howl.fs
+import config from howl
 import style, colors, highlight from howl.ui
 import PropertyTable, Sandbox from howl.aux
 
@@ -56,6 +57,8 @@ status_template = [[
 available = {}
 theme_files = {}
 current_theme = nil
+current_theme_file = nil
+theme_active = false
 
 interpolate = (content, values) ->
   content\gsub '%${([%a_]+)}', values
@@ -70,14 +73,15 @@ parse_background = (value, theme_dir) ->
       value = tostring theme_dir\join(value).path
     "background-image: url('" .. value .. "')"
 
-parse_font = (font) ->
-  desc = font.name
+parse_font = (font = {}) ->
+  size = config.font_size
+  desc = config.font
   desc ..= ' bold' if font.bold
   desc ..= ' italic' if font.italic
-  desc ..= ' ' .. font.size if font.size
+  desc ..= ' ' .. size if size
   desc
 
-indicator_css = (indicators) ->
+indicator_css = (indicators = {}) ->
   css = ''
   for id, def in pairs indicators
     clazz = '.indic_' .. id
@@ -133,17 +137,42 @@ load_theme = (file) ->
   box\put :highlight
   box chunk
 
+apply_theme = ->
+  css = theme_css current_theme, current_theme_file
+  status = css_provider\load_from_data css
+  error 'Error loading theme "' .. theme.name .. '"' if not status
+  style.set_for_theme current_theme
+  highlight.set_for_theme current_theme
+
 set_theme = (name) ->
+  if name == nil
+    current_theme = nil
+    theme_active = false
+    return
+
   file = theme_files[name]
   error 'No theme found with name "' .. name .. '"' if not file
   theme = load_theme file
-  css = theme_css theme, file
-  status = css_provider\load_from_data css
-  error 'Error loading theme "' .. name .. '"' if not status
   theme.name = name
   current_theme = theme
-  style.set_for_theme theme
-  highlight.set_for_theme theme
+  current_theme_file = file
+  apply_theme if theme_active
+
+with config
+  .define
+    name: 'font'
+    description: 'The main font used within the application'
+    default: 'Liberation Mono'
+    type_of: 'string'
+
+  .define
+    name: 'font_size'
+    description: 'The size of the main font'
+    default: 11
+    type_of: 'number'
+
+config.watch 'font', (name, value) -> apply_theme! if current_theme
+config.watch 'font_size', (name, value) -> apply_theme! if current_theme
 
 return PropertyTable {
   current:
@@ -158,4 +187,10 @@ return PropertyTable {
     error 'file not specified for theme', 2 if not file
     available[#available + 1] = name
     theme_files[name] = file
+
+  apply: ->
+    return if theme_active
+    error 'No theme set to apply', 2 unless current_theme
+    apply_theme!
+    theme_active = true
 }

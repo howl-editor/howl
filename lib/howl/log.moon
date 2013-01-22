@@ -21,6 +21,7 @@ dispatch = (level, message) ->
     readline = _G.window.readline
     status[level] status, first_line_of message
     readline\notify message, level if readline.showing
+    _G.print message if level == 'error' and not _G.os.getenv('BUSTED')
 
   while #entries > config.max_log_entries and #entries > 0
     table.remove entries, 1

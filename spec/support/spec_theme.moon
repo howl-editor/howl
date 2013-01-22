@@ -1,10 +1,7 @@
-font = name: 'Monospace', size: 11
-
 return {
   window:
     background: '#000000'
     status:
-      :font
       color: '#0000ff'
 
   editor:
@@ -14,19 +11,13 @@ return {
     header:
       background: '#000000'
       color: 'darkgrey'
-      :font
 
     footer:
       background: '#dddddd'
       color: '#777777'
-      :font
-
-    indicators:
-      title: :font
 
   styles:
     default:
       color: blue
       background: red
-      :font
 }

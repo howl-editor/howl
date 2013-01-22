@@ -16,6 +16,10 @@ predefined_types =
     convert: (value) -> tonumber(value) or tonumber(tostring(value)) or value
     validate: (value) -> type(value) == 'number'
   }
+  string: {
+    convert: (value) -> tostring value
+  }
+
 
 broadcast = (name, value, is_local) ->
   callbacks = watchers[name]

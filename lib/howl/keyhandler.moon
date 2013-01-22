@@ -80,7 +80,7 @@ export dispatch = (event, keymaps, ...) ->
   for handler in *handlers
     status, ret = true, true
     if type(handler) == 'string'
-      status, ret = pcall, command.run handler
+      status, ret = pcall command.run, handler
     else
       status, ret = pcall handler, ...
 

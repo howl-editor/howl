@@ -31,6 +31,25 @@ describe 'style', ->
       custom_fore = sci\style_get_fore custom_number
       assert.equal custom_fore, '#776655'
 
+    it '#defining the "default" style causes other styles to be rebased upon that', ->
+      style.define 'own_style', color: '#334455'
+
+      sci = Scintilla!
+      buffer = Buffer {}, sci
+      style.register_sci sci
+      custom_number = style.number_for 'own_style', buffer
+      default_number = style.number_for 'default', buffer
+
+      style.define 'default', background: '#998877'
+
+      -- background should be changed..
+      custom_back = sci\style_get_back custom_number
+      assert.equal '#998877', custom_back
+
+      -- ..but custom color should still be intact
+      custom_fore = sci\style_get_fore custom_number
+      assert.equal '#334455', custom_fore
+
   describe 'define_default(name, definition)', ->
     it 'defines the style only if it is not already defined', ->
       style.define_default 'preset', color: '#334455'

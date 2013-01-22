@@ -29,7 +29,8 @@ spec_theme = {
     indicators:
       title: :font
 
-  styles: {}
+  styles:
+    default: {}
 }
 
 describe 'theme', ->
@@ -80,3 +81,16 @@ describe 'theme', ->
           theme.register 'colors', file
           theme.current = 'colors'
           assert.equal theme.current.editor.footer.color, '#ee82ee'
+
+    describe 'apply()', ->
+      it 'raises an error unless the current theme is set', ->
+        theme.current = nil
+        assert.has_error -> theme.apply!
+
+      it 'does not raise an error when applying a valid theme', ->
+        with_tmpfile (file) ->
+          file.contents = serpent.dump spec_theme
+          theme.register 'foo', file
+          theme.current = 'foo'
+
+        theme.apply!

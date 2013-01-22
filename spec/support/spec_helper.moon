@@ -62,6 +62,7 @@ support_files = root / 'spec' / 'support'
 -- load basic theme for specs
 theme.register('spec_theme', support_files / 'spec_theme.moon')
 theme.current = 'spec_theme'
+theme.apply!
 
 -- catch any errors and store them in _G.errors
 -- export errors = {}

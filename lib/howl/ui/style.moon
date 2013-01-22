@@ -1,3 +1,5 @@
+import config from howl
+
 default_style_numbers =
   unstyled: 0
   whitespace: 1
@@ -45,15 +47,13 @@ get_buffer_styles = (buffer) ->
   b_styles
 
 set_style = (sci, number, style) ->
-  font = style.font
+  font = style.font or {}
   with sci
-    if font
-      \style_set_font number, font.name if font.name != nil
-      \style_set_size number, font.size if font.size != nil
-      \style_set_bold number, font.bold if font.bold != nil
-      \style_set_italic number, font.italic if font.italic != nil
-      \style_set_weight number, font.weight if font.weight != nil
-
+    \style_set_font number, config.font
+    \style_set_size number, config.font_size
+    \style_set_bold number, font.bold if font.bold != nil
+    \style_set_italic number, font.italic if font.italic != nil
+    \style_set_weight number, font.weight if font.weight != nil
     \style_set_underline number, style.underline if style.underline != nil
     \style_set_fore number, style.color if style.color != nil
     \style_set_back number, style.background if style.background != nil
@@ -77,15 +77,37 @@ set_for_buffer = (sci, buffer) ->
     style = styles[name]
     set_style sci, style_num, style if style
 
-define = (name, attributes) ->
-  style = moon.copy attributes
+rebase_on = (definition) ->
+  for sci in *scis
+    set_style sci, definition.number, definition
+    sci\style_clear_all!
+
+    for name, style in pairs styles
+      if name != 'default'
+        set_style sci, style.number, style if style.number
+
+  for buffer, b_styles in pairs buffer_styles
+    for name, number in pairs b_styles
+      style = styles[name]
+      if style
+        set_style sci, number, styles[name] for sci in *buffer.scis when sci
+
+define = (name, definition) ->
+  error "Missing argument #1 (name)", 2 unless name
+  error "Missing argument #2 (definition)", 2 unless definition
+  name = tostring name
+  style = moon.copy definition
   style.number = default_style_numbers[name]
   styles[name] = style
+
+  if name == 'default'
+    rebase_on style
+    return
 
   -- redefine for existing scis
 
   if style.number -- default style, set for all scis
-    set_style sci, style.number, style for sci in *scis when sci
+    set_style sci, style.number, style for sci in *scis when sci -- when sci? yes; weak table
   else
     for buffer, styles in pairs buffer_styles
       if styles[name]
@@ -104,6 +126,7 @@ name_for = (number, buffer) ->
   default_style_numbers[number] or get_buffer_styles(buffer)[number]
 
 number_for = (style_name, buffer) ->
+  style_name = tostring style_name
   style = styles[style_name]
   if not style
     return default_style_numbers[style_name] or default_style_numbers.default
@@ -120,7 +143,14 @@ number_for = (style_name, buffer) ->
   style_num
 
 set_for_theme = (theme) ->
-  define name, def for name, def in pairs(theme.styles or {})
+  -- copy all theme style definitions
+  for name, definition in pairs theme.styles
+    style = moon.copy definition
+    style.number = default_style_numbers[name]
+    styles[name] = style
+
+  -- and rebase
+  rebase_on styles.default
 
 at_pos = (buffer, pos) ->
   b_pos = buffer\byte_offset pos

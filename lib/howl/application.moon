@@ -19,9 +19,7 @@ sort_buffers = (buffers) ->
 
 class Application extends PropertyObject
 
-  new: (root_dir, args) =>
-    @root_dir = root_dir
-    @args = args
+  new: (@root_dir, @args) =>
     @windows = {}
     @editors = {}
     @_buffers = {}
@@ -121,6 +119,7 @@ class Application extends PropertyObject
     bundle.load_all!
     @_set_theme!
     @settings\load_user!
+    theme.apply!
     window = @new_window!
     _G.window = window
 
