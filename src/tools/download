@@ -1,0 +1,26 @@
+#! /bin/sh
+
+file=$1; shift
+checksum=$1; shift
+
+tmp=$(tempfile)
+echo "Downloading $file.."
+wget -O $tmp $file || exit 1
+
+file_checksum=$(md5sum $tmp | awk '{print $1}')
+
+if [ "$checksum" != "$file_checksum" ]; then
+  echo "ERROR: Checksum mismatch for $file (expected $checksum, got $file_checksum)"
+  rm $tmp
+  exit 1
+fi
+
+echo "Checksum OK."
+
+cmd=$(echo "$@" | sed -e "s|{file}|$tmp|g")
+echo $cmd
+$cmd
+ec=$?
+rm $tmp
+exit $ec
+
