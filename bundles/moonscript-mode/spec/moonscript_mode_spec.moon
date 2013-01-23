@@ -143,11 +143,17 @@ describe 'moonscript-mode', ->
     lines = buffer.lines
     config.set 'indent', 2, buffer
 
+    it 'sets the indent to that of the previous non-empty line if present', ->
+      buffer.text = '  line1\n\n'
+      cursor.line = 3
+      m\after_newline(lines[3], editor)
+      assert.equal buffer.text, '  line1\n\n  '
+
     context 'splitting brackets', ->
       it 'moves the closing bracket to its own line', ->
         buffer.text = '{\n  }'
         cursor.line = 2
-        m\after_newline(buffer.lines[2], editor)
+        m\after_newline(lines[2], editor)
         assert.equal buffer.text, '{\n  \n}'
 
     it 'does nothing for other statements', ->

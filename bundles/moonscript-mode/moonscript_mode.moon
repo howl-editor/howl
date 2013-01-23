@@ -17,6 +17,12 @@ indent_pattern = P {
 
 dedent_pattern = space^0 * (P'elseif' + 'else' + '}') * (eof + space^1)
 
+prev_non_empty_line = (line) ->
+  prev_line = line.previous
+  while prev_line and prev_line.empty
+    prev_line = prev_line.previous
+  prev_line
+
 class MoonscriptMode
   new: =>
     lexer_file = bundle_file 'moonscript_lexer.lua'
@@ -26,9 +32,7 @@ class MoonscriptMode
   short_comment_prefix: '--'
 
   indent_for: (line, indent_level, editor) =>
-    prev_line = line.previous
-    while prev_line and prev_line.empty
-      prev_line = prev_line.previous
+    prev_line = prev_non_empty_line line
 
     if prev_line
       return prev_line.indentation + indent_level if indent_pattern\match prev_line.text
@@ -46,5 +50,9 @@ class MoonscriptMode
       editor\shift_left!
       new_line = editor.buffer.lines\insert line.nr, ''
       new_line.indentation = wanted_indent
+    else
+      prev_line = prev_non_empty_line line
+      if prev_line
+        line.indentation = prev_line.indentation if prev_line.indentation != line.indentation
 
 return MoonscriptMode
