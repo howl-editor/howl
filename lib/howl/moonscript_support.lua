@@ -2,6 +2,8 @@ moonscript = require('moonscript')
 moonscript.errors = require "moonscript.errors"
 moon = require('moon')
 
+local line_tables = moonscript.line_tables
+
 lua_loadfile = loadfile
 
 loadfile = function(filename, mode, env)
@@ -15,6 +17,14 @@ end
 
 local function error_rewriter(err)
   if not err:match('%.moon') then return err end
+  moon_file = err:match('^%[string "([^"]+%.moon)"%]')
+  if not moon_file then return err end
+
+  -- if the file hasn't been compiled yet we do it first for error rewriting to work
+  if not line_tables[moon_file] then
+    pcall(moonscript.loadfile, moon_file)
+  end
+
   local trace = debug.traceback("", 2)
   trace = trace:match('%s*(.+)%s*$')
   local rewritten = moonscript.errors.rewrite_traceback(trace, err)

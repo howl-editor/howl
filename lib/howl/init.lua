@@ -51,7 +51,10 @@ if os.getenv('BUSTED') then
   arg = {table.unpack(argv, 3, #argv)}
   busted()
 else
-  howl.app:run()
+  status, err = pcall(howl.app.run, howl.app)
+  if not status then
+    print(err)
+  end
 end
 
 code_cache.save()
