@@ -15,9 +15,15 @@ describe 'File', ->
       assert.is_true file.is_directory
       file\delete_all!
 
-  it 'creation takes a path (string or ustring)', ->
-    File '/bin/ls'
-    File u'/bin/ls'
+  describe 'new(...)', ->
+    it 'accepts string or ustring as denothing paths', ->
+      File '/bin/ls'
+      File u'/bin/ls'
+
+    it 'accepts other files as well', ->
+      f = File '/bin/ls'
+      f2 = File f
+      assert.equal f, f2
 
   describe '.is_absolute', ->
     it 'returns true if the given path is absolute', ->

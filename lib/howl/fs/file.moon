@@ -18,10 +18,15 @@ class File extends PropertyObject
 
   separator: jit.os == 'Windows' and '\\' or '/'
 
-  new: (path) =>
-    t = typeof path
-    @gfile = if t == 'string' or t == 'ustring' then GFile.new_for_path tostring(path) else path
-    @path = u @gfile\get_path!
+  new: (target) =>
+    t = typeof target
+    if t == 'File'
+      @gfile = target.gfile
+      @path = target.path
+    else
+      @gfile = if t == 'string' or t == 'ustring' then @gfile = GFile.new_for_path tostring(target) else target
+      @path = u @gfile\get_path!
+
     @_stats = {}
     super!
 
