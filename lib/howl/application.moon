@@ -135,7 +135,6 @@ class Application extends PropertyObject
     unless @_loaded
       keyhandler.keymap = keymap
       @settings = Settings!
-      @_load_application_icon!
       @_load_variables!
       @_load_completions!
       @_load_commands!
@@ -143,8 +142,10 @@ class Application extends PropertyObject
       @_set_theme!
       @settings\load_user!
       theme.apply!
+      @_load_application_icon!
 
       window = @new_window!
+      window\show_all!
       @_set_initial_status window
 
     if #files > 0
@@ -155,7 +156,6 @@ class Application extends PropertyObject
     if #@editors == 0 -- failed to load any files above for some reason
       @new_editor @new_buffer!
 
-    window\show_all!
     @_loaded = true
 
   _on_quit: =>
@@ -217,5 +217,10 @@ class Application extends PropertyObject
     require 'howl.commands.app_commands'
     require 'howl.commands.ui_commands'
     require 'howl.commands.search_commands'
+
+  _load_application_icon: =>
+    icon = tostring @root_dir\join('share/icons/scalable/apps/howl.svg')
+    icon_set, err = Gtk.Window.set_default_icon_from_file icon
+    log.error "Failed to load application icon: #{err}" unless icon_set
 
 return Application
