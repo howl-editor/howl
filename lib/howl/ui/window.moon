@@ -1,10 +1,11 @@
 import Gtk from lgi
 import Delegator from howl.aux.moon
 import Status, Readline from howl.ui
+import signal from howl
 
 class Window extends Delegator
   new: (properties = {}) =>
-    props = { }
+    props = type: Gtk.WindowType.TOPLEVEL
     props[k] = v for k,v in pairs properties
 
     @status = Status!
@@ -31,7 +32,8 @@ class Window extends Delegator
     }
 
     @win = Gtk.Window props
-    @win.on_set_focus = -> _G.window = self
+    @win.on_focus_in_event = self\_on_focus
+    @win.on_focus_out_event = self\_on_focus_lost
     @win\add alignment
     @win\get_style_context!\add_class 'main'
 
@@ -58,5 +60,23 @@ class Window extends Delegator
   toggle_fullscreen: =>
     if @is_fullscreen then @unfullscreen!
     else @fullscreen!
+
+  _on_focus: =>
+    _G.window = self
+    signal.emit 'window-focused', window: self
+
+  _on_focus_lost: =>
+    signal.emit 'window-defocused', window: self
+
+-- Signals
+signal.register 'window-focused',
+  description: 'Signaled right after a window has recieved focus'
+  parameters:
+    window: 'The window that recieved focus'
+
+signal.register 'window-defocused',
+  description: 'Signaled right after a window has lost focus'
+  parameters:
+    window: 'The window that lost focus'
 
 return Window
