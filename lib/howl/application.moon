@@ -2,7 +2,7 @@
 -- @copyright 2012
 -- @license MIT (see LICENSE)
 
-import Gtk from lgi
+import Gtk, Gio from lgi
 import Window, Editor, theme from howl.ui
 import Buffer, Settings, mode, bundle, keyhandler, keymap, signal from howl
 import File from howl.fs
@@ -36,6 +36,7 @@ class Application extends PropertyObject
       title: 'Howl'
       width: 800
       height: 640
+      application: @g_app
       on_destroy: (window) ->
         for k, win in ipairs @windows
           if win\to_gobject! == window
@@ -46,12 +47,14 @@ class Application extends PropertyObject
     props[k] = v for k, v in pairs(properties or {})
     window = Window props
     append @windows, window
+    _G.window = window if #@windows == 1
     window
 
   new_editor: (buffer, window = _G.window) =>
     editor = Editor buffer
     window\add_view editor
     append @editors, editor
+    _G.editor = editor if #@editors == 1
     editor
 
   new_buffer: (buffer_mode) =>
@@ -101,7 +104,7 @@ class Application extends PropertyObject
       if editor
         editor.buffer = buffer
       else
-        @new_editor buffer
+        editor = @new_editor buffer
 
     if not status
       @close_buffer buffer
@@ -111,37 +114,52 @@ class Application extends PropertyObject
       buffer
 
   run: =>
-    keyhandler.keymap = keymap
-    @settings = Settings!
-    @_load_variables!
-    @_load_completions!
-    @_load_commands!
-    bundle.load_all!
-    @_set_theme!
-    @settings\load_user!
-    theme.apply!
-    window = @new_window!
-    _G.window = window
+    @g_app = Gtk.Application.new 'io.howl.Editor', Gio.ApplicationFlags.HANDLES_OPEN
+    @g_app.on_activate = -> @_load!
+    @g_app.on_open = (_, files) -> @_load [File(path) for path in *files]
 
-    if #@args > 1
-      @open_file(File(path)) for path in *@args[2,]
-    else
+    -- by default we'll not open files in the same instance,
+    -- but this can be toggled via the --reuse command line parameter
+    args = @args
+    if not @args.reuse
+      @g_app\register!
+      @_load [File(path) for path in *args[2,]]
+      args = { args[1] }
+
+    @g_app\run args
+
+  quit: =>
+    win\destroy! for win in * moon.copy @windows
+
+  _load: (files = {}) =>
+    unless @_loaded
+      keyhandler.keymap = keymap
+      @settings = Settings!
+      @_load_application_icon!
+      @_load_variables!
+      @_load_completions!
+      @_load_commands!
+      bundle.load_all!
+      @_set_theme!
+      @settings\load_user!
+      theme.apply!
+
+      window = @new_window!
+      @_set_initial_status window
+
+    if #files > 0
+      @open_file(File(path)) for path in *files
+    elseif #@buffers == 0
       @_restore_session!
 
     if #@editors == 0 -- failed to load any files above for some reason
       @new_editor @new_buffer!
 
-    @editors[1]\focus!
     window\show_all!
-    @_set_initial_status window
-    Gtk.main!
-
-  quit: =>
-    win\destroy! for win in * moon.copy @windows
+    @_loaded = true
 
   _on_quit: =>
-    @_save_session!
-    Gtk.main_quit!
+    @_save_session! unless #@args > 1
 
   _save_session: =>
     session = version: 1, buffers: {}

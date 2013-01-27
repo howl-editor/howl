@@ -9,6 +9,39 @@ local function set_package_path(...)
   package.path = table.concat(paths, ';') .. ';' .. package.path
 end
 
+local help = [=[
+Usage: howl [options] [<file> [, <file>, ..]]
+
+Where options can be any of:
+  --reuse       Opens any named files in an existing instance of Howl, if present
+  -h, --help    This help
+]=]
+
+local function parse_args(argv)
+  local options = {
+    ['-h'] = 'help',
+    ['--help'] = 'help',
+    ['--reuse'] = 'reuse',
+  }
+  local args = {}
+
+  for _, arg in ipairs(argv) do
+    opt = options[arg]
+    if opt then
+      args[opt] = true
+    else
+      args[#args + 1] = arg
+    end
+  end
+
+  if args.help then
+    print(help)
+    os.exit(0)
+  end
+
+  return args
+end
+
 local function auto_module(name)
   return setmetatable(
     {},
@@ -42,7 +75,7 @@ table.insert(package.loaders, 2, code_cache.loader)
 
 _G.log = require('howl.log')
 
-howl.app = howl.Application(howl.fs.File(app_root), argv)
+howl.app = howl.Application(howl.fs.File(app_root), parse_args(argv))
 
 if os.getenv('BUSTED') then
   local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
