@@ -42,12 +42,14 @@ return {
       font: bold: true
 
     indicators:
+      default:
+        color: blue
+
       title:
         font: bold: true, italic: true
 
       vi:
         color: purple
-        font: bold: true
 
     caret:
       color: lightgray

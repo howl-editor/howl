@@ -81,15 +81,18 @@ parse_font = (font = {}) ->
   desc ..= ' ' .. size if size
   desc
 
-indicator_css = (indicators = {}) ->
-  css = ''
+indicator_css = (id, def) ->
+  clazz = '.indic_' .. id
+  indic_css = clazz .. ' { '
+  if def.color then indic_css ..= 'color: ' .. def.color .. '; '
+  indic_css ..= 'font: ' .. parse_font(def.font).. '; '
+  indic_css ..= ' }\n'
+  indic_css
+
+indicators_css = (indicators = {}) ->
+  css = indicator_css 'default', indicators.default or {}
   for id, def in pairs indicators
-    clazz = '.indic_' .. id
-    indic_css = clazz .. ' { '
-    if def.color then indic_css ..= 'color: ' .. def.color .. '; '
-    if def.font then indic_css ..= 'font: ' .. parse_font(def.font).. '; '
-    indic_css ..= ' }\n'
-    css ..= indic_css
+    css ..= indicator_css id, def if id != 'default'
   css
 
 status_css = (status) ->
@@ -127,7 +130,7 @@ theme_css = (theme, file) ->
     footer_color: footer.color
     footer_font: parse_font footer.font
   css = interpolate css_template, values
-  css ..= indicator_css indicators
+  css ..= indicators_css indicators
   css ..= status_css status
   css
 

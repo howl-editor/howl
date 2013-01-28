@@ -33,7 +33,9 @@ class IndicatorBar
 
   _create_indicator: (id) ->
     label = Gtk.Label single_line_mode: true
-    label\get_style_context!\add_class 'indic_' .. id
+    with label\get_style_context!
+      \add_class 'indic_default'
+      \add_class 'indic_' .. id
     label\show!
     label
 
