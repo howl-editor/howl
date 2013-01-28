@@ -15,12 +15,31 @@
    id="svg2998"
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="logo.svg"
+   sodipodi:docname="howl.svg"
    inkscape:export-filename="/home/nino/prog/howl/share/logo.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
      id="defs3000">
+    <linearGradient
+       id="linearGradient3768">
+      <stop
+         id="stop3770"
+         offset="0"
+         style="stop-color:#374ec8;stop-opacity:1;" />
+      <stop
+         style="stop-color:#374bc8;stop-opacity:0.56055363"
+         offset="0.30523989"
+         id="stop3778" />
+      <stop
+         style="stop-color:#3748c8;stop-opacity:0.50865052"
+         offset="0.81565654"
+         id="stop3772" />
+      <stop
+         id="stop3774"
+         offset="1"
+         style="stop-color:#3742c8;stop-opacity:0.25259516" />
+    </linearGradient>
     <linearGradient
        id="linearGradient5247">
       <stop
@@ -28,7 +47,7 @@
          offset="0"
          id="stop5249" />
       <stop
-         style="stop-color:#3742c8;stop-opacity:0;"
+         style="stop-color:#377bcc;stop-opacity:0;"
          offset="1"
          id="stop5251" />
     </linearGradient>
@@ -57,9 +76,9 @@
          offset="0"
          id="stop5249-7" />
       <stop
-         style="stop-color:#3742c8;stop-opacity:0;"
+         id="stop3766"
          offset="1"
-         id="stop5251-2" />
+         style="stop-color:#060cbb;stop-opacity:1;" />
     </linearGradient>
     <linearGradient
        y2="255.39249"
@@ -95,7 +114,7 @@
        y2="255.39249" />
     <linearGradient
        inkscape:collect="always"
-       xlink:href="#linearGradient5247"
+       xlink:href="#linearGradient3768"
        id="linearGradient5379"
        gradientUnits="userSpaceOnUse"
        x1="16.161621"
@@ -111,10 +130,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.99"
-     inkscape:cx="-98.222182"
+     inkscape:cx="-304.28279"
      inkscape:cy="75.012935"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g5375"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1056"
@@ -133,7 +152,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>

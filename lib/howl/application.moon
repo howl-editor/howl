@@ -219,7 +219,7 @@ class Application extends PropertyObject
     require 'howl.commands.search_commands'
 
   _load_application_icon: =>
-    icon = tostring @root_dir\join('share/icons/scalable/apps/howl.svg')
+    icon = tostring @root_dir\join('share/icons/hicolor/scalable/apps/howl.svg')
     icon_set, err = Gtk.Window.set_default_icon_from_file icon
     log.error "Failed to load application icon: #{err}" unless icon_set
 
