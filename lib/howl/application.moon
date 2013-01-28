@@ -132,6 +132,7 @@ class Application extends PropertyObject
     win\destroy! for win in * moon.copy @windows
 
   _load: (files = {}) =>
+    local window
     unless @_loaded
       keyhandler.keymap = keymap
       @settings = Settings!
@@ -145,7 +146,6 @@ class Application extends PropertyObject
       @_load_application_icon!
 
       window = @new_window!
-      window\show_all!
       @_set_initial_status window
 
     if #files > 0
@@ -156,6 +156,8 @@ class Application extends PropertyObject
     if #@editors == 0 -- failed to load any files above for some reason
       @new_editor @new_buffer!
 
+    _G.editor\focus!
+    window\show_all! if window
     @_loaded = true
 
   _on_quit: =>
