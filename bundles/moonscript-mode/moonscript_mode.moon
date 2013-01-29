@@ -50,9 +50,5 @@ class MoonscriptMode
       editor\shift_left!
       new_line = editor.buffer.lines\insert line.nr, ''
       new_line.indentation = wanted_indent
-    else
-      prev_line = prev_non_empty_line line
-      if prev_line
-        line.indentation = prev_line.indentation if prev_line.indentation != line.indentation
 
 return MoonscriptMode
