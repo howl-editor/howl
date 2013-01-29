@@ -1,4 +1,4 @@
-import signal from howl
+import signal, config from howl
 
 howl.ui.Editor.define_indicator 'vi', 'bottom_left'
 

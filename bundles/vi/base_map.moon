@@ -1,7 +1,14 @@
 state = bundle_load 'state.moon'
 import apply from state
-import keyhandler from howl
+import keyhandler, config from howl
 import math, tonumber, print, _G from _G
+
+with config
+  .define
+    name: 'vi_command_cursor_blink_interval'
+    description: 'The rate at which the cursor blinks while in command mode (ms, 0 disables)'
+    default: 0
+    type_of: 'number'
 
 default_map = keyhandler.keymap
 
@@ -31,7 +38,10 @@ setfenv 1, map
 
 export *
 
-cursor_properties = style: 'block'
+cursor_properties = {
+  style: 'block'
+  blink_interval: config.vi_command_cursor_blink_interval
+}
 
 j = (editor) -> apply editor, (editor) -> editor.cursor\down!
 k = (editor) -> apply editor, (editor) -> editor.cursor\up!
@@ -85,5 +95,8 @@ on_unhandled = (event) ->
     return -> true
 
   (editor) -> keyhandler.dispatch event, { default_map }, editor
+
+config.watch 'vi_command_cursor_blink_interval', (_, value) ->
+  cursor_properties.blink_interval = value
 
 return map

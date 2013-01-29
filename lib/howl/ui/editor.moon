@@ -551,12 +551,18 @@ with config
     default: true
     type_of: 'boolean'
 
+  .define
+    name: 'cursor_blink_interval'
+    description: 'The rate at which the cursor blinks (ms, 0 disables)'
+    default: 500
+    type_of: 'number'
+
   for watched_property in *{
-   'indentation_guides',
-   'horizontal_scrollbar',
-   'vertical_scrollbar',
-   'caret_line_highlighted',
-   'line_numbers'
+    'indentation_guides',
+    'horizontal_scrollbar',
+    'vertical_scrollbar',
+    'caret_line_highlighted',
+    'line_numbers',
   }
     .watch watched_property, apply_property
 
@@ -566,6 +572,8 @@ with config
     { 'indent', 'set_indent' }
     { 'tab_indents', 'set_tab_indents' }
     { 'backspace_unindents', 'set_back_space_un_indents' }
+    { 'cursor_blink_interval', 'set_caret_period' }
+
   }
     .watch live_update[1], (_, value) -> apply_variable live_update[2], value
 

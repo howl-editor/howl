@@ -1,4 +1,4 @@
-import keyhandler from howl
+import keyhandler, config from howl
 state = ...
 
 local insert_pos
@@ -19,6 +19,7 @@ insert_map = {
   name: 'INSERT'
   cursor_properties:
     style: 'line'
+    blink_interval: config.cursor_blink_interval
 
   escape: (editor) ->
     state.insert_edit = get_edit editor
