@@ -1,3 +1,4 @@
+import config from howl
 import PropertyTable from howl.aux
 
 class DefaultMode
@@ -6,11 +7,22 @@ class DefaultMode
 by_extension = {}
 modes = {}
 live = setmetatable {}, __mode: 'k'
+mode_variables = {}
 
 instance_for_mode = (m) ->
   return live[m] if live[m]
   instance = m.create!
   rawset instance, 'name', m.name
+  mode_config = config.local_proxy!
+
+  if m.config
+    mode_config[k] = v for k,v in pairs m.config
+
+  mode_vars = mode_variables[m.name]
+  if mode_vars
+    mode_config[k] = v for k,v in pairs mode_vars
+
+  rawset instance, 'config', mode_config
   live[m] = instance
   instance
 
@@ -42,6 +54,20 @@ unregister = (name) ->
     by_extension[ext] = nil for ext in *exts
     live[mode] = nil
 
+configure = (mode_name, variables) ->
+  error 'Missing argument #1 (mode_name)', 2 unless mode_name
+  error 'Missing argument #2 (variables)', 2 unless variables
+  mode_vars = mode_variables[mode_name] or {}
+  mode_vars[k] = v for k,v in pairs variables
+  mode_variables[mode_name] = mode_vars
+
+  -- update any already instantiated modes
+  mode = modes[mode_name]
+  if mode
+    instance = live[mode]
+    if instance
+      instance.config[k] = v for k,v in pairs variables
+
 register name: 'default', create: DefaultMode
 
 return PropertyTable {
@@ -49,5 +75,6 @@ return PropertyTable {
   :by_name
   :register
   :unregister
+  :configure
   names: get: -> [name for name in pairs modes]
 }

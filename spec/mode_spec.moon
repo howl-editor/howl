@@ -1,4 +1,4 @@
-import mode from howl
+import mode, config from howl
 import File from howl.fs
 
 describe 'mode', ->
@@ -38,6 +38,35 @@ describe 'mode', ->
   it 'mode instances automatically have their .name set', ->
     mode.register name: 'named', extensions: 'again', create: -> {}
     assert.equal mode.by_name('named').name, 'named'
+
+  describe 'mode configuration variables', ->
+    config.define name: 'mode_var', description: 'some var', default: 'def value'
+
+    it 'mode instances automatically have their .config set', ->
+      mode.register name: 'config', create: -> {}
+      mode_config = mode.by_name('config').config
+      assert.is_not_nil mode_config
+
+      assert.equal 'def value', mode_config.mode_var
+      mode_config.mode_var = 123
+      assert.equal 123, mode_config.mode_var
+      assert.equal 'def value', config.mode_var
+
+    it 'the .config is pre-seeded with variables from the config option in mode registration (if any)', ->
+      mode.register name: 'pre_config', config: { mode_var: 543 }, create: -> {}
+      assert.equal 543, mode.by_name('pre_config').config.mode_var
+
+    describe 'configure(mode_name, variables)', ->
+      mode.register name: 'user_configured', create: -> {}
+
+      it 'allows setting mode specific variables automatically upon creation', ->
+        mode.configure 'user_configured', mode_var: 'from_user'
+        assert.equal 'from_user', mode.by_name('user_configured').config.mode_var
+
+      it 'automatically sets the config variables for any already instantiated mode', ->
+        mode_config = mode.by_name('user_configured').config
+        mode.configure 'user_configured', mode_var: 'after_the_fact'
+        assert.equal 'after_the_fact', mode_config.mode_var
 
   describe '.unregister(name)', ->
     it '.unregister(name) removes the mode specified by <name>', ->
