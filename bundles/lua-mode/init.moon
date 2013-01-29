@@ -1,6 +1,9 @@
 create = ->
   lua_lexer = bundle_file 'lua_lexer.lua'
-  lexer: howl.aux.ScintilluaLexer 'lua', lua_lexer
+  {
+    lexer: howl.aux.ScintilluaLexer 'lua', lua_lexer
+    short_comment_prefix: '--'
+  }
 
 mode_reg =
   name: 'lua'
