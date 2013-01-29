@@ -11,25 +11,22 @@ describe 'mode', ->
 
   it '.by_name(name) returns a mode instance with <name>, or nil if not existing', ->
     assert.is_nil mode.by_name 'blargh'
-    instance = {}
 
-    mode.register name: 'shish', create: -> instance
-    assert.equal mode.by_name('shish'), instance
+    mode.register name: 'shish', create: -> {}
+    assert.is_not_nil mode.by_name('shish')
 
   describe '.for_file(file)', ->
     context 'when the file extension is registered with a mode', ->
       it 'returns an instance of that mode', ->
-        instance = {}
-        mode.register name: 'ext', extensions: 'foo', create: -> instance
+        mode.register name: 'ext', extensions: 'foo', create: -> {}
         file = File 'test.foo'
-        assert.equal mode.for_file(file), instance
+        assert.equal 'ext', mode.for_file(file).name
 
     context 'when the file extension is not registered with any mode', ->
       it 'returns an instance of the mode "default"', ->
-        instance = {}
-        mode.register name: 'default', create: -> instance
+        mode.register name: 'default', create: -> {}
         file = File 'test.blargh'
-        assert.equal mode.for_file(file), instance
+        assert.equal 'default', mode.for_file(file).name
 
   it 'mode instances are memoized', ->
     mode.register name: 'same', extensions: 'again', create: -> {}
@@ -68,6 +65,26 @@ describe 'mode', ->
         mode.configure 'user_configured', mode_var: 'after_the_fact'
         assert.equal 'after_the_fact', mode_config.mode_var
 
+  describe 'mode inheritance', ->
+    base = foo: 'foo'
+    mode.register name: 'base', create: -> base
+    mode.register name: 'sub', parent: 'base', create: -> {}
+
+    it 'a mode extending another mode automatically delegates to that mode', ->
+       assert.equal 'foo', mode.by_name('sub').foo
+
+    it 'the instantiated mode has .parent set to the instantiated parent', ->
+      assert.equal mode.by_name('base'), mode.by_name('sub').parent
+
+    it 'an error is raised if the mode indicated by parent does not exist', ->
+      assert.has_error ->
+        mode.register name: 'wrong', parent: 'keyser_soze', create: -> {}
+        mode.by_name 'wrong'
+
+    it 'parent defaults to "default" unless given', ->
+      mode.register name: 'orphan', create: -> {}
+      assert.equal mode.by_name('default'), mode.by_name('orphan').parent
+
   describe '.unregister(name)', ->
     it '.unregister(name) removes the mode specified by <name>', ->
       mode.register name: 'mode', extensions: 'zen', create: -> {}
@@ -78,9 +95,9 @@ describe 'mode', ->
     it 'removes any memoized instance', ->
       mode.register name: 'memo', extensions: 'memo', create: -> {}
       mode.unregister 'memo'
-      instance = {}
-      mode.register name: 'memo', extensions: 'memo', create: -> instance
-      assert.equal mode.by_name('memo'), instance
+      live = mode.by_name 'memo'
+      mode.register name: 'memo', extensions: 'memo', create: -> {}
+      assert.is_not_equal live, mode.by_name('memo')
 
   it '.names contains all registered mode names', ->
     mode.register name: 'needle', create: -> {}

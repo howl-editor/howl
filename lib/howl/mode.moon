@@ -9,10 +9,10 @@ modes = {}
 live = setmetatable {}, __mode: 'k'
 mode_variables = {}
 
+local by_name
+
 instance_for_mode = (m) ->
   return live[m] if live[m]
-  instance = m.create!
-  rawset instance, 'name', m.name
   mode_config = config.local_proxy!
 
   if m.config
@@ -22,7 +22,17 @@ instance_for_mode = (m) ->
   if mode_vars
     mode_config[k] = v for k,v in pairs mode_vars
 
-  rawset instance, 'config', mode_config
+  error "Unknown mode specified as parent: '#{m.parent}'", 3 if m.parent and not modes[m.parent]
+  parent = if m.name != 'default' then by_name m.parent or 'default'
+
+  target = m.create!
+  instance = setmetatable {
+    name: m.name
+    config: mode_config
+    :parent
+  }, {
+    __index: (_, k) -> target[k] or parent and parent[k]
+  }
   live[m] = instance
   instance
 
@@ -30,7 +40,7 @@ by_name = (name) ->
   modes[name] and instance_for_mode modes[name]
 
 for_file = (file) ->
-  return by_name('Default') if not file
+  return by_name('default') if not file
   ext = file.extension
   m = by_extension[ext] or modes['default']
   instance = m and instance_for_mode(m)
