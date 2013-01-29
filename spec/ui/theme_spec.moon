@@ -30,7 +30,7 @@ spec_theme = {
       title: :font
 
   styles:
-    default: {}
+    default: background: 'blue'
 }
 
 describe 'theme', ->

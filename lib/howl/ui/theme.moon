@@ -22,6 +22,10 @@ GtkWindow.main {
   background-color: ${editor_divider_color};
 }
 
+.sci_container {
+  background-color: ${editor_background_color};
+}
+
 .header {
   ${header_background};
   color: ${header_color};
@@ -118,6 +122,7 @@ theme_css = (theme, file) ->
   tv_title = hdr.title
   indicators = editor.indicators
   values =
+    editor_background_color: theme.styles.default.background
     window_background: parse_background(window.background, dir)
     status_font: parse_font status.font
     status_color: status.color

@@ -22,7 +22,7 @@ class FileInput
   complete: (text, readline) =>
     @_chdir(@directory, readline) unless @matcher
 
-    completion_options = list: column_styles: (name, row, column) ->
+    completion_options = title: 'File', list: column_styles: (name, row, column) ->
       file = @directory / name
       file.is_directory and 'keyword' or 'string'
 

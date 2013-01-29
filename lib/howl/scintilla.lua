@@ -143,7 +143,7 @@ function sci.dispatch(sci_ptr, event, args)
   return false
 end
 
-function sci:get_gobject()
+function sci:to_gobject()
   self.gobject = self.gobject or lgi_core.object.new(self.sci_ptr)
   return self.gobject
 end

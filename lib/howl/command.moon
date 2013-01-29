@@ -164,6 +164,7 @@ run = (cmd_string = nil) ->
   state = State!
 
   cmd_input =
+    title: 'Commands'
     should_complete: (_, text, readline) -> state\should_complete text, readline
     update: (_, text, readline) -> state\update text, readline
     on_completed: (_, text, readline) -> state\on_completed text, readline

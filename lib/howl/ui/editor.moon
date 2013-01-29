@@ -67,7 +67,7 @@ class Editor extends PropertyObject
         bottom_padding: 3,
         Gtk.Box {
           orientation: 'VERTICAL',
-          @header\get_gobject!
+          @header\to_gobject!
           {
             expand: true
             Gtk.EventBox {
@@ -75,11 +75,11 @@ class Editor extends PropertyObject
               Gtk.Alignment {
                 top_padding: 1
                 bottom_padding: 1
-                @sci\get_gobject!
+                @sci\to_gobject!
               }
             }
           }
-          @footer\get_gobject!
+          @footer\to_gobject!
         }
       }
     }
@@ -317,7 +317,7 @@ class Editor extends PropertyObject
     x -= char_width
     y += char_height + 2
 
-    popup\show @sci\get_gobject!, :x, :y
+    popup\show @sci\to_gobject!, :x, :y
     @popup = window: popup, :options
 
   remove_popup: =>

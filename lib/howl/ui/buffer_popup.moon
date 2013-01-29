@@ -15,7 +15,7 @@ class BufferPopup extends Popup
         left_padding: 3,
         right_padding: 3,
         bottom_padding: 3,
-        @sci\get_gobject!
+        @sci\to_gobject!
       }
     }
 

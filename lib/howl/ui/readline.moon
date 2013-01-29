@@ -1,7 +1,7 @@
 import Gtk from lgi
 import Scintilla, keyhandler, config from howl
 import PropertyObject from howl.aux.moon
-import style, theme, Cursor, Selection, ActionBuffer, List from howl.ui
+import style, theme, Cursor, Selection, ActionBuffer, List, IndicatorBar from howl.ui
 
 completion_text = (item) ->
   type(item) == 'table' and item[1] or item
@@ -37,6 +37,7 @@ class Readline extends PropertyObject
     input = input! if callable input
     @show! if not @showing
     @prompt = prompt or ''
+    @title = input.title or ''
     @input = input
     @callback = callback
     @text = ''
@@ -69,6 +70,15 @@ class Readline extends PropertyObject
       @_adjust_height!
       @cursor\eof!
 
+  @property title:
+    get: => @indic_title.label
+    set: (text) =>
+      if text == nil or #text == 0
+        @header\to_gobject!\hide!
+      else
+        @header\to_gobject!\show!
+        @indic_title.label = tostring text
+
   _at_start: => @cursor.column <= #@prompt + 1
 
   _complete: (force) =>
@@ -81,6 +91,7 @@ class Readline extends PropertyObject
 
     completions, options = if should_complete and @input.complete then @input\complete text, self
     count = completions and #completions or 0
+    @title = options.title if options and options.title
     if count > 0
       @completion_list = List @buffer, 1
       list_options = options and options.list or {}
@@ -132,19 +143,46 @@ class Readline extends PropertyObject
     @sci\set_lexer Scintilla.SCLEX_NULL
     @cursor = Cursor self, Selection @sci
     @buffer = ActionBuffer @sci
-    @gsci = @sci\get_gobject!
+    @gsci = @sci\to_gobject!
+    @header = IndicatorBar 'header', 3
+    @indic_title = @header\add 'left', 'title'
     @box = Gtk.EventBox {
       Gtk.Alignment {
         top_padding: 1,
         left_padding: 1,
         right_padding: 3,
         bottom_padding: 3,
-        @gsci
+        Gtk.Box {
+          orientation: 'VERTICAL',
+          @header\to_gobject!
+          {
+            expand: false
+            Gtk.EventBox {
+              id: 'sci_box'
+              hexpand: true
+              Gtk.Alignment {
+                top_padding: 1,
+                bottom_padding: 1,
+                Gtk.EventBox {
+                  id: 'sci_container'
+                  Gtk.Alignment {
+                    top_padding: 3,
+                    left_padding: 3,
+                    right_padding: 3,
+                    bottom_padding: 3,
+                    @gsci
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
-    @box.hexpand = true
-    @gsci\get_style_context!\add_class 'readline'
+
     @box\get_style_context!\add_class 'readline_box'
+    @box.child.sci_box\get_style_context!\add_class 'sci_box'
+    @box.child.sci_container\get_style_context!\add_class 'sci_container'
     @_set_appearance!
     @bin\add @box
 

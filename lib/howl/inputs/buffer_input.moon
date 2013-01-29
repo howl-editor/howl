@@ -13,7 +13,7 @@ class BufferInput
 
   complete: (text) =>
     @matcher = load_matcher! unless @matcher
-    completion_options = list: headers: { 'Buffer', 'Directory' }
+    completion_options = title: 'Buffers'
     return self.matcher(text), completion_options
 
   value_for: (title) =>

@@ -46,11 +46,12 @@ class ProjectFileInput
     return {} if not @project
     @matcher = load_matcher(@project) unless @matcher
 
-    completion_options = list: {
-      column_styles: (name) ->
-        name\match(separator .. '$') and 'keyword' or 'string'
-      headers: { @project.root.path .. separator }
-    }
+    completion_options = {
+      title: @project.root.path .. separator
+      list:
+        column_styles: (name) ->
+          name\match(separator .. '$') and 'keyword' or 'string'
+      }
 
     matches = @matcher and self.matcher(text) or {}
     return matches, completion_options

@@ -29,7 +29,7 @@ class IndicatorBar
     pack indicator, false, false, 0
     indicator
 
-  get_gobject: => @container
+  to_gobject: => @container
 
   _create_indicator: (id) ->
     label = Gtk.Label single_line_mode: true
