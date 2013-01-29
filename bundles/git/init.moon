@@ -23,7 +23,8 @@ class Git
     pipe\close!
     git_files = {}
     for path in chunk\gmatch '[^\n]+'
-      append git_files, @root\join path
+      file = @root\join path
+      append git_files, file if file.exists
     git_files
 
 find = (file) ->
