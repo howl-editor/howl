@@ -2,7 +2,7 @@ import config from howl
 import PropertyTable from howl.aux
 
 class DefaultMode
-  true
+  completers: { 'in_buffer' }
 
 by_extension = {}
 modes = {}

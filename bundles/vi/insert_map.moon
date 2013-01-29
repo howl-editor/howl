@@ -14,7 +14,6 @@ get_edit = (editor) ->
     if text and #text > 0
       (editor) -> editor\insert text
 
-
 insert_map = {
   name: 'INSERT'
   cursor_properties:
