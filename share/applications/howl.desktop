@@ -2,7 +2,7 @@
 Name=Howl
 GenericName=Howl Editor
 Comment=Code with the pack
-Exec=howl %F
+Exec=howl --reuse %F
 Terminal=false
 Type=Application
 StartupNotify=true
