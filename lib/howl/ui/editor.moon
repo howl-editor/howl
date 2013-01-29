@@ -99,6 +99,7 @@ class Editor extends PropertyObject
     get: => @_buf
     set: (buffer) =>
       signal.emit 'before-buffer-switch', editor: self, current_buffer: @_buf, new_buffer: buffer
+      @selection\remove!
 
       if @_buf
         @_buf.properties.position = @cursor.pos
