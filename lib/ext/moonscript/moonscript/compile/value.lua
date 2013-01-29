@@ -1,15 +1,19 @@
-module("moonscript.compile", package.seeall)
 local util = require("moonscript.util")
 local data = require("moonscript.data")
-require("moonscript.compile.format")
 local ntype
 do
   local _table_0 = require("moonscript.types")
   ntype = _table_0.ntype
 end
+local user_error
+do
+  local _table_0 = require("moonscript.errors")
+  user_error = _table_0.user_error
+end
 local concat, insert = table.concat, table.insert
+local unpack = util.unpack
 local table_delim = ","
-value_compile = {
+local value_compilers = {
   exp = function(self, node)
     local _comp
     _comp = function(i, value)
@@ -22,11 +26,11 @@ value_compile = {
       local _with_0 = self:line()
       _with_0:append_list((function()
         local _accum_0 = { }
-        local _len_0 = 0
+        local _len_0 = 1
         for i, v in ipairs(node) do
           if i > 1 then
-            _len_0 = _len_0 + 1
             _accum_0[_len_0] = _comp(i, v)
+            _len_0 = _len_0 + 1
           end
         end
         return _accum_0
@@ -39,12 +43,12 @@ value_compile = {
       local _with_0 = self:line()
       _with_0:append_list((function()
         local _accum_0 = { }
-        local _len_0 = 0
+        local _len_0 = 1
         local _list_0 = node
         for _index_0 = 2, #_list_0 do
           local v = _list_0[_index_0]
-          _len_0 = _len_0 + 1
           _accum_0[_len_0] = self:value(v)
+          _len_0 = _len_0 + 1
         end
         return _accum_0
       end)(), ", ")
@@ -114,7 +118,7 @@ value_compile = {
     local self_args = { }
     local arg_names = (function()
       local _accum_0 = { }
-      local _len_0 = 0
+      local _len_0 = 1
       local _list_0 = args
       for _index_0 = 1, #_list_0 do
         local arg = _list_0[_index_0]
@@ -131,10 +135,8 @@ value_compile = {
           insert(default_args, arg)
         end
         local _value_0 = name
-        if _value_0 ~= nil then
-          _len_0 = _len_0 + 1
-          _accum_0[_len_0] = _value_0
-        end
+        _accum_0[_len_0] = _value_0
+        _len_0 = _len_0 + 1
       end
       return _accum_0
     end)()
@@ -181,12 +183,12 @@ value_compile = {
       end
       local self_arg_values = (function()
         local _accum_0 = { }
-        local _len_0 = 0
+        local _len_0 = 1
         local _list_2 = self_args
         for _index_0 = 1, #_list_2 do
           local arg = _list_2[_index_0]
-          _len_0 = _len_0 + 1
           _accum_0[_len_0] = arg[2]
+          _len_0 = _len_0 + 1
         end
         return _accum_0
       end)()
@@ -201,15 +203,12 @@ value_compile = {
       if #args > #arg_names then
         arg_names = (function()
           local _accum_0 = { }
-          local _len_0 = 0
+          local _len_0 = 1
           local _list_2 = args
           for _index_0 = 1, #_list_2 do
             local arg = _list_2[_index_0]
-            local _value_0 = arg[1]
-            if _value_0 ~= nil then
-              _len_0 = _len_0 + 1
-              _accum_0[_len_0] = _value_0
-            end
+            _accum_0[_len_0] = arg[1]
+            _len_0 = _len_0 + 1
           end
           return _accum_0
         end)()
@@ -263,8 +262,8 @@ value_compile = {
   minus = function(self, node)
     return self:line("-", self:value(node[2]))
   end,
-  temp_name = function(self, node)
-    return node:get_name(self)
+  temp_name = function(self, node, ...)
+    return node:get_name(self, ...)
   end,
   number = function(self, node)
     return node[2]
@@ -297,4 +296,7 @@ value_compile = {
     end
     return tostring(value)
   end
+}
+return {
+  value_compilers = value_compilers
 }

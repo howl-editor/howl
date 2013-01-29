@@ -1,14 +1,5 @@
 local app_root, argv = ...
 
-local function set_package_path(...)
-  local paths = {}
-  for _, path in ipairs({...}) do
-    paths[#paths + 1] = app_root .. '/' .. path .. '/?.lua'
-    paths[#paths + 1] = app_root .. '/' .. path .. '/?/init.lua'
-  end
-  package.path = table.concat(paths, ';') .. ';' .. package.path
-end
-
 local help = [=[
 Usage: howl [options] [<file> [, <file>, ..]]
 
@@ -42,6 +33,15 @@ local function parse_args(argv)
   return args
 end
 
+local function set_package_path(...)
+  local paths = {}
+  for _, path in ipairs({...}) do
+    paths[#paths + 1] = app_root .. '/' .. path .. '/?.lua'
+    paths[#paths + 1] = app_root .. '/' .. path .. '/?/init.lua'
+  end
+  package.path = table.concat(paths, ';') .. ';' .. package.path
+end
+
 local function auto_module(name)
   return setmetatable(
     {},
@@ -64,7 +64,6 @@ local function auto_module(name)
 end
 
 set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
-
 require 'howl.moonscript_support'
 lgi = require('lgi')
 howl = auto_module('howl')

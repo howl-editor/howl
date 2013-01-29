@@ -1,10 +1,10 @@
 moonscript = require('moonscript')
 moonscript.errors = require "moonscript.errors"
 moon = require('moon')
-
-local line_tables = moonscript.line_tables
+local line_tables = require "moonscript.line_tables"
 
 lua_loadfile = loadfile
+lua_pcall = pcall
 
 loadfile = function(filename, mode, env)
   filename = tostring(filename)
@@ -22,7 +22,7 @@ local function error_rewriter(err)
 
   -- if the file hasn't been compiled yet we do it first for error rewriting to work
   if not line_tables[moon_file] then
-    pcall(moonscript.loadfile, moon_file)
+    lua_pcall(moonscript.loadfile, moon_file)
   end
 
   local trace = debug.traceback("", 2)

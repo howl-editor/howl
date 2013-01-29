@@ -1,9 +1,14 @@
-module("moonscript.errors", package.seeall)
-local moon = require("moonscript")
 local util = require("moonscript.util")
-require("lpeg")
+local lpeg = require("lpeg")
 local concat, insert = table.concat, table.insert
 local split, pos_to_line = util.split, util.pos_to_line
+local user_error
+user_error = function(...)
+  return error({
+    "user-error",
+    ...
+  })
+end
 local lookup_line
 lookup_line = function(fname, pos, cache)
   if not cache[fname] then
@@ -24,6 +29,7 @@ reverse_line_number = function(fname, line_table, line_num, cache)
   end
   return "unknown"
 end
+local truncate_traceback
 truncate_traceback = function(traceback, chunk_func)
   if chunk_func == nil then
     chunk_func = "moonscript_chunk"
@@ -38,13 +44,13 @@ truncate_traceback = function(traceback, chunk_func)
   end
   traceback = (function()
     local _accum_0 = { }
-    local _len_0 = 0
+    local _len_0 = 1
     local _list_0 = traceback
     local _max_0 = stop
     for _index_0 = 1, _max_0 < 0 and #_list_0 + _max_0 or _max_0 do
       local t = _list_0[_index_0]
-      _len_0 = _len_0 + 1
       _accum_0[_len_0] = t
+      _len_0 = _len_0 + 1
     end
     return _accum_0
   end)()
@@ -52,8 +58,9 @@ truncate_traceback = function(traceback, chunk_func)
   traceback[#traceback] = traceback[#traceback]:gsub(rep, "main chunk")
   return concat(traceback, "\n")
 end
+local rewrite_traceback
 rewrite_traceback = function(text, err)
-  local line_tables = moon.line_tables
+  local line_tables = require("moonscript.line_tables")
   local V, S, Ct, C = lpeg.V, lpeg.S, lpeg.Ct, lpeg.C
   local header_text = "stack traceback:"
   local Header, Line = V("Header"), V("Line")
@@ -97,3 +104,8 @@ rewrite_traceback = function(text, err)
     "\t" .. concat(match, "\n\t")
   }, "\n")
 end
+return {
+  rewrite_traceback = rewrite_traceback,
+  truncate_traceback = truncate_traceback,
+  user_error = user_error
+}

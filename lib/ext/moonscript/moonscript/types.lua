@@ -1,14 +1,14 @@
-module("moonscript.types", package.seeall)
 local util = require("moonscript.util")
 local data = require("moonscript.data")
 local insert = table.insert
-manual_return = data.Set({
+local unpack = util.unpack
+local manual_return = data.Set({
   "foreach",
   "for",
   "while",
   "return"
 })
-cascading = data.Set({
+local cascading = data.Set({
   "if",
   "unless",
   "with",
@@ -16,13 +16,7 @@ cascading = data.Set({
   "class",
   "do"
 })
-is_value = function(stm)
-  local compile, transform = moonscript.compile, moonscript.transform
-  return compile.Block:is_value(stm) or transform.Value:can_transform(stm)
-end
-comprehension_has_value = function(comp)
-  return is_value(comp[2])
-end
+local ntype
 ntype = function(node)
   local _exp_0 = type(node)
   if "nil" == _exp_0 then
@@ -33,9 +27,41 @@ ntype = function(node)
     return "value"
   end
 end
+local mtype
+do
+  local moon_type = util.moon.type
+  mtype = function(val)
+    local mt = getmetatable(val)
+    if mt and mt.smart_node then
+      return "table"
+    end
+    return moon_type(val)
+  end
+end
+local has_value
+has_value = function(node)
+  if ntype(node) == "chain" then
+    local ctype = ntype(node[#node])
+    return ctype ~= "call" and ctype ~= "colon"
+  else
+    return true
+  end
+end
+local is_value
+is_value = function(stm)
+  local compile = require("moonscript.compile")
+  local transform = require("moonscript.transform")
+  return compile.Block:is_value(stm) or transform.Value:can_transform(stm)
+end
+local comprehension_has_value
+comprehension_has_value = function(comp)
+  return is_value(comp[2])
+end
+local value_is_singular
 value_is_singular = function(node)
   return type(node) ~= "table" or node[1] ~= "exp" or #node == 2
 end
+local is_slice
 is_slice = function(node)
   return ntype(node) == "chain" and ntype(node[#node]) == "slice"
 end
@@ -175,7 +201,7 @@ make_builder = function(name)
     return node
   end
 end
-build = nil
+local build = nil
 build = setmetatable({
   group = function(body)
     if body == nil then
@@ -246,25 +272,43 @@ build = setmetatable({
     return rawget(self, name)
   end
 })
-smart_node = function(node)
-  local index = key_table[ntype(node)]
-  if not index then
-    return node
+local smart_node_mt = setmetatable({ }, {
+  __index = function(self, node_type)
+    local index = key_table[node_type]
+    local mt = {
+      smart_node = true,
+      __index = function(node, key)
+        if index[key] then
+          return rawget(node, index[key])
+        elseif type(key) == "string" then
+          return error("unknown key: `" .. key .. "` on node type: `" .. ntype(node) .. "`")
+        end
+      end,
+      __newindex = function(node, key, value)
+        if index[key] then
+          key = index[key]
+        end
+        return rawset(node, key, value)
+      end
+    }
+    self[node_type] = mt
+    return mt
   end
-  return setmetatable(node, {
-    __index = function(node, key)
-      if index[key] then
-        return rawget(node, index[key])
-      elseif type(key) == "string" then
-        return error("unknown key: `" .. key .. "` on node type: `" .. ntype(node) .. "`")
-      end
-    end,
-    __newindex = function(node, key, value)
-      if index[key] then
-        key = index[key]
-      end
-      return rawset(node, key, value)
-    end
-  })
+})
+local smart_node
+smart_node = function(node)
+  return setmetatable(node, smart_node_mt[ntype(node)])
 end
-return nil
+return {
+  ntype = ntype,
+  smart_node = smart_node,
+  build = build,
+  is_value = is_value,
+  is_slice = is_slice,
+  manual_return = manual_return,
+  cascading = cascading,
+  value_is_singular = value_is_singular,
+  comprehension_has_value = comprehension_has_value,
+  has_value = has_value,
+  mtype = mtype
+}

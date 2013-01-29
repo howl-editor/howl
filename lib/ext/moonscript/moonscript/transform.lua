@@ -1,142 +1,17 @@
-module("moonscript.transform", package.seeall)
 local types = require("moonscript.types")
 local util = require("moonscript.util")
 local data = require("moonscript.data")
-local reversed = util.reversed
-local ntype, build, smart_node, is_slice, value_is_singular = types.ntype, types.build, types.smart_node, types.is_slice, types.value_is_singular
+local reversed, unpack = util.reversed, util.unpack
+local ntype, mtype, build, smart_node, is_slice, value_is_singular = types.ntype, types.mtype, types.build, types.smart_node, types.is_slice, types.value_is_singular
 local insert = table.insert
-local mtype = util.moon.type
+local NameProxy, LocalName
+do
+  local _table_0 = require("moonscript.transform.names")
+  NameProxy, LocalName = _table_0.NameProxy, _table_0.LocalName
+end
+local destructure = require("moonscript.transform.destructure")
 local implicitly_return
-do
-  local _parent_0 = nil
-  local _base_0 = {
-    get_name = function(self)
-      return self.name
-    end
-  }
-  _base_0.__index = _base_0
-  if _parent_0 then
-    setmetatable(_base_0, _parent_0.__base)
-  end
-  local _class_0 = setmetatable({
-    __init = function(self, name)
-      self.name = name
-      self[1] = "temp_name"
-    end,
-    __base = _base_0,
-    __name = "LocalName",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil and _parent_0 then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  if _parent_0 and _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  LocalName = _class_0
-end
-do
-  local _parent_0 = nil
-  local _base_0 = {
-    get_name = function(self, scope)
-      if not self.name then
-        self.name = scope:free_name(self.prefix, true)
-      end
-      return self.name
-    end,
-    chain = function(self, ...)
-      local items = {
-        ...
-      }
-      items = (function()
-        local _accum_0 = { }
-        local _len_0 = 0
-        local _list_0 = items
-        for _index_0 = 1, #_list_0 do
-          local i = _list_0[_index_0]
-          local _value_0
-          if type(i) == "string" then
-            _value_0 = {
-              "dot",
-              i
-            }
-          else
-            _value_0 = i
-          end
-          if _value_0 ~= nil then
-            _len_0 = _len_0 + 1
-            _accum_0[_len_0] = _value_0
-          end
-        end
-        return _accum_0
-      end)()
-      return build.chain({
-        base = self,
-        unpack(items)
-      })
-    end,
-    index = function(self, key)
-      return build.chain({
-        base = self,
-        {
-          "index",
-          key
-        }
-      })
-    end,
-    __tostring = function(self)
-      if self.name then
-        return ("name<%s>"):format(self.name)
-      else
-        return ("name<prefix(%s)>"):format(self.prefix)
-      end
-    end
-  }
-  _base_0.__index = _base_0
-  if _parent_0 then
-    setmetatable(_base_0, _parent_0.__base)
-  end
-  local _class_0 = setmetatable({
-    __init = function(self, prefix)
-      self.prefix = prefix
-      self[1] = "temp_name"
-    end,
-    __base = _base_0,
-    __name = "NameProxy",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil and _parent_0 then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  if _parent_0 and _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  NameProxy = _class_0
-end
+local Run
 do
   local _parent_0 = nil
   local _base_0 = {
@@ -182,25 +57,21 @@ apply_to_last = function(stms, fn)
   local last_exp_id = 0
   for i = #stms, 1, -1 do
     local stm = stms[i]
-    if stm and util.moon.type(stm) ~= Run then
+    if stm and mtype(stm) ~= Run then
       last_exp_id = i
       break
     end
   end
   return (function()
     local _accum_0 = { }
-    local _len_0 = 0
+    local _len_0 = 1
     for i, stm in ipairs(stms) do
-      local _value_0
       if i == last_exp_id then
-        _value_0 = fn(stm)
+        _accum_0[_len_0] = fn(stm)
       else
-        _value_0 = stm
+        _accum_0[_len_0] = stm
       end
-      if _value_0 ~= nil then
-        _len_0 = _len_0 + 1
-        _accum_0[_len_0] = _value_0
-      end
+      _len_0 = _len_0 + 1
     end
     return _accum_0
   end)()
@@ -213,48 +84,49 @@ is_singular = function(body)
   if "group" == ntype(body) then
     return is_singular(body[2])
   else
-    return true
+    return body[1]
   end
 end
-local find_assigns
-find_assigns = function(body, out)
+local extract_declarations
+extract_declarations = function(self, body, start, out)
+  if body == nil then
+    body = self.current_stms
+  end
+  if start == nil then
+    start = self.current_stm_i + 1
+  end
   if out == nil then
     out = { }
   end
-  local _list_0 = body
-  for _index_0 = 1, #_list_0 do
-    local thing = _list_0[_index_0]
-    local _exp_0 = thing[1]
-    if "group" == _exp_0 then
-      find_assigns(thing[2], out)
-    elseif "assign" == _exp_0 then
-      table.insert(out, thing[2])
+  for i = start, #body do
+    local _continue_0 = false
+    repeat
+      local stm = body[i]
+      if stm == nil then
+        _continue_0 = true
+        break
+      end
+      stm = self.transform.statement(stm)
+      body[i] = stm
+      local _exp_0 = stm[1]
+      if "assign" == _exp_0 or "declare" == _exp_0 then
+        local _list_0 = stm[2]
+        for _index_0 = 1, #_list_0 do
+          local name = _list_0[_index_0]
+          if type(name) == "string" then
+            insert(out, name)
+          end
+        end
+      elseif "group" == _exp_0 then
+        extract_declarations(self, stm[2], 1, out)
+      end
+      _continue_0 = true
+    until true
+    if not _continue_0 then
+      break
     end
   end
   return out
-end
-local hoist_declarations
-hoist_declarations = function(body)
-  local assigns = { }
-  local _list_0 = find_assigns(body)
-  for _index_0 = 1, #_list_0 do
-    local names = _list_0[_index_0]
-    local _list_1 = names
-    for _index_1 = 1, #_list_1 do
-      local name = _list_1[_index_1]
-      if type(name) == "string" then
-        table.insert(assigns, name)
-      end
-    end
-  end
-  local idx = 1
-  while mtype(body[idx]) == Run do
-    idx = idx + 1
-  end
-  return table.insert(body, idx, {
-    "declare",
-    assigns
-  })
 end
 local expand_elseif_assign
 expand_elseif_assign = function(ifstm)
@@ -420,9 +292,25 @@ construct_comprehension = function(inner, clauses)
   local current_stms = inner
   for _, clause in reversed(clauses) do
     local t = clause[1]
-    if t == "for" then
+    local _exp_0 = t
+    if "for" == _exp_0 then
+      local name, bounds
+      do
+        local _obj_0 = clause
+        _, name, bounds = _obj_0[1], _obj_0[2], _obj_0[3]
+      end
+      current_stms = {
+        "for",
+        name,
+        bounds,
+        current_stms
+      }
+    elseif "foreach" == _exp_0 then
       local names, iter
-      _, names, iter = unpack(clause)
+      do
+        local _obj_0 = clause
+        _, names, iter = _obj_0[1], _obj_0[2], _obj_0[3]
+      end
       current_stms = {
         "foreach",
         names,
@@ -431,9 +319,12 @@ construct_comprehension = function(inner, clauses)
         },
         current_stms
       }
-    elseif t == "when" then
+    elseif "when" == _exp_0 then
       local cond
-      _, cond = unpack(clause)
+      do
+        local _obj_0 = clause
+        _, cond = _obj_0[1], _obj_0[2]
+      end
       current_stms = {
         "if",
         cond,
@@ -448,9 +339,41 @@ construct_comprehension = function(inner, clauses)
   end
   return current_stms[1]
 end
-Statement = Transformer({
+local Statement = Transformer({
   root_stms = function(self, body)
     return apply_to_last(body, implicitly_return(self))
+  end,
+  declare_glob = function(self, node)
+    local names = extract_declarations(self)
+    if node[2] == "^" then
+      names = (function()
+        local _accum_0 = { }
+        local _len_0 = 1
+        local _list_0 = names
+        for _index_0 = 1, #_list_0 do
+          local _continue_0 = false
+          repeat
+            local name = _list_0[_index_0]
+            if not (name:match("^%u")) then
+              _continue_0 = true
+              break
+            end
+            local _value_0 = name
+            _accum_0[_len_0] = _value_0
+            _len_0 = _len_0 + 1
+            _continue_0 = true
+          until true
+          if not _continue_0 then
+            break
+          end
+        end
+        return _accum_0
+      end)()
+    end
+    return {
+      "declare",
+      names
+    }
   end,
   assign = function(self, node)
     local names, values = unpack(node, 2)
@@ -486,7 +409,11 @@ Statement = Transformer({
         })
       end
     end
-    return transformed or node
+    node = transformed or node
+    if destructure.has_destructure(names) then
+      return destructure.split_assign(node)
+    end
+    return node
   end,
   continue = function(self, node)
     local continue_name = self:send("continue")
@@ -549,37 +476,30 @@ Statement = Transformer({
     local _, names, source = unpack(node)
     local stubs = (function()
       local _accum_0 = { }
-      local _len_0 = 0
+      local _len_0 = 1
       local _list_0 = names
       for _index_0 = 1, #_list_0 do
         local name = _list_0[_index_0]
-        local _value_0
         if type(name) == "table" then
-          _value_0 = name
+          _accum_0[_len_0] = name
         else
-          _value_0 = {
+          _accum_0[_len_0] = {
             "dot",
             name
           }
         end
-        if _value_0 ~= nil then
-          _len_0 = _len_0 + 1
-          _accum_0[_len_0] = _value_0
-        end
+        _len_0 = _len_0 + 1
       end
       return _accum_0
     end)()
     local real_names = (function()
       local _accum_0 = { }
-      local _len_0 = 0
+      local _len_0 = 1
       local _list_0 = names
       for _index_0 = 1, #_list_0 do
         local name = _list_0[_index_0]
-        local _value_0 = type(name) == "table" and name[2] or name
-        if _value_0 ~= nil then
-          _len_0 = _len_0 + 1
-          _accum_0[_len_0] = _value_0
-        end
+        _accum_0[_len_0] = type(name) == "table" and name[2] or name
+        _len_0 = _len_0 + 1
       end
       return _accum_0
     end)()
@@ -588,15 +508,15 @@ Statement = Transformer({
         names = real_names,
         values = (function()
           local _accum_0 = { }
-          local _len_0 = 0
+          local _len_0 = 1
           local _list_0 = stubs
           for _index_0 = 1, #_list_0 do
             local stub = _list_0[_index_0]
-            _len_0 = _len_0 + 1
             _accum_0[_len_0] = build.chain({
               base = source,
               stub
             })
+            _len_0 = _len_0 + 1
           end
           return _accum_0
         end)()
@@ -614,15 +534,15 @@ Statement = Transformer({
             names = real_names,
             values = (function()
               local _accum_0 = { }
-              local _len_0 = 0
+              local _len_0 = 1
               local _list_0 = stubs
               for _index_0 = 1, #_list_0 do
                 local stub = _list_0[_index_0]
-                _len_0 = _len_0 + 1
                 _accum_0[_len_0] = build.chain({
                   base = source_name,
                   stub
                 })
+                _len_0 = _len_0 + 1
               end
               return _accum_0
             end)()
@@ -690,13 +610,13 @@ Statement = Transformer({
         build.declare({
           names = (function()
             local _accum_0 = { }
-            local _len_0 = 0
+            local _len_0 = 1
             local _list_0 = stm[2]
             for _index_0 = 1, #_list_0 do
               local name = _list_0[_index_0]
               if type(name) == "string" then
-                _len_0 = _len_0 + 1
                 _accum_0[_len_0] = name
+                _len_0 = _len_0 + 1
               end
             end
             return _accum_0
@@ -723,15 +643,32 @@ Statement = Transformer({
   ["if"] = function(self, node, ret)
     if ntype(node[2]) == "assign" then
       local _, assign, body = unpack(node)
-      local name = assign[2][1]
-      return build["do"]({
-        assign,
-        {
-          "if",
-          name,
-          unpack(node, 3)
+      if destructure.has_destructure(assign[2]) then
+        local name = NameProxy("des")
+        body = {
+          destructure.build_assign(assign[2][1], name),
+          build.group(node[3])
         }
-      })
+        return build["do"]({
+          build.assign_one(name, assign[3][1]),
+          {
+            "if",
+            name,
+            body,
+            unpack(node, 4)
+          }
+        })
+      else
+        local name = assign[2][1]
+        return build["do"]({
+          assign,
+          {
+            "if",
+            name,
+            unpack(node, 3)
+          }
+        })
+      end
     end
     node = expand_elseif_assign(node)
     if ret then
@@ -779,6 +716,29 @@ Statement = Transformer({
   foreach = function(self, node)
     smart_node(node)
     local source = unpack(node.iter)
+    local destructures = { }
+    node.names = (function()
+      local _accum_0 = { }
+      local _len_0 = 1
+      for i, name in ipairs(node.names) do
+        if ntype(name) == "table" then
+          do
+            local _with_0 = NameProxy("des")
+            local proxy = _with_0
+            insert(destructures, destructure.build_assign(name, proxy))
+            _accum_0[_len_0] = _with_0
+          end
+        else
+          _accum_0[_len_0] = name
+        end
+        _len_0 = _len_0 + 1
+      end
+      return _accum_0
+    end)()
+    if next(destructures) then
+      insert(destructures, build.group(node.body))
+      node.body = destructures
+    end
     if ntype(source) == "unpack" then
       local list = source[2]
       local index_name = NameProxy("index")
@@ -857,20 +817,33 @@ Statement = Transformer({
     local exp_name = NameProxy("exp")
     local convert_cond
     convert_cond = function(cond)
-      local t, case_exp, body = unpack(cond)
+      local t, case_exps, body = unpack(cond)
       local out = { }
       insert(out, t == "case" and "elseif" or "else")
       if t ~= "else" then
-        if t ~= "else" then
-          insert(out, {
+        local cond_exp = { }
+        for i, case in ipairs(case_exps) do
+          if i == 1 then
+            insert(cond_exp, "exp")
+          else
+            insert(cond_exp, "or")
+          end
+          if not (value_is_singular(case)) then
+            case = {
+              "parens",
+              case
+            }
+          end
+          insert(cond_exp, {
             "exp",
-            case_exp,
+            case,
             "==",
             exp_name
           })
         end
+        insert(out, cond_exp)
       else
-        body = case_exp
+        body = case_exps
       end
       if ret then
         body = apply_to_last(body, ret)
@@ -921,24 +894,30 @@ Statement = Transformer({
         end
       end
     end
-    local constructor = nil
+    local constructor
     properties = (function()
       local _accum_0 = { }
-      local _len_0 = 0
+      local _len_0 = 1
       local _list_1 = properties
       for _index_0 = 1, #_list_1 do
-        local tuple = _list_1[_index_0]
-        local key = tuple[1]
-        local _value_0
-        if key[1] == "key_literal" and key[2] == constructor_name then
-          constructor = tuple[2]
-          _value_0 = nil
-        else
-          _value_0 = tuple
-        end
-        if _value_0 ~= nil then
-          _len_0 = _len_0 + 1
+        local _continue_0 = false
+        repeat
+          local tuple = _list_1[_index_0]
+          local key = tuple[1]
+          local _value_0
+          if key[1] == "key_literal" and key[2] == constructor_name then
+            constructor = tuple[2]
+            _continue_0 = true
+            break
+          else
+            _value_0 = tuple
+          end
           _accum_0[_len_0] = _value_0
+          _len_0 = _len_0 + 1
+          _continue_0 = true
+        until true
+        if not _continue_0 then
+          break
         end
       end
       return _accum_0
@@ -947,7 +926,7 @@ Statement = Transformer({
     local base_name = NameProxy("base")
     local self_name = NameProxy("self")
     local cls_name = NameProxy("class")
-    if not constructor then
+    if not (constructor) then
       constructor = build.fndef({
         args = {
           {
@@ -972,9 +951,6 @@ Statement = Transformer({
           })
         }
       })
-    else
-      smart_node(constructor)
-      constructor.arrow = "fat"
     end
     local real_name = name or parent_assign and parent_assign[2][1]
     local _exp_0 = ntype(real_name)
@@ -1124,12 +1100,12 @@ Statement = Transformer({
             if chain then
               local slice = (function()
                 local _accum_0 = { }
-                local _len_0 = 0
+                local _len_0 = 1
                 local _list_1 = chain
                 for _index_0 = 3, #_list_1 do
                   local item = _list_1[_index_0]
-                  _len_0 = _len_0 + 1
                   _accum_0[_len_0] = item
+                  _len_0 = _len_0 + 1
                 end
                 return _accum_0
               end)()
@@ -1187,6 +1163,10 @@ Statement = Transformer({
             end
           end)
         end),
+        {
+          "declare_glob",
+          "*"
+        },
         _with_0.assign_one(parent_cls_name, parent_val == "" and "nil" or parent_val),
         _with_0.assign_one(base_name, {
           "table",
@@ -1254,7 +1234,6 @@ Statement = Transformer({
           end
         end)()
       }
-      hoist_declarations(out_body)
       value = _with_0.group({
         _with_0.group((function()
           if ntype(name) == "value" then
@@ -1290,22 +1269,17 @@ do
     wrap = function(self, node)
       return build.block_exp({
         build.assign_one(self.accum_name, build.table()),
-        build.assign_one(self.len_name, 0),
+        build.assign_one(self.len_name, 1),
         node,
         self.accum_name
       })
     end,
-    mutate_body = function(self, body, skip_nil)
-      if skip_nil == nil then
-        skip_nil = true
-      end
+    mutate_body = function(self, body)
+      local single_stm = is_singular(body)
       local val
-      if not skip_nil and is_singular(body) then
-        do
-          local _with_0 = body[1]
-          body = { }
-          val = _with_0
-        end
+      if single_stm and types.is_value(single_stm) then
+        body = { }
+        val = single_stm
       else
         body = apply_to_last(body, function(n)
           if types.is_value(n) then
@@ -1325,27 +1299,15 @@ do
         val = self.value_name
       end
       local update = {
+        build.assign_one(self.accum_name:index(self.len_name), val),
         {
           "update",
           self.len_name,
           "+=",
           1
-        },
-        build.assign_one(self.accum_name:index(self.len_name), val)
+        }
       }
-      if skip_nil then
-        table.insert(body, build["if"]({
-          cond = {
-            "exp",
-            self.value_name,
-            "!=",
-            "nil"
-          },
-          ["then"] = update
-        }))
-      else
-        table.insert(body, build.group(update))
-      end
+      insert(body, build.group(update))
       return body
     end
   }
@@ -1418,7 +1380,7 @@ implicitly_return = function(scope)
   end
   return fn
 end
-Value = Transformer({
+local Value = Transformer({
   ["for"] = default_accumulator,
   ["while"] = default_accumulator,
   foreach = default_accumulator,
@@ -1479,7 +1441,7 @@ Value = Transformer({
     node = self.transform.statement(node, function(exp)
       return a:mutate_body({
         exp
-      }, false)
+      })
     end)
     return a:wrap(node)
   end,
@@ -1658,3 +1620,8 @@ Value = Transformer({
     })
   end
 })
+return {
+  Statement = Statement,
+  Value = Value,
+  Run = Run
+}

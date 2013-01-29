@@ -1,8 +1,7 @@
-module("moonscript.parse", package.seeall)
 
 local util = require"moonscript.util"
 
-require"lpeg"
+local lpeg = require"lpeg"
 
 local debug_grammar = false
 
@@ -13,6 +12,10 @@ local ntype = types.ntype
 
 local dump = util.dump
 local trim = util.trim
+
+local getfenv = util.getfenv
+local setfenv = util.setfenv
+local unpack = util.unpack
 
 local Stack = data.Stack
 
@@ -49,7 +52,10 @@ local _Name = C(R("az", "AZ", "__") * AlphaNum^0)
 local Name = Space * _Name
 
 local Num = P"0x" * R("09", "af", "AF")^1 +
-	R"09"^1 * (P"." * R"09"^1)^-1 * (S"eE" * P"-"^-1 * R"09"^1)^-1
+	(
+		R"09"^1 * (P"." * R"09"^1)^-1 +
+		P"." * R"09"^1
+	) * (S"eE" * P"-"^-1 * R"09"^1)^-1
 
 Num = Space * (Num / function(value) return {"number", value} end)
 
@@ -117,7 +123,7 @@ local function wrap_env(fn)
 	}))
 end
 
-function extract_line(str, start_pos)
+local function extract_line(str, start_pos)
 	str = str:sub(start_pos)
 	m = str:match"^(.-)\n"
 	if m then return m end
@@ -170,7 +176,8 @@ local _chain_assignable = { index = true, dot = true, slice = true }
 local function is_assignable(node)
 	local t = ntype(node)
 	return t == "self" or t == "value" or t == "self_class" or
-		t == "chain" and _chain_assignable[ntype(node[#node])]
+		t == "chain" and _chain_assignable[ntype(node[#node])] or
+		t == "table"
 end
 
 local function check_assignable(str, pos, value)
@@ -400,7 +407,7 @@ local build_grammar = wrap_env(function()
 		PopIndent = Cmt("", pop_indent),
 		InBlock = Advance * Block * PopIndent,
 
-		Local = key"local" * Ct(NameList) / mark"declare_with_shadows",
+		Local = key"local" * ((op"*" + op"^") / mark"declare_glob" + Ct(NameList) / mark"declare_with_shadows"),
 
 		Import = key"import" *  Ct(ImportNameList) * key"from" * Exp / mark"import",
 		ImportName = (sym"\\" * Ct(Cc"colon_stub" * Name) + Name),
@@ -418,7 +425,7 @@ local build_grammar = wrap_env(function()
 		Switch = key"switch" * DisableDo * ensure(Exp, PopDo) * key"do"^-1 * Space^-1 * Break * SwitchBlock / mark"switch",
 
 		SwitchBlock = EmptyLine^0 * Advance * Ct(SwitchCase * (Break^1 * SwitchCase)^0 * (Break^1 * SwitchElse)^-1) * PopIndent,
-		SwitchCase = key"when" * Exp * key"then"^-1 * Body / mark"case",
+		SwitchCase = key"when" * Ct(ExpList) * key"then"^-1 * Body / mark"case",
 		SwitchElse = key"else" * Body / mark"else",
 
 		IfCond = Exp * Assign^-1 / format_single_assign,
@@ -435,7 +442,7 @@ local build_grammar = wrap_env(function()
 		For = key"for" * DisableDo * ensure(Name * sym"=" * Ct(Exp * sym"," * Exp * (sym"," * Exp)^-1), PopDo) *
 			key"do"^-1 * Body / mark"for",
 
-		ForEach = key"for" * Ct(NameList) * key"in" * DisableDo * ensure(Ct(sym"*" * Exp / mark"unpack" + ExpList), PopDo) * key"do"^-1 * Body / mark"foreach",
+		ForEach = key"for" * Ct(AssignableNameList) * key"in" * DisableDo * ensure(Ct(sym"*" * Exp / mark"unpack" + ExpList), PopDo) * key"do"^-1 * Body / mark"foreach",
 
 		Do = key"do" * Body / mark"do",
 
@@ -443,9 +450,10 @@ local build_grammar = wrap_env(function()
 
 		TblComprehension = sym"{" * Ct(Exp * (sym"," * Exp)^-1) * CompInner * sym"}" / mark"tblcomprehension",
 
-		CompInner = Ct(CompFor * CompClause^0),
-		CompFor = key"for" * Ct(NameList) * key"in" * (sym"*" * Exp / mark"unpack" + Exp) / mark"for",
-		CompClause = CompFor + key"when" * Exp / mark"when",
+		CompInner = Ct((CompForEach + CompFor) * CompClause^0),
+		CompForEach = key"for" * Ct(NameList) * key"in" * (sym"*" * Exp / mark"unpack" + Exp) / mark"foreach",
+		CompFor = key "for" * Name * sym"=" * Ct(Exp * sym"," * Exp * (sym"," * Exp)^-1) / mark"for",
+		CompClause = CompFor + CompForEach + key"when" * Exp / mark"when",
 
 		Assign = sym"=" * (Ct(With + If + Switch) + Ct(TableBlock + ExpListLow)) / mark"assign",
 		Update = ((sym"..=" + sym"+=" + sym"-=" + sym"*=" + sym"/=" + sym"%=" + sym"or=" + sym"and=") / trim) * Exp / mark"update",
@@ -552,7 +560,7 @@ local build_grammar = wrap_env(function()
 		TableBlockInner = Ct(KeyValueLine * (SpaceBreak^1 * KeyValueLine)^0),
 		TableBlock = SpaceBreak^1 * Advance * ensure(TableBlockInner, PopIndent) / mark"table",
 
-		ClassDecl = key"class" * (Assignable + Cc(nil)) * (key"extends" * PreventIndent * ensure(Exp, PopIndent) + C"")^-1 * (ClassBlock + Ct("")) / mark"class",
+		ClassDecl = key"class" * -P":" * (Assignable + Cc(nil)) * (key"extends" * PreventIndent * ensure(Exp, PopIndent) + C"")^-1 * (ClassBlock + Ct("")) / mark"class",
 
 		ClassBlock = SpaceBreak^1 * Advance *
 			Ct(ClassLine * (SpaceBreak^1 * ClassLine)^0) * PopIndent,
@@ -575,7 +583,7 @@ local build_grammar = wrap_env(function()
 			(key"using" * Ct(NameList + Space * "nil") + Ct"") *
 			sym")" + Ct"" * Ct"",
 
-		FnArgDefList =  FnArgDef * (sym"," * FnArgDef)^0,
+		FnArgDefList = FnArgDef * (sym"," * FnArgDef)^0,
 		FnArgDef = Ct(Name * (sym"=" * Exp)^-1),
 
 		FunLit = FnArgsDef *
@@ -583,6 +591,9 @@ local build_grammar = wrap_env(function()
 			(Body + Ct"") / mark"fndef",
 
 		NameList = Name * (sym"," * Name)^0,
+		NameOrDestructure = Name + TableLit,
+		AssignableNameList = NameOrDestructure * (sym"," * NameOrDestructure)^0,
+
 		ExpList = Exp * (sym"," * Exp)^0,
 		ExpListLow = Exp * ((sym"," + sym";") * Exp)^0,
 
@@ -632,13 +643,16 @@ local build_grammar = wrap_env(function()
 			return tree
 		end
 	}
-
 end)
 
--- parse a string
--- returns tree, or nil and error message
-function string(str)
-	local g = build_grammar()
-	return g:match(str)
-end
+return {
+	extract_line = extract_line,
+
+	-- parse a string
+	-- returns tree, or nil and error message
+	string = function (str)
+		local g = build_grammar()
+		return g:match(str)
+	end
+}
 

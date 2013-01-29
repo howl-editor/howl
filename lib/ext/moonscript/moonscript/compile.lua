@@ -1,25 +1,36 @@
-module("moonscript.compile", package.seeall)
 local util = require("moonscript.util")
 local dump = require("moonscript.dump")
-require("moonscript.compile.format")
-require("moonscript.compile.statement")
-require("moonscript.compile.value")
 local transform = require("moonscript.transform")
-local NameProxy, LocalName = transform.NameProxy, transform.LocalName
+local NameProxy, LocalName
+do
+  local _table_0 = require("moonscript.transform.names")
+  NameProxy, LocalName = _table_0.NameProxy, _table_0.LocalName
+end
 local Set
 do
   local _table_0 = require("moonscript.data")
   Set = _table_0.Set
 end
-local ntype
+local ntype, has_value
 do
   local _table_0 = require("moonscript.types")
-  ntype = _table_0.ntype
+  ntype, has_value = _table_0.ntype, _table_0.has_value
+end
+local statement_compilers
+do
+  local _table_0 = require("moonscript.compile.statement")
+  statement_compilers = _table_0.statement_compilers
+end
+local value_compilers
+do
+  local _table_0 = require("moonscript.compile.value")
+  value_compilers = _table_0.value_compilers
 end
 local concat, insert = table.concat, table.insert
-local pos_to_line, get_closest_line, trim = util.pos_to_line, util.get_closest_line, util.trim
+local pos_to_line, get_closest_line, trim, unpack = util.pos_to_line, util.get_closest_line, util.trim, util.unpack
 local mtype = util.moon.type
-local Line, Lines
+local indent_char = "  "
+local Line, DelayedLine, Lines, Block, RootBlock
 do
   local _parent_0 = nil
   local _base_0 = {
@@ -51,13 +62,15 @@ do
       end
       local posmap = self.posmap
       for i, l in ipairs(self) do
-        local _exp_0 = type(l)
-        if "table" == _exp_0 then
-          local _
-          _, line_no = l:flatten_posmap(line_no, out)
-        elseif "string" == _exp_0 then
+        local _exp_0 = mtype(l)
+        if "string" == _exp_0 or DelayedLine == _exp_0 then
           line_no = line_no + 1
           out[line_no] = posmap[i]
+        elseif Lines == _exp_0 then
+          local _
+          _, line_no = l:flatten_posmap(line_no, out)
+        else
+          error("Unknown item in Lines: " .. tostring(l))
         end
       end
       return out, line_no
@@ -71,7 +84,12 @@ do
       end
       for i = 1, #self do
         local l = self[i]
-        local _exp_0 = type(l)
+        local t = mtype(l)
+        if t == DelayedLine then
+          l = l:render()
+          t = "string"
+        end
+        local _exp_0 = t
         if "string" == _exp_0 then
           if indent then
             insert(buffer, indent)
@@ -85,8 +103,10 @@ do
           end
           insert(buffer, "\n")
           local last = l
-        elseif "table" == _exp_0 then
+        elseif Lines == _exp_0 then
           l:flatten(indent and indent .. indent_char or indent_char, buffer)
+        else
+          error("Unknown item in Lines: " .. tostring(l))
         end
       end
       return buffer
@@ -97,12 +117,12 @@ do
         if "table" == type(t) then
           return (function()
             local _accum_0 = { }
-            local _len_0 = 0
+            local _len_0 = 1
             local _list_0 = t
             for _index_0 = 1, #_list_0 do
               local v = _list_0[_index_0]
-              _len_0 = _len_0 + 1
               _accum_0[_len_0] = strip(v)
+              _len_0 = _len_0 + 1
             end
             return _accum_0
           end)()
@@ -156,7 +176,7 @@ do
         end
         local _list_0 = item
         for _index_0 = 1, #_list_0 do
-          value = _list_0[_index_0]
+          local value = _list_0[_index_0]
           self:_append_single(value)
         end
       else
@@ -256,6 +276,47 @@ end
 do
   local _parent_0 = nil
   local _base_0 = {
+    prepare = function() end,
+    render = function(self)
+      self:prepare()
+      return concat(self)
+    end
+  }
+  _base_0.__index = _base_0
+  if _parent_0 then
+    setmetatable(_base_0, _parent_0.__base)
+  end
+  local _class_0 = setmetatable({
+    __init = function(self, fn)
+      self.prepare = fn
+    end,
+    __base = _base_0,
+    __name = "DelayedLine",
+    __parent = _parent_0
+  }, {
+    __index = function(cls, name)
+      local val = rawget(_base_0, name)
+      if val == nil and _parent_0 then
+        return _parent_0[name]
+      else
+        return val
+      end
+    end,
+    __call = function(cls, ...)
+      local _self_0 = setmetatable({}, _base_0)
+      cls.__init(_self_0, ...)
+      return _self_0
+    end
+  })
+  _base_0.__class = _class_0
+  if _parent_0 and _parent_0.__inherited then
+    _parent_0.__inherited(_parent_0, _class_0)
+  end
+  DelayedLine = _class_0
+end
+do
+  local _parent_0 = nil
+  local _base_0 = {
     header = "do",
     footer = "end",
     export_all = false,
@@ -275,6 +336,9 @@ do
     get = function(self, name)
       return self._state[name]
     end,
+    get_current = function(self, name)
+      return rawget(self._state, name)
+    end,
     listen = function(self, name, fn)
       self._listeners[name] = fn
     end,
@@ -292,44 +356,58 @@ do
     declare = function(self, names)
       local undeclared = (function()
         local _accum_0 = { }
-        local _len_0 = 0
+        local _len_0 = 1
         local _list_0 = names
         for _index_0 = 1, #_list_0 do
-          local name = _list_0[_index_0]
-          local is_local = false
-          local real_name
-          local _exp_0 = mtype(name)
-          if LocalName == _exp_0 then
-            is_local = true
-            real_name = name:get_name(self)
-          elseif NameProxy == _exp_0 then
-            real_name = name:get_name(self)
-          elseif "string" == _exp_0 then
-            real_name = name
-          end
-          local _value_0
-          if is_local or real_name and not self:has_name(real_name) then
-            _value_0 = real_name
-          end
-          if _value_0 ~= nil then
-            _len_0 = _len_0 + 1
+          local _continue_0 = false
+          repeat
+            local name = _list_0[_index_0]
+            local is_local = false
+            local real_name
+            local _exp_0 = mtype(name)
+            if LocalName == _exp_0 then
+              is_local = true
+              real_name = name:get_name(self)
+            elseif NameProxy == _exp_0 then
+              real_name = name:get_name(self)
+            elseif "string" == _exp_0 then
+              real_name = name
+            end
+            if not (is_local or real_name and not self:has_name(real_name, true)) then
+              _continue_0 = true
+              break
+            end
+            self:put_name(real_name)
+            if self:name_exported(real_name) then
+              _continue_0 = true
+              break
+            end
+            local _value_0 = real_name
             _accum_0[_len_0] = _value_0
+            _len_0 = _len_0 + 1
+            _continue_0 = true
+          until true
+          if not _continue_0 then
+            break
           end
         end
         return _accum_0
       end)()
-      local _list_0 = undeclared
-      for _index_0 = 1, #_list_0 do
-        local name = _list_0[_index_0]
-        self:put_name(name)
-      end
       return undeclared
     end,
     whitelist_names = function(self, names)
       self._name_whitelist = Set(names)
     end,
+    name_exported = function(self, name)
+      if self.export_all then
+        return true
+      end
+      if self.export_proper and name:match("^%u") then
+        return true
+      end
+    end,
     put_name = function(self, name, ...)
-      value = ...
+      local value = ...
       if select("#", ...) == 0 then
         value = true
       end
@@ -339,13 +417,8 @@ do
       self._names[name] = value
     end,
     has_name = function(self, name, skip_exports)
-      if not skip_exports then
-        if self.export_all then
-          return true
-        end
-        if self.export_proper and name:match("^[A-Z]") then
-          return true
-        end
+      if not skip_exports and self:name_exported(name) then
+        return true
       end
       local yes = self._names[name]
       if yes == nil and self.parent then
@@ -419,14 +492,14 @@ do
       end
     end,
     is_stm = function(self, node)
-      return line_compile[ntype(node)] ~= nil
+      return statement_compilers[ntype(node)] ~= nil
     end,
     is_value = function(self, node)
       local t = ntype(node)
-      return value_compile[t] ~= nil or t == "value"
+      return value_compilers[t] ~= nil or t == "value"
     end,
-    name = function(self, node)
-      return self:value(node)
+    name = function(self, node, ...)
+      return self:value(node, ...)
     end,
     value = function(self, node, ...)
       node = self.transform.value(node)
@@ -436,7 +509,7 @@ do
       else
         action = node[1]
       end
-      local fn = value_compile[action]
+      local fn = value_compilers[action]
       if not fn then
         error("Failed to compile value: " .. dump.value(node))
       end
@@ -459,12 +532,12 @@ do
         local _with_0 = Line()
         _with_0:append_list((function()
           local _accum_0 = { }
-          local _len_0 = 0
+          local _len_0 = 1
           local _list_0 = values
           for _index_0 = 1, #_list_0 do
             local v = _list_0[_index_0]
-            _len_0 = _len_0 + 1
             _accum_0[_len_0] = self:value(v)
+            _len_0 = _len_0 + 1
           end
           return _accum_0
         end)(), delim)
@@ -478,7 +551,7 @@ do
       node = self.transform.statement(node)
       local result
       do
-        local fn = line_compile[ntype(node)]
+        local fn = statement_compilers[ntype(node)]
         if fn then
           result = fn(self, node, ...)
         else
@@ -509,11 +582,18 @@ do
       if ret then
         error("deprecated stms call, use transformer")
       end
-      local _list_0 = stms
-      for _index_0 = 1, #_list_0 do
-        local stm = _list_0[_index_0]
-        self:stm(stm)
+      local current_stms, current_stm_i
+      do
+        local _obj_0 = self
+        current_stms, current_stm_i = _obj_0.current_stms, _obj_0.current_stm_i
       end
+      self.current_stms = stms
+      for i = 1, #stms do
+        self.current_stm_i = i
+        self:stm(stms[i])
+      end
+      self.current_stms = current_stms
+      self.current_stm_i = current_stm_i
       return nil
     end,
     splice = function(self, fn)
@@ -590,11 +670,7 @@ do
       if not (self.options.implicitly_return_root == false) then
         stms = transform.Statement.transformers.root_stms(self, stms)
       end
-      local _list_0 = stms
-      for _index_0 = 1, #_list_0 do
-        local s = _list_0[_index_0]
-        self:stm(s)
-      end
+      return self:stms(stms)
     end,
     render = function(self)
       local buffer = self._lines:flatten()
@@ -638,6 +714,7 @@ do
   end
   RootBlock = _class_0
 end
+local format_error
 format_error = function(msg, pos, file_str)
   local line = pos_to_line(file_str, pos)
   local line_str
@@ -648,6 +725,7 @@ format_error = function(msg, pos, file_str)
     (" [%d] >>    %s"):format(line, trim(line_str))
   }, "\n")
 end
+local value
 value = function(value)
   local out = nil
   do
@@ -657,6 +735,7 @@ value = function(value)
   end
   return out
 end
+local tree
 tree = function(tree, options)
   if options == nil then
     options = { }
@@ -689,3 +768,21 @@ tree = function(tree, options)
     return lua_code, posmap
   end
 end
+do
+  local _with_0 = require("moonscript.data")
+  local data = _with_0
+  for name, cls in pairs({
+    Line = Line,
+    Lines = Lines,
+    DelayedLine = DelayedLine
+  }) do
+    data[name] = cls
+  end
+end
+return {
+  tree = tree,
+  value = value,
+  format_error = format_error,
+  Block = Block,
+  RootBlock = RootBlock
+}
