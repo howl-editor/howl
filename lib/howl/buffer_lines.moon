@@ -1,5 +1,3 @@
-import config from howl
-
 line_mt =
   __index: (k) =>
     getter = @_getters[k]
@@ -28,9 +26,9 @@ Line = (nr, buffer, sci) ->
 
   setmetatable {
     :nr
-    indent: => @indentation += config.get 'indent', buffer
+    indent: => @indentation += buffer.config.indent
     unindent: =>
-      new_indent = @indentation - config.get 'indent', buffer
+      new_indent = @indentation - buffer.config.indent
       if new_indent >= 0
         @indentation = new_indent
 

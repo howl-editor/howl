@@ -188,7 +188,7 @@ class Editor extends PropertyObject
     if @selection.empty
       column = @cursor.column
       @current_line\indent!
-      @cursor.column = column + config.get 'indent', @buffer
+      @cursor.column = column + @buffer.config.indent
     else
       @sci\tab!
 
@@ -197,14 +197,14 @@ class Editor extends PropertyObject
       column = @cursor.column
       if @current_line.indentation > 0
         @current_line\unindent!
-        @cursor.column = math.max(column - config.get('indent', @buffer), 0)
+        @cursor.column = math.max(column - @buffer.config.indent, 0)
     else
       @sci\back_tab!
 
   indent: =>
     mode = @buffer.mode
     return unless mode.indent_for
-    indent_level = config.get 'indent', @buffer
+    indent_level = @buffer.config.indent
 
     @transform_active_lines (lines) ->
       for line in *lines
@@ -335,11 +335,11 @@ class Editor extends PropertyObject
   _set_appearance: =>
     @_set_theme_settings!
 
-    with config
-      @horizontal_scrollbar = .get 'horizontal_scrollbar', @buffer
-      @vertical_scrollbar = .get 'vertical_scrollbar', @buffer
-      @caret_line_highlighted = .get 'caret_line_highlighted', @buffer
-      @line_numbers = .get 'line_numbers', @buffer
+    with @buffer.config
+      @horizontal_scrollbar = .horizontal_scrollbar
+      @vertical_scrollbar = .vertical_scrollbar
+      @caret_line_highlighted = .caret_line_highlighted
+      @line_numbers = .line_numbers
 
   _set_theme_settings: =>
     v = theme.current.editor
@@ -366,13 +366,13 @@ class Editor extends PropertyObject
   _set_config_settings: =>
     buf = @buffer
     with @sci
-      \set_tab_width config.get('tab_width', buf)
-      \set_use_tabs config.get('use_tabs', buf)
-      \set_indent config.get('indent', buf)
-      \set_tab_indents config.get('tab_indents', buf)
-      \set_back_space_un_indents config.get('backspace_unindents', buf)
+      \set_tab_width buf.config.tab_width
+      \set_use_tabs buf.config.use_tabs
+      \set_indent buf.config.indent
+      \set_tab_indents buf.config.tab_indents
+      \set_back_space_un_indents buf.config.backspace_unindents
 
-    @indentation_guides = config.get('indentation_guides', buf)
+    @indentation_guides = buf.config.indentation_guides
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
@@ -408,7 +408,7 @@ class Editor extends PropertyObject
     signal.emit 'editor-changed', editor: self
 
   _brace_highlight: =>
-    should_highlight = config.get 'matching_braces_highlighted', @buffer
+    should_highlight = @buffer.config.matching_braces_highlighted
 
     if should_highlight
       current_pos = @sci\get_current_pos!

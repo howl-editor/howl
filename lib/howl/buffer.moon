@@ -51,8 +51,7 @@ class Context extends PropertyObject
   }
 
 class Buffer extends PropertyObject
-  new: (mode, sci) =>
-    error('Missing argument #1 (mode)', 3) if not mode
+  new: (mode = {}, sci) =>
     super!
 
     if sci
@@ -64,6 +63,7 @@ class Buffer extends PropertyObject
       @destructor = destructor background_sci\release_document, @doc
       @scis = {}
 
+    @config = config.local_proxy!
     @completers = {}
     @mode = mode
     @properties = {}
@@ -84,7 +84,9 @@ class Buffer extends PropertyObject
 
   @property mode:
     get: => @_mode
-    set: (mode) => @_mode = mode
+    set: (mode = {}) =>
+      @_mode = mode
+      @config.chain_to mode.config
 
   @property title:
     get: => @_title or 'Untitled'
@@ -205,7 +207,7 @@ class Buffer extends PropertyObject
 
   save: =>
     if @file
-      if config.get 'strip_trailing_whitespace', self
+      if @config.strip_trailing_whitespace
         ws = '[\t ]'
         @replace "(#{ws}+)#{@eol}", ''
         @replace "(#{ws}+)$", ''

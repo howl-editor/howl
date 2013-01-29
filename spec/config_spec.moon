@@ -56,40 +56,6 @@ describe 'config', ->
         config.set 'var', 'hello'
         assert.equal config.get(u'var'), 'hello'
 
-    context 'when buffer is specified and has a local variable set', ->
-      it 'get(name) returns the local value of <name>', ->
-        buffer = {}
-        config.set_local 'var', 'local', buffer
-        assert.equal config.get('var', buffer), 'local'
-
-    it 'when <buffer> is omitted it checks G.editor.buffer for local values', ->
-      buffer = {}
-      _G.editor = :buffer
-      config.set_local 'var', 'local', buffer
-      assert.equal config.get('var'), 'local'
-
-  describe 'set_local(name, value, buffer)', ->
-    before_each -> config.define name: 'local', description: 'local variable'
-
-    it 'an error is raised if <name> is not defined', ->
-      assert.raises 'Undefined', -> config.set_local 'que', 'si', {}
-
-    it 'defaults to _G.editor.buffer if buffer is not specified', ->
-      buffer = {}
-      _G.editor = :buffer
-      config.set_local 'local', 'local'
-      assert.equal config.get('local', buffer), 'local'
-
-    it 'setting a value of nil clears the value', ->
-      buffer = {}
-      config.set_local 'local', 'local', buffer
-      config.set_local 'local', nil, buffer
-      assert.is_nil config.get 'local', buffer
-
-    it 'raises an exception if G.editor.buffer is not available and buffer is not specified', ->
-      _G.editor = nil
-      assert.error -> config.set_local 'local', 'local'
-
   context 'when a default is provided', ->
     before_each -> config.define name: 'with_default', description: 'test', default: 123
 
@@ -118,10 +84,8 @@ describe 'config', ->
     it 'an error is raised if the function returns falsy for to-be set value', ->
       config.define name: 'validated', description: 'test', validate: -> false
       assert.error -> config.set 'validated', 'foo'
-      assert.error -> config.set_local 'validated', 'foo', {}
       config.define name: 'validated', description: 'test', validate: -> nil
       assert.error -> config.set 'validated', 'foo'
-      assert.error -> config.set_local 'validated', 'foo', {}
 
     it 'an error is not raised if the function returns truish for to-be set value', ->
       config.define name: 'validated', description: 'test', validate: -> true
@@ -182,11 +146,6 @@ describe 'config', ->
       it 'an error is raised when trying to set the global value of the variable', ->
         config.define name: 'local', description: 'test', scope: 'local'
         assert.error -> config.set 'local', 'foo'
-
-    context 'with global scope for a variable', ->
-      it 'an error is raised when trying to set the local value of the variable', ->
-        config.define name: 'global', description: 'test', scope: 'global'
-        assert.error -> config.set_local 'global', 'foo', {}
 
   context 'when type_of is provided', ->
     it 'raises an error if the type is not recognized', ->
@@ -253,13 +212,6 @@ describe 'config', ->
       config.define name: 'undefined', description: 'springs into life', default: 123
       assert.spy(callback).was_called_with 'undefined', 123, false
 
-    it 'set_local invokes watchers with <name>, <value> and true', ->
-      callback = Spy!
-      buffer = {}
-      config.watch 'trigger', callback
-      config.set_local 'trigger', 'value', buffer
-      assert.same callback.called_with, { 'trigger', 'value', true }
-
     context 'when a callback raises an error', ->
       before_each -> config.watch 'trigger', -> error 'oh noes'
 
@@ -272,3 +224,51 @@ describe 'config', ->
       it 'an error is logged', ->
         config.set 'trigger', 'value'
         assert.match log.last_error.message, 'watcher'
+
+  describe 'proxy', ->
+    config.define name: 'my_var', description: 'base', type_of: 'number'
+    local proxy
+
+    before_each ->
+      config.my_var = 123
+      proxy = config.local_proxy!
+
+    it 'returns a table with access to all previously defined variables', ->
+      assert.equal 123, proxy.my_var
+
+    it 'changing a variable changes it locally only', ->
+      proxy.my_var = 321
+      assert.equal 321, proxy.my_var
+      assert.equal 123, config.my_var
+
+    it 'assignments are still validated and converted as usual', ->
+      assert.has_error -> proxy.my_var = 'not a number'
+      proxy.my_var = '111'
+      assert.equal 111, proxy.my_var
+
+    it 'an error is raised if trying to set a variable with global scope', ->
+      config.define name: 'global', description: 'global', scope: 'global'
+      assert.has_error -> proxy.global = 'illegal'
+
+    it 'an error is raised if the variable is not defined', ->
+      assert.raises 'Undefined', -> proxy.que = 'si'
+
+    it 'setting a value to nil clears the value', ->
+      proxy.my_var = 666
+      proxy.my_var = nil
+      assert.equal 123, proxy.my_var
+
+    it 'setting a variable via a proxy invokes watchers with <name>, <value> and true', ->
+      callback = spy.new ->
+      config.watch 'my_var', callback
+      proxy.my_var = 333
+      assert.spy(callback).was.called_with, { 'my_var', 333, true }
+
+    it 'can be chained to another proxy to create a lookup chain', ->
+      config.my_var = 222
+      base_proxy = config.local_proxy!
+      proxy.chain_to base_proxy
+      assert.equal 222, proxy.my_var
+      base_proxy.my_var = 333
+      assert.equal 333, proxy.my_var
+      assert.equal 222, config.my_var

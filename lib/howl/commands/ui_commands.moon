@@ -17,17 +17,17 @@ command.register
   name: 'zoom-in',
   description: 'Increases the current font size by 1 (globally)'
   handler: ->
-    size = config.get('font_size') + 1
-    config.set 'font_size', size
+    size = config.font_size + 1
+    config.font_size = size
     log.info "zoom-in: global font size set to #{size}"
 
 command.register
   name: 'zoom-out',
   description: 'Decreases the current font size by 1 (globally)'
   handler: ->
-    size = config.get('font_size') - 1
+    size = config.font_size - 1
     if size <= 6
       log.error 'zoom-out: minimum font size reached (6)'
     else
-      config.set 'font_size', size
+      config.font_size = size
       log.info "zoom-out: global font size set to #{size}"

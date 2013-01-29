@@ -75,7 +75,7 @@ describe 'BufferLines', ->
       buf.lines[1]\indent!
       assert.equal '  hƏllØ\n  wØrld\nagain!', buf.text
 
-      config.set_local 'indent', 1, buf
+      buf.config.indent = 1
       buf.lines[3]\indent!
       assert.equal '  hƏllØ\n  wØrld\n again!', buf.text
 
@@ -85,7 +85,7 @@ describe 'BufferLines', ->
       buf.lines[1]\unindent!
       assert.equal buf.text, 'first\n  second'
 
-      config.set_local 'indent', 1, buf
+      buf.config.indent = 1
       buf.lines[2]\unindent!
       assert.equal buf.text, 'first\n second'
 

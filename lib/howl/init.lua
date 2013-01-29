@@ -63,30 +63,36 @@ local function auto_module(name)
     end})
 end
 
+local function main()
+  howl.app = howl.Application(howl.fs.File(app_root), parse_args(argv))
+
+  if os.getenv('BUSTED') then
+    local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
+    support()
+    local busted = assert(loadfile(argv[2]))
+    arg = {table.unpack(argv, 3, #argv)}
+    busted()
+  else
+    status, err = pcall(howl.app.run, howl.app)
+    if not status then
+      print(err)
+    end
+  end
+
+end
+
 set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
 require 'howl.moonscript_support'
 lgi = require('lgi')
 howl = auto_module('howl')
 require('howl.globals')
-
 local code_cache = require('howl.code_cache')(app_root .. '/lib')
 table.insert(package.loaders, 2, code_cache.loader)
-
 _G.log = require('howl.log')
 
-howl.app = howl.Application(howl.fs.File(app_root), parse_args(argv))
-
-if os.getenv('BUSTED') then
-  local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
-  support()
-  local busted = assert(loadfile(argv[2]))
-  arg = {table.unpack(argv, 3, #argv)}
-  busted()
-else
-  status, err = pcall(howl.app.run, howl.app)
-  if not status then
-    print(err)
-  end
+status, err = pcall(main)
+if not status then
+  print(err)
 end
 
 code_cache.save()

@@ -7,9 +7,6 @@ describe 'Buffer', ->
       .text = text
 
   describe 'creation', ->
-    it 'Buffer(mode) raises an error if mode is not given', ->
-      assert.error -> Buffer!
-
     context 'when sci parameter is specified', ->
       it 'attaches .sci and .doc to the Scintilla instance', ->
         sci = get_doc_pointer: -> 'docky'
@@ -138,6 +135,24 @@ describe 'Buffer', ->
       b\delete 2, 1
       b.length
       assert.is_false b.multibyte
+
+  describe '.config', ->
+    config.define name: 'buf_var', description: 'some var', default: 'def value'
+
+    it 'allows reading and writing (local) variables', ->
+      b = buffer 'config'
+      assert.equal 'def value', b.config.buf_var
+      b.config.buf_var = 123
+      assert.equal 123, b.config.buf_var
+      assert.equal 'def value', config.buf_var
+
+    it 'is chained to the mode config', ->
+      mode_config = config.local_proxy!
+      mode = config: mode_config
+      b = buffer 'config'
+      b.mode = mode
+      mode_config.buf_var = 'from_mode'
+      assert.equal 'from_mode', b.config.buf_var
 
   describe 'context_at(pos)', ->
     b = buffer '"HƏllo", said Mr.Bačon'

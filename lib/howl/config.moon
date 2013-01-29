@@ -1,5 +1,4 @@
 values = {}
-local_values = setmetatable {}, __mode: 'k'
 defs = {}
 watchers = {}
 
@@ -19,7 +18,6 @@ predefined_types =
   string: {
     convert: (value) -> tostring value
   }
-
 
 broadcast = (name, value, is_local) ->
   callbacks = watchers[name]
@@ -54,96 +52,98 @@ convert = (def, value) ->
     return new_value if new_value != nil
   value
 
-config = {
-  definitions: setmetatable {},
-    __index: (_, k) -> defs[tostring k]
-    __newindex: -> error 'Attempt to write to read-only table `.definitions`'
-    __pairs: -> pairs defs
+definitions = setmetatable {},
+  __index: (_, k) -> defs[tostring k]
+  __newindex: -> error 'Attempt to write to read-only table `.definitions`'
+  __pairs: -> pairs defs
 
-  define: (var = {}) ->
-    for field in *{'name', 'description'}
-      error '`' .. field .. '` missing', 2 if not var[field]
+define = (var = {}) ->
+  for field in *{'name', 'description'}
+    error '`' .. field .. '` missing', 2 if not var[field]
 
-    if var.scope and var.scope != 'local' and var.scope != 'global'
-      error 'Unknown scope "' .. var.scope .. '"', 2
+  if var.scope and var.scope != 'local' and var.scope != 'global'
+    error 'Unknown scope "' .. var.scope .. '"', 2
 
-    if var.type_of
-      var = moon.copy var
-      predef = predefined_types[var.type_of]
-      error('Unknown type"' .. var.type_of .. '"', 2) if not predef
-      var[k] = v for k,v in pairs predef
+  if var.type_of
+    var = moon.copy var
+    predef = predefined_types[var.type_of]
+    error('Unknown type"' .. var.type_of .. '"', 2) if not predef
+    var[k] = v for k,v in pairs predef
 
-    defs[tostring var.name] = var
-    broadcast tostring(var.name), var.default, false
+  defs[tostring var.name] = var
+  broadcast tostring(var.name), var.default, false
 
-  set: (name, value) ->
-    name = tostring name
-    def = get_def name
+set = (name, value) ->
+  name = tostring name
+  def = get_def name
 
-    if def.scope and def.scope == 'local'
-      error 'Attempt to set a global value for local variable "' .. name .. '"', 2
+  if def.scope and def.scope == 'local'
+    error 'Attempt to set a global value for local variable "' .. name .. '"', 2
 
-    value = convert def, value
-    validate def, value
+  value = convert def, value
+  validate def, value
 
-    values[name] = value
-    broadcast name, value, false
+  values[name] = value
+  broadcast name, value, false
 
-  set_local: (name, value, buffer) ->
-    name = tostring name
-    def = get_def name
+proxy_set = (name, value, proxy) ->
+  name = tostring name
+  def = get_def name
 
-    if def.scope and def.scope == 'global'
-      error 'Attempt to set a local value for global variable "' .. name .. '"', 2
+  if def.scope and def.scope == 'global'
+    error 'Attempt to set a local value for global variable "' .. name .. '"', 2
 
-    value = convert def, value
-    validate def, value
+  value = convert def, value
+  validate def, value
+  rawset proxy, name, value
+  broadcast name, value, true
 
-    if not buffer
-      buffer = _G.editor.buffer if _G.editor
+get = (name, other) ->
+  error 'fix me here', 2 if other
+  name = tostring name
+  value = values[name]
+  return value if value != nil
+  def = defs[name]
+  return def.default if def
 
-    error 'No buffer available for set_local', 2 if not buffer
+reset = -> values = {}
 
-    locals = local_values[buffer]
+watch = (name, callback) ->
+  name = tostring name
+  list = watchers[name]
+  if not list
+    list = {}
+    watchers[name] = list
+  append list, callback
 
-    if not locals
-      locals = {}
-      local_values[buffer] = locals
-
-    locals[name] = value
-
-    broadcast name, value, true
-
-  get: (name, buffer) ->
-    name = tostring name
-    buffer = _G.editor.buffer if not buffer and _G.editor
-
-    if buffer
-      locals = local_values[buffer]
-      if locals
-        return locals[name] if locals[name] != nil
-
-    value = values[name]
-    return value if value != nil
-    def = defs[name]
-    return def.default if def
-
-  reset: -> values = {}
-
-  watch: (name, callback) ->
-    name = tostring name
-    list = watchers[name]
-    if not list
-      list = {}
-      watchers[name] = list
-    append list, callback
+proxy_mt = {
+  __index: (proxy, key) ->
+    base = rawget proxy, '_base'
+    if base then base[key] else get key
+  __newindex: (proxy, key, value) -> proxy_set key, value, proxy
 }
 
-return setmetatable {}, {
-  __index: (t, k) -> rawget(config, k) or config.get k
+local_proxy = ->
+  proxy = {}
+  proxy.chain_to = (base) -> rawset proxy, '_base', base
+  setmetatable proxy, proxy_mt
+
+config = {
+  :definitions
+  :define
+  :set
+  :set_local
+  :get
+  :watch
+  :reset
+  :local_proxy
+}
+
+return setmetatable config, {
+  __index: (t, k) -> rawget(config, k) or get k
   __newindex: (t, k, v) ->
     if rawget config, k
       config[k] = v
     else
-      config.set k, v
+      set k, v
 }
