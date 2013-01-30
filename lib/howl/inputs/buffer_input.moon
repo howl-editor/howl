@@ -9,7 +9,8 @@ load_matcher = ->
   Matcher buffers
 
 class BufferInput
-  should_complete: => true
+  should_complete: -> true
+  close_on_cancel: -> true
 
   complete: (text) =>
     @matcher = load_matcher! unless @matcher

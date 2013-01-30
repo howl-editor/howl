@@ -47,6 +47,7 @@ class State
     should = @_dispatch 'should_complete', text, readline
     return should != nil and should or config.complete == 'always'
 
+  close_on_cancel: (text, readline) => @_dispatch 'close_on_cancel', text, readline
   complete: (text, readline) => @_dispatch 'complete', text, readline
   on_completed: (text, readline) => @_dispatch 'on_completed', text, readline
   go_back: (readline) => @_dispatch 'go_back', readline
@@ -59,6 +60,7 @@ class State
     current_input = @inputs[#@inputs]
     if current_input and current_input.target[handler]
       return current_input.target[handler] current_input.target, ...
+    nil
 
   submit: (value) =>
     cmd = @cmd or commands[value]
@@ -164,8 +166,9 @@ run = (cmd_string = nil) ->
   state = State!
 
   cmd_input =
-    title: 'Commands'
+    title: 'Command'
     should_complete: (_, text, readline) -> state\should_complete text, readline
+    close_on_cancel: (_, text, readline) -> state\close_on_cancel text, readline
     update: (_, text, readline) -> state\update text, readline
     on_completed: (_, text, readline) -> state\on_completed text, readline
     go_back: (_, readline) -> state\go_back readline

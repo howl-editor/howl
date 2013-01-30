@@ -7,7 +7,8 @@ class SearchInput
     return {}, title: @title
 
   on_cancelled: => @searcher\cancel!
-  should_complete: => true
+  should_complete: -> true
+  close_on_cancel: -> true
   value_for: (text) => text
 
 class ForwardSearchInput extends SearchInput

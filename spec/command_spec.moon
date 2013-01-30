@@ -79,6 +79,7 @@ describe 'command', ->
         first_input = {
           complete: -> 'completions'
           should_complete: -> 'perhaps'
+          close_on_cancel: -> true
           value_for: -> 123
           on_completed: Spy!
           go_back: Spy!
@@ -90,6 +91,7 @@ describe 'command', ->
         second_input = {
           complete: -> 'other completions'
           should_complete: -> 'oh yes'
+          close_on_cancel: -> false
           on_completed: Spy!
           go_back: Spy!
           on_cancelled: Spy!
@@ -150,7 +152,7 @@ describe 'command', ->
         command.run "#{cmd.name} tab1\ttab2"
         assert.spy(cmd.handler).was.called_with('tab1', 'tab2')
 
-      it 'treats the input as a #wildcard input if it is prefixed with "*"', ->
+      it 'treats the input as a wildcard input if it is prefixed with "*"', ->
         cmd.inputs = { 'dummy', '*dummy' }
         command.register cmd
         command.run "#{cmd.name} first second / third"
@@ -207,6 +209,7 @@ describe 'command', ->
           assert.not_nil first_input
           assert.equal input\complete(readline.text, readline), first_input.complete!
           assert.equal input\should_complete(readline.text, readline), first_input.should_complete!
+          assert.equal input\close_on_cancel(readline.text, readline), first_input.close_on_cancel!
 
           input\on_completed(readline.text, readline)
           assert.is_true first_input.on_completed.called
@@ -219,6 +222,7 @@ describe 'command', ->
           assert.not_nil second_input
           assert.equal input\complete(readline.text, readline), second_input.complete!
           assert.equal input\should_complete(readline.text, readline), second_input.should_complete!
+          assert.equal input\close_on_cancel(readline.text, readline), second_input.close_on_cancel!
 
           input\on_completed(readline.text, readline)
           assert.is_true second_input.on_completed.called

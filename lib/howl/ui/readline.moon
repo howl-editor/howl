@@ -92,7 +92,7 @@ class Readline extends PropertyObject
     completions, options = if should_complete and @input.complete then @input\complete text, self
     options or= {}
     count = completions and #completions or 0
-    @title = options.title
+    @title = options.title if options.title
     list_position = 1
     list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
     if count > 0
@@ -247,7 +247,8 @@ class Readline extends PropertyObject
     if @completion_list or @notification
       @_show_only_cmd_line!
       @completion_unwanted = true
-      return if @seen_interaction
+      input_wants_close = @input.close_on_cancel and @input\close_on_cancel!
+      return if @seen_interaction and not input_wants_close
 
     status, err = pcall self.callback, nil, self
     @hide!

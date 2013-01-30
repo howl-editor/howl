@@ -10,7 +10,7 @@ buffer_titles = setmetatable {}, __mode: 'v'
 title_counters = {}
 
 file_title = (file) ->
-  title = file.basename
+  title = tostring file.basename
   while buffer_titles[title]
     file = file.parent
     return title if not file

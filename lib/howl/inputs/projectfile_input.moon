@@ -40,7 +40,8 @@ class ProjectFileInput
       if file
         @project = Project.for_file file
 
-  should_complete: => true
+  should_complete: -> true
+  close_on_cancel: -> true
 
   complete: (text) =>
     return {} if not @project
