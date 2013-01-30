@@ -76,6 +76,9 @@ describe 'VariableAssignmentInput', ->
             { 'true', 'yes' }
           }, completions
 
+        it 'returns nil if the variable is undefined', ->
+          assert.is_nil (input\complete 'honest_politician=')
+
       describe '.value_for(text)', ->
         it 'returns a table containing the assignment information', ->
           value = input\value_for('foo=bar')

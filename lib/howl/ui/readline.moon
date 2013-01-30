@@ -90,10 +90,13 @@ class Readline extends PropertyObject
     should_complete = force or config_says_complete or input_says_complete
 
     completions, options = if should_complete and @input.complete then @input\complete text, self
+    options or= {}
     count = completions and #completions or 0
-    @title = options.title if options and options.title
+    @title = options.title
+    list_position = 1
+    list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
     if count > 0
-      @completion_list = List @buffer, 1
+      @completion_list = List @buffer, list_position
       list_options = options and options.list or {}
       with @completion_list
         .items = completions
@@ -102,20 +105,16 @@ class Readline extends PropertyObject
         @completion_list[k] = v for k, v in pairs list_options
         @completion_list.highlight_matches_for = text unless list_options.highlight_matches_for
         \show!
-      @_adjust_height!
+
+    @_adjust_height!
 
   _adjust_height: =>
     @gsci.height = @sci\text_height(0) * #@buffer.lines
 
   _show_only_cmd_line: =>
-    if @notification
-      @notification\delete!
-      @notification = nil
-
-    if @completion_list
-      @completion_list\clear!
-      @completion_list = nil
-
+    @buffer.lines\delete 1, #@buffer.lines - 1
+    @notification = nil
+    @completion_list = nil
     @_adjust_height!
 
   _update_input: =>
@@ -141,6 +140,7 @@ class Readline extends PropertyObject
     @sci = Scintilla!
     @sci\set_style_bits 8
     @sci\set_lexer Scintilla.SCLEX_NULL
+    @sci\clear_all_cmd_keys!
     @cursor = Cursor self, Selection @sci
     @buffer = ActionBuffer @sci
     @gsci = @sci\to_gobject!

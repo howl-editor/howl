@@ -34,8 +34,11 @@ command.register
   handler: (assignment) ->
     if assignment.name
       value = assignment.value or ''
-      config.set assignment.name, value
-      _G.log.info ('"%s" is now set to "%s"')\format assignment.name, assignment.value
+      if config.definitions[assignment.name]
+        config.set assignment.name, value
+        _G.log.info ('"%s" is now set to "%s"')\format assignment.name, assignment.value
+      else
+        log.error "Undefined variable '#{assignment.name}'"
 
 command.register
   name: 'describe-key',

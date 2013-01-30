@@ -23,7 +23,6 @@ option_completions = (options) ->
 options_list_options = (options, def, text) ->
   selection = nil
   headers = { 'Option' }
-  caption = def.description .. '\n'
   highlight_matches_for = text
 
   unless text
@@ -37,7 +36,7 @@ options_list_options = (options, def, text) ->
   if type(options[1]) == 'table'
     append headers, 'Description'
 
-  return :caption, :headers, :selection, :highlight_matches_for
+  return :headers, :selection, :highlight_matches_for
 
 class VariableAssignmentInput
   new: =>
@@ -51,13 +50,22 @@ class VariableAssignmentInput
     name, val = parse_assignment text
     if name
       def = config.definitions[name]
-      title = name
-      options = def and def.options
-      return {}, :title if not options
+      unless def
+        log.error "Unknown variable #{name}"
+        return
+
+      comp_options = {
+        title: name
+        caption: def.description
+      }
+      options = def.options
+      if not options
+        comp_options.caption ..= "\n\nCurrent value: #{config[name]}"
+        return {}, comp_options
       completions = option_completions options
-      list_options = options_list_options completions, def, val
-      matcher = Matcher(completions)
-      return matcher(val or ''), :title, list: list_options
+      comp_options.list = options_list_options completions, def, val
+      matcher = Matcher completions
+      return matcher(val or ''), comp_options
 
     completion_options = title: 'Set variable', list: headers: { 'Variable', 'Description' }
     return self.matcher(text), completion_options
