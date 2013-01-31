@@ -1254,7 +1254,7 @@ M.word = (M.alpha + '_') * (M.alnum + '_')^0
 -- @usage local annotation = token('annotation', '@' * l.word)
 -- @name token
 function M.token(name, patt)
-  return lpeg_Cc(name) * patt * lpeg_Cp()
+  return lpeg_Cp() * lpeg_Cc(name) * patt * lpeg_Cp()
 end
 
 -- Common tokens

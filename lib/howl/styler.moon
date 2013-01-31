@@ -37,9 +37,10 @@ style_text = (sci, buffer, end_pos, lexer) ->
 
   tokens = lexer\lex text
   pos = 0
-  for idx = 1, #tokens, 2
-    style_number = style.number_for tokens[idx], buffer
-    end_token = tokens[idx + 1] - 1
+  for idx = 1, #tokens, 3
+    start_token = tokens[idx] - 1
+    style_number = style.number_for tokens[idx + 1], buffer
+    end_token = tokens[idx + 2] - 1
     while pos < end_token
       style_buf[pos] = style_number
       pos += 1

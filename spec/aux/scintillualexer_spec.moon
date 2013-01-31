@@ -23,7 +23,7 @@ describe 'ScintilluaLexer', ->
     tmpfile\delete!
     lexed = lexer\lex 'awesome stuff'
     assert.same {
-      'keyword', 8,
-      'spec_whitespace', 9,
-      'keyword', 14
+      1, 'keyword', 8,
+      8, 'spec_whitespace', 9,
+      9, 'keyword', 14
     }, lexed
