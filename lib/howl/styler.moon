@@ -1,10 +1,14 @@
+ffi = require 'ffi'
 import style from howl.ui
 import char_arr from howl.cdefs
 
 style_buf = nil
 style_buf_length = 0
 
-find_style_start = (sci, pos) ->
+get_styling_start_pos = (sci) ->
+  pos = sci\get_end_styled!
+  start_line = sci\line_from_position pos
+  pos = sci\position_from_line start_line
 
   -- find first differing style from current pos
   cur_style = sci\get_style_at pos
@@ -25,28 +29,34 @@ find_style_start = (sci, pos) ->
   return pos
 
 style_text = (sci, buffer, end_pos, lexer) ->
-  start_pos = sci\get_end_styled!
-  start_line = sci\line_from_position start_pos
-  start_pos = sci\position_from_line start_line
-  start_pos = find_style_start sci, start_pos
+  start_pos = get_styling_start_pos sci
   text = sci\get_text_range start_pos, end_pos
+  default_style_number = style.number_for 'default', buffer
 
-  if style_buf_length < text.size
-    style_buf = char_arr(text.size)
-    style_buf_length = text.size
+  size = text.size + 1 -- we'll use one-based indexes below, hence the +1
+  if style_buf_length < size
+    style_buf = char_arr(size)
+    style_buf_length = size
 
   tokens = lexer\lex text
-  pos = 0
+  last_pos = 1
   for idx = 1, #tokens, 3
-    start_token = tokens[idx] - 1
+    pos = tokens[idx]
     style_number = style.number_for tokens[idx + 1], buffer
-    end_token = tokens[idx + 2] - 1
-    while pos < end_token
+    end_pos = tokens[idx + 2]
+    ffi.fill style_buf + last_pos, pos - last_pos, default_style_number
+
+    while pos < end_pos
       style_buf[pos] = style_number
       pos += 1
+
+    last_pos = end_pos
+
+  ffi.fill style_buf + last_pos, size - last_pos, default_style_number
+
   with sci
     \start_styling start_pos, 0xff
-    \set_styling_ex text.size, style_buf
+    \set_styling_ex text.size, style_buf + 1
 
 mark_as_styled = (sci, buffer) ->
   default_style_number = style.number_for 'default', buffer
