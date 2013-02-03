@@ -93,7 +93,8 @@ return {
 
     error:
       font: italic: true
-      color: red
+      color: white
+      background: darkred
 
     warning:
       font: italic: true
