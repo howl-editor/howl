@@ -137,6 +137,10 @@ describe 'moonscript-mode', ->
       buffer.text = 'bar\n  foo'
       assert.equal 0, m\indent_for(lines[2], indent_level, editor)
 
+    it 'returns the indent for the previous line for a blank line', ->
+      buffer.text = '  bar\n'
+      assert.equal 2, m\indent_for(lines[2], indent_level, editor)
+
   describe '.after_newline()', ->
     buffer = Buffer m
     editor = Editor buffer

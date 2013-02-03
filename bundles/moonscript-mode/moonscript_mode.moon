@@ -38,7 +38,8 @@ class MoonscriptMode
       if dedent_pattern\match line.text
         unless r('\\bthen\\b')\match prev_line.text
           return prev_line.indentation - indent_level
-      return prev_line.indentation if line.indentation > prev_line.indentation
+
+      return prev_line.indentation if line.indentation > prev_line.indentation or line.blank
 
     alignment_adjustment = line.indentation % indent_level
     return line.indentation + alignment_adjustment
