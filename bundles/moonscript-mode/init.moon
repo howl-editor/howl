@@ -7,6 +7,6 @@ howl.mode.register mode_reg
 
 return info:
   name: 'moonscript_mode',
-  author: 'Copyright 2012 Nils Nordman <nino at nordman.org>',
+  author: 'Copyright 2012-2013 Nils Nordman <nino at nordman.org>',
   description: 'Moonscript mode',
   license: 'MIT',

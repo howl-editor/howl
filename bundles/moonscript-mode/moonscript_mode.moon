@@ -26,7 +26,7 @@ prev_non_empty_line = (line) ->
 class MoonscriptMode
   new: =>
     lexer_file = bundle_file 'moonscript_lexer.lua'
-    @lexer = howl.aux.ScintilluaLexer 'moon', lexer_file
+    @lexer = bundle_load('moonscript_lexer.moon')
 
   short_comment_prefix: '--'
 
