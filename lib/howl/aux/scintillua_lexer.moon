@@ -14,7 +14,7 @@ class ScintilluaLexer
     env.require = (name) -> name == lexer_name and l! or require name
     @lexer.load lexer_name
 
-  lex: (text) =>
+  __call: (text) =>
     @lexer.lex tostring(text), 32
 
 return ScintilluaLexer

@@ -38,7 +38,7 @@ style_text = (sci, buffer, end_pos, lexer) ->
     style_buf = char_arr(size)
     style_buf_length = size
 
-  tokens = lexer\lex text
+  tokens = lexer text
   last_pos = 1
   for idx = 1, #tokens, 3
     pos = tokens[idx]

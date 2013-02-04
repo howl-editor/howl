@@ -14,7 +14,7 @@ export *
 new = (definition) ->
   setfenv definition, lexer
   pattern = definition!
-  lex: (text) =>
+  setmetatable {}, __call: (_, text) ->
     p = Ct (pattern + P(1))^0
     p\match text
 

@@ -76,3 +76,6 @@ describe 'lpeg_lexer', ->
   it 'the module can be called directly to create a lexer (same as new())', ->
     assert.not_has_error -> l -> true
 
+  it 'the resulting lexer can be called directly', ->
+    lexer = l -> P'x' * Cp!
+    assert.same { 2 }, lexer 'x'

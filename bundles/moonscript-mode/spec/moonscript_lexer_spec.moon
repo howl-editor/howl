@@ -6,7 +6,7 @@ describe 'Moonscript lexer', ->
 
   result = (text, ...) ->
     styles = {k,true for k in *{...}}
-    tokens = lexer\lex text
+    tokens = lexer text
     parts = {}
 
     for i = 1, #tokens, 3

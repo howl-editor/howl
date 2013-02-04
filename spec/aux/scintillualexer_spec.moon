@@ -2,7 +2,7 @@ import File from howl.fs
 import ScintilluaLexer from howl.aux
 
 describe 'ScintilluaLexer', ->
-  it ':lex lexes text using the specified Scintillua lexer', ->
+  it 'calling it lexes text using the specified Scintillua lexer', ->
     tmpfile = File.tmpfile!
     tmpfile.contents = [[
       local l = lexer
@@ -21,7 +21,7 @@ describe 'ScintilluaLexer', ->
     ]]
     lexer = ScintilluaLexer 'spec', tmpfile
     tmpfile\delete!
-    lexed = lexer\lex 'awesome stuff'
+    lexed = lexer 'awesome stuff'
     assert.same {
       1, 'keyword', 8,
       8, 'spec_whitespace', 9,

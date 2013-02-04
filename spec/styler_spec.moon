@@ -7,7 +7,7 @@ describe 'styler', ->
   style.define 's1', color: '#334455'
   style.define 's2', color: '#334455'
 
-  lex_res = (t) -> lex: -> t
+  lex_res = (t) -> -> t
 
   describe 'style_text(sci, buffer, end_pos, lexer)', ->
 
