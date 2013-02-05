@@ -26,13 +26,13 @@ describe 'Moonscript lexer', ->
     assert.same { "'str'" }, result " 'str' ", 'string'
 
   it 'handles double quoted strings', ->
-    assert.same { '"str"' }, result ' "str" ', 'string'
+    assert.same { '"', 'str"' }, result ' "str" ', 'string'
 
   it 'handles long strings', ->
     assert.same { '[[\nfoo\n]]' }, result ' [[\nfoo\n]] ', 'string'
 
   it 'handles backslash escapes in strings', ->
-    assert.same { "'str\\''", '"str\\""' }, result [['str\'' x "str\""]], 'string'
+    assert.same { "'str\\''", '"', 'str\\""' }, result [['str\'' x "str\""]], 'string'
 
   it 'handles numbers', ->
     parts = result '12 0xfe 0Xaa 3.1416 314.16e-2 0.31416E1 0x0.1E 0xA23p-4 0X1.921FB54442D18P+1 .2', 'number'
@@ -69,3 +69,6 @@ describe 'Moonscript lexer', ->
 
   it 'lexes illegal identifiers as error', ->
     assert.same { 'function', 'end', 'goto' }, result "function() end, end_marker goto label", 'error'
+
+  it 'does sub-lexing within string interpolations', ->
+    assert.same { '#', '{', '+', '}', '#', '{', '/', '}', ',' }, result '"#{x + y} +var+ #{z/0}", trailing', 'operator'
