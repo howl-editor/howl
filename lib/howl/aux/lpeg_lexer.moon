@@ -18,10 +18,6 @@ new = (definition) ->
     p = Ct (pattern + P(1))^0
     p\match text
 
-lex = (text) =>
-  p = Ct (@pattern + P(1))^0
-  p\match text
-
 capture = (style, pattern) ->
   Cp! * pattern * Cc(style) * Cp!
 
@@ -34,12 +30,14 @@ word = (args) ->
   word_char = l.alpha + '_'
   (-B(1) + B(-word_char)) * any(args) * -word_char
 
+scan_to = (stop_p, escape_p) ->
+  stop_p = P(stop_p)
+  skip = (-stop_p * 1)
+  skip = (P(escape_p) * 1) + skip if escape_p
+  skip^0 * (stop_p + P-1)
+
 span = (start_p, stop_p, escape_p) ->
-  start_p, stop_p = P(start_p), P(stop_p)
-  middle = (-stop_p * 1)
-  if escape_p
-    middle = (P(escape_p) * 1) + middle
-  start_p * middle^0 * (stop_p + P-1)
+  start_p * scan_to stop_p, escape_p
 
 eol = S('\n\r')^1
 

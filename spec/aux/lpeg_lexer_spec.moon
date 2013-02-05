@@ -55,7 +55,7 @@ describe 'lpeg_lexer', ->
       assert.is_nil grammar\match 'twofold'
       assert.is_nil grammar\match 'two_fold'
 
-  describe 'span(start_p, stop_p [, escape])', ->
+  describe 'span(start_p, stop_p [, escape_p])', ->
     p = l.span('{', '}') * Cp!
 
     it 'matches and consumes from <start_p> up to and including <stop_p>', ->
@@ -65,8 +65,17 @@ describe 'lpeg_lexer', ->
     it 'always considers <EOF> as an alternate stop marker', ->
       assert.equals 3, p\match '{x'
 
-    it 'allows escaping <stop_p> with <escape>', ->
+    it 'allows escaping <stop_p> with <escape_p>', ->
       p = l.span('{', '}', '\\') * Cp!
+      assert.equals 5, p\match '{\\}}'
+
+  describe 'scan_to(stop_p [, escape_p])', ->
+    it 'matches until the specified pattern or <EOF>', ->
+      assert.equals 4, (l.scan_to('x') * Cp!)\match '12x'
+      assert.equals 4, (l.scan_to('x') * Cp!)\match '123'
+
+    it 'allows escaping <stop_p> with <escape_p>', ->
+      p = l.scan_to('}', '\\') * Cp!
       assert.equals 5, p\match '{\\}}'
 
   describe 'new(definition)', ->
