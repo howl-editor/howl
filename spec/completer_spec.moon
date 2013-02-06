@@ -62,3 +62,23 @@ describe 'Completer', ->
     buffer.text = 'oh cruel word'
     assert.equal 4, Completer(buffer, 9).start_pos
 
+  describe 'accept(completion)', ->
+    context 'when hungry_completion is true', ->
+      it 'replaces the current word with <completion>', ->
+        buffer.text = 'hello there'
+        buffer.config.hungry_completion = true
+        completer = Completer(buffer, 3)
+        completer\accept 'hey', 3
+        assert.equal 'hey there', buffer.text
+
+    context 'when hungry_completion is false', ->
+      it 'inserts <completion> at the start position', ->
+        buffer.text = 'hello there'
+        buffer.config.hungry_completion = false
+        completer = Completer(buffer, 7)
+        completer\accept 'over', 7
+        assert.equal 'hello overthere', buffer.text
+
+    it 'returns the position after the accepted completion', ->
+        buffer.text = 'hello there'
+        assert.equal 5, Completer(buffer, 4)\accept 'help', 4

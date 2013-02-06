@@ -1,4 +1,4 @@
-import completion from howl
+import completion, config from howl
 
 load_completers = (buffer, context) ->
   completers = {}
@@ -36,5 +36,17 @@ class Completer
         append completions, comp for comp in *comps
 
     return completions, context.word_prefix
+
+  accept: (completion, pos) =>
+    chunk = @buffer\context_at(pos).word
+    chunk = @buffer\chunk(chunk.start_pos, pos - chunk.start_pos) unless @buffer.config.hungry_completion
+    chunk.text = completion
+    chunk.start_pos + #completion
+
+config.define
+  name: 'hungry_completion'
+  description: 'Whether completing an item will cause the entire current word to be replaced'
+  default: false
+  type_of: 'boolean'
 
 return Completer

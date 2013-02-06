@@ -33,9 +33,7 @@ class CompletionPopup extends MenuPopup
       return
 
   _on_completed: (item) =>
-    cur_word = @editor.current_context.word
-    cur_word.text = item
-    @editor.cursor.pos = cur_word.end_pos + 1
+    @editor.cursor.pos = @completer\accept item, @editor.cursor.pos
     true
 
 return CompletionPopup
