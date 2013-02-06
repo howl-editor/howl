@@ -18,7 +18,7 @@ describe 'styler', ->
       assert.equal 's2', (style.at_pos(buffer, 2))
       assert.equal 's2', (style.at_pos(buffer, 3))
 
-    it 'styles any #holes with the default style', ->
+    it 'styles any holes with the default style', ->
       buffer.text = 'foo'
       styler.style_text sci, buffer, #buffer, lex_res { 2, 's2', 3 }
       assert.equal 'default', (style.at_pos(buffer, 1))

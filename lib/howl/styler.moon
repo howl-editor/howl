@@ -6,34 +6,40 @@ style_buf = nil
 style_buf_length = 0
 
 get_styling_start_pos = (sci) ->
+  -- so where to begin?
   pos = sci\get_end_styled!
   start_line = sci\line_from_position pos
+
+  -- at the start already, or close enough - a safe start from the beginning
+  return 0 if start_line == 0 or pos < 10
+
+  -- we could just start at the beginning of the line?
   pos = sci\position_from_line start_line
 
-  -- find first differing style from current pos
-  cur_style = sci\get_style_at pos
-  while pos > 0
-    pos -= 1
-    s = sci\get_style_at(pos)
-    if s != cur_style
-      cur_style = s
-      break
+  -- hmm, unless we're in the middle of something of course..
+  -- but if the actual newline is styled differently than the pos before,
+  -- we're presumably OK though since multiline lexing would just style
+  -- everything until the end with the same style
+  nl_pos = sci\get_line_end_position start_line - 1
+  nl_style = sci\get_style_at nl_pos
+  before_nl_style = sci\get_style_at nl_pos - 1
+  return pos if nl_style != before_nl_style
 
-  -- and follow it back to the first pos with the same style
-  while pos > 0
-    pos -= 1
-    s = sci\get_style_at(pos)
-    if s != cur_style
-      return pos + 1
+  -- OK, fine. we're now in unknown territory, so back up until the last
+  -- style change in order to get some perspective
+  for pos = nl_pos - 2, 0, -1
+    cur_style = sci\get_style_at pos
+    return pos + 1 if cur_style != nl_style
 
-  return pos
+  -- and after all this we're now back square zero after all, yay!
+  0
 
 style_text = (sci, buffer, end_pos, lexer) ->
   start_pos = get_styling_start_pos sci
   text = sci\get_text_range start_pos, end_pos
   default_style_number = style.number_for 'default', buffer
 
-  size = text.size + 1 -- we'll use one-based indexes below, hence the +1
+  size = text.size + 1 -- we'll use one-based indexes below, hence the + 1
   if style_buf_length < size
     style_buf = char_arr(size)
     style_buf_length = size
