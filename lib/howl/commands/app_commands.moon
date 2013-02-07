@@ -10,11 +10,15 @@ command.register
 command.alias 'q', 'quit'
 
 command.register
+  name: 'new-buffer',
+  description: 'Opens a new buffer'
+  handler: -> _G.editor.buffer = howl.app\new_buffer!
+
+command.register
   name: 'switch-buffer',
   description: 'Switches to another buffer'
   inputs: { 'buffer' }
-  handler: (buffer) ->
-    _G.editor.buffer = buffer
+  handler: (buffer) -> _G.editor.buffer = buffer
 
 command.register
   name: 'switch-to-last-hidden-buffer',
