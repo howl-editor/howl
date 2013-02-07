@@ -88,3 +88,8 @@ describe 'lpeg_lexer', ->
   it 'the resulting lexer can be called directly', ->
     lexer = l -> P'x' * Cp!
     assert.same { 2 }, lexer 'x'
+
+  describe 'built-in lexing support', ->
+    it 'automatically lexes whitespace', ->
+      lexer = l -> P'peace-and-quiet'
+      assert.same { 1, 'whitespace', 3 }, lexer ' \n'
