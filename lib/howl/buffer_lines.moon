@@ -35,7 +35,7 @@ Line = (nr, buffer, sci) ->
     _getters:
       text: => text!
       start_pos: => buffer\char_offset sci\position_from_line(nr - 1) + 1
-      end_pos: => buffer\char_offset sci\position_from_line(nr)
+      end_pos: => buffer\char_offset math.max(sci\position_from_line(nr), 1)
       indentation: =>  sci\get_line_indentation nr - 1
       previous: => if nr > 1 then Line nr - 1, buffer, sci
       next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
