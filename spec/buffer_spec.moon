@@ -400,6 +400,19 @@ describe 'Buffer', ->
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
       assert.same {1, 2, 3, 4}, buffer'äåö'\char_offset { 1, 3, 5, 7 }
 
+  describe 'reload()', ->
+    it 'reloads the buffer contents from file', ->
+      with_tmpfile (file) ->
+        b = buffer ''
+        file.contents = 'hello'
+        b.file = file
+        file.contents = 'there'
+        b\reload!
+        assert.equal 'there', b.text
+
+    it 'raises an error if the buffer is not associated with a file', ->
+      assert.raises 'file', -> Buffer!\reload!
+
   it '#buffer returns the number of characters in the buffer', ->
     assert.equal 5, #buffer('hello')
     assert.equal 3, #buffer('åäö')
@@ -466,6 +479,14 @@ describe 'Buffer', ->
           b3.file = f3
           assert.equal b3.title, 'sub1' .. File.separator .. b2.title
 
+      it 'does not unneccesarily transform the title when setting the same file for a buffer', ->
+        b = Buffer!
+        with_tmpfile (file) ->
+          b.file = file
+          title = b.title
+          b.file = file
+          assert.equal title, b.title
+
     context 'when setting the title explicitly', ->
       it 'appends a counter number in the format <number> to the title', ->
         b1 = Buffer {}
@@ -514,3 +535,13 @@ describe 'Buffer', ->
       b\delete 1, 2
       signal.disconnect 'buffer-modified', handler
       assert.spy(handler).was_called 2
+
+    it 'buffer-reloaded is fired whenever a buffer is reloaded', ->
+      handler = spy.new -> true
+      with_tmpfile (file) ->
+        b = buffer 'foo'
+        b.file = file
+        signal.connect 'buffer-reloaded', handler
+        b\reload!
+        signal.disconnect 'buffer-reloaded', handler
+        assert.spy(handler).was_called!

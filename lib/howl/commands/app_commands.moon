@@ -21,6 +21,11 @@ command.register
   handler: (buffer) -> _G.editor.buffer = buffer
 
 command.register
+  name: 'reload-buffer',
+  description: 'Reloads the current buffer from file'
+  handler: -> _G.editor.buffer\reload!
+
+command.register
   name: 'switch-to-last-hidden-buffer',
   description: 'Switches to the last active hidden buffer'
   handler: ->

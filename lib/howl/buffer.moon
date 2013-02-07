@@ -76,6 +76,7 @@ class Buffer extends PropertyObject
   @property file:
     get: => @_file
     set: (file) =>
+      buffer_titles[@_title] = nil if @_title
       @_file = file
       @title = file_title file
       @text = file.exists and file.contents or ''
@@ -91,6 +92,7 @@ class Buffer extends PropertyObject
   @property title:
     get: => @_title or 'Untitled'
     set: (title) =>
+      buffer_titles[@_title] = nil if @_title
       title ..= '<' .. title_counter(title) .. '>' if buffer_titles[title]
       @_title = title
       buffer_titles[title] = self
@@ -226,6 +228,10 @@ class Buffer extends PropertyObject
   redo: => @sci\redo!
   char_offset: (...) => @_offset u.char_offset, ...
   byte_offset: (...) => @_offset u.byte_offset, ...
+  reload: =>
+    error "Cannot reload buffer '#{self}': no associated file", 2 unless @file
+    @file = @file
+    signal.emit 'buffer-reloaded', buffer: self
 
   @property sci:
     get: =>
@@ -320,5 +326,10 @@ signal.register 'buffer-modified',
   description: 'Signaled right after a buffer was modified',
   parameters:
     buffer: 'The buffer that was modified'
+
+signal.register 'buffer-reloaded',
+  description: 'Signaled right after a buffer was reloaded',
+  parameters:
+    buffer: 'The buffer that was reloaded'
 
 return Buffer
