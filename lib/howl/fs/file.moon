@@ -27,7 +27,6 @@ class File extends PropertyObject
       @gfile = if t == 'string' or t == 'ustring' then @gfile = GFile.new_for_path tostring(target) else target
       @path = u @gfile\get_path!
 
-    @_stats = {}
     super!
 
   @property basename: get: => @gfile\get_basename!
@@ -63,8 +62,6 @@ class File extends PropertyObject
       with @_assert io.open @path, 'w'
         \write tostring contents
         \close!
-
-      @_stats.time = nil
 
   @property parent:
     get: =>
@@ -139,13 +136,7 @@ class File extends PropertyObject
     else
       namespace = 'standard::*'
 
-    ns = @_stats[namespace]
-    return ns if ns
-
-    ns, err = @gfile\query_info namespace, 'NONE'
-    error(err) if not ns
-    @_stats[namespace] = ns
-    ns
+    @_assert @gfile\query_info namespace, 'NONE'
 
   @meta {
     __tostring: => @tostring!
