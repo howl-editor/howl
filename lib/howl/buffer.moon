@@ -82,6 +82,7 @@ class Buffer extends PropertyObject
       @text = file.exists and file.contents or ''
       @dirty = false
       @can_undo = false
+      @sync_etag = file.etag
 
   @property mode:
     get: => @_mode
@@ -150,6 +151,10 @@ class Buffer extends PropertyObject
 
   @property multibyte: get: => @multibyte_from != nil
 
+  @property modified_on_disk: get: =>
+    return false unless @file
+    @file and @file.etag != @sync_etag
+
   destroy: =>
     return if @destroyed
     error 'Cannot destroy a currently showing buffer', 2 if @showing
@@ -216,6 +221,7 @@ class Buffer extends PropertyObject
 
       @file.contents = @text
       @dirty = false
+      @sync_etag = @file.etag
       signal.emit 'buffer-saved', buffer: self
 
   as_one_undo: (f) =>

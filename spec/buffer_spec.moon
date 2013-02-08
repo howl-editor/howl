@@ -136,6 +136,19 @@ describe 'Buffer', ->
       b.length
       assert.is_false b.multibyte
 
+  describe '.modified_on_disk', ->
+    it 'is false for a buffer with no file', ->
+      assert.is_false Buffer!.modified_on_disk
+
+    it "is true if the file's etag is changed after a load or save", ->
+      file = contents: 'foo', etag: '1'
+      b = Buffer!
+      b.file = file
+      file.etag = '2'
+      assert.is_true b.modified_on_disk
+      b\save!
+      assert.is_false b.modified_on_disk
+
   describe '.config', ->
     config.define name: 'buf_var', description: 'some var', default: 'def value'
 
