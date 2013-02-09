@@ -432,10 +432,12 @@ class Editor extends PropertyObject
     _G.editor = self
     @cursor.pos = @cursor.pos -- this ensures cursor is visible
     signal.emit 'editor-focused', editor: self
+    false
 
   _on_focus_lost: (args) =>
     @remove_popup!
     signal.emit 'editor-defocused', editor: self
+    false
 
   _on_char_added: (args) =>
     signal_params = moon.copy args

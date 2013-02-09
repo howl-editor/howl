@@ -64,9 +64,11 @@ class Window extends Delegator
   _on_focus: =>
     _G.window = self
     signal.emit 'window-focused', window: self
+    false
 
   _on_focus_lost: =>
     signal.emit 'window-defocused', window: self
+    false
 
 -- Signals
 signal.register 'window-focused',
