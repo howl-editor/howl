@@ -1,7 +1,7 @@
 howl.aux.lpeg_lexer ->
 
   keyword = capture 'keyword', word {
-    'return', 'break', 'local', 'for', 'while', 'if', 'else', 'elseif', 'then',
+    'return', 'break', 'local', 'for', 'while', 'if', 'elseif', 'else', 'then',
     'export', 'import', 'from', 'with', 'in', 'and', 'or', 'not', 'class',
     'extends', 'super', 'do', 'using', 'switch', 'when', 'unless'
   }
