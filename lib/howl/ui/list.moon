@@ -42,7 +42,7 @@ line_count = (s) ->
   count
 
 class List extends PropertyObject
-  column_styles: { 'string', 'comment', 'operator' }
+  column_styles: { 'string', 'comment', 'keyword', 'number' }
 
   new: (buffer, pos) =>
     @buffer = buffer
