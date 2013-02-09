@@ -22,6 +22,9 @@ describe 'log', ->
         log[m] 'message\nline2\nline3'
         assert.spy(method).was.called_with _G.window.status, 'message'
 
+  it 'warn() is the same as warning()', ->
+    assert.same log.warn, log.warning
+
   describe 'book keeping', ->
     it '.entries is a list of the last log entries', ->
       log.error 'my error'

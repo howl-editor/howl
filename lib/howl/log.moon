@@ -28,13 +28,15 @@ dispatch = (level, message) ->
 
   entry
 
-export entries = {}
-export last_error = nil
+export *
+entries = {}
+last_error = nil
 
-export info = (message) -> dispatch 'info', message
-export warning = (message) -> dispatch 'warning', message
-export error = (message) -> last_error = dispatch 'error', message
-export clear = ->
+info = (message) -> dispatch 'info', message
+warning = (message) -> dispatch 'warning', message
+warn = warning
+error = (message) -> last_error = dispatch 'error', message
+clear = ->
   entries = {}
   last_error = nil
 
