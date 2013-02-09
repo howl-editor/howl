@@ -113,6 +113,25 @@ class Application extends PropertyObject
     else
       buffer
 
+  synchronize: =>
+    reload_count = 0
+    changed_count = 0
+
+    for b in *@_buffers
+      if b.modified_on_disk
+        changed_count += 1
+        unless b.dirty
+          b\reload!
+          reload_count += 1
+
+    if changed_count > 0
+      msg = "Files modified on disk: #{reload_count} buffer(s) reloaded"
+      stale_count = changed_count - reload_count
+      if stale_count > 0
+        log.warn "#{msg}, #{stale_count} modified buffer(s) left"
+      else
+        log.info msg
+
   run: =>
     @g_app = Gtk.Application.new 'io.howl.Editor', Gio.ApplicationFlags.HANDLES_OPEN
     @g_app.on_activate = -> @_load!
@@ -125,6 +144,7 @@ class Application extends PropertyObject
       @g_app\register!
       @_load [File(path) for path in *args[2,]]
       args = { args[1] }
+      signal.connect 'window-focused', self\synchronize
 
     @g_app\run args
 

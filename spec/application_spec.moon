@@ -71,3 +71,22 @@ describe 'Application', ->
 
     buffers = [b.title for b in *application.buffers]
     assert.same { 'visible', 'last_shown', 'hidden' }, buffers
+
+  describe 'synchronize()', ->
+    context "when a buffer's file has changed on disk", ->
+      local b
+
+      before_each ->
+        reload = spy.new -> nil
+        b = application\new_buffer!
+        b.reload = reload
+        rawset b, 'modified_on_disk', true
+
+      it 'the buffer is reloaded atuomatically if it is not modified', ->
+        application\synchronize!
+        assert.spy(b.reload).was_called!
+
+      it 'the buffer is not reloaded atuomatically if it is modified', ->
+        b.dirty = true
+        application\synchronize!
+        assert.spy(b.reload).was_not_called!
