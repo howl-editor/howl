@@ -86,3 +86,5 @@ describe 'signal', ->
 
       it 'returns false if no handlers returned true', ->
         assert.is_false signal.emit 'foo'
+        signal.connect 'foo', -> 'this is not true'
+        assert.is_false signal.emit 'foo'

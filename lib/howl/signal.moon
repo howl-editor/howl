@@ -24,7 +24,7 @@ emit = (name, params, illegal) ->
     if not status
       _G.log.error 'Error invoking handler for "' .. name .. '": ' .. ret
 
-    return true if status and ret
+    return true if status and ret == true
   false
 
 connect = (name, handler, index) ->
