@@ -223,12 +223,17 @@ describe 'Buffer', ->
 
     it 'returns the position right after the inserted text', ->
       b = buffer ''
-      assert.equal 6, b\insert('Bačon', 1)
+      assert.equal 6, b\insert 'Bačon', 1
 
-  it 'append(text) appends the specified text', ->
-    b = buffer 'hello'
-    b\append ' world'
-    assert.equal b.text, 'hello world'
+  describe 'append(text)', ->
+    it 'appends the specified text', ->
+      b = buffer 'hello'
+      b\append ' world'
+      assert.equal b.text, 'hello world'
+
+    it 'returns the position right after the inserted text', ->
+      b = buffer ''
+      assert.equal 6, b\append 'Bačon'
 
   describe '#replace(pattern, replacement)', ->
     it 'replaces all occurences of pattern with replacement', ->

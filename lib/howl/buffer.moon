@@ -180,7 +180,9 @@ class Buffer extends PropertyObject
     @sci\insert_text b_pos - 1, text
     pos + #text
 
-  append: (text) => @sci\append_text #text, text
+  append: (text) =>
+    @sci\append_text #text, text
+    @length + 1
 
   replace: (pattern, replacement) =>
     matches = {}

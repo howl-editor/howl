@@ -44,7 +44,7 @@ describe 'ActionBuffer', ->
 
       it 'appends the text with no specific style', ->
         buf.text = 'hello'
-        buf\append ' world'
+        assert.equal #'hello world' + 1, buf\append ' world'
         assert.equal style.at_pos(buf, 7), 'unstyled'
 
     context 'with style specified', ->

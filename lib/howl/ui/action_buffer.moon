@@ -16,9 +16,10 @@ class ActionBuffer extends Buffer
 
   append: (text, style_name) =>
     start_pos = @length
-    super text
+    pos = super text
     if style_name
       @style start_pos + 1, @length, style_name
+    pos
 
   style: (start_pos, end_pos, style_name) =>
     style_num = style.number_for style_name, self
