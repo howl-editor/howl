@@ -80,7 +80,7 @@ class Buffer extends PropertyObject
       @_file = file
       @title = file_title file
       @text = file.exists and file.contents or ''
-      @dirty = false
+      @modified = false
       @can_undo = false
       @sync_etag = file.etag
 
@@ -107,11 +107,11 @@ class Buffer extends PropertyObject
       @sci\set_code_page Scintilla.SC_CP_UTF8
       @multibyte_from = text.multibyte and 0 or nil
 
-  @property dirty:
+  @property modified:
     get: => @sci\get_modify!
     set: (status) =>
       if not status then @sci\set_save_point!
-      else -- there's no specific message for marking as dirty
+      else -- there's no specific message for marking as modified
         @append ' '
         @delete @size, 1
 
@@ -220,7 +220,7 @@ class Buffer extends PropertyObject
         @replace "(#{ws}+)$", ''
 
       @file.contents = @text
-      @dirty = false
+      @modified = false
       @sync_etag = @file.etag
       signal.emit 'buffer-saved', buffer: self
 

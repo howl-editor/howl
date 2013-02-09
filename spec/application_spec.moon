@@ -87,6 +87,6 @@ describe 'Application', ->
         assert.spy(b.reload).was_called!
 
       it 'the buffer is not reloaded atuomatically if it is modified', ->
-        b.dirty = true
+        b.modified = true
         application\synchronize!
         assert.spy(b.reload).was_not_called!

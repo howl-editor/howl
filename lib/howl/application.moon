@@ -120,7 +120,7 @@ class Application extends PropertyObject
     for b in *@_buffers
       if b.modified_on_disk
         changed_count += 1
-        unless b.dirty
+        unless b.modified
           b\reload!
           reload_count += 1
 

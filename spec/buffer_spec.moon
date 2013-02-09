@@ -28,15 +28,15 @@ describe 'Buffer', ->
     assert.equal buffer('hello').length, 5
     assert.equal buffer('åäö').length, 3
 
-  it '.dirty indicates and allows setting the modified status', ->
+  it '.modified indicates and allows setting the modified status', ->
     b = Buffer {}
-    assert.is_false b.dirty
+    assert.is_false b.modified
     b.text = 'hello'
-    assert.is_true b.dirty
-    b.dirty = false
-    assert.is_false b.dirty
-    b.dirty = true
-    assert.is_true b.dirty
+    assert.is_true b.modified
+    b.modified = false
+    assert.is_false b.modified
+    b.modified = true
+    assert.is_true b.modified
     assert.equal b.text, 'hello' -- toggling should not have changed text
 
   describe '.file = <file>', ->
@@ -61,11 +61,11 @@ describe 'Buffer', ->
         b.file = file
         assert.equal b.text, ''
 
-    it 'marks the buffer as not dirty', ->
-      b.dirty = true
+    it 'marks the buffer as not modified', ->
+      b.modified = true
       with_tmpfile (file) ->
         b.file = file
-        assert.is_false b.dirty
+        assert.is_false b.modified
 
     it 'clears the undo history', ->
       b.text = 'foo'
@@ -346,14 +346,14 @@ describe 'Buffer', ->
           b\save!
           assert.equal text, file.contents
 
-      it 'clears the dirty flag', ->
+      it 'clears the modified flag', ->
         with_tmpfile (file) ->
           b = buffer 'foo'
           b.file = file
           b\append ' bar'
-          assert.is_true b.dirty
+          assert.is_true b.modified
           b\save!
-          assert.is_false b.dirty
+          assert.is_false b.modified
 
       context 'when config.strip_trailing_whitespace is false', ->
         it 'does not strip trailing whitespace before saving', ->
