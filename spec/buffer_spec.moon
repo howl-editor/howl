@@ -13,7 +13,7 @@ describe 'Buffer', ->
   describe 'creation', ->
     context 'when sci parameter is specified', ->
       it 'attaches .sci and .doc to the Scintilla instance', ->
-        sci = get_doc_pointer: -> 'docky'
+        sci.get_doc_pointer = -> 'docky'
         b = Buffer {}, sci
         assert.equal b.doc, 'docky'
         assert.equal b.sci, sci
@@ -52,6 +52,23 @@ describe 'Buffer', ->
     b.read_only = false
     b\append 'yes'
     assert.equal 'yes', b.text
+
+  describe '.mode = <mode>', ->
+    context 'when <mode> has a lexer', ->
+      it 'updates all embedding scis to use container lexing', ->
+        b = Buffer!
+        b\add_sci_ref sci
+        assert.equal Scintilla.SCLEX_NULL, sci\get_lexer!
+        b.mode = lexer: -> {}
+        assert.equal Scintilla.SCLEX_CONTAINER, sci\get_lexer!
+
+    context 'when <mode> does not have a lexer', ->
+      it 'updates all embedding scis to use null lexing', ->
+        b = Buffer lexer: -> {}
+        b\add_sci_ref sci
+        assert.equal Scintilla.SCLEX_CONTAINER, sci\get_lexer!
+        b.mode = {}
+        assert.equal Scintilla.SCLEX_NULL, sci\get_lexer!
 
   describe '.file = <file>', ->
     b = buffer ''
@@ -274,10 +291,11 @@ describe 'Buffer', ->
 
     context 'when a sci is passed and a doc is provided in the constructor', ->
       it 'an error is raised since the buffer is considered as currently showing', ->
-        sci = get_doc_pointer: (-> 'doc'), release_document: Spy!
+        sci.get_doc_pointer = -> 'doc'
+        sci.release_document = spy.new -> nil
         b = Buffer {}, sci
         assert.raises 'showing', -> b\destroy!
-        assert.is_false sci.release_document.called
+        assert.spy(sci.release_document).was_not.called!
 
     it 'raises an error if the buffer is currently showing', ->
       b = buffer 'not yet'
@@ -463,6 +481,19 @@ describe 'Buffer', ->
       b = buffer ''
       b\add_sci_ref sci
       assert.equal b.sci, sci
+
+    it 'sets the sci lexer to container if the mode has a lexer', ->
+      b = buffer ''
+      b.mode.lexer = -> {}
+      sci\set_lexer Scintilla.SCLEX_NULL
+      b\add_sci_ref sci
+      assert.equal Scintilla.SCLEX_CONTAINER, sci\get_lexer!
+
+    it 'sets the sci lexer to null if mode has no lexer', ->
+      b = buffer ''
+      sci\set_lexer Scintilla.SCLEX_CONTAINER
+      b\add_sci_ref sci
+      assert.equal Scintilla.SCLEX_NULL, sci\get_lexer!
 
   describe '.remove_sci_ref(sci)', ->
     it 'removes the specified sci from .scis', ->

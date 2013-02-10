@@ -90,6 +90,8 @@ class Buffer extends PropertyObject
     set: (mode = {}) =>
       @_mode = mode
       @config.chain_to mode.config
+      lexer = mode.lexer and Scintilla.SCLEX_CONTAINER or Scintilla.SCLEX_NULL
+      sci\set_lexer lexer for sci in *@scis
 
   @property title:
     get: => @_title or 'Untitled'
@@ -264,16 +266,19 @@ class Buffer extends PropertyObject
     if background_buffer[1] == self
       background_sci.listener = nil
 
+    sci\set_style_bits 8
+    sci\set_lexer @_mode.lexer and Scintilla.SCLEX_CONTAINER or Scintilla.SCLEX_NULL
+
   remove_sci_ref: (sci) =>
     @scis = [s for s in *@scis when s != sci]
     @_sci = @scis[1] if sci == @_sci
     @_last_shown = os.time! if #@scis == 0
 
   lex: (end_pos) =>
-    if @_mode and @_mode.lexer
+    if @_mode.lexer
       styler.style_text @sci, self, end_pos, @_mode.lexer
     else
-      styler.mark_as_styled @sci, self
+      log.error 'Spurious lexing call'
 
   _on_text_inserted: (args) =>
     if args.text.multibyte

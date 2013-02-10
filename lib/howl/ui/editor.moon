@@ -109,8 +109,6 @@ class Editor extends PropertyObject
       @_buf = buffer
       @indicator.title.label = buffer.title
       @sci\set_doc_pointer(buffer.doc)
-      @sci\set_style_bits 8
-      @sci\set_lexer Scintilla.SCLEX_CONTAINER
 
       @_set_config_settings!
       style.set_for_buffer @sci, buffer

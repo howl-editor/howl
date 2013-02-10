@@ -64,12 +64,4 @@ style_text = (sci, buffer, end_pos, lexer) ->
     \start_styling start_pos, 0xff
     \set_styling_ex text.size, style_buf + 1
 
-mark_as_styled = (sci, buffer) ->
-  default_style_number = style.number_for 'default', buffer
-  with sci
-    start_pos = \get_end_styled!
-    len = \get_length! - start_pos
-    \start_styling start_pos, 0xff
-    \set_styling len, default_style_number
-
-return :style_text, :mark_as_styled
+return :style_text
