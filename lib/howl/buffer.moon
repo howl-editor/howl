@@ -5,6 +5,7 @@ import PropertyObject from howl.aux.moon
 import destructor from howl.aux
 
 background_sci = Scintilla!
+background_sci\set_lexer Scintilla.SCLEX_NULL
 background_buffer = setmetatable {}, __mode: 'v'
 buffer_titles = setmetatable {}, __mode: 'v'
 title_counters = {}
