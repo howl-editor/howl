@@ -2,6 +2,10 @@ import Buffer, Scintilla, config, signal from howl
 import File from howl.fs
 
 describe 'Buffer', ->
+  local sci
+
+  before_each -> sci = Scintilla!
+
   buffer = (text) ->
     with Buffer {}
       .text = text
@@ -117,12 +121,11 @@ describe 'Buffer', ->
   it '.showing is true if the buffer is currently referenced in any sci', ->
     b = buffer ''
     assert.false b.showing
-    b\add_sci_ref {}
+    b\add_sci_ref sci
     assert.true b.showing
 
   it '.last_shown returns a timestamp indicating when it was last shown', ->
     b = buffer ''
-    sci = {}
     assert.is_nil b.last_shown
     ts = os.time!
     b\add_sci_ref sci
@@ -278,7 +281,7 @@ describe 'Buffer', ->
 
     it 'raises an error if the buffer is currently showing', ->
       b = buffer 'not yet'
-      b\add_sci_ref {}
+      b\add_sci_ref sci
       assert.raises 'showing', -> b\destroy!
 
     it 'a destroyed buffer raises an error upon subsequent operations', ->
@@ -452,28 +455,24 @@ describe 'Buffer', ->
 
   describe '.add_sci_ref(sci)', ->
     it 'adds the specified sci to .scis', ->
-      sci = {}
       b = buffer ''
       b\add_sci_ref sci
       assert.same b.scis, { sci }
 
     it 'sets .sci to the specified sci', ->
-      sci = {}
       b = buffer ''
       b\add_sci_ref sci
       assert.equal b.sci, sci
 
   describe '.remove_sci_ref(sci)', ->
     it 'removes the specified sci from .scis', ->
-      sci = {}
       b = buffer ''
       b\add_sci_ref sci
       b\remove_sci_ref sci
       assert.same b.scis, {}
 
     it 'sets .sci to some other sci if they were previously the same', ->
-      sci = {}
-      sci2 = {}
+      sci2 = Scintilla!
       b = buffer ''
       b\add_sci_ref sci
       b\add_sci_ref sci2

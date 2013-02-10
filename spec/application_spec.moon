@@ -1,5 +1,5 @@
 import File from howl.fs
-import Application, Buffer, mode from howl
+import Application, Buffer, mode, Scintilla from howl
 import Editor from howl.ui
 
 describe 'Application', ->
@@ -56,7 +56,7 @@ describe 'Application', ->
           assert.equal buffer, editor.buffer
 
   it '.buffers are sorted by visibility status and last_shown', ->
-    sci = {}
+    sci = Scintilla!
     hidden_buffer = application\new_buffer!
     hidden_buffer.title = 'hidden'
 
