@@ -39,6 +39,16 @@ describe 'Buffer', ->
     assert.is_true b.modified
     assert.equal b.text, 'hello' -- toggling should not have changed text
 
+  it '.read_only can be set to mark the buffer as read-only', ->
+    b = Buffer!
+    b.read_only = true
+    assert.equal true, b.read_only
+    b\append 'illegal'
+    assert.equal '', b.text
+    b.read_only = false
+    b\append 'yes'
+    assert.equal 'yes', b.text
+
   describe '.file = <file>', ->
     b = buffer ''
 

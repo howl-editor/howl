@@ -155,6 +155,10 @@ class Buffer extends PropertyObject
     return false unless @file
     @file and @file.etag != @sync_etag
 
+  @property read_only:
+    get: => @sci\get_read_only!
+    set: (status) => @sci\set_read_only status
+
   destroy: =>
     return if @destroyed
     error 'Cannot destroy a currently showing buffer', 2 if @showing
