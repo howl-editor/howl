@@ -25,7 +25,9 @@ describe 'ProjectFile', ->
       Project.add_root root
       input = inputs.project_file!
 
-    after_each -> root\delete_all!
+    after_each ->
+      Project.remove_root root
+      root\delete_all!
 
     it '.should_complete() returns true', ->
       assert.is_true input\should_complete!

@@ -32,6 +32,9 @@ class Project
     for r in *Project.roots do return if r == root
     append Project.roots, root
 
+  remove_root: (root) ->
+    Project.roots = [r for r in *Project.roots when r != root]
+
   new: (root, vc) =>
     @root = root
     @vc = vc

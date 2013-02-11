@@ -58,7 +58,6 @@ status_template = [[
 }
 ]]
 
-available = {}
 theme_files = {}
 current_theme = nil
 current_theme_file = nil
@@ -187,14 +186,15 @@ return PropertyTable {
     get: -> current_theme
     set: (_, theme) -> set_theme theme
 
-  available:
-    get: -> available
+  all: theme_files
 
   register: (name, file) ->
     error 'name not specified for theme', 2 if not name
     error 'file not specified for theme', 2 if not file
-    available[#available + 1] = name
     theme_files[name] = file
+
+  unregister: (name) ->
+    theme_files[name] = nil
 
   apply: ->
     return if theme_active

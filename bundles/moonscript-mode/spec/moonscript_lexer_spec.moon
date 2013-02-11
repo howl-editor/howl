@@ -1,8 +1,13 @@
 import mode, bundle from howl
 
 describe 'Moonscript lexer', ->
-  bundle.load_by_name 'moonscript-mode'
-  lexer = mode.by_name('moonscript').lexer
+  local lexer
+
+  setup ->
+    bundle.load_by_name 'moonscript-mode'
+    lexer = mode.by_name('moonscript').lexer
+
+  teardown -> bundle.unload 'moonscript-mode'
 
   result = (text, ...) ->
     styles = {k,true for k in *{...}}

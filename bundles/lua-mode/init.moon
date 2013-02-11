@@ -12,8 +12,13 @@ mode_reg =
 
 howl.mode.register mode_reg
 
-return info:
-  name: 'lua_mode',
-  author: 'Copyright 2012 Nils Nordman <nino at nordman.org>',
-  description: 'Lua mode',
-  license: 'MIT',
+unload = -> howl.mode.unregister 'lua'
+
+return {
+  info:
+    name: 'lua_mode',
+    author: 'Copyright 2012 Nils Nordman <nino at nordman.org>',
+    description: 'Lua mode',
+    license: 'MIT',
+  :unload
+}

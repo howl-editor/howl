@@ -1,7 +1,7 @@
 import File from howl.fs
 import Sandbox from howl.aux
 
-import assert, error, loadfile, type, _G from _G
+import assert, error, loadfile, type, callable, tostring, _G from _G
 
 _G.bundles = {}
 
@@ -28,7 +28,9 @@ verify_bundle = (bundle, init) ->
     error 'Incorrect bundle: info missing in ' .. init
 
   for field in *{ 'name', 'description', 'license', 'author' }
-    error init.path .. ': missing field "' .. field .. '"' if not info[field]
+    error init.path .. ': missing info field "' .. field .. '"' if not info[field]
+
+  error "Missing bundle function 'unload' in #{init}" unless callable bundle.unload
 
 load_file = (file, sandbox, ...) ->
   chunk = assert loadfile file
@@ -77,5 +79,12 @@ export load_all = ->
     for c in *dir.children
       if c.is_directory and not c.is_hidden
         load_from_dir c
+
+export unload = (name) ->
+  mname = module_name name
+  def = _G.bundles[mname or '']
+  error "Bundle with name '#{name}' not found" unless def
+  def.unload!
+  _G.bundles[mname] = nil
 
 return bundle

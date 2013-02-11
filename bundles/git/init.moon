@@ -45,4 +45,7 @@ info = {
   license: 'MIT',
 }
 
-return :info
+unload = ->
+  VC.unregister 'git'
+
+return :info, :unload

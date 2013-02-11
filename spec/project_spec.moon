@@ -6,16 +6,22 @@ describe 'Project', ->
     Project.open = {}
 
   it '.roots contains all known roots', ->
-    assert.same Project.roots, {}
+    assert.same {}, Project.roots
     with_tmpdir (dir) ->
       Project.add_root dir
-      assert.same Project.roots, {dir}
+      assert.same {dir}, Project.roots
 
-  it '.add_root only adds the given root if not already present', ->
+  it '.add_root adds the given root if not already present', ->
     with_tmpdir (dir) ->
       Project.add_root dir
       Project.add_root dir
-      assert.equal #Project.roots, 1
+      assert.equal 1, #Project.roots
+
+  it '.remove_root removes the given root', ->
+    with_tmpdir (dir) ->
+      Project.add_root dir
+      Project.remove_root dir
+      assert.equal 0, #Project.roots
 
   describe '.for_file(file)', ->
     it 'raises an error if file is nil', ->

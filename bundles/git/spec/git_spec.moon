@@ -2,9 +2,10 @@ import bundle, config, VC from howl
 import File from howl.fs
 import Spy from howl.spec
 
-bundle.load_by_name 'git'
-
 describe 'Git bundle', ->
+  setup -> bundle.load_by_name 'git'
+  teardown -> bundle.unload 'git'
+
   it 'registers "git" with VC', ->
     assert.not_nil VC.available.git
 

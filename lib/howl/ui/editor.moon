@@ -26,11 +26,14 @@ short_comment_prefix = (buffer) ->
 
 class Editor extends PropertyObject
 
-  define_indicator: (id, placement = 'bottom_right') ->
+  register_indicator: (id, placement = 'bottom_right') ->
     if not indicator_placements[placement]
       error('Illegal placement "' .. placement .. '"', 2)
 
     indicators[id] = :id, :placement
+
+  unregister_indicator: (id) =>
+    e\_remove_indicator id for e in *editors
 
   new: (buffer) =>
     error('Missing argument #1 (buffer)', 2) if not buffer
@@ -382,6 +385,14 @@ class Editor extends PropertyObject
     indics[id] = indic
     indic
 
+  _remove_indicator: (id) =>
+    def = indicators[id]
+    return unless def
+    y, x = def.placement\match('^(%w+)_(%w+)$')
+    bar = y == 'top' and @header or @footer
+    bar\remove id
+    indics[id] = nil
+
   _on_style_needed: (...) =>
     @buffer\lex ...
 
@@ -470,8 +481,8 @@ class Editor extends PropertyObject
 -- Default indicators
 
 with Editor
-  .define_indicator 'title', 'top_left'
-  .define_indicator 'position', 'bottom_right'
+  .register_indicator 'title', 'top_left'
+  .register_indicator 'position', 'bottom_right'
 
 -- Config variables
 

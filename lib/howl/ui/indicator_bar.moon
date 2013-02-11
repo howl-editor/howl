@@ -14,6 +14,7 @@ class IndicatorBar
     }
     @container\get_style_context!\add_class cls
     @box = @container.child.box
+    @indics = {}
     getmetatable(self).__to_gobject = => @container
 
   add: (position, id) =>
@@ -26,8 +27,13 @@ class IndicatorBar
       else error 'Illegal indicator position "' .. position .. '"', 2
 
     indicator = self._create_indicator id
+    @indics[id] = indicator
     pack indicator, false, false, 0
     indicator
+
+  remove: (id) =>
+    indicator = @indics[id]
+    indicator\destroy! if indicator
 
   to_gobject: => @container
 

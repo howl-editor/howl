@@ -2,10 +2,14 @@ import bundle, mode, config, Buffer from howl
 import File from howl.fs
 import Editor from howl.ui
 
-bundle.load_by_name 'moonscript-mode'
-
 describe 'moonscript-mode', ->
-  m = mode.by_name 'moonscript'
+  local m
+
+  setup ->
+    bundle.load_by_name 'moonscript-mode'
+    m = mode.by_name 'moonscript'
+
+  teardown -> bundle.unload 'moonscript-mode'
 
   it 'registers a mode', ->
     assert.not_nil m

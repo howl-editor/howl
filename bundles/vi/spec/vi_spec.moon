@@ -33,6 +33,8 @@ describe 'VI', ->
     state.reset!
     _G.editor = nil
 
+  teardown -> bundle.unload 'vi'
+
   press = (...) ->
     for key in *{...}
       keyhandler.process editor, key_name: key, character: key, key_code: 123
