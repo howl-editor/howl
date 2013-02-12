@@ -2,8 +2,9 @@ import type from _G
 
 export *
 
-u = require('howl.ustring')
-r = require('howl.regex')
+u = require 'howl.ustring'
+r = require 'howl.regex'
+hash = require 'howl.hash'
 
 callable = (o) ->
   return true if type(o) == 'function'

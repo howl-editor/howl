@@ -13,3 +13,12 @@ describe 'Globals', ->
 
     class Bar
     assert.equal 'Bar', typeof Bar!
+
+  it 'u is a short alias for ustring', ->
+    assert.equal u, require 'howl.ustring'
+
+  it 'r is a short alias for regex', ->
+    assert.equal r, require 'howl.regex'
+
+  it 'hash is an alias for howl.hash', ->
+    assert.equal hash, require 'howl.hash'
