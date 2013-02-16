@@ -3,6 +3,7 @@ import Gtk from lgi
 import Buffer, keyhandler, bundle from howl
 import Editor from howl.ui
 
+def_keymap = keyhandler.keymap
 bundle.load_by_name 'vi'
 state = bundles.vi.state
 
@@ -241,3 +242,13 @@ describe 'VI', ->
         assert.equal 'in', selection.text
         press 'w'
         assert.equal 'nƏ t', selection.text
+
+  describe 'unloading', ->
+    before_each -> bundle.unload 'vi'
+    after_each -> bundle.load_by_name 'vi'
+
+    it 'restores the default keymap', ->
+      assert.equals def_keymap, keyhandler.keymap
+
+    it 'unregisters the vi indicator', ->
+      assert.raises 'indicator', -> editor.indicator.vi

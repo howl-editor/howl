@@ -27,11 +27,15 @@ for name, handler in pairs signal_handlers
   signal.connect name, handler
 
 unload = ->
-  for name in pairs signal_handlers
+  for name, handler in pairs signal_handlers
     signal.disconnect name, handler
 
   Editor.unregister_indicator 'vi'
   keyhandler.keymap = default_keymap
+
+  for editor in *howl.app.editors
+    editor.cursor.style = 'line'
+    editor.cursor.blink_interval = config.cursor_blink_interval
 
 info = {
   name: 'vi',

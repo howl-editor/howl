@@ -32,8 +32,9 @@ class Editor extends PropertyObject
 
     indicators[id] = :id, :placement
 
-  unregister_indicator: (id) =>
+  unregister_indicator: (id) ->
     e\_remove_indicator id for e in *editors
+    indicators[id] = nil
 
   new: (buffer) =>
     error('Missing argument #1 (buffer)', 2) if not buffer
@@ -391,7 +392,7 @@ class Editor extends PropertyObject
     y, x = def.placement\match('^(%w+)_(%w+)$')
     bar = y == 'top' and @header or @footer
     bar\remove id
-    indics[id] = nil
+    @indicator[id] = nil
 
   _on_style_needed: (...) =>
     @buffer\lex ...

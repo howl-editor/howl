@@ -1,5 +1,5 @@
 _G = _G
-import tostring, pcall, callable, type, append from _G
+import tostring, pcall, callable, type, append, print from _G
 import signal, command from howl
 
 signal.register 'key-press',
