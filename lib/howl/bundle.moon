@@ -1,9 +1,10 @@
 import File from howl.fs
 import Sandbox from howl.aux
 
-import assert, error, loadfile, type, callable, tostring, _G from _G
+import assert, error, loadfile, type, callable, tostring, pairs, typeof from _G
+import table, hash, _G from _G
 
-_G.bundles = {}
+_G.bundles = hash!
 
 bundle = {}
 setfenv 1, bundle
@@ -18,6 +19,21 @@ find_bundle_init = (dir) ->
 
 module_name = (name) ->
   name\lower!\gsub '[%s%p]+', '_'
+
+available_bundles = ->
+  avail = hash!
+
+  for dir in *dirs
+    for c in *dir.children
+      if c.is_directory and not c.is_hidden
+        avail[module_name c.basename] = c
+
+  avail
+
+unloaded = ->
+  l = [name for name in pairs available_bundles! when not _G.bundles[name]]
+  table.sort l
+  l
 
 verify_bundle = (bundle, init) ->
   if type(bundle) != 'table'
@@ -55,7 +71,10 @@ bundle_sandbox = (dir) ->
   box
 
 export load_from_dir = (dir) ->
-  error 'Not a directory: ' .. dir if not dir.is_directory
+  error "Not a directory: #{dir}", 2 if not dir or typeof(dir) != 'File' or not dir.is_directory
+  mod_name = module_name dir.basename
+  error "Bundle '#{mod_name}' already loaded", 2 if _G.bundles[mod_name]
+
   init = find_bundle_init dir
   sandbox = bundle_sandbox dir
   bundle = load_file init, sandbox
@@ -64,27 +83,21 @@ export load_from_dir = (dir) ->
 
 export load_by_name = (name) ->
   mod_name = module_name name
-
-  for dir in *dirs
-    for c in *dir.children
-      is_candidate = c.is_directory and not c.is_hidden
-      if is_candidate and module_name(c.basename) == mod_name or c.basename == name
-        load_from_dir c
-        return
-
-  error 'bundle "' .. name .. '" was not found', 2
+  dir = available_bundles![mod_name]
+  if dir
+    load_from_dir dir
+  else
+    error 'Bundle "' .. name .. '" was not found', 2
 
 export load_all = ->
-  for dir in *dirs
-    for c in *dir.children
-      if c.is_directory and not c.is_hidden
-        load_from_dir c
+  load_from_dir c for _, c in pairs available_bundles!
 
 export unload = (name) ->
-  mname = module_name name
-  def = _G.bundles[mname or '']
+  mod_name = module_name name
+  def = _G.bundles[mod_name or '']
   error "Bundle with name '#{name}' not found" unless def
   def.unload!
-  _G.bundles[mname] = nil
+  _G.bundles[mod_name] = nil
 
-return bundle
+return _G.setmetatable bundle,
+  __index: (t, k) -> k == 'unloaded' and unloaded! or nil

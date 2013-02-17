@@ -53,6 +53,12 @@ describe 'bundle', ->
         bundle.load_from_dir dir
         assert.not_nil bundles.test_hello_2
 
+    it 'raises an error if the bundle is already loaded', ->
+      with_bundle_dir 'two_times', (dir) ->
+        dir\join('init.lua').contents = bundle_init!
+        bundle.load_from_dir dir
+        assert.raises 'loaded', -> bundle.load_from_dir dir
+
     context 'exposed bundle helpers', ->
       it 'bundle_file provides access to bundle files', ->
         with_bundle_dir 'test', (dir) ->
@@ -174,7 +180,7 @@ describe 'bundle', ->
         assert.same [name for name, _ in pairs _G.bundles], {}
 
   describe 'load_by_name(name)', ->
-    it 'loads the bundle with the specified name', ->
+    it 'loads the bundle with the specified name, if not already loaded', ->
       with_tmpdir (dir) ->
         bundle.dirs = {dir}
         b_dir = dir / 'named'
@@ -183,6 +189,8 @@ describe 'bundle', ->
 
         bundle.load_by_name 'named'
         assert.not_nil _G.bundles.named
+
+        assert.raises 'loaded', -> bundle.load_by_name 'named'
 
     it 'raises an error if the bundle could not be found', ->
       assert.raises 'not found', -> bundle.load_by_name 'oh_bundle_where_art_thouh'
@@ -214,3 +222,17 @@ describe 'bundle', ->
           dir\join('init.lua').contents = bundle_init name: 'dash-love'
           bundle.load_from_dir dir
           assert.no_error -> bundle.unload 'dash-love'
+
+  it '.unloaded holds the adjusted names of any unloaded bundles', ->
+    with_tmpdir (dir) ->
+      bundle.dirs = {dir}
+      for name in *{'foo-bar', 'frob_nic'}
+        b_dir = dir / name
+        b_dir\mkdir!
+        b_dir\join('init.lua').contents = bundle_init :name
+
+      assert.same { 'foo_bar', 'frob_nic' }, bundle.unloaded
+      bundle.load_by_name 'foo_bar'
+      assert.same { 'frob_nic' }, bundle.unloaded
+      bundle.unload 'foo_bar'
+      assert.same { 'foo_bar', 'frob_nic' }, bundle.unloaded
