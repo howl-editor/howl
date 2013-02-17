@@ -1,4 +1,4 @@
-import command, config, keyhandler from howl
+import command, config, keyhandler, bundle from howl
 import ActionBuffer from howl.ui
 serpent = require 'serpent'
 
@@ -76,3 +76,32 @@ command.register
         buffer\style 1, #buffer, 'comment'
       else
         return false
+
+command.register
+  name: 'bundle-unload'
+  description: 'Unloads a specified bundle'
+  inputs: { '*loaded_bundle' }
+  handler: (name) ->
+    log.info "Unloading bundle '#{name}'.."
+    bundle.unload name
+    log.info "Unloaded bundle '#{name}'"
+
+command.register
+  name: 'bundle-load'
+  description: 'Loads a specified, currently unloaded, bundle'
+  inputs: { '*unloaded_bundle' }
+  handler: (name) ->
+    log.info "Loading bundle '#{name}'.."
+    bundle.load_by_name name
+    log.info "Loaded bundle '#{name}'"
+
+command.register
+  name: 'bundle-reload'
+  description: 'Reloads a specified bundle'
+  inputs: { '*loaded_bundle' }
+  handler: (name) ->
+    log.info "Reloading bundle '#{name}'.."
+    bundle.unload name
+    bundle.load_by_name name
+    log.info "Reloaded bundle '#{name}'"
+
