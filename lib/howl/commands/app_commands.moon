@@ -10,6 +10,11 @@ command.register
 command.alias 'q', 'quit'
 
 command.register
+  name: 'run'
+  description: 'Runs a command'
+  handler: -> command.run!
+
+command.register
   name: 'new-buffer',
   description: 'Opens a new buffer'
   handler: -> _G.editor.buffer = howl.app\new_buffer!
@@ -55,7 +60,7 @@ command.register
   handler: ->
     buffer = ActionBuffer!
     buffer.title = 'Key watcher'
-    buffer\append 'Press any key to show information for it (press escape to quit)..\n\n', 'error'
+    buffer\append 'Press any key to show information for it (press escape to quit)..\n\n', 'string'
     editor = howl.app\add_buffer buffer
     editor.cursor\eof!
 
