@@ -88,10 +88,17 @@ class Buffer extends PropertyObject
   @property mode:
     get: => @_mode
     set: (mode = {}) =>
+      had_lexer = @_mode and @_mode.lexer
       @_mode = mode
       @config.chain_to mode.config
-      lexer = mode.lexer and Scintilla.SCLEX_CONTAINER or Scintilla.SCLEX_NULL
+      has_lexer = mode.lexer
+      lexer = has_lexer and Scintilla.SCLEX_CONTAINER or Scintilla.SCLEX_NULL
       sci\set_lexer lexer for sci in *@scis
+
+      if has_lexer
+        @sci\colourise 0, @sci\get_end_styled!
+      elseif had_lexer
+        styler.clear_styling @sci, self
 
   @property title:
     get: => @_title or 'Untitled'

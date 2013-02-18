@@ -151,6 +151,20 @@ class Application extends PropertyObject
   quit: =>
     win\destroy! for win in * moon.copy @windows
 
+  save_session: =>
+    session = version: 1, buffers: {}
+
+    for b in *@buffers
+      continue unless b.file
+      append session.buffers, {
+        -- todo: don't tostring the paths once serialization is fixed
+        file: tostring b.file.path
+        last_shown: b.last_shown
+        properties: b.properties
+      }
+
+    @settings\save_system 'session', session
+
   _load: (files = {}) =>
     local window
     unless @_loaded
@@ -164,6 +178,9 @@ class Application extends PropertyObject
       @settings\load_user!
       theme.apply!
       @_load_application_icon!
+
+      signal.connect 'mode-registered', self\_on_mode_registered
+      signal.connect 'mode-unregistered', self\_on_mode_unregistered
 
       window = @new_window!
       @_set_initial_status window
@@ -181,21 +198,28 @@ class Application extends PropertyObject
     @_loaded = true
 
   _on_quit: =>
-    @_save_session! unless #@args > 1
+    @save_session! unless #@args > 1
 
-  _save_session: =>
-    session = version: 1, buffers: {}
+  _on_mode_registered: (args) =>
+    -- check if any buffers with default_mode could use this new mode
+    mode_name = args.name
+    default_mode = mode.by_name 'default'
+    for buffer in *@_buffers
+      if buffer.file and buffer.mode == default_mode
+        buffer_mode = mode.for_file buffer.file
+        if mode != default_mode
+          buffer.mode = buffer_mode
 
-    for b in *@buffers
-      continue unless b.file
-      append session.buffers, {
-        -- todo: don't tostring the paths once serialization is fixed
-        file: tostring b.file.path
-        last_shown: b.last_shown
-        properties: b.properties
-      }
-
-    @settings\save_system 'session', session
+  _on_mode_unregistered: (args) =>
+    -- remove the mode from any buffers that are previously using it
+    mode_name = args.name
+    default_mode = mode.by_name 'default'
+    for buffer in *@_buffers
+      if buffer.mode.name == mode_name
+        if buffer.file
+          buffer.mode = mode.for_file buffer.file
+        else
+          buffer.mode = default_mode
 
   _restore_session: =>
     session = @settings\load_system 'session'
