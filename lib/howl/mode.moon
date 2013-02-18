@@ -1,4 +1,4 @@
-import config from howl
+import config, signal from howl
 import PropertyTable from howl.aux
 
 class DefaultMode
@@ -55,6 +55,7 @@ register = (mode = {}) ->
   extensions = { extensions } if type(extensions) == 'string'
   by_extension[ext] = mode for ext in *(extensions or {})
   modes[mode.name] = mode
+  signal.emit 'mode-registered', name: mode.name
 
 unregister = (name) ->
   mode = modes[name]
@@ -63,6 +64,7 @@ unregister = (name) ->
     exts = [ext for ext, m in pairs by_extension when m == mode]
     by_extension[ext] = nil for ext in *exts
     live[mode] = nil
+    signal.emit 'mode-unregistered', :name
 
 configure = (mode_name, variables) ->
   error 'Missing argument #1 (mode_name)', 2 unless mode_name
@@ -77,6 +79,16 @@ configure = (mode_name, variables) ->
     instance = live[mode]
     if instance
       instance.config[k] = v for k,v in pairs variables
+
+signal.register 'mode-registered',
+  description: 'Signaled right after a mode was registered',
+  parameters:
+    name: 'The name of the mode'
+
+signal.register 'mode-unregistered',
+  description: 'Signaled right after a mode was unregistered',
+  parameters:
+    name: 'The name of the mode'
 
 register name: 'default', create: DefaultMode
 
