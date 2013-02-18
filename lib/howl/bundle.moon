@@ -1,3 +1,4 @@
+import signal from howl
 import File from howl.fs
 import Sandbox from howl.aux
 
@@ -80,6 +81,7 @@ export load_from_dir = (dir) ->
   bundle = load_file init, sandbox
   verify_bundle bundle, init
   _G.bundles[module_name dir.basename] = bundle
+  signal.emit 'bundle-loaded', bundle: mod_name
 
 export load_by_name = (name) ->
   mod_name = module_name name
@@ -98,6 +100,17 @@ export unload = (name) ->
   error "Bundle with name '#{name}' not found" unless def
   def.unload!
   _G.bundles[mod_name] = nil
+  signal.emit 'bundle-unloaded', bundle: mod_name
+
+signal.register 'bundle-loaded',
+  description: 'Signaled right after a bundle was loaded',
+  parameters:
+    bundle: 'The name of the bundle'
+
+signal.register 'bundle-unloaded',
+  description: 'Signaled right after a bundle was unloaded',
+  parameters:
+    bundle: 'The name of the bundle'
 
 return _G.setmetatable bundle,
   __index: (t, k) -> k == 'unloaded' and unloaded! or nil
