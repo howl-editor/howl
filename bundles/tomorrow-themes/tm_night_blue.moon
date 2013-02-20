@@ -124,7 +124,7 @@ return {
       :background
       color: foreground
 
-    key: color: red
+    key: color: green
     char: color: green
     keyword: color: purple
     class: color: yellow
@@ -136,7 +136,7 @@ return {
     special: color: purple
     tag: color: purple
     type: color: red
-    member: color: green
+    member: color: red
     embedded: color: purple
     info: color: blue
     constant: color: orange
