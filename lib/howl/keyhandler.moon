@@ -4,6 +4,7 @@ import signal, command from howl
 
 signal.register 'key-press',
   description: [[Signaled whenever a key is pressed.
+
 If any handler returns true, the key press is considered to be handled, and any subsequent
 processing is skipped.
 ]]

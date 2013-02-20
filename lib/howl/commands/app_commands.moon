@@ -1,5 +1,5 @@
-import command, config, keyhandler, bundle from howl
-import ActionBuffer from howl.ui
+import command, config, keyhandler, bundle, signal from howl
+import ActionBuffer, List from howl.ui
 serpent = require 'serpent'
 
 command.register
@@ -76,6 +76,31 @@ command.register
         buffer\style 1, #buffer, 'comment'
       else
         return false
+
+command.register
+  name: 'describe-signal',
+  description: 'Describes a given signal'
+  inputs: { 'signal' }
+  handler: (name) ->
+    def = signal.all[name]
+    error "Unknown signal '#{name}'" unless def
+    buffer = with ActionBuffer!
+      .title = "Signal: #{name}"
+      \append "#{def.description}\n\n"
+      \append "Parameters:"
+
+    params = def.parameters
+    if not params
+      buffer\append "None"
+    else
+      buffer\append '\n\n'
+      list = List buffer, #buffer + 1
+      list.items = [ { name, desc } for name, desc in pairs params ]
+      list.headers = { 'Name', 'Description' }
+      list\show!
+
+    buffer.read_only = true
+    editor = howl.app\add_buffer buffer
 
 command.register
   name: 'bundle-unload'

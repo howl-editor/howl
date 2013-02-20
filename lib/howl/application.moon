@@ -260,6 +260,7 @@ class Application extends PropertyObject
     require 'howl.inputs.variable_assignment_input'
     require 'howl.inputs.search_inputs'
     require 'howl.inputs.bundle_inputs'
+    require 'howl.inputs.signal_input'
     require 'howl.commands.file_commands'
     require 'howl.commands.app_commands'
     require 'howl.commands.ui_commands'
