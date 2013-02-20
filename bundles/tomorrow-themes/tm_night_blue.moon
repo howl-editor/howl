@@ -124,7 +124,7 @@ return {
       :background
       color: foreground
 
-    key: color: green
+    key: color: blue
     char: color: green
     keyword: color: purple
     class: color: yellow
