@@ -3,6 +3,14 @@ import PropertyTable from howl.aux
 
 class DefaultMode
   completers: { 'in_buffer' }
+  auto_pairs: {
+    '(': ')'
+    '[': ']'
+    '{': '}'
+    '"': '"'
+    "'": "'"
+    "<": ">"
+  }
 
 by_extension = {}
 modes = {}
