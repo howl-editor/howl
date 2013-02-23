@@ -106,6 +106,7 @@ mod = {
   byte: (...) => string.byte to_s(self), ...
 
   match: (pattern, init) =>
+    return nil if init and init > @len!
     init = char_to_byte_offset self, init
     transform_rets self, string.match to_s(self), tostring(pattern), init
 
@@ -114,6 +115,7 @@ mod = {
     -> transform_rets self, gen!
 
   find: (pattern, init, plain) =>
+    return nil if init and init > @len!
     init = char_to_byte_offset self, init
     transform_rets self, string.find to_s(self), tostring(pattern), init, plain
 

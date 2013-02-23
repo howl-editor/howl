@@ -102,6 +102,9 @@ describe 'ustrings', ->
     it 'init specifies a character offset', ->
       assert.same { u'ö', 4 }, { u'äåö'\match '(%S+)()', 3 }
 
+    it 'if init is greater than the length nil is returned', ->
+      assert.is_nil u'1'\match '1', 2
+
   it 'gmatch(..) always returns ustrings for string captures', ->
     s = u'foo bar'
     gen = s\gmatch '()(%w+)'
@@ -125,6 +128,9 @@ describe 'ustrings', ->
 
     it 'init specifies a character offset', ->
       assert.same {3, 3, u'ö'}, { u'äåö'\find '(%S+)', 3 }
+
+    it 'if init is greater than the length nil is returned', ->
+      assert.is_nil u'1'\find '1', 2
 
   it 'format(formatstring, ...) accepts and returns ustrings', ->
     assert.equal 'ustring', typeof u'%d'\format 2
