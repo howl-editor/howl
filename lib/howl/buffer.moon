@@ -45,6 +45,9 @@ class Context extends PropertyObject
   @property word_suffix: get: => @word.text\sub (@pos - @word.start_pos) + 1
   @property prefix: get: => @line\sub 1, (@pos - @line.start_pos)
   @property suffix: get: => @line\sub (@pos - @line.start_pos) + 1
+  @property next_char: get: => @suffix\sub 1, 1
+  @property prev_char: get: => @prefix\sub -1, -1
+
   @meta {
     __eq: (a, b) ->
       t = typeof a

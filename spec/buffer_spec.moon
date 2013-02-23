@@ -228,6 +228,14 @@ describe 'Buffer', ->
       assert.equal '"HƏllo", said Mr.Bačon', b\context_at(1).suffix
       assert.equal 'Mr.Bačon', b\context_at(15).suffix
 
+    it '.next_char holds the current character or the empty string if none', ->
+      assert.equal 'Ə', b\context_at(3).next_char
+      assert.equal '', b\context_at(#b + 1).next_char
+
+    it '.prev_char holds the previous character or the empty string if none', ->
+      assert.equal 'Ə', b\context_at(4).prev_char
+      assert.equal '', b\context_at(1).prev_char
+
     it '.line holds the current line object', ->
       assert.equal b.lines[1], b\context_at(1).line
 
