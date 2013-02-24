@@ -153,11 +153,13 @@ describe 'moonscript-mode', ->
     config.set 'indent', 2, buffer
 
     context 'splitting brackets', ->
-      it 'moves the closing bracket to its own line', ->
+      it 'moves the closing bracket to its own line and positions the cursor at the middle line', ->
         buffer.text = '{\n  }'
         cursor.line = 2
         m\after_newline(lines[2], editor)
         assert.equal buffer.text, '{\n  \n}'
+        assert.equal 2, cursor.line
+        assert.equal 3, cursor.column
 
     it 'does nothing for other statements', ->
       for code in *{
