@@ -9,7 +9,6 @@ class DefaultMode
     '{': '}'
     '"': '"'
     "'": "'"
-    "<": ">"
   }
 
 by_extension = {}
