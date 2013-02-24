@@ -85,6 +85,9 @@ clean:
 scigen: $(LUAJIT_ARCHIVE) $(SCINTILLA)
 	  $(LUAJIT)/src/luajit $(SCI_GEN) $(SCINTILLA_IFACE) $(SCI_GEN_TARGET)
 
+bytecode: howl
+	  @find ../lib -name '*.lua' -o -name '*.moon' | xargs ./howl --compile
+
 lgi-update:
 	  rm -rf ../lib/ext/lgi/*
 	  cp $(LGI)/lgi/*.lua ../lib/ext/lgi/

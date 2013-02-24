@@ -16,7 +16,7 @@ command.register
 
 command.register
   name: 'save',
-  description: 'Saves current buffer to file'
+  description: 'Saves the current buffer to file'
   inputs: {}
   handler: ->
     buffer = _G.editor.buffer

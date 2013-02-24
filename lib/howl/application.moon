@@ -181,6 +181,7 @@ class Application extends PropertyObject
 
       signal.connect 'mode-registered', self\_on_mode_registered
       signal.connect 'mode-unregistered', self\_on_mode_unregistered
+      signal.connect 'buffer-saved', self\_on_buffer_saved
       signal.connect 'key-press', (args) -> howl.editing.auto_pair.handle args.event, _G.editor
 
       window = @new_window!
@@ -221,6 +222,18 @@ class Application extends PropertyObject
           buffer.mode = mode.for_file buffer.file
         else
           buffer.mode = default_mode
+
+  _on_buffer_saved: (args) =>
+    file = args.buffer.file
+
+    -- automatically update bytecode for howl files
+    if file.extension and file\is_below(@root_dir)
+      bc_file = File file.path\gsub "#{file.extension}$", 'bc'
+      f = loadfile file
+      if f
+        bc_file.contents = string.dump f, false
+      else
+        bc_file\delete! if bc_file.exists
 
   _restore_session: =>
     session = @settings\load_system 'session'
