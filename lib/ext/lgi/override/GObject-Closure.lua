@@ -65,18 +65,47 @@ function CallInfo.new(callable_info, to_lua)
 
       -- Fill in marshaller(s) for the cell.
       cell.dir = ai.direction
-      cell.gtype = Type.from_typeinfo(ti)
-      if (cell.dir == (to_lua and 'in' or 'out') or cell.dir == 'inout'
-	  or (to_lua and cell.dir == 'out-caller-alloc')) then
-	 cell.to_lua = Value.find_marshaller(
-	    cell.gtype, ti, (ai.direction == 'inout'
-			     and 'none' or ti.transfer))
-      end
-      if (cell.dir == (to_lua and 'out' or 'in') or cell.dir == 'inout'
-	  or (not to_lua and cell.dir == 'out-caller-alloc')) then
-	 cell.to_value = Value.find_marshaller(
-	    cell.gtype, ti, (ai.direction == 'inout'
-			     and 'none' or ti.transfer))
+      if cell.dir == 'in' then
+	 -- Direct marshalling into value.
+	 cell.gtype = Type.from_typeinfo(ti)
+	 local marshaller = Value.find_marshaller(cell.gtype, ti, ti.transfer)
+	 cell[to_lua and 'to_lua' or 'to_value'] = marshaller
+      else
+	 -- Indirect marshalling, value contains just pointer to the
+	 -- real storage pointer.  Used for inout and out arguments.
+	 cell.gtype = Type.POINTER
+	 local marshaller = Value.find_marshaller(cell.gtype)
+	 if to_lua then
+	    if cell.dir == 'inout' then
+	       function cell.to_lua(value, params)
+		  local arg = marshaller(value, nil)
+		  return core.marshal.argument(arg, ti, ti.transfer)
+	       end
+	    end
+	    function cell.to_value(value, params, val)
+	       local arg = marshaller(value, nil)
+	       core.marshal.argument(arg, ti, ti.transfer, val)
+	    end
+	 else
+	    function cell.to_value(value, params, val)
+	       local arg, ptr = core.marshal.argument()
+	       params[cell] = arg
+	       marshaller(value, nil, ptr)
+	       if cell.dir == 'inout' then
+		  -- Marshal input to the argument.
+		  core.marshal.argument(arg, ti, ti.transfer, val)
+	       else
+		  -- Returning true indicates that input argument should
+		  -- actually not be consumed, because we are just
+		  -- preparing slot for the output value.
+		  return true
+	       end
+	    end
+	    function cell.to_lua(value, params)
+	       local arg = params[cell]
+	       return core.marshal.argument(arg, ti, ti.transfer)
+	    end
+	 end
       end
       mark_array_length(cell, ti)
 
@@ -123,7 +152,11 @@ local function marshal_cell(
       args[argc] = marshaller(value, marshalling_params)
    else
       -- Marshal from Lua to GValue
-      marshaller(value, marshalling_params, args[argc])
+      if marshaller(value, marshalling_params, args[argc]) then
+	 -- When true is returned, we were just preparing slot for the
+	 -- output value, so do not consume the argument.
+	 argc = argc - 1
+      end
 
       -- Marshal array length output, if applicable.
       if length_marshaller then
@@ -155,7 +188,7 @@ function CallInfo:get_closure_marshaller(target)
       -- Do the call.
       args = { target(unpack(args, 1, argc)) }
       argc = 0
-      marshalling_params = { keepalive = {} }
+      marshalling_params.keepalive = {}
 
       -- Marshall the return value.
       if self.ret and retval then
@@ -201,13 +234,13 @@ function CallInfo:pre_call(...)
    local retval = Value()
    if self.ret then retval.type = self.ret.gtype end
    if self.phantom then retval.type = self.phantom.gtype end
-   return retval, params, marshalling_params.keepalive
+   return retval, params, marshalling_params
 end
 
 -- Unmarshalls Lua restuls from Values after invoking closure or
 -- signal.  Returns all unmarshalled Lua values.
-function CallInfo:post_call(params, retval)
-   local marshalling_params = { keepalive = {} }
+function CallInfo:post_call(params, retval, marshalling_params)
+   marshalling_params.keepalive = {}
    local args, argc = {}, 0
    -- Check, whether phantom return exists and returned 'false'.  If
    -- yes, return just nil.

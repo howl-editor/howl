@@ -8,8 +8,8 @@
 --
 ------------------------------------------------------------------------------
 
-local assert, pairs, ipairs, setmetatable, table, rawget
-   = assert, pairs, ipairs, setmetatable, table, rawget
+local assert, pairs, ipairs, setmetatable, table, rawget, type
+   = assert, pairs, ipairs, setmetatable, table, rawget, type
 local lgi = require 'lgi'
 local cairo = lgi.cairo
 
@@ -22,6 +22,15 @@ local ti = ffi.types
 
 cairo._module = core.module('cairo', 2)
 local module_gobject = core.gi.cairo.resolve
+
+-- Versioning support.
+function cairo.version_encode(major, minor, micro)
+   return 10000 * major + 100 * minor + micro
+end
+cairo.version = core.callable.new {
+   addr = cairo._module.cairo_version, ret = ti.int } ()
+cairo.version_string = core.callable.new {
+   addr = cairo._module.cairo_version_string, ret = ti.utf8 } ()
 
 -- Load some constants.
 cairo._constant = {
@@ -52,17 +61,27 @@ end
 
 -- Load definitions of all boxed records.
 cairo._struct = cairo._struct or {}
-for _, struct in pairs {
+for index, struct in pairs {
    'Context', 'Device', 'Surface', 'Rectangle', 'ScaledFont', 'FontFace',
    'FontOptions', 'Region', 'RectangleInt', 'Path', 'TextExtents',
    'FontExtents', 'Matrix', 'ImageSurface', 'PdfSurface', 'PsSurface',
    'RecordingSurface', 'SvgSurface', 'ToyFontFace', 'RectangleList',
+   'SolidPattern', 'SurfacePattern', 'GradientPattern', 'LinearPattern',
+   'RadialPattern',
+   MeshPattern = cairo.version_encode(1, 12, 0),
 } do
-   local lower = struct:gsub('([%l%d])([%u])', '%1_%2'):lower()
-   local gtype = ffi.load_gtype(
-      module_gobject, 'cairo_gobject_' .. lower .. '_get_type')
-   local obj = component.create(gtype, record.struct_mt, 'cairo.' .. struct)
-   cairo._struct[struct] = obj
+   local since = 0
+   if type(index) == 'string' then
+      since = struct
+      struct = index
+   end
+   if cairo.version >= since then
+      local lower = struct:gsub('([%l%d])([%u])', '%1_%2'):lower()
+      local gtype = ffi.load_gtype(
+	 module_gobject, 'cairo_gobject_' .. lower .. '_get_type')
+      local obj = component.create(gtype, record.struct_mt, 'cairo.' .. struct)
+      cairo._struct[struct] = obj
+   end
 end
 
 local path_data_header = component.create(nil, record.struct_mt)
@@ -142,7 +161,29 @@ for _, info in ipairs {
       },
    },
 
+   {  'FontExtents',
+      fields = {
+	 { 'ascent', ti.double },
+	 { 'descent', ti.double },
+	 { 'height', ti.double },
+	 { 'max_x_advance', ti.double },
+	 { 'max_y_advance', ti.double },
+      },
+   },
+
+   {  'TextExtents',
+      fields = {
+	 { 'x_bearing', ti.double },
+	 { 'y_bearing', ti.double },
+	 { 'width', ti.double },
+	 { 'height', ti.double },
+	 { 'x_advance', ti.double },
+	 { 'y_advance', ti.double },
+      },
+   },
+
    {  'Context',
+      cprefix = '',
       methods = {
 	 create = { static = true, ret = { cairo.Context, xfer = true },
 		    cairo.Surface },
@@ -152,7 +193,7 @@ for _, info in ipairs {
 	 get_target = { ret = cairo.Surface},
 	 push_group = {},
 	 push_group_with_content = { cairo.Content },
-	 pop_group = {},
+	 pop_group = { ret = { cairo.Pattern, xfer = true } },
 	 pop_group_to_source = {},
 	 get_group_target = { ret = cairo.Surface },
 	 set_source_rgb = { ti.double, ti.double, ti.double },
@@ -183,7 +224,7 @@ for _, info in ipairs {
 			  { ti.double, dir = 'out' },
 			  { ti.double, dir = 'out' },
 			  { ti.double, dir = 'out' } },
-	 in_clip = { ret = ti.boolean },
+	 in_clip = { ret = ti.boolean, ti.double, ti.double },
 	 reset_clip = {},
 	 copy_clip_rectangle_list = {
 	    ret = { cairo.RectangleList, xfer = true } },
@@ -193,7 +234,7 @@ for _, info in ipairs {
 			  { ti.double, dir = 'out' },
 			  { ti.double, dir = 'out' },
 			  { ti.double, dir = 'out' } },
-	 in_fill = { ti.double, ti.double },
+	 in_fill = { ret = ti.boolean, ti.double, ti.double },
 	 mask = { cairo.Pattern },
 	 mask_surface = { cairo.Pattern, ti.double, ti.double },
 	 paint = {},
@@ -204,7 +245,7 @@ for _, info in ipairs {
 			    { ti.double, dir = 'out' },
 			    { ti.double, dir = 'out' },
 			    { ti.double, dir = 'out' } },
-	 in_stroke = { ti.double, ti.double },
+	 in_stroke = { ret = ti.boolean, ti.double, ti.double },
 	 copy_page = {},
 	 show_page = {},
 
@@ -278,43 +319,6 @@ for _, info in ipairs {
 
    {  'Pattern',
       methods = {
-	 add_color_stop_rgb = { ti.double, ti.double, ti.double, ti.double },
-	 add_color_stop_rgba = { ti.double, ti.double, ti.double,
-				 ti.double, ti.double },
-	 get_color_stop_count = { ret = cairo.Status, { ti.int, dir = 'out' } },
-	 get_color_stop_rgba = { ret = cairo.Status, ti.int,
-				 { ti.double, dir = 'out' },
-				 { ti.double, dir = 'out' },
-				 { ti.double, dir = 'out' },
-				 { ti.double, dir = 'out' },
-				 { ti.double, dir = 'out' } },
-	 create_rgb = { static = true, ret = { cairo.Pattern, xfer = true },
-			ti.double, ti.double, ti.double },
-	 create_rgba = { static = true, ret = { cairo.Pattern, xfer = true },
-			 ti.double, ti.double, ti.double, ti.double },
-	 get_rgba = { ret = cairo.Status, { ti.double, dir = 'out' },
-		      { ti.double, dir = 'out' }, { ti.double, dir = 'out' } },
-	 create_for_surface = { static = true,
-				ret = { cairo.Pattern, xfer = true },
-				cairo.Surface },
-	 get_surface = { ret = cairo.Status, { cairo.Surface, dir = 'out' } },
-	 create_linear = { static = true, ret = { cairo.Pattern, xfer = true },
-			   ti.double, ti.double, ti.double, ti.double },
-	 get_linear_points = { ret = cairo.Status, ti.int,
-			       { ti.double, dir = 'out' },
-			       { ti.double, dir = 'out' },
-			       { ti.double, dir = 'out' },
-			       { ti.double, dir = 'out' } },
-	 create_radial = { static = true, ret = { cairo.Pattern, xfer = true },
-			   ti.double, ti.double, ti.double, ti.double,
-			   ti.double, ti.double },
-	 get_radial_circles = { ret = cairo.Status, ti.int,
-				{ ti.double, dir = 'out' },
-				{ ti.double, dir = 'out' },
-				{ ti.double, dir = 'out' },
-				{ ti.double, dir = 'out' },
-				{ ti.double, dir = 'out' },
-				{ ti.double, dir = 'out' } },
 	 status = { ret = cairo.Status },
 	 set_extend = { cairo.Extend },
 	 get_extend = { ret = cairo.Extend },
@@ -325,6 +329,108 @@ for _, info in ipairs {
 	 get_type = { ret = cairo.PatternType },
       },
       properties = { 'status', 'extend', 'filter', 'type' },
+   },
+
+   {  'SolidPattern', parent = cairo.Pattern,
+      cprefix = 'pattern_',
+      methods = {
+	 create_rgb = { static = true, ret = { cairo.Pattern, xfer = true },
+			ti.double, ti.double, ti.double },
+	 create_rgba = { static = true, ret = { cairo.Pattern, xfer = true },
+			 ti.double, ti.double, ti.double, ti.double },
+	 get_rgba = { ret = cairo.Status,
+		      { ti.double, dir = 'out' },
+		      { ti.double, dir = 'out' },
+		      { ti.double, dir = 'out' },
+		      { ti.double, dir = 'out' } },
+      },
+   },
+
+   {  'SurfacePattern', parent = cairo.Pattern,
+      cprefix = 'pattern_',
+      methods = {
+	 create = {
+	    cname = 'cairo_pattern_create_for_surface', static = true,
+	    ret = { cairo.Pattern, xfer = true },
+	    cairo.Surface },
+	 get_surface = { ret = cairo.Status, { cairo.Surface, dir = 'out' } },
+      },
+   },
+
+   {  'GradientPattern', parent = cairo.Pattern,
+      cprefix = 'pattern_',
+      methods = {
+	 add_color_stop_rgb = { ti.double, ti.double, ti.double, ti.double },
+	 add_color_stop_rgba = { ti.double, ti.double, ti.double,
+				 ti.double, ti.double },
+	 get_color_stop_count = { ret = cairo.Status, { ti.int, dir = 'out' } },
+	 get_color_stop_rgba = { ret = cairo.Status, ti.int,
+				 { ti.double, dir = 'out' },
+				 { ti.double, dir = 'out' },
+				 { ti.double, dir = 'out' },
+				 { ti.double, dir = 'out' },
+				 { ti.double, dir = 'out' } },
+      },
+   },
+
+   {  'LinearPattern', parent = cairo.GradientPattern,
+      cprefix = 'pattern_',
+      methods = {
+	 create = { cname = 'cairo_pattern_create_linear', static = true,
+		    ret = { cairo.Pattern, xfer = true },
+		    ti.double, ti.double, ti.double, ti.double },
+	 get_linear_points = { ret = cairo.Status,
+			       { ti.double, dir = 'out' },
+			       { ti.double, dir = 'out' },
+			       { ti.double, dir = 'out' },
+			       { ti.double, dir = 'out' } },
+      }
+   },
+
+   {  'RadialPattern', parent = cairo.GradientPattern,
+      cprefix = 'pattern_',
+      methods = {
+	 create = { cname = 'cairo_pattern_create_radial', static = true,
+		    ret = { cairo.Pattern, xfer = true },
+		    ti.double, ti.double, ti.double, ti.double,
+		    ti.double, ti.double },
+	 get_radial_circles = { ret = cairo.Status,
+				{ ti.double, dir = 'out' },
+				{ ti.double, dir = 'out' },
+				{ ti.double, dir = 'out' },
+				{ ti.double, dir = 'out' },
+				{ ti.double, dir = 'out' },
+				{ ti.double, dir = 'out' } },
+      },
+   },
+
+   {  'MeshPattern', parent = cairo.Pattern,
+      since = cairo.version_encode(1, 12, 0),
+      methods = {
+	 create = { cname = 'cairo_pattern_create_mesh', static = true,
+		    ret = { cairo.Pattern, xfer = true } },
+	 begin_patch = {},
+	 end_patch = {},
+	 move_to = { ti.double, ti.double },
+	 line_to = { ti.double, ti.double },
+	 curve_to = { ti.double, ti.double, ti.double, ti.double,
+		      ti.double, ti.double },
+	 set_control_point = { ti.int, ti.double, ti.double },
+	 set_corner_color_rgb = { ti.int, ti.double, ti.double, ti.double },
+	 set_corner_color_rgba = { ti.int, ti.double, ti.double, ti.double,
+				   ti.double },
+	 get_patch_count = { ret = cairo.Status, { ti.int, dir = 'out' } },
+	 get_path = { ret = { cairo.Path, xfer = true }, ti.int },
+	 get_control_point = { ret = cairo.Status, ti.int, ti.int,
+			       { ti.double, dir = 'out' },
+			       { ti.double, dir = 'out' },
+			       { ti.double, dir = 'out' } },
+	 get_corner_color_rgba = { ret = cairo.Status, ti.int, ti.int,
+				   { ti.double, dir = 'out' },
+				   { ti.double, dir = 'out' },
+				   { ti.double, dir = 'out' },
+				   { ti.double, dir = 'out' } },
+      },
    },
 
    {  'Device',
@@ -341,7 +447,7 @@ for _, info in ipairs {
 
    {  'Format',
       methods = {
-	 stride_for_width = { ret = ti.int, cairo.Format },
+	 stride_for_width = { ret = ti.int, ti.int },
       },
    },
 
@@ -436,10 +542,12 @@ for _, info in ipairs {
    {  'RecordingSurface', parent = cairo.Surface,
       methods = {
 	 create = { static = true, ret = { cairo.Surface, xfer = true },
-		    cairo.Content },
+		    cairo.Content, cairo.Rectangle },
 	 ink_extents = {
 	    { ti.double, dir = 'out' }, { ti.double, dir = 'out' },
 	    { ti.double, dir = 'out' }, { ti.double, dir = 'out' } },
+	 get_extents = { since = cairo.version_encode(1, 12, 0),
+			 ret = ti.boolean, cairo.Rectangle },
       },
    },
 
@@ -469,7 +577,7 @@ for _, info in ipairs {
    {  'ToyFontFace', parent = cairo.FontFace,
       methods = {
 	 create = { static = true, ret = { cairo.ToyFontFace, xfer = true },
-		    cairo.FontSlant, cairo.FontWeight },
+		    ti.utf8, cairo.FontSlant, cairo.FontWeight },
 	 get_family = { ret = ti.utf8 },
 	 get_slant = { ret = cairo.Slant },
 	 get_weight = { ret = cairo.Weight },
@@ -545,58 +653,52 @@ for _, info in ipairs {
       properties = { 'status', 'extents', },
    },
 } do
-   local name = info[1]
-   local obj = assert(cairo[name])
-   obj._parent = info.parent
-   if info.methods then
-      -- Go through description of the methods and create functions
-      -- from them.
-      obj._method = {}
-      local prefix = 'cairo_'
-      if name ~= 'Context' then
-	 prefix = prefix .. name:gsub('([%l%d])([%u])', '%1_%2'):lower() .. '_'
-      end
-      local self_arg = { obj }
-      for method_name, method_info in pairs(info.methods) do
-	 method_info.name = 'cairo.' .. name .. '.' .. method_name
-	 method_info.addr = cairo._module[
-	    prefix .. (method_info.cname or method_name)]
-	 if not method_info.static then
-	    table.insert(method_info, 1, self_arg)
+   if cairo.version >= (info.since or 0) then
+      local name = info[1]
+      local obj = assert(cairo[name], name)
+      obj._parent = info.parent
+      if info.methods then
+	 -- Go through description of the methods and create functions
+	 -- from them.
+	 obj._method = {}
+	 local cprefix = 'cairo_' ..
+	    (info.cprefix or
+	     name:gsub('([%l%d])([%u])', '%1_%2'):lower() .. '_')
+	 local self_arg = { obj }
+	 for method_name, method_info in pairs(info.methods) do
+	    if cairo.version >= (method_info.since or 0) then
+	       method_info.name = 'cairo.' .. name .. '.' .. method_name
+	       method_info.addr = assert(
+		  cairo._module[
+		     method_info.cname or (cprefix .. method_name)])
+	       if not method_info.static then
+		  table.insert(method_info, 1, self_arg)
+	       end
+	       method_info.ret = method_info.ret or ti.void
+	       obj._method[method_name] = core.callable.new(method_info)
+	    end
 	 end
-	 method_info.ret = method_info.ret or ti.void
-	 obj._method[method_name] = core.callable.new(method_info)
       end
-   end
-   if info.values then
-      -- Fill in addition enum/bitflag values.
-      for n, v in pairs(info.values) do
-	 obj[n] = v
+      if info.values then
+	 -- Fill in addition enum/bitflag values.
+	 for n, v in pairs(info.values) do
+	    obj[n] = v
+	 end
       end
-   end
-   if info.properties then
-      -- Aggregate getters/setters into pseudoproperties implemented
-      -- as attributes.
-      obj._attribute = {}
-      for _, attr in pairs(info.properties) do
-	 obj._attribute[attr] = {
-	    get = obj._method['get_' .. attr] or obj._method[attr],
-	    set = obj._method['set_' .. attr],
-	 }
+      if info.properties then
+	 -- Aggregate getters/setters into pseudoproperties
+	 -- implemented as attributes.
+	 obj._attribute = {}
+	 for _, attr in pairs(info.properties) do
+	    obj._attribute[attr] = {
+	       get = obj._method['get_' .. attr] or obj._method[attr],
+	       set = obj._method['set_' .. attr],
+	    }
+	 end
       end
-   end
-   if info.fields then
-      -- Load record fields definition
-      ffi.load_fields(obj, info.fields)
-   end
-end
-
--- Map all 'create' methods to constructors.
-for _, struct in pairs(cairo._struct) do
-   local create = struct._method and struct._method.create
-   if create then
-      function struct._new(typetable, ...)
-	 return create(...)
+      if info.fields then
+	 -- Load record fields definition
+	 ffi.load_fields(obj, info.fields)
       end
    end
 end
@@ -625,30 +727,52 @@ function cairo.FontOptions._method:_new(props)
    return font_options
 end
 
--- Fix all 'get_xxx' methods using caller-alloc attribute, which is
--- not supported by ffi.  Emulate it 'by-hand'.
+-- Fix all methods using caller-alloc attribute, which is not
+-- supported by ffi.  Emulate it 'by-hand', creating Lua wrapper for
+-- them.
 for _, info in pairs {
    { cairo.Context, 'matrix', cairo.Matrix },
    { cairo.Context, 'font_matrix', cairo.Matrix },
    { cairo.Context, 'font_options', cairo.FontOptions },
+   { cairo.Context, 'font_extents', cairo.FontExtents },
+   { cairo.Context, 'text_extents', cairo.TextExtents, args = 1 },
    { cairo.Pattern, 'matrix', cairo.Matrix },
    { cairo.Surface, 'font_options', cairo.FontOptions },
    { cairo.ScaledFont, 'font_matrix', cairo.Matrix },
    { cairo.ScaledFont, 'ctm', cairo.Matrix },
    { cairo.ScaledFont, 'scale_matrix', cairo.Matrix },
    { cairo.ScaledFont, 'font_options', cairo.FontOptions },
+   { cairo.ScaledFont, 'extents', cairo.FontExtents },
+   { cairo.ScaledFont, 'text_extents', cairo.TextExtents, args = 1 },
+   { cairo.RecordingSurface, 'extents', cairo.Rectangle },
+   { cairo.Region, 'extents', cairo.RectangleInt },
+   { cairo.Region, 'get_rectangle', cairo.RectangleInt, args = 1 },
 } do
    local getter_name = 'get_' ..info[2]
-   local raw_getter = assert(info[1]._method[getter_name])
-   info[1]._method[getter_name] = function(self)
-      local ret = info[3]()
-      raw_getter(self, ret)
-      return ret
+   local raw_getter = info[1]._method[getter_name]
+   if not raw_getter then
+      getter_name = info[2]
+      raw_getter = info[1]._method[getter_name]
    end
-   info[1]._attribute[info[2]] = {
-      get = info[1][getter_name],
-      set = info[1]['set_' .. info[2]],
-   }
+   if raw_getter then
+      if info.args == 1 then
+	 info[1]._method[getter_name] = function(self, arg1)
+	    local ret = info[3]()
+	    local res = raw_getter(self, arg1, ret)
+	    return (res == nil or res) and ret or nil
+	 end
+      else
+	 info[1]._method[getter_name] = function(self)
+	    local ret = info[3]()
+	    local res = raw_getter(self, ret)
+	    return (res == nil or res) and ret or nil
+	 end
+	 info[1]._attribute[info[2]] = {
+	    get = info[1][getter_name],
+	    set = info[1]['set_' .. info[2]],
+	 }
+      end
+   end
 end
 
 -- Choose correct 'subclass' of surface on attaching to surface instances.
@@ -664,6 +788,53 @@ function cairo.Surface:_attach(surface)
    local repotype = surface_type_map[type]
    if repotype then
       core.record.set(surface, repotype)
+   end
+end
+
+-- Also choose correct 'subclass' for patterns.
+local pattern_type_map = {
+   SOLID = cairo.SolidPattern,
+   SURFACE = cairo.SurfacePattern,
+   LINEAR = cairo.LinearPattern,
+   RADIAL = cairo.RadialPattern,
+   MESH = cairo.MeshPattern
+}
+function cairo.Pattern:_attach(pattern)
+   local type = cairo.Pattern._method.get_type(pattern)
+   local repotype = pattern_type_map[type]
+   if repotype then
+      core.record.set(pattern, repotype)
+   end
+end
+
+-- Solid pattern constructor, calling either rgb or rgba variant
+-- according to the number of arguments.
+function cairo.SolidPattern._method.create(red, green, blue, alpha)
+   if alpha then
+      return cairo.SolidPattern._method.create_rgba(red, green, blue, alpha)
+   else
+      return cairo.SolidPattern._method.create_rgb(red, green, blue)
+   end
+end
+
+-- For backward compatibility, propagate pattern creation methods from
+-- specific subpattern types into base cairo.Pattern class.
+cairo.Pattern._method.create_rgb = cairo.SolidPattern.create_rgb
+cairo.Pattern._method.create_rgba = cairo.SolidPattern.create_rgba
+cairo.Pattern._method.create_for_surface = cairo.SurfacePattern.create
+cairo.Pattern._method.create_linear = cairo.LinearPattern.create
+cairo.Pattern._method.create_radial = cairo.RadialPattern.create
+if cairo.MeshPattern then
+   cairo.Pattern._method.create_mesh = cairo.MeshPattern.create
+end
+
+-- Map all 'create' methods to constructors.
+for _, struct in pairs(cairo._struct) do
+   local create = struct._method and struct._method.create
+   if create then
+      function struct._new(typetable, ...)
+	 return create(...)
+      end
    end
 end
 

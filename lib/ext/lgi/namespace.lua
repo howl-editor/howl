@@ -121,6 +121,8 @@ function namespace.mt:__index(symbol)
 	    if class then val = class._class end
 	 end
       end
+   else
+      val = info
    end
    return val
 end

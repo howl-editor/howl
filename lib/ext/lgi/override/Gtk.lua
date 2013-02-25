@@ -8,8 +8,8 @@
 --
 ------------------------------------------------------------------------------
 
-local select, type, pairs, ipairs, unpack, setmetatable, error, next
-   = select, type, pairs, ipairs, unpack, setmetatable, error, next
+local select, type, pairs, ipairs, unpack, setmetatable, error, next, rawget
+   = select, type, pairs, ipairs, unpack, setmetatable, error, next, rawget
 local lgi = require 'lgi'
 local core = require 'lgi.core'
 local Gtk = lgi.Gtk
@@ -20,6 +20,7 @@ local cairo = lgi.cairo
 local log = lgi.log.domain('lgi.Gtk')
 
 -- Initialize GTK.
+Gtk.disable_setlocale()
 Gtk.init()
 
 -- Gtk.Allocation is just an alias to Gdk.Rectangle.
@@ -39,7 +40,7 @@ for _, name in pairs { 'allocation', 'direction', 'settings', 'realized',
 		       'mapped', 'display', 'screen', 'window', 'root_window',
 		       'has_window', 'style_context' } do
    if not Gtk.Widget._property[name] then
-      local attr = { get = Gtk.Widget['get_' ..name],
+      local attr = { get = Gtk.Widget['get_' .. name],
 		     set = Gtk.Widget['set_' .. name] }
       if next(attr) then
 	 Gtk.Widget._attribute[name] = attr
@@ -66,11 +67,11 @@ if core.gi.Gtk.Widget.methods.intersect.args[2].direction == 'in' then
 end
 
 function Gtk.Widget._attribute.events:get()
-   return Gdk.EventMask(self:get_events())
+   return Gdk.EventMask[self:get_events()]
 end
 
 function Gtk.Widget._attribute.events:set(events)
-   self:set_events(Gdk.EventMask[events])
+   self:set_events(Gdk.EventMask(events))
 end
 
 -- Accessing style properties is preferrably done by accessing 'style'
@@ -79,7 +80,7 @@ end
 local widget_style_mt = {}
 function widget_style_mt:__index(name)
    name = name:gsub('_', '-')
-   local pspec = self._widget.class:find_style_property(name)
+   local pspec = self._widget._class:find_style_property(name)
    if not pspec then
       error(("%s: no style property `%s'"):format(
 	       self._widget.type._name, name:gsub('%-', '_')), 2)
@@ -92,10 +93,18 @@ function Gtk.Widget._attribute.style:get()
    return setmetatable({ _widget = self }, widget_style_mt)
 end
 
--- Get widget from Gdk.Window
+-- Get/Set widget from Gdk.Window
 function Gdk.Window:get_widget()
    return core.object.new(self:get_user_data(), false)
 end
+function Gdk.Window:set_widget(widget)
+   self:set_user_data(widget)
+end
+Gdk.Window._attribute = rawget(Gdk.Window, '_attribute') or {}
+Gdk.Window._attribute.widget = {
+   set = Gdk.Window.set_widget,
+   get = Gdk.Window.get_widget,
+}
 
 -------------------------------- Gtk.Buildable overrides.
 Gtk.Buildable._attribute = { id = {}, child = {} }
@@ -148,7 +157,7 @@ Gtk.Container._attribute.property = {}
 local container_property_item_mt = {}
 function container_property_item_mt:__index(name)
    name = name:gsub('_', '-')
-   local pspec = self._container.class:find_child_property(name)
+   local pspec = self._container._class:find_child_property(name)
    if not pspec then
       error(("%s: no child property `%s'"):format(
 	       self._container.type._name, name:gsub('%-', '_')), 2)
@@ -159,7 +168,7 @@ function container_property_item_mt:__index(name)
 end
 function container_property_item_mt:__newindex(name, val)
    name = name:gsub('_', '-')
-   local pspec = self._container.class:find_child_property(name)
+   local pspec = self._container._class:find_child_property(name)
    if not pspec then
       error(("%s: no child property `%s'"):format(
 	       self._container.type._name, name:gsub('%-', '_')), 2)
@@ -279,7 +288,7 @@ end
 Gtk.TextTagTable._container_add = Gtk.TextTagTable.add
 
 -------------------------------- Gtk.TreeModel and relatives.
-Gtk.TreeModel._attribute = { }
+Gtk.TreeModel._attribute = {}
 
 local tree_model_item_mt = {}
 function tree_model_item_mt:__index(column)
@@ -567,17 +576,23 @@ if not Gtk.Menu.popup then
    Gtk.Menu._method.popup = Gtk.Menu.popup_for_device
 end
 
+-------------------------------- Gtk.MenuItem
+Gtk.MenuItem._attribute = { child = {} }
+function Gtk.MenuItem._attribute.child:get()
+   local children = Gtk.Container._attribute.child.get(self)
+   children[#children + 1] = Gtk.MenuItem.get_submenu(self)
+   return children
+end
+
 -------------------------------- Gtk.EntryCompletion
 
 -- Workaround for bug in GTK+; text_column accessors don't do an extra
 -- needed work which is done properly in
 -- gtk_entry_completion_{set/get}_text_column
-if Gtk.get_major_version() == 3 and Gtk.get_minor_version() < 4 then
-   Gtk.EntryCompletion._attribute = {
-      text_column = { get = Gtk.EntryCompletion.get_text_column,
-		      set = Gtk.EntryCompletion.set_text_column }
-   }
-end
+Gtk.EntryCompletion._attribute = {
+   text_column = { get = Gtk.EntryCompletion.get_text_column,
+		   set = Gtk.EntryCompletion.set_text_column }
+}
 
 -------------------------------- Gtk.PrintSettings
 Gtk._constant = Gtk._constant or {}

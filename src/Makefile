@@ -25,16 +25,16 @@ LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
 LPEG_URL = http://www.inf.puc-rio.br/~roberto/lpeg/$(LPEG_VER).tar.gz
 
-LGI_VER = lgi-0.6.2
-LGI_CHECKSUM = 9ae2c0740e9ea536b6b6afacea5bd21b
-LGI_URL = https://github.com/downloads/pavouk/lgi/$(LGI_VER).tar.gz
-LGI = deps/$(LGI_VER)
-LGI_ARCHIVE = deps/$(LGI_VER)/lgi/lgi.a
+LGI_VER = 0.7.0
+LGI_CHECKSUM = cc7d7d29efcf4cee5973beaeb5f6ee8c
+LGI_URL = https://github.com/pavouk/lgi/archive/$(LGI_VER).tar.gz
+LGI = deps/lgi-$(LGI_VER)
+LGI_ARCHIVE = $(LGI)/lgi/lgi.a
 
 SCI_GEN = tools/sci_gen.lua
 SCI_GEN_TARGET = ../lib/howl/scintilla.lua
 
-CFLAGS = -Wall -O2 $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
+CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
 ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE) $(LGI_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E

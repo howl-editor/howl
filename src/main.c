@@ -73,7 +73,6 @@ int main(int argc, char *argv[])
   g_type_init();
   gchar *app_root = get_app_root(argv[0]);
   lua_State *L = open_lua_state(app_root);
-  gtk_init(&argc, &argv);
   lua_run(argc, argv, app_root, L);
   lua_close(L);
   g_free(app_root);

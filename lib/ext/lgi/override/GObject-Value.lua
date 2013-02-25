@@ -41,7 +41,8 @@ Value._field = nil
 
 -- Register _uninit function, to avoid memory leaks from values which
 -- are inline-allocated by core.record.new.
-Value._uninit = core.record.unset_value
+Value._uninit = core.record.value_unset
+Value._copy = core.record.value_copy
 
 -- 'type' property controls gtype of the property.
 Value._attribute = { gtype = {} }

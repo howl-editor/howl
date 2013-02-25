@@ -25,7 +25,7 @@ for _, name in pairs {
 } do
    cairo.Context._method[name] = PangoCairo[name]
 end
-Pango.Layout._method.create = PangoCairo.layout_create
+Pango.Layout._method.create = PangoCairo.create_layout
 
 -- Extend Pango.Context with additional methods and attributes coming from
 -- PangoCairo package.

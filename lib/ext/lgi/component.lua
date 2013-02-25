@@ -131,21 +131,6 @@ function component.mt:clone(type, categories)
    return new_component
 end
 
--- __index implementation, uses _element method to perform lookup.
-function component.mt:__index(key)
-   -- First try to invoke our own _element method.
-   local _element, mt = rawget(self, '_element')
-   if not _element then
-      mt = getmetatable(self)
-      _element = rawget(mt, '_element')
-   end
-   local value = _element(self, nil, key)
-   if value then return value end
-
-   -- If not found as object element, examine the metatable itself.
-   return rawget(mt or getmetatable(self), key)
-end
-
 -- __call implementation, uses _new method to create new instance of
 -- component type.
 function component.mt:__call(...)
@@ -172,7 +157,7 @@ function component.mt:_access(instance, symbol, ...)
    -- Invoke _element, which converts symbol to element and category.
    local element, category = self:_element(instance, symbol)
    if not element then
-      error(("%s: no `%s'"):format(self._name, symbol), 3)
+      error(("%s: no `%s'"):format(self._name, tostring(symbol)), 3)
    end
    return self:_access_element(instance, category, symbol, element, ...)
 end
@@ -246,6 +231,34 @@ function component.mt:_element(instance, symbol)
       end
       return element, category
    end
+end
+
+-- __index implementation, uses _element method to perform lookup.
+function component.mt:__index(key)
+   -- First try to invoke our own _element method.
+   local _element, mt = rawget(self, '_element')
+   if not _element then
+      mt = getmetatable(self)
+      _element = rawget(mt, '_element')
+   end
+   local value, category = _element(self, nil, key)
+   if value then
+      if category then
+	 -- Mangle the result by type-specific '_index_<category>'
+	 -- method, if present.
+	 local index_name = '_index' .. category
+	 local index = rawget(self, index_name)
+	 if not index then
+	    if not mt then mt = getmetatable(self) end
+	    if mt then index = rawget(mt, index_name) end
+	 end
+	 if index then value = index(self, value) end
+      end
+      return value
+   end
+
+   -- If not found as object element, examine the metatable itself.
+   return rawget(mt or getmetatable(self), key)
 end
 
 -- Implementation of attribute accessor.  Attribute is either function

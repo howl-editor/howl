@@ -9,6 +9,7 @@
 ------------------------------------------------------------------------------
 
 local ipairs = ipairs
+local os = require 'os'
 
 local lgi = require 'lgi'
 local gi = require('lgi.core').gi
@@ -67,3 +68,8 @@ local GstInterfaces = lgi.require('GstInterfaces', Gst._version)
 
 -- Initialize gstreamer.
 Gst.init()
+
+-- Undo unfortunate gstreamer's setlocale(LC_ALL, ""), which breaks
+-- Lua's tonumber() implementation for some locales (e.g. pl_PL, pt_BR
+-- and probably many others).
+os.setlocale ('C', 'numeric')

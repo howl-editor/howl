@@ -40,7 +40,7 @@ function Object:_construct(gtype, param, owns)
    if type(param) == 'userdata' then
       -- Wrap existing GObject instance in the lgi proxy.
       object = core.object.new(param, owns)
-      gtype = core.object.query(object, 'gtype')
+      gtype = object._gtype
    end
 
    -- Check that gtype fits.
@@ -119,10 +119,7 @@ function InitiallyUnowned:_construct(...)
 end
 
 -- Reading 'class' yields real instance of the object class.
-Object._attribute = { class = {}, _type = {} }
-function Object._attribute.class:get()
-   return core.object.query(self, 'class')
-end
+Object._attribute = { _type = {} }
 function Object._attribute._type:get()
    return core.object.query(self, 'repo')
 end
@@ -139,19 +136,18 @@ function Object:_element(object, name)
 
    -- List all interfaces implemented by this object and try whether
    -- they can handle specified _element request.
-   local interfaces = Type.interfaces(core.object.query(object, 'gtype'))
+   local interfaces = Type.interfaces(object._gtype)
    for i = 1, #interfaces do
       local info = gi[core.gtype(interfaces[i])]
-      local iface = repo[info.namespace][info.name]
+      local iface = info and repo[info.namespace][info.name]
       if iface then element, category = iface:_element(object, name) end
       if element then return element, category end
    end
 
    -- Element not found in the repo (typelib), try whether dynamic
    -- property of the specified name exists.
-   local class = core.record.cast(core.object.query(object, 'class'),
-				  Object._class)
-   local property = Object._class.find_property(class, name:gsub('_', '-'))
+   local property = Object._class.find_property(
+      object._class, name:gsub('_', '-'))
    if property then return property, '_paramspec' end
 end
 
@@ -206,14 +202,14 @@ local function emit_signal(obj, gtype, info, detail, ...)
    local call_info = Closure.CallInfo.new(info)
 
    -- Marshal input arguments.
-   local retval, params, keepalive = call_info:pre_call(obj, ...)
+   local retval, params, marshalling_params = call_info:pre_call(obj, ...)
 
    -- Invoke the signal.
    signal_emitv(params, signal_lookup(info.name, gtype),
 		detail and quark_from_string(detail) or 0, retval)
 
    -- Unmarshal results.
-   return call_info:post_call(params, retval)
+   return call_info:post_call(params, retval, marshalling_params)
 end
 
 -- Signal accessor.
@@ -224,25 +220,30 @@ function Object:_access_signal(object, info, ...)
       connect_signal(object, gtype, info.name, Closure((...), info))
    else
       -- Reading yields table with signal operations.
-      local pad = {}
+      local mt = {}
+      local pad = setmetatable({}, mt)
       function pad:connect(target, detail, after)
 	 return connect_signal(object, gtype, info.name,
 			       Closure(target, info), detail, after)
       end
-      function pad:emit(detail, ...)
-	 return emit_signal(object, gtype, info, detail, object, ...)
+      function pad:emit(...)
+	 return emit_signal(object, gtype, info, nil, ...)
+      end
+      function mt:__call(_, ...)
+	 return emit_signal(object, gtype, info, nil, ...)
       end
 
       -- If signal supports details, add metatable implementing
       -- __newindex for connecting in the 'on_signal['detail'] =
       -- handler' form.
       if not info.is_signal or info.flags.detailed then
-	 local mt = {}
+	 function pad:emit(detail, ...)
+	    return emit_signal(object, gtype, info, detail, ...)
+	 end
 	 function mt:__newindex(detail, target)
 	    connect_signal(object, gtype, info.name, Closure(target, info),
 			   detail)
 	 end
-	 setmetatable(pad, mt)
       end
 
       -- Return created signal pad.

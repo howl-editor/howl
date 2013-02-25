@@ -12,8 +12,6 @@ local pairs, ipairs, setmetatable, getmetatable
    = pairs, ipairs, setmetatable, getmetatable
 
 local math = require 'math'
-local lgi = require 'lgi'
-local GObject = lgi.GObject
 
 local core = require 'lgi.core'
 local gi = core.gi
@@ -74,6 +72,7 @@ end
 
 -- Creates new enum/flags table with all values from specified gtype.
 function ffi.load_enum(gtype, name)
+   local GObject = core.repo.GObject
    local is_flags = GObject.Type.is_a(gtype, GObject.Type.FLAGS)
    local enum_component = component.create(
       gtype, is_flags and enum.bitflags_mt or enum.enum_mt, name)
@@ -138,7 +137,7 @@ function ffi.load_fields(rec, defs)
 	       field[2] = 2
 	       size = def[2]._size
 	    end
-	 elseif repotype == 'enum' or 'repotype' == 'flags' then
+	 elseif repotype == 'enum' or repotype == 'flags' then
 	    field[2] = 3
 	    field[4] = def.type or ffi.types.int
 	    size, alignment = core.marshal.typeinfo(field[4])

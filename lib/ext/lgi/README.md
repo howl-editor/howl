@@ -10,9 +10,9 @@ license, see LICENSE file for full text.
 
 Home of the project is on [GitHub](http://github.com/pavouk/lgi).
 
-LGI is tested and compatible with standard Lua 5.1 and Lua 5.2 and
-recent LuaJIT 2 betas.  Compatibility with other Lua implementations
-is not tested yet.
+LGI is tested and compatible with standard Lua 5.1, Lua 5.2 and
+LuaJIT2.  Compatibility with other Lua implementations is not tested
+yet.
 
 If you need to support pre-gobject-introspection GTK (ancient GTK+ 2.x
 releases), use [Lua-Gnome](http://sourceforge.net/projects/lua-gnome/).
@@ -40,32 +40,69 @@ Please note that on BSD-systems you may need to use 'gmake'.
 
 See examples in samples/ directory.  Documentation is available in
 doc/ directory in markdown format.  Process it with your favorite
-markdown processor if you want to read it in HTML.
+Markdown processor if you want to read it in HTML.
+
+## Credits
+
+List of contributors, in no particular order:
+
+- Uli Schlachter
+- Jasper Lievisse Adriaanse
+- Ildar Mulyukov
+- Nils Nordman
+- Ignas Anikevicius
+- Craig Barnes
+
+Many other people contributed to what lgi is today, in many forms -
+writing patches, reporting bugs, packaging for distributions,
+providing ideas, spreading a word...  *Many thanks to all of you!*
 
 ## History
+
+### 0.7.0 (23-Feb-2013)
+
+ - New feature - subclassing.  Allows creating GObject subclasses and
+   implementing their virtual methods in Lua.
+ - cairo: add support for most 1.12-specific cairo features
+ - cairo: create hierarchy for Pattern subclasses
+ - cairo: assorted small cairo bugfixes
+ - samples: add GDBus client example
+ - samples: add GnomeKeyring example
+ - samples: GTK: offscreen window demos
+ - samples: libsoup simple http server example
+ - platforms: added support for darwin/macosx platform
+ - platforms: additional fixes for OpenBSD
+ - build: Makefiles now respect `CFLAGS` and `LDFLAGS` env vars values
+ - build: Add Lua version option into Makefile
+ - fix: custom ffi enum/flags handling
+ - fix: more exotic callback-to-Lua marshalling scenarios
+ - fix: do not allow GTK+ and gstreamer to call setlocale() - this
+   might break Lua in some locales
+ - fix: small adjustments, fixes and additions in Gtk override
+ - fix: tons of other small fixes
 
 ### 0.6.2 (25-Jun-2012)
  - Avoid unexpected dependency on cairo-devel, cairo-runtime is now
    enough
- - Make set_resident() more robust and fix stack leak for lua5.2 case,
-   avoid useless warning when set_resident() fails (to accomodate for
+ - Make `set_resident()` more robust and fix stack leak for Lua 5.2 case,
+   avoid useless warning when `set_resident()` fails (to accomodate for
    static linking case).
  - Fix small memory leak (mutex) which occured once per opened
-   lua_State using lgi.
+   `lua_State` using lgi.
 
 ### 0.6.1 (19-Jun-2012)
- - objects and structs: actually implement '_type' property as documented
+ - objects and structs: actually implement `_type` property as documented
  - tests: Fix regression tests for less common platforms
  - Pango: Add a few missing overrides
- - cairo: Fix Context:user_to_device() family of methods.
+ - cairo: Fix `Context:user_to_device()` family of methods.
  - GStreamer: Add support for transfer!=none for input objects.  This
    is needed to avoid leaks caused by strange usage of transfer
    annotations of gstreamer-0.10
  - GStreamer: Add more missing overrides
  - GStreamer: Fix and improve samples
- - Various fixes for usecase when lua context with loaded lgi is
+ - Various fixes for usecase when Lua context with loaded lgi is
    closed and opened again
- - Gtk: Add missing Gtk.Builder:connect_signals() override
+ - Gtk: Add missing `Gtk.Builder:connect_signals()` override
 
 ### 0.6 (22-May-2012)
 - Add cairo bindings, cairo sample and finish some gtk-demo parts
@@ -85,7 +122,7 @@ markdown processor if you want to read it in HTML.
 - Fix: a few bugs with resolving bitflags values
 - Fix: a few bugs in coroutines-as-callbacks feature
 - Fix: workaround for crashing bug in gobject-introspection 1.32.0
-- Fix: don't try to squeeze GType into lua_Number any more; this could
+- Fix: don't try to squeeze `GType` into `lua_Number` any more; this could
   cause crashes on some 64bit arches.
 
 ### 0.4 (4-Jan-2012)

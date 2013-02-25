@@ -11,7 +11,11 @@
 local select, type, pairs, unpack, rawget = select, type, pairs, unpack, rawget
 
 local lgi = require 'lgi'
+
 local core = require 'lgi.core'
+local ffi = require 'lgi.ffi'
+local ti = ffi.types
+
 local Gdk = lgi.Gdk
 local cairo = lgi.cairo
 
@@ -48,6 +52,31 @@ for name, val in pairs {
    SELECTION_TYPE_WINDOW = 33,
    SELECTION_TYPE_STRING = 31,
 } do Gdk._constant[name] = Gdk.Atom(val) end
+
+-- Easier-to-use Gdk.RGBA.parse() override.
+local parse = Gdk.RGBA.parse
+function Gdk.RGBA._method.parse(arg1, arg2)
+   if Gdk.RGBA:is_type_of(arg1) then
+      -- Standard member method.
+      return parse(arg1, arg2)
+   else
+      -- Static constructor variant.
+      local rgba = Gdk.RGBA()
+      return parse(rgba, arg1) and rgba or nil
+   end
+end
+
+-- Gdk.Window.destroy() actually consumes 'self'.  Prepare workaround
+-- with override doing ref on input arg first.
+local destroy = Gdk.Window.destroy
+local ref = core.callable.new {
+   addr = core.gi.GObject.resolve.g_object_ref,
+   ret = ti.ptr, ti.ptr
+}
+function Gdk.Window._method:destroy()
+   ref(self._native)
+   destroy(self)
+end
 
 -- Better integrate Gdk cairo helpers.
 Gdk.Window._method.cairo_create = Gdk.cairo_create

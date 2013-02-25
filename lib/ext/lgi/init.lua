@@ -42,6 +42,9 @@ local repo = core.repo
 local namespace = require 'lgi.namespace'
 lgi.require = namespace.require
 
+-- Install 'lgi.package' method.
+lgi.package = require('lgi.package').ensure
+
 -- Install metatable into repo table, so that on-demand loading works.
 setmetatable(repo, { __index = function(_, name)
 				  return lgi.require(name)
@@ -61,6 +64,7 @@ repo.GLib._precondition = {}
 for _, name in pairs { 'Variant', 'VariantType', 'VariantBuilder' } do
    repo.GLib._precondition[name] = 'GLib-Variant'
 end
+repo.GLib._precondition.Timer = 'GLib-Timer'
 
 -- Access to module proxies the whole repo, so that lgi.'namespace'
 -- notation works.
