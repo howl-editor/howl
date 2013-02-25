@@ -25,12 +25,13 @@ handle = (event, editor) ->
 
   mate = auto_pairs[char]
   context = editor.current_context
+  next_char = context.next_char
   same_chars = char == mate
-  overwrite_check = context.next_char == char
+  overwrite_check = next_char == char
 
   if mate
-    if same_chars and uneven_count context.line.text, char
-      return
+    return if r'\\p{L}'\match next_char
+    return if same_chars and uneven_count context.line.text, char
 
     if not same_chars or not overwrite_check or uneven_count context.line.text, char
       pos = editor.cursor.pos

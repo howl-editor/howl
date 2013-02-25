@@ -34,10 +34,15 @@ describe 'auto_pair.handle(event, editor)', ->
       auto_pair.handle event('['), editor
       assert.equal 2, editor.cursor.pos
 
-    it 'does not insert an auto-pair for a same character pair if the current balance is uneven', ->
+    it 'does not trigger for a same character pair if the current balance is uneven', ->
       buffer.text = '"foo'
       editor.cursor.pos = 5
       assert.is_not_true auto_pair.handle event('"'), editor
+
+    it 'does not trigger when the next character is a word character', ->
+      buffer.text = 'foo'
+      editor.cursor.pos = 1
+      assert.is_not_true auto_pair.handle event('('), editor
 
   context 'overtyping companion characters', ->
     before_each ->
