@@ -105,6 +105,9 @@ describe 'ustrings', ->
     it 'if init is greater than the length nil is returned', ->
       assert.is_nil u'1'\match '1', 2
 
+    it 'accepts regex patterns', ->
+      assert.same {u'ö'}, { u'/ö'\match r'\\p{L}'}
+
   it 'gmatch(..) always returns ustrings for string captures', ->
     s = u'foo bar'
     gen = s\gmatch '()(%w+)'

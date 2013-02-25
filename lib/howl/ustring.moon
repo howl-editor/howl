@@ -107,6 +107,7 @@ mod = {
 
   match: (pattern, init) =>
     return nil if init and init > @len!
+    return pattern\match self, init if r.is_instance pattern
     init = char_to_byte_offset self, init
     transform_rets self, string.match to_s(self), tostring(pattern), init
 
