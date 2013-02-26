@@ -16,7 +16,6 @@ unload = -> howl.mode.unregister 'lua'
 
 return {
   info:
-    name: 'lua_mode',
     author: 'Copyright 2012 Nils Nordman <nino at nordman.org>',
     description: 'Lua mode',
     license: 'MIT',

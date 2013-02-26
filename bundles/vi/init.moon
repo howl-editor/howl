@@ -38,7 +38,6 @@ unload = ->
     editor.cursor.blink_interval = config.cursor_blink_interval
 
 info = {
-  name: 'vi',
   author: 'Nils Nordman <nino at nordman.org>',
   description: 'VI bundle',
   license: 'MIT',

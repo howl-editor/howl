@@ -8,7 +8,6 @@ end
 
 return {
   info = {
-    name = 'Tomorrow themes',
     author = 'Tomorrow themes adapted by Nordman <nino at nordman.org>',
     description = [[
       The Tomorrow themes designed by Chris Kempson.

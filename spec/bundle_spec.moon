@@ -13,7 +13,7 @@ describe 'bundle', ->
       f b_dir
 
   bundle_init = (info = {}, spec = {}) ->
-    mod = name: 'bundle_test', author: 'bundle_spec', description: 'spec_bundle', license: 'MIT'
+    mod = author: 'bundle_spec', description: 'spec_bundle', license: 'MIT'
     mod[k] = v for k,v in pairs info
     ret = 'return { info = {'
     ret ..= table.concat [k .. '="' .. v .. '"' for k,v in pairs mod], ','
@@ -40,7 +40,7 @@ describe 'bundle', ->
         assert.raises 'missing info field', -> bundle.load_from_dir dir
 
     it 'assigns the returned bundle table to bundles using the dir basename', ->
-      mod = name: 'bundle_test', author: 'bundle_spec', description: 'spec_bundle', license: 'MIT'
+      mod = author: 'bundle_spec', description: 'spec_bundle', license: 'MIT'
       with_bundle_dir 'foo', (dir) ->
         dir\join('init.lua').contents = bundle_init mod
         bundle.load_from_dir dir
@@ -66,7 +66,6 @@ describe 'bundle', ->
             local file = bundle_file('bundle_aux.lua')
             return {
               info = {
-                name = 'test',
                 author = 'spec',
                 description = 'desc',
                 license = 'MIT',
@@ -91,7 +90,6 @@ describe 'bundle', ->
               bundle_load('aux.lua')
               return {
                 info = {
-                  name = 'test',
                   author = 'spec',
                   description = 'desc',
                   license = 'MIT',
@@ -113,7 +111,6 @@ describe 'bundle', ->
               bundle_load('aux.lua')
               return {
                 info = {
-                  name = 'test',
                   author = 'spec',
                   description = 'desc',
                   license = 'MIT',
@@ -128,7 +125,6 @@ describe 'bundle', ->
             dir\join('init.lua').contents = [[
               return {
                 info = {
-                  name = 'test',
                   author = 'spec',
                   description = 'desc',
                   license = 'MIT',
@@ -146,7 +142,6 @@ describe 'bundle', ->
           file = bundle_file('bundle_aux.lua')
           return {
             info = {
-              name = 'test',
               author = 'spec',
               description = 'desc',
               license = 'MIT',

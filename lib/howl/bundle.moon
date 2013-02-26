@@ -44,7 +44,7 @@ verify_bundle = (bundle, init) ->
   if type(info) != 'table'
     error 'Incorrect bundle: info missing in ' .. init
 
-  for field in *{ 'name', 'description', 'license', 'author' }
+  for field in *{ 'description', 'license', 'author' }
     error init.path .. ': missing info field "' .. field .. '"' if not info[field]
 
   error "Missing bundle function 'unload' in #{init}" unless callable bundle.unload

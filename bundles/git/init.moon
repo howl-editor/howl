@@ -39,7 +39,6 @@ VC.register 'git', :find
 config.define name: 'git_path', description: 'Path to git executable'
 
 info = {
-  name: 'Git',
   author: 'Copyright 2012 Nils Nordman <nino at nordman.org>',
   description: 'Git bundle',
   license: 'MIT',
