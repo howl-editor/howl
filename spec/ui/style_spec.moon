@@ -1,5 +1,5 @@
 import style, theme, ActionBuffer from howl.ui
-import Scintilla, Buffer from howl
+import Scintilla, Buffer, config from howl
 
 describe 'style', ->
   it 'styles can be accessed using direct indexing', ->
@@ -31,7 +31,16 @@ describe 'style', ->
       custom_fore = sci\style_get_fore custom_number
       assert.equal custom_fore, '#776655'
 
-    it '#defining the "default" style causes other styles to be rebased upon that', ->
+    it 'allows specifying font size for a style as an offset spec from "font_size"', ->
+      style.define 'larger_style', font: size: 'larger'
+      sci = Scintilla!
+      buffer = Buffer {}, sci
+      style.register_sci sci
+      style_number = style.number_for 'larger_style', buffer
+      font_size = sci\style_get_size style_number
+      assert.is_true font_size > config.font_size
+
+    it 'defining the "default" style causes other styles to be rebased upon that', ->
       style.define 'own_style', color: '#334455'
 
       sci = Scintilla!

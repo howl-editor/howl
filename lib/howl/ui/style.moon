@@ -39,6 +39,27 @@ styles = {}
 scis = setmetatable {}, __mode: 'v'
 buffer_styles = setmetatable {}, __mode: 'k'
 
+size_offsets = {
+  'xx-small': -4
+  'x-small': -3
+  smaller: -2
+  small: -1
+  medium: 0
+  large: 1
+  larger: 2
+  'x-large': 3
+  'xx-large': 4
+}
+
+get_font_size = (def) ->
+  size = config.font_size
+  if def
+    delta = size_offsets[def]
+    error "Invalid font size specification '#{def}'", 3 unless delta
+    size += delta
+
+  size
+
 get_buffer_styles = (buffer) ->
   b_styles = buffer_styles[buffer]
   if b_styles then return b_styles
@@ -50,7 +71,7 @@ set_style = (sci, number, style) ->
   font = style.font or {}
   with sci
     \style_set_font number, config.font
-    \style_set_size number, config.font_size
+    \style_set_size number, get_font_size font.size
     \style_set_bold number, font.bold if font.bold != nil
     \style_set_italic number, font.italic if font.italic != nil
     \style_set_weight number, font.weight if font.weight != nil
