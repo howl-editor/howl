@@ -1,3 +1,7 @@
+import style from howl.ui
+
+style.define 'longstring', 'string'
+
 create = ->
   lua_lexer = bundle_file 'lua_lexer.lua'
   {

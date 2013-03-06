@@ -87,10 +87,6 @@ return {
       font: italic: true
       color: comment
 
-    longstring:
-      font: italic: true
-      color: green
-
     error:
       font: italic: true
       color: white
