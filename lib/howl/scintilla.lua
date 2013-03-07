@@ -1007,6 +1007,8 @@ SCI_FINDINDICATORFLASH = 2641
 SCI_FINDINDICATORHIDE = 2642
 SCI_VCHOMEDISPLAY = 2652
 SCI_VCHOMEDISPLAYEXTEND = 2653
+SCI_GETCARETLINEVISIBLEALWAYS = 2654
+SCI_SETCARETLINEVISIBLEALWAYS = 2655
 SCI_STARTRECORD = 3001
 SCI_STOPRECORD = 3002
 SCI_SETLEXER = 4001
@@ -1282,7 +1284,7 @@ end
 -- Choose between collecting actions into the undo
 -- history and discarding them.
 function sci:set_undo_collection(collect_undo)
-  self:send(2012, collect_undo, 0)
+  self:send(2012, (collect_undo and 1 or 0), 0)
 end
 
 -- Select all the text in the document.
@@ -1406,7 +1408,7 @@ end
 -- If drawing is buffered then each line of text is drawn into a bitmap buffer
 -- before drawing it to the screen to avoid flicker.
 function sci:set_buffered_draw(buffered)
-  self:send(2035, buffered, 0)
+  self:send(2035, (buffered and 1 or 0), 0)
 end
 
 -- Change the visible size of a tab to be a multiple of the width of a space character.
@@ -1447,7 +1449,7 @@ end
 
 -- Enable/disable highlight for current folding bloc (smallest one that contains the caret)
 function sci:marker_enable_highlight(enabled)
-  self:send(2293, enabled, 0)
+  self:send(2293, (enabled and 1 or 0), 0)
 end
 
 -- Add a marker to a line, returning an ID which can be used to find or delete the marker.
@@ -1528,7 +1530,7 @@ end
 
 -- Make a margin sensitive or insensitive to mouse clicks.
 function sci:set_margin_sensitive_n(margin, sensitive)
-  self:send(2246, margin, sensitive)
+  self:send(2246, margin, (sensitive and 1 or 0))
 end
 
 -- Retrieve the mouse click sensitivity of a margin.
@@ -1563,12 +1565,12 @@ end
 
 -- Set a style to be bold or not.
 function sci:style_set_bold(style, bold)
-  self:send(2053, style, bold)
+  self:send(2053, style, (bold and 1 or 0))
 end
 
 -- Set a style to be italic or not.
 function sci:style_set_italic(style, italic)
-  self:send(2054, style, italic)
+  self:send(2054, style, (italic and 1 or 0))
 end
 
 -- Set the size of characters of a style.
@@ -1583,7 +1585,7 @@ end
 
 -- Set a style to have its end of line filled or not.
 function sci:style_set_eolfilled(style, filled)
-  self:send(2057, style, filled)
+  self:send(2057, style, (filled and 1 or 0))
 end
 
 -- Reset the default style to its state at startup
@@ -1593,7 +1595,7 @@ end
 
 -- Set a style to be underlined or not.
 function sci:style_set_underline(style, underline)
-  self:send(2059, style, underline)
+  self:send(2059, style, (underline and 1 or 0))
 end
 
 -- Get the foreground colour of a style.
@@ -1695,17 +1697,17 @@ end
 
 -- Set a style to be a hotspot or not.
 function sci:style_set_hot_spot(style, hotspot)
-  self:send(2409, style, hotspot)
+  self:send(2409, style, (hotspot and 1 or 0))
 end
 
 -- Set the foreground colour of the main and additional selections and whether to use this setting.
 function sci:set_sel_fore(use_setting, fore)
-  self:send(2067, use_setting, string_to_color(fore))
+  self:send(2067, (use_setting and 1 or 0), string_to_color(fore))
 end
 
 -- Set the background colour of the main and additional selections and whether to use this setting.
 function sci:set_sel_back(use_setting, back)
-  self:send(2068, use_setting, string_to_color(back))
+  self:send(2068, (use_setting and 1 or 0), string_to_color(back))
 end
 
 -- Get the alpha of the selection.
@@ -1725,7 +1727,7 @@ end
 
 -- Set the selection to have its end of line filled or not.
 function sci:set_sel_eolfilled(filled)
-  self:send(2480, filled, 0)
+  self:send(2480, (filled and 1 or 0), 0)
 end
 
 -- Set the foreground colour of the caret.
@@ -1755,7 +1757,7 @@ end
 
 -- Set a style to be visible or not.
 function sci:style_set_visible(style, visible)
-  self:send(2074, style, visible)
+  self:send(2074, style, (visible and 1 or 0))
 end
 
 -- Get the time in milliseconds that the caret is on and off.
@@ -1813,7 +1815,7 @@ end
 
 -- Set an indicator to draw under text or over(default).
 function sci:indic_set_under(indic, under)
-  self:send(2510, indic, under)
+  self:send(2510, indic, (under and 1 or 0))
 end
 
 -- Retrieve whether indicator drawn under or over text.
@@ -1823,12 +1825,12 @@ end
 
 -- Set the foreground colour of all whitespace and whether to use this setting.
 function sci:set_whitespace_fore(use_setting, fore)
-  self:send(2084, use_setting, string_to_color(fore))
+  self:send(2084, (use_setting and 1 or 0), string_to_color(fore))
 end
 
 -- Set the background colour of all whitespace and whether to use this setting.
 function sci:set_whitespace_back(use_setting, back)
-  self:send(2085, use_setting, string_to_color(back))
+  self:send(2085, (use_setting and 1 or 0), string_to_color(back))
 end
 
 -- Set the size of the dots used to mark space characters.
@@ -1875,7 +1877,7 @@ end
 
 -- Display the background of the line containing the caret in a different colour.
 function sci:set_caret_line_visible(show)
-  self:send(2096, show, 0)
+  self:send(2096, (show and 1 or 0), 0)
 end
 
 -- Get the colour of the background of the line containing the caret.
@@ -1891,7 +1893,7 @@ end
 -- Set a style to be changeable or not (read only).
 -- Experimental feature, currently buggy.
 function sci:style_set_changeable(style, changeable)
-  self:send(2099, style, changeable)
+  self:send(2099, style, (changeable and 1 or 0))
 end
 
 -- Display a auto-completion list.
@@ -1945,7 +1947,7 @@ end
 -- Should the auto-completion list be cancelled if the user backspaces to a
 -- position before where the box was created.
 function sci:auto_cset_cancel_at_start(cancel)
-  self:send(2110, cancel, 0)
+  self:send(2110, (cancel and 1 or 0), 0)
 end
 
 -- Retrieve whether auto-completion cancelled by backspacing before start.
@@ -1961,7 +1963,7 @@ end
 
 -- Should a single item auto-completion list automatically choose the item.
 function sci:auto_cset_choose_single(choose_single)
-  self:send(2113, choose_single, 0)
+  self:send(2113, (choose_single and 1 or 0), 0)
 end
 
 -- Retrieve whether a single item auto-completion list automatically choose the item.
@@ -1971,7 +1973,7 @@ end
 
 -- Set whether case is significant when performing auto-completion searches.
 function sci:auto_cset_ignore_case(ignore_case)
-  self:send(2115, ignore_case, 0)
+  self:send(2115, (ignore_case and 1 or 0), 0)
 end
 
 -- Retrieve state of ignore case flag.
@@ -1986,7 +1988,7 @@ end
 
 -- Set whether or not autocompletion is hidden automatically when nothing matches.
 function sci:auto_cset_auto_hide(auto_hide)
-  self:send(2118, auto_hide, 0)
+  self:send(2118, (auto_hide and 1 or 0), 0)
 end
 
 -- Retrieve whether or not autocompletion is hidden automatically when nothing matches.
@@ -1997,7 +1999,7 @@ end
 -- Set whether or not autocompletion deletes any word characters
 -- after the inserted text upon completion.
 function sci:auto_cset_drop_rest_of_word(drop_rest_of_word)
-  self:send(2270, drop_rest_of_word, 0)
+  self:send(2270, (drop_rest_of_word and 1 or 0), 0)
 end
 
 -- Retrieve whether or not autocompletion deletes any word characters
@@ -2062,7 +2064,7 @@ end
 -- Indentation will only use space characters if useTabs is false, otherwise
 -- it will use a combination of tabs and spaces.
 function sci:set_use_tabs(use_tabs)
-  self:send(2124, use_tabs, 0)
+  self:send(2124, (use_tabs and 1 or 0), 0)
 end
 
 -- Retrieve whether tabs will be used in indentation.
@@ -2098,7 +2100,7 @@ end
 -- Show or hide the horizontal scroll bar.
 -- Is the horizontal scroll bar visible?
 function sci:set_hscroll_bar(show)
-  self:send(2130, show, 0)
+  self:send(2130, (show and 1 or 0), 0)
 end
 
 -- Show or hide the horizontal scroll bar.
@@ -2205,7 +2207,7 @@ end
 
 -- On Windows, will draw the document into a display context such as a printer.
 function sci:format_range(draw, fr)
-  return tonumber(self:send(2151, draw, fr))
+  return tonumber(self:send(2151, (draw and 1 or 0), fr))
 end
 
 -- Retrieve the display line at the top of the display.
@@ -2268,7 +2270,7 @@ end
 
 -- Draw the selection in normal style or with selection highlighted.
 function sci:hide_selection(normal)
-  self:send(2163, normal, 0)
+  self:send(2163, (normal and 1 or 0), 0)
 end
 
 -- Retrieve the x value of the point in the window where a position is displayed.
@@ -2308,7 +2310,7 @@ end
 
 -- Set to read only or read write.
 function sci:set_read_only(read_only)
-  self:send(2171, read_only, 0)
+  self:send(2171, (read_only and 1 or 0), 0)
 end
 
 -- Null operation.
@@ -2385,7 +2387,7 @@ end
 
 -- Set to overtype (true) or insert mode.
 function sci:set_overtype(overtype)
-  self:send(2186, overtype, 0)
+  self:send(2186, (overtype and 1 or 0), 0)
 end
 
 -- Returns true if overtype mode is active otherwise false is returned.
@@ -2506,7 +2508,7 @@ end
 
 -- Set position of calltip, above or below text.
 function sci:call_tip_set_position(above)
-  self:send(2213, above, 0)
+  self:send(2213, (above and 1 or 0), 0)
 end
 
 -- Find the display line of a document line taking hidden lines into account.
@@ -2568,7 +2570,7 @@ end
 
 -- Show the children of a header line.
 function sci:set_fold_expanded(line, expanded)
-  self:send(2229, line, expanded)
+  self:send(2229, line, (expanded and 1 or 0))
 end
 
 -- Is a header line expanded?
@@ -2599,7 +2601,7 @@ end
 
 -- Sets whether a tab pressed when caret is within indentation indents.
 function sci:set_tab_indents(tab_indents)
-  self:send(2260, tab_indents, 0)
+  self:send(2260, (tab_indents and 1 or 0), 0)
 end
 
 -- Does a tab pressed when caret is within indentation indent?
@@ -2609,7 +2611,7 @@ end
 
 -- Sets whether a backspace pressed when caret is within indentation unindents.
 function sci:set_back_space_un_indents(bs_un_indents)
-  self:send(2262, bs_un_indents, 0)
+  self:send(2262, (bs_un_indents and 1 or 0), 0)
 end
 
 -- Does a backspace pressed when caret is within indentation unindent?
@@ -2629,12 +2631,12 @@ end
 
 -- Get position of start of word.
 function sci:word_start_position(pos, only_word_characters)
-  return tonumber(self:send(2266, pos, only_word_characters))
+  return tonumber(self:send(2266, pos, (only_word_characters and 1 or 0)))
 end
 
 -- Get position of end of word.
 function sci:word_end_position(pos, only_word_characters)
-  return tonumber(self:send(2267, pos, only_word_characters))
+  return tonumber(self:send(2267, pos, (only_word_characters and 1 or 0)))
 end
 
 -- Sets whether text is word wrapped.
@@ -2709,7 +2711,7 @@ end
 
 -- Sets whether the maximum width line displayed is used to set scroll width.
 function sci:set_scroll_width_tracking(tracking)
-  self:send(2516, tracking, 0)
+  self:send(2516, (tracking and 1 or 0), 0)
 end
 
 -- Retrieve whether the scroll width tracks wide lines.
@@ -2728,7 +2730,7 @@ end
 -- the last line at the bottom of the view (default).
 -- Setting this to false allows scrolling one page below the last line.
 function sci:set_end_at_last_line(end_at_last_line)
-  self:send(2277, end_at_last_line, 0)
+  self:send(2277, (end_at_last_line and 1 or 0), 0)
 end
 
 -- Retrieve whether the maximum scroll position has the last
@@ -2744,7 +2746,7 @@ end
 
 -- Show or hide the vertical scroll bar.
 function sci:set_vscroll_bar(show)
-  self:send(2280, show, 0)
+  self:send(2280, (show and 1 or 0), 0)
 end
 
 -- Is the vertical scroll bar visible?
@@ -2765,7 +2767,7 @@ end
 -- In twoPhaseDraw mode, drawing is performed in two phases, first the background
 -- and then the foreground. This avoids chopping off characters that overlap the next run.
 function sci:set_two_phase_draw(two_phase)
-  self:send(2284, two_phase, 0)
+  self:send(2284, (two_phase and 1 or 0), 0)
 end
 
 -- Choose the quality level for text from the FontQuality enumeration.
@@ -2816,12 +2818,12 @@ end
 
 -- Set the colours used as a chequerboard pattern in the fold margin
 function sci:set_fold_margin_colour(use_setting, back)
-  self:send(2290, use_setting, string_to_color(back))
+  self:send(2290, (use_setting and 1 or 0), string_to_color(back))
 end
 
 -- Set the colours used as a chequerboard pattern in the fold margin
 function sci:set_fold_margin_hi_colour(use_setting, fore)
-  self:send(2291, use_setting, string_to_color(fore))
+  self:send(2291, (use_setting and 1 or 0), string_to_color(fore))
 end
 
 -- # Start of key messages
@@ -3131,7 +3133,7 @@ end
 
 -- Use specified indicator to highlight matching braces instead of changing their style.
 function sci:brace_highlight_indicator(use_brace_highlight_indicator, indicator)
-  self:send(2498, use_brace_highlight_indicator, indicator)
+  self:send(2498, (use_brace_highlight_indicator and 1 or 0), indicator)
 end
 
 -- Highlight the character at a position indicating there is no matching brace.
@@ -3141,7 +3143,7 @@ end
 
 -- Use specified indicator to highlight non matching brace instead of changing its style.
 function sci:brace_bad_light_indicator(use_brace_bad_light_indicator, indicator)
-  self:send(2499, use_brace_bad_light_indicator, indicator)
+  self:send(2499, (use_brace_bad_light_indicator and 1 or 0), indicator)
 end
 
 -- Find the position of a matching brace or INVALID_POSITION if no match.
@@ -3156,7 +3158,7 @@ end
 
 -- Make the end of line characters visible or invisible.
 function sci:set_view_eol(visible)
-  self:send(2356, visible, 0)
+  self:send(2356, (visible and 1 or 0), 0)
 end
 
 -- Retrieve a pointer to the document object.
@@ -3231,7 +3233,7 @@ end
 -- Set whether a pop up menu is displayed automatically when the user presses
 -- the wrong mouse button.
 function sci:use_pop_up(allow_pop_up)
-  self:send(2371, allow_pop_up, 0)
+  self:send(2371, (allow_pop_up and 1 or 0), 0)
 end
 
 -- Is the selection rectangular? The alternative is the more common stream selection.
@@ -3285,7 +3287,7 @@ end
 -- Change internal focus flag.
 -- Get internal focus flag.
 function sci:set_focus(focus)
-  self:send(2380, focus, 0)
+  self:send(2380, (focus and 1 or 0), 0)
 end
 
 -- Change internal focus flag.
@@ -3309,7 +3311,7 @@ end
 -- Set whether the mouse is captured when its button is pressed.
 -- Get whether mouse gets captured.
 function sci:set_mouse_down_captures(captures)
-  self:send(2384, captures, 0)
+  self:send(2384, (captures and 1 or 0), 0)
 end
 
 -- Set whether the mouse is captured when its button is pressed.
@@ -3445,7 +3447,7 @@ end
 
 -- Set a fore colour for active hotspots.
 function sci:set_hotspot_active_fore(use_setting, fore)
-  self:send(2410, use_setting, string_to_color(fore))
+  self:send(2410, (use_setting and 1 or 0), string_to_color(fore))
 end
 
 -- Get the fore colour for active hotspots.
@@ -3455,7 +3457,7 @@ end
 
 -- Set a back colour for active hotspots.
 function sci:set_hotspot_active_back(use_setting, back)
-  self:send(2411, use_setting, string_to_color(back))
+  self:send(2411, (use_setting and 1 or 0), string_to_color(back))
 end
 
 -- Get the back colour for active hotspots.
@@ -3465,7 +3467,7 @@ end
 
 -- Enable / Disable underlining active hotspots.
 function sci:set_hotspot_active_underline(underline)
-  self:send(2412, underline, 0)
+  self:send(2412, (underline and 1 or 0), 0)
 end
 
 -- Get whether underlining for active hotspots.
@@ -3475,7 +3477,7 @@ end
 
 -- Limit hotspots to single line so hotspots on two lines don't merge.
 function sci:set_hotspot_single_line(single_line)
-  self:send(2421, single_line, 0)
+  self:send(2421, (single_line and 1 or 0), 0)
 end
 
 -- Get the HotspotSingleLine property
@@ -3729,7 +3731,7 @@ end
 
 -- Enable/Disable convert-on-paste for line endings
 function sci:set_paste_convert_endings(convert)
-  self:send(2467, convert, 0)
+  self:send(2467, (convert and 1 or 0), 0)
 end
 
 -- Get convert-on-paste setting
@@ -3848,7 +3850,7 @@ end
 
 -- Always interpret keyboard input as Unicode
 function sci:set_keys_unicode(keys_unicode)
-  self:send(2521, keys_unicode, 0)
+  self:send(2521, (keys_unicode and 1 or 0), 0)
 end
 
 -- Are keys always interpreted as Unicode?
@@ -4034,7 +4036,7 @@ end
 
 -- Set whether multiple selections can be made
 function sci:set_multiple_selection(multiple_selection)
-  self:send(2563, multiple_selection, 0)
+  self:send(2563, (multiple_selection and 1 or 0), 0)
 end
 
 -- Whether multiple selections can be made
@@ -4044,7 +4046,7 @@ end
 
 -- Set whether typing can be performed into multiple selections
 function sci:set_additional_selection_typing(additional_selection_typing)
-  self:send(2565, additional_selection_typing, 0)
+  self:send(2565, (additional_selection_typing and 1 or 0), 0)
 end
 
 -- Whether typing can be performed into multiple selections
@@ -4054,7 +4056,7 @@ end
 
 -- Set whether additional carets will blink
 function sci:set_additional_carets_blink(additional_carets_blink)
-  self:send(2567, additional_carets_blink, 0)
+  self:send(2567, (additional_carets_blink and 1 or 0), 0)
 end
 
 -- Whether additional carets will blink
@@ -4064,7 +4066,7 @@ end
 
 -- Set whether additional carets are visible
 function sci:set_additional_carets_visible(additional_carets_blink)
-  self:send(2608, additional_carets_blink, 0)
+  self:send(2608, (additional_carets_blink and 1 or 0), 0)
 end
 
 -- Whether additional carets are visible
@@ -4365,6 +4367,16 @@ function sci:vchome_display_extend()
   self:send(2653, 0, 0)
 end
 
+-- Is the caret line always visible?
+function sci:get_caret_line_visible_always()
+  return 0 ~= self:send(2654, 0, 0)
+end
+
+-- Sets the caret line to always visible.
+function sci:set_caret_line_visible_always(always_visible)
+  self:send(2655, (always_visible and 1 or 0), 0)
+end
+
 -- Start notifying the container of all key presses and commands.
 function sci:start_record()
   self:send(3001, 0, 0)
@@ -4471,7 +4483,7 @@ end
 -- In palette mode, Scintilla uses the environment's palette calls to display
 -- more colours. This may lead to ugly displays.
 function sci:set_use_palette(use_palette)
-  self:send(2039, use_palette, 0)
+  self:send(2039, (use_palette and 1 or 0), 0)
 end
 
 -- !! End auto generated content

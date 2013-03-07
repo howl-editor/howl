@@ -112,6 +112,7 @@ end
 local function convert_param(p)
   if p.what == 'string' then return 'string_ptr(' .. p.name .. ')'
   elseif p.what == 'colour' then return 'string_to_color(' .. p.name .. ')'
+  elseif p.what == 'bool' then return '(' .. p.name .. ' and 1 or 0)'
   else return p.name end
 end
 
