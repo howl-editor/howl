@@ -40,6 +40,15 @@ describe 'style', ->
       font_size = sci\style_get_size style_number
       assert.is_true font_size > config.font_size
 
+    it 'allows aliasing styles using a string as <definition>', ->
+      style.define 'target', color: '#beefed'
+      style.define 'alias', 'target'
+      sci = Scintilla!
+      buffer = Buffer {}, sci
+      style.register_sci sci
+      style_number = style.number_for 'alias', buffer
+      assert.equal '#beefed', sci\style_get_fore style_number
+
     it 'defining the "default" style causes other styles to be rebased upon that', ->
       style.define 'own_style', color: '#334455'
 

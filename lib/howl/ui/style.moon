@@ -1,6 +1,6 @@
 import config from howl
 
-default_style_numbers =
+default_style_numbers = hash {
   unstyled: 0
   whitespace: 1
   comment: 2
@@ -27,6 +27,7 @@ default_style_numbers =
   controlchar: 36
   indentguide: 37
   calltip: 38
+}
 
 default_style_numbers[num] = name for name, num in pairs moon.copy default_style_numbers
 
@@ -35,7 +36,7 @@ PREDEF_START = 32
 PREDEF_END = 39
 STYLE_MAX = 255
 
-styles = {}
+styles = hash!
 scis = setmetatable {}, __mode: 'v'
 buffer_styles = setmetatable {}, __mode: 'k'
 
@@ -116,6 +117,11 @@ rebase_on = (definition) ->
 define = (name, definition) ->
   error "Missing argument #1 (name)", 2 unless name
   error "Missing argument #2 (definition)", 2 unless definition
+
+  if type(definition) == 'string' -- style alias
+    styles[name] = definition
+    return
+
   name = tostring name
   style = moon.copy definition
   style.number = default_style_numbers[name]
@@ -147,8 +153,12 @@ name_for = (number, buffer) ->
   default_style_numbers[number] or get_buffer_styles(buffer)[number]
 
 number_for = (style_name, buffer) ->
-  style_name = tostring style_name
+  -- resolve any style aliases
+  while type(styles[style_name]) == 'string'
+    style_name = styles[style_name]
+
   style = styles[style_name]
+
   if not style
     return default_style_numbers[style_name] or default_style_numbers.default
   return style.number if style.number
