@@ -156,7 +156,7 @@ class File extends PropertyObject
 
   _assert: (...) =>
     status, msg = ...
-    error @tostring! .. ' :' .. msg, 3 if not status
+    error @tostring! .. ': ' .. msg, 3 if not status
     ...
 
 File.__base.rm = File.delete
