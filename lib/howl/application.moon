@@ -229,11 +229,12 @@ class Application extends PropertyObject
     -- automatically update bytecode for howl files
     if file.extension and file\is_below(@root_dir)
       bc_file = File file.path\gsub "#{file.extension}$", 'bc'
-      f = loadfile file
+      f, err = loadfile file
       if f
         bc_file.contents = string.dump f, false
       else
         bc_file\delete! if bc_file.exists
+        log.error "Failed to update byte code for #{file}: #{err}"
 
   _restore_session: =>
     session = @settings\load_system 'session'
