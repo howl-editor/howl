@@ -70,18 +70,21 @@ get_buffer_styles = (buffer) ->
 
 set_style = (sci, number, style) ->
   font = style.font or {}
+  default = styles.default
+  default_font = default.font or {}
+  one_of = (a, b) -> a != nil and a or b
+
   with sci
     \style_set_font number, config.font
     \style_set_size number, get_font_size font.size
-    \style_set_bold number, font.bold if font.bold != nil
-    \style_set_italic number, font.italic if font.italic != nil
-    \style_set_weight number, font.weight if font.weight != nil
-    \style_set_underline number, style.underline if style.underline != nil
-    \style_set_fore number, style.color if style.color != nil
-    \style_set_back number, style.background if style.background != nil
-    \style_set_eolfilled number, style.eol_filled if style.eol_filled != nil
-    \style_set_changeable number, not style.read_only if style.read_only != nil
-    \style_set_visible number, style.visible if style.visible != nil
+    \style_set_bold number, one_of(font.bold, default_font.bold)
+    \style_set_italic number, one_of(font.italic, default_font.italic)
+    \style_set_underline number, one_of(style.underline, default.underline)
+    \style_set_fore number, one_of(style.color, default.color)
+    \style_set_back number, one_of(style.background, default.background)
+    \style_set_eolfilled number, one_of(style.eol_filled, default.eol_filled)
+    \style_set_changeable number, not (one_of(style.read_only, default.read_only))
+    \style_set_visible number, not (one_of(style.visible, default.visible) == false)
 
 register_sci = (sci, default_style) ->
   set_style sci, default_style_numbers.default, default_style or styles.default
