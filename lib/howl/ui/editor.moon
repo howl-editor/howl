@@ -91,7 +91,7 @@ class Editor extends PropertyObject
     @bin.child.sci_box\get_style_context!\add_class 'sci_box'
 
     @buffer = buffer
-    @_set_appearance!
+    @_set_theme_settings!
     append editors, self
 
     signal.connect 'buffer-saved', (args) ->
@@ -335,15 +335,6 @@ class Editor extends PropertyObject
   undo: => @buffer\undo!
   redo: => @buffer\redo!
 
-  _set_appearance: =>
-    @_set_theme_settings!
-
-    with @buffer.config
-      @horizontal_scrollbar = .horizontal_scrollbar
-      @vertical_scrollbar = .vertical_scrollbar
-      @caret_line_highlighted = .caret_line_highlighted
-      @line_numbers = .line_numbers
-
   _set_theme_settings: =>
     v = theme.current.editor
     -- caret
@@ -368,14 +359,20 @@ class Editor extends PropertyObject
 
   _set_config_settings: =>
     buf = @buffer
+    config = buf.config
     with @sci
-      \set_tab_width buf.config.tab_width
-      \set_use_tabs buf.config.use_tabs
-      \set_indent buf.config.indent
-      \set_tab_indents buf.config.tab_indents
-      \set_back_space_un_indents buf.config.backspace_unindents
+      \set_tab_width config.tab_width
+      \set_use_tabs config.use_tabs
+      \set_indent config.indent
+      \set_tab_indents config.tab_indents
+      \set_back_space_un_indents config.backspace_unindents
 
-    @indentation_guides = buf.config.indentation_guides
+    with config
+      @indentation_guides = .indentation_guides
+      @horizontal_scrollbar = .horizontal_scrollbar
+      @vertical_scrollbar = .vertical_scrollbar
+      @caret_line_highlighted = .caret_line_highlighted
+      @line_numbers = .line_numbers
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
