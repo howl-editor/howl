@@ -22,11 +22,23 @@ describe 'mode', ->
         file = File 'test.foo'
         assert.equal 'ext', mode.for_file(file).name
 
-    context 'when the file extension is not registered with any mode', ->
+    context 'when the file paths matches a mode pattern', ->
+      it 'returns an instance of that mode', ->
+        mode.register name: 'pattern', patterns: 'match%w+$', create: -> {}
+        file = File 'matchme'
+        assert.equal 'pattern', mode.for_file(file).name
+
+    context 'when no matching mode can be found', ->
       it 'returns an instance of the mode "default"', ->
-        mode.register name: 'default', create: -> {}
         file = File 'test.blargh'
         assert.equal 'default', mode.for_file(file).name
+
+  context 'mode creation', ->
+    it 'modes are created by calling the modes create function, passing the name', ->
+      create = spy.new -> {}
+      mode.register name: 'callme', :create
+      mode.by_name('callme')
+      assert.spy(create).was_called_with 'callme'
 
   it 'mode instances are memoized', ->
     mode.register name: 'same', extensions: 'again', create: -> {}

@@ -11,8 +11,9 @@ class DefaultMode
     "'": "'"
   }
 
-by_extension = {}
-modes = {}
+by_extension = hash!
+by_pattern = hash!
+modes = hash!
 live = setmetatable {}, __mode: 'k'
 mode_variables = {}
 
@@ -32,7 +33,7 @@ instance_for_mode = (m) ->
   error "Unknown mode specified as parent: '#{m.parent}'", 3 if m.parent and not modes[m.parent]
   parent = if m.name != 'default' then by_name m.parent or 'default'
 
-  target = m.create!
+  target = m.create m.name
   instance = setmetatable {
     name: m.name
     config: mode_config
@@ -47,10 +48,16 @@ by_name = (name) ->
   modes[name] and instance_for_mode modes[name]
 
 for_file = (file) ->
-  return by_name('default') if not file
-  ext = file.extension
-  m = by_extension[ext] or modes['default']
-  instance = m and instance_for_mode(m)
+  return by_name('default') unless file
+  def = file.extension and by_extension[file.extension\lower!]
+  unless def
+    for pattern, mode in pairs by_pattern
+      if tostring(file)\match pattern
+        def = mode
+        break
+
+  def or= modes['default']
+  instance = def and instance_for_mode def
   error 'No mode available for "' .. file .. '"' if not instance
   instance
 
@@ -60,7 +67,12 @@ register = (mode = {}) ->
 
   extensions = mode.extensions or {}
   extensions = { extensions } if type(extensions) == 'string'
-  by_extension[ext] = mode for ext in *(extensions or {})
+  by_extension[ext] = mode for ext in *extensions
+
+  patterns = mode.patterns or {}
+  patterns = { patterns } if type(patterns) == 'string'
+  by_pattern[pattern] = mode for pattern in *patterns
+
   modes[mode.name] = mode
   signal.emit 'mode-registered', name: mode.name
 
@@ -70,6 +82,10 @@ unregister = (name) ->
     modes[name] = nil
     exts = [ext for ext, m in pairs by_extension when m == mode]
     by_extension[ext] = nil for ext in *exts
+
+    patterns = [pattern for pattern, m in pairs by_pattern when m == mode]
+    by_pattern[pattern] = nil for pattern in *patterns
+
     live[mode] = nil
     signal.emit 'mode-unregistered', :name
 
