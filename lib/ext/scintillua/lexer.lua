@@ -1091,9 +1091,10 @@ function M.lex(text, init_style)
   else
     local tokens = {}
     local function append(tokens, line_tokens, offset)
-      for i = 1, #line_tokens, 2 do
-        tokens[#tokens + 1] = line_tokens[i]
-        tokens[#tokens + 1] = line_tokens[i + 1] + offset
+      for i = 1, #line_tokens, 3 do
+        tokens[#tokens + 1] = line_tokens[i] + offset
+        tokens[#tokens + 1] = line_tokens[i + 1]
+        tokens[#tokens + 1] = line_tokens[i + 2] + offset
       end
     end
     local offset = 0
@@ -1103,8 +1104,9 @@ function M.lex(text, init_style)
       if line_tokens then append(tokens, line_tokens, offset) end
       offset = offset + #line
       -- Use the default style to the end of the line if none was specified.
-      if tokens[#tokens] ~= offset then
-        tokens[#tokens + 1], tokens[#tokens + 2] = 'default', offset + 1
+      local last = tokens[#tokens] or 1
+      if last < offset then
+        tokens[#tokens + 1], tokens[#tokens + 2], tokens[#tokens + 3] = last, 'default', offset + 1
       end
     end
     return tokens
