@@ -20,7 +20,7 @@ return {
 
       info: color: blue
       warning: color: orange
-      ['error']: color: red
+      'error': color: red
 
   editor:
     border_color: '#333333'
@@ -73,6 +73,7 @@ return {
       outline_alpha: 100
 
   styles:
+
     default:
       :background
       color: foreground
@@ -87,18 +88,7 @@ return {
       font: italic: true
       color: comment
 
-    error:
-      font: italic: true
-      color: white
-      background: darkred
-
-    warning:
-      font: italic: true
-      color: orange
-
-    variable:
-      color: red,
-      font: italic: true
+    variable: color: yellow
 
     label:
       color: orange
@@ -108,18 +98,6 @@ return {
       color: comment
       :background
 
-    bracelight:
-      color: foreground
-      background: '#0064b1'
-
-    bracebad:
-      color: red
-      background: orange
-
-    indentguide:
-      :background
-      color: foreground
-
     key: color: blue
     char: color: green
     keyword: color: purple
@@ -128,13 +106,67 @@ return {
     function: color: blue
     number: color: orange
     operator: color: aqua
-    preproc: color: purple
+    preprocessor: color: purple
     special: color: purple
     tag: color: purple
-    type: color: red
+    type: color: yellow
     member: color: red
-    embedded: color: purple
     info: color: blue
     constant: color: orange
     string: color: green
- }
+    regex: color: green
+
+    embedded:
+      color: blue
+      background: '#444444'
+
+    -- Markup and visual styles
+
+    error:
+      font: italic: true
+      color: white
+      background: darkred
+
+    warning:
+      font: italic: true
+      color: orange
+
+    indentguide:
+      :background
+      color: foreground
+
+    bracelight:
+      color: foreground
+      background: '#0064b1'
+
+    bracebad:
+      color: red
+      background: orange
+
+    h1:
+      color: white
+      background: comment
+      eol_filled: true
+      font: size: 'larger'
+
+    h2:
+      color: white
+      background: '#005491'
+      font: size: 'large'
+
+    h3:
+      color: purple
+      background: current
+      font: italic: true
+
+    strong:
+      color: aqua
+
+    emphasis: font: italic: true
+    link_label: color: aqua
+    link_url: underline: true
+
+    addition: color: green
+    deletion: color: red
+    change: color: yellow
+  }
