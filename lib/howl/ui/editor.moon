@@ -488,7 +488,7 @@ with config
   .define
     name: 'tab_width'
     description: 'The width of a tab, in number of characters'
-    default: 2
+    default: 8
     type_of: 'number'
 
   .define

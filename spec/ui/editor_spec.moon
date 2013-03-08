@@ -300,8 +300,8 @@ describe 'Editor', ->
 
   context 'indentation, tabs, spaces and backspace', ->
 
-    it 'defines a "tab_width" config variable, defaulting to 2', ->
-      assert.equal config.tab_width, 2
+    it 'defines a "tab_width" config variable, defaulting to 8', ->
+      assert.equal config.tab_width, 8
 
     it 'defines a "use_tabs" config variable, defaulting to false', ->
       assert.equal config.use_tabs, false
@@ -328,14 +328,15 @@ describe 'Editor', ->
         buffer.text = 'hƏllo'
         cursor.pos = 1
         editor\tab!
-        assert.equal buffer.text, string.rep(' ', config.tab_width) .. 'hƏllo'
+        assert.equal string.rep(' ', config.indent) .. 'hƏllo', buffer.text
 
-      it 'inserts a tab move to the next tab if use_tabs is true', ->
+      it 'inserts a tab to move to the next tab stop if use_tabs is true', ->
         config.use_tabs = true
+        config.tab_width = config.indent
         buffer.text = 'hƏllo'
         cursor.pos = 1
         editor\tab!
-        assert.equal buffer.text, '\thƏllo'
+        assert.equal '\thƏllo', buffer.text
 
       it 'indents the current line if in whitespace and tab_indents is true', ->
         config.use_tabs = false
