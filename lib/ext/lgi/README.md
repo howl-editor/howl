@@ -59,6 +59,15 @@ providing ideas, spreading a word...  *Many thanks to all of you!*
 
 ## History
 
+### 0.7.1 (4-Mar-2013)
+
+ - Add support for GStreamer 1.0, while still retaining GStreamer 0.10
+   compatibility.
+ - fix: crash when trying to to access '_class' attribute of class
+   which does not have public classstruct exposed in typelib
+ - fix: crash when passing 'nil' to transfer=full struct (caused crash
+   of Awesome WM during startup).
+
 ### 0.7.0 (23-Feb-2013)
 
  - New feature - subclassing.  Allows creating GObject subclasses and

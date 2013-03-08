@@ -133,7 +133,7 @@ local internals = { _native = true, _type = true, _gtype = true,
 		    _class = true, class = true }
 function class.class_mt:_element(instance, symbol)
    -- Special handling of internal symbols.
-   if internals[symbol] then return symbol, symbol end
+   if instance and internals[symbol] then return symbol, symbol end
 
    -- Check default implementation.
    local element, category = component.mt._element(self, instance, symbol)
@@ -390,7 +390,7 @@ class.derived_mt = class.class_mt:clone('derived', {})
 -- implementation data.
 function class.derived_mt:_element(instance, symbol)
    -- Special handling of 'priv' attribute.
-   if symbol == 'priv' then return symbol, '_priv' end
+   if instance and symbol == 'priv' then return symbol, '_priv' end
 
    -- Check default implementation.
    local element, category = class.class_mt._element(self, instance, symbol)

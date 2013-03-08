@@ -25,8 +25,8 @@ LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
 LPEG_URL = http://www.inf.puc-rio.br/~roberto/lpeg/$(LPEG_VER).tar.gz
 
-LGI_VER = 0.7.0
-LGI_CHECKSUM = cc7d7d29efcf4cee5973beaeb5f6ee8c
+LGI_VER = 0.7.1
+LGI_CHECKSUM = de7367aee8e39f7df7c2229675c5ff2d
 LGI_URL = https://github.com/pavouk/lgi/archive/$(LGI_VER).tar.gz
 LGI = deps/lgi-$(LGI_VER)
 LGI_ARCHIVE = $(LGI)/lgi/lgi.a

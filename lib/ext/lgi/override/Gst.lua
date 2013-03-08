@@ -2,13 +2,13 @@
 --
 --  LGI Gst override module.
 --
---  Copyright (c) 2010, 2011, 2012 Pavel Holejsovsky
+--  Copyright (c) 2010-2013 Pavel Holejsovsky
 --  Licensed under the MIT license:
 --  http://www.opensource.org/licenses/mit-license.php
 --
 ------------------------------------------------------------------------------
 
-local ipairs = ipairs
+local ipairs, tonumber = ipairs, tonumber
 local os = require 'os'
 
 local lgi = require 'lgi'
@@ -16,9 +16,11 @@ local gi = require('lgi.core').gi
 local GLib = lgi.GLib
 local Gst = lgi.Gst
 
--- GstObject has special ref_sink mechanism, make sure that lgi core
--- is aware of it, otherwise refcounting is screwed.
-Gst.Object._refsink = gi.Gst.Object.methods.ref_sink
+if tonumber(Gst._version) < 1.0 then
+   -- GstObject has special ref_sink mechanism, make sure that lgi
+   -- core is aware of it, otherwise refcounting is screwed.
+   Gst.Object._refsink = gi.Gst.Object.methods.ref_sink
+end
 
 -- Gst.Element; GstElement uses ugly macro accessors instead of proper
 -- GObject properties, so add attributes for assorted Gst.Element
@@ -45,8 +47,14 @@ function Gst.Element._method:link_many(...)
 end
 
 -- Gst.Bin adjustments
-function Gst.Bus._method:add_watch(callback)
-   return self:add_watch_full(GLib.PRIORITY_DEFAULT, callback)
+if tonumber(Gst._version) < 1.0 then
+   function Gst.Bus._method:add_watch(priority, callback)
+      if not callback then
+	 callback = priority
+	 priority = GLib.PRIORITY_DEFAULT
+      end
+      return self:add_watch_full(priority, callback)
+   end
 end
 
 function Gst.Bin._method:add_many(...)
@@ -64,7 +72,9 @@ function Gst.TagList:get(tag)
 end
 
 -- Load additional Gst modules.
-local GstInterfaces = lgi.require('GstInterfaces', Gst._version)
+if tonumber(Gst._version) < 1.0 then
+   local GstInterfaces = lgi.require('GstInterfaces', Gst._version)
+end
 
 -- Initialize gstreamer.
 Gst.init()
