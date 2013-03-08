@@ -1,3 +1,4 @@
+import mode from howl
 import File from howl.fs
 import ScintilluaLexer from howl.aux
 
@@ -27,3 +28,38 @@ describe 'ScintilluaLexer', ->
       8, 'spec_whitespace', 9,
       9, 'keyword', 14
     }, lexed
+
+  it 'provides the usual pre-defined Scintillua styles in the lexer', ->
+    with_tmpfile (file) ->
+      file.contents = [[
+        local new_tag = lexer.style_tag .. {}
+        assert(lexer.style_class ~= nil)
+        return {
+          _NAME = 'futile_styling_attempt',
+          _rules = { { 'any', lexer.any } }
+        }
+      ]]
+      ScintilluaLexer 'style_craze', file
+
+  describe "Scintillua's lexer.load()", ->
+    it "can load other Scintillua lexers from registered modes", ->
+      with_tmpfile (file) ->
+        file.contents = [[
+          return {
+            _NAME = 'embedded',
+            _rules = { { 'any', lexer.any } }
+          }
+        ]]
+        lexer = ScintilluaLexer 'embedded', file
+        mode.register name: 'embedded', create: -> :lexer
+
+      with_tmpfile (file) ->
+        file.contents = [[
+          local embedded = lexer.load('embedded')
+          assert(embedded._RULES ~= nil, 'Failed to load sub lexer')
+          return {
+            _NAME = 'driver',
+            _rules = { { 'any', lexer.any } }
+          }
+        ]]
+        ScintilluaLexer 'driver', file
