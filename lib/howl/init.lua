@@ -87,7 +87,7 @@ local function compile(args)
   for i = 2, #args do
     file = args[i]
     local target = file:gsub('%.%w+$', '.bc')
-    print('Compiling ' .. target)
+    print('Compiling ' .. file)
     local func = assert(loadfile(file))
     local bytecode = string.dump(func, false)
     local file = assert(io.open(target, 'w'))
