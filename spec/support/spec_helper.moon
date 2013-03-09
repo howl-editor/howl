@@ -5,7 +5,7 @@ import theme from howl.ui
 import signal from howl
 _G.Spy = require 'howl.spec.spy'
 
--- addition aliases
+-- additional aliases
 export context = describe
 
 -- includes assertion
@@ -54,6 +54,13 @@ export with_tmpdir = (f) ->
   dir = File.tmpdir!
   status, err = pcall f, dir
   dir\delete_all! if dir.exists
+  error err if not status
+
+export with_signal_handler = (name, f) ->
+  handler = spy.new -> nil
+  signal.connect name, handler
+  status, err = pcall f, handler
+  signal.disconnect name, handler
   error err if not status
 
 root = howl.app.root_dir

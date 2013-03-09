@@ -1,5 +1,5 @@
 import Gtk from lgi
-import Buffer from howl
+import Buffer, signal from howl
 import Editor, theme from howl.ui
 
 text = 'Liñe 1 ʘf tƏxt\nLiñe 1 ʘf tƏxt'
@@ -99,6 +99,12 @@ describe 'Selection', ->
       selection\remove!
       assert.equal 5, cursor.pos
 
+    it 'signals "selection-removed"', ->
+      with_signal_handler 'selection-removed', (handler) ->
+        selection\set 2, 5
+        selection\remove!
+        assert.spy(handler).was_called!
+
   describe 'cut', ->
     it 'removes the selected text', ->
       selection\set 1, 5
@@ -122,6 +128,18 @@ describe 'Selection', ->
       editor\paste!
       assert.equal 'Liñe 1 ʘf tƏxt', buffer.lines[1].text
 
+    it 'signals "selection-removed"', ->
+      with_signal_handler 'selection-removed', (handler) ->
+        selection\set 1, 5
+        selection\cut!
+        assert.spy(handler).was_called!
+
+    it 'signals "selection-cut"', ->
+      with_signal_handler 'selection-cut', (handler) ->
+        selection\set 1, 5
+        selection\cut!
+        assert.spy(handler).was_called!
+
   describe 'copy', ->
     it 'removes the selection', ->
       selection\set 1, 5
@@ -139,6 +157,18 @@ describe 'Selection', ->
       selection\copy!
       editor\paste!
       assert.equal 'LiñeLiñe 1 ʘf tƏxt', buffer.lines[1].text
+
+    it 'signals "selection-removed"', ->
+      with_signal_handler 'selection-removed', (handler) ->
+        selection\set 1, 5
+        selection\copy!
+        assert.spy(handler).was_called!
+
+    it 'signals "selection-copied"', ->
+      with_signal_handler 'selection-copied', (handler) ->
+        selection\set 1, 5
+        selection\copy!
+        assert.spy(handler).was_called!
 
   describe '.text', ->
     it 'returns nil if nothing is selected', ->

@@ -1,6 +1,6 @@
 ffi = require 'ffi'
 
-import Scintilla from howl
+import Scintilla, signal from howl
 import PropertyObject from howl.aux.moon
 import C from ffi
 
@@ -62,8 +62,10 @@ class Selection extends PropertyObject
     @sci\raw!\char_offset start_pos, end_pos
 
   remove: =>
-    @sci\set_empty_selection @sci\get_current_pos!
-    @persistent = false
+    unless @empty
+      @sci\set_empty_selection @sci\get_current_pos!
+      @persistent = false
+      signal.emit 'selection-removed'
 
   copy: =>
     start_pos, end_pos = @_brange!
@@ -71,6 +73,7 @@ class Selection extends PropertyObject
     @sci\copy_range start_pos - 1, end_pos - 1
     @persistent = false
     @remove!
+    signal.emit 'selection-copied'
 
   cut: =>
     start_pos, end_pos = @_brange!
@@ -78,6 +81,8 @@ class Selection extends PropertyObject
     @sci\copy_range start_pos - 1, end_pos - 1
     @sci\delete_range start_pos - 1, end_pos - start_pos
     @persistent = false
+    signal.emit 'selection-removed'
+    signal.emit 'selection-cut'
 
   _brange: =>
     cursor = @sci\get_current_pos! + 1
@@ -93,5 +98,20 @@ class Selection extends PropertyObject
       return anchor, cursor
 
     nil
+
+with signal
+  .register 'selection-removed',
+    description: [[
+Emitted whenever a selection has been removed.
+
+This could be the result of a copy, cut or an explicit request to remove
+a selection.
+]]
+
+  .register 'selection-copied',
+    description: 'Emitted whenever a selection has been copied.'
+
+  .register 'selection-cut',
+    description: 'Emitted whenever a selection has been cut.'
 
 return Selection
