@@ -109,6 +109,8 @@ ffi.metatype regex, {
   __index: (k) =>
     return methods[k] if methods[k]
     return properties[k] self if properties[k]
+
+  __tostring: => @pattern
 }
 
 r = (pattern) ->

@@ -54,3 +54,6 @@ describe 'Regex', ->
 
   it 'escape(s) returns a string with all special regular expression symbols escaped', ->
     assert.equal 'a\\.b\\*c', r.escape 'a.b*c'
+
+  it 'tostring(regex) returns the pattern', ->
+    assert.equal '\\s*(foo)', tostring r'\\s*(foo)'
