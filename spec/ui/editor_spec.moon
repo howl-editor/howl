@@ -110,12 +110,13 @@ describe 'Editor', ->
   describe 'comment()', ->
     text = [[
   liñe 1
+
     liñe 2
     liñe 3
 ]]
     before_each ->
       buffer.text = text
-      selection\set 1, lines[3].start_pos
+      selection\set 1, lines[4].start_pos
 
     context 'when mode does not provide .short_comment_prefix', ->
       it 'does nothing', ->
@@ -129,6 +130,7 @@ describe 'Editor', ->
         editor\comment!
         assert.equal [[
   -- liñe 1
+
   --   liñe 2
     liñe 3
 ]], buffer.text
@@ -139,12 +141,13 @@ describe 'Editor', ->
         editor\comment!
         assert.equal [[
   -- liñe 1
+
     liñe 2
     liñe 3
 ]], buffer.text
 
       it 'keeps the cursor position', ->
-        editor.selection.cursor = lines[2].start_pos + 2
+        editor.selection.cursor = lines[3].start_pos + 2
         editor\comment!
         assert.equal 6, cursor.column
 

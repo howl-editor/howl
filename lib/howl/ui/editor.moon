@@ -227,11 +227,12 @@ class Editor extends PropertyObject
 
     @transform_active_lines (lines) ->
       min_indent = math.huge
-      min_indent = math.min(min_indent, l.indentation) for l in *lines
+      min_indent = math.min(min_indent, l.indentation) for l in *lines when not l.blank
 
       for line in *lines
-        new_text = line\sub(1, min_indent) .. prefix .. line\sub(min_indent + 1)
-        line.text = new_text
+        unless line.blank
+          new_text = line\sub(1, min_indent) .. prefix .. line\sub(min_indent + 1)
+          line.text = new_text
 
       @cursor.column = current_column + #prefix unless current_column == 1
 
