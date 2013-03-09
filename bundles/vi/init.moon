@@ -18,6 +18,7 @@ signal_handlers = {
   'editor-focused': (args) -> state.change_mode args.editor, state.mode
   'editor-defocused': (args) -> args.editor.indicator.vi.label = ''
   'after-buffer-switch': (args) -> state.change_mode args.editor, 'command'
+  'selection-removed': -> state.change_mode(_G.editor, 'command') if state.mode == 'visual'
   'buffer-saved': (args) ->
     if _G.editor.buffer == args.buffer
       state.change_mode _G.editor, 'command'
