@@ -155,7 +155,7 @@ describe 'Editor', ->
     text = [[
   -- liñe 1
     -- -- liñe 2
-    liñe 3
+    --liñe 3
 ]]
     before_each ->
       buffer.text = text
@@ -169,12 +169,12 @@ describe 'Editor', ->
     context 'when mode provides .short_comment_prefix', ->
       before_each -> buffer.mode = short_comment_prefix: '--'
 
-      it 'removes the first instance of the comment prefix from each line', ->
+      it 'removes the first instance of the comment prefix and optional space from each line', ->
         editor\uncomment!
         assert.equal [[
   liñe 1
     -- liñe 2
-    liñe 3
+    --liñe 3
 ]], buffer.text
 
       it 'uncomments the current line if nothing is selected', ->
@@ -184,13 +184,19 @@ describe 'Editor', ->
         assert.equal [[
   -- liñe 1
     -- liñe 2
-    liñe 3
+    --liñe 3
 ]], buffer.text
 
       it 'keeps the cursor position', ->
         editor.selection.cursor = lines[2].start_pos + 6
         editor\uncomment!
         assert.equal 4, cursor.column
+
+      it 'does nothing for lines that are not commented', ->
+        buffer.text = "line\n"
+        cursor.line = 1
+        editor\uncomment!
+        assert.equal "line\n", buffer.text
 
   describe 'toggle_comment()', ->
     context 'when mode does not provide .short_comment_prefix', ->

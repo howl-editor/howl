@@ -20,10 +20,6 @@ apply_variable = (method, value) ->
 apply_property = (name, value) ->
   e[name] = value for e in *editors
 
-short_comment_prefix = (buffer) ->
-  prefix = buffer.mode.short_comment_prefix
-  prefix and prefix .. ' ' or nil
-
 class Editor extends PropertyObject
 
   register_indicator: (id, placement = 'bottom_right') ->
@@ -221,8 +217,9 @@ class Editor extends PropertyObject
     @buffer\as_one_undo -> f lines
 
   comment: =>
-    prefix = short_comment_prefix @buffer
+    prefix = @buffer.mode.short_comment_prefix
     return unless prefix
+    prefix ..= ' '
     current_column = @cursor.column
 
     @transform_active_lines (lines) ->
@@ -237,24 +234,26 @@ class Editor extends PropertyObject
       @cursor.column = current_column + #prefix unless current_column == 1
 
   uncomment: =>
-    prefix = short_comment_prefix @buffer
+    prefix = @buffer.mode.short_comment_prefix
     return unless prefix
+    pattern = r"()#{r.escape prefix}\\s*()"
     current_column = @cursor.column
+    cur_line_length = #@current_line
 
     @transform_active_lines (lines) ->
       for line in *lines
-        start_pos, end_pos = line\find prefix, 1, true
+        start_pos, end_pos = line\match pattern
         if start_pos
-          new_text = line\sub(1, start_pos - 1) .. line\sub(end_pos + 1)
-          line.text = new_text
+          line.text = line\sub(1, start_pos - 1) .. line\sub(end_pos)
 
-      @cursor.column = math.max 1, current_column - #prefix
+      @cursor.column = math.max 1, current_column - (cur_line_length - #@current_line)
 
   toggle_comment: =>
-    prefix = short_comment_prefix @buffer
+    prefix = @buffer.mode.short_comment_prefix
     return unless prefix
+    pattern = r"^\\s*#{r.escape prefix}.*"
 
-    if @active_lines[1]\find prefix, 1, true
+    if @active_lines[1]\match pattern
       @uncomment!
     else
       @comment!
