@@ -17,11 +17,23 @@ start_character = (character, auto_pairs) ->
     return start_c if character == end_c
   nil
 
+handle_backspace = (event, editor, auto_pairs) ->
+  context = editor.current_context
+  prev_char = context.prev_char
+  mate = auto_pairs[prev_char]
+  if mate and context.next_char == mate
+    buffer = editor.buffer
+    buffer\as_one_undo ->
+      pos = editor.cursor.pos
+      buffer\delete pos - 1, 2
+    true
+
 handle = (event, editor) ->
   buffer = editor.buffer
   auto_pairs = buffer.mode.auto_pairs
   char = event.character
   return unless auto_pairs and buffer.config.auto_pair and char
+  return handle_backspace(event, editor, auto_pairs) if event.key_name == 'backspace'
 
   mate = auto_pairs[char]
   context = editor.current_context
@@ -51,7 +63,7 @@ handle = (event, editor) ->
 with config
   .define
     name: 'auto_pair'
-    description: 'Whether to automatically insert a matching companion character when possible'
+    description: 'Whether to handle certain matching pairs of characters automagically'
     default: true
     type_of: 'boolean'
 
