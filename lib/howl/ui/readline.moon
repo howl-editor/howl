@@ -1,5 +1,5 @@
 import Gtk from lgi
-import Scintilla, keyhandler, config from howl
+import Scintilla, keyhandler, config, inputs from howl
 import PropertyObject from howl.aux.moon
 import style, theme, Cursor, Selection, ActionBuffer, List, IndicatorBar from howl.ui
 
@@ -34,6 +34,8 @@ class Readline extends PropertyObject
       @last_focused\grab_focus! if @last_focused
 
   read: (prompt, input = {}, callback) =>
+    error 'Missing parameter "callback"', 2 unless callback
+    input = inputs[input] if type(input) == 'string'
     input = input! if callable input
     @show! if not @showing
     @prompt = prompt or ''
