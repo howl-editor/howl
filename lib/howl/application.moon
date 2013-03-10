@@ -1,10 +1,10 @@
--- @author Nils Nordman <nino at nordman.org>
--- @copyright 2012
--- @license MIT (see LICENSE)
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+--
+-- License: MIT (see LICENSE)
 
 import Gtk, Gio from lgi
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, keyhandler, keymap, signal from howl
+import Buffer, Settings, mode, bundle, keyhandler, keymap, signal, inputs from howl
 import File from howl.fs
 import PropertyObject from howl.aux.moon
 
@@ -37,12 +37,14 @@ class Application extends PropertyObject
       width: 800
       height: 640
       application: @g_app
+      on_delete_event: -> return @_should_abort_quit! if #@windows == 1
       on_destroy: (window) ->
         for k, win in ipairs @windows
           if win\to_gobject! == window
             @windows[k] = nil
 
         @_on_quit! if #@windows == 0
+
 
     props[k] = v for k, v in pairs(properties or {})
     window = Window props
@@ -199,6 +201,18 @@ class Application extends PropertyObject
     window\show_all! if window
     @_loaded = true
 
+  _should_abort_quit: =>
+    return if @_ignore_modified_on_close
+
+    modified = [b for b in *@_buffers when b.modified]
+    if #modified > 0
+      input = inputs.yes_or_no false
+      _G.window.readline\read "Modified buffers exist, close anyway? ", input, (wants_close) ->
+        if wants_close
+          @_ignore_modified_on_close = true
+          _G.window\destroy!
+      true
+
   _on_quit: =>
     @save_session! unless #@args > 1
 
@@ -276,6 +290,7 @@ class Application extends PropertyObject
     require 'howl.inputs.search_inputs'
     require 'howl.inputs.bundle_inputs'
     require 'howl.inputs.signal_input'
+    require 'howl.inputs.question_inputs'
     require 'howl.commands.file_commands'
     require 'howl.commands.app_commands'
     require 'howl.commands.ui_commands'
