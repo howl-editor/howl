@@ -993,7 +993,7 @@ for k, v in pairs(tokens) do M[string_upper(k)] = k end
 -- @return lexer object
 -- @name load
 function M.load(lexer_name)
-  M.WHITESPACE = lexer_name..'_whitespace'
+  M.WHITESPACE = 'whitespace'
   local lexer = require(lexer_name or 'null')
   if not lexer then error('Lexer '..lexer_name..' does not exist') end
   lexer._TOKENS = tokens

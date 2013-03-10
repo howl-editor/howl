@@ -25,7 +25,7 @@ describe 'ScintilluaLexer', ->
     lexed = lexer 'awesome stuff'
     assert.same {
       1, 'keyword', 8,
-      8, 'spec_whitespace', 9,
+      8, 'whitespace', 9,
       9, 'keyword', 14
     }, lexed
 
