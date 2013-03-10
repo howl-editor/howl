@@ -42,6 +42,12 @@ handle = (event, editor) ->
   overwrite_check = next_char == char
 
   if mate
+    selection = editor.selection
+
+    unless selection.empty
+      selection.text = "#{char}#{selection.text}#{mate}"
+      return true
+
     return if r'\\p{L}'\match next_char
     return if same_chars and uneven_count context.line.text, char
 

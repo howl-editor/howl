@@ -21,29 +21,44 @@ describe 'auto_pair.handle(event, editor)', ->
         '"': '"'
       }
 
-    it 'returns true', ->
-      assert.is_true auto_pair.handle event('('), editor
+    context 'when there is an active selection', ->
+      before_each ->
+        buffer.text = ' foo '
+        editor.selection\set 2, 5
 
-    it 'inserts the pair in the buffer, as one undo operation', ->
-      for start_c, end_c in pairs buffer.mode.auto_pairs
-        auto_pair.handle event(start_c), editor
-        assert.equal "#{start_c}#{end_c}", buffer.text
+      it 'surrounds the selection with the pair as one undo operation', ->
+        auto_pair.handle event('('), editor
+        assert.equal ' (foo) ', buffer.text
         buffer\undo!
-        assert.equal '', buffer.text
+        assert.equal ' foo ', buffer.text
 
-    it 'positions the cursor within the pair', ->
-      auto_pair.handle event('['), editor
-      assert.equal 2, cursor.pos
+      it 'returns true', ->
+        assert.is_true auto_pair.handle event('('), editor
 
-    it 'does not trigger for a same character pair if the current balance is uneven', ->
-      buffer.text = '"foo'
-      cursor.pos = 5
-      assert.is_not_true auto_pair.handle event('"'), editor
+    context 'with no selection active', ->
+      it 'returns true', ->
+        assert.is_true auto_pair.handle event('('), editor
 
-    it 'does not trigger when the next character is a word character', ->
-      buffer.text = 'foo'
-      cursor.pos = 1
-      assert.is_not_true auto_pair.handle event('('), editor
+      it 'inserts the pair in the buffer, as one undo operation', ->
+        for start_c, end_c in pairs buffer.mode.auto_pairs
+          auto_pair.handle event(start_c), editor
+          assert.equal "#{start_c}#{end_c}", buffer.text
+          buffer\undo!
+          assert.equal '', buffer.text
+
+      it 'positions the cursor within the pair', ->
+        auto_pair.handle event('['), editor
+        assert.equal 2, cursor.pos
+
+      it 'does not trigger for a same character pair if the current balance is uneven', ->
+        buffer.text = '"foo'
+        cursor.pos = 5
+        assert.is_not_true auto_pair.handle event('"'), editor
+
+      it 'does not trigger when the next character is a word character', ->
+        buffer.text = 'foo'
+        cursor.pos = 1
+        assert.is_not_true auto_pair.handle event('('), editor
 
   context 'overtyping companion characters', ->
     before_each ->
