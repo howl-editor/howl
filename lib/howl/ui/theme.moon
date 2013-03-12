@@ -147,7 +147,7 @@ load_theme = (file) ->
 apply_theme = ->
   css = theme_css current_theme, current_theme_file
   status = css_provider\load_from_data css
-  error 'Error loading theme "' .. theme.name .. '"' if not status
+  error 'Error loading theme "' .. current_theme.name .. '"' if not status
   style.set_for_theme current_theme
   highlight.set_for_theme current_theme
 
