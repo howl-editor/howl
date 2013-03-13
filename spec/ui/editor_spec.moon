@@ -153,7 +153,7 @@ describe 'Editor', ->
 
   describe 'uncomment()', ->
     text = [[
-  -- liñe 1
+  --  liñe 1
     -- -- liñe 2
     --liñe 3
 ]]
@@ -172,7 +172,7 @@ describe 'Editor', ->
       it 'removes the first instance of the comment prefix and optional space from each line', ->
         editor\uncomment!
         assert.equal [[
-  liñe 1
+   liñe 1
     -- liñe 2
     --liñe 3
 ]], buffer.text
@@ -182,7 +182,7 @@ describe 'Editor', ->
         cursor.line = 2
         editor\uncomment!
         assert.equal [[
-  -- liñe 1
+  --  liñe 1
     -- liñe 2
     --liñe 3
 ]], buffer.text

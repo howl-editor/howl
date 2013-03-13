@@ -236,7 +236,7 @@ class Editor extends PropertyObject
   uncomment: =>
     prefix = @buffer.mode.short_comment_prefix
     return unless prefix
-    pattern = r"()#{r.escape prefix}\\s*()"
+    pattern = r"()#{r.escape prefix}\\s?()"
     current_column = @cursor.column
     cur_line_length = #@current_line
 
