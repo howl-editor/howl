@@ -17,6 +17,14 @@ describe 'ustrings', ->
     assert.is_false ('foo').multibyte
     assert.is_true ('åäö').multibyte
 
+  it '.empty is true for the empty string', ->
+    assert.is_true ('').empty
+    assert.is_false (' ').empty
+
+  it '.blank is true for a string that is empty or only contains whitespace', ->
+    assert.is_true ('\t\r\n').blank
+    assert.is_false ('x').blank
+
   it 'ucompare(s1, s2) returns -1, 0 or 1 if s1 is smaller, equal or greater than s2', ->
     assert.equal -1, 'a'\ucompare 'b'
     assert.equal -1, 'a'\ucompare 'ä'

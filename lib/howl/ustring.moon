@@ -155,12 +155,14 @@ with string
   .byte_offset = byte_offset
   .char_offset = char_offset
 
-properties = {
+properties =
   ulen: => ulen @
   multibyte: => ulen(@) != #@
   ulower: => ffi.string C.g_utf8_strdown(const_char_p(@), #@)
   uupper: => ffi.string C.g_utf8_strup(const_char_p(@), #@)
-  ureverse: => ffi.string C.g_utf8_strreverse(const_char_p(@), #@)}
+  ureverse: => ffi.string C.g_utf8_strreverse(const_char_p(@), #@)
+  empty: => #@ == 0
+  blank: => @find('%S') == nil
 
 getmetatable('').__index = (k) =>
   return usub(@, k, k) if type(k) == 'number'
