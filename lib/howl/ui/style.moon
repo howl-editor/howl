@@ -1,6 +1,6 @@
 import config from howl
 
-default_style_numbers = hash {
+default_style_numbers = {
   unstyled: 0
   whitespace: 1
   comment: 2
@@ -36,7 +36,7 @@ PREDEF_START = 32
 PREDEF_END = 39
 STYLE_MAX = 255
 
-styles = hash!
+styles = {}
 scis = setmetatable {}, __mode: 'v'
 buffer_styles = setmetatable {}, __mode: 'k'
 
@@ -125,7 +125,6 @@ define = (name, definition) ->
     styles[name] = definition
     return
 
-  name = tostring name
   style = moon.copy definition
   style.number = default_style_numbers[name]
   styles[name] = style
@@ -149,7 +148,7 @@ define_default = (name, attributes) ->
 next_style_number = (from_num, buffer) ->
   num = from_num + 1
   if num == PREDEF_START then return PREDEF_END + 1
-  error 'Out of style numbers for ' .. tostring(buffer.title) if num > STYLE_MAX
+  error 'Out of style numbers for ' .. buffer.title if num > STYLE_MAX
   num
 
 name_for = (number, buffer) ->

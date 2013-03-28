@@ -30,7 +30,7 @@ describe 'Regex', ->
 
     context 'with captures in the pattern', ->
       it 'returns the captured values', ->
-        assert.same { u'red', u'right' }, { r'(r\\w+)\\s+(\\S+)'\match 'red right hand' }
+        assert.same { 'red', 'right' }, { r'(r\\w+)\\s+(\\S+)'\match 'red right hand' }
 
       it 'empty captures are returned as position captures', ->
         assert.same { 1, 4 }, { r'()red()'\match 'red' }
@@ -45,12 +45,29 @@ describe 'Regex', ->
       it 'negative values counts from the end', ->
         assert.equal 'og', r'o\\w'\match 'top dog', -2
 
-    it 'both patterns and subjects can be ustrings', ->
-      assert.equal 'right', r(u'ri\\S+')\match u'red right hand'
+  describe 'find(s, init)', ->
+    it 'returns nil if the pattern could not be found in <s>', ->
+      assert.is_nil r'foo'\find 'bar'
 
-    it 'returned string captures are always ustrings', ->
-      capture = r'\\S+'\match 'åäö'
-      assert.equal 3, #capture
+    it 'returns the indices where the pattern match starts and end if found', ->
+      assert.same { 2, 2 }, { r'\\pL'\find '!äö' }
+
+    it 'returns any captures after the indices', ->
+      assert.same { 2, 2, 'ä' }, { r'(\\pL)'\find '!äö' }
+
+    it 'empty captures are returned as position captures', ->
+      assert.same { 2, 2, 3 }, { r'\\pL()'\find '!äö' }
+
+  describe 'gmatch(s)', ->
+    context 'with no captures in the pattern', ->
+      it 'produces each consecutive match in each call', ->
+        matches = [m for m in r'\\w+'\gmatch 'well hello there']
+        assert.same { 'well', 'hello', 'there' }, matches
+
+    context 'with captures in the pattern', ->
+      it 'produces the the set of captures in each call', ->
+        matches = [{p,m} for p,m in r'()(\\w+)'\gmatch 'well hello there']
+        assert.same { {1, 'well'}, {6, 'hello'}, {12, 'there'} }, matches
 
   it 'escape(s) returns a string with all special regular expression symbols escaped', ->
     assert.equal 'a\\.b\\*c', r.escape 'a.b*c'

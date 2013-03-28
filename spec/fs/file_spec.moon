@@ -16,9 +16,8 @@ describe 'File', ->
       file\delete_all!
 
   describe 'new(...)', ->
-    it 'accepts string or ustring as denothing paths', ->
+    it 'accepts a string as denothing a path', ->
       File '/bin/ls'
-      File u'/bin/ls'
 
     it 'accepts other files as well', ->
       f = File '/bin/ls'
@@ -40,8 +39,8 @@ describe 'File', ->
   it '.extension returns the extension of the path', ->
     assert.equal File('/foo/base.ext').extension, 'ext'
 
-  it '.path returns the path of the file as a ustring', ->
-    assert.equal u'/foo/base.ext', File('/foo/base.ext').path
+  it '.path returns the path of the file', ->
+    assert.equal '/foo/base.ext', File('/foo/base.ext').path
 
   it '.uri returns an URI representing the path', ->
     assert.equal File('/foo.txt').uri, 'file:///foo.txt'
@@ -106,7 +105,6 @@ describe 'File', ->
 
   it 'join returns a new file representing the specified child', ->
     assert.equal File('/bin')\join('ls').path, '/bin/ls'
-    assert.equal File('/bin')\join(u'ls').path, '/bin/ls'
 
   it 'relative_to_parent returns a path relative to the specified parent', ->
     parent = File '/bin'

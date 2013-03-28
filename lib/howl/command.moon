@@ -7,7 +7,7 @@ accessible_names = {}
 -- command state
 parse_cmd = (text) ->
   cmd_start, cmd_end, cmd, rest = text\find '^%s*([^%s]+)%s+(.*)$'
-  if cmd then return commands[tostring cmd], cmd, rest
+  if cmd then return commands[cmd], cmd, rest
   else return nil, nil, text
 
 class State

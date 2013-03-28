@@ -228,7 +228,7 @@ class Editor extends PropertyObject
 
       for line in *lines
         unless line.blank
-          new_text = line\sub(1, min_indent) .. prefix .. line\sub(min_indent + 1)
+          new_text = line\usub(1, min_indent) .. prefix .. line\usub(min_indent + 1)
           line.text = new_text
 
       @cursor.column = current_column + #prefix unless current_column == 1
@@ -242,7 +242,7 @@ class Editor extends PropertyObject
 
     @transform_active_lines (lines) ->
       for line in *lines
-        start_pos, end_pos = line\match pattern
+        start_pos, end_pos = line\umatch pattern
         if start_pos
           line.text = line\sub(1, start_pos - 1) .. line\sub(end_pos)
 
@@ -253,7 +253,7 @@ class Editor extends PropertyObject
     return unless prefix
     pattern = r"^\\s*#{r.escape prefix}.*"
 
-    if @active_lines[1]\match pattern
+    if @active_lines[1]\umatch pattern
       @uncomment!
     else
       @comment!
@@ -283,19 +283,19 @@ class Editor extends PropertyObject
       return unless next_line
       @cursor\line_end!
       target_pos = @cursor.pos
-      content_start = next_line\find('[^%s]') or 1
+      content_start = next_line\ufind('[^%s]') or 1
       @buffer\delete target_pos, (next_line.start_pos + content_start - 1) - target_pos
       @buffer\insert ' ', target_pos
 
   forward_to_match: (str) =>
-    pos = @current_line\find str, @cursor.column + 1, true
+    pos = @current_line\ufind str, @cursor.column + 1, true
     @cursor.column = pos if pos
 
   backward_to_match: (str) =>
-    rev_line = @current_line\reverse!
-    cur_column = (#rev_line - @cursor.column + 1)
-    pos = rev_line\find str, cur_column + 1, true
-    @cursor.column = (#rev_line - pos) + 1 if pos
+    rev_line = @current_line.text.ureverse
+    cur_column = (rev_line.ulen - @cursor.column + 1)
+    pos = rev_line\ufind str, cur_column + 1, true
+    @cursor.column = (rev_line.ulen - pos) + 1 if pos
 
   show_popup: (popup, options = {}) =>
     char_width = @sci\text_width 32, ' '

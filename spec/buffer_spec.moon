@@ -22,15 +22,15 @@ describe 'Buffer', ->
     b = Buffer {}
     assert.equal b.text, ''
     b.text = 'Ipsum'
-    assert.equal b.text, 'Ipsum'
+    assert.equal 'Ipsum', b.text
 
   it '.size returns the size of the buffer text, in bytes', ->
     assert.equal buffer('hello').size, 5
     assert.equal buffer('åäö').size, 6
 
   it '.length returns the size of the buffer text, in characters', ->
-    assert.equal buffer('hello').length, 5
-    assert.equal buffer('åäö').length, 3
+    assert.equal 5, buffer('hello').length
+    assert.equal 3, buffer('åäö').length
 
   it '.modified indicates and allows setting the modified status', ->
     b = Buffer {}
@@ -171,7 +171,7 @@ describe 'Buffer', ->
       assert.is_false Buffer!.modified_on_disk
 
     it "is true if the file's etag is changed after a load or save", ->
-      file = contents: 'foo', etag: '1'
+      file = contents: 'foo', etag: '1', basename: 'changeable'
       b = Buffer!
       b.file = file
       file.etag = '2'

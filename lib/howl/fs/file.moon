@@ -25,7 +25,7 @@ class File extends PropertyObject
       @path = target.path
     else
       @gfile = if t == 'string' or t == 'ustring' then @gfile = GFile.new_for_path tostring(target) else target
-      @path = u @gfile\get_path!
+      @path = @gfile\get_path!
 
     super!
 

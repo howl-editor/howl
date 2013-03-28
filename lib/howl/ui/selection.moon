@@ -1,6 +1,7 @@
 ffi = require 'ffi'
 
 import Scintilla, signal from howl
+import const_char_p from howl.cdefs
 import PropertyObject from howl.aux.moon
 import C from ffi
 
@@ -12,11 +13,11 @@ class Selection extends PropertyObject
     get: => @range! == nil
 
   @property anchor:
-    get: => @sci\raw!\char_offset @sci\get_anchor! + 1
-    set: (pos) => @sci\set_anchor @sci\raw!\byte_offset(pos) - 1
+    get: => @sci\get_text!\char_offset @sci\get_anchor! + 1
+    set: (pos) => @sci\set_anchor @sci\get_text!\byte_offset(pos) - 1
 
   @property cursor:
-    get: => @sci\raw!\char_offset @sci\get_current_pos! + 1
+    get: => @sci\get_text!\char_offset @sci\get_current_pos! + 1
     set: (pos) => @set @anchor, pos
 
   @property text:
@@ -42,9 +43,9 @@ class Selection extends PropertyObject
 
   set: (anchor, cursor) =>
     if anchor <= cursor
-      anchor, cursor = @sci\raw!\byte_offset anchor, cursor
+      anchor, cursor = @sci\get_text!\byte_offset anchor, cursor
     else
-      cursor, anchor = @sci\raw!\byte_offset cursor, anchor
+      cursor, anchor = @sci\get_text!\byte_offset cursor, anchor
 
     @sci\set_sel anchor - 1, cursor - 1
 
@@ -59,7 +60,7 @@ class Selection extends PropertyObject
   range: =>
     start_pos, end_pos = @_brange!
     return nil unless start_pos
-    @sci\raw!\char_offset start_pos, end_pos
+    @sci\get_text!\char_offset start_pos, end_pos
 
   remove: =>
     unless @empty
@@ -88,10 +89,10 @@ class Selection extends PropertyObject
     cursor = @sci\get_current_pos! + 1
     anchor = @sci\get_anchor! + 1
     return cursor, anchor if cursor < anchor
-    raw = @sci\raw!
-    if cursor > anchor or @includes_cursor and cursor <= raw.size
+    text = @sci\get_text!
+    if cursor > anchor or @includes_cursor and cursor <= #text
       if @includes_cursor -- bump end offset to start of next character
-        offset_ptr = raw.ptr + cursor - 1
+        offset_ptr = const_char_p(text) + cursor - 1
         ptr = C.g_utf8_find_next_char offset_ptr, nil
         return anchor, cursor + (ptr - offset_ptr)
 

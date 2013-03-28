@@ -5,7 +5,7 @@ uneven_count = (s, character) ->
   pos = 1
 
   while pos
-    _, pos = s\find character, pos, true
+    _, pos = s\ufind character, pos, true
     if pos
       count += 1
       pos += 1

@@ -27,10 +27,10 @@ class Searcher
       @_init!
       pos += 1
 
-    start_pos, end_pos = @text\find search, pos, true
+    start_pos, end_pos = @text\ufind search, pos, true
 
     if not start_pos and config.search_wraps
-      start_pos, end_pos = @text\find search, 1, true
+      start_pos, end_pos = @text\ufind search, 1, true
       if start_pos
         log.info 'Search hit BOTTOM, continuing at TOP'
 

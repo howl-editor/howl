@@ -198,21 +198,21 @@ describe 'VI', ->
         buffer.text = '\nhello world'
         cursor.pos = 2
         press 'c', 'w'
-        editor\insert 'bork'
+        editor\insert 'börk'
         press 'escape'
         press 'w', '.'
         assert.equal 'command', state.mode
-        assert.equal '\nbork bork', buffer.text
+        assert.equal '\nbörk börk', buffer.text
 
       it 'just entering insert is considered a command', ->
         buffer.text = 'hello world'
         cursor.pos = 7
         press 'i'
-        editor\insert 'ba'
+        editor\insert 'bã'
         press 'escape'
         press 'l', '.'
         assert.equal 'command', state.mode
-        assert.equal 'hello babaworld', buffer.text
+        assert.equal 'hello bãbãworld', buffer.text
 
   context 'visual mode', ->
     before_each ->

@@ -4,6 +4,8 @@ import style from howl.ui
 import PropertyObject from howl.aux.moon
 import destructor from howl.aux
 
+import char_offset, byte_offset from string
+
 background_sci = Scintilla!
 background_sci\set_lexer Scintilla.SCLEX_NULL
 background_buffer = setmetatable {}, __mode: 'v'
@@ -11,7 +13,7 @@ buffer_titles = setmetatable {}, __mode: 'v'
 title_counters = {}
 
 file_title = (file) ->
-  title = tostring file.basename
+  title = file.basename
   while buffer_titles[title]
     file = file.parent
     return title if not file
@@ -41,12 +43,12 @@ class Context extends PropertyObject
     @_line or= @buffer.lines\at_pos @pos
     @_line
 
-  @property word_prefix: get: => @word.text\sub 1, @pos - @word.start_pos
-  @property word_suffix: get: => @word.text\sub (@pos - @word.start_pos) + 1
-  @property prefix: get: => @line\sub 1, (@pos - @line.start_pos)
-  @property suffix: get: => @line\sub (@pos - @line.start_pos) + 1
-  @property next_char: get: => tostring @suffix\sub 1, 1
-  @property prev_char: get: => tostring @prefix\sub -1, -1
+  @property word_prefix: get: => @word.text\usub 1, @pos - @word.start_pos
+  @property word_suffix: get: => @word.text\usub (@pos - @word.start_pos) + 1
+  @property prefix: get: => @line\usub 1, (@pos - @line.start_pos)
+  @property suffix: get: => @line\usub (@pos - @line.start_pos) + 1
+  @property next_char: get: => @suffix[1]
+  @property prev_char: get: => @prefix[-1]
 
   @meta {
     __eq: (a, b) ->
@@ -114,9 +116,8 @@ class Buffer extends PropertyObject
   @property text:
     get: => @sci\get_text!
     set: (text) =>
-      text = u text
       @sci\clear_all!
-      @sci\add_text text.size, text
+      @sci\add_text #text, text
       @sci\set_code_page Scintilla.SC_CP_UTF8
       @multibyte_from = text.multibyte and 0 or nil
 
@@ -192,10 +193,9 @@ class Buffer extends PropertyObject
     @sci\delete_range start_pos - 1, end_pos - start_pos
 
   insert: (text, pos) =>
-    text = u text
     b_pos = @byte_offset pos
     @sci\insert_text b_pos - 1, text
-    pos + #text
+    pos + text.ulen
 
   append: (text) =>
     @sci\append_text #text, text
@@ -207,7 +207,7 @@ class Buffer extends PropertyObject
     text = @text
 
     while pos < @length
-      start_pos, end_pos, match = text\find pattern, pos
+      start_pos, end_pos, match = text\ufind pattern, pos
       break unless start_pos
 
       -- only replace the match within pattern if present
@@ -251,8 +251,9 @@ class Buffer extends PropertyObject
 
   undo: => @sci\undo!
   redo: => @sci\redo!
-  char_offset: (...) => @_offset u.char_offset, ...
-  byte_offset: (...) => @_offset u.byte_offset, ...
+  char_offset: (...) => @_offset char_offset, ...
+  byte_offset: (...) => @_offset byte_offset, ...
+
   reload: =>
     error "Cannot reload buffer '#{self}': no associated file", 2 unless @file
     @file = @file
@@ -311,8 +312,8 @@ class Buffer extends PropertyObject
     local offsets
 
     if @multibyte and arg_offsets[#arg_offsets] >= @multibyte_from
-      offsets = f @sci\raw!, arg_offsets
-      for i = #offsets,1,-1
+      offsets = f @text, arg_offsets
+      for i = #offsets, 1, -1
         res = offsets[i]
         arg = arg_offsets[i]
         if res == arg

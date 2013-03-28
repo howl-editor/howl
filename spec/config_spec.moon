@@ -22,7 +22,7 @@ describe 'config', ->
     it 'can be indexed by ustrings', ->
       var = name: 'foo', description: 'foo variable'
       config.define var
-      assert.same var, config.definitions[u'foo']
+      assert.same var, config.definitions['foo']
 
     it 'writing directly to it raises an error', ->
       assert.has_error -> config.definitions.frob = 'crazy'
@@ -54,7 +54,7 @@ describe 'config', ->
 
       it '<name> can be a ustring', ->
         config.set 'var', 'hello'
-        assert.equal config.get(u'var'), 'hello'
+        assert.equal config.get('var'), 'hello'
 
   context 'when a default is provided', ->
     before_each -> config.define name: 'with_default', description: 'test', default: 123

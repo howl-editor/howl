@@ -3,7 +3,7 @@ import Scintilla, Buffer from howl
 
 describe 'highlight', ->
   indicator_on = (buffer, pos, number) ->
-    b_pos = buffer.sci\raw!\byte_offset pos
+    b_pos = buffer.text\byte_offset pos
     on = buffer.sci\indicator_all_on_for b_pos - 1
     return on and bit.band(on, number + 1) != 0
 

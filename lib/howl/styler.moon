@@ -39,7 +39,7 @@ style_text = (sci, buffer, end_pos, lexer) ->
   text = sci\get_text_range start_pos, end_pos
   default_style_number = style.number_for 'default', buffer
 
-  size = text.size + 1 -- we'll use one-based indexes below, hence the + 1
+  size = #text + 1 -- we'll use one-based indexes below, hence the + 1
   if style_buf_length < size
     style_buf = char_arr(size)
     style_buf_length = size
@@ -62,7 +62,7 @@ style_text = (sci, buffer, end_pos, lexer) ->
 
   with sci
     \start_styling start_pos, 0xff
-    \set_styling_ex text.size, style_buf + 1
+    \set_styling_ex #text, style_buf + 1
 
 clear_styling = (sci, buffer) ->
   default_style_number = style.number_for 'default', buffer

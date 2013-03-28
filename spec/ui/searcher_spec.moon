@@ -15,7 +15,7 @@ describe 'Searcher', ->
 
   describe 'forward_to(string)', ->
     it 'moves the cursor to the next occurrence of <string>', ->
-      buffer.text = 'hello\nworld!'
+      buffer.text = 'hellö\nworld!'
       cursor.pos = 1
       searcher\forward_to 'l'
       assert.equal 3, cursor.pos
@@ -23,10 +23,12 @@ describe 'Searcher', ->
       assert.equal 10, cursor.pos
 
     it 'highlights the match with "search"', ->
-      buffer.text = 'hello\nworld!'
+      buffer.text = 'hellö\nworld!'
       cursor.pos = 1
-      searcher\forward_to 'll'
-      assert.same { 'search' }, highlight.at_pos buffer, 3
+      searcher\forward_to 'lö'
+      assert.same { 'search' }, highlight.at_pos buffer, 4
+      assert.same { 'search' }, highlight.at_pos buffer, 5
+      assert.not_same { 'search' }, highlight.at_pos buffer, 6
 
     it 'skips any matches at the current position by default', ->
       buffer.text = 'no means no'
@@ -35,11 +37,11 @@ describe 'Searcher', ->
       assert.equal 10, cursor.pos
 
     it 'does not skip any matches at the current position if the searcher is active', ->
-      buffer.text = 'so no means no'
+      buffer.text = 'sö nö means no'
       cursor.pos = 1
       searcher\forward_to 'n'
       assert.equal 4, cursor.pos
-      searcher\forward_to 'no'
+      searcher\forward_to 'nö'
       assert.equal 4, cursor.pos
 
     it 'does not move the cursor when there is no match', ->
@@ -56,9 +58,9 @@ describe 'Searcher', ->
     assert.equal 1, cursor.pos
 
   it 'next() repeats the last search in the last direction', ->
-    buffer.text = 'hello world'
+    buffer.text = 'hellö wörld'
     cursor.pos = 1
-    searcher\forward_to 'o'
+    searcher\forward_to 'ö'
     searcher\commit!
     searcher\next!
     assert.equal 8, cursor.pos

@@ -2,9 +2,8 @@ import type from _G
 
 export *
 
-u = require 'howl.ustring'
+require 'howl.ustring'
 r = require 'howl.regex'
-hash = require 'howl.hash'
 
 callable = (o) ->
   return true if type(o) == 'function'
@@ -16,7 +15,6 @@ append = table.insert
 typeof = (v) ->
   t = type v
   if t == 'cdata'
-    return 'ustring' if u.is_instance v
     return 'regex' if r.is_instance v
   elseif t == 'table'
     mt = getmetatable v

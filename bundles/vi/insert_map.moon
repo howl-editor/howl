@@ -10,7 +10,7 @@ get_edit = (editor) ->
     start_pos = (insert_pos - cur_line.start_pos) + 1
     end_pos = (editor.cursor.pos - cur_line.start_pos) + 1
     start_pos, end_pos = end_pos, start_pos if end_pos < start_pos
-    text = cur_line\sub start_pos, end_pos - 1
+    text = cur_line\usub start_pos, end_pos - 1
     if text and #text > 0
       (editor) -> editor\insert text
 

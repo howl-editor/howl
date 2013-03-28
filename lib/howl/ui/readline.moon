@@ -66,7 +66,7 @@ class Readline extends PropertyObject
   @property text:
     get: =>
       text = @buffer.lines[#@buffer.lines]
-      text\sub #@prompt + 1
+      text\usub #@prompt + 1
     set: (text) =>
       @buffer.text = @prompt .. text
       @_adjust_height!

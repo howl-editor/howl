@@ -15,11 +15,6 @@ describe 'Scintilla', ->
       _core.sci.new = sci_new
       assert.is_true spy.called
 
-  it 'raw() returns a temporary string for the entire document', ->
-    sci\add_text 3, 'foo'
-    assert.equal 'foo', sci\raw!
-    assert.equal 3, #sci\raw!
-
   describe 'color handling', ->
     it 'automatically converts between color values and strings', ->
       sci\style_set_fore 1, '#112233'

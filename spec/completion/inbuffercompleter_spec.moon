@@ -69,3 +69,15 @@ the_water
     completer = factory buffer, context
     comps = completer\complete context
     assert.same { 'twitter', 'two', 'the_water', 'fatwa' }, comps
+
+  it 'works with #unicode', ->
+    buffer.text = [[
+hƏllo
+häst
+h
+]]
+    line = buffer.lines[3]
+    context = buffer\context_at line.end_pos
+    completer = factory buffer, context
+    comps = completer\complete context
+    assert.same { 'häst', 'hƏllo' }, comps

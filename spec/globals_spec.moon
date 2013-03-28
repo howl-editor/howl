@@ -7,18 +7,11 @@ describe 'Globals', ->
   it 'append is an alias for table.insert', ->
     assert.equal append, table.insert
 
-  it 'typeof(v) is like type(), but handles ustring, regexes and moonscript classes', ->
-    assert.equal 'ustring', typeof u'foo'
+  it 'typeof(v) is like type(), but handles regexes and moonscript classes', ->
     assert.equal 'regex', typeof r'foo'
 
     class Bar
     assert.equal 'Bar', typeof Bar!
 
-  it 'u is a short alias for ustring', ->
-    assert.equal u, require 'howl.ustring'
-
   it 'r is a short alias for regex', ->
     assert.equal r, require 'howl.regex'
-
-  it 'hash is an alias for howl.hash', ->
-    assert.equal hash, require 'howl.hash'

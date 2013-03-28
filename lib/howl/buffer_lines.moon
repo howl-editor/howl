@@ -1,9 +1,11 @@
+import string from _G
+
 line_mt =
   __index: (k) =>
     getter = @_getters[k]
     return getter self if getter
 
-    f = rawget u, k
+    f = string[k]
     if f
       return (_, ...) -> f @text, ...
 
@@ -16,7 +18,7 @@ line_mt =
       rawset self, k, v
 
   __tostring: => @text
-  __len: => #@text
+  __len: => @text.ulen
   __eq: (op1, op2) -> tostring(op1) == tostring(op2)
 
 Line = (nr, buffer, sci) ->

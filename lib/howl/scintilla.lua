@@ -55,7 +55,7 @@ local text_range = ffi.typeof('text_range')
 local find_text = ffi.typeof('find_text')
 
 local function string_ptr(s)
-  return u.is_instance(s) and s.ptr or const_char_p(s)
+  return const_char_p(s)
 end
 
 local function string_to_color(spec)
@@ -113,7 +113,7 @@ function sci.dispatch(sci_ptr, event, args)
       local deleted = bit.band(args.type, SC_MOD_DELETETEXT) ~= 0
       args = {
         at_pos = args.position,
-        text = u(args.text),
+        text = args.text,
         lines_affected = args.lines_affected
       }
       if inserted then handler = 'on_text_inserted'
@@ -154,8 +154,8 @@ end
 
 function sci:send_with_stringresult(message, arg1)
   size = self:send(message, arg1, nil)
-  if size == 0 then return u'' end
-  buffer = char_p(C.malloc(size + 1))
+  if size == 0 then return '' end
+  buffer = char_arr(size + 1)
   -- for the cases where the additional argument isn't specified,
   -- we should send the length as computed above
   if not arg1 then arg1 = size end
@@ -164,7 +164,7 @@ function sci:send_with_stringresult(message, arg1)
   -- don't include the trailing zero in the lua string if there is one
   if buffer[size - 1] == 0 then size = size -1 end
 
-  return u(buffer, size, -1, u.DEALLOC_FREE)
+  return ffi.string(buffer, size)
 end
 
 function sci:send_with_textrange(message, start_pos, end_pos)
@@ -173,11 +173,11 @@ function sci:send_with_textrange(message, start_pos, end_pos)
   end
   size = end_pos - start_pos
   -- in case of style bytes we actually need two bytes per pos so double up
-  buffer = char_p(C.malloc((size * 2) + 2))
+  buffer = char_arr((size * 2) + 2)
   tr = text_range({ char_range(start_pos, end_pos), buffer })
   real_size = self:send(message, nil, ffi.cast('text_range *', tr))
   -- but always return a string of the right size
-  return u(buffer, real_size, -1, u.DEALLOC_FREE)
+  return ffi.string(buffer, real_size)
 end
 
 function sci:send_with_findtext(message, start_pos, end_pos, text)
@@ -187,12 +187,6 @@ function sci:send_with_findtext(message, start_pos, end_pos, text)
   ft = find_text({ char_range({start_pos, end_pos}), buffer, found_range })
   found_at = self:send(message, nil, ffi.cast('find_text *', ft))
   if found_at >= 0 then return found_at, found_at + #text end
-end
-
-function sci:raw()
-  size = self:get_text_length()
-  ptr = self:send(2520, 0, 0)
-  return u(ffi.cast(char_p, ptr), size, nil, u.DEALLOC_NONE)
 end
 
 -- !! Begin auto generated content

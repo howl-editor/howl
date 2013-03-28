@@ -3,9 +3,9 @@ import File from howl.fs
 import Sandbox from howl.aux
 
 import assert, error, loadfile, type, callable, tostring, pairs, typeof from _G
-import table, hash, _G from _G
+import table, _G from _G
 
-_G.bundles = hash!
+_G.bundles = {}
 
 bundle = {}
 setfenv 1, bundle
@@ -22,7 +22,7 @@ module_name = (name) ->
   name\lower!\gsub '[%s%p]+', '_'
 
 available_bundles = ->
-  avail = hash!
+  avail = {}
 
   for dir in *dirs
     for c in *dir.children

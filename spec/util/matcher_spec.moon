@@ -48,9 +48,9 @@ describe 'Matcher', ->
     assert.same { 'Item 2. 1%w' }, m('%w')
 
   it 'accepts ustring both for candidates and searches', ->
-    c = { u'one', u'two' }
+    c = { 'one', 'two' }
     m = Matcher c
-    assert.same { u'one', u'two' }, m(u'o')
+    assert.same { 'one', 'two' }, m('o')
 
   describe 'explain(search, text)', ->
     it 'set .how to the type of match', ->
@@ -66,7 +66,7 @@ describe 'Matcher', ->
       assert.not_nil Matcher.explain 'fu', 'SNAFU'
 
     it 'accepts ustring both for <search> and <text>', ->
-      assert.not_nil Matcher.explain u'FU', u'snafu'
+      assert.not_nil Matcher.explain 'FU', 'snafu'
 
   it 'boundary matches can not skip separators', ->
     assert.equal 'boundary', Matcher.explain('sk', 'nih/says/knights').how

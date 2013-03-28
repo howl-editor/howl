@@ -28,7 +28,7 @@ broadcast = (name, value, is_local) ->
         log.error 'Error invoking config watcher: ' .. ret
 
 get_def = (name) ->
-  def = defs[tostring name]
+  def = defs[name]
   error 'Undefined variable "' .. name .. '"', 2 if not def
   def
 
@@ -53,7 +53,7 @@ convert = (def, value) ->
   value
 
 definitions = setmetatable {},
-  __index: (_, k) -> defs[tostring k]
+  __index: (_, k) -> defs[k]
   __newindex: -> error 'Attempt to write to read-only table `.definitions`'
   __pairs: -> pairs defs
 
@@ -70,11 +70,10 @@ define = (var = {}) ->
     error('Unknown type"' .. var.type_of .. '"', 2) if not predef
     var[k] = v for k,v in pairs predef
 
-  defs[tostring var.name] = var
-  broadcast tostring(var.name), var.default, false
+  defs[var.name] = var
+  broadcast var.name, var.default, false
 
 set = (name, value) ->
-  name = tostring name
   def = get_def name
 
   if def.scope and def.scope == 'local'
@@ -87,7 +86,6 @@ set = (name, value) ->
   broadcast name, value, false
 
 proxy_set = (name, value, proxy) ->
-  name = tostring name
   def = get_def name
 
   if def.scope and def.scope == 'global'
@@ -100,7 +98,6 @@ proxy_set = (name, value, proxy) ->
 
 get = (name, other) ->
   error 'fix me here', 2 if other
-  name = tostring name
   value = values[name]
   return value if value != nil
   def = defs[name]
@@ -109,7 +106,6 @@ get = (name, other) ->
 reset = -> values = {}
 
 watch = (name, callback) ->
-  name = tostring name
   list = watchers[name]
   if not list
     list = {}

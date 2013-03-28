@@ -1,5 +1,5 @@
-handlers = hash!
-all = hash!
+handlers = {}
+all = {}
 
 register = (name, options = {}) ->
   error "Missing field 'description'", 2 unless options.description

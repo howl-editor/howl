@@ -5,7 +5,7 @@ sl_lexer_file = root_dir\join('lib/ext/scintillua/lexer.lua')
 sl_lexer = sl_lexer_file.contents
 
 mt = {
-  __call: (text) => @lexer.lex tostring(text), 32
+  __call: (text) => @lexer.lex text, 32
 }
 
 require_scintillua_lexer = (name) ->

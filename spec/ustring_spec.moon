@@ -1,195 +1,131 @@
 describe 'ustrings', ->
-  it 'tostring(ustring) returns an ordinary string', ->
-    assert.equal 'string', type tostring u'foo'
 
-  it 'creating an ustring from an ustring returns the same string', ->
-    s = u'abc'
-    assert.equal s.ptr, u(s).ptr
+  it '.ulen holds the number characters in the string', ->
+    assert.equal 3, ('foo').ulen
+    assert.equal 3, ('åäö').ulen
 
-  it 'ustrings can be compared to ordinary lua strings', ->
-    assert.equal 'abc', u'abc'
-    assert.equal u'abc', 'abc'
-    assert.equal 'abcåäö', u'abcåäö'
-    assert.is_not.equal 'abcd', u'abc'
-    assert.is_not.equal 'abd', u'abc'
+  it '.ulower is a lower cased version of the string', ->
+    assert.equal 'abcåäö', ('aBCåÄÖ').ulower
 
-  it 'ustring can be compared to other ustrings', ->
-    assert.equal u'abc', u'abc'
-    assert.equal u'abcåäö', u'abcåäö'
-    assert.is_not.equal u'abcd', u'abc'
-    assert.is_not.equal u'abd', u'abc'
+  it '.uupper is a upper cased version of the string', ->
+    assert.equal 'ABCÅÄÖ', ('abcåäö').uupper
 
-  it 'ustrings can be concatenated with ordinary lua strings', ->
-    assert.equal 'abcd', u'ab' .. 'cd'
-    assert.equal 'abcd', 'ab' .. u'cd'
-
-  it 'ustrings can be concatenated with other ustrings', ->
-    assert.equal 'abcd', u'ab' .. u'cd'
-    assert.equal 'abcd', u'ab' .. u'cd'
-
-  it 'ustrings can be lexically compared to ordinary lua strings', ->
-    assert.is_true 'a' < u'b'
-    assert.is_true u'a' < 'b'
-    assert.is_true u'c' > 'b'
-    assert.is_true 'c' > u'b'
-
-  it 'concatenation always returns a ustring', ->
-    assert.equal 'ustring', typeof u'ab' .. 'cd'
-
-  it 'the # operator.returns the number of characters in the string', ->
-    assert.equal 3, #u('foo')
-    assert.equal 3, #u('åäö')
-
-  it '.size contains the number of bytes in the string', ->
-    assert.equal 3, u('foo').size
-    assert.equal 6, u('åäö').size
+  it '.ureverse is a reversed version of the string', ->
+    assert.equal 'abcåäö', ('öäåcba').ureverse
 
   it '.multibyte is true if the string contains multibyte characters', ->
-    assert.is_false u('foo').multibyte
-    assert.is_true u('åäö').multibyte
+    assert.is_false ('foo').multibyte
+    assert.is_true ('åäö').multibyte
 
-  it 'u.is_instance(v) returns true if <v> is an ustring', ->
-    assert.is_true u.is_instance u'foo'
-    assert.is_false u.is_instance 'foo'
-    assert.is_false u.is_instance {}
+  it 'ucompare(s1, s2) returns -1, 0 or 1 if s1 is smaller, equal or greater than s2', ->
+    assert.equal -1, 'a'\ucompare 'b'
+    assert.equal -1, 'a'\ucompare 'ä'
+    assert.equal 1, 'ö'\ucompare 'ä'
 
-  it 'len() returns the number characters in the string', ->
-    assert.equal 3, u('foo')\len!
-    assert.equal 3, u('åäö')\len!
-
-  it 'lower() returns a lower cased version of the string', ->
-    assert.equal 'abcåäö', u('aBCåÄÖ')\lower!
-
-  it 'upper() returns a upper cased version of the string', ->
-    assert.equal 'ABCÅÄÖ', u('abcåäö')\upper!
-
-  it 'reverse() returns a reversed version of the string', ->
-    assert.equal 'abcåäö', u('öäåcba')\reverse!
-
-  describe 'sub(i, [j])', ->
-    s = u'aåäöx'
+  describe 'usub(i, [j])', ->
+    s = 'aåäöx'
 
     it 'operates on characters instead of bytes', ->
-      assert.equal 'aåä', s\sub 1, 3
-      assert.equal 3, #s\sub(1, 3)
+      assert.equal 'aåä', s\usub 1, 3
+      assert.equal 'aåä', s\usub(1, 3)
 
     it 'adjusts the indexes similarily to string.sub', ->
-      assert.equal 'äöx', s\sub 3 -- j defaults to -1
-      assert.equal 'öx', s\sub -2 -- i counts from back
-      assert.equal 'aåäöx', s\sub -7 -- is corrected to 1
-      assert.equal 'aåäöx', s\sub 1, 123 -- j is corrected to last character
-      assert.equal '', s\sub 3, 2 -- empty string when i < j
+      assert.equal 'äöx', s\usub 3 -- j defaults to -1
+      assert.equal 'öx', s\usub -2 -- i counts from back
+      assert.equal 'aåäöx', s\usub -7 -- is corrected to 1
+      assert.equal 'aåäöx', s\usub 1, 123 -- j is corrected to last character
+      assert.equal '', s\usub 3, 2 -- empty string when i < j
 
   describe 'character access using indexing notation', ->
     it 'single character strings can be accessed using indexing notation', ->
-      s = u'aåäöx'
+      s = 'aåäöx'
       assert.equal 'a', s[1]
       assert.equal 'ä', s[3]
 
     it 'accesses using invalid indexes returns an empty string', ->
-      s = u'abc'
+      s = 'abc'
       assert.equal '', s[0]
       assert.equal '', s[4]
 
     it 'the index can be negative similarily to sub()', ->
-      s = u'aåäöx'
+      s = 'aåäöx'
       assert.equal 'ä', s[-3]
 
-  describe 'match(pattern [, init])', ->
-    it 'returns ustrings for string captures', ->
-      assert.same { u'a', 2 }, { u'ab'\match '(%w)()' }
-
+  describe 'umatch(pattern [, init])', ->
     it 'init specifies a character offset', ->
-      assert.same { u'ö', 4 }, { u'äåö'\match '(%S+)()', 3 }
+      assert.same { 'ö', 4 }, { 'äåö'\umatch '(%S+)()', 3 }
 
     it 'if init is greater than the length nil is returned', ->
-      assert.is_nil u'1'\match '1', 2
+      assert.is_nil '1'\umatch '1', 2
 
     it 'accepts regex patterns', ->
-      assert.same {u'ö'}, { u'/ö'\match r'\\p{L}'}
+      assert.same {'ö'}, { '/ö'\umatch r'\\p{L}'}
 
-  it 'gmatch(..) always returns ustrings for string captures', ->
-    s = u'foo bar'
-    gen = s\gmatch '()(%w+)'
-    rets = {}
-    while true
-      vals = { gen! }
-      break if #vals == 0
-      append rets, vals
-
-    assert.same { { 1, u'foo' }, { 5, u'bar' } }, rets
-
-  describe 'find(s, pattern [, init [, plain]])', ->
+  describe 'ugmatch()', ->
     it 'returns character offsets instead of byte offsets', ->
-      assert.same {2, 4, 5}, { u'ä öx'\find '%s.+x()' }
+      s = 'föo bãr'
+      gen = s\ugmatch '(%S+)()'
+      rets = {}
+      while true
+        vals = { gen! }
+        break if #vals == 0
+        append rets, vals
+
+      assert.same { { 'föo', 4 }, { 'bãr', 8 } }, rets
+
+    it 'accepts regex patterns', ->
+      s = 'well hello there'
+      matches = [m for m in s\ugmatch r'\\w+']
+      assert.same { 'well', 'hello', 'there' }, matches
+
+  describe 'ufind(pattern [, init [, plain]])', ->
+    it 'returns character offsets instead of byte offsets', ->
+      assert.same { 2, 4, 5 }, { 'ä öx'\ufind '%s.+x()' }
 
     it 'adjust middle-of-sequence position returns to character start', ->
-      assert.same {1, 1}, { u'äöx'\find '%S' }
-
-    it 'always returns ustrings for string captures', ->
-      assert.same {1, 1, u'a'}, { u'ab'\find '(a)' }
+      assert.same { 1, 1 }, { 'äöx'\ufind '%S' }
 
     it 'init specifies a character offset', ->
-      assert.same {3, 3, u'ö'}, { u'äåö'\find '(%S+)', 3 }
+      assert.same { 3, 3, 'ö' }, { 'äåö'\ufind '(%S+)', 3 }
 
     it 'if init is greater than the length nil is returned', ->
-      assert.is_nil u'1'\find '1', 2
+      assert.is_nil '1'\ufind '1', 2
 
-  it 'format(formatstring, ...) accepts and returns ustrings', ->
-    assert.equal 'ustring', typeof u'%d'\format 2
-
-  it 'rep(n, sep) accepts and returns ustrings', ->
-    ret = u'a'\rep 2, u'x'
-    assert.equal 'axa', ret
-    assert.equal 'ustring', typeof ret
-
-  it 'gsub(pattern, repl [, n]) accepts and returns ustrings', ->
-    s, count = u'foo bar'\gsub u'%w+', u'bork'
-    assert.equal 'bork bork', s
-    assert.equal 2, count
-    assert.equal 'ustring', typeof s
+    it 'accepts regexes', ->
+      assert.same { 2, 2 }, { '!ä öx'\ufind r'\\pL' }
 
   describe 'byte_offset(...)', ->
     it 'returns byte offsets for all character offsets passed as parameters', ->
-      assert.same {1, 3, 5, 7}, { u'äåö'\byte_offset 1, 2, 3, 4 }
+      assert.same {1, 3, 5, 7}, { 'äåö'\byte_offset 1, 2, 3, 4 }
 
     it 'accepts non-increasing offsets', ->
-      assert.same {1, 1}, { u'ab'\byte_offset 1, 1 }
+      assert.same {1, 1}, { 'ab'\byte_offset 1, 1 }
 
     it 'raises an error for decreasing offsets', ->
-      assert.raises 'Decreasing offset', -> u'äåö'\byte_offset 2, 1
+      assert.raises 'Decreasing offset', -> 'äåö'\byte_offset 2, 1
 
     it 'raises error for out-of-bounds offsets', ->
-      assert.raises 'out of bounds', -> u'äåö'\byte_offset 5
-      assert.raises 'offset', -> u'äåö'\byte_offset 0
-      assert.raises 'offset', -> u'a'\byte_offset -1
+      assert.raises 'out of bounds', -> 'äåö'\byte_offset 5
+      assert.raises 'offset', -> 'äåö'\byte_offset 0
+      assert.raises 'offset', -> 'a'\byte_offset -1
 
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
-      assert.same {1, 3, 5}, u'äåö'\byte_offset { 1, 2, 3 }
+      assert.same {1, 3, 5}, 'äåö'\byte_offset { 1, 2, 3 }
 
   describe 'char_offset(...)', ->
     it 'returns character offsets for all byte offsets passed as parameters', ->
-      assert.same {1, 2, 3, 4}, { u'äåö'\char_offset 1, 3, 5, 7 }
+      assert.same {1, 2, 3, 4}, { 'äåö'\char_offset 1, 3, 5, 7 }
 
     it 'accepts non-increasing offsets', ->
-      assert.same {2, 2}, { u'ab'\char_offset 2, 2 }
+      assert.same {2, 2}, { 'ab'\char_offset 2, 2 }
 
     it 'raises an error for decreasing offsets', ->
-      assert.raises 'Decreasing offset', -> u'äåö'\char_offset 3, 1
+      assert.raises 'Decreasing offset', -> 'äåö'\char_offset 3, 1
 
     it 'raises error for out-of-bounds offsets', ->
-      assert.raises 'out of bounds', -> u'ab'\char_offset 4
-      assert.raises 'offset', -> u'äåö'\char_offset 0
-      assert.raises 'offset', -> u'a'\char_offset -1
+      assert.raises 'out of bounds', -> 'ab'\char_offset 4
+      assert.raises 'offset', -> 'äåö'\char_offset 0
+      assert.raises 'offset', -> 'a'\char_offset -1
 
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
-      assert.same {1, 2, 3, 4}, u'äåö'\char_offset { 1, 3, 5, 7 }
-
-  describe 'poor man system integration', ->
-    it 'lpeg.match accepts ustrings', ->
-      assert.is_not_nil lpeg.match lpeg.P'a', u'a'
-
-    it 'io.open accepts ustrings', ->
-      with_tmpfile (file) ->
-        f = assert io.open u file.path
-        f\close!
+      assert.same {1, 2, 3, 4}, 'äåö'\char_offset { 1, 3, 5, 7 }

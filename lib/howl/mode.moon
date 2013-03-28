@@ -11,9 +11,9 @@ class DefaultMode
     "'": "'"
   }
 
-by_extension = hash!
-by_pattern = hash!
-modes = hash!
+by_extension = {}
+by_pattern = {}
+modes = {}
 live = setmetatable {}, __mode: 'k'
 mode_variables = {}
 

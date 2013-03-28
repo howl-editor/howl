@@ -1,7 +1,8 @@
 import Matcher from howl.util
 
 parse = (buffer) ->
-  tokens = { tostring(token), true for token in buffer.text\gmatch '([%a_][%w_-]+)' }
+  token_pattern = r'(\\pL[\\pL\\d_-]+)'
+  tokens = { token, true for token in buffer.text\ugmatch token_pattern }
   [token for token, _ in pairs tokens]
 
 near_tokens = (part, context) ->
@@ -14,7 +15,6 @@ near_tokens = (part, context) ->
   line_pos = context.pos - start_line.start_pos
 
   for pos, token in close_chunk.text\gmatch '()([%a_][%w_-]+)'
-    token = tostring token
     rank = math.abs line_pos - pos
     info = tokens[token]
     rank = math.min info.rank, rank if info
@@ -34,7 +34,7 @@ class InBufferCompleter
     completions = {}
 
     for token in *@near_tokens
-      append completions, token if token.text\match(tostring pattern) and token.text != cur_word
+      append completions, token if token.text\match(pattern) and token.text != cur_word
 
     table.sort completions, (a, b) -> a.rank < b.rank
     completions = [c.text for c in *completions]

@@ -9,7 +9,7 @@ class Chunk extends PropertyObject
 
   @property text:
     get: =>
-      @buffer.sci\raw!\sub(@start_pos, @end_pos)
+      @buffer.text\usub(@start_pos, @end_pos)
     set: (text) =>
       @buffer\as_one_undo ->
         @delete!
