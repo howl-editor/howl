@@ -2,6 +2,13 @@ import style, theme, ActionBuffer from howl.ui
 import Scintilla, Buffer, config from howl
 
 describe 'style', ->
+  local sci, buffer
+
+  before_each ->
+      sci = Scintilla!
+      buffer = Buffer {}, sci
+      style.register_sci sci
+
   it 'styles can be accessed using direct indexing', ->
     t = styles: default: color: '#998877'
     style.set_for_theme t
@@ -16,9 +23,6 @@ describe 'style', ->
       style.define 'keyword', color: '#334455'
       style.define 'custom', color: '#334455'
 
-      sci = Scintilla!
-      buffer = Buffer {}, sci
-      style.register_sci sci
       custom_number = style.number_for 'custom', buffer
       keyword_number = style.number_for 'keyword', buffer
 
@@ -26,16 +30,13 @@ describe 'style', ->
       style.define 'custom', color: '#776655'
 
       keyword_fore = sci\style_get_fore keyword_number
-      assert.equal keyword_fore, '#665544'
+      assert.equal '#665544', keyword_fore
 
       custom_fore = sci\style_get_fore custom_number
-      assert.equal custom_fore, '#776655'
+      assert.equal '#776655', custom_fore
 
     it 'allows specifying font size for a style as an offset spec from "font_size"', ->
       style.define 'larger_style', font: size: 'larger'
-      sci = Scintilla!
-      buffer = Buffer {}, sci
-      style.register_sci sci
       style_number = style.number_for 'larger_style', buffer
       font_size = sci\style_get_size style_number
       assert.is_true font_size > config.font_size
@@ -43,18 +44,27 @@ describe 'style', ->
     it 'allows aliasing styles using a string as <definition>', ->
       style.define 'target', color: '#beefed'
       style.define 'alias', 'target'
-      sci = Scintilla!
-      buffer = Buffer {}, sci
-      style.register_sci sci
       style_number = style.number_for 'alias', buffer
       assert.equal '#beefed', sci\style_get_fore style_number
 
-    it 'defining the "default" style causes other styles to be rebased upon that', ->
+    it 'the actual style used is based upon the effective default style', ->
+      style.define 'default', background: '#112233'
+      style.define 'other_default', background: '#111111'
+      style.define 'custom', color: '#beefed'
+
+      sci2 = Scintilla!
+      buffer2 = Buffer {}, sci2
+      style.register_sci sci2, 'other_default'
+
+      style_number = style.number_for 'custom', buffer
+      assert.equal '#112233', sci\style_get_back style_number
+
+      style_number = style.number_for 'custom', buffer2
+      assert.equal '#111111', sci2\style_get_back style_number
+
+    it 'redefining a default style causes other styles to be rebased upon that', ->
       style.define 'own_style', color: '#334455'
 
-      sci = Scintilla!
-      buffer = Buffer {}, sci
-      style.register_sci sci
       custom_number = style.number_for 'own_style', buffer
       default_number = style.number_for 'default', buffer
 
@@ -81,8 +91,6 @@ describe 'style', ->
       assert.equal style.number_for('keyword'), 5 -- default keyword number
 
     it 'automatically assigns a style number and defines the style in scis if necessary', ->
-      sci = Scintilla!
-      buffer = Buffer {}, sci
       style.define 'my_style_a', color: '#334455'
       style.define 'my_style_b', color: '#334455'
       style_num = style.number_for 'my_style_a', buffer
@@ -91,17 +99,12 @@ describe 'style', ->
       assert.is_not.equal style.number_for('my_style_b', buffer, sci), style_num
 
     it 'remembers the style number used for a particular style', ->
-      sci = Scintilla!
-      buffer = Buffer {}, sci
       style.define 'got_it', color: '#334455'
       style_num = style.number_for 'got_it', buffer
       style_num2 = style.number_for 'got_it', buffer
       assert.equal style_num2, style_num
 
-    it 'raises an error if the number of styles are exhausted', ->
-      sci = Scintilla!
-      buffer = Buffer {}, sci
-
+    it 'raises an error if the number of styles are #exhausted', ->
       for i = 1, 255 style.define 'my_style' .. i, color: '#334455'
 
       assert.raises 'Out of style number', ->
@@ -114,22 +117,22 @@ describe 'style', ->
     assert.equal style.name_for(5, {}), 'keyword' -- default keyword number
 
     style.define 'whats_in_a_name', color: '#334455'
-    buffer = Buffer {}
     style_num = style.number_for 'whats_in_a_name', buffer
     assert.equal style.name_for(style_num, buffer), 'whats_in_a_name'
 
   describe '.register_sci(sci, default_style)', ->
-    it 'defines the default styles in the specified sci', ->
+    it 'defines the #default styles in the specified sci', ->
       t = theme.current
       t.styles.keyword = color: '#112233'
       style.set_for_theme t
 
-      sci = Scintilla!
-      buffer = Buffer {}
-      number = style.number_for 'keyword', buffer
-      old = sci\style_get_fore number
-      style.register_sci sci
-      new = sci\style_get_fore number
+      sci2 = Scintilla!
+      buffer2 = Buffer {}, sci2
+
+      number = style.number_for 'keyword', buffer2
+      old = sci2\style_get_fore number
+      style.register_sci sci2
+      new = sci2\style_get_fore number
       assert.is_not.equal new, old
       assert.equal new, t.styles.keyword.color
 
@@ -138,15 +141,15 @@ describe 'style', ->
       t.styles.keyword = color: '#223344'
       style.set_for_theme t
 
-      sci = Scintilla!
-      style.register_sci sci, style.keyword
-      def_fore = sci\style_get_fore style.number_for 'default', {}
-      assert.equal def_fore, t.styles.keyword.color
+      sci2 = Scintilla!
+      style.register_sci sci2, 'keyword'
+      def_fore = sci2\style_get_fore style.number_for 'default', {}
+      def_kfore = sci2\style_get_fore style.number_for 'keyword', {}
+      assert.equal t.styles.keyword.color, def_fore
 
   it '.set_for_buffer(sci, buffer) initializes any previously used buffer styles', ->
-    sci = Scintilla!
     sci2 = Scintilla!
-    buffer = Buffer {}, sci
+    style.register_sci sci2
 
     style.define 'style_foo', color: '#334455'
     prev_number = style.number_for 'style_foo', buffer

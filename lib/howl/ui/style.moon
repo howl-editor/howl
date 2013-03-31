@@ -37,7 +37,7 @@ PREDEF_END = 39
 STYLE_MAX = 255
 
 styles = {}
-scis = setmetatable {}, __mode: 'v'
+scis = setmetatable {}, __mode: 'k'
 buffer_styles = setmetatable {}, __mode: 'k'
 
 size_offsets = {
@@ -68,9 +68,10 @@ get_buffer_styles = (buffer) ->
   buffer_styles[buffer] = b_styles
   b_styles
 
-set_style = (sci, number, style) ->
+set_style = (sci, number, style, is_default) ->
   font = style.font or {}
-  default = styles.default
+  default = is_default and style or styles[scis[sci]] or styles.default
+  error "sci instance is not registered: #{sci}", 2 unless default
   default_font = default.font or {}
   one_of = (a, b) -> a != nil and a or b
 
@@ -86,15 +87,15 @@ set_style = (sci, number, style) ->
     \style_set_changeable number, not (one_of(style.read_only, default.read_only))
     \style_set_visible number, not (one_of(style.visible, default.visible) == false)
 
-register_sci = (sci, default_style) ->
-  set_style sci, default_style_numbers.default, default_style or styles.default
+register_sci = (sci, default_style = 'default') ->
+  set_style sci, default_style_numbers.default, styles[default_style], true
+  scis[sci] = default_style
   sci\style_clear_all!
 
   for name, style in pairs styles
-    if name != 'default'
+    if style != default_style and style.number != default_style_numbers.default
       set_style sci, style.number, style if style.number
 
-  append scis, sci
 
 set_for_buffer = (sci, buffer) ->
   b_styles = get_buffer_styles buffer
@@ -102,20 +103,23 @@ set_for_buffer = (sci, buffer) ->
     style = styles[name]
     set_style sci, style_num, style if style
 
-rebase_on = (definition) ->
-  for sci in *scis
-    set_style sci, definition.number, definition
-    sci\style_clear_all!
+rebase_on = (style_name, definition, sci) ->
+  style_number = default_style_numbers.default
 
-    for name, style in pairs styles
-      if name != 'default'
-        set_style sci, style.number, style if style.number
+  set_style sci, style_number, definition
+  sci\style_clear_all!
+
+  for name, style in pairs styles
+    if name != style_name and style.number
+      set_style sci, style.number, style
 
   for buffer, b_styles in pairs buffer_styles
-    for name, number in pairs b_styles
-      style = styles[name]
-      if style
-        set_style sci, number, styles[name] for sci in *buffer.scis when sci
+    for b_sci in *buffer.scis
+      if b_sci == sci
+        for name, number in pairs b_styles
+          style = styles[name]
+          if style
+            set_style sci, number, styles[name]
 
 define = (name, definition) ->
   error "Missing argument #1 (name)", 2 unless name
@@ -129,18 +133,21 @@ define = (name, definition) ->
   style.number = default_style_numbers[name]
   styles[name] = style
 
-  if name == 'default'
-    rebase_on style
-    return
-
   -- redefine for existing scis
+  affected_scis = {} -- (sci -> style number)
 
-  if style.number -- default style, set for all scis
-    set_style sci, style.number, style for sci in *scis when sci -- when sci? yes; weak table
-  else
-    for buffer, styles in pairs buffer_styles
-      if styles[name]
-        set_style sci, styles[name], style for sci in *buffer.scis when sci
+  if style.number then -- default style, affects all scis
+    affected_scis[sci] = style.number for sci in pairs scis
+  else -- find scis for buffers with this style
+    for buffer, b_styles in pairs buffer_styles
+      if b_styles[name]
+        affected_scis[sci] = b_styles[name] for sci in *buffer.scis
+
+  for sci, style_number in pairs affected_scis
+    if name == scis[sci] -- redefining the default style for the sci
+      rebase_on name, style, sci
+    else
+      set_style sci, style_number, style
 
 define_default = (name, attributes) ->
   define name, attributes unless styles[name]
@@ -148,7 +155,7 @@ define_default = (name, attributes) ->
 next_style_number = (from_num, buffer) ->
   num = from_num + 1
   if num == PREDEF_START then return PREDEF_END + 1
-  error 'Out of style numbers for ' .. buffer.title if num > STYLE_MAX
+  error('Out of style numbers for ' .. buffer.title) if num > STYLE_MAX
   num
 
 name_for = (number, buffer) ->
@@ -182,8 +189,8 @@ set_for_theme = (theme) ->
     style.number = default_style_numbers[name]
     styles[name] = style
 
-  -- and rebase
-  rebase_on styles.default
+  -- and rebase all existing scis
+  rebase_on default_style, styles[default_style], sci for sci, default_style in pairs scis
 
 at_pos = (buffer, pos) ->
   b_pos = buffer\byte_offset pos

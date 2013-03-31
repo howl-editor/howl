@@ -58,7 +58,7 @@ class BufferPopup extends Popup
       \set_code_page Scintilla.SC_CP_UTF8
       \set_hscroll_bar false
 
-    style.register_sci sci, style.popup
+    style.register_sci sci, 'popup'
     style.set_for_buffer sci, buffer
     highlight.set_for_buffer sci, buffer
     buffer\add_sci_ref sci
