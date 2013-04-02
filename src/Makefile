@@ -10,8 +10,8 @@ LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
 LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
 
-SCINTILLA_VER = scintilla325
-SCINTILLA_CHECKSUM = a9bb60c75e5fcb7ce81711b56fed31e0
+SCINTILLA_VER = scintilla330
+SCINTILLA_CHECKSUM = 5638a9d1cf89459a049798a7cf92e962
 SCINTILLA_URL = http://prdownloads.sourceforge.net/scintilla/$(SCINTILLA_VER).tgz?download
 SCINTILLA = deps/$(SCINTILLA_VER)
 SCINTILLA_IFACE = $(SCINTILLA)/include/Scintilla.iface
