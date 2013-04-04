@@ -60,6 +60,8 @@ ffi.cdef [[
   gchar *       g_regex_escape_string     (const gchar *string, gint length);
 
   gint      g_match_info_get_match_count(const GMatchInfo *match_info);
+  gboolean  g_match_info_matches        (const GMatchInfo *match_info);
+  gboolean  g_match_info_next           (GMatchInfo *match_info, GError **error);
   gchar *   g_match_info_fetch          (const GMatchInfo *match_info, gint match_num);
   void      g_match_info_unref          (GMatchInfo *match_info);
   gboolean  g_match_info_fetch_pos      (const GMatchInfo *match_info,
@@ -83,11 +85,15 @@ do_match = (p, s, init) ->
   count = C.g_match_info_get_match_count mi[0]
   mi, ptr, count
 
+get_capture_string = (mi, index) ->
+  cs_match = C.g_match_info_fetch(mi[0], index)
+  error "Failed to fetch capture #{index}" if cs_match == nil
+  match = ffi.string cs_match
+  C.g_free cs_match
+  match
+
 get_capture = (match_info, index, ptr, fetch_positions = false) ->
-  s_match = C.g_match_info_fetch(match_info[0], index)
-  error "Failed to fetch capture #{index}" if s_match == nil
-  match = ffi.string s_match
-  C.g_free s_match
+  match = get_capture_string match_info, index
   return match unless fetch_positions or #match == 0
 
   start_pos = ffi.new 'gint[1]'
@@ -137,24 +143,54 @@ methods = {
     return table.unpack matches
 
   gmatch: (s) =>
-    start = 1
+    return nil unless #s > 0
+    ptr = const_char_p s
+    start_pos = ffi.new 'gint[1]'
+    mi = ffi.new 'GMatchInfo *[1]'
+    matches = {}
+    pos_matches = {}
+
+    C.g_regex_match self, ptr, 0, mi
+
+    while C.g_match_info_matches(mi[0]) != 0
+      count = C.g_match_info_get_match_count mi[0]
+      capture_start = count > 1 and 1 or 0
+      capture_table = count > 2 and {} or matches
+
+      for i = capture_start, count - 1
+        match = get_capture_string mi, i
+
+        if #match == 0 -- position capture
+          if C.g_match_info_fetch_pos(mi[0], i, start_pos, null) == 0
+            error 'Failed to fetch match position'
+
+          index = #pos_matches + 1
+          pos_matches[index] = tonumber(start_pos[0]) + 1
+          match = index
+
+        capture_table[#capture_table + 1] = match
+
+      matches[#matches + 1] = capture_table if matches != capture_table
+      C.g_match_info_next mi[0], nil
+
+    free_match_info mi
+    has_position_captures = #pos_matches > 0
+    pos_matches = s\char_offset pos_matches if has_position_captures
+
+    pos = 0
     ->
-      return nil if start == nil
-      match_info, ptr, count = do_match self, s, start
-      unless match_info
-        start = nil
-        return nil
+      pos += 1
+      match = matches[pos]
+      return nil unless match
+      if type(match) == 'table'
+        if has_position_captures
+          for i, value in ipairs match
+            match[i] = pos_matches[value] if type(value) == 'number'
 
-      match, _, end_pos = get_capture match_info, 0, ptr, true
-      matches = {}
-      if count > 1
-        get_captures match_info, ptr, matches, 1, count, start - 1
+        return table.unpack match
       else
-        matches[#matches + 1] = match
+        return type(match) == 'number' and pos_matches[match] or match
 
-      free_match_info match_info
-      start += end_pos + 1
-      return table.unpack matches
 }
 
 regex = ffi.typeof 'GRegex'

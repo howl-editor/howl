@@ -65,6 +65,10 @@ describe 'Regex', ->
         assert.same { 'well', 'hello', 'there' }, matches
 
     context 'with captures in the pattern', ->
+      it 'returns empty captures as position matches', ->
+        matches = [p for p in r'()\\pL+'\gmatch 'well hellö there' ]
+        assert.same { 1, 6, 12 }, matches
+
       it 'produces the the set of captures in each call', ->
         matches = [{p,m} for p,m in r'()(\\w+)'\gmatch 'well hello there']
         assert.same { {1, 'well'}, {6, 'hello'}, {12, 'there'} }, matches
