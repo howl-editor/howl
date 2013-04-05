@@ -1,5 +1,6 @@
 ffi = require 'ffi'
 
+import type, tonumber from _G
 import GError, gint, const_char_p from howl.cdefs
 import C from ffi
 
@@ -165,7 +166,7 @@ methods = {
             error 'Failed to fetch match position'
 
           index = #pos_matches + 1
-          pos_matches[index] = tonumber(start_pos[0]) + 1
+          pos_matches[index] = start_pos[0] + 1
           match = index
 
         capture_table[#capture_table + 1] = match
@@ -187,9 +188,9 @@ methods = {
           for i, value in ipairs match
             match[i] = pos_matches[value] if type(value) == 'number'
 
-        return table.unpack match
+        table.unpack match
       else
-        return type(match) == 'number' and pos_matches[match] or match
+        if has_position_captures and type(match) == 'number' then pos_matches[match] else match
 
 }
 
