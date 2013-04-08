@@ -27,5 +27,8 @@ class BufferInput
     for buffer in *app.buffers
       return buffer if buffer.title == title
 
+    with app\new_buffer!
+      .title = title
+
 howl.inputs.register 'buffer', BufferInput
 return BufferInput
