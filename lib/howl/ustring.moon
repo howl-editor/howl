@@ -5,6 +5,7 @@ ffi = require 'ffi'
 bit = require 'bit'
 
 import C from ffi
+ffi_string = ffi.string
 
 ffi.cdef [[
   glong g_utf8_strlen(const gchar *str, gssize len);
@@ -17,6 +18,10 @@ ffi.cdef [[
   gchar * g_strndup(const gchar *str, gssize n);
 ]]
 
+g_string = (ptr) ->
+  s = ffi_string ptr
+  C.g_free ptr
+  s
 
 transform_rets = (s, ...) ->
   vals = {...}
@@ -124,7 +129,7 @@ usub = (i, j = -1) =>
   j = len if j > len
   return '' if j < i
 
-  ffi.string C.g_utf8_substring(const_char_p(@), i - 1, j)
+  g_string C.g_utf8_substring(const_char_p(@), i - 1, j)
 
 umatch = (s, pattern, init = 1) ->
   return nil if init and init > ulen s
@@ -158,9 +163,9 @@ with string
 properties =
   ulen: => ulen @
   multibyte: => ulen(@) != #@
-  ulower: => ffi.string C.g_utf8_strdown(const_char_p(@), #@)
-  uupper: => ffi.string C.g_utf8_strup(const_char_p(@), #@)
-  ureverse: => ffi.string C.g_utf8_strreverse(const_char_p(@), #@)
+  ulower: => g_string C.g_utf8_strdown(const_char_p(@), #@)
+  uupper: => g_string C.g_utf8_strup(const_char_p(@), #@)
+  ureverse: => g_string C.g_utf8_strreverse(const_char_p(@), #@)
   empty: => #@ == 0
   blank: => @find('%S') == nil
 
