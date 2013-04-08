@@ -41,7 +41,7 @@ class Matcher
   __call: (search) =>
     return @candidates if not search or #search == 0
 
-    search = search\lower!
+    search = search.ulower
     prev_search = search\usub 1, -2
     matches = @cache.matches[search] or {}
     if #matches > 0 then return matches
