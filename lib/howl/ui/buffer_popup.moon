@@ -30,6 +30,10 @@ class BufferPopup extends Popup
     super @bin, @_get_dimensions!
     @window\override_background_color 0, background
 
+  show: (...) =>
+    @buffer\add_sci_ref @sci
+    super ...
+
   close: =>
     @buffer\remove_sci_ref @sci
     super!
@@ -57,11 +61,11 @@ class BufferPopup extends Popup
       \set_style_bits 8
       \set_code_page Scintilla.SC_CP_UTF8
       \set_hscroll_bar false
+      \set_undo_collection false
 
     style.register_sci sci, 'popup'
     style.set_for_buffer sci, buffer
     highlight.set_for_buffer sci, buffer
-    buffer\add_sci_ref sci
     sci
 
   _get_dimensions: =>
