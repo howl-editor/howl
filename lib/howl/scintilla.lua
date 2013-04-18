@@ -17,6 +17,7 @@ local ffi = require('ffi')
 local bit = require('bit')
 local cdefs = require('howl.cdefs')
 local colors = require('howl.ui.colors')
+local destructor = require('howl.aux.destructor')
 local lgi_core = require 'lgi.core'
 
 local C = ffi.C
@@ -83,8 +84,14 @@ setmetatable(sci, {
     obj:set_margin_width_n(1, 0) -- no fold margin
     obj:set_mod_event_mask(bit.bor(SC_MOD_INSERTTEXT, SC_MOD_DELETETEXT))
 
+    -- set the gobject for use with lgi
+    obj.gobject = lgi_core.object.new(obj.sci_ptr)
+
     -- store in registry
     sci_map[obj.sci_ptr] = obj
+
+    -- destroy gobject when vanguished
+    obj.destructor = destructor(function() obj.gobject:destroy() end)
     return obj
   end
 })
@@ -144,7 +151,6 @@ function sci.dispatch(sci_ptr, event, args)
 end
 
 function sci:to_gobject()
-  self.gobject = self.gobject or lgi_core.object.new(self.sci_ptr)
   return self.gobject
 end
 
