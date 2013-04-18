@@ -13,8 +13,7 @@ describe 'Editor', ->
   window\show_all!
 
   teardown ->
-    -- teardown broken in busted it seems
-    -- window\destroy!
+    window\destroy!
 
   before_each ->
     buffer = Buffer {}
