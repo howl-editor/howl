@@ -121,7 +121,7 @@ describe 'style', ->
     assert.equal style.name_for(style_num, buffer), 'whats_in_a_name'
 
   describe '.register_sci(sci, default_style)', ->
-    it 'defines the #default styles in the specified sci', ->
+    it 'defines the default styles in the specified sci', ->
       t = theme.current
       t.styles.keyword = color: '#112233'
       style.set_for_theme t
