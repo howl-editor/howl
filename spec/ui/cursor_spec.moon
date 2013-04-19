@@ -1,5 +1,5 @@
 import Gtk from lgi
-import Buffer from howl
+import Buffer, config from howl
 import Editor, theme from howl.ui
 
 text = [[
@@ -80,15 +80,23 @@ describe 'Cursor', ->
       cursor.pos = 4
       assert.equal cursor.column, 4
 
-    it 'setting moves the cursor to the specified column', ->
-      cursor.column = 2
-      assert.equal 2, cursor.pos
+    context 'setting', ->
+      it 'moves the cursor to the specified column', ->
+        cursor.column = 2
+        assert.equal 2, cursor.pos
 
-    it 'setting adjusts the selection if it is persistent', ->
-      cursor.pos = 1
-      selection.persistent = true
-      cursor.column = 5
-      assert.equals 'Liñe', selection.text
+      it 'takes tabs into account', ->
+        config.tab_width = 4
+        buffer.text = '\tsome text after'
+        cursor.pos = 1
+        cursor.column = 5
+        assert.equal 2, cursor.pos
+
+      it 'adjusts the selection if it is persistent', ->
+        cursor.pos = 1
+        selection.persistent = true
+        cursor.column = 5
+        assert.equals 'Liñe', selection.text
 
   it '.at_end_of_line returns true if cursor is at the end of the line', ->
     cursor.pos = 1
