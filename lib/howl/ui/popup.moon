@@ -55,7 +55,11 @@ class Popup extends PropertyObject
     @resize @window.width, @window.height
 
   resize: (width, height) =>
-    error('Attempt to resize a closed popup', 2) if not @showing
+    if not @showing
+      @window.width = width
+      @window.height = height
+      return
+
     screen = screen_size @widget
 
     if @x + width > (screen.width - @comfort_zone)
