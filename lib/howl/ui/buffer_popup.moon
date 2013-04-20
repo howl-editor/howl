@@ -1,5 +1,6 @@
 import Gtk, Gdk from lgi
 import Scintilla from howl
+import destructor from howl.aux
 import Popup, style, highlight from howl.ui
 
 class BufferPopup extends Popup
@@ -7,7 +8,10 @@ class BufferPopup extends Popup
   new: (buffer) =>
     error('Missing argument #1: buffer', 3) if not buffer
     @buffer = buffer
-    @sci = @_create_sci buffer
+    @default_style = style.popup and 'popup' or 'default'
+    sci = @_create_sci buffer -- assignment to plain upvalue for the destructor to work
+    @sci = sci
+    @destructor = destructor -> buffer\remove_sci_ref sci
 
     @bin = Gtk.EventBox {
       Gtk.Alignment {
@@ -19,9 +23,8 @@ class BufferPopup extends Popup
       }
     }
 
-    popup_style = style.popup or style.default
     background = Gdk.RGBA!
-    background\parse popup_style.background
+    background\parse style[@default_style].background
 
     -- override the background color of the window as well, in order to avoid
     -- annoying flashes of the default window background color when closing
@@ -29,14 +32,6 @@ class BufferPopup extends Popup
 
     super @bin, @_get_dimensions!
     @window\override_background_color 0, background
-
-  show: (...) =>
-    @buffer\add_sci_ref @sci
-    super ...
-
-  close: =>
-    @buffer\remove_sci_ref @sci
-    super!
 
   resize: =>
     dimensions = @_get_dimensions!
@@ -63,7 +58,8 @@ class BufferPopup extends Popup
       \set_hscroll_bar false
       \set_undo_collection false
 
-    style.register_sci sci, 'popup'
+    buffer\add_sci_ref sci
+    style.register_sci sci, @default_style
     style.set_for_buffer sci, buffer
     highlight.set_for_buffer sci, buffer
     sci
