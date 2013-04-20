@@ -292,6 +292,8 @@ class Buffer extends PropertyObject
       log.error 'Spurious lexing call'
 
   _on_text_inserted: (args) =>
+    return unless args.text and #args.text > 0
+
     if args.text.multibyte
       @multibyte_from = @multibyte_from and math.min(@multibyte_from, args.at_pos) or args.at_pos
 
