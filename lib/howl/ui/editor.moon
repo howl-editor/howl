@@ -55,6 +55,7 @@ class Editor extends PropertyObject
     @selection = Selection @sci
     @cursor = Cursor self, @selection
     @searcher = Searcher self
+    @completion_popup = CompletionPopup self
 
     @header = IndicatorBar 'header', 3
     @footer = IndicatorBar 'footer', 3
@@ -328,9 +329,9 @@ class Editor extends PropertyObject
       @popup = nil
 
   complete: =>
-    completion = CompletionPopup self, @cursor.pos
-    if not completion.empty
-      @show_popup completion, position: completion.position, persistent: true
+    @completion_popup\complete!
+    if not @completion_popup.empty
+      @show_popup @completion_popup, position: @completion_popup.position, persistent: true
 
   undo: => @buffer\undo!
   redo: => @buffer\redo!
@@ -455,6 +456,7 @@ class Editor extends PropertyObject
       @popup.window\on_char_added self, signal_params if @popup.window.on_char_added
     elseif not handled and #@current_context.word_prefix >= config.completion_popup_after
       @complete!
+      true
 
   _on_text_inserted: (args) =>
     @buffer.sci_listener.on_text_inserted args
