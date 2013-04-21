@@ -88,6 +88,7 @@ set_style = (sci, number, style, is_default) ->
     \style_set_visible number, not (one_of(style.visible, default.visible) == false)
 
 register_sci = (sci, default_style = 'default') ->
+  error "Invalid default style '#{default_style}'", 2 unless styles[default_style]
   set_style sci, default_style_numbers.default, styles[default_style], true
   scis[sci] = default_style
   sci\style_clear_all!
