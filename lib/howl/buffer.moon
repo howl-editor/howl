@@ -195,10 +195,18 @@ class Buffer extends PropertyObject
   insert: (text, pos) =>
     b_pos = @byte_offset pos
     @sci\insert_text b_pos - 1, text
+
+    if not @multibyte_from and text.multibyte
+      @multibyte_from = b_pos
+
     pos + text.ulen
 
   append: (text) =>
     @sci\append_text #text, text
+
+    if not @multibyte_from and text.multibyte
+      @multibyte_from = @size
+
     @length + 1
 
   replace: (pattern, replacement) =>

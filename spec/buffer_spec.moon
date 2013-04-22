@@ -6,8 +6,8 @@ describe 'Buffer', ->
 
   before_each -> sci = Scintilla!
 
-  buffer = (text) ->
-    with Buffer {}
+  buffer = (text, sci) ->
+    with Buffer {}, sci
       .text = text
 
   describe 'creation', ->
@@ -151,12 +151,27 @@ describe 'Buffer', ->
     assert.is_true b.last_shown <= os.time!
 
   describe '.multibyte', ->
-    it 'returns #true if the buffer contains multibyte characters', ->
+    it 'returns true if the buffer contains multibyte characters', ->
       assert.is_false buffer('vanilla').multibyte
       assert.is_true buffer('HƏllo').multibyte
 
-    it 'is updated whenever text is #inserted', ->
+    it 'is updated whenever text is inserted', ->
       b = buffer 'vanilla'
+      b\insert 'Bačon', 1
+      assert.is_true b.multibyte
+
+    it 'is updated whenever text is inserted into a non-connected buffer', ->
+      b = buffer 'vanilla', sci
+      b\insert 'Bačon', 1
+      assert.is_true b.multibyte
+
+    it 'is updated whenever text is appended', ->
+      b = buffer 'vanilla'
+      b\append 'Bačon'
+      assert.is_true b.multibyte
+
+    it 'is updated whenever text is appended into a non-connected buffer', ->
+      b = buffer 'vanilla', sci
       b\append 'Bačon'
       assert.is_true b.multibyte
 
