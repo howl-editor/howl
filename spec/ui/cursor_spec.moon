@@ -80,23 +80,53 @@ describe 'Cursor', ->
       cursor.pos = 4
       assert.equal cursor.column, 4
 
-    context 'setting', ->
-      it 'moves the cursor to the specified column', ->
-        cursor.column = 2
-        assert.equal 2, cursor.pos
+  describe '.column = <nr>', ->
+    it 'moves the cursor to the specified column', ->
+      cursor.column = 2
+      assert.equal 2, cursor.pos
 
-      it 'takes tabs into account', ->
-        config.tab_width = 4
-        buffer.text = '\tsome text after'
-        cursor.pos = 1
-        cursor.column = 5
-        assert.equal 2, cursor.pos
+    it 'takes tabs into account', ->
+      buffer.config.tab_width = 4
+      buffer.text = '\tsome text after'
+      cursor.pos = 1
+      cursor.column = 5
+      assert.equal 2, cursor.pos
 
-      it 'adjusts the selection if it is persistent', ->
-        cursor.pos = 1
-        selection.persistent = true
-        cursor.column = 5
-        assert.equals 'Liñe', selection.text
+    it 'adjusts the selection if it is persistent', ->
+      cursor.pos = 1
+      selection.persistent = true
+      cursor.column = 5
+      assert.equals 'Liñe', selection.text
+
+  describe '.column_index', ->
+    it 'returns the real column index for the current line disregarding tabs', ->
+        buffer.config.tab_width = 4
+        buffer.text = '\tsome text'
+        cursor.pos = 2
+        assert.equal 5, cursor.column
+        assert.equal 2, cursor.column_index
+
+    it 'returns the column index as a character offset', ->
+        buffer.text = 'åäö\nåäö'
+        cursor.pos = 6
+        assert.equal 2, cursor.column_index
+
+  describe '.column_index = <nr>', ->
+    before_each ->
+      buffer.config.tab_width = 4
+      buffer.text = '\tsome text after'
+
+    it 'moves the cursor to the specified column index', ->
+      cursor.column_index = 2
+      assert.equal 2, cursor.column_index
+      assert.equal 5, cursor.column
+
+    it 'treats <nr> as a character offset', ->
+      buffer.text = 'åäö\nåäö'
+      cursor.line = 2
+      cursor.column_index = 2
+      assert.equal 2, cursor.column_index
+      assert.equal 6, cursor.pos
 
   it '.at_end_of_line returns true if cursor is at the end of the line', ->
     cursor.pos = 1

@@ -49,6 +49,14 @@ class Cursor extends PropertyObject
     get: => 1 + @sci\get_column @sci\get_current_pos!
     set: (col) => @pos = @container.buffer\char_offset 1 + @sci\find_column @line - 1, col - 1
 
+  @property column_index:
+    get: => @sci\count_characters(@sci\position_from_line(@line - 1), @sci\get_current_pos!) + 1
+    set: (index) => with @sci
+      base = \position_from_line(@line - 1)
+      offset = \get_line(@line - 1)\byte_offset(index) - 1
+      \goto_pos base + offset
+      \choose_caret_x!
+
   @property at_end_of_line:
     get: => @sci\get_line_end_position(@line - 1) == @sci\get_current_pos!
 
