@@ -100,10 +100,12 @@ describe 'BufferLines', ->
       lines[2] = 'hƏllØ'
       assert.equal lines[1], lines[2]
 
-    it 'ustring methods can be accessed directly on the object', ->
-      line = lines[3]
-      assert.equal line\sub(1,2), 'ag'
-      assert.equal line\find('in'), 4
+    it 'string methods can be accessed directly on the object', ->
+      buf.text = 'first line'
+      line = lines[1]
+      assert.equal 'fi', line\sub(1,2)
+      assert.equal 8, (line\find('in'))
+      assert.equal 'first win', (line\gsub('line', 'win'))
 
   describe '[nr]', ->
     it 'returns a line object for the specified line', ->
