@@ -50,6 +50,8 @@ class MoonscriptMode
       editor\shift_left!
       new_line = editor.buffer.lines\insert line.nr, ''
       new_line.indentation = wanted_indent
-      editor.cursor.column = wanted_indent + 1
+      with editor.cursor
+        .line = line.nr
+        .column = wanted_indent + 1
 
 return MoonscriptMode
