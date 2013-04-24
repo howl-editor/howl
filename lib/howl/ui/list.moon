@@ -58,6 +58,8 @@ class List extends PropertyObject
     set: (items) =>
       @_items = items or {}
       @_widths = nil
+      @offset = 1
+      @_sel_row = nil
 
   @property headers:
     get: => @_headers
@@ -191,6 +193,7 @@ class List extends PropertyObject
     total_length = 0
     total_length += width for width in *@_widths
     total_length += #@_widths if @_multi_column
+
     for row = @offset, @last_shown
       item = @items[row]
       start_pos = pos

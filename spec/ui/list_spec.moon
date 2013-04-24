@@ -21,9 +21,9 @@ describe 'List', ->
     assert.is_true list.showing
 
   it 'shows single column items each on one line', ->
-    list.items = {'one', 'two', 'three'}
+    list.items = {'one', 'twö', 'three'}
     list\show!
-    assert.equal buf.text, 'one\ntwo\nthree\n'
+    assert.equal 'one\ntwö\nthree\n', buf.text
 
   it 'shows multi column items each on one line, in separate columns', ->
     list.items = {
@@ -164,6 +164,15 @@ first    item one
 Column 1 Column 2
 three    four
 ]]
+
+  it 'resets offset when items are reassigned', ->
+    list.items = { 'one', 'two', 'three' }
+    list.max_height = 1
+    list\show!
+    list\next_page!
+    list.items = { 'one', 'two' }
+    list\show!
+    assert.match buf.text, '^one'
 
   context 'when items are not strings', ->
     it 'automatically converts items to strings using tostring before displaying', ->
@@ -344,7 +353,7 @@ three    four
       list\scroll_to 3
       assert.equal list.selection, 'three'
 
-  describe '.next_page', ->
+  describe 'next_page()', ->
     it 'scrolls to the next page', ->
       list.items = {'one', 'two', 'three'}
       list.max_height = 1
@@ -360,7 +369,7 @@ three    four
       list\next_page!
       assert.equal 1, list.offset
 
-  describe '.prev_page', ->
+  describe 'prev_page()', ->
     it 'scrolls to the previous page', ->
       list.items = {'one', 'two', 'three'}
       list.max_height = 1
