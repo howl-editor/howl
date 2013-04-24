@@ -39,13 +39,16 @@ describe 'moonscript-mode', ->
         'var = ',
         'var: ',
       }
+      'hanging declarations': {
+        'var,',
+      }
       'open bracket statements': {
         'var = { ',
         'var = {',
         'other: {',
         'some(',
         '{'
-      },
+      }
       'open conditionals': {
         'if foo and bar',
         'else',
@@ -53,7 +56,7 @@ describe 'moonscript-mode', ->
         'elseif true',
         'while foo',
         'unless bar',
-      },
+      }
       'block statements': {
         'switch foo!'
         'do',
