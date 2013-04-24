@@ -222,6 +222,7 @@ class Editor extends PropertyObject
     return unless prefix
     prefix ..= ' '
     current_column = @cursor.column
+    tab_expansion = string.rep ' ', @buffer.config.tab_width
 
     @transform_active_lines (lines) ->
       min_indent = math.huge
@@ -229,7 +230,8 @@ class Editor extends PropertyObject
 
       for line in *lines
         unless line.blank
-          new_text = line\usub(1, min_indent) .. prefix .. line\usub(min_indent + 1)
+          text = line\gsub '\t', tab_expansion
+          new_text = text\usub(1, min_indent) .. prefix .. text\usub(min_indent + 1)
           line.text = new_text
 
       @cursor.column = current_column + #prefix unless current_column == 1
@@ -289,14 +291,14 @@ class Editor extends PropertyObject
       @buffer\insert ' ', target_pos
 
   forward_to_match: (str) =>
-    pos = @current_line\ufind str, @cursor.column + 1, true
-    @cursor.column = pos if pos
+    pos = @current_line\ufind str, @cursor.column_index + 1, true
+    @cursor.column_index = pos if pos
 
   backward_to_match: (str) =>
     rev_line = @current_line.text.ureverse
-    cur_column = (rev_line.ulen - @cursor.column + 1)
+    cur_column = (rev_line.ulen - @cursor.column_index + 1)
     pos = rev_line\ufind str, cur_column + 1, true
-    @cursor.column = (rev_line.ulen - pos) + 1 if pos
+    @cursor.column_index = (rev_line.ulen - pos) + 1 if pos
 
   show_popup: (popup, options = {}) =>
     char_width = @sci\text_width 32, ' '
