@@ -78,7 +78,7 @@ map['/'] = 'search-forward'
 n = 'repeat-search'
 
 map['$'] = (editor) -> apply editor, (editor) ->
-  editor.cursor.column = math.max(1, #editor.current_line)
+  editor.cursor.column_index = math.max(1, #editor.current_line)
 
 on_unhandled = (event) ->
   char = event.character
