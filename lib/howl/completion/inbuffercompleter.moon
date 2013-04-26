@@ -1,7 +1,9 @@
 import Matcher from howl.util
 
+token_pattern = r'(\\pL[\\pL\\d_-]+)'
+near_token_pattern = r'()(\\pL[\\pL\\d_-]+)'
+
 parse = (buffer) ->
-  token_pattern = r'(\\pL[\\pL\\d_-]+)'
   tokens = { token, true for token in buffer.text\ugmatch token_pattern }
   [token for token, _ in pairs tokens]
 
@@ -14,7 +16,7 @@ near_tokens = (part, context) ->
   close_chunk = context.buffer\chunk start_line.start_pos, end_line.end_pos
   line_pos = context.pos - start_line.start_pos
 
-  for pos, token in close_chunk.text\gmatch '()([%a_][%w_-]+)'
+  for pos, token in close_chunk.text\ugmatch near_token_pattern
     rank = math.abs line_pos - pos
     info = tokens[token]
     rank = math.min info.rank, rank if info
