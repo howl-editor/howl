@@ -71,7 +71,13 @@ class Application extends PropertyObject
       _G.editor.buffer = buffer
       _G.editor
 
-  close_buffer: (buffer) =>
+  close_buffer: (buffer, force = false) =>
+    if not force and buffer.modified
+      input = inputs.yes_or_no false
+      _G.window.readline\read "Buffer '#{buffer}' is modified, close anyway? ", input, (wants_close) ->
+        @close_buffer buffer, true if wants_close
+      return
+
     @_buffers = [b for b in *@_buffers when b != buffer]
 
     if buffer.showing
