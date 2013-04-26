@@ -53,6 +53,7 @@
 
   diff:
     extensions: { 'diff', 'patch' }
+    patterns: { '%.git/COMMIT_EDITMSG$' }
 
   dot:
     extensions: { 'dot', 'gv' }
