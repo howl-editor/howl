@@ -10,6 +10,15 @@ command.register
 command.alias 'q', 'quit'
 
 command.register
+  name: 'wq',
+  description: 'Saves modified buffers and quits the application'
+  handler: ->
+    with howl.app
+      \quit! if \save_all!
+
+command.alias 'wq', 'save-and-quit'
+
+command.register
   name: 'run'
   description: 'Runs a command'
   handler: -> command.run!

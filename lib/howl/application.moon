@@ -121,6 +121,17 @@ class Application extends PropertyObject
     else
       buffer
 
+  save_all: =>
+    for b in *@buffers
+      if b.modified
+        unless b.file
+          log.error "No file associated with modified buffer '#{b}'"
+          return false
+
+        b\save!
+
+    true
+
   synchronize: =>
     reload_count = 0
     changed_count = 0
