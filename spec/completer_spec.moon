@@ -81,4 +81,4 @@ describe 'Completer', ->
 
     it 'returns the position after the accepted completion', ->
         buffer.text = 'hello there'
-        assert.equal 5, Completer(buffer, 4)\accept 'help', 4
+        assert.equal 5, Completer(buffer, 4)\accept 'hƏlp', 4

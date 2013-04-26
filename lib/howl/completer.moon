@@ -41,7 +41,7 @@ class Completer
     chunk = @buffer\context_at(pos).word
     chunk = @buffer\chunk(chunk.start_pos, pos - chunk.start_pos) unless @buffer.config.hungry_completion
     chunk.text = completion
-    chunk.start_pos + #completion
+    chunk.start_pos + completion.ulen
 
 config.define
   name: 'hungry_completion'
