@@ -20,18 +20,6 @@ describe 'BufferLines', ->
     it '.nr holds the line number', ->
       assert.equal lines[1].nr, 1
 
-    it '.empty returns true if the line is empty', ->
-      assert.is_false lines[1].empty
-      lines[1] = ''
-      assert.is_true lines[1].empty
-
-    it '.blank returns true if the line is empty or contains just whitespace', ->
-      assert.is_false lines[1].blank
-      lines[1] = ''
-      assert.is_true lines[1].blank
-      lines[1] = '  \t '
-      assert.is_true lines[1].blank
-
     it '.text returns the text of the specified line, sans linebreak', ->
       assert.equal lines[1].text, 'hƏllØ'
       assert.equal lines[2].text, '  wØrld'
@@ -106,6 +94,13 @@ describe 'BufferLines', ->
       assert.equal 'fi', line\sub(1,2)
       assert.equal 8, (line\find('in'))
       assert.equal 'first win', (line\gsub('line', 'win'))
+
+    it 'string properties can be accessed directly on the object', ->
+      assert.is_false lines[1].empty
+      assert.is_false lines[1].blank
+      lines[1] = ''
+      assert.is_true lines[1].empty
+      assert.is_true lines[1].blank
 
   describe '[nr]', ->
     it 'returns a line object for the specified line', ->

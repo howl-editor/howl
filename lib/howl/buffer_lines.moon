@@ -1,13 +1,14 @@
-import string from _G
+import string, type from _G
 
 line_mt =
   __index: (k) =>
     getter = @_getters[k]
     return getter self if getter
 
-    f = string[k]
-    if f
-      return (_, ...) -> f @text, ...
+    v = @text[k]
+    if v != nil
+      return v unless type(v) == 'function'
+      return (_, ...) -> v @text, ...
 
   __newindex: (k, v) =>
     setter = @_setters[k]
@@ -41,8 +42,6 @@ Line = (nr, buffer, sci) ->
       indentation: =>  sci\get_line_indentation nr - 1
       previous: => if nr > 1 then Line nr - 1, buffer, sci
       next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
-      empty: => #text! == 0
-      blank: => @match('^%s*$') != nil
 
     _setters:
       text: (value) =>
