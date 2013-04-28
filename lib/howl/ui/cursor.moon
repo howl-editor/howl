@@ -54,8 +54,7 @@ class Cursor extends PropertyObject
     set: (index) => with @sci
       base = \position_from_line(@line - 1)
       offset = \get_line(@line - 1)\byte_offset(index) - 1
-      \goto_pos base + offset
-      \choose_caret_x!
+      @pos = @container.buffer\char_offset 1 + base + offset
 
   @property at_end_of_line:
     get: => @sci\get_line_end_position(@line - 1) == @sci\get_current_pos!

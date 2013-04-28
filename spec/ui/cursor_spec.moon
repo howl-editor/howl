@@ -111,6 +111,13 @@ describe 'Cursor', ->
         cursor.pos = 6
         assert.equal 2, cursor.column_index
 
+    it 'adjusts the selection if it is persistent', ->
+      buffer.text = 'åäö'
+      cursor.pos = 1
+      selection.persistent = true
+      cursor.column_index = 3
+      assert.equals 'åä', selection.text
+
   describe '.column_index = <nr>', ->
     before_each ->
       buffer.config.tab_width = 4
