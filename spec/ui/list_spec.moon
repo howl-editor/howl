@@ -4,6 +4,10 @@ import Buffer, Scintilla from howl
 describe 'List', ->
   sci = Scintilla!
   buf = ActionBuffer sci
+  sci.listener =
+    on_text_inserted: buf\_on_text_inserted
+    on_text_deleted: buf\_on_text_deleted
+
   list = nil
 
   before_each ->
