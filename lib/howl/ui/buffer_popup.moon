@@ -57,6 +57,9 @@ class BufferPopup extends Popup
       \set_code_page Scintilla.SC_CP_UTF8
       \set_hscroll_bar false
       \set_undo_collection false
+      .listener =
+        on_text_inserted: buffer\_on_text_inserted
+        on_text_deleted: buffer\_on_text_deleted
 
     buffer\add_sci_ref sci
     style.register_sci sci, @default_style
