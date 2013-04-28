@@ -292,12 +292,14 @@ class Buffer extends PropertyObject
       log.error 'Spurious lexing call'
 
   _on_text_inserted: (args) =>
-    return unless args.text and #args.text > 0
-
-    if args.text.multibyte
-      @multibyte_from = @multibyte_from and math.min(@multibyte_from, args.at_pos) or args.at_pos
-
     @_len = nil
+
+    if args.text
+      if args.text.multibyte
+        @multibyte_from = @multibyte_from and math.min(@multibyte_from, args.at_pos) or args.at_pos
+    elseif @length != @size
+      @multibyte_from = math.min(@multibyte_from or 0, args.at_pos)
+
     signal.emit 'buffer-modified', buffer: self
 
   _on_text_deleted: (args) =>

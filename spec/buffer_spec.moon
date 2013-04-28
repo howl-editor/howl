@@ -151,11 +151,11 @@ describe 'Buffer', ->
     assert.is_true b.last_shown <= os.time!
 
   describe '.multibyte', ->
-    it 'returns #true if the buffer contains multibyte characters', ->
+    it 'returns true if the buffer contains multibyte characters', ->
       assert.is_false buffer('vanilla').multibyte
       assert.is_true buffer('HƏllo').multibyte
 
-    it 'is updated whenever text is #inserted', ->
+    it 'is updated whenever text is inserted', ->
       b = buffer 'vanilla'
       b\append 'Bačon'
       assert.is_true b.multibyte
