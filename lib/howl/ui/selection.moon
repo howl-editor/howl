@@ -7,10 +7,11 @@ import C from ffi
 
 class Selection extends PropertyObject
   new: (@sci) =>
+    @includes_cursor = false
     super!
 
   @property empty:
-    get: => @range! == nil
+    get: => @sci\get_selection_empty!
 
   @property anchor:
     get: => @sci\get_text!\char_offset @sci\get_anchor! + 1

@@ -258,9 +258,9 @@ describe 'Selection', ->
       editor\paste!
       assert.equal 'LiñeLiñe 1 ʘf tƏxt', buffer.lines[1].text
 
-    it '.empty is only false at eof', ->
-      assert.is_false selection.empty
-      cursor\eof!
+    it '.empty is still true if anchor and pos are the same sans the includes_cursor', ->
+      selection\set 1, 1
       assert.is_true selection.empty
-      cursor\left!
+
+      selection\set 1, 2
       assert.is_false selection.empty
