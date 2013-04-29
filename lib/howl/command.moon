@@ -49,7 +49,8 @@ class State
 
   close_on_cancel: (text, readline) => @_dispatch 'close_on_cancel', text, readline
   complete: (text, readline) => @_dispatch 'complete', text, readline
-  on_completed: (text, readline) => @_dispatch 'on_completed', text, readline
+  on_completed: (item, readline) => @_dispatch 'on_completed', item, readline
+  on_submit: (text, readline) => @_dispatch 'on_submit', text, readline
   go_back: (readline) => @_dispatch 'go_back', readline
   on_cancelled: (readline) =>
     for input in *@inputs
@@ -170,7 +171,8 @@ run = (cmd_string = nil) ->
     should_complete: (_, text, readline) -> state\should_complete text, readline
     close_on_cancel: (_, text, readline) -> state\close_on_cancel text, readline
     update: (_, text, readline) -> state\update text, readline
-    on_completed: (_, text, readline) -> state\on_completed text, readline
+    on_completed: (_, item, readline) -> state\on_completed item, readline
+    on_submit: (_, text, readline) -> state\on_submit text, readline
     go_back: (_, readline) -> state\go_back readline
 
     complete: (_, text, readline) ->

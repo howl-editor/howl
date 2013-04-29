@@ -145,6 +145,7 @@ class Readline extends PropertyObject
     @sci\clear_all_cmd_keys!
     @cursor = Cursor self, Selection @sci
     @buffer = ActionBuffer @sci
+    @buffer.title = 'readline'
     @gsci = @sci\to_gobject!
     @header = IndicatorBar 'header', 3
     @indic_title = @header\add 'left', 'title'
@@ -232,6 +233,9 @@ class Readline extends PropertyObject
       if @input.on_completed and @input\on_completed(item, self) == false
         @_complete!
         return
+
+    if @input.on_submit and @input\on_submit(value, self) == false
+      return
 
     value = @input\value_for value if @input.value_for
     @_show_only_cmd_line!
