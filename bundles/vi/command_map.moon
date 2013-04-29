@@ -70,7 +70,7 @@ d = (editor) ->
 
     with editor.selection
       \set start_pos, end_pos
-      \cut!
+      \cut force_include_cursor: true
 
 D = (editor) ->
   if state.has_modifier!

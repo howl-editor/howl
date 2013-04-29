@@ -201,15 +201,32 @@ describe 'Selection', ->
       assert.equal 5, selection.anchor
       assert.equal 'iñe', selection.text
 
-    it '.text #includes the current character', ->
+    it '.text includes the current character', ->
       selection\set 1, 3
-      selection.includes_cursor = true
       assert.equal 'Liñ', selection.text
 
     it '.text = <text> replaces the current character as well', ->
       selection\set 1, 2
       selection.text = 'Shi'
       assert.equal 'Shiñe 1 ʘf tƏxt', buffer.lines[1].text
+
+    context 'when the selection ends at a end-of-line character', ->
+      before_each ->
+        buffer.text = 'liñe1\nline2'
+        selection\set 1, 6
+
+      it 'the end-of-line character is not included in the selection', ->
+        assert.equal 'liñe1', selection.text
+
+      it 'the end-of-line character can be explicitly requested in cut() and copy()', ->
+        selection\copy force_include_cursor: true
+        cursor.column = 1
+        editor\paste!
+        assert.equal 'liñe1\nliñe1\nline2', buffer.text
+
+        selection\set 1, 6
+        selection\cut force_include_cursor: true
+        assert.equal 'liñe1\nline2', buffer.text
 
     describe 'range()', ->
       it 'includes the cursor position if needed', ->

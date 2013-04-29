@@ -89,7 +89,7 @@ describe 'VI', ->
     assert.equal ' two', editor.current_line.text
     assert.equal 'insert', state.mode
 
-  it '<d><d> removes the entire current line regardless of the current column', ->
+  it 'dd removes the entire current line regardless of the current column', ->
     cursor.column = 4
     press 'd', 'd'
     assert.equal 'LinƏ 1\nAnd third linƏ\n', buffer.text
@@ -141,6 +141,14 @@ describe 'VI', ->
         press mod, 'b'
         assert.equal 'Ə two', editor.current_line.text
         check!
+
+    it 'cw at end of line changes to end of line only', ->
+      buffer.text = 'line1\nline2'
+      cursor.pos = 5
+      press 'c', 'w'
+      assert.equals 'line\nline2', buffer.text
+      assert.equals 5, cursor.pos
+      assert.equal 'insert', state.mode
 
   describe 'commands with counts', ->
     it 'x deletes <count> characters', ->
