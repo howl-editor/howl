@@ -32,3 +32,32 @@ describe 'search_inputs', ->
 
     it 'value_for(text) returns <text>', ->
       assert.equal 'foo', input\value_for 'foo'
+
+  describe 'replace input', ->
+    local input, readline
+
+    before_each ->
+      input = inputs.replace!
+      readline = prompt: 'replace ', text: ''
+
+    describe 'on_submit', ->
+      context 'when no target has been specified yet', ->
+        it 'returns false', ->
+          assert.is_false input\on_submit 'foo', readline
+
+        it 'changes the prompt to show the selected target and resets the text', ->
+          input\on_submit 'foo', readline
+          assert.equals "replace 'foo' with ", readline.prompt
+          assert.equals "", readline.text
+
+      context 'when target has been specified already', ->
+        it 'returns non-false', ->
+          input\on_submit 'foo', readline
+          assert.is_not_false input\on_submit 'bar', readline
+
+    describe 'value_for', ->
+      it 'returns a table containing target and replacement', ->
+        input\on_submit 'foo', readline
+        input\on_submit 'bar', readline
+        assert.same { 'foo', 'bar' }, input\value_for 'bar', readline
+

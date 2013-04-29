@@ -8,6 +8,7 @@ class CompletionPopup extends MenuPopup
     @editor = editor
     @candidates = {}
     super {}, self\_on_completed
+    @buffer.title = 'completion'
 
   @property position: get: => @completer.start_pos
   @property empty: get: => #@candidates == 0

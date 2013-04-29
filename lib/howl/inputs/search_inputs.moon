@@ -14,4 +14,17 @@ class SearchInput
 class ForwardSearchInput extends SearchInput
   new: => super('forward_to', 'Forward search')
 
+class ReplaceInput
+  close_on_cancel: -> true
+
+  on_submit: (text, readline) =>
+    unless @target
+      @target = text
+      readline.prompt ..= "'#{text}' with "
+      readline.text = ''
+      false
+
+  value_for: (text) => { @target, text }
+
 howl.inputs.register 'forward_search', ForwardSearchInput
+howl.inputs.register 'replace', ReplaceInput

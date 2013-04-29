@@ -165,6 +165,13 @@ class Editor extends PropertyObject
     else
       @buffer.lines\for_text_range @selection.anchor, @cursor.pos
 
+  @property active_chunk: get: =>
+    return if @selection.empty
+      @buffer\chunk 1, @buffer.length
+    else
+      start, stop = @selection\range!
+      @buffer\chunk start, stop - start + 1
+
   focus: => @sci\grab_focus!
   newline: => @sci\new_line!
 

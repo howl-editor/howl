@@ -26,6 +26,38 @@ describe 'Editor', ->
     cursor.pos = 2
     assert.equal editor.current_line, buffer.lines[1]
 
+  describe '.active_lines', ->
+    context 'with no selection active', ->
+      it 'is a table containing .current_line', ->
+        buffer.text = 'hƏllo\nworld'
+        lines = editor.active_lines
+        assert.equals 1, #lines
+        assert.equals editor.current_line, lines[1]
+
+    context 'with a selection active', ->
+      it 'is a table of lines involved in the selection', ->
+        buffer.text = 'hƏllo\nworld'
+        selection\set 3, 8
+        active_lines = editor.active_lines
+        assert.equals 2, #active_lines
+        assert.equals lines[1], active_lines[1]
+        assert.equals lines[2], active_lines[2]
+
+  describe '.active_chunk', ->
+    it 'is a chunk', ->
+      assert.equals 'Chunk', typeof editor.active_chunk
+
+    context 'with no selection active', ->
+      it 'is a chunk encompassing the entire buffer text', ->
+        buffer.text = 'hƏllo\nworld'
+        assert.equals 'hƏllo\nworld', editor.active_chunk.text
+
+    context 'with a selection active', ->
+      it 'is a chunk containing the current the selection', ->
+        buffer.text = 'hƏllo\nworld'
+        selection\set 3, 8
+        assert.equals 'llo\nwo', editor.active_chunk.text
+
   it '.current_context returns the buffer context at the current position', ->
     buffer.text = 'hƏllo\nwʘrld'
     cursor.pos = 2
