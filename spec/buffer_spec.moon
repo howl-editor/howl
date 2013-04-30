@@ -243,9 +243,9 @@ describe 'Buffer', ->
       assert.equal b\context_at(2), b\context_at(2)
       assert.not_equal b\context_at(2), b\context_at(4)
 
-  it '.chunk(start_pos, length) returns a chunk for the specified range', ->
+  it '.chunk(start_pos, end_pos) returns a chunk for the specified range, inclusive', ->
     b = buffer 'chuñky bacon'
-    chunk = b\chunk(8, 3)
+    chunk = b\chunk(8, 10)
     assert.equal 'bac', chunk.text
 
   it 'delete deletes the specified number of characters', ->

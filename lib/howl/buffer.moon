@@ -184,7 +184,7 @@ class Buffer extends PropertyObject
 
     @doc = nil
 
-  chunk: (pos, length) => Chunk self, pos, pos + length - 1
+  chunk: (start_pos, end_pos) => Chunk self, start_pos, end_pos
 
   context_at: (pos) => Context self, pos
 
