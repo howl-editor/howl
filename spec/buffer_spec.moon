@@ -617,3 +617,11 @@ describe 'Buffer', ->
         b\reload!
         signal.disconnect 'buffer-reloaded', handler
         assert.spy(handler).was_called!
+
+    it 'buffer-title-set is fired whenever a buffer has its title set', ->
+      handler = spy.new -> true
+      b = buffer 'foo'
+      signal.connect 'buffer-title-set', handler
+      b.title = 'Sir Buffer'
+      signal.disconnect 'buffer-title-set', handler
+      assert.spy(handler).was_called!

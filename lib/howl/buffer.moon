@@ -112,6 +112,7 @@ class Buffer extends PropertyObject
       title ..= '<' .. title_counter(title) .. '>' if buffer_titles[title]
       @_title = title
       buffer_titles[title] = self
+      signal.emit 'buffer-title-set', buffer: self
 
   @property text:
     get: => @sci\get_text!
@@ -366,5 +367,10 @@ signal.register 'buffer-reloaded',
   description: 'Signaled right after a buffer was reloaded',
   parameters:
     buffer: 'The buffer that was reloaded'
+
+signal.register 'buffer-title-set',
+  description: 'Signaled right after a buffer had its title set',
+  parameters:
+    buffer: 'The buffer receiving the new title'
 
 return Buffer
