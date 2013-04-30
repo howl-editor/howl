@@ -109,6 +109,7 @@ command.register
       list\show!
 
     buffer.read_only = true
+    buffer.modified = false
     editor = howl.app\add_buffer buffer
 
 command.register
