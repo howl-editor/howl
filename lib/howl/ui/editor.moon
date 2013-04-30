@@ -294,7 +294,7 @@ class Editor extends PropertyObject
       @cursor\line_end!
       target_pos = @cursor.pos
       content_start = next_line\ufind('[^%s]') or 1
-      @buffer\delete target_pos, (next_line.start_pos + content_start - 1) - target_pos
+      @buffer\delete target_pos, next_line.start_pos + content_start - 2
       @buffer\insert ' ', target_pos
 
   forward_to_match: (str) =>

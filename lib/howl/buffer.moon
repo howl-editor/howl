@@ -127,13 +127,14 @@ class Buffer extends PropertyObject
       if not status then @sci\set_save_point!
       else -- there's no specific message for marking as modified
         @append ' '
-        @delete @size, 1
+        @sci\delete_range @size - 1, 1
 
   @property can_undo:
     get: => @sci\can_undo!
     set: (value) => @sci\empty_undo_buffer! if not value
 
   @property size: get: => @sci\get_text_length!
+
   @property length: get: =>
     @_len or= @sci\count_characters 0, @size
     @multibyte_from = nil if @_len == @size
@@ -188,9 +189,10 @@ class Buffer extends PropertyObject
 
   context_at: (pos) => Context self, pos
 
-  delete: (pos, length) =>
-    start_pos, end_pos = @byte_offset pos, pos + length
-    @sci\delete_range start_pos - 1, end_pos - start_pos
+  delete: (start_pos, end_pos) =>
+    return if start_pos > end_pos
+    b_start, b_end = @byte_offset start_pos, end_pos + 1
+    @sci\delete_range b_start - 1, b_end - b_start
 
   insert: (text, pos) =>
     b_pos = @byte_offset pos

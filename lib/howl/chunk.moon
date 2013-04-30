@@ -1,10 +1,7 @@
 import PropertyObject from howl.aux.moon
 
 class Chunk extends PropertyObject
-  new: (buffer, start_pos, end_pos) =>
-    @buffer = buffer
-    @start_pos = start_pos
-    @end_pos = end_pos
+  new: (@buffer, @start_pos, @end_pos) =>
     super!
 
   @property text:
@@ -16,7 +13,7 @@ class Chunk extends PropertyObject
         @buffer\insert text, @start_pos
         @end_pos = @start_pos + #text - 1
 
-  delete: => @buffer\delete @start_pos, @end_pos - @start_pos + 1
+  delete: => @buffer\delete @start_pos, @end_pos if @end_pos >= @start_pos
 
   @meta {
     __tostring: => @text

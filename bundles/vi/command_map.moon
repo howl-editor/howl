@@ -22,8 +22,9 @@ to_insert = (editor) ->
 replace_char = (event, translations, editor) ->
   if event.character
     apply editor, (editor) ->
-      editor.buffer\delete editor.cursor.pos, 1
-      editor.buffer\insert event.character, editor.cursor.pos, 1
+      with editor.cursor
+        editor.buffer\delete .pos, .pos
+        editor.buffer\insert event.character, .pos, 1
   else
     return false
 

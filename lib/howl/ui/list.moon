@@ -85,8 +85,8 @@ class List extends PropertyObject
       height
 
   clear: =>
-    if @end_pos
-      @buffer\delete @start_pos, @end_pos - @start_pos
+    if @end_pos and @end_pos > 1
+      @buffer\delete @start_pos, @end_pos - 1
       @end_pos = nil
 
   @property showing:
@@ -159,6 +159,8 @@ class List extends PropertyObject
         @scroll_to row
 
   show: =>
+    error "List: show() called without .items set", 2 unless @items
+
     @clear!
 
     total = #@items

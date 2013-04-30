@@ -99,7 +99,7 @@ describe 'auto_pair.handle(event, editor)', ->
       cursor.pos = 2
       assert.is_true auto_pair.handle event('\8', 'backspace'), editor
 
-    it '#deletes both characters as one undo', ->
+    it 'deletes both characters as one undo', ->
       buffer.text = '()'
       cursor.pos = 2
       auto_pair.handle event('\8', 'backspace'), editor

@@ -51,6 +51,26 @@ second item two
     list\show!
     assert.equal buf.text, 'one\ntwo'
 
+  describe 'clear()', ->
+    it 'removes a rendered list from the buffer', ->
+      buf.text = '||'
+      list = List buf, 2
+      list.items = {'one', 'two'}
+      list\show!
+      list\clear!
+      assert.equal '||', buf.text
+
+    it 'does nothing if the list has not been rendered yet or was empty', ->
+      buf.text = '||'
+      list = List buf, 2
+      list\clear!
+      assert.equal '||', buf.text
+
+      list.items = {}
+      list\show!
+      list\clear!
+      assert.equal '||', buf.text
+
   context 'when .caption is set', ->
     it 'shows it above the items', ->
       list.items = { 'first' }

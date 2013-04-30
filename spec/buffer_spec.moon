@@ -162,7 +162,7 @@ describe 'Buffer', ->
 
     it 'is unset whenever a previously multibyte buffer has its length calculated', ->
       b = buffer('HƏllo')
-      b\delete 2, 1
+      b\delete 2, 2
       b.length
       assert.is_false b.multibyte
 
@@ -248,10 +248,16 @@ describe 'Buffer', ->
     chunk = b\chunk(8, 10)
     assert.equal 'bac', chunk.text
 
-  it 'delete deletes the specified number of characters', ->
-    b = buffer 'ño örf'
-    b\delete 2, 3
-    assert.equal b.text, 'ñrf'
+  describe 'delete(start_pos, end_pos)', ->
+    it 'deletes the specified range, inclusive', ->
+      b = buffer 'ño örf'
+      b\delete 2, 4
+      assert.equal 'ñrf', b.text
+
+    it 'does nothing if end_pos is smaller than start_pos', ->
+      b = buffer 'hello'
+      b\delete 2, 1
+      assert.equal 'hello', b.text
 
   describe 'insert(text, pos)', ->
     it 'inserts text at pos', ->

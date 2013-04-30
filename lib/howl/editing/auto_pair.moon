@@ -25,7 +25,7 @@ handle_backspace = (event, editor, auto_pairs) ->
     buffer = editor.buffer
     buffer\as_one_undo ->
       pos = editor.cursor.pos
-      buffer\delete pos - 1, 2
+      buffer\delete pos - 1, pos
     true
 
 handle = (event, editor) ->
