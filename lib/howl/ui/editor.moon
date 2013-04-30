@@ -94,6 +94,10 @@ class Editor extends PropertyObject
     signal.connect 'buffer-saved', (args) ->
       @remove_popup! if @buffer == args.buffer
 
+    signal.connect 'buffer-title-set', (args) ->
+      buffer = args.buffer
+      @indicator.title.label = buffer.title if @buffer == buffer
+
   to_gobject: => @bin
 
   @property buffer:
