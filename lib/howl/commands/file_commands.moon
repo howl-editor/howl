@@ -20,11 +20,21 @@ command.register
   inputs: {}
   handler: ->
     buffer = _G.editor.buffer
-    if buffer.file
-      buffer\save!
-      nr_lines = #buffer.lines
-      log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
-        nr_lines, #buffer
+    return command.run 'save-as' unless buffer.file
+
+    buffer\save!
+    nr_lines = #buffer.lines
+    log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
+      nr_lines, #buffer
+
+command.register
+  name: 'save-as',
+  description: 'Saves the current buffer to a given file'
+  inputs: { 'file' }
+  handler: (file) ->
+    buffer = _G.editor.buffer
+    buffer.file = file
+    command.save!
 
 command.register
   name: 'close',
