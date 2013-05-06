@@ -6,11 +6,21 @@ meta_methods = (cls) ->
   cls.__base.__metas = {} if not cls.__base.__metas
   cls.__base.__metas
 
+delegate = (target, key) ->
+  return nil unless target
+  val = target[key]
+  return val unless callable val
+  return (self, ...) ->
+    val(target, ...)
+
 __index = (key) =>
   base = getmetatable self
   prop = base.__properties[key]
-  if prop and prop.get then return prop.get self
-  base[key]
+  return prop.get self if prop and prop.get
+  v = base[key]
+  return v if v
+  target = base.__delegate_target
+  target and delegate target, key
 
 __newindex = (key, value) =>
   base = getmetatable self
@@ -24,9 +34,10 @@ __newindex = (key, value) =>
     rawset self, key, value
 
 class PropertyObject
-  new: =>
+  new: (delegate_target) =>
     base = getmetatable self
     rawset base, '__properties', base.__properties or {}
+    rawset base, '__delegate_target', delegate_target if delegate_target
     base.__index = __index
     base.__newindex = __newindex
     for k, v in pairs base.__metas or {}

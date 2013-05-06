@@ -100,3 +100,20 @@ describe 'PropertyObject', ->
       o = SubClass!
       assert.equal 5, o + 2
       assert.equal 'div', o / 2
+
+  describe 'delegation', ->
+    it 'allows delegating to a default object passed in the constructor', ->
+      target = {
+        foo: 'bar'
+        func: spy.new -> 'return'
+      }
+
+      class Delegating extends PropertyObject
+        new: => super target
+        @property frob: get: => 'nic'
+
+      o = Delegating!
+      assert.equals 'nic',  o.frob
+      assert.equals 'bar',  o.foo
+      assert.equals 'return',  o\func!
+      assert.spy(target.func).was.called_with target
