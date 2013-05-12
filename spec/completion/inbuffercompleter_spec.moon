@@ -60,7 +60,7 @@ twitter
     buffer.text = [[
 two
 twitter
-fatwa
+_fatwa
 tw
 the_water
 ]]
@@ -68,7 +68,7 @@ the_water
     context = buffer\context_at line.end_pos
     completer = factory buffer, context
     comps = completer\complete context
-    assert.same { 'twitter', 'two', 'the_water', 'fatwa' }, comps
+    assert.same { 'twitter', 'two', 'the_water', '_fatwa' }, comps
 
   it 'works with unicode', ->
     buffer.text = [[

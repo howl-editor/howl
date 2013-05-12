@@ -1,7 +1,7 @@
 import Matcher from howl.util
 
-token_pattern = r'(\\pL[\\pL\\d_-]+)'
-near_token_pattern = r'()(\\pL[\\pL\\d_-]+)'
+token_pattern = r'([\\pL_][\\pL\\d_-]+)'
+near_token_pattern = r'()([\\pL_][\\pL\\d_-]+)'
 
 parse = (buffer) ->
   tokens = { token, true for token in buffer.text\ugmatch token_pattern }
