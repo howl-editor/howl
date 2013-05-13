@@ -83,6 +83,7 @@ command.register
       if event.key_name == 'escape'
         buffer.lines[1] = '(Snooping done, close this buffer at your leisure)'
         buffer\style 1, #buffer, 'comment'
+        buffer.modified = false
       else
         return false
 
