@@ -18,10 +18,11 @@ sort_buffers = (buffers) ->
     a.title < b.title
 
 class Application extends PropertyObject
+  title: 'Howl'
 
   new: (@root_dir, @args) =>
     @windows = {}
-    @editors = {}
+    @_editors = setmetatable {}, __mode: 'v'
     @_buffers = {}
     bundle.dirs = { @root_dir / 'bundles' }
     super!
@@ -31,9 +32,19 @@ class Application extends PropertyObject
     sort_buffers buffers
     buffers
 
+  @property editors: get: =>
+    [e for _, e in pairs @_editors when e != nil]
+
+  @property next_buffer: get: =>
+    return @new_buffer! if #@_buffers == 0
+
+    sort_buffers @_buffers
+    hidden_buffers = [b for b in *@_buffers when not b.showing]
+    return #hidden_buffers > 0 and hidden_buffers[1] or @_buffers[1]
+
   new_window: (properties) =>
     props =
-      title: 'Howl'
+      title: @title
       width: 800
       height: 640
       application: @g_app
@@ -52,11 +63,11 @@ class Application extends PropertyObject
     _G.window = window if #@windows == 1
     window
 
-  new_editor: (buffer, window = _G.window) =>
-    editor = Editor buffer
-    window\add_view editor
-    append @editors, editor
-    _G.editor = editor if #@editors == 1
+  new_editor: (opts = {}) =>
+    editor = Editor opts.buffer or @next_buffer
+    (opts.window or _G.window)\add_view editor, opts.placement or 'right_of'
+    append @_editors, editor
+    editor\grab_focus!
     editor
 
   new_buffer: (buffer_mode) =>
@@ -81,22 +92,9 @@ class Application extends PropertyObject
     @_buffers = [b for b in *@_buffers when b != buffer]
 
     if buffer.showing
-      sort_buffers @_buffers
-      shown_buffers = [b for b in *@_buffers when b.showing]
-      hidden_buffers = [b for b in *@_buffers when not b.showing]
-
-      if #shown_buffers == 0 and #hidden_buffers == 0
-        append hidden_buffers, @new_buffer!
-
       for editor in *@editors
         if editor.buffer == buffer
-          candidate = table.remove hidden_buffers, 1
-          if candidate
-            append shown_buffers, candidate
-          else
-            candidate = shown_buffers[1]
-
-          editor.buffer = candidate
+          editor.buffer = @next_buffer
 
     buffer\destroy!
 
@@ -213,7 +211,6 @@ class Application extends PropertyObject
     if #@editors == 0 -- failed to load any files above for some reason
       @new_editor @new_buffer!
 
-    _G.editor\focus!
     window\show_all! if window
     @_loaded = true
 

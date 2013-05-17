@@ -3,8 +3,11 @@ import Scintilla, Completer, signal, keyhandler, config, command from howl
 import PropertyObject from howl.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
 import Searcher, CompletionPopup from howl.ui
+import destructor from howl.aux
 
-editors = setmetatable {}, __mode: 'v'
+_editors = setmetatable {}, __mode: 'v'
+editors = -> [e for _, e in pairs _editors when e != nil]
+
 indicators = {}
 indicator_placements =
   top_left: true
@@ -13,12 +16,12 @@ indicator_placements =
   bottom_right: true
 
 apply_variable = (method, value) ->
-  for e in *editors
+  for e in *editors!
     sci = e.sci
     sci[method] sci, value
 
 apply_property = (name, value) ->
-  e[name] = value for e in *editors
+  e[name] = value for e in *editors!
 
 class Editor extends PropertyObject
 
@@ -29,7 +32,7 @@ class Editor extends PropertyObject
     indicators[id] = :id, :placement
 
   unregister_indicator: (id) ->
-    e\_remove_indicator id for e in *editors
+    e\_remove_indicator id for e in *editors!
     indicators[id] = nil
 
   new: (buffer) =>
@@ -39,7 +42,9 @@ class Editor extends PropertyObject
     @indicator = setmetatable {}, __index: self\_create_indicator
 
     @sci = Scintilla!
+
     style.register_sci @sci
+
     listener =
       on_style_needed: self\_on_style_needed
       on_keypress: self\_on_keypress
@@ -50,6 +55,7 @@ class Editor extends PropertyObject
       on_text_inserted: self\_on_text_inserted
       on_text_deleted: self\_on_text_deleted
       on_error: log.error
+
     @sci.listener = listener
 
     @selection = Selection @sci
@@ -86,10 +92,18 @@ class Editor extends PropertyObject
     }
     @bin\get_style_context!\add_class 'editor'
     @bin.child.sci_box\get_style_context!\add_class 'sci_box'
+    @bin.can_focus = true
+    @bin.on_focus_in_event = -> @sci\grab_focus!
+    @bin.on_destroy = ->
+      print 'on_destroy'
+      @buffer\remove_sci_ref @sci
+
+    @destructor = destructor -> print 'editor destructor'
 
     @buffer = buffer
+
     @_set_theme_settings!
-    append editors, self
+    append _editors, self
 
     signal.connect 'buffer-saved', (args) ->
       @remove_popup! if @buffer == args.buffer
@@ -176,7 +190,7 @@ class Editor extends PropertyObject
       start, stop = @selection\range!
       @buffer\chunk start, stop
 
-  focus: => @sci\grab_focus!
+  grab_focus: => @sci\grab_focus!
   newline: => @sci\new_line!
 
   newline_and_format: =>

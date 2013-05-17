@@ -9,4 +9,10 @@ return {
   alt_f11:    'toggle-fullscreen'
   alt_x:      'run'
   return:     'editor:newline-and-format'
+
+  ctrl_shift_left:  'view-left-or-create'
+  ctrl_shift_right: 'view-right-or-create'
+  ctrl_shift_up:    'view-up-or-create'
+  ctrl_shift_down:  'view-down-or-create'
+  ctrl_w:           'close-view'
 }

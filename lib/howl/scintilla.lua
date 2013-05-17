@@ -25,11 +25,13 @@ local char_arr, char_p, const_char_p = cdefs.char_arr, cdefs.char_p, cdefs.const
 local u = u
 
 local sci = {}
+local sci_mt = { __index = sci }
+
 local _ENV = sci
 if setfenv then setfenv(1, _ENV) end
 
 local sci_map = {}
-setmetatable(sci_map, { __mode = 'v' })
+setmetatable(sci_map, { __mode = 'kv' })
 
 ffi.cdef[[
 typedef struct {
@@ -77,7 +79,7 @@ end
 
 setmetatable(sci, {
   __call = function()
-    obj = setmetatable({ sci_ptr = _G._core.sci.new() }, { __index = sci })
+    obj = setmetatable({ sci_ptr = _G._core.sci.new() }, sci_mt )
 
     -- set up defaults
     obj:set_code_page(SC_CP_UTF8)
@@ -90,8 +92,11 @@ setmetatable(sci, {
     -- store in registry
     sci_map[obj.sci_ptr] = obj
 
-    -- destroy gobject when vanguished
-    obj.destructor = destructor(function() obj.gobject:destroy() end)
+    -- destroy gobject when vanquished
+    obj.destructor = destructor(function()
+      _G.print('scintilla destructor')
+      obj.gobject:destroy()
+    end)
     return obj
   end
 })

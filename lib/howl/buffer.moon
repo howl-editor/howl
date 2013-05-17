@@ -59,15 +59,15 @@ class Context extends PropertyObject
 class Buffer extends PropertyObject
   new: (mode = {}, sci) =>
     super!
+    @_scis = setmetatable {}, __mode: 'v'
 
     if sci
       @_sci = sci
       @doc = sci\get_doc_pointer!
-      @scis = { sci }
+      append @_scis, sci
     else
       @doc = background_sci\create_document!
       @destructor = destructor background_sci\release_document, @doc
-      @scis = {}
 
     @config = config.local_proxy!
     @completers = {}
@@ -275,7 +275,7 @@ class Buffer extends PropertyObject
       background_sci
 
   add_sci_ref: (sci) =>
-    append @scis, sci
+    append @_scis, sci
     @_sci = sci
     if background_buffer[1] == self
       background_sci.listener = nil
@@ -284,15 +284,18 @@ class Buffer extends PropertyObject
     sci\set_lexer @_mode.lexer and Scintilla.SCLEX_CONTAINER or Scintilla.SCLEX_NULL
 
   remove_sci_ref: (sci) =>
-    @scis = [s for s in *@scis when s != sci]
-    @_sci = @scis[1] if sci == @_sci
-    @_last_shown = os.time! if #@scis == 0
+    @_scis = [s for s in *@_scis when s != sci and s != nil]
+    @_sci = @_scis[1] if sci == @_sci
+    @_last_shown = os.time! if #@_scis == 0
 
   lex: (end_pos) =>
     if @_mode.lexer
       styler.style_text @sci, self, end_pos, @_mode.lexer
     else
       log.error 'Spurious lexing call'
+
+  @property scis: get: =>
+    [sci for _, sci in pairs @_scis when sci != nil]
 
   _on_text_inserted: (args) =>
     @_len = nil
