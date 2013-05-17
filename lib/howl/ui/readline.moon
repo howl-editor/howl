@@ -7,8 +7,7 @@ completion_text = (item) ->
   type(item) == 'table' and item[1] or item
 
 class Readline extends PropertyObject
-  new: (window) =>
-    @window = window
+  new: (@window) =>
     @bin = Gtk.Box orientation: 'HORIZONTAL'
     @showing = false
     super!
@@ -18,12 +17,15 @@ class Readline extends PropertyObject
 
     @last_focused = @window\get_focus!
     @window.status\hide!
+    @window\_remember_focus!
     @sci\grab_focus!
     @bin\show_all!
     @showing = true
 
   hide: =>
     if @showing
+      has_focus = @sci\to_gobject!.is_focus
+
       @bin\hide!
       @showing = false
       @buffer.text = ''
@@ -31,7 +33,8 @@ class Readline extends PropertyObject
       @completion_list = nil
       @notification = nil
       @window.status\show!
-      @last_focused\grab_focus! if @last_focused
+
+      @last_focused\grab_focus! if @last_focused and has_focus
 
   read: (prompt, input = {}, callback) =>
     error 'Missing parameter "callback"', 2 unless callback
