@@ -94,9 +94,7 @@ class Editor extends PropertyObject
     @bin.child.sci_box\get_style_context!\add_class 'sci_box'
     @bin.can_focus = true
     @bin.on_focus_in_event = -> @sci\grab_focus!
-    @bin.on_destroy = ->
-      print 'on_destroy'
-      @buffer\remove_sci_ref @sci
+    @bin.on_destroy = -> @buffer\remove_sci_ref @sci
 
     @destructor = destructor -> print 'editor destructor'
 

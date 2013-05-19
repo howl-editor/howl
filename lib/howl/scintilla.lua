@@ -93,10 +93,7 @@ setmetatable(sci, {
     sci_map[obj.sci_ptr] = obj
 
     -- destroy gobject when vanquished
-    obj.destructor = destructor(function()
-      _G.print('scintilla destructor')
-      obj.gobject:destroy()
-    end)
+    obj.destructor = destructor(function() obj.gobject:destroy() end)
     return obj
   end
 })
