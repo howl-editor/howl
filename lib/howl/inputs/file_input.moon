@@ -9,6 +9,14 @@ display_name = (file) ->
   name ..= separator if file.is_directory
   name
 
+root_dir = (file) ->
+  while file.parent
+    file = file.parent
+
+  file
+
+home_dir = -> File os.getenv 'HOME'
+
 class FileInput
   new: =>
     @directory = File GLib.get_current_dir!
@@ -22,11 +30,21 @@ class FileInput
   complete: (text, readline) =>
     @_chdir(@directory, readline) unless @matcher
 
-    completion_options = title: 'File', list: column_styles: (name, row, column) ->
-      file = @directory / name
-      file.is_directory and 'keyword' or 'string'
+    if text == separator
+      @_chdir(root_dir(@directory), readline)
+    else if text == "~#{separator}"
+      @_chdir(home_dir!, readline)
 
-    return self.matcher(text), completion_options
+    completion_options = {
+      title: 'File'
+      list:
+        highlight_matches_for: readline.text
+        column_styles: (name, row, column) ->
+          file = @directory / name
+          file.is_directory and 'keyword' or 'string'
+    }
+
+    return self.matcher(readline.text), completion_options
 
   on_completed: (value, readline) =>
     path = @directory / value
@@ -55,7 +73,8 @@ class FileInput
     names = [display_name c for c in *children]
     @matcher = Matcher names
     @directory = directory
-    @base_prompt = readline.prompt .. readline.text unless @base_prompt
+
+    @base_prompt = readline.prompt unless @base_prompt
     prompt = @base_prompt .. tostring directory
     prompt ..= separator if not prompt\match separator .. '$'
     readline.prompt = prompt

@@ -13,10 +13,10 @@ describe 'FileInput', ->
 
     before_each ->
       files = {}
-      readline = prompt: 'prompt', text: 'text'
+      readline = prompt: 'open ', text: ''
       directory = File.tmpdir!
       _G.editor = buffer: file: parent: directory
-      input = inputs.file!
+      input = inputs.file readline
 
     after_each ->
       directory\rm_r!
@@ -25,12 +25,26 @@ describe 'FileInput', ->
     it 'should_complete() returns true', ->
       assert.is_true input\should_complete!
 
-    it 'complete(text, readline) returns files matching <text>', ->
-      directory\join('test.lua')\touch!
-      directory\join('foo.lua')\touch!
+    describe 'complete(text, readline)', ->
+      it 'returns files matching <text>', ->
+        directory\join('test.lua')\touch!
+        directory\join('foo.lua')\touch!
 
-      files = input\complete 'foo', readline
-      assert.same { 'foo.lua' }, files
+        readline.text = 'foo'
+        files = input\complete 'foo', readline
+        assert.same { 'foo.lua' }, files
+
+      it 'automatically switches to root dir if the text is "/"', ->
+        input\complete '', readline
+        readline.text ..= '/'
+        input\complete readline.text, readline
+        assert.equals 'open /', readline.prompt
+
+      it 'automatically switches to the #home dir if the text is "~/"', ->
+        input\complete '', readline
+        readline.text ..= '~/'
+        input\complete readline.text, readline
+        assert.equals "open #{os.getenv('HOME')}/", readline.prompt
 
     it 'on_completed(path, readline) changes dir and returns false for sub dir', ->
       sub = directory\join('sub')
