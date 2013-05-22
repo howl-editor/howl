@@ -39,10 +39,7 @@ describe 'moonscript-mode', ->
         'var = ',
         'var: ',
       }
-      'hanging declarations': {
-        'var,',
-      }
-      'open bracket statements': {
+     'open bracket statements': {
         'var = { ',
         'var = {',
         'other: {',
@@ -60,16 +57,20 @@ describe 'moonscript-mode', ->
       'block statements': {
         'switch foo!'
         'do',
-        'for i = 1,10'
-        'with some.object'
-        'when conditional'
+        'for i = 1,10',
+        'with some.object',
+        'when conditional',
+        'foo = if bar and frob'
       }
     }
 
     non_indents = {
       'closed conditionals': {
-        'if foo then bar', 'elseif foo then bar',
+        'if foo then bar',
+        'elseif foo then bar',
         'unless foo then bar',
+        'bar unless foo',
+        'else bar',
       },
       'statement modifiers': {
         'foo! if bar',
@@ -84,6 +85,7 @@ describe 'moonscript-mode', ->
         'motif some'
         'iffy!'
         'dojo_style foo'
+        'one for two'
       }
     }
 
@@ -122,7 +124,7 @@ describe 'moonscript-mode', ->
     for desc in pairs dedents
       context 'returns a one level dedent for a line containing ' .. desc, ->
         for code in *dedents[desc]
-          it "e.g. dedents for '#{code}'", ->
+          it "e.g. #dedents for '#{code}'", ->
             buffer.text = '  foo\n  ' .. code
 
             cursor.line = 2

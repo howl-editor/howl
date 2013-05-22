@@ -1,21 +1,30 @@
-lpeg = require 'lpeg'
-import lpegx from howl
-import P, S, V from lpeg
-import space, eof from lpegx
+-- indent_pattern [, unless_match_pattern]
+indent_patterns = {
+  '[-=]>%s*$', -- fdecls
+  '[([{:=]%s*$' -- hanging operators
+  r'^\\s*\\b(class|switch|do|with|for|when)\\b', -- block starters
+  { r'^\\s*\\b(elseif|if|while|unless)\\b', '%sthen%s*'}, -- conditionals
+  '^%s*else%s*$',
+  { '=%s*if%s', '%sthen%s*'} -- if used as rvalue
 
-fdecl = S('-=') * '>' * space^0 * eof
-hanging_operators = S'([{:=,' * space^0 * eof
-blocks = space^0 * (P'class' + 'switch' + 'do' + 'with' + 'for' + 'when') * (eof + space^1)
-cond_keywords = P'elseif' + 'if' + 'else' + 'while' + 'unless'
-
-indent_pattern = P {
-  V('conditionals') + blocks + V('partial_matches')
-  partial_matches: hanging_operators + fdecl + (1 * V 'partial_matches')
-  conditionals: space^0 * cond_keywords * (eof + space * -V('then'))
-  then: space^1 * 'then' * space^1 + (1 * V 'then')
 }
 
-dedent_pattern = space^0 * (P'elseif' + 'else' + '}') * (eof + space^1)
+dedent_patterns = {
+  r'^\\s*(else|\\})\\s*$',
+  { '^%s*elseif%s', '%sthen%s*' }
+}
+
+is_match = (text, patterns) ->
+  for p in *patterns
+    neg_match = nil
+    if type(p) == 'table'
+      p, neg_match = p[1], p[2]
+
+    match = text\umatch p
+    if text\umatch(p) and (not neg_match or not text\umatch neg_match)
+      return true
+
+  false
 
 prev_non_empty_line = (line) ->
   prev_line = line.previous
@@ -34,11 +43,8 @@ class MoonscriptMode
     prev_line = prev_non_empty_line line
 
     if prev_line
-      return prev_line.indentation + indent_level if indent_pattern\match prev_line.text
-      if dedent_pattern\match line.text
-        unless r('\\bthen\\b')\match prev_line.text
-          return prev_line.indentation - indent_level
-
+      return prev_line.indentation + indent_level if is_match prev_line.text, indent_patterns
+      return prev_line.indentation - indent_level if is_match line.text, dedent_patterns
       return prev_line.indentation if line.indentation > prev_line.indentation or line.blank
 
     alignment_adjustment = line.indentation % indent_level
