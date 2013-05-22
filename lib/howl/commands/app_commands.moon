@@ -3,20 +3,20 @@ import ActionBuffer, List from howl.ui
 serpent = require 'serpent'
 
 command.register
-  name: 'q',
+  name: 'quit',
   description: 'Quits the application'
   handler: -> howl.app\quit!
 
-command.alias 'q', 'quit'
+command.alias 'quit', 'q'
 
 command.register
-  name: 'wq',
+  name: 'save-and-quit',
   description: 'Saves modified buffers and quits the application'
   handler: ->
     with howl.app
       \quit! if \save_all!
 
-command.alias 'wq', 'save-and-quit'
+command.alias 'save-and-quit', 'wq'
 
 command.register
   name: 'run'

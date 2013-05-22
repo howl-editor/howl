@@ -5,10 +5,15 @@ commands = {}
 accessible_names = {}
 
 -- command state
+resolve_command = (name) ->
+  def = commands[name]
+  def = commands[def] if type(def) == 'string' -- alias
+  def
+
 parse_cmd = (text) ->
   cmd_start, cmd_end, cmd, rest = text\find '^%s*([^%s]+)%s+(.*)$'
-  if cmd then return commands[cmd], cmd, rest
-  else return nil, nil, text
+  return resolve_command(cmd), cmd, rest if cmd
+  return nil, nil, text
 
 class State
   new: =>
@@ -64,7 +69,7 @@ class State
     nil
 
   submit: (value) =>
-    cmd = @cmd or commands[value]
+    cmd = @cmd or resolve_command value
     return false if not cmd
 
     if #@arguments >= #cmd.inputs
@@ -139,8 +144,8 @@ unregister = (name) ->
   commands[name] = nil
 
   aliases = {}
-  for name, target in pairs commands
-    append aliases, name if target == cmd
+  for cmd_name, target in pairs commands
+    append aliases, cmd_name if target == name
 
   commands[alias] = nil for alias in *aliases
   sane_name = accessible_name name
@@ -148,7 +153,7 @@ unregister = (name) ->
 
 alias = (target, name) ->
   error 'Target ' .. target .. 'does not exist' if not commands[target]
-  commands[name] = commands[target]
+  commands[name] = target
 
 get = (name) -> commands[name]
 
@@ -158,7 +163,12 @@ command_completer = ->
   completion_options = list: headers: { 'Command', 'Description' }
   cmd_names = names!
   table.sort cmd_names
-  items = [{name, commands[name].description} for name in *cmd_names]
+  items = {}
+  for name in *cmd_names
+    def = commands[name]
+    desc = type(def) == 'string' and "(Alias for #{def})" or def.description
+    append items, { name, desc }
+
   matcher = Matcher items
   (text) -> matcher(text), completion_options
 
