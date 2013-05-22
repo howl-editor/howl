@@ -85,6 +85,7 @@ setmetatable(sci, {
     obj:set_code_page(SC_CP_UTF8)
     obj:set_margin_width_n(1, 0) -- no fold margin
     obj:set_mod_event_mask(bit.bor(SC_MOD_INSERTTEXT, SC_MOD_DELETETEXT))
+    obj:use_pop_up(false)
 
     -- set the gobject for use with lgi
     obj.gobject = lgi_core.object.new(obj.sci_ptr)
