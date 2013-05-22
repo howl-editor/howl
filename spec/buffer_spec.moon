@@ -279,7 +279,7 @@ describe 'Buffer', ->
       b = buffer ''
       assert.equal 6, b\append 'Bačon'
 
-  describe '#replace(pattern, replacement)', ->
+  describe 'replace(pattern, replacement)', ->
     it 'replaces all occurences of pattern with replacement', ->
       b = buffer 'hello\nuñi©ode\nworld\n'
       b\replace '[lo]', ''

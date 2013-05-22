@@ -118,8 +118,8 @@ class Buffer extends PropertyObject
     get: => @sci\get_text!
     set: (text) =>
       @sci\clear_all!
-      @sci\add_text #text, text
       @sci\set_code_page Scintilla.SC_CP_UTF8
+      @sci\add_text #text, text
       @multibyte_from = text.multibyte and 0 or nil
 
   @property modified:
