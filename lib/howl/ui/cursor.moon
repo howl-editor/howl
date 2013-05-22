@@ -1,5 +1,5 @@
 import PropertyObject from howl.aux.moon
-import Scintilla from howl
+import Scintilla, command from howl
 
 class Cursor extends PropertyObject
   new: (@container, @selection) =>
@@ -65,42 +65,49 @@ class Cursor extends PropertyObject
     correct_anchor = @selection.cursor < selection_start and selection_start + 1 or selection_start
     @selection.anchor = correct_anchor if @selection.anchor != correct_anchor
 
-  key_commands = {
-    down:             'line_down'
-    up:               'line_up'
-    left:             'char_left'
-    right:            'char_right'
-    word_left:        'word_left'
-    word_left_end:    'word_left_end'
-    word_part_left:   'word_part_left'
-    word_right:       'word_right'
-    word_right_end:   'word_right_end'
-    word_part_right:  'word_part_right'
-    home:             'home'
-    home_vc:          'vchome'
-    home_vc_display:  'vchome_display'
-    home_display:     'home_display'
-    home_wrap:        'home_wrap'
-    home_vc_wrap:     'vchome_wrap'
-    line_end:         'line_end'
-    line_end_display: 'line_end_display'
-    line_end_wrap:    'line_end_wrap'
-    start:            'document_start'
-    eof:              'document_end'
-    page_up:          'page_up'
-    page_down:        'page_down'
-    para_down:        'para_down'
-    para_up:          'para_up'
-  }
-  for name, cmd in pairs key_commands
-    plain = Scintilla[cmd]
-    extended = Scintilla[cmd .. '_extend']
+commands = {
+  { 'down',               'line_down',        'Moves cursor down' },
+  { 'up',                 'line_up',          'Move cursor up' },
+  { 'left',               'char_left',        'Moves cursor left' },
+  { 'right',              'char_right',       'Moves cursor right' },
+  { 'word_left',          'word_left',        'Moves cursor one word left' },
+  { 'word_left_end',      'word_left_end',    'Moves cursor left, to the end of the word' },
+  { 'word_part_left',     'word_part_left',   'Moves cursor left, to the start of word part' },
+  { 'word_right',         'word_right',       'Moves cursor one word right' },
+  { 'word_right_end',     'word_right_end',   'Moves cursor right, to the end of the word' },
+  { 'word_part_right',    'word_part_right',  'Moves cursor right, to the start of the next word part' },
+  { 'home',               'home',             'Moves cursor to the first column' },
+  { 'home_indent',        'vchome',           'Moves cursor to the first non-blank column' },
+  { 'home_indent_display','vchome_display',   'Moves cursor to the first non-blank column of the display line' },
+  { 'home_display',       'home_display',     'Moves cursor to the first column of the display line' },
+  { 'home_auto',          'home_wrap',        'Moves cursor the first column of the real or display line' },
+  { 'home_indent_auto',   'vchome_wrap',      'Moves cursor the first column or the first non-blank column' },
+  { 'line_end',           'line_end',         'Moves cursor to the end of line' },
+  { 'line_end_display',   'line_end_display', 'Moves cursor to the end of the display line' },
+  { 'line_end_auto',      'line_end_wrap',    'Moves cursor to the end of the real or display line' },
+  { 'start',              'document_start',   'Moves cursor to the start of the buffer' },
+  { 'eof',                'document_end',     'Moves cursor to the end of the buffer' },
+  { 'page_up',            'page_up',          'Moves cursor one page up' },
+  { 'page_down',          'page_down',        'Moves cursor one page down' },
+  { 'para_down',          'para_down',        'Moves cursor one paragraph down' },
+  { 'para_up',            'para_up',          'Moves cursor one paragraph up' },
+}
 
-    self.__base[name] = (extend_selection) =>
-      if extend_selection or @selection.persistent
-        extended @sci
-        @_adjust_persistent_selection_if_needed!
-      else
-        plain @sci
+for cmd in *commands
+  name, key_cmd, description = cmd[1], cmd[2], cmd[3]
+  plain = Scintilla[key_cmd]
+  extended = Scintilla[key_cmd .. '_extend']
+
+  Cursor.__base[name] = (extend_selection) =>
+    if extend_selection or @selection.persistent
+      extended @sci
+      @_adjust_persistent_selection_if_needed!
+    else
+      plain @sci
+
+  command.register
+    name: "cursor-#{name\gsub '_', '-'}"
+    :description
+    handler: -> _G.editor.cursor[name] _G.editor.cursor
 
 return Cursor
