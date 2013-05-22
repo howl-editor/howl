@@ -169,6 +169,13 @@ class Editor extends PropertyObject
     get: => @sci\get_vscroll_bar!
     set: (flag) => @sci\set_vscroll_bar flag
 
+  @property overtype:
+    get: => @sci\get_overtype!
+    set: (flag) => @sci\set_overtype flag
+
+  @property lines_on_screen:
+    get: => @sci\lines_on_screen!
+
   @property line_numbers:
     get: => @sci\get_margin_width_n(0) > 0
     set: (flag) =>
@@ -616,29 +623,29 @@ with config
 
 -- Commands
 for cmd_spec in *{
-  { 'editor:newline', 'Adds a new line at the current position', 'newline' }
-  { 'editor:newline-and-format', 'Adds a new line, and formats as needed', 'newline_and_format' }
-  { 'editor:comment', 'Comments the selection or current line', 'comment' }
-  { 'editor:uncomment', 'Uncomments the selection or current line', 'uncomment' }
-  { 'editor:toggle_comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
-  { 'editor:delete-line', 'Deletes the current line', 'delete_line' }
-  { 'editor:cut-to-end-of-line', 'Cuts to the end of line', 'delete_to_end_of_line' }
-  { 'editor:delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line', true }
-  { 'editor:copy-line', 'Copies the current line to the clipboard', 'copy_line' }
-  { 'editor:paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
-  { 'editor:tab', 'Simulates a tab key press', 'tab' }
-  { 'editor:backspace', 'Simulates a backspace key press', 'backspace' }
-  { 'editor:shift_right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
-  { 'editor:shift_left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
-  { 'editor:indent', 'Indents the selected lines, or the current line', 'indent' }
-  { 'editor:join-lines', 'Joins the current line with the line below', 'join_lines' }
-  { 'editor:complete', 'Starts completion at cursor', 'complete' }
-  { 'editor:undo', 'Undo last edit for the current editor', 'undo' }
-  { 'editor:redo', 'Redo last undo for the current editor', 'redo' }
+  { 'newline', 'Adds a new line at the current position', 'newline' }
+  { 'newline-and-format', 'Adds a new line, and formats as needed', 'newline_and_format' }
+  { 'comment', 'Comments the selection or current line', 'comment' }
+  { 'uncomment', 'Uncomments the selection or current line', 'uncomment' }
+  { 'toggle_comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
+  { 'delete-line', 'Deletes the current line', 'delete_line' }
+  { 'cut-to-end-of-line', 'Cuts to the end of line', 'delete_to_end_of_line' }
+  { 'delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line', true }
+  { 'copy-line', 'Copies the current line to the clipboard', 'copy_line' }
+  { 'paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
+  { 'tab', 'Simulates a tab key press', 'tab' }
+  { 'backspace', 'Simulates a backspace key press', 'backspace' }
+  { 'shift-right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
+  { 'shift-left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
+  { 'indent', 'Indents the selected lines, or the current line', 'indent' }
+  { 'join-lines', 'Joins the current line with the line below', 'join_lines' }
+  { 'complete', 'Starts completion at cursor', 'complete' }
+  { 'undo', 'Undo last edit for the current editor', 'undo' }
+  { 'redo', 'Redo last undo for the current editor', 'redo' }
 }
   args = { select 4, table.unpack cmd_spec }
   command.register
-    name: cmd_spec[1]
+    name: "editor-#{cmd_spec[1]}"
     description: cmd_spec[2]
     handler: -> _G.editor[cmd_spec[3]] _G.editor, table.unpack args
 
