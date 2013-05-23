@@ -45,7 +45,7 @@ class Completer
 
 config.define
   name: 'hungry_completion'
-  description: 'Whether completing an item will cause the entire current word to be replaced'
+  description: 'Whether completing an item will cause the current word to be replaced'
   default: false
   type_of: 'boolean'
 

@@ -10,7 +10,7 @@ highlight.define_default 'search', {
 with config
   .define
     name: 'search_wraps'
-    description: 'Whether searches wrap around to top or bottom when there is no more matches'
+    description: 'Whether searches wrap around to top or bottom when there are no more matches'
     default: true
     type_of: 'boolean'
 
