@@ -247,49 +247,9 @@ class Editor extends PropertyObject
     lines = @active_lines
     @buffer\as_one_undo -> f lines
 
-  comment: =>
-    prefix = @buffer.mode.short_comment_prefix
-    return unless prefix
-    prefix ..= ' '
-    current_column = @cursor.column
-    tab_expansion = string.rep ' ', @buffer.config.tab_width
-
-    @transform_active_lines (lines) ->
-      min_indent = math.huge
-      min_indent = math.min(min_indent, l.indentation) for l in *lines when not l.blank
-
-      for line in *lines
-        unless line.blank
-          text = line\gsub '\t', tab_expansion
-          new_text = text\usub(1, min_indent) .. prefix .. text\usub(min_indent + 1)
-          line.text = new_text
-
-      @cursor.column = current_column + #prefix unless current_column == 1
-
-  uncomment: =>
-    prefix = @buffer.mode.short_comment_prefix
-    return unless prefix
-    pattern = r"()#{r.escape prefix}\\s?()"
-    current_column = @cursor.column
-    cur_line_length = #@current_line
-
-    @transform_active_lines (lines) ->
-      for line in *lines
-        start_pos, end_pos = line\umatch pattern
-        if start_pos
-          line.text = line\sub(1, start_pos - 1) .. line\sub(end_pos)
-
-      @cursor.column = math.max 1, current_column - (cur_line_length - #@current_line)
-
-  toggle_comment: =>
-    prefix = @buffer.mode.short_comment_prefix
-    return unless prefix
-    pattern = r"^\\s*#{r.escape prefix}.*"
-
-    if @active_lines[1]\umatch pattern
-      @uncomment!
-    else
-      @comment!
+  comment: => if @buffer.mode.comment then @buffer.mode\comment self
+  uncomment: => if @buffer.mode.uncomment then @buffer.mode\uncomment self
+  toggle_comment: => if @buffer.mode.toggle_comment then @buffer.mode\toggle_comment self
 
   delete_line: => @sci\line_delete!
 

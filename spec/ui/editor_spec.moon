@@ -17,7 +17,7 @@ describe 'Editor', ->
 
   before_each ->
     buffer = Buffer {}
-    config.set 'indent', 2, buffer
+    buffer.config.indent = 2
     lines = buffer.lines
     editor.buffer = buffer
 
@@ -138,116 +138,19 @@ describe 'Editor', ->
         editor\newline_and_format!
         assert.spy(after_newline).was.called_with buffer.mode, buffer.lines[2], editor
 
-  describe 'comment()', ->
-    text = [[
-  liñe 1
+  for method in *{ 'comment', 'uncomment', 'toggle_comment' }
+    describe "#{method}()", ->
+      context "when mode does not provide a #{method} method", ->
+        it 'does nothing', ->
+          text = buffer.text
+          editor[method] editor
+          assert.equal text, buffer.text
 
-    liñe 2
-    liñe 3
-]]
-    before_each ->
-      buffer.text = text
-      selection\set 1, lines[4].start_pos
-
-    context 'when mode does not provide .short_comment_prefix', ->
-      it 'does nothing', ->
-        editor\comment!
-        assert.equal text, buffer.text
-
-    context 'when mode provides .short_comment_prefix', ->
-      before_each -> buffer.mode = short_comment_prefix: '--'
-
-      it 'prefixes the selected lines with the prefix and a space, at the minimum indentation level', ->
-        editor\comment!
-        assert.equal [[
-  -- liñe 1
-
-  --   liñe 2
-    liñe 3
-]], buffer.text
-
-      it 'comments the current line if nothing is selected', ->
-        selection\remove!
-        cursor.pos = 1
-        editor\comment!
-        assert.equal [[
-  -- liñe 1
-
-    liñe 2
-    liñe 3
-]], buffer.text
-
-      it 'keeps the cursor position', ->
-        editor.selection.cursor = lines[3].start_pos + 2
-        editor\comment!
-        assert.equal 6, cursor.column
-
-  describe 'uncomment()', ->
-    text = [[
-  --  liñe 1
-    -- -- liñe 2
-    --liñe 3
-]]
-    before_each ->
-      buffer.text = text
-      selection\set 1, lines[3].start_pos
-
-    context 'when mode does not provide .short_comment_prefix', ->
-      it 'does nothing', ->
-        editor\comment!
-        assert.equal text, buffer.text
-
-    context 'when mode provides .short_comment_prefix', ->
-      before_each -> buffer.mode = short_comment_prefix: '--'
-
-      it 'removes the first instance of the comment prefix and optional space from each line', ->
-        editor\uncomment!
-        assert.equal [[
-   liñe 1
-    -- liñe 2
-    --liñe 3
-]], buffer.text
-
-      it 'uncomments the current line if nothing is selected', ->
-        selection\remove!
-        cursor.line = 2
-        editor\uncomment!
-        assert.equal [[
-  --  liñe 1
-    -- liñe 2
-    --liñe 3
-]], buffer.text
-
-      it 'keeps the cursor position', ->
-        editor.selection.cursor = lines[2].start_pos + 6
-        editor\uncomment!
-        assert.equal 4, cursor.column
-
-      it 'does nothing for lines that are not commented', ->
-        buffer.text = "line\n"
-        cursor.line = 1
-        editor\uncomment!
-        assert.equal "line\n", buffer.text
-
-  describe 'toggle_comment()', ->
-    context 'when mode does not provide .short_comment_prefix', ->
-      it 'does nothing', ->
-        buffer.text = '-- foo'
-        editor\toggle_comment!
-        assert.equal '-- foo', buffer.text
-
-    context 'when mode provides .short_comment_prefix', ->
-      before_each -> buffer.mode = short_comment_prefix: '--'
-
-      it 'it uncomments if the first line starts with the comment prefix', ->
-        buffer.text = '  -- foo'
-        editor\toggle_comment!
-        assert.equal '  foo', buffer.text
-
-      it 'comments if the first line do no start with the comment prefix', ->
-        buffer.text = 'foo'
-        editor\toggle_comment!
-        assert.equal '-- foo', buffer.text
+      context "when mode provides a #{method} method", ->
+        it 'calls that passing itself a parameter', ->
+          buffer.mode = [method]: spy.new -> nil
+          editor[method] editor
+          assert.spy(buffer.mode[method]).was_called_with buffer.mode, editor
 
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->
     buffer.text = 'hƏllo'

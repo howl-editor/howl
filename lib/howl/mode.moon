@@ -1,16 +1,6 @@
 import config, signal from howl
 import PropertyTable from howl.aux
 
-class DefaultMode
-  completers: { 'in_buffer' }
-  auto_pairs: {
-    '(': ')'
-    '[': ']'
-    '{': '}'
-    '"': '"'
-    "'": "'"
-  }
-
 by_extension = {}
 by_pattern = {}
 modes = {}
@@ -113,7 +103,7 @@ signal.register 'mode-unregistered',
   parameters:
     name: 'The name of the mode'
 
-register name: 'default', create: DefaultMode
+register name: 'default', create: howl.modes.DefaultMode
 
 return PropertyTable {
   :for_file
