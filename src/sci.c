@@ -70,7 +70,8 @@ static gboolean emit_event(lua_State *L, int nr_params, int top)
 
 static void explain_key_code(lua_State *l, int code)
 {
-  gchar *key_name = gdk_keyval_name(code);
+  int effective_code = code == 10 ? GDK_KEY_Return : code;
+  gchar *key_name = gdk_keyval_name(effective_code);
   guint32 unicode_char = gdk_keyval_to_unicode(code);
   gchar utf8[6];
   gint nr_utf8 = 0;
