@@ -1,3 +1,23 @@
+prev_non_empty_line = (line) ->
+  prev_line = line.previous
+  while prev_line and prev_line.empty
+    prev_line = prev_line.previous
+  prev_line
+
+is_match = (text, patterns) ->
+  return false unless patterns
+
+  for p in *patterns
+    neg_match = nil
+    if type(p) == 'table'
+      p, neg_match = p[1], p[2]
+
+    match = text\umatch p
+    if text\umatch(p) and (not neg_match or not text\umatch neg_match)
+      return true
+
+  false
+
 class DefaultMode
   completers: { 'in_buffer' }
 
@@ -8,6 +28,17 @@ class DefaultMode
     '"': '"'
     "'": "'"
   }
+
+  indent: (editor) =>
+    indent_level = editor.buffer.config.indent
+
+    editor\transform_active_lines (lines) ->
+      for line in *lines
+        indent = @_indent_for line, indent_level
+        line.indentation = indent if indent != line.indentation
+
+      with editor
+        .cursor.column = .current_line.indentation + 1 if .cursor.column < .current_line.indentation
 
   comment: (editor) =>
     buffer, cursor = editor.buffer, editor.cursor
@@ -54,3 +85,18 @@ class DefaultMode
       @uncomment editor
     else
       @comment editor
+
+  _indent_for: (line, indent_level) =>
+    prev_line = prev_non_empty_line line
+
+    if prev_line
+      return prev_line.indentation + indent_level if is_match prev_line.text, @indent_patterns
+      return prev_line.indentation - indent_level if is_match line.text, @dedent_patterns
+
+      -- unwarranted indents
+      return prev_line.indentation if @indent_patterns and line.indentation > prev_line.indentation
+      return prev_line.indentation if @dedent_patterns and line.indentation < prev_line.indentation
+      return prev_line.indentation if line.blank
+
+    alignment_adjustment = line.indentation % indent_level
+    line.indentation + alignment_adjustment

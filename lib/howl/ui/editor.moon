@@ -231,22 +231,11 @@ class Editor extends PropertyObject
     else
       @sci\back_tab!
 
-  indent: =>
-    mode = @buffer.mode
-    return unless mode.indent_for
-    indent_level = @buffer.config.indent
-
-    @transform_active_lines (lines) ->
-      for line in *lines
-        indent = mode\indent_for line, indent_level, self
-        line.indentation = indent if indent and indent != line.indentation
-
-      @cursor.column = @current_line.indentation + 1 if @cursor.column < @current_line.indentation
-
   transform_active_lines: (f) =>
     lines = @active_lines
     @buffer\as_one_undo -> f lines
 
+  indent: => if @buffer.mode.indent then @buffer.mode\indent self
   comment: => if @buffer.mode.comment then @buffer.mode\comment self
   uncomment: => if @buffer.mode.uncomment then @buffer.mode\uncomment self
   toggle_comment: => if @buffer.mode.toggle_comment then @buffer.mode\toggle_comment self

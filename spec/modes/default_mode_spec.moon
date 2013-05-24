@@ -7,12 +7,6 @@ describe 'DefaultMode', ->
   editor = Editor Buffer {}
   cursor = editor.cursor
   selection = editor.selection
-   -- window = Gtk.OffscreenWindow!
-  -- window\add editor\to_gobject!
-  -- window\show_all!
-
-  -- teardown ->
-  --   window\destroy!
 
   before_each ->
     buffer = Buffer {}
@@ -21,6 +15,65 @@ describe 'DefaultMode', ->
     buffer.config.indent = 2
     lines = buffer.lines
     editor.buffer = buffer
+
+  describe '.indent()', ->
+    context 'when .indent_patterns is set', ->
+      context 'and the previous line matches one of the patterns', ->
+        it 'indents lines below matching lines with the currently set indent', ->
+          mode.indent_patterns = { r'if', 'then' }
+          buffer.text = 'if\nbar\nthen\nfoo\n'
+          selection\select_all!
+          mode\indent editor
+          assert.equals 'if\n  bar\nthen\n  foo\n', buffer.text
+
+        it 'adjusts lines with unwarranted greater indents to match the previous line', ->
+          mode.indent_patterns = { 'if' }
+          buffer.text = 'line\n  wat?\n'
+          selection\select_all!
+          mode\indent editor
+          assert.equals 'line\nwat?\n', buffer.text
+
+    context 'when .dedent_patterns is set', ->
+      context 'and the current line matches one of the patterns', ->
+        it 'dedents the line one level below the previous line if it exists', ->
+          mode.dedent_patterns = { r'else', '}' }
+          buffer.text = '    bar\n    else\n  foo\n  }\n'
+          selection\select_all!
+          mode\indent editor
+          assert.equals '    bar\n  else\n  foo\n}\n', buffer.text
+
+        it 'adjusts lines with unwarranted smaller indents to match the previous line', ->
+          mode.dedent_patterns = { 'else' }
+          buffer.text = '  line\nwat?\n'
+          selection\select_all!
+          mode\indent editor
+          assert.equals '  line\n  wat?\n', buffer.text
+
+    it 'sets the same indent as for the previous line if the line is blank', ->
+      buffer.text = '  line\n\n'
+      selection\select_all!
+      mode\indent editor
+      assert.equals '  line\n  \n', buffer.text
+
+    it 'adjust any illegal indentation (not divisable by indent)', ->
+      buffer.text = '  line\n two\n'
+      selection\select_all!
+      mode\indent editor
+      assert.equals '  line\n  two\n', buffer.text
+
+    it 'works on the currentl line if no selection is specified', ->
+      mode.indent_patterns = { 'if' }
+      buffer.text = 'if\none\ntwo\n'
+      cursor.line = 2
+      mode\indent editor
+      assert.equals 'if\n  one\ntwo\n', buffer.text
+
+    it 'moves the cursor to the beginning of indentation if it would be positioned before', ->
+      buffer.text = '  line\n\n'
+      cursor.line = 2
+      mode\indent editor
+      assert.equals '  line\n  \n', buffer.text
+      assert.equals 3, cursor.column
 
   describe 'comment(editor)', ->
     text = [[

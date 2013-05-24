@@ -71,34 +71,6 @@ describe 'Editor', ->
     editor\newline!
     assert.equal buffer.text, 'hƏ\nllo'
 
-  describe '.indent()', ->
-    context "when the buffer's mode provides an .indent_for", ->
-      it 'is called with (mode, line, indent_level, editor)', ->
-        indent_for = spy.new -> true
-        buffer.mode = :indent_for
-        editor\indent!
-        assert.spy(indent_for).was.called_with buffer.mode, editor.current_line, 2, editor
-
-      it 'the line indentation is set to the return value if not nil', ->
-        buffer.mode = indent_for: -> 2
-        buffer.text = 'line'
-        editor\indent!
-        assert.equal '  line', buffer.text
-
-      it 'the cursor is moved to the beginning of indentation if would be positioned before', ->
-        buffer.mode = indent_for: -> 2
-        buffer.text = 'line'
-        cursor.column = 1
-        editor\indent!
-        assert.equal '  line', buffer.text
-        assert.equal 3, cursor.column
-
-    context "when the buffer's mode does not provide an .indent_for", ->
-      it 'does nothing', ->
-        buffer.text = 'line'
-        editor\indent!
-        assert.equal 'line', buffer.text
-
   describe '.newline_and_format()', ->
     it 'adds a newline and sets the indentation to that of the previous line', ->
       buffer.text = '  line'
@@ -120,14 +92,13 @@ describe 'Editor', ->
       assert.equal editor.cursor.line, 2
       assert.equal editor.cursor.column, 3
 
-    context "when the buffer's mode provides an .indent_for", ->
-     it "indents the current line and the next line according to the returned indent level", ->
-        buffer.mode = indent_for: (line) => line\match('else') and 0 or 2
-        buffer.text = '  line\n  else'
-        cursor.line = 2
-        cursor\line_end!
+    context "when the buffer's mode provides an indent() method", ->
+     it "invokes that passing itself as a parameter", ->
+        buffer.mode = indent: spy.new -> true
+        buffer.text = 'line'
+        cursor.pos = 3
         editor\newline_and_format!
-        assert.equal '  line\nelse\n  ', buffer.text
+        assert.spy(buffer.mode.indent).was.called_with buffer.mode, editor
 
     context "when the buffer's mode provides an .after_newline", ->
       it 'is called with (mode, current-line, editor)', ->
@@ -138,7 +109,7 @@ describe 'Editor', ->
         editor\newline_and_format!
         assert.spy(after_newline).was.called_with buffer.mode, buffer.lines[2], editor
 
-  for method in *{ 'comment', 'uncomment', 'toggle_comment' }
+  for method in *{ 'indent', 'comment', 'uncomment', 'toggle_comment' }
     describe "#{method}()", ->
       context "when mode does not provide a #{method} method", ->
         it 'does nothing', ->

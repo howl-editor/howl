@@ -17,13 +17,16 @@ describe 'moonscript-mode', ->
   it 'handles .moon files', ->
     assert.equal mode.for_file(File 'test.moon'), m
 
-  describe '.indent_for(line, indent_level, editor)', ->
-    buffer = Buffer m
-    editor = Editor buffer
-    cursor = editor.cursor
-    lines = buffer.lines
+  describe 'indentation support', ->
+    local buffer, editor, cursor, lines
     indent_level = 2
-    config.set 'indent', indent_level, buffer
+
+    before_each ->
+      buffer = Buffer m
+      editor = Editor buffer
+      cursor = editor.cursor
+      lines = buffer.lines
+      buffer.config.indent = indent_level
 
     indents = {
       'pending function definitions': {
@@ -105,57 +108,70 @@ describe 'moonscript-mode', ->
           it "e.g. indents for '#{code}'", ->
             buffer.text = code .. '\n'
             cursor.line = 2
-            assert.equal indent_level, m\indent_for(lines[2], indent_level, editor)
+            editor\indent!
+            assert.equal indent_level, editor.current_line.indentation
 
     it 'disregards empty lines above when determining indent', ->
       for desc in pairs indents
         for code in *indents[desc]
           buffer.text = code .. '\n\n'
           cursor.line = 3
-          assert.equal indent_level, m\indent_for(lines[3], indent_level, editor)
+          editor\indent!
+          assert.equal indent_level, editor.current_line.indentation
 
     it 'does not disregard blank lines above when determining indent', ->
       for desc in pairs indents
         for code in *indents[desc]
           buffer.text = "  #{code}'\n  \n  "
           cursor.line = 3
-          assert.equal 2, m\indent_for(lines[3], indent_level, editor)
+          editor\indent!
+          assert.equal indent_level, editor.current_line.indentation
 
     for desc in pairs dedents
       context 'returns a one level dedent for a line containing ' .. desc, ->
         for code in *dedents[desc]
-          it "e.g. #dedents for '#{code}'", ->
+          it "e.g. dedents for '#{code}'", ->
             buffer.text = '  foo\n  ' .. code
-
             cursor.line = 2
-            assert.equal 0, m\indent_for(lines[2], indent_level, editor)
+            editor\indent!
+            assert.equal 0, editor.current_line.indentation
 
     for desc in pairs non_indents
-      context 'returns the current indent for a line after ' .. desc, ->
+      context 'keeps the current indent for a line after ' .. desc, ->
         for code in *non_indents[desc]
           it "e.g. does not indent for '#{code}'", ->
             buffer.text = "  #{code}\n  "
             cursor.line = 2
-            assert.equal 2, m\indent_for(lines[2], indent_level, editor)
+            editor\indent!
+            assert.equal 2, editor.current_line.indentation
 
     it 'returns a corrected indent for lines that are on incorrect indentation', ->
       buffer.text = '  bar\n one_column_offset'
-      assert.equal 2, m\indent_for(lines[2], indent_level, editor)
+      cursor.line = 2
+      editor\indent!
+      assert.equal 2, editor.current_line.indentation
 
     it 'returns the indent for the previous line for a line with a non-motivated indent', ->
       buffer.text = 'bar\n  foo'
-      assert.equal 0, m\indent_for(lines[2], indent_level, editor)
+      cursor.line = 2
+      editor\indent!
+      assert.equal 0, editor.current_line.indentation
 
     it 'returns the indent for the previous line for a blank line', ->
       buffer.text = '  bar\n'
-      assert.equal 2, m\indent_for(lines[2], indent_level, editor)
+      cursor.line = 2
+      editor\indent!
+      assert.equal 2, editor.current_line.indentation
 
   describe '.after_newline()', ->
-    buffer = Buffer m
-    editor = Editor buffer
-    cursor = editor.cursor
-    lines = buffer.lines
-    config.set 'indent', 2, buffer
+    local buffer, editor, cursor, lines
+
+    before_each ->
+      buffer = Buffer m
+      editor = Editor buffer
+      cursor = editor.cursor
+      lines = buffer.lines
+      config.set 'indent', 2, buffer
 
     context 'splitting brackets', ->
       it 'moves the closing bracket to its own line and positions the cursor at the middle line', ->
