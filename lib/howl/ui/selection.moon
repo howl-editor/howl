@@ -58,6 +58,9 @@ class Selection extends PropertyObject
 
     @set start_pos, end_pos
 
+  select_all: =>
+    @sci\set_sel 0, @sci\get_length! + 1
+
   range: =>
     start_pos, end_pos = @_brange!
     return nil unless start_pos

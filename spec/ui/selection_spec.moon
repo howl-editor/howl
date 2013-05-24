@@ -31,6 +31,11 @@ describe 'Selection', ->
     assert.equal 5, selection.anchor
     assert.equal 'iñe', selection.text
 
+  it 'select_all() adjusts the selection to include the entire buffer', ->
+    selection\select_all!
+    assert.equal 1, selection.anchor
+    assert.equal text.ulen + 1, selection.cursor
+
   describe '.anchor', ->
     it 'returns the current position if nothing is selected', ->
       cursor.pos = 3
