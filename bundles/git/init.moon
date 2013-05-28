@@ -9,9 +9,8 @@ class Git
   files: =>
     exec_path = config.git_path or 'git'
     cmd = table.concat {
+      "cd '#{@root}' &&"
       exec_path,
-      "--git-dir='" .. @git_dir .. "'",
-      "--work-tree='" .. @root .. "'",
       "ls-files",
       "--exclude-standard",
       "--others"
