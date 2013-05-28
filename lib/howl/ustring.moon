@@ -168,6 +168,7 @@ properties =
   ureverse: => g_string C.g_utf8_strreverse(const_char_p(@), #@)
   empty: => #@ == 0
   blank: => @find('%S') == nil
+  stripped: => @match '%s*(.-)%s*$'
 
 getmetatable('').__index = (k) =>
   return usub(@, k, k) if type(k) == 'number'

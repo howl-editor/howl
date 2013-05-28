@@ -25,6 +25,13 @@ describe 'ustrings', ->
     assert.is_true ('\t\r\n').blank
     assert.is_false ('x').blank
 
+  it '.stripped contains the string without leading or trailing whitespace', ->
+    assert.equal 'foo', ('  \tfoo').stripped
+    assert.equal 'foo', ('foo ').stripped
+    assert.equal 'foo', ('  \tfoo ').stripped
+    assert.equal '', ('  \t').stripped
+    assert.equal '', ('').stripped
+
   it 'ucompare(s1, s2) returns -1, 0 or 1 if s1 is smaller, equal or greater than s2', ->
     assert.equal -1, 'a'\ucompare 'b'
     assert.equal -1, 'a'\ucompare 'ä'
