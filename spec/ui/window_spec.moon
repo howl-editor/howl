@@ -7,21 +7,12 @@ describe 'Window', ->
   before_each -> win = Window!
   after_each -> win\to_gobject!\destroy!
 
-  it 'fullscreen() sets .is_fullscreen to true', ->
-    win\fullscreen!
-    assert.is_true win.is_fullscreen
-
-  it 'unfullscreen() sets .is_fullscreen to false', ->
-    win\fullscreen!
-    win\unfullscreen!
-    assert.is_false win.is_fullscreen
-
   it 'toggle_fullscreen() toggles fullscreen', ->
-    assert.is_false win.is_fullscreen
+    assert.is_false win.fullscreen
     win\toggle_fullscreen!
-    assert.is_true win.is_fullscreen
+    assert.is_true win.fullscreen
     win\toggle_fullscreen!
-    assert.is_false win.is_fullscreen
+    assert.is_false win.fullscreen
 
   describe 'add_view(view [, placement, anchor])', ->
     it 'adds the specified view', ->

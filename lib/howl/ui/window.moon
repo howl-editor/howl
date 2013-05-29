@@ -49,7 +49,7 @@ class Window extends PropertyObject
     @win\add alignment
     @win\get_style_context!\add_class 'main'
 
-    @is_fullscreen = false
+    @_is_fullscreen = false
     @data = {}
 
     super @win
@@ -82,6 +82,17 @@ class Window extends PropertyObject
     focused = @focus_child
     return nil unless focused
     @get_view focused
+
+  @property fullscreen:
+    get: => @_is_fullscreen
+
+    set: (status) =>
+      if status and not @_is_fullscreen
+        @win\fullscreen!
+        @_is_fullscreen = true
+      elseif not status and @_is_fullscreen
+        @win\unfullscreen!
+        @_is_fullscreen = false
 
   siblings: (view, wraparound = false) =>
     current = @get_view to_gobject(view or @focus_child)
@@ -151,17 +162,7 @@ class Window extends PropertyObject
 
     nil
 
-  fullscreen: =>
-    @win\fullscreen!
-    @is_fullscreen = true
-
-  unfullscreen: =>
-    @win\unfullscreen!
-    @is_fullscreen = false
-
-  toggle_fullscreen: =>
-    if @is_fullscreen then @unfullscreen!
-    else @fullscreen!
+  toggle_fullscreen: => @fullscreen = not (@fullscreen == true)
 
   _remember_focus: =>
     @data.focus_child = @grid\get_focus_child!
