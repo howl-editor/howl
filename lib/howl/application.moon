@@ -48,13 +48,20 @@ class Application extends PropertyObject
       width: 800
       height: 640
       application: @g_app
-      on_delete_event: -> return @_should_abort_quit! if #@windows == 1
+
+      on_delete_event: ->
+        if #@windows == 1
+          unless @_should_abort_quit!
+            @_on_quit!
+            return false
+
+          true
+
       on_destroy: (window) ->
         for k, win in ipairs @windows
           if win\to_gobject! == window
             @windows[k] = nil
 
-        @_on_quit! if #@windows == 0
 
 
     props[k] = v for k, v in pairs(properties or {})
@@ -169,7 +176,14 @@ class Application extends PropertyObject
     win\destroy! for win in * moon.copy @windows
 
   save_session: =>
-    session = version: 1, buffers: {}
+    session = {
+      version: 1
+      buffers: {}
+      window: {
+        maximized: window.maximized
+        fullscreen: window.fullscreen
+      }
+    }
 
     for b in *@buffers
       continue unless b.file
@@ -205,11 +219,12 @@ class Application extends PropertyObject
 
     if #files > 0
       @open_file(File(path)) for path in *files
-    elseif #@buffers == 0
-      @_restore_session!
 
-    if #@editors == 0 -- failed to load any files above for some reason
-      @new_editor @new_buffer!
+    unless @_loaded
+      @_restore_session window, #files == 0
+
+    if #@editors == 0
+      @new_editor @_buffers[1] or @new_buffer!
 
     window\show_all! if window
     @_loaded = true
@@ -263,22 +278,26 @@ class Application extends PropertyObject
         bc_file\delete! if bc_file.exists
         log.error "Failed to update byte code for #{file}: #{err}"
 
-  _restore_session: =>
+  _restore_session: (window, restore_buffers) =>
     session = @settings\load_system 'session'
 
     if session and session.version == 1
-      for entry in *session.buffers
-        file = File(entry.file)
-        continue unless file.exists
-        status, err = pcall ->
-          buffer = @new_buffer mode.for_file file
-          buffer.file = file
-          buffer.last_shown = entry.last_shown
-          buffer.properties = entry.properties
+      if restore_buffers
+        for entry in *session.buffers
+          file = File(entry.file)
+          continue unless file.exists
+          status, err = pcall ->
+            buffer = @new_buffer mode.for_file file
+            buffer.file = file
+            buffer.last_shown = entry.last_shown
+            buffer.properties = entry.properties
 
-        log.error "Failed to load #{file}: #{err}" unless status
+          log.error "Failed to load #{file}: #{err}" unless status
 
-    @new_editor @_buffers[1] or @new_buffer!
+      if session.window
+        with session.window
+          window.maximized = .maximized
+          window.fullscreen = .fullscreen
 
   _set_initial_status: (window) =>
     if log.last_error

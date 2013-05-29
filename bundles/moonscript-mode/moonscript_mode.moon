@@ -12,7 +12,6 @@ class MoonscriptMode
     { r'^\\s*\\b(elseif|if|while|unless)\\b', '%sthen%s*'}, -- conditionals
     '^%s*else%s*$',
     { '=%s*if%s', '%sthen%s*'} -- 'if' used as rvalue
-
   }
 
   dedent_patterns: {
