@@ -4,7 +4,12 @@ import style from howl.ui
 command.register
   name: 'toggle-fullscreen',
   description: 'Toggles fullscreen for the current window'
-  handler: -> _G.window\toggle_fullscreen!
+  handler: -> _G.window.fullscreen = not _G.window.fullscreen
+
+command.register
+  name: 'toggle-maximized',
+  description: 'Toggles maximized state for the current window'
+  handler: -> _G.window.maximized = not _G.window.maximized
 
 command.register
   name: 'describe-style',

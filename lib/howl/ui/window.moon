@@ -1,4 +1,6 @@
-import Gtk from lgi
+bit = require 'bit'
+
+import Gtk, Gdk from lgi
 import PositionType from Gtk
 import PropertyObject from howl.aux.moon
 import Status, Readline from howl.ui
@@ -49,7 +51,6 @@ class Window extends PropertyObject
     @win\add alignment
     @win\get_style_context!\add_class 'main'
 
-    @_is_fullscreen = false
     @data = {}
 
     super @win
@@ -84,15 +85,22 @@ class Window extends PropertyObject
     @get_view focused
 
   @property fullscreen:
-    get: => @_is_fullscreen
+    get: => @window\get_state!.FULLSCREEN != nil
 
-    set: (status) =>
-      if status and not @_is_fullscreen
+    set: (state) =>
+      if state and not @fullscreen
         @win\fullscreen!
-        @_is_fullscreen = true
-      elseif not status and @_is_fullscreen
+      elseif not state and @fullscreen
         @win\unfullscreen!
-        @_is_fullscreen = false
+
+  @property maximized:
+    get: => @window\get_state!.MAXIMIZED != nil
+
+    set: (state) =>
+      if state and not @maximized
+        @win\maximize!
+      elseif not state and @maximized
+        @win\unmaximize!
 
   siblings: (view, wraparound = false) =>
     current = @get_view to_gobject(view or @focus_child)
@@ -161,8 +169,6 @@ class Window extends PropertyObject
       return v if v.view == gobject
 
     nil
-
-  toggle_fullscreen: => @fullscreen = not (@fullscreen == true)
 
   _remember_focus: =>
     @data.focus_child = @grid\get_focus_child!

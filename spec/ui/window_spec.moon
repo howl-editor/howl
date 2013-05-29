@@ -4,15 +4,11 @@ import Window from howl.ui
 describe 'Window', ->
   local win
 
-  before_each -> win = Window!
-  after_each -> win\to_gobject!\destroy!
+  before_each ->
+    win = Window!
+    win\realize!
 
-  it 'toggle_fullscreen() toggles fullscreen', ->
-    assert.is_false win.fullscreen
-    win\toggle_fullscreen!
-    assert.is_true win.fullscreen
-    win\toggle_fullscreen!
-    assert.is_false win.fullscreen
+  after_each -> win\to_gobject!\destroy!
 
   describe 'add_view(view [, placement, anchor])', ->
     it 'adds the specified view', ->
