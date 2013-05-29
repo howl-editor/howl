@@ -26,12 +26,21 @@ describe 'DefaultMode', ->
           mode\indent editor
           assert.equals 'if\n  bar\nthen\n  foo\n', buffer.text
 
-        it 'adjusts lines with unwarranted greater indents to match the previous line', ->
-          mode.indent_patterns = { 'if' }
-          buffer.text = 'line\n  wat?\n'
-          selection\select_all!
-          mode\indent editor
-          assert.equals 'line\nwat?\n', buffer.text
+        context 'unless .indent_patterns.authoritive is false', ->
+          it 'adjusts lines with unwarranted greater indents to match the previous line', ->
+            mode.indent_patterns = { 'if' }
+            buffer.text = 'line\n  wat?\n'
+            selection\select_all!
+            mode\indent editor
+            assert.equals 'line\nwat?\n', buffer.text
+
+        context 'if .indent_patterns.authoritive is false', ->
+          it 'does not adjust lines with unwarranted greater indents to match the previous line', ->
+            mode.indent_patterns = { 'if', authoritive: false }
+            buffer.text = 'line\n  wat?\n'
+            selection\select_all!
+            mode\indent editor
+            assert.equals 'line\n  wat?\n', buffer.text
 
     context 'when .dedent_patterns is set', ->
       context 'and the current line matches one of the patterns', ->
@@ -42,12 +51,21 @@ describe 'DefaultMode', ->
           mode\indent editor
           assert.equals '    bar\n  else\n  foo\n}\n', buffer.text
 
-        it 'adjusts lines with unwarranted smaller indents to match the previous line', ->
-          mode.dedent_patterns = { 'else' }
-          buffer.text = '  line\nwat?\n'
-          selection\select_all!
-          mode\indent editor
-          assert.equals '  line\n  wat?\n', buffer.text
+        context 'unless .dedent_patterns.authoritive is false', ->
+          it 'adjusts lines with unwarranted smaller indents to match the previous line', ->
+            mode.dedent_patterns = { 'else' }
+            buffer.text = '  line\nwat?\n'
+            selection\select_all!
+            mode\indent editor
+            assert.equals '  line\n  wat?\n', buffer.text
+
+        context 'when .dedent_patterns.authoritive is false', ->
+          it 'does not adjust lines with unwarranted smaller indents to match the previous line', ->
+            mode.dedent_patterns = { 'else', authoritive: false }
+            buffer.text = '  line\nwat?\n'
+            selection\select_all!
+            mode\indent editor
+            assert.equals '  line\nwat?\n', buffer.text
 
     it 'sets the same indent as for the previous line if the line is blank', ->
       buffer.text = '  line\n\n'
@@ -61,7 +79,7 @@ describe 'DefaultMode', ->
       mode\indent editor
       assert.equals '  line\n  two\n', buffer.text
 
-    it 'works on the currentl line if no selection is specified', ->
+    it 'works on the current line if no selection is specified', ->
       mode.indent_patterns = { 'if' }
       buffer.text = 'if\none\ntwo\n'
       cursor.line = 2
@@ -185,3 +203,16 @@ describe 'DefaultMode', ->
         buffer.text = 'foo'
         mode\toggle_comment editor
         assert.equal '-- foo', buffer.text
+
+  describe 'auto-formatting after newline', ->
+    it 'indents the new line automatically given the indent patterns', ->
+      mode.indent_patterns = { 'if' }
+      buffer.text = 'if'
+      cursor\eof!
+      editor\newline!
+      assert.equals 'if\n  ', buffer.text
+
+      buffer.text = 'other'
+      cursor\eof!
+      editor\newline!
+      assert.equals 'other\n', buffer.text

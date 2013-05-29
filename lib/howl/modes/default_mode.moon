@@ -86,6 +86,11 @@ class DefaultMode
     else
       @comment editor
 
+  on_char_added: (args, editor) =>
+    if args.key_name == 'return'
+      @indent editor
+      true
+
   _indent_for: (line, indent_level) =>
     prev_line = prev_non_empty_line line
 
@@ -94,8 +99,12 @@ class DefaultMode
       return prev_line.indentation - indent_level if is_match line.text, @dedent_patterns
 
       -- unwarranted indents
-      return prev_line.indentation if @indent_patterns and line.indentation > prev_line.indentation
-      return prev_line.indentation if @dedent_patterns and line.indentation < prev_line.indentation
+      if @indent_patterns and @indent_patterns.authoritive != false and line.indentation > prev_line.indentation
+        return prev_line.indentation
+
+      if @dedent_patterns and @dedent_patterns.authoritive != false and line.indentation < prev_line.indentation
+        return prev_line.indentation
+
       return prev_line.indentation if line.blank
 
     alignment_adjustment = line.indentation % indent_level

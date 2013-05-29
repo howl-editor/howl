@@ -196,23 +196,7 @@ class Editor extends PropertyObject
       @buffer\chunk start, stop
 
   grab_focus: => @sci\grab_focus!
-  newline: => @sci\new_line!
-
-  newline_and_format: =>
-    cur_line = @current_line
-    mode = @buffer.mode
-    indentation = cur_line.indentation
-
-    @buffer\as_one_undo ->
-      @indent!
-      @newline!
-      @current_line.indentation = indentation
-      @indent!
-
-      if mode.after_newline
-        mode\after_newline @current_line, self
-
-      @cursor.column = @current_line.indentation + 1
+  newline: => @buffer\as_one_undo -> @sci\new_line!
 
   shift_right: =>
     if @selection.empty
@@ -429,13 +413,14 @@ class Editor extends PropertyObject
     false
 
   _on_char_added: (args) =>
-    signal_params = moon.copy args
-    signal_params.editor = self
-    handled = signal.emit 'character-added', signal_params
+    params = moon.copy args
+    params.editor = self
+    return if signal.emit 'character-added', params
+    return if @buffer.mode.on_char_added and @buffer.mode\on_char_added params, self
 
     if @popup
-      @popup.window\on_char_added self, signal_params if @popup.window.on_char_added
-    elseif not handled and #@current_context.word_prefix >= config.completion_popup_after
+      @popup.window\on_char_added self, params if @popup.window.on_char_added
+    elseif #@current_context.word_prefix >= config.completion_popup_after
       @complete!
       true
 

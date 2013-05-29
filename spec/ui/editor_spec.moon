@@ -1,6 +1,6 @@
 import Gtk from lgi
 
-import Buffer, config from howl
+import Buffer, config, signal from howl
 import Editor from howl.ui
 
 describe 'Editor', ->
@@ -70,44 +70,6 @@ describe 'Editor', ->
     cursor.pos = 3
     editor\newline!
     assert.equal buffer.text, 'hƏ\nllo'
-
-  describe '.newline_and_format()', ->
-    it 'adds a newline and sets the indentation to that of the previous line', ->
-      buffer.text = '  line'
-      cursor.pos = 7
-      editor\newline_and_format!
-      assert.equal '  line\n  ', buffer.text
-
-    it 'does the whole shebang as a one undo', ->
-      buffer.text = '  line'
-      cursor.pos = 7
-      editor\newline_and_format!
-      editor.buffer\undo!
-      assert.equal buffer.text, '  line'
-
-    it 'positions the cursor at the end of the indentation', ->
-      buffer.text = '  line'
-      cursor.pos = 7
-      editor\newline_and_format!
-      assert.equal editor.cursor.line, 2
-      assert.equal editor.cursor.column, 3
-
-    context "when the buffer's mode provides an indent() method", ->
-     it "invokes that passing itself as a parameter", ->
-        buffer.mode = indent: spy.new -> true
-        buffer.text = 'line'
-        cursor.pos = 3
-        editor\newline_and_format!
-        assert.spy(buffer.mode.indent).was.called_with buffer.mode, editor
-
-    context "when the buffer's mode provides an .after_newline", ->
-      it 'is called with (mode, current-line, editor)', ->
-        after_newline = spy.new -> true
-        buffer.mode = :after_newline
-        buffer.text = 'line'
-        cursor.pos = 3
-        editor\newline_and_format!
-        assert.spy(after_newline).was.called_with buffer.mode, buffer.lines[2], editor
 
   for method in *{ 'indent', 'comment', 'uncomment', 'toggle_comment' }
     describe "#{method}()", ->
@@ -315,3 +277,20 @@ describe 'Editor', ->
         editor\shift_left!
         assert.equal buffer.text, '  hƏllo\nworld!'
         assert.equal cursor.pos, 2
+
+  context 'events', ->
+    describe 'on char added', ->
+      it 'emits a character-added event with the passed arguments merged with the editor reference', ->
+        handler = spy.new -> true
+        signal.connect 'character-added', handler
+        args = key_name: 'a'
+        editor\_on_char_added args
+        signal.disconnect 'character-added', handler
+        args.editor = editor
+        assert.spy(handler).was_called_with args
+
+      it 'invokes mode.on_char_added if present, passing (arguments, editor)', ->
+        buffer.mode = on_char_added: spy.new -> nil
+        args = key_name: 'a', :editor
+        editor\_on_char_added args
+        assert.spy(buffer.mode.on_char_added).was_called_with buffer.mode, args, editor

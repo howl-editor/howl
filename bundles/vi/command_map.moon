@@ -86,7 +86,7 @@ J = (editor) -> apply editor, (editor) -> editor\join_lines!
 
 o = (editor) -> apply editor, (editor) ->
   A editor
-  editor\newline_and_format!
+  editor\newline!
 
 O = (editor) -> apply editor, (editor) ->
   current_indent = editor.current_line.indentation

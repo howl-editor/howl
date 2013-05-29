@@ -8,7 +8,7 @@ return {
   'ctrl_+':   'zoom-in'
   alt_f11:    'toggle-fullscreen'
   alt_x:      'run'
-  return:     'editor-newline-and-format'
+  return:     'editor-newline'
 
   ctrl_shift_left:  'view-left-or-create'
   ctrl_shift_right: 'view-right-or-create'

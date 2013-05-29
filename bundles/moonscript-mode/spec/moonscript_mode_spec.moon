@@ -103,7 +103,7 @@ describe 'moonscript-mode', ->
     }
 
     for desc in pairs indents
-      context 'returns a one level indent for a line after ' .. desc, ->
+      context 'indents one level for a line after ' .. desc, ->
         for code in *indents[desc]
           it "e.g. indents for '#{code}'", ->
             buffer.text = code .. '\n'
@@ -128,7 +128,7 @@ describe 'moonscript-mode', ->
           assert.equal indent_level, editor.current_line.indentation
 
     for desc in pairs dedents
-      context 'returns a one level dedent for a line containing ' .. desc, ->
+      context 'dedents one level for a line containing ' .. desc, ->
         for code in *dedents[desc]
           it "e.g. dedents for '#{code}'", ->
             buffer.text = '  foo\n  ' .. code
@@ -151,8 +151,14 @@ describe 'moonscript-mode', ->
       editor\indent!
       assert.equal 2, editor.current_line.indentation
 
-    it 'returns the indent for the previous line for a line with a non-motivated indent', ->
+    it 'returns the indent for the previous line for a line with a non-motivated greater indent', ->
       buffer.text = 'bar\n  foo'
+      cursor.line = 2
+      editor\indent!
+      assert.equal 0, editor.current_line.indentation
+
+    it 'keeps the indent for lines when if nothing particular is known', ->
+      buffer.text = '  foo\nbar'
       cursor.line = 2
       editor\indent!
       assert.equal 0, editor.current_line.indentation
@@ -163,7 +169,7 @@ describe 'moonscript-mode', ->
       editor\indent!
       assert.equal 2, editor.current_line.indentation
 
-  describe '.after_newline()', ->
+  describe 'auto-formatting after newline', ->
     local buffer, editor, cursor, lines
 
     before_each ->
@@ -175,10 +181,10 @@ describe 'moonscript-mode', ->
 
     context 'splitting brackets', ->
       it 'moves the closing bracket to its own line and positions the cursor at the middle line', ->
-        buffer.text = '{\n  }'
-        cursor.line = 2
-        m\after_newline(lines[2], editor)
-        assert.equal buffer.text, '{\n  \n}'
+        buffer.text = '{}'
+        cursor.pos = 2
+        editor\newline!
+        assert.equal '{\n  \n}', buffer.text
         assert.equal 2, cursor.line
         assert.equal 3, cursor.column
 
@@ -189,8 +195,7 @@ describe 'moonscript-mode', ->
         'foo = bar()'
         'frob\\gurlg!'
       }
-        orig_text = code .. '\n'
-        buffer.text = orig_text
-        cursor.line = 2
-        m\after_newline(lines[2], editor)
-        assert.equal buffer.text, orig_text
+        buffer.text = code
+        cursor\eof!
+        editor\newline!
+        assert.equal "#{code}\n", buffer.text

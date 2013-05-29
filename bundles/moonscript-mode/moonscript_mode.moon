@@ -16,18 +16,31 @@ class MoonscriptMode
   }
 
   dedent_patterns: {
-    r'^\\s*(else|\\})\\s*$',
+    authoritive: false
+    r'^\\s*(else|\\})\\s*$'
     { '^%s*elseif%s', '%sthen%s*' }
   }
 
-  after_newline: (line, editor) =>
-    if line\match '^%s*}%s*$'
-      wanted_indent = line.indentation
-      editor\shift_left!
+  on_char_added: (args, editor) =>
+    if args.key_name == 'return'
+      return true if @_auto_format_after_newline(editor) == true
+
+    @parent.on_char_added @, args, editor
+
+  _auto_format_after_newline: (editor) =>
+    line = editor.current_line
+    prev_line = line.previous
+
+    if prev_line\match('{%s*$') and line.text.stripped == '}'
+      cur_indent = prev_line.indentation
+      new_indent = cur_indent + editor.buffer.config.indent
+      line.indentation = cur_indent
       new_line = editor.buffer.lines\insert line.nr, ''
-      new_line.indentation = wanted_indent
+      new_line.indentation = new_indent
       with editor.cursor
         .line = line.nr
-        .column = wanted_indent + 1
+        .column = new_indent + 1
+
+      return true
 
 return MoonscriptMode
