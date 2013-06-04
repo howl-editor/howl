@@ -45,7 +45,7 @@ describe 'keyhandler', ->
         kp_right: 'right'
         kp_page_up: 'page_up'
         kp_page_down: 'page_down'
-        iso_left_tab: 'shift_tab'
+        iso_left_tab: 'tab' -- shifts are automatically prepended
         return: 'enter'
       }
 

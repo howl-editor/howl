@@ -16,21 +16,22 @@ processing is skipped.
 _ENV = {}
 setfenv(1, _ENV) if setfenv
 
+capture_handler = nil
+
+alternate_names = {
+  kp_up: 'up'
+  kp_down: 'down'
+  kp_left: 'left'
+  kp_right: 'right'
+  kp_page_up: 'page_up'
+  kp_page_down: 'page_down'
+  iso_left_tab: 'tab'
+  return: 'enter'
+}
+
 alternate_translation = (event) ->
-  alternate_names = {
-    kp_up: 'up'
-    kp_down: 'down'
-    kp_left: 'left'
-    kp_right: 'right'
-    kp_page_up: 'page_up'
-    kp_page_down: 'page_down'
-    iso_left_tab: 'shift_tab'
-    return: 'enter'
-  }
   name = event.key_name
   return alternate_names[name] if name
-
-capture_handler = nil
 
 export translate_key = (event) ->
   ctrl = (event.control and 'ctrl_') or ''
