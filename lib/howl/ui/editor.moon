@@ -239,8 +239,9 @@ class Editor extends PropertyObject
   copy_line: => @sci\line_copy!
   paste: => @sci\paste!
   insert: (text) => @sci\add_text #text, text
-  tab: => @sci\tab!
-  backspace: => @sci\delete_back!
+  smart_tab: => @sci\tab!
+  smart_back_tab: => @sci\back_tab!
+  delete_back: => @sci\delete_back!
 
   join_lines: =>
     @buffer\as_one_undo ->
@@ -300,6 +301,10 @@ class Editor extends PropertyObject
 
   undo: => @buffer\undo!
   redo: => @buffer\redo!
+  scroll_up: => @sci\line_scroll_up!
+  scroll_down: => @sci\line_scroll_down!
+
+  -- private
 
   _set_theme_settings: =>
     v = theme.current.editor
@@ -567,8 +572,9 @@ for cmd_spec in *{
   { 'delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line', true }
   { 'copy-line', 'Copies the current line to the clipboard', 'copy_line' }
   { 'paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
-  { 'tab', 'Simulates a tab key press', 'tab' }
-  { 'backspace', 'Simulates a backspace key press', 'backspace' }
+  { 'smart-tab', 'Inserts tab or shifts selected text right', 'smart_tab' }
+  { 'smart-back-tab', 'Moves to previous tab stop or shifts text left', 'smart_back_tab' }
+  { 'delete-back', 'Deletes one character back', 'delete_back' }
   { 'shift-right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
   { 'shift-left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
   { 'indent', 'Indents the selected lines, or the current line', 'indent' }
@@ -576,12 +582,24 @@ for cmd_spec in *{
   { 'complete', 'Starts completion at cursor', 'complete' }
   { 'undo', 'Undo last edit for the current editor', 'undo' }
   { 'redo', 'Redo last undo for the current editor', 'redo' }
+  { 'scroll-up', 'Scrolls one line up', 'scroll_up' }
+  { 'scroll-down', 'Scrolls one line down', 'scroll_down' }
 }
   args = { select 4, table.unpack cmd_spec }
   command.register
     name: "editor-#{cmd_spec[1]}"
     description: cmd_spec[2]
     handler: -> _G.editor[cmd_spec[3]] _G.editor, table.unpack args
+
+for sel_cmd_spec in *{
+  { 'copy', 'Copies the current selection to the clipboard' }
+  { 'cut', 'Cuts the current selection to the clipboard' }
+  { 'select-all', 'Cuts the current selection to the clipboard' }
+}
+  command.register
+    name: "editor-#{sel_cmd_spec[1]}"
+    description: sel_cmd_spec[2]
+    handler: -> _G.editor.selection[sel_cmd_spec[1]\gsub '-', '_'] _G.editor.selection
 
 -- signals
 

@@ -191,19 +191,19 @@ describe 'Editor', ->
     it 'defines a "backspace_unindents" config variable, defaulting to true', ->
       assert.equal config.backspace_unindents, true
 
-    describe '.tab()', ->
+    describe 'smart_tab()', ->
       it 'inserts a tab character if use_tabs is true', ->
         config.use_tabs = true
         buffer.text = 'hƏllo'
         cursor.pos = 2
-        editor\tab!
+        editor\smart_tab!
         assert.equal buffer.text, 'h\tƏllo'
 
       it 'inserts spaces to move to the next tab if use_tabs is false', ->
         config.use_tabs = false
         buffer.text = 'hƏllo'
         cursor.pos = 1
-        editor\tab!
+        editor\smart_tab!
         assert.equal string.rep(' ', config.indent) .. 'hƏllo', buffer.text
 
       it 'inserts a tab to move to the next tab stop if use_tabs is true', ->
@@ -211,7 +211,7 @@ describe 'Editor', ->
         config.tab_width = config.indent
         buffer.text = 'hƏllo'
         cursor.pos = 1
-        editor\tab!
+        editor\smart_tab!
         assert.equal '\thƏllo', buffer.text
 
       it 'indents the current line if in whitespace and tab_indents is true', ->
@@ -220,7 +220,7 @@ describe 'Editor', ->
         indent = string.rep ' ', config.indent
         buffer.text = indent .. 'hƏllo'
         cursor.pos = 2
-        editor\tab!
+        editor\smart_tab!
         assert.equal buffer.text, string.rep(indent, 2) .. 'hƏllo'
 
     describe '.backspace()', ->
