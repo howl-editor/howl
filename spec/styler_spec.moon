@@ -7,25 +7,48 @@ describe 'styler', ->
   style.define 's1', color: '#334455'
   style.define 's2', color: '#334455'
 
-  lex_res = (t) -> -> t
+  describe 'apply(buffer, start_pos, styles)', ->
 
-  describe 'style_text(sci, buffer, end_pos, lexer)', ->
-
-    it 'styles the buffers text according to the triplet series returned by the lexer', ->
+    it 'styles the buffer text according to the styles', ->
       buffer.text = 'foo'
-      styler.style_text sci, buffer, #buffer, lex_res { 1, 's1', 2, 2, 's2', 4 }
+      styler.apply buffer, 1, { 1, 's1', 2, 2, 's2', 4 }
       assert.equal 's1', (style.at_pos(buffer, 1))
       assert.equal 's2', (style.at_pos(buffer, 2))
       assert.equal 's2', (style.at_pos(buffer, 3))
 
     it 'styles any holes with the default style', ->
       buffer.text = 'foo'
-      styler.style_text sci, buffer, #buffer, lex_res { 2, 's2', 3 }
+      styler.apply buffer, 1, { 2, 's2', 3 }
       assert.equal 'default', (style.at_pos(buffer, 1))
       assert.equal 's2', (style.at_pos(buffer, 2))
       assert.equal 'default', (style.at_pos(buffer, 3))
 
     it 'undefined styles are replaced with "default"', ->
       buffer.text = 'foo'
-      styler.style_text sci, buffer, #buffer, lex_res { 1, 'wat', 4 }
+      styler.apply buffer, 1, { 1, 'wat', 4 }
       assert.equal 'default', (style.at_pos(buffer, 1))
+
+  describe 'styles_for_range(buffer, start_pos, end_pos)', ->
+    it 'returns a table of styles and positions for the given range, same as styles argument to apply', ->
+      buffer.text = 'foo'
+      styles = { 1, 's1', 2, 2, 's2', 4 }
+      styler.apply buffer, 1, styles
+      assert.same styles, styler.styles_for_range buffer, 1, #buffer
+
+    it 'handles "gaps" for characters with the default style', ->
+      buffer.text = 'foo'
+      styles = { 2, 's2', 3 }
+      styler.apply buffer, 1, styles
+      assert.same styles, styler.styles_for_range buffer, 1, #buffer
+
+    it 'end_pos is inclusive', ->
+      buffer.text = 'foo'
+      styles = { 1, 's1', 2, 2, 's2', 4 }
+      styler.apply buffer, 1, styles
+      assert.same { 1, 's1', 2 }, styler.styles_for_range buffer, 1, 1
+
+    it 'indexes are byte offsets', ->
+      buffer.text = 'Liñe'
+      styles = { 1, 's1', 2 }
+      styler.apply buffer, buffer.size, styles
+      assert.same { 1, 'unstyled', 2 }, styler.styles_for_range buffer, 4, 4
