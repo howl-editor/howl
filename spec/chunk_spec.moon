@@ -1,4 +1,4 @@
-import Chunk, Buffer from howl
+import Chunk, Buffer, styler from howl
 
 describe 'Chunk', ->
 
@@ -27,6 +27,11 @@ describe 'Chunk', ->
       chunk.text = 'Zen'
       assert.equal 3, chunk.end_pos
       assert.equal 'Zen', chunk.text
+
+  it '.styling is a table of offsets and styles, { start, "style", end [,..]}', ->
+    styles = { 1, 'keyword', 3 }
+    styler.apply buffer, 1, styles
+    assert.same { 1, 'keyword', 2 }, Chunk(buffer, 2, 2).styles
 
   it 'delete() deletes the chunk', ->
     Chunk(buffer, 1, 5)\delete!

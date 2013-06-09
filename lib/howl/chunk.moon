@@ -1,3 +1,4 @@
+import styler from howl
 import PropertyObject from howl.aux.moon
 
 class Chunk extends PropertyObject
@@ -12,6 +13,11 @@ class Chunk extends PropertyObject
         @delete!
         @buffer\insert text, @start_pos
         @end_pos = @start_pos + #text - 1
+
+  @property styles:
+    get: =>
+      b_start, b_end = @buffer\byte_offset @start_pos, @end_pos
+      styler.styles_for_range @buffer, b_start, b_end
 
   delete: => @buffer\delete @start_pos, @end_pos if @end_pos >= @start_pos
 
