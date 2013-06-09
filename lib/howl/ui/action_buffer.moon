@@ -1,4 +1,4 @@
-import Buffer, Scintilla from howl
+import Buffer, Scintilla, styler from howl
 import style from howl.ui
 
 class ActionBuffer extends Buffer
@@ -6,20 +6,28 @@ class ActionBuffer extends Buffer
     super {}, sci
     @sci\set_lexer Scintilla.SCLEX_NULL
 
-  insert: (text, pos, style_name) =>
-    pos_after = super text, pos
+  insert: (object, pos, style_name) =>
+    pos_after = if typeof(object) == 'Chunk'
+      @_insert_chunk(object, pos)
+    else
+      super object, pos
 
     if style_name
       @style pos, pos_after - 1, style_name
 
     pos_after
 
-  append: (text, style_name) =>
+  append: (object, style_name) =>
     start_pos = @length
-    pos = super text
+    pos_after = if typeof(object) == 'Chunk'
+      @_insert_chunk(object, @length + 1)
+    else
+      super object
+
     if style_name
       @style start_pos + 1, @length, style_name
-    pos
+
+    pos_after
 
   style: (start_pos, end_pos, style_name) =>
     style_num = style.number_for style_name, self
@@ -27,5 +35,10 @@ class ActionBuffer extends Buffer
     @sci\start_styling start_pos - 1, 0xff
     @sci\set_styling end_pos - start_pos, style_num
 
+  _insert_chunk: (chunk, pos) =>
+    super\insert chunk.text, pos
+    b_start = @byte_offset pos
+    styler.apply self, b_start, chunk.styles
+    pos + #chunk
 
 return ActionBuffer
