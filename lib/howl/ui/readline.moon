@@ -108,7 +108,7 @@ class Readline extends PropertyObject
         .max_height = @_max_list_lines!
         .selection_enabled = true
         @completion_list[k] = v for k, v in pairs list_options
-        @completion_list.highlight_matches_for = text unless list_options.highlight_matches_for
+        @completion_list.highlight_matches_for = text unless list_options.highlight_matches_for != nil
         \show!
 
     @_adjust_height!
