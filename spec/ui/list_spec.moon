@@ -29,6 +29,14 @@ describe 'List', ->
     list\show!
     assert.equal 'one\ntwö\nthree\n', buf.text
 
+  it 'allows items to be Chunks', ->
+    source_buf = Buffer!
+    source_buf.text = 'source'
+    chunk = source_buf\chunk 1, 6
+    list.items = { chunk }
+    list\show!
+    assert.equal 'source\n', buf.text
+
   it 'shows multi column items each on one line, in separate columns', ->
     list.items = {
       {'first', 'item one'},
@@ -229,6 +237,10 @@ three    four
       list\show!
       assert.equal style.at_pos(buf, 1), List.column_styles[1]
       assert.equal style.at_pos(buf, 7), List.column_styles[2]
+
+    it '.column_styles can be customized for each instance', ->
+      list.column_styles[1] = 'custom'
+      assert.not_equal 'custom', List.column_styles[1]
 
     context 'when .column_styles is a function', ->
       it 'it is called with the item, row and column and the returned style is used', ->

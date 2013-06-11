@@ -29,7 +29,7 @@ calculate_column_widths = (items, headers) ->
 
 column_padding = (text, column, widths) ->
   return '' if column == #widths
-  string.rep ' ', (widths[column] - #text) + 1
+  string.rep ' ', (widths[column] - #tostring(text)) + 1
 
 line_count = (s) ->
   count = -1
@@ -51,6 +51,7 @@ class List extends PropertyObject
     @offset = 1
     @selection_enabled = false
     @trailing_newline = true
+    @column_styles = moon.copy @column_styles
     super!
 
   @property items:
@@ -203,12 +204,12 @@ class List extends PropertyObject
       if @_multi_column
         for column, field in ipairs item
           padding = column_padding field, column, @_widths
-          pos = buffer\insert tostring(field), pos, @_column_style item, row, column
+          pos = buffer\insert field, pos, @_column_style(item, row, column)
           pos = buffer\insert padding, pos
           text ..= tostring(field) .. padding
       else
         text = tostring(item)
-        pos = buffer\insert text, pos, @_column_style item, row, 1
+        pos = buffer\insert text, pos, @_column_style(item, row, 1)
 
       if @highlight_matches_for
         positions = Matcher.explain @highlight_matches_for, text
