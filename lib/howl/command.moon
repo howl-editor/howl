@@ -100,8 +100,11 @@ class State
       return nil if not @cmd.inputs
       input_spec = @cmd.inputs[input_index]
       return nil if not input_spec
-      input_factory = inputs[input_spec.name]
-      if not input_factory then error 'Could not find input for `' .. input_spec.name .. '`'
+      input_factory = input_spec.factory
+      if type(input_factory) == 'string'
+        input_factory = inputs[input_factory]
+        if not input_factory then error "Could not find input for `${input_factory}`"
+
       target = input_factory!
       input = :target, wildcard: input_spec.wildcard
       table.insert @inputs, input_index, input
@@ -115,18 +118,19 @@ accessible_name = (name) ->
 
 parse_inputs = (inputs = {}) ->
   iputs = {}
+
   for i = 1, #inputs
     input = inputs[i]
     wildcard = false
+    wildcard_input = type(input) == 'string' and input\match('^%*(.+)$')
 
-    name = input
-    match = name\match '^%*(.+)$'
-    if match
+    if wildcard_input
       error('Wildcard input only allowed as last input') if i != #inputs
-      name = match
+      input = wildcard_input
       wildcard = true
 
-    append iputs, :name, :wildcard
+    append iputs, factory: input, :wildcard
+
   iputs
 
 register = (spec) ->

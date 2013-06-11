@@ -163,6 +163,18 @@ describe 'command', ->
         command.run "#{cmd.name} first second / third"
         assert.spy(cmd.handler).was.called_with('first second / third')
 
+      it 'accepts function values as inputs"', ->
+        input = value_for: -> 'yay'
+        cmd.inputs = { -> input }
+        command.register cmd
+        command.run "#{cmd.name} arg"
+        assert.spy(cmd.handler).was.called_with('yay')
+
+        cmd.inputs = { '*dummy' }
+        command.register cmd
+        command.run "#{cmd.name} first second / third"
+        assert.spy(cmd.handler).was.called_with('first second / third')
+
       it 'only allows the last input to be a wildcard', ->
         cmd.inputs = { '*dummy', 'dummy' }
         assert.raises 'Wildcard', -> command.register cmd
