@@ -76,7 +76,7 @@ style_text = (buffer, end_pos, lexer) ->
   text = buffer.sci\get_text_range start_pos, end_pos
   apply buffer, start_pos + 1, lexer(text)
 
-styles_for_range = (buffer, start_pos, end_pos) ->
+reverse = (buffer, start_pos, end_pos) ->
   default_style_number = style_number_for 'default', buffer
   style_bytes = buffer.sci\get_styled_text start_pos - 1, end_pos
   styles = {}
@@ -87,7 +87,7 @@ styles_for_range = (buffer, start_pos, end_pos) ->
   for i = 1, #style_bytes, 2
     style_num = style_bytes\byte(i + 1)
     if style_num != cur_style
-      styles[#styles + 1] = c_index if #styles > 0 -- mark end pos
+      styles[#styles + 1] = c_index if #styles > 0 and cur_style != default_style_number -- mark end pos
       if style_num != default_style_number
         styles[#styles + 1] = c_index
         styles[#styles + 1] = style_name_for style_num, buffer
@@ -107,4 +107,4 @@ clear_styling = (sci, buffer) ->
     \start_styling 0, 0xff
     \set_styling end_pos, default_style_number
 
-return :apply, :style_text, :clear_styling, :styles_for_range
+return :apply, :style_text, :clear_styling, :reverse

@@ -7,7 +7,9 @@ class Chunk extends PropertyObject
 
   @property text:
     get: =>
-      @buffer.text\usub(@start_pos, @end_pos)
+      @_text or= @buffer.text\usub(@start_pos, @end_pos)
+      @_text
+
     set: (text) =>
       @buffer\as_one_undo ->
         @delete!
@@ -16,8 +18,11 @@ class Chunk extends PropertyObject
 
   @property styles:
     get: =>
-      b_start, b_end = @buffer\byte_offset @start_pos, @end_pos
-      styler.styles_for_range @buffer, b_start, b_end
+      unless @_styles
+        b_start, b_end = @buffer\byte_offset @start_pos, @end_pos
+        @_styles = styler.reverse @buffer, b_start, b_end
+
+      @_styles
 
   delete: => @buffer\delete @start_pos, @end_pos if @end_pos >= @start_pos
 

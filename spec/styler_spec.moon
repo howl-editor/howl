@@ -4,6 +4,7 @@ import styler, Scintilla, Buffer from howl
 describe 'styler', ->
   sci = Scintilla!
   buffer = Buffer {}, sci
+  sci.listener = buffer.sci_listener
   style.define 's1', color: '#334455'
   style.define 's2', color: '#334455'
 
@@ -28,27 +29,27 @@ describe 'styler', ->
       styler.apply buffer, 1, { 1, 'wat', 4 }
       assert.equal 'default', (style.at_pos(buffer, 1))
 
-  describe 'styles_for_range(buffer, start_pos, end_pos)', ->
+  describe 'reverse(buffer, start_pos, end_pos)', ->
     it 'returns a table of styles and positions for the given range, same as styles argument to apply', ->
       buffer.text = 'foo'
       styles = { 1, 's1', 2, 2, 's2', 4 }
       styler.apply buffer, 1, styles
-      assert.same styles, styler.styles_for_range buffer, 1, #buffer
+      assert.same styles, styler.reverse buffer, 1, #buffer
 
     it 'handles "gaps" for characters with the default style', ->
-      buffer.text = 'foo'
-      styles = { 2, 's2', 3 }
+      buffer.text = 'foobar'
+      styles = { 1, 's1', 2, 4, 's2', 6 }
       styler.apply buffer, 1, styles
-      assert.same styles, styler.styles_for_range buffer, 1, #buffer
+      assert.same styles, styler.reverse buffer, 1, #buffer
 
     it 'end_pos is inclusive', ->
       buffer.text = 'foo'
       styles = { 1, 's1', 2, 2, 's2', 4 }
       styler.apply buffer, 1, styles
-      assert.same { 1, 's1', 2 }, styler.styles_for_range buffer, 1, 1
+      assert.same { 1, 's1', 2 }, styler.reverse buffer, 1, 1
 
     it 'indexes are byte offsets', ->
       buffer.text = 'Liñe'
       styles = { 1, 's1', 2 }
       styler.apply buffer, buffer.size, styles
-      assert.same { 1, 'unstyled', 2 }, styler.styles_for_range buffer, 4, 4
+      assert.same { 1, 'unstyled', 2 }, styler.reverse buffer, 4, 4
