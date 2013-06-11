@@ -88,13 +88,14 @@ setmetatable(sci, {
     obj:use_pop_up(false)
 
     -- set the gobject for use with lgi
-    obj.gobject = lgi_core.object.new(obj.sci_ptr)
+    local gobject = lgi_core.object.new(obj.sci_ptr)
+    obj.gobject = gobject
 
     -- store in registry
     sci_map[obj.sci_ptr] = obj
 
     -- destroy gobject when vanquished
-    obj.destructor = destructor(function() obj.gobject:destroy() end)
+    obj.destructor = destructor(function() gobject:destroy() end)
     return obj
   end
 })
