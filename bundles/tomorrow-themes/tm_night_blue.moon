@@ -131,6 +131,10 @@ return {
       font: italic: true
       color: orange
 
+    list_highlight:
+      color: white
+      underline: true
+
     indentguide:
       :background
       color: foreground
