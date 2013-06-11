@@ -1,10 +1,25 @@
 import Matcher from howl.util
 
-describe 'Matcher', ->
+describe 'Matcher(candidates)', ->
   it 'matches if all characters are present', ->
     c = { 'One', 'Green Fields', 'two', 'overflow' }
     m = Matcher c
     assert.same { 'One', 'Green Fields' }, m('ne')
+
+  it 'candidates are automatically converted to strings', ->
+    candidate = setmetatable {}, __tostring: -> 'auto'
+    m = Matcher { candidate }
+    assert.same { candidate }, m('auto')
+
+  it 'candidates can be multi-valued tables', ->
+    c = { { 'One', 'Uno' } }
+    m = Matcher c
+    assert.same { c[1] }, m('One')
+
+  it 'multi-valued candidates are automatically converted to strings', ->
+    candidate = setmetatable {}, __tostring: -> 'auto'
+    m = Matcher { { candidate, 'desc' } }
+    assert.same { { candidate, 'desc' } }, m('auto')
 
   it 'prefers boundary matches over straight ones over fuzzy ones', ->
     c = { 'kiss her', 'some/stuff/here', 'openssh', 'sss hhh' }
@@ -31,7 +46,6 @@ describe 'Matcher', ->
       'TODO',
       'src/tools.sh'
     }, m('to')
-
 
   it 'prefers tighter matches to longer ones', ->
     c = { 'aa bb cc dd', 'zzzzzzzzzzzzzzz ad' }

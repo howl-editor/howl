@@ -83,8 +83,11 @@ class Matcher
     max_len = 0
 
     for i, candidate in ipairs @candidates do
-      text = candidate
-      if type(candidate) == 'table' then text = table.concat candidate, ' '
+      text = if type(candidate) == 'table' and #candidate > 0
+        table.concat [tostring(c) for c in *candidate], ' '
+      else
+        text = tostring candidate
+
       text = text.ulower
       append @lines, index: i, :text
       max_len = max max_len, #text
