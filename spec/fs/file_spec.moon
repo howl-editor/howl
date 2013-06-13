@@ -103,10 +103,59 @@ describe 'File', ->
       assert.is.not_nil file.modified_at
       assert.equal type(file.modified_at), 'number'
 
-  it 'join returns a new file representing the specified child', ->
+  describe 'open([function])', ->
+    context 'when <function> is nil', ->
+      it 'returns a Lua file handle', ->
+        with_tmpfile (file) ->
+          file.contents = 'first line\nsecond line\n'
+          fh = file\open!
+          assert.equal 'first line', fh\read!
+          assert.equal 'second line\n', fh\read '*L'
+          fh\close!
+
+    context 'when <function> is provided', ->
+      it 'it is invoked with the file handle', ->
+        with_tmpfile (file) ->
+          file.contents = 'first line\nsecond line\n'
+          local first_line
+          file\open (fh) ->
+            first_line = fh\read!
+
+          assert.equal 'first line', first_line
+
+      it 'returns the value of the function', ->
+        with_tmpfile (file) ->
+          assert.equal 'callback', file\open -> 'callback'
+
+      it 'closes the file automatically after invoking <function>', ->
+        with_tmpfile (file) ->
+          local handle
+          file\open (fh) -> handle = fh
+          assert.has_errors -> handle\read!
+
+      context 'when <function> raises an error', ->
+        it 'propagates that error', ->
+          with_tmpfile (file) ->
+            assert.raises 'kaboom', -> file\open -> error 'kaboom'
+
+        it 'still closes the file', ->
+          with_tmpfile (file) ->
+            local handle
+            pcall -> file\open (fh) ->
+              handle = fh
+              error 'kaboom'
+
+            assert.has_errors -> handle\read!
+
+  it 'read(..) is a short hand for doing a read(..) on the Lua file handle', ->
+    with_tmpfile (file) ->
+      file.contents = 'first line\n'
+      assert.same { 'first', ' line' }, { file\read 5, '*l' }
+
+  it 'join() returns a new file representing the specified child', ->
     assert.equal File('/bin')\join('ls').path, '/bin/ls'
 
-  it 'relative_to_parent returns a path relative to the specified parent', ->
+  it 'relative_to_parent() returns a path relative to the specified parent', ->
     parent = File '/bin'
     file = File '/bin/ls'
     assert.equal 'ls', file\relative_to_parent(parent)
@@ -117,14 +166,14 @@ describe 'File', ->
     assert.is_true File('/bin/sub/ls')\is_below parent
     assert.is_false File('/usr/bin/ls')\is_below parent
 
-  describe 'mkdir', ->
+  describe 'mkdir()', ->
     it 'creates a directory for the path specified by the file', ->
       with_tmpfile (file) ->
         file\delete!
         file\mkdir!
         assert.is_true file.exists and file.is_directory
 
-  describe 'mkdir_p', ->
+  describe 'mkdir_p()', ->
     it 'creates a directory for the path specified by the file, including parents', ->
       with_tmpfile (file) ->
         file\delete!
@@ -132,7 +181,7 @@ describe 'File', ->
         file\mkdir_p!
         assert.is_true file.exists and file.is_directory
 
-  describe 'delete', ->
+  describe 'delete()', ->
     it 'deletes the target file', ->
       with_tmpfile (file) ->
         file\delete!
@@ -147,7 +196,7 @@ describe 'File', ->
     assert.equal File.rm, File.delete
     assert.equal File.unlink, File.delete
 
-  describe 'delete_all', ->
+  describe 'delete_all()', ->
     context 'for a regular file', ->
       it 'deletes the target file', ->
         with_tmpfile (file) ->
@@ -171,7 +220,7 @@ describe 'File', ->
   it 'rm_r is an alias for delete_all', ->
     assert.equal File.rm_r, File.delete_all
 
-  describe 'touch', ->
+  describe 'touch()', ->
     it 'creates the file if does not exist', ->
       with_tmpfile (file) ->
         file\delete!
@@ -182,14 +231,14 @@ describe 'File', ->
       file = File '/no/does/not/exist'
       assert.error -> file\touch!
 
-  describe 'tostring', ->
+  describe 'tostring()', ->
     it 'returns a string containing the path', ->
       with_tmpfile (file) ->
         to_s = file\tostring!
         assert.equal 'string', typeof to_s
         assert.equal to_s, file.path
 
-  describe 'find', ->
+  describe 'find()', ->
     with_populated_dir = (f) ->
       with_tmpdir (dir) ->
         dir\join('child1')\mkdir!

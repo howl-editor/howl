@@ -78,6 +78,21 @@ class File extends PropertyObject
         error(err) if not info
         append files, File @gfile\get_child info\get_name!
 
+  open: (func) =>
+    fh = assert io.open @path
+
+    if func
+      ret = { pcall func, fh }
+      fh\close!
+      error ret[2] unless ret[1]
+      return table.unpack ret, 2
+
+    fh
+
+  read: (...) =>
+    args = {...}
+    @open (fh) -> fh\read table.unpack args
+
   join: (...) =>
     root = @gfile
     root = root\get_child(tostring child) for child in *{...}
