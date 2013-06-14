@@ -11,6 +11,7 @@ create = ->
 
 mode_reg =
   name: 'lua'
+  shebangs: '/lua.*$'
   extensions: 'lua'
   :create
 

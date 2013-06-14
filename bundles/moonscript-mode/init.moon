@@ -1,6 +1,7 @@
 mode_reg =
   name: 'moonscript'
   extensions: 'moon'
+  shebangs: '/moon$'
   create: -> bundle_load('moonscript_mode.moon')!
 
 howl.mode.register mode_reg
