@@ -3,6 +3,7 @@ import PropertyTable from howl.aux
 
 by_extension = {}
 by_pattern = {}
+by_shebang = {}
 modes = {}
 live = setmetatable {}, __mode: 'k'
 mode_variables = {}
@@ -37,15 +38,22 @@ instance_for_mode = (m) ->
 by_name = (name) ->
   modes[name] and instance_for_mode modes[name]
 
+get_shebang = (file) ->
+  return nil unless file.readable
+  line = file\read!
+  line and line\match '^#!%s*(%S+)'
+
 for_file = (file) ->
   return by_name('default') unless file
   def = file.extension and by_extension[file.extension\lower!]
-  unless def
-    for pattern, mode in pairs by_pattern
-      if tostring(file)\match pattern
-        def = mode
-        break
 
+  pattern_match = (value, patterns) ->
+    return nil unless value
+    for pattern, mode in pairs patterns
+      return mode if value\umatch pattern
+
+  def or= pattern_match tostring(file), by_pattern
+  def or= pattern_match get_shebang(file), by_shebang
   def or= modes['default']
   instance = def and instance_for_mode def
   error 'No mode available for "' .. file .. '"' if not instance
@@ -55,13 +63,11 @@ register = (mode = {}) ->
   error 'Missing field `name` for mode', 2 if not mode.name
   error 'Missing field `create` for mode', 2 if not mode.create
 
-  extensions = mode.extensions or {}
-  extensions = { extensions } if type(extensions) == 'string'
-  by_extension[ext] = mode for ext in *extensions
+  multi_value = (v = {}) -> type(v) == 'string' and { v } or v
 
-  patterns = mode.patterns or {}
-  patterns = { patterns } if type(patterns) == 'string'
-  by_pattern[pattern] = mode for pattern in *patterns
+  by_extension[ext] = mode for ext in *multi_value mode.extensions
+  by_pattern[pattern] = mode for pattern in *multi_value mode.patterns
+  by_shebang[shebang] = mode for shebang in *multi_value mode.shebangs
 
   modes[mode.name] = mode
   signal.emit 'mode-registered', name: mode.name
@@ -70,11 +76,14 @@ unregister = (name) ->
   mode = modes[name]
   if mode
     modes[name] = nil
-    exts = [ext for ext, m in pairs by_extension when m == mode]
-    by_extension[ext] = nil for ext in *exts
 
-    patterns = [pattern for pattern, m in pairs by_pattern when m == mode]
-    by_pattern[pattern] = nil for pattern in *patterns
+    remove_from = (table, mode) ->
+      keys = [k for k, m in pairs table when m == mode]
+      table[k] = nil for k in *keys
+
+    remove_from by_extension, mode
+    remove_from by_pattern, mode
+    remove_from by_shebang, mode
 
     live[mode] = nil
     signal.emit 'mode-unregistered', :name

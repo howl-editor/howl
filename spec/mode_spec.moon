@@ -28,6 +28,13 @@ describe 'mode', ->
         file = File 'matchme'
         assert.equal 'pattern', mode.for_file(file).name
 
+    context 'when the file header matches a mode shebang', ->
+      it 'returns an instance of that mode', ->
+        mode.register name: 'shebang', shebangs: 'lua$', create: -> {}
+        with_tmpfile (file) ->
+          file.contents = '#! /usr/bin/lua\nother line\nand other\n'
+          assert.equal 'shebang', mode.for_file(file).name
+
     context 'when no matching mode can be found', ->
       it 'returns an instance of the mode "default"', ->
         file = File 'test.blargh'
