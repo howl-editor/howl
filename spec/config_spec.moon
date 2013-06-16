@@ -81,6 +81,12 @@ describe 'config', ->
     assert.equal config.get('direct'), 'bar'
 
   context 'when a validate function is provided', ->
+    it 'is called with the value to be set whenever the variable is set', ->
+      validate = spy.new -> true
+      config.define name: 'validated', description: 'test', :validate
+      config.set 'validated', 'my_value'
+      assert.spy(validate).was_called_with 'my_value'
+
     it 'an error is raised if the function returns falsy for to-be set value', ->
       config.define name: 'validated', description: 'test', validate: -> false
       assert.error -> config.set 'validated', 'foo'
