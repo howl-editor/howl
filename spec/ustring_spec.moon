@@ -109,6 +109,27 @@ describe 'ustrings', ->
     it 'accepts regexes', ->
       assert.same { 2, 2 }, { '!ä öx'\ufind r'\\pL' }
 
+  it 'starts_with(s) returns true if the string starts with the specified string', ->
+    assert.is_true 'foobar'\starts_with 'foo'
+    assert.is_true 'foobar'\starts_with 'foobar'
+    assert.is_false 'foobar'\starts_with 'foobarx'
+    assert.is_false 'foobar'\starts_with '.oo'
+
+  it 'ends_with(s) returns true if the string ends with the specified string', ->
+    assert.is_true 'foobar'\ends_with 'bar'
+    assert.is_true 'foobar'\ends_with 'foobar'
+    assert.is_false 'foobar'\ends_with 'barx'
+    assert.is_false 'foobar'\ends_with '.ar'
+
+  it 'contains(s) returns true if the string contains the specified string', ->
+    assert.is_true 'foobar'\contains 'foobar'
+    assert.is_true 'foobar'\contains 'bar'
+    assert.is_true 'foobar'\contains 'foo'
+    assert.is_true 'foobar'\contains 'oba'
+    assert.is_false 'foobar'\contains 'arx'
+    assert.is_false 'foobar'\contains 'xfo'
+    assert.is_false 'foobar'\contains '.'
+
   describe 'byte_offset(...)', ->
     it 'returns byte offsets for all character offsets passed as parameters', ->
       assert.same {1, 3, 5, 7}, { 'äåö'\byte_offset 1, 2, 3, 4 }

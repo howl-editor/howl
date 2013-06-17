@@ -151,6 +151,17 @@ ufind = (s, pattern, init = 1, plain = false) ->
 ucompare = (s1, s2) ->
   C.g_utf8_collate const_char_p(s1), const_char_p(s2)
 
+starts_with = (s1, s2) ->
+  s1\find(s2, 1, true) == 1
+
+ends_with = (s1, s2) ->
+  start = (#s1 - #s2) + 1
+  return false if start < 1
+  s1\find(s2, start, true) == start
+
+contains = (s1, s2) ->
+  s1\find(s2, 1, true) != nil
+
 with string
   .usub = usub
   .umatch = umatch
@@ -159,6 +170,9 @@ with string
   .ucompare = ucompare
   .byte_offset = byte_offset
   .char_offset = char_offset
+  .starts_with = starts_with
+  .ends_with = ends_with
+  .contains = contains
 
 properties =
   ulen: => ulen @
