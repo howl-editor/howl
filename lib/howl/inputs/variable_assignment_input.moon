@@ -2,9 +2,9 @@ import Matcher from howl.util
 import config from howl
 
 parse_assignment = (text) ->
-  name, val = text\match('%s*([^%s]+)%s*=%s*([^%s]+)')
+  name, val = text\match('%s*(%S+)%s*=%s*(%S.*)%s*')
   return name, val if name
-  return text\match('%s*([^%s]+)%s*=')
+  return text\match('%s*(%S+)%s*=')
 
 stringify = (value) ->
   return tostring(value) if type(value) != 'table'
@@ -59,9 +59,11 @@ class VariableAssignmentInput
         caption: def.description
       }
       options = def.options
+
       if not options
         comp_options.caption ..= "\n\nCurrent value: #{config[name]}"
         return {}, comp_options
+
       completions = option_completions options
       comp_options.list = options_list_options completions, def, val
       matcher = Matcher completions

@@ -53,7 +53,7 @@ command.register
 command.register
   name: 'set',
   description: 'Sets a configuration variable'
-  inputs: { 'variable_assignment' }
+  inputs: { '*variable_assignment' }
   handler: (assignment) ->
     if assignment.name
       value = assignment.value or ''

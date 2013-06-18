@@ -34,6 +34,9 @@ describe 'VariableAssignmentInput', ->
         readline.text = 'foo=bar'
         assert.is_true input\on_completed { 'foo', 'foo description' }, readline
 
+        readline.text = 'foo=Hello Whitespace Sentence'
+        assert.is_true input\on_completed { 'foo', 'foo description' }, readline
+
     describe '.complete(text)', ->
       before_each ->
         config.define name: 'hola_var', description: 'Yes!', options: { 'two', 'one' }
@@ -85,3 +88,7 @@ describe 'VariableAssignmentInput', ->
           assert.same value, name: 'foo', value: 'bar'
           assert.same input\value_for('foo='), name: 'foo'
           assert.same input\value_for('foo'), {}
+
+        it 'it handles whitespace separated values', ->
+          value = input\value_for('foo=Frob bar')
+          assert.same value, name: 'foo', value: 'Frob bar'
