@@ -147,7 +147,7 @@ load_theme = (file) ->
 apply_theme = ->
   css = theme_css current_theme, current_theme_file
   status = css_provider\load_from_data css
-  error 'Error loading theme "' .. current_theme.name .. '"' if not status
+  error 'Error applying theme "' .. current_theme.name .. '"' if not status
   style.set_for_theme current_theme
   highlight.set_for_theme current_theme
 
@@ -159,7 +159,9 @@ set_theme = (name) ->
 
   file = theme_files[name]
   error 'No theme found with name "' .. name .. '"' if not file
-  theme = load_theme file
+  status, ret = pcall load_theme, file
+  error "Error applying theme '#{name}: #{ret}'" if not status
+  theme = ret
   theme.name = name
   current_theme = theme
   current_theme_file = file
@@ -167,24 +169,35 @@ set_theme = (name) ->
 
 with config
   .define
+    name: 'theme'
+    description: 'The theme to use (colors, styles, highlights, etc.)'
+    default: 'Tomorrow Night Blue'
+    type_of: 'string'
+    options: -> [name for name in pairs theme_files]
+    scope: 'global'
+
+  .define
     name: 'font'
     description: 'The main font used within the application'
     default: 'Liberation Mono'
     type_of: 'string'
+    scope: 'global'
 
   .define
     name: 'font_size'
     description: 'The size of the main font'
     default: 11
     type_of: 'number'
+    scope: 'global'
+
+config.watch 'theme', (_, name) ->
+  set_theme name
 
 config.watch 'font', (name, value) -> apply_theme! if current_theme
 config.watch 'font_size', (name, value) -> apply_theme! if current_theme
 
 return PropertyTable {
-  current:
-    get: -> current_theme
-    set: (_, theme) -> set_theme theme
+  current: get: -> current_theme
 
   all: theme_files
 
@@ -198,6 +211,7 @@ return PropertyTable {
 
   apply: ->
     return if theme_active
+    set_theme config.theme unless current_theme
     error 'No theme set to apply', 2 unless current_theme
     apply_theme!
     theme_active = true

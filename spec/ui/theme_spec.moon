@@ -1,3 +1,4 @@
+import config from howl
 import theme from howl.ui
 import File from howl.fs
 
@@ -57,18 +58,19 @@ describe 'theme', ->
       theme.unregister 'tmp'
       assert.is_nil theme.all.tmp
 
-  describe 'assigning to .current', ->
-    it "raises an error if there's an error loading the theme", ->
+  describe 'assigning a new theme to config.theme', ->
+    it "logs an error if there's an error loading the theme", ->
       with_tmpfile (file) ->
         file.contents = "error('cantload')"
         theme.register 'error', file
-        assert.error -> theme.current = 'error'
+        config.theme = 'error'
+        assert.match log.last_error.message, 'cantload'
 
     it "assigns the loaded theme to .current and sets .name", ->
       with_tmpfile (file) ->
         file.contents = serpent.dump spec_theme
         theme.register 'foo', file
-        theme.current = 'foo'
+        config.theme = 'foo'
         expected = moon.copy spec_theme
         expected.name = 'foo'
         assert.same theme.current, expected
@@ -77,7 +79,7 @@ describe 'theme', ->
       with_tmpfile (file) ->
         file.contents = 'spec_global = "noo!"\n' .. serpent.dump spec_theme
         theme.register 'foo', file
-        theme.current = 'foo'
+        config.theme = 'foo'
         assert.is_nil spec_global
 
     it 'allows the use of named colors', ->
@@ -86,18 +88,11 @@ describe 'theme', ->
         theme_string = theme_string\gsub '"#777777"', 'violet' -- footer.color
         file.contents = theme_string
         theme.register 'colors', file
-        theme.current = 'colors'
+        config.theme = 'colors'
         assert.equal theme.current.editor.footer.color, '#ee82ee'
 
-    describe 'apply()', ->
-      it 'raises an error unless the current theme is set', ->
-        theme.current = nil
-        assert.has_error -> theme.apply!
-
-      it 'does not raise an error when applying a valid theme', ->
-        with_tmpfile (file) ->
-          file.contents = serpent.dump spec_theme
-          theme.register 'foo', file
-          theme.current = 'foo'
-
-        theme.apply!
+  it 'assigning directly to .current raises an error', ->
+    with_tmpfile (file) ->
+      file.contents = serpent.dump spec_theme
+      theme.register 'foo', file
+      assert.has_errors -> config.current = 'foo'

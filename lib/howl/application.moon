@@ -204,7 +204,6 @@ class Application extends PropertyObject
       @_load_completions!
       @_load_commands!
       bundle.load_all!
-      @_set_theme!
       @settings\load_user!
       theme.apply!
       @_load_application_icon!
@@ -304,9 +303,6 @@ class Application extends PropertyObject
       window.status\error log.last_error.message
     else
       window.status\info 'Howl 0.0 ready.'
-
-  _set_theme: =>
-    theme.current = 'Tomorrow Night Blue'
 
   _load_variables: =>
     require 'howl.variables.core_variables'

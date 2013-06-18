@@ -1,8 +1,9 @@
 require 'busted'
 say = require('say')
+
 import File from howl.fs
 import theme from howl.ui
-import signal from howl
+import signal, config from howl
 _G.Spy = require 'howl.spec.spy'
 
 -- additional aliases
@@ -68,7 +69,7 @@ support_files = root / 'spec' / 'support'
 
 -- load basic theme for specs
 theme.register('spec_theme', support_files / 'spec_theme.moon')
-theme.current = 'spec_theme'
+config.theme = 'spec_theme'
 theme.apply!
 
 -- catch any errors and store them in _G.errors
