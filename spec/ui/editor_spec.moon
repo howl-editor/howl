@@ -223,11 +223,11 @@ describe 'Editor', ->
         editor\smart_tab!
         assert.equal buffer.text, string.rep(indent, 2) .. 'hƏllo'
 
-    describe '.backspace()', ->
+    describe '.delete_back()', ->
       it 'deletes back by one character', ->
         buffer.text = 'hƏllo'
         cursor.pos = 2
-        editor\backspace!
+        editor\delete_back!
         assert.equal buffer.text, 'Əllo'
 
       it 'unindents if in whitespace and backspace_unindents is true', ->
@@ -235,7 +235,7 @@ describe 'Editor', ->
         buffer.text = '  hƏllo'
         cursor.pos = 3
         config.backspace_unindents = true
-        editor\backspace!
+        editor\delete_back!
         assert.equal buffer.text, 'hƏllo'
 
       it 'deletes back if in whitespace and backspace_unindents is false', ->
@@ -243,7 +243,7 @@ describe 'Editor', ->
         buffer.text = '  hƏllo'
         cursor.pos = 3
         config.backspace_unindents = false
-        editor\backspace!
+        editor\delete_back!
         assert.equal buffer.text, ' hƏllo'
 
     describe '.shift_right()', ->
