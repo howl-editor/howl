@@ -98,9 +98,12 @@ describe 'command', ->
         }
         second_input
 
+      inputs.register 'dummy', -> {}
+
     after_each ->
       inputs.unregister 'test_first'
       inputs.unregister 'test_second'
+      inputs.unregister 'dummy'
 
     context 'when <cmd_string> is empty or missing', ->
       it 'invokes _G.window.readline with a ":" prompt', ->
@@ -141,9 +144,6 @@ describe 'command', ->
           assert.equal readline.writes.text, 'what-the-heck now'
 
     context 'parameter parsing', ->
-      before_each ->
-        inputs.register 'dummy', -> {}
-
       it 'separates arguments on whitespace', ->
         cmd.inputs = { 'dummy', 'dummy' }
         command.register cmd
@@ -181,7 +181,7 @@ describe 'command', ->
           @text = ''
         _G.window = :readline
 
-        handler = Spy!
+        handler = spy.new -> nil
 
         command.register {
           name: 'p_cmd',
@@ -251,7 +251,25 @@ describe 'command', ->
           input\update readline.text, readline
           readline.text = 'final'
           assert.is_true callback readline.text, readline
-          assert.is_true handler.called
+          assert.spy(handler).was_called_with first_input\value_for!, 'final'
+
+        context 'with a wildcard input', ->
+          before_each ->
+            cmd.inputs = { '*dummy' }
+            command.register cmd
+            command.run!
+
+          it 'does not update the readline prompt to include partial arguments', ->
+            input\update "#{cmd.name} first second third", readline
+            assert.match readline.prompt, "#{cmd.name} $"
+
+          it 'handles multiple updates when typing', ->
+            readline.text = "#{cmd.name} first second third"
+            input\update readline.text, readline
+            input\update readline.text, readline
+            assert.match readline.prompt, "#{cmd.name} $"
+            assert.is_true callback readline.text, readline
+            assert.spy(cmd.handler).was_called_with readline.text
 
       context 'when the user submits an unknown command', ->
         it 'the callback returns false to keep readline open', ->

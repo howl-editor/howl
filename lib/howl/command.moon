@@ -38,15 +38,16 @@ class State
     args = [ part for part in text\gmatch '(%S+)%s' ]
 
     for index, arg in ipairs args
+      @_ensure_input_loaded #@arguments + 1
       current_input = @inputs[#@inputs]
+      return unless current_input
 
-      if #@arguments > 0 and current_input and current_input.wildcard
-        @arguments[#@arguments] ..= ' ' .. arg
-      else
-        current_input = @_ensure_input_loaded #@arguments + 1
-        return unless current_input
-        append @arguments, arg
-        readline.prompt ..= arg .. ' ' if readline and not current_input.wildcard
+      if current_input.wildcard
+        @arguments[index] = table.concat args, ' ', index
+        return
+
+      append @arguments, arg
+      readline.prompt ..= arg .. ' ' if readline
 
   should_complete: (text, readline) =>
     should = @_dispatch 'should_complete', text, readline
