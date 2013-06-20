@@ -291,8 +291,6 @@ class Buffer extends PropertyObject
   lex: (end_pos) =>
     if @_mode.lexer
       styler.style_text self, end_pos, @_mode.lexer
-    else
-      log.error 'Spurious lexing call'
 
   @property scis: get: =>
     [sci for _, sci in pairs @_scis when sci != nil]

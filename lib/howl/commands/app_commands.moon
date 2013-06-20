@@ -1,4 +1,4 @@
-import command, config, keyhandler, bundle, signal from howl
+import command, config, keyhandler, bundle, signal, inputs from howl
 import ActionBuffer, List from howl.ui
 serpent = require 'serpent'
 
@@ -141,3 +141,22 @@ command.register
     bundle.load_by_name name
     log.info "Reloaded bundle '#{name}'"
 
+command.register
+  name: 'buffer-grep'
+  description: 'Matches certain buffer lines in realtime'
+  inputs: {
+    ->
+      buffer = editor.buffer
+      inputs.line "Buffer grep in #{buffer.title}", buffer
+  }
+  handler: (line) -> editor.cursor.line = line.nr
+
+command.register
+  name: 'buffer-structure'
+  description: 'Shows the structure for the given buffer'
+  inputs: {
+    ->
+      buffer = editor.buffer
+      inputs.line "Structure for #{buffer.title}", buffer, buffer.mode\structure editor
+  }
+  handler: (line) -> editor.cursor.line = tonumber line.nr
