@@ -4,12 +4,20 @@ import Editor from howl.ui
 
 describe 'moonscript-mode', ->
   local m
+  local buffer, editor, cursor, lines
 
   setup ->
     bundle.load_by_name 'moonscript-mode'
     m = mode.by_name 'moonscript'
 
   teardown -> bundle.unload 'moonscript-mode'
+
+  before_each ->
+    m = mode.by_name 'moonscript'
+    buffer = Buffer m
+    editor = Editor buffer
+    cursor = editor.cursor
+    lines = buffer.lines
 
   it 'registers a mode', ->
     assert.not_nil m
@@ -18,14 +26,9 @@ describe 'moonscript-mode', ->
     assert.equal mode.for_file(File 'test.moon'), m
 
   describe 'indentation support', ->
-    local buffer, editor, cursor, lines
     indent_level = 2
 
     before_each ->
-      buffer = Buffer m
-      editor = Editor buffer
-      cursor = editor.cursor
-      lines = buffer.lines
       buffer.config.indent = indent_level
 
     indents = {
@@ -170,14 +173,8 @@ describe 'moonscript-mode', ->
       assert.equal 2, editor.current_line.indentation
 
   describe 'auto-formatting after newline', ->
-    local buffer, editor, cursor, lines
-
     before_each ->
-      buffer = Buffer m
-      editor = Editor buffer
-      cursor = editor.cursor
-      lines = buffer.lines
-      config.set 'indent', 2, buffer
+      buffer.config.indent = 2
 
     context 'splitting brackets', ->
       it 'moves the closing bracket to its own line and positions the cursor at the middle line', ->
@@ -199,3 +196,49 @@ describe 'moonscript-mode', ->
         cursor\eof!
         editor\newline!
         assert.equal "#{code}\n", buffer.text
+
+  describe 'structure(editor)', ->
+    it 'returns lines that match class and function declarations', ->
+      buffer.text = [[
+bar = -> true
+foo = ->
+  true
+but_this_passes_a_callback ->
+  'no'
+also = a_callback ->
+class Foo
+  new: (frob) =>
+    nil
+  other: =>
+    'this one to'
+  class_f: ->
+    'oh yeah'
+]]
+
+      expected = [[
+bar = -> true
+foo = ->
+class Foo
+  new: (frob) =>
+  other: =>
+  class_f: ->
+]]
+      assert.equal expected.stripped, table.concat [tostring(l) for l in *m\structure(editor)], '\n'
+
+    it 'always includes the parent line of an included line', ->
+      buffer.text = [[
+take_me! {
+  foo: -> 'voila'
+}
+]]
+      assert.same {1, 2}, [l.nr for l in *m\structure editor]
+
+    it 'falls back to the parent structure method if nothing is found', ->
+      buffer.text = [[
+foo {
+  bar: 1
+  frob:
+    zed: 2
+}
+]]
+      assert.same {1, 3}, [l.nr for l in *m\structure editor]

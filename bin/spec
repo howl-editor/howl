@@ -15,4 +15,3 @@ fi
 
 export BUSTED='yes'
 exec busted -l $HOWL --pattern=_spec.moon $*
-

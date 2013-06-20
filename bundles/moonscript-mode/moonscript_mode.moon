@@ -26,6 +26,38 @@ class MoonscriptMode
 
     @parent.on_char_added @, args, editor
 
+  structure: (editor) =>
+    buffer = editor.buffer
+    lines = {}
+    parents = {}
+    prev_line = nil
+
+    patterns = {
+      '%s*class%s+%w'
+      r'\\w\\s*[=:]\\s*(\\([^)]*\\))?\\s*[=-]>'
+      r'(?:it|describe|context)\\(?\\s+[\'"].+->\\s*$'
+    }
+
+    for line in *editor.buffer.lines
+      if prev_line
+        if prev_line.indentation < line.indentation
+          append parents, prev_line
+        else
+          parents = [l for l in *parents when l.indentation < line.indentation]
+
+      prev_line = line
+
+      for p in *patterns
+        if line\umatch p
+          for i = 1, #parents
+            append lines, table.remove parents, 1
+
+          append lines, line
+          prev_line = nil
+          break
+
+    #lines > 0 and lines or self.parent.structure @, editor
+
   _auto_format_after_newline: (editor) =>
     line = editor.current_line
     prev_line = line.previous
