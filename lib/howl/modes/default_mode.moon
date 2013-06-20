@@ -1,3 +1,5 @@
+import config from howl
+
 prev_non_empty_line = (line) ->
   prev_line = line.previous
   while prev_line and prev_line.empty
@@ -86,6 +88,44 @@ class DefaultMode
     else
       @comment editor
 
+  structure: (editor) =>
+    buffer = editor.buffer
+    buf_indent = buffer.config.indent
+    threshold = buffer.config.indentation_structure_threshold
+    line_levels = {}
+    lines = {}
+
+    cur_line = nil
+    max_level = 0
+
+    for line in *editor.buffer.lines
+      unless line.blank
+        indentation = line.indentation
+        if cur_line and indentation > cur_line.indentation
+          unless cur_line\match '%a'
+            prev = cur_line.previous
+            cur_line = prev if prev and prev.indentation == cur_line.indentation
+
+          if cur_line and cur_line\match '%a'
+            level = cur_line.indentation / buf_indent
+            max_level = math.max level, max_level
+            line_levels[level] = 1 + (line_levels[level] or 0)
+            append lines, { line: cur_line, :level }
+
+        cur_line = line
+
+    cut_off = 0
+    count = 0
+
+    for i = 0, max_level
+      level_count = line_levels[i]
+      if level_count
+        cut_off = i
+        count += level_count
+        break if count >= threshold
+
+    [l.line for l in *lines when l.level <= cut_off]
+
   on_char_added: (args, editor) =>
     if args.key_name == 'return'
       @indent editor
@@ -109,3 +149,14 @@ class DefaultMode
 
     alignment_adjustment = line.indentation % indent_level
     line.indentation + alignment_adjustment
+
+-- Config variables
+
+with config
+  .define
+    name: 'indentation_structure_threshold'
+    description: 'The indentation structure parsing will stop once this number of lines has been collected'
+    default: 10
+    type_of: 'number'
+
+DefaultMode

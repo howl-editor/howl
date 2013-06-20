@@ -216,3 +216,57 @@ describe 'DefaultMode', ->
       cursor\eof!
       editor\newline!
       assert.equals 'other\n', buffer.text
+
+  describe 'structure()', ->
+    assert_lines = (expected, actual) -> assert.same [l.nr for l in *expected], [l.nr for l in *actual]
+
+    it 'returns a simple indentation-based structure', ->
+      buffer.text = [[
+        header1
+          sub1
+            foo
+            bar
+            zed
+            froz
+        header2
+          sub2
+      ]]
+      assert_lines {
+        lines[1]
+        lines[2]
+        lines[7]
+      }, mode\structure editor
+
+    it 'the config variable indentation_structure_threshold determines when it stops', ->
+      buffer.text = [[
+        header1
+          sub1
+            froz
+        header2
+          sub2
+      ]]
+      buffer.config.indentation_structure_threshold = 2
+      assert_lines { lines[1], lines[4] }, mode\structure editor
+
+    it 'disregards blank lines', ->
+      buffer.text = '\n  sub\n'
+      assert.same {}, mode\structure editor
+
+    context 'if a structure line is all non-alpha', ->
+      it 'tries to use the previous line if that contains alpha characters', ->
+        buffer.text = [[
+          int func(int arg)
+          {
+            froz();
+          }
+        ]]
+        assert_lines { lines[1] }, mode\structure editor
+
+      it 'skips the line altogether if the previous line does not contain alpha characters', ->
+        buffer.text = [[
+
+          {
+            froz();
+          }
+        ]]
+        assert_lines {}, mode\structure editor
