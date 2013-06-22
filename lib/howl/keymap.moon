@@ -7,6 +7,7 @@
   ctrl_b:           'switch-buffer'
   ctrl_c:           'editor-copy'
   ctrl_i:           'editor-indent'
+  ctrl_g:           'buffer-grep'
   ctrl_p:           'project-open'
   ctrl_v:           'editor-paste'
   ctrl_w:           'close-view'
@@ -20,6 +21,7 @@
 
   alt_f11:          'toggle-fullscreen'
   alt_x:            'run'
+  alt_s:            'buffer-structure'
 
   left:             'cursor-left'
   right:            'cursor-right'
