@@ -1,4 +1,4 @@
-import config from howl
+import config, signal from howl
 import theme from howl.ui
 import File from howl.fs
 
@@ -75,6 +75,18 @@ describe 'theme', ->
         expected.name = 'foo'
         assert.same theme.current, expected
 
+    it 'emits a theme-changed event with the newly set theme', ->
+      with_tmpfile (file) ->
+        file.contents = serpent.dump spec_theme
+        theme.register 'alert', file
+        handler = spy.new -> true
+        signal.connect 'theme-changed', handler
+        config.theme = 'alert'
+        signal.disconnect 'theme-changed', handler
+        expected = moon.copy spec_theme
+        expected.name = 'alert'
+        assert.spy(handler).was_called_with theme: expected
+
     it 'does not propagate global assignments to the global environment', ->
       with_tmpfile (file) ->
         file.contents = 'spec_global = "noo!"\n' .. serpent.dump spec_theme
@@ -96,3 +108,25 @@ describe 'theme', ->
       file.contents = serpent.dump spec_theme
       theme.register 'foo', file
       assert.has_errors -> config.current = 'foo'
+
+  describe 'life cycle management', ->
+    it 'automatically applies a theme upon registration if that theme is already set as current', ->
+      with_tmpfile (file) ->
+        the_theme = moon.copy spec_theme
+        file.contents = serpent.dump the_theme
+        theme.register 'reloadme', file
+        config.theme = 'reloadme'
+
+        theme.unregister 'reloadme'
+        the_theme.window.background = '#112233'
+        file.contents = serpent.dump the_theme
+        theme.register 'reloadme', file
+        assert.equal '#112233', theme.current.window.background
+
+    it 'keeps the loaded in-memory theme when the current is unregistered', ->
+      with_tmpfile (file) ->
+        file.contents = serpent.dump spec_theme
+        theme.register 'keepme', file
+        config.theme = 'keepme'
+        theme.unregister 'keepme'
+        assert.equal 'keepme', theme.current.name

@@ -1,6 +1,6 @@
 import Gdk, Gtk from lgi
 import File from howl.fs
-import config from howl
+import config, signal from howl
 import style, colors, highlight from howl.ui
 import PropertyTable, Sandbox from howl.aux
 
@@ -165,7 +165,9 @@ set_theme = (name) ->
   theme.name = name
   current_theme = theme
   current_theme_file = file
-  apply_theme if theme_active
+  if theme_active
+    apply_theme!
+    signal.emit 'theme-changed', :theme
 
 with config
   .define
@@ -196,6 +198,11 @@ config.watch 'theme', (_, name) ->
 config.watch 'font', (name, value) -> apply_theme! if current_theme
 config.watch 'font_size', (name, value) -> apply_theme! if current_theme
 
+signal.register 'theme-changed',
+  description: 'Signaled after a theme has been applied'
+  parameters:
+    theme: 'The theme that has been set'
+
 return PropertyTable {
   current: get: -> current_theme
 
@@ -205,6 +212,9 @@ return PropertyTable {
     error 'name not specified for theme', 2 if not name
     error 'file not specified for theme', 2 if not file
     theme_files[name] = file
+
+    if current_theme and current_theme.name == name
+      set_theme name
 
   unregister: (name) ->
     theme_files[name] = nil
