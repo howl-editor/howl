@@ -44,6 +44,7 @@ class Editor extends PropertyObject
     @sci = Scintilla!
 
     style.register_sci @sci
+    theme.register_sci @sci
 
     listener =
       on_style_needed: self\_on_style_needed
@@ -100,7 +101,6 @@ class Editor extends PropertyObject
 
     @buffer = buffer
 
-    @_set_theme_settings!
     append _editors, self
 
     signal.connect 'buffer-saved', (args) ->
@@ -305,29 +305,6 @@ class Editor extends PropertyObject
   scroll_down: => @sci\line_scroll_down!
 
   -- private
-
-  _set_theme_settings: =>
-    v = theme.current.editor
-    -- caret
-    c_color = '#000000'
-    c_width = 1
-
-    if v.caret
-      c_color = v.caret.color if v.caret.color
-      c_width = v.caret.width if v.caret.width
-    @sci\set_caret_fore c_color
-    @sci\set_caret_width c_width
-
-    current_line = v.current_line
-    if current_line and current_line.background
-      @sci\set_caret_line_back current_line.background
-
-    -- selection
-    if v.selection
-      sel = v.selection
-      @sci\set_sel_back true, sel.background if sel.background
-      @sci\set_sel_fore true, sel.color if sel.color
-
   _set_config_settings: =>
     buf = @buffer
     config = buf.config

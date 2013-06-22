@@ -62,9 +62,34 @@ theme_files = {}
 current_theme = nil
 current_theme_file = nil
 theme_active = false
+scis = setmetatable {}, __mode: 'k'
 
 interpolate = (content, values) ->
   content\gsub '%${([%a_]+)}', values
+
+apply_sci_visuals = (theme, sci) ->
+  v = theme.editor
+  -- caret
+  c_color = '#000000'
+  c_width = 1
+
+  if v.caret
+    c_color = v.caret.color if v.caret.color
+    c_width = v.caret.width if v.caret.width
+
+  current_line = v.current_line
+  selection = v.selection
+
+  with sci
+    \set_caret_fore c_color
+    \set_caret_width c_width
+
+    if current_line and current_line.background
+      \set_caret_line_back current_line.background
+
+    if selection
+      \set_sel_back true, selection.background if selection.background
+      \set_sel_fore true, selection.color if selection.color
 
 parse_background = (value, theme_dir) ->
   if value\match '^%s*#%x+%s*$'
@@ -150,6 +175,7 @@ apply_theme = ->
   error 'Error applying theme "' .. current_theme.name .. '"' if not status
   style.set_for_theme current_theme
   highlight.set_for_theme current_theme
+  apply_sci_visuals current_theme, sci for sci in pairs scis
 
 set_theme = (name) ->
   if name == nil
@@ -225,4 +251,8 @@ return PropertyTable {
     error 'No theme set to apply', 2 unless current_theme
     apply_theme!
     theme_active = true
+
+  register_sci: (sci) ->
+    scis[sci] = true
+    apply_sci_visuals current_theme, sci if theme_active
 }

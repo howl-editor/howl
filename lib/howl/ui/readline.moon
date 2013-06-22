@@ -199,25 +199,14 @@ class Readline extends PropertyObject
       on_text_deleted: @buffer\_on_text_deleted
       on_error: self\_on_error
 
-  _set_appearance: =>
     style.register_sci @sci
+    theme.register_sci @sci
 
+  _set_appearance: =>
     with @sci
       \set_hscroll_bar false
       \set_vscroll_bar false
       @gsci.height = \text_height(0)
-
-    v = theme.current.editor
-    -- caret
-    c_color = '#000000'
-    c_width = 1
-
-    if v.caret
-      c_color = v.caret.color if v.caret.color
-      c_width = v.caret.width if v.caret.width
-
-    @sci\set_caret_fore c_color
-    @sci\set_caret_width c_width
 
   _select_next: => @completion_list and @completion_list\select_next!
   _select_prev: => @completion_list and @completion_list\select_prev!

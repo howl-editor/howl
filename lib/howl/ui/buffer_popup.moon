@@ -1,7 +1,7 @@
 import Gtk, Gdk from lgi
 import Scintilla from howl
 import destructor from howl.aux
-import Popup, style, highlight from howl.ui
+import Popup, style, highlight, theme from howl.ui
 
 class BufferPopup extends Popup
 
@@ -63,6 +63,7 @@ class BufferPopup extends Popup
 
     buffer\add_sci_ref sci
     style.register_sci sci, @default_style
+    theme.register_sci sci
     style.set_for_buffer sci, buffer
     highlight.set_for_buffer sci, buffer
     sci
