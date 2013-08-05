@@ -9,12 +9,12 @@
 
   awk:
     extensions: 'awk'
-    shebangs: 'awk$'
+    shebangs: '[/ ]awk$'
     short_comment_prefix: '#'
 
   bash:
     extensions: { 'bash', 'bashrc', 'bash_profile', 'configure', 'csh', 'sh', 'zsh' }
-    shebangs: {'/sh$', '/bash$' }
+    shebangs: {'[/ ]sh$', '[/ ]bash$' }
     short_comment_prefix: '#'
 
   batch:
@@ -160,12 +160,12 @@
 
   perl:
     extensions: { 'al', 'perl', 'pl', 'pm', 'pod' }
-    shebangs: '/perl.*$'
+    shebangs: '[/ ]perl.*$'
     short_comment_prefix: '#'
 
   php:
     extensions: { 'inc', 'php', 'php3', 'php4', 'phtml' }
-    shebangs: '/php.*$'
+    shebangs: '[/ ]php.*$'
     short_comment_prefix: '//'
 
   pike:
@@ -186,7 +186,7 @@
 
   python:
     extensions: { 'sc', 'py', 'pyw' }
-    shebangs: '/python.*$'
+    shebangs: '[/ ]python.*$'
     short_comment_prefix: '#'
 
   rstats:

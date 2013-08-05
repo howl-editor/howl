@@ -41,7 +41,7 @@ by_name = (name) ->
 get_shebang = (file) ->
   return nil unless file.readable
   line = file\read!
-  line and line\match '^#!%s*(%S+)'
+  line and line\match '^#!%s*(.+)$'
 
 for_file = (file) ->
   return by_name('default') unless file
