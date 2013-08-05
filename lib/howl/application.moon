@@ -173,7 +173,9 @@ class Application extends PropertyObject
     @g_app\run args
 
   quit: =>
-    win\destroy! for win in * moon.copy @windows
+    unless @_should_abort_quit!
+      @_on_quit!
+      win\destroy! for win in * moon.copy @windows
 
   save_session: =>
     session = {
