@@ -126,10 +126,6 @@
   json:
     extensions: 'json'
 
-  lisp:
-    extensions: { 'cl', 'el', 'lisp', 'lsp' }
-    short_comment_prefix: ';'
-
   latex:
     extensions: { 'bbl', 'dtx', 'ins', 'ltx', 'tex', 'sty' }
     short_comment_prefix: '%'
