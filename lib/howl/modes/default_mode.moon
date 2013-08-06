@@ -1,11 +1,5 @@
 import config from howl
 
-prev_non_empty_line = (line) ->
-  prev_line = line.previous
-  while prev_line and prev_line.empty
-    prev_line = prev_line.previous
-  prev_line
-
 is_match = (text, patterns) ->
   return false unless patterns
 
@@ -36,7 +30,7 @@ class DefaultMode
 
     editor\transform_active_lines (lines) ->
       for line in *lines
-        indent = @_indent_for line, indent_level
+        indent = @indent_for line, indent_level
         line.indentation = indent if indent != line.indentation
 
       with editor
@@ -131,8 +125,8 @@ class DefaultMode
       @indent editor
       true
 
-  _indent_for: (line, indent_level) =>
-    prev_line = prev_non_empty_line line
+  indent_for: (line, indent_level) =>
+    prev_line = line.previous_non_blank
 
     if prev_line
       return prev_line.indentation + indent_level if is_match prev_line.text, @indent_patterns

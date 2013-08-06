@@ -58,6 +58,12 @@ describe 'BufferLines', ->
       assert.equal lines[2].previous, lines[1]
       assert.is_nil lines[1].previous
 
+    it '.previous_non_blank returns the first preceding non-blank line, or nil if none', ->
+      assert.is_nil lines[1].previous_non_blank
+      assert.equal lines[2].previous_non_blank, lines[1]
+      lines\insert 3, ''
+      assert.equal lines[4].previous_non_blank, lines[2]
+
     it '.next returns the line below this one, or nil if none', ->
       assert.equal lines[1].next, lines[2]
       assert.is_nil lines[3].next

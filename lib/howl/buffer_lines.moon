@@ -44,6 +44,12 @@ Line = (nr, buffer, sci) ->
       next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
       chunk: => buffer\chunk @start_pos, @end_pos - #buffer.eol
 
+      previous_non_blank: =>
+        prev_line = @previous
+        while prev_line and prev_line.blank
+          prev_line = prev_line.previous
+        prev_line
+
     _setters:
       text: (value) =>
         error 'line text can not be set to nil', 2 if value == nil
