@@ -77,7 +77,7 @@ return {
     default:
       :background
       color: foreground
-      font: bold: true
+      -- font: bold: true
 
     popup:
       background: '#00346e'
@@ -98,12 +98,25 @@ return {
       color: comment
       :background
 
-    key: color: blue
+    key:
+      color: blue
+      font: bold: true
+
     char: color: green
-    keyword: color: purple
-    class: color: yellow
+    keyword:
+      color: purple
+      font: bold: true
+
+    class:
+      color: yellow
+      font: bold: true
+
     definition: color: yellow
-    function: color: blue
+
+    function:
+      color: blue
+      font: bold: true
+
     number: color: orange
     operator: color: aqua
     preprocessor: color: purple
@@ -112,7 +125,11 @@ return {
     type: color: yellow
     member: color: red
     info: color: blue
-    constant: color: orange
+
+    constant:
+      color: orange
+      font: bold: true
+
     string: color: green
     regex: color: green
 
