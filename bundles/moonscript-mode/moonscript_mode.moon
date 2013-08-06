@@ -1,6 +1,5 @@
 class MoonscriptMode
   new: =>
-    lexer_file = bundle_file 'moonscript_lexer.lua'
     @lexer = bundle_load('moonscript_lexer.moon')
 
   short_comment_prefix: '--'
