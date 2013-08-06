@@ -42,6 +42,7 @@ new = (definition) ->
     match = any {
       pattern,
       capture('whitespace', space^1),
+      P 1
     }
     p = Ct match^0
     p\match text

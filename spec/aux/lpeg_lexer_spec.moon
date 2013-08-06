@@ -93,3 +93,7 @@ describe 'lpeg_lexer', ->
     it 'automatically lexes whitespace', ->
       lexer = l -> P'peace-and-quiet'
       assert.same { 1, 'whitespace', 3 }, lexer ' \n'
+
+    it 'automatically skips non-recognized tokens', ->
+      lexer = l -> capture 'foo', P'foo'
+      assert.same { 2, 'foo', 5 }, lexer '|foo'
