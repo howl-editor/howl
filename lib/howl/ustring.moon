@@ -162,6 +162,18 @@ ends_with = (s1, s2) ->
 contains = (s1, s2) ->
   s1\find(s2, 1, true) != nil
 
+count = (s1, s2) ->
+  c = 0
+  pos = 1
+
+  while pos
+    _, pos = s1\find s2, pos, true
+    if pos
+      c += 1
+      pos += 1
+
+  c
+
 with string
   .usub = usub
   .umatch = umatch
@@ -173,6 +185,7 @@ with string
   .starts_with = starts_with
   .ends_with = ends_with
   .contains = contains
+  .count = count
 
 properties =
   ulen: => ulen @

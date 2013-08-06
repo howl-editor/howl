@@ -130,6 +130,11 @@ describe 'ustrings', ->
     assert.is_false 'foobar'\contains 'xfo'
     assert.is_false 'foobar'\contains '.'
 
+  it 'count(s) returns the number of occurences of s with the string', ->
+    assert.equal 1, 'foobar'\count 'foo'
+    assert.equal 2, 'foobar'\count 'o'
+    assert.equal 0, 'foobar'\count 'x'
+
   describe 'byte_offset(...)', ->
     it 'returns byte offsets for all character offsets passed as parameters', ->
       assert.same {1, 3, 5, 7}, { 'äåö'\byte_offset 1, 2, 3, 4 }
