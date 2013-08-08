@@ -4,6 +4,13 @@ class LispMode
 
   short_comment_prefix: ';'
 
+  auto_pairs: {
+    '(': ')'
+    '[': ']'
+    '{': '}'
+    '"': '"'
+  }
+
   indent_for: (line, indent_level) =>
     prev_line = line.previous_non_blank
     indentation = line.indentation
