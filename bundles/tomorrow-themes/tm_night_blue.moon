@@ -77,12 +77,10 @@ return {
     default:
       :background
       color: foreground
-      -- font: bold: true
 
     popup:
       background: '#00346e'
       color: foreground
-      font: bold: true
 
     comment:
       font: italic: true
