@@ -62,8 +62,6 @@ class Application extends PropertyObject
           if win\to_gobject! == window
             @windows[k] = nil
 
-
-
     props[k] = v for k, v in pairs(properties or {})
     window = Window props
     append @windows, window
