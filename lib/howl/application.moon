@@ -311,6 +311,7 @@ class Application extends PropertyObject
     require 'howl.completion.inbuffercompleter'
 
   _load_commands: =>
+    require 'howl.inputs.basic_inputs'
     require 'howl.inputs.projectfile_input'
     require 'howl.inputs.file_input'
     require 'howl.inputs.buffer_input'
