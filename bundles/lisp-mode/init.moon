@@ -1,6 +1,6 @@
 mode_reg =
   name: 'lisp'
-  extensions: { 'cl', 'clj', 'el', 'lisp', 'lsp' }
+  extensions: { 'cl', 'el', 'lisp', 'lsp' }
   create: -> bundle_load('lisp_mode.moon')!
 
 howl.mode.register mode_reg
