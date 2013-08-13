@@ -33,13 +33,14 @@ class InBufferCompleter
   complete: (context) =>
     pattern = '^' .. context.word_prefix .. '.'
     cur_word = context.word.text
-    completions = {}
+    candidates = {}
 
     for token in *@near_tokens
-      append completions, token if token.text\match(pattern) and token.text != cur_word
+      append candidates, token if token.text\match(pattern) and token.text != cur_word
 
-    table.sort completions, (a, b) -> a.rank < b.rank
-    completions = [c.text for c in *completions]
+    table.sort candidates, (a, b) -> a.rank < b.rank
+    completions = {}
+    append completions, c.text for c in *candidates when #completions < 10
 
     if #completions < 10
       seen = { token, true for token in *completions }
