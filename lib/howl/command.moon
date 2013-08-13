@@ -102,8 +102,9 @@ class State
       return nil if not input_spec
       input_factory = input_spec.factory
       if type(input_factory) == 'string'
-        input_factory = inputs[input_factory]
-        if not input_factory then error "Could not find input for `${input_factory}`"
+        factory = inputs[input_factory]
+        if not factory then error "Could not find input for `#{input_factory}`"
+        input_factory = factory
 
       target = input_factory!
       input = :target, wildcard: input_spec.wildcard
