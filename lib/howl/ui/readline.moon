@@ -291,7 +291,7 @@ class Readline extends PropertyObject
         @completion_unwanted = false
         @_complete true
 
-    shift_shift_tab: => @_prev_page!
+    shift_tab: => @_prev_page!
   }
 
 return Readline
