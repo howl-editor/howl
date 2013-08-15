@@ -197,57 +197,6 @@ describe 'Buffer', ->
       mode_config.buf_var = 'from_mode'
       assert.equal 'from_mode', b.config.buf_var
 
-  describe 'context_at(pos)', ->
-    b = buffer '"HƏllo", said Mr.Bačon'
-
-    it '.word holds the current word', ->
-      assert.equal '', b\context_at(1).word.text
-      assert.equal 'HƏllo', b\context_at(2).word.text
-      assert.equal 'HƏllo', b\context_at(4).word.text
-      assert.equal 'HƏllo', b\context_at(6).word.text
-      assert.equal '', b\context_at(8).word.text
-      assert.equal 'said', b\context_at(14).word.text
-      assert.equal 'Mr', b\context_at(16).word.text
-      assert.equal 'Bačon', b\context_at(19).word.text
-
-    it ".word_prefix holds the words's text up until pos", ->
-      assert.equal '', b\context_at(2).word_prefix
-      assert.equal 'HƏ', b\context_at(4).word_prefix
-
-    it ".word_suffix holds the words's text after and including pos", ->
-      assert.equal 'HƏllo', b\context_at(2).word_suffix
-      assert.equal 'llo', b\context_at(4).word_suffix
-
-    it ".prefix holds the line's text up until pos", ->
-      assert.equal '', b\context_at(1).prefix
-      assert.equal '"HƏllo", said Mr.Bačon', b\context_at(#b + 1).prefix
-      assert.equal '"H', b\context_at(3).prefix
-
-    it ".suffix holds the line's text after and including pos", ->
-      assert.equal '', b\context_at(#b + 1).suffix
-      assert.equal '"HƏllo", said Mr.Bačon', b\context_at(1).suffix
-      assert.equal 'Mr.Bačon', b\context_at(15).suffix
-
-    it '.next_char holds the current character or the empty string if none', ->
-      assert.equal 'Ə', b\context_at(3).next_char
-      assert.equal '', b\context_at(#b + 1).next_char
-
-    it '.prev_char holds the previous character or the empty string if none', ->
-      assert.equal 'Ə', b\context_at(4).prev_char
-      assert.equal '', b\context_at(1).prev_char
-
-    it '.line holds the current line object', ->
-      assert.equal b.lines[1], b\context_at(1).line
-
-    it 'contexts are equal for the same buffer and pos', ->
-      assert.equal b\context_at(2), b\context_at(2)
-      assert.not_equal b\context_at(2), b\context_at(4)
-
-  it '.chunk(start_pos, end_pos) returns a chunk for the specified range, inclusive', ->
-    b = buffer 'chuñky bacon'
-    chunk = b\chunk(8, 10)
-    assert.equal 'bac', chunk.text
-
   describe 'delete(start_pos, end_pos)', ->
     it 'deletes the specified range, inclusive', ->
       b = buffer 'ño örf'
