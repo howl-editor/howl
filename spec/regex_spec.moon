@@ -58,6 +58,9 @@ describe 'Regex', ->
     it 'empty captures are returned as position captures', ->
       assert.same { 2, 2, 3 }, { r'\\pL()'\find '!äö' }
 
+    it 'starts matching after init', ->
+      assert.same { 3, 5 }, { r'\\w+'\find '12ab2', 3}
+
   describe 'gmatch(s)', ->
     context 'with no captures in the pattern', ->
       it 'produces each consecutive match in each call', ->

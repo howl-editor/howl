@@ -138,7 +138,7 @@ methods = {
     return nil unless match_info
 
     match, start_pos, end_pos = get_capture match_info, 0, ptr, true
-    matches = { start_pos, end_pos }
+    matches = { start_pos + init - 1, end_pos + init - 1 }
     get_captures match_info, ptr, matches, 1, count
     free_match_info match_info
     return table.unpack matches
