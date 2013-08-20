@@ -16,9 +16,23 @@ describe 'BufferContext', ->
       assert.equal 'HƏllo', context_at(4).word.text
       assert.equal 'HƏllo', context_at(6).word.text
       assert.equal '', context_at(8).word.text
+      assert.equal '', context_at(9).word.text
       assert.equal 'said', context_at(14).word.text
       assert.equal 'Mr', context_at(16).word.text
       assert.equal 'Bačon', context_at(19).word.text
+
+    it "the start and end positions are determined by the mode's word_pattern if present", ->
+      b.mode.word_pattern = '[Əl]+'
+      assert.equal 'Əll', context_at(3).word.text
+
+      b.mode.word_pattern = '["Ə%w]+'
+      assert.equal '"HƏllo"', context_at(3).word.text
+      assert.equal '"HƏllo"', context_at(8).word.text -- after "
+      assert.equal '', context_at(9).word.text -- after ','
+
+    it "the word_pattern can be a regex", ->
+      b.mode.word_pattern = r'\\pL+'
+      assert.equal 'HƏllo', context_at(3).word.text
 
   it ".word_prefix holds the words's text up until pos", ->
     assert.equal '', context_at(2).word_prefix
