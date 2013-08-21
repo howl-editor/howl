@@ -10,3 +10,9 @@ config.define {
     { 'always', 'Alway start completion automatically' }
   }
 }
+
+config.define {
+  name: 'word_pattern'
+  description: 'A pattern determining what constitutes a "word" in a buffer'
+  default: r'\\pL[\\pL\\d]*'
+}

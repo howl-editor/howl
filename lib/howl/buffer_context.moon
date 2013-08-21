@@ -3,7 +3,6 @@ import PropertyObject from howl.aux.moon
 
 class Context extends PropertyObject
   new: (@buffer, @pos) =>
-    @default_word_pattern = r'\\pL[\\pL\\d]*'
     super!
 
   @property word: get: =>
@@ -30,7 +29,7 @@ class Context extends PropertyObject
   }
 
   _get_word_boundaries: =>
-    word_pattern = @buffer.mode.word_pattern or @default_word_pattern
+    word_pattern = @buffer.config.word_pattern
 
     line_text = @line.text
     line_start_pos = @line.start_pos
