@@ -58,6 +58,18 @@ describe 'Completer', ->
       completer\complete 7
       assert.spy(comp.complete).was.called_with comp, buffer\context_at 7
 
+    it 'returns completions from just one completer if completions.authoritive is set', ->
+      append buffer.completers, -> complete: -> { 'one', authoritive: true }
+      append buffer.completers, -> complete: -> { 'two' }
+      completions = Completer(buffer, 1)\complete 1
+      assert.same { 'one' }, completions
+
+    it 'merges duplicate completions from different completers', ->
+      append buffer.completers, -> complete: -> { 'yes'}
+      append buffer.completers, -> complete: -> { 'yes' }
+      completions = Completer(buffer, 1)\complete 1
+      assert.same { 'yes' }, completions
+
   it '.start_pos holds the start position for completing', ->
     buffer.text = 'oh cruel word'
     assert.equal 4, Completer(buffer, 9).start_pos

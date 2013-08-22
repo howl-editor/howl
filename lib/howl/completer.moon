@@ -28,12 +28,20 @@ class Completer
   complete: (pos) =>
     context = @context.start_pos == pos and @context or @buffer\context_at pos
 
+    seen = {}
     completions = {}
 
     for completer in *@completers
       comps = completer\complete context
       if comps
-        append completions, comp for comp in *comps
+        if comps.authoritive
+          completions = [c for c in *comps]
+          break
+
+        for comp in *comps
+          unless seen[comp]
+            append completions, comp
+            seen[comp] = true
 
     return completions, context.word_prefix
 
