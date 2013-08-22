@@ -35,6 +35,9 @@ span = (start_p, stop_p, escape_p) ->
 
 eol = S('\n\r')^1
 
+complement = (p) ->
+  P(1) - p
+
 new = (definition) ->
   setfenv definition, lexer
   pattern = definition!

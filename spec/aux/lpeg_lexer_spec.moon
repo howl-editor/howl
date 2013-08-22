@@ -78,6 +78,12 @@ describe 'lpeg_lexer', ->
       p = l.scan_to('}', '\\') * Cp!
       assert.equals 5, p\match '{\\}}'
 
+  describe 'complement(p)', ->
+    it 'matches if <p> does not match', ->
+      assert.is_not_nil l.complement('a')\match 'b'
+      assert.is_nil l.complement('a')\match 'a'
+      assert.equals 3, (l.complement('a')^1 * Cp!)\match 'bca'
+
   describe 'new(definition)', ->
     it 'accepts a function', ->
       assert.not_has_error -> l.new -> true
