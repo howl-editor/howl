@@ -23,6 +23,7 @@ instance_for_mode = (m) ->
 
   error "Unknown mode specified as parent: '#{m.parent}'", 3 if m.parent and not modes[m.parent]
   parent = if m.name != 'default' then by_name m.parent or 'default'
+  mode_config.chain_to parent.config if parent
 
   target = m.create m.name
   instance = setmetatable {

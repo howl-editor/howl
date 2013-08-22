@@ -88,12 +88,15 @@ describe 'mode', ->
     base = foo: 'foo'
     mode.register name: 'base', create: -> base
     mode.register name: 'sub', parent: 'base', create: -> {}
-
-    it 'a mode extending another mode automatically delegates to that mode', ->
-       assert.equal 'foo', mode.by_name('sub').foo
+    config.define name: 'delegated_mode_var', description: 'some var', default: 'def value'
 
     it 'the instantiated mode has .parent set to the instantiated parent', ->
       assert.equal mode.by_name('base'), mode.by_name('sub').parent
+
+    it 'a mode extending another mode automatically delegates to that mode', ->
+       assert.equal 'foo', mode.by_name('sub').foo
+       mode.by_name('base').config.delegated_mode_var = 123
+       assert.equal 123, mode.by_name('sub').config.delegated_mode_var
 
     it 'an error is raised if the mode indicated by parent does not exist', ->
       assert.has_error ->
