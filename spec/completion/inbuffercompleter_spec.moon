@@ -2,11 +2,20 @@ import Buffer from howl
 import completion from howl
 
 require 'howl.completion.inbuffercompleter'
+require 'howl.variables.core_variables'
 
 describe 'InBufferCompleter.complete()', ->
-  buffer = nil
+  local buffer, lines
   factory = completion.in_buffer.factory
-  before_each -> buffer = Buffer {}
+
+  before_each ->
+    buffer = Buffer {}
+    lines = buffer.lines
+
+  complete_at = (pos) ->
+    context = buffer\context_at pos
+    completer = factory buffer, context
+    completer\complete context
 
   it 'returns strict and fuzzy completions for local matches in the buffer', ->
     buffer.text = [[
@@ -22,10 +31,7 @@ Hello there
     saphire = 'that too'
   }
 ]]
-    line = buffer.lines[5]
-    context = buffer\context_at line.end_pos
-    completer = factory buffer, context
-    comps = completer\complete context
+    comps = complete_at buffer.lines[5].end_pos
     table.sort comps
     assert.same { 'saphire', 'say_it', 'sion', 'some', 'symbol' }, comps
 
@@ -34,11 +40,7 @@ Hello there
 text
 ter
 ]]
-    line = buffer.lines[2]
-    context = buffer\context_at line.end_pos - 1
-    completer = factory buffer, context
-    comps = completer\complete context
-    assert.same { 'text' }, comps
+    assert.same { 'text' }, complete_at lines[2].end_pos - 1
 
   it 'favours matches close to the current position', ->
     buffer.text = [[
@@ -50,11 +52,7 @@ and other
 twice
 twitter
 ]]
-    line = buffer.lines[3]
-    context = buffer\context_at line.end_pos
-    completer = factory buffer, context
-    comps = completer\complete context
-    assert.same { 'twitter', 'two', 'twice' }, comps
+    assert.same { 'twitter', 'two', 'twice' }, complete_at lines[3].end_pos
 
   it 'offers "smart" completions after the local ones', ->
     buffer.text = [[
@@ -64,11 +62,7 @@ _fatwa
 tw
 the_water
 ]]
-    line = buffer.lines[4]
-    context = buffer\context_at line.end_pos
-    completer = factory buffer, context
-    comps = completer\complete context
-    assert.same { 'twitter', 'two', 'the_water', '_fatwa' }, comps
+    assert.same { 'twitter', 'two', 'the_water', '_fatwa' }, complete_at lines[4].end_pos
 
   it 'works with unicode', ->
     buffer.text = [[
@@ -76,8 +70,14 @@ hellö
 häst
 h
 ]]
-    line = buffer.lines[3]
-    context = buffer\context_at line.end_pos
-    completer = factory buffer, context
-    comps = completer\complete context
-    assert.same { 'häst', 'hellö' }, comps
+    assert.same { 'häst', 'hellö' }, complete_at lines[3].end_pos
+
+  it 'detects existing words using the word_pattern variable', ->
+    buffer.text = [[
+*foo*/-bar
+eat.food.
+*
+oo
+]]
+    buffer.config.word_pattern = '[^/%s.]+'
+    assert.same { '*foo*' }, complete_at lines[3].end_pos

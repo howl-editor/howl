@@ -1,34 +1,41 @@
 import Matcher from howl.util
 
-token_pattern = r'([\\pL_][\\pL\\d_-]+)'
-near_token_pattern = r'()([\\pL_][\\pL\\d_-]+)'
-
 parse = (buffer) ->
-  tokens = { token, true for token in buffer.text\ugmatch token_pattern }
+  tokens = { token, true for token in buffer.text\ugmatch buffer.config.word_pattern }
   [token for token, _ in pairs tokens]
 
-near_tokens = (part, context) ->
+close_chunk = (context) ->
   lines = context.buffer.lines
   line = context.line
   start_line = lines[math.max 1, line.nr - 10]
   end_line = lines[math.min #lines, line.nr + 10]
-  tokens = {}
-  close_chunk = context.buffer\chunk start_line.start_pos, end_line.end_pos
-  line_pos = context.pos - start_line.start_pos
+  context.buffer\chunk start_line.start_pos, end_line.end_pos
 
-  for pos, token in close_chunk.text\ugmatch near_token_pattern
-    rank = math.abs line_pos - pos
+near_tokens = (part, context) ->
+  chunk = close_chunk context
+  line_pos = context.pos - chunk.start_pos
+
+  tokens = {}
+  start_pos = 1
+  chunk_text = chunk.text
+  pattern = context.buffer.config.word_pattern
+
+  while start_pos < #chunk_text
+    start_pos, end_pos = chunk_text\ufind pattern, start_pos
+    break unless start_pos
+    token = chunk_text\usub start_pos, end_pos
+    rank = math.abs line_pos - start_pos
     info = tokens[token]
     rank = math.min info.rank, rank if info
-    tokens[token] = :pos, :rank, text: token
+    tokens[token] = pos: start_pos, :rank, text: token
+    start_pos = end_pos + 1
 
   [token for _, token in pairs tokens]
 
 class InBufferCompleter
   new: (buffer, context) =>
     @near_tokens = near_tokens context.word_prefix, context
-    all_tokens = parse buffer
-    @matcher = Matcher all_tokens
+    @matcher = Matcher parse buffer
 
   complete: (context) =>
     pattern = '^' .. context.word_prefix .. '.'
