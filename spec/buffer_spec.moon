@@ -135,6 +135,9 @@ describe 'Buffer', ->
   it '.properties is a table', ->
     assert.equal 'table', type buffer('').properties
 
+  it '.data is a table', ->
+    assert.equal 'table', type buffer('').data
+
   it '.showing is true if the buffer is currently referenced in any sci', ->
     b = buffer ''
     assert.false b.showing

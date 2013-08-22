@@ -43,6 +43,7 @@ class Buffer extends PropertyObject
     @completers = {}
     @mode = mode
     @properties = {}
+    @data = {}
     @multibyte_from = nil
     @_len = nil
     @sci_listener =
