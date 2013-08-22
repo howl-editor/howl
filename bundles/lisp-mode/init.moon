@@ -2,7 +2,7 @@ mode_reg =
   name: 'lisp'
   extensions: { 'cl', 'el', 'lisp', 'lsp' }
   config: {
-    word_pattern: '[^][%s/.(){}]+'
+    word_pattern: '[^][%s/.(){}"\']+'
   }
   create: -> bundle_load('lisp_mode.moon')!
 
