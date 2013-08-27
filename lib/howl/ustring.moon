@@ -162,12 +162,12 @@ ends_with = (s1, s2) ->
 contains = (s1, s2) ->
   s1\find(s2, 1, true) != nil
 
-count = (s1, s2) ->
+count = (s1, s2, is_pattern = false) ->
   c = 0
   pos = 1
 
   while pos
-    _, pos = s1\find s2, pos, true
+    _, pos = s1\find s2, pos, not is_pattern
     if pos
       c += 1
       pos += 1

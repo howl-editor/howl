@@ -130,10 +130,15 @@ describe 'ustrings', ->
     assert.is_false 'foobar'\contains 'xfo'
     assert.is_false 'foobar'\contains '.'
 
-  it 'count(s) returns the number of occurences of s with the string', ->
-    assert.equal 1, 'foobar'\count 'foo'
-    assert.equal 2, 'foobar'\count 'o'
-    assert.equal 0, 'foobar'\count 'x'
+  describe 'count(s, pattern = false)', ->
+    it 'returns the number of occurences of s with the string', ->
+      assert.equal 1, 'foobar'\count 'foo'
+      assert.equal 2, 'foobar'\count 'o'
+      assert.equal 0, 'foobar'\count 'x'
+
+    it 's is evaluated as a pattern if pattern is true', ->
+      assert.equal 3, 'foo'\count('%w', true)
+      assert.equal 2, 'foobar'\count('[ab]', true)
 
   describe 'byte_offset(...)', ->
     it 'returns byte offsets for all character offsets passed as parameters', ->
