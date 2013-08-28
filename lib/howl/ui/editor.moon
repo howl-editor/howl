@@ -157,6 +157,23 @@ class Editor extends PropertyObject
       error "Unknown value for indentation_guides: #{value}", 2 unless sci_value
       @sci\set_indentation_guides sci_value
 
+  @property line_wrapping:
+    get: =>
+      sci_val = @sci\get_wrap_mode!
+      switch sci_val
+        when Scintilla.SC_WRAP_NONE then 'none'
+        when Scintilla.SC_WRAP_WORD then 'word'
+        when Scintilla.SC_WRAP_CHAR then 'character'
+        else '(unknown)'
+
+    set: (value) =>
+      sci_value = switch value
+        when 'none' then Scintilla.SC_WRAP_NONE
+        when 'word' then Scintilla.SC_WRAP_WORD
+        when 'character' then Scintilla.SC_WRAP_CHAR
+      error "Unknown value for line_wrapping: #{value}", 2 unless sci_value
+      @sci\set_wrap_mode sci_value
+
   @property caret_line_highlighted:
     get: => @sci\get_caret_line_visible!
     set: (flag) => @sci\set_caret_line_visible flag
@@ -314,9 +331,11 @@ class Editor extends PropertyObject
       \set_indent config.indent
       \set_tab_indents config.tab_indents
       \set_back_space_un_indents config.backspace_unindents
+      \set_wrap_visual_flags Scintilla.SC_WRAPVISUALFLAG_END
 
     with config
       @indentation_guides = .indentation_guides
+      @line_wrapping = .line_wrapping
       @horizontal_scrollbar = .horizontal_scrollbar
       @vertical_scrollbar = .vertical_scrollbar
       @caret_line_highlighted = .caret_line_highlighted
@@ -482,6 +501,16 @@ with config
     }
 
   .define
+    name: 'line_wrapping'
+    description: 'Controls how lines are wrapped if neccessary'
+    default: 'word'
+    options: {
+      { 'none', 'Lines are not wrapped' }
+      { 'word', 'Lines are wrapped on word boundaries' }
+      { 'character', 'Lines are wrapped on character boundaries' }
+    }
+
+  .define
     name: 'horizontal_scrollbar'
     description: 'Whether horizontal scrollbars are shown'
     default: false
@@ -519,6 +548,7 @@ with config
 
   for watched_property in *{
     'indentation_guides',
+    'line_wrapping',
     'horizontal_scrollbar',
     'vertical_scrollbar',
     'caret_line_highlighted',
