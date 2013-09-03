@@ -2,7 +2,7 @@ import signal from howl
 import File from howl.fs
 import Sandbox from howl.aux
 
-import assert, error, loadfile, type, callable, tostring, pairs, typeof from _G
+import assert, error, loadfile, type, callable, tostring, pairs, typeof, pcall from _G
 import table, _G from _G
 
 _G.bundles = {}
@@ -92,7 +92,9 @@ export load_by_name = (name) ->
     error 'Bundle "' .. name .. '" was not found', 2
 
 export load_all = ->
-  load_from_dir c for _, c in pairs available_bundles!
+  for _, dir in pairs available_bundles!
+    status = pcall find_bundle_init, dir
+    load_from_dir dir if status
 
 export unload = (name) ->
   mod_name = module_name name
