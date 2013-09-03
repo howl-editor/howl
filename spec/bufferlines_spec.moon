@@ -17,6 +17,9 @@ describe 'BufferLines', ->
       buf = buffer 'hƏllØ\n  wØrld\nagain!'
       lines = buf.lines
 
+    it '.buffer points to the corresponding buffer', ->
+      assert.same buf, lines[1].buffer
+
     it '.nr holds the line number', ->
       assert.equal lines[1].nr, 1
 

@@ -43,6 +43,7 @@ Line = (nr, buffer, sci) ->
       previous: => if nr > 1 then Line nr - 1, buffer, sci
       next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
       chunk: => buffer\chunk @start_pos, @end_pos - #buffer.eol
+      buffer: => buffer
 
       previous_non_blank: =>
         prev_line = @previous
