@@ -2,6 +2,8 @@ import bundle, mode, config, Buffer from howl
 import File from howl.fs
 import Editor from howl.ui
 
+require 'howl.variables.core_variables'
+
 describe 'lisp-mode', ->
   local m
   local buffer, editor, cursor, lines
@@ -28,18 +30,47 @@ describe 'lisp-mode', ->
       buffer.config.indent = indent_level
 
     it 'indents when the previous line has more opening than closing parentheses', ->
-      for ex in *{ '(defn foo\n', '(inv (bar)\n' }
-        buffer.text = ex
-        cursor.line = 2
-        editor\indent!
-        assert.equal indent_level, editor.current_line.indentation
+      buffer.text = '(defn foo\n'
+      cursor.line = 2
+      editor\indent!
+      assert.equal indent_level, editor.current_line.indentation
 
-    it 'dedents when the previous line has more closing than opening parentheses', ->
-      for ex in *{ '  (bar foo))\n', '  bar)\n' }
+    it 'indents from the last unmatched parenthesis', ->
+      buffer.text = '(defn (foo\n'
+      cursor.line = #lines
+      editor\indent!
+      assert.equal 8, editor.current_line.indentation
+
+    it 'indents from the last expression', ->
+      buffer.text = '(defn bar\n  (foo\n    (z)))\n'
+      cursor.line = #lines
+      editor\indent!
+      assert.equal 0, editor.current_line.indentation
+
+    it 'aligns with the quote for quoted lists', ->
+      buffer.text = "(defn '(foo\n"
+      cursor.line = 2
+      editor\indent!
+      assert.equal 8, editor.current_line.indentation
+
+    it 'aligns with unmatched opening brackets', ->
+      buffer.text = '(let [foo (bar)\n'
+      cursor.line = 2
+      editor\indent!
+      assert.equal 6, editor.current_line.indentation
+
+    -- it 'aligns with any subsequent forms following an opening bracket', ->
+    --   buffer.text = '(list-me (bar)\n'
+    --   cursor.line = 2
+    --   editor\indent!
+    --   assert.equal 9, editor.current_line.indentation
+
+    it 'shrewdly avoids misaligning with any subsequent forms to far away', ->
+      for ex in *{ '(defn list-me ()\n', '(fn []\n' }
         buffer.text = ex
         cursor.line = 2
         editor\indent!
-        assert.equal 0, editor.current_line.indentation
+        assert.equal 2, editor.current_line.indentation
 
     it 'corrects any incorrect indentation level', ->
       buffer.text = '  foo\n   bar'
