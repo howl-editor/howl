@@ -18,7 +18,7 @@ describe 'VI', ->
   editor = Editor Buffer {}
   cursor = editor.cursor
   selection = editor.selection
-  window = Gtk.OffscreenWindow!
+  window = Gtk.OffscreenWindow width: 800, height: 640
   window\add editor\to_gobject!
   window\show_all!
 
