@@ -122,14 +122,6 @@ describe 'moonscript-mode', ->
           editor\indent!
           assert.equal indent_level, editor.current_line.indentation
 
-    it 'does not disregard blank lines above when determining indent', ->
-      for desc in pairs indents
-        for code in *indents[desc]
-          buffer.text = "  #{code}'\n  \n  "
-          cursor.line = 3
-          editor\indent!
-          assert.equal indent_level, editor.current_line.indentation
-
     for desc in pairs dedents
       context 'dedents one level for a line containing ' .. desc, ->
         for code in *dedents[desc]
