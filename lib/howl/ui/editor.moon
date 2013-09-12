@@ -271,6 +271,8 @@ class Editor extends PropertyObject
       @buffer\delete target_pos, next_line.start_pos + content_start - 2
       @buffer\insert ' ', target_pos
 
+  duplicate_current: => @sci\selection_duplicate!
+
   forward_to_match: (str) =>
     pos = @current_line\ufind str, @cursor.column_index + 1, true
     @cursor.column_index = pos if pos
@@ -598,6 +600,7 @@ for cmd_spec in *{
   { 'redo', 'Redo last undo for the current editor', 'redo' }
   { 'scroll-up', 'Scrolls one line up', 'scroll_up' }
   { 'scroll-down', 'Scrolls one line down', 'scroll_down' }
+  { 'duplicate-current', 'Duplicates the selection or current line', 'duplicate_current' }
 }
   args = { select 4, table.unpack cmd_spec }
   command.register
