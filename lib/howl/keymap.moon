@@ -6,6 +6,7 @@
 
   ctrl_b:           'switch-buffer'
   ctrl_c:           'editor-copy'
+  ctrl_d:           'editor-duplicate-current'
   ctrl_i:           'editor-indent'
   ctrl_g:           'buffer-grep'
   ctrl_p:           'project-open'
@@ -17,6 +18,9 @@
   'ctrl_-':         'zoom-out'
   'ctrl_+':         'zoom-in'
 
+  shift_insert:     'editor-paste'
+  ctrl_insert:      'editor-copy'
+
   ctrl_shift_a:     'editor-select-all'
 
   alt_f11:          'toggle-fullscreen'
@@ -27,11 +31,24 @@
   right:            'cursor-right'
   up:               'cursor-up'
   down:             'cursor-down'
+  shift_left:       'cursor-left-extend'
+  shift_right:      'cursor-right-extend'
+  shift_up:         'cursor-up-extend'
+  shift_down:       'cursor-down-extend'
 
   ctrl_left:        'cursor-word-left'
   ctrl_right:       'cursor-word-right'
   ctrl_up:          'editor-scroll-up'
   ctrl_down:        'editor-scroll-down'
+
+  page_up:          'cursor-page-up'
+  shift_page_up:    'cursor-page-up-extend'
+  page_down:        'cursor-page-down'
+  shift_page_down:  'cursor-page-down-extend'
+  end:              'cursor-line-end'
+  shift_end:        'cursor-line-end-extend'
+  home:             'cursor-home'
+  shift_home:       'cursor-home-extend'
 
   ctrl_shift_left:  'view-left-or-create'
   ctrl_shift_right: 'view-right-or-create'
