@@ -1,8 +1,8 @@
-# Howl base modes bundle
+# Howl basic modes bundle
 
 ## What is it?
 
-This bundle contains a collection of lexer-only modes for the Howl editor,
+This bundle contains a collection of mostly lexer-only modes for the Howl editor,
 using [Scintillua lexers](http://foicica.com/scintillua/).
 
 ## License
