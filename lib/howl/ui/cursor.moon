@@ -105,9 +105,15 @@ for cmd in *commands
     else
       plain @sci
 
+  cmd_name = name\gsub '_', '-'
   command.register
-    name: "cursor-#{name\gsub '_', '-'}"
+    name: "cursor-#{cmd_name}"
     :description
     handler: -> _G.editor.cursor[name] _G.editor.cursor
+
+  command.register
+    name: "cursor-#{cmd_name}-extend"
+    description: "#{description}, extending the selection"
+    handler: -> _G.editor.cursor[name] _G.editor.cursor, true
 
 return Cursor
