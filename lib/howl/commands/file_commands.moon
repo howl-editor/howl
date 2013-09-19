@@ -3,7 +3,7 @@ import command from howl
 command.register
   name: 'open',
   description: 'Open file'
-  inputs: { 'file' }
+  inputs: { '*file' }
   handler: (file) -> howl.app\open_file file
 
 command.alias 'open', 'e'
@@ -11,7 +11,7 @@ command.alias 'open', 'e'
 command.register
   name: 'project-open',
   description: 'Open project file'
-  inputs: { 'project_file' }
+  inputs: { '*project_file' }
   handler: (file) -> howl.app\open_file file
 
 command.register
@@ -30,7 +30,7 @@ command.register
 command.register
   name: 'save-as',
   description: 'Saves the current buffer to a given file'
-  inputs: { 'file' }
+  inputs: { '*file' }
   handler: (file) ->
     buffer = _G.editor.buffer
     buffer.file = file
