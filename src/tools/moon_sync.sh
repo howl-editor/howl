@@ -1,4 +1,7 @@
 #! /bin/sh
+#
+# Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+# License: MIT (see LICENSE)
 
 source_dir=$1
 target_dir=$2

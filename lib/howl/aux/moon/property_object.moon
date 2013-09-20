@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 class_properties = (cls) ->
   cls.__base.__properties = {} if not cls.__base.__properties
   cls.__base.__properties

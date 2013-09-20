@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 import P, B, S, Cp, Cc, Ct from lpeg
 import pairs, setfenv, setmetatable from _G
 l = lpeg.locale!

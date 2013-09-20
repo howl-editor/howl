@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 import mode from howl
 
 root_dir = howl.app.root_dir

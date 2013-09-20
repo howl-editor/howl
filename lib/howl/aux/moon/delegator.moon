@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 forwarding_table = (target, base) ->
   return setmetatable {
     __index: (key) =>

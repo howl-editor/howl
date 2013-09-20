@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+--
 -- Destructor object
 --
 -- Call with the callback and eventual arguments. NB: The callback or arguments

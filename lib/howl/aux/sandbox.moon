@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 sand_box = (env, options = {}) ->
   env = if env then moon.copy env else {}
   chain = if options.no_globals then nil else _G

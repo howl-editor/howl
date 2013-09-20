@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 import Gtk, Gdk from lgi
 import Scintilla, signal from howl
 import destructor from howl.aux

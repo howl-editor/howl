@@ -1,4 +1,7 @@
 #! /bin/sh
+#
+# Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+# License: MIT (see LICENSE)
 
 file=$1; shift
 checksum=$1; shift

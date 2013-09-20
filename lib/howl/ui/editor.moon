@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 import Gtk from lgi
 import Scintilla, Completer, signal, keyhandler, config, command from howl
 import PropertyObject from howl.aux.moon

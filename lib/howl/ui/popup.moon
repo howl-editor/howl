@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 import Gtk from lgi
 import PropertyObject from howl.aux.moon
 

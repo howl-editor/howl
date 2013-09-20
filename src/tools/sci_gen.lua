@@ -1,10 +1,9 @@
 #! /usr/bin/env lua
 
---[[
-(C) 2012 Nils Nordman <nino at nordman.org>
-
-Generates a Lua interface for Scintilla using the latter's interface file.
-]]
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+--
+-- Generates a Lua interface for Scintilla using the latter's interface file.
 
 local iface, target = ...
 

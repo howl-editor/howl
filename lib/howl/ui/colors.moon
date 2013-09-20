@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 defs = {
   aliceblue: '#f0f8ff'
   antiquewhite: '#faebd7'

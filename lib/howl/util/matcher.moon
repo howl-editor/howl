@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 lpeg = require 'lpeg'
 import P, V, S, Cp, Ct, Cc, Cg from lpeg
 

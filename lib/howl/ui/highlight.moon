@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 import Scintilla from howl
 import _G, print, tostring, error, pairs, append from _G
 bit = require 'bit'

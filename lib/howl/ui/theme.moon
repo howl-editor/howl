@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 import Gdk, Gtk from lgi
 import File from howl.fs
 import config, signal from howl

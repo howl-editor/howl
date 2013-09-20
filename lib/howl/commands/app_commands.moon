@@ -1,3 +1,6 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 import command, config, keyhandler, bundle, signal, inputs from howl
 import ActionBuffer, List from howl.ui
 serpent = require 'serpent'
