@@ -1,7 +1,12 @@
 import Gtk, Gdk from lgi
-import Scintilla from howl
+import Scintilla, signal from howl
 import destructor from howl.aux
 import Popup, style, highlight, theme from howl.ui
+
+popups = setmetatable {}, __mode: 'v'
+
+signal.connect 'theme-changed', ->
+  p\_override_backgrounds! for p in *popups
 
 class BufferPopup extends Popup
 
@@ -23,15 +28,9 @@ class BufferPopup extends Popup
       }
     }
 
-    background = Gdk.RGBA!
-    background\parse style[@default_style].background
-
-    -- override the background color of the window as well, in order to avoid
-    -- annoying flashes of the default window background color when closing
-    @bin\override_background_color 0, background
-
     super @bin, @_get_dimensions!
-    @window\override_background_color 0, background
+    @_override_backgrounds!
+    append popups, self
 
   resize: =>
     dimensions = @_get_dimensions!
@@ -80,5 +79,13 @@ class BufferPopup extends Popup
     max_line = math.max(#line, max_line) for line in *@buffer.lines
     width = (max_line * char_width) + (char_width / 2) + 6
     return :width, :height
+
+  _override_backgrounds: =>
+    background = Gdk.RGBA!
+    background\parse style[@default_style].background
+
+    -- override the background color of the window as well as the component,
+    @bin\override_background_color 0, background
+    @window\override_background_color 0, background
 
 return BufferPopup
