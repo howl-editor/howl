@@ -16,7 +16,7 @@ get_styling_start_pos = (sci) ->
   start_line = sci\line_from_position pos
 
   -- at the start already, or close enough - a safe start from the beginning
-  return 0 if start_line == 0 or pos < 10
+  return 0 if start_line == 0 or pos < 100
 
   -- we could just start at the beginning of the line?
   pos = sci\position_from_line start_line
@@ -34,7 +34,8 @@ get_styling_start_pos = (sci) ->
   -- style change in order to get some perspective
   for pos = nl_pos - 2, 0, -1
     cur_style = sci\get_style_at pos
-    return pos + 1 if cur_style != nl_style
+    if cur_style != nl_style
+      return sci\position_from_line sci\line_from_position(pos) -- from start of line
 
   -- and after all this we're now back square zero after all, yay!
   0
