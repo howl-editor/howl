@@ -1,10 +1,27 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
-import P, B, S, Cp, Cc, Ct from lpeg
+import P, B, S, Cp, Cc, Ct, Cmt from lpeg
 import pairs, setfenv, setmetatable from _G
 l = lpeg.locale!
 import space, alpha from l
+
+cur_line_indent = (subject, pos) ->
+  ws = 0
+  for i = pos, 1, -1
+    c = subject[i]
+    if c\match '[\n\r]+' then return ws
+    elseif c\match '%s+' then  ws += 1
+    else ws = 0
+  ws
+
+indented_block_end = (subject, pos) ->
+  cur_indent = cur_line_indent subject, pos - 1
+  pattern = r"\\R()\\s{0,#{cur_indent}}\\S"
+  block_end = subject\umatch pattern, pos
+  block_end and block_end or #subject + 1
+
+-- START lexer environment --
 
 lexer = {}
 
@@ -32,6 +49,9 @@ scan_to = (stop_p, escape_p) ->
   skip = (-stop_p * 1)
   skip = (P(escape_p) * 1) + skip if escape_p
   skip^0 * (stop_p + P-1)
+
+scan_through_indented = ->
+  Cmt P(true), indented_block_end
 
 span = (start_p, stop_p, escape_p) ->
   start_p * scan_to stop_p, escape_p

@@ -78,6 +78,16 @@ describe 'lpeg_lexer', ->
       p = l.scan_to('}', '\\') * Cp!
       assert.equals 5, p\match '{\\}}'
 
+  describe 'scan_through_indented', ->
+    p = P' ' * l.scan_through_indented! * Cp!
+
+    it 'matches until the indentation is smaller or equal to the current line', ->
+      assert.equals 4, p\match ' x\n y'
+      assert.equals 8, p\match ' x\n  y\n z'
+
+    it 'matches until eol if it can not find any line with smaller or equal indentation', ->
+      assert.equals 7, p\match ' x\n  y'
+
   describe 'complement(p)', ->
     it 'matches if <p> does not match', ->
       assert.is_not_nil l.complement('a')\match 'b'
