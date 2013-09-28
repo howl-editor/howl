@@ -5,12 +5,12 @@ howl.aux.lpeg_lexer ->
   dq_string = capture 'string', span('"', '"', P'\\')
   number = capture 'number', digit^1
 
-  delimiter = any { space, S'/.(){}[]^#' }
+  delimiter = any { space, S'/.,(){}[]^#' }
   name = complement(delimiter)^1
   identifier = capture 'identifier', name
   keyword = capture 'constant', P':' * P':'^0 * name
 
-  fcall = capture('operator', P'(') * capture('function', complement(any {space, P')'}))^1
+  fcall = capture('operator', P'(') * capture('function', complement(delimiter))^1
   specials = capture 'special', word { 'true', 'false' }
 
   any {
