@@ -41,6 +41,7 @@ describe 'Regex', ->
     context 'when init is specified', ->
       it 'matching starts from the init position', ->
         assert.equal 'right', r'r\\S+'\match 'red right hand', 2
+        assert.equal 6, r'r()\\S+'\match 'red right hand', 2
 
       it 'negative values counts from the end', ->
         assert.equal 'og', r'o\\w'\match 'top dog', -2
@@ -59,7 +60,7 @@ describe 'Regex', ->
       assert.same { 2, 2, 3 }, { r'\\pL()'\find '!äö' }
 
     it 'starts matching after init', ->
-      assert.same { 3, 5 }, { r'\\w+'\find '12ab2', 3}
+      assert.same { 3, 5, 6 }, { r'\\w+()'\find '12ab2', 3}
 
   describe 'gmatch(s)', ->
     context 'with no captures in the pattern', ->

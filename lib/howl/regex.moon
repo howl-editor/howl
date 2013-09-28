@@ -129,7 +129,7 @@ methods = {
 
     matches = {}
     start = count > 1 and 1 or 0
-    get_captures match_info, ptr, matches, start, count
+    get_captures match_info, ptr, matches, start, count, init - 1
     free_match_info match_info
     return table.unpack matches
 
@@ -139,7 +139,7 @@ methods = {
 
     match, start_pos, end_pos = get_capture match_info, 0, ptr, true
     matches = { start_pos + init - 1, end_pos + init - 1 }
-    get_captures match_info, ptr, matches, 1, count
+    get_captures match_info, ptr, matches, 1, count, init - 1
     free_match_info match_info
     return table.unpack matches
 
