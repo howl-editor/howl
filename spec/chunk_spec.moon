@@ -30,7 +30,7 @@ describe 'Chunk', ->
 
   it '.styling is a table of offsets and styles, { start, "style", end [,..]}', ->
     styles = { 1, 'keyword', 3 }
-    styler.apply buffer, 1, styles
+    styler.apply buffer, 1, buffer.size, styles
     assert.same { 1, 'keyword', 2 }, Chunk(buffer, 2, 2).styles
 
   it 'delete() deletes the chunk', ->

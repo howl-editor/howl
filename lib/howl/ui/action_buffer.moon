@@ -41,7 +41,7 @@ class ActionBuffer extends Buffer
   _insert_chunk: (chunk, pos) =>
     super\insert chunk.text, pos
     b_start = @byte_offset pos
-    styler.apply self, b_start, chunk.styles
+    styler.apply self, b_start, b_start + #chunk.text, chunk.styles
     pos + #chunk
 
 return ActionBuffer
