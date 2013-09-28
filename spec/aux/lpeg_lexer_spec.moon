@@ -69,6 +69,15 @@ describe 'lpeg_lexer', ->
       p = l.span('{', '}', '\\') * Cp!
       assert.equals 5, p\match '{\\}}'
 
+  describe 'scan_until(stop_p [, escape_p])', ->
+    it 'matches until the specified pattern or <EOF>', ->
+      assert.equals 3, (l.scan_until('x') * Cp!)\match '12x'
+      assert.equals 4, (l.scan_until('x') * Cp!)\match '123'
+
+    it 'allows escaping <stop_p> with <escape_p>', ->
+      p = l.scan_until('}', '\\') * Cp!
+      assert.equals 4, p\match '{\\}}'
+
   describe 'scan_to(stop_p [, escape_p])', ->
     it 'matches until the specified pattern or <EOF>', ->
       assert.equals 4, (l.scan_to('x') * Cp!)\match '12x'

@@ -44,11 +44,15 @@ word = (args) ->
   word_char = alpha + '_'
   (-B(1) + B(-word_char)) * any(args) * -word_char
 
-scan_to = (stop_p, escape_p) ->
+scan_until = (stop_p, escape_p) ->
   stop_p = P(stop_p)
   skip = (-stop_p * 1)
   skip = (P(escape_p) * 1) + skip if escape_p
-  skip^0 * (stop_p + P-1)
+  skip^0 * (#stop_p + P-1)
+
+scan_to = (stop_p, escape_p) ->
+  stop_p = P(stop_p)
+  scan_until(stop_p, escape_p) * stop_p^-1
 
 scan_through_indented = ->
   Cmt P(true), indented_block_end
