@@ -36,6 +36,11 @@ describe 'lpeg_lexer', ->
       assert.is_not_nil p\match 'two'
       assert.is_nil p\match 'three'
 
+    it '<list> can be vararg arguments', ->
+      -- p = l.any { 'one', 'two' }
+      p = l.any 'one', 'two'
+      assert.is_not_nil p\match 'two'
+
   describe 'word(list)', ->
     grammar = P {
       V'word' + P(1) * V(1)

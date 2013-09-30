@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE)
 
 import P, B, S, Cp, Cc, Ct, Cmt from lpeg
-import pairs, setfenv, setmetatable from _G
+import pairs, setfenv, setmetatable, type, _G from _G
 l = lpeg.locale!
 import space, alpha from l
 
@@ -35,7 +35,9 @@ export *
 capture = (style, pattern) ->
   Cp! * pattern * Cc(style) * Cp!
 
-any = (args) ->
+any = (...) ->
+  args = {...}
+  args = args[1] if type(args[1]) == 'table'
   arg_p = P args[1]
   arg_p += args[i] for i = 2, #args
   arg_p
