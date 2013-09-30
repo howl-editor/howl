@@ -10,7 +10,7 @@ cur_line_indent = (subject, pos) ->
   ws = 0
   for i = pos, 1, -1
     c = subject[i]
-    if c\match '[\n\r]+' then return ws
+    if i != pos and c\match '[\n\r]+' then return ws
     elseif c\match '%s+' then  ws += 1
     else ws = 0
   ws

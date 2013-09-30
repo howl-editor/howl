@@ -102,6 +102,10 @@ describe 'lpeg_lexer', ->
     it 'matches until eol if it can not find any line with smaller or equal indentation', ->
       assert.equals 7, p\match ' x\n  y'
 
+    it 'uses the indentation of the line containing eol if positioned right at it', ->
+      p = l.eol * l.scan_through_indented! * Cp!
+      assert.equals 8, p\match ' x\n  y\n z', 3
+
   describe 'complement(p)', ->
     it 'matches if <p> does not match', ->
       assert.is_not_nil l.complement('a')\match 'b'
