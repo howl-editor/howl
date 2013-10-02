@@ -1,0 +1,62 @@
+!!!
+%html{ :xmlns => "http://www.w3.org/1999/xhtml", :lang => "en", 'xml:lang' => "en"}
+  / single line html comment
+  %head
+    %title BoBlog
+    %meta(http-equiv="Content-Type" content="text/html; charset=utf-8" colon:key='zed')
+    %link{"rel" => "stylesheet", "href" => "main.css", "type" => "text/css"}
+    %script(type="text/javascript"
+        src="javascripts/script_#{2 + 7}")
+  / multiline html
+    comment
+
+  %body\
+    -# haml comment
+    #header
+      %h1{ one_dot_nine_style_key: @instance_var } BoBlog
+      %h2 Bob's Blog
+    -# multiline
+      haml comment
+    #content
+      - @entries.each do |entry|
+        .entry
+          %h3.title= entry.title
+          %p.date= entry.posted.strftime("%A, %B %d, %Y")
+          %p.body<= entry.body
+
+        \= but this is escaped
+        \#escaped-hash
+
+        %br/ / closed tag
+
+        / whitespace eating
+        %blockquote<
+          Foo!
+
+        = plain eval!
+
+      %foo
+      %div[@user, :greeting] -# object reference
+        %bar[290]/
+        Hello!
+
+      &= "I like cheese & crackers"
+      & I like #{"cheese & crackers"}
+      != "I feel <strong>!"
+      ! I feel #{"<strong>"}!
+
+      -# and filters.. what the hell is this, when will it end?!
+      :markdown
+        # Greetings
+
+        Hello, *World*
+
+    #footer
+      %p
+        -# multine ruby eval
+        - links = {:home => "/",
+          :docs => "/docs",
+          :about => "/about"}
+
+        %strong.code#message foo
+        All content copyright © Bob
