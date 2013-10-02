@@ -59,10 +59,12 @@ class Buffer extends PropertyObject
       buffer_titles[@_title] = nil if @_title
       @_file = file
       @title = file_title file
-      @text = file.exists and file.contents or ''
-      @modified = false
-      @can_undo = false
-      @sync_etag = file.etag
+
+      if file.exists and not @modified
+        @text = file.contents
+        @modified = false
+        @can_undo = false
+        @sync_etag = file.etag
 
   @property mode:
     get: => @_mode

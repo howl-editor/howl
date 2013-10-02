@@ -78,31 +78,42 @@ describe 'Buffer', ->
         b.file = file
         assert.equal b.title, file.basename
 
-    it 'sets the buffer text to the contents of the file if it exists', ->
-      b.text = 'foo'
-      with_tmpfile (file) ->
-        file.contents = 'yes sir'
-        b.file = file
-        assert.equal b.text, 'yes sir'
+    describe 'when <file> exists', ->
+      describe 'and the buffer is not modified', ->
 
-    it 'sets the buffer text to empty if the file does not exist', ->
+        before ->
+          b.text = 'foo'
+          b.modified = false
+
+        it 'sets the buffer text to the contents of the file', ->
+          with_tmpfile (file) ->
+            file.contents = 'yes sir'
+            b.file = file
+            assert.equal b.text, 'yes sir'
+
+        it 'marks the buffer as not modified', ->
+          with_tmpfile (file) ->
+            b.file = file
+            assert.is_false b.modified
+
+        it 'clears the undo history', ->
+          with_tmpfile (file) ->
+            b.file = file
+            assert.is_false b.can_undo
+
+      it 'keeps the existing buffer text if the buffer is modified', ->
+        b.text = 'foo'
+        with_tmpfile (file) ->
+          file.contents = 'yes sir'
+          b.file = file
+          assert.equal b.text, 'foo'
+
+    it 'keeps the existing buffer text if the file does not exist', ->
       b.text = 'foo'
       with_tmpfile (file) ->
         file\delete!
         b.file = file
-        assert.equal b.text, ''
-
-    it 'marks the buffer as not modified', ->
-      b.modified = true
-      with_tmpfile (file) ->
-        b.file = file
-        assert.is_false b.modified
-
-    it 'clears the undo history', ->
-      b.text = 'foo'
-      with_tmpfile (file) ->
-        b.file = file
-        assert.is_false b.can_undo
+        assert.equal b.text, 'foo'
 
   it '.eol returns the current line ending', ->
     b = buffer ''
