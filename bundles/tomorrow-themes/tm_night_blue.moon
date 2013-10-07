@@ -133,7 +133,7 @@ return {
 
     embedded:
       color: blue
-      background: '#444444'
+      background: '#003080'
 
     -- Markup and visual styles
 
