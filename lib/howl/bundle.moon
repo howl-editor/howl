@@ -5,8 +5,8 @@ import signal from howl
 import File from howl.fs
 import Sandbox from howl.aux
 
-import assert, error, loadfile, type, callable, tostring, pairs, typeof, pcall from _G
-import table, _G from _G
+_G = _G
+import assert, error, loadfile, type, callable, table, tostring, pairs, typeof, pcall from _G
 
 _G.bundles = {}
 

@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE)
 
 import Scintilla from howl
-import _G, print, tostring, error, pairs, append from _G
+import print, tostring, error, pairs, append from _G
 bit = require 'bit'
 
 highlights = {}

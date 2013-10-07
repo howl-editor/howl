@@ -227,7 +227,7 @@ local function symx(chars)
 end
 
 local function simple_string(delim, allow_interpolation)
-	local inner = P('\\'..delim) + "\\\\" + (1 - S('\r\n'..delim))
+	local inner = P('\\'..delim) + "\\\\" + (1 - P(delim))
 	if allow_interpolation then
 		inter = symx"#{" * V"Exp" * sym"}"
 		inner = (C((inner - inter)^1) + inter / mark"interpolate")^0
@@ -409,9 +409,9 @@ local build_grammar = wrap_env(function()
 
 		Local = key"local" * ((op"*" + op"^") / mark"declare_glob" + Ct(NameList) / mark"declare_with_shadows"),
 
-		Import = key"import" *  Ct(ImportNameList) * key"from" * Exp / mark"import",
+		Import = key"import" * Ct(ImportNameList) * SpaceBreak^0 * key"from" * Exp / mark"import",
 		ImportName = (sym"\\" * Ct(Cc"colon_stub" * Name) + Name),
-		ImportNameList = ImportName * (sym"," * ImportName)^0,
+		ImportNameList = SpaceBreak^0 * ImportName * ((SpaceBreak^1 + sym"," * SpaceBreak^0) * ImportName)^0,
 
 		NameList = Name * (sym"," * Name)^0,
 
@@ -575,7 +575,7 @@ local build_grammar = wrap_env(function()
 			op"*" + op"^" +
 			Ct(NameList) * (sym"=" * Ct(ExpListLow))^-1) / mark"export",
 
-		KeyValue = (sym":" * Name) / self_assign + Ct((KeyName + sym"[" * Exp * sym"]" + DoubleString + SingleString) * symx":" * (Exp + TableBlock)),
+		KeyValue = (sym":" * -SomeSpace *  Name) / self_assign + Ct((KeyName + sym"[" * Exp * sym"]" + DoubleString + SingleString) * symx":" * (Exp + TableBlock)),
 		KeyValueList = KeyValue * (sym"," * KeyValue)^0,
 		KeyValueLine = CheckIndent * KeyValueList * sym","^-1,
 
@@ -597,7 +597,7 @@ local build_grammar = wrap_env(function()
 		ExpList = Exp * (sym"," * Exp)^0,
 		ExpListLow = Exp * ((sym"," + sym";") * Exp)^0,
 
-		InvokeArgs = ExpList * (sym"," * (TableBlock + SpaceBreak * Advance * ArgBlock * TableBlock^-1) + TableBlock)^-1 + TableBlock,
+		InvokeArgs = -P"-" * (ExpList * (sym"," * (TableBlock + SpaceBreak * Advance * ArgBlock * TableBlock^-1) + TableBlock)^-1 + TableBlock),
 		ArgBlock = ArgLine * (sym"," * SpaceBreak * ArgLine)^0 * PopIndent,
 		ArgLine = CheckIndent * ExpList
 	}

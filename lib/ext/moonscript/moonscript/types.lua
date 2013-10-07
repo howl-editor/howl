@@ -1,14 +1,23 @@
 local util = require("moonscript.util")
-local data = require("moonscript.data")
-local insert = table.insert
-local unpack = util.unpack
-local manual_return = data.Set({
+local Set
+do
+  local _obj_0 = require("moonscript.data")
+  Set = _obj_0.Set
+end
+local insert
+do
+  local _obj_0 = table
+  insert = _obj_0.insert
+end
+local unpack
+unpack = util.unpack
+local manual_return = Set({
   "foreach",
   "for",
   "while",
   "return"
 })
-local cascading = data.Set({
+local cascading = Set({
   "if",
   "unless",
   "with",
@@ -232,9 +241,8 @@ build = setmetatable({
     if tbl == nil then
       tbl = { }
     end
-    local _list_0 = tbl
-    for _index_0 = 1, #_list_0 do
-      local tuple = _list_0[_index_0]
+    for _index_0 = 1, #tbl do
+      local tuple = tbl[_index_0]
       if type(tuple[1]) == "string" then
         tuple[1] = {
           "key_literal",
@@ -259,9 +267,8 @@ build = setmetatable({
       "chain",
       base
     }
-    local _list_0 = parts
-    for _index_0 = 1, #_list_0 do
-      local part = _list_0[_index_0]
+    for _index_0 = 1, #parts do
+      local part = parts[_index_0]
       insert(node, part)
     end
     return node

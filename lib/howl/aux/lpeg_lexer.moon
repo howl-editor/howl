@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE)
 
 import P, B, S, Cp, Cc, Ct, Cmt from lpeg
-import pairs, setfenv, setmetatable, type, _G from _G
+import pairs, setfenv, setmetatable, type from _G
 l = lpeg.locale!
 import space, alpha from l
 
@@ -50,7 +50,7 @@ scan_until = (stop_p, escape_p) ->
   stop_p = P(stop_p)
   skip = (-stop_p * 1)
   skip = (P(escape_p) * 1) + skip if escape_p
-  skip^0 * (#stop_p + P-1)
+  skip^0 * (#stop_p + P(-1))
 
 scan_to = (stop_p, escape_p) ->
   stop_p = P(stop_p)
