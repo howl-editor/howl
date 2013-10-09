@@ -3,7 +3,7 @@ howl.aux.lpeg_lexer ->
   comment = capture 'comment', span(';', eol)
   operator = capture 'operator', S'/.%^#,(){}[]'
   dq_string = capture 'string', span('"', '"', P'\\')
-  number = capture 'number', digit^1
+  number = capture 'number', digit^1 * alpha^-1
 
   delimiter = any { space, S'/.,(){}[]^#' }
   name = complement(delimiter)^1
