@@ -11,7 +11,7 @@ howl.aux.lpeg_lexer ->
   keyword = capture 'constant', P':' * P':'^0 * name
 
   fcall = capture('operator', P'(') * capture('function', complement(delimiter))^1
-  specials = capture 'special', word { 'true', 'false' }
+  specials = capture 'special', word({ 'true', 'false' }) * #delimiter^1
 
   any {
     dq_string,
