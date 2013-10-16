@@ -200,8 +200,8 @@
     extensions: { 'erb', 'rhtml' }
 
   ruby:
-    extensions: { 'rb', 'Rakefile', 'rake', 'rb', 'rbw' }
-    patterns: { 'Rakefile$', 'Gemfile$'  }
+    extensions: { 'rb', 'Rakefile', 'rake', 'rb', 'rbw'  }
+    patterns: { 'Rakefile$', 'Gemfile$', 'Guardfile$'  }
     short_comment_prefix: '#'
 
   scala:
