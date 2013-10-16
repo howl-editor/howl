@@ -67,7 +67,7 @@ describe 'Matcher(candidates)', ->
     assert.same { 'one', 'two' }, m('o')
 
   describe 'explain(search, text)', ->
-    it 'set .how to the type of match', ->
+    it 'sets .how to the type of match', ->
       assert.equal 'exact', Matcher.explain('fu', 'snafu').how
 
     it 'returns a list of character offsets indicating where <search> matched', ->
@@ -86,3 +86,37 @@ describe 'Matcher(candidates)', ->
     assert.equal 'boundary', Matcher.explain('sk', 'nih/says/knights').how
     assert.not_equal 'boundary', Matcher.explain('nk', 'nih/says/knights').how
 
+  describe 'with reverse matching (reverse = true specified as an option)', ->
+    it 'prefers late occurring matches over ones at the end', ->
+      c = { 'match me', 'me match' }
+      m = Matcher c, reverse: true
+      assert.same {
+        'me match'
+        'match me',
+      }, m('mat')
+
+    it 'still prefers tighter matches to longer ones', ->
+      c = { 'aabbac', 'abbaca' }
+
+      m = Matcher c, reverse: true
+      assert.same {
+        'aabbac',
+        'abbaca',
+      }, m('aa')
+
+    it 'still prefers boundary matches over straight ones over fuzzy ones', ->
+      c = { 'just kiss her', 'some/stuff/here', 'sshopen', 'open/ssh', 'ss xh' }
+      m = Matcher c, reverse: true
+
+      assert.same {
+        'open/ssh',
+        'sshopen',
+        'some/stuff/here'
+        'ss xh',
+        'just kiss her'
+      }, m('ssh')
+
+    it 'explain(search, text) works correctly', ->
+      assert.same { how: 'exact', 7, 8, 9 }, Matcher.explain 'aƒl', 'ƒluxsñaƒlux', reverse: true
+      assert.same { how: 'boundary', 1, 5 }, Matcher.explain 'as', 'app_spec.fu', reverse: true
+      assert.same { how: 'fuzzy', 5, 8 }, Matcher.explain 'sc', 'app_spec.fu', reverse: true
