@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
-import Gtk from lgi
+import Gtk, Gdk from lgi
 import Scintilla, keyhandler, config, inputs from howl
 import PropertyObject from howl.aux.moon
 import style, theme, Cursor, Selection, ActionBuffer, List, IndicatorBar from howl.ui
@@ -17,6 +17,10 @@ class Readline extends PropertyObject
 
   show: =>
     if not @box then @_instantiate!
+
+    background = Gdk.RGBA!
+    background\parse style.default.background
+    @box\override_background_color 0, background
 
     @last_focused = @window\get_focus!
     @window.status\hide!
