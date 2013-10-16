@@ -34,7 +34,10 @@ load_matcher = (project) ->
   files = project\files!
   paths = [display_name f, root for f in *files]
   sort_paths paths
-  Matcher paths
+  Matcher paths, reverse: true
+
+highlighter = (search, text) ->
+  Matcher.explain search, text, reverse: true
 
 class ProjectFileInput
   new: =>
@@ -53,6 +56,7 @@ class ProjectFileInput
     completion_options = {
       title: @project.root.path .. separator
       list:
+        :highlighter
         column_styles: (name) ->
           name\match(separator .. '$') and 'keyword' or 'string'
       }
