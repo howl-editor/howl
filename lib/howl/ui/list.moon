@@ -44,6 +44,9 @@ line_count = (s) ->
 
   count
 
+highlighter = (search, text) ->
+  Matcher.explain search, text
+
 class List extends PropertyObject
   column_styles: { 'string', 'comment', 'keyword', 'number' }
 
@@ -55,6 +58,7 @@ class List extends PropertyObject
     @selection_enabled = false
     @trailing_newline = true
     @column_styles = moon.copy @column_styles
+    @highlighter = highlighter
     super!
 
   @property items:
@@ -214,8 +218,8 @@ class List extends PropertyObject
         text = tostring(item)
         pos = buffer\insert text, pos, @_column_style(item, row, 1)
 
-      if @highlight_matches_for
-        positions = Matcher.explain @highlight_matches_for, text
+      if @highlight_matches_for and not @highlight_matches_for.blank
+        positions = self.highlighter @highlight_matches_for, text
         if positions
           for hl_pos in *positions
             p = start_pos + hl_pos - 1
