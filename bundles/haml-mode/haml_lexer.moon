@@ -19,12 +19,14 @@ howl.aux.lpeg_lexer ->
 
   instance_var = capture 'member', '@' * name
   ruby_key = capture 'key', any(P':' * name, name * ':')
-  hash_attributes = any ruby_key, blank, operator, string, instance_var, complement '}'
-  hash_attribute_list = capture('operator', '{') * hash_attributes^0 * capture('operator', '}')
+
+  attributes_halt = #S'%%.#'
+  hash_attributes = any ruby_key, blank, operator, string, instance_var, complement(P'}' + attributes_halt)
+  hash_attribute_list = capture('operator', '{') * hash_attributes^0 * (capture('operator', '}') + attributes_halt)
 
   html_key = capture('key', (name + ':')^1) * capture('operator', '=')
-  html_attributes = any html_key, blank, operator, string, instance_var, complement ')'
-  html_attribute_list = capture('operator', '(') * html_attributes^0 * capture('operator', ')')
+  html_attributes = any html_key, blank, operator, string, instance_var, complement(P')' + attributes_halt)
+  html_attribute_list = capture('operator', '(') * html_attributes^0 * (capture('operator', ')') + attributes_halt)
   attributes = any hash_attribute_list, html_attribute_list
 
   object_ref = capture('operator', '[') * any(ruby_key, instance_var, blank, operator, complement(']'))^0 * capture('operator', ']')
