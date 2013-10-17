@@ -25,8 +25,8 @@ LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
 LPEG_URL = http://www.inf.puc-rio.br/~roberto/lpeg/$(LPEG_VER).tar.gz
 
-LGI_VER = 0.7.1
-LGI_CHECKSUM = de7367aee8e39f7df7c2229675c5ff2d
+LGI_VER = 0.7.2
+LGI_CHECKSUM = f41902695c3d8ef40312d7c654885bf3
 LGI_URL = https://github.com/pavouk/lgi/archive/$(LGI_VER).tar.gz
 LGI = deps/lgi-$(LGI_VER)
 LGI_ARCHIVE = $(LGI)/lgi/lgi.a
@@ -88,7 +88,7 @@ scigen: $(LUAJIT_ARCHIVE) $(SCINTILLA)
 bytecode: howl
 	@find ../lib -name '*.lua' -o -name '*.moon' | xargs ./howl --compile
 
-lgi-update:
+lgi-update: $(LGI)
 	rm -rf ../lib/ext/lgi/*
 	cp $(LGI)/lgi/*.lua ../lib/ext/lgi/
 	cp -r $(LGI)/lgi/override ../lib/ext/lgi/

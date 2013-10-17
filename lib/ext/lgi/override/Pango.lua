@@ -64,6 +64,20 @@ function Pango.Layout._method:set_markup(text, len)
    pango_layout_set_markup(self, text, len or -1)
 end
 
+-- Pango.Layout:set_attributes() has incorrect transfer-full
+-- annotation on its attrs argument.  Workaround for
+-- https://github.com/pavouk/lgi/issues/60
+if gi.Pango.Layout.methods.set_attributes.args[1].transfer ~= 'none' then
+   local _ = Pango.Layout._method.set_attributes
+   Pango.Layout._method.set_attributes = core.callable.new {
+      addr = core.gi.Pango.resolve.pango_layout_set_attributes,
+      name = 'Pango.Layout.set_attributes',
+      ret = ti.void,
+      gi.Pango.Layout.methods.new.return_type,
+      gi.Pango.Layout.methods.set_attributes.args[1].typeinfo,
+   }
+end
+
 -- Add attributes simulating logically missing properties in Pango classes.
 for compound, attrs in pairs {
    [Pango.Layout] = {

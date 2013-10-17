@@ -21,7 +21,7 @@ local log = lgi.log.domain('lgi.Gtk')
 
 -- Initialize GTK.
 Gtk.disable_setlocale()
-Gtk.init()
+assert(Gtk.init_check())
 
 -- Gtk.Allocation is just an alias to Gdk.Rectangle.
 Gtk.Allocation = Gdk.Rectangle
@@ -601,3 +601,11 @@ Gtk._constant.PRINT_OUTPUT_URI = 'output-uri'
 
 -- Gtk-cairo integration helpers.
 cairo.Context._method.should_draw_window = Gtk.cairo_should_draw_window
+
+--------------------------------- Gtk-2 workarounds
+if tonumber(Gtk._version) < 3.0 then
+   -- Get rid of Gtk.Bin internal 'child' field, which gets in the way
+   -- of 'child' attribute mechanism introduced in this override.
+   local _ = Gtk.Bin.child
+   Gtk.Bin._field.child = nil
+end

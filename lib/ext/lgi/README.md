@@ -52,12 +52,39 @@ List of contributors, in no particular order:
 - Nils Nordman
 - Ignas Anikevicius
 - Craig Barnes
+- Nicola Fontana
+- Andreas Stührk
 
 Many other people contributed to what lgi is today, in many forms -
 writing patches, reporting bugs, packaging for distributions,
 providing ideas, spreading a word...  *Many thanks to all of you!*
 
 ## History
+
+### 0.7.2 (12-Sep-2013)
+
+ - fix: improper marshalling of certain APIs passing pointers to
+   records.
+ - fix: cairo.PsSurface.create() had incorrect signature, missing
+   filename.
+ - fix: If GTK initialization fails, raise Lua exception instead of
+   hard-crash of calling process.
+ - fix: when running test in devel tree, prefer lgi from devel tree
+   instead of the installed one.
+ - add: cairo.Status.to_string() API
+ - fix: avoid referencing GdkRGBA in GDk override when targetting
+   Gdk2.0, which does not have GdkRGBA.
+ - fix: replace GStaticRecMutex with GRecMutex to avoid compilation
+   warnings.
+ - fix: Gtk.Container.'child' pseudoproperty works even in Gtk2, where
+   it was shadowed by internal field.
+ - fix: add workaround for improperly parsed g_bytes_get_data()
+   annotation.
+ - fix: add workarounf for incorrect annotation on
+   Pango.Layour.set_attributes(), which caused memory leak.
+ - fix: adapt to Gio.InputStream.[read|read_all|read_async] API
+   change, which does not accept buffer length argument any more (due
+   to the newly added annotations).
 
 ### 0.7.1 (4-Mar-2013)
 
