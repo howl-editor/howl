@@ -41,7 +41,7 @@ class Application extends PropertyObject
     hidden_buffers = [b for b in *@_buffers when not b.showing]
     return #hidden_buffers > 0 and hidden_buffers[1] or @_buffers[1]
 
-  new_window: (properties) =>
+  new_window: (properties = {}) =>
     props =
       title: @title
       width: 800
@@ -61,7 +61,7 @@ class Application extends PropertyObject
           if win\to_gobject! == window
             @windows[k] = nil
 
-    props[k] = v for k, v in pairs(properties or {})
+    props[k] = v for k, v in pairs(properties)
     window = Window props
     append @windows, window
     _G.window = window if #@windows == 1
@@ -267,7 +267,8 @@ class Application extends PropertyObject
     file = args.buffer.file
 
     -- automatically update bytecode for howl files
-    if file.extension and file\is_below(@root_dir)
+    -- todo: move this away
+    if file.extension and file.extension\umatch(r'(lua|moon)') and file\is_below(@root_dir)
       bc_file = File file.path\gsub "#{file.extension}$", 'bc'
       f, err = loadfile file
       if f
