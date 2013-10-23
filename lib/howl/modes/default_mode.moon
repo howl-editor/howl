@@ -125,6 +125,9 @@ class DefaultMode
 
   on_char_added: (args, editor) =>
     if args.key_name == 'return'
+      cur_line = editor.current_line
+      prev_line = cur_line.previous_non_blank
+      cur_line.indentation = prev_line.indentation if prev_line
       @indent editor
       true
 

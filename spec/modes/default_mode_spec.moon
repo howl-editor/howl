@@ -270,3 +270,10 @@ describe 'DefaultMode', ->
           }
         ]]
         assert_lines {}, mode\structure editor
+
+  context 'when return is pressed', ->
+    it 'sets the indentation for the newl line to the indentation of the previous non-blank line', ->
+      buffer.text = '  line1\n\nline3'
+      cursor.line = 3
+      editor\newline!
+      assert.equals 2, editor.current_line.indentation
