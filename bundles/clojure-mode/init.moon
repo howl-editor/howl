@@ -39,6 +39,7 @@ register_commands!
 unload = ->
   mode.unregister 'clojure'
   command.unregister 'nrepl-connect'
+  command.unregister 'nrepl-eval'
 
 return {
   info:
