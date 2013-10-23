@@ -26,7 +26,7 @@ describe 'DefaultMode', ->
           mode\indent editor
           assert.equals 'if\n  bar\nthen\n  foo\n', buffer.text
 
-        context 'unless .indent_patterns.authoritive is false', ->
+        context 'when .indent_patterns.authoritive is not false', ->
           it 'adjusts lines with unwarranted greater indents to match the previous line', ->
             mode.indent_patterns = { 'if' }
             buffer.text = 'line\n  wat?\n'
@@ -34,7 +34,7 @@ describe 'DefaultMode', ->
             mode\indent editor
             assert.equals 'line\nwat?\n', buffer.text
 
-        context 'if .indent_patterns.authoritive is false', ->
+        context 'when .indent_patterns.authoritive is false', ->
           it 'does not adjust lines with unwarranted greater indents to match the previous line', ->
             mode.indent_patterns = { 'if', authoritive: false }
             buffer.text = 'line\n  wat?\n'
@@ -51,7 +51,7 @@ describe 'DefaultMode', ->
           mode\indent editor
           assert.equals '    bar\n  else\n  foo\n}\n', buffer.text
 
-        context 'unless .dedent_patterns.authoritive is false', ->
+        context 'when .dedent_patterns.authoritive is not false', ->
           it 'adjusts lines with unwarranted smaller indents to match the previous line', ->
             mode.dedent_patterns = { 'else' }
             buffer.text = '  line\nwat?\n'
@@ -66,6 +66,14 @@ describe 'DefaultMode', ->
             selection\select_all!
             mode\indent editor
             assert.equals '  line\nwat?\n', buffer.text
+
+        it 'prioritizes dedent_patterns over indent_patterns', ->
+          mode.indent_patterns = { '{' }
+          mode.dedent_patterns = { '}' }
+          buffer.text = '{\n  }'
+          selection\select_all!
+          mode\indent editor
+          assert.equals '{\n}', buffer.text
 
     it 'sets the same indent as for the previous line if the line is blank', ->
       buffer.text = '  line\n\n'

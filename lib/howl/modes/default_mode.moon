@@ -135,8 +135,8 @@ class DefaultMode
     prev_line = line.previous_non_blank
 
     if prev_line
-      return prev_line.indentation + indent_level if is_match prev_line.text, @indent_patterns
       return prev_line.indentation - indent_level if is_match line.text, @dedent_patterns
+      return prev_line.indentation + indent_level if is_match prev_line.text, @indent_patterns
 
       -- unwarranted indents
       if @indent_patterns and @indent_patterns.authoritive != false and line.indentation > prev_line.indentation
