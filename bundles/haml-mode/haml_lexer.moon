@@ -31,14 +31,18 @@ howl.aux.lpeg_lexer ->
 
   object_ref = capture('operator', '[') * any(ruby_key, instance_var, blank, operator, complement(']'))^0 * capture('operator', ']')
 
-  ruby_start = (S'&!'^0 * S'-=') + S'&!'
+  ruby_start = any {
+    capture('operator', S'&!'^0 * S'-='),
+    capture('whitespace', (eol + P(-1)) * space^0) * capture('operator', S'&!')
+  }
   ruby_finish = eol - B','
-  ruby = capture('operator', ruby_start) * blank * capture('embedded', scan_until ruby_finish)
+  ruby_interpolation = capture('operator', '#{') * capture('embedded', scan_until '}') * capture('operator', '}')
+  ruby = ruby_start * blank * capture('embedded', scan_until ruby_finish)
   escape = capture('operator', '\\') * (capture('default', 1) - eol)
   comment = capture 'comment', any('/', '-#') * scan_through_indented!
   doctype = capture 'haml_doctype', span('!!!', eol)
   element = capture('haml_element', '%' * name) * (attributes + object_ref)^-1 * capture('haml_element', S'/<>')^-1
-  classes = capture 'class', '.' * name
+  classes = capture('class', '.' * name) * attributes^-1
   id = capture 'haml_id', "#" * name
   filter = capture('preprocessor', ':') * capture('embedded', name * scan_through_indented!)
 
@@ -49,7 +53,8 @@ howl.aux.lpeg_lexer ->
     id,
     comment,
     ruby,
+    ruby_interpolation,
     filter,
     operator,
-    doctype
+    doctype,
   }
