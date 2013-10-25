@@ -213,10 +213,15 @@ describe 'BufferLines', ->
       b.lines\insert 3, '1.5'
       assert.equal b.text, 'half\none\n1.5\ntwo'
 
+    it 'appends the line if line_nr is just beyond the last line', ->
+      b = buffer 'first\nsecond'
+      b.lines\insert 3, 'foo'
+      assert.equal b.text, 'first\nsecond\nfoo\n'
+
     it 'raises an error if <line_nr> is invalid', ->
       b = buffer 'first\nsecond'
       assert.raises 'Invalid', -> b.lines\insert 0, 'foo'
-      assert.raises 'Invalid', -> b.lines\insert 3, 'foo'
+      assert.raises 'Invalid', -> b.lines\insert 4, 'foo'
 
     it 'returns a line object for the newly inserted line', ->
       b = buffer 'line'

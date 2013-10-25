@@ -108,7 +108,10 @@ BufferLines = (buffer, sci) ->
 
       insert: (line_nr, text) =>
         cur_line = self[line_nr]
-        error('Invalid line number "' .. line_nr .. '"', 2) if not cur_line
+        if not cur_line
+          return @append(text) if line_nr == #@ + 1
+          error('Invalid line number "' .. line_nr .. '"', 2) if not cur_line
+
         text ..= @buffer.eol if not text\match '[\r\n]$'
         @buffer\insert text, cur_line.start_pos
         self[line_nr]
