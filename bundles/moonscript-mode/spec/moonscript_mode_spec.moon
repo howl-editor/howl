@@ -164,31 +164,6 @@ describe 'moonscript-mode', ->
       editor\indent!
       assert.equal 2, editor.current_line.indentation
 
-  describe 'auto-formatting after newline', ->
-    before_each ->
-      buffer.config.indent = 2
-
-    context 'splitting brackets', ->
-      it 'moves the closing bracket to its own line and positions the cursor at the middle line', ->
-        buffer.text = '{}'
-        cursor.pos = 2
-        editor\newline!
-        assert.equal '{\n  \n}', buffer.text
-        assert.equal 2, cursor.line
-        assert.equal 3, cursor.column
-
-    it 'does nothing for other statements', ->
-      for code in *{
-        '',
-        'foo = bar'
-        'foo = bar()'
-        'frob\\gurlg!'
-      }
-        buffer.text = code
-        cursor\eof!
-        editor\newline!
-        assert.equal "#{code}\n", buffer.text
-
   describe 'structure(editor)', ->
     it 'returns lines that match class and function declarations', ->
       buffer.text = [[

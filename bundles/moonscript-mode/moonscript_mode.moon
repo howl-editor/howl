@@ -1,3 +1,8 @@
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
+import formatting from howl
+
 class MoonscriptMode
   new: =>
     @lexer = bundle_load('moonscript_lexer.moon')
@@ -21,7 +26,7 @@ class MoonscriptMode
 
   on_char_added: (args, editor) =>
     if args.key_name == 'return'
-      return true if @_auto_format_after_newline(editor) == true
+      return true if formatting.ensure_block editor, '{%s*$', '^%s*}', '}'
 
     @parent.on_char_added @, args, editor
 
@@ -56,21 +61,5 @@ class MoonscriptMode
           break
 
     #lines > 0 and lines or self.parent.structure @, editor
-
-  _auto_format_after_newline: (editor) =>
-    line = editor.current_line
-    prev_line = line.previous
-
-    if prev_line\match('{%s*$') and line.text.stripped == '}'
-      cur_indent = prev_line.indentation
-      new_indent = cur_indent + editor.buffer.config.indent
-      line.indentation = cur_indent
-      new_line = editor.buffer.lines\insert line.nr, ''
-      new_line.indentation = new_indent
-      with editor.cursor
-        .line = line.nr
-        .column = new_indent + 1
-
-      return true
 
 return MoonscriptMode
