@@ -6,7 +6,7 @@ describe 'Completer', ->
   before_each ->
     buffer = Buffer {}
 
-  describe '.complete()', ->
+  describe '.complete(pos [, limit])', ->
 
     it 'instantiates completers once with (buffer, context)', ->
       buffer.text = 'mr.cat'
@@ -69,6 +69,20 @@ describe 'Completer', ->
       append buffer.completers, -> complete: -> { 'yes' }
       completions = Completer(buffer, 1)\complete 1
       assert.same { 'yes' }, completions
+
+    context 'limiting completions', ->
+      it 'returns at most `completion_max_shown` completions', ->
+        completions = ["cand-#{i}" for i = 1,15]
+        append buffer.completers, -> complete: -> completions
+        buffer.config.completion_max_shown = 3
+        actual = Completer(buffer, 1)\complete 1
+        assert.equal 3, #actual
+
+      it 'returns at most <limit> completions if specified', ->
+        completions = ["cand-#{i}" for i = 1,15]
+        append buffer.completers, -> complete: -> completions
+        actual = Completer(buffer, 1)\complete 1, 4
+        assert.equal 4, #actual
 
   it '.start_pos holds the start position for completing', ->
     buffer.text = 'oh cruel word'

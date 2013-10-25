@@ -17,6 +17,14 @@ load_completers = (buffer, context) ->
 
   completers
 
+at_most = (limit, t) ->
+  return t if #t <= limit
+  t2 = {}
+  for i = 1,limit
+    t2[#t2 + 1] = t[i]
+
+  t2
+
 class Completer
 
   new: (buffer, pos) =>
@@ -25,7 +33,7 @@ class Completer
     @start_pos = @context.word.start_pos
     @completers = load_completers buffer, @context
 
-  complete: (pos) =>
+  complete: (pos, limit = @buffer.config.completion_max_shown) =>
     context = @context.start_pos == pos and @context or @buffer\context_at pos
 
     seen = {}
@@ -43,7 +51,7 @@ class Completer
             append completions, comp
             seen[comp] = true
 
-    return completions, context.word_prefix
+    return at_most(limit, completions), context.word_prefix
 
   accept: (completion, pos) =>
     chunk = @buffer\context_at(pos).word
@@ -51,10 +59,17 @@ class Completer
     chunk.text = completion
     chunk.start_pos + completion.ulen
 
-config.define
-  name: 'hungry_completion'
-  description: 'Whether completing an item will cause the current word to be replaced'
-  default: false
-  type_of: 'boolean'
+with config
+  .define
+    name: 'hungry_completion'
+    description: 'Whether completing an item will cause the current word to be replaced'
+    default: false
+    type_of: 'boolean'
+
+  .define
+    name: 'completion_max_shown'
+    description: 'Show at most this number of completions'
+    default: 10
+    type_of: 'number'
 
 return Completer
