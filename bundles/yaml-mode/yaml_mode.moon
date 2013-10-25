@@ -10,7 +10,7 @@ class YAMLMode
 
   short_comment_prefix: '#'
 
-  indent_patterns: {
+  indent_after_patterns: {
     ':%s*$',
     '[>|]%s*$'
   }

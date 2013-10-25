@@ -136,13 +136,13 @@ class DefaultMode
 
     if prev_line
       dedent_delta = -indent_level if is_match line.text, @dedent_patterns
-      indent_delta = indent_level if is_match prev_line.text, @indent_patterns
+      indent_delta = indent_level if is_match prev_line.text, @indent_after_patterns
 
       if indent_delta or dedent_delta
         return prev_line.indentation + (dedent_delta or 0) + (indent_delta or 0)
 
       -- unwarranted indents
-      if @indent_patterns and @indent_patterns.authoritive != false and line.indentation > prev_line.indentation
+      if @indent_after_patterns and @indent_after_patterns.authoritive != false and line.indentation > prev_line.indentation
         return prev_line.indentation
 
       if @dedent_patterns and @dedent_patterns.authoritive != false and line.indentation < prev_line.indentation

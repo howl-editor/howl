@@ -9,7 +9,7 @@ class MoonscriptMode
 
   short_comment_prefix: '--'
 
-  indent_patterns: {
+  indent_after_patterns: {
     '[-=]>%s*$', -- fdecls
     '[([{:=]%s*$' -- hanging operators
     r'^\\s*\\b(class|switch|do|with|for|when)\\b', -- block starters

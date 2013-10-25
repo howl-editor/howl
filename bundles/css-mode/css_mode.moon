@@ -12,7 +12,7 @@ class CSSMode
   default_config:
     word_pattern: '[-_%w]+'
 
-  indent_patterns: {
+  indent_after_patterns: {
     authoritive: true
     '{%s*$',
   }

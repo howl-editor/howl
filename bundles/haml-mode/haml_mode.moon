@@ -7,7 +7,7 @@ class HamlMode
 
   short_comment_prefix: '-#'
 
-  indent_patterns: {
+  indent_after_patterns: {
     authoritive: false
 
     '^%s*[.#%%][%a_-]+%s*$',
