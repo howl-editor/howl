@@ -24,6 +24,7 @@ class Application extends PropertyObject
     @_editors = setmetatable {}, __mode: 'v'
     @_buffers = {}
     bundle.dirs = { @root_dir / 'bundles' }
+    @_load_variables!
     super!
 
   @property buffers: get: =>
@@ -199,7 +200,6 @@ class Application extends PropertyObject
     unless @_loaded
       keyhandler.keymap = keymap
       @settings = Settings!
-      @_load_variables!
       @_load_completions!
       @_load_commands!
       bundle.load_all!
