@@ -306,6 +306,7 @@ SCI_MARKERPREVIOUS = 2048
 SCI_MARKERDEFINEPIXMAP = 2049
 SCI_MARKERADDSET = 2466
 SCI_MARKERSETALPHA = 2476
+SC_MAX_MARGIN = 4
 SC_MARGIN_SYMBOL = 0
 SC_MARGIN_NUMBER = 1
 SC_MARGIN_BACK = 2
@@ -421,6 +422,7 @@ INDIC_DOTS = 10
 INDIC_SQUIGGLELOW = 11
 INDIC_DOTBOX = 12
 INDIC_SQUIGGLEPIXMAP = 13
+INDIC_COMPOSITIONTHICK = 14
 INDIC_MAX = 31
 INDIC_CONTAINER = 8
 INDIC0_MASK = 0x20
@@ -539,6 +541,7 @@ SCI_LINEFROMPOSITION = 2166
 SCI_POSITIONFROMLINE = 2167
 SCI_LINESCROLL = 2168
 SCI_SCROLLCARET = 2169
+SCI_SCROLLRANGE = 2569
 SCI_REPLACESEL = 2170
 SCI_SETREADONLY = 2171
 SCI_NULL = 2172
@@ -596,7 +599,19 @@ SCI_GETALLLINESVISIBLE = 2236
 SCI_SETFOLDEXPANDED = 2229
 SCI_GETFOLDEXPANDED = 2230
 SCI_TOGGLEFOLD = 2231
+SC_FOLDACTION_CONTRACT = 0
+SC_FOLDACTION_EXPAND = 1
+SC_FOLDACTION_TOGGLE = 2
+SCI_FOLDLINE = 2237
+SCI_FOLDCHILDREN = 2238
+SCI_EXPANDCHILDREN = 2239
+SCI_FOLDALL = 2662
 SCI_ENSUREVISIBLE = 2232
+SC_AUTOMATICFOLD_SHOW = 0x0001
+SC_AUTOMATICFOLD_CLICK = 0x0002
+SC_AUTOMATICFOLD_CHANGE = 0x0004
+SCI_SETAUTOMATICFOLD = 2663
+SCI_GETAUTOMATICFOLD = 2664
 SC_FOLDFLAG_LINEBEFORE_EXPANDED = 0x0002
 SC_FOLDFLAG_LINEBEFORE_CONTRACTED = 0x0004
 SC_FOLDFLAG_LINEAFTER_EXPANDED = 0x0008
@@ -816,6 +831,7 @@ SCI_PARAUP = 2415
 SCI_PARAUPEXTEND = 2416
 SCI_POSITIONBEFORE = 2417
 SCI_POSITIONAFTER = 2418
+SCI_POSITIONRELATIVE = 2670
 SCI_COPYRANGE = 2419
 SCI_COPYTEXT = 2420
 SC_SEL_STREAM = 0
@@ -854,6 +870,11 @@ SC_CASEINSENSITIVEBEHAVIOUR_RESPECTCASE = 0
 SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE = 1
 SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR = 2634
 SCI_AUTOCGETCASEINSENSITIVEBEHAVIOUR = 2635
+SC_ORDER_PRESORTED = 0
+SC_ORDER_PERFORMSORT = 1
+SC_ORDER_CUSTOM = 2
+SCI_AUTOCSETORDER = 2660
+SCI_AUTOCGETORDER = 2661
 SCI_ALLOCATE = 2446
 SCI_TARGETASUTF8 = 2447
 SCI_SETLENGTHFORENCODE = 2448
@@ -933,10 +954,14 @@ SCI_ANNOTATIONSETVISIBLE = 2548
 SCI_ANNOTATIONGETVISIBLE = 2549
 SCI_ANNOTATIONSETSTYLEOFFSET = 2550
 SCI_ANNOTATIONGETSTYLEOFFSET = 2551
+SCI_RELEASEALLEXTENDEDSTYLES = 2552
+SCI_ALLOCATEEXTENDEDSTYLES = 2553
 UNDO_MAY_COALESCE = 1
 SCI_ADDUNDOACTION = 2560
 SCI_CHARPOSITIONFROMPOINT = 2561
 SCI_CHARPOSITIONFROMPOINTCLOSE = 2562
+SCI_SETMOUSESELECTIONRECTANGULARSWITCH = 2668
+SCI_GETMOUSESELECTIONRECTANGULARSWITCH = 2669
 SCI_SETMULTIPLESELECTION = 2563
 SCI_GETMULTIPLESELECTION = 2564
 SCI_SETADDITIONALSELECTIONTYPING = 2565
@@ -1013,6 +1038,9 @@ SCI_VCHOMEDISPLAY = 2652
 SCI_VCHOMEDISPLAYEXTEND = 2653
 SCI_GETCARETLINEVISIBLEALWAYS = 2654
 SCI_SETCARETLINEVISIBLEALWAYS = 2655
+SCI_SETREPRESENTATION = 2665
+SCI_GETREPRESENTATION = 2666
+SCI_CLEARREPRESENTATION = 2667
 SCI_STARTRECORD = 3001
 SCI_STOPRECORD = 3002
 SCI_SETLEXER = 4001
@@ -1193,6 +1221,10 @@ SCLEX_AVS = 104
 SCLEX_ECL = 105
 SCLEX_OSCRIPT = 106
 SCLEX_VISUALPROLOG = 107
+SCLEX_LITERATEHASKELL = 108
+SCLEX_STTXT = 109
+SCLEX_KVIRC = 110
+SCLEX_RUST = 111
 SCLEX_AUTOMATIC = 1000
 SCN_STYLENEEDED = 2000
 SCN_CHARADDED = 2001
@@ -1221,6 +1253,23 @@ SCN_INDICATORRELEASE = 2024
 SCN_AUTOCCANCELLED = 2025
 SCN_AUTOCCHARDELETED = 2026
 SCN_HOTSPOTRELEASECLICK = 2027
+SCN_FOCUSIN = 2028
+SCN_FOCUSOUT = 2029
+SC_LINE_END_TYPE_DEFAULT = 0
+SC_LINE_END_TYPE_UNICODE = 1
+SCI_SETLINEENDTYPESALLOWED = 2656
+SCI_GETLINEENDTYPESALLOWED = 2657
+SCI_GETLINEENDTYPESACTIVE = 2658
+SCI_GETLINEENDTYPESSUPPORTED = 4018
+SCI_ALLOCATESUBSTYLES = 4020
+SCI_GETSUBSTYLESSTART = 4021
+SCI_GETSUBSTYLESLENGTH = 4022
+SCI_GETSTYLEFROMSUBSTYLE = 4027
+SCI_GETPRIMARYSTYLEFROMSTYLE = 4028
+SCI_FREESUBSTYLES = 4023
+SCI_SETIDENTIFIERS = 4024
+SCI_DISTANCETOSECONDARYSTYLES = 4025
+SCI_GETSUBSTYLEBASES = 4026
 SC_CP_DBCS = 1
 SCI_GETUSEPALETTE = 2139
 SCI_SETUSEPALETTE = 2039
@@ -2307,6 +2356,13 @@ function sci:scroll_caret()
   self:send(2169, 0, 0)
 end
 
+-- Scroll the argument positions and the range between them into view giving
+-- priority to the primary position then the secondary position.
+-- This may be used to make a search match visible.
+function sci:scroll_range(secondary, primary)
+  self:send(2569, secondary, primary)
+end
+
 -- Replace the selected text with the argument text.
 function sci:replace_sel(text)
   self:send(2170, 0, string_ptr(text))
@@ -2587,9 +2643,39 @@ function sci:toggle_fold(line)
   self:send(2231, line, 0)
 end
 
+-- Expand or contract a fold header.
+function sci:fold_line(line, action)
+  self:send(2237, line, action)
+end
+
+-- Expand or contract a fold header and its children.
+function sci:fold_children(line, action)
+  self:send(2238, line, action)
+end
+
+-- Expand a fold header and all children. Use the level argument instead of the line's current level.
+function sci:expand_children(line, level)
+  self:send(2239, line, level)
+end
+
+-- Expand or contract all fold headers.
+function sci:fold_all(action)
+  self:send(2662, action, 0)
+end
+
 -- Ensure a particular line is visible by expanding any header line hiding it.
 function sci:ensure_visible(line)
   self:send(2232, line, 0)
+end
+
+-- Set automatic folding behaviours.
+function sci:set_automatic_fold(automatic_fold)
+  self:send(2663, automatic_fold, 0)
+end
+
+-- Get automatic folding behaviours.
+function sci:get_automatic_fold()
+  return tonumber(self:send(2664, 0, 0))
 end
 
 -- Set some style options for folding.
@@ -3521,6 +3607,12 @@ function sci:position_after(pos)
   return tonumber(self:send(2418, pos, 0))
 end
 
+-- Given a valid document position, return a position that differs in a number
+-- of characters. Returned value is always between 0 and last position in document.
+function sci:position_relative(pos, relative)
+  return tonumber(self:send(2670, pos, relative))
+end
+
 -- Copy a range of text to the clipboard. Positions are clipped into the document.
 function sci:copy_range(start_pos, end_pos)
   self:send(2419, start_pos, end_pos)
@@ -3686,6 +3778,16 @@ end
 -- Get auto-completion case insensitive behaviour.
 function sci:auto_cget_case_insensitive_behaviour()
   return tonumber(self:send(2635, 0, 0))
+end
+
+-- Set the way autocompletion lists are ordered.
+function sci:auto_cset_order(order)
+  self:send(2660, order, 0)
+end
+
+-- Get the way autocompletion lists are ordered.
+function sci:auto_cget_order()
+  return tonumber(self:send(2661, 0, 0))
 end
 
 -- Enlarge the document to a particular size of text bytes.
@@ -4022,6 +4124,16 @@ function sci:annotation_get_style_offset()
   return tonumber(self:send(2551, 0, 0))
 end
 
+-- Release all extended (>255) style numbers
+function sci:release_all_extended_styles()
+  self:send(2552, 0, 0)
+end
+
+-- Allocate some extended (>255) style numbers and return the start of the range
+function sci:allocate_extended_styles(number_styles)
+  return tonumber(self:send(2553, number_styles, 0))
+end
+
 -- Add a container action to the undo stack
 function sci:add_undo_action(token, flags)
   self:send(2560, token, flags)
@@ -4036,6 +4148,16 @@ end
 -- Return INVALID_POSITION if not close to text.
 function sci:char_position_from_point_close(x, y)
   return tonumber(self:send(2562, x, y))
+end
+
+-- Set whether switching to rectangular mode while selecting with the mouse is allowed.
+function sci:set_mouse_selection_rectangular_switch(mouse_selection_rectangular_switch)
+  self:send(2668, (mouse_selection_rectangular_switch and 1 or 0), 0)
+end
+
+-- Whether switching to rectangular mode while selecting with the mouse is allowed.
+function sci:get_mouse_selection_rectangular_switch()
+  return 0 ~= self:send(2669, 0, 0)
 end
 
 -- Set whether multiple selections can be made
@@ -4381,6 +4503,21 @@ function sci:set_caret_line_visible_always(always_visible)
   self:send(2655, (always_visible and 1 or 0), 0)
 end
 
+-- Set the way a character is drawn.
+function sci:set_representation(encoded_character, representation)
+  self:send(2665, string_ptr(encoded_character), string_ptr(representation))
+end
+
+-- Set the way a character is drawn.
+function sci:get_representation(encoded_character)
+  return self:send_with_stringresult(2666, encoded_character)
+end
+
+-- Remove a character representation.
+function sci:clear_representation(encoded_character)
+  self:send(2667, string_ptr(encoded_character), 0)
+end
+
 -- Start notifying the container of all key presses and commands.
 function sci:start_record()
   self:send(3001, 0, 0)
@@ -4477,6 +4614,73 @@ end
 -- Retrieve a '\n' separated list of descriptions of the keyword sets understood by the current lexer.
 function sci:describe_key_word_sets()
   return self:send_with_stringresult(4017)
+end
+
+-- Set the line end types that the application wants to use. May not be used if incompatible with lexer or encoding.
+function sci:set_line_end_types_allowed(line_end_bit_set)
+  self:send(2656, line_end_bit_set, 0)
+end
+
+-- Get the line end types currently allowed.
+function sci:get_line_end_types_allowed()
+  return tonumber(self:send(2657, 0, 0))
+end
+
+-- Get the line end types currently recognised. May be a subset of the allowed types due to lexer limitation.
+function sci:get_line_end_types_active()
+  return tonumber(self:send(2658, 0, 0))
+end
+
+-- Bit set of LineEndType enumertion for which line ends beyond the standard
+-- LF, CR, and CRLF are supported by the lexer.
+function sci:get_line_end_types_supported()
+  return tonumber(self:send(4018, 0, 0))
+end
+
+-- Allocate a set of sub styles for a particular base style, returning start of range
+function sci:allocate_sub_styles(style_base, number_styles)
+  return tonumber(self:send(4020, style_base, number_styles))
+end
+
+-- The starting style number for the sub styles associated with a base style
+function sci:get_sub_styles_start(style_base)
+  return tonumber(self:send(4021, style_base, 0))
+end
+
+-- The number of sub styles associated with a base style
+function sci:get_sub_styles_length(style_base)
+  return tonumber(self:send(4022, style_base, 0))
+end
+
+-- For a sub style, return the base style, else return the argument.
+function sci:get_style_from_sub_style(sub_style)
+  return tonumber(self:send(4027, sub_style, 0))
+end
+
+-- For a secondary style, return the primary style, else return the argument.
+function sci:get_primary_style_from_style(style)
+  return tonumber(self:send(4028, style, 0))
+end
+
+-- Free allocated sub styles
+function sci:free_sub_styles()
+  self:send(4023, 0, 0)
+end
+
+-- Set the identifiers that are shown in a particular style
+function sci:set_identifiers(style, identifiers)
+  self:send(4024, style, string_ptr(identifiers))
+end
+
+-- Where styles are duplicated by a feature such as active/inactive code
+-- return the distance between the two types.
+function sci:distance_to_secondary_styles()
+  return tonumber(self:send(4025, 0, 0))
+end
+
+-- Get the set of base styles that can be extended with sub styles
+function sci:get_sub_style_bases()
+  return self:send_with_stringresult(4026)
 end
 
 -- In palette mode?
