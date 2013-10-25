@@ -67,13 +67,14 @@ describe 'DefaultMode', ->
             mode\indent editor
             assert.equals '  line\nwat?\n', buffer.text
 
-        it 'prioritizes dedent_patterns over indent_patterns', ->
-          mode.indent_patterns = { '{' }
-          mode.dedent_patterns = { '}' }
-          buffer.text = '{\n  }'
-          selection\select_all!
-          mode\indent editor
-          assert.equals '{\n}', buffer.text
+    context 'when both .dedent_patterns and .indent_patterns are set', ->
+      it 'they cancel out each other when both match', ->
+        mode.indent_patterns = { '{' }
+        mode.dedent_patterns = { '}' }
+        buffer.text = '  {\n  }'
+        selection\select_all!
+        mode\indent editor
+        assert.equals '  {\n  }', buffer.text
 
     it 'sets the same indent as for the previous line if the line is blank', ->
       buffer.text = '  line\n\n'
