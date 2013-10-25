@@ -4,7 +4,7 @@
 howl.aux.lpeg_lexer ->
 
   comment = capture 'comment', span('#' * space^1, eol)
-  directive = capture 'preprocessor', span('---', eol)
+  directive = capture 'preproc', span('---', eol)
   delimiter = capture('special', '...') * eol
   operator = capture 'operator', S'-:&*?!(){}[]'
   key = capture('key', alpha * (alpha + S'-_')^0) * #(space^0 * ':' * space^1)

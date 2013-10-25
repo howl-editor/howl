@@ -117,7 +117,7 @@ return {
 
     number: color: orange
     operator: color: aqua
-    preprocessor: color: purple
+    preproc: color: aqua
     special: color: purple
     tag: color: purple
     type: color: yellow

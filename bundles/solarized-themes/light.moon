@@ -132,7 +132,7 @@ return {
       color: operator
       font: bold: true
 
-    preprocessor: color: red
+    preproc: color: red
 
     special:
       color: cyan

@@ -44,7 +44,7 @@ howl.aux.lpeg_lexer ->
   element = capture('haml_element', '%' * name) * (attributes + object_ref)^-1 * capture('haml_element', S'/<>')^-1
   classes = capture('class', '.' * name) * attributes^-1
   id = capture 'haml_id', "#" * name
-  filter = capture('preprocessor', ':') * capture('embedded', name * scan_through_indented!)
+  filter = capture('preproc', ':') * capture('embedded', name * scan_through_indented!)
 
   any {
     escape

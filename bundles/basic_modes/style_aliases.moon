@@ -4,7 +4,7 @@ import style from howl.ui
 
 with style
   .define_default 'attribute', 'key'
-  .define_default 'at_rule', 'preprocessor'
+  .define_default 'at_rule', 'preproc'
   .define_default 'cdata', 'comment'
   .define_default 'doctype', 'comment'
   .define_default 'element', 'type'
