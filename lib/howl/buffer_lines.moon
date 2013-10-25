@@ -54,6 +54,12 @@ Line = (nr, buffer, sci) ->
           prev_line = prev_line.previous
         prev_line
 
+      next_non_blank: =>
+        next_line = @next
+        while next_line and next_line.blank
+          next_line = next_line.next
+        next_line
+
     _setters:
       text: (value) =>
         error 'line text can not be set to nil', 2 if value == nil
