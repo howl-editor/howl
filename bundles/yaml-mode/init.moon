@@ -8,7 +8,7 @@ mode_reg =
   config:
       use_tabs: false
 
-  create: -> bundle_load('yaml_mode.moon')!
+  create: -> bundle_load('yaml_mode')!
 
 howl.mode.register mode_reg
 

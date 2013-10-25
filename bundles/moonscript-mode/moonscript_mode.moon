@@ -5,7 +5,7 @@ import formatting from howl
 
 class MoonscriptMode
   new: =>
-    @lexer = bundle_load('moonscript_lexer.moon')
+    @lexer = bundle_load('moonscript_lexer')
 
   short_comment_prefix: '--'
 

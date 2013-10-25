@@ -36,7 +36,7 @@ complete = (context) =>
     return authoritive(Matcher(candidates) context.word_prefix) if candidates
 
 ->
-  properties = bundle_load 'css_properties.moon'
+  properties = bundle_load 'css_properties'
   properties_matcher = Matcher [p for p in pairs properties]
   color_matcher = Matcher [n for n in pairs colors when n != 'reverse']
   :complete

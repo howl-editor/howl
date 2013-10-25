@@ -4,12 +4,12 @@ import Editor from howl.ui
 default_keymap = keyhandler.keymap
 
 Editor.register_indicator 'vi', 'bottom_left'
-state = bundle_load 'state.moon'
+state = bundle_load 'state'
 
 maps = {
-  command: bundle_load 'command_map.moon', state
-  insert: bundle_load 'insert_map.moon', state
-  visual: bundle_load 'visual_map.moon', state
+  command: bundle_load 'command_map', state
+  insert: bundle_load 'insert_map', state
+  visual: bundle_load 'visual_map', state
 }
 
 state.init maps, 'command'

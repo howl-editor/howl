@@ -3,7 +3,7 @@
 
 class YAMLMode
   new: =>
-    @lexer = bundle_load('yaml_lexer.moon')
+    @lexer = bundle_load('yaml_lexer')
 
   short_comment_prefix: '#'
 

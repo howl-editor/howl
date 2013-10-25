@@ -4,7 +4,7 @@ mode_reg =
   config: {
     word_pattern: '[^][%s/.(){}"\']+'
   }
-  create: -> bundle_load('lisp_mode.moon')!
+  create: -> bundle_load('lisp_mode')!
 
 howl.mode.register mode_reg
 

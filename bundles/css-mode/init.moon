@@ -5,7 +5,7 @@ mode_reg =
   name: 'css'
   aliases: 'scss'
   extensions: {'css', 'scss'}
-  create: -> bundle_load('css_mode.moon')!
+  create: -> bundle_load('css_mode')!
   config: {
     word_pattern: '[-_%w]+'
   }

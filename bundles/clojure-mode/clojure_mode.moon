@@ -1,4 +1,4 @@
-bundle_load 'nrepl_completer.moon'
+bundle_load 'nrepl_completer'
 
 class ClojureMode
   completers: { 'in_buffer', 'nrepl_completer' }

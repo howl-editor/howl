@@ -5,8 +5,8 @@ import formatting from howl
 
 class CSSMode
   new: =>
-    @lexer = bundle_load 'css_lexer.moon'
-    completer = bundle_load 'css_completer.moon'
+    @lexer = bundle_load 'css_lexer'
+    completer = bundle_load 'css_completer'
     @completers = { completer, 'in_buffer' }
 
   indent_patterns: {

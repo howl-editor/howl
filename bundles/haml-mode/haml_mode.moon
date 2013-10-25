@@ -3,8 +3,7 @@
 
 class HamlMode
   new: =>
-
-    @lexer = bundle_load('haml_lexer.moon')
+    @lexer = bundle_load('haml_lexer')
 
   short_comment_prefix: '-#'
 

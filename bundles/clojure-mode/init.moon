@@ -1,13 +1,13 @@
 import command, mode from howl
-bundle_load 'nrepl_port_input.moon'
-nrepl = bundle_load 'nrepl.moon'
-parser = bundle_load 'clojure_parser.moon'
+bundle_load 'nrepl_port_input'
+nrepl = bundle_load 'nrepl'
+parser = bundle_load 'clojure_parser'
 
 register_mode = ->
   mode_reg =
     name: 'clojure'
     extensions: {'clj', 'edn'}
-    create: -> bundle_load('clojure_mode.moon')!
+    create: -> bundle_load('clojure_mode')!
     parent: 'lisp'
 
   mode.register mode_reg

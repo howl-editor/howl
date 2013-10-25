@@ -15,11 +15,12 @@ setfenv 1, bundle
 
 export dirs = {}
 
-find_bundle_init = (dir) ->
-  for f in *{'init.moon', 'init.lua'}
-    path = dir / f
+find_bundle_file = (dir, base) ->
+  for ext in *{'bc', 'lua', 'moon'}
+    path = dir\join "#{base}.#{ext}"
     return path if path.exists
-  error 'Failed to find bundle init file in "' .. dir .. '"'
+
+  error "Failed to find bundle file #{base} in '#{dir}'"
 
 module_name = (name) ->
   name\lower!\gsub '[%s%p]+', '_'
@@ -62,11 +63,13 @@ bundle_sandbox = (dir) ->
   box = Sandbox {}, no_implicit_globals: true
   box\put {
     bundle_file: (rel_path) -> dir / rel_path
+
     bundle_load: (rel_path, ...) ->
       error 'Cyclic dependency in ' .. dir / rel_path if loading[rel_path]
       return loaded[rel_path] if loaded[rel_path]
       loading[rel_path] = true
       path = dir / rel_path
+      path = find_bundle_file dir, rel_path unless path.exists
       mod = load_file path, box, ...
       loading[rel_path] = false
       loaded[rel_path] = mod
@@ -79,7 +82,7 @@ export load_from_dir = (dir) ->
   mod_name = module_name dir.basename
   error "Bundle '#{mod_name}' already loaded", 2 if _G.bundles[mod_name]
 
-  init = find_bundle_init dir
+  init = find_bundle_file dir, 'init'
   sandbox = bundle_sandbox dir
   bundle = load_file init, sandbox
   verify_bundle bundle, init
@@ -96,7 +99,7 @@ export load_by_name = (name) ->
 
 export load_all = ->
   for _, dir in pairs available_bundles!
-    status = pcall find_bundle_init, dir
+    status = pcall find_bundle_file, dir, 'init'
     load_from_dir dir if status
 
 export unload = (name) ->

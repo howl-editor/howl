@@ -1,4 +1,4 @@
-bencode = bundle_load 'bencode.lua'
+bencode = bundle_load 'bencode'
 has_luasocket, socket = pcall require, 'socket'
 
 import PropertyTable from howl.aux

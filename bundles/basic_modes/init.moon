@@ -1,7 +1,7 @@
 import mode from howl
 
-bundle_load 'style_aliases.moon'
-definitions = bundle_load 'mode_definitions.moon'
+bundle_load 'style_aliases'
+definitions = bundle_load 'mode_definitions'
 
 registered = {}
 

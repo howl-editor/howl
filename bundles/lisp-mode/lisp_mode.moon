@@ -26,7 +26,7 @@ find_start = (line, opening) ->
 
 class LispMode
   new: =>
-    @lexer = bundle_load('lisp_lexer.moon')
+    @lexer = bundle_load('lisp_lexer')
 
   short_comment_prefix: ';'
 

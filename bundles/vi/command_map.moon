@@ -1,5 +1,5 @@
 state = ...
-base_map = bundle_load 'base_map.moon'
+base_map = bundle_load 'base_map'
 import apply, record, repeat_last from state
 import command, keyhandler from howl
 import math, tostring from _G

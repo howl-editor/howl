@@ -1,4 +1,4 @@
-state = bundle_load 'state.moon'
+state = bundle_load 'state'
 import apply from state
 import keyhandler, config from howl
 import math, tonumber, print from _G

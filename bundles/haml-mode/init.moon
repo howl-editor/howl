@@ -5,7 +5,7 @@ mode_reg =
   name: 'haml'
   extensions: 'haml'
 
-  create: -> bundle_load('haml_mode.moon')!
+  create: -> bundle_load('haml_mode')!
 
 howl.mode.register mode_reg
 

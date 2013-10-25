@@ -30,7 +30,7 @@ describe 'bundle', ->
 
     it 'raises an error if the bundle init file is missing or incomplete', ->
       with_tmpdir (dir) ->
-        assert.raises 'bundle init', -> bundle.load_from_dir dir
+        assert.raises 'bundle file', -> bundle.load_from_dir dir
         init = dir / 'init.lua'
         init\touch!
         assert.raises 'Incorrect bundle', -> bundle.load_from_dir dir
@@ -86,6 +86,7 @@ describe 'bundle', ->
               return 'foo' .. _G.load_count
             ]]
             dir\join('aux2.moon').contents = 'return bundle_load("aux.lua")'
+            dir\join('bytecode.bc').contents = string.dump loadstring('return "bytecode"'), false
             dir\join('init.lua').contents = [[
               bundle_load('aux.lua')
               return {
@@ -96,12 +97,16 @@ describe 'bundle', ->
                 },
                 unload = function() end,
                 aux = bundle_load('aux.lua'),
-                aux2 = bundle_load('aux2.moon')
+                aux2 = bundle_load('aux2.moon'),
+                bytecode = bundle_load('bytecode.bc'),
+                auto = bundle_load('bytecode')
               }
             ]]
             bundle.load_from_dir dir
-            assert.equal bundles.load.aux, 'foo1'
-            assert.equal bundles.load.aux2, 'foo1'
+            assert.equal 'foo1', bundles.load.aux
+            assert.equal 'foo1', bundles.load.aux2
+            assert.equal 'bytecode', bundles.load.bytecode
+            assert.equal 'bytecode', bundles.load.auto
 
         it 'signals an error upon cyclic dependencies', ->
           with_bundle_dir 'cyclic', (dir) ->

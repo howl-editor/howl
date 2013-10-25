@@ -1,5 +1,5 @@
 state = ...
-base_map = bundle_load 'base_map.moon'
+base_map = bundle_load 'base_map'
 
 import command from howl
 

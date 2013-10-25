@@ -1,7 +1,7 @@
 import config from howl
 
-nrepl = bundle_load 'nrepl.moon'
-parser = bundle_load 'clojure_parser.moon'
+nrepl = bundle_load 'nrepl'
+parser = bundle_load 'clojure_parser'
 
 import Matcher from howl.util
 
