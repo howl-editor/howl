@@ -2,18 +2,27 @@ import mode, config from howl
 import File from howl.fs
 
 describe 'mode', ->
-  after_each -> for name in pairs mode do mode.unregister name
+  after_each ->
+    for name in *[name for name in *mode.names when name != 'default' ]
+      mode.unregister name
 
   describe '.register(spec)', ->
     it 'raises an error if any of the mandatory inputs are missing', ->
       assert.raises 'name', -> mode.register {}
       assert.raises 'create', -> mode.register name: 'foo'
 
-  it '.by_name(name) returns a mode instance with <name>, or nil if not existing', ->
-    assert.is_nil mode.by_name 'blargh'
+  describe '.by_name(name)', ->
+    it 'returns a mode instance for <name>, or nil if not existing', ->
+      assert.is_nil mode.by_name 'blargh'
 
-    mode.register name: 'shish', create: -> {}
-    assert.is_not_nil mode.by_name('shish')
+      mode.register name: 'shish', create: -> {}
+      assert.is_not_nil mode.by_name('shish')
+
+    it 'allows looking up modes by any aliases', ->
+      assert.is_nil mode.by_name 'my_mode'
+
+      mode.register name: 'shish', aliases: {'my_mode'}, create: -> {}
+      assert.is_not_nil mode.by_name('my_mode')
 
   describe '.for_file(file)', ->
     context 'when the file extension is registered with a mode', ->
@@ -73,7 +82,8 @@ describe 'mode', ->
       assert.equal 543, mode.by_name('pre_config').config.mode_var
 
     describe 'configure(mode_name, variables)', ->
-      mode.register name: 'user_configured', create: -> {}
+      before_each ->
+        mode.register name: 'user_configured', create: -> {}
 
       it 'allows setting mode specific variables automatically upon creation', ->
         mode.configure 'user_configured', mode_var: 'from_user'
@@ -85,10 +95,11 @@ describe 'mode', ->
         assert.equal 'after_the_fact', mode_config.mode_var
 
   describe 'mode inheritance', ->
-    base = foo: 'foo'
-    mode.register name: 'base', create: -> base
-    mode.register name: 'sub', parent: 'base', create: -> {}
-    config.define name: 'delegated_mode_var', description: 'some var', default: 'def value'
+    before_each ->
+      base = foo: 'foo'
+      mode.register name: 'base', create: -> base
+      mode.register name: 'sub', parent: 'base', create: -> {}
+      config.define name: 'delegated_mode_var', description: 'some var', default: 'def value'
 
     it 'the instantiated mode has .parent set to the instantiated parent', ->
       assert.equal mode.by_name('base'), mode.by_name('sub').parent
@@ -108,10 +119,11 @@ describe 'mode', ->
       assert.equal mode.by_name('default'), mode.by_name('orphan').parent
 
   describe '.unregister(name)', ->
-    it '.unregister(name) removes the mode specified by <name>', ->
-      mode.register name: 'mode', extensions: 'zen', create: -> {}
+    it 'removes the mode specified by <name>', ->
+      mode.register name: 'mode', aliases: 'foo', extensions: 'zen', create: -> {}
       mode.unregister 'mode'
       assert.is_nil mode.by_name 'mode'
+      assert.is_nil mode.by_name 'foo'
       assert.equal mode.for_file(File('test.zen')), mode.by_name 'default'
 
     it 'removes any memoized instance', ->
@@ -121,7 +133,7 @@ describe 'mode', ->
       mode.register name: 'memo', extensions: 'memo', create: -> {}
       assert.is_not_equal live, mode.by_name('memo')
 
-  it '.names contains all registered mode names', ->
-    mode.register name: 'needle', create: -> {}
-    names = [name for name in *mode.names when name == 'needle']
-    assert.same names, { 'needle' }
+  it '.names contains all registered mode names and their aliases', ->
+    mode.register name: 'needle', aliases: 'foo', create: -> {}
+    assert.includes mode.names, 'needle'
+    assert.includes mode.names, 'foo'

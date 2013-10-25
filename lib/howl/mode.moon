@@ -71,17 +71,18 @@ register = (mode = {}) ->
   by_shebang[shebang] = mode for shebang in *multi_value mode.shebangs
 
   modes[mode.name] = mode
+  modes[alias] = mode for alias in *multi_value mode.aliases
+
   signal.emit 'mode-registered', name: mode.name
 
 unregister = (name) ->
   mode = modes[name]
   if mode
-    modes[name] = nil
-
     remove_from = (table, mode) ->
       keys = [k for k, m in pairs table when m == mode]
       table[k] = nil for k in *keys
 
+    remove_from modes, mode
     remove_from by_extension, mode
     remove_from by_pattern, mode
     remove_from by_shebang, mode
