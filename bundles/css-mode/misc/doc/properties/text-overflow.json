@@ -1,0 +1,30 @@
+{
+  "name": "text-overflow",
+  "description": "This property specifies rendering when inline content overflows its block container element (\"the block\") in its inline progression direction that has <code>overflow</code> other than <code>visible</code>.",
+  "keywords": [
+    "css",
+    "property",
+    "text-overflow",
+    "text",
+    "overflow"
+  ],
+  "longDescription": "<p>Text can overflow for example when it is prevented from wrapping (e.g. due to <code>white-space:nowrap</code> or a single word is too long to fit).</p>",
+  "syntax": [
+    "text-overflow: ( clip | ellipsis | <string> ){1,2};"
+  ],
+  "defaultValue": "clip",
+  "values": {
+    "clip": {
+      "description": "Clip inline content that overflows. Characters may be only partially rendered."
+    },
+    "ellipsis": {
+      "description": "Render an ellipsis character (U+2026) to represent clipped inline content. Implementations may substitute a more language/script-appropriate ellipsis character, or three dots <code>\"...\"</code> if the ellipsis character is unavailable."
+    },
+    "<string>": {
+      "description": "Render the given string to represent clipped inline content. The given string is treated as an independent paragraph for bidi purposes."
+    }
+  },
+  "versions": {
+    "doc3": "http://dev.w3.org/csswg/css3-ui/#text-overflow"
+  }
+}

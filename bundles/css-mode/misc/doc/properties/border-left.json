@@ -1,0 +1,21 @@
+{
+  "name": "border-left",
+  "description": "Shorthand property for setting the width, style, and color of the left border",
+  "keywords": [
+    "css",
+    "property",
+    "border-left",
+    "border",
+    "left"
+  ],
+  "longDescription": "<p>This is a shorthand property for setting the width, style, and color of the left border of a box. Omitted values are set to their initial values.</p>\n<p>See <a href=\"border-left-width\">border-left-width</a>, <a href=\"border-left-style\">border-left-style</a> and <a href=\"border-left-color\">border-left-color</a>.</p>\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#border-left",
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-left",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-left",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-left"
+  }
+}

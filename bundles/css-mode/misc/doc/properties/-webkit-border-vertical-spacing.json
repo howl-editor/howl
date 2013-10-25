@@ -1,0 +1,26 @@
+{
+  "name": "-webkit-border-vertical-spacing",
+  "description": "Defines the spacing between the vertical portion of an element’s border and the content within.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-border-vertical-spacing",
+    "webkit",
+    "border",
+    "vertical",
+    "spacing"
+  ],
+  "longDescription": "<p>Equivalent to the vertical portion of the <code>border-spacing</code> property. Changes to this property can be animated.</p>\n",
+  "syntax": [
+    "-webkit-border-vertical-spacing: <spacing>;"
+  ],
+  "values": {
+    "<spacing>": {
+      "description": "<p>The amount of vertical spacing.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-border-vertical-spacing",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-border-vertical-spacing"
+  }
+}

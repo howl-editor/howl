@@ -1,0 +1,21 @@
+{
+  "name": "word-spacing",
+  "description": "Specifies the minimum, maximum, and optimal spacing between words",
+  "keywords": [
+    "css",
+    "property",
+    "word-spacing",
+    "word",
+    "spacing"
+  ],
+  "longDescription": "<p>This property specifies the minimum, maximum, and optimal spacing between words. If only one value is specified, then it represents the optimal spacing and the minimum and maximum are both 'normal'. If two values are specified, then the first represents both the optimal spacing and the minimum spacing, and the second represents the maximum spacing. If three values are specified, they represent the optimum, minimum, and maximum respectively.</p>\n\n<h2>Syntax</h2>\n<p><code>word-spacing: &lt;spacing-limit&gt;{1,3};</code></p>\n\n<h2>Parameters</h2>\n<dl>\n    <dt>&lt;spacing-limit&gt;</dt>\n    <dd><code>normal | &lt;length&gt; | &lt;percentage&gt;</code></dd>\n</dl>\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#word-spacing",
+    "doc2": "http://www.w3.org/TR/CSS2/text.html#propdef-word-spacing",
+    "doc21": "http://www.w3.org/TR/CSS21/text.html#propdef-word-spacing",
+    "doc3": "http://www.w3.org/TR/css3-text/#word-spacing"
+  }
+}

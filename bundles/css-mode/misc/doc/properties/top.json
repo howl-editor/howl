@@ -1,0 +1,30 @@
+{
+  "name": "top",
+  "description": "Absolute position from the top edge of the containing block.",
+  "keywords": [
+    "css",
+    "property",
+    "top"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "top: <length> | <percentage> | auto;"
+  ],
+  "defaultValue": "auto",
+  "values": {
+    "auto": {
+      "description": "<p>For non-replaced elements, the effect of this value depends on which of related properties have the value <code>auto</code> as well.</p>"
+    },
+    "<length>": {
+      "description": "<p>The offset is a fixed distance from the reference edge. Negative values are allowed.</p>"
+    },
+    "<percentage>": {
+      "description": "<p>The offset is a percentage of the containing block's height. Negative values are allowed.</p>"
+    }
+  },
+  "versions": {
+    "doc2": "http://www.w3.org/TR/CSS2/visuren.html#propdef-top",
+    "doc21": "http://www.w3.org/TR/CSS21/visuren.html#propdef-top",
+    "doc3": "1"
+  }
+}

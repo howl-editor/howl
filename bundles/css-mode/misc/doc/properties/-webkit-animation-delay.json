@@ -1,0 +1,30 @@
+{
+  "name": "-webkit-animation-delay",
+  "description": "Defines when an animation starts.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-animation-delay",
+    "webkit",
+    "animation",
+    "delay"
+  ],
+  "longDescription": "<p>This property allows an animation to begin execution some time after it is applied.</p>",
+  "syntax": [
+    "-webkit-animation-delay: <time> [, ...];"
+  ],
+  "values": {
+    "<time>": {
+      "description": "<p>The time to begin executing an animation after it is applied. If <code>0</code>, the animation executes as soon as it is applied. If positive, it specifies an offset from the moment the animation is applied, and the animation delays execution by that offset. If negative, the animation executes the moment the property changes but appears to begin at the specified negative offset—that is, begins part-way through the animation. Nonzero values must specify a unit: <code>s</code> for seconds, <code>ms</code> for milliseconds.</p>",
+      "default": "0",
+      "values": {
+        "0": "The default value is <code>0</code>.",
+        "now": "The animation begins immediately. Available in iOS 2.0 and later."
+      }
+    }
+  },
+  "versions": {
+    "safari.4.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-animation-delay",
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-animation-delay"
+  }
+}

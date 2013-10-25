@@ -1,0 +1,18 @@
+{
+  "name": "grid-columns",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "grid-columns",
+    "grid",
+    "columns"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

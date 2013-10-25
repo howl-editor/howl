@@ -1,0 +1,32 @@
+{
+  "name": "-webkit-background-size",
+  "description": "Overrides the size of a background image.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-background-size",
+    "webkit",
+    "background",
+    "size"
+  ],
+  "longDescription": "<p>Changes to this property can be animated in Safari 4.0 and later.</p>\n",
+  "syntax": [
+    "-webkit-background-size: <length>;",
+    "-webkit-background-size: <length_x> <length_y>;"
+  ],
+  "values": {
+    "<length>": {
+      "description": "<p>The width and height of the background image.</p>"
+    },
+    "<length_x>": {
+      "description": "<p>The width of the background image.</p>"
+    },
+    "<length_y>": {
+      "description": "<p>The height of the background image.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-background-size",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-background-size"
+  }
+}

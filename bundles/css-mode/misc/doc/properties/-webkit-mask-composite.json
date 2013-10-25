@@ -1,0 +1,28 @@
+{
+  "name": "-webkit-mask-composite",
+  "description": "Sets a compositing style for a mask.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-mask-composite",
+    "webkit",
+    "mask",
+    "composite"
+  ],
+  "longDescription": "<p>The default value is <code>border</code>, which means that the background extends into the border area. Specifying a value of <code>padding</code> limits the background so that it extends only into the padding area enclosed by the border.</p>\n\n",
+  "syntax": [
+    "-webkit-mask-composite: border | padding;"
+  ],
+  "defaultValue": "border",
+  "values": {
+    "border": {
+      "description": "<p>The background extends into the border area.</p>"
+    },
+    "padding": {
+      "description": "<p>The background extends only into the padding area enclosed by the border.</p>"
+    }
+  },
+  "versions": {
+    "safari.4.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-mask-composite"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "-webkit-animation-fill-mode",
+  "description": "Specifies whether the effects of an animation are apparent before the animation starts and after it ends.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-animation-fill-mode",
+    "webkit",
+    "animation",
+    "fill",
+    "mode"
+  ],
+  "longDescription": "<p>By default, an animation starts as soon as the style that describes the animation is applied to an element; however, the <code>-webkit-animation-delay</code> property can delay the start of an animation. Specifying a value of backwards or both for this property overrides the <code>-webkit-animation-delay</code> property and tells the animation to start as soon as the style is applied.</p>",
+  "syntax": [
+    "-webkit-animation-fill-mode: <mode> [, ...];"
+  ],
+  "values": {
+    "<mode>": {
+      "description": "<p>The animation's fill mode. Can be <code>none</code>, <code>forwards</code>, <code>backwards</code>, or <code>both</code>.</p>",
+      "values": {
+        "none": "The effects of the animation are apparent only during the defined duration of the animation.",
+        "forwards": "The animation’s final keyframe continues to apply after the final iteration of the animation completes.",
+        "backwards": "The animation’s initial keyframe is applied as soon as the animation style is applied to an element. This only affects animations that have a nonzero value for <code>-webkit-animation-delay</code>.",
+        "both": "The animation’s initial keyframe is applied as soon as the animation style is applied to an element, and the animation’s final keyframe continues to apply after the final iteration of the animation completes. The initial keyframe only affects animations that have a nonzero value for <code>-webkit-animation-delay</code>."
+      }
+    }
+  },
+  "versions": {
+    "safari.5.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-animation-fill-mode",
+    "ios.4.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-animation-fill-mode"
+  }
+}

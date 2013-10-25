@@ -1,0 +1,28 @@
+{
+  "name": "box-decoration-break",
+  "description": "Behavior when a box is broken at a page break.",
+  "keywords": [
+    "css",
+    "property",
+    "box-decoration-break",
+    "box",
+    "decoration",
+    "break"
+  ],
+  "longDescription": "<p>When a box is broken at a page break, column break, or, for inline elements, at a line break, the <code>box-decoration-break</code> property specifies whether individual boxes are treated as broken pieces of one continuous box, or whether each box is individually wrapped with the border and padding. For backgrounds it defines how the background positioning area is derived from these multiple boxes and how the element's background is drawn within them.</p>\n<figure>\n    <img src=\"/images/figures/box-break.png\" alt=\"Illustration: (1) a single box cut in two in between two lines of text by a page break and (2) two boxes, one before and one after the page break, both with a border all around and their own background image\"/>\n    <figcaption>Two possibilities: on the left, the value <code>slice</code>, on the right the value <code>clone</code>.</figcaption>\n</figure>\n",
+  "syntax": [
+    "box-decoration-break: slice | clone;"
+  ],
+  "defaultValue": "slice",
+  "values": {
+    "slice": {
+      "description": "<p>No border and no padding are inserted at the break. <code>border-radius</code> has no effect at its corners; and the <code>border-image</code> is rendered for the whole box as if it were unbroken. The effect is as though the element were rendered with no break present, and then sliced by the break afterward.</p>\n                        <p>Backgrounds are drawn as if, after the element has been laid out (including any justification, bidi reordering, page breaks, etc.), all the element's boxes are taken and put one after the other in visual order. The background is applied to the bounding box of this composite box and then the boxes are put back, with their share of the background.</p>\n                        <p>For boxes broken across lines, first boxes on the same line are connected in visual order. Then boxes on subsequent lines are ordered according to the element's inline progression direction and aligned on the baseline. For example in a left-to-right containing block (‘direction’ is ‘ltr’), the first box is the leftmost box on the first line and boxes from subsequent lines are put to the right of it. In a right-to-left containing block, the first box is the rightmost on the first line and subsequent boxes are put to the left of it.</p>\n                        <p>For boxes broken across columns, the columns are treated as one continuous element, as if the column boxes were glued together in the block progression direction of the multi-column element. For boxes broken across pages, the page content areas are glued together in the block progression direction of the root element. In these cases, if the pieces have different widths (heights, if the root element / multi-column element is in vertical text mode), then each piece draws its background assuming that the whole element has the same width (height) as this piece. This ensures that right-aligned images stay aligned to the right edge, left-aligned images stay aligned to the left edge, and centered images stay centered.</p>"
+    },
+    "clone": {
+      "description": "<p>Each box is independently wrapped with the border and padding. The <code>border-radius</code> and <code>border-image</code> are applied to each box independently. The background is drawn independently in each box of the element. A no-repeat background image will thus be rendered once in each box of the element.</p>"
+    }
+  },
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-background/#box-decoration-break"
+  }
+}

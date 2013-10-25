@@ -1,0 +1,36 @@
+{
+  "name": "-webkit-marquee",
+  "description": "Defines properties for showing content as though displayed on an electronic marquee sign.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-marquee",
+    "webkit",
+    "marquee"
+  ],
+  "longDescription": "<p>See <code>-webkit-marquee-direction</code>, <code>-webkit-marquee-increment</code>, <code>-webkit-marquee-repetition</code>, <code>-webkit-marquee-speed</code> and <code>-webkit-marquee-style</code>.</p>\n",
+  "syntax": [
+    "-webkit-marquee: <direction> <increment> <repetition> <style> <speed>;"
+  ],
+  "values": {
+    "<direction>": {
+      "description": "<p>The direction of the marquee.</p>"
+    },
+    "<increment>": {
+      "description": "<p>The distance the marquee moves in each increment.</p>"
+    },
+    "<repetition>": {
+      "description": "<p>The number of times the marquee repeats.</p>"
+    },
+    "<style>": {
+      "description": "<p>The style of the marquee’s motion.</p>"
+    },
+    "<speed>": {
+      "description": "<p>The scroll or slide speed of the marquee.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-marquee",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-marquee"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "-webkit-column-rule",
+  "description": "Specifies the color, style, and width of the column rule.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-column-rule",
+    "webkit",
+    "column",
+    "rule"
+  ],
+  "longDescription": "<p>The column rule appears in the middle of the column gap in a multicolumn flow layout.</p>\n<p>See <code>-webkit-column-rule-color</code>, <code>-webkit-column-rule-style</code> and <code>-webkit-column-rule-width</code>.</p>\n",
+  "syntax": [
+    "-webkit-column-rule: <width> <style> <color>;"
+  ],
+  "values": {
+    "<width>": {
+      "description": "<p>The width of the column rule.</p>"
+    },
+    "<style>": {
+      "description": "<p>The style of the column rule.</p>"
+    },
+    "<color>": {
+      "description": "<p>The color of the column rule.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-column-rule",
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-column-rule"
+  }
+}

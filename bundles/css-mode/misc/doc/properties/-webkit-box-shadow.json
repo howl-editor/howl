@@ -1,0 +1,39 @@
+{
+  "name": "-webkit-box-shadow",
+  "description": "Applies a drop shadow effect to the border box of an object.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-box-shadow",
+    "webkit",
+    "box",
+    "shadow"
+  ],
+  "longDescription": "<p>This property takes four parameters. The first two are horizontal and vertical offsets—down for horizontal, and to the right for vertical. The third value is a blur radius. The fourth value is the color of the shadow. Changes to this property can be animated.</p>\n",
+  "syntax": [
+    "-webkit-box-shadow: none;",
+    "-webkit-box-shadow: <hoff> <voff> <blur> <color>;"
+  ],
+  "defaultValue": "none",
+  "values": {
+    "none": {
+      "description": "<p>The box has no shadow.</p>"
+    },
+    "<hoff>": {
+      "description": "<p>The horizontal offset of the shadow.</p>"
+    },
+    "<voff>": {
+      "description": "<p>The vertical offset of the shadow.</p>"
+    },
+    "<blur>": {
+      "description": "<p>The blur radius of the shadow.</p>"
+    },
+    "<color>": {
+      "description": "<p>The color of the shadow.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-box-shadow",
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-box-shadow"
+  }
+}

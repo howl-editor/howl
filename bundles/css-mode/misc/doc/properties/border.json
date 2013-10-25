@@ -1,0 +1,48 @@
+{
+  "name": "border",
+  "description": "Shorthand property for setting the same width, color, and style for all four borders of a box.",
+  "keywords": [
+    "css",
+    "property",
+    "border"
+  ],
+  "longDescription": "<p>See <code>border-top</code>, <code>border-right</code>, <code>border-bottom</code> et <code>border-left</code>.</p>\n",
+  "syntax": [
+    "border: <width> || <style> || <color>;"
+  ],
+  "values": {
+    "<width>": {
+      "description": "<p>The border width. The lengths corresponding to <code>thin</code>, <code>medium</code> and <code>thick</code> are not specified, but the values are constant throughout a document and <code>thin</code> ≤ <code>medium</code> ≤ <code>thick</code>.</p>",
+      "values": {
+        "<length>": "It may not be negative.",
+        "thin": "",
+        "medium": "",
+        "thick": ""
+      }
+    },
+    "<style>": {
+      "description": "<p>The border style.</p>",
+      "values": {
+        "none": "No border. Color and width are ignored (i.e., the border has width 0, unless the border is an image, see <code>background-image</code>).",
+        "hidden": "Same as <code>none</code>, but has different behavior in the border conflict resolution rules for border-collapsed tables.",
+        "dotted": "A series of round dots.",
+        "dashed": "A series of square-ended dashes.",
+        "solid": "A single line segment.",
+        "double": "Two parallel solid lines with some space between them. The thickness of the lines is not specified, but the sum of the lines and the space must equal <code>border-width</code>.",
+        "groove": "Looks as if it were carved in the canvas. This is typically achieved by creating a “shadow” from two colors that are slightly lighter and darker than the <code>border-color</code>.",
+        "ridge": "Looks as if it were coming out of the canvas.",
+        "inset": "Looks as if the content on the inside of the border is sunken into the canvas. Treated as <code>ridge</code> in border-collapsed tables.",
+        "outset": "Looks as if the content on the inside of the border is coming out of the canvas. Treated as <code>groove</code> in border-collapsed tables."
+      }
+    },
+    "<color>": {
+      "description": "<p>The border color.</p>"
+    }
+  },
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#border",
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border",
+    "doc3": "http://www.w3.org/TR/css3-background/#the-border-shorthands"
+  }
+}

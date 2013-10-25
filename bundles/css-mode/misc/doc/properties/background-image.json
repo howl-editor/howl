@@ -1,0 +1,31 @@
+{
+  "name": "background-image",
+  "description": "This property sets the background image(s) of an element.",
+  "keywords": [
+    "css",
+    "property",
+    "background-image",
+    "background",
+    "image"
+  ],
+  "longDescription": "<p>Images are drawn with the first specified one on top (closest to the user) and each subsequent image behind the previous one.</p>",
+  "syntax": [
+    "background-image: <image> | none;",
+    "background-image: <image> | none [ , <image> | none ]*;"
+  ],
+  "defaultValue": "none",
+  "values": {
+    "<image>": {
+      "description": "Image URI."
+    },
+    "none": {
+      "description": "No image."
+    }
+  },
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#background-image",
+    "doc2": "http://www.w3.org/TR/CSS2/colors.html#propdef-background-image",
+    "doc21": "http://www.w3.org/TR/CSS21/colors.html#propdef-background-image",
+    "doc3": "http://www.w3.org/TR/css3-background/#background-image"
+  }
+}

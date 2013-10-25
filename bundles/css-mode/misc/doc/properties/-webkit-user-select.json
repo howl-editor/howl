@@ -1,0 +1,31 @@
+{
+  "name": "-webkit-user-select",
+  "description": "Determines whether a user can select the content of an element.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-user-select",
+    "webkit",
+    "user",
+    "select"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-user-select: auto | none | text;"
+  ],
+  "values": {
+    "auto": {
+      "description": "<p>The user can select content in the element.</p>"
+    },
+    "none": {
+      "description": "<p>The user cannot select any content.</p>"
+    },
+    "text": {
+      "description": "<p>The user can select text in the element.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-user-select",
+    "ios.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-user-select"
+  }
+}

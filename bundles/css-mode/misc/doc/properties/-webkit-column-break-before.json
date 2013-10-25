@@ -1,0 +1,34 @@
+{
+  "name": "-webkit-column-break-before",
+  "description": "Determines whether a column break can and should occur before an element in a multicolumn flow layout.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-column-break-before",
+    "webkit",
+    "column",
+    "break",
+    "before"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-column-break-before: <policy>;"
+  ],
+  "values": {
+    "<policy>": {
+      "description": "<p>The column break policy.</p>",
+      "default": "auto",
+      "values": {
+        "always": "A column break is always inserted before the element.",
+        "auto": "A right column break is inserted before the element where appropriate.",
+        "avoid": "Column breaks are avoided before the element.",
+        "left": "A left column break is inserted before the element.",
+        "right": "A right column break is inserted before the element."
+      }
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-column-break-before",
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-column-break-before"
+  }
+}

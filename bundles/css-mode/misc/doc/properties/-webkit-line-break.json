@@ -1,0 +1,29 @@
+{
+  "name": "-webkit-line-break",
+  "description": "Specifies line-breaking rules for CJK (Chinese, Japanese, and Korean) text.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-line-break",
+    "webkit",
+    "line",
+    "break"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-line-break: after-white-space | normal;"
+  ],
+  "defaultValue": "normal",
+  "values": {
+    "after-white-space": {
+      "description": "<p>The line breaks after white space.</p>"
+    },
+    "normal": {
+      "description": "<p>A standard line-breaking rule</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-line-break",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-line-break"
+  }
+}

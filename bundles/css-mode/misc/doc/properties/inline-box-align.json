@@ -1,0 +1,19 @@
+{
+  "name": "inline-box-align",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "inline-box-align",
+    "inline",
+    "box",
+    "align"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

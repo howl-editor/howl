@@ -1,0 +1,18 @@
+{
+  "name": "hanging-punctuation",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "hanging-punctuation",
+    "hanging",
+    "punctuation"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

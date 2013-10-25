@@ -1,0 +1,19 @@
+{
+  "name": "table-layout",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "table-layout",
+    "table",
+    "layout"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc21": "1"
+  }
+}

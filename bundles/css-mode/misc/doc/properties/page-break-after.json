@@ -1,0 +1,21 @@
+{
+  "name": "page-break-after",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "page-break-after",
+    "page",
+    "break",
+    "after"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc21": "1",
+    "doc3": "http://www.w3.org/TR/css3-page/#page-break-after"
+  }
+}

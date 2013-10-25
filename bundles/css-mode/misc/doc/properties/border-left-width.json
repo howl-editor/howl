@@ -1,0 +1,22 @@
+{
+  "name": "border-left-width",
+  "description": "The thickness of the left border",
+  "keywords": [
+    "css",
+    "property",
+    "border-left-width",
+    "border",
+    "left",
+    "width"
+  ],
+  "longDescription": "<p>This property set the thickness of the left border.</p>\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#border-left-width",
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-left-width",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-left-width",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-left-width"
+  }
+}

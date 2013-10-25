@@ -1,0 +1,21 @@
+{
+  "name": "text-indent",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "text-indent",
+    "text",
+    "indent"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#text-indent",
+    "doc2": "1",
+    "doc21": "1",
+    "doc3": "http://www.w3.org/TR/css3-text/#text-indent"
+  }
+}

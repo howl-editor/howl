@@ -1,0 +1,27 @@
+{
+  "name": "border-radius",
+  "description": "The border radius.",
+  "keywords": [
+    "css",
+    "property",
+    "border-radius",
+    "border",
+    "radius"
+  ],
+  "longDescription": "<p>It is a shorthand sets all four <code>border-bottom-left-radius</code>, <code>border-bottom-right-radius</code>, <code>border-top-left-radius</code> and <code>border-top-right-radius</code> properties. If values are given before and after the slash, then the values before the slash set the horizontal radius and the values after the slash set the vertical radius. If there is no slash, then the values set both radii equally. The four values for each radii are given in the order top-left, top-right, bottom-right, bottom-left. If bottom-left is omitted it is the same as top-right. If bottom-right is omitted it is the same as top-left. If top-right is omitted it is the same as top-left.</p>\n",
+  "syntax": [
+    "border-radius: [ <length> | <percentage> ]{1,4} [ / [ <length> | <percentage> ]{1,4} ]?;"
+  ],
+  "defaultValue": "0",
+  "values": {
+    "<length>": {
+      "description": "<p>Specifies the radius of a quarter ellipse that defines the shape of the corner of the outer border edge.</p>"
+    },
+    "<percentage>": {
+      "description": "<p>Specifies the radius of a quarter ellipse that defines the shape of the corner of the outer border edge.</p>"
+    }
+  },
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-background/#the-border-radius"
+  }
+}

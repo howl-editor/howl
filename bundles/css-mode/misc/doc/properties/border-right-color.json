@@ -1,0 +1,21 @@
+{
+  "name": "border-right-color",
+  "description": "The foreground color of the right border",
+  "keywords": [
+    "css",
+    "property",
+    "border-right-color",
+    "border",
+    "right",
+    "color"
+  ],
+  "longDescription": "<p>This property set the foreground color of the right border specified by the <a href=\"border-right-style\">border-right-style</a> property.</p>\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-right-color",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-right-color",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-right-color"
+  }
+}

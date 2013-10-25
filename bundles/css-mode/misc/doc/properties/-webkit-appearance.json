@@ -1,0 +1,69 @@
+{
+  "name": "-webkit-appearance",
+  "description": "Changes the appearance of buttons and other controls to resemble native controls.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-appearance",
+    "webkit",
+    "appearance"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-appearance: <appearance>;"
+  ],
+  "values": {
+    "<appearance>": {
+      "description": "<p>The appearance of the control.</p>",
+      "values": {
+        "caps-lock-indicator": "The indicator that appears in a password field when Caps Lock is active. Available in Safari 4.0 and later. Available in iOS 2.0 and later.",
+        "button": "",
+        "button-bevel": "",
+        "caret": "",
+        "checkbox": "",
+        "default-button": "",
+        "listbox": "",
+        "listitem": "",
+        "media-fullscreen-button": "",
+        "media-mute-button": "",
+        "media-play-button": "",
+        "media-seek-back-button": "",
+        "media-seek-forward-button": "",
+        "media-slider": "",
+        "media-sliderthumb": "",
+        "menulist": "",
+        "menulist-button": "",
+        "menulist-text": "",
+        "menulist-textfield": "",
+        "none": "",
+        "push-button": "",
+        "radio": "",
+        "searchfield": "",
+        "searchfield-cancel-button": "",
+        "searchfield-decoration": "",
+        "searchfield-results-button": "",
+        "searchfield-results-decoration": "",
+        "slider-horizontal, slider-vertical": "",
+        "sliderthumb-horizontal": "",
+        "sliderthumb-vertical": "",
+        "square-button": "",
+        "textarea": "",
+        "textfield": "",
+        "scrollbarbutton-down": "Unsupported in Safari 4.0",
+        "scrollbarbutton-left": "Unsupported in Safari 4.0",
+        "scrollbarbutton-right": "Unsupported in Safari 4.0",
+        "scrollbarbutton-up": "Unsupported in Safari 4.0",
+        "scrollbargripper-horizontal": "Unsupported in Safari 4.0",
+        "scrollbargripper-vertical": "Unsupported in Safari 4.0",
+        "scrollbarthumb-horizontal": "Unsupported in Safari 4.0",
+        "scrollbarthumb-vertical": "Unsupported in Safari 4.0",
+        "scrollbartrack-horizontal": "Unsupported in Safari 4.0",
+        "scrollbartrack-vertical": "Unsupported in Safari 4.0"
+      }
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-appearance",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-appearance"
+  }
+}

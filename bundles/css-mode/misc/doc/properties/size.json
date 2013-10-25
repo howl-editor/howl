@@ -1,0 +1,17 @@
+{
+  "name": "size",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "size"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc3": "1"
+  }
+}

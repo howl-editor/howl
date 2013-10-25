@@ -1,0 +1,21 @@
+{
+  "name": "border-bottom",
+  "description": "Shorthand property for setting the width, style, and color of the bottom border",
+  "keywords": [
+    "css",
+    "property",
+    "border-bottom",
+    "border",
+    "bottom"
+  ],
+  "longDescription": "<p>This is a shorthand property for setting the width, style, and color of the bottom border of a box. Omitted values are set to their initial values.</p>\n<p>See <a href=\"border-bottom-width\">border-bottom-width</a>, <a href=\"border-bottom-style\">border-bottom-style</a> and <a href=\"border-bottom-color\">border-bottom-color</a>.</p>\n\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#border-bottom",
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-bottom",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-bottom",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-bottom"
+  }
+}

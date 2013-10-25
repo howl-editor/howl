@@ -1,0 +1,19 @@
+{
+  "name": "font-size-adjust",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "font-size-adjust",
+    "font",
+    "size",
+    "adjust"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-fonts/#propdef-font-size-adjust"
+  }
+}

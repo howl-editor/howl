@@ -1,0 +1,19 @@
+{
+  "name": "voice-pitch-range",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "voice-pitch-range",
+    "voice",
+    "pitch",
+    "range"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

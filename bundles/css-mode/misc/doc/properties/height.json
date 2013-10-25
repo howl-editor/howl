@@ -1,0 +1,31 @@
+{
+  "name": "height",
+  "description": "Specifies the height of the content area, padding area or border area (depending on <code>box-sizing</code>) of certain boxes.",
+  "keywords": [
+    "css",
+    "property",
+    "height"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "height: <length> | <percentage> | auto;"
+  ],
+  "defaultValue": "auto",
+  "values": {
+    "<length>": {
+      "description": "Specifies the height of the content area using a length unit."
+    },
+    "<percentage>": {
+      "description": "Specifies a percentage height. The percentage is calculated with respect to the height of the generated box's containing block. If the containing block's height depends on this element's height, then the resulting layout is undefined in CSS3."
+    },
+    "auto": {
+      "description": "The height depends on the values of other properties."
+    }
+  },
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#height",
+    "doc2": "http://www.w3.org/TR/CSS2/visudet.html#the-height-property",
+    "doc21": "http://www.w3.org/TR/CSS21/visudet.html#the-height-property",
+    "doc3": "http://www.w3.org/TR/css3-box/#height"
+  }
+}

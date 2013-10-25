@@ -1,0 +1,22 @@
+{
+  "name": "border-bottom-width",
+  "description": "The thickness of the bottom border",
+  "keywords": [
+    "css",
+    "property",
+    "border-bottom-width",
+    "border",
+    "bottom",
+    "width"
+  ],
+  "longDescription": "<p>This property set the thickness of the bottom border.</p>\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#border-bottom-width",
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-bottom-width",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-bottom-width",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-bottom-width"
+  }
+}

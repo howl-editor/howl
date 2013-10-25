@@ -1,0 +1,35 @@
+{
+  "name": "-webkit-text-stroke-width",
+  "description": "Specifies the width for the text outline.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-text-stroke-width",
+    "webkit",
+    "text",
+    "stroke",
+    "width"
+  ],
+  "longDescription": "<p>This property is significant only in combination with <code>-webkit-text-stroke-color</code>.</p>\n\n\n",
+  "syntax": [
+    "-webkit-text-stroke-width: medium | thick | thin | <width>;"
+  ],
+  "values": {
+    "medium": {
+      "description": "<p>A medium stroke.</p>"
+    },
+    "thick": {
+      "description": "<p>A thick stroke.</p>"
+    },
+    "thin": {
+      "description": "<p>A thin stroke.</p>"
+    },
+    "<width>": {
+      "description": "<p>Length unit. The width of the stroke.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-text-stroke-width",
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-text-stroke-width"
+  }
+}

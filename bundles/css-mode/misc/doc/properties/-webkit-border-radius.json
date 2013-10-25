@@ -1,0 +1,32 @@
+{
+  "name": "-webkit-border-radius",
+  "description": "Specifies that the corners of a box be rounded with the specified radius.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-border-radius",
+    "webkit",
+    "border",
+    "radius"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-border-radius: <radius>;",
+    "-webkit-border-radius: <horizontal_radius> <vertical_radius>;"
+  ],
+  "values": {
+    "<radius>": {
+      "description": "<p>The radius of the rounded corners.</p>"
+    },
+    "<horizontal_radius>": {
+      "description": "<p>The horizontal radius of the rounded corners.</p>"
+    },
+    "<vertical_radius>": {
+      "description": "<p>The vertical radius of the rounded corners.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-border-radius",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-border-radius"
+  }
+}

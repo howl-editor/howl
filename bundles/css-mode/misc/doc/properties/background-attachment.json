@@ -1,0 +1,33 @@
+{
+  "name": "background-attachment",
+  "description": "If background images are specified, this property specifies whether they are fixed with regard to the viewport or scroll along with the element or its contents.",
+  "keywords": [
+    "css",
+    "property",
+    "background-attachment",
+    "background",
+    "attachment"
+  ],
+  "longDescription": "<p>If background images are specified, this property specifies whether they are fixed with regard to the viewport (<code>fixed</code>) or scroll along with the element (<code>scroll</code>) or its contents (<code>local</code>).</p>\n\n",
+  "syntax": [
+    "background: <attachment>;",
+    "background: <attachment> [ , <attachment> ]*;"
+  ],
+  "values": {
+    "<attachment>": {
+      "description": "<p></p>",
+      "default": "scroll",
+      "values": {
+        "fixed": "The background is fixed with regard to the viewport. In paged media where there is no viewport, a ‘fixed’ background is fixed with respect to the page box and therefore replicated on every page. Note that there is only one viewport per view. Even if an element has a scrolling mechanism (see the <code>overflow</code> property), a <code>fixed</code> background doesn't move with the element.",
+        "local": "The background is fixed with regard to the element's contents: if the element has a scrolling mechanism, the background scrolls with the element's contents. In this case, the background behind the element's border (if any) scrolls as well, even though the border itself does not scroll with the contents. The UA may, however, treat the <code>border-box</code> value of <code>background-clip</code> as <code>padding-box</code> in cases where <code>background-attachment</code> is <code>local</code> and the contents of the element scroll.",
+        "scroll": "The background is fixed with regard to the element itself and does not scroll with its contents. (It is effectively attached to the element's border.)"
+      }
+    }
+  },
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#background-attachment",
+    "doc2": "http://www.w3.org/TR/CSS2/colors.html#propdef-background-attachment",
+    "doc21": "http://www.w3.org/TR/CSS21/colors.html#propdef-background-attachment",
+    "doc3": "http://www.w3.org/TR/css3-background/#background-attachment"
+  }
+}

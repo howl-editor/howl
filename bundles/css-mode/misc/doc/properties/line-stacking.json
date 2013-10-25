@@ -1,0 +1,18 @@
+{
+  "name": "line-stacking",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "line-stacking",
+    "line",
+    "stacking"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "-webkit-transition-property",
+  "description": "Specifies the name of the CSS property to which the transition is applied.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-transition-property",
+    "webkit",
+    "transition",
+    "property"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-transition-property: none | all | <name>;"
+  ],
+  "defaultValue": "all",
+  "values": {
+    "none": {
+      "description": "<p>No transition specified.</p>"
+    },
+    "all": {
+      "description": "<p>The default transition name.</p>"
+    },
+    "<name>": {
+      "description": "<p>CSS property name. You can list multiple properties. Property names should be bare, unquoted names.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.1": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-transition-property",
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-transition-property"
+  }
+}

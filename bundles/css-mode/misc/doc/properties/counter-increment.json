@@ -1,0 +1,20 @@
+{
+  "name": "counter-increment",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "counter-increment",
+    "counter",
+    "increment"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc21": "1",
+    "doc3": "1"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "background",
+  "description": "The background property is a shorthand property for setting most background properties.",
+  "keywords": [
+    "css",
+    "property",
+    "background"
+  ],
+  "longDescription": "<p>The background property is a shorthand property for setting most background properties at the same place in the style sheet. Given a valid declaration, the shorthand first sets each of <code>background-color</code>, <code>background-position</code>, <code>background-size</code>, <code>background-repeat</code>, <code>background-origin</code>, <code>background-clip</code>, <code>background-attachment</code> and <code>background-image</code> to its initial value, then assigns explicit values given in the declaration.</p>\n<p>If <code>background-origin</code> is present and its value matches a possible value for <code>background-clip</code> then it also sets <code>background-clip</code> to that value. For example, <code>background: border-box</code> sets both <code>background-origin</code> and <code>background-clip</code> to <code>border-box</code>.</p>\n\n<section>\n    <h1>CSS 3</h1>\n    <p>Note that a color is permitted in <code>&lt;final-layer&gt;</code>, but not in <code>&lt;layer&gt;</code>.</p>\n    <p>The <code>background</code> property is a shorthand property for setting most background properties at the same place in the style sheet. The number of comma-separated items defines the number of background layers. Given a valid declaration, for each layer the shorthand first sets the corresponding layer of each of <code>background-position</code>, <code>background-size</code>, <code>background-repeat</code>, <code>background-origin</code>, <code>background-clip</code> and <code>background-attachment</code> to that property's initial value, then assigns any explicit values specified for this layer in the declaration. Finally <code>background-color</code> is set to the specified color, if any, else set to its initial value.</p>\n    <p>If one <code>&lt;box&gt;</code> value is present then it sets both <code>background-origin</code> and <code>background-clip</code> to that value. If two values are present, then the first sets <code>background-origin</code> and the second <code>background-clip</code>.</p>\n</section>",
+  "syntax": [
+    "background: <color> || <image> || <repeat> || <attachment> || <position>;",
+    "background: [ <layer>, ]* <final-layer>;",
+    "<layer> = <image> || <position> [ / <size> ]? || <repeat> || <attachment> || <box>{1,2};",
+    "<final-layer> = <image> || <position> [ / <size> ]? || <repeat> || <attachment> || <box>{1,2} || <color>;"
+  ],
+  "values": {
+    "<color>": {
+      "description": "<p>This property sets the background color of an element, either a <code>&lt;color&gt;</code> value or the keyword <code>transparent</code>, to make the underlying colors shine through.</p>",
+      "default": "transparent",
+      "values": {
+        "<color>": "",
+        "transparent": ""
+      }
+    },
+    "<image>": {
+      "description": "<p>This property sets the background image of an element. When setting a background image, authors should also specify a background color that will be used when the image is unavailable. When the image is available, it is rendered on top of the background color. (Thus, the color is visible in the transparent parts of the image).</p>",
+      "default": "none",
+      "values": {
+        "<uri>": "",
+        "none": ""
+      }
+    },
+    "<repeat>": {
+      "description": "<p>If a background image is specified, this property specifies whether the image is repeated (tiled), and how.</p>",
+      "default": "repeat",
+      "values": {
+        "repeat": "The image is repeated both horizontally and vertically.",
+        "repeat-x": "The image is repeated horizontally only.",
+        "repeat-y": "The image is repeated vertically only.",
+        "no-repeat": "The image is not repeated: only one copy of the image is drawn."
+      }
+    },
+    "<attachment>": {
+      "description": "<p>If a background image is specified, this property specifies whether it is fixed with regard to the viewport (<code>fixed</code>) or scrolls along with the containing block (<code>scroll</code>).</p>",
+      "default": "scroll",
+      "values": {
+        "scroll": "",
+        "fixed": ""
+      }
+    },
+    "<position>": {
+      "description": "<p>See <code>background-position</code>.</p>"
+    }
+  },
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#background",
+    "doc2": "http://www.w3.org/TR/CSS2/colors.html#propdef-background",
+    "doc21": "http://www.w3.org/TR/CSS21/colors.html#propdef-background",
+    "doc3": "http://www.w3.org/TR/css3-background/#the-background"
+  }
+}

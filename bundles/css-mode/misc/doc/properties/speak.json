@@ -1,0 +1,18 @@
+{
+  "name": "speak",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "speak"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc21": "1",
+    "doc3": "1"
+  }
+}

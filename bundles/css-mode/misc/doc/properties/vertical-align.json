@@ -1,0 +1,21 @@
+{
+  "name": "vertical-align",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "vertical-align",
+    "vertical",
+    "align"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#vertical-align",
+    "doc2": "http://www.w3.org/TR/CSS2/visudet.html#propdef-vertical-align",
+    "doc21": "http://www.w3.org/TR/CSS21/visudet.html#propdef-vertical-align",
+    "doc3": "1"
+  }
+}

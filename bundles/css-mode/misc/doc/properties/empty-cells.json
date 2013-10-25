@@ -1,0 +1,19 @@
+{
+  "name": "empty-cells",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "empty-cells",
+    "empty",
+    "cells"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc21": "1"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "-webkit-box-flex",
+  "description": "Specifies an element’s flexibility.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-box-flex",
+    "webkit",
+    "box",
+    "flex"
+  ],
+  "longDescription": "<p>Flexible elements can stretch or shrink to fit the size of the bounding box of their parent element. The amount of stretching or shrinkage of an element is determined by its flex value relative to the flex values of other elements within the same parent element.</p>\n<p>This property applies only to flexible box layouts. For more information about flexible boxes, see <a href=\"http://www.w3.org/TR/css3-layout/\">http://www.w3.org/TR/css3-layout/</a></p>\n\n\n",
+  "syntax": [
+    "-webkit-box-flex: <flex_value>;"
+  ],
+  "values": {
+    "<flex_value>": {
+      "description": "<p>Floating-point number. The flexibility of the element.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-box-flex",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-box-flex"
+  }
+}

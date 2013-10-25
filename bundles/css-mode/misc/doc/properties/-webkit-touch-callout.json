@@ -1,0 +1,29 @@
+{
+  "name": "-webkit-touch-callout",
+  "description": "Disables the default callout shown when you touch and hold a touch target.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-touch-callout",
+    "webkit",
+    "touch",
+    "callout"
+  ],
+  "longDescription": "<p>On iPhone OS, when you touch and hold a touch target such as a link, Safari displays a callout containing information about the link. This property allows you to disable that callout.</p>\n",
+  "syntax": [
+    "-webkit-touch-callout: <behavior>;"
+  ],
+  "values": {
+    "<behavior>": {
+      "description": "<p>The touch callout behavior.</p>",
+      "values": {
+        "default": "Restore the default callout.",
+        "none": "The callout is disabled.",
+        "inherit": ""
+      }
+    }
+  },
+  "versions": {
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-touch-callout"
+  }
+}

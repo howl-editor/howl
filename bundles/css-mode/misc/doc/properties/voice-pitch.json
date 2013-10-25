@@ -1,0 +1,18 @@
+{
+  "name": "voice-pitch",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "voice-pitch",
+    "voice",
+    "pitch"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

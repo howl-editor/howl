@@ -93,18 +93,6 @@ M._tokenstyles = {
   {'doctype', l.style_comment},
 }
 
--- Embedded CSS.
-local css = l.load('css')
-local style_element = word_match({'style'}, nil, case_insensitive_tags)
-local css_start_rule = #(P('<') * style_element *
-                        ('>' + P(function(input, index)
-  if input:find('^[^>]+type%s*=%s*(["\'])text/css%1', index) then
-    return index
-  end
-end))) * tag -- <style type="text/css">
-local css_end_rule = #('</' * style_element * ws^0 * '>') * tag -- </style>
-l.embed_lexer(M, css, css_start_rule, css_end_rule)
-
 -- Embedded Javascript.
 local js = l.load('javascript')
 local script_element = word_match({'script'}, nil, case_insensitive_tags)

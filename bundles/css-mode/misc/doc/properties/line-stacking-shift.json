@@ -1,0 +1,19 @@
+{
+  "name": "line-stacking-shift",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "line-stacking-shift",
+    "line",
+    "stacking",
+    "shift"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "punctuation-trim",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "punctuation-trim",
+    "punctuation",
+    "trim"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

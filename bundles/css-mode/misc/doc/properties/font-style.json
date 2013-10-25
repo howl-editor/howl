@@ -1,0 +1,21 @@
+{
+  "name": "font-style",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "font-style",
+    "font",
+    "style"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#font-style",
+    "doc2": "http://www.w3.org/TR/CSS2/fonts.html#propdef-font-style",
+    "doc21": "http://www.w3.org/TR/CSS21/fonts.html#propdef-font-style",
+    "doc3": "http://www.w3.org/TR/css3-fonts/#descdef-font-style"
+  }
+}

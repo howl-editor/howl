@@ -1,0 +1,25 @@
+{
+  "name": "-webkit-mask-position-x",
+  "description": "Defines the x-coordinate of the position of a mask.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-mask-position-x",
+    "webkit",
+    "mask",
+    "position",
+    "x"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-mask-position-x: <xpos>;"
+  ],
+  "values": {
+    "<xpos>": {
+      "description": "<p>The x-coordinate of the position of the mask.</p>"
+    }
+  },
+  "versions": {
+    "safari.4.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-mask-position-x"
+  }
+}

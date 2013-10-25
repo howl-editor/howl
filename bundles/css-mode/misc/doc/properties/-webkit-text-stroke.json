@@ -1,0 +1,28 @@
+{
+  "name": "-webkit-text-stroke",
+  "description": "Specifies the width and color of the outline (stroke) of text.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-text-stroke",
+    "webkit",
+    "text",
+    "stroke"
+  ],
+  "longDescription": "<p>This property is commonly used in combination with <code>-webkit-text-fill-color</code>.</p>\n<p>See <code>-webkit-text-stroke-color</code> and <code>-webkit-text-stroke-width</code>.</p>\n",
+  "syntax": [
+    "-webkit-text-stroke: <width> <color>;"
+  ],
+  "values": {
+    "<width>": {
+      "description": "<p>The width of the stroke.</p>"
+    },
+    "<color>": {
+      "description": "<p>TThe color of the stroke.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-text-stroke",
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-text-stroke"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "-webkit-margin-collapse",
+  "description": "Specifies the behavior of an element’s vertical margins if it is adjacent to an element with a margin. Elements can maintain their respective margins or share a single margin between them.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-margin-collapse",
+    "webkit",
+    "margin",
+    "collapse"
+  ],
+  "longDescription": "<p>This property allows you to emulate the behavior of some browsers in quirks mode where table cell margins are collapsed into the borders of vertically adjacent cells.</p>\n<p>See <code>-webkit-margin-bottom-collapse</code> and <code>-webkit-margin-top-collapse</code>.</p>\n\n\n",
+  "syntax": [
+    "-webkit-margin-collapse: <collapse_behavior>;"
+  ],
+  "values": {
+    "<collapse_behavior>": {
+      "description": "<p>The behavior of the vertical margins.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-margin-collapse",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-margin-collapse"
+  }
+}

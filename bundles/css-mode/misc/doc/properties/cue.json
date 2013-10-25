@@ -1,0 +1,18 @@
+{
+  "name": "cue",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "cue"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc21": "1",
+    "doc3": "1"
+  }
+}

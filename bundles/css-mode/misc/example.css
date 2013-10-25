@@ -1,0 +1,89 @@
+/* Example CSS file */
+body {
+  padding-top: 20;
+  bogus-number-property: +5 -2 4.0 .3 -.2;
+}
+
+.one_line { padding: 10px; border-top: 10; }
+
+a:hover {
+  background-color: #eabc;
+}
+
+.footer {
+  border-top: 1em solid #eee;
+  padding-bottom: 40px;
+  foo: 40px #dfeac;
+}
+
+/* feast your eyes on the below id
+   and this multi-line comment */
+#id { margin: 5 5 5 5; }
+
+.class {
+  text-align: /* in-place comment */ center;
+  background-color: transparent;
+}
+.class1 .class2,
+.class1 #id {
+  font-size: 21px;
+  padding: 14px 24px;
+}
+
+.nav-justified > li > a {
+  background-color: #e5e5e5; /* Old browsers */
+  background-image: -moz-linear-gradient(top, #f5f5f5 0%, #e5e5e5 100%); /* FF3.6+ */
+  background-image: -webkit-linear-gradient(top, #f5f5f5 0%,#e5e5e5 100%); /* Chrome 10+,Safari 5.1+ */
+  background-image: -ms-linear-gradient(top, #f5f5f5 0%,#e5e5e5 100%); /* IE10+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f5f5f5', endColorstr='#e5e5e5',GradientType=0 ); /* IE6-9 */
+  background-image: linear-gradient(top, #f5f5f5 0%,#e5e5e5 100%); /* W3C */
+}
+.nav-justified > .active > a:hover,
+.nav-justified > .active > a:focus {
+  box-shadow: inset 0 3px 7px rgba(0,0,0,.15);
+}
+
+@import "my-styles.css";
+
+@page :left {
+  margin-left: 4cm;
+  margin-right: 3cm;
+}
+
+@media screen and (min-width: 768px) {
+  .masthead,
+  .footer {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+q {
+  quotes: "\201C" "\201D" "\2018" "\2019";
+}
+
+html input[type="button"] {
+  -webkit-appearance: button;
+}
+
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+[hidden] {
+  display: none;
+}
+
+@media print {
+  * {
+    color: #000 !important;
+  }
+}
+
+a[href^="#"]:after {
+  content: "";
+}
+
+table col[class*="col-"] {
+  display: table-column;
+}

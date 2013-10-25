@@ -1,0 +1,30 @@
+{
+  "name": "target-new",
+  "description": "This property determines what new target destination (if any) is created.",
+  "keywords": [
+    "css",
+    "property",
+    "target-new",
+    "target",
+    "new"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "target-new: window | tab | none;"
+  ],
+  "defaultValue": "window",
+  "values": {
+    "window": {
+      "description": "<p>The target is displayed in a new window.</p>"
+    },
+    "tab": {
+      "description": "<p>The target is displayed in a new tab of an existing window.</p>"
+    },
+    "none": {
+      "description": "<p>No new destination is created. The target is not displayed.</p>"
+    }
+  },
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-hyperlinks/#the-target-new"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "font",
+  "description": "Shorthand property for font settings.",
+  "keywords": [
+    "css",
+    "property",
+    "font"
+  ],
+  "longDescription": "<p>See <code>font-style</code>, <code>font-variant</code>, <code>font-weight</code>, <code>font-size</code>, <code>line-height</code>, <code>font-family</code>.</p>",
+  "syntax": [
+    "font: [ [ <style> || <variant> || <weight> ]? <size> [ / <line-height> ]? <family> ] | caption | icon | menu | message-box | small-caption | status-bar;"
+  ],
+  "values": {
+    "<style>": {
+      "description": "<p>See <code>font-style</code>.</p>"
+    },
+    "<variant>": {
+      "description": "<p></p>",
+      "values": {
+        "normal": "",
+        "small-caps": ""
+      }
+    },
+    "<weight>": {
+      "description": "<p>See <code>font-weight</code>.</p>"
+    },
+    "<size>": {
+      "description": "<p>See <code>font-size</code>.</p>"
+    },
+    "<line-height>": {
+      "description": "<p>See <code>line-height</code>.</p>"
+    },
+    "<family>": {
+      "description": "<p>See <code>font-family</code>.</p>"
+    },
+    "caption": {
+      "description": "<p>The font used for captioned controls (e.g., buttons, drop-downs, etc.).</p>"
+    },
+    "icon": {
+      "description": "<p>The font used to label icons.</p>"
+    },
+    "menu": {
+      "description": "<p>The font used in menus (e.g., dropdown menus and menu lists).</p>"
+    },
+    "message-box": {
+      "description": "<p>The font used in dialog boxes.</p>"
+    },
+    "small-caption": {
+      "description": "<p>The font used for labeling small controls.</p>"
+    },
+    "status-bar": {
+      "description": "<p>The font used in window status bars.</p>"
+    }
+  },
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#font",
+    "doc2": "http://www.w3.org/TR/CSS2/fonts.html#propdef-font",
+    "doc21": "http://www.w3.org/TR/CSS21/fonts.html#propdef-font",
+    "doc3": "http://www.w3.org/TR/css3-fonts/#font-prop"
+  }
+}

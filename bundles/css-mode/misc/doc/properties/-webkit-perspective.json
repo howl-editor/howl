@@ -1,0 +1,27 @@
+{
+  "name": "-webkit-perspective",
+  "description": "Gives depth to a scene, causing elements farther away from the viewer to appear smaller.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-perspective",
+    "webkit",
+    "perspective"
+  ],
+  "longDescription": "<p>The <code>-webkit-perspective</code> property applies the same transform as the <code>perspective(&lt;number&gt;)</code> transform function, except that it applies only to the children of the element, not to the transform on the element itself.</p>\n<p>The use of this property with any value other than <code>none</code> establishes a stacking context. It also establishes a containing block (somewhat similar to <code>position:relative</code>), just as the <code>-webkit-transform</code> property does.</p>\n<p>This transform alters the effect of other transforms. In the absence of additional transforms, this transform has no effect.</p>\n\n\n",
+  "syntax": [
+    "-webkit-perspective: none | <distance>;"
+  ],
+  "defaultValue": "none",
+  "values": {
+    "none": {
+      "description": "<p>No perspective transform is applied.</p>"
+    },
+    "<distance>": {
+      "description": "<p>Length in pixel. The distance in pixels from the viewer’s position to the z=<code>0</code> plane.</p>"
+    }
+  },
+  "versions": {
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-perspective"
+  }
+}

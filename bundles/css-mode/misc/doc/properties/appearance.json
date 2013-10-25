@@ -1,0 +1,50 @@
+{
+  "name": "appearance",
+  "description": "Standard user interface appearance.",
+  "keywords": [
+    "css",
+    "property",
+    "appearance"
+  ],
+  "longDescription": "<p>The <code>appearance</code> property can be used to make an element look like a standard user interface element on the platform.</p>\n\n",
+  "syntax": [
+    "appearance: normal | <appearance>;"
+  ],
+  "defaultValue": "normal",
+  "values": {
+    "normal": {
+      "description": ""
+    },
+    "<appearance>": {
+      "description": "",
+      "values": {
+        "icon": "A small picture representing an object, often with a name or label.",
+        "desktop": "A window used to represent a system as a whole that often contains other windows.",
+        "workspace": "A window used to represent a project or application that may contain other windows, typically with a titlebar that shows the name of the project or application.",
+        "document": "A window used to represent a user document, typically with a titlebar that shows its name. May also be used to represent folders or directories in a file system.",
+        "tooltip": "A window that is used to temporarily display information or help about an object. Also called \"info\" in the CSS2 system colors.",
+        "dialog": "A window used to present a notification or alternatives for the user to choose as part of an action taken by the user. Also called \"message-box\" in the CSS2 system fonts.",
+        "push-button": "A button that has a border surrounding it, often beveled to appear three dimensional, as if it is raised. Also called \"caption\" in CSS2 system fonts.",
+        "hyperlink": "A button that represents a hypertext link, often as simple as normal text that is underlined and perhaps colored differently.",
+        "radio-button": "A button that displays whether or not it is checked with a small circle next to the button label. There may be a disc inside the circle when the button is checked. An indeterminate (neither checked nor unchecked) state may be indicated with some other graphic in the circle.",
+        "checkbox": "A button that displays whether or not it is checked with a small box next to the button label. There may be an <code>x</code> or check mark inside the box when the button is checked. An indeterminate (neither checked nor unchecked) state may be indicated with a dash <code>-</code> or a square or some other graphic in the box.",
+        "menu-item": "A choice within a menu, which may also act as a label for a nested (hierarchical) menu.",
+        "tab": "A button representing the label for a pane in a tabbed interface.",
+        "menubar": "A menu of menus, typically arranged linearly, in a horizontal bar.",
+        "pull-down-menu": "A menu where the name of the menu is displayed and the options remain hidden until the user activates the menu. When the user releases or deactivates the menu, the options are hidden again.",
+        "pop-up-menu": "A menu where all but the currently selected option remains hidden until the user activates the menu. When the user releases or deactivates the menu, all but the selected option are hidden again.",
+        "list-menu": "A list of options for the user to choose from, perhaps more than one at a time.",
+        "radio-group": "A menu where the options are displayed as radio-buttons.",
+        "checkbox-group": "A menu where the options are displayed as checkboxes.",
+        "outline-tree": "A menu where the options can be shown or hidden with small widgets, often represented by a small triangle or plus and minus signs.",
+        "range": "A control that displays the current option, perhaps graphically and allows the user to select other options, perhaps by dragging a slider or turning a knob.",
+        "combo-box": "A field which is accompanied by a menu of preset values that can be used to quickly enter common or typical values.",
+        "signature": "A field for entering a signature.",
+        "password": "A field for entering a password. Typically the text is rendered as a set of bullets or boxes to obscure the value."
+      }
+    }
+  },
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-ui/#appearance"
+  }
+}

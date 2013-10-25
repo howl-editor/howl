@@ -1,0 +1,32 @@
+{
+  "name": "margin-left",
+  "description": "The left margin of a box.",
+  "keywords": [
+    "css",
+    "property",
+    "margin-left",
+    "margin",
+    "left"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "margin-left: <length> | <percentage> | auto;"
+  ],
+  "values": {
+    "<length>": {
+      "description": "<p>Specifies a fixed width.</p>"
+    },
+    "<percentage>": {
+      "description": "<p>The percentage is relative to the width of the containing block, not the height (at least in a horizontal flow; in a vertical flow they are relative to the height).</p>"
+    },
+    "auto": {
+      "description": ""
+    }
+  },
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#margin-left",
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-margin-left",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-margin-left",
+    "doc3": "http://www.w3.org/TR/css3-box/#margin-left"
+  }
+}

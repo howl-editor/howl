@@ -1,0 +1,22 @@
+{
+  "name": "border-top-width",
+  "description": "The thickness of the top border",
+  "keywords": [
+    "css",
+    "property",
+    "border-top-width",
+    "border",
+    "top",
+    "width"
+  ],
+  "longDescription": "<p>This property set the thickness of the top border.</p>\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#border-top-width",
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-top-width",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-top-width",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-top-width"
+  }
+}

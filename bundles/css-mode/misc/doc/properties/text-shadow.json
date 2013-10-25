@@ -1,0 +1,19 @@
+{
+  "name": "text-shadow",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "text-shadow",
+    "text",
+    "shadow"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc3": "1"
+  }
+}

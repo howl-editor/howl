@@ -39,8 +39,6 @@
     extensions: 'cs'
     short_comment_prefix: '//'
 
-  css: { extensions: 'css' }
-
   cpp:
     extensions: { 'c', 'cc', 'cpp', 'cxx', 'c++', 'h', 'hh', 'hpp', 'hxx', 'h++' }
     short_comment_prefix: '//'

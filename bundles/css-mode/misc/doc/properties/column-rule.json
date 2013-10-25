@@ -1,0 +1,18 @@
+{
+  "name": "column-rule",
+  "description": "Shorthand for setting column-rule-width, column-rule-style, and column-rule-color at the same place",
+  "keywords": [
+    "css",
+    "property",
+    "column-rule",
+    "column",
+    "rule"
+  ],
+  "longDescription": "<p>This property is a shorthand for setting <a href=\"column-rule-width\">column-rule-width</a>, <a href=\"column-rule-style\">column-rule-style</a>, and <a href=\"column-rule-color\">column-rule-color</a> at the same place in the style sheet. Omitted values are set to their initial values.</p>\n\n<h2>Syntax</h2>\n<p><code>column-rule: &lt;column-rule-width&gt; || &lt;border-style&gt; || [ &lt;color&gt; | transparent ];</code></p>\n\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-multicol/#column-rule0"
+  }
+}

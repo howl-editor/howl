@@ -1,0 +1,21 @@
+{
+  "name": "border-top-color",
+  "description": "The foreground color of the top border",
+  "keywords": [
+    "css",
+    "property",
+    "border-top-color",
+    "border",
+    "top",
+    "color"
+  ],
+  "longDescription": "<p>This property set the foreground color of the top border specified by the <a href=\"border-top-style\">border-top-style</a> property.</p>\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-top-color",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-top-color",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-top-color"
+  }
+}

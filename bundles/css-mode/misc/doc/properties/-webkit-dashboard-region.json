@@ -1,0 +1,24 @@
+{
+  "name": "-webkit-dashboard-region",
+  "description": "Specifies the behavior of regions in a Dashboard widget.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-dashboard-region",
+    "webkit",
+    "dashboard",
+    "region"
+  ],
+  "longDescription": "<p>This property is described in more detail in <a href=\"http://developer.apple.com/safari/library/documentation/AppleApplications/Conceptual/Dashboard_ProgTopics/Articles/ControlRegions.html#//apple_ref/doc/uid/TP40003045\">“Declaring Control Regions”</a> in <a href=\"http://developer.apple.com/safari/library/documentation/AppleApplications/Conceptual/Dashboard_ProgTopics/Introduction/Introduction.html#//apple_ref/doc/uid/TP40002837\">Dashboard Programming Topics</a>.</p>\n\n\n",
+  "syntax": [
+    "-webkit-dashboard-region: none | dashboard-region(...) [...];"
+  ],
+  "values": {
+    "none": {
+      "description": "<p>No behavior is specified.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-dashboard-region"
+  }
+}

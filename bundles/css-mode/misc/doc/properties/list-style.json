@@ -1,0 +1,21 @@
+{
+  "name": "list-style",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "list-style",
+    "list",
+    "style"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#list-style",
+    "doc2": "1",
+    "doc21": "1",
+    "doc3": "1"
+  }
+}

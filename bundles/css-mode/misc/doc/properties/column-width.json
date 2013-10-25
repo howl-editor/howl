@@ -1,0 +1,18 @@
+{
+  "name": "column-width",
+  "description": "The width of columns in multicol elements",
+  "keywords": [
+    "css",
+    "property",
+    "column-width",
+    "column",
+    "width"
+  ],
+  "longDescription": "<p>This property describes the width of columns in multicol elements.</p>\n\n<h2>Syntax</h2>\n<p><code>column-width: &lt;length&gt; | auto;</code></p>\n\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-multicol/#column-width"
+  }
+}

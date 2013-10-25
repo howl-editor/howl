@@ -1,0 +1,18 @@
+{
+  "name": "column-gap",
+  "description": "The gap between columns",
+  "keywords": [
+    "css",
+    "property",
+    "column-gap",
+    "column",
+    "gap"
+  ],
+  "longDescription": "<p>The <code>column-gap</code> property sets the gap between columns. If there is a column rule between columns, it will appear in the middle of the gap.</p>\n<p>The <code>normal</code> value is UA-specific. A value of <code>1em</code> is suggested.</p>\n<p>Column gaps cannot be negative.</p>\n\n<h2>Syntax</h2>\n<p><code>column-gap: &lt;length&gt; | normal;</code></p>\n\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-multicol/#column-gap0"
+  }
+}

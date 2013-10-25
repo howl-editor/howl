@@ -1,0 +1,21 @@
+{
+  "name": "border-style",
+  "description": "The style of the border",
+  "keywords": [
+    "css",
+    "property",
+    "border-style",
+    "border",
+    "style"
+  ],
+  "longDescription": "<p>This property is a shorthand for <a href=\"border-bottom-style\">border-bottom-style</a>, <a href=\"border-left-style\">border-left-style</a>, <a href=\"border-right-style\">border-right-style</a> and <a href=\"border-top-style\">border-top-style</a>. Its four values set the top, right, bottom and left border respectively. A missing left is the same as right, a missing bottom is the same as top, and a missing right is also the same as top.</p>\n<p>Values have the following meanings:</p>\n<dl>\n    <dt>none</dt>\n    <dd>No border. Color and width are ignored (i.e., the border has width 0, unless the border is an image, see <a href=\"background-image\">background-image</a>.</dd>\n\n    <dt>hidden</dt>\n    <dd>Same as <code>none</code>, but has different behavior in the border conflict resolution rules for border-collapsed tables.</dd>\n\n    <dt>dotted</dt>\n    <dd>A series of round dots.</dd>\n\n    <dt>dashed</dt>\n    <dd>A series of square-ended dashes.</dd>\n\n    <dt>solid</dt>\n    <dd>A single line segment.</dd>\n\n    <dt>double</dt>\n    <dd>Two parallel solid lines with some space between them. (The thickness of the lines is not specified, but the sum of the lines and the space must equal <a href=\"border-width\">border-width</a>.)</dd>\n\n    <dt>groove</dt>\n    <dd>Looks as if it were carved in the canvas. (This is typically achieved by creating a “shadow” from two colors that are slightly lighter and darker than the <a href=\"border-color\">border-color</a>.)</dd>\n\n    <dt>ridge</dt>\n    <dd>Looks as if it were coming out of the canvas.</dd>\n\n    <dt>inset</dt>\n    <dd>Looks as if the content on the inside of the border is sunken into the canvas. Treated as <code>ridge</code> in border-collapsed tables.</dd>\n\n    <dt>outset</dt>\n    <dd>Looks as if the content on the inside of the border is coming out of the canvas. Treated as <code>groove</code> in border-collapsed tables.</dd>\n</dl>\n\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#border-style",
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-style",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-style",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-style"
+  }
+}

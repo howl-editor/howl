@@ -1,0 +1,63 @@
+{
+  "name": "alignment-adjust",
+  "description": "Setting the alignment point.",
+  "keywords": [
+    "css",
+    "property",
+    "alignment-adjust",
+    "alignment",
+    "adjust"
+  ],
+  "longDescription": "<p>The <code>alignment-adjust</code> property allows more precise alignment of elements, such as graphics, that do not have a baseline-table or lack the desired baseline in their baseline-table. With the <code>alignment-adjust</code> property, the position of the baseline identified by the <code>alignment-baseline</code> can be explicitly determined. It also determines precisely the alignment point for each glyph within a textual element. The user agent should use heuristics to determine the position of a non existing baseline for a given element.</p>\n\n",
+  "syntax": [
+    "alignment-adjust: auto | baseline | before-edge | text-before-edge | middle | central | after-edge | text-after-edge | ideographic | alphabetic | hanging | mathematical | <percentage> | <length>;"
+  ],
+  "defaultValue": "auto",
+  "values": {
+    "auto": {
+      "description": "<p>For each glyph corresponding to textual information within the element, the alignment-point is the intersection of the start-edge of the glyph box and the block-progression-direction position of the alignment point from the font. Padding, border or margin do not affect that alignment point. The alignment point of the inline-level element itself is at the intersection of the start-edge of the first inline box and the baseline identified by the <code>alignment-baseline</code> property if this baseline exists in the baseline-table for the element dominant-baseline. If that specific baseline does not exist, the user agent may use heuristics to determine where that missing baseline would be. For other inline box content like images, the user agent will use heuristics to determine the position of the alignment point. For example when the resulting baseline is <code>alphabetic</code> or <code>ideographic</code>, it is expected that the alignment point will be at the intersection of the start-edge and the after-edge of the inline box, including its respective margin. If the resulting baseline is <code>hanging</code>, the intersection of the start-edge and the before-edge of the inline box, including its respective margin should be used instead.</p>\n                        <p>When the <code>alignment-baseline</code> property is set to either <code>after-edge</code> or <code>before-edge</code>, the <code>auto</code> value is equivalent to <code>after-edge</code> or <code>before-edge</code> respectively.</p>"
+    },
+    "baseline": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the dominant-baseline of the element.</p>"
+    },
+    "before-edge": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the before-edge of the extended inline box of the element. This may include or not the <code>line-height</code> of the element, depending on the line-stacking-strategy.</p>"
+    },
+    "text-before-edge": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the <code>text-before-edge</code> baseline of the element.</p>"
+    },
+    "central": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the <code>central</code> baseline of the element.</p>"
+    },
+    "middle": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the <code>middle</code> baseline of the element.</p>"
+    },
+    "after-edge": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the after-edge of the extended inline box of the element. This may include or not the <code>line-height</code> of the element, depending on the line-stacking-strategy.</p>"
+    },
+    "text-after-edge": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the <code>text-after-edge</code> baseline of the element.</p>"
+    },
+    "ideographic": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the <code>ideographic</code> baseline of the element.</p>"
+    },
+    "alphabetic": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the <code>alphabetic</code> baseline of the element.</p>"
+    },
+    "hanging": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the <code>hanging</code> baseline of the element.</p>"
+    },
+    "mathematical": {
+      "description": "<p>The alignment point is at the intersection of the start-edge of the element and the <code>mathematical</code> baseline of the element.</p>"
+    },
+    "<percentage>": {
+      "description": "<p>The computed value of the property is this percentage multiplied by the computed <code>line-height</code> of the element. The alignment point is on the start-edge of the inline box. Its position along the start-edge relative to the intersection of the dominant-baseline and the start-edge is offset by the computed value. The offset is opposite to the shift-direction (positive value) or in the shift-direction (negative value). A value of <code>0%</code> makes the dominant-baseline the alignment point.</p>"
+    },
+    "<length>": {
+      "description": "<p>The alignment-point is on the start-edge of the inline box. Its position along the start-edge relative to the intersection of the dominant-baseline and the start-edge is offset by the <code>&lt;length&gt;</code> value. The offset is opposite to the shift-direction (positive value) or in the shift-direction (negative value). A value of <code>0cm</code> makes the dominant-baseline the alignment point.</p>"
+    }
+  },
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-linebox/#alignment-adjust"
+  }
+}

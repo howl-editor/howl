@@ -1,0 +1,21 @@
+{
+  "name": "white-space",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "white-space",
+    "white",
+    "space"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#white-space",
+    "doc2": "1",
+    "doc21": "1",
+    "doc3": "1"
+  }
+}

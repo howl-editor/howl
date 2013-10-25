@@ -1,0 +1,57 @@
+{
+  "name": "alignment-baseline",
+  "description": "Aligning the alignment point of an element.",
+  "keywords": [
+    "css",
+    "property",
+    "alignment-baseline",
+    "alignment",
+    "baseline"
+  ],
+  "longDescription": "<p>This property specifies how an inline-level element is aligned with respect to its parent. That is, to which of the parent's baselines the alignment point of this element is aligned. Unlike the <code>dominant-baseline</code> property the <code>alignment-baseline</code> property has no effect on its children dominant-baselines.</p>\n<p>Note: The <code>alignment-adjust</code> property specifies how the alignment point is determined and defaults to the baseline with the same name as the computed value of the <code>alignment-baseline</code> property.</p>\n<p>Except for <code>use-script</code>, all baseline values refer to the respective baseline-identifier components of the <code>dominant-baseline</code> of the parent, and glyphs within the element are aligned similarly to the element itself. The description for <code>use-script</code> covers these points specifically.</p>\n",
+  "syntax": [
+    "alignment-baseline: baseline | use-script | before-edge | text-before-edge | after-edge | text-after-edge | central | middle | ideographic | alphabetic | hanging | mathematical;"
+  ],
+  "defaultValue": "baseline",
+  "values": {
+    "baseline": {
+      "description": "<p>The alignment-point of the element being aligned is aligned with the dominant baseline of the parent.</p>"
+    },
+    "use-script": {
+      "description": "<p>If the element <code>script</code> property value is <code>auto</code>, the alignment point of each glyph is aligned with the baseline-identifier of the script to which the glyph belongs. If the element <code>script</code> property value is other than <code>auto</code>, the alignment point of each glyph is aligned with the baseline-identifier specified by the <code>script</code> property. The baseline-identifier position is determined by using the relevant information related to the parent element dominant-baseline set. The alignment point of the element itself is aligned as for the <code>baseline</code> value.</p>"
+    },
+    "before-edge": {
+      "description": "<p>The alignment point of the box is aligned with the <code>before-edge</code> baseline of the line box.</p>"
+    },
+    "text-before-edge": {
+      "description": "<p>The alignment-point of the element being aligned is aligned with the <code>text-before-edge</code> baseline of the parent.</p>"
+    },
+    "after-edge": {
+      "description": "<p>The alignment point of the box is aligned with the <code>after-edge</code> baseline of the line box.</p>"
+    },
+    "text-after-edge": {
+      "description": "<p>The alignment-point of the element being aligned is aligned with the <code>text-after-edge</code> baseline of the parent.</p>"
+    },
+    "central": {
+      "description": "<p>The alignment point of the box is aligned with the <code>central</code> baseline of the parent.</p>"
+    },
+    "middle": {
+      "description": "<p>The alignment point of the box is aligned with the <code>middle</code> baseline of the parent.</p>"
+    },
+    "ideographic": {
+      "description": "<p>The alignment-point of the element being aligned is aligned with the <code>ideographic</code> baseline of the parent.</p>"
+    },
+    "alphabetic": {
+      "description": "<p>The alignment-point of the element being aligned is aligned with the lower baseline of the parent.</p>"
+    },
+    "hanging": {
+      "description": "<p>The alignment-point of the element being aligned is aligned with the hanging baseline of the parent.</p>"
+    },
+    "mathematical": {
+      "description": "<p>The alignment-point of the element being aligned is aligned with the mathematical baseline of the parent.</p>"
+    }
+  },
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-linebox/#alignment-baseline"
+  }
+}

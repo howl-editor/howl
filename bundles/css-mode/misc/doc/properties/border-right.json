@@ -1,0 +1,21 @@
+{
+  "name": "border-right",
+  "description": "Shorthand property for setting the width, style, and color of the right border",
+  "keywords": [
+    "css",
+    "property",
+    "border-right",
+    "border",
+    "right"
+  ],
+  "longDescription": "<p>This is a shorthand property for setting the width, style, and color of the right border of a box. Omitted values are set to their initial values.</p>\n<p>See <a href=\"border-right-width\">border-right-width</a>, <a href=\"border-right-style\">border-right-style</a> and <a href=\"border-right-color\">border-right-color</a>.</p>\n\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#border-right",
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-right",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-right",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-right"
+  }
+}

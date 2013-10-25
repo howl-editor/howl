@@ -1,0 +1,30 @@
+{
+  "name": "-webkit-user-drag",
+  "description": "Specifies that an entire element should be draggable instead of its contents.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-user-drag",
+    "webkit",
+    "user",
+    "drag"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-user-drag: auto | element | none;"
+  ],
+  "values": {
+    "auto": {
+      "description": "<p>The default dragging behavior is used.</p>"
+    },
+    "element": {
+      "description": "<p>The entire element is draggable instead of its contents.</p>"
+    },
+    "none": {
+      "description": "<p>The element cannot be dragged at all.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-user-drag"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "-webkit-box-pack",
+  "description": "Specifies alignment of child elements within the current element in the direction of orientation.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-box-pack",
+    "webkit",
+    "box",
+    "pack"
+  ],
+  "longDescription": "<p>For elements whose children are aligned horizontally, a packing value of <code>start</code> indicates left alignment with extra space towards the right side, a value of <code>end</code> indicates right alignment with extra space to the left, a value of <code>center</code> indicates center alignment with extra space split evenly on either side, and a value of <code>justify</code> indicates that the outer elements should be aligned on the left and right, with space added evenly between the elements.</p>\n<p>Similarly, for elements whose children are aligned vertically, a value of <code>start</code> indicates that the elements should be aligned to the top, a value of end indicates that the elements should be aligned to the bottom, and so on.</p>\n<p>This property is similar to <code>-webkit-box-align</code>, which specifies alignment in the opposite direction from the direction of orientation.</p>\n<p>This property applies only to flexible box layouts. For more information about flexible boxes, see <a href=\"http://www.w3.org/TR/css3-layout/\">http://www.w3.org/TR/css3-layout/</a>.</p>\n\n",
+  "syntax": [
+    "-webkit-box-pack: <alignment>;"
+  ],
+  "values": {
+    "<alignment>": {
+      "description": "<p>The alignment of child elements.</p>",
+      "values": {
+        "center": "Child elements are aligned to the center of the element.",
+        "end": "Child elements are aligned to the end of the element.",
+        "justify": "Child elements are justified with both the start and end of the element.",
+        "start": "Child elements are aligned to the start of the element."
+      }
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-box-pack",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-box-pack"
+  }
+}

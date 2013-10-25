@@ -1,0 +1,16 @@
+{
+  "name": "resize",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "resize"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

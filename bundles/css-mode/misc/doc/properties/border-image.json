@@ -1,0 +1,18 @@
+{
+  "name": "border-image",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "border-image",
+    "border",
+    "image"
+  ],
+  "longDescription": "<p>Specifies an image to use instead of the border styles given by the <a href=\"border-style\">border-style</a> properties and an additional background image for the element.</p>\n\n<h2>Syntax</h2>\n<p><code>border-image: &lt;border-image-source&gt; || &lt;border-image-slice&gt; [ / &lt;border-image-width&gt;? [ / &lt;border-image-outset&gt; ]? ]? || &lt;border-image-repeat&gt;;</code></p>\n\n<h2>Parameters</h2>\n<dl>\n    <dt>&lt;border-image-source&gt;</dt>\n    <dd>Syntax: <code>none | &lt;image&gt;</code></dd>\n\n    <dt>&lt;border-image-slice&gt;</dt>\n    <dd>Syntax: <code>[ &lt;number&gt; | &lt;percentage&gt; ]{1,4} &amp;&amp; fill?</code></dd>\n\n    <dt>&lt;border-image-width&gt;</dt>\n    <dd>Syntax: <code>[ &lt;length&gt; | &lt;percentage&gt; | &lt;number&gt; | auto ]{1,4}</code></dd>\n\n    <dt>&lt;border-image-outset&gt;</dt>\n    <dd>Syntax: <code>[ &lt;length&gt; | &lt;number&gt; ]{1,4}</code></dd>\n\n    <dt>&lt;border-image-repeat&gt;</dt>\n    <dd>Syntax: <code>[ stretch | repeat | round ]{1,2}</code></dd>\n</dl>\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-background/#border-image"
+  }
+}

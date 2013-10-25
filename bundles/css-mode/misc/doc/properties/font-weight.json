@@ -1,0 +1,21 @@
+{
+  "name": "font-weight",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "font-weight",
+    "font",
+    "weight"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#font-weight",
+    "doc2": "http://www.w3.org/TR/CSS2/fonts.html#propdef-font-weight",
+    "doc21": "http://www.w3.org/TR/CSS21/fonts.html#propdef-font-weight",
+    "doc3": "http://www.w3.org/TR/css3-fonts/#font-weight-prop"
+  }
+}

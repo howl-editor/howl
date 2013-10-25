@@ -1,0 +1,26 @@
+{
+  "name": "-webkit-box-flex-group",
+  "description": "Specifies groups of dynamically resizing elements that are adjusted to be the same size.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-box-flex-group",
+    "webkit",
+    "box",
+    "flex",
+    "group"
+  ],
+  "longDescription": "<p>During size adjustment of flex boxes, any boxes with the same group number are adjusted to be the same size.</p>\n<p>This property applies only to flexible box layouts. For more information about flexible boxes, see <a href=\"http://www.w3.org/TR/css3-layout/\">http://www.w3.org/TR/css3-layout/</a>.</p>\n",
+  "syntax": [
+    "-webkit-box-flex-group: <group_number>;"
+  ],
+  "values": {
+    "<group_number>": {
+      "description": "<p>The group number of the flexible element. Integer, nonnegative value.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-box-flex-group",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-box-flex-group"
+  }
+}

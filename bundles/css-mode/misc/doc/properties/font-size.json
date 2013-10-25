@@ -1,0 +1,49 @@
+{
+  "name": "font-size",
+  "description": "This property indicates the desired height of glyphs from the font.",
+  "keywords": [
+    "css",
+    "property",
+    "font-size",
+    "font",
+    "size"
+  ],
+  "longDescription": "<p>For scalable fonts, the <code>font-size</code> is a scale factor applied to the EM unit of the font. (Note that certain glyphs may bleed outside their EM box.) For non-scalable fonts, the <code>font-size</code> is converted into absolute units and matched against the declared <code>font-size</code> of the font, using the same absolute coordinate space for both of the matched values.</p>",
+  "syntax": [
+    "font-size: <absolute-size> | <relative-size> | <length> | <percentage>;"
+  ],
+  "values": {
+    "<absolute-size>": {
+      "description": "<p>An <code>&lt;absolute-size&gt;</code> keyword refers to an entry in a table of font sizes computed and kept by the user agent.</p>",
+      "default": "medium",
+      "values": {
+        "xx-small": "",
+        "x-small": "",
+        "small": "",
+        "medium": "",
+        "large": "",
+        "x-large": "",
+        "xx-large": ""
+      }
+    },
+    "<relative-size>": {
+      "description": "<p>A <code>&lt;relative-size&gt;</code> keyword is interpreted relative to the table of font sizes and the font size of the parent element.</p>",
+      "values": {
+        "larger": "",
+        "smaller": ""
+      }
+    },
+    "<length>": {
+      "description": "<p>A length value specifies an absolute font size (that is independent of the user agent's font table). Negative lengths are illegal.</p>"
+    },
+    "<percentage>": {
+      "description": "<p>A percentage value specifies an absolute font size relative to the parent element's font size. Use of percentage values, or values in <code>em</code>s, leads to more robust and cascadable style sheets.</p>"
+    }
+  },
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#font-size",
+    "doc2": "http://www.w3.org/TR/CSS2/fonts.html#propdef-font-size",
+    "doc21": "http://www.w3.org/TR/CSS21/fonts.html#propdef-font-size",
+    "doc3": "http://www.w3.org/TR/css3-fonts/#propdef-font-size"
+  }
+}

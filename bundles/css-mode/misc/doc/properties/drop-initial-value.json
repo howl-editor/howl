@@ -1,0 +1,19 @@
+{
+  "name": "drop-initial-value",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "drop-initial-value",
+    "drop",
+    "initial",
+    "value"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

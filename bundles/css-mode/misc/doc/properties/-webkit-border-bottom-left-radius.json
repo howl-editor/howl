@@ -1,0 +1,34 @@
+{
+  "name": "-webkit-border-bottom-left-radius",
+  "description": "Specifies that the bottom-left corner of a box be rounded with the specified radius.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-border-bottom-left-radius",
+    "webkit",
+    "border",
+    "bottom",
+    "left",
+    "radius"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-border-bottom-left-radius: <radius>;",
+    "-webkit-border-bottom-left-radius: <horizontal_radius> <vertical_radius>;"
+  ],
+  "values": {
+    "<radius>": {
+      "description": "<p>The radius of the rounded corner.</p>"
+    },
+    "<horizontal_radius>": {
+      "description": "<p>The horizontal radius of the rounded corner.</p>"
+    },
+    "<vertical_radius>": {
+      "description": "<p>The vertical radius of the rounded corner.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-border-bottom-left-radius",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-border-bottom-left-radius"
+  }
+}

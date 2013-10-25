@@ -1,0 +1,19 @@
+{
+  "name": "speech-rate",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "speech-rate",
+    "speech",
+    "rate"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc21": "1"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "float-offset",
+  "description": "This property pushes a float in opposite direction of the where it has been floated.",
+  "keywords": [
+    "css",
+    "property",
+    "float-offset",
+    "float",
+    "offset"
+  ],
+  "longDescription": "<p>If one value is specified, it is the horizontal offset. If two values are specified, the first is the horizontal and the second is the vertical offset. If no vertical value has been specified, the vertical offset is set to zero.</p>\n<p>Floats that are moved into other columns with this property intrudes.</p>",
+  "syntax": [
+    "float-offset: <length> <length>?;"
+  ],
+  "defaultValue": "0 0",
+  "values": {
+    "<length>": {
+      "description": "<p>Negative values are allowed; a negative values will push the float in the same direction as it has been floated with <code>float</code></p>\n                        <p>The float will never be pushed outside the content edges of the multicol element due to a setting on <code>float-offset</code>.</p>\n                        <p>Percentage values refer to the width/height of the float plus a fraction of the column gap.</p>"
+    }
+  },
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-gcpm/#float-offset"
+  }
+}

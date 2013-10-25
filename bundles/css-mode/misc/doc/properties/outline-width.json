@@ -1,0 +1,20 @@
+{
+  "name": "outline-width",
+  "description": "The outline width",
+  "keywords": [
+    "css",
+    "property",
+    "outline-width",
+    "outline",
+    "width"
+  ],
+  "longDescription": "<p>The outline width.</p>\n\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "http://www.w3.org/TR/CSS2/ui.html#propdef-outline-width",
+    "doc21": "http://www.w3.org/TR/CSS21/ui.html#propdef-outline-width",
+    "doc3": "http://www.w3.org/TR/css3-ui/#outline-width0"
+  }
+}

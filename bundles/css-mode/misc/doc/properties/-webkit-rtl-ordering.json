@@ -1,0 +1,28 @@
+{
+  "name": "-webkit-rtl-ordering",
+  "description": "Overrides ordering defaults for right-to-left content.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-rtl-ordering",
+    "webkit",
+    "rtl",
+    "ordering"
+  ],
+  "longDescription": "<p>The distinction between these two character orders is normally handled automatically as a side effect of character set. This property allows you to override whether the browser should treat the content as being in logical or visual order.</p>\n\n",
+  "syntax": [
+    "-webkit-rtl-ordering: logical | visual;"
+  ],
+  "values": {
+    "logical": {
+      "description": "<p>Raw content is in mixed order (requiring a bidirectional renderer).</p>"
+    },
+    "visual": {
+      "description": "<p>Right-to-left content is encoded in reverse order so an entire line of text can be rendered from left to right in a unidirectional fashion.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-rtl-ordering",
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-rtl-ordering"
+  }
+}

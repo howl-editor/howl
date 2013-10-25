@@ -1,0 +1,21 @@
+{
+  "name": "border-bottom-style",
+  "description": "The style of the bottom border",
+  "keywords": [
+    "css",
+    "property",
+    "border-bottom-style",
+    "border",
+    "bottom",
+    "style"
+  ],
+  "longDescription": "<p>This property set the style of the bottom border.</p>\n\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "http://www.w3.org/TR/CSS2/box.html#propdef-border-bottom-style",
+    "doc21": "http://www.w3.org/TR/CSS21/box.html#propdef-border-bottom-style",
+    "doc3": "http://www.w3.org/TR/css3-background/#border-bottom-style"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "-webkit-background-clip",
+  "description": "Specifies the clipping behavior of the background of a box.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-background-clip",
+    "webkit",
+    "background",
+    "clip"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-background-clip: <behavior>;"
+  ],
+  "values": {
+    "<behavior>": {
+      "description": "<p>The clipping behavior of the background.</p>",
+      "values": {
+        "border": "The background clips to the border of the box.",
+        "content": "The background clips to the content of the box.",
+        "padding": "The background clips to the padding of the box.",
+        "text": "The background clips to the text of the box. Available in Safari 4.0 and later."
+      }
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-background-clip",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-background-clip"
+  }
+}

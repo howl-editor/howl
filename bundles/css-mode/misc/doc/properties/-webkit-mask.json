@@ -1,0 +1,41 @@
+{
+  "name": "-webkit-mask",
+  "description": "Defines a variety of mask properties within one declaration.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-mask",
+    "webkit",
+    "mask"
+  ],
+  "longDescription": "<p>As with most composite properties, all arguments are optional.</p>\n",
+  "syntax": [
+    "-webkit-mask: <attachment>, <clip>, <origin>, <image>, <repeat>, <composite>, <box_image>;"
+  ],
+  "values": {
+    "<attachment>": {
+      "description": "<p>Defines the scrolling or fixed nature of the image mask. See <code>-webkit-mask-attachment</code>.</p>"
+    },
+    "<clip>": {
+      "description": "<p>Specifies whether the mask should extend into the border of a box. See <code>-webkit-mask-clip</code>.</p>"
+    },
+    "<origin>": {
+      "description": "<p>Determines where the <code>-webkit-mask-position</code> property is anchored. See <code>-webkit-mask-origin</code>.</p>"
+    },
+    "<image>": {
+      "description": "<p>Defines an image to be used as a mask for an element. See <code>-webkit-mask-image</code>.</p>"
+    },
+    "<repeat>": {
+      "description": "<p>Defines the repeating qualities of a mask. See <code>-webkit-mask-repeat</code>.</p>"
+    },
+    "<composite>": {
+      "description": "<p>Sets a compositing style for a mask. See <code>-webkit-mask-composite</code>.</p>"
+    },
+    "<box_image>": {
+      "description": "<p>See <code>-webkit-mask-box-image</code> for details.</p>"
+    }
+  },
+  "versions": {
+    "safari.4.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-mask"
+  }
+}

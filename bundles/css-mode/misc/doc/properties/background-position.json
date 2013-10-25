@@ -1,0 +1,35 @@
+{
+  "name": "background-position",
+  "description": "Background image position.",
+  "keywords": [
+    "css",
+    "property",
+    "background-position",
+    "background",
+    "position"
+  ],
+  "longDescription": "<p>\nIf a background image has been specified, this property specifies its initial position.\nIf only one value is specified, the second value is assumed to be <code>center</code>.\nIf at least one value is not a keyword, then the first value represents the horizontal position \nand the second represents the vertical position.\n</p>\n",
+  "syntax": [
+    "background-position: <position> [ , <position> ]*;"
+  ],
+  "values": {
+    "<position>": {
+      "description": "<p class=\"syntax\"><code>top | bottom</code></p>\n                        <p class=\"syntax\"><code>[ &lt;percentage&gt; | &lt;length&gt; | left | center | right ] [ &lt;percentage&gt; | &lt;length&gt; | top | center | bottom ]?</code></p>\n                        <p class=\"syntax\"><code>[ center | [ left | right ] [ &lt;percentage&gt; | &lt;length&gt; ]? ] && [ center | [ top | bottom ] [ &lt;percentage&gt; | &lt;length&gt; ]? ]</code></p>\n                        <p>Negative <code>&lt;percentage&gt;</code> and <code>&lt;length&gt;</code> values are allowed.</p>",
+      "values": {
+        "top": "Equivalent to <code>0%</code> for the vertical position if one or two values are given, otherwise specifies the top edge as the origin for the next offset.",
+        "right": "Equivalent to <code>100%</code> for the horizontal position if one or two values are given, otherwise specifies the right edge as the origin for the next offset.",
+        "bottom": "Equivalent to <code>100%</code> for the vertical position if one or two values are given, otherwise specifies the bottom edge as the origin for the next offset.",
+        "left": "Equivalent to <code>0%</code> for the horizontal position if one or two values are given, otherwise specifies the left edge as the origin for the next offset.",
+        "center": "Equivalent to <code>50%</code> (<code>left 50%</code>) for the horizontal position if the horizontal position is not otherwise specified, or <code>50%</code> (<code>top 50%</code>) for the vertical position if it is.",
+        "<percentage>": "A percentage for the horizontal offset is relative to (width of background positioning area - width of background image). A percentage for the vertical offset is relative to (height of background positioning area - height of background image), where the size of the image is the size given by <code>background-size</code>.",
+        "<length>": "A length value gives a fixed length as the offset. For example, with a value pair of <code>2cm 1cm</code>, the upper left corner of the image is placed 2cm to the right and 1cm below the upper left corner of the background positioning area."
+      }
+    }
+  },
+  "versions": {
+    "doc1": "http://www.w3.org/TR/CSS1/#background-position",
+    "doc2": "http://www.w3.org/TR/CSS2/colors.html#propdef-background-position",
+    "doc21": "http://www.w3.org/TR/CSS21/colors.html#propdef-background-position",
+    "doc3": "http://www.w3.org/TR/css3-background/#background-position"
+  }
+}

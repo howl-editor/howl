@@ -1,0 +1,28 @@
+{
+  "name": "-webkit-mask-position",
+  "description": "Defines the position of a mask.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-mask-position",
+    "webkit",
+    "mask",
+    "position"
+  ],
+  "longDescription": "<p>Position can be specified in terms of pixels or percentages of the viewport width or using the keywords <code>top</code>, <code>left</code>, <code>center</code>, <code>right</code>, or <code>bottom</code>.</p>\n<p>Changes to this property can be animated in Safari 4.0 and later.</p>\n\n\n",
+  "syntax": [
+    "-webkit-mask-position: <xpos>;",
+    "-webkit-mask-position: <xpos> <ypos>;"
+  ],
+  "values": {
+    "<xpos>": {
+      "description": "<p>The x-coordinate of the position of the mask.</p>"
+    },
+    "<ypos>": {
+      "description": "<p>The y-coordinate of the position of the mask.</p>"
+    }
+  },
+  "versions": {
+    "safari.4.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-mask-position"
+  }
+}

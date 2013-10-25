@@ -1,0 +1,41 @@
+{
+  "name": "-webkit-perspective-origin",
+  "description": "Sets the origin of the -webkit-perspective property.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-perspective-origin",
+    "webkit",
+    "perspective",
+    "origin"
+  ],
+  "longDescription": "<p>Sets the origin of the <code>-webkit-perspective</code> property described in <a href=\"http://developer.apple.com/safari/library/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/doc/uid/TP30001266-_webkit_perspective\">\"-webkit-perspective.\"</a></p>\n<p>This property effectively sets the x and y position at which the viewer appears to be looking at the children of the element. The default value is <code>50%</code> for both x and y coordinates.</p>\n\n\n",
+  "syntax": [
+    "-webkit-perspective-origin: <posx> <posy>;"
+  ],
+  "values": {
+    "<posx>": {
+      "description": "<p>The x-origin as a percentage or value.</p>",
+      "default": "50%",
+      "values": {
+        "50%": "The default value is <code>50%</code>.",
+        "center": "Sets the x or y origin to the center of the element’s border box. If this constant appears before <code>left</code> or <code>right</code>, specifies the y-origin. If it appears after <code>top</code> or <code>bottom</code>, specifies the x-origin. If appears alone, centers both the x and y origin.",
+        "left": "Sets the x-origin to the left side of the border box.",
+        "right": "Sets the x-origin to the right side of the border box."
+      }
+    },
+    "<posy>": {
+      "description": "<p>The y-origin as a percentage or value.</p>",
+      "default": "50%",
+      "values": {
+        "50%": "The default value is <code>50%</code>.",
+        "center": "Sets the x or y origin to the center of the element’s border box. If this constant appears before <code>left</code> or <code>right</code>, specifies the y-origin. If it appears after <code>top</code> or <code>bottom</code>, specifies the x-origin. If appears alone, centers both the x and y origin.",
+        "top": "Sets the y-origin to the top of the element’s border box.",
+        "bottom": "Sets the y-origin to the bottom of the element’s border box."
+      }
+    }
+  },
+  "versions": {
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-perspective-origin"
+  }
+}

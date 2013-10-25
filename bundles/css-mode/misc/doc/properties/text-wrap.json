@@ -1,0 +1,18 @@
+{
+  "name": "text-wrap",
+  "description": "Specifies the mode for text wrapping",
+  "keywords": [
+    "css",
+    "property",
+    "text-wrap",
+    "text",
+    "wrap"
+  ],
+  "longDescription": "<p>This property specifies the mode for text wrapping.</p>\n\n<h2>Syntax</h2>\n<p><code>text-wrap: normal | unrestricted | none | suppress;</code></p>\n\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-text/#text-wrap"
+  }
+}

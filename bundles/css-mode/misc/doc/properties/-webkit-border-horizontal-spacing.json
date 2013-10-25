@@ -1,0 +1,26 @@
+{
+  "name": "-webkit-border-horizontal-spacing",
+  "description": "Defines the spacing between the horizontal portion of an element’s border and the content within.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-border-horizontal-spacing",
+    "webkit",
+    "border",
+    "horizontal",
+    "spacing"
+  ],
+  "longDescription": "<p>Equivalent to the horizontal portion of the <code>border-spacing</code> property. Changes to this property can be animated.</p>\n\n",
+  "syntax": [
+    "-webkit-border-horizontal-spacing: <spacing>;"
+  ],
+  "values": {
+    "<spacing>": {
+      "description": "<p>The amount of horizontal spacing.</p>"
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-border-horizontal-spacing",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-border-horizontal-spacing"
+  }
+}

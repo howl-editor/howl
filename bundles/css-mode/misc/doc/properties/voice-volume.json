@@ -1,0 +1,18 @@
+{
+  "name": "voice-volume",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "voice-volume",
+    "voice",
+    "volume"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

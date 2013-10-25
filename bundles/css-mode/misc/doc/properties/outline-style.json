@@ -1,0 +1,20 @@
+{
+  "name": "outline-style",
+  "description": "The outline style",
+  "keywords": [
+    "css",
+    "property",
+    "outline-style",
+    "outline",
+    "style"
+  ],
+  "longDescription": "<p>The outline style.</p>\n",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "http://www.w3.org/TR/CSS2/ui.html#propdef-outline-style",
+    "doc21": "http://www.w3.org/TR/CSS21/ui.html#propdef-outline-style",
+    "doc3": "http://www.w3.org/TR/css3-ui/#outline-style0"
+  }
+}

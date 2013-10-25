@@ -1,0 +1,20 @@
+{
+  "name": "max-height",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "max-height",
+    "max",
+    "height"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc21": "1",
+    "doc3": "1"
+  }
+}

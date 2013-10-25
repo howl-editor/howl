@@ -1,0 +1,18 @@
+{
+  "name": "font-stretch",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "font-stretch",
+    "font",
+    "stretch"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-fonts/#descdef-font-stretch"
+  }
+}

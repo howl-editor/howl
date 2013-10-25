@@ -1,0 +1,18 @@
+{
+  "name": "text-justify",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "text-justify",
+    "text",
+    "justify"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "http://www.w3.org/TR/css3-text/#text-justify"
+  }
+}

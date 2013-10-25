@@ -1,0 +1,19 @@
+{
+  "name": "white-space-collapse",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "white-space-collapse",
+    "white",
+    "space",
+    "collapse"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc3": "1"
+  }
+}

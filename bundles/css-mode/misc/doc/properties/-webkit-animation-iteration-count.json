@@ -1,0 +1,31 @@
+{
+  "name": "-webkit-animation-iteration-count",
+  "description": "Specifies the number of times an animation iterates.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-animation-iteration-count",
+    "webkit",
+    "animation",
+    "iteration",
+    "count"
+  ],
+  "longDescription": "<p>This property is often used with a <code>-webkit-animation-direction</code> property set to alternate, which causes the animation to play in reverse on alternate iterations.</p>\n\n",
+  "syntax": [
+    "-webkit-animation-iteration-count: <number> [, …];"
+  ],
+  "values": {
+    "<number>": {
+      "description": "<p>The number of iterations. If <code>1</code>, the animation plays from beginning to end once. A value of <code>infinite</code> causes the animation to repeat forever. Noninteger values cause the animation to end partway through an interation. Negative values are invalid.</p>",
+      "default": "1",
+      "values": {
+        "1": "The default value is <code>1</code>.",
+        "infinite": "Repeats the animation forever."
+      }
+    }
+  },
+  "versions": {
+    "safari.4.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-animation-iteration-count",
+    "ios.2.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-animation-iteration-count"
+  }
+}

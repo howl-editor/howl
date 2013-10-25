@@ -1,0 +1,29 @@
+{
+  "name": "-webkit-background-composite",
+  "description": "Sets a compositing style for background images and colors.",
+  "keywords": [
+    "css",
+    "property",
+    "-webkit-background-composite",
+    "webkit",
+    "background",
+    "composite"
+  ],
+  "longDescription": "",
+  "syntax": [
+    "-webkit-background-composite: <compositing_style>;"
+  ],
+  "values": {
+    "<compositing_style>": {
+      "description": "<p>The compositing style of the background.</p>",
+      "values": {
+        "border": "The background extends into the border area",
+        "padding": "The background extends only into the padding area enclosed by the border"
+      }
+    }
+  },
+  "versions": {
+    "safari.3.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-background-composite",
+    "ios.1.0": "http://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html#//apple_ref/css/property/-webkit-background-composite"
+  }
+}

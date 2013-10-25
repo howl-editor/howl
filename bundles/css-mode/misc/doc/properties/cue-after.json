@@ -1,0 +1,20 @@
+{
+  "name": "cue-after",
+  "description": "",
+  "keywords": [
+    "css",
+    "property",
+    "cue-after",
+    "cue",
+    "after"
+  ],
+  "longDescription": "",
+  "syntax": [
+
+  ],
+  "versions": {
+    "doc2": "1",
+    "doc21": "1",
+    "doc3": "1"
+  }
+}
