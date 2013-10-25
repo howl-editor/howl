@@ -130,10 +130,10 @@ function sci.dispatch(sci_ptr, event, args)
       if inserted then handler = 'on_text_inserted'
       elseif deleted then handler = 'on_text_deleted'
       end
+    elseif code == SCN_FOCUSIN then handler = 'on_focus'
+    elseif code == SCN_FOCUSOUT then handler = 'on_focus_lost'
     end
   elseif event == 'key-press' then handler = 'on_keypress'
-  elseif event == 'focused' then handler = 'on_focus'
-  elseif event == 'defocused' then handler = 'on_focus_lost'
   end
 
   if handler then

@@ -96,20 +96,6 @@ static void explain_key_code(lua_State *l, int code)
   }
 }
 
-static gboolean on_sci_command(GtkWidget *widget, gint code, gpointer nil, lua_State *L) {
-  code >>= 16;
-  if (code == SCEN_SETFOCUS || code == SCEN_KILLFOCUS) {
-    gchar *name = code == SCEN_SETFOCUS ? "focused" : "defocused";
-    int top = setup_for_event(L, widget, name);
-
-    if (top < 0)
-      return FALSE;
-
-    return emit_event(L, 0, top);
-  }
-  return FALSE;
-}
-
 static gboolean on_sci_notify(GtkWidget *widget, gint ctrl_id, struct SCNotification *n, lua_State *L)
 {
   int code = n->nmhdr.code;
@@ -203,7 +189,6 @@ static int sci_new(lua_State *L)
   GtkWidget *sci = scintilla_new();
   g_signal_connect(sci, "key-press-event", G_CALLBACK(on_sci_key_press), L);
   g_signal_connect(sci, SCINTILLA_NOTIFY, G_CALLBACK(on_sci_notify), L);
-  g_signal_connect(sci, "command", G_CALLBACK(on_sci_command), L);
   lua_pushlightuserdata(L, sci);
   return 1;
 }
