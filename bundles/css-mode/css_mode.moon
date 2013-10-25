@@ -9,6 +9,9 @@ class CSSMode
     completer = bundle_load 'css_completer'
     @completers = { completer, 'in_buffer' }
 
+  default_config:
+    word_pattern: '[-_%w]+'
+
   indent_patterns: {
     authoritive: true
     '{%s*$',

@@ -12,20 +12,22 @@ local by_name
 
 instance_for_mode = (m) ->
   return live[m] if live[m]
+
+  error "Unknown mode specified as parent: '#{m.parent}'", 3 if m.parent and not modes[m.parent]
+  parent = if m.name != 'default' then by_name m.parent or 'default'
+  target = m.create m.name
+
   mode_config = config.local_proxy!
 
-  if m.config
-    mode_config[k] = v for k,v in pairs m.config
+  if target.default_config
+    mode_config[k] = v for k,v in pairs target.default_config
 
   mode_vars = mode_variables[m.name]
   if mode_vars
     mode_config[k] = v for k,v in pairs mode_vars
 
-  error "Unknown mode specified as parent: '#{m.parent}'", 3 if m.parent and not modes[m.parent]
-  parent = if m.name != 'default' then by_name m.parent or 'default'
   mode_config.chain_to parent.config if parent
 
-  target = m.create m.name
   instance = setmetatable {
     name: m.name
     config: mode_config

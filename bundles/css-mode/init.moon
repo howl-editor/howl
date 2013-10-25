@@ -6,9 +6,6 @@ mode_reg =
   aliases: 'scss'
   extensions: {'css', 'scss'}
   create: -> bundle_load('css_mode')!
-  config: {
-    word_pattern: '[-_%w]+'
-  }
 
 howl.mode.register mode_reg
 

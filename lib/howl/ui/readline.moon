@@ -134,7 +134,7 @@ class Readline extends PropertyObject
 
   _max_list_lines: =>
     win_lines = @window.height / @sci\text_height 0
-    max_lines = math.floor win_lines - win_lines * 0.3 -- max occupation two thirds
+    max_lines = math.floor win_lines - (win_lines * 0.5) -- max occupation half of estate
     max_lines
 
   _on_keypress: (event) =>

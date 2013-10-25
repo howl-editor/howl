@@ -4,10 +4,6 @@
 mode_reg =
   name: 'yaml'
   extensions: { 'yml', 'yaml' }
-
-  config:
-      use_tabs: false
-
   create: -> bundle_load('yaml_mode')!
 
 howl.mode.register mode_reg

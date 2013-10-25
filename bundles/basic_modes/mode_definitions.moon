@@ -132,12 +132,12 @@
     extensions: { 'iface', 'mak' }
     patterns: { 'GNUmakefile$', 'Makefile$' }
     short_comment_prefix: '#'
-    config:
+    default_config:
       use_tabs: true
 
   markdown:
     extensions: 'md'
-    config:
+    default_config:
       caret_line_highlighted: false
 
   nemerle:

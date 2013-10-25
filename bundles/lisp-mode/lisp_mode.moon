@@ -30,6 +30,9 @@ class LispMode
 
   short_comment_prefix: ';'
 
+  default_config:
+    word_pattern: '[^][%s/.(){}"\']+'
+
   auto_pairs: {
     '(': ')'
     '[': ']'

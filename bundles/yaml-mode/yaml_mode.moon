@@ -5,6 +5,9 @@ class YAMLMode
   new: =>
     @lexer = bundle_load('yaml_lexer')
 
+  default_config:
+    use_tabs: false
+
   short_comment_prefix: '#'
 
   indent_patterns: {

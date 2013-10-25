@@ -77,8 +77,8 @@ describe 'mode', ->
       assert.equal 123, mode_config.mode_var
       assert.equal 'def value', config.mode_var
 
-    it 'the .config is pre-seeded with variables from the config option in mode registration (if any)', ->
-      mode.register name: 'pre_config', config: { mode_var: 543 }, create: -> {}
+    it 'the .config is pre-seeded with variables from .default_config of the mode (if any)', ->
+      mode.register name: 'pre_config', create: -> default_config: { mode_var: 543 }
       assert.equal 543, mode.by_name('pre_config').config.mode_var
 
     describe 'configure(mode_name, variables)', ->
@@ -93,6 +93,11 @@ describe 'mode', ->
         mode_config = mode.by_name('user_configured').config
         mode.configure 'user_configured', mode_var: 'after_the_fact'
         assert.equal 'after_the_fact', mode_config.mode_var
+
+      it 'overrides any default mode configuration set', ->
+        mode.register name: 'mode_with_config', create: -> default_config: { mode_var: 'mode set' }
+        mode.configure 'mode_with_config', mode_var: 'user set'
+        assert.equal 'user set', mode.by_name('mode_with_config').config.mode_var
 
   describe 'mode inheritance', ->
     before_each ->
