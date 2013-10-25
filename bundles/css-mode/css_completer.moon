@@ -2,8 +2,9 @@
 -- License: MIT (see LICENSE.md)
 
 import Matcher from howl.util
+import colors from howl.ui
 
-local properties, properties_matcher
+local properties, properties_matcher, color_matcher
 
 authoritive = (t) ->
   with t
@@ -20,12 +21,16 @@ css_context = (context) ->
     return if line\match '}%s*$'
     line = line.previous
 
+complete_color = (context) ->
+  return authoritive(color_matcher context.word_prefix)
+
 complete = (context) =>
   ctx, value = css_context context
   if ctx == 'selector'
     return authoritive(properties_matcher context.word_prefix)
 
   if ctx == 'property'
+    return complete_color(context) if value\ends_with 'color'
     def = properties[value]
     candidates = def and [k for k in pairs def.values]
     return authoritive(Matcher(candidates) context.word_prefix) if candidates
@@ -33,4 +38,5 @@ complete = (context) =>
 ->
   properties = bundle_load 'css_properties.moon'
   properties_matcher = Matcher [p for p in pairs properties]
+  color_matcher = Matcher [n for n in pairs colors when n != 'reverse']
   :complete
