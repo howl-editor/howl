@@ -351,7 +351,7 @@ describe 'Buffer', ->
   describe 'save()', ->
     context 'when a file is assigned', ->
       it 'stores the contents of the buffer in the assigned file', ->
-        text = 'line1\nline2♥\nåäö'
+        text = 'line1\nline2♥\nåäö\n'
         b = buffer text
         with_tmpfile (file) ->
           b.file = file
@@ -374,9 +374,9 @@ describe 'Buffer', ->
             config.strip_trailing_whitespace = false
             b = buffer ''
             b.file = file
-            b.text = 'blank  \n\nfoo '
+            b.text = 'blank  \n\nfoo \n'
             b\save!
-            assert.equal 'blank  \n\nfoo ', b.text
+            assert.equal 'blank  \n\nfoo \n', b.text
             assert.equal file.contents, b.text
 
       context 'when config.strip_trailing_whitespace is true', ->
@@ -388,6 +388,28 @@ describe 'Buffer', ->
             b.text = 'åäö  \n\nfoo  \n  '
             b\save!
             assert.equal 'åäö\n\nfoo\n', b.text
+            assert.equal file.contents, b.text
+
+      context 'when config.ensure_newline_at_eof is true', ->
+        it 'appends a newline if necessary', ->
+          with_tmpfile (file) ->
+            config.ensure_newline_at_eof = true
+            b = buffer ''
+            b.file = file
+            b.text = 'look mah no newline!'
+            b\save!
+            assert.equal 'look mah no newline!\n', b.text
+            assert.equal file.contents, b.text
+
+      context 'when config.ensure_newline_at_eof is false', ->
+        it 'does not appends a newline', ->
+          with_tmpfile (file) ->
+            config.ensure_newline_at_eof = false
+            b = buffer ''
+            b.file = file
+            b.text = 'look mah no newline!'
+            b\save!
+            assert.equal 'look mah no newline!', b.text
             assert.equal file.contents, b.text
 
   describe 'byte_offset(...)', ->

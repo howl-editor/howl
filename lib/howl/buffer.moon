@@ -215,7 +215,10 @@ class Buffer extends PropertyObject
       if @config.strip_trailing_whitespace
         ws = '[\t ]'
         @replace "(#{ws}+)#{@eol}", ''
-        @replace "(#{ws}+)$", ''
+        @replace "(#{ws}+)#{@eol}?$", ''
+
+      if @config.ensure_newline_at_eof and not @text\match "#{@eol}$"
+        @append @eol
 
       @file.contents = @text
       @modified = false
@@ -325,6 +328,12 @@ with config
   .define
     name: 'strip_trailing_whitespace'
     description: 'Whether trailing whitespace will be removed upon save'
+    default: true
+    type_of: 'boolean'
+
+  .define
+    name: 'ensure_newline_at_eof'
+    description: 'Whether to ensure a trailing newline is present at eof upon save'
     default: true
     type_of: 'boolean'
 
