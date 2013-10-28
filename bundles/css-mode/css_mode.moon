@@ -2,11 +2,11 @@
 -- License: MIT (see LICENSE.md)
 
 import formatting from howl
+completer = bundle_load 'css_completer'
 
 class CSSMode
   new: =>
     @lexer = bundle_load 'css_lexer'
-    completer = bundle_load 'css_completer'
     @completers = { completer, 'in_buffer' }
 
   default_config:
@@ -27,3 +27,7 @@ class CSSMode
       return true if formatting.ensure_block editor, '{%s*$', '^%s*}'
 
     @parent.on_char_added @, args, editor
+
+  on_completion_accepted: (completion, context) =>
+    @completer or= completer!
+    @completer.finish_completion completion, context
