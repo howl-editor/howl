@@ -57,7 +57,13 @@ class Completer
     chunk = @buffer\context_at(pos).word
     chunk = @buffer\chunk(chunk.start_pos, pos - 1) unless @buffer.config.hungry_completion
     chunk.text = completion
-    chunk.start_pos + completion.ulen
+    pos_after = chunk.start_pos + completion.ulen
+
+    if @buffer.mode.on_completion_accepted
+      pos = @buffer.mode\on_completion_accepted completion, @buffer\context_at(pos_after)
+      pos_after = pos if type(pos) == 'number'
+
+    pos_after
 
 with config
   .define

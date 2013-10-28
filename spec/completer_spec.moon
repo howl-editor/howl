@@ -108,3 +108,17 @@ describe 'Completer', ->
     it 'returns the position after the accepted completion', ->
         buffer.text = 'hello there'
         assert.equal 5, Completer(buffer, 4)\accept 'hƏlp', 4
+
+    context "(interacting with mode's .on_completion_accepted)", ->
+      it "invokes it with (mode, completion, context) if present", ->
+        mode = on_completion_accepted: spy.new -> nil
+        buffer.mode = mode
+        buffer.text = 'hello there'
+        Completer(buffer, 4)\accept 'help', 4
+        assert.spy(mode.on_completion_accepted).was_called_with mode, 'help', buffer\context_at(5)
+
+      it "uses it's return value as the position returned if it's a number", ->
+        mode = on_completion_accepted: -> 6
+        buffer.mode = mode
+        buffer.text = 'hello there'
+        assert.equal 6, Completer(buffer, 4)\accept 'help', 4
