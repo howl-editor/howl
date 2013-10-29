@@ -52,7 +52,8 @@ class Editor extends PropertyObject
     listener =
       on_style_needed: self\_on_style_needed
       on_keypress: self\_on_keypress
-      on_update_ui: self\_on_update_ui
+      on_selection_changed: self\_on_selection_changed
+      on_changed: self\_on_changed
       on_focus: self\_on_focus
       on_focus_lost: self\_on_focus_lost
       on_char_added: self\_on_char_added
@@ -382,9 +383,12 @@ class Editor extends PropertyObject
 
     keyhandler.process self, event
 
-  _on_update_ui: =>
+  _on_selection_changed: =>
     @_update_position!
     @_brace_highlight!
+    signal.emit 'selection-changed', editor: self, selection: @selection
+
+  _on_changed: =>
     signal.emit 'editor-changed', editor: self
 
   _brace_highlight: =>

@@ -104,12 +104,6 @@ describe 'Selection', ->
       selection\remove!
       assert.equal 5, cursor.pos
 
-    it 'signals "selection-removed"', ->
-      with_signal_handler 'selection-removed', (handler) ->
-        selection\set 2, 5
-        selection\remove!
-        assert.spy(handler).was_called!
-
   describe 'cut', ->
     it 'removes the selected text', ->
       selection\set 1, 5
@@ -132,12 +126,6 @@ describe 'Selection', ->
       selection\cut!
       editor\paste!
       assert.equal 'Liñe 1 ʘf tƏxt', buffer.lines[1].text
-
-    it 'signals "selection-removed"', ->
-      with_signal_handler 'selection-removed', (handler) ->
-        selection\set 1, 5
-        selection\cut!
-        assert.spy(handler).was_called!
 
     it 'signals "selection-cut"', ->
       with_signal_handler 'selection-cut', (handler) ->
@@ -162,12 +150,6 @@ describe 'Selection', ->
       selection\copy!
       editor\paste!
       assert.equal 'LiñeLiñe 1 ʘf tƏxt', buffer.lines[1].text
-
-    it 'signals "selection-removed"', ->
-      with_signal_handler 'selection-removed', (handler) ->
-        selection\set 1, 5
-        selection\copy!
-        assert.spy(handler).was_called!
 
     it 'signals "selection-copied"', ->
       with_signal_handler 'selection-copied', (handler) ->

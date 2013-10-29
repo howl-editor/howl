@@ -117,7 +117,12 @@ function sci.dispatch(sci_ptr, event, args)
     if code == SCN_STYLENEEDED then
       handler = 'on_style_needed'
       args = args.position
-    elseif code == SCN_UPDATEUI then handler = 'on_update_ui'
+    elseif code == SCN_UPDATEUI then
+      if bit.band(args.updated, SC_UPDATE_SELECTION) ~= 0 then
+        handler = 'on_selection_changed'
+      elseif bit.band(args.updated, SC_UPDATE_CONTENT) ~= 0 then
+        handler = 'on_changed'
+      end
     elseif code == SCN_CHARADDED then handler = 'on_char_added'
     elseif code == SCN_MODIFIED then
       local inserted = bit.band(args.type, SC_MOD_INSERTTEXT) ~= 0

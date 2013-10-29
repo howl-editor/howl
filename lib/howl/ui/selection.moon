@@ -73,7 +73,6 @@ class Selection extends PropertyObject
     unless @empty
       @sci\set_empty_selection @sci\get_current_pos!
       @persistent = false
-      signal.emit 'selection-removed'
 
   copy: (options = {}) =>
     start_pos, end_pos = @_brange options.force_include_cursor
@@ -89,7 +88,6 @@ class Selection extends PropertyObject
     @sci\copy_range start_pos - 1, end_pos - 1
     @sci\delete_range start_pos - 1, end_pos - start_pos
     @persistent = false
-    signal.emit 'selection-removed'
     signal.emit 'selection-cut'
 
   _brange: (force_include_cursor) =>
@@ -110,13 +108,17 @@ class Selection extends PropertyObject
     nil
 
 with signal
-  .register 'selection-removed',
+  .register 'selection-changed',
     description: [[
-Emitted whenever a selection has been removed.
+Emitted whenever a selection has been changed.
 
 This could be the result of a copy, cut or an explicit request to remove
-a selection.
+or create a selection.
 ]]
+    parameters: {
+      editor: 'The editor holding the selection'
+      selection: 'The selection instance that has been changed'
+    }
 
   .register 'selection-copied',
     description: 'Emitted whenever a selection has been copied.'
