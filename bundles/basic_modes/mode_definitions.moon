@@ -201,6 +201,12 @@
     extensions: { 'rb', 'Rakefile', 'rake', 'rb', 'rbw'  }
     patterns: { 'Rakefile$', 'Gemfile$', 'Guardfile$'  }
     short_comment_prefix: '#'
+    indent_after_patterns: {
+      {r'^\\s*(def|class|if|else|unless)\\b', '%send%s*$'},
+      r'\\s(do|{)\\s*\\|[^|]*\\|\\s*$',
+      '{%s*$'
+    }
+    dedent_patterns: { '%s*end%s*$'}
 
   scala:
     extensions: 'scala'
