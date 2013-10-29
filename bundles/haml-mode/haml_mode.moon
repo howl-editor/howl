@@ -5,7 +5,7 @@ class HamlMode
   new: =>
     @lexer = bundle_load('haml_lexer')
 
-  short_comment_prefix: '-#'
+  comment_syntax: '-#'
 
   indent_after_patterns: {
     authoritive: false

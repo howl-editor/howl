@@ -40,10 +40,13 @@ class DefaultMode
         .cursor.column = .current_line.indentation + 1 if .cursor.column < .current_line.indentation
 
   comment: (editor) =>
-    buffer, cursor = editor.buffer, editor.cursor
-    prefix = @short_comment_prefix
+    prefix, suffix = @_comment_pair!
     return unless prefix
+
     prefix ..= ' '
+    suffix = ' ' .. suffix unless suffix.empty
+
+    buffer, cursor = editor.buffer, editor.cursor
     current_column = cursor.column
     tab_expansion = string.rep ' ', buffer.config.tab_width
 
@@ -54,29 +57,37 @@ class DefaultMode
       for line in *lines
         unless line.blank
           text = line\gsub '\t', tab_expansion
-          new_text = text\usub(1, min_indent) .. prefix .. text\usub(min_indent + 1)
+          new_text = text\usub(1, min_indent) .. prefix .. text\usub(min_indent + 1) .. suffix
           line.text = new_text
 
       cursor.column = current_column + #prefix unless current_column == 1
 
   uncomment: (editor) =>
-    buffer, cursor = editor.buffer, editor.cursor
-    prefix = @short_comment_prefix
+    prefix, suffix = @_comment_pair!
     return unless prefix
-    pattern = r"()#{r.escape prefix}\\s?()"
+
+    buffer, cursor = editor.buffer, editor.cursor
+    pattern = r"()#{r.escape prefix}\\s?().*?()\\s?#{r.escape suffix}()$"
     current_column = cursor.column
-    cur_line_length = #editor.current_line
+    cur_line = editor.current_line
+    cur_line_length = #cur_line
+    cursor_delta = nil
 
     editor\transform_active_lines (lines) ->
       for line in *lines
-        start_pos, end_pos = line\umatch pattern
-        if start_pos
-          line.text = line\sub(1, start_pos - 1) .. line\sub(end_pos)
+        pfx_start, middle_start, sfx_start, trail_start = line\umatch pattern
+        if pfx_start
+          head = line\usub 1, pfx_start - 1
+          middle = line\usub middle_start, sfx_start - 1
+          trail = line\usub trail_start
+          line.text = head .. middle .. trail
+          cursor_delta = middle_start - pfx_start if line == cur_line
 
-      cursor.column = math.max 1, current_column - (cur_line_length - #editor.current_line)
+      if cursor_delta
+        cursor.column = math.max 1, current_column - cursor_delta
 
   toggle_comment: (editor) =>
-    prefix = @short_comment_prefix
+    prefix, suffix = @_comment_pair!
     return unless prefix
     pattern = r"^\\s*#{r.escape prefix}.*"
 
@@ -152,6 +163,15 @@ class DefaultMode
 
     alignment_adjustment = line.indentation % indent_level
     line.indentation + alignment_adjustment
+
+  _comment_pair: =>
+    return unless @comment_syntax
+    prefix, suffix = @comment_syntax, ''
+
+    if type(@comment_syntax) == 'table'
+      {prefix, suffix} = @comment_syntax
+
+    prefix, suffix
 
 -- Config variables
 

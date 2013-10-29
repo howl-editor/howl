@@ -7,7 +7,7 @@ class MoonscriptMode
   new: =>
     @lexer = bundle_load('moonscript_lexer')
 
-  short_comment_prefix: '--'
+  comment_syntax: '--'
 
   indent_after_patterns: {
     '[-=]>%s*$', -- fdecls

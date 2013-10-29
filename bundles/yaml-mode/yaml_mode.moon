@@ -8,7 +8,7 @@ class YAMLMode
   default_config:
     use_tabs: false
 
-  short_comment_prefix: '#'
+  comment_syntax: '#'
 
   indent_after_patterns: {
     ':%s*$',

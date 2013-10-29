@@ -28,7 +28,7 @@ class LispMode
   new: =>
     @lexer = bundle_load('lisp_lexer')
 
-  short_comment_prefix: ';'
+  comment_syntax: ';'
 
   default_config:
     word_pattern: '[^][%s/.(){}"\']+'

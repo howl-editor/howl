@@ -113,13 +113,13 @@ describe 'DefaultMode', ->
       buffer.text = text
       selection\set 1, lines[4].start_pos
 
-    context 'when .short_comment_prefix is not set', ->
+    context 'when .comment_syntax is not set', ->
       it 'does nothing', ->
         mode\comment editor
         assert.equal text, buffer.text
 
-    context 'when .short_comment_prefix is set', ->
-      before_each -> mode.short_comment_prefix = '--'
+    context 'when .comment_syntax is set to a string', ->
+      before_each -> mode.comment_syntax = '--'
 
       it 'prefixes the selected lines with the prefix and a space, at the minimum indentation level', ->
         mode\comment editor
@@ -146,23 +146,52 @@ describe 'DefaultMode', ->
         mode\comment editor
         assert.equal 6, cursor.column
 
+    context 'when .comment_syntax is set to a pair', ->
+      before_each -> mode.comment_syntax = {'/*', '*/'}
+
+      it 'wraps each selected line with the pair, at the minimum indentation level', ->
+        mode\comment editor
+        assert.equal [[
+  /* liñe 1 */
+
+  /*   liñe 2 */
+    liñe 3
+  ]], buffer.text
+
+      it 'comments the current line if nothing is selected', ->
+        selection\remove!
+        cursor.pos = 1
+        mode\comment editor
+        assert.equal [[
+  /* liñe 1 */
+
+    liñe 2
+    liñe 3
+  ]], buffer.text
+
+      it 'keeps the cursor position', ->
+        editor.selection.cursor = lines[3].start_pos + 2
+        mode\comment editor
+        assert.equal 6, cursor.column
+
   describe 'uncomment(editor)', ->
-    text = [[
+
+    context 'when .comment_syntax is not set', ->
+      it 'does nothing', ->
+        buffer.text = 'foo\nbar\n'
+        selection\set 1, lines[2].start_pos
+        mode\uncomment editor
+        assert.equal 'foo\nbar\n', buffer.text
+
+    context 'when .comment_syntax is set to a string', ->
+      before_each ->
+        buffer.mode.comment_syntax = '--'
+        buffer.text = [[
   --  liñe 1
     -- -- liñe 2
     --liñe 3
 ]]
-    before_each ->
-      buffer.text = text
-      selection\set 1, lines[3].start_pos
-
-    context 'when .short_comment_prefix is not set', ->
-      it 'does nothing', ->
-        mode\uncomment editor
-        assert.equal text, buffer.text
-
-    context 'when .short_comment_prefix is set', ->
-      before_each -> buffer.mode.short_comment_prefix = '--'
+        selection\set 1, lines[3].start_pos
 
       it 'removes the first instance of the comment prefix and optional space from each line', ->
         mode\uncomment editor
@@ -193,15 +222,54 @@ describe 'DefaultMode', ->
         mode\uncomment editor
         assert.equal "line\n", buffer.text
 
+    context 'when .comment_syntax is set to a pair', ->
+      before_each ->
+        buffer.mode.comment_syntax = {'/*', '*/'}
+        buffer.text = [[
+  /*  liñe 1 */
+    /* liñe 2 */
+    /*liñe 3*/
+]]
+        selection\set 1, lines[3].start_pos
+
+      it 'removes the first instance of the comment prefix and optional space from each line', ->
+        mode\uncomment editor
+        assert.equal [[
+   liñe 1
+    liñe 2
+    /*liñe 3*/
+]], buffer.text
+
+      it 'uncomments the current line if nothing is selected', ->
+        selection\remove!
+        cursor.line = 2
+        mode\uncomment editor
+        assert.equal [[
+  /*  liñe 1 */
+    liñe 2
+    /*liñe 3*/
+]], buffer.text
+
+      it 'keeps the cursor position', ->
+        editor.selection.cursor = lines[2].start_pos + 6
+        mode\uncomment editor
+        assert.equal 4, cursor.column
+
+      it 'does nothing for lines that are not commented', ->
+        buffer.text = "line\n"
+        cursor.line = 1
+        mode\uncomment editor
+        assert.equal "line\n", buffer.text
+
   describe 'toggle_comment(editor)', ->
-    context 'when mode does not provide .short_comment_prefix', ->
+    context 'when mode does not provide .comment_syntax', ->
       it 'does nothing', ->
         buffer.text = '-- foo'
         mode\toggle_comment editor
         assert.equal '-- foo', buffer.text
 
-    context 'when mode provides .short_comment_prefix', ->
-      before_each -> buffer.mode.short_comment_prefix = '--'
+    context 'when mode provides .comment_syntax', ->
+      before_each -> buffer.mode.comment_syntax = '--'
 
       it 'it uncomments if the first line starts with the comment prefix', ->
         buffer.text = '  -- foo'
