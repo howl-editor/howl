@@ -437,9 +437,11 @@ class Editor extends PropertyObject
 
     if @popup
       @popup.window\on_char_added self, params if @popup.window.on_char_added
-    elseif #@current_context.word_prefix >= config.completion_popup_after
-      @complete!
-      true
+    else
+      complete_allowed = @buffer.config.complete != 'manual'
+      if complete_allowed and #@current_context.word_prefix >= config.completion_popup_after
+        @complete!
+        true
 
   _on_text_inserted: (args) =>
     @buffer.sci_listener.on_text_inserted args
