@@ -26,10 +26,12 @@
 
   caml:
     extensions: { 'caml', 'ml', 'mli', 'mll', 'mly' }
+    comment_syntax: { '(*', '*)' }
 
   cmake:
     extensions: { 'cmake', 'ctest' }
     patterns: { '.cmake.in$', '.ctest.in$' }
+    comment_syntax: '#'
 
   coffeescript:
     extensions: 'coffee'
@@ -45,7 +47,7 @@
 
   dlang:
     extensions: 'd'
-    comment_syntax: '//'
+    comment_syntax: { '/*', '*/' }
 
   desktop:
     extensions: 'desktop'
@@ -101,6 +103,7 @@
 
   hypertext:
     extensions: { 'htm', 'html', 'shtm', 'shtml', 'xhtml' }
+    comment_syntax: { '<!--', '-->' }
 
   ini:
     extensions: { 'cfg', 'cnf', 'inf', 'ini', 'reg' }
@@ -120,6 +123,7 @@
 
   jsp:
     extensions: 'jsp'
+    comment_syntax: { '<%--', '--%>' }
 
   json:
     extensions: 'json'
@@ -196,6 +200,7 @@
 
   rhtml:
     extensions: { 'erb', 'rhtml' }
+    comment_syntax: { '<%-#', '-%>' }
 
   ruby:
     extensions: { 'rb', 'Rakefile', 'rake', 'rb', 'rbw'  }
@@ -218,6 +223,7 @@
 
   smalltalk:
     extensions: { 'changes', 'st', 'sources' }
+    comment_syntax: { '"', '"' }
 
   sql:
     extensions: { 'sql', 'ddl' }
@@ -241,4 +247,5 @@
 
   xml:
     extensions: { 'dtd', 'svg', 'xml', 'xsd', 'xsl', 'xslt', 'xul' }
+    comment_syntax: { '<!--', '-->' }
 }

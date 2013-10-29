@@ -22,6 +22,8 @@ class CSSMode
     '%s*}%s*$',
   }
 
+  comment_syntax: { '/*', '*/' }
+
   on_char_added: (args, editor) =>
     if args.key_name == 'return'
       return true if formatting.ensure_block editor, '{%s*$', '^%s*}'
