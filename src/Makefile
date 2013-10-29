@@ -65,7 +65,7 @@ $(LUAJIT):
 	@tools/download $(LUAJIT_URL) $(LUAJIT_CHECKSUM) tar xzf {file} -C deps
 
 $(LUAJIT_ARCHIVE): $(LUAJIT)
-	cd ${LUAJIT} && $(MAKE) XCFLAGS=-DLUAJIT_ENABLE_LUA52COMPAT
+	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT -DLUA_IDSIZE=120"
 
 $(LGI):
 	@tools/download $(LGI_URL) $(LGI_CHECKSUM) tar xzf {file} -C deps
