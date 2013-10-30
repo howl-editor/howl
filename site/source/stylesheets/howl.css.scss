@@ -1,0 +1,153 @@
+$border_radius: 10px;
+
+@mixin badge($text, $bcolor, $color) {
+  content: $text;
+  background-color: $bcolor;
+  color: $color;
+
+  border-radius: 7px;
+  margin: 0 0.5em 0.1em 0;
+  padding: 0px 0.3em 0.1em 0.2em;
+  border: 1px solid cadetblue;
+  font-size: 14px;
+  vertical-align: middle;
+  display: inline-block;
+ }
+
+@mixin property-badge { @include badge('P', skyblue, aliceblue); }
+@mixin method-badge { @include badge('m', mediumseagreen, aliceblue); }
+@mixin function-badge { @include badge('f (x)', mediumpurple, aliceblue); }
+
+.masthead {
+  margin-bottom: 2em;
+}
+
+code {
+  background-color: aliceblue;
+  color: steelblue;
+}
+
+.footer-logo {
+  float: left;
+}
+
+.footer-blurb {
+  font-size: smaller;
+  margin-left: 60px;
+  min-height: 50px;
+  vertical-align: text-bottom;
+}
+
+h3 {
+  background-color: aliceblue;
+  border: 1px solid cadetblue;
+  font-size: 18px;
+  padding: 10px;
+  border-radius: $border_radius;
+  margin: 1em 0 1em 0;
+  vertical-align: middle;
+}
+
+h4 {
+  margin-top: 1em;
+  font-size: 16px;
+  font-style: italic;
+  border-radius: $border_radius;
+}
+
+.dev_api {
+  li {
+    margin-top: 0.3em;
+  }
+
+  .toc {
+    margin-top: 2em;
+    border: 1px solid cadetblue;
+    border-radius: $border_radius;
+    margin-left: auto;
+    margin-right: auto;
+    display: inline-block;
+    min-width: 50%;
+
+    .toc-title {
+      background-color: aliceblue;
+      color: darkslategray;
+      border-bottom: 1px solid cadetblue;
+      border-top-left-radius: $border_radius;
+      border-top-right-radius: $border_radius;
+      font-size: 18px;
+      padding: 0.5em;
+      vertical-align: middle;
+    }
+
+    .toc-entries {
+      padding: 0.5em;
+    }
+
+    .toc-group {
+      margin: 0.5em;
+      li {
+        list-style: none;
+        margin-left: 1em;
+      }
+
+      .toc-group-header {
+        margin-bottom: 0.2em;
+        display: block;
+        font-weight: bold;
+
+        &.properties:before {
+          @include property-badge();
+          font-size: 8px;
+          margin-bottom: 0.3em;
+        }
+        &.methods:before {
+          @include method-badge();
+          font-size: 8px;
+          margin-bottom: 0.3em;
+        }
+        &.functions:before {
+          @include function-badge();
+          font-size: 8px;
+          margin-bottom: 0.3em;
+        }
+      }
+    }
+  }
+
+  @media (min-width: 1580px) {
+    .toc {
+      position: fixed;
+      top: 1em;
+      left: 1em;
+      min-width: 12%;
+    }
+  }
+
+  h1 {
+    margin: 1em 0 0.5em 0;
+  }
+
+  /* header: properties / methods / functions */
+  h2 {
+    padding: 0.5em;
+    border-bottom-left-radius: $border_radius;
+    border-bottom: 1px solid black;
+    margin: 1em 0 1em 0;
+  }
+
+  /* badges */
+  h2#properties ~ h3:before {
+    @include property-badge();
+  }
+
+  h2#methods ~ h3:before {
+    @include method-badge();
+  }
+
+  h2#functions ~ h3:before {
+    @include function-badge();
+  }
+
+
+}
