@@ -80,6 +80,9 @@ n = 'repeat-search'
 map['$'] = (editor) -> apply editor, (editor) ->
   editor.cursor.column_index = math.max(1, #editor.current_line)
 
+map['^'] = (editor) -> apply editor, (editor) ->
+  editor.cursor\home_indent!
+
 on_unhandled = (event) ->
   char = event.character
   modifiers = event.control or event.alt
