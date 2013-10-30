@@ -144,7 +144,9 @@ return {
       color: class_name
       font: bold: true
 
-    member: font: bold: true
+    member:
+      color: member
+      font: bold: true
 
     info: color: blue
     constant: color: orange
