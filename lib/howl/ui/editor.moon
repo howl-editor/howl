@@ -389,6 +389,8 @@ class Editor extends PropertyObject
     signal.emit 'selection-changed', editor: self, selection: @selection
 
   _on_changed: =>
+    @_update_position!
+    @_brace_highlight!
     signal.emit 'editor-changed', editor: self
 
   _brace_highlight: =>
