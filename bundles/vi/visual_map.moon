@@ -35,6 +35,10 @@ map = {
     editor.selection.persistent = false
     state.change_mode editor, 'insert'
   ':': -> command.run!
+
+  __on_selection_changed: (editor, selection) ->
+    if selection.empty and editor.cursor.pos != selection_start
+      cancel editor
 }
 
 setmetatable map, {

@@ -5,7 +5,7 @@ _G = _G
 _ENV = {}
 setfenv 1, _ENV
 
-export mode
+export mode, map
 export delete, change, yank, go
 export count, insert_edit
 
