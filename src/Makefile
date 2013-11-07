@@ -1,3 +1,5 @@
+PREFIX ?= /usr/local
+
 GTK = gtk+-3.0
 GTK_CFLAGS = $(shell pkg-config --cflags $(GTK))
 GTK_LIBS = $(shell pkg-config --libs $(GTK) gobject-introspection-1.0 gmodule-2.0 libffi)
@@ -94,3 +96,22 @@ lgi-update: $(LGI)
 	cp -r $(LGI)/lgi/override ../lib/ext/lgi/
 	cp -r $(LGI)/README.md ../lib/ext/lgi/
 	cp -r $(LGI)/LICENSE ../lib/ext/lgi/
+
+install: howl bytecode
+	@echo Installing to $(DESTDIR)$(PREFIX)..
+	@install -d $(DESTDIR)$(PREFIX)/bin/
+	@install -d $(DESTDIR)$(PREFIX)/share/howl/
+
+	@install ./howl $(DESTDIR)$(PREFIX)/bin/
+	@cp -rp ../bundles $(DESTDIR)$(PREFIX)/share/howl
+	@cp -rp ../lib $(DESTDIR)$(PREFIX)/share/howl
+	@cp -rp ../share/* $(DESTDIR)$(PREFIX)/share/
+	@echo All done.
+
+uninstall:
+	@echo Uninstalling from $(DESTDIR)$(PREFIX)..
+	@rm $(DESTDIR)$(PREFIX)/bin/howl
+	@rm -r $(DESTDIR)$(PREFIX)/share/howl
+	@rm $(DESTDIR)$(PREFIX)/share/applications/howl.desktop
+	@rm $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/howl.svg
+	@echo All done.
