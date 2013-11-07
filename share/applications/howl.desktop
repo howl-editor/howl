@@ -8,7 +8,6 @@ Type=Application
 StartupNotify=true
 MimeType=text/plain;
 Icon=howl
-Categories=GNOME;GTK;Utility;TextEditor;
-Actions=Window;Document;
-Keywords=Text;Plaintext;Write;
-
+Categories=Development;GTK;Utility;TextEditor;
+Actions=
+Keywords=Text;Plaintext;Write;Code;
