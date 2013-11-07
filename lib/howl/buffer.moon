@@ -248,6 +248,7 @@ class Buffer extends PropertyObject
 
       if background_buffer[1] != self
         background_sci\set_doc_pointer self.doc
+        background_sci\set_code_page Scintilla.SC_CP_UTF8
         background_buffer[1] = self
         background_sci.listener = @sci_listener
 
@@ -259,6 +260,7 @@ class Buffer extends PropertyObject
     if background_buffer[1] == self
       background_sci.listener = nil
 
+    sci\set_code_page Scintilla.SC_CP_UTF8
     sci\set_style_bits 8
     sci\set_lexer @_mode.lexer and Scintilla.SCLEX_CONTAINER or Scintilla.SCLEX_NULL
 
