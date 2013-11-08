@@ -186,6 +186,10 @@
     extensions: { 'sc', 'py', 'pyw' }
     shebangs: '[/ ]python.*$'
     comment_syntax: '#'
+    indent_after_patterns: {
+      { ':%s*$', 'else:%s*$' }
+    }
+    dedent_patterns: { 'else:%s*$'}
 
   rstats:
     extensions: { 'r', 'rout', 'rhistory', 'rt' }
