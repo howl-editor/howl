@@ -6,7 +6,8 @@
   %p.lead
     A general purpose, light-weight customizable editor.
   %p
-    %a.btn.btn-success(href="getit.html") Current version: 0.1.0-pre
+    %a.btn.btn-success(href="getit.html")
+      Current version: [Pre-release]
   %p
     = link_to image_tag('screenshots/howl-midnight.png', width: 100, height: 100), "images/screenshots/howl-midnight.png"
     = link_to image_tag('screenshots/howl-solarized.png', width: 100, height: 100), "images/screenshots/howl-solarized.png"
@@ -28,8 +29,8 @@
   .col-lg-4
     %h2 Try it out!
     %p
-      Howl is #{link_to "available", "getit.html"} as pre-built binary package for Linux. If you prefer to,
-      or if you're not on Linux, you can build it from source. Howl should build on other *NIX platforms as well
+      Howl is not yet officially released, but you can try it out if you're willing to build it
+      from source. Howl is developed on Linux, but it should build on other *NIX platforms as well
       such as the *BSD family, although your mileage may vary. Have a look at the
       installation instructions for more information.
     %p
@@ -38,10 +39,15 @@
   .col-lg-4
     %h2 Learn more
     %p
-      A good place to start off is the #{link_to "User manual", "manual/index.html"}, which should hopefully
-      get you off the ground.
+      %p.alert.alert-warning
+        Documentation is currently being worked on, and it's not really there yet.
+        It will be available before the release, and will be incrementally added. Have a
+        look at the link below to see what's currently available.
+
+    -#   A good place to start off is the #{link_to "User manual", "doc/manual/"}, which should hopefully
+    -#   get you off the ground.
+    -# %p
+    -#   If you're interested in what you can do with Howl, and how you can bend it to your will,
+    -#   head over to the #{link_to "Developer manual", "doc/dev/"}.
     %p
-      If you're interested in what you can do with Howl, and how you can bend it to your will,
-      head over to the #{link_to "Developer manual", "dev/index.html"}.
-    %p
-      %a.btn.btn-primary(href="documentation.html") View documentation &raquo;
+      %a.btn.btn-primary(href="doc/") View documentation &raquo;
