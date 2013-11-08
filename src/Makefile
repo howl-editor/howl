@@ -57,14 +57,15 @@ $(LPEG_OBJECT): $(LPEG) $(LUAJIT)
 
 $(SCINTILLA):
 	@tools/download $(SCINTILLA_URL) $(SCINTILLA_CHECKSUM) tar xzf {file} -C deps
-	mv deps/scintilla $(SCINTILLA)
-	perl -piorig -e 's/LINK_LEXER\(\w+\);//' $(SCINTILLA)/src/Catalogue.cxx
+	@mv deps/scintilla $(SCINTILLA)
+	@perl -piorig -e 's/LINK_LEXER\(\w+\);//' $(SCINTILLA)/src/Catalogue.cxx
 
 $(SCINTILLA_ARCHIVE): $(SCINTILLA)
 	cd ${SCINTILLA}/gtk && make $(SCINTILLA_DEFS)
 
 $(LUAJIT):
 	@tools/download $(LUAJIT_URL) $(LUAJIT_CHECKSUM) tar xzf {file} -C deps
+	@perl -piorig -e 's/LUA_IDSIZE\s*\d+/LUA_IDSIZE 120/' $(LUAJIT)/src/luaconf.h
 
 $(LUAJIT_ARCHIVE): $(LUAJIT)
 	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT -DLUA_IDSIZE=120"
@@ -110,8 +111,8 @@ install: howl bytecode
 
 uninstall:
 	@echo Uninstalling from $(DESTDIR)$(PREFIX)..
-	@rm $(DESTDIR)$(PREFIX)/bin/howl
-	@rm -r $(DESTDIR)$(PREFIX)/share/howl
-	@rm $(DESTDIR)$(PREFIX)/share/applications/howl.desktop
-	@rm $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/howl.svg
+	@rm -v $(DESTDIR)$(PREFIX)/bin/howl
+	@rm -vr $(DESTDIR)$(PREFIX)/share/howl
+	@rm -v $(DESTDIR)$(PREFIX)/share/applications/howl.desktop
+	@rm -v $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/howl.svg
 	@echo All done.
