@@ -41,9 +41,11 @@ ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE) $(LGI_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E
 OBJECTS = main.o sci.o
-DEP_OBJECTS = $(LPEG)/lpeg.o $(SCINTILLUA_LEXER)
+DEP_OBJECTS = $(LPEG_OBJECT)
 
-howl: ${OBJECTS} main.h $(DEP_OBJECTS) $(ARCHIVES) Makefile
+all: howl bytecode
+
+howl: ${OBJECTS} main.h $(ARCHIVES) $(DEP_OBJECTS) Makefile
 	${CC} -o howl ${CFLAGS} ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
 
 ${OBJECTS}: %.o : %.c main.h $(SCINTILLA) $(LUAJIT)
@@ -68,7 +70,7 @@ $(LUAJIT):
 	@perl -piorig -e 's/LUA_IDSIZE\s*\d+/LUA_IDSIZE 120/' $(LUAJIT)/src/luaconf.h
 
 $(LUAJIT_ARCHIVE): $(LUAJIT)
-	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT -DLUA_IDSIZE=120"
+	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT"
 
 $(LGI):
 	@tools/download $(LGI_URL) $(LGI_CHECKSUM) tar xzf {file} -C deps
@@ -98,7 +100,7 @@ lgi-update: $(LGI)
 	cp -r $(LGI)/README.md ../lib/ext/lgi/
 	cp -r $(LGI)/LICENSE ../lib/ext/lgi/
 
-install: howl bytecode
+install: howl
 	@echo Installing to $(DESTDIR)$(PREFIX)..
 	@install -d $(DESTDIR)$(PREFIX)/bin/
 	@install -d $(DESTDIR)$(PREFIX)/share/howl/
