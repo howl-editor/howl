@@ -43,7 +43,7 @@
 
   cpp:
     extensions: { 'c', 'cc', 'cpp', 'cxx', 'c++', 'h', 'hh', 'hpp', 'hxx', 'h++' }
-    comment_syntax: '//'
+    comment_syntax: { '/*', '*/' }
 
   dlang:
     extensions: 'd'
