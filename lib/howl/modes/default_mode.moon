@@ -25,7 +25,6 @@ class DefaultMode
     '[': ']'
     '{': '}'
     '"': '"'
-    "'": "'"
   }
 
   indent: (editor) =>
