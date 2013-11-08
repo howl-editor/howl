@@ -1,5 +1,5 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE)
+-- License: MIT (see LICENSE.md)
 
 import Matcher from howl.util
 import config from howl

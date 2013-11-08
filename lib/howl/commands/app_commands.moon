@@ -1,5 +1,5 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE)
+-- License: MIT (see LICENSE.md)
 
 import command, config, keyhandler, bundle, signal, inputs from howl
 import ActionBuffer, List from howl.ui
