@@ -1,5 +1,7 @@
 # The Howl editor
 
+[![Build Status](https://travis-ci.org/nilnor/howl.png?branch=master)](https://travis-ci.org/nilnor/howl)
+
 ## What is it?
 
 Howl is a general purpose editor, that aims to be both light-weight
