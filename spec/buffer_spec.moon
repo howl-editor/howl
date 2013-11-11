@@ -81,7 +81,7 @@ describe 'Buffer', ->
     describe 'when <file> exists', ->
       describe 'and the buffer is not modified', ->
 
-        before ->
+        before_each ->
           b.text = 'foo'
           b.modified = false
 
