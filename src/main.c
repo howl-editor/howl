@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include <gio/gio.h>
+#include <string.h>
 
 static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 {
@@ -80,6 +81,12 @@ static lua_State *open_lua_state(const gchar *app_root)
 
 int main(int argc, char *argv[])
 {
+  if (argc == 2 && strcmp(argv[1], "--compile") == 0) {
+    g_type_init();
+  }
+  else {
+    gtk_init(&argc, &argv);
+  }
   gchar *app_root = get_app_root(argv[0]);
   lua_State *L = open_lua_state(app_root);
   lua_run(argc, argv, app_root, L);
