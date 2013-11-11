@@ -106,20 +106,23 @@ local function main(args)
   require('howl.globals')
   _G.log = require('howl.log')  local args = parse_args(argv)
 
-  howl.app = howl.Application(howl.fs.File(app_root), args)
 
   if args.compile then
     compile(args)
-  elseif os.getenv('BUSTED') then
-    local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
-    support()
-    local busted = assert(loadfile(argv[2]))
-    arg = {table.unpack(argv, 3, #argv)}
-    busted()
   else
-    status, err = pcall(howl.app.run, howl.app)
-    if not status then
-      print(err)
+    howl.app = howl.Application(howl.fs.File(app_root), args)
+
+    if os.getenv('BUSTED') then
+      local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
+      support()
+      local busted = assert(loadfile(argv[2]))
+      arg = {table.unpack(argv, 3, #argv)}
+      busted()
+    else
+      status, err = pcall(howl.app.run, howl.app)
+      if not status then
+        print(err)
+      end
     end
   end
 end
