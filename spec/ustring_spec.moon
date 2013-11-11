@@ -32,10 +32,11 @@ describe 'ustrings', ->
     assert.equal '', ('  \t').stripped
     assert.equal '', ('').stripped
 
-  it 'ucompare(s1, s2) returns -1, 0 or 1 if s1 is smaller, equal or greater than s2', ->
-    assert.equal -1, 'a'\ucompare 'b'
-    assert.equal -1, 'a'\ucompare 'ä'
-    assert.equal 1, 'ö'\ucompare 'ä'
+  it 'ucompare(s1, s2) returns negative, 0 or positive if s1 is smaller, equal or greater than s2', ->
+    assert.is_true 'a'\ucompare('b') < 0
+    assert.is_true 'a'\ucompare('ä') < 0
+    assert.equal 0, 'a'\ucompare('a')
+    assert.is_true 'ö'\ucompare('ä') > 0
 
   describe 'usub(i, [j])', ->
     s = 'aåäöx'
