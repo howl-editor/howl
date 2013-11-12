@@ -102,12 +102,15 @@ lgi-update: $(LGI)
 
 install: howl
 	@echo Installing to $(DESTDIR)$(PREFIX)..
-	@install -d $(DESTDIR)$(PREFIX)/bin/
-	@install -d $(DESTDIR)$(PREFIX)/share/howl/
+	@mkdir -p $(DESTDIR)$(PREFIX)/bin/
+	@mkdir -p $(DESTDIR)$(PREFIX)/share/howl/
+	@mkdir -p $(DESTDIR)$(PREFIX)/share/howl/spec
 
-	@install ./howl $(DESTDIR)$(PREFIX)/bin/
+	@cp -p howl $(DESTDIR)$(PREFIX)/bin/
+	@cp -p ../bin/howl-spec $(DESTDIR)$(PREFIX)/bin/
 	@cp -rp ../bundles $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../lib $(DESTDIR)$(PREFIX)/share/howl
+	@cp -rp ../spec/support $(DESTDIR)$(PREFIX)/share/howl/spec
 	@cp -rp ../share/* $(DESTDIR)$(PREFIX)/share/
 	@echo All done.
 
