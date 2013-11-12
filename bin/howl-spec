@@ -16,5 +16,21 @@ if [ -z "$HOWL" ]; then
   exit 1
 fi
 
-export BUSTED='yes'
-exec busted -l $HOWL --pattern=_spec.moon $*
+if command -v busted > /dev/null 2>/dev/null; then
+  export BUSTED='yes'
+  exec busted -l $HOWL --pattern=_spec.moon $*
+else
+  cat <<ERR
+Error: 'busted' command not found
+---------------------------------
+
+To run $0 you need to have the busted testing framework installed.
+The easiest way of doing this is to install luarocks, and execute:
+
+$ luarocks install busted
+
+luarocks might be available from your package manager, or you can install
+it using the instructions from http://luarocks.org
+ERR
+  exit 1
+fi
