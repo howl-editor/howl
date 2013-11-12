@@ -11,7 +11,7 @@ install:
   - sudo luarocks install busted
   - (cd src && make)
 
-script: "./bin/spec -o TAP && ./bin/spec -o TAP bundles"
+script: "./bin/howl-spec -o TAP && ./bin/howl-spec -o TAP bundles"
 
 notifications:
   recipients:
