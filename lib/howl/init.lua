@@ -104,8 +104,8 @@ local function main(args)
   lgi = require('lgi')
   howl = auto_module('howl')
   require('howl.globals')
-  _G.log = require('howl.log')  local args = parse_args(argv)
-
+  _G.log = require('howl.log')
+  local args = parse_args(argv)
 
   if args.compile then
     compile(args)
