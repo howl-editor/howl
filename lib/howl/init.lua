@@ -119,15 +119,12 @@ local function main(args)
       arg = {table.unpack(argv, 3, #argv)}
       busted()
     else
-      status, err = pcall(howl.app.run, howl.app)
-      if not status then
-        print(err)
-      end
+      howl.app:run()
     end
   end
 end
 
-status, err = pcall(main, args)
+local status, err = pcall(main, args)
 if not status then
   print(err)
 end
