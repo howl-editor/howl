@@ -263,6 +263,7 @@ class Readline extends PropertyObject
     escape: => @_cancel!
     ctrl_c: => @_cancel!
     ctrl_g: => @_cancel!
+    ctrl_v: => @sci\paste!
 
     left: => @cursor\left! if not @_at_start!
     right: => @cursor\right!
