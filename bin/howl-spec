@@ -3,7 +3,6 @@
 # Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 # License: MIT (see LICENSE)
 
-
 ROOT=$(cd $(dirname $0)/.. && pwd)
 for howl in $ROOT/bin/howl $ROOT/src/howl; do
   if [ -e $howl ]; then
