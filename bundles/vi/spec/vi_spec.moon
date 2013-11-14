@@ -29,9 +29,11 @@ describe 'VI', ->
     editor.buffer = buffer
     cursor.line = 2
     _G.editor = editor
+    state.activate editor
 
   after_each ->
     state.reset!
+    state.deactivate!
     _G.editor = nil
 
   teardown -> bundle.unload 'vi'

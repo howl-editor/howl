@@ -1,9 +1,7 @@
-import signal, config, keyhandler from howl
+import signal, config, keyhandler, command from howl
 import Editor from howl.ui
 
 default_keymap = keyhandler.keymap
-
-Editor.register_indicator 'vi', 'bottom_left'
 state = bundle_load 'state'
 
 maps = {
@@ -12,36 +10,68 @@ maps = {
   visual: bundle_load 'visual_map', state
 }
 
-state.init maps, 'command'
-
 signal_handlers = {
-  'editor-focused': (args) -> state.change_mode args.editor, state.mode
-  'editor-defocused': (args) -> args.editor.indicator.vi.label = ''
-  'after-buffer-switch': (args) -> state.change_mode args.editor, 'command'
+  'editor-focused': (args) -> state.change_mode args.editor, state.mode if state.active
+  'editor-defocused': (args) -> args.editor.indicator.vi.label = '' if state.active
+  'after-buffer-switch': (args) -> state.change_mode args.editor, 'command' if state.active
 
   'selection-changed': (args) ->
-    if state.mode == 'visual'
+    if state.active and state.mode == 'visual'
       state.map.__on_selection_changed args.editor, args.selection
 
   'buffer-saved': (args) ->
-    if _G.editor.buffer == args.buffer
+    if state.active and _G.editor.buffer == args.buffer
       state.change_mode _G.editor, 'command'
 }
+
+vi_commands = {
+  {
+    name: 'vi-on',
+    description: 'Switches VI mode on'
+    handler: -> state.activate(_G.editor) unless state.active
+  }
+
+  {
+    name: 'vi-off',
+    description: 'Switches VI mode off'
+    handler: ->
+      if state.active
+        state.deactivate!
+
+        for editor in *howl.app.editors
+          with editor
+            .indicator.vi.label = ''
+            .cursor.style = 'line'
+            .cursor.blink_interval = config.cursor_blink_interval
+  }
+
+  {
+    name: 'vi-toggle',
+    description: 'Toggles VI mode'
+    handler: -> if state.active then command.vi_off! else command.vi_on!
+  }
+}
+
+unload = ->
+  command.vi_off!
+
+  for name, handler in pairs signal_handlers
+    signal.disconnect name, handler
+
+  command.unregister cmd.name for cmd in *vi_commands
+
+  Editor.unregister_indicator 'vi'
+
+-- Hookup
+Editor.register_indicator 'vi', 'bottom_left'
+state.init maps, 'command'
 
 for name, handler in pairs signal_handlers
   signal.connect name, handler
 
-unload = ->
-  for name, handler in pairs signal_handlers
-    signal.disconnect name, handler
+command.register cmd for cmd in *vi_commands
 
-  Editor.unregister_indicator 'vi'
-  keyhandler.keymap = default_keymap
-
-  for editor in *howl.app.editors
-    editor.cursor.style = 'line'
-    editor.cursor.blink_interval = config.cursor_blink_interval
-
+-- state.activate!
 info = {
   author: 'Nils Nordman <nino at nordman.org>',
   description: 'VI bundle',

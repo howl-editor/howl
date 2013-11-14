@@ -5,7 +5,9 @@ _G = _G
 _ENV = {}
 setfenv 1, _ENV
 
+default_keymap = keyhandler.keymap
 export mode, map
+export active = false
 export delete, change, yank, go
 export count, insert_edit
 
@@ -81,8 +83,17 @@ export repeat_last = (editor) ->
 
   reset!
 
-export init = (keymaps, start_mode) ->
+export init = (keymaps) ->
   maps = keymaps
-  change_mode nil, start_mode
+
+export activate = (editor) ->
+  unless active
+    change_mode editor, 'command'
+    active = true
+
+export deactivate = ->
+  if active
+    keyhandler.keymap = default_keymap
+    active = false
 
 return _ENV
