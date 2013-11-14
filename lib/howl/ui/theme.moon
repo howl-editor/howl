@@ -13,6 +13,7 @@ Gtk.StyleContext.add_provider_for_screen screen, css_provider, 600
 
 css_template = [[
 GtkWindow.main {
+  background-color: ${editor_background_color};
   ${window_background};
 }
 
