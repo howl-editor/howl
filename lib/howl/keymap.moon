@@ -43,6 +43,11 @@
   ctrl_up:          'editor-scroll-up'
   ctrl_down:        'editor-scroll-down'
 
+  ctrl_shift_left:  'cursor-word-left-extend'
+  ctrl_shift_right: 'cursor-word-right-extend'
+  ctrl_shift_up:    'editor-scroll-up'
+  ctrl_shift_down:  'editor-scroll-down'
+
   page_up:          'cursor-page-up'
   shift_page_up:    'cursor-page-up-extend'
   page_down:        'cursor-page-down'
@@ -52,8 +57,8 @@
   home:             'cursor-home'
   shift_home:       'cursor-home-extend'
 
-  ctrl_shift_left:  'view-left-or-create'
-  ctrl_shift_right: 'view-right-or-create'
-  ctrl_shift_up:    'view-up-or-create'
-  ctrl_shift_down:  'view-down-or-create'
+  shift_alt_left:  'view-left-or-create'
+  shift_alt_right: 'view-right-or-create'
+  shift_alt_up:    'view-up-or-create'
+  shift_alt_down:  'view-down-or-create'
 }
