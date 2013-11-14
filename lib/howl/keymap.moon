@@ -13,6 +13,8 @@
   ctrl_v:           'editor-paste'
   ctrl_w:           'close-view'
   ctrl_x:           'editor-cut'
+  ctrl_z:           'editor-undo'
+  ctrl_Z:           'editor-redo'
   ctrl_space:       'editor-complete'
   ctrl_slash:       'editor-toggle_comment'
   'ctrl_-':         'zoom-out'
