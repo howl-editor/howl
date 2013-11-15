@@ -7,20 +7,20 @@ class AutoTOC
     @app = app
   end
 
+  def is_doc_page?(content)
+    content.include? '<html>' and content =~ /<body class=['"]doc/
+  end
+
   def call(env)
     status, headers, response = @app.call(env)
     response_body = ''
     response.each { |p| response_body += p }
-    return [status, headers, response] unless is_api_page?(response_body)
+    return [status, headers, response] unless is_doc_page?(response_body)
 
     toc = generate_toc response_body
     response_body = response_body.sub('<h2', "#{toc}<h2")
     headers["Content-Length"] = response_body.length.to_s
     [status, headers, [response_body]]
-  end
-
-  def is_api_page?(content)
-    ['<html>', 'dev_api'].all? { |t| content.include? t }
   end
 
   def generate_toc(content)
