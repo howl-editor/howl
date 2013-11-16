@@ -620,7 +620,7 @@ for cmd_spec in *{
 for sel_cmd_spec in *{
   { 'copy', 'Copies the current selection to the clipboard' }
   { 'cut', 'Cuts the current selection to the clipboard' }
-  { 'select-all', 'Cuts the current selection to the clipboard' }
+  { 'select-all', 'Selects all text' }
 }
   command.register
     name: "editor-#{sel_cmd_spec[1]}"
