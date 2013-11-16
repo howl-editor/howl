@@ -1,4 +1,4 @@
-import command, inputs, config from howl
+import command, inputs, config, keymap from howl
 
 describe 'command', ->
   local cmd, readline
@@ -209,10 +209,11 @@ describe 'command', ->
           command.run!
           assert.is_false input\should_complete '', readline
 
-        it 'complete(..) returns a list of command names and descriptions', ->
+        it 'complete(..) returns a list of command names, key bindings, and descriptions', ->
+          keymap.ctrl_shift_p = 'p_cmd'
           command.run!
           completions = input\complete '', readline
-          assert.same completions, { { 'p_cmd', 'desc' } }
+          assert.same completions, { { 'p_cmd', 'ctrl_shift_p', 'desc' } }
 
       context 'when entering command arguments', ->
         it 'delegates all input methods to the current corresponding input', ->
