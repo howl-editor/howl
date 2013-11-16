@@ -13,6 +13,7 @@ class Readline extends PropertyObject
   new: (@window) =>
     @bin = Gtk.Box orientation: 'HORIZONTAL'
     @showing = false
+    @session_id = 0
     super!
 
   show: =>
@@ -47,6 +48,7 @@ class Readline extends PropertyObject
     error 'Missing parameter "callback"', 2 unless callback
     input = inputs[input] if type(input) == 'string'
     input = input! if callable input
+    @session_id += 1
     @show! if not @showing
     @prompt = prompt or ''
     @title = input.title or ''
@@ -238,13 +240,14 @@ class Readline extends PropertyObject
 
     value = @input\value_for value if @input.value_for
     @_show_only_cmd_line!
+    session_id = @session_id
     status, ret = pcall self.callback, value, self
     if not status
       @hide!
       error ret
 
     if ret != false
-      @hide!
+      @hide! if session_id == @session_id
     else
       @_complete!
 
