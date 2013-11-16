@@ -1,7 +1,7 @@
 # Requires guard-shell
 
 def run_spec(spec)
-  system("./bin/spec #{spec}")
+  system("./bin/howl-spec #{spec}")
 end
 
 guard :shell do
