@@ -109,13 +109,13 @@ class Readline extends PropertyObject
     list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
     if count > 0
       @completion_list = List @buffer, list_position
-      list_options = options and options.list or {}
+      list_options = options.list or {}
       with @completion_list
         .items = completions
         .max_height = @_max_list_lines!
         .selection_enabled = true
+        .highlight_matches_for = text
         @completion_list[k] = v for k, v in pairs list_options
-        @completion_list.highlight_matches_for = text unless list_options.highlight_matches_for != nil
         \show!
 
     @_adjust_height!
