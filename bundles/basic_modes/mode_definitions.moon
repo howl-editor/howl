@@ -139,6 +139,14 @@
     default_config:
       use_tabs: true
 
+    keymap: {
+      tab: (editor) ->
+        if editor.current_context.prefix.blank
+          editor\insert '\t'
+        else
+          false
+    }
+
   markdown:
     extensions: 'md'
     default_config:
