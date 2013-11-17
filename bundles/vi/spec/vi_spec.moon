@@ -86,6 +86,15 @@ describe 'VI', ->
     press 'r', 'F'
     assert.equal 'FinƏ two', lines[2].text
 
+  it '<f><character> searches forward in the current line to <character>', ->
+    press 'f', 'n'
+    assert.equal 3, cursor.column
+
+  it '<F><character> searches backwards in the current line to <character>', ->
+    cursor.column = 4
+    press 'F', 'i'
+    assert.equal 2, cursor.column
+
   it '<c><w> deletes to the end of word and enters insert', ->
     press 'c', 'w'
     assert.equal ' two', editor.current_line.text
