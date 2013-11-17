@@ -40,7 +40,7 @@ describe 'VI', ->
 
   press = (...) ->
     for key in *{...}
-      keyhandler.process editor, key_name: key, character: key, key_code: 123
+      keyhandler.process {key_name: key, character: key, key_code: 123}, 'editor', nil, editor
 
   it '<j> moves down one line', ->
     press 'j'

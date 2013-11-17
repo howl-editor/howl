@@ -57,8 +57,8 @@ export with_tmpdir = (f) ->
   dir\delete_all! if dir.exists
   error err if not status
 
-export with_signal_handler = (name, f) ->
-  handler = spy.new -> nil
+export with_signal_handler = (name, ret, f) ->
+  handler = spy.new -> ret
   signal.connect name, handler
   status, err = pcall f, handler
   signal.disconnect name, handler

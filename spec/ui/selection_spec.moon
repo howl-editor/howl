@@ -128,7 +128,7 @@ describe 'Selection', ->
       assert.equal 'Liñe 1 ʘf tƏxt', buffer.lines[1].text
 
     it 'signals "selection-cut"', ->
-      with_signal_handler 'selection-cut', (handler) ->
+      with_signal_handler 'selection-cut', nil, (handler) ->
         selection\set 1, 5
         selection\cut!
         assert.spy(handler).was_called!
@@ -152,7 +152,7 @@ describe 'Selection', ->
       assert.equal 'LiñeLiñe 1 ʘf tƏxt', buffer.lines[1].text
 
     it 'signals "selection-copied"', ->
-      with_signal_handler 'selection-copied', (handler) ->
+      with_signal_handler 'selection-copied', nil, (handler) ->
         selection\set 1, 5
         selection\copy!
         assert.spy(handler).was_called!

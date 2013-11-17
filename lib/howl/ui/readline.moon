@@ -140,7 +140,7 @@ class Readline extends PropertyObject
     max_lines
 
   _on_keypress: (event) =>
-    return true if keyhandler.dispatch event, { @keymap }, self
+    return true if keyhandler.dispatch event, 'readline', { @keymap }, self
     return event.character == nil or event.ctrl or event.alt
 
   _on_char_added: (event) =>

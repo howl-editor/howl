@@ -19,7 +19,7 @@ to_insert = (editor) ->
   state.change_mode editor, 'insert'
   state.record editor, ->
 
-replace_char = (event, translations, editor) ->
+replace_char = (event, source, translations, editor) ->
   if event.character
     apply editor, (editor) ->
       with editor.cursor

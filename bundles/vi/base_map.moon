@@ -14,13 +14,13 @@ default_map = keyhandler.keymap
 
 cursor_home = (editor) -> apply editor, (editor) -> editor.cursor\home!
 
-forward_to_char = (event, translations, editor) ->
+forward_to_char = (event, source, translations, editor) ->
   if event.character
     apply editor, (editor) -> editor\forward_to_match event.character
   else
     return false
 
-back_to_char = (event, translations, editor) ->
+back_to_char = (event, source, translations, editor) ->
   if event.character
     apply editor, (editor) -> editor\backward_to_match event.character
   else
@@ -83,7 +83,7 @@ map['$'] = (editor) -> apply editor, (editor) ->
 map['^'] = (editor) -> apply editor, (editor) ->
   editor.cursor\home_indent!
 
-on_unhandled = (event) ->
+on_unhandled = (event, source, translations) ->
   char = event.character
   modifiers = event.control or event.alt
   if char and not modifiers
@@ -97,7 +97,7 @@ on_unhandled = (event) ->
 
     return -> true
 
-  (editor) -> keyhandler.dispatch event, { default_map }, editor
+  (...) -> keyhandler.dispatch event, source, { default_map }, ...
 
 config.watch 'vi_command_cursor_blink_interval', (_, value) ->
   cursor_properties.blink_interval = value

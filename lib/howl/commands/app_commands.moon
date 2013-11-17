@@ -76,7 +76,7 @@ command.register
     editor = howl.app\add_buffer buffer
     editor.cursor\eof!
 
-    keyhandler.capture (event, translations) ->
+    keyhandler.capture (event, source, translations) ->
       buffer.lines\delete 3, #buffer.lines
       buffer\append 'Key translations (usable from keymap):\n', 'comment'
       buffer\append serpent.block translations, comment: false

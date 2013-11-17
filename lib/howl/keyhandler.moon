@@ -12,6 +12,8 @@ processing is skipped.
     editor: 'The editor for which the key press occured'
     event: 'The event for the key press'
     translations: 'A list of readable translations for the key event'
+    source: 'The source of the key press (e.g. "editor")'
+    parameters: 'Other source specific parameters (e.g. an editor for source = "editor")'
 
 _ENV = {}
 setfenv(1, _ENV) if setfenv
@@ -49,7 +51,7 @@ export translate_key = (event) ->
   append translations, ctrl .. shift .. alt .. event.key_code
   translations
 
-find_handlers = (translations, event, keymaps) ->
+find_handlers = (event, source, translations, keymaps, ...) ->
   handlers = {}
   for map in *keymaps
     if map
@@ -59,15 +61,15 @@ find_handlers = (translations, event, keymaps) ->
         break if handler
 
       if not handler and callable map.on_unhandled
-        handler = map.on_unhandled event, translations
+        handler = map.on_unhandled event, source, translations, ...
 
       append handlers, handler if handler
 
   handlers
 
-process_capture = (event, translations, ...) ->
+process_capture = (event, source, translations, ...) ->
   if capture_handler
-    status, ret = pcall capture_handler, event, translations, ...
+    status, ret = pcall capture_handler, event, source, translations, ...
     if not status or ret != false
       capture_handler = nil
 
@@ -75,9 +77,9 @@ process_capture = (event, translations, ...) ->
 
     return true
 
-export dispatch = (event, keymaps, ...) ->
+export dispatch = (event, source, keymaps, ...) ->
   translations = translate_key event
-  handlers = find_handlers translations, event, keymaps
+  handlers = find_handlers event, source, translations, keymaps, ...
 
   for handler in *handlers
     status, ret = true, true
@@ -92,15 +94,15 @@ export dispatch = (event, keymaps, ...) ->
 
   false
 
-export process = (editor, event) ->
+export process = (event, source, extra_keymaps,  ...) ->
   translations = translate_key event
-  buffer = editor.buffer
-  maps = { buffer.keymap, buffer.mode and buffer.mode.keymap, keymap }
+  return true if process_capture event, source, translations, ...
+  return true if signal.emit 'key-press', :event, :source, :translations, parameters: {...}
 
-  return true if process_capture event, translations, editor
-  return true if signal.emit 'key-press', :event, :translations, :editor
+  maps = { keymap }
+  append maps, map for map in *(extra_keymaps or {})
 
-  dispatch event, maps, editor
+  dispatch event, source, maps, ...
 
 export capture = (handler) ->
   capture_handler = handler

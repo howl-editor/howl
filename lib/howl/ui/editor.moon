@@ -373,13 +373,14 @@ class Editor extends PropertyObject
         @remove_popup!
       else
         if @popup.window.keymap
-          return true if keyhandler.dispatch event, { @popup.window.keymap }, @popup.window
+          return true if keyhandler.dispatch event, 'completion', { @popup.window.keymap }, @popup.window
 
         @remove_popup! if not @popup.options.persistent
     else
       @searcher\cancel!
 
-    keyhandler.process self, event
+    maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
+    keyhandler.process event, 'editor', maps, self
 
   _on_selection_changed: =>
     @_update_position!

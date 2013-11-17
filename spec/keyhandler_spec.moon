@@ -53,159 +53,126 @@ describe 'keyhandler', ->
         translations = keyhandler.translate_key key_code: 123, key_name: name
         assert.includes translations, alternative
 
-  describe 'process(editor, buffer, event)', ->
-    context 'when firing the key-press signal', ->
-      it 'passes the event, translations and editor', ->
-        event = character: 'A', key_name: 'a', key_code: 65
-        editor = buffer: keymap: {}
-        signal_handler = spy.new -> true
-        signal.connect 'key-press', signal_handler
+  describe 'process(event, source, extra_keymaps, ..)', ->
 
-        status, ret = pcall keyhandler.process editor, event
-        signal.disconnect 'key-press', signal_handler
-        assert.spy(signal_handler).was.called_with :event, :editor, translations: { 'A', 'a', '65' }
+    context 'when firing the key-press signal', ->
+
+      it 'passes the event, translations, source and parameters', ->
+        event = character: 'A', key_name: 'a', key_code: 65
+
+        with_signal_handler 'key-press', nil, (handler) ->
+          status, ret = pcall keyhandler.process, event, 'editor', {}, 'yowser'
+          assert.spy(handler).was.called_with {
+            :event
+            source: 'editor'
+            translations: { 'A', 'a', '65' }
+            parameters: { 'yowser' }
+          }
 
       it 'returns early with true if the handler does', ->
         buffer = keymap: Spy!
-        signal_handler = Spy with_return: true
-        signal.connect 'key-press', signal_handler
-
-        status, ret = pcall keyhandler.process, :buffer, { character: 'A', key_name: 'A', key_code: 65 }
-        signal.disconnect 'key-press', signal_handler
-
-        assert.equal #buffer.keymap.reads, 0
-        assert.is_true signal_handler.called
-        assert.is_true ret
+        with_signal_handler 'key-press', true, (handler) ->
+          status, ret = pcall keyhandler.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
+          assert.equal #buffer.keymap.reads, 0
+          assert.spy(handler).was.called
+          assert.is_true ret
 
       it 'continues processing keymaps if the handler returns false', ->
-        keymap_handler = Spy!
-        buffer = keymap: A: keymap_handler
-        signal_handler = Spy with_return: false
-        signal.connect 'key-press', signal_handler
-
-        status, ret = pcall keyhandler.process, :buffer, { character: 'A', key_name: 'A', key_code: 65 }
-        signal.disconnect 'key-press', signal_handler
-
-        assert.is_true keymap_handler.called
+        buffer = keymap: A: spy.new -> true
+        with_signal_handler 'key-press', true, (handler) ->
+          status, ret = pcall keyhandler.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
+          assert.spy(buffer.keymap.A).was_called
 
     context 'when looking up handlers', ->
 
       it 'tries each translated key, and .on_unhandled in order for a given keymap', ->
-        buffer = keymap: Spy!
-        keyhandler.process :buffer, { character: 'A', key_name: 'a', key_code: 65 }
-        assert.same buffer.keymap.reads, { 'A', 'a', '65', 'on_unhandled' }
+        keyhandler.keymap = Spy!
+        keyhandler.process { character: 'A', key_name: 'a', key_code: 65 }, 'editor'
+        assert.same keyhandler.keymap.reads, { 'A', 'a', '65', 'on_unhandled' }
 
-      it 'searches the buffer keymap -> the mode keymap -> global keymap', ->
+      it 'searches all extra keymaps and the global keymap', ->
         key_args = character: 'A', key_name: 'a', key_code: 65
         buffer_map = Spy!
         mode_map = Spy!
         keyhandler.keymap = Spy!
 
-        buffer =
-          keymap: buffer_map
-          mode:
-            keymap: mode_map
-
-        keyhandler.process :buffer, key_args
+        keyhandler.process key_args, 'editor', { buffer_map, mode_map }
         assert.equal #keyhandler.keymap.reads, 4
         assert.same keyhandler.keymap.reads, mode_map.reads
         assert.same mode_map.reads, buffer_map.reads
 
       context 'when .on_unhandled is defined and keys are not found in a keymap', ->
-        it 'is called with the event and translations', ->
-          on_unhandled = Spy!
-          buffer = keymap: { :on_unhandled }
+        it 'is called with the event, source, translations and extra parameters', ->
+          keymap = on_unhandled: spy.new ->
           event = character: 'A', key_name: 'a', key_code: 65
-          keyhandler.process :buffer, event
-          assert.same on_unhandled.called_with, { event, { 'A', 'a', '65' } }
+          keyhandler.process event, 'editor', {keymap}, 'hello!'
+          assert.spy(keymap.on_unhandled).was.called_with(event, 'editor', { 'A', 'a', '65' }, 'hello!')
 
         it 'any return is used as the handler', ->
-          handler = Spy!
-          buffer = keymap: { on_unhandled: -> handler }
-          keyhandler.process :buffer, { character: 'A', key_name: 'A', key_code: 65 }
-          assert.is_true handler.called
-
-      it 'skips any keymaps not present', ->
-        key_args = character: 'A', key_name: 'a', key_code: 65
-        keyhandler.keymap = Spy!
-
-        buffer = {}
-        assert.is_true (pcall keyhandler.process, :buffer, key_args)
-        assert.equal #keyhandler.keymap.reads, 4
+          handler = spy.new ->
+          keymap = on_unhandled: -> handler
+          keyhandler.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
+          assert.spy(handler).was.called
 
     context 'when invoking handlers', ->
       context 'when the handler is a function', ->
-        it 'passes the editor as argument', ->
-          received = {}
-          buffer = keymap: { k: (...) -> received = {...} }
-          editor = :buffer
-          keyhandler.process editor, character: 'k', key_code: 65
-          assert.same received, { editor }
+        it 'passes along any extra arguments', ->
+          keymap = k: spy.new ->
+          keyhandler.process { character: 'k', key_code: 65 }, 'editor', { keymap }, 'reference'
+          assert.spy(keymap.k).was.called_with('reference')
 
         it 'returns early with true unless a handler explicitly returns false', ->
-          mode_handler = Spy!
-          buffer =
-            keymap: { k: -> nil }
-            mode:
-              keymap:
-                k: mode_handler
-          assert.is_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
-          assert.is_false mode_handler.called
-
-          buffer.keymap.k = -> false
-          assert.is_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
-          assert.is_true mode_handler.called
+          first = k: spy.new ->
+          sencond = k: spy.new ->
+          assert.is_true keyhandler.process { character: 'k', key_code: 65 }, 'space', { first, second }
+          assert.spy(second).was.not_called
 
         context 'when the handler raises an error', ->
           it 'returns true', ->
-            buffer = keymap: { k: -> error 'BOOM!' }
-            assert.is_true keyhandler.process :buffer, { character: 'k', key_code: 65 }
+            keymap = { k: -> error 'BOOM!' }
+            assert.is_true keyhandler.process { character: 'k', key_code: 65 }, 'mybad', { keymap }
 
           it 'logs an error to the log', ->
-            buffer = keymap: { k: -> error 'a to the k log' }
-            keyhandler.process :buffer, { character: 'k', key_code: 65 }
+            keymap = { k: -> error 'a to the k log' }
+            keyhandler.process { character: 'k', key_code: 65 }, 'mybad', { keymap }
             assert.is_not.equal #log.entries, 0
             assert.equal log.entries[#log.entries].message, 'a to the k log'
 
       context 'when the handler is a string', ->
         it 'runs the command with command.run() and returns true', ->
-          cmd_run = Spy!
-          orig_run = command.run
-          command.run = cmd_run
-          buffer = keymap: { k: 'spy' }
-          status = keyhandler.process :buffer, { character: 'k', key_code: 65 }
-          command.run = orig_run
-          assert.is_true status
-          assert.same cmd_run.called_with, { 'spy' }
+          cmd_run = spy.on(command, 'run')
+          keymap = k: 'spy'
+          assert.is_true keyhandler.process { character: 'k', key_code: 65 }, 'editor', { keymap }
+          command.run\revert!
+          assert.spy(cmd_run).was.called_with 'spy'
 
       it 'returns false if no handlers are found', ->
-        assert.is_false keyhandler.process buffer: {}, { character: 'k', key_code: 65 }
+        assert.is_false keyhandler.process { character: 'k', key_code: 65 }, 'editor'
 
   describe 'capture(function)', ->
-    it 'causes <function> to be called exclusively with the next key event', ->
+    it 'causes <function> to be called exclusively event, source, translations and any extra parameters', ->
       event = character: 'A', key_name: 'a', key_code: 65
       thief = spy.new -> true
-      handler = spy.new -> true
+      keymap = A: spy.new -> true
       keyhandler.capture thief
-      editor = buffer: keymap: A: handler
-      keyhandler.process editor, event
-      assert.spy(handler).was_not.called!
-      assert.spy(thief).was.called_with(event, { 'A', 'a', '65' }, editor)
+      keyhandler.process event, 'source', { keymap }, 'catch-me!'
+      assert.spy(keymap.A).was_not.called!
+      assert.spy(thief).was.called_with(event, 'source', { 'A', 'a', '65' }, 'catch-me!')
 
     it '<function> continues to capture events as long as it returns false', ->
       ret = false
       event = character: 'A', key_name: 'A', key_code: 65
       thief = spy.new -> return ret
       keyhandler.capture thief
-      keyhandler.process buffer: {}, event
+      keyhandler.process event, 'editor'
       ret = nil
-      keyhandler.process buffer: {}, event
-      keyhandler.process buffer: {}, event
+      keyhandler.process event, 'editor'
+      keyhandler.process event, 'editor'
       assert.spy(thief).was.called(2)
 
   it 'cancel_capture cancels any currently set capture', ->
       thief = spy.new -> return ret
       keyhandler.capture thief
       keyhandler.cancel_capture!
-      keyhandler.process { buffer: {} }, { character: 'A', key_name: 'A', key_code: 65 }
+      keyhandler.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
       assert.spy(thief).was_not.called!
