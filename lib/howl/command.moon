@@ -174,7 +174,11 @@ command_completer = ->
     column_styles: { 'string', 'keyword', 'comment' }
   }
   cmd_names = names!
-  bindings = {cmd, binding for binding, cmd in pairs keymap when type(cmd) == 'string'}
+
+  bindings = {}
+  for map in *{ keymap, keymap.editor or {} }
+    bindings[cmd] = binding for binding, cmd in pairs map when type(cmd) == 'string'
+
   table.sort cmd_names
   items = {}
   for name in *cmd_names
