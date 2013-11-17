@@ -9,7 +9,6 @@ If any handler returns true, the key press is considered to be handled, and any 
 processing is skipped.
 ]]
   parameters:
-    editor: 'The editor for which the key press occured'
     event: 'The event for the key press'
     translations: 'A list of readable translations for the key event'
     source: 'The source of the key press (e.g. "editor")'
@@ -104,8 +103,9 @@ export process = (event, source, extra_keymaps,  ...) ->
   return true if process_capture event, source, translations, ...
   return true if signal.emit 'key-press', :event, :source, :translations, parameters: {...}
 
-  maps = { keymap }
+  maps = {}
   append maps, map for map in *(extra_keymaps or {})
+  append maps, keymap
 
   dispatch event, source, maps, ...
 

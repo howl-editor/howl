@@ -159,6 +159,13 @@ describe 'keyhandler', ->
       it 'returns false if no handlers are found', ->
         assert.is_false keyhandler.process { character: 'k', key_code: 65 }, 'editor'
 
+      it 'invokes handlers in extra keymaps before the default keymap', ->
+        keyhandler.keymap = k: spy.new -> nil
+        extra_map = k: spy.new -> nil
+        keyhandler.process { character: 'k', key_code: 65 }, 'editor', { extra_map }
+        assert.spy(extra_map.k).was_called(1)
+        assert.spy(keyhandler.keymap.k).was_not_called!
+
   describe 'capture(function)', ->
     it 'causes <function> to be called exclusively event, source, translations and any extra parameters', ->
       event = character: 'A', key_name: 'a', key_code: 65
