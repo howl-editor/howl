@@ -125,6 +125,14 @@ describe 'VI', ->
     press 'D'
     assert.equal 'LinƏ', editor.current_line.text
 
+  it '<o> opens a new line below and enters insert', ->
+    buffer.text = 'first\nsecond'
+    cursor.pos = 3
+    press 'o'
+    assert.equal cursor.line, 2
+    assert.equal 'first\n\nsecond', buffer.text
+    assert.equal 'insert', state.mode
+
   describe 'movement with destructive modifiers', ->
     for mod, check in pairs {
       d: -> true
@@ -179,7 +187,6 @@ describe 'VI', ->
       cursor.pos = 1
       press '2', 'l'
       assert.equal 3, cursor.pos
-
 
   context 'insert mode', ->
     before_each -> press 'i'
