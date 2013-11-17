@@ -25,16 +25,18 @@ substitute = (editor) ->
 map = {
   name: 'VISUAL'
 
-  d: cut
-  x: cut
-  y: copy
-  v: cancel
-  s: substitute
-  escape: cancel
-  i: (editor) ->
-    editor.selection.persistent = false
-    state.change_mode editor, 'insert'
-  ':': -> command.run!
+  editor: setmetatable {
+    d: cut
+    x: cut
+    y: copy
+    v: cancel
+    s: substitute
+    escape: cancel
+    i: (editor) ->
+      editor.selection.persistent = false
+      state.change_mode editor, 'insert'
+    ':': -> command.run!
+  }, __index: base_map.editor
 
   __on_selection_changed: (editor, selection) ->
     if selection.empty and editor.cursor.pos != selection_start

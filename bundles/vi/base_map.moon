@@ -1,7 +1,6 @@
 state = bundle_load 'state'
 import apply from state
 import keyhandler, config from howl
-import math, tonumber, print from _G
 
 with config
   .define
@@ -33,71 +32,72 @@ end_of_word = (cursor) ->
     \word_right_end! if .pos == current_pos + 1
     \left!
 
-map = {}
-setfenv 1, map
-
-export *
-
 cursor_properties = {
   style: 'block'
   blink_interval: config.vi_command_cursor_blink_interval
 }
 
-j = (editor) -> apply editor, (editor) -> editor.cursor\down!
-k = (editor) -> apply editor, (editor) -> editor.cursor\up!
-h = (editor) -> apply editor, (editor) -> editor.cursor\left!
-l = (editor) -> apply editor, (editor) -> editor.cursor\right!
+map = {
+  :cursor_properties
 
-e = (editor) -> apply editor, (editor) -> end_of_word editor.cursor
+  editor: {
+    j: (editor) -> apply editor, (editor) -> editor.cursor\down!
+    k: (editor) -> apply editor, (editor) -> editor.cursor\up!
+    h: (editor) -> apply editor, (editor) -> editor.cursor\left!
+    l: (editor) -> apply editor, (editor) -> editor.cursor\right!
 
-w = (editor) -> apply editor, (editor, _state) ->
-  if _state.change or _state.yank then end_of_word editor.cursor
-  elseif _state.delete
-    for i = 1,_state.count or 1 do editor.cursor\word_right!
-    editor.cursor\left!
-    true
-  else
-    editor.cursor\word_right!
+    e: (editor) -> apply editor, (editor) -> end_of_word editor.cursor
 
-b = (editor) -> apply editor, (editor) -> editor.cursor\word_left!
+    w: (editor) -> apply editor, (editor, _state) ->
+      if _state.change or _state.yank then end_of_word editor.cursor
+      elseif _state.delete
+        for i = 1,_state.count or 1 do editor.cursor\word_right!
+        editor.cursor\left!
+        true
+      else
+        editor.cursor\word_right!
 
-g = (editor) ->
-  if state.go
-    editor.cursor\start!
-    state.reset!
-  else
-    state.go = true
+    b: (editor) -> apply editor, (editor) -> editor.cursor\word_left!
 
-G = (editor) -> apply editor, (editor, _state) ->
-  if _state.count then editor.cursor.line = _state.count
-  else editor.cursor\eof!
+    g: (editor) ->
+      if state.go
+        editor.cursor\start!
+        state.reset!
+      else
+        state.go = true
 
-f = (editor) -> keyhandler.capture forward_to_char
-F = (editor) -> keyhandler.capture back_to_char
-map['/'] = 'search-forward'
-n = 'repeat-search'
+    G: (editor) -> apply editor, (editor, _state) ->
+      if _state.count then editor.cursor.line = _state.count
+      else editor.cursor\eof!
 
-map['$'] = (editor) -> apply editor, (editor) ->
-  editor.cursor.column_index = math.max(1, #editor.current_line)
+    f: (editor) -> keyhandler.capture forward_to_char
+    F: (editor) -> keyhandler.capture back_to_char
+    '/': 'search-forward'
+    n: 'repeat-search'
 
-map['^'] = (editor) -> apply editor, (editor) ->
-  editor.cursor\home_indent!
+    '$': (editor) -> apply editor, (editor) ->
+      editor.cursor.column_index = math.max(1, #editor.current_line)
 
-on_unhandled = (event, source, translations) ->
-  char = event.character
-  modifiers = event.control or event.alt
-  if char and not modifiers
-    if char\match '^%d$'
-      -- we need to special case '0' here as that's a valid command in its own
-      -- right, unless it's part of a numerical prefix
-      if char == '0' and not state.count then return cursor_home
-      else state.add_number tonumber char
-    elseif char\match '^%w$'
-      state.reset!
+    '^': (editor) -> apply editor, (editor) ->
+      editor.cursor\home_indent!
+  }
 
-    return -> true
+  on_unhandled: (event, source, translations) ->
+    char = event.character
+    modifiers = event.control or event.alt
+    if char and not modifiers
+      if char\match '^%d$'
+        -- we need to special case '0' here as that's a valid command in its own
+        -- right, unless it's part of a numerical prefix
+        if char == '0' and not state.count then return cursor_home
+        else state.add_number tonumber char
+      elseif char\match '^%w$'
+        state.reset!
 
-  (...) -> keyhandler.dispatch event, source, { default_map }, ...
+      return -> true
+
+    (...) -> keyhandler.dispatch event, source, { default_map }, ...
+}
 
 config.watch 'vi_command_cursor_blink_interval', (_, value) ->
   cursor_properties.blink_interval = value
