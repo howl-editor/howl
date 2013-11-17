@@ -85,10 +85,20 @@ describe 'keyhandler', ->
 
     context 'when looking up handlers', ->
 
-      it 'tries each translated key, and .on_unhandled in order for a given keymap', ->
-        keyhandler.keymap = Spy!
-        keyhandler.process { character: 'A', key_name: 'a', key_code: 65 }, 'editor'
-        assert.same keyhandler.keymap.reads, { 'A', 'a', '65', 'on_unhandled' }
+      it 'tries each translated key and .on_unhandled in order for a keymap, and optional source specific map', ->
+        keymap = Spy!
+        keyhandler.process { character: 'A', key_name: 'a', key_code: 65 }, 'my_source', { keymap }
+        assert.same { 'my_source', 'A', 'a', '65', 'on_unhandled' }, keymap.reads
+
+      it 'prefers source specific bindings', ->
+        specific_map = A: spy.new -> nil
+        general_map = {
+          A: spy.new -> nil
+          my_source: specific_map
+        }
+        keyhandler.process { character: 'A', key_name: 'a', key_code: 65 }, 'my_source', { general_map }
+        assert.spy(specific_map.A).was_called(1)
+        assert.spy(general_map.A).was_not_called!
 
       it 'searches all extra keymaps and the global keymap', ->
         key_args = character: 'A', key_name: 'a', key_code: 65
@@ -97,7 +107,7 @@ describe 'keyhandler', ->
         keyhandler.keymap = Spy!
 
         keyhandler.process key_args, 'editor', { buffer_map, mode_map }
-        assert.equal #keyhandler.keymap.reads, 4
+        assert.equal #keyhandler.keymap.reads, 5
         assert.same keyhandler.keymap.reads, mode_map.reads
         assert.same mode_map.reads, buffer_map.reads
 

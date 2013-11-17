@@ -55,15 +55,20 @@ find_handlers = (event, source, translations, keymaps, ...) ->
   handlers = {}
   for map in *keymaps
     if map
-      handler = nil
-      for t in *translations
-        handler = map[t]
-        break if handler
+      for target_map in *{ map[source], map }
+        continue unless target_map
 
-      if not handler and callable map.on_unhandled
-        handler = map.on_unhandled event, source, translations, ...
+        handler = nil
+        for t in *translations
+          handler = target_map[t]
+          break if handler
 
-      append handlers, handler if handler
+        if not handler and callable target_map.on_unhandled
+          handler = target_map.on_unhandled event, source, translations, ...
+
+        if handler
+          append handlers, handler
+          break
 
   handlers
 
