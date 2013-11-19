@@ -7,13 +7,10 @@ describe 'Scintilla', ->
 
   describe 'creation - Scintilla()', ->
     it 'creates the Scintilla widget using _core.sci.new', ->
-      sci_new = _core.sci.new
-      ptr = sci_new!
-      spy = Spy with_return: ptr
-      _core.sci.new = spy
+      spy = spy.on(_core.sci, 'new')
       pcall Scintilla
-      _core.sci.new = sci_new
-      assert.is_true spy.called
+      spy\revert!
+      assert.spy(spy).was_called(1)
 
   describe 'color handling', ->
     it 'automatically converts between color values and strings', ->
@@ -27,6 +24,14 @@ describe 'Scintilla', ->
   describe '.dispatch', ->
     context 'for key-press event', ->
       it 'calls the on_keypress handler if present', ->
-        sci.listener = on_keypress: Spy!
+        sci.listener = on_keypress: spy.new -> nil
         sci.dispatch sci.sci_ptr, 'key-press', {}
-        assert.is_true sci.listener.on_keypress.called
+        assert.spy(sci.listener.on_keypress).was_called(1)
+
+    it 'calls the on_error handler with the error if a handler raise one', ->
+      sci.listener = {
+        on_keypress: -> error 'BOOM!'
+        on_error: spy.new -> nil
+      }
+      sci.dispatch sci.sci_ptr, 'key-press', {}
+      assert.spy(sci.listener.on_error).was_called_with('BOOM!')
