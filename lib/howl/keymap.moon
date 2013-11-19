@@ -10,7 +10,9 @@
     ctrl_d:           'editor-duplicate-current'
     ctrl_i:           'editor-indent'
     ctrl_g:           'buffer-grep'
+    ctrl_o:           'open'
     ctrl_p:           'project-open'
+    ctrl_s:           'save'
     ctrl_v:           'editor-paste'
 
     ctrl_x:           'editor-cut'
