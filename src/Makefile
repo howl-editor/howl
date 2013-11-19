@@ -10,7 +10,7 @@ LUAJIT = deps/${LUAJIT_VER}
 LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
 LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
-LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
+LUAJIT_URL = http://nordman.org/mirror/luajit/$(LUAJIT_VER).tar.gz
 
 SCINTILLA_VER = scintilla336
 SCINTILLA_CHECKSUM = 616fd011f85331ba2f5d9c710bd106fb
