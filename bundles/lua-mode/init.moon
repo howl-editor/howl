@@ -7,6 +7,13 @@ create = ->
   {
     lexer: howl.aux.ScintilluaLexer 'lua', lua_lexer
     comment_syntax: '--'
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '{': '}'
+      '"': '"'
+      "'": "'"
+    }
   }
 
 mode_reg =

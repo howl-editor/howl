@@ -24,6 +24,14 @@ class MoonscriptMode
     { '^%s*elseif%s', '%sthen%s*' }
   }
 
+  auto_pairs: {
+    '(': ')'
+    '[': ']'
+    '{': '}'
+    '"': '"'
+    "'": "'"
+  }
+
   on_char_added: (args, editor) =>
     if args.key_name == 'return'
       return true if formatting.ensure_block editor, '{%s*$', '^%s*}', '}'
