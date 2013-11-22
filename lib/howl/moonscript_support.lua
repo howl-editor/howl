@@ -9,7 +9,11 @@ lua_pcall = pcall
 loadfile = function(filename, mode, env)
   filename = tostring(filename)
   if (filename:match('%.moon$')) then
-    return moonscript.loadfile(filename)
+    local status, ret = moonscript.loadfile(filename)
+    if not status then
+      return nil, filename .. ': ' .. ret
+    end
+    return status, ret
   else
     return lua_loadfile(filename, mode, env)
   end
