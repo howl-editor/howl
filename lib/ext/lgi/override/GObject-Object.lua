@@ -106,8 +106,18 @@ end
 -- specified GType.
 function Object.new(gtype, params, owns)
    -- Find proper repo instance for gtype.
-   local self = core.repotype(gtype)
-   return self:_construct(gtype, params, owns)
+   local gtype_walker, self = gtype
+   while true do
+      local self = core.repotype(gtype_walker)
+      if self then
+         -- We have repo instance, use it to construct the object.
+         return self:_construct(gtype, params, owns)
+      end
+      gtype_walker = Type.parent(gtype_walker)
+      if not gtype_walker then
+         error(("`%s': cannot create object, type not found"):format(gtype), 2)
+      end
+   end
 end
 
 -- Initially unowned creation is similar to normal GObject creation,
