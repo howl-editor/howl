@@ -1,4 +1,5 @@
 import const_char_p from howl.cdefs
+import g_string from howl.cdefs.glib
 import string, type from _G
 
 ffi = require 'ffi'
@@ -6,22 +7,6 @@ bit = require 'bit'
 
 import C from ffi
 ffi_string = ffi.string
-
-ffi.cdef [[
-  glong g_utf8_strlen(const gchar *str, gssize len);
-  gchar * g_utf8_strdown(const gchar *str, gssize len);
-  gchar * g_utf8_strup(const gchar *str, gssize len);
-  gchar * g_utf8_strreverse(const gchar *str, gssize len);
-  gint g_utf8_collate(const gchar *str1, const gchar *str2);
-  gchar * g_utf8_substring(const gchar *str, glong start_pos, glong end_pos);
-  int strncmp(const char *s1, const char *s2, size_t n);
-  gchar * g_strndup(const gchar *str, gssize n);
-]]
-
-g_string = (ptr) ->
-  s = ffi_string ptr
-  C.g_free ptr
-  s
 
 transform_rets = (s, ...) ->
   vals = {...}

@@ -10,17 +10,20 @@ The MIT license (see LICENSE.md)
 ]]
 
 local _G = _G
-local setmetatable, tonumber, pcall, error = setmetatable, tonumber, pcall, error
+local setmetatable, tonumber, pcall, error, print, tostring = setmetatable, tonumber, pcall, error, print, tostring
 local string_format = string.format
 local ffi = require('ffi')
 local bit = require('bit')
 local cdefs = require('howl.cdefs')
 local colors = require('howl.ui.colors')
 local destructor = require('howl.aux.destructor')
+local lgi = require 'lgi'
 local lgi_core = require 'lgi.core'
 
 local C = ffi.C
 local char_arr, char_p, const_char_p = cdefs.char_arr, cdefs.char_p, cdefs.const_char_p
+local glib, gobject = cdefs.glib, cdefs.gobject
+local gchar_arr = glib.gchar_arr
 local u = u
 
 local sci = {}
@@ -49,7 +52,39 @@ typedef struct {
     char_range found_range;
 } find_text;
 
-intptr_t sci_send(void *sci, int message, intptr_t wParam, intptr_t lParam);
+struct Sci_NotifyHeader {
+  void *hwndFrom;
+  uintptr_t idFrom;
+  unsigned int code;
+};
+
+typedef struct {
+  struct Sci_NotifyHeader nmhdr;
+  int position;
+  int ch;
+  int modifiers;
+  int modificationType;
+  const char *text;
+  int length;
+  int linesAdded;
+  int message;
+  uintptr_t wParam;
+  uintptr_t lParam;
+  int line;
+  int foldLevelNow;
+  int foldLevelPrev;
+  int margin;
+  int listType;
+  int x;
+  int y;
+  int token;
+  int annotationLinesAdded;
+  int updated;
+} SCNotification;
+
+intptr_t scintilla_send_message(void *sci, int message, intptr_t wParam, intptr_t lParam);
+
+GType scintilla_get_type();
 ]]
 
 local char_range = ffi.typeof('char_range')
@@ -76,9 +111,115 @@ local function color_to_string(color)
   return colors.reverse[rgb] or rgb
 end
 
+local function explain_key_code(code, event)
+  local effective_code = code == 10 and glib.GDK_KEY_Return or code
+
+  local key_name = C.gdk_keyval_name(effective_code)
+  if key_name then
+    event.key_name = ffi.string(key_name):lower()
+  end
+  local unicode_char = C.gdk_keyval_to_unicode(code);
+
+  if (unicode_char ~= 0) then
+    utf8 = gchar_arr(6)
+    nr_utf8 = C.g_unichar_to_utf8(unicode_char, utf8);
+    if nr_utf8 > 0 then
+      event.character = ffi.string(utf8, nr_utf8)
+    end
+  end
+
+  event.key_code = code
+end
+
+local on_sci_key_press = ffi.cast('GCallback3', function(sci_ptr, key, data)
+  local get = function(sci_ptr, key)
+    key = ffi.cast('GdkEventKey *', key)
+    local event = {
+      shift = bit.band(key.state, C.GDK_SHIFT_MASK) ~= 0,
+      control = bit.band(key.state, C.GDK_CONTROL_MASK) ~= 0,
+      alt = bit.band(key.state, C.GDK_MOD1_MASK) ~= 0,
+      super = bit.band(key.state, C.GDK_SUPER_MASK) ~= 0,
+      meta = bit.band(key.state, C.GDK_META_MASK) ~= 0,
+    }
+    explain_key_code(key.keyval, event)
+    return event
+  end
+  local status, event = pcall(get, sci_ptr, key)
+  if not status then
+    print(event)
+    return false
+  else
+    return dispatch(sci_ptr, 'key-press', event)
+  end
+end)
+
+local on_sci_notify = ffi.cast('GCallback4', function(sci_ptr, ctrl_id, notification, data)
+  local n = ffi.cast('SCNotification *', notification)
+  local code = n.nmhdr.code;
+
+    -- fires a lot, ignore for now
+  if code == SCN_PAINTED then return false end
+
+  local event = { code = code }
+  local mods = n.modifiers;
+
+  if code == SCN_UPDATEUI then
+    event.updated = n.updated
+  else
+    event.position = n.position
+
+    if code == SCN_CHARADDED or code == SCN_KEY or code == SCN_DOUBLECLICK or
+       code == SCN_HOTSPOTCLICK or code == SCN_HOTSPOTDOUBLECLICK or
+       code == SCN_HOTSPOTRELEASECLICK or code == SCN_INDICATORCLICK or
+       code == SCN_INDICATORRELEASE or code == SCN_MARGINCLICK then
+
+      event.shift = bit.band(mods, SCMOD_SHIFT) ~= 0
+      event.control = bit.band(mods, SCMOD_CTRL) ~= 0
+      event.alt = bit.band(mods, SCMOD_ALT) ~= 0
+      event.super = bit.band(mods, SCMOD_SUPER) ~= 0
+      event.meta = bit.band(mods, SCMOD_META) ~= 0
+    end
+
+    if code == SCN_MODIFIED or code == SCN_DOUBLECLICK then
+      event.line = n.line
+    end
+
+    if code == SCN_MODIFIED or code == SCN_USERLISTSELECTION or
+        code == SCN_AUTOCSELECTION or code == SCN_URIDROPPED then
+      if n.length > 0 and n.text ~= nil then
+        event.text = ffi.string(n.text, n.length)
+      end
+    end
+
+    if code == SCN_CHARADDED or code == SCN_KEY then
+      explain_key_code(n.ch, event)
+    elseif code == SCN_MODIFIED then
+      event.type = n.modificationType
+      event.length = n.length
+      event.lines_affected = n.linesAdded
+      event.fold_level_now = n.foldLevelNow
+      event.fold_level_previous = n.foldLevelPrev
+      event.token = n.token
+    elseif code == SCN_USERLISTSELECTION then
+      event.list_type = n.listType
+    elseif code == SCN_MARGINCLICK then
+      event.margin = n.margin
+    elseif code == SCN_DWELLSTART or code == SCN_DWELLEND then
+      event.x = n.x
+      event.y = n.y
+    end
+  end
+
+  return dispatch(sci_ptr, 'sci', event)
+end)
+
 setmetatable(sci, {
   __call = function()
-    obj = setmetatable({ sci_ptr = _G._core.sci.new() }, sci_mt )
+
+    local gtype = C.scintilla_get_type()
+    local gobj = lgi.GObject.Object.new(tonumber(gtype))
+    local sci_ptr = gobj._native
+    local obj = setmetatable({ sci_ptr = sci_ptr, gobject = gobj }, sci_mt )
 
     -- set up defaults
     obj:set_code_page(SC_CP_UTF8)
@@ -87,15 +228,16 @@ setmetatable(sci, {
     obj:use_pop_up(false)
     obj:clear_all_cmd_keys()
 
-    -- set the gobject for use with lgi
-    local gobject = lgi_core.object.new(obj.sci_ptr)
-    obj.gobject = gobject
-
     -- store in registry
-    sci_map[obj.sci_ptr] = obj
+    sci_map[sci_ptr] = obj
+    sci_map[tostring(ffi.cast('gpointer', sci_ptr))] = obj
 
     -- destroy gobject when vanquished
-    obj.destructor = destructor(function() gobject:destroy() end)
+    obj.destructor = destructor(function() gobj:destroy() end)
+
+    gobject.g_signal_connect3(sci_ptr, 'key-press-event', on_sci_key_press, 0)
+    gobject.g_signal_connect4(sci_ptr, 'sci-notify', on_sci_notify, 0)
+
     return obj
   end
 })
@@ -108,9 +250,9 @@ function sci.string_to_color(rgb)
 end
 
 function sci.dispatch(sci_ptr, event, args)
-  local instance = sci_map[sci_ptr]
+  local instance = sci_map[sci_ptr] or sci_map[tostring(sci_ptr)]
   local listener = instance.listener
-  if not listener then return end
+  if not listener then return false end
   local handler
   if event == 'sci' then
     code = args.code
@@ -152,7 +294,9 @@ function sci.dispatch(sci_ptr, event, args)
           error(ret)
         end
       end
-      return ret
+      if ret == true or ret == false then
+        return ret
+      end
     end
   end
 
@@ -164,7 +308,7 @@ function sci:to_gobject()
 end
 
 function sci:send(message, arg1, arg2)
-  return C.sci_send(self.sci_ptr, message, ffi.cast('intptr_t', arg1), ffi.cast('intptr_t', arg2))
+  return C.scintilla_send_message(self.sci_ptr, message, ffi.cast('intptr_t', arg1), ffi.cast('intptr_t', arg2))
 end
 
 function sci:send_with_stringresult(message, arg1)

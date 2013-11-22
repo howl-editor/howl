@@ -40,7 +40,7 @@ CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
 ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE) $(LGI_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E
-OBJECTS = main.o sci.o
+OBJECTS = main.o
 DEP_OBJECTS = $(LPEG_OBJECT)
 
 all: howl bytecode

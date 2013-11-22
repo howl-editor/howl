@@ -4,6 +4,8 @@
 #include "main.h"
 #include <gio/gio.h>
 #include <string.h>
+#include <Scintilla.h>
+#include <ScintillaWidget.h>
 
 static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 {
@@ -71,11 +73,6 @@ static lua_State *open_lua_state(const gchar *app_root)
   lua_setfield(l, -2, "lgi.corelgilua51");
   lua_pop(l, 2);
 
-  /* core bindings */
-  lua_newtable(l);
-  sci_init(l, app_root);
-  lua_setglobal(l, "_core");
-
   return l;
 }
 
@@ -94,6 +91,6 @@ int main(int argc, char *argv[])
   lua_run(argc, argv, app_root, L);
   lua_close(L);
   g_free(app_root);
-  sci_close();
+  scintilla_release_resources();
   return 0;
 }

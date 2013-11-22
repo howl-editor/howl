@@ -5,13 +5,6 @@ describe 'Scintilla', ->
 
   sci = Scintilla!
 
-  describe 'creation - Scintilla()', ->
-    it 'creates the Scintilla widget using _core.sci.new', ->
-      spy = spy.on(_core.sci, 'new')
-      pcall Scintilla
-      spy\revert!
-      assert.spy(spy).was_called(1)
-
   describe 'color handling', ->
     it 'automatically converts between color values and strings', ->
       sci\style_set_fore 1, '#112233'
