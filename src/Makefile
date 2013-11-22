@@ -25,7 +25,7 @@ LPEG_VER = lpeg-0.10.2
 LPEG_CHECKSUM = 1402433f02e37ddadff04a3d4118b026
 LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
-LPEG_URL = http://www.inf.puc-rio.br/~roberto/lpeg/$(LPEG_VER).tar.gz
+LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
 
 LGI_VER = 0.7.2
 LGI_CHECKSUM = f41902695c3d8ef40312d7c654885bf3
