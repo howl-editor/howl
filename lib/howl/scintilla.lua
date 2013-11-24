@@ -10,8 +10,7 @@ The MIT license (see LICENSE.md)
 ]]
 
 local _G = _G
-local setmetatable, tonumber, pcall, error, print, tostring, coroutine =
-      setmetatable, tonumber, pcall, error, print, tostring, coroutine
+local setmetatable, tonumber, pcall, error, print, tostring = setmetatable, tonumber, pcall, error, print, tostring
 local string_format = string.format
 local ffi = require('ffi')
 local bit = require('bit')
@@ -286,8 +285,7 @@ function sci.dispatch(sci_ptr, event, args)
 
   if handler then
     if listener[handler] then
-      local co = coroutine.create(function(...) return listener[handler](...) end)
-      local status, ret = coroutine.resume(co, args)
+      local status, ret = pcall(listener[handler], args)
       if not status then
         if listener.on_error then
           listener.on_error(ret)
@@ -296,12 +294,8 @@ function sci.dispatch(sci_ptr, event, args)
           error(ret)
         end
       end
-      if coroutine.status(co) == 'dead' then
-        if ret == true or ret == false then
-          return ret
-        end
-      else
-        return true
+      if ret == true or ret == false then
+        return ret
       end
     end
   end

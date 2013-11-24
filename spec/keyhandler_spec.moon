@@ -70,18 +70,18 @@ describe 'keyhandler', ->
           }
 
       it 'returns early with true if the handler does', ->
-        keymap = A: spy.new -> nil
+        buffer = keymap: Spy!
         with_signal_handler 'key-press', true, (handler) ->
-          status, ret = pcall keyhandler.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
-          assert.spy(handler).was.called!
-          assert.spy(keymap.A).was.not_called!
+          status, ret = pcall keyhandler.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
+          assert.equal #buffer.keymap.reads, 0
+          assert.spy(handler).was.called
           assert.is_true ret
 
       it 'continues processing keymaps if the handler returns false', ->
-        keymap = A: spy.new -> true
-        with_signal_handler 'key-press', false, (handler) ->
-          status, ret = pcall keyhandler.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
-          assert.spy(keymap.A).was_called!
+        buffer = keymap: A: spy.new -> true
+        with_signal_handler 'key-press', true, (handler) ->
+          status, ret = pcall keyhandler.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
+          assert.spy(buffer.keymap.A).was_called
 
     context 'when looking up handlers', ->
 
@@ -122,7 +122,7 @@ describe 'keyhandler', ->
           handler = spy.new ->
           keymap = on_unhandled: -> handler
           keyhandler.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
-          assert.spy(handler).was.called!
+          assert.spy(handler).was.called
 
     context 'when invoking handlers', ->
       context 'when the handler is a function', ->
@@ -133,9 +133,9 @@ describe 'keyhandler', ->
 
         it 'returns early with true unless a handler explicitly returns false', ->
           first = k: spy.new ->
-          second = k: spy.new ->
+          sencond = k: spy.new ->
           assert.is_true keyhandler.process { character: 'k', key_code: 65 }, 'space', { first, second }
-          assert.spy(second.k).was.not_called!
+          assert.spy(second).was.not_called
 
         context 'when the handler raises an error', ->
           it 'returns true', ->
@@ -165,24 +165,6 @@ describe 'keyhandler', ->
         keyhandler.process { character: 'k', key_code: 65 }, 'editor', { extra_map }
         assert.spy(extra_map.k).was_called(1)
         assert.spy(keyhandler.keymap.k).was_not_called!
-
-      it 'invokes handlers in their own coroutines', ->
-        coros = {}
-        coro_register = ->
-          co, main = coroutine.running!
-          coros[co] = true unless main
-
-        keymap = k: coro_register
-        for i = 1,2
-          keyhandler.process { character: 'k', key_code: 65 }, 'editor', { keymap }
-
-        assert.equal 2, #[v for _, v in pairs coros]
-
-      it 'returns early with true if a handler yields', ->
-        first = k: spy.new -> yield false
-        second = k: spy.new ->
-        assert.is_true keyhandler.process { character: 'k', key_code: 65 }, 'space', { first, second }
-        assert.spy(second.k).was.not_called!
 
   describe 'capture(function)', ->
     it 'causes <function> to be called exclusively event, source, translations and any extra parameters', ->

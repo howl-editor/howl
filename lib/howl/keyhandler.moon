@@ -1,5 +1,5 @@
 _G = _G
-import tostring, pcall, callable, type, append, print, coroutine from _G
+import tostring, pcall, callable, type, append, print from _G
 import signal, command from howl
 
 signal.register 'key-press',
@@ -86,13 +86,11 @@ export dispatch = (event, source, keymaps, ...) ->
   handlers = find_handlers event, source, translations, keymaps, ...
 
   for handler in *handlers
-    f = if type(handler) == 'string'
-      -> command.run handler
+    status, ret = true, true
+    if type(handler) == 'string'
+      status, ret = pcall command.run, handler
     else
-      (...) -> handler ...
-
-    co = coroutine.create f
-    status, ret = coroutine.resume co, ...
+      status, ret = pcall handler, ...
 
     _G.log.error ret unless status
 
