@@ -62,7 +62,8 @@ local function auto_module(name)
 
       t[key] = mod
       return mod
-    end})
+    end
+  })
 end
 
 local function bytecode_loader()
