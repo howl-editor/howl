@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import config from howl
+import style from howl.ui
 
 is_match = (text, patterns) ->
   return false unless patterns
@@ -29,11 +30,15 @@ class DefaultMode
 
   indent: (editor) =>
     indent_level = editor.buffer.config.indent
+    dont_indent_styles = comment: true, string: true
+    buffer = editor.buffer
 
     editor\transform_active_lines (lines) ->
       for line in *lines
-        indent = @indent_for line, indent_level
-        line.indentation = indent if indent != line.indentation
+        line_start_style = style.at_pos buffer, line.start_pos
+        unless dont_indent_styles[line_start_style]
+          indent = @indent_for line, indent_level
+          line.indentation = indent if indent != line.indentation
 
       with editor
         .cursor.column = .current_line.indentation + 1 if .cursor.column < .current_line.indentation

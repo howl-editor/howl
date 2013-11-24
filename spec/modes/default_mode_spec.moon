@@ -1,6 +1,6 @@
 import DefaultMode from howl.modes
 import Buffer from howl
-import Editor from howl.ui
+import Editor, ActionBuffer from howl.ui
 
 describe 'DefaultMode', ->
   local buffer, mode, lines
@@ -75,6 +75,19 @@ describe 'DefaultMode', ->
         selection\select_all!
         mode\indent editor
         assert.equals '  {\n  }', buffer.text
+
+    it 'does not try to indent lines within comments or strings', ->
+        mode.indent_after_patterns = { '{' }
+        mode.dedent_patterns = { '}' }
+        buffer = ActionBuffer!
+        buffer.text = '{\nfoo\n  }\n'
+        lines = buffer.lines
+        buffer\style lines[1].start_pos, lines[2].end_pos, 'comment'
+        buffer\style lines[3].start_pos, lines[4].end_pos, 'string'
+        editor.buffer = buffer
+        selection\select_all!
+        mode\indent editor
+        assert.equals '{\nfoo\n  }\n', buffer.text
 
     it 'sets the same indent as for the previous line if the line is blank', ->
       buffer.text = '  line\n\n'
