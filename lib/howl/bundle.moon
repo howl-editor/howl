@@ -23,7 +23,7 @@ find_bundle_file = (dir, base) ->
   error "Failed to find bundle file #{base} in '#{dir}'"
 
 module_name = (name) ->
-  name\lower!\gsub '[%s%p]+', '_'
+  (name\lower!\gsub '[%s%p]+', '_')
 
 available_bundles = ->
   avail = {}
@@ -109,6 +109,15 @@ export unload = (name) ->
   def.unload!
   _G.bundles[mod_name] = nil
   signal.emit 'bundle-unloaded', bundle: mod_name
+
+export from_file = (file) ->
+  for bundle_dir in *dirs
+    if file\is_below bundle_dir
+      rel_path = file\relative_to_parent bundle_dir
+      name = rel_path\match("([^#{File.separator}]+)#{File.separator}")
+      return module_name(name) if name
+
+  nil
 
 signal.register 'bundle-loaded',
   description: 'Signaled right after a bundle was loaded',

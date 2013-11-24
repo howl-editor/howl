@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import command, config, keyhandler, bundle, signal, inputs from howl
+import app, command, config, keyhandler, bundle, signal, inputs from howl
 import ActionBuffer, List from howl.ui
 serpent = require 'serpent'
 
@@ -140,9 +140,21 @@ command.register
   inputs: { '*loaded_bundle' }
   handler: (name) ->
     log.info "Reloading bundle '#{name}'.."
-    bundle.unload name
+    bundle.unload name if _G.bundles[name]
     bundle.load_by_name name
     log.info "Reloaded bundle '#{name}'"
+
+command.register
+  name: 'bundle-reload-current'
+  description: 'Reloads the last active bundle (with files open)'
+  handler: ->
+    for buffer in *app.buffers
+      bundle_name = buffer.file and bundle.from_file(buffer.file) or nil
+      if bundle_name
+        command.run "bundle-reload #{bundle_name}"
+        return
+
+    log.warn 'Could not find any currently active bundle to reload'
 
 command.register
   name: 'buffer-grep'

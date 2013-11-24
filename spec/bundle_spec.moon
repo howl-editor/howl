@@ -223,6 +223,16 @@ describe 'bundle', ->
           bundle.load_from_dir dir
           assert.no_error -> bundle.unload 'dash-love'
 
+  describe 'from_file(file)', ->
+    it 'returns the adjusted name of the containing bundle if any', ->
+      with_tmpdir (dir) ->
+        bundle.dirs = {dir}
+        b_dir = dir / 'my-bundle'
+        init = b_dir\join('init.lua')
+        assert.equal 'my_bundle', bundle.from_file(init)
+        assert.is_nil bundle.from_file(File('/bin/ls'))
+        assert.is_nil bundle.from_file(dir\join('directly_under_root'))
+
   it '.unloaded holds the adjusted names of any unloaded bundles', ->
     with_tmpdir (dir) ->
       bundle.dirs = {dir}
