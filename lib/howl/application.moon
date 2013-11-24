@@ -3,7 +3,7 @@
 
 import Gtk, Gio from lgi
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, keyhandler, keymap, signal, inputs from howl
+import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs from howl
 import File from howl.fs
 import PropertyObject from howl.aux.moon
 
@@ -198,7 +198,7 @@ class Application extends PropertyObject
   _load: (files = {}) =>
     local window
     unless @_loaded
-      keyhandler.keymap = keymap
+      bindings.keymap = keymap
       @settings = Settings!
       @_load_completions!
       @_load_commands!

@@ -1,6 +1,6 @@
 state = bundle_load 'state'
 import apply from state
-import keyhandler, config from howl
+import bindings, config from howl
 
 with config
   .define
@@ -9,7 +9,7 @@ with config
     default: 0
     type_of: 'number'
 
-default_map = keyhandler.keymap
+default_map = bindings.keymap
 
 cursor_home = (editor) -> apply editor, (editor) -> editor.cursor\home!
 
@@ -70,8 +70,8 @@ map = {
       if _state.count then editor.cursor.line = _state.count
       else editor.cursor\eof!
 
-    f: (editor) -> keyhandler.capture forward_to_char
-    F: (editor) -> keyhandler.capture back_to_char
+    f: (editor) -> bindings.capture forward_to_char
+    F: (editor) -> bindings.capture back_to_char
     '/': 'search-forward'
     n: 'repeat-search'
 
@@ -96,7 +96,7 @@ map = {
 
       return -> true
 
-    (...) -> keyhandler.dispatch event, source, { default_map }, ...
+    (...) -> bindings.dispatch event, source, { default_map }, ...
 }
 
 config.watch 'vi_command_cursor_blink_interval', (_, value) ->

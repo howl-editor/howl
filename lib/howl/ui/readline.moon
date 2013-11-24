@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import Gtk, Gdk from lgi
-import Scintilla, keyhandler, config, inputs from howl
+import Scintilla, bindings, config, inputs from howl
 import PropertyObject from howl.aux.moon
 import style, theme, Cursor, Selection, ActionBuffer, List, IndicatorBar from howl.ui
 
@@ -140,7 +140,7 @@ class Readline extends PropertyObject
     max_lines
 
   _on_keypress: (event) =>
-    return true if keyhandler.dispatch event, 'readline', { @keymap }, self
+    return true if bindings.dispatch event, 'readline', { @keymap }, self
     return event.character == nil or event.ctrl or event.alt
 
   _on_char_added: (event) =>

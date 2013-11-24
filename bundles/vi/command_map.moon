@@ -1,7 +1,7 @@
 state = ...
 base_map = bundle_load 'base_map'
 import apply, record, repeat_last from state
-import command, keyhandler from howl
+import command, bindings from howl
 
 one_right = (editor) ->
   if editor.cursor.at_end_of_line
@@ -98,7 +98,7 @@ map = {
 
     P: (editor) -> apply editor, (editor) -> editor\paste!
 
-    r: (editor) ->  keyhandler.capture replace_char
+    r: (editor) ->  bindings.capture replace_char
 
     u: 'editor-undo'
     ctrl_r: 'editor-redo'

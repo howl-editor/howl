@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import app, command, config, keyhandler, bundle, signal, inputs from howl
+import app, command, config, bindings, bundle, signal, inputs from howl
 import ActionBuffer, List from howl.ui
 serpent = require 'serpent'
 
@@ -76,7 +76,7 @@ command.register
     editor = howl.app\add_buffer buffer
     editor.cursor\eof!
 
-    keyhandler.capture (event, source, translations) ->
+    bindings.capture (event, source, translations) ->
       buffer.lines\delete 3, #buffer.lines
       buffer\append 'Key translations (usable from keymap):\n', 'comment'
       buffer\append serpent.block translations, comment: false

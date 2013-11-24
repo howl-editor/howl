@@ -1,9 +1,9 @@
 import Gtk from lgi
 
-import Buffer, keyhandler, bundle from howl
+import Buffer, bindings, bundle from howl
 import Editor from howl.ui
 
-def_keymap = keyhandler.keymap
+def_keymap = bindings.keymap
 bundle.load_by_name 'vi'
 state = bundles.vi.state
 
@@ -40,7 +40,7 @@ describe 'VI', ->
 
   press = (...) ->
     for key in *{...}
-      keyhandler.process {key_name: key, character: key, key_code: 123}, 'editor', nil, editor
+      bindings.process {key_name: key, character: key, key_code: 123}, 'editor', nil, editor
 
   it '<j> moves down one line', ->
     press 'j'
@@ -274,7 +274,7 @@ describe 'VI', ->
     after_each -> bundle.load_by_name 'vi'
 
     it 'restores the default keymap', ->
-      assert.equals def_keymap, keyhandler.keymap
+      assert.equals def_keymap, bindings.keymap
 
     it 'unregisters the vi indicator', ->
       assert.raises 'indicator', -> editor.indicator.vi

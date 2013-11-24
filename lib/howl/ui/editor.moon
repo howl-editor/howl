@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import Gtk from lgi
-import Scintilla, Completer, signal, keyhandler, config, command from howl
+import Scintilla, Completer, signal, bindings, config, command from howl
 import PropertyObject from howl.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
 import Searcher, CompletionPopup from howl.ui
@@ -387,14 +387,14 @@ class Editor extends PropertyObject
         @remove_popup!
       else
         if @popup.window.keymap
-          return true if keyhandler.dispatch event, 'completion', { @popup.window.keymap }, @popup.window
+          return true if bindings.dispatch event, 'completion', { @popup.window.keymap }, @popup.window
 
         @remove_popup! if not @popup.options.persistent
     else
       @searcher\cancel!
 
     maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
-    keyhandler.process event, 'editor', maps, self
+    bindings.process event, 'editor', maps, self
 
   _on_selection_changed: =>
     @_update_position!

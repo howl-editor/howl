@@ -1,11 +1,11 @@
-import keyhandler from howl
+import bindings from howl
 import getmetatable, setfenv, pairs, callable, print, tostring from _G
 
 _G = _G
 _ENV = {}
 setfenv 1, _ENV
 
-default_keymap = keyhandler.keymap
+default_keymap = bindings.keymap
 export mode, map
 export active = false
 export delete, change, yank, go
@@ -21,7 +21,7 @@ export reset = ->
   yank = false
   count = nil
   go = nil
-  keyhandler.cancel_capture!
+  bindings.cancel_capture!
 
 export add_number = (number) ->
   count = count or 0
@@ -36,7 +36,7 @@ export change_mode = (editor, to, ...) ->
     editor.cursor[k] = v for k,v in pairs map.cursor_properties
 
   mode = to
-  keyhandler.keymap = map
+  bindings.keymap = map
   map(editor, ...) if callable map
 
 export apply = (editor, f) ->
@@ -93,7 +93,7 @@ export activate = (editor) ->
 
 export deactivate = ->
   if active
-    keyhandler.keymap = default_keymap
+    bindings.keymap = default_keymap
     active = false
 
 return _ENV

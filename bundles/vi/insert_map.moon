@@ -1,4 +1,4 @@
-import keyhandler, config from howl
+import bindings, config from howl
 state = ...
 
 local insert_pos
@@ -29,7 +29,7 @@ insert_map = {
 
 setmetatable insert_map, {
   __call: (_, editor) -> insert_pos = editor.cursor.pos
-  __index: keyhandler.keymap
+  __index: bindings.keymap
 }
 
 return insert_map
