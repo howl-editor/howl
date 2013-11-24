@@ -32,13 +32,15 @@ class DefaultMode
     indent_level = editor.buffer.config.indent
     dont_indent_styles = comment: true, string: true
     buffer = editor.buffer
+    current_line = editor.cursor.line
 
     editor\transform_active_lines (lines) ->
       for line in *lines
+        continue if line.blank and line.nr != current_line
         line_start_style = style.at_pos buffer, line.start_pos
-        unless dont_indent_styles[line_start_style]
-          indent = @indent_for line, indent_level
-          line.indentation = indent if indent != line.indentation
+        continue if dont_indent_styles[line_start_style]
+        indent = @indent_for line, indent_level
+        line.indentation = indent if indent != line.indentation
 
       with editor
         .cursor.column = .current_line.indentation + 1 if .cursor.column < .current_line.indentation
