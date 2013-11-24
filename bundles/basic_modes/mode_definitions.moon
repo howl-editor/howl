@@ -99,7 +99,12 @@ common_auto_pairs = {
   diff:
     extensions: { 'diff', 'patch' }
     patterns: { '%.git/COMMIT_EDITMSG$' }
-    auto_pairs: common_auto_pairs
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '{': '}'
+      '"': '"'
+    }
 
   dot:
     extensions: { 'dot', 'gv' }
