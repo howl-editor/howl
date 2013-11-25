@@ -115,7 +115,7 @@ local function explain_key_code(code, event)
   local effective_code = code == 10 and glib.GDK_KEY_Return or code
 
   local key_name = C.gdk_keyval_name(effective_code)
-  if key_name then
+  if key_name ~= nil then
     event.key_name = ffi.string(key_name):lower()
   end
   local unicode_char = C.gdk_keyval_to_unicode(code);
