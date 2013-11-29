@@ -65,7 +65,7 @@ describe 'Git bundle', ->
         assert_same_files git\files!, { file }
         git_cmd 'add ' .. file\relative_to_parent root
         assert_same_files git\files!, { file }
-        git_cmd 'ci -q -m "new" ' .. file\relative_to_parent root
+        git_cmd 'commit -q -m "new" ' .. file\relative_to_parent root
         assert_same_files git\files!, { file }
         file.contents = 'change'
         assert_same_files git\files!, { file }
@@ -81,7 +81,7 @@ describe 'Git bundle', ->
         file = root\join('new.lua')
         file.contents = 'line 1\n'
         git_cmd "add #{file}"
-        git_cmd "ci -q -m 'rev1' #{file}"
+        git_cmd "commit -q -m 'rev1' #{file}"
 
       it 'returns nil if <file> has not changed', ->
         assert.is_nil git\diff file
