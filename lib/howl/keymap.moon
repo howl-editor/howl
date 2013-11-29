@@ -48,6 +48,9 @@
     ctrl_shift_up:    'editor-scroll-up'
     ctrl_shift_down:  'editor-scroll-down'
 
+    ctrl_shift_d:     'vc-diff-file'
+    ctrl_alt_d:       'vc-diff'
+
     page_up:          'cursor-page-up'
     shift_page_up:    'cursor-page-up-extend'
     page_down:        'cursor-page-down'

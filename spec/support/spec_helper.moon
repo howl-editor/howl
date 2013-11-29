@@ -12,6 +12,9 @@ export context = describe
 -- includes assertion
 includes = (state, args) ->
   t, b = table.unpack args
+  if type(t) == 'string'
+    return t\contains(b), args
+
   error 'Not a table', 1 if type(t) != 'table'
   for v in *t
     if v == b

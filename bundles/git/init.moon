@@ -1,36 +1,10 @@
 import config, VC from howl
-import File from howl.fs
-
-class Git
-  new: (root, git_dir) =>
-    @root = root
-    @git_dir = git_dir
-
-  files: =>
-    exec_path = config.git_path or 'git'
-    cmd = table.concat {
-      "cd '#{@root}' &&"
-      exec_path,
-      "ls-files",
-      "--exclude-standard",
-      "--others"
-      "--cached"
-      "--directory"
-    }, ' '
-    pipe = assert io.popen cmd
-    chunk = assert pipe\read '*a'
-    pipe\close!
-    git_files = {}
-    for path in chunk\gmatch '[^\n]+'
-      file = @root\join path
-      append git_files, file if file.exists
-    git_files
 
 find = (file) ->
   while file != nil
     git_dir = file\join('.git')
     if git_dir.exists
-      return Git file, git_dir
+      return bundle_load('git') file, git_dir
     file = file.parent
   nil
 

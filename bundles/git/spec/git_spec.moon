@@ -41,7 +41,7 @@ describe 'Git bundle', ->
         "--work-tree='" .. root .. "'",
         args
       }, ' '
-      os.execute cmd
+      assert os.execute cmd
 
     before_each ->
       root = File.tmpdir!
@@ -50,7 +50,7 @@ describe 'Git bundle', ->
 
     after_each -> root\delete_all!
 
-    describe '.files()', ->
+    describe 'files()', ->
       assert_same_files = (list1, list2) ->
         list1 = [f.path for f in *list1]
         list2 = [f.path for f in *list2]
@@ -73,6 +73,30 @@ describe 'Git bundle', ->
         file2 = root / 'another.lua'
         file2\touch!
         assert_same_files git\files!, { file2, file }
+
+    describe 'diff([file])', ->
+      local file
+
+      before_each ->
+        file = root\join('new.lua')
+        file.contents = 'line 1\n'
+        git_cmd "add #{file}"
+        git_cmd "ci -q -m 'rev1' #{file}"
+
+      it 'returns nil if <file> has not changed', ->
+        assert.is_nil git\diff file
+
+      it 'returns a string containing the diff if <file> has changed', ->
+        file.contents ..= 'line 2\n'
+        diff = git\diff file
+        assert.includes diff, file.basename
+        assert.includes diff, '+line 2'
+
+      it 'returns a diff for the entire directory if file is not specified', ->
+        file.contents ..= 'line 2\n'
+        diff = git\diff!
+        assert.includes diff, file.basename
+        assert.includes diff, '+line 2'
 
     it 'uses the executable in variable `git_path` if specified', ->
       orig_popen = io.popen

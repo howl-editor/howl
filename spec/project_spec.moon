@@ -36,7 +36,7 @@ describe 'Project', ->
       before_each -> VC.register 'vc', find: -> vc
       after_each -> VC.unregister 'vc'
 
-      it 'returns a project instantiaded with the vc and vc root', ->
+      it 'returns a project instantiated with the vc and vc root', ->
         p = Project.for_file 'file'
         assert.not_nil p
         assert.equal p.root, vc.root
