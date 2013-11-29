@@ -238,6 +238,14 @@ class Editor extends PropertyObject
     lines = @active_lines
     @buffer\as_one_undo -> f lines
 
+  with_position_restored: (f) =>
+    line, column, indentation = @cursor.line, @cursor.column, @current_line.indentation
+    status, ret = pcall f, self
+    @cursor.line = line
+    delta = @current_line.indentation - indentation
+    @cursor.column = column + delta
+    error ret unless status
+
   indent: => if @buffer.mode.indent then @buffer.mode\indent self
   comment: => if @buffer.mode.comment then @buffer.mode\comment self
   uncomment: => if @buffer.mode.uncomment then @buffer.mode\uncomment self

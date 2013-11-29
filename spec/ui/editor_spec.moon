@@ -85,6 +85,50 @@ describe 'Editor', ->
           editor[method] editor
           assert.spy(buffer.mode[method]).was_called_with buffer.mode, editor
 
+  describe 'with_position_restored(f)', ->
+    before_each ->
+      buffer.text = '  yowser!\n  yikes!'
+      cursor.line = 2
+      cursor.column = 4
+
+    it 'calls <f> passing itself a parameter', ->
+      f = spy.new -> nil
+      editor\with_position_restored f
+      assert.spy(f).was_called_with editor
+
+    it 'restores the cursor position afterwards', ->
+      editor\with_position_restored -> cursor.pos = 2
+      assert.equals 2, cursor.line
+      assert.equals 4, cursor.column
+
+    it 'adjusts the position should the indentation have changed', ->
+      editor\with_position_restored ->
+        lines[1].indentation = 0
+        lines[2].indentation = 0
+
+      assert.equals 2, cursor.line
+      assert.equals 2, cursor.column
+
+      editor\with_position_restored ->
+        lines[1].indentation = 3
+        lines[2].indentation = 3
+
+      assert.equals 2, cursor.line
+      assert.equals 5, cursor.column
+
+    context 'when <f> raises an error', ->
+      it 'propagates the error', ->
+        assert.raises 'ARGH!', -> editor\with_position_restored -> error 'ARGH!'
+
+      it 'the position is still restored', ->
+        cursor.pos = 4
+
+        pcall editor.with_position_restored, editor, ->
+          cursor.pos = 2
+          error 'ARGH!'
+
+        assert.equals 4, cursor.pos
+
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->
     buffer.text = 'hƏllo'
     cursor.pos = 6
