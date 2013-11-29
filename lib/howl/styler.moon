@@ -6,6 +6,7 @@ style_number_for = style.number_for
 style_name_for = style.name_for
 ffi_fill = ffi.fill
 string_byte = string.byte
+whitespace = style_number_for 'whitespace'
 
 style_buf = nil
 style_buf_length = 0
@@ -13,29 +14,25 @@ style_buf_length = 0
 get_styling_start_pos = (sci) ->
   -- so where to begin?
   pos = sci\get_end_styled!
+  line = sci\line_from_position pos
 
-  while pos > 100 -- don't bother with smarts if were so close to the beginning of doc
-    start_line = sci\line_from_position pos
+  while line > 5 -- don't bother with smarts if were so close to the beginning of doc
 
     -- we could just start at the beginning of the line?
-    pos = sci\position_from_line start_line
+    pos = sci\position_from_line line
 
     -- hmm, unless we're in the middle of something of course..
-    -- but if the actual newline is styled differently than the pos before,
-    -- we're presumably OK though since multiline lexing would just style
-    -- everything until the end with the same style
-    nl_pos = sci\get_line_end_position start_line - 1
-    nl_style = sci\get_style_at nl_pos
-    before_nl_style = sci\get_style_at nl_pos - 1
-    return pos if nl_style != before_nl_style
+    -- but if the newline before is styled with whitespace, we're presumably OK
+    -- though since multiline lexing would just style everything until the end with
+    -- the same non-whitespace style, including newlines
+    cur_style = sci\get_style_at pos
+    if cur_style != 0 -- 0 == unstyled, means we're probably editing it right now
+      nl_pos = sci\get_line_end_position line - 1
+      nl_style = sci\get_style_at nl_pos
+      return pos if nl_style == whitespace
 
-    -- OK, fine. we're now in unknown territory, so back up until the last
-    -- style change in order to get some perspective
-    pos = nl_pos - 2
-    while pos > 100
-      cur_style = sci\get_style_at p
-      if cur_style != nl_style then break
-      pos -= 1
+    -- back up a line
+    line -= 1
 
   -- just start from the beginning
   0
