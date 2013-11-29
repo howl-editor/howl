@@ -9,6 +9,7 @@
     ctrl_c:           'editor-copy'
     ctrl_d:           'editor-duplicate-current'
     ctrl_i:           'editor-indent'
+    ctrl_shift_i:     'editor-indent-all'
     ctrl_g:           'buffer-grep'
     ctrl_o:           'open'
     ctrl_p:           'project-open'

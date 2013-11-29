@@ -247,6 +247,12 @@ class Editor extends PropertyObject
     error ret unless status
 
   indent: => if @buffer.mode.indent then @buffer.mode\indent self
+
+  indent_all: =>
+    @with_position_restored ->
+      @selection\select_all!
+      @indent!
+
   comment: => if @buffer.mode.comment then @buffer.mode\comment self
   uncomment: => if @buffer.mode.uncomment then @buffer.mode\uncomment self
   toggle_comment: => if @buffer.mode.toggle_comment then @buffer.mode\toggle_comment self
@@ -612,6 +618,7 @@ for cmd_spec in *{
   { 'shift-right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
   { 'shift-left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
   { 'indent', 'Indents the selected lines, or the current line', 'indent' }
+  { 'indent-all', 'Indents the entire buffer', 'indent_all' }
   { 'join-lines', 'Joins the current line with the line below', 'join_lines' }
   { 'complete', 'Starts completion at cursor', 'complete' }
   { 'undo', 'Undo last edit for the current editor', 'undo' }
