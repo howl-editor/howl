@@ -8,6 +8,23 @@ describe 'File', ->
       assert.is_true file.exists
       file\delete!
 
+  describe 'with_tmpfile(f)', ->
+    it 'invokes <f> with the file', ->
+      f = spy.new (file) ->
+        assert.equals 'File', typeof(file)
+
+      File.with_tmpfile f
+      assert.spy(f).was_called(1)
+
+    it 'removes the temporary file even if <f> raises an error', ->
+      local tmpfile
+      f = (file) ->
+        tmpfile = file
+        error 'NOO'
+
+      assert.raises 'NOO', -> File.with_tmpfile f
+      assert.is_false tmpfile.exists
+
   describe '.tmpdir', ->
     it 'returns a file instance pointing to an existing directory', ->
       file = File.tmpdir!
@@ -46,11 +63,11 @@ describe 'File', ->
     assert.equal File('/foo.txt').uri, 'file:///foo.txt'
 
   it '.exists returns true if the path exists', ->
-    with_tmpfile (file) -> assert.is_true file.exists
+    File.with_tmpfile (file) -> assert.is_true file.exists
 
   describe 'contents', ->
     it 'assigning a string writes the string to the file', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file.contents = 'hello world'
         f = io.open file.path
         read_back = f\read '*all'
@@ -58,7 +75,7 @@ describe 'File', ->
         assert.equal read_back, 'hello world'
 
     it 'returns the contents of the file', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         f = io.open file.path, 'w'
         f\write 'hello world'
         f\close!
@@ -94,19 +111,19 @@ describe 'File', ->
       assert.is_true file.readable
 
   it '.etag is a string that can be used to check for modification', ->
-    with_tmpfile (file) ->
+    File.with_tmpfile (file) ->
       assert.is.not_nil file.etag
       assert.equal type(file.etag), 'string'
 
   it '.modified_at is a the unix time when the file was last modified', ->
-    with_tmpfile (file) ->
+    File.with_tmpfile (file) ->
       assert.is.not_nil file.modified_at
       assert.equal type(file.modified_at), 'number'
 
   describe 'open([function])', ->
     context 'when <function> is nil', ->
       it 'returns a Lua file handle', ->
-        with_tmpfile (file) ->
+        File.with_tmpfile (file) ->
           file.contents = 'first line\nsecond line\n'
           fh = file\open!
           assert.equal 'first line', fh\read!
@@ -115,7 +132,7 @@ describe 'File', ->
 
     context 'when <function> is provided', ->
       it 'it is invoked with the file handle', ->
-        with_tmpfile (file) ->
+        File.with_tmpfile (file) ->
           file.contents = 'first line\nsecond line\n'
           local first_line
           file\open (fh) ->
@@ -124,22 +141,22 @@ describe 'File', ->
           assert.equal 'first line', first_line
 
       it 'returns the value of the function', ->
-        with_tmpfile (file) ->
+        File.with_tmpfile (file) ->
           assert.equal 'callback', file\open -> 'callback'
 
       it 'closes the file automatically after invoking <function>', ->
-        with_tmpfile (file) ->
+        File.with_tmpfile (file) ->
           local handle
           file\open (fh) -> handle = fh
           assert.has_errors -> handle\read!
 
       context 'when <function> raises an error', ->
         it 'propagates that error', ->
-          with_tmpfile (file) ->
+          File.with_tmpfile (file) ->
             assert.raises 'kaboom', -> file\open -> error 'kaboom'
 
         it 'still closes the file', ->
-          with_tmpfile (file) ->
+          File.with_tmpfile (file) ->
             local handle
             pcall -> file\open (fh) ->
               handle = fh
@@ -148,7 +165,7 @@ describe 'File', ->
             assert.has_errors -> handle\read!
 
   it 'read(..) is a short hand for doing a read(..) on the Lua file handle', ->
-    with_tmpfile (file) ->
+    File.with_tmpfile (file) ->
       file.contents = 'first line\n'
       assert.same { 'first', ' line' }, { file\read 5, '*l' }
 
@@ -168,14 +185,14 @@ describe 'File', ->
 
   describe 'mkdir()', ->
     it 'creates a directory for the path specified by the file', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file\delete!
         file\mkdir!
         assert.is_true file.exists and file.is_directory
 
   describe 'mkdir_p()', ->
     it 'creates a directory for the path specified by the file, including parents', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file\delete!
         file = file\join 'sub/foo'
         file\mkdir_p!
@@ -183,7 +200,7 @@ describe 'File', ->
 
   describe 'delete()', ->
     it 'deletes the target file', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file\delete!
         assert.is_false file.exists
 
@@ -199,7 +216,7 @@ describe 'File', ->
   describe 'delete_all()', ->
     context 'for a regular file', ->
       it 'deletes the target file', ->
-        with_tmpfile (file) ->
+        File.with_tmpfile (file) ->
           file\delete_all!
           assert.is_false file.exists
 
@@ -213,7 +230,7 @@ describe 'File', ->
           assert.is_false dir.exists
 
     it 'raise an error if the file does not exist', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file\delete!
         assert.error -> file\delete!
 
@@ -222,7 +239,7 @@ describe 'File', ->
 
   describe 'touch()', ->
     it 'creates the file if does not exist', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file\delete!
         file\touch!
         assert.is_true file.exists
@@ -233,7 +250,7 @@ describe 'File', ->
 
   describe 'tostring()', ->
     it 'returns a string containing the path', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         to_s = file\tostring!
         assert.equal 'string', typeof to_s
         assert.equal to_s, file.path

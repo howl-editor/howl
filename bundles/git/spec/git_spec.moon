@@ -27,7 +27,7 @@ describe 'Git bundle', ->
           assert.equal instance.root, dir
 
     it 'returns nil if no git root was found', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         assert.is_nil git_vc.find file
 
   describe 'A Git instance', ->

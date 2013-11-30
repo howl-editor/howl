@@ -40,7 +40,7 @@ describe 'mode', ->
     context 'when the file header matches a mode shebang', ->
       it 'returns an instance of that mode', ->
         mode.register name: 'shebang', shebangs: 'lua$', create: -> {}
-        with_tmpfile (file) ->
+        File.with_tmpfile (file) ->
           file.contents = '#! /usr/bin/lua\nother line\nand other\n'
           assert.equal 'shebang', mode.for_file(file).name
 

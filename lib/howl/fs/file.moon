@@ -16,6 +16,12 @@ class File extends PropertyObject
       \delete! if .exists
       \mkdir!
 
+  with_tmpfile: (f) ->
+    file = File.tmpfile!
+    status, err = pcall f, file
+    file\delete_all! if file.exists
+    error err if not status
+
   is_absolute: (path) ->
     (path\match('^/') or path\match('^%a:\\\\')) != nil
 

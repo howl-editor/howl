@@ -60,14 +60,14 @@ describe 'theme', ->
 
   describe 'assigning a new theme to config.theme', ->
     it "logs an error if there's an error loading the theme", ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file.contents = "error('cantload')"
         theme.register 'error', file
         config.theme = 'error'
         assert.match log.last_error.message, 'cantload'
 
     it "assigns the loaded theme to .current and sets .name", ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file.contents = serpent.dump spec_theme
         theme.register 'foo', file
         config.theme = 'foo'
@@ -76,7 +76,7 @@ describe 'theme', ->
         assert.same theme.current, expected
 
     it 'emits a theme-changed event with the newly set theme', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file.contents = serpent.dump spec_theme
         theme.register 'alert', file
         handler = spy.new -> true
@@ -88,14 +88,14 @@ describe 'theme', ->
         assert.spy(handler).was_called_with theme: expected
 
     it 'does not propagate global assignments to the global environment', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file.contents = 'spec_global = "noo!"\n' .. serpent.dump spec_theme
         theme.register 'foo', file
         config.theme = 'foo'
         assert.is_nil spec_global
 
     it 'allows the use of named colors', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         theme_string = serpent.dump spec_theme
         theme_string = theme_string\gsub '"#777777"', 'violet' -- footer.color
         file.contents = theme_string
@@ -104,14 +104,14 @@ describe 'theme', ->
         assert.equal theme.current.editor.footer.color, '#ee82ee'
 
   it 'assigning directly to .current raises an error', ->
-    with_tmpfile (file) ->
+    File.with_tmpfile (file) ->
       file.contents = serpent.dump spec_theme
       theme.register 'foo', file
       assert.has_errors -> config.current = 'foo'
 
   describe 'life cycle management', ->
     it 'automatically applies a theme upon registration if that theme is already set as current', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         the_theme = moon.copy spec_theme
         file.contents = serpent.dump the_theme
         theme.register 'reloadme', file
@@ -124,7 +124,7 @@ describe 'theme', ->
         assert.equal '#112233', theme.current.window.background
 
     it 'keeps the loaded in-memory theme when the current is unregistered', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file.contents = serpent.dump spec_theme
         theme.register 'keepme', file
         config.theme = 'keepme'

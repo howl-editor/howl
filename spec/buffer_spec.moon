@@ -1,5 +1,6 @@
 import Buffer, Scintilla, config, signal from howl
 import File from howl.fs
+import with_tmpfile from File
 
 describe 'Buffer', ->
   local sci

@@ -48,12 +48,6 @@ say\set("assertion.raises.negative", "Function did raise an error matching '%s'"
 assert\register("assertion", "raises", raises, "assertion.raises.positive", "assertion.raises.negative")
 
 -- helpers
-export with_tmpfile = (f) ->
-  file = File.tmpfile!
-  status, err = pcall f, file
-  file\delete_all! if file.exists
-  error err if not status
-
 export with_tmpdir = (f) ->
   dir = File.tmpdir!
   status, err = pcall f, dir

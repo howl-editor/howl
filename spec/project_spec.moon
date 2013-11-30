@@ -1,4 +1,5 @@
 import Project, VC from howl
+import File from howl.fs
 
 describe 'Project', ->
   after_each ->
@@ -28,7 +29,7 @@ describe 'Project', ->
       assert.raises 'file', -> Project.for_file nil
 
     it 'returns nil by default', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         assert.is_nil Project.for_file file
 
     context 'when there is VC found for the file', ->

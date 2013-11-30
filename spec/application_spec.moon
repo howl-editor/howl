@@ -29,18 +29,18 @@ describe 'Application', ->
     editor = Editor Buffer {}
 
     it 'opens the file in the specified editor if given', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file.contents = 'well hello there'
         application\open_file file, editor
         assert.equal file.contents, editor.buffer.text
 
     it 'returns the newly created buffer', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         buffer = application\open_file file, editor
         assert.equal buffer, editor.buffer
 
     it 'adds the buffer to @buffers', ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         buffer = application\open_file file, editor
         assert.same { buffer }, application.buffers
 

@@ -30,7 +30,7 @@ describe 'ScintilluaLexer', ->
     }, lexed
 
   it 'provides the usual pre-defined Scintillua styles in the lexer', ->
-    with_tmpfile (file) ->
+    File.with_tmpfile (file) ->
       file.contents = [[
         local new_tag = lexer.style_tag .. {}
         assert(lexer.style_class ~= nil)
@@ -43,7 +43,7 @@ describe 'ScintilluaLexer', ->
 
   describe "Scintillua's lexer.load()", ->
     it "can load other Scintillua lexers from registered modes", ->
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file.contents = [[
           return {
             _NAME = 'embedded',
@@ -53,7 +53,7 @@ describe 'ScintilluaLexer', ->
         lexer = ScintilluaLexer 'embedded', file
         mode.register name: 'embedded', create: -> :lexer
 
-      with_tmpfile (file) ->
+      File.with_tmpfile (file) ->
         file.contents = [[
           local embedded = lexer.load('embedded')
           assert(embedded._RULES ~= nil, 'Failed to load sub lexer')
