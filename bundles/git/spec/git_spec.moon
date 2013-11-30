@@ -30,81 +30,74 @@ describe 'Git bundle', ->
       with_tmpfile (file) ->
         assert.is_nil git_vc.find file
 
-  -- describe 'A Git instance', ->
-  --   root = nil
-  --   git = nil
+  describe 'A Git instance', ->
+    root = nil
+    git = nil
 
-  --   git_cmd = (args) ->
-  --     cmd = table.concat {
-  --       "git",
-  --       "--git-dir='" .. root\join('.git') .. "'",
-  --       "--work-tree='" .. root .. "'",
-  --       args
-  --     }, ' '
-  --     assert os.execute cmd
+    before_each ->
+      root = File.tmpdir!
+      os.execute 'git init -q ' .. root
+      git = VC.available.git.find root
+      git\run 'config user.email "spec@howl.io"'
+      git\run 'config user.name "Howl Spec"'
 
-  --   before_each ->
-  --     root = File.tmpdir!
-  --     os.execute 'git init -q ' .. root
-  --     git = VC.available.git.find root
+    after_each -> root\delete_all!
 
-  --   after_each -> root\delete_all!
+    describe 'files()', ->
+      assert_same_files = (list1, list2) ->
+        list1 = [f.path for f in *list1]
+        list2 = [f.path for f in *list2]
+        table.sort list1
+        table.sort list2
+        assert.same list1, list2
 
-  --   describe 'files()', ->
-  --     assert_same_files = (list1, list2) ->
-  --       list1 = [f.path for f in *list1]
-  --       list2 = [f.path for f in *list2]
-  --       table.sort list1
-  --       table.sort list2
-  --       assert.same list1, list2
+      it 'returns a list of git files, including untracked', ->
+        assert_same_files git\files!, {}
+        file = root / 'new.lua'
+        file\touch!
+        assert_same_files git\files!, { file }
+        git\run 'add ' .. file\relative_to_parent root
+        assert_same_files git\files!, { file }
+        git\run 'commit -q -m "new" ' .. file\relative_to_parent root
+        assert_same_files git\files!, { file }
+        file.contents = 'change'
+        assert_same_files git\files!, { file }
 
-  --     it 'returns a list of git files, including untracked', ->
-  --       assert_same_files git\files!, {}
-  --       file = root / 'new.lua'
-  --       file\touch!
-  --       assert_same_files git\files!, { file }
-  --       git_cmd 'add ' .. file\relative_to_parent root
-  --       assert_same_files git\files!, { file }
-  --       git_cmd 'commit -q -m "new" ' .. file\relative_to_parent root
-  --       assert_same_files git\files!, { file }
-  --       file.contents = 'change'
-  --       assert_same_files git\files!, { file }
+        file2 = root / 'another.lua'
+        file2\touch!
+        assert_same_files git\files!, { file2, file }
 
-  --       file2 = root / 'another.lua'
-  --       file2\touch!
-  --       assert_same_files git\files!, { file2, file }
+    describe 'diff([file])', ->
+      local file
 
-  --   describe 'diff([file])', ->
-  --     local file
+      before_each ->
+        file = root\join('new.lua')
+        file.contents = 'line 1\n'
+        git\run "add #{file}"
+        git\run "commit -q -m 'rev1' #{file}"
 
-  --     before_each ->
-  --       file = root\join('new.lua')
-  --       file.contents = 'line 1\n'
-  --       git_cmd "add #{file}"
-  --       git_cmd "commit -q -m 'rev1' #{file}"
+      it 'returns nil if <file> has not changed', ->
+        assert.is_nil git\diff file
 
-  --     it 'returns nil if <file> has not changed', ->
-  --       assert.is_nil git\diff file
+      it 'returns a string containing the diff if <file> has changed', ->
+        file.contents ..= 'line 2\n'
+        diff = git\diff file
+        assert.includes diff, file.basename
+        assert.includes diff, '+line 2'
 
-  --     it 'returns a string containing the diff if <file> has changed', ->
-  --       file.contents ..= 'line 2\n'
-  --       diff = git\diff file
-  --       assert.includes diff, file.basename
-  --       assert.includes diff, '+line 2'
+      it 'returns a diff for the entire directory if file is not specified', ->
+        file.contents ..= 'line 2\n'
+        diff = git\diff!
+        assert.includes diff, file.basename
+        assert.includes diff, '+line 2'
 
-  --     it 'returns a diff for the entire directory if file is not specified', ->
-  --       file.contents ..= 'line 2\n'
-  --       diff = git\diff!
-  --       assert.includes diff, file.basename
-  --       assert.includes diff, '+line 2'
+    describe 'run(...)', ->
+      it 'runs git in the root dir with the given arguments and returns the output', ->
+        assert.includes git\run('config --local -l'), "Howl Spec"
 
-  --   it 'uses the executable in variable `git_path` if specified', ->
-  --     orig_popen = io.popen
-  --     pipe = read: -> 'file\n'
-  --     wrapper = Spy as_null_object: true, with_return: pipe
-  --     io.popen = wrapper
-  --     config.git_path = 'foo_git'
-  --     status, err = pcall git\files
-  --     io.popen = orig_popen
-  --     config.git_path = nil
-  --     assert.match wrapper.called_with[1], 'foo_git'
+      it 'uses the executable in variable `git_path` if specified', ->
+        config.git_path = '/bin/echo'
+        status, out = pcall git.run, git, 'using echo'
+        config.git_path = nil
+        assert status, out
+        assert.includes out, "using echo"
