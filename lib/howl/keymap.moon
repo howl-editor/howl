@@ -14,6 +14,7 @@
     ctrl_o:           'open'
     ctrl_p:           'project-open'
     ctrl_s:           'save'
+    ctrl_shift_s:     'save-as'
     ctrl_v:           'editor-paste'
 
     ctrl_x:           'editor-cut'
