@@ -113,6 +113,10 @@ return {
 
     char: color: green
 
+    fdecl:
+      color: key
+      font: bold: true
+
     keyword:
       color: keyword
       font: bold: true
@@ -151,7 +155,10 @@ return {
     info: color: blue
     constant: color: orange
     string: color: string
-    regex: color: green
+
+    regex:
+      color: green
+      background: wheat
 
     embedded:
       background: wheat

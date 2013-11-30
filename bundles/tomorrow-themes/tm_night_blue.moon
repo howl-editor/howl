@@ -11,6 +11,8 @@ aqua = '#99ffff'
 blue = '#bbdaff'
 purple = '#ebbbff'
 
+embedded_bg = '#003080'
+
 return {
   window:
     background: 'dark_back.png'
@@ -100,7 +102,11 @@ return {
       color: blue
       font: bold: true
 
-    char: color: green
+    fdecl:
+      color: blue
+      font: bold: true
+
+
     keyword:
       color: purple
       font: bold: true
@@ -115,6 +121,7 @@ return {
       color: blue
       font: bold: true
 
+    char: color: green
     number: color: orange
     operator: color: aqua
     preproc: color: aqua
@@ -129,11 +136,14 @@ return {
       font: bold: true
 
     string: color: green
-    regex: color: green
+
+    regex:
+      color: green
+      background: embedded_bg
 
     embedded:
       color: blue
-      background: '#003080'
+      background: embedded_bg
 
     -- Markup and visual styles
 

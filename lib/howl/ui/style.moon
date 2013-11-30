@@ -23,6 +23,11 @@ default_style_numbers = {
   key: 16
   member: 17
   popup: 18
+  symbol: 19
+  global: 20
+  fdecl: 21
+  regex: 22
+
   default: 32
   line_number: 33
   bracelight: 34
@@ -34,7 +39,7 @@ default_style_numbers = {
 
 default_style_numbers[num] = name for name, num in pairs moon.copy default_style_numbers
 
-CUSTOM_START = 19
+CUSTOM_START = 23
 PREDEF_START = 32
 PREDEF_END = 39
 STYLE_MAX = 255
@@ -201,6 +206,11 @@ at_pos = (buffer, pos) ->
   style_num = buffer.sci\get_style_at b_pos - 1
   name = default_style_numbers[style_num] or get_buffer_styles(buffer)[style_num]
   name, styles[name]
+
+-- alias some default styles
+define 'symbol', 'key'
+define 'global', 'member'
+define 'regex', 'string'
 
 return setmetatable {
   :set_for_theme
