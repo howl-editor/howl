@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import command, mode, Buffer, Project from howl
+import File from howl.fs
 
 with_vc = (f) ->
   buffer = _G.editor.buffer
@@ -21,6 +22,7 @@ show_diff_buffer = (title, contents) ->
   buffer.text = contents
   buffer.title = "* Diff: #{title} *"
   buffer.modified = false
+  buffer.can_undo = false
   howl.app\add_buffer buffer
 
 command.register
@@ -90,3 +92,22 @@ command.register
         show_diff_buffer vc.root, diff
       else
         log.info "VC: No differences found for #{project.root}"
+
+command.register
+  name: 'diff-buffer-against-saved',
+  description: 'Shows a diff against the saved file for the current buffer'
+  handler: ->
+    buffer = _G.editor.buffer
+    unless buffer.file
+      log.error "No file associated with buffer '#{buffer}'"
+      return
+
+    File.with_tmpfile (file) ->
+      file.contents = buffer.text
+      pipe = assert io.popen "diff -u #{buffer.file} #{file}"
+      diff = assert pipe\read '*a'
+      pipe\close!
+      if diff and not diff.blank
+        show_diff_buffer "Compared to disk: #{buffer.file.basename}", diff
+      else
+        log.info "No unsaved modifications found for #{buffer.file.basename}"
