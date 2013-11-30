@@ -1,5 +1,5 @@
 import lpeg_lexer from howl.aux
-import P,V, Cp from lpeg
+import P,V, C, Cp, Cg from lpeg
 
 l = lpeg_lexer
 
@@ -30,16 +30,27 @@ describe 'lpeg_lexer', ->
     assert.is_nil l.eol\match '2'
 
   describe 'any(list)', ->
-    it 'the resulting pattern is an ordered match of any member of list', ->
+    it 'the resulting pattern is an ordered match of any member of <list>', ->
       p = l.any { 'one', 'two' }
       assert.is_not_nil p\match 'one'
       assert.is_not_nil p\match 'two'
       assert.is_nil p\match 'three'
 
     it '<list> can be vararg arguments', ->
-      -- p = l.any { 'one', 'two' }
       p = l.any 'one', 'two'
       assert.is_not_nil p\match 'two'
+
+  describe 'sequence(list)', ->
+    it 'the resulting pattern is a chained match of all members of <list>', ->
+      p = l.sequence { 'one', 'two' }
+      assert.is_nil p\match 'one'
+      assert.is_nil p\match 'two'
+      assert.is_not_nil p\match 'onetwo'
+      assert.is_nil p\match 'Xonetwo'
+
+    it '<list> can be vararg arguments', ->
+      p = l.sequence 'one', 'two'
+      assert.is_not_nil p\match 'onetwo'
 
   describe 'word(list)', ->
     grammar = P {
@@ -74,6 +85,29 @@ describe 'lpeg_lexer', ->
       p = l.span('{', '}', '\\') * Cp!
       assert.equals 5, p\match '{\\}}'
 
+  describe 'paired(p, escape)', ->
+    p = l.paired('|') * Cp!
+
+    it 'matches and consumes from <p> up to and including the matching <p>', ->
+      assert.equals 3, p\match '||x'
+      assert.equals 5, p\match '|xx|x'
+
+    it 'always considers <EOF> as an alternate stop marker', ->
+      assert.equals 3, p\match '|x'
+
+    it 'allows escaping the end delimiter with <escape>', ->
+      p = l.paired('|', '\\') * Cp!
+      assert.equals 5, p\match '|\\|| foo\\'
+
+  describe 'match_back(name)', ->
+    p = Cg(P'x', 'start') * 'y' * l.match_back('start')
+
+    it 'matches the named capture given by <name>', ->
+      assert.equals 4, p\match 'xyxzx'
+
+    it 'produces no captures', ->
+      assert.equals 1, #{ p\match 'xyxzx' }
+
   describe 'scan_until(stop_p [, escape_p])', ->
     it 'matches until the specified pattern or <EOF>', ->
       assert.equals 3, (l.scan_until('x') * Cp!)\match '12x'
@@ -105,6 +139,37 @@ describe 'lpeg_lexer', ->
     it 'uses the indentation of the line containing eol if positioned right at it', ->
       p = l.eol * l.scan_through_indented! * Cp!
       assert.equals 8, p\match ' x\n  y\n z', 3
+
+  describe 'scan_until_capture(name, escape, [, halt_at, halt_at_N, ..])', ->
+
+    it 'matches until the named capture', ->
+      p = Cg('x', 'start') * l.scan_until_capture('start')
+      assert.equals 4, p\match 'xyzx'
+
+    it 'stops matching at any optional halt_at parameters', ->
+      p = Cg('x', 'start') * l.scan_until_capture('start', nil, 'z')
+      assert.equals 3, p\match 'xyzx'
+
+    it 'treats all stop parameters as strings and not patterns', ->
+      p = Cg('x', 'start') * l.scan_until_capture('start', nil, '%w')
+      assert.equals 4, p\match 'xyz%w'
+
+    it 'does not halt on escaped matches', ->
+      p = Cg('x', 'start') * l.scan_until_capture('start', '\\', 'z')
+      assert.equals 7, p\match 'xy\\x\\zx'
+
+    it 'matches until eof if no match is found', ->
+      p = Cg('x', 'start') * l.scan_until_capture('start')
+      assert.equals 4, p\match 'xyz'
+
+  describe 'match_until(stop_p, p)', ->
+    p = l.match_until('\n', C(l.alpha)) * Cp!
+
+    it 'matches p until stop_p matches', ->
+      assert.same { 'x', 'y', 'z', 4 }, { p\match 'xyz\nx' }
+
+    it 'matches until eof if stop_p is not found', ->
+      assert.same { 'x', 'y', 3 }, { p\match 'xy' }
 
   describe 'complement(p)', ->
     it 'matches if <p> does not match', ->
