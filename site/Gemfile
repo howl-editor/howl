@@ -2,8 +2,7 @@ source 'https://rubygems.org'
 gem "therubyracer"
 gem "middleman", "~>3.1.5"
 
-# rouge from git for moonscript support
-gem "rouge", git: 'https://github.com/jayferd/rouge.git'
+gem "rouge", "~> 1.2.0"
 
 # middleman-syntax from git just for good measure and more alignment with rouge
 gem "middleman-syntax", git: 'https://github.com/middleman/middleman-syntax.git'

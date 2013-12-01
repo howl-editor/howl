@@ -1,10 +1,4 @@
 GIT
-  remote: https://github.com/jayferd/rouge.git
-  revision: c62a9ce0738ed6d930311c069da7f4b5a6ad733b
-  specs:
-    rouge (1.0.0)
-
-GIT
   remote: https://github.com/middleman/middleman-syntax.git
   revision: 20a58df14bcc8a850d5d79c847a9851d54dbd0ee
   specs:
@@ -105,6 +99,7 @@ GEM
     rb-kqueue (0.2.0)
       ffi (>= 0.5.0)
     ref (1.0.5)
+    rouge (1.2.0)
     sass (3.2.10)
     sprockets (2.10.0)
       hike (~> 1.2)
@@ -134,5 +129,5 @@ DEPENDENCIES
   middleman-livereload (~> 3.1.0)
   middleman-syntax!
   redcarpet!
-  rouge!
+  rouge (~> 1.2.0)
   therubyracer
