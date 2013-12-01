@@ -85,6 +85,13 @@ describe 'DefaultMode', ->
         indent!
         assert.equals '{\nfoo\n  }\n', buffer.text
 
+    it 'uses the same indent as for the previous line if it is a comment', ->
+        mode.indent_after_patterns = { '{' }
+        mode.comment_syntax = '#'
+        buffer.text = "  # I'm commenting thank you very much {\n# and still are\n"
+        indent!
+        assert.equals 2, lines[2].indentation
+
     context 'when a line is blank', ->
       it 'does not indent unless it is the current line', ->
           mode.indent_after_patterns = { '{' }

@@ -18,6 +18,9 @@ is_match = (text, patterns) ->
 
   false
 
+is_comment = (line, comment_prefix) ->
+  line\umatch r"^\\s*#{r.escape comment_prefix}"
+
 class DefaultMode
   completers: { 'in_buffer' }
 
@@ -35,12 +38,23 @@ class DefaultMode
     current_line = editor.cursor.line
 
     editor\transform_active_lines (lines) ->
+      comment_prefix = @_comment_pair!
+      local prev_line
+
       for line in *lines
         continue if line.blank and line.nr != current_line
-        line_start_style = style.at_pos buffer, line.start_pos
-        continue if dont_indent_styles[line_start_style]
-        indent = @indent_for line, indent_level
+        local indent
+
+        prev_line or= line.previous_non_blank
+        if comment_prefix and prev_line and is_comment(prev_line, comment_prefix)
+          indent = prev_line.indentation
+        else
+          line_start_style = style.at_pos buffer, line.start_pos
+          continue if dont_indent_styles[line_start_style]
+          indent = @indent_for line, indent_level
+
         line.indentation = indent if indent != line.indentation
+        prev_line = line
 
       with editor
         .cursor.column = .current_line.indentation + 1 if .cursor.column < .current_line.indentation
