@@ -372,24 +372,6 @@ common_auto_pairs = {
       '<': '>'
     }
 
-  ruby:
-    extensions: { 'rb', 'Rakefile', 'rake', 'rb', 'rbw'  }
-    patterns: { 'Rakefile$', 'Gemfile$', 'Guardfile$'  }
-    comment_syntax: '#'
-    indent_after_patterns: {
-      {r'^\\s*(def|class|if|else|unless)\\b', '%send%s*$'},
-      r'\\s(do|{)\\s*\\|[^|]*\\|\\s*$',
-      '{%s*$'
-    }
-    dedent_patterns: { '%s*end%s*$'}
-    auto_pairs: {
-      '(': ')'
-      '[': ']'
-      '{': '}'
-      "'": "'"
-      '|': '|'
-    }
-
   scala:
     extensions: 'scala'
     comment_syntax: '/'
