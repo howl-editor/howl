@@ -46,7 +46,8 @@ map = {
 setmetatable map, {
   __index: base_map
   __call: (_, editor) ->
-    editor.selection.persistent = true
-    selection_start = editor.cursor.pos
+    with editor.selection
+      .persistent = true
+      selection_start = .anchor
 }
 return map

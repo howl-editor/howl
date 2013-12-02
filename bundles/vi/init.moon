@@ -16,8 +16,11 @@ signal_handlers = {
   'after-buffer-switch': (args) -> state.change_mode args.editor, 'command' if state.active
 
   'selection-changed': (args) ->
-    if state.active and state.mode == 'visual'
-      state.map.__on_selection_changed args.editor, args.selection
+    if state.active
+      if state.mode == 'visual'
+        state.map.__on_selection_changed args.editor, args.selection
+      elseif not args.selection.empty
+        state.change_mode args.editor, 'visual'
 
   'buffer-saved': (args) ->
     if state.active and _G.editor.buffer == args.buffer
