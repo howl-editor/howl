@@ -4,19 +4,6 @@
 import config from howl
 import style from howl.ui
 
-is_match = (text, patterns) ->
-  return false unless patterns
-
-  for p in *patterns
-    neg_match = nil
-    if type(p) == 'table'
-      p, neg_match = p[1], p[2]
-
-    match = text\umatch p
-    if text\umatch(p) and (not neg_match or not text\umatch neg_match)
-      return true
-
-  false
 
 is_comment = (line, comment_prefix) ->
   line\umatch r"^\\s*#{r.escape comment_prefix}"
@@ -166,8 +153,8 @@ class DefaultMode
     prev_line = line.previous_non_blank
 
     if prev_line
-      dedent_delta = -indent_level if is_match line.text, @dedent_patterns
-      indent_delta = indent_level if is_match prev_line.text, @indent_after_patterns
+      dedent_delta = -indent_level if @patterns_match line.text, @dedent_patterns
+      indent_delta = indent_level if @patterns_match prev_line.text, @indent_after_patterns
 
       if indent_delta or dedent_delta
         return prev_line.indentation + (dedent_delta or 0) + (indent_delta or 0)
@@ -183,6 +170,20 @@ class DefaultMode
 
     alignment_adjustment = line.indentation % indent_level
     line.indentation + alignment_adjustment
+
+  patterns_match: (text, patterns) =>
+    return false unless patterns
+
+    for p in *patterns
+      neg_match = nil
+      if type(p) == 'table'
+        p, neg_match = p[1], p[2]
+
+      match = text\umatch p
+      if text\umatch(p) and (not neg_match or not text\umatch neg_match)
+        return true
+
+    false
 
   _comment_pair: =>
     return unless @comment_syntax

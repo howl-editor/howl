@@ -381,6 +381,20 @@ describe 'DefaultMode', ->
         ]]
         assert_lines {}, mode\structure editor
 
+  describe 'patterns_match(text, patterns)', ->
+    it 'returns a boolean indicating whether <text> matches any of the specified patterns', ->
+      assert.is_true mode\patterns_match 'foo', { 'foo' }
+      assert.is_false mode\patterns_match 'foo', { 'bar' }
+
+    it 'accepts both Lua patterns and regexes', ->
+      assert.is_true mode\patterns_match 'foo', { 'fo+' }
+      assert.is_true mode\patterns_match 'foo', { r'\\pLo*' }
+
+    it 'a specifed pattern can be table containing both a positiv and a negative match', ->
+      p = { 'foo', 'bar' }
+      assert.is_true mode\patterns_match 'foo zed', { p }
+      assert.is_false mode\patterns_match 'foo bar', { p }
+
   context 'when return is pressed', ->
     it 'sets the indentation for the newl line to the indentation of the previous non-blank line', ->
       buffer.text = '  line1\n\nline3'
