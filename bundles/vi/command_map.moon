@@ -86,12 +86,10 @@ map = {
       editor\newline!
 
     O: (editor) -> apply editor, (editor) ->
-      current_indent = editor.current_line.indentation
       editor.cursor\home!
       editor\newline!
       editor.cursor\up!
-      editor.current_line.indentation = current_indent
-      editor.cursor.column = current_indent + 1
+      editor\indent!
       to_insert editor
 
     p: (editor) -> apply editor, (editor) ->
