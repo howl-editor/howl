@@ -4,7 +4,7 @@
 import bundle, mode, Buffer from howl
 import Editor from howl.ui
 
-describe 'ruby-mode', ->
+describe 'Ruby mode', ->
   local m
   local buffer, editor, cursor, lines
 
@@ -58,6 +58,7 @@ describe 'ruby-mode', ->
         'elsif true',
         'while foo',
         'unless bar',
+        'bar = if zed'
       }
       'block statements': {
         'foo do',
@@ -71,6 +72,7 @@ describe 'ruby-mode', ->
         'if foo; true; end',
         'elseif foo; true; end',
         'unless foo; true; end',
+        'bar = if zed; "zed"; else "foo"; end'
       },
       'statement modifiers': {
         'bar unless foo',
@@ -139,26 +141,26 @@ describe 'ruby-mode', ->
       editor\indent!
       assert.equal 2, editor.current_line.indentation
 
+    it 'does not indent after continued lines that are hash entries', ->
+      buffer.text = "foo: true,\n'bar' => true,\n"
+      editor\indent_all!
+      assert.equal 0, lines[2].indentation
+      assert.equal 0, lines[3].indentation
+
     it 'dedents after a finished continuation block', ->
-      buffer.text = "bar +\n  foo,\n  bar\n"
+      buffer.text = "start do\n  bar +\n    foo+\n    bar\n"
+      cursor.line = 5
+      editor\indent!
+      assert.equal 2, editor.current_line.indentation
+
+    it 'dedents after a finished continuation block of hash entries', ->
+      buffer.text = "h = {\n  bar: true,\n  foo: false\n"
       cursor.line = 4
       editor\indent!
       assert.equal 0, editor.current_line.indentation
 
-    it 'returns a corrected indent for lines that are on incorrect indentation', ->
-      buffer.text = '  bar\n one_column_offset'
-      cursor.line = 2
-      editor\indent!
-      assert.equal 2, editor.current_line.indentation
-
-    it 'returns the indent for the previous line for a line with a non-motivated greater indent', ->
-      buffer.text = 'bar\n  foo'
-      cursor.line = 2
+    it 'double-dedents after a finished continuation block for ending tokens', ->
+      buffer.text = "start do\n  bar +\n    foo\n    end"
+      cursor.line = 4
       editor\indent!
       assert.equal 0, editor.current_line.indentation
-
-    it 'returns the indent for the previous line for a blank line', ->
-      buffer.text = '  bar\n'
-      cursor.line = 2
-      editor\indent!
-      assert.equal 2, editor.current_line.indentation
