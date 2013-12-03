@@ -1,8 +1,19 @@
 -- Copyright 2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
+pairs = pairs
+
 howl.aux.lpeg_lexer ->
   c = capture
+
+  ruby_pairs = {
+    '(': ')'
+    '{': '}'
+    '[': ']'
+  }
+
+  capture_pair_as = (name) ->
+    any [ (P(p1) * Cg(Cc(p2), name)) for p1, p2 in pairs ruby_pairs ]
 
   keyword = c 'keyword', -B'.' * word {
     'BEGIN', 'END', 'alias', 'and', 'begin', 'break', 'case'
@@ -61,7 +72,11 @@ howl.aux.lpeg_lexer ->
     (float + integer) * (S'eE' * P('-')^0 * digit^1)^0
   }
 
-  sq_string = c 'string', span("'", "'", '\\') + (P'%q' * paired(1, '\\'))
+  sq_string = c 'string', any {
+    span("'", "'", '\\'),
+    P'%q' * capture_pair_as('sq_del') * scan_until_capture 'sq_del', '\\',
+    P'%q' * paired(1, '\\'),
+  }
 
   P {
     'all'
@@ -106,8 +121,7 @@ howl.aux.lpeg_lexer ->
 
     dq_string_start: c 'string', any {
       Cg(S'"`', 'del'),
-      P'%x{' * Cg(Cc('}'), 'del'),
-      P'%' * S'Qx' * Cg(P(1), 'del')
+      P'%' * S'Qx' * any { capture_pair_as('del'), Cg(P(1), 'del') }
     }
     dq_string_end: c 'string', match_back('del')
     dq_string_chunk: c('string', scan_until_capture('del', '\\', '#')) * any {
@@ -119,7 +133,7 @@ howl.aux.lpeg_lexer ->
 
     regex_start: c 'regex', any {
       Cg('/', 're_del'),
-      P'%r{' * Cg(Cc('}'), 're_del'),
+      P'%r' * capture_pair_as 're_del',
       P'%r' * Cg(P(1), 're_del')
     }
     regex_end: c 'regex', match_back('re_del')
@@ -150,8 +164,7 @@ howl.aux.lpeg_lexer ->
     }
 
     wordlist_start: c('operator', '%w') * capture 'operator', any {
-      P'{' * Cg(Cc('}'), 'wl_del'),
-      P'(' * Cg(Cc(')'), 'wl_del'),
+      capture_pair_as 'wl_del',
       Cg(P(1), 'wl_del'),
     }
     wordlist_chunk: -match_back('wl_del') * any {

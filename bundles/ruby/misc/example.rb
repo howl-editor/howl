@@ -20,11 +20,14 @@ local = 2
 # string madness
 'sq string'
 %q/sq again/ and %q#sq again# and %q|esca\|ed| and true
+%q(paired) and %q{paired} and %q[yes paired]
+# string end
 
 "dq string"
 "Interpolation: #{[1,2,3].inject(:+)} #@ends #$here sir"
 # string end
 %Q/dq again/ and %Q|dq again| and %Q#esca\#ed# and %Q|inter#{'pol' + :at.to_s}ed|
+%Q(paired) and %Q{paired} and %Q[yes paired]
 # string end
 "Double interpolation: #{ "Why why oh #{1 + 2} why" } is twice as fun?"
 # string end
@@ -32,6 +35,7 @@ local = 2
 
 # regex
 /foo(\\w+)/ and  %r|(foo\|bar)| and %r'\\d+' and %r{'"\\d+magic\\pL} and /with 東京都 flags/im
+puts %r[PAIR ME!]
 
 # commands
 puts `ls -l #{'/bin/ls'}`
@@ -64,7 +68,7 @@ word_list = %w(
   next
 )
 
-wl2 = %w{ foo/bar/urk/**.rb } or %w|never reached|
+wl2 = %w{ foo/bar/urk/**.rb } or %w|never reached| or %w[ditto]
 
 def yes?
 end
