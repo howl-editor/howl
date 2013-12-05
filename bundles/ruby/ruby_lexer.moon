@@ -72,10 +72,12 @@ howl.aux.lpeg_lexer ->
     (float + integer) * (S'eE' * P('-')^0 * digit^1)^0
   }
 
-  sq_string = c 'string', any {
-    span("'", "'", '\\'),
-    P'%q' * capture_pair_as('sq_del') * scan_until_capture 'sq_del', '\\',
-    P'%q' * paired(1, '\\'),
+  del_style = 'operator'
+
+  sq_string = any {
+    c('string', span("'", "'", '\\')),
+    c(del_style, '%q' * capture_pair_as('sq_del')) * c('string', scan_until_capture('sq_del', '\\')) * c(del_style, 1),
+    c(del_style, '%q') * paired(1, '\\', del_style, 'string'),
   }
 
   P {
@@ -119,11 +121,17 @@ howl.aux.lpeg_lexer ->
     interpolation_block: c('operator', '{') * (-P'}' * (V'interpolation_base' + 1))^0 * c('operator', '}')
     interpolation: c('operator', '#') * any( V'interpolation_block', member, global )
 
-    dq_string_start: c 'string', any {
-      Cg(S'"`', 'del'),
-      P'%' * S'Qx' * any { capture_pair_as('del'), Cg(P(1), 'del') }
+    dq_string_start: any {
+      c('string', Cg(S'"`', 'del')),
+      c(del_style, P'%' * S'Qx' * any {
+        capture_pair_as('del'),
+        Cg(P(1), 'del')
+      })
     }
-    dq_string_end: c 'string', match_back('del')
+    dq_string_end: any {
+      c('string', S'"`'),
+      c(del_style, match_back('del')),
+    }
     dq_string_chunk: c('string', scan_until_capture('del', '\\', '#')) * any {
       V'dq_string_end',
       V'interpolation' * V'dq_string_chunk',
@@ -131,12 +139,17 @@ howl.aux.lpeg_lexer ->
     }
     dq_string: V'dq_string_start' * V('dq_string_chunk') * V('dq_string_end')^0
 
-    regex_start: c 'regex', any {
-      Cg('/', 're_del'),
-      P'%r' * capture_pair_as 're_del',
-      P'%r' * Cg(P(1), 're_del')
+    regex_start: any {
+      c('regex', Cg('/', 're_del')),
+      c(del_style, P'%r' * any {
+        capture_pair_as 're_del',
+        Cg(P(1), 're_del')
+      })
     }
-    regex_end: c 'regex', match_back('re_del')
+    regex_end: any {
+      c('regex', '/'),
+      c(del_style, match_back('re_del')),
+    }
     regex_chunk: c('regex', scan_until_capture('re_del', '\\', '#')) * any {
       V'regex_end',
       V'interpolation' * V'regex_chunk',
@@ -163,13 +176,14 @@ howl.aux.lpeg_lexer ->
       Cg('', 'hd_del') -- cancel out any outside (stacked) heredocs
     }
 
-    wordlist_start: c('operator', '%w') * capture 'operator', any {
+    wordlist_start: c del_style, '%w' * any {
       capture_pair_as 'wl_del',
       Cg(P(1), 'wl_del'),
     }
+    wordlist_end: c del_style, match_back('wl_del')
     wordlist_chunk: -match_back('wl_del') * any {
       c('whitespace', S(' \t')^1),
       c('string', complement(S(' \t') + match_back('wl_del'))^1),
     }
-    wordlist: V'wordlist_start' * V('wordlist_chunk')^0
+    wordlist: V'wordlist_start' * V('wordlist_chunk')^0 * V'wordlist_end'
   }

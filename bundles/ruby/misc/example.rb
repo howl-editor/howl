@@ -2,7 +2,7 @@
 
 =begin
 Embedded doc
-that spans multiline
+that spans multiple lines
 =end
 
 BEGIN {
@@ -68,7 +68,7 @@ word_list = %w(
   next
 )
 
-wl2 = %w{ foo/bar/urk/**.rb } or %w|never reached| or %w[ditto]
+wl2 = %w{foo/bar/urk/**.rb paths} or %w|never reached| or %w[ditto]
 
 def yes?
 end
