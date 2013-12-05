@@ -85,8 +85,8 @@ describe 'lpeg_lexer', ->
       p = l.span('{', '}', '\\') * Cp!
       assert.equals 5, p\match '{\\}}'
 
-  describe 'paired(p, escape)', ->
-    p = l.paired('|') * Cp!
+  describe 'paired(p, escape [, pair_style, content_style])', ->
+    p = l.paired(1) * Cp!
 
     it 'matches and consumes from <p> up to and including the matching <p>', ->
       assert.equals 3, p\match '||x'
@@ -96,8 +96,27 @@ describe 'lpeg_lexer', ->
       assert.equals 3, p\match '|x'
 
     it 'allows escaping the end delimiter with <escape>', ->
-      p = l.paired('|', '\\') * Cp!
+      p = l.paired(1, '\\') * Cp!
       assert.equals 5, p\match '|\\|| foo\\'
+
+    context 'when pair_style and content_style are specified', ->
+      it 'captures the components in the specified styles', ->
+        p = l.paired(1, nil, 'keyword', 'string')
+        expected = {
+          1, 'keyword', 2,
+          2, 'string', 5,
+          5, 'keyword', 6,
+        }
+        assert.same expected, { p\match '|foo|' }
+
+      it 'still handles escapes properly', ->
+        p = l.paired(1, '%', 'keyword', 'string')
+        expected = {
+          1, 'keyword', 2,
+          2, 'string', 6,
+          6, 'keyword', 7,
+        }
+        assert.same expected, { p\match '|f%|o|' }
 
   describe 'match_back(name)', ->
     p = Cg(P'x', 'start') * 'y' * l.match_back('start')

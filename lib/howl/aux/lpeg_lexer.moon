@@ -109,11 +109,16 @@ match_until = (stop_p, p) ->
 span = (start_p, stop_p, escape_p) ->
   start_p * scan_to stop_p, escape_p
 
-paired = (p, escape = nil) ->
-  if escape
-    p = C(p) * Cc(escape)
-
-  Cmt p, paired_end
+paired = (p, escape = nil, pair_style = nil, content_style = nil) ->
+  if pair_style
+    sequence {
+      capture(pair_style, Cg(p, '_pair_del')),
+      capture(content_style, scan_until_capture('_pair_del', escape)),
+      capture(pair_style, p),
+    }
+  else
+    p = C(p) * Cc(escape) if escape
+    Cmt p, paired_end
 
 match_back = (name) ->
   Cmt Cb(name), skip_if_next
