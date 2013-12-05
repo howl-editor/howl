@@ -1,7 +1,6 @@
 import signal, config, bindings, command from howl
 import Editor from howl.ui
 
-default_keymap = bindings.keymap
 state = bundle_load 'state'
 
 maps = {

@@ -3,7 +3,6 @@ import Gtk from lgi
 import Buffer, bindings, bundle from howl
 import Editor from howl.ui
 
-def_keymap = bindings.keymap
 bundle.load_by_name 'vi'
 state = bundles.vi.state
 
@@ -273,8 +272,8 @@ describe 'VI', ->
     before_each -> bundle.unload 'vi'
     after_each -> bundle.load_by_name 'vi'
 
-    it 'restores the default keymap', ->
-      assert.equals def_keymap, bindings.keymap
+    it 'pops any active keymaps, leaving only the default one', ->
+      assert.equals 1, #bindings.keymaps
 
     it 'unregisters the vi indicator', ->
       assert.raises 'indicator', -> editor.indicator.vi

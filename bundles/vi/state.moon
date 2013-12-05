@@ -5,7 +5,6 @@ _G = _G
 _ENV = {}
 setfenv 1, _ENV
 
-default_keymap = bindings.keymap
 export mode, map
 export active = false
 export delete, change, yank, go
@@ -36,7 +35,8 @@ export change_mode = (editor, to, ...) ->
     editor.cursor[k] = v for k,v in pairs map.cursor_properties
 
   mode = to
-  bindings.keymap = map
+  bindings.pop! if active
+  bindings.push map
   map(editor, ...) if callable map
 
 export apply = (editor, f) ->
@@ -93,7 +93,7 @@ export activate = (editor) ->
 
 export deactivate = ->
   if active
-    bindings.keymap = default_keymap
+    bindings.pop!
     active = false
 
 return _ENV

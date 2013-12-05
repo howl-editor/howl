@@ -9,8 +9,6 @@ with config
     default: 0
     type_of: 'number'
 
-default_map = bindings.keymap
-
 cursor_home = (editor) -> apply editor, (editor) -> editor.cursor\home!
 
 forward_to_char = (event, source, translations, editor) ->
@@ -95,8 +93,6 @@ map = {
         state.reset!
 
       return -> true
-
-    (...) -> bindings.dispatch event, source, { default_map }, ...
 }
 
 config.watch 'vi_command_cursor_blink_interval', (_, value) ->

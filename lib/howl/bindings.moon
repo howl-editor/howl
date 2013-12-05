@@ -18,6 +18,7 @@ _ENV = {}
 setfenv(1, _ENV) if setfenv
 
 capture_handler = nil
+export keymaps = {}
 
 alternate_names = {
   kp_up: 'up'
@@ -33,22 +34,6 @@ alternate_names = {
 alternate_translation = (event) ->
   name = event.key_name
   return alternate_names[name] if name
-
-export translate_key = (event) ->
-  ctrl = (event.control and 'ctrl_') or ''
-  shift = (event.shift and 'shift_') or ''
-  alt = (event.alt and 'alt_') or ''
-  alternate = alternate_translation event
-
-  translations = {}
-  append translations, ctrl .. alt .. event.character if event.character
-
-  if event.key_name and event.key_name != event.character
-    append translations, ctrl .. shift .. alt .. event.key_name
-
-  append translations, ctrl .. shift .. alt .. alternate if alternate
-  append translations, ctrl .. shift .. alt .. event.key_code
-  translations
 
 find_handlers = (event, source, translations, keymaps, ...) ->
   handlers = {}
@@ -81,6 +66,29 @@ process_capture = (event, source, translations, ...) ->
 
     return true
 
+export push = (km) ->
+  append keymaps, km
+
+export pop = ->
+  error "No bindings in stack" unless #keymaps > 0
+  keymaps[#keymaps] = nil
+
+export translate_key = (event) ->
+  ctrl = (event.control and 'ctrl_') or ''
+  shift = (event.shift and 'shift_') or ''
+  alt = (event.alt and 'alt_') or ''
+  alternate = alternate_translation event
+
+  translations = {}
+  append translations, ctrl .. alt .. event.character if event.character
+
+  if event.key_name and event.key_name != event.character
+    append translations, ctrl .. shift .. alt .. event.key_name
+
+  append translations, ctrl .. shift .. alt .. alternate if alternate
+  append translations, ctrl .. shift .. alt .. event.key_code
+  translations
+
 export dispatch = (event, source, keymaps, ...) ->
   translations = translate_key event
   handlers = find_handlers event, source, translations, keymaps, ...
@@ -105,7 +113,8 @@ export process = (event, source, extra_keymaps,  ...) ->
 
   maps = {}
   append maps, map for map in *(extra_keymaps or {})
-  append maps, keymap
+  for i = #keymaps, 1, -1
+    append maps, keymaps[i]
 
   dispatch event, source, maps, ...
 
@@ -114,7 +123,5 @@ export capture = (handler) ->
 
 export cancel_capture = ->
   capture_handler = nil
-
-export keymap = {}
 
 return _ENV

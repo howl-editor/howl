@@ -2,6 +2,23 @@ import bindings, signal, command from howl
 
 describe 'bindings', ->
 
+  after_each ->
+    while #bindings.keymaps > 1
+      bindings.pop!
+
+  describe 'push(map)', ->
+    it 'pushes <map> to the keymap stack at .keymaps', ->
+      map = {}
+      bindings.push map
+      assert.equals map, bindings.keymaps[#bindings.keymaps]
+
+  describe 'pop()', ->
+    it 'pops the top-most keymap of the stack at .keymaps', ->
+      stack_before = [m for m in *bindings.keymaps]
+      bindings.push {}
+      bindings.pop!
+      assert.same stack_before, bindings.keymaps
+
   describe 'translate_key(event)', ->
 
     context 'for ordinary characters', ->
@@ -70,7 +87,7 @@ describe 'bindings', ->
           }
 
       it 'returns early with true if the handler does', ->
-        buffer = keymap: Spy!
+        keymap = A: spy.new -> true
         with_signal_handler 'key-press', true, (handler) ->
           status, ret = pcall bindings.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
           assert.spy(handler).was.called!
@@ -100,16 +117,15 @@ describe 'bindings', ->
         assert.spy(specific_map.A).was_called(1)
         assert.spy(general_map.A).was_not_called!
 
-      it 'searches all extra keymaps and the global keymap', ->
+      it 'searches all extra keymaps and the bindings in the stack', ->
         key_args = character: 'A', key_name: 'a', key_code: 65
-        buffer_map = Spy!
-        mode_map = Spy!
-        bindings.keymap = Spy!
-
-        bindings.process key_args, 'editor', { buffer_map, mode_map }
-        assert.equal #bindings.keymap.reads, 5
-        assert.same bindings.keymap.reads, mode_map.reads
-        assert.same mode_map.reads, buffer_map.reads
+        extra_map = Spy!
+        stack_map = Spy!
+        bindings.push stack_map
+        pcall bindings.process, key_args, 'editor', { extra_map }
+        bindings.pop!
+        assert.equal 5, #stack_map.reads
+        assert.same stack_map.reads, extra_map.reads
 
       context 'when .on_unhandled is defined and keys are not found in a keymap', ->
         it 'is called with the event, source, translations and extra parameters', ->

@@ -25,6 +25,7 @@ class Application extends PropertyObject
     @_buffers = {}
     bundle.dirs = { @root_dir / 'bundles' }
     @_load_variables!
+    bindings.push keymap
     super!
 
   @property buffers: get: =>
@@ -198,7 +199,6 @@ class Application extends PropertyObject
   _load: (files = {}) =>
     local window
     unless @_loaded
-      bindings.keymap = keymap
       @settings = Settings!
       @_load_completions!
       @_load_commands!

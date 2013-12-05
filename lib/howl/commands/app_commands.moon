@@ -78,7 +78,7 @@ command.register
 
     bindings.capture (event, source, translations) ->
       buffer.lines\delete 3, #buffer.lines
-      buffer\append 'Key translations (usable from keymap):\n', 'comment'
+      buffer\append 'Key translations (usable from bindings):\n', 'comment'
       buffer\append serpent.block translations, comment: false
       buffer\append '\n\nKey event:\n', 'comment'
       buffer\append serpent.block event, comment: false
