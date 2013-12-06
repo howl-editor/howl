@@ -1,4 +1,5 @@
 _G = _G
+import table from _G
 import tostring, pcall, callable, type, append, print, setmetatable from _G
 import signal, command from howl
 
@@ -55,8 +56,8 @@ find_handlers = (event, source, translations, keymaps, ...) ->
           append handlers, handler
           break
 
-      opts = keymap_options[map]
-      return handlers if opts and opts.block
+      opts = keymap_options[map] or {}
+      return handlers, map, opts if opts.block or opts.pop
 
   handlers
 
@@ -74,9 +75,19 @@ export push = (km, options = {}) ->
   append keymaps, km
   keymap_options[km] = options
 
-export pop = ->
+export remove = (map) ->
   error "No bindings in stack" unless #keymaps > 0
-  keymaps[#keymaps] = nil
+
+  for i = 1, #keymaps
+    if keymaps[i] == map
+      keymap_options[map] = nil
+      table.remove keymaps, i
+      return true
+
+  false
+
+export pop = ->
+  remove keymaps[#keymaps]
 
 export translate_key = (event) ->
   ctrl = (event.control and 'ctrl_') or ''
@@ -96,7 +107,8 @@ export translate_key = (event) ->
 
 export dispatch = (event, source, keymaps, ...) ->
   translations = translate_key event
-  handlers = find_handlers event, source, translations, keymaps, ...
+  handlers, halt_map, map_opts = find_handlers event, source, translations, keymaps, ...
+  remove halt_map if halt_map and map_opts.pop
 
   for handler in *handlers
     status, ret = true, true

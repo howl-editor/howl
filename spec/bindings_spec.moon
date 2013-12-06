@@ -14,10 +14,21 @@ describe 'bindings', ->
 
   describe 'pop()', ->
     it 'pops the top-most keymap of the stack at .keymaps', ->
-      stack_before = [m for m in *bindings.keymaps]
+      stack_before = moon.copy bindings.keymaps
       bindings.push {}
       bindings.pop!
       assert.same stack_before, bindings.keymaps
+
+  describe 'remove(map)', ->
+    it 'removes the specified map from the keymap stack', ->
+      stack = moon.copy bindings.keymaps
+      m1 = {}
+      m2 = {}
+      bindings.push m1
+      bindings.push m2
+      bindings.remove m1
+      append stack, m2
+      assert.same stack, bindings.keymaps
 
   describe 'translate_key(event)', ->
 
@@ -146,6 +157,30 @@ describe 'bindings', ->
           bindings.push base
           bindings.push blocking, block: true
           bindings.process { character: 'k', key_code: 65 }, 'editor'
+          assert.spy(base.k).was_not_called!
+
+      context 'when a keymap was pushed with options.pop set to true', ->
+
+        it 'is automatically popped after the next dispatch', ->
+          pop_me = k: spy.new -> nil
+          bindings.push pop_me, pop: true
+          bindings.process { character: 'k', key_code: 65 }, 'editor'
+          assert.spy(pop_me.k).was_called!
+          assert.not_includes bindings.keymaps, pop_me
+
+        it 'is popped regardless of whether it contained a matching binding or not', ->
+          pop_me = {}
+          bindings.push pop_me, pop: true
+          bindings.process { character: 'k', key_code: 65 }, 'editor'
+          assert.not_includes bindings.keymaps, pop_me
+
+        it 'is always blocking', ->
+          base = k: spy.new -> nil
+          pop_me = k: spy.new -> nil
+          bindings.push base
+          bindings.push pop_me, pop: true
+          bindings.process { character: 'k', key_code: 65 }, 'editor'
+          assert.spy(pop_me.k).was_called!
           assert.spy(base.k).was_not_called!
 
     context 'when invoking handlers', ->
