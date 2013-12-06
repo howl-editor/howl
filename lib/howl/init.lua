@@ -128,4 +128,5 @@ end
 local status, err = pcall(main, args)
 if not status then
   print(err)
+  error(err)
 end
