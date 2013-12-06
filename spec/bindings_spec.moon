@@ -184,7 +184,7 @@ describe 'bindings', ->
           assert.spy(base.k).was_not_called!
 
     context 'when invoking handlers', ->
-      context 'when the handler is a function', ->
+      context 'when the handler is callable', ->
         it 'passes along any extra arguments', ->
           keymap = k: spy.new ->
           bindings.process { character: 'k', key_code: 65 }, 'editor', { keymap }, 'reference'
@@ -214,6 +214,22 @@ describe 'bindings', ->
           assert.is_true bindings.process { character: 'k', key_code: 65 }, 'editor', { keymap }
           command.run\revert!
           assert.spy(cmd_run).was.called_with 'spy'
+
+      context 'when the handler is a non-callable table', ->
+        it 'pushes the table as a new keymap and returns true', ->
+          nr_bindings = #bindings.keymaps
+          submap = {}
+          keymap = k: submap
+          assert.is_true bindings.process { character: 'k', key_code: 65 }, 'editor', { keymap }
+          assert.equal nr_bindings + 1, #bindings.keymaps
+          assert.equal submap, bindings.keymaps[#bindings.keymaps]
+
+        it 'pushes the table with the pop option', ->
+          submap = {}
+          keymap = k: submap
+          bindings.process { character: 'k', key_code: 65 }, 'editor', { keymap }
+          bindings.process { character: 'k', key_code: 65 }, 'editor'
+          assert.not_includes bindings.keymaps, submap
 
       it 'returns false if no handlers are found', ->
         assert.is_false bindings.process { character: 'k', key_code: 65 }, 'editor'

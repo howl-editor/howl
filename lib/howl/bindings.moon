@@ -1,6 +1,6 @@
 _G = _G
 import table from _G
-import tostring, pcall, callable, type, append, print, setmetatable from _G
+import tostring, pcall, callable, type, append, print, setmetatable, typeof from _G
 import signal, command from howl
 
 signal.register 'key-press',
@@ -109,10 +109,15 @@ export dispatch = (event, source, keymaps, ...) ->
 
   for handler in *handlers
     status, ret = true, true
-    if type(handler) == 'string'
+    htype = typeof handler
+    if htype == 'string'
       status, ret = pcall command.run, handler
-    else
+    elseif callable handler
       status, ret = pcall handler, ...
+    elseif htype == 'table'
+      push handler, pop: true
+    else
+      _G.log.error "Illegal handler: type #{htype}"
 
     _G.log.error ret unless status
 
