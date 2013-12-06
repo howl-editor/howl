@@ -6,7 +6,7 @@ describe 'bindings', ->
     while #bindings.keymaps > 1
       bindings.pop!
 
-  describe 'push(map)', ->
+  describe 'push(map, options = {})', ->
     it 'pushes <map> to the keymap stack at .keymaps', ->
       map = {}
       bindings.push map
@@ -122,8 +122,7 @@ describe 'bindings', ->
         extra_map = Spy!
         stack_map = Spy!
         bindings.push stack_map
-        pcall bindings.process, key_args, 'editor', { extra_map }
-        bindings.pop!
+        bindings.process key_args, 'editor', { extra_map }
         assert.equal 5, #stack_map.reads
         assert.same stack_map.reads, extra_map.reads
 
@@ -139,6 +138,15 @@ describe 'bindings', ->
           keymap = on_unhandled: -> handler
           bindings.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
           assert.spy(handler).was.called!
+
+      context 'when a keymap was pushed with options.block set to true', ->
+        it 'looks no further down the stack than that keymap', ->
+          base = k: spy.new -> nil
+          blocking = {}
+          bindings.push base
+          bindings.push blocking, block: true
+          bindings.process { character: 'k', key_code: 65 }, 'editor'
+          assert.spy(base.k).was_not_called!
 
     context 'when invoking handlers', ->
       context 'when the handler is a function', ->

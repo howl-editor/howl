@@ -1,5 +1,5 @@
 _G = _G
-import tostring, pcall, callable, type, append, print from _G
+import tostring, pcall, callable, type, append, print, setmetatable from _G
 import signal, command from howl
 
 signal.register 'key-press',
@@ -18,6 +18,7 @@ _ENV = {}
 setfenv(1, _ENV) if setfenv
 
 capture_handler = nil
+keymap_options = setmetatable {}, __mode: 'k'
 export keymaps = {}
 
 alternate_names = {
@@ -54,6 +55,9 @@ find_handlers = (event, source, translations, keymaps, ...) ->
           append handlers, handler
           break
 
+      opts = keymap_options[map]
+      return handlers if opts and opts.block
+
   handlers
 
 process_capture = (event, source, translations, ...) ->
@@ -66,8 +70,9 @@ process_capture = (event, source, translations, ...) ->
 
     return true
 
-export push = (km) ->
+export push = (km, options = {}) ->
   append keymaps, km
+  keymap_options[km] = options
 
 export pop = ->
   error "No bindings in stack" unless #keymaps > 0
