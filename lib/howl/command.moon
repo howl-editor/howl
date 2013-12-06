@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import inputs, config, keymap from howl
+import inputs, config from howl
 import Matcher from howl.util
 
 commands = {}
@@ -168,16 +168,22 @@ get = (name) -> commands[name]
 
 names = -> [name for name in pairs commands]
 
+command_bindings = ->
+  c_bindings = {}
+
+  for map in *howl.bindings.keymaps
+    for m in *{ map, map['editor'] or {} }
+      c_bindings[cmd] = binding for binding, cmd in pairs m when type(cmd) == 'string'
+
+  c_bindings
+
 command_completer = ->
   completion_options = list: {
     headers: { 'Command', 'Key binding', 'Description' }
     column_styles: { 'string', 'keyword', 'comment' }
   }
   cmd_names = names!
-
-  bindings = {}
-  for map in *{ keymap, keymap.editor or {} }
-    bindings[cmd] = binding for binding, cmd in pairs map when type(cmd) == 'string'
+  bindings = command_bindings!
 
   table.sort cmd_names
   items = {}
