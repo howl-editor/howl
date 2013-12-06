@@ -40,24 +40,21 @@ alternate_translation = (event) ->
 find_handlers = (event, source, translations, keymaps, ...) ->
   handlers = {}
   for map in *keymaps
-    if map
-      for target_map in *{ map[source], map }
-        continue unless target_map
+    continue unless map
+    source_map = map[source] or {}
+    handler = nil
 
-        handler = nil
-        for t in *translations
-          handler = target_map[t]
-          break if handler
+    for t in *translations
+      handler = source_map[t] or map[t]
+      break if handler
 
-        if not handler and callable target_map.on_unhandled
-          handler = target_map.on_unhandled event, source, translations, ...
+    if not handler and callable map.on_unhandled
+      handler = map.on_unhandled event, source, translations, ...
 
-        if handler
-          append handlers, handler
-          break
+    append handlers, handler if handler
 
-      opts = keymap_options[map] or {}
-      return handlers, map, opts if opts.block or opts.pop
+    opts = keymap_options[map] or {}
+    return handlers, map, opts if opts.block or opts.pop
 
   handlers
 
