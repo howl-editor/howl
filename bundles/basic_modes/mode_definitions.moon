@@ -262,17 +262,6 @@ common_auto_pairs = {
           false
     }
 
-  markdown:
-    extensions: 'md'
-    auto_pairs: {
-      '(': ')'
-      '[': ']'
-      '{': '}'
-      '"': '"'
-    }
-    default_config:
-      caret_line_highlighted: false
-
   objective_c:
     extensions: {'m', 'mm', 'objc' }
     comment_syntax: '//'
