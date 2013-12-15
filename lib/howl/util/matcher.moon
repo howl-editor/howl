@@ -80,7 +80,7 @@ class Matcher
 
     for i, line in ipairs lines
       score = do_match line.text, pattern, @base_score
-      if score then
+      if score
         append matches, index: line.index, :score
         append matching_lines, line
 
