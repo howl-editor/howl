@@ -15,6 +15,7 @@ get_styling_start_pos = (sci) ->
   -- so where to begin?
   pos = sci\get_end_styled!
   line = sci\line_from_position pos
+  line = math.max(0, line - 1)
 
   while line > 5 -- don't bother with smarts if were so close to the beginning of doc
 
