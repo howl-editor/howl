@@ -176,24 +176,25 @@ return {
       color: white
       background: comment
       eol_filled: true
-      font: size: 'larger'
+      font: bold: true
 
     h2:
       color: white
       background: '#005491'
-      font: size: 'large'
 
     h3:
       color: purple
       background: current
       font: italic: true
 
-    strong:
-      color: aqua
+    emphasis:
+      font:
+        bold: true
+        italic: true
 
-    emphasis: font: italic: true
+    strong: font: italic: true
     link_label: color: aqua
-    link_url: underline: true
+    link_url: color: comment
 
     addition: color: green
     deletion: color: red

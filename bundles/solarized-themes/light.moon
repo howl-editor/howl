@@ -196,29 +196,30 @@ return {
       color: white
       background: yellow
       eol_filled: true
-      font: size: 'larger'
+      font: bold: true
 
     h2:
       color: white
       background: comment
-      font: size: 'large'
 
     h3:
       color: violet
       background: current
       font: italic: true
 
-    strong:
-      color: aqua
-      font: bold: true
-
     emphasis:
       font:
-        italic: true
         bold: true
+        italic: true
 
-    link_label: color: aqua
-    link_url: underline: true
+    strong: font: italic: true
+
+    link_label:
+      color: blue
+      underline: true
+
+    link_url:
+      color: comment
 
     addition: color: green
     deletion: color: red
