@@ -6,12 +6,12 @@ import Matcher from howl.util
 class LineInput
   new: (@title, buffer, @lines = buffer.lines) =>
     @completion_options = title: @title, list: column_styles: { 'string' }
-    @items = [{tostring(l.nr), l.chunk} for l in *@lines]
+    items = [{tostring(l.nr), l.chunk} for l in *@lines]
+    @matcher = Matcher items
     buffer\lex buffer.size
 
   complete: (text) =>
-    matches = [i for i in *@items when i[2].text\umatch text]
-    return matches, @completion_options
+    return self.matcher(text), @completion_options
 
   value_for: (value) =>
     nr = tonumber value
