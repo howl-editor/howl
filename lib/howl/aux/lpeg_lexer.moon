@@ -123,10 +123,12 @@ paired = (p, escape = nil, pair_style = nil, content_style = nil) ->
 match_back = (name) ->
   Cmt Cb(name), skip_if_next
 
-eol = S('\n\r')^1
-
 complement = (p) ->
   P(1) - p
+
+eol = S('\n\r')^1
+blank = S(' \t')
+line_start = -B(1) + B(eol)
 
 new = (definition) ->
   setfenv definition, lexer
@@ -134,7 +136,8 @@ new = (definition) ->
   setmetatable {}, __call: (_, text) ->
     match = any {
       pattern,
-      capture('whitespace', space^1),
+      capture('whitespace', S' \t'^0 * eol)
+      capture('whitespace', S' \t'^1),
       P 1
     }
     p = Ct match^0

@@ -29,6 +29,14 @@ describe 'lpeg_lexer', ->
     assert.is_nil l.eol\match 'a'
     assert.is_nil l.eol\match '2'
 
+  describe '.line_start', ->
+    it 'matches after newline or at start of text', ->
+      assert.is_not_nil l.line_start\match 'x'
+      assert.is_not_nil (l.eol * l.line_start * P'x')\match '\nx'
+
+    it 'does not consume anything', ->
+      assert.equals 2, (l.eol * l.line_start * Cp!)\match '\nx'
+
   describe 'any(list)', ->
     it 'the resulting pattern is an ordered match of any member of <list>', ->
       p = l.any { 'one', 'two' }
