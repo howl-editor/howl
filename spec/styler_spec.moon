@@ -24,10 +24,33 @@ describe 'styler', ->
       assert.equal 's2', (style.at_pos(buffer, 2))
       assert.equal 'default', (style.at_pos(buffer, 3))
 
-    it 'undefined styles are replaced with "default"', ->
+    it 'uses "default" for undefined styles', ->
       buffer.text = 'foo'
       styler.apply buffer, 1, buffer.size, { 1, 'wat', 4 }
       assert.equal 'default', (style.at_pos(buffer, 1))
+
+    context 'sub lexing', ->
+      it 'automatically styles using extended styles when requested', ->
+        buffer.text = 'foo'
+        styler.apply buffer, 1, buffer.size, {
+          1, '> s1', 'my_sub',
+          1, 's2', 2
+          2, '< s1', 'my_sub',
+          2, 's2', 3
+        }
+        assert.equal 's1:s2', (style.at_pos(buffer, 1))
+        assert.equal 's2', (style.at_pos(buffer, 2))
+
+      it 'styles any holes with the base style', ->
+        buffer.text = '123'
+        styler.apply buffer, 1, buffer.size, {
+          1, '> s1', 'my_sub',
+          2, 's2', 3
+        }
+
+        assert.equal 's1', (style.at_pos(buffer, 1))
+        assert.equal 's1:s2', (style.at_pos(buffer, 2))
+        assert.equal 's1', (style.at_pos(buffer, 3))
 
   describe 'reverse(buffer, start_pos, end_pos)', ->
     it 'returns a table of styles and positions for the given range, same as styles argument to apply', ->

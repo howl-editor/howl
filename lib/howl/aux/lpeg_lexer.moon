@@ -1,10 +1,12 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
+import mode from howl
 import P, B, S, Cp, Cc, Ct, Cmt, Cg, Cb from lpeg
 import pairs, setfenv, setmetatable, type, print, tostring from _G
 l = lpeg.locale!
 import space, alpha from l
+lpeg_type = lpeg.type
 
 cur_line_indent = (subject, pos) ->
   ws = 0
@@ -60,6 +62,10 @@ lpeg.locale lexer
 
 setfenv 1, lexer
 export *
+
+eol = S('\n\r')^1
+blank = S(' \t')
+line_start = -B(1) + B(eol)
 
 capture = (style, pattern) ->
   Cp! * pattern * Cc(style) * Cp!
@@ -126,20 +132,41 @@ match_back = (name) ->
 complement = (p) ->
   P(1) - p
 
-eol = S('\n\r')^1
-blank = S(' \t')
-line_start = -B(1) + B(eol)
+lenient_pattern = (p) ->
+  any {
+    p,
+    capture('whitespace', S' \t'^0 * eol)
+    capture('whitespace', S' \t'^1),
+    P 1
+  }
+
+sub_lex = (mode_name, stop_p) ->
+  m = mode.by_name mode_name
+
+  if not m or not m.lexer or not m.lexer.pattern
+    return capture('embedded', scan_until stop_p)
+
+  push = Cp! * Cc('> embedded') * Cc(mode_name)
+  pop = Cp! * Cc('< embedded') * Cc(mode_name)
+
+  sub_pattern = any {
+    -- don't embed leading whitespace
+    line_start * pop * capture('whitespace', blank^1) * push,
+    m.lexer.pattern
+  }
+  sequence {
+    push,
+    match_until(stop_p, lenient_pattern sub_pattern)
+    pop,
+  }
 
 new = (definition) ->
   setfenv definition, lexer
   pattern = definition!
-  setmetatable {}, __call: (_, text) ->
-    match = any {
-      pattern,
-      capture('whitespace', S' \t'^0 * eol)
-      capture('whitespace', S' \t'^1),
-      P 1
-    }
+  setmetatable {
+    :pattern
+  }, __call: (_, text) ->
+    match = lenient_pattern pattern
     p = Ct match^0
     p\match text
 

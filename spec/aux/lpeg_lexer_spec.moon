@@ -1,9 +1,22 @@
 import lpeg_lexer from howl.aux
-import P,V, C, Cp, Cg from lpeg
+import mode from howl
+import P,V, C, Cp, Cg, Cb from lpeg
 
 l = lpeg_lexer
 
 describe 'lpeg_lexer', ->
+
+  describe 'new(definition)', ->
+    it 'accepts a function', ->
+      assert.not_has_error -> l.new -> true
+
+  it 'the module can be called directly to create a lexer (same as new())', ->
+    assert.not_has_error -> l -> true
+
+  it 'the resulting lexer can be called directly', ->
+    lexer = l -> P'x' * Cp!
+    assert.same { 2 }, lexer 'x'
+
   it 'imports lpeg definitions locally into the module', ->
     for op in *{'Cp', 'Ct', 'S', 'P'}
       assert.is_not_nil l[op]
@@ -204,16 +217,61 @@ describe 'lpeg_lexer', ->
       assert.is_nil l.complement('a')\match 'a'
       assert.equals 3, (l.complement('a')^1 * Cp!)\match 'bca'
 
-  describe 'new(definition)', ->
-    it 'accepts a function', ->
-      assert.not_has_error -> l.new -> true
+  describe 'sub_lex(mode_name, stop_p)', ->
+    context 'when no mode is found for the mode_p match', ->
+      it 'captures using the embedded style until stop_p', ->
+        p = l.sub_lex('unknown', '>')
+        res = { p\match 'xx>' }
+        assert.same {1, 'embedded', 3}, res
 
-  it 'the module can be called directly to create a lexer (same as new())', ->
-    assert.not_has_error -> l -> true
+    context 'when a mode matching <mode_name exists', ->
+      local p
 
-  it 'the resulting lexer can be called directly', ->
-    lexer = l -> P'x' * Cp!
-    assert.same { 2 }, lexer 'x'
+      before_each ->
+        sub_mode = lexer: l -> capture('number', digit^1)
+        mode.register name: 'sub', create: -> sub_mode
+        p = l.sub_lex('sub', '>')
+
+      after_each ->
+        mode.unregister 'sub'
+
+      sub_captures_for = (text) ->
+        res = { p\match text }
+        extracted = {}
+        for i = 4, #res - 3
+          extracted[#extracted + 1] = res[i]
+        extracted
+
+      it 'emits rebasing instructions to the styler', ->
+        assert.same {
+          1, '> embedded', 'sub',
+          1, '< embedded', 'sub'
+        }, { p\match '' }
+
+      it "lexes the content using that mode's lexer until <stop_p>", ->
+        assert.same {1, 'number', 3}, sub_captures_for '12>'
+
+      it 'lexes until EOF if <stop_p> is not found', ->
+        assert.same {1, 'number', 3}, sub_captures_for '12'
+
+      it 'automatically lexes infix and trailing whitespace', ->
+        assert.same {
+          1, 'number', 2
+          2, 'whitespace', 3,
+          3, 'number', 4
+          4, 'whitespace', 5,
+        }, sub_captures_for '1 2 '
+
+      it 'explicitly stops sub-lexing for leading whitespace', ->
+        assert.same {
+          1, '< embedded', 'sub'
+          1, 'whitespace', 2,
+          2, '> embedded', 'sub',
+          2, 'number', 3
+        }, sub_captures_for ' 1'
+
+      it 'automatically skips non-recognized tokens', ->
+        assert.same {2, 'number', 4}, sub_captures_for '|12'
 
   describe 'built-in lexing support', ->
     it 'automatically lexes whitespace', ->

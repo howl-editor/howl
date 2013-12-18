@@ -53,22 +53,36 @@ apply = (buffer, start_pos, end_pos, tokens) ->
     style_buf_length = length + 1
 
   last_pos = 1
+  base = nil
+  gap_style_number = default_style_number
+
   for idx = 1, #tokens, 3
     pos = tokens[idx]
-    style_number = style_number_for tokens[idx + 1], buffer
+    style_name = tokens[idx + 1]
     stop_pos = tokens[idx + 2]
-    ffi_fill style_buf + last_pos, pos - last_pos, default_style_number
 
-    while pos < stop_pos
-      style_buf[pos] = style_number
-      pos += 1
+    if type(stop_pos) == 'number'
+      style_number = style_number_for style_name, buffer, base
+      ffi_fill style_buf + last_pos, pos - last_pos, gap_style_number
 
-    last_pos = stop_pos
+      while pos < stop_pos
+        style_buf[pos] = style_number
+        pos += 1
+      last_pos = stop_pos
+
+    else
+      op = style_name\sub(1, 1)
+      if op == '>'
+        base = style_name\sub(3)
+        gap_style_number = style_number_for base, buffer
+      elseif op == '<'
+        base = nil
+        gap_style_number = default_style_number
 
   -- fill any unstyled tail with default
   fill_count = length - last_pos + 1
   if fill_count > 0
-    ffi_fill style_buf + last_pos, fill_count, default_style_number
+    ffi_fill style_buf + last_pos, fill_count, gap_style_number
 
   with sci
     \start_styling start_pos - 1, 0xff
