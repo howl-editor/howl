@@ -105,12 +105,24 @@ register_sci = (sci, default_style = 'default') ->
     if style != default_style and style.number != default_style_numbers.default
       set_style sci, style.number, style if style.number
 
-
 set_for_buffer = (sci, buffer) ->
   b_styles = get_buffer_styles buffer
   for name, style_num in pairs b_styles
     style = styles[name]
     set_style sci, style_num, style if style
+
+is_extended = (style_name) ->
+  style_name\contains ':'
+
+define_extended = (style_name) ->
+  base, ext = style_name\match '^([^:]+):(%S+)$'
+  error "Not an extended style: #{style_name}", 2 unless base
+  if styles[base] and styles[ext]
+    def = moon.copy styles[base]
+    def[k] = v for k,v in pairs styles[ext]
+    def.number = nil
+    styles[style_name] = def
+    def
 
 rebase_on = (style_name, definition, sci) ->
   style_number = default_style_numbers.default
@@ -128,6 +140,7 @@ rebase_on = (style_name, definition, sci) ->
         for name, number in pairs b_styles
           style = styles[name]
           if style
+            define_extended name if is_extended name
             set_style sci, number, styles[name]
 
 define = (name, definition) ->
@@ -158,6 +171,13 @@ define = (name, definition) ->
     else
       set_style sci, style_number, style
 
+  unless is_extended name
+    extended_styles = [n for n in pairs styles when is_extended(n) and n\contains(name)]
+    for n in *extended_styles
+      define n, define_extended n
+
+  style
+
 define_default = (name, attributes) ->
   define name, attributes unless styles[name]
 
@@ -170,15 +190,23 @@ next_style_number = (from_num, buffer) ->
 name_for = (number, buffer) ->
   default_style_numbers[number] or get_buffer_styles(buffer)[number]
 
-number_for = (style_name, buffer) ->
+number_for = (style_name, buffer, base) ->
   -- resolve any style aliases
   while type(styles[style_name]) == 'string'
     style_name = styles[style_name]
 
+  style_name = "#{base}:#{style_name}" if base
   style = styles[style_name]
 
   if not style
-    return default_style_numbers[style_name] or default_style_numbers.default
+    if base
+      style = define_extended(style_name)
+      if not style
+        style = styles[base]
+        style_name = base
+    else
+      return default_style_numbers[style_name] or default_style_numbers.default
+
   return style.number if style.number
 
   b_styles = get_buffer_styles buffer

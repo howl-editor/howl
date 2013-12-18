@@ -86,7 +86,7 @@ describe 'style', ->
       style.define_default 'preset', color: '#667788'
       assert.equal style.preset.color, '#334455'
 
-  describe '.number_for(name, buffer)', ->
+  describe '.number_for(name, buffer [, base])', ->
     it 'returns the assigned style number for name in sci', ->
       assert.equal style.number_for('keyword'), 5 -- default keyword number
 
@@ -96,7 +96,7 @@ describe 'style', ->
       style_num = style.number_for 'my_style_a', buffer
       set_fore = sci\style_get_fore style_num
       assert.equal set_fore, '#334455'
-      assert.is_not.equal style.number_for('my_style_b', buffer, sci), style_num
+      assert.is_not.equal style.number_for('my_style_b', buffer), style_num
 
     it 'remembers the style number used for a particular style', ->
       style.define 'got_it', color: '#334455'
@@ -111,7 +111,7 @@ describe 'style', ->
         for i = 1, 255 style.number_for 'my_style' .. i, buffer
 
     it 'returns the default style number if the style is not defined', ->
-      assert.equal style.number_for('foo', {}, sci), style.number_for('default', {}, {})
+      assert.equal style.number_for('foo', {}), style.number_for('default', {})
 
   it '.name_for(number, buffer, sci) returns the style name for number', ->
     assert.equal style.name_for(5, {}), 'keyword' -- default keyword number
@@ -158,7 +158,7 @@ describe 'style', ->
     defined_fore = sci2\style_get_fore prev_number
     assert.equal defined_fore, '#334455'
 
-    new_number = style.number_for 'style_foo', buffer, sci2
+    new_number = style.number_for 'style_foo', buffer
     assert.equal new_number, prev_number
 
   it '.at_pos(buffer, pos) returns name and style definition at pos', ->
@@ -175,3 +175,47 @@ describe 'style', ->
     assert.equal name, 'stylish'
     assert.same def, style.stylish
 
+  context '(extended styles)', ->
+    before_each ->
+      style.define 'my_base', background: '#112233'
+      style.define 'my_style', color: '#334455'
+
+    describe '.number_for(name, buffer, base)', ->
+      context 'when base is specified', ->
+        it 'automatically defines an extended style based upon the base and specified style', ->
+          style_num = style.number_for 'my_style', buffer, 'my_base'
+          set_fore = sci\style_get_fore style_num
+          set_back = sci\style_get_back style_num
+          assert.equal set_fore, '#334455'
+          assert.equal set_back, '#112233'
+          assert.is_not_nil style['my_base:my_style']
+
+        it 'returns the base style if the specified style is not found', ->
+          style_num = style.number_for 'my_unknown_style', buffer, 'my_base'
+          assert.equal style.number_for('my_base', buffer), style_num
+
+    context 'when one of composing styles is redefined', ->
+      it 'updates the extended style definition', ->
+        style_num = style.number_for 'my_style', buffer, 'my_base'
+        style.define 'my_base', background: '#222222'
+        assert.equal '#222222', style['my_base:my_style'].background
+
+        style.define 'my_style', color: '#222222'
+        assert.equal '#222222', style['my_base:my_style'].color
+
+        set_fore = sci\style_get_fore style_num
+        set_back = sci\style_get_back style_num
+        assert.equal set_fore, '#222222'
+        assert.equal set_back, '#222222'
+
+    it 'redefining a default style also rebases extended styles', ->
+      style_num = style.number_for 'my_style', buffer, 'my_base'
+
+      assert.is_false sci\style_get_bold style_num
+      style.define 'default', font: bold: true
+
+      -- font should be bold now
+      assert.is_true sci\style_get_bold style_num
+
+      -- ..but custom color should still be intact
+      assert.equal '#112233', sci\style_get_back style_num
