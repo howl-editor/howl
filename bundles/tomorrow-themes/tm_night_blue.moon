@@ -196,6 +196,11 @@ return {
     link_label: color: aqua
     link_url: color: comment
 
+    table:
+      color: blue
+      background: embedded_bg
+      underline: true
+
     addition: color: green
     deletion: color: red
     change: color: yellow

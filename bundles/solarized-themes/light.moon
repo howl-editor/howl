@@ -221,6 +221,11 @@ return {
     link_url:
       color: comment
 
+    table:
+      background: wheat
+      color: foreground
+      underline: true
+
     addition: color: green
     deletion: color: red
     change: color: yellow
