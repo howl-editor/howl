@@ -16,7 +16,8 @@ license, with the source being available on [Github](https://github.com/nilnor/h
 
 It's currently in a pre-release state.
 
-Read more at [howl.io](http://howl.io).
+Read more at [howl.io](http://howl.io), and follow on
+[Twitter](https://twitter.com/howleditor) for updates.
 
 ## License
 
