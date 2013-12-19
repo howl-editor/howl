@@ -137,6 +137,7 @@ lenient_pattern = (p) ->
     p,
     capture('whitespace', S' \t'^0 * eol)
     capture('whitespace', S' \t'^1),
+    alpha^1,
     P 1
   }
 
