@@ -30,7 +30,7 @@ describe 'bundle', ->
 
     it 'raises an error if the bundle init file is missing or incomplete', ->
       with_tmpdir (dir) ->
-        assert.raises 'bundle file', -> bundle.load_from_dir dir
+        assert.raises 'find file', -> bundle.load_from_dir dir
         init = dir / 'init.lua'
         init\touch!
         assert.raises 'Incorrect bundle', -> bundle.load_from_dir dir
@@ -76,70 +76,6 @@ describe 'bundle', ->
           ]]
           bundle.load_from_dir dir
           assert.equal bundles.test.file, dir / 'bundle_aux.lua'
-
-      describe 'bundle_load', ->
-        it 'allows for cached loading of bundle files using relative paths', ->
-          with_bundle_dir 'load', (dir) ->
-            dir\join('aux.lua').contents = [[
-              _G.load_count = _G.load_count or 0
-              _G.load_count = _G.load_count + 1
-              return 'foo' .. _G.load_count
-            ]]
-            dir\join('aux2.moon').contents = 'return bundle_load("aux.lua")'
-            dir\join('bytecode.bc').contents = string.dump loadstring('return "bytecode"'), false
-            dir\join('init.lua').contents = [[
-              bundle_load('aux.lua')
-              return {
-                info = {
-                  author = 'spec',
-                  description = 'desc',
-                  license = 'MIT',
-                },
-                unload = function() end,
-                aux = bundle_load('aux.lua'),
-                aux2 = bundle_load('aux2.moon'),
-                bytecode = bundle_load('bytecode.bc'),
-                auto = bundle_load('bytecode')
-              }
-            ]]
-            bundle.load_from_dir dir
-            assert.equal 'foo1', bundles.load.aux
-            assert.equal 'foo1', bundles.load.aux2
-            assert.equal 'bytecode', bundles.load.bytecode
-            assert.equal 'bytecode', bundles.load.auto
-
-        it 'signals an error upon cyclic dependencies', ->
-          with_bundle_dir 'cyclic', (dir) ->
-            dir\join('aux.lua').contents = 'bundle_load("aux2.lua")'
-            dir\join('aux2.lua').contents = 'bundle_load("aux.lua")'
-            dir\join('init.lua').contents = [[
-              bundle_load('aux.lua')
-              return {
-                info = {
-                  author = 'spec',
-                  description = 'desc',
-                  license = 'MIT',
-                },
-              }
-            ]]
-            assert.raises 'Cyclic dependency', -> bundle.load_from_dir dir
-
-        it 'allows passing parameters to the loaded file', ->
-          with_bundle_dir 'load', (dir) ->
-            dir\join('aux.lua').contents = 'return ...'
-            dir\join('init.lua').contents = [[
-              return {
-                info = {
-                  author = 'spec',
-                  description = 'desc',
-                  license = 'MIT',
-                },
-                unload = function() end,
-                aux = bundle_load('aux.lua', 123),
-              }
-            ]]
-            bundle.load_from_dir dir
-            assert.equal bundles.load.aux, 123
 
     it 'raises an error upon implicit global writes', ->
       with_tmpdir (dir) ->

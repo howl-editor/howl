@@ -18,6 +18,9 @@ typeof = (v) ->
     return 'regex' if r.is_instance v
   elseif t == 'table'
     mt = getmetatable v
-    cls = rawget mt, '__class' if mt
-    return cls.__name if cls
+    if mt
+      t = rawget mt, '__type'
+      return t if t
+      cls = rawget mt, '__class' if mt
+      return cls.__name if cls
   t
