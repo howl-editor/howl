@@ -1,6 +1,7 @@
 serpent = require 'serpent'
 
 import File from howl.fs
+import SandboxedLoader from howl.aux
 
 default_dir = ->
   home = os.getenv('HOME')
@@ -21,12 +22,11 @@ class Settings
 
   load_user: =>
     return unless @dir
-    for ext in *{ 'moon', 'lua' }
+    for ext in *{ 'bc', 'moon', 'lua' }
       init = @dir\join "init.#{ext}"
       if init.exists
-        status, ret = pcall loadfile init
-        unless status
-          log.error "Error loading #{init}: #{ret}"
+        loader = SandboxedLoader @dir, 'user', no_implicit_globals: true
+        loader -> user_load 'init'
         break
 
   save_system: (name, t) =>
