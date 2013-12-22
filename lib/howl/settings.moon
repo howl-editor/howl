@@ -4,6 +4,8 @@ import File from howl.fs
 import SandboxedLoader from howl.aux
 
 default_dir = ->
+  howl_dir = os.getenv 'HOWL_DIR'
+  return File(howl_dir) if howl_dir
   home = os.getenv('HOME')
   home and File(home)\join('.howl') or nil
 

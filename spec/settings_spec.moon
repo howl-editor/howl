@@ -2,13 +2,10 @@ import Settings from howl
 import File from howl.fs
 
 describe 'Settings', ->
-  local tmpdir, sysdir
-  settings = nil
+  local tmpdir, settings
 
   before_each ->
     tmpdir = File.tmpdir!
-    sysdir = tmpdir / 'system'
-    sysdir\mkdir!
     settings = Settings tmpdir
 
   after_each ->
@@ -24,12 +21,22 @@ describe 'Settings', ->
       Settings target
       assert.is_false target.exists
 
-    it 'defaults to "$HOME/.howl" when <dir> is not provided', ->
-      getenv = os.getenv
-      os.getenv = -> tostring tmpdir.path
-      pcall Settings
-      os.getenv = getenv
-      assert.is_true tmpdir\join('.howl').exists
+    context 'when <dir> is not provided', ->
+      it 'uses "$HOWL_DIR" when specified', ->
+        with_tmpdir (dir) ->
+          getenv = os.getenv
+          os.getenv = (name) -> tostring dir.path if name == 'HOWL_DIR'
+          pcall Settings
+          os.getenv = getenv
+          assert.is_true dir\join('system').exists
+
+      it 'defaults to "$HOME/.howl"', ->
+        with_tmpdir (dir) ->
+          getenv = os.getenv
+          os.getenv = (name) -> tostring dir.path if name == 'HOME'
+          pcall Settings
+          os.getenv = getenv
+          assert.is_true dir\join('.howl').exists
 
   it '.dir is set to the settings directory if available', ->
     assert.equal tmpdir, Settings(tmpdir).dir
@@ -75,6 +82,7 @@ describe 'Settings', ->
 
   describe 'load_system(name)', ->
    it 'returns the loaded contents of a file named system/<name>.lua', ->
+      sysdir = tmpdir / 'system'
       sysdir\join('foo.lua').contents = 'return { a = "bar" }'
       assert.same {a: 'bar'}, settings\load_system 'foo'
 
