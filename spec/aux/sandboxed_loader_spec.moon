@@ -52,9 +52,31 @@ describe 'SandboxedLoader(dir, name, sandbox_options)', ->
         assert.equals 1, loader -> foo_load 'aux'
         assert.equals 1, loader -> foo_load 'aux'
 
+      context '(loading files from sub directories)', ->
+        it 'supports both slashes and dots in the path', ->
+          sub = dir\join('down/sub.lua')
+          sub.parent\mkdir!
+          sub.contents = 'return "sub"'
+
+          dir\join('down/sub2.lua').contents = 'return "sub2"'
+
+          assert.equals 'sub', loader -> foo_load 'down/sub'
+          assert.equals 'sub2', loader -> foo_load 'down.sub2'
+
+        it 'loads the file once regardless of whether dots or slashes are used', ->
+          sub = dir\join('down/sub.lua')
+          sub.parent\mkdir!
+          sub.contents = [[
+            _G.load_count = _G.load_count + 1
+            return _G.load_count
+          ]]
+          _G.load_count = 0
+          assert.equals 1, loader -> foo_load 'down/sub'
+          assert.equals 1, loader -> foo_load 'down.sub'
+
       it 'signals an error upon cyclic dependencies', ->
-        dir\join('aux.lua').contents = 'foo_load("aux2.lua")'
-        dir\join('aux2.lua').contents = 'foo_load("aux.lua")'
+        dir\join('aux.lua').contents = 'foo_load("aux2")'
+        dir\join('aux2.lua').contents = 'foo_load("aux")'
         assert.raises 'Cyclic dependency', -> loader -> foo_load 'aux'
 
       it 'allows passing parameters to the loaded file', ->
