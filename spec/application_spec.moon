@@ -55,6 +55,12 @@ describe 'Application', ->
           assert.equal 2, #application.buffers
           assert.equal buffer, editor.buffer
 
+    it 'fires the file-opened signal', ->
+      with_signal_handler 'file-opened', nil, (handler) ->
+        File.with_tmpfile (file) ->
+          application\open_file file, editor
+        assert.spy(handler).was_called!
+
   it '.buffers are sorted by visibility status and last_shown', ->
     sci = Scintilla!
     hidden_buffer = application\new_buffer!

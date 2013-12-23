@@ -123,6 +123,7 @@ class Application extends PropertyObject
       log.error "Failed to open #{file}: #{err}"
       nil
     else
+      signal.emit 'file-opened', :file, :buffer
       buffer
 
   save_all: =>
@@ -335,5 +336,11 @@ class Application extends PropertyObject
         return
 
     log.warn "Failed to find application icon"
+
+signal.register 'file-opened',
+  description: 'Signaled right after a file was opened in a buffer',
+  parameters:
+    buffer: 'The buffer that the file was opened into'
+    file: 'The file that was opened'
 
 return Application
