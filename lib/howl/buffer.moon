@@ -69,7 +69,8 @@ class Buffer extends PropertyObject
   @property mode:
     get: => @_mode
     set: (mode = {}) =>
-      had_lexer = @_mode and @_mode.lexer
+      old_mode = @_mode
+      had_lexer = old_mode and old_mode.lexer
       @_mode = mode
       @config.chain_to mode.config
       has_lexer = mode.lexer
@@ -80,6 +81,8 @@ class Buffer extends PropertyObject
         @sci\colourise 0, @sci\get_end_styled!
       elseif had_lexer
         styler.clear_styling @sci, self
+
+      signal.emit 'buffer-mode-set', buffer: self, :mode, :old_mode
 
   @property title:
     get: => @_title or 'Untitled'
@@ -355,6 +358,13 @@ signal.register 'buffer-reloaded',
   description: 'Signaled right after a buffer was reloaded',
   parameters:
     buffer: 'The buffer that was reloaded'
+
+signal.register 'buffer-mode-set',
+  description: 'Signaled right after a buffer had its mode set',
+  parameters:
+    buffer: 'The target buffer'
+    mode: 'The new mode that was set'
+    old_mode: 'The old mode if any'
 
 signal.register 'buffer-title-set',
   description: 'Signaled right after a buffer had its title set',

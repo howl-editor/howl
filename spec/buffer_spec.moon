@@ -575,39 +575,36 @@ describe 'Buffer', ->
 
   describe 'signals', ->
     it 'buffer-saved is fired whenever a buffer is saved', ->
-      handler = spy.new -> true
-      signal.connect 'buffer-saved', handler
-      b = buffer 'foo'
-      with_tmpfile (file) ->
-        b.file = file
-        b\save!
+      with_signal_handler 'buffer-saved', nil, (handler) ->
+        b = buffer 'foo'
+        with_tmpfile (file) ->
+          b.file = file
+          b\save!
 
-      signal.disconnect 'buffer-saved', handler
-      assert.spy(handler).was_called!
+        assert.spy(handler).was_called!
 
     it 'buffer-modified is fired whenever a buffer is modified', ->
-      handler = spy.new -> true
-      b = buffer 'foo'
-      signal.connect 'buffer-modified', handler
-      b\append 'bar'
-      b\delete 1, 2
-      signal.disconnect 'buffer-modified', handler
-      assert.spy(handler).was_called 2
+      with_signal_handler 'buffer-modified', nil, (handler) ->
+        b = buffer 'foo'
+        b\append 'bar'
+        assert.spy(handler).was_called!
 
     it 'buffer-reloaded is fired whenever a buffer is reloaded', ->
-      handler = spy.new -> true
-      with_tmpfile (file) ->
+      with_signal_handler 'buffer-reloaded', nil, (handler) ->
+        with_tmpfile (file) ->
+          b = buffer 'foo'
+          b.file = file
+          b\reload!
+          assert.spy(handler).was_called!
+
+    it 'buffer-mode-set is fired whenever a buffer has its mode set', ->
+      with_signal_handler 'buffer-mode-set', nil, (handler) ->
         b = buffer 'foo'
-        b.file = file
-        signal.connect 'buffer-reloaded', handler
-        b\reload!
-        signal.disconnect 'buffer-reloaded', handler
+        b.mode = {}
         assert.spy(handler).was_called!
 
     it 'buffer-title-set is fired whenever a buffer has its title set', ->
-      handler = spy.new -> true
-      b = buffer 'foo'
-      signal.connect 'buffer-title-set', handler
-      b.title = 'Sir Buffer'
-      signal.disconnect 'buffer-title-set', handler
-      assert.spy(handler).was_called!
+      with_signal_handler 'buffer-title-set', nil, (handler) ->
+        b = buffer 'foo'
+        b.title = 'Sir Buffer'
+        assert.spy(handler).was_called!
