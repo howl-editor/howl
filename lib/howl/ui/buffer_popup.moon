@@ -16,7 +16,7 @@ class BufferPopup extends Popup
   new: (buffer) =>
     error('Missing argument #1: buffer', 3) if not buffer
     @buffer = buffer
-    @default_style = style.popup and 'popup' or 'default'
+    @default_style = style.popup and style.popup.background and 'popup' or 'default'
     sci = @_create_sci buffer -- assignment to plain upvalue for the destructor to work
     @sci = sci
     @destructor = destructor -> buffer\remove_sci_ref sci
