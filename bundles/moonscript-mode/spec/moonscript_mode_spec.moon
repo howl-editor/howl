@@ -195,10 +195,11 @@ class Foo
     it 'always includes the parent line of an included line', ->
       buffer.text = [[
 take_me! {
+
   foo: -> 'voila'
 }
 ]]
-      assert.same {1, 2}, [l.nr for l in *m\structure editor]
+      assert.same {1, 3}, [l.nr for l in *m\structure editor]
 
     it 'falls back to the parent structure method if nothing is found', ->
       buffer.text = [[
