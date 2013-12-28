@@ -43,7 +43,7 @@ howl.aux.lpeg_lexer ->
   }
   identifier = c 'identifier', ident
   member = c 'member', P'@' * ident^1
-  global = c 'global', P'$' * (ident^1 + S'/_?$')
+  global = c 'global', P'$' * (ident^1 + S"/_?$`'" + R'09')
   constant = c 'constant', upper^1 * (upper + digit + '_')^0 * -(#lower)
   type = c 'type', upper^1 * (alpha + digit + '_')^0
   fdecl = c('keyword', 'def') * c('whitespace', space^1) * c('fdecl', ident)
