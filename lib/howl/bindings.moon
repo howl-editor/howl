@@ -125,13 +125,13 @@ export dispatch = (event, source, keymaps, ...) ->
 
   false
 
-export process = (event, source, extra_keymaps,  ...) ->
+export process = (event, source, extra_keymaps = {},  ...) ->
   translations = translate_key event
   return true if process_capture event, source, translations, ...
   return true if signal.emit 'key-press', :event, :source, :translations, parameters: {...}
 
   maps = {}
-  append maps, map for map in *(extra_keymaps or {})
+  append maps, map for map in *extra_keymaps
   for i = #keymaps, 1, -1
     append maps, keymaps[i]
 
