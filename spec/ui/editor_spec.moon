@@ -56,7 +56,7 @@ describe 'Editor', ->
       it 'is a chunk containing the current the selection', ->
         buffer.text = 'hƏllo\nworld'
         selection\set 3, 8
-        assert.equals 'llo\nwo', editor.active_chunk.text
+        assert.equals 'llo\nw', editor.active_chunk.text
 
   it '.current_context returns the buffer context at the current position', ->
     buffer.text = 'hƏllo\nwʘrld'

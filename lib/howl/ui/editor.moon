@@ -212,7 +212,7 @@ class Editor extends PropertyObject
       @buffer\chunk 1, @buffer.length
     else
       start, stop = @selection\range!
-      @buffer\chunk start, stop
+      @buffer\chunk start, stop - 1
 
   grab_focus: => @sci\grab_focus!
   newline: => @buffer\as_one_undo -> @sci\new_line!
