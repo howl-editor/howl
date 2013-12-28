@@ -1,0 +1,5 @@
+#! /bin/sh
+
+root=$(cd $(dirname $0)/.. && pwd)
+echo $root
+exec rspec -I $root $@

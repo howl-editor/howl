@@ -7,16 +7,37 @@ $border_radius: 10px;
 
   border-radius: 7px;
   margin: 0 0.5em 0.1em 0;
-  padding: 0px 0.3em 0.1em 0.2em;
+  padding: 0.1em 0.3em 0.1em 0.3em;
   border: 1px solid cadetblue;
-  font-size: 14px;
+  font-size: 10px;
   vertical-align: middle;
   display: inline-block;
- }
+}
 
 @mixin property-badge { @include badge('P', skyblue, aliceblue); }
 @mixin method-badge { @include badge('m', mediumseagreen, aliceblue); }
-@mixin function-badge { @include badge('f (x)', mediumpurple, aliceblue); }
+@mixin function-badge { @include badge('F', mediumpurple, aliceblue); }
+
+@mixin toc-badge {
+  margin-left: -2em;
+  font-size: 8px;
+  margin-bottom: 0.3em;
+}
+
+@mixin code-info($text) {
+  content: $text;
+  float: right;
+  /* border-radius: 7px; */
+  border-bottom-left-radius: 7px;
+  background-color: white;
+  color: darkslategray;
+  /* font-weight: bold; */
+  padding: 0 0.5em 0 0.5em;
+  margin-right: -9.5px;
+  margin-top: -9.5px;
+  border-left: 1px solid lightgray;
+  border-bottom: 1px solid lightgray;
+}
 
 .masthead {
   margin-bottom: 2em;
@@ -29,7 +50,23 @@ $border_radius: 10px;
 
 code {
   background-color: aliceblue;
-  color: steelblue;
+  color: darkblue;
+  border: 1px solid skyblue;
+  padding: 1px 2px 0 2px;
+}
+
+pre.highlight {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  border: 1px dotted cadetblue;
+  border-bottom: 2px solid lightgray;
+  border-right: 2px solid lightgray;
+  background-color: aliceblue;
+
+  .c1 { color: seagreen; }
+
+  &.lua:before { @include code-info('Lua') };
+  &.moonscript:before { @include code-info('Moonscript') };
 }
 
 .footer-logo {
@@ -66,6 +103,10 @@ h4 {
   border-radius: $border_radius;
 }
 
+.arg-list {
+  color: grey;
+}
+
 body.doc {
   li {
     margin-top: 0.3em;
@@ -97,6 +138,7 @@ body.doc {
 
     .toc-group {
       margin: 0.5em;
+      margin-left: 1.5em;
       li {
         list-style: none;
         margin-left: 1em;
@@ -109,18 +151,15 @@ body.doc {
 
         &.properties:before {
           @include property-badge();
-          font-size: 8px;
-          margin-bottom: 0.3em;
+          @include toc-badge();
         }
         &.methods:before {
           @include method-badge();
-          font-size: 8px;
-          margin-bottom: 0.3em;
+          @include toc-badge();
         }
         &.functions:before {
           @include function-badge();
-          font-size: 8px;
-          margin-bottom: 0.3em;
+          @include toc-badge();
         }
       }
     }
@@ -159,6 +198,4 @@ body.doc {
   h2#functions ~ h3:before {
     @include function-badge();
   }
-
-
 }

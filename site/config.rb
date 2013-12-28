@@ -24,11 +24,14 @@ set :markdown, {
   autolink: true,
   tables: true,
   with_toc_data: true,
-  no_intra_emphasis: true
+  no_intra_emphasis: true,
+  footnotes: true
 }
 
-require 'middleware/auto_toc'
-use AutoTOC
+# require 'middleware/auto_toc'
+require 'middleware/auto_format'
+# use AutoTOC
+use AutoFormat
 
 # Build-specific configuration
 configure :build do

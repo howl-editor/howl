@@ -26,15 +26,11 @@ This is the most recent buffer that is currently not showing in any editor. If a
 
 ## Methods
 
-### new_window
-
-_Parameters:_ (`properties` = {})
+### new_window (properties = {})
 
 Creates a new application [Window](ui/window.html). `properties` is table of window properties to set for the new window, such as title, height and width. The window is added to [.windows](#.windows) before the return of the method. Returns the newly created window.
 
-### new_editor
-
-_Parameters:_ (`options` = {})
+### new_editor (options = {})
 
 Creates a new [Editor](ui/editor.html). Unless `options` specify otherwise, the newly created editor is added to the currently focused window, to the right of the currently focused existing editor. It's set to show the buffer from the [.next_buffer](#.next_buffer) property. The editor is added to [.editors](#.editors) before the return of the method.
 
@@ -52,8 +48,6 @@ buffer.text = 'Show this text in the new buffer'
 howl.app\new_editor :buffer
 ```
 
-### new_buffer
-
-_Parameters:_ (`buffer_mode` = nil)
+### new_buffer (buffer_mode = nil)
 
 Creates a new buffer, and adds it to [.buffers](#.buffers). `buffer_mode` can optionally be specified to assign a specific mode for the new buffer directly. When not specified, the [default mode](modes/default_mode.html) is used. See [mode](mode.html) for more information about buffer modes.
