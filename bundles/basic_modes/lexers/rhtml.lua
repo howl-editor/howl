@@ -12,10 +12,10 @@ local html = l.load('hypertext')
 M._lexer = html
 
 -- Embedded Ruby.
-local ruby = l.load('rails')
-local ruby_start_rule = token('rhtml_tag', '<%' * P('=')^-1)
-local ruby_end_rule = token('rhtml_tag', '%>')
-l.embed_lexer(html, ruby, ruby_start_rule, ruby_end_rule, true)
+-- local ruby = l.load('rails')
+-- local ruby_start_rule = token('rhtml_tag', '<%' * P('=')^-1)
+-- local ruby_end_rule = token('rhtml_tag', '%>')
+-- l.embed_lexer(html, ruby, ruby_start_rule, ruby_end_rule, true)
 
 M._tokenstyles = {
   {'rhtml_tag', l.style_embedded},
