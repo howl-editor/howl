@@ -34,8 +34,15 @@ local = 2
 "but this is just a # sign"
 
 # regex
-/foo(\\w+)/ and  %r|(foo\|bar)| and %r'\\d+' and %r{'"\\d+magic\\pL} and /with 東京都 flags/im
-puts %r[PAIR ME!]
+/foo(\w+)/ and  %r|(foo\|bar)| and %r'\d+#{local}\w+' and %r{'"\d+magic\pL} and /with 東京都 flags/im
+puts %r[PAIR #{local} ME!]
+
+# but these are arithmetic expressions containing division
+foo = 4 / 2 * 3
+bar = foo / 23 * 7
+
+# but this is a method invoked with a regex
+puts /\d*/
 
 # commands
 puts `ls -l #{'/bin/ls'}`
@@ -46,7 +53,7 @@ puts %x{ echo #{MY_CONSTANT} }
 
 # crazy number representations
 [
-  123, -123, 1_234, 123.45, 12.32_1, 1.2e-3, 1.234E1,
+  0 123, -123, 1_234, 123.45, 12.32_1, 1.2e-3, 1.234E1,
   0xffff, 0x23_32, 0o252, 0b01011, 0b10_10, 0377, ?a,
   ?\C-a, ?\M-a, ?\M-\C-a
 ]

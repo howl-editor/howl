@@ -60,7 +60,7 @@ howl.aux.lpeg_lexer ->
 
   digit_run = digit^1 * (P'_' * digit^1)^0
   float = digit_run^1 * '.' * digit_run^1
-  integer = #R('19')^1 * digit_run^1
+  integer = digit_run^1
 
   char = P'?' * (P'\\' * alpha * '-')^0 * alpha
 
@@ -140,7 +140,10 @@ howl.aux.lpeg_lexer ->
     dq_string: V'dq_string_start' * V('dq_string_chunk') * V('dq_string_end')^0
 
     regex_start: any {
-      c('regex', Cg('/', 're_del')),
+      sequence {
+        #(P'/' * complement(eol + '/')^0 * '/'),
+        c('regex', Cg('/', 're_del')),
+      },
       c(del_style, P'%r' * any {
         capture_pair_as 're_del',
         Cg(P(1), 're_del')
@@ -150,13 +153,13 @@ howl.aux.lpeg_lexer ->
       c('regex', '/'),
       c(del_style, match_back('re_del')),
     }
-    regex_chunk: c('regex', scan_until_capture('re_del', '\\', '#')) * any {
+    regex_chunk: c('regex', scan_until_capture('re_del', '\\', '#', '\n')) * any {
       V'regex_end',
       V'interpolation' * V'regex_chunk',
       (c('regex', '#') * V'regex_chunk')^-1
     }
     regex_modifiers: c 'special', lower^0
-    regex: V'regex_start' * V('regex_chunk') * V('regex_end')^0 * V'regex_modifiers'
+    regex: V'regex_start' * V('regex_chunk') * V'regex_modifiers'
 
     heredoc_end: c('string', eol) * S(' \t')^0 * c('constant', match_back('hd_del'))
     heredoc_chunk: c('string', scan_until(V'heredoc_end' + '#', '\\')) * any {
