@@ -5,6 +5,7 @@ mode_reg =
   name: 'ruby'
   extensions: { 'rb', 'Rakefile', 'rake', 'rb', 'rbw', 'gemspec'  }
   patterns: { 'Rakefile$', 'Gemfile$', 'Guardfile$'  }
+  shebangs: '[/ ]ruby.*$'
   create: -> bundle_load('ruby_mode')!
 
 howl.mode.register mode_reg
