@@ -1,0 +1,36 @@
+---
+title: User manual
+---
+
+%h1 Howl Documentation
+
+%em
+  Howl is currently in pre-release state. One of the reasons for this is unfortunately the lack of documentation.
+  This will be addressed before the release, with content appearing here as it is written. Should you have any
+  questions before this is completed, don't hesitate to contact me.
+
+%h2 User manual
+
+= hdr_link 1, 'Getting started', '/doc/manual/getting-started.html'
+= hdr_link 2, 'Configuring Howl', '/doc/manual/configuration.html'
+
+%h2 API reference
+
+- howl_api_docs.each do |doc|
+  %h4
+    %a(href = "#{doc.url}") #{doc.data[:title]}
+
+-# #### [howl.Application](/doc/api/application.html)
+-# #### [howl.bindings](/doc/api/bindings.html)
+
+%h2 Howl specs (tests)
+%p
+  Below are the Howl specs in HTML format. While the specs are certainly not
+  complete, they are provided here in the hope that they may be useful for
+  better understanding the API, as well as providing some code examples.
+  Bundle specs are currently not included in the below list.
+
+- howl_specs.each do |spec|
+  %h4
+    %a(href = "#{spec.url}") #{spec.data[:title]}
+

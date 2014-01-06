@@ -10,16 +10,16 @@ class AutoFormat
     content = content response
     return [status, headers, response] unless status == 200 and content.include? '<html>'
     classes = classes content
-    content = generate_toc(content) if classes.include? :doc
-    content = separate_arglists(content) if classes.include? :doc_api
-    headers["Content-Length"] = content.length.to_s
+    content = generate_toc(content) if classes.include? :doc and not classes.include? :doc_spec
+    content = separate_arglists(content) if classes & [:doc_api, :doc_spec]
+    headers["Content-Length"] = content.bytesize.to_s
     return [status, headers, [content]]
   end
 
   private
 
   def separate_arglists(content)
-    content.gsub %r|(<h3\s+id=")([^"]+)([^>]+>)([^<]+)(</h3>)| do |hdr|
+    content.gsub %r|(<h[23]\s+id=")([^"]+)([^>]+>)([^<]+)(</h[23]>)| do |hdr|
       open, anchor, close, middle, post = $1, $2, $3, $4, $5
       extracted = middle.gsub /(\([^)]*\))/, '<span class="arg-list">\\1</span>'
       anchor = anchor.gsub /-?\([^)]*\)/, ''
@@ -43,19 +43,20 @@ class AutoFormat
 
     hdrs.each_with_index do |hdr, idx|
       level, target_id, text = hdr
+      text = text[/^[^(]+/]
       target_id = target_id.gsub /-?\([^)]*\)/, ''
+      next if text.nil? or text.empty?
       if level == '2'
         toc += "</div>\n" unless idx.zero?
         toc += "<div class=\"toc-group\">\n"
         cls = text.downcase.gsub(' ', '_')
         toc += "<a href=\"##{target_id}\" class=\"toc-group-header #{cls}\">#{text}</a>\n"
       else
-        text = text[/^[^(]+/]
         toc += "<li class=\"\"><a href=\"##{target_id}\">#{text}</a></li>\n"
       end
     end
     toc += "</div>\n</div>\n</div>\n"
-    content.sub('<h2', "#{toc}<h2")
+    content.sub('</h1>', "</h1>#{toc}")
   end
 
   def classes(content)

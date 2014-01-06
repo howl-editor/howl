@@ -3,3 +3,4 @@ src/*.o
 src/howl
 *.bc
 site/build/*
+site/source/doc/spec/*

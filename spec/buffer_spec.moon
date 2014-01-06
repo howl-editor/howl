@@ -5,7 +5,8 @@ import with_tmpfile from File
 describe 'Buffer', ->
   local sci
 
-  before_each -> sci = Scintilla!
+  before_each ->
+    sci = Scintilla!
 
   buffer = (text) ->
     with Buffer {}

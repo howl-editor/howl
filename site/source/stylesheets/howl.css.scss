@@ -27,11 +27,9 @@ $border_radius: 10px;
 @mixin code-info($text) {
   content: $text;
   float: right;
-  /* border-radius: 7px; */
   border-bottom-left-radius: 7px;
   background-color: white;
   color: darkslategray;
-  /* font-weight: bold; */
   padding: 0 0.5em 0 0.5em;
   margin-right: -9.5px;
   margin-top: -9.5px;
@@ -197,5 +195,60 @@ body.doc {
 
   h2#functions ~ h3:before {
     @include function-badge();
+  }
+}
+
+body.doc_spec {
+  .spec-group-2 {
+    border: 1px solid green;
+    padding: 1em;
+    border-radius: $border-radius;
+  }
+
+  .spec-group-3 {
+    border: 1px solid mediumseagreen;
+    padding: 1em;
+    border-radius: $border-radius;
+  }
+
+  .spec-group {
+    margin-top: 1em;
+  }
+
+  h1:before {
+    content: 'Spec';
+    background-color: green;
+    color: white;
+
+    border-radius: 7px;
+    margin: 0 0.5em 0.1em 0;
+    padding: 0.1em 0.3em 0.1em 0.3em;
+    border: 1px solid cadetblue;
+    font-size: 16px;
+    vertical-align: middle;
+    display: inline-block;
+  }
+
+  h2 {
+    margin: 0;
+    padding: 0 0 0.5em 0;
+  }
+
+  h3 {
+    background-color: #efefef;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    font-style: italic;
+    margin: 0;
+  }
+
+  h4 {
+    background-color: white;
+    border: none;
+    font-size: medium;
+    color: green;
+    font-weight: bold;
+    font-style: italic;
   }
 }

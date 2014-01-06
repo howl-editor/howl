@@ -5,6 +5,7 @@ set :relative_links, true
 
 # Reload the browser automatically whenever files change
 activate :livereload
+
 activate :syntax
 
 activate :deploy do |deploy|
@@ -28,12 +29,16 @@ set :markdown, {
   footnotes: true
 }
 
-# require 'middleware/auto_toc'
 require 'middleware/auto_format'
-# use AutoTOC
 use AutoFormat
 
 # Build-specific configuration
 configure :build do
   activate :relative_assets
+end
+
+helpers do
+  def hdr_link(idx, title, path)
+    "<h4>#{idx} <a href=\"#{path}\">#{title}</a></h4>"
+  end
 end

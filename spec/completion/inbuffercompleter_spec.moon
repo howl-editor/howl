@@ -8,14 +8,14 @@ describe 'InBufferCompleter.complete()', ->
   local buffer, lines
   factory = completion.in_buffer.factory
 
-  before_each ->
-    buffer = Buffer {}
-    lines = buffer.lines
-
   complete_at = (pos) ->
     context = buffer\context_at pos
     completer = factory buffer, context
     completer\complete context
+
+  before_each ->
+    buffer = Buffer {}
+    lines = buffer.lines
 
   it 'returns strict and fuzzy completions for local matches in the buffer', ->
     buffer.text = [[

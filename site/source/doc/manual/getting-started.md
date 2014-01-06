@@ -36,9 +36,9 @@ Buffers are what you work with when you edit. Buffers are typically associated w
 
 All buffers have a mode associated with them. Modes handles everything language/format specific for a certain buffer, such as indentation support, syntax highlighting, etc. Modes are typically assigned to a buffer automatically, e.g. when a file is opened a mode is automatically selected based on the file's extension, etc.
 
-### Keymaps
+### Key bindings
 
-Keymaps are used for triggering certain actions whenever a certain key combination is entered. Actions are typically commands, but can also be custom functions.
+Key bindings are used for triggering certain actions whenever a certain key combination is entered. Actions are typically commands, but can also be custom functions.
 
 ### Signals
 

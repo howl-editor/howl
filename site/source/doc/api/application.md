@@ -1,5 +1,5 @@
 ---
-title: Application
+title: howl.Application
 ---
 
 # Application

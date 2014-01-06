@@ -1,0 +1,194 @@
+#! /usr/bin/env ruby
+#
+# Ugly converter hack for Howl spec -> html
+# Copyright 2013 Nils Nordman <nino at nordman.org>
+# License: MIT (see LICENSE.md)
+
+require 'pathname'
+require 'rouge'
+require 'pp'
+
+SECTION_PATTERN = /^\s*(describe|it|context)\s+['"']/
+MULTITEST_PATTERN = /^\s*for /
+
+def html_escape(string)
+  string.gsub('<', '&lt;').gsub('>', '&gt;').gsub('"', '&quot;')
+end
+
+def indent_level(line)
+  line =~ /^(\s*)/ and $1.length or 0
+end
+
+def multi_sub(text, var, id)
+  text.gsub("\#{#{var}}", id)
+end
+
+class Section
+  attr_reader :nr, :indent_level, :children, :text, :is_context
+  attr_accessor :parent
+
+  def initialize(nr, line, indent)
+    @nr = nr
+    @is_context = line =~ /^\s*context/
+    @text = line.strip
+    if line =~ /^\s*\w+\s+['"](.+)['"],\s*->\s*/
+      @text = $1
+    elsif line =~ /^\s*for (\w+) in \*\{(.+)\}/
+      @multi_var = $1
+      @multi_ids = $2.split(',').map { |id| id.tr("'", '').strip }
+    end
+    @text = line =~ /^\s*\w+\s+['"](.+)['"],\s*->\s*/ ? $1 : line
+    @indent_level = indent
+    @section_level = @indent_level / 2 + 1
+    @content = ''
+    @children = []
+  end
+
+  def add_content(line)
+    @content += line.gsub /^\s{#{@indent_level + 2}}/, ''
+  end
+
+  def is_container?
+    not @children.empty?
+  end
+
+  def <=>(o)
+    return -1 if not is_container? and o.is_container?
+    return 1 if not o.is_container? and is_container?
+    nr <=> o.nr
+  end
+
+  def emit(dest, code_formatter, opts = {})
+    text = html_escape @text
+    text = multi_sub(text, opts[:template_var], opts[:template_value]) if opts.include?(:template_var)
+    if @multi_var
+      @multi_ids.map do |id|
+        @children.each {|c| c.emit dest, code_formatter, template_var: @multi_var, template_value: id }
+      end
+    elsif not is_container?
+      dest << hdr(text, 4)
+      dest << "\n" + code_formatter.call(@content.strip) + "\n"
+    else
+      dest << frontmatter(opts[:package]) if parent.nil?
+      dest << %Q|<div class="spec-group spec-group-#@section_level">\n|
+
+      if @parent.nil?
+        dest << hdr("#{opts[:package]}#{text}", 1)
+      elsif @is_context
+        text = "..  #{text}" if @parent.is_context
+        text = "(#{text})" unless text.start_with? '('
+        dest << hdr(text, 3)
+      else
+        h_level = @indent_level / 2 + 1
+        dest << hdr(text, h_level)
+      end
+
+      unless @content.strip.empty?
+        dest << "\n" + code_formatter.call(@content.strip) + "\n"
+      end
+
+      @children.sort.each {|c| c.emit dest, code_formatter, opts }
+      dest << "</div>\n"
+    end
+    dest
+  end
+
+  def frontmatter(package)
+    fields = {
+      title: "Spec - #{package}#@text",
+      tags: 'spec'
+    }
+    vars = fields.to_a.map { |a| a.join(': ') }.join("\n")
+    "---\n#{vars}\n---\n"
+  end
+
+  def to_s
+    "#@nr: #@text (#{@children.size} children)"
+  end
+
+  def to_tree(indent = 0)
+    if @multi_var
+      return @multi_ids.map do |id|
+        @children.inject('') {|s, c| s + multi_sub(c.to_tree(indent + 2), @multi_var, id) }
+      end.join('')
+    else
+      s = ' ' * indent + "#{text} (#{children.size} children)\n"
+      s + @children.sort.map { |c| c.to_tree(indent + 2) }.join('')
+    end
+  end
+
+  private
+
+  def hdr(text, level)
+    id = text.downcase.gsub(' ', '-')
+    %Q|\n<h#{level} id="#{id}">#{text}</h#{level}>\n|
+  end
+end
+
+def parent_for(indent, last)
+  while last.parent and indent <= last.indent_level
+    last = last.parent
+  end
+  last
+end
+
+def parse(f)
+  node = nil
+  IO.readlines(f).each_with_index do |line, nr|
+    next if line =~ /^\s*--/
+    indent = indent_level line
+    if line =~ SECTION_PATTERN or (node and node.indent_level >= indent and line =~ MULTITEST_PATTERN)
+      n = Section.new nr, line, indent
+      if node
+        parent = parent_for indent, node
+        parent.children << n
+        n.parent = parent
+        node = n
+      else
+        node = n
+      end
+    elsif node
+      node.add_content line
+    end
+  end
+  root = node.parent
+  root = root.parent while root.parent
+  root
+end
+
+## main ##
+
+def input_files(input, pattern = '')
+  Pathname.glob("#{input}/**/*#{pattern}*_spec.moon")
+end
+
+def clean_output(dir)
+  Pathname.glob("#{dir}/**/*_spec.html.erb").each do |f|
+    f.unlink
+    f.parent.rmdir if f.parent.children.empty?
+  end
+end
+
+formatter = Rouge::Formatters::HTML.new(:css_class => 'highlight moonscript')
+lexer = Rouge::Lexers::Moonscript.new
+code_formatter = -> (code) { formatter.format(lexer.lex(code)) }
+
+root_dir = Pathname.new(File.dirname File.expand_path(__FILE__)).parent
+input = root_dir.parent.join 'spec'
+output = root_dir.join 'source/doc/spec'
+pattern = ARGV.shift unless ARGV.empty?
+
+clean_output output
+
+input_files(input, pattern).each do |file|
+  rel_path = file.relative_path_from input
+  out = output.join rel_path.dirname, "#{rel_path.basename('.moon')}.html.erb"
+  out.parent.mkpath
+  puts "Parsing #{file}.."
+  root = parse file
+  # puts root.to_tree
+  package = 'howl.'
+  package += "#{rel_path.dirname.to_s.tr('/', '.')}." if not rel_path.dirname.to_s == '.'
+  IO.write out, root.emit('', code_formatter, package: package)
+  puts "Wrote #{out}"
+end

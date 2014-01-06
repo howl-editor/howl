@@ -242,7 +242,7 @@ describe 'bindings', ->
         assert.spy(bindings.keymap.k).was_not_called!
 
   describe 'capture(function)', ->
-    it 'causes <function> to be called exclusively event, source, translations and any extra parameters', ->
+    it 'causes <function> to be called exclusively with event, source, translations and any extra parameters', ->
       event = character: 'A', key_name: 'a', key_code: 65
       thief = spy.new -> true
       keymap = A: spy.new -> true
@@ -262,9 +262,10 @@ describe 'bindings', ->
       bindings.process event, 'editor'
       assert.spy(thief).was.called(2)
 
-  it 'cancel_capture cancels any currently set capture', ->
-      thief = spy.new -> return ret
-      bindings.capture thief
-      bindings.cancel_capture!
-      bindings.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
-      assert.spy(thief).was_not.called!
+  describe 'cancel_capture()', ->
+    it 'cancels any currently set capture', ->
+        thief = spy.new -> return ret
+        bindings.capture thief
+        bindings.cancel_capture!
+        bindings.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
+        assert.spy(thief).was_not.called!
