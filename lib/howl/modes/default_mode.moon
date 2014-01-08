@@ -1,9 +1,8 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import config from howl
+import config, formatting from howl
 import style from howl.ui
-
 
 is_comment = (line, comment_prefix) ->
   line\umatch r"^\\s*#{r.escape comment_prefix}"
@@ -11,12 +10,7 @@ is_comment = (line, comment_prefix) ->
 class DefaultMode
   completers: { 'in_buffer' }
 
-  auto_pairs: {
-    '(': ')'
-    '[': ']'
-    '{': '}'
-    '"': '"'
-  }
+  code_blocks: {}
 
   indent: (editor) =>
     indent_level = editor.buffer.config.indent
@@ -143,6 +137,9 @@ class DefaultMode
 
   on_char_added: (args, editor) =>
     if args.key_name == 'return'
+      for code_block in * (@code_blocks.multiline or {})
+        return true if formatting.ensure_block editor, table.unpack code_block
+
       cur_line = editor.current_line
       prev_line = cur_line.previous_non_blank
       cur_line.indentation = prev_line.indentation if prev_line

@@ -395,9 +395,20 @@ describe 'DefaultMode', ->
       assert.is_true mode\patterns_match 'foo zed', { p }
       assert.is_false mode\patterns_match 'foo bar', { p }
 
-  context 'when return is pressed', ->
-    it 'sets the indentation for the newl line to the indentation of the previous non-blank line', ->
+  context 'when a newline is added', ->
+    it 'sets the indentation for the new line to the indentation of the previous non-blank line', ->
       buffer.text = '  line1\n\nline3'
       cursor.line = 3
       editor\newline!
       assert.equals 2, editor.current_line.indentation
+
+    context 'when .code_blocks.multiline is present', ->
+      it 'the code blocks are automatically enforced', ->
+        mode.code_blocks = multiline: {
+          { '%sdo$', '^%s*end', 'end' },
+        }
+        buffer.text = 'foo do'
+        cursor\eof!
+        editor\newline!
+        assert.equals 'foo do\n\nend\n', buffer.text
+        assert.equals 2, cursor.line
