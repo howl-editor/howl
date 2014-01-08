@@ -1,6 +1,8 @@
 -- Copyright 2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
+import formatting from howl
+
 continuation_pattern = r'(?:[,+=]|\\|\\||&&)\\s*$'
 hash_entry_pattern = r'^\\s*(?:\\S+:|[\'"][^\'"]+[\'"]\\s*=>)'
 
@@ -60,6 +62,16 @@ mode = {
     '"': '"'
     '|': '|'
   }
+
+  code_blocks:
+    multiline: {
+      { r'\\s+do(?:\\s*\\|[^|]+\\|)?\\s*$', '^%s*end', 'end' },
+      { r'^\\s*def\\s+\\w[\\w\\d]+(?:\\s*\\([^)]*\\))?\\s*$', '^%s*end', 'end' },
+      { r'^\\s*(class|module)\\s+\\p{Lu}[\\w\\d]*\\s*$', '^%s*end', 'end' },
+      { '{%s*$', '^%s*}', '}'}
+      { '%[%s*$', '^%s*%]', ']'}
+      { '%(%s*$', '^%s*%)', ')'}
+    }
 
   indent_for: (line, indent_level) =>
     cont_indent = continuation_indent line, indent_level

@@ -32,11 +32,10 @@ class CSSMode
     "'": "'"
   }
 
-  on_char_added: (args, editor) =>
-    if args.key_name == 'return'
-      return true if formatting.ensure_block editor, '{%s*$', '^%s*}'
-
-    @parent.on_char_added @, args, editor
+  code_blocks:
+    multiline: {
+      { '{%s*$', '^%s*}', '}'}
+    }
 
   on_completion_accepted: (completion, context) =>
     @completer or= completer!

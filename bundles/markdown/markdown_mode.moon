@@ -19,6 +19,11 @@ is_header = (line) ->
       '"': '"'
     }
 
+  code_blocks:
+    multiline: {
+      { r'```(\\w+)?\\s*$', '^```', '```'}
+    }
+
   default_config:
     caret_line_highlighted: false
 
