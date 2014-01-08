@@ -24,7 +24,6 @@ describe 'formatting', ->
         assert.is_true formatting.ensure_block editor, '{$', '}', '}'
         assert.equals '{\n  \n}', buffer.text
         assert.equals 2, cursor.line
-        assert.equals 3, cursor.column
 
       it 'completes an existing block as necessary', ->
         buffer.text = '{\n'
@@ -32,19 +31,46 @@ describe 'formatting', ->
         assert.is_true formatting.ensure_block editor, '{$', '}', '}'
         assert.equals '{\n  \n}\n', buffer.text
         assert.equals 2, cursor.line
-        assert.equals 3, cursor.column
 
-      it 'it leaves an already ok block alone', ->
+      it 'leaves an already ok block alone', ->
         buffer.text = '{\n  \n}\n'
         cursor.line = 2
         assert.is_false formatting.ensure_block editor, '{%s*$', '}', '}'
         assert.equals '{\n  \n}\n', buffer.text
         assert.equals 2, cursor.line
 
-      it 'it leaves blocks with content in them alone', ->
+      it 'leaves blocks with content in them alone', ->
         buffer.text = '{\n  \n  foo\n}\n'
         for line in *{2, 3}
           cursor.line = line
           assert.is_false formatting.ensure_block editor, '{$', '}', '}'
           assert.equals '{\n  \n  foo\n}\n', buffer.text
           assert.equals line, cursor.line
+
+      it 'handles nested blocks', ->
+        buffer.text = '{\n  {\n\n}\n'
+        cursor.line = 3
+        assert.is_true formatting.ensure_block editor, '{$', '}', '}'
+        assert.equals '{\n  {\n    \n  }\n}\n', buffer.text
+        assert.equals 3, cursor.line
+
+      context 'indentation & cursor', ->
+        it 'indents the new line using the "indent" config variable by default', ->
+          buffer.config.indent = 4
+          buffer.text = '{\n'
+          cursor.line = 2
+          formatting.ensure_block editor, '{$', '}', '}'
+          assert.equals '{\n    \n}\n', buffer.text
+
+        it 'indents the new line using the editor', ->
+          buffer.mode = indent: (editor) => editor.current_line.indentation = 5
+          buffer.text = '{\n'
+          cursor.line = 2
+          formatting.ensure_block editor, '{$', '}', '}'
+          assert.equals '{\n     \n}\n', buffer.text
+
+        it 'positions the cursor after the indentation of the new line', ->
+          buffer.text = '{\n'
+          cursor.line = 2
+          assert.is_true formatting.ensure_block editor, '{$', '}', '}'
+          assert.equals 3, cursor.column
