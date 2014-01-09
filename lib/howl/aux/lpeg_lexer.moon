@@ -66,6 +66,8 @@ export *
 eol = S('\n\r')^1
 blank = S(' \t')
 line_start = -B(1) + B(eol)
+float = digit^0 * P'.' * digit^1 * (S'eE' * P('-')^0 * digit^1)^0
+hexadecimal = P'0' * S'xX' * xdigit^1
 
 capture = (style, pattern) ->
   Cp! * pattern * Cc(style) * Cp!

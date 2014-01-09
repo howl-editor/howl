@@ -33,14 +33,25 @@ describe 'lpeg_lexer', ->
       p = l.capture 'foo', P'fo'
       assert.same { 1, 'foo', 3 }, { p\match 'foobar' }
 
-  describe '.eol matches and consumes new lines', ->
-    assert.is_not_nil l.eol\match '\n'
-    assert.is_not_nil l.eol\match '\r'
-    assert.equals 2, (l.eol * Cp!)\match '\n'
-    assert.equals 3, (l.eol * Cp!)\match '\r\n'
+  describe '.eol', ->
+    it 'matches and consumes new lines', ->
+      assert.is_not_nil l.eol\match '\n'
+      assert.is_not_nil l.eol\match '\r'
+      assert.equals 2, (l.eol * Cp!)\match '\n'
+      assert.equals 3, (l.eol * Cp!)\match '\r\n'
 
-    assert.is_nil l.eol\match 'a'
-    assert.is_nil l.eol\match '2'
+      assert.is_nil l.eol\match 'a'
+      assert.is_nil l.eol\match '2'
+
+  describe '.float', ->
+    it 'matches and consumes various float representations', ->
+      for repr in *{ '34.5', '3.45e2', '1.234E1', '3.45e-2', '.32' }
+        assert.is_not_nil l.float\match repr
+
+  describe '.hexadecimal', ->
+    it 'matches and consumes various hexadecimal representations', ->
+      for repr in *{ '0xfeab', '0XDEADBEEF' }
+        assert.is_not_nil l.hexadecimal\match repr
 
   describe '.line_start', ->
     it 'matches after newline or at start of text', ->
