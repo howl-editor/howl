@@ -103,6 +103,9 @@ describe 'lpeg_lexer', ->
       assert.is_nil grammar\match 'twofold'
       assert.is_nil grammar\match 'two_fold'
 
+    it 'accepts var arg parameters', ->
+      assert.is_not_nil l.word('one', 'two')\match 'two'
+
   describe 'span(start_p, stop_p [, escape_p])', ->
     p = l.span('{', '}') * Cp!
 

@@ -86,9 +86,9 @@ sequence = (...) ->
   arg_p *= args[i] for i = 2, #args
   arg_p
 
-word = (args) ->
+word = (...) ->
   word_char = alpha + '_'
-  (-B(1) + B(-word_char)) * any(args) * -word_char
+  (-B(1) + B(-word_char)) * any(...) * -word_char
 
 scan_until = (stop_p, escape_p) ->
   stop_p = P(stop_p)
