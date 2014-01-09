@@ -49,8 +49,7 @@ this writing, comments and all). Whether you're adding some personal configurati
 or writing a Howl bundle, you'll have access to the API Howl itself is using.
 
 Should the Howl API not be enough, you can directly interact with C libraries using
-LuaJIT's [ffi](http://luajit.org/ext_ffi.html) library, or you can go wild and graphic
-with Gtk using the embedded [LGI](https://github.com/pavouk/lgi) library.
+LuaJIT's [ffi](http://luajit.org/ext_ffi.html) library.
 
 Howl can be developed for in either [Moonscript](http://www.moonscript.org) or
 [Lua](http://www.lua.org), whatever suits your taste better. They both target the
@@ -71,9 +70,9 @@ with respect to startup time and overall feel.
 Howl is still in early stages of development, and as such there's lot of functionality
 that is still missing. It might not do what you want, you might not get it to do what
 you want, or the manual could have been better at helping you get it done. If so, feel
-free to open a pull request or issue at [Github](https://github.com/nilnor/howl), or
-better yet have a look at the code or the manual and see if it's something you can fix
-yourself (and send me a pull request or patch).
+free to open a pull request, feature request, or issue at
+[Github](https://github.com/nilnor/howl), or better yet have a look at the code or the
+manual and see if it's something you can fix yourself (and send me a pull request or patch).
 
 ## What's inside?
 
@@ -101,12 +100,6 @@ Nearly all of Howl's code is written in Moonscript.
 
 Parsing Expression Grammars for Lua. Very powerful parsing stuff, but with a slight
 learning curve. Used in Howl for lexers and other matching purposes.
-
-#### [LGI](https://github.com/pavouk/lgi)
-
-"LGI is gobject-introspection based dynamic Lua binding to GObject based libraries."
-Used in Howl for creating and managing the user interface. Enables access to not
-only Gtk but to any library supporting gobject-introspection.
 
 #### [Scintillua](http://foicica.com/scintillua/)
 
