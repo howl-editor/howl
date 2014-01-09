@@ -84,11 +84,13 @@ class BufferPopup extends Popup
     return :width, :height
 
   _override_backgrounds: =>
-    background = Gdk.RGBA!
-    background\parse style[@default_style].background
+    background_color = style[@default_style].background
+    if background_color
+      background = Gdk.RGBA!
+      background\parse background_color
 
-    -- override the background color of the window as well as the component,
-    @bin\override_background_color 0, background
-    @window\override_background_color 0, background
+      -- override the background color of the window as well as the component,
+      @bin\override_background_color 0, background
+      @window\override_background_color 0, background
 
 return BufferPopup
