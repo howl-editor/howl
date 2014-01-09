@@ -83,11 +83,13 @@ common_auto_pairs = {
     extensions: { 'c', 'cc', 'cpp', 'cxx', 'c++', 'h', 'hh', 'hpp', 'hxx', 'h++' }
     comment_syntax: { '/*', '*/' }
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   dlang:
     extensions: 'd'
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   desktop:
     extensions: 'desktop'
@@ -171,11 +173,13 @@ common_auto_pairs = {
     extensions: 'go'
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   groovy:
     extensions: { 'groovy', 'gvy' }
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   haskell:
     extensions: 'hs'
@@ -211,6 +215,7 @@ common_auto_pairs = {
     extensions: { 'java', 'bsh' }
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   jsp:
     extensions: 'jsp'
@@ -232,6 +237,7 @@ common_auto_pairs = {
       '{': '}'
       '"': '"'
     }
+    parent: 'curly_mode'
 
   latex:
     extensions: { 'bbl', 'dtx', 'ins', 'ltx', 'tex', 'sty' }
@@ -261,6 +267,7 @@ common_auto_pairs = {
     extensions: {'m', 'mm', 'objc' }
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   pascal:
     extensions: { 'dpk', 'dpr', 'p', 'pas' }
@@ -272,6 +279,7 @@ common_auto_pairs = {
     shebangs: '[/ ]perl.*$'
     comment_syntax: '#'
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   php:
     extensions: { 'inc', 'php', 'php3', 'php4', 'phtml' }
@@ -285,11 +293,13 @@ common_auto_pairs = {
       "'": "'"
       '<': '>'
     }
+    parent: 'curly_mode'
 
   pike:
     extensions: { 'pike', 'pmod' }
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   postscript:
     extensions: { 'ps', 'eps' }
@@ -360,6 +370,7 @@ common_auto_pairs = {
     extensions: 'scala'
     comment_syntax: '/'
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   scheme:
     extensions: { 'sch', 'scm' }
@@ -402,6 +413,7 @@ common_auto_pairs = {
     extensions: 'vala'
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
 
   verilog:
     extensions: { 'v', 'ver' }

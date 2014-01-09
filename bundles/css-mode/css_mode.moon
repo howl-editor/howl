@@ -12,16 +12,6 @@ class CSSMode
   default_config:
     word_pattern: '[-_%w]+'
 
-  indent_after_patterns: {
-    authoritive: true
-    '{%s*$',
-  }
-
-  dedent_patterns: {
-    authoritive: true
-    '%s*}%s*$',
-  }
-
   comment_syntax: { '/*', '*/' }
 
   auto_pairs: {
@@ -31,11 +21,6 @@ class CSSMode
     '"': '"'
     "'": "'"
   }
-
-  code_blocks:
-    multiline: {
-      { '{%s*$', '^%s*}', '}'}
-    }
 
   on_completion_accepted: (completion, context) =>
     @completer or= completer!

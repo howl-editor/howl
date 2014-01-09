@@ -6,6 +6,7 @@ mode_reg =
   aliases: 'scss'
   extensions: {'css', 'scss'}
   create: -> bundle_load('css_mode')!
+  parent: 'curly_mode'
 
 howl.mode.register mode_reg
 
