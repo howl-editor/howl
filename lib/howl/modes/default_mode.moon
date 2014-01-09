@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import config, formatting from howl
+import config, formatting, mode from howl
 import style from howl.ui
 
 is_comment = (line, comment_prefix) ->
@@ -199,5 +199,7 @@ with config
     description: 'The indentation structure parsing will stop once this number of lines has been collected'
     default: 10
     type_of: 'number'
+
+mode.register name: 'default', create: DefaultMode
 
 DefaultMode

@@ -24,7 +24,7 @@ class Application extends PropertyObject
     @_editors = setmetatable {}, __mode: 'v'
     @_buffers = {}
     bundle.dirs = { @root_dir / 'bundles' }
-    @_load_variables!
+    @_load_base!
     bindings.push keymap
     super!
 
@@ -201,8 +201,7 @@ class Application extends PropertyObject
     local window
     unless @_loaded
       @settings = Settings!
-      @_load_completions!
-      @_load_commands!
+      @_load_core!
       bundle.load_all!
       @settings\load_user!
       theme.apply!
@@ -305,13 +304,12 @@ class Application extends PropertyObject
     else
       window.status\info 'Howl 0.0 ready.'
 
-  _load_variables: =>
+  _load_base: =>
     require 'howl.variables.core_variables'
+    require 'howl.modes'
 
-  _load_completions: =>
+  _load_core: =>
     require 'howl.completion.inbuffercompleter'
-
-  _load_commands: =>
     require 'howl.inputs.basic_inputs'
     require 'howl.inputs.projectfile_input'
     require 'howl.inputs.file_input'

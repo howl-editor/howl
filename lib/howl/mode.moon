@@ -116,8 +116,6 @@ signal.register 'mode-unregistered',
   parameters:
     name: 'The name of the mode'
 
-register name: 'default', create: howl.modes.DefaultMode
-
 return PropertyTable {
   :for_file
   :by_name
