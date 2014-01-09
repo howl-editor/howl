@@ -38,7 +38,7 @@ howl.aux.lpeg_lexer ->
   link = not_escaped * sequence {
     capture('operator', '!')^-1,
     capture('link_label', line_pair '[', ']'),
-    any {
+    any({
       sequence {
         capture('link_url', '(' * scan_until S') \t'),
         (blank^1 * capture('string', line_pair('"')) * blank^0)^-1,
@@ -46,7 +46,7 @@ howl.aux.lpeg_lexer ->
       }
       line_pair '(', ')',
       capture('link_url', P' '^-1 * line_pair '[', ']'),
-    }
+    })^-1
   }
 
   ref_def = sequence {
@@ -99,7 +99,7 @@ howl.aux.lpeg_lexer ->
     h1,
     emphasis,
     strong,
-    link,
     ref_def,
+    link,
     code,
   }

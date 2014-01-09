@@ -32,7 +32,7 @@ Here's a [link](http://link.com).
 And one with a [title](http://titled.com "Title").
 And a reference style [link][ref_id]
 Reference style links can have the [id] [separated]
-And can omit the [ref][]
+And can omit the [ref][], even [completely]
 
 And image links
 ![Alt text](/path/to/img.jpg)
@@ -44,6 +44,7 @@ Now let's define the references:
 [separated]: http://separated.com
   "Separated FTW"
 [ref]: <http://parens.com>     (delim!)
+[completely]: #.buffers
 
 <http://www.autolink.com>
 
