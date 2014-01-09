@@ -212,11 +212,6 @@ common_auto_pairs = {
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
 
-  javascript:
-    extensions: { 'js', 'jsfl' }
-    comment_syntax: '//'
-    auto_pairs: common_auto_pairs
-
   jsp:
     extensions: 'jsp'
     comment_syntax: { '<%--', '--%>' }
