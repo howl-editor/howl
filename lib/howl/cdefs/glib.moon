@@ -70,8 +70,31 @@ ffi.cdef [[
   gchar * g_strndup(const gchar *str, gssize n);
 
   /* Custom callback definitions */
+  typedef gboolean (*GCallback1) (gpointer);
   typedef gboolean (*GCallback3) (gpointer, gpointer, gpointer);
   typedef gboolean (*GCallback4) (gpointer, gpointer, gpointer, gpointer);
+
+
+  /* main loop */
+  typedef GCallback1 GSourceFunc;
+  typedef GCallback1 GDestroyNotify;
+  typedef gpointer GMainContext;
+
+  GMainContext g_main_context_default(void);
+  gboolean g_main_context_iteration(GMainContext *context, gboolean may_block);
+
+  guint g_idle_add_full(gint priority,
+                        GSourceFunc function,
+                        gpointer data,
+                        GDestroyNotify notify);
+
+  enum GPriority {
+    G_PRIORITY_HIGH = -100,
+    G_PRIORITY_DEFAULT = 0,
+    G_PRIORITY_HIGH_IDLE = 100,
+    G_PRIORITY_DEFAULT_IDLE = 200,
+    G_PRIORITY_LOW = 300
+  };
 ]]
 
 return {
