@@ -30,6 +30,7 @@ class CompletionPopup extends MenuPopup
     super!
 
   on_char_added: (editor, args) =>
+    return unless @completer
     if args.key_name == 'space'
       @close!
       return
@@ -42,6 +43,7 @@ class CompletionPopup extends MenuPopup
       @items = items
 
   on_text_deleted: (editor, args) =>
+    return unless @completer
     if args.at_pos < @completer.start_pos or editor.current_line != @completer.line
       @close!
       return
