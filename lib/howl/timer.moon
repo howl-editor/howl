@@ -9,7 +9,7 @@ unpack = table.unpack
 ref_id_cnt = 0
 callbacks = {}
 
-asap_cb = ffi.cast 'GSourceFunc', (data) ->
+g_callback = ffi.cast 'GSourceFunc', (data) ->
   ref_id = tonumber ffi.cast('gint', data)
   cb = callbacks[ref_id]
   if cb
@@ -17,14 +17,23 @@ asap_cb = ffi.cast 'GSourceFunc', (data) ->
 
   false
 
-asap = (f, ...) ->
+register_callback = (f, ...) ->
   ref_id_cnt += 1
   args = {...}
   args.maxn = select '#', ...
-  data = ffi.cast 'gpointer', ref_id_cnt
   callbacks[ref_id_cnt] = { f, args }
-  C.g_idle_add_full C.G_PRIORITY_LOW, asap_cb, data, nil
+  ffi.cast 'gpointer', ref_id_cnt
+
+asap = (f, ...) ->
+  cb_id = register_callback f, ...
+  C.g_idle_add_full C.G_PRIORITY_LOW, g_callback, cb_id, nil
+
+after = (seconds, f, ...) ->
+  cb_id = register_callback f, ...
+  interval = seconds * 1000
+  C.g_timeout_add_full C.G_PRIORITY_LOW, interval, g_callback, cb_id, nil
 
 {
   :asap
+  :after
 }

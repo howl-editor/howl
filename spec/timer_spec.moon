@@ -19,7 +19,14 @@ describe 'timer', ->
       assert.spy(callback).was_called(1)
 
     it 'passes along any additional arguments as is', ->
-      callback = spy.new (...)-> nil
+      callback = spy.new (...) -> nil
       timer.asap callback, 'one', nil, 3
       pump_mainloop!
       assert.spy(callback).was_called_with 'one', nil, 3
+
+  describe 'after(seconds, f, ...)', ->
+    it 'invokes <f> once after approximately <seconds>', ->
+      callback = spy.new -> nil
+      timer.after 0, callback
+      pump_mainloop!
+      assert.spy(callback).was_called(1)

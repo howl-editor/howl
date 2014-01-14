@@ -88,6 +88,12 @@ ffi.cdef [[
                         gpointer data,
                         GDestroyNotify notify);
 
+  guint g_timeout_add_full(gint priority,
+                           guint interval,
+                           GSourceFunc function,
+                           gpointer data,
+                           GDestroyNotify notify);
+
   enum GPriority {
     G_PRIORITY_HIGH = -100,
     G_PRIORITY_DEFAULT = 0,
