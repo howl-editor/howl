@@ -3,8 +3,14 @@
 
 mode_reg =
   name: 'ruby'
-  extensions: { 'rb', 'Rakefile', 'rake', 'rb', 'rbw', 'gemspec'  }
-  patterns: { 'Rakefile$', 'Gemfile$', 'Guardfile$'  }
+  extensions: {
+    'rb',
+    'rake',
+    'rb',
+    'rbw',
+    'gemspec'
+  }
+  patterns: { 'Rakefile$', 'Gemfile$', 'Guardfile$', 'Capfile$'  }
   shebangs: '[/ ]ruby.*$'
   create: -> bundle_load('ruby_mode')!
 
