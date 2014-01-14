@@ -41,9 +41,11 @@ howl.aux.lpeg_lexer ->
 
   dq_string_end = scan_to(P'"' + #P'#{', P'\\')
 
+  ws = capture 'whitespace', blank^0
+
   P {
     'all'
-    all: any { number, key, V'string', comment, operator, special, keyword, member, clazz, lua_keywords, identifier }
+    all: any { number, key, V'string', comment, operator, special, keyword, member, clazz, lua_keywords, V'fdecl', identifier }
     string: any {
       capture 'string', any { sq_string, long_string }
       V'dq_string'
@@ -51,4 +53,24 @@ howl.aux.lpeg_lexer ->
     interpolation: #P'#' * (-P'}' * (V'all' + 1))^1 * capture('operator', '}') * V'dq_string_chunk'
     dq_string_chunk: capture('string', scan_to(P'"' + #P'#{', P'\\')) * V('interpolation')^0
     dq_string: capture('string', '"') * (V'dq_string_chunk')
-  }
+    fdecl: sequence {
+      capture('fdecl', ident),
+      ws,
+      capture('operator', '='),
+      ws,
+      sequence({
+        capture('operator', '('),
+        any({
+          identifier,
+          -#P')' * operator,
+          special,
+          capture('whitespace', blank^1),
+          number,
+          V'string'
+        })^0,
+        capture('operator', ')'),
+        ws,
+      })^0,
+      capture('operator', any('->', '=>')),
+      }
+    }
