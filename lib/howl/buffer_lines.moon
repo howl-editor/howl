@@ -32,6 +32,7 @@ Line = (nr, buffer, sci) ->
 
   setmetatable {
     :nr
+    :buffer
     indent: => @indentation += buffer.config.indent
     unindent: =>
       new_indent = @indentation - buffer.config.indent
@@ -40,13 +41,14 @@ Line = (nr, buffer, sci) ->
 
     _getters:
       text: => text!
-      start_pos: => buffer\char_offset sci\position_from_line(nr - 1) + 1
-      end_pos: => buffer\char_offset math.max(sci\position_from_line(nr), 1)
+      byte_start_pos: => sci\position_from_line(nr - 1) + 1
+      byte_end_pos: => math.max(sci\position_from_line(nr), 1)
+      start_pos: => buffer\char_offset @byte_start_pos
+      end_pos: => buffer\char_offset @byte_end_pos
       indentation: =>  sci\get_line_indentation nr - 1
       previous: => if nr > 1 then Line nr - 1, buffer, sci
       next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
       chunk: => buffer\chunk @start_pos, @end_pos - #buffer.eol
-      buffer: => buffer
 
       previous_non_blank: =>
         prev_line = @previous

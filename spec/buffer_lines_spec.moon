@@ -57,6 +57,18 @@ describe 'BufferLines', ->
       buf.text = ''
       assert.equal lines[1].end_pos, 1
 
+    it '.byte_start_pos returns the byte start position for line', ->
+      buf.text = 'åäö\nwØrld'
+      assert.equal lines[2].byte_start_pos, 8
+      buf.text = ''
+      assert.equal lines[1].byte_start_pos, 1
+
+    it '.byte_end_pos returns the byte end position for line', ->
+      buf.text = 'åäö\nwØrld'
+      assert.equal lines[1].byte_end_pos, 7
+      buf.text = ''
+      assert.equal lines[1].byte_end_pos, 1
+
     it '.previous returns the line above this one, or nil if none', ->
       assert.equal lines[2].previous, lines[1]
       assert.is_nil lines[1].previous
