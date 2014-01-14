@@ -584,6 +584,18 @@ describe 'Buffer', ->
 
         assert.spy(handler).was_called!
 
+    it 'text-inserted is fired whenever text is inserted into a buffer', ->
+      with_signal_handler 'text-inserted', nil, (handler) ->
+        b = buffer 'foo'
+        b\append 'bar'
+        assert.spy(handler).was_called!
+
+    it 'text-deleted is fired whenever text is deleted from buffer', ->
+      with_signal_handler 'text-inserted', nil, (handler) ->
+        b = buffer 'foo'
+        b\delete 1, 2
+        assert.spy(handler).was_called!
+
     it 'buffer-modified is fired whenever a buffer is modified', ->
       with_signal_handler 'buffer-modified', nil, (handler) ->
         b = buffer 'foo'

@@ -272,7 +272,9 @@ function sci.dispatch(sci_ptr, event, args)
       args = {
         at_pos = args.position,
         text = args.text,
-        lines_affected = args.lines_affected
+        lines_affected = args.lines_affected,
+        as_undo = bit.band(args.type, SC_PERFORMED_UNDO) ~= 0,
+        as_redo = bit.band(args.type, SC_PERFORMED_REDO) ~= 0,
       }
       if inserted then handler = 'on_text_inserted'
       elseif deleted then handler = 'on_text_deleted'

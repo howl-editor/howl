@@ -236,6 +236,7 @@ class Buffer extends PropertyObject
 
   undo: => @sci\undo!
   redo: => @sci\redo!
+
   char_offset: (...) => @_offset char_offset, ...
   byte_offset: (...) => @_offset byte_offset, ...
 
@@ -288,6 +289,8 @@ class Buffer extends PropertyObject
     elseif @length != @size
       @multibyte_from = math.min(@multibyte_from or 1, args.at_pos)
 
+    args.buffer = self
+    signal.emit 'text-inserted', args
     signal.emit 'buffer-modified', buffer: self
 
   _on_text_deleted: (args) =>
@@ -295,6 +298,9 @@ class Buffer extends PropertyObject
       @multibyte_from = args.at_pos
 
     @_len = nil
+
+    args.buffer = self
+    signal.emit 'text-deleted', args
     signal.emit 'buffer-modified', buffer: self
 
   _offset: (f, ...) =>
@@ -344,31 +350,64 @@ with config
 
 -- Signals
 
-signal.register 'buffer-saved',
-  description: 'Signaled right after a buffer was saved',
-  parameters:
-    buffer: 'The buffer that was saved'
+with signal
+  .register 'buffer-saved',
+    description: 'Signaled right after a buffer was saved',
+    parameters:
+      buffer: 'The buffer that was saved'
 
-signal.register 'buffer-modified',
-  description: 'Signaled right after a buffer was modified',
-  parameters:
-    buffer: 'The buffer that was modified'
+  .register 'text-inserted',
+    description: [[
+Signaled right after text has been inserted into an editor. No additional
+modifications  may be done within the signal handler.
+  ]]
+    parameters:
+      buffer: 'The buffer for which the text was inserted'
+      editor: '(Optional) The editor containing the buffer'
+      at_pos: 'The byte start position of the inserted text'
+      length: 'The number of characters in the inserted text'
+      text: 'The text that was inserted'
+      lines_added: 'The number of lines that were added'
+      as_undo: 'The text was inserted as part of an undo operation'
+      as_redo: 'The text was inserted as part of a redo operation'
 
-signal.register 'buffer-reloaded',
-  description: 'Signaled right after a buffer was reloaded',
-  parameters:
-    buffer: 'The buffer that was reloaded'
+  .register 'text-deleted',
+    description: [[
+Signaled right after text was deleted from the editor. No additional
+modifications may be done within the signal handler.
+  ]]
+    parameters:
+      buffer: 'The buffer for which the text was deleted'
+      editor: '(Optional) The editor containing the buffer'
+      at_pos: 'The byte start position of the deleted text'
+      length: 'The number of characters that was deleted'
+      text: 'The text that was deleted'
+      lines_deleted: 'The number of lines that were deleted'
+      as_undo: 'The text was deleted as part of an undo operation'
+      as_redo: 'The text was deleted as part of a redo operation'
 
-signal.register 'buffer-mode-set',
-  description: 'Signaled right after a buffer had its mode set',
-  parameters:
-    buffer: 'The target buffer'
-    mode: 'The new mode that was set'
-    old_mode: 'The old mode if any'
+  .register 'buffer-modified',
+    description: 'Signaled right after a buffer was modified',
+    parameters:
+      buffer: 'The buffer that was modified'
+      as_undo: 'The buffer was modified as the result of an undo operation'
+      as_redo: 'The buffer was modified as the result of a redo operation'
 
-signal.register 'buffer-title-set',
-  description: 'Signaled right after a buffer had its title set',
-  parameters:
-    buffer: 'The buffer receiving the new title'
+  .register 'buffer-reloaded',
+    description: 'Signaled right after a buffer was reloaded',
+    parameters:
+      buffer: 'The buffer that was reloaded'
+
+  .register 'buffer-mode-set',
+    description: 'Signaled right after a buffer had its mode set',
+    parameters:
+      buffer: 'The target buffer'
+      mode: 'The new mode that was set'
+      old_mode: 'The old mode if any'
+
+  .register 'buffer-title-set',
+    description: 'Signaled right after a buffer had its title set',
+    parameters:
+      buffer: 'The buffer receiving the new title'
 
 return Buffer
