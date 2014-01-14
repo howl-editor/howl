@@ -14,7 +14,7 @@ predefined_types =
   number: {
     convert: (value) -> tonumber(value) or tonumber(tostring(value)) or value
     validate: (value) -> type(value) == 'number'
-  }
+  },
   string: {
     convert: (value) -> tostring value
   }

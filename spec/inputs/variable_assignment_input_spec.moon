@@ -89,6 +89,10 @@ describe 'VariableAssignmentInput', ->
           assert.same input\value_for('foo='), name: 'foo'
           assert.same input\value_for('foo'), {}
 
-        it 'it handles whitespace separated values', ->
+        it 'handles whitespace separated values', ->
           value = input\value_for('foo=Frob bar')
           assert.same value, name: 'foo', value: 'Frob bar'
+
+        it 'converts empty values to nil', ->
+          value = input\value_for('foo=')
+          assert.same value, name: 'foo', value: nil

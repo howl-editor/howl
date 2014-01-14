@@ -59,7 +59,7 @@ command.register
   inputs: { '*variable_assignment' }
   handler: (assignment) ->
     if assignment.name
-      value = assignment.value or ''
+      value = assignment.value
       if config.definitions[assignment.name]
         config.set assignment.name, value
         _G.log.info ('"%s" is now set to "%s"')\format assignment.name, assignment.value

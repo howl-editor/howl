@@ -38,7 +38,7 @@ describe 'config', ->
       assert.raises 'Undefined', -> config.set 'que', 'si'
 
     it 'setting a value of nil clears the value', ->
-      var = name: 'foo', description: 'foo variale'
+      var = name: 'foo', description: 'foo variable'
       config.define var
       config.set 'foo', 'bar'
       config.set 'foo', nil
