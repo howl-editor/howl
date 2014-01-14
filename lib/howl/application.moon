@@ -324,6 +324,7 @@ class Application extends PropertyObject
     require 'howl.commands.app_commands'
     require 'howl.commands.ui_commands'
     require 'howl.commands.search_commands'
+    require 'howl.editing'
 
   _load_application_icon: =>
     for dir in *{ @root_dir.parent, @root_dir }

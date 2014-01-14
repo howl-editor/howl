@@ -29,6 +29,7 @@
     ctrl_shift_a:     'editor-select-all'
 
     alt_s:            'buffer-structure'
+    alt_q:            'reflow-paragraph'
 
     left:             'cursor-left'
     right:            'cursor-right'
