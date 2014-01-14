@@ -459,6 +459,7 @@ class Editor extends PropertyObject
         true
 
   _on_text_inserted: (args) =>
+    args.at_pos += 1
     @buffer.sci_listener.on_text_inserted args
     signal_params = moon.copy args
     signal_params.editor = self
@@ -469,6 +470,7 @@ class Editor extends PropertyObject
       @popup.window\on_text_inserted self, signal_params if @popup.window.on_text_inserted
 
   _on_text_deleted: (args) =>
+    args.at_pos += 1
     @buffer.sci_listener.on_text_deleted args
     signal_params = moon.copy args
     signal_params.editor = self
@@ -691,19 +693,25 @@ signal.register 'character-added',
     meta: 'A boolean indicating whether the meta key was held down'
 
 signal.register 'text-inserted',
-  description: 'Signaled right after text has been inserted into an editor'
+  description: [[
+Signaled right after text has been inserted into an editor. No additional
+modifications  may be done within the signal handler.
+]]
   parameters:
     editor: 'The editor for which the text was inserted'
-    position: 'The start position of the inserted text'
+    at_pos: 'The byte start position of the inserted text'
     length: 'The number of characters in the inserted text'
     text: 'The text that was inserted'
     lines_added: 'The number of lines that were added'
 
 signal.register 'text-deleted',
-  description: 'Signaled right after text was deleted from the editor'
+  description: [[
+Signaled right after text was deleted from the editor. No additional
+modifications may be done within the signal handler.
+]]
   parameters:
     editor: 'The editor for which the text was inserted'
-    position: 'The start position of the deleted text'
+    at_pos: 'The byte start position of the deleted text'
     length: 'The number of characters that was deleted'
     text: 'The text that was deleted'
     lines_deleted: 'The number of lines that were deleted'

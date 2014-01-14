@@ -99,7 +99,7 @@ class Buffer extends PropertyObject
       @sci\clear_all!
       @sci\set_code_page Scintilla.SC_CP_UTF8
       @sci\add_text #text, text
-      @multibyte_from = text.multibyte and 0 or nil
+      @multibyte_from = text.multibyte and 1 or nil
 
   @property modified:
     get: => @sci\get_modify!
@@ -286,7 +286,7 @@ class Buffer extends PropertyObject
       if args.text.multibyte
         @multibyte_from = @multibyte_from and math.min(@multibyte_from, args.at_pos) or args.at_pos
     elseif @length != @size
-      @multibyte_from = math.min(@multibyte_from or 0, args.at_pos)
+      @multibyte_from = math.min(@multibyte_from or 1, args.at_pos)
 
     signal.emit 'buffer-modified', buffer: self
 
@@ -303,7 +303,7 @@ class Buffer extends PropertyObject
     arg_offsets = is_table and args[1] or args
     local offsets
 
-    if @multibyte and arg_offsets[#arg_offsets] >= @multibyte_from
+    if @multibyte and arg_offsets[#arg_offsets] > @multibyte_from
       offsets = f @text, arg_offsets
       for i = #offsets, 1, -1
         res = offsets[i]

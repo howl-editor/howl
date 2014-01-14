@@ -422,7 +422,7 @@ describe 'Buffer', ->
       assert.same {1, 1}, { buffer'ab'\byte_offset 1, 1 }
 
     it 'raises an error for decreasing offsets', ->
-      assert.raises 'Decreasing offset', -> buffer'äåö'\byte_offset 2, 1
+      assert.raises 'Decreasing offset', -> buffer'äåö'\byte_offset 3, 2
 
     it 'raises error for out-of-bounds offsets', ->
       assert.has_error -> buffer'äåö'\byte_offset 5
@@ -440,7 +440,7 @@ describe 'Buffer', ->
       assert.same {2, 2}, { buffer'ab'\char_offset 2, 2 }
 
     it 'raises an error for decreasing offsets', ->
-      assert.raises 'Decreasing offset', -> buffer'äåö'\char_offset 3, 1
+      assert.raises 'Decreasing offset', -> buffer'äåö'\char_offset 3, 2
 
     it 'raises error for out-of-bounds offsets', ->
       assert.has_error -> buffer'ab'\char_offset 4
