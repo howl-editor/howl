@@ -23,13 +23,13 @@ option_completions = (options) ->
 
   options
 
-options_list_options = (options, def, text) ->
+options_list_options = (options, def, text, current_buffer) ->
   selection = nil
   headers = { 'Option' }
   highlight_matches_for = text
 
   unless text
-    cur_val = config.get def.name
+    cur_val = current_buffer and current_buffer.config[def.name] or config.get def.name
     if cur_val
       cur_val = tostring(cur_val)
       for option in *options
@@ -41,11 +41,17 @@ options_list_options = (options, def, text) ->
 
   return :headers, :selection, :highlight_matches_for
 
+option_caption = (name, current_buffer) ->
+  caption = "Global value: #{config[name]}\n"
+  caption ..= "For current mode: #{current_buffer.mode.config[name]}\n"
+  caption .. "For current buffer: #{current_buffer.config[name]}"
+
 class VariableAssignmentInput
   new: =>
     vars = [{name, def.description} for name, def in pairs config.definitions]
     table.sort vars, (a, b) -> a[1] < b[1]
     @matcher = Matcher vars
+    @current_buffer = _G.editor.buffer
 
   should_complete: => true
 
@@ -59,16 +65,15 @@ class VariableAssignmentInput
 
       comp_options = {
         title: name
-        caption: def.description
+        caption: def.description .. "\n\n" .. option_caption name, @current_buffer
       }
       options = def.options
 
       if not options
-        comp_options.caption ..= "\n\nCurrent value: #{config[name]}"
         return {}, comp_options
 
       completions = option_completions options
-      comp_options.list = options_list_options completions, def, val
+      comp_options.list = options_list_options completions, def, val, @current_buffer
       matcher = Matcher completions
       return matcher(val or ''), comp_options
 

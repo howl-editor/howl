@@ -53,18 +53,34 @@ command.register
 
     _G.log.error 'No hidden buffer found'
 
+set_variable = (assignment, target) ->
+  if assignment.name
+    value = assignment.value
+    if config.definitions[assignment.name]
+      target[assignment.name] = value
+      _G.log.info ('"%s" is now set to "%s"')\format assignment.name, assignment.value
+    else
+      log.error "Undefined variable '#{assignment.name}'"
+
 command.register
   name: 'set',
-  description: 'Sets a configuration variable'
+  description: 'Sets a configuration variable globally'
+  inputs: { '*variable_assignment' }
+  handler: (assignment) -> set_variable assignment, config
+
+command.register
+  name: 'mode-set',
+  description: 'Sets a configuration variable for the current mode'
   inputs: { '*variable_assignment' }
   handler: (assignment) ->
-    if assignment.name
-      value = assignment.value
-      if config.definitions[assignment.name]
-        config.set assignment.name, value
-        _G.log.info ('"%s" is now set to "%s"')\format assignment.name, assignment.value
-      else
-        log.error "Undefined variable '#{assignment.name}'"
+    set_variable assignment, editor.buffer.mode.config
+
+command.register
+  name: 'buffer-set',
+  description: 'Sets a configuration variable for the current buffer'
+  inputs: { '*variable_assignment' }
+  handler: (assignment) ->
+    set_variable assignment, editor.buffer.config
 
 command.register
   name: 'describe-key',
