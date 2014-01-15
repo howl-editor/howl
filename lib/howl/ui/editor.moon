@@ -176,7 +176,7 @@ class Editor extends PropertyObject
       error "Unknown value for line_wrapping: #{value}", 2 unless sci_value
       @sci\set_wrap_mode sci_value
 
-  @property caret_line_highlighted:
+  @property cursor_line_highlighted:
     get: => @sci\get_caret_line_visible!
     set: (flag) => @sci\set_caret_line_visible flag
 
@@ -356,7 +356,7 @@ class Editor extends PropertyObject
       @line_wrapping = .line_wrapping
       @horizontal_scrollbar = .horizontal_scrollbar
       @vertical_scrollbar = .vertical_scrollbar
-      @caret_line_highlighted = .caret_line_highlighted
+      @cursor_line_highlighted = .cursor_line_highlighted
       @line_numbers = .line_numbers
 
   _create_indicator: (indics, id) =>
@@ -554,8 +554,8 @@ with config
     type_of: 'boolean'
 
   .define
-    name: 'caret_line_highlighted'
-    description: 'Whether the caret line is highlighted'
+    name: 'cursor_line_highlighted'
+    description: 'Whether the cursor line is highlighted'
     default: true
     type_of: 'boolean'
 
@@ -582,7 +582,7 @@ with config
     'line_wrapping',
     'horizontal_scrollbar',
     'vertical_scrollbar',
-    'caret_line_highlighted',
+    'cursor_line_highlighted',
     'line_numbers',
   }
     .watch watched_property, apply_property
