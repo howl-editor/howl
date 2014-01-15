@@ -1,18 +1,20 @@
 import signal, timer, config, command from howl
 tinsert = table.insert
 
+paragraph_line = (line) -> line\umatch r'^\\pL'
+
 paragraph_at = (line) ->
   lines = {}
   prev = line.previous
-  while prev and not prev.blank
+  while prev and paragraph_line prev
     tinsert lines, 1, prev
     prev = prev.previous
 
   return lines if line.blank and #lines > 0
-  tinsert lines, line unless line.blank
+  tinsert lines, line if paragraph_line line
 
   next = line.next
-  while next and not next.blank
+  while next and paragraph_line next
     tinsert lines, next
     next = next.next
 
@@ -20,15 +22,19 @@ paragraph_at = (line) ->
 
 can_reflow = (line, limit) ->
   len = line.ulen
-  first_blank = line\find('%s') or len
-  return true if len > limit and first_blank < len
+  first_blank = line\find('[\t ]')
+  if len > limit
+    return false if not first_blank
+    return true if first_blank <= len
+
+  cut_off = first_blank or len
 
   prev = line.previous
-  return true if prev and not prev.blank and prev.ulen + first_blank + 1 <= limit
+  return true if prev and not prev.blank and prev.ulen + cut_off + 1 <= limit
 
   next = line.next
   if next and not next.blank
-    return true if next.ulen + first_blank + 1 <= limit
+    return true if next.ulen + cut_off + 1 <= limit
     next_first_blank = next\find('%s')
     return true if next_first_blank and len + next_first_blank <= limit
 
@@ -56,7 +62,7 @@ reflow_paragraph_at = (line, limit) ->
   new_lines = {}
   start_pos = 1
 
-  while start_pos and (start_pos + limit <= #text)
+  while start_pos and (start_pos + limit <= text.ulen)
     start_search = start_pos + limit
     i = start_search
     while i > start_pos and not text[i].blank
@@ -73,27 +79,14 @@ reflow_paragraph_at = (line, limit) ->
   tinsert(new_lines, text\sub(start_pos)) if start_pos <= #text
   reflowed = table.concat(new_lines, buffer.eol)
   reflowed ..= buffer.eol if has_eol
+  reflowed ..= buffer.eol if start_pos == text.ulen + 1
+
   if reflowed != orig_text
     chunk.text = reflowed
 
 -------------------------------------------------------------------------------
 -- reflow commands and auto handling
 -------------------------------------------------------------------------------
-
-command.register
-  name: 'reflow-paragraph',
-  description: 'Reflows the current paragraph according to `hard_wrap_column`'
-  handler: ->
-    cur_line = editor.current_line
-    paragraph = paragraph_at cur_line
-    if #paragraph > 0
-      hard_wrap_column = editor.buffer.config.hard_wrap_column
-      reflow_paragraph_at cur_line, hard_wrap_column
-      log.info "Reflowed paragraph to max #{hard_wrap_column} columns"
-    else
-      log.info 'Could not find paragraph to reflow'
-
-command.alias 'reflow-paragraph', 'fill-paragraph'
 
 config.define
   name: 'hard_wrap_column'
@@ -108,6 +101,28 @@ config.define
   default: false
 
 is_reflowing = false
+
+do_reflow = (editor, line, reflow_at) ->
+  is_reflowing = true
+  cur_pos = editor.cursor.pos
+  reflow_paragraph_at line, reflow_at
+  editor.cursor.pos = cur_pos
+  is_reflowing = false
+
+command.register
+  name: 'reflow-paragraph',
+  description: 'Reflows the current paragraph according to `hard_wrap_column`'
+  handler: ->
+    cur_line = editor.current_line
+    paragraph = paragraph_at cur_line
+    if #paragraph > 0
+      hard_wrap_column = editor.buffer.config.hard_wrap_column
+      do_reflow editor, cur_line, hard_wrap_column
+      log.info "Reflowed paragraph to max #{hard_wrap_column} columns"
+    else
+      log.info 'Could not find paragraph to reflow'
+
+command.alias 'reflow-paragraph', 'fill-paragraph'
 
 reflow_check = (args) ->
   editor = args.editor
@@ -129,12 +144,8 @@ reflow_check = (args) ->
   if start_pos >= cur_start_pos and start_pos <= cur_end_pos
     -- it does, but can we reflow?
     if can_reflow cur_line, reflow_at
-      timer.asap -> -- can't do modification in callback
-        is_reflowing = true
-        cur_pos = editor.cursor.pos
-        reflow_paragraph_at cur_line, reflow_at
-        editor.cursor.pos = cur_pos
-        is_reflowing = false
+      -- can't do modification in callback so do it asap
+      timer.asap do_reflow, editor, cur_line, reflow_at
       return true
 
 signal.connect 'text-deleted', reflow_check

@@ -12,15 +12,7 @@ describe 'text', ->
       [l.nr for l in *text.paragraph_at lines[nr]]
 
     before_each ->
-      buffer.text = [[
-        one
-
-        three
-        four
-
-
-        seven
-      ]]
+      buffer.text = 'one\n\nthree\nfour\n\n\nseven'
 
     it 'returns a list of line composing the current paragraph', ->
       assert.same { 1 }, at 1
@@ -39,6 +31,10 @@ describe 'text', ->
       it 'returns an empty list if no paragraph is found', ->
         buffer.text = 'one\n\n\n\nfive'
         assert.same {}, at 3
+
+    it 'only considers lines starting with alpha character to be part of a paragraph', ->
+      buffer.text = '-\nå vilken bra rad\noch en till\n# dont include me!'
+      assert.same { 2, 3 }, at 2
 
   describe 'can_reflow(line, limit)', ->
     it 'returns true if the line is longer than limit', ->
@@ -109,6 +105,11 @@ describe 'text', ->
       buffer.text = 'one t'
       text.reflow_paragraph_at lines[1], 4
       assert.equals 'one\nt', buffer.text
+
+    it 'converts an overflowing space to an eol', ->
+      buffer.text = 'one \n'
+      text.reflow_paragraph_at lines[1], 3
+      assert.equals 'one\n\n', buffer.text
 
     it 'does not modify the buffer unless there is a change', ->
       buffer.text = 'one two\n'
