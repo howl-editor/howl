@@ -302,6 +302,8 @@ class Editor extends PropertyObject
     @cursor.column_index = (rev_line.ulen - pos) + 1 if pos
 
   show_popup: (popup, options = {}) =>
+    @remove_popup!
+
     char_width = @sci\text_width 32, ' '
     char_height = @sci\text_height 0
 
