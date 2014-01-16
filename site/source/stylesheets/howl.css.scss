@@ -191,12 +191,12 @@ body.doc {
     @include property-badge();
   }
 
-  h2#methods ~ h3:before {
-    @include method-badge();
-  }
-
   h2#functions ~ h3:before {
     @include function-badge();
+  }
+
+  h2#methods ~ h3:before {
+    @include method-badge();
   }
 }
 
