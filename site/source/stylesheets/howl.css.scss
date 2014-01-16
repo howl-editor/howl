@@ -166,9 +166,11 @@ body.doc {
   @media (min-width: 1645px) {
     .toc {
       position: fixed;
-      top: 1em;
+      overflow-y: auto;
+      top: 1%;
       left: 1em;
       min-width: 12%;
+      max-height: 90%;
     }
   }
 
