@@ -149,7 +149,8 @@ reflow_check = (args) ->
       return true
 
 signal.connect 'text-deleted', reflow_check
-signal.connect 'text-inserted', reflow_check
+signal.connect 'text-inserted', (args) ->
+  reflow_check(args) unless args.text == args.buffer.eol
 
 {
   :paragraph_at
