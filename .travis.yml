@@ -12,7 +12,7 @@ before_install:
 install:
   - (cd src && make)
 
-script: "./bin/howl-spec -o TAP && ./bin/howl-spec -o TAP bundles"
+script: "./bin/howl-spec && ./bin/howl-spec bundles"
 
 notifications:
   recipients:
