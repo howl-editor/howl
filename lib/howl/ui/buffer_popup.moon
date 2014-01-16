@@ -1,15 +1,10 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Gtk, Gdk from lgi
-import Scintilla, signal from howl
+import Gtk from lgi
+import Scintilla from howl
 import destructor from howl.aux
 import Popup, style, highlight, theme from howl.ui
-
-popups = setmetatable {}, __mode: 'v'
-
-signal.connect 'theme-changed', ->
-  p\_override_backgrounds! for p in *popups
 
 class BufferPopup extends Popup
 
@@ -32,8 +27,7 @@ class BufferPopup extends Popup
     }
 
     super @bin, @_get_dimensions!
-    @_override_backgrounds!
-    append popups, self
+    theme.register_background_widget @bin, @default_style
 
   resize: =>
     dimensions = @_get_dimensions!
@@ -82,15 +76,5 @@ class BufferPopup extends Popup
     max_line = math.max(#line, max_line) for line in *@buffer.lines
     width = (max_line * char_width) + (char_width / 2) + 6
     return :width, :height
-
-  _override_backgrounds: =>
-    background_color = style[@default_style].background
-    if background_color
-      background = Gdk.RGBA!
-      background\parse background_color
-
-      -- override the background color of the window as well as the component,
-      @bin\override_background_color 0, background
-      @window\override_background_color 0, background
 
 return BufferPopup

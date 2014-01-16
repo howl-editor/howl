@@ -67,6 +67,7 @@ current_theme = nil
 current_theme_file = nil
 theme_active = false
 scis = setmetatable {}, __mode: 'k'
+background_color_widgets = setmetatable {}, __mode: 'k'
 
 interpolate = (content, values) ->
   content\gsub '%${([%a_]+)}', values
@@ -173,6 +174,19 @@ load_theme = (file) ->
   box\put :highlight
   box chunk
 
+override_widget_background = (widget, background_style) ->
+  if theme_active
+    style_def = current_theme.styles[background_style]
+    bg_color = style_def and style_def.background
+    if not bg_color and style != 'default'
+      style_def = current_theme.styles.default
+      bg_color = style_def and style_def.background
+
+    if bg_color
+      background = Gdk.RGBA!
+      background\parse bg_color
+      widget\override_background_color 0, background
+
 apply_theme = ->
   css = theme_css current_theme, current_theme_file
   status = css_provider\load_from_data css
@@ -180,6 +194,7 @@ apply_theme = ->
   style.set_for_theme current_theme
   highlight.set_for_theme current_theme
   apply_sci_visuals current_theme, sci for sci in pairs scis
+  override_widget_background widget, style for widget, style in pairs background_color_widgets
 
 set_theme = (name) ->
   if name == nil
@@ -259,4 +274,8 @@ return PropertyTable {
   register_sci: (sci) ->
     scis[sci] = true
     apply_sci_visuals current_theme, sci if theme_active
-}
+
+  register_background_widget: (widget, style = 'default') ->
+    background_color_widgets[widget] = style
+    override_widget_background widget, style
+ }

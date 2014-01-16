@@ -1,6 +1,7 @@
 import config, signal from howl
 import theme from howl.ui
 import File from howl.fs
+import Gtk from lgi
 
 serpent = require 'serpent'
 
@@ -32,7 +33,12 @@ spec_theme = {
 
   styles:
     default: background: 'blue'
+    popup: {}
 }
+
+theme_copy = ->
+  dumped = serpent.dump spec_theme
+  loadstring(dumped)!
 
 describe 'theme', ->
   describe 'register(name, file)', ->
@@ -71,7 +77,7 @@ describe 'theme', ->
         file.contents = serpent.dump spec_theme
         theme.register 'foo', file
         config.theme = 'foo'
-        expected = moon.copy spec_theme
+        expected = theme_copy!
         expected.name = 'foo'
         assert.same theme.current, expected
 
@@ -83,7 +89,7 @@ describe 'theme', ->
         signal.connect 'theme-changed', handler
         config.theme = 'alert'
         signal.disconnect 'theme-changed', handler
-        expected = moon.copy spec_theme
+        expected = theme_copy!
         expected.name = 'alert'
         assert.spy(handler).was_called_with theme: expected
 
@@ -109,10 +115,50 @@ describe 'theme', ->
       theme.register 'foo', file
       assert.has_errors -> config.current = 'foo'
 
+  describe 'register_background_widget(widget, style)', ->
+
+    set_theme_with_background = (color, style = 'default') ->
+      File.with_tmpfile (file) ->
+        the_theme = theme_copy!
+        the_theme.styles[style].background = color
+        file.contents = serpent.dump the_theme
+        theme.register 'with_background', file
+        config.theme = 'with_background'
+
+    it "overrides the widget's background with the current theme background", ->
+      widget = Gtk.EventBox!
+      set_theme_with_background 'red'
+      theme.register_background_widget widget
+      bg = widget\get_style_context!\get_background_color 'NORMAL'
+      assert.same { 1, 0, 0 }, { bg.red, bg.green, bg.blue }
+
+    it "updates the widget's background whenver the theme changes", ->
+      widget = Gtk.EventBox!
+      set_theme_with_background 'red'
+      theme.register_background_widget widget
+      set_theme_with_background 'blue'
+      bg = widget\get_style_context!\get_background_color 'NORMAL'
+      assert.same { 0, 0, 1 }, { bg.red, bg.green, bg.blue }
+
+    context 'when <style> is specified', ->
+      it 'uses the named style for the background if possible', ->
+        widget = Gtk.EventBox!
+        set_theme_with_background '#00ff00', 'popup'
+        theme.register_background_widget widget, 'popup'
+        bg = widget\get_style_context!\get_background_color 'NORMAL'
+        assert.same { 0, 1, 0 }, { bg.red, bg.green, bg.blue }
+
+      it 'falls back to the default style if the specified style is unavailable', ->
+        widget = Gtk.EventBox!
+        set_theme_with_background 'red'
+        theme.register_background_widget widget, 'popup'
+        bg = widget\get_style_context!\get_background_color 'NORMAL'
+        assert.same { 1, 0, 0 }, { bg.red, bg.green, bg.blue }
+
   describe 'life cycle management', ->
     it 'automatically applies a theme upon registration if that theme is already set as current', ->
       File.with_tmpfile (file) ->
-        the_theme = moon.copy spec_theme
+        the_theme = theme_copy!
         file.contents = serpent.dump the_theme
         theme.register 'reloadme', file
         config.theme = 'reloadme'

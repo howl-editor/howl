@@ -3,6 +3,7 @@
 
 import Gtk from lgi
 import PropertyObject from howl.aux.moon
+import theme from howl.ui
 
 screen_size = (widget) ->
   screen = widget\get_screen!
@@ -23,6 +24,7 @@ class Popup extends PropertyObject
       { expand: true, child }
     }
     @window\add box
+    theme.register_background_widget @window, 'popup'
     @showing = false
     super!
 
