@@ -88,7 +88,7 @@ describe 'Application', ->
         b.reload = reload
         rawset b, 'modified_on_disk', true
 
-      it 'the buffer is reloaded atuomatically if it is not modified', ->
+      it 'the buffer is reloaded automatically if it is not modified', ->
         application\synchronize!
         assert.spy(b.reload).was_called!
 
