@@ -3,10 +3,10 @@
 
 bit = require 'bit'
 
-import Gtk, Gdk from lgi
+import Gtk from lgi
 import PositionType from Gtk
 import PropertyObject from howl.aux.moon
-import Status, Readline from howl.ui
+import Status, Readline, theme from howl.ui
 import signal from howl
 
 to_gobject = (o) ->
@@ -53,6 +53,7 @@ class Window extends PropertyObject
     @win.on_focus_out_event = self\_on_focus_lost
     @win\add alignment
     @win\get_style_context!\add_class 'main'
+    theme.register_background_widget @win
 
     @data = {}
 
