@@ -195,6 +195,7 @@ class Readline extends PropertyObject
     @box.child.sci_box\get_style_context!\add_class 'sci_box'
     @box.child.sci_container\get_style_context!\add_class 'sci_container'
     theme.register_background_widget @box
+    theme.register_background_widget @gsci
     @_set_appearance!
     @bin\add @box
 

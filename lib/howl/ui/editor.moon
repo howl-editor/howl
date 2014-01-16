@@ -101,6 +101,8 @@ class Editor extends PropertyObject
     @bin.on_focus_in_event = -> @sci\grab_focus!
     @bin.on_destroy = -> @buffer\remove_sci_ref @sci
 
+    theme.register_background_widget @sci\to_gobject!
+
     @buffer = buffer
 
     append _editors, self

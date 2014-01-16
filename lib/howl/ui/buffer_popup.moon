@@ -28,6 +28,7 @@ class BufferPopup extends Popup
 
     super @bin, @_get_dimensions!
     theme.register_background_widget @bin, @default_style
+    theme.register_background_widget @sci\to_gobject!, @default_style
 
   resize: =>
     dimensions = @_get_dimensions!
