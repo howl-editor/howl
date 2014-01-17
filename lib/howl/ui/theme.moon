@@ -276,6 +276,10 @@ return PropertyTable {
     apply_sci_visuals current_theme, sci if theme_active
 
   register_background_widget: (widget, style = 'default') ->
-    background_color_widgets[widget] = style
+    -- todo: disable for now as it causes seg faults, presumably due to
+    -- non-working lifecycle management with lgi
+
+    -- background_color_widgets[widget] = style
+
     override_widget_background widget, style
  }

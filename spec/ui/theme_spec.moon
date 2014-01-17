@@ -132,13 +132,13 @@ describe 'theme', ->
       bg = widget\get_style_context!\get_background_color 'NORMAL'
       assert.same { 1, 0, 0 }, { bg.red, bg.green, bg.blue }
 
-    it "updates the widget's background whenver the theme changes", ->
-      widget = Gtk.EventBox!
-      set_theme_with_background 'red'
-      theme.register_background_widget widget
-      set_theme_with_background 'blue'
-      bg = widget\get_style_context!\get_background_color 'NORMAL'
-      assert.same { 0, 0, 1 }, { bg.red, bg.green, bg.blue }
+    -- it "updates the widget's background whenever the theme changes", ->
+    --   widget = Gtk.EventBox!
+    --   set_theme_with_background 'red'
+    --   theme.register_background_widget widget
+    --   set_theme_with_background 'blue'
+    --   bg = widget\get_style_context!\get_background_color 'NORMAL'
+    --   assert.same { 0, 0, 1 }, { bg.red, bg.green, bg.blue }
 
     context 'when <style> is specified', ->
       it 'uses the named style for the background if possible', ->
