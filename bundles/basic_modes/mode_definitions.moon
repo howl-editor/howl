@@ -71,6 +71,7 @@ common_auto_pairs = {
 
   coffeescript:
     extensions: 'coffee'
+    aliases: 'coffe'
     comment_syntax: '#'
     auto_pairs: common_auto_pairs
 
@@ -80,6 +81,7 @@ common_auto_pairs = {
     auto_pairs: common_auto_pairs
 
   cpp:
+    aliases: { 'c', 'c++' }
     extensions: { 'c', 'cc', 'cpp', 'cxx', 'c++', 'h', 'hh', 'hpp', 'hxx', 'h++' }
     comment_syntax: { '/*', '*/' }
     auto_pairs: common_auto_pairs
@@ -100,6 +102,7 @@ common_auto_pairs = {
 
   diff:
     extensions: { 'diff', 'patch' }
+    aliases: 'patch'
     patterns: { '%.git/COMMIT_EDITMSG$' }
     auto_pairs: {
       '(': ')'
@@ -171,6 +174,7 @@ common_auto_pairs = {
 
   go:
     extensions: 'go'
+    aliases: 'golang'
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
     parent: 'curly_mode'
@@ -188,6 +192,7 @@ common_auto_pairs = {
 
   hypertext:
     extensions: { 'htm', 'html', 'shtm', 'shtml', 'xhtml' }
+    aliases: 'html'
     comment_syntax: { '<!--', '-->' }
     auto_pairs: {
       '(': ')'
@@ -251,6 +256,7 @@ common_auto_pairs = {
 
   makefile:
     extensions: { 'iface', 'mak' }
+    aliases: 'make'
     patterns: { 'GNUmakefile$', 'Makefile$' }
     comment_syntax: '#'
     auto_pairs: common_auto_pairs
