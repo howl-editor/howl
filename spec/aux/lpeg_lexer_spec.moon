@@ -231,14 +231,47 @@ describe 'lpeg_lexer', ->
       assert.is_nil l.complement('a')\match 'a'
       assert.equals 3, (l.complement('a')^1 * Cp!)\match 'bca'
 
+  describe 'sub_lex_by_pattern(mode_p, mode_style, stop_p)', ->
+    context 'when no mode is found for the <mode_p> capture', ->
+      it 'emits mode match styling and an embedded capture for the sub text', ->
+        p = l.sub_lex_by_pattern(l.alpha^1, 'keyword', '>')
+        res = { p\match 'xx123>' }
+        assert.same {
+          1, 'embedded:keyword', 3,
+          3, 'embedded', 6
+        }, res
+
+    context 'when a mode matching the <mode_p> capture exists', ->
+      local p
+
+      before_each ->
+        sub_mode = lexer: l -> capture('number', digit^1)
+        mode.register name: 'dynsub', create: -> sub_mode
+        p = l.P'<' * l.sub_lex_by_pattern(l.alpha^1, 'keyword', '>')
+
+      after_each ->
+        mode.unregister 'dynsub'
+
+      it 'emits mode match styling and rebasing instructions to the styler', ->
+        assert.same {
+          2, 'embedded:keyword', 8,
+          8, {}, 'dynsub|embedded'
+        }, { p\match '<dynsub>' }
+
+      it "lexes the content using that mode's lexer until <stop_p>", ->
+        assert.same {
+          2, 'embedded:keyword', 8,
+          8, { 1, 'number', 4 }, 'dynsub|embedded'
+        }, { p\match '<dynsub123>' }
+
   describe 'sub_lex(mode_name, stop_p)', ->
-    context 'when no mode is found for the mode_p match', ->
+    context 'when no mode is found matching <mode_name>', ->
       it 'captures using the embedded style until stop_p', ->
         p = l.sub_lex('unknown', '>')
         res = { p\match 'xx>' }
         assert.same {1, 'embedded', 3}, res
 
-    context 'when a mode matching <mode_name exists', ->
+    context 'when a mode matching <mode_name> exists', ->
       local p
 
       before_each ->
@@ -258,8 +291,8 @@ describe 'lpeg_lexer', ->
 
       it 'emits rebasing instructions to the styler', ->
         assert.same {
-          1, '> embedded', 'sub',
-          1, '< embedded', 'sub'
+          1, '>', 'sub|embedded',
+          1, '<', 'sub|embedded'
         }, { p\match '' }
 
       it "lexes the content using that mode's lexer until <stop_p>", ->
@@ -278,9 +311,9 @@ describe 'lpeg_lexer', ->
 
       it 'explicitly stops sub-lexing for leading whitespace', ->
         assert.same {
-          1, '< embedded', 'sub'
+          1, '<', 'sub|embedded'
           1, 'whitespace', 2,
-          2, '> embedded', 'sub',
+          2, '>', 'sub|embedded',
           2, 'number', 3
         }, sub_captures_for ' 1'
 

@@ -38,6 +38,45 @@ get_styling_start_pos = (sci) ->
   -- just start from the beginning
   0
 
+apply_tokens = (buffer, style_buf, offset, tokens, base_style, gap_style_number) ->
+  last_pos = offset + 1
+
+  for idx = 1, #tokens, 3
+    pos = tokens[idx]
+    style_name = tokens[idx + 1]
+    stop_pos = tokens[idx + 2]
+
+    if type(stop_pos) == 'number'
+      style_number = style_number_for style_name, buffer, base_style
+      pos += offset
+      stop_pos += offset
+
+      ffi_fill style_buf + last_pos, pos - last_pos, gap_style_number
+
+      while pos < stop_pos
+        style_buf[pos] = style_number
+        pos += 1
+
+      last_pos = stop_pos
+
+    else -- embedded
+      op = style_name
+      mode_spec = stop_pos
+
+      if op == '<'
+        base_style = nil
+        gap_style_number = default_style_number
+      else
+        sub_base = mode_spec\match '[^|]*|(.+)'
+        sub_gap_number = style_number_for sub_base, buffer
+        if op == '>'
+          base_style = sub_base
+          gap_style_number = sub_gap_number
+        elseif type(op) == 'table' -- table based sub lexing
+          last_pos = apply_tokens buffer, style_buf, pos - 1, op, sub_base, sub_gap_number
+
+  last_pos, gap_style_number
+
 apply = (buffer, start_pos, end_pos, tokens) ->
   last_styled_pos = tokens[#tokens]
   return unless last_styled_pos
@@ -52,32 +91,7 @@ apply = (buffer, start_pos, end_pos, tokens) ->
     style_buf = char_arr(length + 1)
     style_buf_length = length + 1
 
-  last_pos = 1
-  base = nil
-  gap_style_number = default_style_number
-
-  for idx = 1, #tokens, 3
-    pos = tokens[idx]
-    style_name = tokens[idx + 1]
-    stop_pos = tokens[idx + 2]
-
-    if type(stop_pos) == 'number'
-      style_number = style_number_for style_name, buffer, base
-      ffi_fill style_buf + last_pos, pos - last_pos, gap_style_number
-
-      while pos < stop_pos
-        style_buf[pos] = style_number
-        pos += 1
-      last_pos = stop_pos
-
-    else
-      op = style_name\sub(1, 1)
-      if op == '>'
-        base = style_name\sub(3)
-        gap_style_number = style_number_for base, buffer
-      elseif op == '<'
-        base = nil
-        gap_style_number = default_style_number
+  last_pos, gap_style_number = apply_tokens buffer, style_buf, 0, tokens, base, default_style_number
 
   -- fill any unstyled tail with default
   fill_count = length - last_pos + 1
