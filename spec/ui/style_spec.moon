@@ -194,6 +194,16 @@ describe 'style', ->
           style_num = style.number_for 'my_unknown_style', buffer, 'my_base'
           assert.equal style.number_for('my_base', buffer), style_num
 
+        context 'when <name> itself specifies an extended style', ->
+          it 'extracts the base automatically', ->
+            style.define 'my_other_base', background: '#112244'
+            style_num = style.number_for 'my_other_base:my_style', buffer
+            set_fore = sci\style_get_fore style_num
+            set_back = sci\style_get_back style_num
+            assert.equal set_fore, '#334455'
+            assert.equal set_back, '#112244'
+            assert.is_not_nil style['my_other_base:my_style']
+
     context 'when one of composing styles is redefined', ->
       it 'updates the extended style definition', ->
         style_num = style.number_for 'my_style', buffer, 'my_base'

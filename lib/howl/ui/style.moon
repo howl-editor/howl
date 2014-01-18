@@ -195,7 +195,11 @@ number_for = (style_name, buffer, base) ->
   while type(styles[style_name]) == 'string'
     style_name = styles[style_name]
 
-  style_name = "#{base}:#{style_name}" if base
+  if base
+    style_name = "#{base}:#{style_name}"
+  else
+    base = style_name\match ':(.+)$'
+
   style = styles[style_name]
 
   if not style
