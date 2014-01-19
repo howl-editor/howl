@@ -33,33 +33,52 @@ describe 'lpeg_lexer', ->
       p = l.capture 'foo', P'fo'
       assert.same { 1, 'foo', 3 }, { p\match 'foobar' }
 
-  describe '.eol', ->
-    it 'matches and consumes new lines', ->
-      assert.is_not_nil l.eol\match '\n'
-      assert.is_not_nil l.eol\match '\r'
-      assert.equals 2, (l.eol * Cp!)\match '\n'
-      assert.equals 3, (l.eol * Cp!)\match '\r\n'
+  describe 'predefined helper patterns', ->
+    describe '.eol', ->
+      it 'matches and consumes new lines', ->
+        assert.is_not_nil l.eol\match '\n'
+        assert.is_not_nil l.eol\match '\r'
+        assert.equals 2, (l.eol * Cp!)\match '\n'
+        assert.equals 3, (l.eol * Cp!)\match '\r\n'
 
-      assert.is_nil l.eol\match 'a'
-      assert.is_nil l.eol\match '2'
+        assert.is_nil l.eol\match 'a'
+        assert.is_nil l.eol\match '2'
 
-  describe '.float', ->
-    it 'matches and consumes various float representations', ->
-      for repr in *{ '34.5', '3.45e2', '1.234E1', '3.45e-2', '.32' }
-        assert.is_not_nil l.float\match repr
+    describe '.float', ->
+      it 'matches and consumes various float representations', ->
+        for repr in *{ '34.5', '3.45e2', '1.234E1', '3.45e-2', '.32' }
+          assert.is_not_nil l.float\match repr
 
-  describe '.hexadecimal', ->
-    it 'matches and consumes various hexadecimal representations', ->
-      for repr in *{ '0xfeab', '0XDEADBEEF' }
-        assert.is_not_nil l.hexadecimal\match repr
+    describe '.hexadecimal', ->
+      it 'matches and consumes various hexadecimal representations', ->
+        for repr in *{ '0xfeab', '0XDEADBEEF' }
+          assert.is_not_nil l.hexadecimal\match repr
 
-  describe '.line_start', ->
-    it 'matches after newline or at start of text', ->
-      assert.is_not_nil l.line_start\match 'x'
-      assert.is_not_nil (l.eol * l.line_start * P'x')\match '\nx'
+      it 'does not match illegal hexadecimal representations', ->
+        assert.is_nil l.hexadecimal\match '0xCDEFG'
 
-    it 'does not consume anything', ->
-      assert.equals 2, (l.eol * l.line_start * Cp!)\match '\nx'
+    describe '.hexadecimal_float', ->
+      it 'matches and consumes various hexadecimal float representations', ->
+        for repr in *{ '0xfep2', '0XAP-3' }
+          assert.is_not_nil l.hexadecimal_float\match repr
+
+      it 'does not match illegal hexadecimal representations', ->
+        assert.is_nil l.hexadecimal_float\match '0xFGp3'
+
+    describe '.octal', ->
+      it 'matches and consumes octal representations', ->
+        assert.is_not_nil l.octal\match '0123'
+
+      it 'does not match illegal octal representations', ->
+        assert.is_nil l.octal\match '0128'
+
+    describe '.line_start', ->
+      it 'matches after newline or at start of text', ->
+        assert.is_not_nil l.line_start\match 'x'
+        assert.is_not_nil (l.eol * l.line_start * P'x')\match '\nx'
+
+      it 'does not consume anything', ->
+        assert.equals 2, (l.eol * l.line_start * Cp!)\match '\nx'
 
   describe 'any(list)', ->
     it 'the resulting pattern is an ordered match of any member of <list>', ->
