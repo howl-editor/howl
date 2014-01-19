@@ -106,7 +106,6 @@ return {
       color: blue
       font: bold: true
 
-
     keyword:
       color: purple
       font: bold: true
@@ -132,8 +131,7 @@ return {
     info: color: blue
 
     constant:
-      color: orange
-      font: bold: true
+      color: yellow
 
     string: color: green
 
