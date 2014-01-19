@@ -163,6 +163,7 @@ return {
     embedded:
       background: wheat
       color: foreground
+      eol_filled: true
 
     -- Markup and visual styles
 

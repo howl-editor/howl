@@ -142,6 +142,7 @@ return {
     embedded:
       color: blue
       background: embedded_bg
+      eol_filled: true
 
     -- Markup and visual styles
 
