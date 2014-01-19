@@ -20,7 +20,8 @@ class MoonscriptMode
 
   dedent_patterns: {
     authoritive: false
-    r'^\\s*(else|\\})\\s*$'
+    r'^\\s*(else|\\})\\s*$',
+    '^%s*[]})]',
     { '^%s*elseif%s', '%sthen%s*' }
   }
 
