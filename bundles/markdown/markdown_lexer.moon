@@ -58,6 +58,13 @@ howl.aux.lpeg_lexer ->
     (space^1 * capture('string', any( line_pair('"'), line_pair("'"), line_pair('(', ')'))))^-1
   }
 
+  fenced_code_block = sequence {
+    not_escaped,
+    capture('embedded', '```'),
+    sub_lex_by_pattern(alpha^1, 'special', '```')
+    capture('embedded', '```'),
+  }
+
   code = not_escaped * capture 'embedded', any {
     paired '```',
     line_pair('``'),
@@ -101,5 +108,6 @@ howl.aux.lpeg_lexer ->
     strong,
     ref_def,
     link,
+    fenced_code_block,
     code,
   }

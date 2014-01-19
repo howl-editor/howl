@@ -68,9 +68,20 @@ But a single ` does not a code block make
 TODO: Backtick escapes!
 
 And my preformatted code block:
+
+```
+  some thing or another;
+  blargh!;
+```
+
+And my sub lexed fenced code block:
+
 ```ruby
-foo
-bar
+class Foo
+  attr_accessor :bar
+
+  def initialize(bar)
+    @bar = bar
 ```
 (Clear here)
 
