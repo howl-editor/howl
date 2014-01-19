@@ -80,13 +80,6 @@ common_auto_pairs = {
     comment_syntax: '//'
     auto_pairs: common_auto_pairs
 
-  cpp:
-    aliases: { 'c', 'c++' }
-    extensions: { 'c', 'cc', 'cpp', 'cxx', 'c++', 'h', 'hh', 'hpp', 'hxx', 'h++' }
-    comment_syntax: { '/*', '*/' }
-    auto_pairs: common_auto_pairs
-    parent: 'curly_mode'
-
   dlang:
     extensions: 'd'
     comment_syntax: '//'
