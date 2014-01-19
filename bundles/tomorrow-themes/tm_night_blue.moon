@@ -174,13 +174,11 @@ return {
 
     h1:
       color: white
-      background: comment
-      eol_filled: true
-      font: bold: true
+      background: '#005491'
 
     h2:
-      color: white
-      background: '#005491'
+      color: green
+      font: bold: true
 
     h3:
       color: purple
