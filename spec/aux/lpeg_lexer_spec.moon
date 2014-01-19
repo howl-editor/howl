@@ -303,41 +303,16 @@ describe 'lpeg_lexer', ->
 
       sub_captures_for = (text) ->
         res = { p\match text }
-        extracted = {}
-        for i = 4, #res - 3
-          extracted[#extracted + 1] = res[i]
-        extracted
+        res[2]
 
       it 'emits rebasing instructions to the styler', ->
-        assert.same {
-          1, '>', 'sub|embedded',
-          1, '<', 'sub|embedded'
-        }, { p\match '' }
+        assert.same { 1, {}, 'sub|embedded' }, { p\match '' }
 
       it "lexes the content using that mode's lexer until <stop_p>", ->
         assert.same {1, 'number', 3}, sub_captures_for '12>'
 
       it 'lexes until EOF if <stop_p> is not found', ->
         assert.same {1, 'number', 3}, sub_captures_for '12'
-
-      it 'automatically lexes infix and trailing whitespace', ->
-        assert.same {
-          1, 'number', 2
-          2, 'whitespace', 3,
-          3, 'number', 4
-          4, 'whitespace', 5,
-        }, sub_captures_for '1 2 '
-
-      it 'explicitly stops sub-lexing for leading whitespace', ->
-        assert.same {
-          1, '<', 'sub|embedded'
-          1, 'whitespace', 2,
-          2, '>', 'sub|embedded',
-          2, 'number', 3
-        }, sub_captures_for ' 1'
-
-      it 'automatically skips non-recognized tokens', ->
-        assert.same {2, 'number', 4}, sub_captures_for '|12'
 
   describe 'built-in lexing support', ->
     it 'automatically lexes whitespace', ->

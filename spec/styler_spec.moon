@@ -32,29 +32,6 @@ describe 'styler', ->
 
     context 'sub lexing', ->
       it 'automatically styles using extended styles when requested', ->
-        buffer.text = 'foo'
-        styler.apply buffer, 1, buffer.size, {
-          1, '>', 'my_sub|s1',
-          1, 's2', 2
-          2, '<', 'my_sub|s1',
-          2, 's2', 3
-        }
-        assert.equal 's1:s2', (style.at_pos(buffer, 1))
-        assert.equal 's2', (style.at_pos(buffer, 2))
-
-      it 'styles any holes with the base style', ->
-        buffer.text = '123'
-        styler.apply buffer, 1, buffer.size, {
-          1, '>', 'my_sub|s1',
-          2, 's2', 3
-        }
-
-        assert.equal 's1', (style.at_pos(buffer, 1))
-        assert.equal 's1:s2', (style.at_pos(buffer, 2))
-        assert.equal 's1', (style.at_pos(buffer, 3))
-
-    context 'table based sub lexing', ->
-      it 'automatically styles using extended styles when requested', ->
         buffer.text = '>foo'
         styler.apply buffer, 1, buffer.size, {
           1, 'operator', 2,

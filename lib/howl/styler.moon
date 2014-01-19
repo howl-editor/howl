@@ -60,20 +60,10 @@ apply_tokens = (buffer, style_buf, offset, tokens, base_style, gap_style_number)
       last_pos = stop_pos
 
     else -- embedded
-      op = style_name
-      mode_spec = stop_pos
-
-      if op == '<'
-        base_style = nil
-        gap_style_number = default_style_number
-      else
-        sub_base = mode_spec\match '[^|]*|(.+)'
-        sub_gap_number = style_number_for sub_base, buffer
-        if op == '>'
-          base_style = sub_base
-          gap_style_number = sub_gap_number
-        elseif type(op) == 'table' -- table based sub lexing
-          last_pos = apply_tokens buffer, style_buf, pos - 1, op, sub_base, sub_gap_number
+      op, mode_spec = style_name, stop_pos
+      sub_base = mode_spec\match '[^|]*|(.+)'
+      sub_gap_number = style_number_for sub_base, buffer
+      last_pos = apply_tokens buffer, style_buf, pos - 1, op, sub_base, sub_gap_number
 
   last_pos, gap_style_number
 

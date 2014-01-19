@@ -53,17 +53,21 @@ skip_if_next = (subject, pos, token) ->
   if subject\sub(pos, pos + #token - 1) == token
     return pos + #token
 
-dyn_sub_capture = (subject, cur_pos, mode_name, mode_style, sub_text) ->
+sub_lex_capture = (subject, cur_pos, mode_name, sub_text) ->
+  sub_start_pos = cur_pos - #sub_text
+  m = mode.by_name mode_name
+
+  if not m or not m.lexer
+    return cur_pos, sub_start_pos, 'embedded', cur_pos
+
+  cur_pos, sub_start_pos, m.lexer(sub_text), "#{mode_name}|embedded"
+
+pattern_sub_lex_capture = (subject, cur_pos, mode_name, mode_style, sub_text) ->
   sub_start_pos = cur_pos - #sub_text
   start_pos = sub_start_pos - #mode_name
-
   m = mode.by_name mode_name
-  ret = {
-    cur_pos,
-    start_pos, mode_style, sub_start_pos,
-  }
-
   mode_style = "embedded:#{mode_style}"
+
   if not m or not m.lexer
     unpack {
       cur_pos,
@@ -172,27 +176,10 @@ lenient_pattern = (p) ->
   }
 
 sub_lex = (mode_name, stop_p) ->
-  m = mode.by_name mode_name
-
-  if not m or not m.lexer or not m.lexer.pattern
-    return capture('embedded', scan_until stop_p)
-
-  push = Cp! * Cc('>') * Cc("#{mode_name}|embedded")
-  pop = Cp! * Cc('<') * Cc("#{mode_name}|embedded")
-
-  sub_pattern = any {
-    -- don't embed leading whitespace
-    line_start * pop * capture('whitespace', blank^1) * push,
-    m.lexer.pattern
-  }
-  sequence {
-    push,
-    match_until(stop_p, lenient_pattern sub_pattern)
-    pop,
-  }
+  Cmt(Cc(mode_name) * C(scan_until(stop_p)), sub_lex_capture)
 
 sub_lex_by_pattern = (mode_p, mode_style, stop_p) ->
-  Cmt(C(mode_p) * Cc(mode_style) * C(scan_until(stop_p)), dyn_sub_capture)
+  Cmt(C(mode_p) * Cc(mode_style) * C(scan_until(stop_p)), pattern_sub_lex_capture)
 
 new = (definition) ->
   setfenv definition, lexer
