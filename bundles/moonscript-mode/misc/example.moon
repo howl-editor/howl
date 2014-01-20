@@ -61,3 +61,23 @@ class MyClass extends SomeClass
   other: =>
     @@foo + 2
     @
+
+-- sub lexed LuaJIT cdefs
+ffi = require 'ffi'
+
+ffi.cdef [[
+  typedef char          gchar;
+  typedef long          glong;
+
+  typedef enum {
+    GDK_SHIFT_MASK    = 1 << 0,
+    GDK_LOCK_MASK     = 1 << 1,
+
+    GDK_MODIFIER_MASK = 0x5c001fff
+  } GdkModifierType;
+
+  gchar * g_strndup(const gchar *str, gssize n);
+]]
+
+ffi.cdef 'typedef char gchar;' -- single quoted string cdef
+ffi.cdef "typedef char gchar;" -- double quoted string cdef

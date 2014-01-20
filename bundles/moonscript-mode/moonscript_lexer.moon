@@ -43,9 +43,36 @@ howl.aux.lpeg_lexer ->
 
   ws = capture 'whitespace', blank^0
 
+  cdef = sequence {
+    capture('identifier', 'ffi'),
+    capture('operator', '.'),
+    capture('identifier', 'cdef'),
+    ws,
+    any {
+      sequence {
+        capture('string', '[['),
+        sub_lex('c', ']]'),
+        capture('string', ']]'),
+      },
+      sequence {
+        capture('string', '"'),
+        sub_lex('c', '"'),
+        capture('string', '"'),
+      },
+      sequence {
+        capture('string', "'"),
+        sub_lex('c', "'"),
+        capture('string', "'"),
+      }
+    }
+  }
+
   P {
     'all'
-    all: any { number, key, V'string', comment, operator, special, keyword, member, clazz, lua_keywords, V'fdecl', identifier }
+    all: any {
+      number, key, V'string', comment, operator, special, keyword, member,
+      clazz, lua_keywords, V'fdecl', cdef, identifier
+    }
     string: any {
       capture 'string', any { sq_string, long_string }
       V'dq_string'
