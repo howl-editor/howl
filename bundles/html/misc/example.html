@@ -1,0 +1,83 @@
+<!-- A slew of doc types.. -->
+<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<!doctype HTML system "about:legacy-compat">
+
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="alternate" type="application/atom+xml"
+          title="Atom feed" href="/feed.atom" />
+
+    <title>This is a title</title>
+  </head>
+
+  <body>
+    <p>Hello world!</p>
+    <p>
+      foo
+    </p>
+    <p>
+      Character references: &dagger; &#8224; &#x2020;
+    </p>
+    <a href="http://www.google.com/">A Link to Google!</a>
+    <br/>
+
+    <form action="action">
+      First name: <input type="text" name="fname" disabled=""><br>
+      Last name: <input type="text" name="lname" disabled><br>
+      <input type='checkbox'>
+      <input type="submit" value="Submit">
+    </form>
+
+    <p>
+      Some characters that should not be part of regular content:
+
+      Bare & or < and > are illegal.
+    </p>
+
+    <annotation encoding="text/latex">
+      <!-- CDATA ftw -->
+      <![CDATA[\documentclass{article}
+      \usepackage{amsmath}
+
+      \begin{document}
+      The absolute value of $x$:
+      \[
+      \left|x\right|= \begin{cases}-x& \text{if $x<0$}\\
+                                    x& \text{otherwise}\end{cases}
+      \]
+      \end{document}]]>
+    </annotation>
+
+    <!-- JavaScript snippets -->
+    <script>
+      var _gauges = _gauges || [];
+      (function() {
+        var t   = document.createElement('script');
+        t.async = true;
+        t.id    = 'gauges-tracker';
+        t.setAttribute('data-site-id', '1234');
+        t.src = '//sometrackerdomainsomewhere.notavailable/track.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(t, s);
+      })();
+    </script>
+
+    <script id="composition_state">
+      for(var c=0;c<b.length;c++)console.log("actionQueue",u(b[c]));
+      (function(){function a(a){a.target.setAttribute("data-in-composition","true")}function b(a){a.target.removeAttribute("data-in-composition")}if(document.addEventListener){document.addEventListener("compositionstart",a,!1);document.addEventListener("compositionend"
+      ,b,!1)}})();
+    </script>
+
+  </body>
+</html>
+
+<!-- Things that should look nice while editing -->
+
+attr="value"
+
+title="Atom feed" href="/feed.atom" />
+
+<link rel="alternate" type="application/atom+xml"

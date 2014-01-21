@@ -172,6 +172,18 @@ describe 'lpeg_lexer', ->
         }
         assert.same expected, { p\match '|f%|o|' }
 
+  describe 'back_was(name, value)', ->
+    p = Cg(l.alpha^1, 'group') * ' ' * l.back_was('group', 'foo')
+
+    it 'matches if the named capture <named> previously matched <value>', ->
+      assert.is_not_nil p\match 'foo '
+
+    it 'does not match if the named capture <named> did not match <value>', ->
+      assert.is_nil p\match 'bar '
+
+    it 'produces no captures', ->
+      assert.equals 1, #{ p\match 'foo ' }
+
   describe 'match_back(name)', ->
     p = Cg(P'x', 'start') * 'y' * l.match_back('start')
 

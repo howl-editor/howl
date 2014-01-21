@@ -53,6 +53,9 @@ skip_if_next = (subject, pos, token) ->
   if subject\sub(pos, pos + #token - 1) == token
     return pos + #token
 
+match_if_equal = (subject, pos, value1, value2) ->
+  return pos if value1 == value2
+
 sub_lex_capture = (subject, cur_pos, mode_name, sub_text) ->
   sub_start_pos = cur_pos - #sub_text
   m = mode.by_name mode_name
@@ -163,6 +166,9 @@ paired = (p, escape = nil, pair_style = nil, content_style = nil) ->
 
 match_back = (name) ->
   Cmt Cb(name), skip_if_next
+
+back_was = (name, value) ->
+  Cmt Cb(name) * Cc(value), match_if_equal
 
 complement = (p) ->
   P(1) - p

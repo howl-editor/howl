@@ -183,19 +183,6 @@ common_auto_pairs = {
     comment_syntax: '--'
     auto_pairs: common_auto_pairs
 
-  hypertext:
-    extensions: { 'htm', 'html', 'shtm', 'shtml', 'xhtml' }
-    aliases: 'html'
-    comment_syntax: { '<!--', '-->' }
-    auto_pairs: {
-      '(': ')'
-      '[': ']'
-      '{': '}'
-      '"': '"'
-      "'": "'"
-      '<': '>'
-    }
-
   ini:
     extensions: { 'cfg', 'cnf', 'inf', 'ini', 'reg' }
     comment_syntax: ';'
