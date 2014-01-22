@@ -3,63 +3,98 @@ import File from howl.fs
 
 require 'howl.inputs.file_input'
 
-describe 'FileInput', ->
+describe 'File inputs', ->
+  local directory, files, readline
 
-  it 'registers a "file" input', ->
-    assert.not_nil inputs.file
+  before_each ->
+    files = {}
+    readline = prompt: 'open ', text: ''
+    directory = File.tmpdir!
+    _G.editor = buffer: file: parent: directory
 
-  describe 'an instance', ->
-    local directory, input, files, readline
+  after_each ->
+    directory\rm_r!
+    _G.editor = nil
 
-    before_each ->
-      files = {}
-      readline = prompt: 'open ', text: ''
-      directory = File.tmpdir!
-      _G.editor = buffer: file: parent: directory
-      input = inputs.file readline
+  for input_type in *{'File', 'Directory'}
+    name = input_type.ulower
 
-    after_each ->
-      directory\rm_r!
-      _G.editor = nil
+    describe "#{input_type}Input", ->
 
-    it 'should_complete() returns true', ->
-      assert.is_true input\should_complete!
+      it "registers a '#{name}' input", ->
+        assert.not_nil inputs[name]
 
+      describe 'an instance', ->
+        local input
+
+        before_each -> input = inputs[name] readline
+
+        it 'should_complete() returns true', ->
+          assert.is_true input\should_complete!
+
+        describe 'complete(text, readline)', ->
+          it 'automatically switches to root dir if the text is "/"', ->
+            input\complete '', readline
+            readline.text ..= '/'
+            input\complete readline.text, readline
+            assert.equals 'open /', readline.prompt
+
+          it 'automatically switches to the home dir if the text is "~/"', ->
+            input\complete '', readline
+            readline.text ..= '~/'
+            input\complete readline.text, readline
+            assert.equals "open #{os.getenv('HOME')}/", readline.prompt
+
+        describe 'on_completed(path, readline)', ->
+          it 'changes dir and returns false when <path> is a directory', ->
+            sub = directory\join('sub')
+            sub\mkdir!
+            sub\join('subdir')\mkdir!
+            assert.is_false input\on_completed 'sub', readline
+            readline.text = 'sub'
+            files = input\complete 'sub', readline
+            assert.same { 'subdir/' }, files
+
+        it 'value_for(text) returns a File for <text>', ->
+          file = directory\join('test.lua')
+          file\touch!
+          assert.equal file, input\value_for 'test.lua'
+
+        it 'go_back(readline) goes up a directory', ->
+          input\go_back readline
+          assert.equal directory, input\value_for directory.basename
+
+  describe 'FileInput', ->
     describe 'complete(text, readline)', ->
-      it 'returns files matching <text>', ->
+      it 'returns all files matching <text>', ->
+        input = inputs.file readline
         directory\join('test.lua')\touch!
         directory\join('foo.lua')\touch!
+        directory\join('foodir')\mkdir!
 
         readline.text = 'foo'
         files = input\complete 'foo', readline
-        assert.same { 'foo.lua' }, files
+        assert.same { 'foodir/', 'foo.lua' }, files
 
-      it 'automatically switches to root dir if the text is "/"', ->
-        input\complete '', readline
-        readline.text ..= '/'
-        input\complete readline.text, readline
-        assert.equals 'open /', readline.prompt
+  describe 'DirectoryInput', ->
+    local input
+    before_each -> input = inputs.directory readline
 
-      it 'automatically switches to the #home dir if the text is "~/"', ->
-        input\complete '', readline
-        readline.text ..= '~/'
-        input\complete readline.text, readline
-        assert.equals "open #{os.getenv('HOME')}/", readline.prompt
+    describe 'complete(text, readline)', ->
+      it 'returns all directories matching <text>', ->
+        directory\join('foo.lua')\touch!
+        directory\join('foodir')\mkdir!
+        directory\join('bardir')\mkdir!
 
-    it 'on_completed(path, readline) changes dir and returns false for sub dir', ->
-      sub = directory\join('sub')
-      sub\mkdir!
-      sub\join('subfile.txt')\touch!
-      assert.is_false input\on_completed 'sub', readline
-      readline.text = 'sub'
-      files = input\complete 'sub', readline
-      assert.same { 'subfile.txt' }, files
+        readline.text = 'foo'
+        files = input\complete 'foo', readline
+        assert.same { 'foodir/' }, files
 
-    it 'value_for(text) returns a File for <text>', ->
-      file = directory\join('test.lua')
-      file\touch!
-      assert.equal file, input\value_for 'test.lua'
+      it 'always includes the current directory as well', ->
+        readline.text = ''
+        files = input\complete '', readline
+        assert.same { './' }, files
 
-    it 'go_back(readline) goes up a directory', ->
-      input\go_back readline
-      assert.equal directory, input\value_for directory.basename
+    describe 'on_completed(path, readline)', ->
+      it 'returns non-false when the current directory is choosen', ->
+        assert.is_not_false input\on_completed './', readline

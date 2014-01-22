@@ -5,9 +5,13 @@ import GLib from lgi
 import File from howl.fs
 import Matcher from howl.util
 
+append = table.insert
+
 separator = File.separator
 
-display_name = (file) ->
+display_name = (directory, file) ->
+  return ".#{separator}" if directory == file
+
   name = file.basename
   name ..= separator if file.is_directory
   name
@@ -21,7 +25,7 @@ root_dir = (file) ->
 home_dir = -> File os.getenv 'HOME'
 
 class FileInput
-  new: =>
+  new: (@directory_reader) =>
     @directory = File GLib.get_current_dir!
 
     if editor
@@ -51,7 +55,7 @@ class FileInput
 
   on_completed: (value, readline) =>
     path = @directory / value
-    if path.is_directory
+    if path.is_directory and path != @directory
       @_chdir path, readline
       return false
 
@@ -62,7 +66,7 @@ class FileInput
   value_for: (basename) => @directory / basename
 
   _chdir: (directory, readline) =>
-    children = directory.children
+    children = self.directory_reader directory
 
     table.sort children, (f1, f2) ->
       d1, d2 = f1.is_directory, f2.is_directory
@@ -73,7 +77,7 @@ class FileInput
       return false if d2 and not d1
       f1.path < f2.path
 
-    names = [display_name c for c in *children]
+    names = [display_name(directory, c) for c in *children]
     @matcher = Matcher names
     @directory = directory
 
@@ -82,5 +86,9 @@ class FileInput
     prompt ..= separator if not prompt\match separator .. '$'
     readline.prompt = prompt
 
-howl.inputs.register 'file', FileInput
-return FileInput
+howl.inputs.register 'file', -> FileInput (directory) -> directory.children
+
+howl.inputs.register 'directory', -> FileInput (directory) ->
+  kids = [c for c in *directory.children when c.is_directory]
+  append kids, directory\join '.'
+  kids
