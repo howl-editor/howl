@@ -5,8 +5,17 @@
 
 file=$1; shift
 checksum=$1; shift
+tmp=$(tempfile2 2> /dev/null)
 
-tmp=$(tempfile)
+# tempfile is not always available
+if [ -z "$tmp" ]; then
+  tmpdir=$TMPDIR
+  if [ -z "$tmpdir" ]; then
+    tmpdir=/tmp
+  fi
+  tmp=$tmpdir/howl_download$RANDOM.$$
+fi
+
 echo "Downloading $file.."
 wget -O $tmp $file || exit 1
 
