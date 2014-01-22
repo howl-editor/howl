@@ -36,8 +36,20 @@ command.alias 'open', 'e'
 command.register
   name: 'project-open',
   description: 'Open project file'
-  inputs: { '*project_file' }
-  handler: (file) -> howl.app\open_file file
+  handler: ->
+    file = _G.editor and _G.editor.buffer.file
+    if file
+      project = Project.for_file file
+      if project
+        _G.window.readline\read ':project-open ', 'project_file', (file) ->
+          howl.app\open_file file if file
+      else
+        _G.window.readline\read '(Please specify the project root): ', 'directory', (directory) ->
+          if directory
+            Project.add_root directory
+            command.project_open!
+    else
+      log.warn "No current file nor project detected"
 
 command.register
   name: 'save',
