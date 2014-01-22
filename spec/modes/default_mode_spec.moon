@@ -3,7 +3,7 @@ import Buffer from howl
 import Editor, ActionBuffer from howl.ui
 
 describe 'DefaultMode', ->
-  local buffer, mode, lines
+  local buffer, mode, lines, indentation
   editor = Editor Buffer {}
   cursor = editor.cursor
   selection = editor.selection
@@ -15,67 +15,69 @@ describe 'DefaultMode', ->
   before_each ->
     buffer = Buffer {}
     mode = DefaultMode!
+    indentation = {}
+    mode.indentation = indentation
     buffer.mode = mode
     buffer.config.indent = 2
     lines = buffer.lines
     editor.buffer = buffer
 
   describe '.indent()', ->
-    context 'when .indent_after_patterns is set', ->
+    context 'when .indentation.more_after patterns is set', ->
       context 'and the previous line matches one of the patterns', ->
         it 'indents lines below matching lines with the currently set indent', ->
-          mode.indent_after_patterns = { r'if', 'then' }
+          indentation.more_after = { r'if', 'then' }
           buffer.text = 'if\nbar\nthen\nfoo\n'
           indent!
           assert.equals 'if\n  bar\nthen\n  foo\n', buffer.text
 
-        context 'when .indent_after_patterns.authoritive is not false', ->
+        context 'when .authoritive is not false', ->
           it 'adjusts lines with unwarranted greater indents to match the previous line', ->
-            mode.indent_after_patterns = { 'if' }
+            indentation.more_after = { 'if' }
             buffer.text = 'line\n  wat?\n'
             indent!
             assert.equals 'line\nwat?\n', buffer.text
 
-        context 'when .indent_after_patterns.authoritive is false', ->
+        context 'when .authoritive is false', ->
           it 'does not adjust lines with unwarranted greater indents to match the previous line', ->
-            mode.indent_after_patterns = { 'if', authoritive: false }
+            indentation.more_after = { 'if', authoritive: false }
             buffer.text = 'line\n  wat?\n'
             indent!
             assert.equals 'line\n  wat?\n', buffer.text
 
-    context 'when .dedent_patterns is set', ->
+    context 'when .indentation.less_for is set', ->
       context 'and the current line matches one of the patterns', ->
         it 'dedents the line one level below the previous line if it exists', ->
-          mode.dedent_patterns = { r'else', '}' }
+          indentation.less_for = { r'else', '}' }
           buffer.text = '    bar\n    else\n  foo\n  }\n'
           indent!
           assert.equals '    bar\n  else\n  foo\n}\n', buffer.text
 
         context 'when .dedent_patterns.authoritive is not false', ->
           it 'adjusts lines with unwarranted smaller indents to match the previous line', ->
-            mode.dedent_patterns = { 'else' }
+            indentation.less_for = { 'else' }
             buffer.text = '  line\nwat?\n'
             indent!
             assert.equals '  line\n  wat?\n', buffer.text
 
         context 'when .dedent_patterns.authoritive is false', ->
           it 'does not adjust lines with unwarranted smaller indents to match the previous line', ->
-            mode.dedent_patterns = { 'else', authoritive: false }
+            indentation.less_for = { 'else', authoritive: false }
             buffer.text = '  line\nwat?\n'
             indent!
             assert.equals '  line\nwat?\n', buffer.text
 
-    context 'when both .dedent_patterns and .indent_after_patterns are set', ->
+    context 'when both indentation.less_for and .indentation.more_after are set', ->
       it 'they cancel out each other when both match', ->
-        mode.indent_after_patterns = { '{' }
-        mode.dedent_patterns = { '}' }
+        indentation.more_after = { '{' }
+        indentation.less_for = { '}' }
         buffer.text = '  {\n  }'
         indent!
         assert.equals '  {\n  }', buffer.text
 
     it 'does not try to indent lines within comments or strings', ->
-        mode.indent_after_patterns = { '{' }
-        mode.dedent_patterns = { '}' }
+        indentation.more_after = { '{' }
+        indentation.less_for = { '}' }
         buffer = ActionBuffer!
         buffer.text = '{\nfoo\n  }\n'
         lines = buffer.lines
@@ -86,7 +88,7 @@ describe 'DefaultMode', ->
         assert.equals '{\nfoo\n  }\n', buffer.text
 
     it 'uses the same indent as for the previous line if it is a comment', ->
-        mode.indent_after_patterns = { '{' }
+        indentation.more_after = { '{' }
         mode.comment_syntax = '#'
         buffer.text = "  # I'm commenting thank you very much {\n# and still are\n"
         indent!
@@ -94,8 +96,8 @@ describe 'DefaultMode', ->
 
     context 'when a line is blank', ->
       it 'does not indent unless it is the current line', ->
-          mode.indent_after_patterns = { '{' }
-          mode.dedent_patterns = { '}' }
+          indentation.more_after = { '{' }
+          indentation.less_for = { '}' }
           buffer.text = '{\n\n}'
           indent!
           assert.equals '{\n\n}', buffer.text
@@ -103,8 +105,8 @@ describe 'DefaultMode', ->
       context 'and it is the current line', ->
 
         it 'indents according to patterns', ->
-            mode.indent_after_patterns = { '{' }
-            mode.dedent_patterns = { '}' }
+            indentation.more_after = { '{' }
+            indentation.less_for = { '}' }
             buffer.text = '{\n\n}'
             cursor.line = 2
             mode\indent editor
@@ -122,7 +124,7 @@ describe 'DefaultMode', ->
       assert.equals '  line\n  two\n', buffer.text
 
     it 'works on the current line if no selection is specified', ->
-      mode.indent_after_patterns = { 'if' }
+      indentation.more_after = { 'if' }
       buffer.text = 'if\none\ntwo\n'
       cursor.line = 2
       mode\indent editor
@@ -316,7 +318,7 @@ describe 'DefaultMode', ->
 
   describe 'auto-formatting after newline', ->
     it 'indents the new line automatically given the indent patterns', ->
-      mode.indent_after_patterns = { 'if' }
+      indentation.more_after = { 'if' }
       buffer.text = 'if'
       cursor\eof!
       editor\newline!

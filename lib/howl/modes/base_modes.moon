@@ -1,14 +1,14 @@
 import mode from howl
 
 curly_mode = {
-  indent_after_patterns: {
-    authoritive: true
-    '[[{(]%s*$',
-  }
+  indentation: {
+    more_after: {
+      '[[{(]%s*$',
+    }
 
-  dedent_patterns: {
-    authoritive: true
-    '^%s*[]})]',
+    less_for: {
+      '^%s*[]})]',
+    }
   }
 
   code_blocks:

@@ -316,10 +316,13 @@ common_auto_pairs = {
     extensions: { 'sc', 'py', 'pyw' }
     shebangs: '[/ ]python.*$'
     comment_syntax: '#'
-    indent_after_patterns: {
-      { ':%s*$', 'else:%s*$' }
+    indentation: {
+      more_after: {
+        { ':%s*$', 'else:%s*$' }
+      }
+      less_for: { 'else:%s*$'}
     }
-    dedent_patterns: { 'else:%s*$'}
+
     auto_pairs: common_auto_pairs
 
   rstats:
@@ -428,10 +431,13 @@ common_auto_pairs = {
         '"': '"'
         '<': '>'
       }
-    indent_after_patterns: {
-      '<[^/]+>%s*$'
+    indentation: {
+      more_after: {
+        '<[^/]+>%s*$'
+      }
+      less_for: {
+        '^%s*</[^<]+>%s*$'
+      }
     }
-    dedent_patterns: {
-      '^%s*</[^<]+>%s*$'
-    }
+
 }

@@ -13,8 +13,8 @@ is_header = (line) ->
 {
   lexer: bundle_load('cucumber_lexer')
 
-  indent_after_patterns: {
-    ':'
+  indentation: {
+    more_after: { ':' }
   }
 
   auto_pairs: {

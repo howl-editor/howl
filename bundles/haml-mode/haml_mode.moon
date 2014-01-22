@@ -7,12 +7,14 @@ class HamlMode
 
   comment_syntax: '-#'
 
-  indent_after_patterns: {
-    authoritive: false
+  indentation: {
+    more_after: {
+      authoritive: false
 
-    '^%s*[.#%%][%a_-]+%s*$',
-    '^%s*-%s+.+|%s*$',
-    '^%s*%%html',
+      '^%s*[.#%%][%a_-]+%s*$',
+      '^%s*-%s+.+|%s*$',
+      '^%s*%%html',
+    }
   }
 
   auto_pairs: {

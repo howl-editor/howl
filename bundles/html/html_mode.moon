@@ -15,12 +15,14 @@
     '<': '>'
   }
 
-  indent_after_patterns: {
-    '<%a>%s*$',
-    { '<[^/!][^<]*[^/]>%s*$', r'<(br|input)[\\s>][^<]*$' }
-  }
+  indentation: {
+    more_after: {
+      '<%a>%s*$',
+      { '<[^/!][^<]*[^/]>%s*$', r'<(br|input)[\\s>][^<]*$' }
+    }
 
-  dedent_patterns: {
-    '^%s*</[^>]+>%s*$'
+    less_for: {
+      '^%s*</[^>]+>%s*$'
+    }
   }
 }

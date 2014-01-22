@@ -9,21 +9,24 @@ class MoonscriptMode
 
   comment_syntax: '--'
 
-  indent_after_patterns: {
-    '[-=]>%s*$', -- fdecls
-    '[([{:=]%s*$' -- hanging operators
-    r'^\\s*\\b(class|switch|do|with|for|when)\\b', -- block starters
-    { r'^\\s*\\b(elseif|if|while|unless)\\b', '%sthen%s*'}, -- conditionals
-    '^%s*else%s*$',
-    { '=%s*if%s', '%sthen%s*'} -- 'if' used as rvalue
+  indentation: {
+    more_after: {
+      '[-=]>%s*$', -- fdecls
+      '[([{:=]%s*$' -- hanging operators
+      r'^\\s*\\b(class|switch|do|with|for|when)\\b', -- block starters
+      { r'^\\s*\\b(elseif|if|while|unless)\\b', '%sthen%s*'}, -- conditionals
+      '^%s*else%s*$',
+      { '=%s*if%s', '%sthen%s*'} -- 'if' used as rvalue
+    }
+
+    less_for: {
+      authoritive: false
+      r'^\\s*(else|\\})\\s*$',
+      '^%s*[]})]',
+      { '^%s*elseif%s', '%sthen%s*' }
+    }
   }
 
-  dedent_patterns: {
-    authoritive: false
-    r'^\\s*(else|\\})\\s*$',
-    '^%s*[]})]',
-    { '^%s*elseif%s', '%sthen%s*' }
-  }
 
   auto_pairs: {
     '(': ')'

@@ -150,17 +150,18 @@ class DefaultMode
     prev_line = line.previous_non_blank
 
     if prev_line
-      dedent_delta = -indent_level if @patterns_match line.text, @dedent_patterns
-      indent_delta = indent_level if @patterns_match prev_line.text, @indent_after_patterns
+      spec = @indentation or {}
+      dedent_delta = -indent_level if @patterns_match line.text, spec.less_for
+      indent_delta = indent_level if @patterns_match prev_line.text, spec.more_after
 
       if indent_delta or dedent_delta
         return prev_line.indentation + (dedent_delta or 0) + (indent_delta or 0)
 
       -- unwarranted indents
-      if @indent_after_patterns and @indent_after_patterns.authoritive != false and line.indentation > prev_line.indentation
+      if spec.more_after and spec.more_after.authoritive != false and line.indentation > prev_line.indentation
         return prev_line.indentation
 
-      if @dedent_patterns and @dedent_patterns.authoritive != false and line.indentation < prev_line.indentation
+      if spec.less_for and spec.less_for.authoritive != false and line.indentation < prev_line.indentation
         return prev_line.indentation
 
       return prev_line.indentation if line.blank

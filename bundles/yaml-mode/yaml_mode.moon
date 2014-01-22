@@ -10,9 +10,11 @@ class YAMLMode
 
   comment_syntax: '#'
 
-  indent_after_patterns: {
-    ':%s*$',
-    '[>|]%s*$'
+  indentation: {
+    more_after: {
+      ':%s*$',
+      '[>|]%s*$'
+    }
   }
 
   auto_pairs: {

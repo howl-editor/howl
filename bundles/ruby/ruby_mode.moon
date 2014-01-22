@@ -42,16 +42,18 @@ mode = {
   default_config:
     word_pattern: '%w[%w%d_]+[?!=]?'
 
-  indent_after_patterns: {
-    {r'^\\s*(def|class|if|elsif|else|unless|module|begin|rescue|ensure|when|case|while)\\b', '%send%s*$'},
-    {r'=\\s+(?:if|begin)\\b', '%send%s*$'},
-    r'\\s(do|{)\\s*(?:\\|[^|]*\\|)?\\s*$',
-    '[[{(]%s*$'
-  }
+  indentation: {
+    more_after: {
+      {r'^\\s*(def|class|if|elsif|else|unless|module|begin|rescue|ensure|when|case|while)\\b', '%send%s*$'},
+      {r'=\\s+(?:if|begin)\\b', '%send%s*$'},
+      r'\\s(do|{)\\s*(?:\\|[^|]*\\|)?\\s*$',
+      '[[{(]%s*$'
+    }
 
-  dedent_patterns: {
-    r'^\\s*(elsif|else|end|rescue|ensure|when)',
-    r'^\\s*[]}\\)]'
+    less_for: {
+      r'^\\s*(elsif|else|end|rescue|ensure|when)',
+      r'^\\s*[]}\\)]'
+    }
   }
 
   auto_pairs: {
@@ -76,7 +78,7 @@ mode = {
   indent_for: (line, indent_level) =>
     cont_indent = continuation_indent line, indent_level
     if cont_indent
-      if @patterns_match line, @dedent_patterns
+      if @patterns_match line, @indentation.less_for
         cont_indent -= indent_level
       return math.max 0, cont_indent
 
