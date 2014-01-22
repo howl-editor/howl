@@ -268,9 +268,10 @@ describe 'lpeg_lexer', ->
         p = l.sub_lex_by_pattern(l.alpha^1, 'keyword', '>')
         res = { p\match 'xx123>' }
         assert.same {
-          1, 'embedded:keyword', 3,
+          1, 'keyword', 3,
           3, 'embedded', 6
         }, res
+
 
     context 'when a mode matching the <mode_p> capture exists', ->
       local p
@@ -285,15 +286,24 @@ describe 'lpeg_lexer', ->
 
       it 'emits mode match styling and rebasing instructions to the styler', ->
         assert.same {
-          2, 'embedded:keyword', 8,
+          2, 'keyword', 8,
           8, {}, 'dynsub|embedded'
         }, { p\match '<dynsub>' }
 
       it "lexes the content using that mode's lexer until <stop_p>", ->
         assert.same {
-          2, 'embedded:keyword', 8,
+          2, 'keyword', 8,
           8, { 1, 'number', 4 }, 'dynsub|embedded'
         }, { p\match '<dynsub123>' }
+
+    it 'lexes any leading space followed by eol as extended whitespace', ->
+      p = l.sub_lex_by_pattern(l.alpha^1, 'keyword', '>')
+      res = { p\match 'xx \n123>' }
+      assert.same {
+        1, 'keyword', 3,
+        3, 'default:whitespace', 5,
+        5, 'embedded', 8
+      }, res
 
   describe 'sub_lex(mode_name, stop_p)', ->
     context 'when no mode is found matching <mode_name>', ->
@@ -325,6 +335,14 @@ describe 'lpeg_lexer', ->
 
       it 'lexes until EOF if <stop_p> is not found', ->
         assert.same {1, 'number', 3}, sub_captures_for '12'
+
+    it 'lexes any leading space followed by eol as extended whitespace', ->
+      p = l.sub_lex('unknown', '>')
+      res = { p\match ' \n123>' }
+      assert.same {
+        1, 'default:whitespace', 3,
+        3, 'embedded', 6
+      }, res
 
   describe 'built-in lexing support', ->
     it 'automatically lexes whitespace', ->

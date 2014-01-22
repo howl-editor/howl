@@ -7,7 +7,10 @@ import pairs, setfenv, setmetatable, type, print, tostring from _G
 l = lpeg.locale!
 import space, alpha from l
 lpeg_type = lpeg.type
-unpack = table.unpack
+unpack, append, tinsert = table.unpack, table.insert, table.insert
+
+eol_p = P'\n' + P'\r\n' + P'\r'
+blank_p = S(' \t')
 
 cur_line_indent = (subject, pos) ->
   ws = 0
@@ -56,33 +59,59 @@ skip_if_next = (subject, pos, token) ->
 match_if_equal = (subject, pos, value1, value2) ->
   return pos if value1 == value2
 
+sub_lex_capture_start = (sub_text, sub_start_pos, cur_pos) ->
+  trailing_line_p = blank_p^0 * eol_p
+  content_start = trailing_line_p\match sub_text
+  capture = { cur_pos }
+
+  if content_start
+    new_start_pos = sub_start_pos + content_start - 1
+    capture = {
+      cur_pos,
+      sub_start_pos,
+      'default:whitespace',
+      new_start_pos
+    }
+    sub_text = sub_text\sub content_start
+    sub_start_pos = new_start_pos
+
+  sub_text, sub_start_pos, capture
+
 sub_lex_capture = (subject, cur_pos, mode_name, sub_text) ->
   sub_start_pos = cur_pos - #sub_text
   m = mode.by_name mode_name
+  sub_text, sub_start_pos, ret = sub_lex_capture_start sub_text, sub_start_pos, cur_pos
+  append ret, sub_start_pos
 
   if not m or not m.lexer
-    return cur_pos, sub_start_pos, 'embedded', cur_pos
+    append ret, 'embedded'
+    append ret, cur_pos
+  else
+    append ret, m.lexer(sub_text)
+    append ret, "#{mode_name}|embedded"
 
-  cur_pos, sub_start_pos, m.lexer(sub_text), "#{mode_name}|embedded"
+  unpack ret
 
 pattern_sub_lex_capture = (subject, cur_pos, mode_name, mode_style, sub_text) ->
-  sub_start_pos = cur_pos - #sub_text
-  start_pos = sub_start_pos - #mode_name
+  real_sub_start_pos = cur_pos - #sub_text
+  start_pos = real_sub_start_pos - #mode_name
   m = mode.by_name mode_name
-  mode_style = "embedded:#{mode_style}"
+  sub_text, sub_start_pos, ret = sub_lex_capture_start sub_text, real_sub_start_pos, cur_pos
+
+  tinsert ret, 2, real_sub_start_pos
+  tinsert ret, 2, mode_style
+  tinsert ret, 2, start_pos
+
+  append ret, sub_start_pos
 
   if not m or not m.lexer
-    unpack {
-      cur_pos,
-      start_pos, mode_style, sub_start_pos,
-      sub_start_pos, 'embedded', cur_pos
-    }
+    append ret, 'embedded'
+    append ret, cur_pos
   else
-    unpack {
-      cur_pos,
-      start_pos, mode_style, sub_start_pos,
-      sub_start_pos, m.lexer(sub_text), "#{mode_name}|embedded"
-    }
+    append ret, m.lexer(sub_text)
+    append ret, "#{mode_name}|embedded"
+
+  unpack ret
 
 -- START lexer environment --
 
@@ -96,8 +125,8 @@ setfenv 1, lexer
 export *
 
 -- helper patterns
-eol = P'\n' + P'\r\n' + P'\r'
-blank = S(' \t')
+eol = eol_p
+blank = blank_p
 line_start = -B(1) + B(eol)
 float = digit^0 * P'.' * digit^1 * (S'eE' * P('-')^0 * digit^1)^0
 hexadecimal = P'0' * S'xX' * xdigit^1 * -#(digit + alpha)
