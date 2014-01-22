@@ -5,7 +5,7 @@
 
 file=$1; shift
 checksum=$1; shift
-tmp=$(tempfile2 2> /dev/null)
+tmp=$(tempfile 2> /dev/null)
 
 # tempfile is not always available
 if [ -z "$tmp" ]; then
@@ -13,7 +13,7 @@ if [ -z "$tmp" ]; then
   if [ -z "$tmpdir" ]; then
     tmpdir=/tmp
   fi
-  tmp=$tmpdir/howl_download$RANDOM.$$
+  tmp=$tmpdir/howl_download$RANDOM$(date +"%s").$$
 fi
 
 echo "Downloading $file.."
