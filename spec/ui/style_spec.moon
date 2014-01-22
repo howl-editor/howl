@@ -200,8 +200,8 @@ describe 'style', ->
             style_num = style.number_for 'my_other_base:my_style', buffer
             set_fore = sci\style_get_fore style_num
             set_back = sci\style_get_back style_num
-            assert.equal set_fore, '#334455'
-            assert.equal set_back, '#112244'
+            assert.equal '#334455', set_fore
+            assert.equal '#112244', set_back
             assert.is_not_nil style['my_other_base:my_style']
 
     context 'when one of composing styles is redefined', ->

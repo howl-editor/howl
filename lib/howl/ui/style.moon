@@ -140,7 +140,6 @@ rebase_on = (style_name, definition, sci) ->
         for name, number in pairs b_styles
           style = styles[name]
           if style
-            define_extended name if is_extended name
             set_style sci, number, styles[name]
 
 define = (name, definition) ->
@@ -198,7 +197,7 @@ number_for = (style_name, buffer, base) ->
   if base
     style_name = "#{base}:#{style_name}"
   else
-    base = style_name\match ':(.+)$'
+    base = style_name\match '^(.+):'
 
   style = styles[style_name]
 
@@ -229,6 +228,10 @@ set_for_theme = (theme) ->
     style = moon.copy definition
     style.number = default_style_numbers[name]
     styles[name] = style
+
+  -- redefine all extended styles
+  for name in pairs styles
+    define_extended name if is_extended name
 
   -- and rebase all existing scis
   rebase_on default_style, styles[default_style], sci for sci, default_style in pairs scis
