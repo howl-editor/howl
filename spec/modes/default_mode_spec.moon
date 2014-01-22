@@ -67,13 +67,26 @@ describe 'DefaultMode', ->
             indent!
             assert.equals '  line\nwat?\n', buffer.text
 
-    context 'when both indentation.less_for and .indentation.more_after are set', ->
-      it 'they cancel out each other when both match', ->
+    context 'when .indentation.same_after patterns is set', ->
+      context 'and the previous line matches one of the patterns', ->
+        it 'indents lines below matching lines to have the same indent as the previous line', ->
+          indentation.same_after = ',$'
+          buffer.text = '  foo,\nbar'
+          indent!
+          assert.equals '  foo,\n  bar', buffer.text
+
+    context 'when more than one of .less_for, .more_after or .same_after are set', ->
+      it 'they are weighed together', ->
         indentation.more_after = { '{' }
         indentation.less_for = { '}' }
+        indentation.same_after = { ',$' }
         buffer.text = '  {\n  }'
         indent!
         assert.equals '  {\n  }', buffer.text
+
+        buffer.text = '  {\n  foo,}'
+        indent!
+        assert.equals '  {\n  foo,}', buffer.text
 
     it 'does not try to indent lines within comments or strings', ->
         indentation.more_after = { '{' }
