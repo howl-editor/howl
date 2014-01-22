@@ -60,9 +60,9 @@ howl.aux.lpeg_lexer ->
 
   fenced_code_block = sequence {
     not_escaped,
-    capture('embedded', '```'),
+    capture('operator', '```'),
     sub_lex_by_pattern(alpha^1, 'special', '```')
-    capture('embedded', '```'),
+    capture('operator', '```')^-1,
   }
 
   code = not_escaped * capture 'embedded', any {
