@@ -140,7 +140,7 @@ return {
       background: embedded_bg
 
     embedded:
-      color: blue
+      color: '#aadaff'
       background: embedded_bg
       eol_filled: true
 
