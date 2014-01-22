@@ -1,8 +1,6 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
-import formatting from howl
-
 class MoonscriptMode
   new: =>
     @lexer = bundle_load('moonscript_lexer')
@@ -19,6 +17,10 @@ class MoonscriptMode
       { '=%s*if%s', '%sthen%s*'} -- 'if' used as rvalue
     }
 
+    same_after: {
+      ',%s*$'
+    }
+
     less_for: {
       authoritive: false
       r'^\\s*(else|\\})\\s*$',
@@ -26,7 +28,6 @@ class MoonscriptMode
       { '^%s*elseif%s', '%sthen%s*' }
     }
   }
-
 
   auto_pairs: {
     '(': ')'

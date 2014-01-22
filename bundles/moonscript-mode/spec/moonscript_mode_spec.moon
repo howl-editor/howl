@@ -140,6 +140,12 @@ describe 'moonscript-mode', ->
             editor\indent!
             assert.equal 2, editor.current_line.indentation
 
+    it 'enforces the same indent after ","', ->
+      buffer.text = "  foo,\nbar"
+      cursor.line = 2
+      editor\indent!
+      assert.equal 2, editor.current_line.indentation
+
     it 'returns a corrected indent for lines that are on incorrect indentation', ->
       buffer.text = '  bar\n one_column_offset'
       cursor.line = 2
@@ -152,7 +158,7 @@ describe 'moonscript-mode', ->
       editor\indent!
       assert.equal 0, editor.current_line.indentation
 
-    it 'keeps the indent for lines when if nothing particular is known', ->
+    it 'keeps the indent for lines when nothing particular is known', ->
       buffer.text = '  foo\nbar'
       cursor.line = 2
       editor\indent!
