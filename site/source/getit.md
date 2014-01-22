@@ -46,7 +46,7 @@ remote: Counting objects: 7924, done.
 [..]
 Checking connectivity... done
 [nino@cohen:~/tmp]%
-[nino@cohen:~/tmp]% c howl/src/
+[nino@cohen:~/tmp]% cd howl/src/
 [nino@cohen:~/tmp/howl/src]% make
 [snipped download and compiling]
 make  49.44s user 4.21s system 81% cpu 1:05.74 total
