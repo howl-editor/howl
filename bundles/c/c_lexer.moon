@@ -68,7 +68,7 @@ howl.aux.lpeg_lexer ->
     c('operator', '>'),
   }
 
-  constant = c 'constant', word any('_', upper)^1
+  constant = c 'constant', word any('_', upper)^1 * any('_', upper, digit)^0
 
   any {
     include_stmt,

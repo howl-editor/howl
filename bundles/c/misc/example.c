@@ -14,6 +14,9 @@
 #include "other.h"
 #endif
 
+#define GDK_MOD1_MASK 1 << 3
+#define GDK_LOCK_MASK 1 << 1
+
 typedef unsigned char byte;
 
 /* number representations */

@@ -152,7 +152,7 @@ sequence = (...) ->
   arg_p
 
 word = (...) ->
-  word_char = alpha + '_'
+  word_char = alpha + '_' + digit
   (-B(1) + B(-word_char)) * any(...) * -word_char
 
 scan_until = (stop_p, escape_p) ->

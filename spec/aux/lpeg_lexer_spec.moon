@@ -106,7 +106,7 @@ describe 'lpeg_lexer', ->
   describe 'word(list)', ->
     grammar = P {
       V'word' + P(1) * V(1)
-      word: l.word { 'one', 'two' }
+      word: l.word { 'one', 'two2' }
     }
 
     it 'returns a pattern who matches any word in <list>', ->
@@ -114,13 +114,14 @@ describe 'lpeg_lexer', ->
       assert.is_not_nil grammar\match 'so one match'
       assert.is_not_nil grammar\match '!one'
       assert.is_not_nil grammar\match 'one()'
-      assert.is_not_nil grammar\match 'then two'
+      assert.is_not_nil grammar\match 'then two2,'
       assert.is_nil grammar\match 'three'
 
     it 'only matches standalone words, not substring occurences', ->
       assert.is_nil grammar\match 'fone'
-      assert.is_nil grammar\match 'twofold'
-      assert.is_nil grammar\match 'two_fold'
+      assert.is_nil grammar\match 'one2'
+      assert.is_nil grammar\match 'two2fold'
+      assert.is_nil grammar\match 'two2_fold'
 
     it 'accepts var arg parameters', ->
       assert.is_not_nil l.word('one', 'two')\match 'two'
