@@ -40,7 +40,7 @@ raises = (state, args) ->
   error 'Not a function', 2 if type(f) != 'function'
   status, raised_error = pcall f
   raised_error = raised_error or '<no-error>'
-  val = not status and raised_error\match(pattern) != nil
+  val = not status and raised_error.ulower\match(pattern.ulower) != nil
   return val, { pattern }
 
 say\set("assertion.raises.positive", "Function raised no error matching '%s'")
