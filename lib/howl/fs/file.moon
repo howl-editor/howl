@@ -1,7 +1,8 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-GFile = lgi.Gio.File
+GFile = require 'ljglibs.gio.gfile'
+GFileInfo = require 'ljglibs.gio.gfileinfo'
 import PropertyObject from howl.aux.moon
 
 class File extends PropertyObject
@@ -34,25 +35,25 @@ class File extends PropertyObject
       @path = target.path
     else
       @gfile = if t == 'string' or t == 'ustring' then @gfile = GFile.new_for_path tostring(target) else target
-      @path = @gfile\get_path!
+      @path = @gfile.path
 
     super!
 
-  @property basename: get: => @gfile\get_basename!
+  @property basename: get: => @gfile.basename
   @property extension: get: => @basename\match('%.(%w+)$')
-  @property uri: get: => @gfile\get_uri!
-  @property is_directory: get: => @file_type == 'directory'
-  @property is_link: get: => @file_type == 'symbolic_link'
-  @property is_special: get: => @file_type == 'special'
-  @property is_regular: get: => @file_type == 'regular'
-  @property is_shortcut: get: => @file_type == 'shortcut'
-  @property is_mountable: get: => @file_type == 'mountable'
-  @property is_hidden: get: => @_info!\get_is_hidden!
-  @property is_backup: get: => @_info!\get_is_backup!
-  @property size: get: => @_info!\get_size!
-  @property exists: get: => @gfile\query_exists!
+  @property uri: get: => @gfile.uri
+  @property is_directory: get: => @file_type == GFileInfo.TYPE_DIRECTORY
+  @property is_link: get: => @file_type == GFileInfo.TYPE_SYMBOLIC_LINK
+  @property is_special: get: => @file_type == GFileInfo.TYPE_SPECIAL
+  @property is_regular: get: => @file_type == GFileInfo.TYPE_REGULAR
+  @property is_shortcut: get: => @file_type == GFileInfo.TYPE_SHORTCUT
+  @property is_mountable: get: => @file_type == GFileInfo.TYPE_MOUNTABLE
+  @property is_hidden: get: => @_info!.is_hidden
+  @property is_backup: get: => @_info!.is_backup
+  @property size: get: => @_info!.size
+  @property exists: get: => @gfile.exists
   @property readable: get: => @exists and @_info('access')\get_attribute_boolean 'access::can-read'
-  @property etag: get: => @exists and @_info('etag')\get_etag!
+  @property etag: get: => @exists and @_info('etag').etag
   @property modified_at: get: => @exists and @_info('time')\get_attribute_uint64 'time::modified'
 
   @property writeable: get: =>
@@ -62,11 +63,11 @@ class File extends PropertyObject
       return @parent.exists and @parent.writeable
 
   @property file_type: get: =>
-    @ft = @ft or @_info!\get_file_type!\lower!
+    @ft or= @_info!.filetype
     @ft
 
   @property contents:
-    get: => tostring @_assert @gfile\load_contents!
+    get: => @gfile\load_contents!
     set: (contents) =>
       with @_assert io.open @path, 'w'
         \write tostring contents
@@ -74,18 +75,20 @@ class File extends PropertyObject
 
   @property parent:
     get: =>
-      parent = @gfile\get_parent!
+      parent = @gfile.parent
       return if parent then File(parent) else nil
 
   @property children:
     get: =>
       files = {}
-      enum = @gfile\enumerate_children 'standard::name', 'NONE'
+      enum = @gfile\enumerate_children 'standard::name', GFile.QUERY_INFO_NONE
       while true
-        info, err = enum\next_file!
-        return files if not info and not err
-        error(err) if not info
-        append files, File @gfile\get_child info\get_name!
+        info = enum\next_file!
+        unless info
+          enum\close!
+          return files
+
+        append files, File @gfile\get_child info.name
 
   open: (func) =>
     fh = assert io.open @path
@@ -111,9 +114,9 @@ class File extends PropertyObject
     parent.gfile\get_relative_path @gfile
 
   is_below: (dir) => @relative_to_parent(dir) != nil
-  mkdir: => @_assert @gfile\make_directory!
-  mkdir_p: => @_assert @gfile\make_directory_with_parents!
-  delete: => @_assert @gfile\delete!
+  mkdir: => @gfile\make_directory!
+  mkdir_p: => @gfile\make_directory_with_parents!
+  delete: => @gfile\delete!
   delete_all: =>
     if @is_directory
       entries = @find!
@@ -160,7 +163,7 @@ class File extends PropertyObject
     else
       namespace = 'standard::*'
 
-    @_assert @gfile\query_info namespace, 'NONE'
+    @gfile\query_info namespace, GFile.QUERY_INFO_NONE
 
   @meta {
     __tostring: => @tostring!

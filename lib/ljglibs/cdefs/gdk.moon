@@ -1,7 +1,7 @@
 -- Copyright 2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-require 'howl.cdefs.glib'
+require 'ljglibs.cdefs.glib'
 ffi = require 'ffi'
 
 ffi.cdef [[
@@ -69,6 +69,3 @@ ffi.cdef [[
   gchar * gdk_keyval_name(guint keyval);
   guint32 gdk_keyval_to_unicode(guint keyval);
 ]]
-
-return {
-}

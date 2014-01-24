@@ -176,7 +176,7 @@ class DefaultMode
 
     for p in *patterns
       neg_match = nil
-      if type(p) == 'table'
+      if typeof(p) == 'table'
         p, neg_match = p[1], p[2]
 
       match = text\umatch p

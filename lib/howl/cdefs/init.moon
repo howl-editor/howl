@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 ffi = require 'ffi'
+require 'ljglibs.cdefs.gdk'
 
 ffi.cdef [[
   void *malloc(size_t size);
@@ -14,7 +15,6 @@ return {
   char_p: ffi.typeof 'char *'
   char_arr: ffi.typeof 'char[?]'
 
-  gdk: require 'howl.cdefs.gdk'
   glib: require 'howl.cdefs.glib'
   gobject: require 'howl.cdefs.gobject'
 }

@@ -63,7 +63,7 @@ describe 'Regex', ->
       assert.same { 3, 5, 6 }, { r'\\w+()'\find '12ab2', 3}
 
   describe 'gmatch(s)', ->
-    context 'with no captures in the pattern', ->
+    context 'with captures in the pattern', ->
       it 'produces each consecutive match in each call', ->
         matches = [m for m in r'\\w+'\gmatch 'well hello there']
         assert.same { 'well', 'hello', 'there' }, matches

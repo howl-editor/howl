@@ -20,9 +20,9 @@ describe 'File', ->
       local tmpfile
       f = (file) ->
         tmpfile = file
-        error 'NOO'
+        error 'noo'
 
-      assert.raises 'NOO', -> File.with_tmpfile f
+      assert.raises 'noo', -> File.with_tmpfile f
       assert.is_false tmpfile.exists
 
   describe '.tmpdir', ->
@@ -118,7 +118,6 @@ describe 'File', ->
   it '.modified_at is a the unix time when the file was last modified', ->
     File.with_tmpfile (file) ->
       assert.is.not_nil file.modified_at
-      assert.equal type(file.modified_at), 'number'
 
   describe 'open([function])', ->
     context 'when <function> is nil', ->
