@@ -4,10 +4,11 @@ title: User manual
 
 %h1 Howl Documentation
 
-%em
+.alert.alert-warning
   Howl is currently in pre-release state. One of the reasons for this is unfortunately the lack of documentation.
   This will be addressed before the release, with content appearing here as it is written. Should you have any
-  questions before this is completed, don't hesitate to contact me.
+  questions before this is completed, don't hesitate to
+  %a.alert-link(href = "/contact.html") contact me.
 
 %h2 User manual
 
@@ -19,9 +20,6 @@ title: User manual
 - howl_api_docs.each do |doc|
   %h4
     %a(href = "#{doc.url}") #{doc.data[:title]}
-
--# #### [howl.Application](/doc/api/application.html)
--# #### [howl.bindings](/doc/api/bindings.html)
 
 %h2 Howl specs (tests)
 %p
