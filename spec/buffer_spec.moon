@@ -250,7 +250,7 @@ describe 'Buffer', ->
       b\replace '[lo]', ''
       assert.equal 'he\nuñi©de\nwrd\n', b.text
 
-    context 'when pattern contains a grouping', ->
+    context 'when pattern contains a leading grouping', ->
       it 'replaces only the match within pattern with replacement', ->
         b = buffer 'hello\nworld\n'
         b\replace '(hel)lo', ''

@@ -258,6 +258,10 @@ class Buffer extends PropertyObject
 
       background_sci
 
+  lex: (end_pos) =>
+    if @_mode.lexer
+      styler.style_text self, end_pos, @_mode.lexer
+
   add_sci_ref: (sci) =>
     append @_scis, sci
     @_sci = sci
@@ -272,10 +276,6 @@ class Buffer extends PropertyObject
     @_scis = [s for s in *@_scis when s != sci and s != nil]
     @_sci = @_scis[1] if sci == @_sci
     @_last_shown = os.time! if #@_scis == 0
-
-  lex: (end_pos) =>
-    if @_mode.lexer
-      styler.style_text self, end_pos, @_mode.lexer
 
   @property scis: get: =>
     [sci for _, sci in pairs @_scis when sci != nil]
