@@ -1,4 +1,5 @@
 import signal, timer, config, command from howl
+import style from howl.ui
 tinsert = table.insert
 
 paragraph_line = (line) -> line\umatch r'^\\pL'
@@ -130,6 +131,9 @@ reflow_check = (args) ->
 
   config = args.buffer.config
   return if is_reflowing or not config.auto_reflow_text
+
+  cur_style = style.at_pos args.buffer, math.max(args.at_pos - 1, 1)
+  return if cur_style\contains 'embedded'
 
   reflow_at = config.hard_wrap_column
   if not reflow_at
