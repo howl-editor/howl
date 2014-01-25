@@ -3,10 +3,10 @@
 
 howl.aux.lpeg_lexer ->
 
-  line_pair = (start, stop) ->
+  para_pair = (start, stop) ->
     stop = start unless stop
     stop = P(stop)
-    P(start) * scan_until(any(stop, eol)) * stop
+    P(start) * scan_until(any(stop, eol * eol)) * stop
 
   -- headers
 
@@ -32,30 +32,30 @@ howl.aux.lpeg_lexer ->
   not_escaped = -B'\\'
 
   emp_start = -B(1) + B(space)
-  strong = emp_start * capture 'strong', any { line_pair('*'), line_pair('_') }
-  emphasis = emp_start * capture 'emphasis', any { line_pair('**'), line_pair('__') }
+  strong = emp_start * capture 'strong', any { para_pair('*'), para_pair('_') }
+  emphasis = emp_start * capture 'emphasis', any { para_pair('**'), para_pair('__') }
 
   link = not_escaped * sequence {
     capture('operator', '!')^-1,
-    capture('link_label', line_pair '[', ']'),
+    capture('link_label', para_pair '[', ']'),
     any({
       sequence {
         capture('link_url', '(' * scan_until S') \t'),
-        (blank^1 * capture('string', line_pair('"')) * blank^0)^-1,
+        (blank^1 * capture('string', para_pair('"')) * blank^0)^-1,
         capture('link_url', ')'),
       }
-      line_pair '(', ')',
-      capture('link_url', P' '^-1 * line_pair '[', ']'),
+      para_pair '(', ')',
+      capture('link_url', P' '^-1 * para_pair '[', ']'),
     })^-1
   }
 
   ref_def = sequence {
     line_start,
     blank^-3,
-    capture('link_label', line_pair '[', ']'),
+    capture('link_label', para_pair '[', ']'),
     ':' * blank^1,
     capture('link_url', complement(space)^1),
-    (space^1 * capture('string', any( line_pair('"'), line_pair("'"), line_pair('(', ')'))))^-1
+    (space^1 * capture('string', any( para_pair('"'), para_pair("'"), para_pair('(', ')'))))^-1
   }
 
   fenced_code_block = sequence {
@@ -67,8 +67,8 @@ howl.aux.lpeg_lexer ->
 
   code = not_escaped * capture 'embedded', any {
     paired '```',
-    line_pair('``'),
-    line_pair('`'),
+    para_pair('``'),
+    para_pair('`'),
     line_start * (blank^4 + P'\t') * scan_until eol
   }
 

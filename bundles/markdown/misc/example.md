@@ -56,7 +56,7 @@ And if you __really__ mean it use **two** of the above.
 
 But we choose not to lex the*m when they're em_bedded GFM style (normal now)
 
-And this *stuff really needs to be closed on the __same line to work
+And this *stuff really needs to be closed in the __same paragraph to work
 
 ## Code blocks galore
 
