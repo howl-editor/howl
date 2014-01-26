@@ -1,7 +1,11 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Gdk, Gtk from lgi
+ffi = require 'ffi'
+Gtk = require 'ljglibs.gtk'
+Gdk = require 'ljglibs.gdk'
+require 'ljglibs.gtk.widget'
+
 import File from howl.fs
 import config, signal from howl
 import style, colors, highlight from howl.ui
@@ -185,6 +189,7 @@ override_widget_background = (widget, background_style) ->
     if bg_color
       background = Gdk.RGBA!
       background\parse bg_color
+      widget = ffi.cast('GtkWidget *', widget._native)
       widget\override_background_color 0, background
 
 apply_theme = ->

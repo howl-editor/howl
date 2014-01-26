@@ -1,5 +1,5 @@
 ffi = require 'ffi'
-GRegex = require 'ljglibs.glib.gregex'
+GRegex = require 'ljglibs.glib.regex'
 
 import type, tonumber from _G
 import const_char_p from howl.cdefs

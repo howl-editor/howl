@@ -25,6 +25,7 @@ ffi.cdef [[
   typedef guint32       gunichar;
   typedef guint64       guint64;
   typedef gint64        goffset;
+  typedef double        gdouble;
 
   /* GError definitions */
   typedef struct {

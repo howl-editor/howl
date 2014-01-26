@@ -5,6 +5,7 @@ require 'ljglibs.cdefs.glib'
 ffi = require 'ffi'
 
 ffi.cdef [[
+  /* events */
   typedef enum {
     GDK_NOTHING           = -1,
     GDK_DELETE            = 0,
@@ -68,4 +69,18 @@ ffi.cdef [[
 
   gchar * gdk_keyval_name(guint keyval);
   guint32 gdk_keyval_to_unicode(guint keyval);
+
+  /* screen */
+  typedef struct {} GdkScreen;
+  GdkScreen * gdk_screen_get_default (void);
+
+  /* GdkRGBA */
+  typedef struct {
+    gdouble red;
+    gdouble green;
+    gdouble blue;
+    gdouble alpha;
+  } GdkRGBA;
+
+  gboolean gdk_rgba_parse (GdkRGBA *rgba, const gchar *spec);
 ]]

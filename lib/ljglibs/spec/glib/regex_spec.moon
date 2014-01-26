@@ -1,4 +1,4 @@
-GRegex = require 'ljglibs.glib.gregex'
+GRegex = require 'ljglibs.glib.regex'
 
 describe 'GRegex', ->
   context 'creation', ->

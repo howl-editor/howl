@@ -1,4 +1,4 @@
-GFile = require 'ljglibs.gio.gfile'
+GFile = require 'ljglibs.gio.file'
 
 describe 'GFile', ->
   tmpfile = ->

@@ -1,8 +1,8 @@
 -- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-GFile = require 'ljglibs.gio.gfile'
-GFileInfo = require 'ljglibs.gio.gfileinfo'
+GFile = require 'ljglibs.gio.file'
+GFileInfo = require 'ljglibs.gio.file_info'
 import PropertyObject from howl.aux.moon
 
 class File extends PropertyObject

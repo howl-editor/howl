@@ -3,7 +3,7 @@
 
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gio'
-require 'ljglibs.gio.gfileinfo'
+require 'ljglibs.gio.file_info'
 core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
 import gc_ptr from require 'ljglibs.gobject'

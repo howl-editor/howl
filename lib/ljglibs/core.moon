@@ -4,6 +4,12 @@
 ffi = require 'ffi'
 C = ffi.C
 
+auto_require = (module, name) ->
+  name = name\gsub '%l%u', (match) ->
+    match\gsub '%u', (upper) -> '_' .. upper\lower!
+  name = name\lower!
+  require "ljglibs.#{module}.#{name}"
+
 {
   define: (name, spec, constructor) ->
     mt = spec.meta or {}
@@ -24,4 +30,7 @@ C = ffi.C
     ffi.metatype name, mt
     spec = setmetatable(spec, __call: constructor) if constructor
     spec
+
+  auto_loading: (name, def) ->
+    setmetatable def, __index: (t, k) -> auto_require name, k
 }
