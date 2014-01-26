@@ -10,17 +10,19 @@ auto_require = (module, name) ->
   name = name\lower!
   require "ljglibs.#{module}.#{name}"
 
+set_constants = (def) ->
+  if def.constants
+    pfx = def.constants.prefix or ''
+    for c in *def.constants
+      full = "#{pfx}#{c}"
+      def[c] = C[full]
+      def[full] = C[full]
+
 {
   define: (name, spec, constructor) ->
     mt = spec.meta or {}
     props = spec.properties or {}
-
-    if spec.constants
-      pfx = spec.constants.prefix or ''
-      for c in *spec.constants
-        full = "#{pfx}#{c}"
-        spec[c] = C[full]
-        spec[full] = C[full]
+    set_constants spec
 
     mt.__index = (o, k) ->
       prop = props[k]
@@ -32,5 +34,6 @@ auto_require = (module, name) ->
     spec
 
   auto_loading: (name, def) ->
+    set_constants def
     setmetatable def, __index: (t, k) -> auto_require name, k
 }
