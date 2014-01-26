@@ -12,7 +12,7 @@ before_install:
 install:
   - (cd src && make)
 
-script: "./bin/howl-spec && ./bin/howl-spec bundles"
+script: "./bin/howl-spec && ./bin/howl-spec bundles && ./bin/howl-spec lib/ljglibs/spec"
 
 notifications:
   recipients:
