@@ -36,8 +36,6 @@ ffi.cdef [[
 
   void g_error_free (GError *error);
 
-  typedef void    (*GCallback) (void);
-
   typedef enum {
     GDK_SHIFT_MASK    = 1 << 0,
     GDK_LOCK_MASK     = 1 << 1,
@@ -76,8 +74,21 @@ ffi.cdef [[
   gint    g_unichar_to_utf8(gunichar c, gchar *outbuf);
   gchar * g_strndup(const gchar *str, gssize n);
 
-  /* Custom callback definitions */
+  /* Callback definitions */
+  typedef void (*GCallback) (void);
+
+  typedef void (*GVCallback1) (gpointer);
+  typedef void (*GVCallback2) (gpointer, gpointer);
+  typedef void (*GVCallback3) (gpointer, gpointer, gpointer);
+  typedef void (*GVCallback4) (gpointer, gpointer, gpointer, gpointer);
+
+  typedef gboolean (*GBCallback1) (gpointer);
+  typedef gboolean (*GBCallback2) (gpointer, gpointer);
+  typedef gboolean (*GBCallback3) (gpointer, gpointer, gpointer);
+  typedef gboolean (*GBCallback4) (gpointer, gpointer, gpointer, gpointer);
+
   typedef gboolean (*GCallback1) (gpointer);
+  typedef gboolean (*GCallback2) (gpointer, gpointer);
   typedef gboolean (*GCallback3) (gpointer, gpointer, gpointer);
   typedef gboolean (*GCallback4) (gpointer, gpointer, gpointer, gpointer);
 

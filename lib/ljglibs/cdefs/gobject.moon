@@ -5,6 +5,16 @@ ffi = require 'ffi'
 glib = require 'ljglibs.cdefs.glib'
 
 ffi.cdef [[
+  /* GType */
+  typedef gsize GType;
+  const gchar * g_type_name (GType type);
+  GType g_type_from_name (const gchar *name);
+
+  /* GObject */
+  typedef struct {} GObject;
+
+  GObject g_object_new (GType object_type);
+
   gpointer g_object_ref (gpointer object);
   void g_object_unref (gpointer object);
 
@@ -34,4 +44,8 @@ ffi.cdef [[
                                gpointer data,
                                GClosureNotify destroy_data,
                                GConnectFlags connect_flags);
+
+  void g_signal_emit_by_name (gpointer instance, const gchar *detailed_signal, ...);
+
+  void g_signal_handler_disconnect (gpointer instance, gulong handler_id);
 ]]

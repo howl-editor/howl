@@ -3,6 +3,7 @@
 
 ffi = require 'ffi'
 require 'ljglibs.cdefs.glib'
+require 'ljglibs.cdefs.gio'
 
 ffi.cdef [[
   /* standard enums */
@@ -35,10 +36,28 @@ ffi.cdef [[
                                                   GtkStyleProvider *provider,
                                                   guint priority);
 
-    /* GtkWidget */
+  /* GtkApplication */
+  typedef struct {} GtkApplication;
+  GtkApplication * gtk_application_new (const gchar *application_id,
+                                        GApplicationFlags flags);
+
+  /* GtkWidget */
   typedef struct {} GtkWidget;
 
+  void gtk_widget_realize (GtkWidget *widget);
+  void gtk_widget_show (GtkWidget *widget);
+  void gtk_widget_hide (GtkWidget *widget);
   void gtk_widget_override_background_color (GtkWidget *widget,
                                              GtkStateFlags state,
                                              const GdkRGBA *color);
+
+  /* GtkBin */
+  typedef struct {} GtkBin;
+
+   /* GtkContainer */
+  typedef struct {} GtkContainer;
+
+  /* GtkEventBox */
+  typedef struct {} GtkEventBox;
+  GtkEventBox * gtk_event_box_new (void);
 ]]

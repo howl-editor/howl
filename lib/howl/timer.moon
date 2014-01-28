@@ -1,7 +1,7 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-require 'howl.cdefs.glib'
+require 'ljglibs.cdefs.glib'
 ffi = require 'ffi'
 C = ffi.C
 unpack = table.unpack
