@@ -60,4 +60,8 @@ ffi.cdef [[
   /* GtkEventBox */
   typedef struct {} GtkEventBox;
   GtkEventBox * gtk_event_box_new (void);
+
+  /* GtkWindow */
+  typedef struct {} GtkWindow;
+  GtkWindow * gtk_window_new (void);
 ]]

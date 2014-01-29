@@ -1,5 +1,6 @@
 ffi = require 'ffi'
 core = require 'ljglibs.core'
+Window = require 'ljglibs.gtk.window'
 
 describe 'core', ->
   describe 'define(name, spec, constructor)', ->
@@ -64,3 +65,12 @@ describe 'core', ->
         assert.equal 'from_middle', o.middle_prop
         assert.equal 456, Type.MIDDLE_ME
         assert.equal 'middle', o\override_me!
+
+    context '(signals)', ->
+      it 'sets up signal hook functions automatically based on the gtype', ->
+        -- we're just borrowing the Window class here to verify this
+        win = Window!
+        show_handler = spy.new ->
+        win\on_show show_handler, 123
+        win\show!
+        assert.spy(show_handler).was_called_with win, 123

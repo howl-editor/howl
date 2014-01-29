@@ -81,11 +81,17 @@ ffi.cdef [[
   typedef void (*GVCallback2) (gpointer, gpointer);
   typedef void (*GVCallback3) (gpointer, gpointer, gpointer);
   typedef void (*GVCallback4) (gpointer, gpointer, gpointer, gpointer);
+  typedef void (*GVCallback5) (gpointer, gpointer, gpointer, gpointer, gpointer);
+  typedef void (*GVCallback6) (gpointer, gpointer, gpointer, gpointer, gpointer, gpointer);
+  typedef void (*GVCallback7) (gpointer, gpointer, gpointer, gpointer, gpointer, gpointer, gpointer);
 
   typedef gboolean (*GBCallback1) (gpointer);
   typedef gboolean (*GBCallback2) (gpointer, gpointer);
   typedef gboolean (*GBCallback3) (gpointer, gpointer, gpointer);
   typedef gboolean (*GBCallback4) (gpointer, gpointer, gpointer, gpointer);
+  typedef gboolean (*GBCallback5) (gpointer, gpointer, gpointer, gpointer, gpointer);
+  typedef gboolean (*GBCallback6) (gpointer, gpointer, gpointer, gpointer, gpointer, gpointer);
+  typedef gboolean (*GBCallback7) (gpointer, gpointer, gpointer, gpointer, gpointer, gpointer, gpointer);
 
   typedef gboolean (*GCallback1) (gpointer);
   typedef gboolean (*GCallback2) (gpointer, gpointer);

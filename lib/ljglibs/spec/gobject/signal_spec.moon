@@ -3,8 +3,9 @@
 
 require 'ljglibs.cdefs.gtk'
 gobject = require 'ljglibs.gobject'
+require 'ljglibs.gtk.widget' -- for instantiating the widget type
 ffi = require 'ffi'
-import signal from gobject
+import signal, Type from gobject
 
 C = ffi.C
 
@@ -77,3 +78,29 @@ describe 'signal', ->
       assert.equal 2, #called_with
       assert.same { widget, 'event' }, { called_with[1], ffi.string(called_with[2]) }
 
+  describe 'lookup(name, gtype)', ->
+    it 'returns a signal id for the given name and gtype', ->
+      signal_id = signal.lookup 'destroy', Type.from_name 'GtkWidget'
+      assert.equal 'number', type signal_id
+
+  describe 'list_ids(gtype)', ->
+    it 'returns a list of signal ids for a specific gtype', ->
+      gtype = Type.from_name 'GtkWidget'
+      ids = signal.list_ids gtype
+      assert.not_equal 0, #ids
+      for n in *ids
+        assert.equal 'number', type(n)
+
+  describe 'query(signal_id)', ->
+    it 'returns a GQueryInfo table for the given signal_id', ->
+      gtype = Type.from_name 'GtkWidget'
+      info = signal.query signal.lookup 'destroy', gtype
+      assert.is_not_nil info
+      assert.equal Type.from_name('void'), info.return_type
+      assert.equal 0, info.n_params
+
+      info = signal.query signal.lookup 'focus', gtype
+      assert.is_not_nil info
+      assert.equal Type.from_name('gboolean'), info.return_type
+      assert.equal 1, info.n_params
+      assert.same { Type.from_name('GtkDirectionType') }, info.param_types

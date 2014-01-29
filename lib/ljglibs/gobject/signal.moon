@@ -2,7 +2,8 @@
 -- License: MIT (see LICENSE.md)
 
 ffi = require 'ffi'
-C = ffi.C
+require 'ljglibs.cdefs.gobject'
+C, ffi_string = ffi.C, ffi.string
 unpack = table.unpack
 
 ref_id_cnt = 0
@@ -56,15 +57,33 @@ callbacks = {
   void2: cb_cast 'GVCallback2', (a1, data) -> dispatch data, a1
   void3: cb_cast 'GVCallback3', (a1, a2, data) -> dispatch data, a1, a2
   void4: cb_cast 'GVCallback4', (a1, a2, a3, data) -> dispatch data, a1, a2, a3
+  void5: cb_cast 'GVCallback5', (a1, a2, a3, a4, data) -> dispatch data, a1, a2, a3, a4
+  void6: cb_cast 'GVCallback6', (a1, a2, a3, a4, a5, data) -> dispatch data, a1, a2, a3, a4, a5
+  void7: cb_cast 'GVCallback7', (a1, a2, a3, a4, a5, a6, data) -> dispatch data, a1, a2, a3, a4, a5, a6
   bool1: cb_cast 'GBCallback1', (data) -> dispatch data
   bool2: cb_cast 'GBCallback2', (a1, data) -> dispatch data, a1
   bool3: cb_cast 'GBCallback3', (a1, a2, data) -> dispatch data, a1, a2
   bool4: cb_cast 'GBCallback4', (a1, a2, a3, data) -> dispatch data, a1, a2, a3
-}
+  bool5: cb_cast 'GBCallback5', (a1, a2, a3, a4, data) -> dispatch data, a1, a2, a3, a4
+  bool6: cb_cast 'GBCallback6', (a1, a2, a3, a4, a5, data) -> dispatch data, a1, a2, a3, a4, a5
+  bool7: cb_cast 'GBCallback7', (a1, a2, a3, a4, a5, a6, data) -> dispatch data, a1, a2, a3, a4, a5, a6
+ }
 
 {
+  -- GConnectFlags
   CONNECT_AFTER: C.G_CONNECT_AFTER,
   CONNECT_SWAPPED: C.G_CONNECT_SWAPPED
+
+  -- GSignalFlags
+  RUN_FIRST: C.G_SIGNAL_RUN_FIRST
+  RUN_LAST: C.G_SIGNAL_RUN_LAST
+  RUN_CLEANUP: C.G_SIGNAL_RUN_CLEANUP
+  NO_RECURSE: C.G_SIGNAL_NO_RECURSE
+  DETAILED: C.G_SIGNAL_DETAILED
+  ACTION: C.G_SIGNAL_ACTION
+  NO_HOOKS: C.G_SIGNAL_NO_HOOKS
+  MUST_COLLECT: C.G_SIGNAL_MUST_COLLECT
+  DEPRECATED: C.G_SIGNAL_DEPRECATED
 
   connect: (cb_type, instance, signal, handler, ...) ->
     cb = callbacks[cb_type]
@@ -85,4 +104,37 @@ callbacks = {
 
   emit_by_name: (instance, signal, ...) ->
     C.g_signal_emit_by_name ffi.cast('gpointer', instance), signal, ...
+
+  lookup: (name, gtype) ->
+    C.g_signal_lookup name, gtype
+
+  list_ids: (gtype) ->
+    error 'Undefined gtype passed in (zero)', 2 if gtype == 0
+    n_ids = ffi.new 'guint [1]'
+    id_ptr = C.g_signal_list_ids gtype, n_ids
+    ids = {}
+    for i = 0, n_ids[0] - 1
+      ids[#ids + 1] = (id_ptr + i)[0]
+    ids
+
+  query: (signal_id) ->
+    query = ffi.new 'GSignalQuery'
+    C.g_signal_query signal_id, query
+    return nil if query.signal_id == 0
+
+    param_types = {}
+    for i = 0, query.n_params - 1
+      param_types[#param_types + 1] = (query.param_types + i)[0]
+
+    info = {
+      :signal_id,
+      signal_name: ffi_string query.signal_name
+      itype: query.itype
+      signal_flags: query.signal_flags
+      return_type: query.return_type
+      n_params: query.n_params
+      :param_types
+    }
+    info
+
 }
