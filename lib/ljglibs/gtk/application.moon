@@ -11,5 +11,9 @@ import gc_ptr from gobject
 C = ffi.C
 
 core.define 'GtkApplication < GApplication', {
+
+  add_window: (window) => C.gtk_application_add_window @, window
+  remove_window: (window) => C.gtk_application_remove_window @, window
+
 }, (t, application_id, flags) ->
   gc_ptr(C.gtk_application_new application_id, flags)

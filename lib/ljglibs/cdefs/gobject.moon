@@ -7,19 +7,29 @@ glib = require 'ljglibs.cdefs.glib'
 ffi.cdef [[
   /* GType */
   typedef gsize GType;
+
+  typedef struct {
+    GType type;
+    const gchar *type_name;
+    guint class_size;
+    guint instance_size;
+  } GTypeQuery;
+
   const gchar * g_type_name (GType type);
   GType g_type_from_name (const gchar *name);
+  gpointer g_type_class_ref (GType type);
+  void g_type_class_unref (gpointer g_class);
+  gboolean g_type_is_a (GType type, GType is_a_type);
+  gpointer g_type_default_interface_ref (GType g_type);
+  void g_type_default_interface_unref (gpointer g_iface);
+  void g_type_query (GType type, GTypeQuery *query);
 
   /* GObject */
   typedef struct {} GObject;
 
   GObject g_object_new (GType object_type);
-
   gpointer g_object_ref (gpointer object);
   void g_object_unref (gpointer object);
-  gpointer g_type_class_ref (GType type);
-  void g_type_class_unref (gpointer g_class);
-  gboolean g_type_is_a (GType type, GType is_a_type);
 
   typedef struct {
     volatile       	guint	 in_marshal : 1;

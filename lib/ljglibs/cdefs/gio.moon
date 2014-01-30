@@ -43,7 +43,7 @@ ffi.cdef [[
                                     GCancellable *cancellable,
                                     GError **error);
   /* GFile */
-  typedef struct GFile GFile;
+  typedef struct {} GFile;
 
   typedef enum {
     G_FILE_QUERY_INFO_NONE              = 0,

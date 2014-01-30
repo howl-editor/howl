@@ -64,4 +64,9 @@ ffi.cdef [[
   /* GtkWindow */
   typedef struct {} GtkWindow;
   GtkWindow * gtk_window_new (void);
+  gboolean gtk_window_set_default_icon_from_file (const gchar *filename,
+                                                  GError **err);
+
+  void gtk_application_add_window (GtkApplication *application, GtkWindow *window);
+  void gtk_application_remove_window (GtkApplication *application, GtkWindow *window);
 ]]

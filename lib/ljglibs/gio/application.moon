@@ -6,11 +6,11 @@ require 'ljglibs.cdefs.gio'
 glib = require 'ljglibs.glib'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
-import gc_ptr from gobject
+import gc_ptr, signal, object from gobject
 import catch_error from glib
 
 C = ffi.C
-ffi_string = ffi.string
+ffi_string, ffi_cast = ffi.string, ffi.cast
 
 core.define 'GApplication', {
   constants: {
@@ -35,5 +35,22 @@ core.define 'GApplication', {
   release: => C.g_application_release @
   quit: => C.g_application_quit @
 
-},  (t, application_id, flags) ->
+  run: (args) =>
+    argv = ffi.new 'char*[?]', #args
+    for i = 0, #args - 1
+      arg = args[i + 1]
+      argv[i] = ffi.new 'char [?]', #arg + 1, arg
+    C.g_application_run @, #args, argv
+
+  on_open: (handler, ...) =>
+    signal.connect 'void5', @, 'open', (app, files, n_files, hint) ->
+      gfiles = {}
+      n_files = tonumber ffi_cast('gint', n_files)
+      files = ffi_cast 'GFile **', files
+      for i = 1, n_files
+        gfiles[#gfiles + 1] = gc_ptr object.ref files[i - 1]
+
+      handler @, gfiles, ffi_string hint
+
+},  (t, application_id, flags = t.FLAGS_NONE) ->
   gc_ptr(C.g_application_new application_id, flags)

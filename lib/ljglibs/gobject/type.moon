@@ -18,4 +18,11 @@ C, ffi_string = ffi.C, ffi.string
   class_ref: (gtype) -> C.g_type_class_ref gtype
   class_unref: (type_class) -> C.g_type_class_unref type_class
   is_a: (gtype, is_a_type) -> C.g_type_is_a(gtype, is_a_type ) != 0
+  default_interface_ref: (gtype) -> C.g_type_default_interface_ref gtype
+  default_interface_unref: (giface) -> C.g_type_default_interface_unref giface
+  query: (gtype) ->
+    query_type = ffi.new 'GTypeQuery'
+    C.g_type_query gtype, query_type
+    query_type
+
 }

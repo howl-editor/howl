@@ -36,14 +36,16 @@ dispatch = (data, ...) ->
 
       status, ret = pcall handler, unpack(args, 1, args.maxn + handle.args.maxn)
       return ret == true if status
+      error "*error in '#{handle.signal}' handler: #{ret}"
     else
       disconnect handle
 
   false
 
-register_callback = (handler, instance, ...) ->
+register_callback = (signal, handler, instance, ...) ->
   ref_id_cnt += 1
   handle = {
+    :signal
     :handler,
     :instance,
     id: ref_id_cnt,
@@ -88,7 +90,7 @@ callbacks = {
   connect: (cb_type, instance, signal, handler, ...) ->
     cb = callbacks[cb_type]
     error "Unknown callback type '#{cb_type}'" unless cb
-    handle = register_callback handler, instance, ...
+    handle = register_callback signal, handler, instance, ...
     handler_id = C.g_signal_connect_data(instance, signal, cb, ffi.cast('gpointer', handle.id), nil, 0)
     handle.handler_id = handler_id
     handle
@@ -109,7 +111,7 @@ callbacks = {
     C.g_signal_lookup name, gtype
 
   list_ids: (gtype) ->
-    error 'Undefined gtype passed in (zero)', 2 if gtype == 0
+    error 'Undefined gtype passed in (zero)', 2 if gtype == 0 or gtype == nil
     n_ids = ffi.new 'guint [1]'
     id_ptr = C.g_signal_list_ids gtype, n_ids
     ids = {}

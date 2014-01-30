@@ -16,3 +16,10 @@ describe 'Type', ->
     it 'returns the name for a given gtype', ->
       gtype = Type.from_name 'GtkWindow'
       assert.equals 'GtkWindow', Type.name gtype
+
+  describe 'query(gtype)', ->
+    it 'returns a query structure with information about a given type', ->
+      gtype = Type.from_name 'GtkWindow'
+      info = Type.query gtype
+      assert.equal gtype, info.type
+      assert.equal 'GtkWindow', ffi.string info.type_name
