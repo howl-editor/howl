@@ -78,6 +78,21 @@ describe 'core', ->
         assert.equal 456, MyType.MIDDLE_ME
         assert.equal 'middle', o\override_me!
 
+    context '(instance creation)', ->
+      context 'when a table is passed to the constructor', ->
+        it 'sets any key-value pairs as properties on the instance', ->
+          ffi.cdef 'typedef struct { int foo; } my_prop_type;'
+          MyPropType = core.define 'my_prop_type', {
+            properties: {
+              foo: {
+                get: => @foo
+                set: (v) => @.foo = v
+              }
+            }
+          }, -> ffi.new 'my_prop_type'
+          o = MyPropType foo: 123
+          assert.equal 123, o.foo
+
     context '(signals)', ->
       -- we're just borrowing the Window class here to verify this
 

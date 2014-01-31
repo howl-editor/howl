@@ -92,6 +92,15 @@ setup_signals = (name, def, gtype, instance_cast) ->
 
         signal.connect cb_type, instance, info.signal_name, casting_handler, ...
 
+construct = (spec, constructor, ...) ->
+  args = {...}
+  if #args == 1 and type(args[1]) == 'table'
+    inst = constructor spec
+    inst[k] = v for k,v in pairs args[1]
+    inst
+  else
+    constructor spec, ...
+
 {
   define: (name, spec, constructor) ->
     base = nil
@@ -117,8 +126,13 @@ setup_signals = (name, def, gtype, instance_cast) ->
       Type.class_unref type_class
 
     ffi.metatype name, meta_t
-    mt = __call: constructor, __index: base and base.def
+
+    mt = __index: base and base.def
+    if constructor
+      mt.__call = (t, ...) -> construct t, constructor, ...
+
     spec = setmetatable(spec, mt)
+
     casts[tonumber gtype] = cast if gtype
     defs[name] = {
       :base
