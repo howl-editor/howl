@@ -10,7 +10,7 @@ before_install:
   - sudo luarocks install busted
 
 install:
-  - (cd src && make)
+  - (cd src && make -j 4)
 
 script: "./bin/howl-spec && ./bin/howl-spec bundles && ./bin/howl-spec lib/ljglibs/spec"
 
