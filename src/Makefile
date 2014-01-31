@@ -75,7 +75,7 @@ $(LUAJIT_ARCHIVE): $(LUAJIT)
 $(LGI):
 	@tools/download $(LGI_URL) $(LGI_CHECKSUM) tar xzf {file} -C deps
 
-$(LGI_ARCHIVE): $(LGI)
+$(LGI_ARCHIVE): $(LGI) $(LUAJIT)
 	cd ${LGI}/lgi && $(MAKE) LUA_CFLAGS=$(LUAJIT_CFLAGS)
 	ar rs $(LGI_ARCHIVE) ${LGI}/lgi/*.o
 
