@@ -18,9 +18,20 @@ describe 'core', ->
 
     it 'exposes any properties given in .properties', ->
       ffi.cdef 'typedef struct {} my_type3;'
-      core.define 'my_type3', { properties: { my_prop: -> 'prop me up' } }
+      prop2 = 'unset'
+      core.define 'my_type3', {
+        properties: {
+          my_prop: -> 'prop me up'
+          prop2: {
+            get: => prop2
+            set: (v) => prop2 = "set-#{v}"
+          }
+        }
+      }
       o = ffi.new 'my_type3'
       assert.equal 'prop me up', o.my_prop
+      o.prop2 = 'yes'
+      assert.equal 'set-yes', o.prop2
 
     context '(inheritance)', ->
       it 'dispatches missing methods, properties and constants to the base', ->

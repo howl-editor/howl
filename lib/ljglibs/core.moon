@@ -36,21 +36,29 @@ force_type_init = (name) ->
   status, gtype = pcall -> C[type_f]!
   status and gtype or nil
 
-dispatch = (def, base, o, k, cast) ->
+dispatch = (def, base, o, k, v, cast) ->
   props = def.properties
   o = cast(o) if cast
   if props
     prop = props[k]
-    return prop o if prop
+    if prop
+      if v
+        setter = prop.set
+        error "Attempt to set read-only property: '#{k}'" unless setter
+        setter o, v
+      else
+        return prop o if type(prop) == 'function'
+        return prop.get o
 
-  v = rawget def, k
-  if v
-    if cast and type(v) == 'function'
-      return (instance, ...) -> v o, ...
-    return v
+  unless v
+    def_v = rawget def, k
+    if def_v
+      if cast and type(def_v) == 'function'
+        return (instance, ...) -> def_v o, ...
+      return def_v
 
   if base
-    dispatch base.def, base.base, o, k, base.cast
+    dispatch base.def, base.base, o, k, v, base.cast
 
 set_constants = (def) ->
   if def.constants
@@ -64,12 +72,8 @@ cast = (gtype, v) ->
   c = casts[tonumber gtype]
   c and c(v) or v
 
-set_signals = (name, def, gtype, instance_cast) ->
-  query_info = Type.query gtype
-  return if query_info.class_size == 0
-  type_class = Type.class_ref gtype
+setup_signals = (name, def, gtype, instance_cast) ->
   ids = signal.list_ids gtype
-  Type.class_unref type_class
   for id in *ids
     info = signal.query id, gtype
     name = 'on_' .. info.signal_name\gsub '-', '_'
@@ -102,10 +106,15 @@ set_signals = (name, def, gtype, instance_cast) ->
     cast = (o) -> ffi_cast(ctype, o)
 
     meta_t = spec.meta or {}
+    meta_t.__index = (o, k) -> dispatch spec, base, o, k
+    meta_t.__newindex = (o, k, v) -> dispatch spec, base, o, k, v
     spec.properties or= {}
     set_constants spec
-    set_signals name, spec, gtype, cast if gtype
-    meta_t.__index = (o, k) -> dispatch spec, base, o, k
+
+    if gtype and Type.query(gtype).class_size != 0
+      type_class = Type.class_ref gtype
+      setup_signals name, spec, gtype, cast
+      Type.class_unref type_class
 
     ffi.metatype name, meta_t
     mt = __call: constructor, __index: base and base.def
