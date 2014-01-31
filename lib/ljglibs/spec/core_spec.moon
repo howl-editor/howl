@@ -1,7 +1,8 @@
 ffi = require 'ffi'
 core = require 'ljglibs.core'
 Type = require 'ljglibs.gobject.type'
-Window = require 'ljglibs.gtk.window'
+Gtk = require 'ljglibs.gtk'
+import Window, Box from Gtk
 
 describe 'core', ->
   describe 'define(name, spec, constructor)', ->
@@ -93,8 +94,12 @@ describe 'core', ->
           o = MyPropType foo: 123
           assert.equal 123, o.foo
 
+        it 'adds any positional (array part) parameters as children', ->
+          box = Box Gtk.ORIENTATION_HORIZONTAL, 5
+          win = Window { box }
+          -- assert.equal box, win\get_child!
+
     context '(signals)', ->
-      -- we're just borrowing the Window class here to verify this
 
       it 'sets up signal hook functions automatically based on the gtype', ->
         win = Window!

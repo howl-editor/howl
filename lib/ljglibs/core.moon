@@ -96,7 +96,8 @@ construct = (spec, constructor, ...) ->
   args = {...}
   if #args == 1 and type(args[1]) == 'table'
     inst = constructor spec
-    inst[k] = v for k,v in pairs args[1]
+    inst[k] = v for k,v in pairs args[1] when type(k) != 'number'
+    inst\add child for child in *args[1]
     inst
   else
     constructor spec, ...
