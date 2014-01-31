@@ -162,8 +162,8 @@ class Application extends PropertyObject
 
   run: =>
     @g_app = Gtk.Application 'io.howl.Editor', Gtk.Application.HANDLES_OPEN
-    @g_app.on_activate @_load
-    @g_app.on_open (_, files) -> @_load [File(path) for path in *files]
+    @g_app\on_activate -> @_load
+    @g_app\on_open (_, files) -> @_load [File(path) for path in *files]
 
     -- by default we'll not open files in the same instance,
     -- but this can be toggled via the --reuse command line parameter
