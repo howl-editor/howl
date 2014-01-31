@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import GLib from lgi
+glib = require 'ljglibs.glib'
 import File from howl.fs
 import Matcher from howl.util
 
@@ -26,7 +26,7 @@ home_dir = -> File os.getenv 'HOME'
 
 class FileInput
   new: (@directory_reader) =>
-    @directory = File GLib.get_current_dir!
+    @directory = File glib.get_current_dir!
 
     if editor
       file = editor.buffer.file

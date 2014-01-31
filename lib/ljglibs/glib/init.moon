@@ -7,12 +7,14 @@ C, ffi_string = ffi.C, ffi.string
 
 unpack = table.unpack
 
+g_string = (ptr) ->
+  return nil if ptr == nil
+  s = ffi_string ptr
+  C.g_free ptr
+  s
+
 return {
-  g_string: (ptr) ->
-    return nil if ptr == nil
-    s = ffi_string ptr
-    C.g_free ptr
-    s
+  :g_string
 
   catch_error: (f, ...) ->
     err = ffi.new 'GError *[1]'
@@ -28,4 +30,6 @@ return {
       error "#{err_s} (code: #{code})", 2
 
     ret
+
+  get_current_dir: -> g_string C.g_get_current_dir!
 }

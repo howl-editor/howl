@@ -27,6 +27,8 @@ ffi.cdef [[
   typedef gint64        goffset;
   typedef double        gdouble;
 
+  gchar * g_get_current_dir (void);
+
   /* GError definitions */
   typedef struct {
     GQuark  domain;
@@ -61,6 +63,7 @@ ffi.cdef [[
 
   void g_free(gpointer mem);
 
+  /* utf8 helper functions */
   glong   g_utf8_pointer_to_offset(const gchar *str, const gchar *pos);
   gchar * g_utf8_offset_to_pointer(const gchar *str, glong offset);
   gchar * g_utf8_find_next_char   (const gchar *p, const gchar *end);
