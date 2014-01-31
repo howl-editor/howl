@@ -8,6 +8,5 @@ require 'ljglibs.gtk.container'
 
 C = ffi.C
 
-core.define 'GtkBin < GtkContainer', {
-  get_child: => C.gtk_bin_get_child @
+core.define 'GtkGrid < GtkContainer', {
 }

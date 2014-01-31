@@ -11,6 +11,12 @@ C = ffi.C
 catch_error = glib.catch_error
 
 core.define 'GtkWindow < GtkBin', {
+  constants: {
+    prefix: 'GTK_WINDOW_'
+    'TOPLEVEL',
+    'POPUP'
+  }
+
   new: -> C.gtk_window_new!
 
   set_default_icon_from_file: (filename) ->

@@ -18,6 +18,18 @@ ffi.cdef [[
     GTK_STATE_FLAG_FOCUSED      = 1 << 5
   } GtkStateFlags;
 
+  typedef enum {
+    GTK_POS_LEFT,
+    GTK_POS_RIGHT,
+    GTK_POS_TOP,
+    GTK_POS_BOTTOM
+  } GtkPositionType;
+
+  typedef enum {
+    GTK_ORIENTATION_HORIZONTAL,
+    GTK_ORIENTATION_VERTICAL
+  } GtkOrientation;
+
   /* GtkCssProvider */
   typedef struct {} GtkStyleProvider;
   typedef struct {} GtkCssProvider;
@@ -53,15 +65,34 @@ ffi.cdef [[
 
   /* GtkBin */
   typedef struct {} GtkBin;
+  GtkWidget * gtk_bin_get_child (GtkBin *bin);
+
+  /* GtkGrid */
+  typedef struct {} GtkGrid;
 
    /* GtkContainer */
   typedef struct {} GtkContainer;
+
+  void gtk_container_add (GtkContainer *container, GtkWidget *widget);
+  void gtk_container_remove (GtkContainer *container, GtkWidget *widget);
+
+  /* GtkAlignment */
+  typedef struct {} GtkAlignment;
+
+  /* GtkBox */
+  typedef struct {} GtkBox;
+  GtkBox * gtk_box_new (GtkOrientation orientation, gint spacing);
 
   /* GtkEventBox */
   typedef struct {} GtkEventBox;
   GtkEventBox * gtk_event_box_new (void);
 
   /* GtkWindow */
+  typedef enum {
+    GTK_WINDOW_TOPLEVEL,
+    GTK_WINDOW_POPUP
+  } GtkWindowType;
+
   typedef struct {} GtkWindow;
   GtkWindow * gtk_window_new (void);
   gboolean gtk_window_set_default_icon_from_file (const gchar *filename,

@@ -13,5 +13,15 @@ core.auto_loading 'gtk', {
     'STATE_FLAG_INSENSITIVE',
     'STATE_FLAG_INCONSISTENT',
     'STATE_FLAG_FOCUSED',
+
+    -- GtkPositionType
+    'POS_LEFT',
+    'POS_RIGHT',
+    'POS_TOP',
+    'POS_BOTTOM'
+
+    -- GtkOrientation;
+    'ORIENTATION_HORIZONTAL',
+    'ORIENTATION_VERTICAL',
   }
 }

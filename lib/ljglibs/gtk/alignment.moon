@@ -4,10 +4,9 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
-require 'ljglibs.gtk.container'
+require 'ljglibs.gtk.bin'
 
 C = ffi.C
 
-core.define 'GtkBin < GtkContainer', {
-  get_child: => C.gtk_bin_get_child @
+core.define 'GtkAlignment < GtkBin', {
 }

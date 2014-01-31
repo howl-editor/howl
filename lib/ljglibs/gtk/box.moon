@@ -8,6 +8,6 @@ require 'ljglibs.gtk.container'
 
 C = ffi.C
 
-core.define 'GtkBin < GtkContainer', {
-  get_child: => C.gtk_bin_get_child @
-}
+core.define 'GtkBox < GtkContainer', {
+  new: (orientation, spacing) -> C.gtk_box_new orientation, spacing
+}, (spec, ...) -> spec.new ...
