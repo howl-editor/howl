@@ -1,11 +1,14 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Gtk, Gio from lgi
+ffi = require 'ffi'
+
 import Window, Editor, theme from howl.ui
 import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs from howl
 import File from howl.fs
 import PropertyObject from howl.aux.moon
+
+Gtk = require 'ljglibs.gtk'
 
 sort_buffers = (buffers) ->
   table.sort buffers, (a, b) ->
@@ -48,7 +51,6 @@ class Application extends PropertyObject
       title: @title
       width: 800
       height: 640
-      application: @g_app
 
       on_delete_event: ->
         if #@windows == 1
@@ -65,6 +67,8 @@ class Application extends PropertyObject
 
     props[k] = v for k, v in pairs(properties)
     window = Window props
+    @g_app\add_window ffi.cast('GtkWindow *', window\to_gobject!._native)
+
     append @windows, window
     _G.window = window if #@windows == 1
     window
@@ -157,9 +161,9 @@ class Application extends PropertyObject
         log.info msg
 
   run: =>
-    @g_app = Gtk.Application.new 'io.howl.Editor', Gio.ApplicationFlags.HANDLES_OPEN
-    @g_app.on_activate = -> @_load!
-    @g_app.on_open = (_, files) -> @_load [File(path) for path in *files]
+    @g_app = Gtk.Application 'io.howl.Editor', Gtk.Application.HANDLES_OPEN
+    @g_app.on_activate @_load
+    @g_app.on_open (_, files) -> @_load [File(path) for path in *files]
 
     -- by default we'll not open files in the same instance,
     -- but this can be toggled via the --reuse command line parameter
@@ -330,7 +334,7 @@ class Application extends PropertyObject
     for dir in *{ @root_dir.parent, @root_dir }
       icon = dir\join('share/icons/hicolor/scalable/apps/howl.svg')
       if icon.exists
-        icon_set, err = Gtk.Window.set_default_icon_from_file icon.path
+        icon_set = Gtk.Window.set_default_icon_from_file icon.path
         log.error "Failed to load application icon: #{err}" unless icon_set
         return
 
