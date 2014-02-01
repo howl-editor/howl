@@ -189,7 +189,7 @@ override_widget_background = (widget, background_style) ->
     if bg_color
       background = Gdk.RGBA!
       background\parse bg_color
-      widget = ffi.cast('GtkWidget *', widget._native)
+      widget = ffi.cast('GtkWidget *', widget._native) unless type(widget) == 'cdata'
       widget\override_background_color 0, background
 
 apply_theme = ->

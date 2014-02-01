@@ -47,27 +47,25 @@ class Application extends PropertyObject
     return #hidden_buffers > 0 and hidden_buffers[1] or @_buffers[1]
 
   new_window: (properties = {}) =>
-    props =
-      title: @title
-      width: 800
-      height: 640
-
-      on_delete_event: ->
-        if #@windows == 1
-          unless @_should_abort_quit!
-            @_on_quit!
-            return false
-
-          true
-
-      on_destroy: (window) ->
-        for k, win in ipairs @windows
-          if win\to_gobject! == window
-            @windows[k] = nil
-
+    props = title: @title
     props[k] = v for k, v in pairs(properties)
     window = Window props
-    @g_app\add_window ffi.cast('GtkWindow *', window\to_gobject!._native)
+    window\set_default_size 800, 640
+
+    window\on_delete_event ->
+      if #@windows == 1
+        unless @_should_abort_quit!
+          @_on_quit!
+          return false
+
+        true
+
+    window\on_destroy (window) ->
+      for k, win in ipairs @windows
+        if win\to_gobject! == window
+          @windows[k] = nil
+
+    @g_app\add_window window\to_gobject!
 
     append @windows, window
     _G.window = window if #@windows == 1

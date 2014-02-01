@@ -1,13 +1,13 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-bit = require 'bit'
-
 import Gtk from lgi
 import PositionType from Gtk
 import PropertyObject from howl.aux.moon
 import Status, Readline, theme from howl.ui
 import signal from howl
+
+GtkWindow = require 'ljglibs.gtk.window'
 
 to_gobject = (o) ->
   status, gobject = pcall -> o\to_gobject!
@@ -22,9 +22,6 @@ placements = {
 
 class Window extends PropertyObject
   new: (properties = {}) =>
-    props = type: Gtk.WindowType.TOPLEVEL
-    props[k] = v for k,v in pairs properties
-
     @status = Status!
     @readline = Readline self
 
@@ -48,11 +45,13 @@ class Window extends PropertyObject
       }
     }
 
-    @win = Gtk.Window props
-    @win.on_focus_in_event = self\_on_focus
-    @win.on_focus_out_event = self\_on_focus_lost
-    @win\add alignment
-    @win\get_style_context!\add_class 'main'
+    @win = GtkWindow GtkWindow.TOPLEVEL
+    @win[k] = v for k,v in pairs properties
+    @win\on_focus_in_event self\_on_focus
+    @win\on_focus_out_event self\_on_focus_lost
+
+    @win\add alignment._native
+    @win.style_context\add_class 'main'
     theme.register_background_widget @win
 
     @data = {}
@@ -89,7 +88,7 @@ class Window extends PropertyObject
     @get_view focused
 
   @property fullscreen:
-    get: => @window and @window\get_state!.FULLSCREEN != nil
+    get: => @win.window and @win.window.state.FULLSCREEN
 
     set: (state) =>
       if state and not @fullscreen
@@ -98,7 +97,7 @@ class Window extends PropertyObject
         @win\unfullscreen!
 
   @property maximized:
-    get: => @window and @window\get_state!.MAXIMIZED != nil
+    get: => @win.window and @win.window.state.MAXIMIZED
 
     set: (state) =>
       if state and not @maximized

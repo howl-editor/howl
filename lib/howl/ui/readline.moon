@@ -19,7 +19,7 @@ class Readline extends PropertyObject
   show: =>
     if not @box then @_instantiate!
 
-    @last_focused = @window\get_focus!
+    @last_focused = @window.focus
     @window.status\hide!
     @window\_remember_focus!
     @sci\grab_focus!
@@ -131,7 +131,7 @@ class Readline extends PropertyObject
     if @input and @input.update then @input\update @text, self
 
   _max_list_lines: =>
-    win_lines = @window.height / @sci\text_height 0
+    win_lines = @window.allocated_height / @sci\text_height 0
     max_lines = math.floor win_lines - (win_lines * 0.5) -- max occupation half of estate
     max_lines
 
