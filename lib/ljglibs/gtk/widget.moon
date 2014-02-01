@@ -4,13 +4,14 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gtk'
 require 'ljglibs.gdk.window'
+require 'ljglibs.gobject.object'
 core = require 'ljglibs.core'
 
 optional = core.optional
 
 C = ffi.C
 
-core.define 'GtkWidget', {
+core.define 'GtkWidget < GObject', {
   properties: {
     style_context: => C.gtk_widget_get_style_context @
     window: => optional C.gtk_widget_get_window @

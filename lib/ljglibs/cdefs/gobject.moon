@@ -30,6 +30,13 @@ ffi.cdef [[
   GObject g_object_new (GType object_type);
   gpointer g_object_ref (gpointer object);
   void g_object_unref (gpointer object);
+  void g_object_set (gpointer object,
+                    const gchar *first_property_name,
+                    gpointer data);
+
+  void g_object_get (gpointer object,
+                     const gchar *first_property_name,
+                     gpointer data);
 
   typedef struct {
     volatile       	guint	 in_marshal : 1;

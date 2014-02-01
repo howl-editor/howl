@@ -17,22 +17,41 @@ describe 'core', ->
       MyType = core.define 'my_type2', { constants: { 'WAT' } }
       assert.equal 3, MyType.WAT
 
-    it 'exposes any properties given in .properties', ->
-      ffi.cdef 'typedef struct {} my_type3;'
-      prop2 = 'unset'
-      core.define 'my_type3', {
-        properties: {
-          my_prop: -> 'prop me up'
-          prop2: {
-            get: => prop2
-            set: (v) => prop2 = "set-#{v}"
+    context '(properties)', ->
+      it 'exposes any properties given in .properties', ->
+        ffi.cdef 'typedef struct {} my_type3;'
+        prop2 = 'unset'
+        core.define 'my_type3', {
+          properties: {
+            my_prop: -> 'prop me up'
+            prop2: {
+              get: => prop2
+              set: (v) => prop2 = "set-#{v}"
+            }
           }
         }
-      }
-      o = ffi.new 'my_type3'
-      assert.equal 'prop me up', o.my_prop
-      o.prop2 = 'yes'
-      assert.equal 'set-yes', o.prop2
+        o = ffi.new 'my_type3'
+        assert.equal 'prop me up', o.my_prop
+        o.prop2 = 'yes'
+        assert.equal 'set-yes', o.prop2
+
+      it 'provides automatic getting and setting for named, GObject, properties', ->
+        ffi.cdef 'typedef struct {} my_gobject_type;'
+        set_typed = setmetatable {}, __call: (t, o, ...) -> t.args = {...}
+        get_typed = setmetatable {}, __call: (t, o, ...) ->
+          t.args = {...}
+          123
+        core.define 'my_gobject_type', {
+          properties: my_prop: 'gint'
+
+          :get_typed
+          :set_typed
+        }
+        o = ffi.new 'my_gobject_type'
+        assert.equal 123, o.my_prop
+        o.my_prop = 234
+        assert.same { 'my_prop', 'gint' }, get_typed.args
+        assert.same { 'my_prop', 'gint', 234 }, set_typed.args
 
     context '(inheritance)', ->
       it 'dispatches missing methods, properties and constants to the base', ->

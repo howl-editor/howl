@@ -37,19 +37,24 @@ force_type_init = (name) ->
   status, gtype = pcall -> C[type_f]!
   status and gtype or nil
 
+dispatch_property = (o, prop, k, v) ->
+  if type(prop) == 'string'
+    return o\get_typed k, prop unless v
+    o\set_typed k, prop, v
+  else
+    if v
+      setter = prop.set
+      error "Attempt to set read-only property: '#{k}'" unless setter
+      setter o, v
+    else
+      return prop o if type(prop) == 'function'
+      return prop.get o
+
 dispatch = (def, base, o, k, v, cast) ->
-  props = def.properties
   o = cast(o) if cast
-  if props
-    prop = props[k]
-    if prop
-      if v
-        setter = prop.set
-        error "Attempt to set read-only property: '#{k}'" unless setter
-        setter o, v
-      else
-        return prop o if type(prop) == 'function'
-        return prop.get o
+  prop = def.properties[k]
+  if prop
+    return dispatch_property o, prop, k, v
 
   unless v
     def_v = rawget def, k
