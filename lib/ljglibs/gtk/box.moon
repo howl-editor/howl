@@ -9,5 +9,12 @@ require 'ljglibs.gtk.container'
 C = ffi.C
 
 core.define 'GtkBox < GtkContainer', {
-  new: (orientation, spacing) -> C.gtk_box_new orientation, spacing
+  properties: {
+    homogeneous: 'gboolean'
+    spacing: 'gint'
+  }
+
+  new: (orientation = C.GTK_ORIENTATION_HORIZONTAL, spacing = 0) ->
+    C.gtk_box_new orientation, spacing
+
 }, (spec, ...) -> spec.new ...
