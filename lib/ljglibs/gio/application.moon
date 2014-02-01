@@ -12,7 +12,7 @@ import catch_error from glib
 C = ffi.C
 ffi_string, ffi_cast = ffi.string, ffi.cast
 
-core.define 'GApplication', {
+core.define 'GApplication < GObject', {
   constants: {
     prefix: 'G_APPLICATION_'
 
@@ -28,7 +28,7 @@ core.define 'GApplication', {
 
   properties: {
     flags: => C.g_application_get_flags @
-    application_id: => ffi_string C.g_application_get_application_id @
+    application_id: 'gchar*'
   }
 
   register: => catch_error(C.g_application_register, @, nil) != 0
