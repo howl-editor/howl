@@ -50,8 +50,8 @@ describe 'core', ->
         o = ffi.new 'my_gobject_type'
         assert.equal 123, o.my_prop
         o.my_prop = 234
-        assert.same { 'my_prop', 'gint' }, get_typed.args
-        assert.same { 'my_prop', 'gint', 234 }, set_typed.args
+        assert.same { 'my-prop', 'gint' }, get_typed.args
+        assert.same { 'my-prop', 'gint', 234 }, set_typed.args
 
     context '(inheritance)', ->
       it 'dispatches missing methods, properties and constants to the base', ->

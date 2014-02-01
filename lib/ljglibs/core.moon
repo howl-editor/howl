@@ -39,6 +39,7 @@ force_type_init = (name) ->
 
 dispatch_property = (o, prop, k, v) ->
   if type(prop) == 'string'
+    k = k\gsub '_', '-'
     return o\get_typed k, prop unless v
     o\set_typed k, prop, v
   else
