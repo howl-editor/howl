@@ -97,7 +97,7 @@ describe 'core', ->
         it 'adds any positional (array part) parameters as children', ->
           box = Box Gtk.ORIENTATION_HORIZONTAL, 5
           win = Window { box }
-          -- assert.equal box, win\get_child!
+          assert.equal box, win\get_child!
 
     context '(signals)', ->
 
@@ -125,3 +125,17 @@ describe 'core', ->
       v = ffi.cast 'void *', win
       win2 = core.cast(Type.from_name('GtkWindow'), v)
       assert.equals Window.new, win2.new
+
+  describe 'bit_flags(def, prefix, value)', ->
+    it 'offers a convinient way of accessing bit flags using string constants', ->
+      def = {
+        MY_FOO: 1,
+        MY_BAR: 2,
+      }
+      flags = core.bit_flags def, 'MY_', 2
+      assert.is_true flags.BAR
+      assert.is_false flags.FOO
+
+    it 'raises an error upon access of a non-existent constant', ->
+      flags = core.bit_flags {}, 2
+      assert.raises 'Unknown', -> flags.NO

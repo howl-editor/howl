@@ -4,6 +4,7 @@
 signal = require 'ljglibs.gobject.signal'
 Type = require 'ljglibs.gobject.type'
 ffi = require 'ffi'
+bit = require 'bit'
 C, ffi_cast = ffi.C, ffi.cast
 unpack = table.unpack
 
@@ -146,6 +147,18 @@ construct = (spec, constructor, ...) ->
   auto_loading: (name, def) ->
     set_constants def
     setmetatable def, __index: (t, k) -> auto_require name, k
+
+  bit_flags: (def, prefix = '', value) ->
+    setmetatable { :value, :def }, __index: (t, k) ->
+      kv = def["#{prefix}#{k}"]
+      error "Unknown member '#{k}'" unless kv
+      bit.band(tonumber(t.value), tonumber(kv)) != 0
+
+  optional: (v) ->
+    if v == nil
+      nil
+    else
+      v
 
   :cast
 }

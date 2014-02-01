@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 ffi = require 'ffi'
+require 'ljglibs.cdefs.gdk'
 require 'ljglibs.cdefs.glib'
 require 'ljglibs.cdefs.gio'
 
@@ -44,24 +45,30 @@ ffi.cdef [[
   /* GtkStyleContext */
   typedef struct {} GtkStyleContext;
 
+  GtkStyleContext * gtk_style_context_new (void);
+  void gtk_style_context_add_class (GtkStyleContext *context,
+                                    const gchar *class_name);
+
   void gtk_style_context_add_provider_for_screen (GdkScreen *screen,
                                                   GtkStyleProvider *provider,
                                                   guint priority);
-
-  /* GtkApplication */
-  typedef struct {} GtkApplication;
-  GtkApplication * gtk_application_new (const gchar *application_id,
-                                        GApplicationFlags flags);
 
   /* GtkWidget */
   typedef struct {} GtkWidget;
 
   void gtk_widget_realize (GtkWidget *widget);
   void gtk_widget_show (GtkWidget *widget);
+  void gtk_widget_show_all (GtkWidget *widget);
   void gtk_widget_hide (GtkWidget *widget);
+  GtkStyleContext * gtk_widget_get_style_context (GtkWidget *widget);
   void gtk_widget_override_background_color (GtkWidget *widget,
                                              GtkStateFlags state,
                                              const GdkRGBA *color);
+  GdkWindow * gtk_widget_get_window (GtkWidget *widget);
+  void gtk_widget_grab_focus (GtkWidget *widget);
+  void gtk_widget_destroy (GtkWidget *widget);
+  int gtk_widget_get_allocated_width (GtkWidget *widget);
+  int gtk_widget_get_allocated_height (GtkWidget *widget);
 
   /* GtkBin */
   typedef struct {} GtkBin;
@@ -94,10 +101,34 @@ ffi.cdef [[
   } GtkWindowType;
 
   typedef struct {} GtkWindow;
+
   GtkWindow * gtk_window_new (void);
+
+  const gchar * gtk_window_get_title (GtkWindow *window);
+  void gtk_window_set_title (GtkWindow *window, const gchar *title);
+  GtkWindowType gtk_window_get_window_type (GtkWindow *window);
+
+  void gtk_window_set_default_size (GtkWindow *window,
+                                    gint width,
+                                    gint height);
+
+  void gtk_window_get_size (GtkWindow *window, gint *width, gint *height);
+  void gtk_window_resize (GtkWindow *window, gint width, gint height);
+  GtkWidget * gtk_window_get_focus (GtkWindow *window);
+  void gtk_window_set_focus (GtkWindow *window, GtkWidget *focus);
+
   gboolean gtk_window_set_default_icon_from_file (const gchar *filename,
                                                   GError **err);
+  void gtk_window_fullscreen (GtkWindow *window);
+  void gtk_window_unfullscreen (GtkWindow *window);
+  void gtk_window_maximize (GtkWindow *window);
+  void gtk_window_unmaximize (GtkWindow *window);
 
+  /* GtkApplication */
+  typedef struct {} GtkApplication;
+  GtkApplication * gtk_application_new (const gchar *application_id,
+                                        GApplicationFlags flags);
   void gtk_application_add_window (GtkApplication *application, GtkWindow *window);
   void gtk_application_remove_window (GtkApplication *application, GtkWindow *window);
+
 ]]
