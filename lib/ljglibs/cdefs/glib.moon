@@ -26,6 +26,7 @@ ffi.cdef [[
   typedef guint64       guint64;
   typedef gint64        goffset;
   typedef double        gdouble;
+  typedef float         gfloat;
 
   gchar * g_get_current_dir (void);
 

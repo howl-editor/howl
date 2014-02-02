@@ -25,6 +25,11 @@ core.define 'GObject', {
     C.g_object_ref o
     o
 
+  ref_sink: (o) ->
+    return nil if o == nil
+    C.g_object_ref_sink o
+    o
+
   unref: (o) ->
     return nil if o == nil
     C.g_object_unref o
@@ -44,8 +49,7 @@ core.define 'GObject', {
     r
 
   set_typed: (k, type, v) =>
-    v = ffi_cast type, v
-    C.g_object_set @, k, ffi_cast(gpointer_t, v)
+    C.g_object_set @, k, ffi_cast(type, v)
 
 }, (spec, type) -> spec.new type
 

@@ -125,15 +125,16 @@ construct = (spec, constructor, ...) ->
     meta_t = spec.meta or {}
     meta_t.__index = (o, k) -> dispatch spec, base, o, k
     meta_t.__newindex = (o, k, v) -> dispatch spec, base, o, k, v
+    ffi.metatype name, meta_t
     spec.properties or= {}
     set_constants spec
+    spec.__type = name
 
     if gtype and Type.query(gtype).class_size != 0
       type_class = Type.class_ref gtype
       setup_signals name, spec, gtype, cast
       Type.class_unref type_class
 
-    ffi.metatype name, meta_t
 
     mt = __index: base and base.def
     if constructor
