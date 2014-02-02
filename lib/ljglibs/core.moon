@@ -101,16 +101,17 @@ setup_signals = (name, def, gtype, instance_cast) ->
 
 construct = (spec, constructor, ...) ->
   args = {...}
-  if #args == 1 and type(args[1]) == 'table'
-    inst = constructor spec
-    inst[k] = v for k,v in pairs args[1] when type(k) != 'number'
-    inst\add child for child in *args[1]
+  last = args[#args]
+  if type(last) == 'table'
+    inst = constructor spec, unpack(args, 1, #args - 1)
+    inst[k] = v for k,v in pairs last when type(k) != 'number'
+    inst\add child for child in *last
     inst
   else
     constructor spec, ...
 
 {
-  define: (name, spec, constructor) ->
+  define: (name, spec, constructor, options = {}) ->
     base = nil
     if name\find '<', 1
       name, base_name = name\match '(%S+)%s+<%s+(%S+)'
@@ -121,6 +122,7 @@ construct = (spec, constructor, ...) ->
     gtype = force_type_init name
     ctype = ffi.typeof "#{name} *"
     cast = (o) -> ffi_cast(ctype, o)
+    casts[tonumber gtype] = cast if gtype
 
     meta_t = spec.meta or {}
     meta_t.__index = (o, k) -> dispatch spec, base, o, k
@@ -135,19 +137,18 @@ construct = (spec, constructor, ...) ->
       setup_signals name, spec, gtype, cast
       Type.class_unref type_class
 
-
     mt = __index: base and base.def
     if constructor
       mt.__call = (t, ...) -> construct t, constructor, ...
 
     spec = setmetatable(spec, mt)
 
-    casts[tonumber gtype] = cast if gtype
     defs[name] = {
       :base
       metatype: meta_t,
       def: spec,
-      :cast
+      cast: not options.no_cast and cast
+      :options
     }
     spec
 

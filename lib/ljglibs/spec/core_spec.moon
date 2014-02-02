@@ -99,8 +99,9 @@ describe 'core', ->
         assert.equal 'middle', o\override_me!
 
     context '(instance creation)', ->
-      context 'when a table is passed to the constructor', ->
+      context 'when a table is passed as the final arg to the constructor', ->
         it 'sets any key-value pairs as properties on the instance', ->
+          local first_args
           ffi.cdef 'typedef struct { int foo; } my_prop_type;'
           MyPropType = core.define 'my_prop_type', {
             properties: {
@@ -109,14 +110,19 @@ describe 'core', ->
                 set: (v) => @.foo = v
               }
             }
-          }, -> ffi.new 'my_prop_type'
-          o = MyPropType foo: 123
-          assert.equal 123, o.foo
+          }, (spec, ...) ->
+            first_args = {...}
+            ffi.new 'my_prop_type'
 
-        it 'adds any positional (array part) parameters as children', ->
-          box = Box Gtk.ORIENTATION_HORIZONTAL, 5
-          win = Window { box }
-          assert.equal box, win\get_child!
+          o = MyPropType 'one', 2, { foo: 123 }
+          assert.equal 123, o.foo
+          assert.same { 'one', 2 }, first_args
+
+        describe 'with positional (array part) parameters', ->
+          it 'adds them as children', ->
+            box = Box Gtk.ORIENTATION_HORIZONTAL, 5
+            win = Window { box }
+            assert.equal box, win\get_child!
 
     context '(signals)', ->
 
