@@ -120,9 +120,16 @@ describe 'core', ->
 
         describe 'with positional (array part) parameters', ->
           it 'adds them as children', ->
-            box = Box Gtk.ORIENTATION_HORIZONTAL, 5
-            win = Window { box }
-            assert.equal box, win\get_child!
+            child_box = Box!
+            box = Box {
+              {
+                padding: 123,
+                child_box
+              }
+            }
+            assert.equal 123, box\properties_for(child_box).padding
+
+          it 'treats a table parameter as a child with properties', ->
 
     context '(signals)', ->
 

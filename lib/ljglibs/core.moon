@@ -105,7 +105,17 @@ construct = (spec, constructor, ...) ->
   if type(last) == 'table'
     inst = constructor spec, unpack(args, 1, #args - 1)
     inst[k] = v for k,v in pairs last when type(k) != 'number'
-    inst\add child for child in *last
+    for child in *last
+      properties = nil
+      if type(child) == 'table'
+        properties = child
+        child = child[1]
+
+      inst\add child
+
+      if properties
+        props = inst\properties_for(child)
+        props[k] = v for k, v in pairs properties when type(k) != 'number'
     inst
   else
     constructor spec, ...
