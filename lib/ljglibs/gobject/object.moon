@@ -1,19 +1,11 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gobject'
 core = require 'ljglibs.core'
+types = require 'ljglibs.types'
 
 C, ffi_cast, ffi_new, ffi_string = ffi.C, ffi.cast, ffi.new, ffi.string
 gpointer_t = ffi.typeof 'gpointer'
-
-lconverters = {
-  gboolean: (v) -> v != 0
-
-  'gchar*': (v) ->
-    return nil if v == nil
-    s = ffi_string v
-    C.g_free v
-    s
-}
+lua_value = types.lua_value
 
 core.define 'GObject', {
   new: (type) ->
@@ -40,8 +32,7 @@ core.define 'GObject', {
     C.g_object_get @, k, ret
     r = ret[0]
     return nil if r == nil
-    converter = lconverters[type]
-    return converter r if converter
+    r = lua_value type, r
 
     if type\match '^%u.*%*$' -- Object * pointer
       return ffi.gc(r, C.g_object_unref)
