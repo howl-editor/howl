@@ -83,6 +83,16 @@ ffi.cdef [[
   void gtk_container_add (GtkContainer *container, GtkWidget *widget);
   void gtk_container_remove (GtkContainer *container, GtkWidget *widget);
 
+  void gtk_container_child_get (GtkContainer *container,
+                                GtkWidget *child,
+                                const gchar *first_prop_name,
+                                ...);
+
+  void gtk_container_child_set (GtkContainer *container,
+                                GtkWidget *child,
+                                const gchar *first_prop_name,
+                                ...);
+
   /* GtkAlignment */
   typedef struct {} GtkAlignment;
 
