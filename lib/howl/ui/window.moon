@@ -1,13 +1,12 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Gtk from lgi
-import PositionType from Gtk
+Gtk = require 'ljglibs.gtk'
+LgiGtk = lgi.Gtk
+import PositionType from LgiGtk
 import PropertyObject from howl.aux.moon
 import Status, Readline, theme from howl.ui
 import signal from howl
-
-GtkWindow = require 'ljglibs.gtk.window'
 
 to_gobject = (o) ->
   status, gobject = pcall -> o\to_gobject!
@@ -25,7 +24,7 @@ class Window extends PropertyObject
     @status = Status!
     @readline = Readline self
 
-    @grid = Gtk.Grid
+    @grid = LgiGtk.Grid
       row_spacing: 4
       column_spacing: 4
       column_homogeneous: true
@@ -36,21 +35,21 @@ class Window extends PropertyObject
       left_padding: 5,
       right_padding: 5,
       bottom_padding: 5,
-      Gtk.Box {
+      LgiGtk.Box({
         orientation: 'VERTICAL',
         spacing: 3,
         { expand: true, @grid },
         @status\to_gobject!,
         @readline\to_gobject!
-      }
+      })._native
     }
 
-    @win = GtkWindow GtkWindow.TOPLEVEL
+    @win = Gtk.Window Gtk.Window.TOPLEVEL
     @win[k] = v for k,v in pairs properties
     @win\on_focus_in_event self\_on_focus
     @win\on_focus_out_event self\_on_focus_lost
 
-    @win\add alignment._native
+    @win\add alignment
     @win.style_context\add_class 'main'
     theme.register_background_widget @win
 
