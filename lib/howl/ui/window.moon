@@ -35,13 +35,12 @@ class Window extends PropertyObject
       left_padding: 5,
       right_padding: 5,
       bottom_padding: 5,
-      LgiGtk.Box({
-        orientation: 'VERTICAL',
+      Gtk.Box Gtk.ORIENTATION_VERTICAL, {
         spacing: 3,
-        { expand: true, @grid },
-        @status\to_gobject!,
-        @readline\to_gobject!
-      })._native
+        { expand: true, @grid._native },
+        @status\to_gobject!._native,
+        @readline\to_gobject!._native
+      }
     }
 
     @win = Gtk.Window Gtk.Window.TOPLEVEL
