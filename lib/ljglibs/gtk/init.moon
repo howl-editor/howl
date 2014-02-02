@@ -23,5 +23,9 @@ core.auto_loading 'gtk', {
     -- GtkOrientation;
     'ORIENTATION_HORIZONTAL',
     'ORIENTATION_VERTICAL',
+
+    -- GtkPackType;
+    'PACK_START',
+    'PACK_END'
   }
 }

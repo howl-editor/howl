@@ -31,6 +31,11 @@ ffi.cdef [[
     GTK_ORIENTATION_VERTICAL
   } GtkOrientation;
 
+  typedef enum {
+    GTK_PACK_START,
+    GTK_PACK_END
+  } GtkPackType;
+
   /* GtkCssProvider */
   typedef struct {} GtkStyleProvider;
   typedef struct {} GtkCssProvider;
@@ -122,6 +127,17 @@ ffi.cdef [[
   /* GtkBox */
   typedef struct {} GtkBox;
   GtkBox * gtk_box_new (GtkOrientation orientation, gint spacing);
+  void gtk_box_pack_start (GtkBox *box,
+                           GtkWidget *child,
+                           gboolean expand,
+                           gboolean fill,
+                           guint padding);
+
+  void gtk_box_pack_end (GtkBox *box,
+                         GtkWidget *child,
+                         gboolean expand,
+                         gboolean fill,
+                         guint padding);
 
   /* GtkEventBox */
   typedef struct {} GtkEventBox;
