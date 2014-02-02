@@ -3,7 +3,6 @@
 
 Gtk = require 'ljglibs.gtk'
 LgiGtk = lgi.Gtk
-import PositionType from LgiGtk
 import PropertyObject from howl.aux.moon
 import Status, Readline, theme from howl.ui
 import signal from howl
@@ -13,10 +12,10 @@ to_gobject = (o) ->
   return status and gobject or o
 
 placements = {
-  left_of: 'LEFT'
-  right_of: 'RIGHT'
-  above: 'TOP'
-  below: 'BOTTOM'
+  left_of: 'POS_LEFT'
+  right_of: 'POS_RIGHT'
+  above: 'POS_TOP'
+  below: 'POS_BOTTOM'
 }
 
 class Window extends PropertyObject
@@ -231,7 +230,7 @@ class Window extends PropertyObject
       return
 
     @_insert_column anchor, placement if placement == 'left_of' or placement == 'right_of'
-    @grid\attach_next_to gobject, anchor, PositionType[where], 1, 1
+    @grid\attach_next_to gobject, anchor, Gtk[where], 1, 1
 
   _on_focus: =>
     _G.window = self
