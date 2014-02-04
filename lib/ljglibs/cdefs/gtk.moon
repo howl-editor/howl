@@ -90,6 +90,29 @@ ffi.cdef [[
   /* GtkGrid */
   typedef struct {} GtkGrid;
 
+  GtkGrid * gtk_grid_new (void);
+  void gtk_grid_attach (GtkGrid *grid,
+                        GtkWidget *child,
+                        gint left,
+                        gint top,
+                        gint width,
+                        gint height);
+
+  void gtk_grid_attach_next_to (GtkGrid *grid,
+                                GtkWidget *child,
+                                GtkWidget *sibling,
+                                GtkPositionType side,
+                                gint width,
+                                gint height);
+  GtkWidget * gtk_grid_get_child_at (GtkGrid *grid, gint left, gint top);
+  void gtk_grid_insert_row (GtkGrid *grid, gint position);
+  void gtk_grid_insert_column (GtkGrid *grid, gint position);
+  void gtk_grid_remove_row (GtkGrid *grid, gint position);
+  void gtk_grid_remove_column (GtkGrid *grid, gint position);
+  void gtk_grid_insert_next_to (GtkGrid *grid,
+                                GtkWidget *sibling,
+                                GtkPositionType side);
+
    /* GtkContainer */
   typedef struct {} GtkContainer;
 
