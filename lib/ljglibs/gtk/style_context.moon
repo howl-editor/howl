@@ -19,5 +19,6 @@ core.define 'GtkStyleContext', {
     C.gtk_style_context_add_provider_for_screen screen, cast(provider_p, provider), priority
 
   add_class: (cls) => C.gtk_style_context_add_class @, cls
+  remove_class: (cls) => C.gtk_style_context_remove_class @, cls
 
 }, (spec) -> spec.new!

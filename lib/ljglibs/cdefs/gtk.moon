@@ -60,6 +60,7 @@ ffi.cdef [[
   GtkStyleContext * gtk_style_context_new (void);
   void gtk_style_context_add_class (GtkStyleContext *context,
                                     const gchar *class_name);
+  void gtk_style_context_remove_class (GtkStyleContext *context, const gchar *class_name);
 
   void gtk_style_context_add_provider_for_screen (GdkScreen *screen,
                                                   GtkStyleProvider *provider,
