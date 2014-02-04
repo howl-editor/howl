@@ -36,6 +36,13 @@ ffi.cdef [[
     GTK_PACK_END
   } GtkPackType;
 
+  typedef enum {
+    GTK_JUSTIFY_LEFT,
+    GTK_JUSTIFY_RIGHT,
+    GTK_JUSTIFY_CENTER,
+    GTK_JUSTIFY_FILL
+  } GtkJustification;
+
   /* GtkCssProvider */
   typedef struct {} GtkStyleProvider;
   typedef struct {} GtkCssProvider;
@@ -184,5 +191,19 @@ ffi.cdef [[
                                         GApplicationFlags flags);
   void gtk_application_add_window (GtkApplication *application, GtkWindow *window);
   void gtk_application_remove_window (GtkApplication *application, GtkWindow *window);
+
+  /* GtkMisc */
+  typedef struct {} GtkMisc;
+
+  /* GtkLabel */
+  typedef struct {} GtkLabel;
+
+  GtkLabel * gtk_label_new (const gchar *str);
+  const gchar * gtk_label_get_text (GtkLabel *label);
+  void gtk_label_set_text (GtkLabel *label, const gchar *str);
+
+  /* GtkEntry */
+  typedef struct {} GtkEntry;
+  GtkEntry * gtk_entry_new (void);
 
 ]]
