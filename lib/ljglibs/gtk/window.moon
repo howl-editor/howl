@@ -21,10 +21,39 @@ core.define 'GtkWindow < GtkBin', {
   }
 
   properties: {
-    title:
-      get: => ffi_string C.gtk_window_get_title @
-      set: (title) => C.gtk_window_set_title @, title
+    accept_focus: 'gboolean'
+    application: 'GtkApplication*'
+    decorated: 'gboolean'
+    default_height: 'gint'
+    default_width: 'gint'
+    deletable: 'gboolean'
+    destroy_with_parent: 'gboolean'
+    focus_on_map: 'gboolean'
+    focus_visible: 'gboolean'
+    gravity: 'GdkGravity'
+    has_resize_grip: 'gboolean'
+    has_toplevel_focus: 'gboolean'
+    icon: 'GdkPixbuf*'
+    icon_name: 'gchar*'
+    is_active: 'gboolean'
+    mnemonics_visible: 'gboolean'
+    modal: 'gboolean'
+    opacity: 'gdouble'
+    resizable: 'gboolean'
+    resize_grip_visible: 'gboolean'
+    role: 'gchar*'
+    screen: 'GdkScreen*'
+    skip_pager_hint: 'gboolean'
+    skip_taskbar_hint: 'gboolean'
+    startup_id: 'gchar*'
+    title: 'gchar*'
+    transient_for: 'GtkWindow*'
+    type: 'GtkWindowType'
+    type_hint: 'GdkWindowTypeHint'
+    urgency_hint: 'gboolean'
+    window_position: 'GtkWindowPosition'
 
+    -- added properties
     window_type: => C.gtk_window_get_window_type @
 
     focus:
