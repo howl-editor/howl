@@ -119,7 +119,9 @@ ffi.cdef [[
 
   void gtk_container_add (GtkContainer *container, GtkWidget *widget);
   void gtk_container_remove (GtkContainer *container, GtkWidget *widget);
-
+  GtkWidget * gtk_container_get_focus_child (GtkContainer *container);
+  void gtk_container_set_focus_child (GtkContainer *container, GtkWidget *child);
+  GList * gtk_container_get_children (GtkContainer *container);
   void gtk_container_child_get (GtkContainer *container,
                                 GtkWidget *child,
                                 const gchar *first_prop_name,

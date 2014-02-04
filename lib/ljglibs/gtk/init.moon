@@ -20,12 +20,18 @@ core.auto_loading 'gtk', {
     'POS_TOP',
     'POS_BOTTOM'
 
-    -- GtkOrientation;
+    -- GtkOrientation
     'ORIENTATION_HORIZONTAL',
     'ORIENTATION_VERTICAL',
 
-    -- GtkPackType;
+    -- GtkPackType
     'PACK_START',
     'PACK_END'
+
+    -- GtkJustification
+    'JUSTIFY_LEFT'
+    'JUSTIFY_RIGHT'
+    'JUSTIFY_CENTER'
+    'JUSTIFY_FILL'
   }
 }
