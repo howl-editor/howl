@@ -173,6 +173,10 @@ ffi.cdef [[
   void gtk_window_maximize (GtkWindow *window);
   void gtk_window_unmaximize (GtkWindow *window);
 
+  /* GtkOffscreenWindow */
+  typedef struct {} GtkOffscreenWindow;
+  GtkOffscreenWindow * gtk_offscreen_window_new (void);
+
   /* GtkApplication */
   typedef struct {} GtkApplication;
   GtkApplication * gtk_application_new (const gchar *application_id,
