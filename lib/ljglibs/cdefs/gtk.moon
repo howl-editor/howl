@@ -61,6 +61,7 @@ ffi.cdef [[
   /* GtkWidget */
   typedef struct {} GtkWidget;
 
+  const gchar * gtk_widget_get_name (GtkWidget *widget);
   void gtk_widget_realize (GtkWidget *widget);
   void gtk_widget_show (GtkWidget *widget);
   void gtk_widget_show_all (GtkWidget *widget);

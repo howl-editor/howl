@@ -147,17 +147,6 @@ describe 'core', ->
         win\on_show show_handler
         win\show!
 
-  describe 'cast(gtype, instance)', ->
-    it 'supports some basic types', ->
-      v = ffi.cast 'void *', 1
-      assert.equal 1, core.cast(Type.from_name('guint'), v)
-
-    it 'supports ljglibs definitions', ->
-      win = Window!
-      v = ffi.cast 'void *', win
-      win2 = core.cast(Type.from_name('GtkWindow'), v)
-      assert.equals Window.new, win2.new
-
   describe 'bit_flags(def, prefix, value)', ->
     it 'offers a convinient way of accessing bit flags using string constants', ->
       def = {
