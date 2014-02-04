@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Gtk from lgi
+Gtk = require 'ljglibs.gtk'
 import Scintilla, Completer, signal, bindings, config, command from howl
 import PropertyObject from howl.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
@@ -71,35 +71,35 @@ class Editor extends PropertyObject
     @header = IndicatorBar 'header', 3
     @footer = IndicatorBar 'footer', 3
 
+    sci_box = Gtk.EventBox {
+      Gtk.Alignment {
+        top_padding: 1
+        bottom_padding: 1
+        @sci\to_gobject!._native
+      }
+    }
+
     @bin = Gtk.EventBox {
       Gtk.Alignment {
         top_padding: 1,
         left_padding: 1,
         right_padding: 3,
         bottom_padding: 3,
-        Gtk.Box {
-          orientation: 'VERTICAL',
+        Gtk.Box Gtk.ORIENTATION_VERTICAL, {
           @header\to_gobject!
           {
-            expand: true
-            Gtk.EventBox {
-              id: 'sci_box'
-              Gtk.Alignment {
-                top_padding: 1
-                bottom_padding: 1
-                @sci\to_gobject!
-              }
-            }
+            expand: true,
+            sci_box
           }
           @footer\to_gobject!
         }
       }
     }
-    @bin\get_style_context!\add_class 'editor'
-    @bin.child.sci_box\get_style_context!\add_class 'sci_box'
+    @bin.style_context\add_class 'editor'
+    sci_box.style_context\add_class 'sci_box'
     @bin.can_focus = true
-    @bin.on_focus_in_event = -> @sci\grab_focus!
-    @bin.on_destroy = -> @buffer\remove_sci_ref @sci
+    @bin\on_focus_in_event -> @sci\grab_focus!
+    @bin\on_destroy -> @buffer\remove_sci_ref @sci
 
     theme.register_background_widget @sci\to_gobject!
 

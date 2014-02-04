@@ -1,4 +1,4 @@
-import Gtk from lgi
+Gtk = require 'ljglibs.gtk'
 
 import Buffer, bindings, bundle from howl
 import Editor from howl.ui
@@ -17,7 +17,7 @@ describe 'VI', ->
   editor = Editor Buffer {}
   cursor = editor.cursor
   selection = editor.selection
-  window = Gtk.OffscreenWindow width: 800, height: 640
+  window = Gtk.OffscreenWindow default_width: 800, default_height: 640
   window\add editor\to_gobject!
   window\show_all!
 

@@ -1,4 +1,4 @@
-import Gtk from lgi
+Gtk = require 'ljglibs.gtk'
 
 import Buffer, config, signal from howl
 import Editor from howl.ui

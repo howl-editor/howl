@@ -1,4 +1,4 @@
-import Gtk from lgi
+Gtk = require 'ljglibs.gtk'
 import Window from howl.ui
 
 describe 'Window', ->

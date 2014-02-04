@@ -2,7 +2,6 @@
 -- License: MIT (see LICENSE.md)
 
 Gtk = require 'ljglibs.gtk'
-LgiGtk = lgi.Gtk
 import PropertyObject from howl.aux.moon
 import Status, Readline, theme from howl.ui
 import signal from howl
@@ -23,7 +22,7 @@ class Window extends PropertyObject
     @status = Status!
     @readline = Readline self
 
-    @grid = LgiGtk.Grid
+    @grid = Gtk.Grid
       row_spacing: 4
       column_spacing: 4
       column_homogeneous: true
@@ -36,9 +35,9 @@ class Window extends PropertyObject
       bottom_padding: 5,
       Gtk.Box Gtk.ORIENTATION_VERTICAL, {
         spacing: 3,
-        { expand: true, @grid._native },
-        @status\to_gobject!._native,
-        @readline\to_gobject!._native
+        { expand: true, @grid },
+        @status\to_gobject!,
+        @readline\to_gobject!
       }
     }
 
@@ -56,15 +55,15 @@ class Window extends PropertyObject
     super @win
 
   @property views: get: =>
-    props = @grid.property
     views = {}
 
-    for c in *@grid\get_children!
+    for c in *@grid.children
+      props = @grid\properties_for c
       append views, {
-        x: props[c].left_attach + 1
-        y: props[c].top_attach + 1
-        width: props[c].width
-        height: props[c].height
+        x: props.left_attach + 1
+        y: props.top_attach + 1
+        width: props.width
+        height: props.height
         view: c
       }
 
@@ -75,7 +74,7 @@ class Window extends PropertyObject
     views
 
   @property focus_child: get: =>
-    fc = @grid\get_focus_child!
+    fc = @grid.focus_child
     @data.focus_child = nil if fc
     fc or @data.focus_child
 
@@ -171,7 +170,7 @@ class Window extends PropertyObject
     nil
 
   _remember_focus: =>
-    @data.focus_child = @grid\get_focus_child!
+    @data.focus_child = @grid.focus_child
 
   _as_rows: (views) =>
     rows = {}
@@ -193,7 +192,6 @@ class Window extends PropertyObject
     views = @views
     return unless #views > 1
 
-    props = @grid.property
     rows = @_as_rows views
 
     max_columns = 0
@@ -208,13 +206,13 @@ class Window extends PropertyObject
         width += extra if i == #row - 1
         widget = row[i + 1]
 
-        with props[widget]
+        with @grid\properties_for(widget)
           .left_attach = i * col_size
           .top_attach = y - 1
           .width = width
 
   _insert_column: (anchor, where) =>
-    rel_column = @grid.property[anchor].left_attach
+    rel_column = @grid\properties_for(anchor).left_attach
     if where == 'left_of'
       @grid\insert_column rel_column
     else

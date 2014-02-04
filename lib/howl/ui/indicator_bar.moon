@@ -1,22 +1,18 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Gtk from lgi
+Gtk = require 'ljglibs.gtk'
 
 class IndicatorBar
   new: (cls, border_width) =>
     error('Missing argument #1 (id)', 2) if not cls
-    @container = Gtk.EventBox {
-      Gtk.Box {
-        id: 'box'
-        orientation: 'HORIZONTAL'
-        :border_width
-        spacing: 10
-        height_request: 20
-      }
+    @box = Gtk.Box {
+      :border_width
+      spacing: 10
+      height_request: 20
     }
-    @container\get_style_context!\add_class cls
-    @box = @container.child.box
+    @container = Gtk.EventBox { @box }
+    @container.style_context\add_class cls
     @indics = {}
     getmetatable(self).__to_gobject = => @container
 
@@ -42,7 +38,7 @@ class IndicatorBar
 
   _create_indicator: (id) ->
     label = Gtk.Label single_line_mode: true
-    with label\get_style_context!
+    with label.style_context
       \add_class 'indic_default'
       \add_class 'indic_' .. id
     label\show!

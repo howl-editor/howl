@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Gtk from lgi
+Gtk = require 'ljglibs.gtk'
 import Scintilla, bindings, config, inputs from howl
 import PropertyObject from howl.aux.moon
 import style, theme, Cursor, Selection, ActionBuffer, List, IndicatorBar from howl.ui
@@ -11,7 +11,7 @@ completion_text = (item) ->
 
 class Readline extends PropertyObject
   new: (@window) =>
-    @bin = Gtk.Box orientation: 'HORIZONTAL'
+    @bin = Gtk.Box!
     @showing = false
     @session_id = 0
     super!
@@ -157,43 +157,45 @@ class Readline extends PropertyObject
     @gsci = @sci\to_gobject!
     @header = IndicatorBar 'header', 3
     @indic_title = @header\add 'left', 'title'
+
+    sci_container = Gtk.EventBox {
+      Gtk.Alignment {
+        top_padding: 3,
+        left_padding: 3,
+        right_padding: 3,
+        bottom_padding: 3,
+        @gsci._native
+      }
+    }
+    sci_container.style_context\add_class 'sci_container'
+
+    sci_box = Gtk.EventBox {
+      hexpand: true
+      Gtk.Alignment {
+        top_padding: 1,
+        bottom_padding: 1,
+        sci_container
+      }
+    }
+    sci_box.style_context\add_class 'sci_box'
+
     @box = Gtk.EventBox {
       Gtk.Alignment {
         top_padding: 1,
         left_padding: 1,
         right_padding: 3,
         bottom_padding: 3,
-        Gtk.Box {
-          orientation: 'VERTICAL',
+        Gtk.Box Gtk.ORIENTATION_VERTICAL, {
           @header\to_gobject!
           {
             expand: false
-            Gtk.EventBox {
-              id: 'sci_box'
-              hexpand: true
-              Gtk.Alignment {
-                top_padding: 1,
-                bottom_padding: 1,
-                Gtk.EventBox {
-                  id: 'sci_container'
-                  Gtk.Alignment {
-                    top_padding: 3,
-                    left_padding: 3,
-                    right_padding: 3,
-                    bottom_padding: 3,
-                    @gsci
-                  }
-                }
-              }
-            }
+            sci_box
           }
         }
       }
     }
 
-    @box\get_style_context!\add_class 'readline_box'
-    @box.child.sci_box\get_style_context!\add_class 'sci_box'
-    @box.child.sci_container\get_style_context!\add_class 'sci_container'
+    @box.style_context\add_class 'readline_box'
     theme.register_background_widget @box
     theme.register_background_widget @gsci
     @_set_appearance!
