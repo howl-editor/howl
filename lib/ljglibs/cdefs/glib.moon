@@ -27,6 +27,7 @@ ffi.cdef [[
   typedef gint64        goffset;
   typedef double        gdouble;
   typedef float         gfloat;
+  typedef const void *  gconstpointer;
 
   gchar * g_get_current_dir (void);
 
@@ -196,4 +197,16 @@ ffi.cdef [[
                                            GMatchInfo **match_info);
   gchar *       g_regex_escape_string     (const gchar *string, gint length);
 
+  /* GList */
+  typedef struct {} GList;
+
+  GList * g_list_append (GList *list, gpointer data);
+  GList * g_list_prepend (GList *list, gpointer data);
+  GList * g_list_insert (GList *list, gpointer data, gint position);
+  GList * g_list_remove (GList *list, gconstpointer data);
+  GList * g_list_remove_all (GList *list, gconstpointer data);
+  void g_list_free (GList *list);
+  guint g_list_length (GList *list);
+  GList * g_list_nth (GList *list, guint n);
+  gpointer g_list_nth_data (GList *list, guint n);
 ]]
