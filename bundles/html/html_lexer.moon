@@ -39,7 +39,7 @@ howl.aux.lpeg_lexer ->
 
   attribute = sequence {
     c('html_attr', any(alpha, S'-_')^1),
-    (c('operator', '=') * string)
+    c('operator', '=')
   }
 
   opening_tag = sequence {
@@ -87,6 +87,7 @@ howl.aux.lpeg_lexer ->
     opening_tag,
     closing_tag,
     attribute,
+    string,
     char_ref,
     error
     operator,

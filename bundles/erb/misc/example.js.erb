@@ -1,0 +1,31 @@
+// This is an example of how you would implement jquery.environment in Rails
+// Borrowed from https://github.com/pboling/jquery.environment/blob/master/example/jquery-environment-config.js.erb
+
+<% if Rails.env == 'production' %>
+$.environment({
+  env_name:'production',
+  face_book_app_id: 'new-york-city',
+  hostname: 'www.example.com'
+});
+<% elsif Rails.env == 'staging' %>
+$.environment({
+  env_name:'staging',
+  face_book_app_id: 'boston',
+  hostname: 'staging.example.com'
+});
+<% elsif Rails.env == 'development' %>
+$.environment({
+  env_name:'development',
+  face_book_app_id: 'fiddle-sticks',
+  hostname: 'example-web.dev'
+});
+<% elsif Rails.env == 'testing' %>
+$.environment({
+  env_name:'test',
+  face_book_app_id: 'big-bird',
+  hostname: 'localhost:3000'
+});
+<% end %>
+console.log('[config.js] env_name', $.environment.config('env_name'));
+console.log('[config.js] face_book_app_id', $.environment.config('face_book_app_id'));
+console.log('[config.js] hostname', $.environment.config('hostname'));

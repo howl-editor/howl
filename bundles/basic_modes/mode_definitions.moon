@@ -343,18 +343,6 @@ common_auto_pairs = {
 
   rails: {} -- only used for sublexing
 
-  rhtml:
-    extensions: { 'erb', 'rhtml' }
-    comment_syntax: { '<%-#', '-%>' }
-    auto_pairs: {
-      '(': ')'
-      '[': ']'
-      '{': '}'
-      '"': '"'
-      "'": "'"
-      '<': '>'
-    }
-
   scala:
     extensions: 'scala'
     comment_syntax: '/'

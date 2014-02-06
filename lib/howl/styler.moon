@@ -95,7 +95,7 @@ apply = (buffer, start_pos, end_pos, tokens) ->
 style_text = (buffer, end_pos, lexer) ->
   start_pos = get_styling_start_pos buffer.sci
   text = buffer.sci\get_text_range start_pos, end_pos
-  apply buffer, start_pos + 1, start_pos + #text, lexer(text)
+  apply buffer, start_pos + 1, start_pos + #text, lexer(text, buffer)
 
 reverse = (buffer, start_pos, end_pos) ->
   default_style_number = style_number_for 'default', buffer

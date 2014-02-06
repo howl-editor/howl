@@ -1,0 +1,35 @@
+<section id="todoapp" class="<%= "has_todos" if @todos.unscoped.count > 0 %> <%= todos_filter_class %>">
+
+  <header id="header">
+    <h1>todos</h1>
+    <%= form_for(Todo.new, remote: true) do |f| %>
+      <%= f.text_field :title, placeholder: "What needs to be done?", id: "new-todo", autofocus: true, "data-behavior" => "submit_on_enter" %>
+    <% end %>
+  </header>
+  <%= { foo: 2} %>
+
+
+  <section id="main">
+    <%= form_tag(toggle_all_todos_path, method: :post, remote: true) do %>
+      <input name="completed" id="toggle-all" type="checkbox" value="true" data-behavior="submit_on_check" <%= "checked" if @todos.active.count == 0 %>>
+    <% end %>
+    <label for="toggle-all">Mark all as complete</label>
+    <ul id="todo-list">
+      <%= render @todos.all %>
+    </ul>
+  </section>
+
+
+  <%= render "footer" %>
+
+  <% if Rails.env == 'production' %>
+    <h2>production!</h2>
+  <% end %>
+
+</section>
+
+<footer id="info">
+  <p>Double-click to edit a todo</p>
+  <p>Created by <a href="mailto: smidwap@gmail.com">Matt De Leon</a></p>
+  <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+</footer>
