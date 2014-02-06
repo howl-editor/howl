@@ -33,5 +33,12 @@ core.auto_loading 'gtk', {
     'JUSTIFY_RIGHT'
     'JUSTIFY_CENTER'
     'JUSTIFY_FILL'
+
+    -- GtkWindowPosition;
+    'WIN_POS_NONE'
+    'WIN_POS_CENTER'
+    'WIN_POS_MOUSE'
+    'WIN_POS_CENTER_ALWAYS'
+    'WIN_POS_CENTER_ON_PARENT'
   }
 }

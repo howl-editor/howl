@@ -20,5 +20,9 @@ core.define 'GtkStyleContext', {
 
   add_class: (cls) => C.gtk_style_context_add_class @, cls
   remove_class: (cls) => C.gtk_style_context_remove_class @, cls
+  get_background_color: (state) =>
+    rgba = ffi.new 'GdkRGBA'
+    C.gtk_style_context_get_background_color @, state, rgba
+    rgba
 
 }, (spec) -> spec.new!

@@ -43,6 +43,15 @@ ffi.cdef [[
     GTK_JUSTIFY_FILL
   } GtkJustification;
 
+  typedef enum {
+    GTK_WIN_POS_NONE,
+    GTK_WIN_POS_CENTER,
+    GTK_WIN_POS_MOUSE,
+    GTK_WIN_POS_CENTER_ALWAYS,
+    GTK_WIN_POS_CENTER_ON_PARENT
+  } GtkWindowPosition;
+
+
   /* GtkCssProvider */
   typedef struct {} GtkStyleProvider;
   typedef struct {} GtkCssProvider;
@@ -61,7 +70,9 @@ ffi.cdef [[
   void gtk_style_context_add_class (GtkStyleContext *context,
                                     const gchar *class_name);
   void gtk_style_context_remove_class (GtkStyleContext *context, const gchar *class_name);
-
+  void gtk_style_context_get_background_color (GtkStyleContext *context,
+                                               GtkStateFlags state,
+                                               GdkRGBA *color);
   void gtk_style_context_add_provider_for_screen (GdkScreen *screen,
                                                   GtkStyleProvider *provider,
                                                   guint priority);
@@ -79,11 +90,21 @@ ffi.cdef [[
                                              GtkStateFlags state,
                                              const GdkRGBA *color);
   GdkWindow * gtk_widget_get_window (GtkWidget *widget);
+  GdkScreen * gtk_widget_get_screen (GtkWidget *widget);
   void gtk_widget_grab_focus (GtkWidget *widget);
   void gtk_widget_destroy (GtkWidget *widget);
   int gtk_widget_get_allocated_width (GtkWidget *widget);
   int gtk_widget_get_allocated_height (GtkWidget *widget);
-
+  void gtk_widget_set_size_request (GtkWidget *widget,
+                                    gint width,
+                                    gint height);
+  GtkWidget * gtk_widget_get_toplevel (GtkWidget *widget);
+  gboolean gtk_widget_translate_coordinates (GtkWidget *src_widget,
+                                             GtkWidget *dest_widget,
+                                             gint src_x,
+                                             gint src_y,
+                                             gint *dest_x,
+                                             gint *dest_y);
   /* GtkBin */
   typedef struct {} GtkBin;
   GtkWidget * gtk_bin_get_child (GtkBin *bin);
@@ -185,7 +206,7 @@ ffi.cdef [[
 
   typedef struct {} GtkWindow;
 
-  GtkWindow * gtk_window_new (void);
+  GtkWindow * gtk_window_new  (GtkWindowType type);
 
   const gchar * gtk_window_get_title (GtkWindow *window);
   void gtk_window_set_title (GtkWindow *window, const gchar *title);
@@ -197,6 +218,7 @@ ffi.cdef [[
 
   void gtk_window_get_size (GtkWindow *window, gint *width, gint *height);
   void gtk_window_resize (GtkWindow *window, gint width, gint height);
+  void gtk_window_move (GtkWindow *window, gint x, gint y);
   GtkWidget * gtk_window_get_focus (GtkWindow *window);
   void gtk_window_set_focus (GtkWindow *window, GtkWidget *focus);
 
