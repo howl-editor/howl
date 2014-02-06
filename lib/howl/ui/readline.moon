@@ -119,7 +119,7 @@ class Readline extends PropertyObject
     @_adjust_height!
 
   _adjust_height: =>
-    @gsci.height = @sci\text_height(0) * #@buffer.lines
+    @gsci\set_size_request -1, @sci\text_height(0) * #@buffer.lines
 
   _show_only_cmd_line: =>
     @buffer.lines\delete 1, #@buffer.lines - 1
@@ -164,7 +164,7 @@ class Readline extends PropertyObject
         left_padding: 3,
         right_padding: 3,
         bottom_padding: 3,
-        @gsci._native
+        @gsci
       }
     }
     sci_container.style_context\add_class 'sci_container'
@@ -215,7 +215,7 @@ class Readline extends PropertyObject
     with @sci
       \set_hscroll_bar false
       \set_vscroll_bar false
-      @gsci.height = \text_height(0)
+      @gsci\set_size_request -1, \text_height(0)
 
   _select_next: => @completion_list and @completion_list\select_next!
   _select_prev: => @completion_list and @completion_list\select_prev!

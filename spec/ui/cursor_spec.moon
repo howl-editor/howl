@@ -1,4 +1,3 @@
-import Gtk from lgi
 import Buffer, config from howl
 import Editor, theme from howl.ui
 

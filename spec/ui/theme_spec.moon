@@ -1,7 +1,7 @@
 import config, signal from howl
 import theme from howl.ui
 import File from howl.fs
-import Gtk from lgi
+Gtk = require 'ljglibs.gtk'
 
 serpent = require 'serpent'
 
@@ -129,7 +129,7 @@ describe 'theme', ->
       widget = Gtk.EventBox!
       set_theme_with_background 'red'
       theme.register_background_widget widget
-      bg = widget\get_style_context!\get_background_color 'NORMAL'
+      bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
       assert.same { 1, 0, 0 }, { bg.red, bg.green, bg.blue }
 
     -- it "updates the widget's background whenever the theme changes", ->
@@ -145,14 +145,14 @@ describe 'theme', ->
         widget = Gtk.EventBox!
         set_theme_with_background '#00ff00', 'popup'
         theme.register_background_widget widget, 'popup'
-        bg = widget\get_style_context!\get_background_color 'NORMAL'
+        bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
         assert.same { 0, 1, 0 }, { bg.red, bg.green, bg.blue }
 
       it 'falls back to the default style if the specified style is unavailable', ->
         widget = Gtk.EventBox!
         set_theme_with_background 'red'
         theme.register_background_widget widget, 'popup'
-        bg = widget\get_style_context!\get_background_color 'NORMAL'
+        bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
         assert.same { 1, 0, 0 }, { bg.red, bg.green, bg.blue }
 
   describe 'life cycle management', ->

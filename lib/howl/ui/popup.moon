@@ -1,13 +1,10 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Gtk from lgi
+Gtk = require 'ljglibs.gtk'
+Window = Gtk.Window
 import PropertyObject from howl.aux.moon
 import theme from howl.ui
-
-screen_size = (widget) ->
-  screen = widget\get_screen!
-  width: screen\get_width!, height: screen\get_height!
 
 class Popup extends PropertyObject
   comfort_zone: 10
@@ -15,12 +12,10 @@ class Popup extends PropertyObject
   new: (child, properties = {}) =>
     error('Missing argument #1: child', 3) if not child
 
-    properties.type = 'POPUP'
-    properties.height = 150 if not properties.height
-    properties.width = 150 if not properties.width
-    @window = Gtk.Window properties
-    box = Gtk.Box {
-      orientation: 'VERTICAL',
+    properties.default_height = 150 if not properties.default_height
+    properties.default_width = 150 if not properties.default_width
+    @window = Window Window.POPUP, properties
+    box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
       { expand: true, child }
     }
     @window\add box
@@ -30,13 +25,13 @@ class Popup extends PropertyObject
 
   show: (widget, options = position: 'center') =>
     error('Missing argument #1: widget', 2) if not widget
-    @transient_for = widget\get_toplevel!
+    @window.transient_for = widget.toplevel
     @window\realize!
     @widget = widget
     @showing = true
 
     if options.x
-      @window.window_position = 'NONE'
+      @window.window_position = Gtk.WIN_POS_NONE
       @move_to options.x, options.y
     else
       @center!
@@ -50,22 +45,22 @@ class Popup extends PropertyObject
 
   move_to: (x, y) =>
     error('Attempt to move a closed popup', 2) if not @showing
-    w_x, w_y = @widget\get_toplevel!.window\get_position!
-    t_x, t_y = @widget\translate_coordinates(@widget\get_toplevel!, x, y)
+    w_x, w_y = @widget.toplevel.window\get_position!
+    t_x, t_y = @widget\translate_coordinates(@widget.toplevel, x, y)
     x = w_x + t_x
     y = w_y + t_y
 
     @x, @y = x, y
     @window\move x, y
-    @resize @window.width, @window.height
+    @resize @window.allocated_width, @window.allocated_height
 
   resize: (width, height) =>
     if not @showing
-      @window.width = width
-      @window.height = height
+      @window.default_width = width
+      @window.default_height = height
       return
 
-    screen = screen_size @widget
+    screen = @widget.screen
 
     if @x + width > (screen.width - @comfort_zone)
       width = screen.width - @x - @comfort_zone
@@ -85,10 +80,10 @@ class Popup extends PropertyObject
     -- now, if we were to center ourselves on the widgets toplevel,
     -- with our current width and height..
 
-    screen = screen_size @widget
-    toplevel = @widget\get_toplevel!
+    screen = @widget.screen
+    toplevel = @widget.toplevel
     w_x, w_y = toplevel.window\get_position!
-    w_width, w_height = toplevel.width, toplevel.height
+    w_width, w_height = toplevel.allocated_width, toplevel.allocated_height
     win_h_center = w_x + (w_width / 2)
     win_v_center = w_y + (w_height / 2)
     x = win_h_center - (width / 2)

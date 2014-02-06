@@ -102,7 +102,6 @@ local function main(args)
   require 'howl.moonscript_support'
   table.insert(package.loaders, 2, bytecode_loader())
 
-  lgi = require('lgi')
   howl = auto_module('howl')
   require('howl.globals')
   _G.log = require('howl.log')

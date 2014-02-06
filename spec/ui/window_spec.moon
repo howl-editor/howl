@@ -8,8 +8,6 @@ describe 'Window', ->
     win = Window!
     win\realize!
 
-  after_each -> win\to_gobject!\destroy!
-
   describe 'add_view(view [, placement, anchor])', ->
     it 'adds the specified view', ->
       win\add_view Gtk.Label!

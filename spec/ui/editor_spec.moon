@@ -12,9 +12,6 @@ describe 'Editor', ->
   window\add editor\to_gobject!
   window\show_all!
 
-  teardown ->
-    window\destroy!
-
   before_each ->
     buffer = Buffer {}
     buffer.config.indent = 2

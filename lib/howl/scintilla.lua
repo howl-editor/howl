@@ -17,12 +17,11 @@ local bit = require('bit')
 local cdefs = require('howl.cdefs')
 local colors = require('howl.ui.colors')
 local destructor = require('howl.aux.destructor')
-local lgi = require 'lgi'
-local lgi_core = require 'lgi.core'
+local gobject = require('ljglibs.gobject')
 
 local C = ffi.C
 local char_arr, char_p, const_char_p = cdefs.char_arr, cdefs.char_p, cdefs.const_char_p
-local glib, gobject = cdefs.glib, cdefs.gobject
+local glib, gobject_old = cdefs.glib, cdefs.gobject
 local gchar_arr = glib.gchar_arr
 local u = u
 
@@ -85,6 +84,7 @@ typedef struct {
 intptr_t scintilla_send_message(void *sci, int message, intptr_t wParam, intptr_t lParam);
 
 GType scintilla_get_type();
+GtkWidget *scintilla_new();
 ]]
 
 local char_range = ffi.typeof('char_range')
@@ -216,9 +216,9 @@ end)
 setmetatable(sci, {
   __call = function()
 
-    local gtype = C.scintilla_get_type()
-    local gobj = lgi.GObject.Object.new(tonumber(gtype))
-    local sci_ptr = gobj._native
+    local gobj = C.scintilla_new()
+    -- gobj = gobject.gc_ptr(gobj)
+    local sci_ptr = gobj
     local obj = setmetatable({ sci_ptr = sci_ptr, gobject = gobj }, sci_mt )
 
     -- set up defaults
@@ -233,10 +233,10 @@ setmetatable(sci, {
     sci_map[tostring(ffi.cast('gpointer', sci_ptr))] = obj
 
     -- destroy gobject when vanquished
-    obj.destructor = destructor(function() gobj:destroy() end)
+    -- obj.destructor = destructor(function() gobj:destroy() end)
 
-    gobject.g_signal_connect3(sci_ptr, 'key-press-event', on_sci_key_press, 0)
-    gobject.g_signal_connect4(sci_ptr, 'sci-notify', on_sci_notify, 0)
+    gobject_old.g_signal_connect3(sci_ptr, 'key-press-event', on_sci_key_press, 0)
+    gobject_old.g_signal_connect4(sci_ptr, 'sci-notify', on_sci_notify, 0)
 
     return obj
   end
@@ -251,6 +251,9 @@ end
 
 function sci.dispatch(sci_ptr, event, args)
   local instance = sci_map[sci_ptr] or sci_map[tostring(sci_ptr)]
+  if not instance then
+    return true
+  end
   local listener = instance.listener
   if not listener then return false end
   local handler

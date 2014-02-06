@@ -75,7 +75,7 @@ class Editor extends PropertyObject
       Gtk.Alignment {
         top_padding: 1
         bottom_padding: 1
-        @sci\to_gobject!._native
+        @sci\to_gobject!
       }
     }
 

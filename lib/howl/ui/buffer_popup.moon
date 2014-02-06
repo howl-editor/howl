@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Gtk from lgi
+Gtk = require 'ljglibs.gtk'
 import Scintilla from howl
 import destructor from howl.aux
 import Popup, style, highlight, theme from howl.ui
