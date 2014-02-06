@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 Gtk = require 'ljglibs.gtk'
+gobject_signal = require 'ljglibs.gobject.signal'
 import Scintilla, Completer, signal, bindings, config, command from howl
 import PropertyObject from howl.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
@@ -25,6 +26,17 @@ apply_variable = (method, value) ->
 
 apply_property = (name, value) ->
   e[name] = value for e in *editors!
+
+signal.connect 'buffer-saved', (args) ->
+  for e in *editors!
+    e\remove_popup! if e.buffer == args.buffer
+    break
+
+signal.connect 'buffer-title-set', (args) ->
+  buffer = args.buffer
+  for e in *editors!
+    if buffer == e.buffer
+      e.indicator.title.label = buffer.title
 
 class Editor extends PropertyObject
 
@@ -98,21 +110,19 @@ class Editor extends PropertyObject
     @bin.style_context\add_class 'editor'
     sci_box.style_context\add_class 'sci_box'
     @bin.can_focus = true
-    @bin\on_focus_in_event -> @sci\grab_focus!
-    @bin\on_destroy -> @buffer\remove_sci_ref @sci
+
+    @signal_handlers = {
+      on_focus_in_event: gobject_signal.unref_handle @bin\on_focus_in_event ->
+        @sci\grab_focus!
+      on_destroy: gobject_signal.unref_handle @bin\on_destroy ->
+        @buffer\remove_sci_ref @sci
+    }
 
     theme.register_background_widget @sci\to_gobject!
 
     @buffer = buffer
 
     append _editors, self
-
-    signal.connect 'buffer-saved', (args) ->
-      @remove_popup! if @buffer == args.buffer
-
-    signal.connect 'buffer-title-set', (args) ->
-      buffer = args.buffer
-      @indicator.title.label = buffer.title if @buffer == buffer
 
   to_gobject: => @bin
 

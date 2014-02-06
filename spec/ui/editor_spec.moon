@@ -335,3 +335,12 @@ describe 'Editor', ->
         args = key_name: 'a', :editor
         editor\_on_char_added args
         assert.spy(buffer.mode.on_char_added).was_called_with buffer.mode, args, editor
+
+  context 'resource management', ->
+    it 'editors are collected as they should', ->
+      e = Editor Buffer {}
+      editors = setmetatable {}, __mode: 'v'
+      append editors, e
+      e = nil
+      collectgarbage!
+      assert.is_nil editors[1]

@@ -24,7 +24,7 @@ class Application extends PropertyObject
 
   new: (@root_dir, @args) =>
     @windows = {}
-    @_editors = setmetatable {}, __mode: 'v'
+    @_editors = {}
     @_buffers = {}
     bundle.dirs = { @root_dir / 'bundles' }
     @_load_base!
