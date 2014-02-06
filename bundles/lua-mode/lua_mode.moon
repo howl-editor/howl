@@ -4,7 +4,7 @@ style.define 'longstring', 'string'
 
 class LuaMode
   new: =>
-    @lexer = howl.aux.ScintilluaLexer 'lua', bundle_file 'lua_lexer.lua'
+    @lexer = bundle_load('lua_lexer')
 
   comment_syntax: '--'
 
@@ -18,7 +18,7 @@ class LuaMode
 
   indentation: {
     more_after: {
-      '[({=]%s*(--.*|)$' -- hanging operators
+      r'[({=]\\s*(--.*|)$' -- hanging operators
       r'function\\b\\s*[^(]*\\([^)]*\\)\\s*(--.*|)$' -- function starter
       r'\\b(then|do)\\b\\s*(--.*|)$', -- block starters
       { '^%s*if%s+', '%s+end$' }
@@ -33,3 +33,11 @@ class LuaMode
       r'^\\s*\\}\\b'
     }
   }
+
+  code_blocks:
+    multiline: {
+      { r'\\s+then\\s*$', '^%s*end', 'end' },
+      { r'(^\\s*|\\s+)function\\s*\\([^)]*\\)\\s*$', '^%s*end', 'end' },
+      { r'(^\\s*|\\s+)do\\s*$', '^%s*end', 'end' },
+      { r'^\\s*repeat\\s*$', '^%s*until', 'until' },
+    }
