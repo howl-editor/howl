@@ -35,6 +35,7 @@ core.define 'GObject', {
     r = lua_value type, r
 
     if type\match '^%u.*%*$' -- Object * pointer
+      C.g_object_ref r
       return ffi.gc(r, C.g_object_unref)
 
     r

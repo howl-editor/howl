@@ -7,7 +7,7 @@ core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 require 'ljglibs.gtk.container'
 
-gc_ptr = gobject.gc_ptr
+gc_ptr, ref_ptr = gobject.gc_ptr, gobject.ref_ptr
 C, ffi_cast = ffi.C, ffi.cast
 widget_t = ffi.typeof 'GtkWidget *'
 to_w = (o) -> ffi_cast widget_t, o
@@ -36,7 +36,7 @@ core.define 'GtkGrid < GtkContainer', {
   attach_next_to: (child, sibling, side, width, height) =>
     C.gtk_grid_attach_next_to @, to_w(child), to_w(sibling), side, width, height
 
-  get_child_at: (left, top) => gc_ptr C.gtk_grid_get_child_at @, left, top
+  get_child_at: (left, top) => ref_ptr C.gtk_grid_get_child_at @, left, top
   insert_row: (position) => C.gtk_grid_insert_row @, position
   insert_column: (position) => C.gtk_grid_insert_column @, position
   remove_row: (position) => C.gtk_grid_remove_row @, position

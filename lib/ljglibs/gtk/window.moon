@@ -5,11 +5,12 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.gtk'
 glib = require 'ljglibs.glib'
 core = require 'ljglibs.core'
+gobject = require 'ljglibs.gobject'
 require 'ljglibs.gtk.bin'
 
 C, ffi_string = ffi.C, ffi.string
 catch_error = glib.catch_error
-optional = core.optional
+ref_ptr = gobject.ref_ptr
 
 core.define 'GtkWindow < GtkBin', {
   constants: {
@@ -57,7 +58,7 @@ core.define 'GtkWindow < GtkBin', {
     window_type: => C.gtk_window_get_window_type @
 
     focus:
-      get: => optional C.gtk_window_get_focus @
+      get: => ref_ptr C.gtk_window_get_focus @
       set: (focus) => C.gtk_window_set_focus @, focus
   }
 
