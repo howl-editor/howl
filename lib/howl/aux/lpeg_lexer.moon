@@ -217,6 +217,13 @@ sub_lex = (mode_name, stop_p) ->
 sub_lex_by_pattern = (mode_p, mode_style, stop_p) ->
   Cmt(C(mode_p) * Cc(mode_style) * C(scan_until(stop_p)), pattern_sub_lex_capture)
 
+compose = (mode_name, definition_p) ->
+  m = mode.by_name mode_name
+  if m and m.lexer and m.lexer.pattern
+    any(definition_p, m.lexer.pattern)
+  else
+    definition_p
+
 new = (definition) ->
   setfenv definition, lexer
   pattern = definition!

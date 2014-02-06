@@ -345,6 +345,16 @@ describe 'lpeg_lexer', ->
         3, 'embedded', 6
       }, res
 
+  describe 'compose(base_mode, pattern)', ->
+    it 'returns a conjunction pattern with <pattern> and the mode pattern', ->
+      base_mode = lexer: l -> capture('number', digit^1)
+      mode.register name: 'base_mode', create: -> base_mode
+      p = l.compose('base_mode', l.capture('override', l.alpha))^0
+      assert.same {
+        1, 'override', 2,
+        2, 'number', 3
+      }, { p\match 'a2' }
+
   describe 'built-in lexing support', ->
     it 'automatically lexes whitespace', ->
       lexer = l -> P'peace-and-quiet'
