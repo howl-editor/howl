@@ -38,6 +38,7 @@ class LuaMode
     multiline: {
       { r'\\s+then\\s*$', '^%s*end', 'end' },
       { r'(^\\s*|\\s+)function\\s*\\([^)]*\\)\\s*$', '^%s*end', 'end' },
+      { r'^\\s*function\\s+\\w+[_:.\\w]+\\s*\\([^)]*\\)\\s*$', '^%s*end', 'end' },
       { r'(^\\s*|\\s+)do\\s*$', '^%s*end', 'end' },
       { r'^\\s*repeat\\s*$', '^%s*until', 'until' },
     }
