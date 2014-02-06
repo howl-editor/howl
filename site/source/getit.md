@@ -4,9 +4,10 @@ title: Installation
 
 # Installing Howl
 
-Howl is not yet officially released, but you can try it out if you're willing to build it
-from source. Howl is developed on Linux, but it should build on other *NIX platforms as well
-such as the \*BSD family, although this hasn't been verified yet.
+Howl is not yet officially released, but you can try it out if you're willing to
+build it from source. Howl is developed on Linux, but it should build on other
+\*NIX platforms as well such as the \*BSD family, although this hasn't been
+verified yet.
 
 ### Requirements
 
@@ -17,10 +18,6 @@ Howl requires the following build dependencies:
 - `GTK+`: Version >= 3, with development files.
 
   As an example, on Debian-based based systems you would need the `libgtk-3-dev` package.
-
-- `gobject-introspection` development libraries.
-
-  As an example, on Debian-based based systems you would need the `libgirepository1.0-dev` package.
 
 - `C/C++ compiler`: Howl has a very small C core itself, but it embedds dependencies built both
   in C and C++.
