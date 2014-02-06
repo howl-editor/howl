@@ -14,5 +14,3 @@
 
 /* External dependencies hookups */
 int luaopen_lpeg (lua_State *L);
-int luaopen_lfs (lua_State *L);
-int luaopen_lgi_corelgilua51 (lua_State* L);

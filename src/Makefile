@@ -27,17 +27,11 @@ LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
 LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
 
-LGI_VER = 0.7.2
-LGI_CHECKSUM = f41902695c3d8ef40312d7c654885bf3
-LGI_URL = https://github.com/pavouk/lgi/archive/$(LGI_VER).tar.gz
-LGI = deps/lgi-$(LGI_VER)
-LGI_ARCHIVE = $(LGI)/lgi/lgi.a
-
 SCI_GEN = tools/sci_gen.lua
 SCI_GEN_TARGET = ../lib/howl/scintilla.lua
 
 CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
-ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE) $(LGI_ARCHIVE)
+ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E
 OBJECTS = main.o
@@ -72,17 +66,10 @@ $(LUAJIT):
 $(LUAJIT_ARCHIVE): $(LUAJIT)
 	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT"
 
-$(LGI):
-	@tools/download $(LGI_URL) $(LGI_CHECKSUM) tar xzf {file} -C deps
-
-$(LGI_ARCHIVE): $(LGI) $(LUAJIT)
-	cd ${LGI}/lgi && $(MAKE) LUA_CFLAGS=$(LUAJIT_CFLAGS)
-	ar rs $(LGI_ARCHIVE) ${LGI}/lgi/*.o
-
 deps: scintilla-build luajit-build lpeg-build scintillua-build
 
 deps-purge:
-	rm -rf $(LGI) $(LUAJIT) $(LPEG) $(SCINTILLA)
+	rm -rf $(LUAJIT) $(LPEG) $(SCINTILLA)
 
 clean:
 	-rm -f ${OBJECTS}
@@ -93,13 +80,6 @@ scigen: $(LUAJIT_ARCHIVE) $(SCINTILLA)
 bytecode: howl
 	-@find ../lib ../bundles -name '*.bc' | xargs rm
 	@find ../lib ../bundles -name '*.lua' -o -name '*.moon' | xargs ./howl --compile
-
-lgi-update: $(LGI)
-	rm -rf ../lib/ext/lgi/*
-	cp $(LGI)/lgi/*.lua ../lib/ext/lgi/
-	cp -r $(LGI)/lgi/override ../lib/ext/lgi/
-	cp -r $(LGI)/README.md ../lib/ext/lgi/
-	cp -r $(LGI)/LICENSE ../lib/ext/lgi/
 
 install: howl
 	@echo Installing to $(DESTDIR)$(PREFIX)..
