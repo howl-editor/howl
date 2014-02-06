@@ -152,7 +152,7 @@ def parse(f)
     end
   end
   root = node.parent
-  root = root.parent while root.parent
+  root = root.parent while root and root.parent
   root
 end
 
@@ -186,9 +186,12 @@ input_files(input, pattern).each do |file|
   out.parent.mkpath
   puts "Parsing #{file}.."
   root = parse file
-  # puts root.to_tree
-  package = 'howl.'
-  package += "#{rel_path.dirname.to_s.tr('/', '.')}." if not rel_path.dirname.to_s == '.'
-  IO.write out, root.emit('', code_formatter, package: package)
-  puts "Wrote #{out}"
+  if root
+    # puts root.to_tree
+    package = 'howl.'
+    package += "#{rel_path.dirname.to_s.tr('/', '.')}." if not rel_path.dirname.to_s == '.'
+    IO.write out, root.emit('', code_formatter, package: package)
+    puts "Wrote #{out}"
+  end
+
 end
