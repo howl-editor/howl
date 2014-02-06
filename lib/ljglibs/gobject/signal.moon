@@ -103,6 +103,7 @@ callbacks = {
       weak_handler_id_cnt += 1
       unrefed_handlers[weak_handler_id_cnt] = handler
       handle.handler = weak_handler_id_cnt
+      handler
 
   emit_by_name: (instance, signal, ...) ->
     C.g_signal_emit_by_name ffi.cast('gpointer', instance), signal, ...

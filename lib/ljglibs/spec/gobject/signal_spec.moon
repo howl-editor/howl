@@ -69,6 +69,11 @@ describe 'signal', ->
       C.gtk_widget_hide widget
       C.gtk_widget_show widget
 
+    it 'returns the unrefed callback function', ->
+      handler = ->
+      handle = signal.connect('void2', widget, 'show', handler)
+      assert.equal handler, signal.unref_handle handle
+
   describe 'emit_by_name(instance, signal, ...)', ->
     it 'allows emitting custom signals', ->
       called_with = nil
