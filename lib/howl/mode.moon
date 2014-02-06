@@ -62,6 +62,9 @@ for_file = (file) ->
   error 'No mode available for "' .. file .. '"' if not instance
   instance
 
+for_extension = (extension) ->
+  by_extension[extension\lower!]
+
 register = (mode = {}) ->
   error 'Missing field `name` for mode', 2 if not mode.name
   error 'Missing field `create` for mode', 2 if not mode.create
@@ -118,6 +121,7 @@ signal.register 'mode-unregistered',
 
 return PropertyTable {
   :for_file
+  :for_extension
   :by_name
   :register
   :unregister

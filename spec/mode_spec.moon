@@ -24,6 +24,11 @@ describe 'mode', ->
       mode.register name: 'shish', aliases: {'my_mode'}, create: -> {}
       assert.is_not_nil mode.by_name('my_mode')
 
+  describe 'for_extension(extension)', ->
+    it 'returns a mode registered for <extension>, if any', ->
+      mode.register name: 'ext', extensions: 'foo', create: -> {}
+      assert.equal 'ext', mode.for_extension('foo').name
+
   describe '.for_file(file)', ->
     context 'when the file extension is registered with a mode', ->
       it 'returns an instance of that mode', ->
