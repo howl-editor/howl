@@ -73,6 +73,11 @@ ffi.cdef [[
   /* screen */
   typedef struct {} GdkScreen;
   GdkScreen * gdk_screen_get_default (void);
+  gint gdk_screen_get_number (GdkScreen *screen);
+  gint gdk_screen_get_width (GdkScreen *screen);
+  gint gdk_screen_get_height (GdkScreen *screen);
+  gint gdk_screen_get_width_mm (GdkScreen *screen);
+  gint gdk_screen_get_height_mm (GdkScreen *screen);
 
   /* GdkRGBA */
   typedef struct {
@@ -100,4 +105,7 @@ ffi.cdef [[
   } GdkWindowState;
 
   GdkWindowState gdk_window_get_state (GdkWindow *window);
+  void gdk_window_get_position (GdkWindow *window,
+                                gint *x,
+                                gint *y);
 ]]

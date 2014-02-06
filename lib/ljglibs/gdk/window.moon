@@ -27,4 +27,9 @@ core.define 'GdkWindow', {
   properties: {
     state: => bit_flags @, 'STATE_', C.gdk_window_get_state @
   }
+
+  get_position: =>
+    ret = ffi.new 'gint [2]'
+    C.gdk_window_get_position @, ret, ret + 1
+    ret[0], ret[1]
 }
