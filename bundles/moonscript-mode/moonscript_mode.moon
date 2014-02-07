@@ -4,6 +4,9 @@
 class MoonscriptMode
   new: =>
     @lexer = bundle_load('moonscript_lexer')
+    with howl.mode.by_name('lua')
+      @api = .api
+      @completers = .completers
 
   comment_syntax: '--'
 

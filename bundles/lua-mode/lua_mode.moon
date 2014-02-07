@@ -5,6 +5,8 @@ style.define 'longstring', 'string'
 class LuaMode
   new: =>
     @lexer = bundle_load('lua_lexer')
+    @api = bundle_load('api')
+    @completers = { 'api', 'in_buffer' }
 
   comment_syntax: '--'
 
