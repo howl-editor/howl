@@ -189,7 +189,6 @@ override_widget_background = (widget, background_style) ->
     if bg_color
       background = Gdk.RGBA!
       background\parse bg_color
-      widget = ffi.cast('GtkWidget *', widget._native) unless type(widget) == 'cdata'
       widget\override_background_color 0, background
 
 apply_theme = ->
@@ -281,10 +280,6 @@ return PropertyTable {
     apply_sci_visuals current_theme, sci if theme_active
 
   register_background_widget: (widget, style = 'default') ->
-    -- todo: disable for now as it causes seg faults, presumably due to
-    -- non-working lifecycle management with lgi
-
-    -- background_color_widgets[widget] = style
-
+    background_color_widgets[widget] = style
     override_widget_background widget, style
- }
+}
