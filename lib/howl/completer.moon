@@ -11,7 +11,7 @@ load_completers = (buffer, context) ->
           completer = completion[f]
           f = completer and completer.factory
 
-        error '`nil` completer set for ' .. buffer if not f
+        error "`nil` completer set for #{buffer}" if not f
         completer = f(buffer, context)
         append(completers, completer) if completer
 

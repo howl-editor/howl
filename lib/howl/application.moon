@@ -313,6 +313,7 @@ class Application extends PropertyObject
 
   _load_core: =>
     require 'howl.completion.inbuffercompleter'
+    require 'howl.completion.api_completer'
     require 'howl.inputs.basic_inputs'
     require 'howl.inputs.projectfile_input'
     require 'howl.inputs.file_input'
