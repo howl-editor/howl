@@ -67,7 +67,7 @@ class Matcher
     @_load_candidates!
 
   __call: (search) =>
-    return @candidates if not search or #search == 0
+    return [c for c in *@candidates] if not search or #search == 0
 
     search = search.ulower
     prev_search = search\usub 1, -2
