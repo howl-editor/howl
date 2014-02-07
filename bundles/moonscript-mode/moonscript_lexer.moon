@@ -62,7 +62,7 @@ howl.aux.lpeg_lexer ->
       sequence {
         capture('string', "'"),
         sub_lex('c', "'"),
-        capture('string', "'"),
+        capture('string', "'")^-1,
       }
     }
   }
