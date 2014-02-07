@@ -76,6 +76,9 @@ class State
     cmd = @cmd or resolve_command value
     return false if not cmd
 
+    if #@arguments == 0 and @_dispatch('can_finish')
+      @arguments[1] = value
+
     if #@arguments >= #cmd.inputs
       values = {}
       for i = 1, #@arguments

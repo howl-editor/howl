@@ -55,6 +55,10 @@ describe 'search_inputs', ->
           input\on_submit 'foo', readline
           assert.is_not_false input\on_submit 'bar', readline
 
+        it 'returns non-false even for an empty string', ->
+          input\on_submit 'foo', readline
+          assert.is_not_false input\on_submit '', readline
+
     describe 'value_for', ->
       it 'returns a table containing target and replacement', ->
         input\on_submit 'foo', readline

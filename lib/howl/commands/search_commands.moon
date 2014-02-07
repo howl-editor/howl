@@ -22,4 +22,8 @@ command.register
   handler: (values) ->
     { target, replacement } = values
     chunk = editor.active_chunk
-    chunk.text = chunk.text\gsub target, replacement
+    chunk.text, count = chunk.text\gsub target, replacement
+    if count > 0
+      log.info "Replaced #{count} occurrences of '#{target}' with '#{replacement}'"
+    else
+      log.warn "No occurrences of '#{target}' found"

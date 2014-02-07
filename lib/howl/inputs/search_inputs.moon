@@ -19,6 +19,7 @@ class ForwardSearchInput extends SearchInput
 
 class ReplaceInput
   close_on_cancel: -> true
+  can_finish: => @target != nil
 
   on_submit: (text, readline) =>
     unless @target
