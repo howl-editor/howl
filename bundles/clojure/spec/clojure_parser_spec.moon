@@ -2,11 +2,10 @@ import bundle, Buffer from howl
 
 describe 'clojure_parser', ->
   local parser, buffer
-   -- local buffer, editor, cursor, lines
 
   setup ->
-    bundle.load_by_name 'clojure-mode'
-    parser = bundles.clojure_mode.parser
+    bundle.load_by_name 'clojure'
+    parser = bundles.clojure.parser
     buffer = Buffer!
 
   context 'parse(buffer)', ->

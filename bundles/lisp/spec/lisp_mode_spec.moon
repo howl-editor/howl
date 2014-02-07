@@ -9,10 +9,10 @@ describe 'lisp-mode', ->
   local buffer, editor, cursor, lines
 
   setup ->
-    bundle.load_by_name 'lisp-mode'
+    bundle.load_by_name 'lisp'
     m = mode.by_name 'lisp'
 
-  teardown -> bundle.unload 'lisp-mode'
+  teardown -> bundle.unload 'lisp'
 
   before_each ->
     buffer = Buffer m

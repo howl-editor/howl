@@ -4,10 +4,13 @@ describe 'Moonscript lexer', ->
   local lexer
 
   setup ->
-    bundle.load_by_name 'moonscript-mode'
+    bundle.load_by_name 'lua'
+    bundle.load_by_name 'moonscript'
     lexer = mode.by_name('moonscript').lexer
 
-  teardown -> bundle.unload 'moonscript-mode'
+  teardown ->
+    bundle.unload 'moonscript'
+    bundle.unload 'lua'
 
   result = (text, ...) ->
     styles = {k,true for k in *{...}}

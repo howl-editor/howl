@@ -7,10 +7,13 @@ describe 'moonscript-mode', ->
   local buffer, editor, cursor, lines
 
   setup ->
-    bundle.load_by_name 'moonscript-mode'
+    bundle.load_by_name 'lua'
+    bundle.load_by_name 'moonscript'
     m = mode.by_name 'moonscript'
 
-  teardown -> bundle.unload 'moonscript-mode'
+  teardown ->
+    bundle.unload 'moonscript'
+    bundle.unload 'lua'
 
   before_each ->
     m = mode.by_name 'moonscript'
