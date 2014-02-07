@@ -36,8 +36,7 @@ class Application extends PropertyObject
     sort_buffers buffers
     buffers
 
-  @property editors: get: =>
-    [e for _, e in pairs @_editors when e != nil]
+  @property editors: get: => @_editors
 
   @property next_buffer: get: =>
     return @new_buffer! if #@_buffers == 0
@@ -171,6 +170,8 @@ class Application extends PropertyObject
       @_load [File(path) for path in *args[2,]]
       args = { args[1] }
       signal.connect 'window-focused', self\synchronize
+      signal.connect 'editor-destroyed', (args) ->
+        @_editors =  [e for e in *@_editors when e != args.editor]
 
     @g_app\run args
 

@@ -116,6 +116,7 @@ class Editor extends PropertyObject
         @sci\grab_focus!
       on_destroy: gobject_signal.unref_handle @bin\on_destroy ->
         @buffer\remove_sci_ref @sci
+        signal.emit 'editor-destroyed', editor: self
     }
 
     theme.register_background_widget @sci\to_gobject!
@@ -688,6 +689,11 @@ signal.register 'editor-defocused',
   description: 'Signaled right after an editor has lost focus'
   parameters:
     editor: 'The editor that lost focus'
+
+signal.register 'editor-destroyed',
+  description: 'Signaled as an editor is destroyed'
+  parameters:
+    editor: 'The editor that is being destroyed'
 
 signal.register 'character-added',
   description: 'Signaled when a character has been typed into an editor'
