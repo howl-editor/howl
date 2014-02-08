@@ -23,6 +23,9 @@ describe 'BufferContext', ->
       assert.equal 'Mr', context_at(16).word.text
       assert.equal 'Bačon', context_at(19).word.text
 
+      b.text = 'first'
+      assert.equal 'first', context_at(1).word.text
+
     it "the word boundaries are determined using the variable word_pattern", ->
       b.config.word_pattern = '[Əl]+'
       assert.equal 'Əll', context_at(3).word.text

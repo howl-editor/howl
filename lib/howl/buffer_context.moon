@@ -40,7 +40,7 @@ class Context extends PropertyObject
     line_start_pos = @line.start_pos
     line_pos = @pos - line_start_pos + 1
     start_pos = 1
-    while start_pos < line_pos
+    while start_pos <= line_pos
       start_pos, end_pos = line_text\ufind word_pattern, start_pos
       break unless start_pos
 
