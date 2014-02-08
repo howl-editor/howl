@@ -157,6 +157,7 @@ end
 
 local function update(target, constants, methods)
   local lines = {}
+  local overrides = {}
   for line in io.lines(target) do lines[#lines + 1] = line end
   local t = assert(io.open(target, 'w'))
   local in_auto = false
@@ -181,7 +182,16 @@ local function update(target, constants, methods)
         t:write('\n')
 
         for _, m in ipairs(methods) do
-          write_method(m, t)
+          if overrides[m.name] then
+            print("Skipping '" .. m.name .. "': Found prior override")
+          else
+            write_method(m, t)
+          end
+        end
+      else
+        local m = line:match('function sci:([%w_]+)')
+        if m then
+          overrides[m] = true
         end
       end
     end
