@@ -1,6 +1,7 @@
 require 'howl.completion.api_completer'
 import Buffer from howl
 import completion from howl
+import DefaultMode from howl.modes
 
 describe 'api_completer(api, resolver)', ->
 
@@ -30,7 +31,9 @@ describe 'api_completer(api, resolver)', ->
       comps
 
     before_each ->
-      mode = :api, completers: {'api'}
+      mode = DefaultMode!
+      mode.api = api
+      mode.completers = { 'api' }
       buffer = Buffer mode
       lines = buffer.lines
 

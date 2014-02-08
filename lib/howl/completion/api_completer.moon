@@ -25,15 +25,8 @@ matcher_for = (path = '', parts = {}, api) ->
   matchers[path] = m
   m
 
-standard_resolver = (_, context) ->
-  pfx = context.prefix
-  parts = {}
-  leading = pfx\umatch r'((?:\\w+[.:])*\\w+)[.:]\\w*$'
-  parts = [p for p in leading\gmatch '%w+'] if leading
-  leading, parts
-
 complete = (context) =>
-  path, parts = self.resolver @mode, context
+  path, parts = @mode\resolve_type context
   matcher = matcher_for(path, parts, @api)
   candidates = matcher and matcher(context.word_prefix) or {}
   if #candidates > 0 and #parts > 0
@@ -47,5 +40,4 @@ howl.completion.register name: 'api', factory: (buffer, context) ->
       :complete
       :mode
       api: mode.api
-      resolver: mode.resolve_type or standard_resolver
     }

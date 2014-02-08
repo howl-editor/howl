@@ -135,6 +135,13 @@ class DefaultMode
 
     [l.line for l in *lines when l.level <= cut_off]
 
+  resolve_type: (context) =>
+    pfx = context.prefix
+    parts = {}
+    leading = pfx\umatch r'((?:\\w+[.:])*\\w+)[.:]\\w*$'
+    parts = [p for p in leading\gmatch '%w+'] if leading
+    leading, parts
+
   on_char_added: (args, editor) =>
     if args.key_name == 'return'
       for code_block in * (@code_blocks.multiline or {})
