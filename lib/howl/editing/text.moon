@@ -132,7 +132,8 @@ reflow_check = (args) ->
   config = args.buffer.config
   return if is_reflowing or not config.auto_reflow_text
 
-  cur_style = style.at_pos args.buffer, math.max(args.at_pos - 1, 1)
+  at_pos = args.buffer\char_offset args.at_pos
+  cur_style = style.at_pos args.buffer, math.max(at_pos - 1, 1)
   return if cur_style\contains 'embedded'
 
   reflow_at = config.hard_wrap_column
