@@ -58,7 +58,7 @@ reflow_paragraph_at = (line, limit) ->
   orig_text = chunk.text
   text = orig_text
   has_eol = orig_text\ends_with buffer.eol
-  text = text\sub 1, #text - 1 if has_eol
+  text = text\usub 1, text.ulen - 1 if has_eol
   text = text\gsub buffer.eol, ' '
   new_lines = {}
   start_pos = 1
@@ -70,14 +70,14 @@ reflow_paragraph_at = (line, limit) ->
       i -= 1
 
     if i == start_pos
-      i = text\find('[ \t]', start_search) or #text + 1
+      i = text\ufind('[ \t]', start_search) or text.ulen + 1
 
     if i
-      tinsert new_lines, text\sub start_pos, i - 1
+      tinsert new_lines, text\usub start_pos, i - 1
 
     start_pos = i + 1
 
-  tinsert(new_lines, text\sub(start_pos)) if start_pos <= #text
+  tinsert(new_lines, text\usub(start_pos)) if start_pos <= text.ulen
   reflowed = table.concat(new_lines, buffer.eol)
   reflowed ..= buffer.eol if has_eol
   reflowed ..= buffer.eol if start_pos == text.ulen + 1
