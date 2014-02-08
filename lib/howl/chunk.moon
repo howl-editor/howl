@@ -22,7 +22,7 @@ class Chunk extends PropertyObject
   @property styles:
     get: =>
       unless @_styles
-        b_start, b_end = @buffer\byte_offset @start_pos, @end_pos
+        b_start, b_end = @buffer\byte_offset(@start_pos), @buffer\byte_offset(@end_pos)
         @_styles = styler.reverse @buffer, b_start, b_end
 
       @_styles

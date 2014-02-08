@@ -414,41 +414,37 @@ describe 'Buffer', ->
             assert.equal 'look mah no newline!', b.text
             assert.equal file.contents, b.text
 
-  describe 'byte_offset(...)', ->
-    it 'returns byte offsets for all character offsets passed as parameters', ->
-      assert.same {1, 3, 5, 7}, { buffer'äåö'\byte_offset 1, 2, 3, 4 }
+  describe 'byte_offset(char_offset)', ->
+    it 'returns the byte offset for the given <char_offset>', ->
+      b = buffer 'äåö'
+      for p in *{
+        {1, 1},
+        {3, 2},
+        {5, 3},
+        {7, 4},
+      }
+        assert.equal p[1], b\byte_offset p[2]
 
-    it 'accepts non-increasing offsets', ->
-      assert.same {1, 1}, { buffer'ab'\byte_offset 1, 1 }
-
-    it 'raises an error for decreasing offsets', ->
-      assert.raises 'Decreasing offset', -> buffer'äåö'\byte_offset 3, 2
-
-    it 'raises error for out-of-bounds offsets', ->
+    it 'raises an error for an out-of-bounds <char_offset>', ->
       assert.has_error -> buffer'äåö'\byte_offset 5
       assert.has_error -> buffer'äåö'\byte_offset 0
       assert.has_error -> buffer'a'\byte_offset -1
 
-    it 'when parameters is a table, it returns a table for all offsets within that table', ->
-      assert.same {1, 3, 5}, buffer'äåö'\byte_offset { 1, 2, 3 }
-
-  describe 'char_offset(...)', ->
-    it 'returns character offsets for all byte offsets passed as parameters', ->
-      assert.same {1, 2, 3, 4}, { buffer'äåö'\char_offset 1, 3, 5, 7 }
-
-    it 'accepts non-increasing offsets', ->
-      assert.same {2, 2}, { buffer'ab'\char_offset 2, 2 }
-
-    it 'raises an error for decreasing offsets', ->
-      assert.raises 'Decreasing offset', -> buffer'äåö'\char_offset 3, 2
+  describe 'char_offset(byte_offset)', ->
+    it 'returns the character offset for the given <byte_offset>', ->
+      b = buffer 'äåö'
+      for p in *{
+        {1, 1},
+        {3, 2},
+        {5, 3},
+        {7, 4},
+      }
+        assert.equal p[2], b\char_offset p[1]
 
     it 'raises error for out-of-bounds offsets', ->
       assert.has_error -> buffer'ab'\char_offset 4
       assert.has_error -> buffer'äåö'\char_offset 0
       assert.has_error -> buffer'a'\char_offset -1
-
-    it 'when parameters is a table, it returns a table for all offsets within that table', ->
-      assert.same {1, 2, 3, 4}, buffer'äåö'\char_offset { 1, 3, 5, 7 }
 
   describe 'reload()', ->
     it 'reloads the buffer contents from file', ->

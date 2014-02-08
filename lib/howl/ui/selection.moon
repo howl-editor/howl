@@ -17,11 +17,11 @@ class Selection extends PropertyObject
     get: => @sci\get_selection_empty!
 
   @property anchor:
-    get: => @sci\get_text!\char_offset @sci\get_anchor! + 1
-    set: (pos) => @sci\set_anchor @sci\get_text!\byte_offset(pos) - 1
+    get: => 1 + @sci\char_offset @sci\get_anchor!
+    set: (pos) => @sci\set_anchor @sci\byte_offset(pos - 1)
 
   @property cursor:
-    get: => @sci\get_text!\char_offset @sci\get_current_pos! + 1
+    get: => 1 + @sci\char_offset @sci\get_current_pos!
     set: (pos) => @set @anchor, pos
 
   @property text:
@@ -46,12 +46,10 @@ class Selection extends PropertyObject
       @persistent_anchor = state and @anchor or nil
 
   set: (anchor, cursor) =>
-    if anchor <= cursor
-      anchor, cursor = @sci\get_text!\byte_offset anchor, cursor
-    else
-      cursor, anchor = @sci\get_text!\byte_offset cursor, anchor
-
-    @sci\set_sel anchor - 1, cursor - 1
+    with @sci
+      anchor = \byte_offset anchor - 1
+      cursor = \byte_offset cursor - 1
+      \set_sel anchor, cursor
 
   select: (start_pos, end_pos) =>
     if end_pos > start_pos
@@ -67,7 +65,7 @@ class Selection extends PropertyObject
   range: =>
     start_pos, end_pos = @_brange!
     return nil unless start_pos
-    @sci\get_text!\char_offset start_pos, end_pos
+    1 + @sci\char_offset(start_pos - 1), 1 + @sci\char_offset(end_pos - 1)
 
   remove: =>
     unless @empty

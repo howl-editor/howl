@@ -28,7 +28,7 @@ class Cursor extends PropertyObject
       else error 'Invalid style ' .. style, 2
 
   @property pos:
-    get: => @container.buffer\char_offset 1 + @sci\get_current_pos!
+    get: => 1 + @sci\char_offset(@sci\get_current_pos!)
     set: (pos) =>
       pos = #@container.buffer + 1 if pos > #@container.buffer + 1
       pos = 1 if pos < 1
@@ -36,8 +36,8 @@ class Cursor extends PropertyObject
       if @selection.persistent
         @selection\set @selection.anchor, pos
       else
-        b_pos = @container.buffer\byte_offset pos
-        @sci\goto_pos b_pos - 1
+        b_pos = @sci\byte_offset pos - 1
+        @sci\goto_pos b_pos
 
       @sci\choose_caret_x!
 
@@ -46,18 +46,18 @@ class Cursor extends PropertyObject
     set: (line) =>
       if line < 1 then @start!
       elseif line > @sci\get_line_count! then @eof!
-      else @pos = @container.buffer\char_offset 1 + @sci\position_from_line(line - 1)
+      else @pos = 1 + @sci\char_offset @sci\position_from_line(line - 1)
 
   @property column:
     get: => 1 + @sci\get_column @sci\get_current_pos!
-    set: (col) => @pos = @container.buffer\char_offset 1 + @sci\find_column @line - 1, col - 1
+    set: (col) => @pos = 1 + @sci\char_offset @sci\find_column @line - 1, col - 1
 
   @property column_index:
     get: => @sci\count_characters(@sci\position_from_line(@line - 1), @sci\get_current_pos!) + 1
     set: (index) => with @sci
       base = \position_from_line(@line - 1)
       offset = \get_line(@line - 1)\byte_offset(index) - 1
-      @pos = @container.buffer\char_offset 1 + base + offset
+      @pos = 1 + @sci\char_offset base + offset
 
   @property at_end_of_line:
     get: => @sci\get_line_end_position(@line - 1) == @sci\get_current_pos!

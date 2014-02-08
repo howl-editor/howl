@@ -72,7 +72,7 @@ export define_default = (name, definition) ->
 export apply = (name, buffer, pos, length) ->
   num = number_for name, buffer
   end_pos = pos + length
-  pos, end_pos = buffer\byte_offset pos, end_pos
+  pos, end_pos = buffer\byte_offset(pos), buffer\byte_offset(end_pos)
   with buffer.sci
     \set_indicator_current num
     \indicator_fill_range pos - 1, end_pos - pos
@@ -103,7 +103,7 @@ export remove_all = (name, buffer) ->
     \indicator_clear_range 0, buffer.size
 
 export remove_in_range = (name, buffer, start_pos, end_pos) ->
-  start_pos, end_pos = buffer\byte_offset start_pos, end_pos
+  start_pos, end_pos = buffer\byte_offset(start_pos), buffer\byte_offset(end_pos)
   num = number_for name, buffer
   sci = buffer.sci
   sci\set_indicator_current num

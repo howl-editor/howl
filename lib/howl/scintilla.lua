@@ -15,12 +15,13 @@ local string_format = string.format
 local ffi = require('ffi')
 local bit = require('bit')
 local cdefs = require('howl.cdefs')
+local offsets = require('howl.offsets')
 local colors = require('howl.ui.colors')
 local destructor = require('howl.aux.destructor')
 local gobject = require('ljglibs.gobject')
 local gsignal = gobject.signal
 
-local C = ffi.C
+local C, ffi_cast = ffi.C, ffi.cast
 local char_arr, char_p, const_char_p = cdefs.char_arr, cdefs.char_p, cdefs.const_char_p
 local glib = cdefs.glib
 local gchar_arr = glib.gchar_arr
@@ -211,7 +212,13 @@ local function on_sci_notify(sci_ptr, ctrl_id, notification)
     end
   end
 
-  return dispatch(sci_ptr, 'sci', event)
+  local status, ret = pcall(dispatch, sci_ptr, 'sci', event)
+  if status then
+    return ret
+  else
+    print(ret)
+    return false
+  end
 end
 
 setmetatable(sci, {
@@ -220,7 +227,12 @@ setmetatable(sci, {
     local gobj = C.scintilla_new()
     -- gobj = gobject.gc_ptr(gobj)
     local sci_ptr = gobj
-    local obj = setmetatable({ sci_ptr = sci_ptr, gobject = gobj }, sci_mt )
+    local obj = setmetatable({
+      sci_ptr = sci_ptr,
+      gobject = gobj,
+      multibyte = false,
+      offsets = offsets()
+    }, sci_mt)
 
     -- set up defaults
     obj:set_code_page(SC_CP_UTF8)
@@ -250,13 +262,54 @@ function sci.string_to_color(rgb)
   return tonumber(b .. g .. r, 16)
 end
 
+local function on_text_inserted(instance, args)
+  if not instance.multibyte then
+    instance.multibyte = args.text.multibyte
+  end
+end
+
+local function on_text_deleted(instance, args)
+  if instance.multibyte then
+    instance.multibyte = nil
+  end
+end
+
+function sci:is_multibyte()
+  if self.multibyte ~= nil then return self.multibyte end
+  self:character_count()
+  return self.multibyte
+end
+
+function sci:char_offset(byte_offset)
+  if not self.is_multibyte then return byte_offset end
+  local ptr = self:get_character_pointer()
+  return self.offsets:char_offset(ptr, byte_offset)
+end
+
+function sci:byte_offset(char_offset)
+  if not self.is_multibyte then return char_offset end
+  local ptr = self:get_character_pointer()
+  return self.offsets:byte_offset(ptr, char_offset)
+end
+
+function sci:character_count()
+  local count = self:count_characters(0, self:get_length() + 1)
+  local size = self:get_length()
+  self.multibyte = count ~= size
+  return count
+end
+
+-- Compact the document buffer and return a read-only pointer to the
+-- characters in the document.
+function sci:get_character_pointer()
+  return ffi_cast(const_char_p, self:send(2520, 0, 0))
+end
+
 function sci.dispatch(sci_ptr, event, args)
   local instance = sci_map[sci_ptr] or sci_map[tostring(sci_ptr)]
   if not instance then
     return true
   end
-  local listener = instance.listener
-  if not listener then return false end
   local handler
   if event == 'sci' then
     code = args.code
@@ -280,8 +333,12 @@ function sci.dispatch(sci_ptr, event, args)
         as_undo = bit.band(args.type, SC_PERFORMED_UNDO) ~= 0,
         as_redo = bit.band(args.type, SC_PERFORMED_REDO) ~= 0,
       }
-      if inserted then handler = 'on_text_inserted'
-      elseif deleted then handler = 'on_text_deleted'
+      if inserted then
+        handler = 'on_text_inserted'
+        on_text_inserted(instance, args)
+      elseif deleted then
+        handler = 'on_text_deleted'
+        on_text_deleted(instance, args)
       end
     elseif code == SCN_FOCUSIN then handler = 'on_focus'
     elseif code == SCN_FOCUSOUT then handler = 'on_focus_lost'
@@ -289,7 +346,8 @@ function sci.dispatch(sci_ptr, event, args)
   elseif event == 'key-press' then handler = 'on_keypress'
   end
 
-  if handler then
+  local listener = instance.listener
+  if listener and handler then
     if listener[handler] then
       local status, ret = pcall(listener[handler], args)
       if not status then
@@ -312,6 +370,7 @@ end
 function sci:to_gobject()
   return self.gobject
 end
+
 
 function sci:send(message, arg1, arg2)
   return C.scintilla_send_message(self.sci_ptr, message, ffi.cast('intptr_t', arg1), ffi.cast('intptr_t', arg2))
@@ -4088,12 +4147,6 @@ end
 -- Copy the selection, if selection empty copy the line with the caret
 function sci:copy_allow_line()
   self:send(2519, 0, 0)
-end
-
--- Compact the document buffer and return a read-only pointer to the
--- characters in the document.
-function sci:get_character_pointer()
-  return tonumber(self:send(2520, 0, 0))
 end
 
 -- Return a read-only pointer to a range of characters in the document.

@@ -3,7 +3,47 @@ import colors from howl.ui
 
 describe 'Scintilla', ->
 
-  sci = Scintilla!
+  local sci
+
+  before_each ->
+    sci = Scintilla!
+
+  describe 'character_count()', ->
+    it 'returns the number of characters in the document', ->
+      sci\insert_text 0, '123'
+      assert.equal 3, sci\character_count!
+      sci\insert_text 0, 'HƏllo'
+      assert.equal 8, sci\character_count!
+
+  describe 'is_multibyte()', ->
+    it 'returns true when the document contains multibyte characters', ->
+      assert.is_false sci\is_multibyte()
+      sci\insert_text 0, 'HƏllo'
+      assert.is_true sci\is_multibyte()
+      sci\delete_range 1, 4
+      assert.is_false sci\is_multibyte()
+
+  describe 'char_offset(byte_offset)', ->
+    it 'returns the char_offset for the given byte_offset', ->
+      sci\insert_text 0, 'äåö'
+      for p in *{
+        {0, 0},
+        {2, 1},
+        {4, 2},
+        {6, 3},
+      }
+        assert.equal p[2], sci\char_offset p[1]
+
+  describe 'byte_offset(char_offset)', ->
+    it 'returns byte offsets for all character offsets passed as parameters', ->
+      sci\insert_text 0, 'äåö'
+      for p in *{
+        {0, 0},
+        {2, 1},
+        {4, 2},
+        {6, 3},
+      }
+        assert.equal p[1], sci\byte_offset p[2]
 
   describe 'color handling', ->
     it 'automatically converts between color values and strings', ->

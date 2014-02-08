@@ -158,15 +158,15 @@ Invokes the function `f`, and collects any modifications performed within `f` as
 one undo group. Calling this, and subsequently calling [undo](#undo) will thus
 undo all modifications made within `f`.
 
-### byte_offset(...)
+### byte_offset(char_offset)
 
-Accepts a variable number of numerical buffer character positions, and returns
-the same amount of corresponding byte positions.
+Returns the byte offset corresponding to the passed `char_offset`. Raises an
+error if `char_offset` is out of bounds.
 
-### char_offset(...)
+### char_offset(byte_offset)
 
-Accepts a variable number of numerical buffer byte positions, and returns the
-same amount of corresponding character positions.
+Returns the character offset corresponding to the passed `byte_offset`. Raises
+an error if `byte_offset` is out of bounds.
 
 ### chunk(start_pos, end_pos)
 

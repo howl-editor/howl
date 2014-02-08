@@ -7,8 +7,6 @@ import style from howl.ui
 import PropertyObject from howl.aux.moon
 import destructor from howl.aux
 
-import char_offset, byte_offset from string
-
 background_sci = Scintilla!
 background_sci\set_lexer Scintilla.SCLEX_NULL
 background_buffer = setmetatable {}, __mode: 'v'
@@ -47,7 +45,6 @@ class Buffer extends PropertyObject
     @mode = mode
     @properties = {}
     @data = {}
-    @multibyte_from = nil
     @_len = nil
     @sci_listener =
       on_text_inserted: self\_on_text_inserted
@@ -99,7 +96,6 @@ class Buffer extends PropertyObject
       @sci\clear_all!
       @sci\set_code_page Scintilla.SC_CP_UTF8
       @sci\add_text #text, text
-      @multibyte_from = text.multibyte and 1 or nil
 
   @property modified:
     get: => @sci\get_modify!
@@ -116,8 +112,7 @@ class Buffer extends PropertyObject
   @property size: get: => @sci\get_text_length!
 
   @property length: get: =>
-    @_len or= @sci\count_characters 0, @size
-    @multibyte_from = nil if @_len == @size
+    @_len or= @sci\character_count!
     @_len
 
   @property lines: get: => BufferLines self, @sci
@@ -144,7 +139,7 @@ class Buffer extends PropertyObject
 
   @property destroyed: get: => @doc == nil
 
-  @property multibyte: get: => @multibyte_from != nil
+  @property multibyte: get: => @sci\is_multibyte!
 
   @property modified_on_disk: get: =>
     return false unless @file
@@ -171,7 +166,7 @@ class Buffer extends PropertyObject
 
   delete: (start_pos, end_pos) =>
     return if start_pos > end_pos
-    b_start, b_end = @byte_offset start_pos, end_pos + 1
+    b_start, b_end = @byte_offset(start_pos), @byte_offset(end_pos + 1)
     @sci\delete_range b_start - 1, b_end - b_start
 
   insert: (text, pos) =>
@@ -200,7 +195,7 @@ class Buffer extends PropertyObject
       pos = end_pos + 1
 
     return if #matches == 0
-    b_offsets = @byte_offset matches
+    b_offsets = text\byte_offset matches
 
     for i = #b_offsets, 1, -2
       start_pos = b_offsets[i - 1]
@@ -237,8 +232,17 @@ class Buffer extends PropertyObject
   undo: => @sci\undo!
   redo: => @sci\redo!
 
-  char_offset: (...) => @_offset char_offset, ...
-  byte_offset: (...) => @_offset byte_offset, ...
+  char_offset: (byte_offset) =>
+    if byte_offset < 1 or byte_offset > @size + 1
+      error "Byte offset '#{byte_offset}' out of bounds (size = #{@size})", 2
+
+    1 + @sci\char_offset byte_offset - 1
+
+  byte_offset: (char_offset) =>
+    if char_offset < 1 or char_offset > @length + 1
+      error "Character offset '#{char_offset}' out of bounds (length = #{@length})", 2
+
+    1 + @sci\byte_offset char_offset - 1
 
   reload: =>
     error "Cannot reload buffer '#{self}': no associated file", 2 unless @file
@@ -282,51 +286,16 @@ class Buffer extends PropertyObject
 
   _on_text_inserted: (args) =>
     @_len = nil
-
-    if args.text
-      if args.text.multibyte
-        @multibyte_from = @multibyte_from and math.min(@multibyte_from, args.at_pos) or args.at_pos
-    elseif @length != @size
-      @multibyte_from = math.min(@multibyte_from or 1, args.at_pos)
-
     args.buffer = self
     signal.emit 'text-inserted', args
     signal.emit 'buffer-modified', buffer: self
 
   _on_text_deleted: (args) =>
-    if @multibyte and args.at_pos < @multibyte_from
-      @multibyte_from = args.at_pos
-
     @_len = nil
 
     args.buffer = self
     signal.emit 'text-deleted', args
     signal.emit 'buffer-modified', buffer: self
-
-  _offset: (f, ...) =>
-    args = {...}
-    is_table = type(args[1]) == 'table'
-    arg_offsets = is_table and args[1] or args
-    local offsets
-
-    if @multibyte and arg_offsets[#arg_offsets] > @multibyte_from
-      offsets = f @text, arg_offsets
-      for i = #offsets, 1, -1
-        res = offsets[i]
-        arg = arg_offsets[i]
-        if res == arg
-          @multibyte_from = res
-          break
-    else
-      offsets = {}
-      size = @size
-      for offset in *arg_offsets
-        if offset < 1 or offset > size + 1
-          error "Offset '#{offset}' out of bounds (size = #{size})", 2
-        append offsets, offset
-
-    return offsets if is_table
-    return table.unpack offsets
 
   @meta {
     __len: => @length
