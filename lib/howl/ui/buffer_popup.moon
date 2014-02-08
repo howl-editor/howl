@@ -15,6 +15,7 @@ class BufferPopup extends Popup
     sci = @_create_sci buffer -- assignment to plain upvalue for the destructor to work
     @sci = sci
     @destructor = destructor -> buffer\remove_sci_ref sci
+    @buffer\lex!
 
     @bin = Gtk.EventBox {
       Gtk.Alignment {

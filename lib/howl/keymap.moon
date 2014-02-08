@@ -23,6 +23,7 @@
     ctrl_x:           'editor-cut'
     ctrl_z:           'editor-undo'
     ctrl_Z:           'editor-redo'
+    ctrl_q:           'show-doc-at-cursor'
     ctrl_space:       'editor-complete'
     ctrl_slash:       'editor-toggle_comment'
 

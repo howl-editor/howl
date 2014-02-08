@@ -258,7 +258,7 @@ class Buffer extends PropertyObject
 
       background_sci
 
-  lex: (end_pos) =>
+  lex: (end_pos = @size) =>
     if @_mode.lexer
       styler.style_text self, end_pos, @_mode.lexer
 

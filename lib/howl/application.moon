@@ -327,7 +327,7 @@ class Application extends PropertyObject
     require 'howl.commands.file_commands'
     require 'howl.commands.app_commands'
     require 'howl.commands.ui_commands'
-    require 'howl.commands.search_commands'
+    require 'howl.commands.edit_commands'
     require 'howl.editing'
 
   _load_application_icon: =>
