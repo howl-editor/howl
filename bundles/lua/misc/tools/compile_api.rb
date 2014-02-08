@@ -58,7 +58,7 @@ ARGF.each do |line|
     cur = {
       f: f,
       signature: signature,
-      description: "# #{signature}"
+      description: "# #{signature}\n"
   }
 elsif cur and line =~ /^\* \*/
   add cur, root
@@ -96,4 +96,5 @@ puts <<HDR
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 HDR
-puts puts out.tr '[]', '{}'
+puts out
+# puts out.tr '[]', '{}'
