@@ -11,7 +11,7 @@ def process_spec(spec)
     else
       n "#{spec}: Specs failed", 'Busted', :failed
     end
-    "#{spec}: Specs run."
+    "#{spec}: Specs run (#{Time.now.asctime})."
   end
 end
 
@@ -21,8 +21,10 @@ guard :shell do
     process_spec m[0]
   end
 
-  watch %r|lib/howl/.*\.moon$| do |m|
-    spec = m[0].gsub('lib/howl', 'spec').gsub('.moon', '_spec.moon')
+  watch %r"lib/howl/.*\.(?:moon|lua)$" do |m|
+    puts m[0]
+    spec = m[0].gsub('lib/howl', 'spec').gsub(/\.(?:moon|lua)$/, '_spec.moon')
+    puts spec
     process_spec spec
   end
 
