@@ -145,6 +145,7 @@ class Editor extends PropertyObject
       @_set_config_settings!
       style.set_for_buffer @sci, buffer
       highlight.set_for_buffer @sci, buffer
+      @line_numbers = @line_numbers -- force width calculation
       buffer\add_sci_ref @sci
 
       pos = buffer.properties.position or 1
@@ -211,7 +212,12 @@ class Editor extends PropertyObject
   @property line_numbers:
     get: => @sci\get_margin_width_n(0) > 0
     set: (flag) =>
-      width = flag and 4 + 4 * @sci\text_width(Scintilla.STYLE_LINENUMBER, '9') or 0
+      width = 0
+      if flag
+        needed_for_buffer = math.max(#tostring(@sci\get_line_count!) + 1, 4)
+        width_for_char = @sci\text_width(Scintilla.STYLE_LINENUMBER, '9')
+        width = 4 + needed_for_buffer * width_for_char
+
       @sci\set_margin_width_n 0, width
 
   @property active_lines: get: =>
