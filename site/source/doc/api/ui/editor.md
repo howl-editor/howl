@@ -15,8 +15,8 @@ shown to the user.
 ### active_chunk
 
 Contains a [Chunk] representing the currently active text block. If no selection
-is present, the chunk contains for the entire buffer. With a selection present,
-the chunk spans the current [selection][Selection].
+is present, the chunk contains the entire buffer. With a selection present, the
+chunk spans the current [selection][Selection].
 
 ### active_lines
 
@@ -168,8 +168,7 @@ current line. Does nothing if `str` could not be found.
 ### comment ()
 
 Comments the current line or selection, if possible, by forwarding the request
-to the current
-[mode].
+to the current [mode].
 
 ### complete ()
 
@@ -298,13 +297,14 @@ If a selection is not present, then:
 ### toggle_comment ()
 
 Comments or uncomments the current line or selection, if possible, by forwarding
-the request to the current
-[mode].
+the request to the current [mode].
 
 ### transform_active_lines (f)
 
 A helper for transforming [.active_lines] within the scope of
-[Buffer.as_one_undo](../buffer.html#as_one_undo) for the current buffer. Invokes `f` with [.active_lines], with any modifications being recorded as one undo operation.
+[Buffer.as_one_undo](../buffer.html#as_one_undo) for the current buffer. Invokes
+`f` with [.active_lines], with any modifications being recorded as one undo
+operation.
 
 ### uncomment ()
 
@@ -318,8 +318,9 @@ Undo:s the last edit operation, if any.
 
 ### with_position_restored (f)
 
-Invokes `f`, and restores the position to the original line and column after
-`f` has returned. Should the indentation level for the current line have changed, attempts to automatically adjust the column for the new indentation.
+Invokes `f`, and restores the position to the original line and column after `f`
+has returned. Should the indentation level for the current line have changed,
+attempts to automatically adjust the column for the new indentation.
 
 [.active_lines]: #.active_lines
 [.buffer]: #.buffer
