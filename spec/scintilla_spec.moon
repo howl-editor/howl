@@ -45,6 +45,29 @@ describe 'Scintilla', ->
       }
         assert.equal p[1], sci\byte_offset p[2]
 
+  context '(offset handling stress test)', ->
+    it 'returns the correct result as compared to ustring', ->
+      build = {}
+      line = 'äåöLinƏΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣbutnowforsomesingleΤΥΦΧĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏ'
+      for i = 1,3000
+        build[#build + 1] = line
+      s = table.concat build, '\n'
+      sci\insert_text 0, s
+
+      for i = 1, 3000 * line.ulen, 3007
+        assert.equal s\byte_offset(i), sci\byte_offset(i - 1) + 1
+
+      for i = 1, 3000 * #line, 3007
+        assert.equal s\char_offset(i), sci\char_offset(i - 1) + 1
+
+      for i = 2000 * #line, 100, -2003
+        sci\delete_range i, 20
+        sci\insert_text i, 'ordinary ascii text here'
+        s = sci\get_text!
+        c_offset = sci\char_offset(i + 100 - 1) + 1
+        assert.equal s\char_offset(i + 100), c_offset
+        assert.equal s\byte_offset(c_offset), sci\byte_offset(c_offset - 1) + 1
+
   describe 'color handling', ->
     it 'automatically converts between color values and strings', ->
       sci\style_set_fore 1, '#112233'

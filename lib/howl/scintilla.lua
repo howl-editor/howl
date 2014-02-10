@@ -265,12 +265,15 @@ end
 local function on_text_inserted(instance, args)
   if not instance.multibyte then
     instance.multibyte = args.text.multibyte
+  else
+    instance.offsets:invalidate_from(args.at_pos)
   end
 end
 
 local function on_text_deleted(instance, args)
   if instance.multibyte then
     instance.multibyte = nil
+    instance.offsets:invalidate_from(args.at_pos)
   end
 end
 
