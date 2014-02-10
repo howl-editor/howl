@@ -35,11 +35,7 @@ connect = (name, handler, index) ->
   else if index < 1 then index = 1
   append list, index, handler
 
-connect_first = (name, handler) ->
-  error "Unknown signal '#{name}'", 2 unless all[name]
-  connect name, handler, 1
-
 disconnect = (name, handler) ->
   handlers[name] = [h for h in *handlers_for name when h != handler]
 
-return :register, :unregister, :emit, :connect, :connect_first, :disconnect, :all
+return :register, :unregister, :emit, :connect, :disconnect, :all

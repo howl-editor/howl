@@ -22,9 +22,6 @@ describe 'signal', ->
     it 'connect raises an error', ->
       assert.raises 'none', -> signal.connect 'none', -> true
 
-    it 'connect_first raises an error', ->
-      assert.raises 'none', -> signal.connect_first 'none', -> true
-
   context 'with a registered signal', ->
     before_each -> signal.register 'foo', description: 'bar'
     after_each -> signal.unregister 'foo'
@@ -41,7 +38,7 @@ describe 'signal', ->
     it 'allows connecting handlers before existing handlers', ->
       value = nil
       signal.connect 'foo', -> value = 'first'
-      signal.connect_first 'foo', -> value = 'second'
+      signal.connect 'foo', (-> value = 'second'), 1
       signal.emit 'foo'
       assert.equal value, 'first'
 
