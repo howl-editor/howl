@@ -1,8 +1,8 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import app, command, config, bindings, bundle, signal, inputs from howl
-import ActionBuffer, List from howl.ui
+import app, Buffer, command, config, bindings, bundle, signal, inputs, mode from howl
+import ActionBuffer, BufferPopup, List from howl.ui
 serpent = require 'serpent'
 
 command.register
@@ -191,3 +191,43 @@ command.register
       inputs.line "Structure for #{buffer.title}", buffer, buffer.mode\structure editor
   }
   handler: (line) -> editor.cursor.line = tonumber line.nr
+
+-----------------------------------------------------------------------
+-- Howl eval commands
+-----------------------------------------------------------------------
+
+do_howl_eval = (load_f, mode_name, transform_f) ->
+  editor = _G.editor
+  text = editor.selection.empty and editor.current_line.text or editor.selection.text
+  text = transform_f and transform_f(text) or text
+  f = assert load_f text
+  ret = { pcall f }
+  if ret[1]
+    out = ''
+    for i = 2, #ret
+      out ..= "\n#{serpent.block ret[i], comment: false}"
+
+    buf = Buffer mode.by_name mode_name
+    buf.text = "-- Howl eval (#{mode_name}) =>#{out}"
+    editor\show_popup BufferPopup buf
+   else
+    log.error "(ERROR) => #{ret[2]}"
+
+command.register
+  name: 'howl-lua-eval'
+  description: 'Evals the current line or selection as Lua'
+  handler: ->
+    do_howl_eval load, 'lua', (text) ->
+      unless text\match 'return%s'
+        text = if text\find '\n'
+          text\gsub "\n([^\n]+)$", "\n  return %1"
+        else
+          "return #{text}"
+      text
+
+command.register
+  name: 'howl-moon-eval'
+  description: 'Evals the current line or selection as Moonscript'
+  handler: ->
+    moonscript = require('moonscript')
+    do_howl_eval moonscript.loadstring, 'moonscript'
