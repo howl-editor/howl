@@ -199,6 +199,7 @@ command.register
 do_howl_eval = (load_f, mode_name, transform_f) ->
   editor = _G.editor
   text = editor.selection.empty and editor.current_line.text or editor.selection.text
+  text = text.stripped
   text = transform_f and transform_f(text) or text
   f = assert load_f text
   ret = { pcall f }
