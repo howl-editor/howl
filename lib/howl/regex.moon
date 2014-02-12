@@ -124,6 +124,7 @@ r = (pattern) ->
 
 return setmetatable {
   escape: (s) -> GRegex.escape_string s
+  :r
   :is_instance
 }, {
   __call: (...) => r ...
