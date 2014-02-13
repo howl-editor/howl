@@ -52,13 +52,13 @@ Line = (nr, buffer, sci) ->
 
       previous_non_blank: =>
         prev_line = @previous
-        while prev_line and prev_line.blank
+        while prev_line and prev_line.is_blank
           prev_line = prev_line.previous
         prev_line
 
       next_non_blank: =>
         next_line = @next
-        while next_line and next_line.blank
+        while next_line and next_line.is_blank
           next_line = next_line.next
         next_line
 

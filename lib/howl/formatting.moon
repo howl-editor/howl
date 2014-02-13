@@ -11,7 +11,7 @@
 
       -- check whether we need to add the end_s ourselves
       unless line.text\umatch(block_end_p)
-        return false unless line.blank
+        return false unless line.is_blank
         next_line = line.next_non_blank
         if next_line
           return false if next_line.indentation > start_line_indent
@@ -21,7 +21,7 @@
         modified = true
 
       -- add a blank line between the start and end line if necessary
-      unless line.blank
+      unless line.is_blank
         line = lines\insert line.nr, ''
         modified = true
 

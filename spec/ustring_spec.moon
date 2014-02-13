@@ -17,13 +17,13 @@ describe 'ustrings', ->
     assert.is_false ('foo').multibyte
     assert.is_true ('åäö').multibyte
 
-  it '.empty is true for the empty string', ->
-    assert.is_true ('').empty
-    assert.is_false (' ').empty
+  it '.is_empty is true for the empty string', ->
+    assert.is_true ('').is_empty
+    assert.is_false (' ').is_empty
 
-  it '.blank is true for a string that is empty or only contains whitespace', ->
-    assert.is_true ('\t\r\n').blank
-    assert.is_false ('x').blank
+  it '.is_blank is true for a string that is empty or only contains whitespace', ->
+    assert.is_true ('\t\r\n').is_blank
+    assert.is_false ('x').is_blank
 
   it '.stripped contains the string without leading or trailing whitespace', ->
     assert.equal 'foo', ('  \tfoo').stripped

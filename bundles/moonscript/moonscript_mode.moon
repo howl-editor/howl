@@ -67,7 +67,7 @@ class MoonscriptMode
         else
           parents = [l for l in *parents when l.indentation < line.indentation]
 
-      prev_line = line if line and not line.blank
+      prev_line = line if line and not line.is_blank
 
       for p in *patterns
         if line\umatch p

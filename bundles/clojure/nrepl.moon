@@ -24,7 +24,7 @@ send = (cmd) ->
     error = res[1]
     return bencode.decode error if error
     answer = res[3]
-    return bencode.decode answer if not answer.empty
+    return bencode.decode answer if not answer.is_empty
 
   error "Timeout waiting for reply from nrepl"
 

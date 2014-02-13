@@ -218,7 +218,7 @@ class List extends PropertyObject
         text = tostring(item)
         pos = buffer\insert text, pos, @_column_style(item, row, 1)
 
-      if @highlight_matches_for and not @highlight_matches_for.blank
+      if @highlight_matches_for and not @highlight_matches_for.is_blank
         positions = self.highlighter @highlight_matches_for, text
         if positions
           for hl_pos in *positions

@@ -178,8 +178,8 @@ properties =
   ulower: => g_string C.g_utf8_strdown(const_char_p(@), #@)
   uupper: => g_string C.g_utf8_strup(const_char_p(@), #@)
   ureverse: => g_string C.g_utf8_strreverse(const_char_p(@), #@)
-  empty: => #@ == 0
-  blank: => @find('%S') == nil
+  is_empty: => #@ == 0
+  is_blank: => @find('%S') == nil
   stripped: => @match '%s*(.-)%s*$'
 
 getmetatable('').__index = (k) =>

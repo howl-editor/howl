@@ -131,11 +131,11 @@ describe 'BufferLines', ->
       assert.equal 'first win', (line\gsub('line', 'win'))
 
     it 'string properties can be accessed directly on the object', ->
-      assert.is_false lines[1].empty
-      assert.is_false lines[1].blank
+      assert.is_false lines[1].is_empty
+      assert.is_false lines[1].is_blank
       lines[1] = ''
-      assert.is_true lines[1].empty
-      assert.is_true lines[1].blank
+      assert.is_true lines[1].is_empty
+      assert.is_true lines[1].is_blank
 
   describe '[nr]', ->
     it 'returns a line object for the specified line', ->

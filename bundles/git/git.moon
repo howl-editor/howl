@@ -20,7 +20,7 @@ class Git
 
   diff: (file) =>
     d = @run 'diff', file
-    not d.blank and d or nil
+    not d.is_blank and d or nil
 
   run: (...) =>
     exec_path = config.git_path or 'git'

@@ -23,7 +23,7 @@ class DefaultMode
       local prev_line
 
       for line in *lines
-        continue if line.blank and line.nr != current_line
+        continue if line.is_blank and line.nr != current_line
         local indent
 
         prev_line or= line.previous_non_blank
@@ -45,7 +45,7 @@ class DefaultMode
     return unless prefix
 
     prefix ..= ' '
-    suffix = ' ' .. suffix unless suffix.empty
+    suffix = ' ' .. suffix unless suffix.is_empty
 
     buffer, cursor = editor.buffer, editor.cursor
     current_column = cursor.column
@@ -53,10 +53,10 @@ class DefaultMode
 
     editor\transform_active_lines (lines) ->
       min_indent = math.huge
-      min_indent = math.min(min_indent, l.indentation) for l in *lines when not l.blank
+      min_indent = math.min(min_indent, l.indentation) for l in *lines when not l.is_blank
 
       for line in *lines
-        unless line.blank
+        unless line.is_blank
           text = line\gsub '\t', tab_expansion
           new_text = text\usub(1, min_indent) .. prefix .. text\usub(min_indent + 1) .. suffix
           line.text = new_text
@@ -108,7 +108,7 @@ class DefaultMode
     max_level = 0
 
     for line in *editor.buffer.lines
-      unless line.blank
+      unless line.is_blank
         indentation = line.indentation
         if cur_line and indentation > cur_line.indentation
           unless cur_line\match '%a'
@@ -173,7 +173,7 @@ class DefaultMode
       if spec.less_for and spec.less_for.authoritive != false and line.indentation < prev_line.indentation
         return prev_line.indentation
 
-      return prev_line.indentation if line.blank
+      return prev_line.indentation if line.is_blank
 
     alignment_adjustment = line.indentation % indent_level
     line.indentation + alignment_adjustment

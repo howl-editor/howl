@@ -11,7 +11,7 @@ paragraph_at = (line) ->
     tinsert lines, 1, prev
     prev = prev.previous
 
-  return lines if line.blank and #lines > 0
+  return lines if line.is_blank and #lines > 0
   tinsert lines, line if paragraph_line line
 
   next = line.next
@@ -31,10 +31,10 @@ can_reflow = (line, limit) ->
   cut_off = first_blank or len
 
   prev = line.previous
-  return true if prev and not prev.blank and prev.ulen + cut_off + 1 <= limit
+  return true if prev and not prev.is_blank and prev.ulen + cut_off + 1 <= limit
 
   next = line.next
-  if next and not next.blank
+  if next and not next.is_blank
     return true if next.ulen + cut_off + 1 <= limit
     next_first_blank = next\find('%s')
     return true if next_first_blank and len + next_first_blank <= limit
@@ -66,7 +66,7 @@ reflow_paragraph_at = (line, limit) ->
   while start_pos and (start_pos + limit <= text.ulen)
     start_search = start_pos + limit
     i = start_search
-    while i > start_pos and not text[i].blank
+    while i > start_pos and not text[i].is_blank
       i -= 1
 
     if i == start_pos

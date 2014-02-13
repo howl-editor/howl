@@ -119,7 +119,7 @@ command.register
       pipe = assert io.popen "diff -u #{buffer.file} #{file}"
       diff = assert pipe\read '*a'
       pipe\close!
-      if diff and not diff.blank
+      if diff and not diff.is_blank
         show_diff_buffer "Compared to disk: #{buffer.file.basename}", diff
       else
         log.info "No unsaved modifications found for #{buffer.file.basename}"

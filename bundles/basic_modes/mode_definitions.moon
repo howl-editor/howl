@@ -243,7 +243,7 @@ common_auto_pairs = {
 
     keymap: {
       tab: (editor) ->
-        if editor.current_context.prefix.blank
+        if editor.current_context.prefix.is_blank
           editor\insert '\t'
         else
           false

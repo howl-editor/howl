@@ -71,7 +71,7 @@ class BufferPopup extends Popup
     char_height = @sci\text_height 0
     height = (char_height * #@buffer.lines) + 6
 
-    if @buffer.lines[#@buffer.lines].blank
+    if @buffer.lines[#@buffer.lines].is_blank
       height -= char_height
 
     max_line = 0
