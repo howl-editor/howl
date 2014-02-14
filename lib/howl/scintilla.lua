@@ -302,11 +302,21 @@ function sci:character_count()
   return count
 end
 
+-- Overrides
+
 -- Compact the document buffer and return a read-only pointer to the
 -- characters in the document.
 function sci:get_character_pointer()
   return ffi_cast(const_char_p, self:send(2520, 0, 0))
 end
+
+-- Change the document object used.
+function sci:set_doc_pointer(pointer)
+  self.offsets:invalidate_from(0)
+  self:send(2358, 0, pointer)
+end
+
+-- End overrides
 
 function sci.dispatch(sci_ptr, event, args)
   local instance = sci_map[sci_ptr] or sci_map[tostring(sci_ptr)]
@@ -3471,11 +3481,6 @@ end
 -- Retrieve a pointer to the document object.
 function sci:get_doc_pointer()
   return tonumber(self:send(2357, 0, 0))
-end
-
--- Change the document object used.
-function sci:set_doc_pointer(pointer)
-  self:send(2358, 0, pointer)
 end
 
 -- Set which document modification events are sent to the container.
