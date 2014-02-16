@@ -77,7 +77,7 @@ describe 'ustrings', ->
     it 'accepts regex patterns', ->
       assert.same {'ö'}, { '/ö'\umatch r'\\p{L}'}
 
-  describe 'ugmatch()', ->
+  describe 'ugmatch(pattern)', ->
     it 'returns character offsets instead of byte offsets', ->
       s = 'föo bãr'
       gen = s\ugmatch '(%S+)()'
@@ -132,14 +132,17 @@ describe 'ustrings', ->
     assert.is_false 'foobar'\contains '.'
 
   describe 'count(s, pattern = false)', ->
-    it 'returns the number of occurences of s with the string', ->
+    it 'returns the number of occurences of s within the string', ->
       assert.equal 1, 'foobar'\count 'foo'
       assert.equal 2, 'foobar'\count 'o'
       assert.equal 0, 'foobar'\count 'x'
 
-    it 's is evaluated as a pattern if pattern is true', ->
+    it 's is evaluated as a pattern if <pattern> is true', ->
       assert.equal 3, 'foo'\count('%w', true)
-      assert.equal 2, 'foobar'\count('[ab]', true)
+      assert.equal 2, 'foobar'\count(r'[ab]', true)
+
+    it 's is evaluated as a pattern if it is a regex, regardless of <pattern>', ->
+      assert.equal 2, 'foobar'\count(r'[ab]')
 
   describe 'byte_offset(...)', ->
     it 'returns byte offsets for all character offsets passed as parameters', ->

@@ -152,7 +152,7 @@ count = (s1, s2, is_pattern = false) ->
   pos = 1
 
   while pos
-    _, pos = s1\find s2, pos, not is_pattern
+    _, pos = s1\ufind s2, pos, not is_pattern
     if pos
       c += 1
       pos += 1
