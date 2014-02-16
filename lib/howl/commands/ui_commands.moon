@@ -1,4 +1,4 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 import command, config from howl
@@ -41,7 +41,7 @@ command.register
       log.info "zoom-out: global font size set to #{size}"
 
 command.register
-  name: "close-view",
+  name: "view-close",
   description: "Closes the current view"
   handler: ->
     if #window.views > 1
@@ -49,6 +49,16 @@ command.register
       collectgarbage!
     else
       log.error "Can't close the one remaining view"
+
+command.register
+  name: "view-next",
+  description: "Focuses the next view, wrapping around as necessary"
+  handler: ->
+    target = window\siblings(nil, true).right
+    if target
+      target\grab_focus!
+    else
+      log.warn "No other view found"
 
 for cmd in *{
   { 'left', 'left_of', 'Goes to the left view, creating it if necessary' }

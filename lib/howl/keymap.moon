@@ -67,7 +67,7 @@
     shift_home:       'cursor-home-extend'
   }
 
-  ctrl_w:           'close-view'
+  ctrl_w:           'view-close'
   'ctrl_-':         'zoom-out'
   'ctrl_+':         'zoom-in'
 
