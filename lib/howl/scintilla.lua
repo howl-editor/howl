@@ -513,6 +513,7 @@ SC_MARK_LEFTRECT = 27
 SC_MARK_AVAILABLE = 28
 SC_MARK_UNDERLINE = 29
 SC_MARK_RGBAIMAGE = 30
+SC_MARK_BOOKMARK = 31
 SC_MARK_CHARACTER = 10000
 SC_MARKNUM_FOLDEREND = 25
 SC_MARKNUM_FOLDEROPENMID = 26
@@ -746,8 +747,8 @@ SC_PRINT_COLOURONWHITE = 3
 SC_PRINT_COLOURONWHITEDEFAULTBG = 4
 SCI_SETPRINTCOLOURMODE = 2148
 SCI_GETPRINTCOLOURMODE = 2149
-SCFIND_WHOLEWORD = 2
-SCFIND_MATCHCASE = 4
+SCFIND_WHOLEWORD = 0x2
+SCFIND_MATCHCASE = 0x4
 SCFIND_WORDSTART = 0x00100000
 SCFIND_REGEXP = 0x00200000
 SCFIND_POSIX = 0x00400000
@@ -805,6 +806,7 @@ SCI_CALLTIPSHOW = 2200
 SCI_CALLTIPCANCEL = 2201
 SCI_CALLTIPACTIVE = 2202
 SCI_CALLTIPPOSSTART = 2203
+SCI_CALLTIPSETPOSSTART = 2214
 SCI_CALLTIPSETHLT = 2204
 SCI_CALLTIPSETBACK = 2205
 SCI_CALLTIPSETFORE = 2206
@@ -1205,6 +1207,7 @@ SCI_GETSELECTIONEMPTY = 2650
 SCI_CLEARSELECTIONS = 2571
 SCI_SETSELECTION = 2572
 SCI_ADDSELECTION = 2573
+SCI_DROPSELECTIONN = 2671
 SCI_SETMAINSELECTION = 2574
 SCI_GETMAINSELECTION = 2575
 SCI_SETSELECTIONNCARET = 2576
@@ -1455,6 +1458,7 @@ SCLEX_LITERATEHASKELL = 108
 SCLEX_STTXT = 109
 SCLEX_KVIRC = 110
 SCLEX_RUST = 111
+SCLEX_DMAP = 112
 SCLEX_AUTOMATIC = 1000
 SCN_STYLENEEDED = 2000
 SCN_CHARADDED = 2001
@@ -2769,6 +2773,11 @@ end
 -- Retrieve the position where the caret was before displaying the call tip.
 function sci:call_tip_pos_start()
   return tonumber(self:send(2203, 0, 0))
+end
+
+-- Set the start position in order to change when backspacing removes the calltip.
+function sci:call_tip_set_pos_start(pos_start)
+  self:send(2214, pos_start, 0)
 end
 
 -- Highlight a segment of the definition.
@@ -4442,6 +4451,11 @@ end
 -- Add a selection
 function sci:add_selection(caret, anchor)
   return tonumber(self:send(2573, caret, anchor))
+end
+
+-- Drop one selection
+function sci:drop_selection_n(selection)
+  self:send(2671, selection, 0)
 end
 
 -- Set the main selection
