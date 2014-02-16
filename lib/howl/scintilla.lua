@@ -263,7 +263,7 @@ function sci.string_to_color(rgb)
 end
 
 local function on_text_inserted(instance, args)
-  if not instance.multibyte then
+  if instance.multibyte == false then
     instance.multibyte = args.text.multibyte
   else
     instance.offsets:invalidate_from(args.at_pos)
@@ -278,19 +278,21 @@ local function on_text_deleted(instance, args)
 end
 
 function sci:is_multibyte()
-  if self.multibyte ~= nil then return self.multibyte end
-  self:character_count()
+  if self.multibyte == nil then
+    self:character_count()
+  end
+
   return self.multibyte
 end
 
 function sci:char_offset(byte_offset)
-  if not self.is_multibyte then return byte_offset end
+  if not self:is_multibyte() then return byte_offset end
   local ptr = self:get_character_pointer()
   return self.offsets:char_offset(ptr, byte_offset)
 end
 
 function sci:byte_offset(char_offset)
-  if not self.is_multibyte then return char_offset end
+  if not self:is_multibyte() then return char_offset end
   local ptr = self:get_character_pointer()
   return self.offsets:byte_offset(ptr, char_offset)
 end
@@ -313,6 +315,7 @@ end
 -- Change the document object used.
 function sci:set_doc_pointer(pointer)
   self.offsets:invalidate_from(0)
+  self.multibyte = nil
   self:send(2358, 0, pointer)
 end
 
