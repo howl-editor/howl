@@ -22,9 +22,7 @@ guard :shell do
   end
 
   watch %r"lib/howl/.*\.(?:moon|lua)$" do |m|
-    puts m[0]
     spec = m[0].gsub('lib/howl', 'spec').gsub(/\.(?:moon|lua)$/, '_spec.moon')
-    puts spec
     process_spec spec
   end
 
