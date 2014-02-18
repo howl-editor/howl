@@ -2,15 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import Matcher from howl.util
--- import colors from howl.ui
-
--- local properties, properties_matcher, color_matcher
-
 matchers = {}
-
-authoritive = (t) ->
-  with t
-    .authoritive = true
 
 matcher_for = (path = '', parts = {}, api) ->
   m = matchers[path]
