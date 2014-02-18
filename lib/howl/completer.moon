@@ -1,3 +1,6 @@
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE.md)
+
 import completion, config from howl
 
 load_completers = (buffer, context) ->

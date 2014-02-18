@@ -1,5 +1,4 @@
-import Buffer from howl
-import completion from howl
+import Buffer, app, completion  from howl
 
 require 'howl.completion.inbuffercompleter'
 require 'howl.variables.core_variables'
@@ -81,3 +80,47 @@ oo
 ]]
     buffer.config.word_pattern = '[^/%s.]+'
     assert.same { '*foo*' }, complete_at lines[3].end_pos
+
+  context '(multiple buffers)', ->
+    local buffer2, buffer3
+    before_each ->
+      buffer2 = Buffer buffer.mode
+      buffer2.text = 'foo\n'
+      app\add_buffer buffer2, false
+      buffer2.last_shown = 123
+
+      buffer3 = Buffer buffer.mode
+      buffer3.text = 'fabulous\n'
+      buffer3.last_shown = 12
+      app\add_buffer buffer3, false
+
+    after_each ->
+      app\close_buffer buffer2, true
+      app\close_buffer buffer3, true
+
+    it 'searches up to <config.inbuffer_completion_max_buffers> other buffers', ->
+      buffer.text = 'fry\nf'
+      comps = complete_at buffer.lines[2].end_pos
+      table.sort comps
+      assert.same { 'fabulous', 'foo', 'fry' }, comps
+
+      buffer.config.inbuffer_completion_max_buffers = 2
+      comps = complete_at buffer.lines[2].end_pos
+      table.sort comps
+      assert.same { 'foo', 'fry' }, comps
+
+    it 'prefers closer matches', ->
+      buffer.text = 'fry\nf'
+      comps = complete_at buffer.lines[2].end_pos
+      assert.same { 'fry', 'foo', 'fabulous' }, comps
+
+    it 'skips buffers with a different mode if <config.inbuffer_completion_same_mode_only> is true', ->
+      buffer.config.inbuffer_completion_same_mode_only = true
+      buffer2.mode = {}
+      buffer.text = 'fry\nf'
+      comps = complete_at buffer.lines[2].end_pos
+      assert.same { 'fry', 'fabulous' }, comps
+
+      buffer.config.inbuffer_completion_same_mode_only = false
+      comps = complete_at buffer.lines[2].end_pos
+      assert.same { 'fry', 'foo', 'fabulous' }, comps

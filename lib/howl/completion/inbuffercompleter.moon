@@ -1,10 +1,46 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Matcher from howl.util
+Matcher = require 'howl.util.matcher'
+import config, signal, app from howl
+os = os
 
-parse = (buffer) ->
-  tokens = { token, true for token in buffer.text\ugmatch buffer.config.word_pattern }
+RESCAN_STALE_AFTER = 30
+
+signal.connect 'buffer-modified', (args) ->
+    data = args.buffer.data.inbuffer_completer
+    data.is_stale = true if data
+
+completion_buffers_for = (buffer) ->
+  candidates = { buffer }
+  max_buffers = buffer.config.inbuffer_completion_max_buffers
+  same_only = buffer.config.inbuffer_completion_same_mode_only
+
+  for b in *app.buffers
+    if b != buffer and not same_only or b.mode == buffer.mode
+      candidates[#candidates + 1] = b
+    break if #candidates >= max_buffers
+
+  candidates
+
+should_update = (data) ->
+  data.is_stale and os.difftime(os.time!, data.updated_at) > RESCAN_STALE_AFTER
+
+load = (buffer) ->
+  candidates = completion_buffers_for buffer
+
+  tokens = {}
+  for b in *candidates
+    data = b.data.inbuffer_completer or {}
+    b_tokens = data.tokens
+    if not b_tokens or should_update data
+      b_tokens = { token, true for token in b.text\ugmatch b.config.word_pattern }
+      data.tokens = b_tokens
+      data.updated_at = os.time!
+      b.data.inbuffer_completer = data
+
+    tokens[token] = true for token in pairs b_tokens
+
   [token for token, _ in pairs tokens]
 
 close_chunk = (context) ->
@@ -21,24 +57,30 @@ near_tokens = (part, context) ->
   tokens = {}
   start_pos = 1
   chunk_text = chunk.text
-  pattern = context.buffer.config.word_pattern
+  buffer = context.buffer
+  pattern = buffer.config.word_pattern
 
   while start_pos < #chunk_text
     start_pos, end_pos = chunk_text\ufind pattern, start_pos
     break unless start_pos
     token = chunk_text\usub start_pos, end_pos
-    rank = math.abs line_pos - start_pos
-    info = tokens[token]
-    rank = math.min info.rank, rank if info
-    tokens[token] = pos: start_pos, :rank, text: token
+    if token != part
+      rank = math.abs line_pos - start_pos
+      info = tokens[token]
+      rank = math.min info.rank, rank if info
+      tokens[token] = pos: start_pos, :rank, text: token
     start_pos = end_pos + 1
+
+  data = buffer.data.inbuffer_completer
+  if data and data.tokens
+    data.tokens[token.text] = true for _, token in pairs tokens
 
   [token for _, token in pairs tokens]
 
 class InBufferCompleter
   new: (buffer, context) =>
     @near_tokens = near_tokens context.word_prefix, context
-    @matcher = Matcher parse buffer
+    @matcher = Matcher load buffer
 
   complete: (context) =>
     pattern = '^' .. context.word_prefix .. '.'
@@ -62,5 +104,19 @@ class InBufferCompleter
         i += 1
 
     completions
+
+with config
+  .define
+    name: 'inbuffer_completion_max_buffers'
+    description: 'The maxium number of buffers that the inbuffer completer should search'
+    default: 4
+    type_of: 'number'
+
+with config
+  .define
+    name: 'inbuffer_completion_same_mode_only'
+    description: 'Whether the inbuffer completer only completes from buffers with the same mode'
+    default: false
+    type_of: 'boolean'
 
 howl.completion.register name: 'in_buffer', factory: InBufferCompleter
