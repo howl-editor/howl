@@ -7,7 +7,6 @@ import Scintilla, Completer, signal, bindings, config, command from howl
 import PropertyObject from howl.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
 import Searcher, CompletionPopup from howl.ui
-import destructor from howl.aux
 
 _editors = setmetatable {}, __mode: 'v'
 editors = -> [e for _, e in pairs _editors when e != nil]
@@ -115,6 +114,7 @@ class Editor extends PropertyObject
       on_focus_in_event: gobject_signal.unref_handle @bin\on_focus_in_event ->
         @sci\grab_focus!
       on_destroy: gobject_signal.unref_handle @bin\on_destroy ->
+        theme.unregister_background_widget @sci\to_gobject!
         @buffer\remove_sci_ref @sci
         signal.emit 'editor-destroyed', editor: self
     }
