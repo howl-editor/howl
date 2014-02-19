@@ -205,13 +205,18 @@ describe 'Buffer', ->
       assert.equal 123, b.config.buf_var
       assert.equal 'def value', config.buf_var
 
-    it 'is chained to the mode config', ->
+    it 'is chained to the mode config when available', ->
       mode_config = config.local_proxy!
       mode = config: mode_config
       b = buffer 'config'
       b.mode = mode
       mode_config.buf_var = 'from_mode'
       assert.equal 'from_mode', b.config.buf_var
+
+    it 'is chained to the global config when mode config is not available', ->
+      b = buffer 'config'
+      b.mode = {}
+      assert.equal 'def value', b.config.buf_var
 
   describe 'delete(start_pos, end_pos)', ->
     it 'deletes the specified range, inclusive', ->
