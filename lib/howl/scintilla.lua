@@ -17,7 +17,6 @@ local bit = require('bit')
 local cdefs = require('howl.cdefs')
 local offsets = require('howl.offsets')
 local colors = require('howl.ui.colors')
-local destructor = require('howl.aux.destructor')
 local gobject = require('ljglibs.gobject')
 local gsignal = gobject.signal
 
@@ -224,12 +223,9 @@ end
 setmetatable(sci, {
   __call = function()
 
-    local gobj = C.scintilla_new()
-    -- gobj = gobject.gc_ptr(gobj)
-    local sci_ptr = gobj
+    local sci_ptr = gobject.ref_ptr(C.scintilla_new())
     local obj = setmetatable({
       sci_ptr = sci_ptr,
-      gobject = gobj,
       multibyte = false,
       offsets = offsets()
     }, sci_mt)
@@ -244,9 +240,6 @@ setmetatable(sci, {
     -- store in registry
     sci_map[sci_ptr] = obj
     sci_map[tostring(ffi.cast('gpointer', sci_ptr))] = obj
-
-    -- destroy gobject when vanquished
-    -- obj.destructor = destructor(function() gobj:destroy() end)
 
     gsignal.connect('bool3', sci_ptr, 'key-press-event', on_sci_key_press)
     gsignal.connect('bool4', sci_ptr, 'sci-notify', on_sci_notify)
@@ -384,7 +377,7 @@ function sci.dispatch(sci_ptr, event, args)
 end
 
 function sci:to_gobject()
-  return self.gobject
+  return self.sci_ptr
 end
 
 
