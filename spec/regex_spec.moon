@@ -63,7 +63,7 @@ describe 'Regex', ->
       assert.same { 3, 5, 6 }, { r'\\w+()'\find '12ab2', 3}
 
   describe 'gmatch(s)', ->
-    context 'with captures in the pattern', ->
+    context 'with no captures in the pattern', ->
       it 'produces each consecutive match in each call', ->
         matches = [m for m in r'\\w+'\gmatch 'well hello there']
         assert.same { 'well', 'hello', 'there' }, matches
@@ -76,6 +76,10 @@ describe 'Regex', ->
       it 'produces the the set of captures in each call', ->
         matches = [{p,m} for p,m in r'()(\\w+)'\gmatch 'well hello there']
         assert.same { {1, 'well'}, {6, 'hello'}, {12, 'there'} }, matches
+
+    it 'returns no matches when it does not match', ->
+      matches = [m for m in r'\\d+'\gmatch 'well hello there']
+      assert.same {}, matches
 
   it 'escape(s) returns a string with all special regular expression symbols escaped', ->
     assert.equal 'a\\.b\\*c', r.escape 'a.b*c'

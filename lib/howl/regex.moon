@@ -59,7 +59,6 @@ methods = {
     return table.unpack matches
 
   gmatch: (s) =>
-    return nil unless #s > 0
     ptr = const_char_p s
     matches = {}
     pos_matches = {}
