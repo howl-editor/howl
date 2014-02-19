@@ -115,7 +115,7 @@ describe 'theme', ->
       theme.register 'foo', file
       assert.has_errors -> config.current = 'foo'
 
-  describe 'register_background_widget(widget, style)', ->
+  describe 'widget background support', ->
 
     set_theme_with_background = (color, style = 'default') ->
       File.with_tmpfile (file) ->
@@ -125,33 +125,45 @@ describe 'theme', ->
         theme.register 'with_background', file
         config.theme = 'with_background'
 
-    it "overrides the widget's background with the current theme background", ->
-      widget = Gtk.EventBox!
-      set_theme_with_background 'red'
-      theme.register_background_widget widget
-      bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
-      assert.same { 1, 0, 0 }, { bg.red, bg.green, bg.blue }
+    describe 'register_background_widget(widget, style)', ->
 
-    -- it "updates the widget's background whenever the theme changes", ->
-    --   widget = Gtk.EventBox!
-    --   set_theme_with_background 'red'
-    --   theme.register_background_widget widget
-    --   set_theme_with_background 'blue'
-    --   bg = widget\get_style_context!\get_background_color 'NORMAL'
-    --   assert.same { 0, 0, 1 }, { bg.red, bg.green, bg.blue }
-
-    context 'when <style> is specified', ->
-      it 'uses the named style for the background if possible', ->
-        widget = Gtk.EventBox!
-        set_theme_with_background '#00ff00', 'popup'
-        theme.register_background_widget widget, 'popup'
-        bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
-        assert.same { 0, 1, 0 }, { bg.red, bg.green, bg.blue }
-
-      it 'falls back to the default style if the specified style is unavailable', ->
+      it "overrides the widget's background with the current theme background", ->
         widget = Gtk.EventBox!
         set_theme_with_background 'red'
-        theme.register_background_widget widget, 'popup'
+        theme.register_background_widget widget
+        bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
+        assert.same { 1, 0, 0 }, { bg.red, bg.green, bg.blue }
+
+      it "updates the widget's background whenever the theme changes", ->
+        widget = Gtk.EventBox!
+        set_theme_with_background 'red'
+        theme.register_background_widget widget
+        set_theme_with_background 'blue'
+        bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
+        assert.same { 0, 0, 1 }, { bg.red, bg.green, bg.blue }
+
+      context 'when <style> is specified', ->
+        it 'uses the named style for the background if possible', ->
+          widget = Gtk.EventBox!
+          set_theme_with_background '#00ff00', 'popup'
+          theme.register_background_widget widget, 'popup'
+          bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
+          assert.same { 0, 1, 0 }, { bg.red, bg.green, bg.blue }
+
+        it 'falls back to the default style if the specified style is unavailable', ->
+          widget = Gtk.EventBox!
+          set_theme_with_background 'red'
+          theme.register_background_widget widget, 'popup'
+          bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
+          assert.same { 1, 0, 0 }, { bg.red, bg.green, bg.blue }
+
+    describe 'unregister_background_widget(widget)', ->
+      it 'causes the widget to be excluded from theme auto-updates', ->
+        widget = Gtk.EventBox!
+        set_theme_with_background 'red'
+        theme.register_background_widget widget
+        theme.unregister_background_widget widget
+        set_theme_with_background 'blue'
         bg = widget.style_context\get_background_color Gtk.STATE_FLAG_NORMAL
         assert.same { 1, 0, 0 }, { bg.red, bg.green, bg.blue }
 

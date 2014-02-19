@@ -282,4 +282,7 @@ return PropertyTable {
   register_background_widget: (widget, style = 'default') ->
     background_color_widgets[widget] = style
     override_widget_background widget, style
+
+  unregister_background_widget: (widget) ->
+    background_color_widgets[widget] = nil
 }
