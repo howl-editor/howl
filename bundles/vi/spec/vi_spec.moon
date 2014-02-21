@@ -1,6 +1,6 @@
 Gtk = require 'ljglibs.gtk'
 
-import Buffer, bindings, bundle from howl
+import app, Buffer, bindings, bundle from howl
 import Editor from howl.ui
 
 bundle.load_by_name 'vi'
@@ -27,13 +27,13 @@ describe 'VI', ->
     lines = buffer.lines
     editor.buffer = buffer
     cursor.line = 2
-    _G.editor = editor
+    app.editor = editor
     state.activate editor
 
   after_each ->
     state.reset!
     state.deactivate!
-    _G.editor = nil
+    app.editor = nil
 
   teardown -> bundle.unload 'vi'
 

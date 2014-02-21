@@ -29,6 +29,8 @@ class Application extends PropertyObject
     bundle.dirs = { @root_dir / 'bundles' }
     @_load_base!
     bindings.push keymap
+    @window = nil
+    @editor = nil
     super!
 
   @property buffers: get: =>
@@ -67,12 +69,12 @@ class Application extends PropertyObject
     @g_app\add_window window\to_gobject!
 
     append @windows, window
-    _G.window = window if #@windows == 1
+    @window = window if #@windows == 1
     window
 
   new_editor: (opts = {}) =>
     editor = Editor opts.buffer or @next_buffer
-    (opts.window or _G.window)\add_view editor, opts.placement or 'right_of'
+    (opts.window or @window)\add_view editor, opts.placement or 'right_of'
     append @_editors, editor
     editor\grab_focus!
     editor
@@ -86,13 +88,13 @@ class Application extends PropertyObject
   add_buffer: (buffer, show = true) =>
     append @_buffers, buffer
     if show
-      _G.editor.buffer = buffer
-      _G.editor
+      @editor.buffer = buffer
+      @editor
 
   close_buffer: (buffer, force = false) =>
     if not force and buffer.modified
       input = inputs.yes_or_no false
-      _G.window.readline\read "Buffer '#{buffer}' is modified, close anyway? ", input, (wants_close) ->
+      @window.readline\read "Buffer '#{buffer}' is modified, close anyway? ", input, (wants_close) ->
         @close_buffer buffer, true if wants_close
       return
 
@@ -105,7 +107,7 @@ class Application extends PropertyObject
 
     buffer\destroy!
 
-  open_file: (file, editor = _G.editor) =>
+  open_file: (file, editor = @editor) =>
     for b in *@buffers
       if b.file == file
         editor.buffer = b
@@ -213,7 +215,7 @@ class Application extends PropertyObject
       signal.connect 'mode-registered', self\_on_mode_registered
       signal.connect 'mode-unregistered', self\_on_mode_unregistered
       signal.connect 'buffer-saved', self\_on_buffer_saved
-      signal.connect 'key-press', (args) -> howl.editing.auto_pair.handle args.event, _G.editor
+      signal.connect 'key-press', (args) -> howl.editing.auto_pair.handle args.event, @editor
 
       window = @new_window!
       @_set_initial_status window
@@ -236,10 +238,10 @@ class Application extends PropertyObject
     modified = [b for b in *@_buffers when b.modified]
     if #modified > 0
       input = inputs.yes_or_no false
-      _G.window.readline\read "Modified buffers exist, close anyway? ", input, (wants_close) ->
+      @window.readline\read "Modified buffers exist, close anyway? ", input, (wants_close) ->
         if wants_close
           @_ignore_modified_on_close = true
-          _G.window\destroy!
+          @window\destroy!
       true
 
   _on_quit: =>

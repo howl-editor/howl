@@ -1,4 +1,4 @@
-import inputs, Project from howl
+import app, inputs, Project from howl
 import File from howl.fs
 
 require 'howl.inputs.projectfile_input'
@@ -21,7 +21,7 @@ describe 'ProjectFile', ->
       file = root\join('Makefile')
       file\touch!
 
-      _G.editor = buffer: :file
+      app.editor = buffer: :file
       Project.add_root root
       input = inputs.project_file!
 
@@ -50,7 +50,7 @@ describe 'ProjectFile', ->
 
     before_each ->
       file = File.tmpfile!
-      _G.editor = buffer: :file
+      app.editor = buffer: :file
       input = inputs.project_file!
 
     after_each -> file\delete!
@@ -62,7 +62,7 @@ describe 'ProjectFile', ->
       assert.is_nil input\value_for 'foo'
 
   describe 'when file is not available', ->
-    before_each -> _G.editor = buffer: {}
+    before_each -> app.editor = buffer: {}
 
     it '.complete() returns an empty table', ->
       assert.same inputs.project_file!\complete(''), {}

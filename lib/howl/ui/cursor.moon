@@ -112,11 +112,11 @@ for cmd in *commands
   command.register
     name: "cursor-#{cmd_name}"
     :description
-    handler: -> _G.editor.cursor[name] _G.editor.cursor
+    handler: -> howl.app.editor.cursor[name] howl.app.editor.cursor
 
   command.register
     name: "cursor-#{cmd_name}-extend"
     description: "#{description}, extending the selection"
-    handler: -> _G.editor.cursor[name] _G.editor.cursor, true
+    handler: -> howl.app.editor.cursor[name] howl.app.editor.cursor, true
 
 return Cursor

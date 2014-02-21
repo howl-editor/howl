@@ -1,9 +1,9 @@
-import config, signal from howl
+import app, config, signal from howl
 
 describe 'config', ->
   before_each ->
     config.reset!
-    _G.editor = nil
+    app.editor = nil
 
   describe 'define(options)', ->
     it 'raises an error if name is missing', ->

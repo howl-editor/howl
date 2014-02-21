@@ -1,11 +1,11 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import command, mode, Buffer, Project from howl
+import app, command, mode, Buffer, Project from howl
 import File from howl.fs
 
 with_vc = (f) ->
-  buffer = _G.editor.buffer
+  buffer = app.editor.buffer
   unless buffer.file
     log.error "No file associated with buffer '#{buffer}'"
     return
@@ -23,13 +23,13 @@ show_diff_buffer = (title, contents) ->
   buffer.title = "* Diff: #{title} *"
   buffer.modified = false
   buffer.can_undo = false
-  howl.app\add_buffer buffer
+  app\add_buffer buffer
 
 command.register
   name: 'open',
   description: 'Open file'
   inputs: { '*file' }
-  handler: (file) -> howl.app\open_file file
+  handler: (file) -> app\open_file file
 
 command.alias 'open', 'e'
 
@@ -37,14 +37,14 @@ command.register
   name: 'project-open',
   description: 'Open project file'
   handler: ->
-    file = _G.editor and _G.editor.buffer.file
+    file = app.editor and app.editor.buffer.file
     if file
       project = Project.for_file file
       if project
-        _G.window.readline\read ':project-open ', 'project_file', (file) ->
-          howl.app\open_file file if file
+        app.window.readline\read ':project-open ', 'project_file', (file) ->
+          app\open_file file if file
       else
-        _G.window.readline\read '(Please specify the project root): ', 'directory', (directory) ->
+        app.window.readline\read '(Please specify the project root): ', 'directory', (directory) ->
           if directory
             Project.add_root directory
             command.project_open!
@@ -56,7 +56,7 @@ command.register
   description: 'Saves the current buffer to file'
   inputs: {}
   handler: ->
-    buffer = _G.editor.buffer
+    buffer = app.editor.buffer
     return command.run 'save-as' unless buffer.file
 
     buffer\save!
@@ -71,7 +71,7 @@ command.register
   description: 'Saves the current buffer to a given file'
   inputs: { '*file' }
   handler: (file) ->
-    buffer = _G.editor.buffer
+    buffer = app.editor.buffer
     buffer.file = file
     command.save!
 
@@ -80,8 +80,8 @@ command.register
   description: 'Closes the current buffer'
   inputs: {}
   handler: ->
-    buffer = _G.editor.buffer
-    howl.app\close_buffer buffer
+    buffer = app.editor.buffer
+    app\close_buffer buffer
 
 command.register
   name: 'vc-diff-file',
@@ -109,7 +109,7 @@ command.register
   name: 'diff-buffer-against-saved',
   description: 'Shows a diff against the saved file for the current buffer'
   handler: ->
-    buffer = _G.editor.buffer
+    buffer = app.editor.buffer
     unless buffer.file
       log.error "No file associated with buffer '#{buffer}'"
       return

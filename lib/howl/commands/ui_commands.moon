@@ -1,24 +1,24 @@
 -- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import command, config from howl
+import app, command, config from howl
 import style from howl.ui
 
 command.register
   name: 'toggle-fullscreen',
   description: 'Toggles fullscreen for the current window'
-  handler: -> _G.window.fullscreen = not _G.window.fullscreen
+  handler: -> app.window.fullscreen = not app.window.fullscreen
 
 command.register
   name: 'toggle-maximized',
   description: 'Toggles maximized state for the current window'
-  handler: -> _G.window.maximized = not _G.window.maximized
+  handler: -> app.window.maximized = not app.window.maximized
 
 command.register
   name: 'describe-style',
   description: 'Describes the current style at cursor'
   handler: ->
-    name, def = style.at_pos _G.editor.buffer, _G.editor.cursor.pos
+    name, def = style.at_pos app.editor.buffer, app.editor.cursor.pos
     log.info "#{name}"
 
 command.register
@@ -44,8 +44,8 @@ command.register
   name: "view-close",
   description: "Closes the current view"
   handler: ->
-    if #window.views > 1
-      window\remove_view!
+    if #app.window.views > 1
+      app.window\remove_view!
       collectgarbage!
     else
       log.error "Can't close the one remaining view"
@@ -54,7 +54,7 @@ command.register
   name: "view-next",
   description: "Focuses the next view, wrapping around as necessary"
   handler: ->
-    target = window\siblings(nil, true).right
+    target = app.window\siblings(nil, true).right
     if target
       target\grab_focus!
     else
@@ -73,7 +73,7 @@ for cmd in *{
     name: "view-#{direction}",
     description: "Goes to the view #{human_placement} the current one if present"
     handler: ->
-      target = window\siblings![direction]
+      target = app.window\siblings![direction]
       if target
         target\grab_focus!
       else
@@ -83,7 +83,7 @@ for cmd in *{
     name: "view-#{direction}-wraparound",
     description: "Goes to the view #{human_placement} the current one if present"
     handler: ->
-      target = window\siblings(true)[direction]
+      target = app.window\siblings(true)[direction]
       if target
         target\grab_focus!
       else
@@ -93,7 +93,7 @@ for cmd in *{
     name: "view-#{direction}-or-create",
     description: "Goes to the view #{human_placement} the current one, creating it if necessary"
     handler: ->
-      target = window\siblings![direction]
+      target = app.window\siblings![direction]
       if target
         target\grab_focus!
       else

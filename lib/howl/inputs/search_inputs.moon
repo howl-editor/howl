@@ -1,9 +1,11 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
+import app from howl
+
 class SearchInput
   new: (@operation, @title) =>
-    @searcher = editor.searcher
+    @searcher = app.editor.searcher
 
   complete: (text) =>
     @searcher[@operation] @searcher, text

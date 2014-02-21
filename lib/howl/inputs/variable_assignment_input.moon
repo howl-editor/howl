@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import Matcher from howl.util
-import config from howl
+import config, app from howl
 
 parse_assignment = (text) ->
   name, val = text\match('%s*(%S+)%s*=%s*(%S.*)%s*')
@@ -51,7 +51,7 @@ class VariableAssignmentInput
     vars = [{name, def.description} for name, def in pairs config.definitions]
     table.sort vars, (a, b) -> a[1] < b[1]
     @matcher = Matcher vars
-    @current_buffer = _G.editor.buffer
+    @current_buffer = app.editor.buffer
 
   should_complete: => true
 

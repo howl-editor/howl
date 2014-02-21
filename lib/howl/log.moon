@@ -16,9 +16,10 @@ first_line_of = (s) -> s\match '[^\n\r]*'
 dispatch = (level, message) ->
   entry = :message, :level
   append entries, entry
-  if _G.window
-    status = _G.window.status
-    readline = _G.window.readline
+  window = _G.howl.app.window
+  if window
+    status = window.status
+    readline = window.readline
     status[level] status, first_line_of message
     readline\notify message, level if readline.showing
     _G.print message if level == 'error' and not _G.os.getenv('BUSTED')

@@ -455,7 +455,7 @@ class Editor extends PropertyObject
     @indicator.position.label = pos
 
   _on_focus: (args) =>
-    _G.editor = self
+    howl.app.editor = self
     @cursor.pos = @cursor.pos -- this ensures cursor is visible
     signal.emit 'editor-focused', editor: self
     false
@@ -650,7 +650,7 @@ for cmd_spec in *{
   command.register
     name: "editor-#{cmd_spec[1]}"
     description: cmd_spec[2]
-    handler: -> _G.editor[cmd_spec[3]] _G.editor, table.unpack args
+    handler: -> howl.app.editor[cmd_spec[3]] howl.app.editor, table.unpack args
 
 for sel_cmd_spec in *{
   { 'copy', 'Copies the current selection to the clipboard' }
@@ -660,7 +660,7 @@ for sel_cmd_spec in *{
   command.register
     name: "editor-#{sel_cmd_spec[1]}"
     description: sel_cmd_spec[2]
-    handler: -> _G.editor.selection[sel_cmd_spec[1]\gsub '-', '_'] _G.editor.selection
+    handler: -> howl.app.editor.selection[sel_cmd_spec[1]\gsub '-', '_'] howl.app.editor.selection
 
 -- signals
 

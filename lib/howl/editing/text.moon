@@ -1,4 +1,4 @@
-import signal, timer, config, command from howl
+import app, signal, timer, config, command from howl
 import style from howl.ui
 tinsert = table.insert
 
@@ -114,6 +114,7 @@ command.register
   name: 'reflow-paragraph',
   description: 'Reflows the current paragraph according to `hard_wrap_column`'
   handler: ->
+    editor = app.editor
     cur_line = editor.current_line
     paragraph = paragraph_at cur_line
     if #paragraph > 0

@@ -29,18 +29,18 @@ command.register
 command.register
   name: 'new-buffer',
   description: 'Opens a new buffer'
-  handler: -> _G.editor.buffer = howl.app\new_buffer!
+  handler: -> app.editor.buffer = howl.app\new_buffer!
 
 command.register
   name: 'switch-buffer',
   description: 'Switches to another buffer'
   inputs: { 'buffer' }
-  handler: (buffer) -> _G.editor.buffer = buffer
+  handler: (buffer) -> app.editor.buffer = buffer
 
 command.register
   name: 'reload-buffer',
   description: 'Reloads the current buffer from file'
-  handler: -> _G.editor.buffer\reload!
+  handler: -> app.editor.buffer\reload!
 
 command.register
   name: 'switch-to-last-hidden-buffer',
@@ -48,7 +48,7 @@ command.register
   handler: ->
     for buffer in *howl.app.buffers
       if not buffer.showing
-        _G.editor.buffer = buffer
+        app.editor.buffer = buffer
         return
 
     _G.log.error 'No hidden buffer found'
@@ -73,14 +73,14 @@ command.register
   description: 'Sets a configuration variable for the current mode'
   inputs: { '*variable_assignment' }
   handler: (assignment) ->
-    set_variable assignment, editor.buffer.mode.config
+    set_variable assignment, app.editor.buffer.mode.config
 
 command.register
   name: 'buffer-set',
   description: 'Sets a configuration variable for the current buffer'
   inputs: { '*variable_assignment' }
   handler: (assignment) ->
-    set_variable assignment, editor.buffer.config
+    set_variable assignment, app.editor.buffer.config
 
 command.register
   name: 'describe-key',
@@ -177,27 +177,27 @@ command.register
   description: 'Matches certain buffer lines in realtime'
   inputs: {
     ->
-      buffer = editor.buffer
+      buffer = app.editor.buffer
       inputs.line "Buffer grep in #{buffer.title}", buffer
   }
-  handler: (line) -> editor.cursor.line = line.nr
+  handler: (line) -> app.editor.cursor.line = line.nr
 
 command.register
   name: 'buffer-structure'
   description: 'Shows the structure for the given buffer'
   inputs: {
     ->
-      buffer = editor.buffer
-      inputs.line "Structure for #{buffer.title}", buffer, buffer.mode\structure editor
+      buffer = app.editor.buffer
+      inputs.line "Structure for #{buffer.title}", buffer, buffer.mode\structure app.editor
   }
-  handler: (line) -> editor.cursor.line = tonumber line.nr
+  handler: (line) -> app.editor.cursor.line = tonumber line.nr
 
 -----------------------------------------------------------------------
 -- Howl eval commands
 -----------------------------------------------------------------------
 
 do_howl_eval = (load_f, mode_name, transform_f) ->
-  editor = _G.editor
+  editor = app.editor
   text = editor.selection.empty and editor.current_line.text or editor.selection.text
   text = text.stripped
   text = transform_f and transform_f(text) or text

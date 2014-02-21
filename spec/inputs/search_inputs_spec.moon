@@ -1,4 +1,4 @@
-import inputs from howl
+import app, inputs from howl
 
 require 'howl.inputs.search_inputs'
 
@@ -12,10 +12,10 @@ describe 'search_inputs', ->
 
     before_each ->
       searcher = {}
-      _G.editor = :searcher
+      app.editor = :searcher
       input = inputs.forward_search!
 
-    after_each -> _G.editor = nil
+    after_each -> app.editor = nil
 
     it 'should_complete() returns true', ->
       assert.is_true input\should_complete!

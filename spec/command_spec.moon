@@ -1,16 +1,16 @@
-import command, inputs, config, keymap from howl
+import app, command, inputs, config, keymap from howl
 
 describe 'command', ->
   local cmd, readline
 
   before_each ->
     readline = Spy as_null_object: true
-    _G.window = :readline
+    app.window = :readline
     cmd = name: 'foo', description: 'desc', handler: spy.new -> true
 
   after_each ->
     command.unregister name for name in *command.names!
-    _G.window = nil
+    app.window = nil
 
   describe '.register(command)', ->
     it 'raises an error if any of the mandatory fields are missing', ->
@@ -106,7 +106,7 @@ describe 'command', ->
       inputs.unregister 'dummy'
 
     context 'when <cmd_string> is empty or missing', ->
-      it 'invokes _G.window.readline with a ":" prompt', ->
+      it 'invokes howl.app.window.readline with a ":" prompt', ->
         command.run!
         assert.is_true readline.read.called
         _, prompt = unpack readline.read.called_with
@@ -129,7 +129,7 @@ describe 'command', ->
           assert.same cmd.handler.called_with, { first_input.value_for! }
 
       context 'when it specifies a command without all required parameters', ->
-        it 'invokes _G.window.readline with the prompt set to the given string', ->
+        it 'invokes howl.app..window.readline with the prompt set to the given string', ->
           cmd.inputs = { 'test_first', 'test_second' }
           command.register cmd
           command.run cmd.name .. ' arg'
@@ -138,7 +138,7 @@ describe 'command', ->
           assert.equal prompt, ':' .. cmd.name .. ' arg '
 
       context 'when it specifies a unknown command', ->
-        it 'invokes _G.window.readline with the text set to the given string', ->
+        it 'invokes howl.app.window.readline with the text set to the given string', ->
           command.run 'what-the-heck now'
           assert.is_true readline.read.called
           assert.equal readline.writes.text, 'what-the-heck now'
@@ -191,7 +191,7 @@ describe 'command', ->
           callback = c
           @prompt = prompt
           @text = ''
-        _G.window = :readline
+        app.window = :readline
 
         handler = spy.new -> nil
 

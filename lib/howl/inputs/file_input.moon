@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 glib = require 'ljglibs.glib'
+import app from howl
 import File from howl.fs
 import Matcher from howl.util
 
@@ -28,8 +29,8 @@ class FileInput
   new: (@directory_reader) =>
     @directory = File glib.get_current_dir!
 
-    if editor
-      file = editor.buffer.file
+    if app.editor
+      file = app.editor.buffer.file
       @directory = file.parent if file
 
   should_complete: => true

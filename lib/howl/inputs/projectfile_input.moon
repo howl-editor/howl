@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import Project from howl
+import app, Project from howl
 import Matcher from howl.util
 
 separator = howl.fs.File.separator
@@ -41,8 +41,8 @@ highlighter = (search, text) ->
 
 class ProjectFileInput
   new: =>
-    if editor
-      file = editor.buffer.file
+    if app.editor
+      file = app.editor.buffer.file
       if file
         @project = Project.for_file file
 

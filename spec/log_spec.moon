@@ -1,26 +1,26 @@
-import config from howl
+import app, config from howl
 
 describe 'log', ->
   after_each ->
     log.clear!
-    _G.window = nil
+    app.window = nil
 
   it 'is exported globally as `log`', ->
     assert.equal type(_G.log), 'table'
 
   for m in *{'info', 'warning', 'error'}
     describe m .. '(text)', ->
-      it 'propages the message to _G.window.status\\' .. m .. '() if available', ->
+      it 'propages the message to howl.app.window.status\\' .. m .. '() if available', ->
         method = spy.new -> true
-        _G.window = readline: {}, status: [m]: method
+        app.window = readline: {}, status: [m]: method
         log[m] 'message'
-        assert.spy(method).was.called_with _G.window.status, 'message'
+        assert.spy(method).was.called_with app.window.status, 'message'
 
       it 'only propagates the first line of the message', ->
         method = spy.new -> true
-        _G.window = readline: {}, status: [m]: method
+        app.window = readline: {}, status: [m]: method
         log[m] 'message\nline2\nline3'
-        assert.spy(method).was.called_with _G.window.status, 'message'
+        assert.spy(method).was.called_with app.window.status, 'message'
 
   it 'warn() is the same as warning()', ->
     assert.same log.warn, log.warning

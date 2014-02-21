@@ -1,4 +1,4 @@
-import signal, config, bindings, command from howl
+import app, signal, config, bindings, command from howl
 import Editor from howl.ui
 
 state = bundle_load 'state'
@@ -22,15 +22,15 @@ signal_handlers = {
         state.change_mode args.editor, 'visual'
 
   'buffer-saved': (args) ->
-    if state.active and _G.editor.buffer == args.buffer
-      state.change_mode _G.editor, 'command'
+    if state.active and app.editor.buffer == args.buffer
+      state.change_mode app.editor, 'command'
 }
 
 vi_commands = {
   {
     name: 'vi-on',
     description: 'Switches VI mode on'
-    handler: -> state.activate(_G.editor) unless state.active
+    handler: -> state.activate(app.editor) unless state.active
   }
 
   {

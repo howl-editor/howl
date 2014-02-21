@@ -1,4 +1,4 @@
-import inputs from howl
+import app, inputs from howl
 import File from howl.fs
 
 require 'howl.inputs.file_input'
@@ -10,11 +10,11 @@ describe 'File inputs', ->
     files = {}
     readline = prompt: 'open ', text: ''
     directory = File.tmpdir!
-    _G.editor = buffer: file: parent: directory
+    app.editor = buffer: file: parent: directory
 
   after_each ->
     directory\rm_r!
-    _G.editor = nil
+    app.editor = nil
 
   for input_type in *{'File', 'Directory'}
     name = input_type.ulower

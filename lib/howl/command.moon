@@ -228,7 +228,7 @@ run = (cmd_string = nil) ->
     prompt ..= state\to_string!
     text = cmd_string if not state.cmd
 
-  window.readline\read prompt, cmd_input, (value, readline) ->
+  howl.app.window.readline\read prompt, cmd_input, (value, readline) ->
     if not value
       state\on_cancelled readline
       return
@@ -239,7 +239,7 @@ run = (cmd_string = nil) ->
 
     return false
 
-  window.readline.text = text if text
+  howl.app.window.readline.text = text if text
 
 return setmetatable { :register, :unregister, :alias, :run, :names, :get }, {
   __index: (key) => commands[key] or accessible_names[key]

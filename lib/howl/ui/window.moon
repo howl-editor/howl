@@ -231,7 +231,7 @@ class Window extends PropertyObject
     @grid\attach_next_to gobject, anchor, Gtk[where], 1, 1
 
   _on_focus: =>
-    _G.window = self
+    howl.app.window = self
     signal.emit 'window-focused', window: self
     false
 

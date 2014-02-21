@@ -1,4 +1,4 @@
-import inputs, config, Buffer from howl
+import app, inputs, config, Buffer from howl
 
 require 'howl.inputs.variable_assignment_input'
 
@@ -13,7 +13,7 @@ describe 'VariableAssignmentInput', ->
     before_each ->
       readline = {}
       mode = config: {}
-      _G.editor = buffer: Buffer mode
+      app.editor = buffer: Buffer mode
       input = inputs.variable_assignment!
 
     after_each -> readline = nil
