@@ -7,6 +7,8 @@ import style from howl.ui
 import PropertyObject from howl.aux.moon
 import destructor from howl.aux
 
+append = table.insert
+
 background_sci = Scintilla!
 background_sci\set_lexer Scintilla.SCLEX_NULL
 background_buffer = setmetatable {}, __mode: 'v'

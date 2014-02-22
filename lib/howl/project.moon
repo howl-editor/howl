@@ -1,5 +1,7 @@
 import VC from howl
 
+append = table.insert
+
 root_for = (file, roots) ->
   for root in *roots
     return root if file\is_below root

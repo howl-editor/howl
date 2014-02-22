@@ -1,4 +1,5 @@
 import mode, bundle from howl
+append = table.insert
 
 describe 'Moonscript lexer', ->
   local lexer

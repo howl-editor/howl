@@ -7,6 +7,7 @@ bit = require 'bit'
 
 import C from ffi
 ffi_string = ffi.string
+append = table.insert
 
 transform_rets = (s, ...) ->
   vals = {...}

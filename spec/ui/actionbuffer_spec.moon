@@ -1,5 +1,6 @@
 import ActionBuffer, style from howl.ui
 import Scintilla from howl
+append = table.insert
 
 describe 'ActionBuffer', ->
   sci = Scintilla!

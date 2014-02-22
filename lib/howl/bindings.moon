@@ -1,7 +1,8 @@
 _G = _G
 import table from _G
-import tostring, pcall, callable, type, append, print, setmetatable, typeof from _G
+import tostring, pcall, callable, type, print, setmetatable, typeof from _G
 import signal, command from howl
+append = table.insert
 
 signal.register 'key-press',
   description: [[Signaled whenever a key is pressed.

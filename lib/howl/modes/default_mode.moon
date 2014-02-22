@@ -3,6 +3,7 @@
 
 import config, formatting, mode from howl
 import style from howl.ui
+append = table.insert
 
 is_comment = (line, comment_prefix) ->
   line\umatch r"^\\s*#{r.escape comment_prefix}"

@@ -3,6 +3,7 @@
 
 lpeg = require 'lpeg'
 import B, P, V, S, Cp, Ct, Cc, Cg from lpeg
+append = table.insert
 
 separator = S ' \t-_:/\\'
 

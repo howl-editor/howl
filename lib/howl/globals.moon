@@ -10,8 +10,6 @@ callable = (o) ->
   mt = getmetatable o
   return (mt and mt.__call) != nil
 
-append = table.insert
-
 typeof = (v) ->
   t = type v
   if t == 'cdata'

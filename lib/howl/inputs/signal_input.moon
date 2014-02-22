@@ -3,6 +3,7 @@
 
 import signal from howl
 import Matcher from howl.util
+append = table.insert
 
 load_matcher = ->
   signals = {}

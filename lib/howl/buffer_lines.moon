@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import string, type from _G
+append = table.insert
 
 line_mt =
   __index: (k) =>

@@ -1,5 +1,6 @@
 import Completer, Buffer, completion from howl
 import Editor from howl.ui
+append = table.insert
 
 describe 'Completer', ->
   buffer = nil

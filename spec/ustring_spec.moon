@@ -1,3 +1,5 @@
+append = table.insert
+
 describe 'ustrings', ->
 
   it '.ulen holds the number characters in the string', ->

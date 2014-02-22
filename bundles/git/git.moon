@@ -1,4 +1,5 @@
 import config from howl
+append = table.insert
 
 class Git
   new: (root, git_dir) =>

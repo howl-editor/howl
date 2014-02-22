@@ -1,5 +1,6 @@
 handlers = {}
 all = {}
+append = table.insert
 
 register = (name, options = {}) ->
   error "Missing field 'description'", 2 unless options.description

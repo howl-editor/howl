@@ -3,6 +3,7 @@
 
 import Matcher from howl.util
 import config, app from howl
+append = table.insert
 
 parse_assignment = (text) ->
   name, val = text\match('%s*(%S+)%s*=%s*(%S.*)%s*')

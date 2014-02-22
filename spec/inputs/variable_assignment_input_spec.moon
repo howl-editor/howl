@@ -1,4 +1,5 @@
 import app, inputs, config, Buffer from howl
+append = table.insert
 
 require 'howl.inputs.variable_assignment_input'
 

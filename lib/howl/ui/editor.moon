@@ -7,6 +7,7 @@ import Scintilla, Completer, signal, bindings, config, command from howl
 import PropertyObject from howl.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
 import Searcher, CompletionPopup from howl.ui
+append = table.insert
 
 _editors = setmetatable {}, __mode: 'v'
 editors = -> [e for _, e in pairs _editors when e != nil]

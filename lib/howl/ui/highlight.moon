@@ -2,8 +2,9 @@
 -- License: MIT (see LICENSE.md)
 
 import Scintilla from howl
-import print, tostring, error, pairs, append from _G
+import print, tostring, error, pairs from _G
 bit = require 'bit'
+append = table.insert
 
 highlights = {}
 buffer_highlights = setmetatable {}, __mode: 'k'

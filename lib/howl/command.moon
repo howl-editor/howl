@@ -4,6 +4,8 @@
 import inputs, config from howl
 import Matcher from howl.util
 
+append = table.insert
+
 commands = {}
 accessible_names = {}
 

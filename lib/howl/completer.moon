@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import completion, config from howl
+append = table.insert
 
 load_completers = (buffer, context) ->
   completers = {}

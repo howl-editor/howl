@@ -1,4 +1,5 @@
 Gtk = require 'ljglibs.gtk'
+append = table.insert
 
 import Buffer, config, signal from howl
 import Editor from howl.ui

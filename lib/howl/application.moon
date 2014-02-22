@@ -7,8 +7,9 @@ import Window, Editor, theme from howl.ui
 import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs from howl
 import File from howl.fs
 import PropertyObject from howl.aux.moon
-
 Gtk = require 'ljglibs.gtk'
+
+append = table.insert
 
 sort_buffers = (buffers) ->
   table.sort buffers, (a, b) ->

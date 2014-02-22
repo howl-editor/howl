@@ -4,6 +4,7 @@
 Matcher = require 'howl.util.matcher'
 import config, signal, app from howl
 os = os
+append = table.insert
 
 RESCAN_STALE_AFTER = 30
 

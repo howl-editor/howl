@@ -3,6 +3,7 @@
 
 import Buffer, Scintilla, styler from howl
 import style from howl.ui
+append = table.insert
 
 class ActionBuffer extends Buffer
   new: (sci = nil) =>

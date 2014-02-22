@@ -1,6 +1,7 @@
 _G = _G
-import append, table from _G
+import table from _G
 import config from howl
+append = table.insert
 
 config.define
   name: 'max_log_entries'

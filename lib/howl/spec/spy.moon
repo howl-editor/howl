@@ -1,5 +1,6 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
+append = table.insert
 
 new = (options = {}) ->
   spy =

@@ -1,4 +1,5 @@
 import bindings, signal, command from howl
+append = table.insert
 
 describe 'bindings', ->
 

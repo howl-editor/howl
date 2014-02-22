@@ -4,9 +4,6 @@ describe 'Globals', ->
     t = setmetatable {}, __call: -> true
     assert.is_true callable t
 
-  it 'append is an alias for table.insert', ->
-    assert.equal append, table.insert
-
   it 'typeof(v) is like type(), but handles regexes and moonscript classes', ->
     assert.equal 'regex', typeof r'foo'
 

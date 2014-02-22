@@ -4,6 +4,7 @@ nrepl = bundle_load 'nrepl'
 parser = bundle_load 'clojure_parser'
 
 import Matcher from howl.util
+append = table.insert
 
 get_ns = (buffer) ->
   clj = buffer.data.clojure

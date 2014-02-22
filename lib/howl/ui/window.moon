@@ -5,6 +5,7 @@ Gtk = require 'ljglibs.gtk'
 import PropertyObject from howl.aux.moon
 import Status, Readline, theme from howl.ui
 import signal from howl
+append = table.insert
 
 to_gobject = (o) ->
   status, gobject = pcall -> o\to_gobject!

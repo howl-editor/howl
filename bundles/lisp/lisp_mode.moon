@@ -1,3 +1,5 @@
+append = table.insert
+
 find_start = (line, opening) ->
   closing = {v, k for k, v in pairs opening}
   stack = {}

@@ -1,3 +1,5 @@
+append = table.insert
+
 values = {}
 defs = {}
 watchers = {}
