@@ -4,6 +4,8 @@ title: howl.Buffer
 
 # howl.Buffer
 
+## Overview
+
 Buffers are in-memory containers of text. While they are often associated with a
 specific file on disk, this need not be the case. Instead they simply represent
 some textual content loaded into memory, available for manipulation within Howl.
