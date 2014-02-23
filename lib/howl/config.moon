@@ -98,8 +98,7 @@ proxy_set = (name, value, proxy) ->
   rawset proxy, name, value
   broadcast name, value, true
 
-get = (name, other) ->
-  error 'fix me here', 2 if other
+get = (name) ->
   value = values[name]
   return value if value != nil
   def = defs[name]
@@ -130,7 +129,6 @@ config = {
   :definitions
   :define
   :set
-  :set_local
   :get
   :watch
   :reset

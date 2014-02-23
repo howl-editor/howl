@@ -19,11 +19,6 @@ describe 'config', ->
       assert.equal type(config.definitions), 'table'
       assert.same var, config.definitions.foo
 
-    it 'can be indexed by ustrings', ->
-      var = name: 'foo', description: 'foo variable'
-      config.define var
-      assert.same var, config.definitions['foo']
-
     it 'writing directly to it raises an error', ->
       assert.has_error -> config.definitions.frob = 'crazy'
 
@@ -44,17 +39,12 @@ describe 'config', ->
       config.set 'foo', nil
       assert.is_nil config.foo
 
-  describe 'get(name, [buffer])', ->
+  describe 'get(name)', ->
     before_each -> config.define name: 'var', description: 'test variable'
 
-    context 'with no local variable available', ->
-      it 'get(name) returns the global value of <name>', ->
-        config.set 'var', 'hello'
-        assert.equal config.get('var'), 'hello'
-
-      it '<name> can be a ustring', ->
-        config.set 'var', 'hello'
-        assert.equal config.get('var'), 'hello'
+    it 'returns the global value of <name>', ->
+      config.set 'var', 'hello'
+      assert.equal config.get('var'), 'hello'
 
   context 'when a default is provided', ->
     before_each -> config.define name: 'with_default', description: 'test', default: 123

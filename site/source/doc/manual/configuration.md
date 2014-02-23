@@ -102,8 +102,8 @@ the howl namespace. For mode variables you access variables using the config
 object on a particular mode instance, and similarily for buffer variables
 you use the config object for a particular buffer.
 
-The following code snipped illustrates the various ways of setting variables
-on different levels:
+The following code snippet illustrates the various ways of setting variables on
+different levels:
 
 ```lua
 howl.config.my_var = 'foo'
