@@ -12,7 +12,7 @@ mode_reg =
   }
   patterns: { 'Rakefile$', 'Gemfile$', 'Guardfile$', 'Capfile$'  }
   shebangs: '[/ ]ruby.*$'
-  create: -> bundle_load('ruby_mode')!
+  create: -> bundle_load('ruby_mode')
 
 howl.mode.register mode_reg
 

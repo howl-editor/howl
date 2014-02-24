@@ -34,7 +34,7 @@ continuation_indent = (line, indent_level) ->
 
       return start.indentation
 
-mode = {
+{
   lexer: bundle_load('ruby_lexer')
 
   comment_syntax: '#'
@@ -68,7 +68,7 @@ mode = {
   code_blocks:
     multiline: {
       { r'\\s+do(?:\\s*\\|[^|]+\\|)?\\s*$', '^%s*end', 'end' },
-      { r'^\\s*def\\s+\\w[\\w\\d]+(?:\\s*\\([^)]*\\))?\\s*$', '^%s*end', 'end' },
+      { r'^\\s*def\\s+\\w[\\w.\\d]+(?:\\s*\\([^)]*\\))?\\s*$', '^%s*end', 'end' },
       { r'^\\s*(class|module)\\s+\\p{Lu}[\\w\\d]*\\s*$', '^%s*end', 'end' },
       { r'^\\s*(if|unless)\\s+', '^%s*end', 'end' },
       { '{%s*$', '^%s*}', '}'},
@@ -85,5 +85,3 @@ mode = {
 
     return @parent.indent_for self, line, indent_level
 }
-
--> mode
