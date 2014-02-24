@@ -20,12 +20,14 @@ emit = (name, params, illegal) ->
   error "expected table as second parameter", 2 if params and type(params) != 'table'
 
   for handler in *handlers_for name
-    status, ret = pcall handler, params
+    co = coroutine.create (...) -> handler ...
+    status, ret = coroutine.resume co, params
 
-    if not status
+    if status
+      return true if ret == true and coroutine.status(co) == 'dead'
+    else
       _G.log.error 'Error invoking handler for "' .. name .. '": ' .. ret
 
-    return true if status and ret == true
   false
 
 connect = (name, handler, index) ->

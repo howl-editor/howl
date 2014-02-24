@@ -84,6 +84,22 @@ describe 'Scintilla', ->
         sci.dispatch sci.sci_ptr, 'key-press', {}
         assert.spy(sci.listener.on_keypress).was_called(1)
 
+    it 'calls handlers within a coroutine', ->
+      in_coroutine = false
+      sci.listener = on_keypress: ->
+        _, main = coroutine.running!
+        in_coroutine = main == false
+      sci.dispatch sci.sci_ptr, 'key-press', {}
+      assert.is_true in_coroutine
+
+    it 'returns the value returned by the handler', ->
+      sci.listener = on_keypress: -> true
+      assert.is_true sci.dispatch sci.sci_ptr, 'key-press', {}
+
+    it 'returns true to indicated handled if handler yields', ->
+      sci.listener = on_keypress: -> coroutine.yield false
+      assert.is_true sci.dispatch sci.sci_ptr, 'key-press', {}
+
     it 'calls the on_error handler with the error if a handler raise one', ->
       sci.listener = {
         on_keypress: -> error 'BOOM!'

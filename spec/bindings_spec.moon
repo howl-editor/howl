@@ -216,6 +216,18 @@ describe 'bindings', ->
           command.run\revert!
           assert.spy(cmd_run).was.called_with 'spy'
 
+      it 'invokes handlers in their own coroutines', ->
+        coros = {}
+        coro_register = ->
+          co, main = coroutine.running!
+          coros[co] = true unless main
+
+        keymap = k: coro_register
+        for i = 1,2
+          bindings.process { character: 'k', key_code: 65 }, 'editor', { keymap }
+
+        assert.equal 2, #[v for _, v in pairs coros]
+
       context 'when the handler is a non-callable table', ->
         it 'pushes the table as a new keymap and returns true', ->
           nr_bindings = #bindings.keymaps

@@ -1,5 +1,5 @@
 _G = _G
-import table from _G
+import table, coroutine from _G
 import tostring, pcall, callable, type, print, setmetatable, typeof from _G
 import signal, command from howl
 append = table.insert
@@ -111,17 +111,21 @@ export dispatch = (event, source, keymaps, ...) ->
   for handler in *handlers
     status, ret = true, true
     htype = typeof handler
-    if htype == 'string'
-      status, ret = pcall command.run, handler
+
+    f = if htype == 'string'
+      -> command.run handler
     elseif callable handler
-      status, ret = pcall handler, ...
+      (...) -> handler ...
+
+    if f
+      co = coroutine.create f
+      status, ret = coroutine.resume co, ...
     elseif htype == 'table'
       push handler, pop: true
     else
       _G.log.error "Illegal handler: type #{htype}"
 
     _G.log.error ret unless status
-
     return true if not status or (status and ret != false)
 
   false
