@@ -9,6 +9,9 @@ components which display the contents of a buffer visually and lets the user
 manipulate them. An editor always contains a buffer, and is typically always
 shown to the user.
 
+_See also_:
+
+- The [spec](../../spec/ui/editor_spec.html) for Editor
 
 ## Properties
 
