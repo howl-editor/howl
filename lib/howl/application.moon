@@ -188,8 +188,8 @@ class Application extends PropertyObject
       version: 1
       buffers: {}
       window: {
-        maximized: window.maximized
-        fullscreen: window.fullscreen
+        maximized: @window.maximized
+        fullscreen: @window.fullscreen
       }
     }
 
