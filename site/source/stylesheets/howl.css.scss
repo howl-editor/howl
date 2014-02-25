@@ -147,18 +147,18 @@ body.doc {
         display: block;
         font-weight: bold;
 
-        &.properties:before {
-          @include property-badge();
-          @include toc-badge();
-        }
-        &.methods:before {
-          @include method-badge();
-          @include toc-badge();
-        }
-        &.functions:before {
-          @include function-badge();
-          @include toc-badge();
-        }
+        /* &.properties:before { */
+        /*   @include property-badge(); */
+        /*   @include toc-badge(); */
+        /* } */
+        /* &.methods:before { */
+        /*   @include method-badge(); */
+        /*   @include toc-badge(); */
+        /* } */
+        /* &.functions:before { */
+        /*   @include function-badge(); */
+        /*   @include toc-badge(); */
+        /* } */
       }
     }
   }
