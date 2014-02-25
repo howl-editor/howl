@@ -76,7 +76,6 @@ class Selection extends PropertyObject
     start_pos, end_pos = @_brange!
     return unless start_pos
     @sci\copy_range start_pos - 1, end_pos - 1
-    @persistent = false
     @remove!
     signal.emit 'selection-copied'
 
