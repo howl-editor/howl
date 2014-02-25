@@ -74,7 +74,7 @@ near_tokens = (part, context) ->
 
   data = buffer.data.inbuffer_completer
   if data and data.tokens
-    data.tokens[token.text] = true for _, token in pairs tokens
+    data.tokens[token] = true for token in pairs tokens
 
   [token for _, token in pairs tokens]
 
