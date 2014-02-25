@@ -63,11 +63,13 @@ map = {
         lines = editor.buffer.lines
         start_pos = current_line.start_pos
         end_line = lines[current_line.nr + count]
-        end_pos = end_line and end_line.start_pos - 1 or #editor.buffer + 1
+        end_pos = end_line and end_line.start_pos or #editor.buffer + 1
 
         with editor.selection
+          .includes_cursor = false
           \set start_pos, end_pos
-          \cut force_include_cursor: true
+          \cut!
+          .includes_cursor = true
 
     D: (editor) ->
       if state.has_modifier!

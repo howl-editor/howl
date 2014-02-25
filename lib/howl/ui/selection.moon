@@ -72,23 +72,23 @@ class Selection extends PropertyObject
       @sci\set_empty_selection @sci\get_current_pos!
       @persistent = false
 
-  copy: (options = {}) =>
-    start_pos, end_pos = @_brange options.force_include_cursor
+  copy: =>
+    start_pos, end_pos = @_brange!
     return unless start_pos
     @sci\copy_range start_pos - 1, end_pos - 1
     @persistent = false
     @remove!
     signal.emit 'selection-copied'
 
-  cut: (options = {}) =>
-    start_pos, end_pos = @_brange options.force_include_cursor
+  cut: =>
+    start_pos, end_pos = @_brange!
     return unless start_pos
     @sci\copy_range start_pos - 1, end_pos - 1
     @sci\delete_range start_pos - 1, end_pos - start_pos
     @persistent = false
     signal.emit 'selection-cut'
 
-  _brange: (force_include_cursor) =>
+  _brange: =>
     cursor = @sci\get_current_pos! + 1
     anchor = @sci\get_anchor! + 1
     return cursor, anchor if cursor < anchor
@@ -97,7 +97,7 @@ class Selection extends PropertyObject
       if @includes_cursor -- bump end offset to start of next character
         offset_ptr = const_char_p(text) + cursor - 1
 
-        if force_include_cursor or offset_ptr[0] != 10 and offset_ptr[0] != 13 -- are we looking at a newline?
+        if offset_ptr[0] != 10 and offset_ptr[0] != 13 -- are we looking at a newline?
           ptr = C.g_utf8_find_next_char offset_ptr, nil
           return anchor, cursor + (ptr - offset_ptr)
 

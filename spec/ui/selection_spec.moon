@@ -22,7 +22,7 @@ describe 'Selection', ->
     selection\set 1, 5
     assert.equal 'Liñe', selection.text
 
-  it 'select(anchor, pos) adjusts the selection to include the specifed range', ->
+  it 'select(anchor, pos) adjusts the selection to include the specified range', ->
     selection\select 1, 4
     assert.equal 5, selection.cursor
     assert.equal 'Liñe', selection.text
@@ -204,16 +204,6 @@ describe 'Selection', ->
 
       it 'the end-of-line character is not included in the selection', ->
         assert.equal 'liñe1', selection.text
-
-      it 'the end-of-line character can be explicitly requested in cut() and copy()', ->
-        selection\copy force_include_cursor: true
-        cursor.column = 1
-        editor\paste!
-        assert.equal 'liñe1\nliñe1\nline2', buffer.text
-
-        selection\set 1, 6
-        selection\cut force_include_cursor: true
-        assert.equal 'liñe1\nline2', buffer.text
 
     describe 'range()', ->
       it 'includes the cursor position if needed', ->
