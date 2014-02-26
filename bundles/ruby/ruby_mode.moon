@@ -23,7 +23,7 @@ continuation_indent = (line, indent_level) ->
   if prev
     preceding = prev.previous_non_blank
     if is_continued prev
-      if is_hash_entry(prev) or preceding and is_continued(preceding)
+      if is_hash_entry(prev) or preceding and (is_continued(preceding) or preceding.indentation < prev.indentation)
         return prev.indentation
       return prev.indentation + indent_level
     elseif preceding and is_continued preceding

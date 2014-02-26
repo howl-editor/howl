@@ -141,6 +141,11 @@ describe 'Ruby mode', ->
       editor\indent!
       assert.equal 2, editor.current_line.indentation
 
+    it 'does not indent after continued lines that first in a block', ->
+      buffer.text = "{\n  foo,\nwat"
+      editor\indent_all!
+      assert.equal 2, lines[3].indentation
+
     it 'does not indent after continued lines that are hash entries', ->
       buffer.text = "foo: true,\n'bar' => true,\n"
       editor\indent_all!
