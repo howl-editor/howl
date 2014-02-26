@@ -10,33 +10,33 @@ one and only one instantiated application object per Howl instance, available as
 
 ## Properties
 
-### .buffers
+### buffers
 
 A list of currently open [Buffer]:s. The list is ordered by how recently a
 buffer was shown. Thus, a currently showing buffer will come before a buffer
 that is not shown, and  not showing buffers will be ordered according to the
 timestamp they were last shown.
 
-### .editor
+### editor
 
 Points to the currently active [Editor], if any.
 
-### .editors
+### editors
 
 A list of all existing [Editor]:s. Each editor can be placed in only one window
 at a time, but this list holds all editors present for the current Howl instance
 - regardless of whether they're placed in the currently focused window or not.
 
-### .next_buffer
+### next_buffer
 
 This is the most recent buffer that is currently not showing in any editor. If
 all buffers are currently showing it's the first buffer in [.buffers].
 
-### .window
+### window
 
 Points to the currently focused [Window].
 
-### .windows
+### windows
 
 A list of existing [Window]:s.
 

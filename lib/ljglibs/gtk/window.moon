@@ -74,7 +74,7 @@ core.define 'GtkWindow < GtkBin', {
 
   get_size: =>
     sizes = ffi.new 'gint [2]'
-    C.gtk_window_get_size @, sizes, size + 1
+    C.gtk_window_get_size @, sizes, sizes + 1
     sizes[0], sizes[1]
 
   set_default_icon_from_file: (filename) ->

@@ -297,6 +297,10 @@ If a selection is not present, then:
 - It dedents the current line if the cursor is in leading white-space or at the start of line content.
 - Moves the cursor one indentation level to the left if the cursor is in the middle of text.
 
+### to_gobject ()
+
+Returns the Gtk view for the Editor.
+
 ### toggle_comment ()
 
 Comments or uncomments the current line or selection, if possible, by forwarding
@@ -337,4 +341,3 @@ attempts to automatically adjust the column for the new indentation.
 [Searcher]: searcher.html
 [Selection]: selection.html
 [Popup]: popup.html
-
