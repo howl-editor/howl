@@ -194,3 +194,5 @@ howl.command.vi_on!
 
 Consult the documentation for the [command module](../api/command.html) for more
 information.
+
+*Next*: [Using Howl completions](completions.html)
