@@ -32,7 +32,9 @@ class MenuPopup extends BufferPopup
 
   keymap: {
     down: => @list\select_next!
+    ctrl_n: => @list\select_next!
     up: => @list\select_prev!
+    ctrl_p: => @list\select_prev!
     page_down: => @list\next_page!
     page_up: => @list\prev_page!
     return: => @choose!
