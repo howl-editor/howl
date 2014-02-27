@@ -82,6 +82,7 @@ class InBufferCompleter
   new: (buffer, context) =>
     @near_tokens = near_tokens context.word_prefix, context
     @matcher = Matcher load buffer
+    @limit = buffer.config.completion_max_shown
 
   complete: (context) =>
     pattern = '^' .. context.word_prefix .. '.'
@@ -93,13 +94,13 @@ class InBufferCompleter
 
     table.sort candidates, (a, b) -> a.rank < b.rank
     completions = {}
-    append completions, c.text for c in *candidates when #completions < 10
+    append completions, c.text for c in *candidates when #completions < @limit
 
-    if #completions < 10
+    if #completions < @limit
       seen = { token, true for token in *completions }
       match_completions = self.matcher context.word_prefix
       i = 1
-      while #completions < 10 and i <= #match_completions
+      while #completions < @limit and i <= #match_completions
         match_completion = match_completions[i]
         append completions, match_completion unless seen[match_completion] or match_completion == cur_word
         i += 1
