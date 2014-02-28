@@ -1,5 +1,5 @@
 ---
-title: Howl
+title: Using Howl completions
 ---
 
 # Using Howl completions
@@ -101,3 +101,5 @@ consulted for completions.
 
 For the in-buffer completer, this controls whether only open buffers with the
 same mode as the current one is consulted or not.
+
+*Next*: [Working with files](files.html)

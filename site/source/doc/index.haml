@@ -11,19 +11,20 @@ title: User manual
   don't hesitate to
   %a.alert-link(href = "/contact.html") contact me.
 
-%h2 User manual
+%h2#user-manual User manual
 
-= hdr_link 1, 'Getting started', '/doc/manual/getting-started.html'
-= hdr_link 2, 'Configuring Howl', '/doc/manual/configuration.html'
-= hdr_link 3, 'Using Howl completions', '/doc/manual/completions.html'
+= hdr_link 1, 'Getting started', 'manual/getting-started.html'
+= hdr_link 2, 'Configuring Howl', 'manual/configuration.html'
+= hdr_link 3, 'Using Howl completions', 'manual/completions.html'
+= hdr_link 4, 'Working with files', 'manual/files.html'
 
-%h2 API reference
+%h2#api-reference API reference
 
 - howl_api_docs.each do |doc|
   %h4
     %a(href = "#{doc.url}") #{doc.data[:title]}
 
-%h2 Howl specs (tests)
+%h2#howl-specs Howl specs (tests)
 %p
   Below are the Howl specs in HTML format. While the specs are certainly not
   complete, they are provided here in the hope that they may be useful for
