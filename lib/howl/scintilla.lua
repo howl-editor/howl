@@ -292,8 +292,10 @@ function sci:byte_offset(char_offset)
 end
 
 function sci:character_count()
-  local count = self:count_characters(0, self:get_length() + 1)
   local size = self:get_length()
+  local count = tonumber(C.g_utf8_strlen(self:get_character_pointer(), size))
+  -- Bug or weird behaviour with Scintillas count_characters
+  -- local count = self:count_characters(0, self:get_length() + 1)
   self.multibyte = count ~= size
   return count
 end
