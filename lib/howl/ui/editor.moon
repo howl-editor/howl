@@ -113,6 +113,7 @@ class Editor extends PropertyObject
 
     @signal_handlers = {
       on_focus_in_event: gobject_signal.unref_handle @bin\on_focus_in_event ->
+        @line_numbers = @line_numbers -- force width calculation
         @sci\grab_focus!
       on_destroy: gobject_signal.unref_handle @bin\on_destroy ->
         theme.unregister_background_widget @sci\to_gobject!
@@ -146,7 +147,6 @@ class Editor extends PropertyObject
       @_set_config_settings!
       style.set_for_buffer @sci, buffer
       highlight.set_for_buffer @sci, buffer
-      @line_numbers = @line_numbers -- force width calculation
       buffer\add_sci_ref @sci
 
       pos = buffer.properties.position or 1
