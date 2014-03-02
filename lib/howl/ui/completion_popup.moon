@@ -21,8 +21,8 @@ class CompletionPopup extends MenuPopup
     @candidates, @search = @completer\complete @editor.cursor.pos
 
   show: (...) =>
-    @items = @candidates
     @list.highlight_matches_for = @search
+    @items = @candidates
     super ...
 
   close: =>
