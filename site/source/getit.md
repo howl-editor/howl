@@ -44,7 +44,7 @@ remote: Counting objects: 7924, done.
 Checking connectivity... done
 [nino@cohen:~/tmp]%
 [nino@cohen:~/tmp]% cd howl/src/
-[nino@cohen:~/tmp/howl/src]% make
+[nino@cohen:~/tmp/howl/src]% make -j 4
 [snipped download and compiling]
 make  49.44s user 4.21s system 81% cpu 1:05.74 total
 [nino@cohen:~/tmp/howl/src]% sudo make install
@@ -63,3 +63,10 @@ make PREFIX=~/.local install
 
 *NB: If you install to a non-standard location, your desktop environment might not pick
 up on the fact that Howl is installed, and the application icon will look ugly.*
+
+### Tracking the latest from Github
+
+If you want to track the latest version of Howl, clone the repository from
+Github and build as per the above instructions. To update just pull the latest
+additions, and issue make again from the src directory. Don't forget to make
+again, as this would cause stale code to be loaded.
