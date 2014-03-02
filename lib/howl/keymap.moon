@@ -26,6 +26,7 @@
     ctrl_q:           'show-doc-at-cursor'
     ctrl_space:       'editor-complete'
     ctrl_slash:       'editor-toggle_comment'
+    ctrl_tab:         'view-next'
 
     shift_insert:     'editor-paste'
     ctrl_insert:      'editor-copy'
