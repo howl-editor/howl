@@ -34,6 +34,7 @@ class Selection extends PropertyObject
     set: (text) =>
       error 'Cannot replace empty selection', 2 if @empty
       start_pos, end_pos = @_brange!
+      @remove!
 
       with @sci
         \set_target_start start_pos - 1
