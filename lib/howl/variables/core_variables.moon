@@ -19,3 +19,9 @@ config.define {
   description: 'A pattern determining what constitutes a "word" in a buffer'
   default: r'[\\pL_][\\pL\\d_]*'
 }
+
+config.define
+  name: 'auto_format'
+  description: 'Whether to automatically format code when possible'
+  default: true
+  type_of: 'boolean'

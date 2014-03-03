@@ -145,8 +145,11 @@ class DefaultMode
 
   on_char_added: (args, editor) =>
     if args.key_name == 'return'
-      for code_block in * (@code_blocks.multiline or {})
-        return true if formatting.ensure_block editor, table.unpack code_block
+      buffer = editor.buffer
+
+      if buffer.config.auto_format
+        for code_block in * (@code_blocks.multiline or {})
+          return true if formatting.ensure_block editor, table.unpack code_block
 
       cur_line = editor.current_line
       prev_line = cur_line.previous_non_blank

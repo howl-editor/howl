@@ -427,3 +427,13 @@ describe 'DefaultMode', ->
         editor\newline!
         assert.equals 'foo do\n\nend\n', buffer.text
         assert.equals 2, cursor.line
+
+      it 'is ignored if the configuration variable "auto_format" is false', ->
+        buffer.config.auto_format = false
+        mode.code_blocks = multiline: {
+          { '%sdo$', '^%s*end', 'end' },
+        }
+        buffer.text = 'foo do'
+        cursor\eof!
+        editor\newline!
+        assert.equals 'foo do\n', buffer.text
