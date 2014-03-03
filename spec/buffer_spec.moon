@@ -188,7 +188,7 @@ describe 'Buffer', ->
       assert.is_false Buffer!.modified_on_disk
 
     it "is true if the file's etag is changed after a load or save", ->
-      file = contents: 'foo', etag: '1', basename: 'changeable'
+      file = contents: 'foo', etag: '1', basename: 'changeable', exists: true
       b = Buffer!
       b.file = file
       file.etag = '2'

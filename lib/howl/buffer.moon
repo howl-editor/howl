@@ -144,7 +144,7 @@ class Buffer extends PropertyObject
   @property multibyte: get: => @sci\is_multibyte!
 
   @property modified_on_disk: get: =>
-    return false unless @file
+    return false if not @file or not @file.exists
     @file and @file.etag != @sync_etag
 
   @property read_only:
