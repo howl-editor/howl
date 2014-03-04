@@ -9,7 +9,7 @@ title: User manual
   the incomplete documentation. Additional documentation will appear
   here as it is written. Meanwhile, should you have any questions,
   don't hesitate to
-  %a.alert-link(href = "/contact.html") contact me.
+  %a.alert-link(href = "/contact.html") get in contact.
 
 %h2#user-manual User manual
 
@@ -17,13 +17,15 @@ title: User manual
 = hdr_link 2, 'Configuring Howl', 'manual/configuration.html'
 = hdr_link 3, 'Using Howl completions', 'manual/completions.html'
 = hdr_link 4, 'Working with files', 'manual/files.html'
-= hdr_link 5, 'Using multiple views', 'manual/views.html'
+= hdr_link 5, 'Editing', 'manual/editing.html'
+= hdr_link 6, 'Using multiple views', 'manual/views.html'
 
 %h2#api-reference API reference
 
 - howl_api_docs.each do |doc|
   %h4
     %a(href = "#{doc.url}") #{doc.data[:title]}
+%h4 (.. WIP)
 
 %h2#howl-specs Howl specs (tests)
 %p

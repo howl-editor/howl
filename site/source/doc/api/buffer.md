@@ -18,7 +18,6 @@ an [Editor], or without showing up in the buffer list. But if you want the
 buffer to show up in the buffer list you need to either create it through, or
 register it with, [Application].
 
-
 _See also_:
 
 - The [spec](../spec/buffer_spec.html) for Buffer

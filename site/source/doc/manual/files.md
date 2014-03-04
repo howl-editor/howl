@@ -102,5 +102,5 @@ when you open a non-existing file, you create a new buffer with an association
 to the specified file, which does not have to exist. As you save the buffer, the
 file will be created as necessary.
 
-*Next*: [Using multiple views](views.html)
+*Next*: [Editing](editing.html)
 

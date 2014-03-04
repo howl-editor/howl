@@ -110,6 +110,10 @@ body.doc {
     margin-top: 0.3em;
   }
 
+  img {
+    margin: 0.5em 0;
+  }
+
   .toc {
     margin-top: 2em;
     border: 1px solid cadetblue;
@@ -183,7 +187,7 @@ body.doc {
     padding: 0.5em;
     border-bottom-left-radius: $border_radius;
     border-bottom: 1px solid black;
-    margin: 1em 0 1em 0;
+    margin: 0.5em 0 0.5em 0;
   }
 
   /* badges */
