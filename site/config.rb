@@ -3,18 +3,17 @@ set :js_dir, 'javascripts'
 set :images_dir, 'images'
 set :relative_links, true
 
+ignore '*.bak'
+
 # Reload the browser automatically whenever files change
 activate :livereload
 
 activate :syntax
 
-activate :deploy do |deploy|
-  deploy.build_before = true
-  deploy.clean = true
-  deploy.method = :rsync
-  deploy.host = "nf"
-  deploy.port = 42000
-  deploy.path = "www/howl.io"
+activate :s3_sync do |s3_sync|
+  s3_sync.bucket = 'howl.io'
+  s3_sync.region = 'eu-west-1'
+  s3_sync.add_caching_policy :default, max_age: 60 * 30
 end
 
 require "redcarpet"

@@ -11,6 +11,6 @@ gem "middleman-syntax", git: 'https://github.com/middleman/middleman-syntax.git'
 gem "redcarpet", git: 'https://github.com/vmg/redcarpet.git'
 
 gem "middleman-livereload", "~> 3.1.0"
-gem "middleman-deploy"
+gem 'middleman-s3_sync'
 
 gem 'rspec'
