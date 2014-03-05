@@ -3,4 +3,5 @@
 root=$(cd $(dirname $0)/.. && pwd)
 echo $root
 ./bin/spec2html
+middleman build
 middleman s3_sync
