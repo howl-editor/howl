@@ -48,6 +48,9 @@ dog.color;    // also results in "brown"
 /ab{3}\/dc/; // with escaped terminator
 /ab{3}/gim; // with flags
 
+// not a regex below
+var foo = 2 / 2;
+
 // function declarations
 var add = new Function('x', 'y', 'return x+y');
 var sum = function(a, b) { return a + b; }

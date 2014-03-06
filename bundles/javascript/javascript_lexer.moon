@@ -39,7 +39,15 @@ howl.aux.lpeg_lexer ->
 
   type = c 'type', upper^1 * (alpha + digit + '_')^0
   key = c 'key', any(str, ident) * ':'
-  regex = c('regex', span('/', '/', '\\')) * c('operator', S'gim'^1)^0
+
+  regex = sequence {
+    c('regex', sequence {
+      '/',
+      scan_to(any('/', eol), '\\'),
+      B('/'),
+    }),
+    c('operator', S'gim'^1)^0
+  }
 
   fdecl = any {
     c('keyword', 'function') * ws^1 * c('fdecl', ident),
