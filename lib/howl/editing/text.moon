@@ -1,21 +1,32 @@
+-- Copyright 2014 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE.md)
+
 import app, signal, timer, config, command from howl
 import style from howl.ui
 tinsert = table.insert
 
-paragraph_line = (line) -> line\umatch r'^\\pL'
+paragraph_break_line = (line) ->
+  mode_check = line.buffer.mode.is_paragraph_break
+  return mode_check(line) if mode_check
+  return true if line.is_blank or line\umatch '^[ \t]'
+  start_style = style.at_pos line.buffer, line.start_pos
+  start_style\contains 'embedded'
 
 paragraph_at = (line) ->
   lines = {}
-  prev = line.previous
-  while prev and paragraph_line prev
-    tinsert lines, 1, prev
-    prev = prev.previous
+  start = line
+  start = start.previous if start.is_blank
+  start = line.next if start.is_blank
+  return {} if start.is_blank
 
-  return lines if line.is_blank and #lines > 0
-  tinsert lines, line if paragraph_line line
+  back = start
+  while back
+    tinsert lines, 1, back unless back.is_blank
+    break if paragraph_break_line back
+    back = back.previous
 
-  next = line.next
-  while next and paragraph_line next
+  next = start.next
+  while next and not paragraph_break_line next
     tinsert lines, next
     next = next.next
 

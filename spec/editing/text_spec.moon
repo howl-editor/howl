@@ -14,7 +14,7 @@ describe 'text', ->
     before_each ->
       buffer.text = 'one\n\nthree\nfour\n\n\nseven'
 
-    it 'returns a list of line composing the current paragraph', ->
+    it 'returns a list of lines composing the current paragraph', ->
       assert.same { 1 }, at 1
       assert.same { 3, 4 }, at 3
       assert.same { 3, 4 }, at 4
@@ -32,8 +32,13 @@ describe 'text', ->
         buffer.text = 'one\n\n\n\nfive'
         assert.same {}, at 3
 
-    it 'only considers lines starting with alpha character to be part of a paragraph', ->
-      buffer.text = '-\nå vilken bra rad\noch en till\n# dont include me!'
+    it 'considers lines starting with blanks to be paragraph delimiters', ->
+      buffer.text = 'trailing\n  indented start\ncontinued and ended here.\n  new para'
+      assert.same { 2, 3 }, at 2
+
+    it "calls and respects the mode's .is_paragraph_break() if present", ->
+      buffer.mode = is_paragraph_break: (line) -> line\match '^-'
+      buffer.text = 'before\n- new para\n  continued\n- next'
       assert.same { 2, 3 }, at 2
 
   describe 'can_reflow(line, limit)', ->

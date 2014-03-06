@@ -25,6 +25,12 @@ is_header = (line) ->
       { r'```(\\w+)?\\s*$', '^```', '```'}
     }
 
+  is_paragraph_break: (line) ->
+    return true if line.is_blank or is_header line
+    prev = line.previous
+    return true if prev and (is_header(prev) or prev\match('^```'))
+    line\umatch r'^(?:[\\s-*]|```)'
+
   structure: (editor) =>
     [l for l in *editor.buffer.lines when is_header(l)]
 }
