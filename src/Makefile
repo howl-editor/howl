@@ -2,7 +2,7 @@ PREFIX ?= /usr/local
 
 GTK = gtk+-3.0
 GTK_CFLAGS = $(shell pkg-config --cflags $(GTK))
-GTK_LIBS = $(shell pkg-config --libs $(GTK) gobject-introspection-1.0 gmodule-2.0 libffi)
+GTK_LIBS = $(shell pkg-config --libs $(GTK) gmodule-2.0)
 
 LUAJIT_VER = LuaJIT-2.0.2
 LUAJIT_CHECKSUM = 112dfb82548b03377fbefbba2e0e3a5b
@@ -66,7 +66,7 @@ $(LUAJIT):
 $(LUAJIT_ARCHIVE): $(LUAJIT)
 	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT"
 
-deps: scintilla-build luajit-build lpeg-build scintillua-build
+deps-download: $(LUAJIT) $(SCINTILLA) $(LPEG)
 
 deps-purge:
 	rm -rf $(LUAJIT) $(LPEG) $(SCINTILLA)
