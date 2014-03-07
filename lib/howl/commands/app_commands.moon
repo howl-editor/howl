@@ -1,4 +1,4 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 import app, Buffer, command, config, bindings, bundle, signal, inputs, mode from howl
@@ -20,6 +20,13 @@ command.register
       \quit! if \save_all!
 
 command.alias 'save-and-quit', 'wq'
+
+command.register
+  name: 'quit-without-save',
+  description: 'Quits the application, disregarding any modified buffers'
+  handler: -> howl.app\quit true
+
+command.alias 'quit-without-save', 'q!'
 
 command.register
   name: 'run'

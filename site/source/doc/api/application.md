@@ -111,10 +111,10 @@ Synchronizes all open files with their respective files, if any. This will cause
 any non-modified buffers to be reloaded from disk, should the file be more
 recently modified than the buffer.
 
-### quit ()
+### quit (force = false)
 
-Requests for Howl to quit. Should any modified buffers be open, this will cause
-the user to be prompted for verification before actually quitting.
+Requests for Howl to quit. If any open buffers are modified, and `force` is not
+true, the user will be prompted for verification before actually quitting.
 
 [.buffers]: #.buffers
 [.editors]: #.editors
