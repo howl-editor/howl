@@ -219,7 +219,7 @@ describe 'Editor', ->
   context 'indentation, tabs, spaces and backspace', ->
 
     it 'defines a "tab_width" config variable, defaulting to 8', ->
-      assert.equal config.tab_width, 8
+      assert.equal config.tab_width, 4
 
     it 'defines a "use_tabs" config variable, defaulting to false', ->
       assert.equal config.use_tabs, false
