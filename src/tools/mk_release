@@ -1,0 +1,38 @@
+#! /bin/sh
+
+set -e
+
+root=$(cd $(dirname $0)/../.. && pwd)
+cd $root
+ver=$(git tag -l|tail -n 1)
+echo -n "Enter tag to release from: [$ver]: "
+read answer
+if [ -n "$answer" ]; then
+  ver=$answer
+fi
+
+rel=howl-$ver
+rel_dir=~/tmp/$rel
+
+if [ -e $rel_dir ]; then
+  echo "$rel_dir already exists, please remove it first"
+  exit 1
+fi
+
+mkdir $rel_dir
+git archive --format=tar $ver | tar x -C $rel_dir
+
+echo "Downloading dependencies in $rel_dir.."
+(cd $rel_dir/src && make deps-download)
+
+tarball=$rel.tgz
+echo "Creating release tarball as $HOME/tmp/$tarball.."
+cd ~/tmp
+tar czf $tarball $rel
+rm -rf $rel_dir
+
+echo -n "MD5: "
+md5sum $tarball | awk '{print $1}'
+
+echo -n "SHA1: "
+sha1sum $tarball | awk '{print $1}'
