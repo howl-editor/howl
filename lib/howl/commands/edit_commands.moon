@@ -23,9 +23,9 @@ command.register
   handler: (values) ->
     { target, replacement } = values
     escaped = target\gsub '[%p%%]', '%%%1'
-    print "replaced: #{escaped}"
+    escaped_replacement = replacement\gsub('%%%d', '%%%1')
     chunk = app.editor.active_chunk
-    chunk.text, count = chunk.text\gsub escaped, replacement\gsub('%%%d', '%%%1')
+    chunk.text, count = chunk.text\gsub escaped, escaped_replacement
     if count > 0
       log.info "Replaced #{count} occurrences of '#{target}' with '#{replacement}'"
     else
@@ -34,11 +34,11 @@ command.register
 command.register
   name: 'replace-pattern',
   description: 'Replaces text using Lua patterns (within selection or globally)'
-  inputs: { 'replace-pattern' }
+  inputs: { 'replace' }
   handler: (values) ->
     { target, replacement } = values
     chunk = app.editor.active_chunk
-    chunk.text, count = chunk.text\gsub escaped, replacement
+    chunk.text, count = chunk.text\gsub target, replacement
     if count > 0
       log.info "Replaced #{count} occurrences of '#{target}' with '#{replacement}'"
     else

@@ -110,6 +110,9 @@ local function main(args)
   if args.compile then
     compile(args)
   else
+    local signal = require 'ljglibs.gobject.signal'
+    signal.configure({ dispatch_in_coroutine = true })
+
     howl.app = howl.Application(howl.fs.File(app_root), args)
 
     if os.getenv('BUSTED') then

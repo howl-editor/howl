@@ -40,8 +40,9 @@ class Readline extends PropertyObject
 
       @last_focused\grab_focus! if @last_focused and has_focus
 
-  read: (prompt, input = {}, callback) =>
-    error 'Missing parameter "callback"', 2 unless callback
+  read: (prompt, input = {}, opts = {}) =>
+    @co, is_main = coroutine.running!
+    error "Cannot invoke Readline.read() from the main coroutine", 2 if is_main
     input = inputs[input] if type(input) == 'string'
     input = input! if callable input
     @session_id += 1
@@ -49,11 +50,11 @@ class Readline extends PropertyObject
     @prompt = prompt or ''
     @title = input.title or ''
     @input = input
-    @callback = callback
-    @text = ''
+    @text = opts.text or ''
     @completion_unwanted = false
     @seen_interaction = false
     @_complete!
+    coroutine.yield!
 
   notify: (text, style) =>
     @notification\delete! if @notification
@@ -144,7 +145,8 @@ class Readline extends PropertyObject
     @_update_input!
     @_complete @completion_list != nil
 
-  _on_error: (err) => @notify err, 'error'
+  _on_error: (err) =>
+    @notify err, 'error'
 
   _instantiate: =>
     @sci = Scintilla!
@@ -236,20 +238,14 @@ class Readline extends PropertyObject
         return
 
     if @input.on_submit and @input\on_submit(value, self) == false
+      @_complete!
       return
 
     value = @input\value_for value if @input.value_for
     @_show_only_cmd_line!
     session_id = @session_id
-    status, ret = pcall self.callback, value, self
-    if not status
-      @hide!
-      error ret
-
-    if ret != false
-      @hide! if session_id == @session_id
-    else
-      @_complete!
+    coroutine.resume @co, value
+    @hide! if session_id == @session_id
 
   _cancel: =>
     if @completion_list or @notification
@@ -258,9 +254,8 @@ class Readline extends PropertyObject
       input_wants_close = @input.close_on_cancel and @input\close_on_cancel!
       return if @seen_interaction and not input_wants_close
 
-    status, err = pcall self.callback, nil, self
     @hide!
-    error(err) if not status
+    coroutine.resume @co, nil
 
   keymap: {
     escape: => @_cancel!

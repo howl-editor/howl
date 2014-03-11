@@ -10,6 +10,9 @@ ref_id_cnt = 0
 weak_handler_id_cnt = 0
 handles = {}
 unrefed_handlers = setmetatable {}, __mode: 'v'
+options = {
+  dispatch_in_coroutine: false
+}
 
 cb_cast = (cb_type, handler) -> ffi.cast('GCallback', ffi.cast(cb_type, handler))
 
@@ -33,6 +36,10 @@ dispatch = (data, ...) ->
       args = pack_n ...
       for i = 1, handle.args.maxn
         args[args.maxn + i] = handle.args[i]
+
+      if options.dispatch_in_coroutine
+        target = handler
+        handler = coroutine.wrap (...) -> target ...
 
       status, ret = pcall handler, unpack(args, 1, args.maxn + handle.args.maxn)
       return ret == true if status
@@ -139,5 +146,8 @@ callbacks = {
       :param_types
     }
     info
+
+  configure: (opts) ->
+    options[k] = v for k,v in pairs opts
 
 }

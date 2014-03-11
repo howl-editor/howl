@@ -4,7 +4,7 @@
 ffi = require 'ffi'
 
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs from howl
+import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs, timer from howl
 import File from howl.fs
 import PropertyObject from howl.aux.moon
 Gtk = require 'ljglibs.gtk'
@@ -55,12 +55,14 @@ class Application extends PropertyObject
     window\set_default_size 800, 640
 
     window\on_delete_event ->
+      return false if @_ignore_modified_on_close
       if #@windows == 1
-        unless @_should_abort_quit!
-          @_on_quit!
-          return false
-
-        true
+        modified = [b for b in *@_buffers when b.modified]
+        if #modified > 0
+          -- postpone the quit check, since we really need to prevent
+          -- the close right away by returning true
+          timer.asap -> @quit!
+          true
 
     window\on_destroy (window) ->
       for k, win in ipairs @windows
@@ -95,9 +97,8 @@ class Application extends PropertyObject
   close_buffer: (buffer, force = false) =>
     if not force and buffer.modified
       input = inputs.yes_or_no false
-      @window.readline\read "Buffer '#{buffer}' is modified, close anyway? ", input, (wants_close) ->
-        @close_buffer buffer, true if wants_close
-      return
+      wants_close = @window.readline\read "Buffer '#{buffer}' is modified, close anyway? ", input
+      return unless wants_close
 
     @_buffers = [b for b in *@_buffers when b != buffer]
 
@@ -239,10 +240,10 @@ class Application extends PropertyObject
     modified = [b for b in *@_buffers when b.modified]
     if #modified > 0
       input = inputs.yes_or_no false
-      @window.readline\read "Modified buffers exist, close anyway? ", input, (wants_close) ->
-        if wants_close
-          @_ignore_modified_on_close = true
-          @window\destroy!
+      wants_close = @window.readline\read "Modified buffers exist, close anyway? ", input
+      return true unless wants_close
+      @_ignore_modified_on_close = true
+      @window\destroy!
       true
 
   _on_quit: =>

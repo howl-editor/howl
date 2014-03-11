@@ -61,7 +61,20 @@ class State
   close_on_cancel: (text, readline) => @_dispatch 'close_on_cancel', text, readline
   complete: (text, readline) => @_dispatch 'complete', text, readline
   on_completed: (item, readline) => @_dispatch 'on_completed', item, readline
-  on_submit: (text, readline) => @_dispatch 'on_submit', text, readline
+
+  on_submit: (text, readline) =>
+    cmd = @cmd or resolve_command text
+    return false unless cmd
+
+    if readline
+      input_returned = @_dispatch 'on_submit', text, readline
+      return input_returned unless input_returned == nil
+      @update readline.text .. ' ', readline
+
+    input_can_finish = @_dispatch('can_finish')
+    return false if input_can_finish == false
+    #@arguments >= #cmd.inputs
+
   go_back: (readline) => @_dispatch 'go_back', readline
   on_cancelled: (readline) =>
     for input in *@inputs
@@ -84,7 +97,8 @@ class State
     if #@arguments >= #cmd.inputs
       values = {}
       for i = 1, #@arguments
-        target = @inputs[i].target
+        input = @inputs[i] or @inputs[#@inputs]
+        target = input.target
         value = @arguments[i]
         value = target\value_for(value) if target.value_for
         append values, value
@@ -224,24 +238,23 @@ run = (cmd_string = nil) ->
   prompt = ':'
   text = nil
 
-  if cmd_string and #cmd_string > 0
+  if cmd_string and not cmd_string.is_empty
     state\update cmd_string .. ' '
-    return if state\submit!
-    prompt ..= state\to_string!
-    text = cmd_string if not state.cmd
+    if state\on_submit ''
+      if state\submit!
+        return true
+    else
+      prompt ..= state\to_string!
+      text = cmd_string if not state.cmd
 
-  howl.app.window.readline\read prompt, cmd_input, (value, readline) ->
-    if not value
-      state\on_cancelled readline
-      return
-
+  readline = howl.app.window.readline
+  value = readline\read prompt, cmd_input, :text
+  if not value
+    state\on_cancelled readline
+  else
     state\update readline.text .. ' ', readline
-    if state\submit value
-      return true
+    state\submit value
 
-    return false
-
-  howl.app.window.readline.text = text if text
 
 return setmetatable { :register, :unregister, :alias, :run, :names, :get }, {
   __index: (key) => commands[key] or accessible_names[key]

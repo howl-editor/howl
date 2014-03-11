@@ -129,7 +129,7 @@ describe 'command', ->
           assert.same cmd.handler.called_with, { first_input.value_for! }
 
       context 'when it specifies a command without all required parameters', ->
-        it 'invokes howl.app..window.readline with the prompt set to the given string', ->
+        it 'invokes howl.app.window.readline with the prompt set to the given string', ->
           cmd.inputs = { 'test_first', 'test_second' }
           command.register cmd
           command.run cmd.name .. ' arg'
@@ -138,10 +138,10 @@ describe 'command', ->
           assert.equal prompt, ':' .. cmd.name .. ' arg '
 
       context 'when it specifies a unknown command', ->
-        it 'invokes howl.app.window.readline with the text set to the given string', ->
+        it 'invokes readline.read with the text set to the given string', ->
           command.run 'what-the-heck now'
           assert.is_true readline.read.called
-          assert.equal readline.writes.text, 'what-the-heck now'
+          assert.equals 'what-the-heck now', readline.read.called_with[4].text
 
     context 'parameter parsing', ->
       it 'separates arguments on whitespace', ->
@@ -180,17 +180,23 @@ describe 'command', ->
         assert.raises 'Wildcard', -> command.register cmd
 
     context 'interacting with readline', ->
-      input = nil
-      callback = nil
-      readline = nil
-      handler = nil
+      local input, readline, handler, co, return_value
+
+      run = (...) ->
+        f = coroutine.wrap (...) -> command.run ...
+        return_value = f ...
+
+      fake_return = (...) ->
+        coroutine.resume co, ...
 
       before_each ->
-        readline = read: (prompt, i, c) =>
+        readline = read: (prompt, i) =>
+          co = coroutine.running!
           input = i
-          callback = c
           @prompt = prompt
           @text = ''
+          coroutine.yield!
+
         app.window = :readline
 
         handler = spy.new -> nil
@@ -206,18 +212,18 @@ describe 'command', ->
 
       context 'when entering a command', ->
         it 'should_complete(..) returns false', ->
-          command.run!
+          run!
           assert.is_false input\should_complete '', readline
 
         it 'complete(..) returns a list of command names, key bindings, and descriptions', ->
           keymap.ctrl_shift_p = 'p_cmd'
-          command.run!
+          run!
           completions = input\complete '', readline
           assert.same completions, { { 'p_cmd', 'ctrl_shift_p', 'desc' } }
 
       context 'when entering command arguments', ->
         it 'delegates all input methods to the current corresponding input', ->
-          command.run!
+          run!
           input\update 'p_cmd first', readline
           assert.not_nil first_input
           assert.equal input\complete(readline.text, readline), first_input.complete!
@@ -244,14 +250,14 @@ describe 'command', ->
           assert.is_true second_input.go_back.called
 
         it 'calls on_cancelled on all instantiated inputs when the user cancels', ->
-          command.run!
+          run!
           input\update 'p_cmd first', readline
-          callback nil, readline
+          fake_return nil
           assert.is_true first_input.on_cancelled.called
           assert.is_false second_input.on_cancelled.called
 
         it 'updates the readline prompt to include arguments when they are finished', ->
-          command.run!
+          run!
           input\update 'p_cmd first', readline
           assert.match readline.prompt, 'p_cmd $'
           readline.text ..= ' second'
@@ -259,18 +265,18 @@ describe 'command', ->
           assert.match readline.prompt, 'p_cmd first $'
 
         it 'runs the command when the user submits', ->
-          command.run!
+          run!
           readline.text = 'p_cmd first final'
           input\update readline.text, readline
           readline.text = 'final'
-          assert.is_true callback readline.text, readline
+          fake_return 'final'
           assert.spy(handler).was_called_with first_input\value_for!, 'final'
 
         context 'with a wildcard input', ->
           before_each ->
             cmd.inputs = { '*dummy' }
             command.register cmd
-            command.run!
+            run!
 
           it 'does not update the readline prompt to include partial arguments', ->
             input\update "#{cmd.name} first second third", readline
@@ -281,22 +287,22 @@ describe 'command', ->
             input\update readline.text, readline
             input\update readline.text, readline
             assert.match readline.prompt, "#{cmd.name} $"
-            assert.is_true callback readline.text, readline
+            fake_return readline.text
             assert.spy(cmd.handler).was_called_with readline.text
 
       context 'when the user submits an unknown command', ->
-        it 'the callback returns false to keep readline open', ->
-          command.run!
-          assert.is_false callback 'unknowncommand', readline
+        it 'the on_submit callback returns false to keep readline open', ->
+          run!
+          assert.is_false input\on_submit 'unknowncommand', readline
 
       context 'when the user submits a known command but with too few arguments', ->
-        it 'the callback returns false to keep readline open', ->
-          command.run!
-          assert.is_false callback 'p_cmd', readline
+        it 'the on_submit callback returns false to keep readline open', ->
+          run!
+          assert.is_false input\on_submit 'p_cmd', readline
 
         it 'the callback adds command to the readline prompt', ->
-          command.run!
+          run!
           readline.text = 'p_cmd'
           input\update readline.text, readline
-          callback 'p_cmd', readline
+          input\on_submit 'p_cmd', readline
           assert.match readline.prompt, 'p_cmd $'

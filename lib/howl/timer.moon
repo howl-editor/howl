@@ -13,8 +13,11 @@ g_callback = ffi.cast 'GSourceFunc', (data) ->
   ref_id = tonumber ffi.cast('gint', data)
   cb = callbacks[ref_id]
   if cb
-    status, ret = pcall cb[1], unpack(cb[2], 1, cb[2].maxn)
+    co = coroutine.create (...) -> cb[1] ...
+    status, ret = coroutine.resume co, unpack(cb[2], 1, cb[2].maxn)
 
+    unless status
+      _G.log.error 'Error invoking timer handler: ' .. ret
   false
 
 register_callback = (f, ...) ->

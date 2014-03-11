@@ -41,13 +41,13 @@ command.register
     if file
       project = Project.for_file file
       if project
-        app.window.readline\read ':project-open ', 'project_file', (file) ->
-          app\open_file file if file
+        file = app.window.readline\read ':project-open ', 'project_file'
+        app\open_file file if file
       else
-        app.window.readline\read '(Please specify the project root): ', 'directory', (directory) ->
-          if directory
-            Project.add_root directory
-            command.project_open!
+        directory = app.window.readline\read '(Please specify the project root): ', 'directory'
+        if directory
+          Project.add_root directory
+          command.project_open!
     else
       log.warn "No current file nor project detected"
 
