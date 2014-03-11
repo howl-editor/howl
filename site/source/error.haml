@@ -1,0 +1,22 @@
+---
+title: Page not found..
+---
+.row
+  .col-md-6.col-md-offset-2
+
+    = image_tag('sad-wolf.png', class: 'img-responsive')
+
+.row
+  .col-md-6.col-md-offset-3
+
+    %h1.text-danger Page not found
+
+    %p
+      If you reached this page, it probably means that you we're trying to follow a
+      link to a page that has not yet been written, most likely from the
+      documentation. Documentation is being added continually, but it will be a while
+      until everything is in place, hence the sad wolf above.
+
+    %p
+      If you think that this particular page you were trying to visit really needs to
+      be written now, feel free to prod #{link_to "me", "/contact.html"}!
