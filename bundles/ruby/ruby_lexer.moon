@@ -46,7 +46,7 @@ howl.aux.lpeg_lexer ->
   global = c 'global', P'$' * (ident^1 + S"/_?$`'" + R'09')
   constant = c 'constant', upper^1 * (upper + digit + '_')^0 * -(#lower)
   type = c 'type', upper^1 * (alpha + digit + '_')^0
-  fdecl = c('keyword', 'def') * c('whitespace', space^1) * c('fdecl', ident)
+  fdecl = c('keyword', 'def') * c('whitespace', space^1) * c('fdecl', complement(any(space, '('))^1)
 
   -- numbers
   hex_digit_run = xdigit^1 * (P'_' * xdigit^1)^0
