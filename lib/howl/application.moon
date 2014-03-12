@@ -62,7 +62,10 @@ class Application extends PropertyObject
           -- postpone the quit check, since we really need to prevent
           -- the close right away by returning true
           timer.asap -> @quit!
-          true
+        else
+          @quit!
+
+        true
 
     window\on_destroy (window) ->
       for k, win in ipairs @windows
