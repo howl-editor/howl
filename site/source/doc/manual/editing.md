@@ -110,4 +110,6 @@ documentation for the symbol at the cursor if available:
 
 ![Show doc](/images/doc/show-doc.png)
 
+---
+
 *Next*: [Using multiple views](views.html)

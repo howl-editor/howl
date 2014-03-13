@@ -7,13 +7,16 @@ title: Installation
 Howl is not yet officially released, but you can try it out if you're willing to
 build it from source. Howl is developed on Linux, but it should build on other
 \*NIX platforms as well such as the \*BSD family, although this hasn't been
-verified yet.
+verified yet (there's also nothing the author is aware of that should prevent it
+from being ported to OSX or Window, should any brave soul like to try).
 
 ### Requirements
 
 Howl requires the following build dependencies:
 
-- `wget`: For auto-downloading build dependencies
+- `wget`: For auto-downloading build dependencies (only needed when building
+from a code checkout, as the release tarball contains pre-downloaded
+dependencies).
 
 - `GTK+`: Version >= 3, with development files.
 
@@ -27,16 +30,18 @@ This list is not guaranteed to be complete, so please let me know if there's any
 
 ### Building
 
-Get the source from [Github](https://github.com/nilnor/howl), either by cloning the repository
-or by download a Zip-file of the master branch. Compile Howl by issuing `make` from the `src`
-directory. When building directly from source, in-app dependencies will automatically be downloaded
-for you using `wget`. Once it's built, you can if you want run it directly as is from the `src` directory,
-like so: `$ ./howl`. To install it properly however, so that it integrates into your desktop, you'll
-want to run the `make install` command.
+Download and unpack a Howl release, or get the source from
+[Github](https://github.com/nilnor/howl), either by cloning the repository or by
+download a Zip-file of the desired branch/tag.. Compile Howl by issuing `make`
+from the `src` directory. When building directly from a source checkout, in-app
+dependencies will automatically be downloaded for you using `wget`. Once it's
+built, you can if you want run it directly as is from the `src` directory, like
+so: `$ ./howl`. To install it properly however, so that it integrates into your
+desktop, you'll want to run the `make install` command.
 
 *Example session:*
 
-```shell
+```
 [nino@cohen:~/tmp]% git clone https://github.com/nilnor/howl.git
 Cloning into 'howl'...
 remote: Counting objects: 7924, done.
@@ -61,8 +66,9 @@ make PREFIX=~/.local
 make PREFIX=~/.local install
 ```
 
-*NB: If you install to a non-standard location, your desktop environment might not pick
-up on the fact that Howl is installed, and the application icon will look ugly.*
+*NB: If you install to a non-standard location, your desktop environment might
+not pick up on the fact that Howl is installed, and the application icon will
+look ugly as the result.*
 
 ### Tracking the latest from Github
 

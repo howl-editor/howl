@@ -67,3 +67,7 @@ however, it would be created first. The last set of commands are bound to
 
 - `view-close`: Closes/removes the current view. Bound to `ctrl_w` in the
 default keymap.
+
+---
+
+*Next*: [What's next?](next.html)
