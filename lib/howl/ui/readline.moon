@@ -97,7 +97,7 @@ class Readline extends PropertyObject
     text = @text
     return if @completion_unwanted
     config_says_complete = config.complete == 'always'
-    input_says_complete = @input.should_complete and @input\should_complete text, self
+    input_says_complete = @input.should_complete and @input\should_complete self
     should_complete = force or config_says_complete or input_says_complete
 
     completions, options = if should_complete and @input.complete then @input\complete text, self
@@ -251,7 +251,7 @@ class Readline extends PropertyObject
     if @completion_list or @notification
       @_show_only_cmd_line!
       @completion_unwanted = true
-      input_wants_close = @input.close_on_cancel and @input\close_on_cancel!
+      input_wants_close = @input.close_on_cancel and @input\close_on_cancel self
       return if @seen_interaction and not input_wants_close
 
     @hide!

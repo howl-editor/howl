@@ -54,11 +54,11 @@ class State
       append @arguments, arg
       readline.prompt ..= arg .. ' ' if readline
 
-  should_complete: (text, readline) =>
-    should = @_dispatch 'should_complete', text, readline
+  should_complete: (readline) =>
+    should = @_dispatch 'should_complete', readline
     return should != nil and should or config.complete == 'always'
 
-  close_on_cancel: (text, readline) => @_dispatch 'close_on_cancel', text, readline
+  close_on_cancel: (readline) => @_dispatch 'close_on_cancel', readline
   complete: (text, readline) => @_dispatch 'complete', text, readline
   on_completed: (item, readline) => @_dispatch 'on_completed', item, readline
 
@@ -221,8 +221,8 @@ run = (cmd_string = nil) ->
 
   cmd_input =
     title: 'Command'
-    should_complete: (_, text, readline) -> state\should_complete text, readline
-    close_on_cancel: (_, text, readline) -> state\close_on_cancel text, readline
+    should_complete: (_, readline) -> state\should_complete readline
+    close_on_cancel: (_, readline) -> state\close_on_cancel readline
     update: (_, text, readline) -> state\update text, readline
     on_completed: (_, item, readline) -> state\on_completed item, readline
     on_submit: (_, text, readline) -> state\on_submit text, readline
