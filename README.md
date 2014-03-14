@@ -14,14 +14,13 @@ should work on at least the \*BSD:s as well.
 It is released as free software under the [MIT](http://opensource.org/licenses/MIT)
 license, with the source being available on [Github](https://github.com/nilnor/howl).
 
-It's currently in a pre-release state.
-
-Read more at [howl.io](http://howl.io), and follow on
-[Twitter](https://twitter.com/howleditor) for updates.
+Visit [howl.io](http://howl.io) for installation instructions and documentation,
+and follow on [Twitter](https://twitter.com/howleditor) for updates.
 
 ## License
 
-Howl is released under the MIT license (see the LICENSE file for the full details).
+Howl is released under the MIT license (see the LICENSE.md file for the full
+details).
 
 ## Contribute
 
