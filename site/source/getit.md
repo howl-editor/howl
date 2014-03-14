@@ -4,13 +4,24 @@ title: Installation
 
 # Installing Howl
 
-Howl is not yet officially released, but you can try it out if you're willing to
-build it from source. Howl is developed on Linux, but it should build on other
-\*NIX platforms as well such as the \*BSD family, although this hasn't been
-verified yet (there's also nothing the author is aware of that should prevent it
-from being ported to OSX or Window, should any brave soul like to try).
+Howl is developed on Linux, but it should build on other \*NIX platforms as well
+such as the \*BSD family, although this hasn't been verified yet (there's also
+nothing the author is aware of that should prevent it from being ported to OSX
+or Window, should any brave soul like to try).
 
-### Requirements
+You can install Howl by building it from source, either from a release or by
+cloning the repository from Github.
+
+### Latest release
+
+The latest release is Howl 0.1, available for download from
+[http://download.howl.io/release/howl-0.1.tgz](http://download.howl.io/release/howl-0.1.tgz)
+
+__MD5 checksum__: c8128a9d1510c91ae27603787b17010a
+
+__SHA1 checksum__: 16cfdd89d537ca22881c1646832270165dd05d17
+
+### Build requirements
 
 Howl requires the following build dependencies:
 
@@ -42,18 +53,18 @@ desktop, you'll want to run the `make install` command.
 *Example session:*
 
 ```
-[nino@cohen:~/tmp]% git clone https://github.com/nilnor/howl.git
+[nilnor@cohen:~/tmp]% git clone https://github.com/nilnor/howl.git
 Cloning into 'howl'...
 remote: Counting objects: 7924, done.
 [..]
 Checking connectivity... done
-[nino@cohen:~/tmp]%
-[nino@cohen:~/tmp]% cd howl/src/
-[nino@cohen:~/tmp/howl/src]% make -j 4
+[nilnor@cohen:~/tmp]%
+[nilnor@cohen:~/tmp]% cd howl/src/
+[nilnor@cohen:~/tmp/howl/src]% make -j 4
 [snipped download and compiling]
 make  49.44s user 4.21s system 81% cpu 1:05.74 total
-[nino@cohen:~/tmp/howl/src]% sudo make install
-[sudo] password for nino:
+[nilnor@cohen:~/tmp/howl/src]% sudo make install
+[sudo] password for nilnor:
 Installing to /usr/local..
 All done.
 ```
