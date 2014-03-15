@@ -17,6 +17,25 @@ license, with the source being available on [Github](https://github.com/nilnor/h
 Visit [howl.io](http://howl.io) for installation instructions and documentation,
 and follow on [Twitter](https://twitter.com/howleditor) for updates.
 
+## Quick installation instructions
+
+The home page contains more elaborate instructions, but below you'll find the
+basic instructions for how to install Howl.
+
+### Build requirements
+
+- `wget`: For auto-downloading build dependencies pre-downloaded dependencies).
+- `GTK+`: Version >= 3, with development files (e.g.`libgtk-3-dev` on Debian
+based system).
+- `C/C++ compiler`: Howl has a very small C core itself, but it embedds
+dependencies built both in C and C++.
+
+### Build && install
+
+Clone the repository or download and unpack a release. Cd into the `src`
+directory, and issue `make && sudo make install`. The installed binary will be
+named `howl`.
+
 ## License
 
 Howl is released under the MIT license (see the LICENSE.md file for the full
