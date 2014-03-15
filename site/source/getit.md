@@ -14,12 +14,13 @@ cloning the repository from Github.
 
 ### Latest release
 
-The latest release is Howl 0.1, available for download from
-[http://download.howl.io/release/howl-0.1.tgz](http://download.howl.io/release/howl-0.1.tgz)
+The latest release is Howl 0.1.1. It was released at 2014-03-15, and is
+available for download from
+[http://download.howl.io/release/howl-0.1.1.tgz](http://download.howl.io/release/howl-0.1.1.tgz)
 
-__MD5 checksum__: c8128a9d1510c91ae27603787b17010a
+__MD5 checksum__: b7fe35018a7016e66b93920a67444b0d
 
-__SHA1 checksum__: 16cfdd89d537ca22881c1646832270165dd05d17
+__SHA1 checksum__: 9542dd53c25045e33732f7210b0c68ebff156d41
 
 ### Build requirements
 
@@ -87,3 +88,12 @@ If you want to track the latest version of Howl, clone the repository from
 Github and build as per the above instructions. To update just pull the latest
 additions, and issue make again from the src directory. Don't forget to make
 again, as this would cause stale code to be loaded.
+
+### Older releases
+
+#### Howl 0.1, released 2014-03-15.
+[Download](http://download.howl.io/release/howl-0.1.tgz)
+
+__MD5 checksum__: c8128a9d1510c91ae27603787b17010a
+
+__SHA1 checksum__: 16cfdd89d537ca22881c1646832270165dd05d17
