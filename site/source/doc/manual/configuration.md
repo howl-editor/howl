@@ -145,8 +145,8 @@ A few notes on the above example:
 - We use [mode.configure](../api/mode.html#configure) for specifying the mode
   variable rather than setting it using the config object of an existing mode
   instance. This is because we don't want to load the mode unnecessarily just
-  to set a variable. Using configure() instead means that it will set once the
-  mode is loaded (or straight away should the mode already be loaded).
+  to set a variable. Using configure() instead means that it will be set once
+  the mode is loaded (or straight away should the mode already be loaded).
 
 - We use [signal.connect](../api/signal.html#connect) to add a signal handler
   for the `file-opened` signal, and set the indent for a certain buffer with
