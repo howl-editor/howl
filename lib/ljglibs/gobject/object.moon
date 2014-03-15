@@ -29,7 +29,7 @@ core.define 'GObject', {
 
   get_typed: (k, type) =>
     ret = ffi_new "#{type}[1]"
-    C.g_object_get @, k, ret
+    C.g_object_get @, k, ret, nil
     r = ret[0]
     return nil if r == nil
     r = lua_value type, r
@@ -41,7 +41,7 @@ core.define 'GObject', {
     r
 
   set_typed: (k, type, v) =>
-    C.g_object_set @, k, ffi_cast(type, v)
+    C.g_object_set @, k, ffi_cast(type, v), nil
 
 }, (spec, type) -> spec.new type
 

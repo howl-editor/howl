@@ -48,13 +48,13 @@ core.define 'GtkContainer < GtkWidget', {
         type = props[k]
         error "No child property '#{k}' found for #{cls}", 2 unless type
         ret = ffi_new "#{type}[1]"
-        C.gtk_container_child_get to_c(@), child, k, ret
+        C.gtk_container_child_get to_c(@), child, k, ret, nil
         lua_value type, ret[0]
 
       __newindex: (t, k, v) ->
         type = props[k]
         error "No child property '#{k}' found for #{cls}", 2 unless type
-        C.gtk_container_child_set to_c(@), child, k, ffi_cast(type, v)
+        C.gtk_container_child_set to_c(@), child, k, ffi_cast(type, v), nil
     }
 
 }, nil, { no_cast: true }

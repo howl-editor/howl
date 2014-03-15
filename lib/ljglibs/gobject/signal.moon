@@ -113,7 +113,7 @@ callbacks = {
       handler
 
   emit_by_name: (instance, signal, ...) ->
-    C.g_signal_emit_by_name ffi.cast('gpointer', instance), signal, ...
+    C.g_signal_emit_by_name ffi.cast('gpointer', instance), signal, ..., nil
 
   lookup: (name, gtype) ->
     C.g_signal_lookup name, gtype
