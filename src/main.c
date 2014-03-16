@@ -71,7 +71,7 @@ static lua_State *open_lua_state(const gchar *app_root)
 
 int main(int argc, char *argv[])
 {
-  if (argc == 2 && strcmp(argv[1], "--compile") == 0) {
+  if (argc >= 2 && strcmp(argv[1], "--compile") == 0) {
 #if !GLIB_CHECK_VERSION(2, 36, 0)
     g_type_init();
 #endif
