@@ -312,7 +312,7 @@ class Application extends PropertyObject
     if log.last_error
       window.status\error log.last_error.message
     else
-      window.status\info 'Howl 0.0 ready.'
+      window.status\info 'Howl ready.'
 
   _load_base: =>
     require 'howl.variables.core_variables'
