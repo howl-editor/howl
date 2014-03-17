@@ -132,6 +132,13 @@ describe 'VI', ->
     assert.equal 'first\n\nsecond', buffer.text
     assert.equal 'insert', state.mode
 
+  it '<y><y> yanks the current line', ->
+    buffer.text = 'first\nsecond'
+    cursor.pos = 1
+    press 'y', 'y'
+    editor\paste!
+    assert.equal 'first\nfirst\nsecond', buffer.text
+
   describe 'movement with destructive modifiers', ->
     for mod, check in pairs {
       d: -> true

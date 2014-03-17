@@ -115,7 +115,8 @@ map = {
 
     y: (editor) ->
       if state.yank
-        apply editor, (editor) -> editor\copy_line!
+        editor\copy_line!
+        state.yank = false
       else
         state.yank = true
 
