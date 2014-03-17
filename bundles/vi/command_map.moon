@@ -22,6 +22,29 @@ replace_char = (event, source, translations, editor) ->
   else
     return false
 
+with_lines_selected = (editor, count, f) ->
+  current_line = editor.current_line
+  lines = editor.buffer.lines
+  start_pos = current_line.start_pos
+  end_line = lines[current_line.nr + count]
+  end_pos = end_line and end_line.start_pos or #editor.buffer + 1
+
+  with editor.selection
+    .includes_cursor = false
+    \set start_pos, end_pos
+    f editor
+    .includes_cursor = true
+
+copy_lines = (editor) ->
+  if not state.count or state.count <= 1
+    editor\copy_line!
+  else
+    editor\with_position_restored ->
+      with_lines_selected editor, state.count, (editor) ->
+        editor.selection\copy!
+
+  state.reset!
+
 map = {
   name: 'VI'
 
@@ -59,17 +82,8 @@ map = {
       count = state.count or 1
 
       record editor, (editor) ->
-        current_line = editor.current_line
-        lines = editor.buffer.lines
-        start_pos = current_line.start_pos
-        end_line = lines[current_line.nr + count]
-        end_pos = end_line and end_line.start_pos or #editor.buffer + 1
-
-        with editor.selection
-          .includes_cursor = false
-          \set start_pos, end_pos
-          \cut!
-          .includes_cursor = true
+        with_lines_selected editor, count, (editor) ->
+          editor.selection\cut!
 
     D: (editor) ->
       if state.has_modifier!
@@ -115,12 +129,12 @@ map = {
 
     y: (editor) ->
       if state.yank
-        editor\copy_line!
+        copy_lines editor
         state.yank = false
       else
         state.yank = true
 
-    Y: (editor) -> editor\copy_line!
+    Y: (editor) -> copy_lines editor
 
     '.': (editor) -> repeat_last editor
   }, __index: base_map.editor

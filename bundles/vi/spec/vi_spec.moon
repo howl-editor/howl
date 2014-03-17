@@ -194,6 +194,28 @@ describe 'VI', ->
       press '2', 'l'
       assert.equal 3, cursor.pos
 
+    it 'dd cuts <count> lines', ->
+      buffer.text = 'line1\nline2'
+      cursor.pos = 1
+      press '2', 'd', 'd'
+      assert.equals '', buffer.text
+      editor\paste!
+      assert.equals 'line1\nline2', buffer.text
+
+    it 'Y yanks <count> lines', ->
+      buffer.text = 'line1\nline2\n'
+      cursor.pos = 1
+      press '2', 'Y'
+      editor\paste!
+      assert.equals 'line1\nline2\nline1\nline2\n', buffer.text
+
+    it 'yy yanks <count> lines', ->
+      buffer.text = 'line1\nline2\n'
+      cursor.pos = 1
+      press '2', 'y', 'y'
+      editor\paste!
+      assert.equals 'line1\nline2\nline1\nline2\n', buffer.text
+
   context 'insert mode', ->
     before_each -> press 'i'
 
