@@ -32,10 +32,21 @@ map = {
     v: cancel
     s: substitute
     escape: cancel
+
     i: (editor) ->
       editor.selection.persistent = false
       state.change_mode editor, 'insert'
+
     ':': -> command.run!
+
+    '>': (editor) ->
+      editor\shift_right!
+      cancel editor
+
+    '<': (editor) ->
+      editor\shift_left!
+      cancel editor
+
   }, __index: base_map.editor
 
   __on_selection_changed: (editor, selection) ->

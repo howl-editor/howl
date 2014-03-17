@@ -241,6 +241,11 @@ describe 'VI', ->
 
   context 'visual mode', ->
     before_each ->
+      buffer.text = [[
+LinƏ 1
+Next LinƏ
+]]
+      cursor.line = 1
       cursor.column = 3
       press 'v'
       assert.equal 'visual', state.mode
@@ -254,19 +259,35 @@ describe 'VI', ->
     it 'sets an persistent selection', ->
       assert.is_true selection.persistent
 
+    it '">" causes the lines in the selection to be right-shifted and leaves visual', ->
+      press '>'
+      assert.equals '  LinƏ 1\nNext LinƏ\n', buffer.text
+      assert.equal 'command', state.mode
+      press 'v', 'j', '>'
+      assert.equals '    LinƏ 1\n  Next LinƏ\n', buffer.text
+
+    it '"<" causes the selection to be dedented and leaves visual', ->
+      lines[i].indentation = 4 for i in *{1, 2}
+      press '<'
+      assert.equals '  LinƏ 1\n    Next LinƏ\n', buffer.text
+      assert.equal 'command', state.mode
+      press 'v', 'j', '<'
+      assert.equals 'LinƏ 1\n  Next LinƏ\n', buffer.text
+
     context 'movement', ->
       it 'ordinary movement extends the selection', ->
         press 'l'
+        assert.is_true selection.persistent
         assert.is_false selection.empty
         assert.equal 'nƏ', selection.text
         press 'j'
-        assert.equal 'nƏ two\nAnd ', selection.text
+        assert.equal 'nƏ 1\nNext', selection.text
 
       it 'always includes the starting position in the selection', ->
         press 'h'
         assert.equal 'in', selection.text
         press 'w'
-        assert.equal 'nƏ t', selection.text
+        assert.equal 'nƏ 1', selection.text
 
   describe 'unloading', ->
     before_each -> bundle.unload 'vi'
