@@ -4,12 +4,20 @@ title: User manual
 
 %h1 Howl Documentation
 
-.alert.alert-warning
-  Howl is still in relatively early stages, and this if sadly enough reflected in
-  the incomplete documentation. Additional documentation will appear
-  here as it is written. Meanwhile, should you have any questions,
-  don't hesitate to
-  %a.alert-link(href = "/contact.html") get in contact.
+.alert.alert-info
+  %p
+    Howl is still in relatively early stages, and this if sadly enough reflected in
+    the incomplete documentation. Additional documentation will appear
+    here as it is written. Meanwhile, should you have any questions,
+    don't hesitate to
+    %a.alert-link(href = "/contact.html") get in contact.
+
+  %p
+    %em
+      ( This is the documentation for the master branch. Documentation
+      for the 0.1* releases can be found
+      %a.alert-link(href = "/versions/0.1/doc/") here
+      )
 
 %h2#user-manual User manual
 
@@ -25,7 +33,7 @@ title: User manual
 
 - howl_api_docs.each do |doc|
   %h4
-    %a(href = "#{doc.url}") #{doc.data[:title]}
+    = link_to doc.data[:title], doc.url
 %h4 (.. WIP)
 
 %h2#howl-specs Howl specs (tests)
@@ -37,5 +45,5 @@ title: User manual
 
 - howl_specs.each do |spec|
   %h4
-    %a(href = "#{spec.url}") #{spec.data[:title]}
+    = link_to spec.data[:title], spec.url
 

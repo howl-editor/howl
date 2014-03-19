@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: Editing</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+  </head>
+  <body class='doc doc_manual doc_manual_editing'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <h1 id="editing">Editing</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>Editing</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header overview">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#auto-pairs" class="toc-group-header auto_pairs">Auto pairs</a>
+</div>
+<div class="toc-group">
+<a href="#code-blocks" class="toc-group-header code_blocks">Code blocks</a>
+</div>
+<div class="toc-group">
+<a href="#buffer-structure" class="toc-group-header buffer_structure">Buffer structure</a>
+</div>
+<div class="toc-group">
+<a href="#buffer-grep" class="toc-group-header buffer_grep">Buffer grep</a>
+</div>
+<div class="toc-group">
+<a href="#comments" class="toc-group-header comments">Comments</a>
+</div>
+<div class="toc-group">
+<a href="#word-wrapping" class="toc-group-header word_wrapping">Word wrapping</a>
+</div>
+<div class="toc-group">
+<a href="#version-control-diffs" class="toc-group-header version_control_diffs">Version control diffs</a>
+</div>
+<div class="toc-group">
+<a href="#documentation-popup" class="toc-group-header documentation_popup">Documentation popup</a>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>This section attempts to highlight a few things that you might encounter while&#x000A;editing, or that might simplify your editing experience.</p>&#x000A;&#x000A;<h2 id="auto-pairs">Auto pairs</h2>&#x000A;&#x000A;<p>Auto pairs, where a matching end character is inserted automatically as you type&#x000A;the starting character, is supported out of the box in Howl. This can save you&#x000A;some typing as you don&rsquo;t have to type out the ending character for every&#x000A;combination of <code>[]</code>, <code>{}</code>, etc. Exactly what pairs are enabled for a buffer is&#x000A;specified by the buffer&rsquo;s mode.</p>&#x000A;&#x000A;<p>In case you find auto pairs annoying, the configuration variable&#x000A;<code>auto_pair</code> lets you specify whether you want this on or not.</p>&#x000A;&#x000A;<h2 id="code-blocks">Code blocks</h2>&#x000A;&#x000A;<p>Code blocks are code snippets that are automatically inserted as you type. They&#x000A;differ from completions in that they are inserted without any prompting, and can&#x000A;include more text than a single completion would. As an example, if you were to&#x000A;type the following Lua, and press enter:</p>&#x000A;<pre class="highlight lua"><span class="k">function</span> <span class="nf">foo</span><span class="p">()</span> <span class="c1">-- &lt;- cursor here</span>&#x000A;</pre>&#x000A;<p>Howl would automatically insert the matching <code>end</code> for you, like so:</p>&#x000A;<pre class="highlight lua"><span class="k">function</span> <span class="nf">foo</span><span class="p">()</span>&#x000A;  <span class="c1">-- &lt;- cursor here</span>&#x000A;<span class="k">end</span>&#x000A;</pre>&#x000A;<p>The configuration variable <code>auto_format</code> lets you specify whether you want this on&#x000A;or not.</p>&#x000A;&#x000A;<h2 id="buffer-structure">Buffer structure</h2>&#x000A;&#x000A;<p>When editing a larger buffer, it can be challenging to quickly jump to a&#x000A;specific part of it. The <code>buffer-structure</code> command (bound to <code>alt_s</code> by&#x000A;default) can provide you with an outline for the current buffer:</p>&#x000A;&#x000A;<p><img alt="Buffer structure" src="/images/doc/buffer-structure.png" /></p>&#x000A;&#x000A;<p>How well this works is depending on the language mode - should the mode not&#x000A;provide custom support for this a general, indentation-based, structure is&#x000A;provided.</p>&#x000A;&#x000A;<h2 id="buffer-grep">Buffer grep</h2>&#x000A;&#x000A;<p>Buffer grep works as an alternative to the regular <code>search-forward</code> command for&#x000A;searching for something in the current buffer. It let&rsquo;s you grep all lines in&#x000A;the current buffer for a search string and displays all matching lines in&#x000A;real-time as you type:</p>&#x000A;&#x000A;<p><img alt="Buffer grep" src="/images/doc/buffer-grep.png" /></p>&#x000A;&#x000A;<p>This is decidedly less effective than doing a plain search, which can be a&#x000A;factor for large buffers.</p>&#x000A;&#x000A;<h2 id="comments">Comments</h2>&#x000A;&#x000A;<p>The <code>editor-toggle-comment</code> is bound to <code>ctrl_slash</code> by default, and let&rsquo;s you&#x000A;quickly comment and uncomment code.</p>&#x000A;&#x000A;<h2 id="word-wrapping">Word wrapping</h2>&#x000A;&#x000A;<p>Howl provides optional support for hard wrapping of text paragraphs. The&#x000A;<code>fill-paragraph</code> command, bound to <code>alt_q</code> by default, will reflow a paragraph&#x000A;so that each line is at most as long as the configuration variable&#x000A;<code>hard_wrap_column</code> specifies.</p>&#x000A;&#x000A;<p>You can also turn on automatic reflowing of paragraphs if you like, by&#x000A;customizing the <code>auto_reflow_text</code> configuration variable. This reflow the&#x000A;current paragraph as you type if needed. For example, the author keeps this in&#x000A;his <code>~/.howl/init.moon</code> to enable automatic reflowing for markdown documents:</p>&#x000A;<pre class="highlight moonscript"><span class="n">howl</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">configure</span><span class="w"> </span><span class="s1">'markdown'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">&#x000A;  </span><span class="ss">auto_reflow_text:</span><span class="w"> </span><span class="kc">true</span><span class="w">&#x000A;</span><span class="p">}</span><span class="w">&#x000A;</span></pre>&#x000A;<p>Unlike most other feature, this is not enabled by default, so you have to&#x000A;explicitly turn it on.</p>&#x000A;&#x000A;<h2 id="version-control-diffs">Version control diffs</h2>&#x000A;&#x000A;<p>The version control support in Howl is currently rather spartan, and will be&#x000A;expanded in future releases. However, if you&rsquo;re using Git you might find the&#x000A;<code>vc-diff</code> and <code>vc-diff-file</code> commands useful. The former displays a complete&#x000A;diff for your entire repository, while the latter displays a diff for the&#x000A;current file.</p>&#x000A;&#x000A;<h2 id="documentation-popup">Documentation popup</h2>&#x000A;&#x000A;<p><em>Support for this is dependent on the language mode, and is currently only&#x000A;available for Lua and Moonscript.</em></p>&#x000A;&#x000A;<p>The <code>show-doc-at-cursor</code> command, bound to <code>ctrl_q</code> by default, pops up&#x000A;documentation for the symbol at the cursor if available:</p>&#x000A;&#x000A;<p><img alt="Show doc" src="/images/doc/show-doc.png" /></p>&#x000A;&#x000A;<hr>&#x000A;&#x000A;<p><em>Next</em>: <a href="views.html">Using multiple views</a></p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.regex</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+  </head>
+  <body class='doc doc_api doc_api_regex'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <h1 id="howl.regex">howl.regex</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.regex</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header overview">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#properties" class="toc-group-header properties">Properties</a>
+<li class=""><a href="#pattern">pattern</a></li>
+<li class=""><a href="#capture_count">capture_count</a></li>
+</div>
+<div class="toc-group">
+<a href="#functions" class="toc-group-header functions">Functions</a>
+<li class=""><a href="#is_instance">is_instance </a></li>
+<li class=""><a href="#r">r </a></li>
+</div>
+<div class="toc-group">
+<a href="#methods" class="toc-group-header methods">Methods</a>
+<li class=""><a href="#match">match </a></li>
+<li class=""><a href="#find">find </a></li>
+<li class=""><a href="#gmatch">gmatch </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>Lua, by itself, does not provide regular expression. Instead it provides its own&#x000A;more limited form of pattern matching. Regular expressions are instead provided&#x000A;by the howl.regex module as an extension. To blend in with Lua, the operations&#x000A;provided by the regex module closely mimics the corresponding operations found&#x000A;in the Lua string standard library. Support for regular expressions is also&#x000A;included in Howl&rsquo;s <a href="ustring.html">string extensions</a>, making it easy to use&#x000A;within your code. Since regular expressions are not native to Lua, there&rsquo;s no&#x000A;syntactical sugar available for constructing a regular expression. Instead&#x000A;regular expression are constructed as ordinary strings. The global function&#x000A;<a href="#r">r</a> provides a constructor function for this. Since this is available in the&#x000A;global namespace, it&rsquo;s possible to construct a regular expression anywhere&#x000A;within Howl just by prefixing a string with <code>r</code>, like so:</p>&#x000A;<pre class="highlight lua"><span class="n">my_regex</span> <span class="o">=</span> <span class="n">r</span><span class="s1">'</span><span class="se">\\</span><span class="s1">d+[lL]'</span>&#x000A;</pre>&#x000A;<p>You can then either use provided methods directly on the regular expression:</p>&#x000A;<pre class="highlight lua"><span class="n">r</span><span class="s1">'(r\\w+)\\s+(\\S+)'</span><span class="p">:</span><span class="n">match</span><span class="p">(</span><span class="s1">'red right hand'</span><span class="p">)</span> <span class="c1">-- =&gt; "red", "right"</span>&#x000A;</pre>&#x000A;<p>Or use Howl&rsquo;s <a href="ustring.html">string extensions</a> which allows for passing in&#x000A;regular expressions instead of Lua patterns:</p>&#x000A;<pre class="highlight lua"><span class="kd">local</span> <span class="n">s</span> <span class="o">=</span> <span class="s1">'red right hand'</span>&#x000A;<span class="n">s</span><span class="p">:</span><span class="n">ufind</span><span class="p">(</span><span class="n">r</span><span class="s1">'(\\w+)'</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">-- =&gt; 5, 9, "right"</span>&#x000A;<span class="n">s</span><span class="p">:</span><span class="n">umatch</span><span class="p">(</span><span class="n">r</span><span class="s1">'(r\\w+)\\s+(\\S+)'</span><span class="p">)</span> <span class="c1">-- =&gt; "red", "right"</span>&#x000A;</pre>&#x000A;<p>Howl&rsquo;s regular expressions are implemented as Perl compatible regular&#x000A;expressions. While it&rsquo;s an implementation detail, susceptible to change, they&#x000A;are currently implemented on top of GLibs regular expression support. You can&#x000A;read more about the full syntax supported by the implementation&#x000A;<a href="https://developer.gnome.org/glib/stable/glib-regex-syntax.html">here</a>.</p>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../spec/regex_spec.html">spec</a> for regex</li>&#x000A;<li>The <a href="https://developer.gnome.org/glib/stable/glib-regex-syntax.html">&ldquo;Regular expression syntax&rdquo;</a> page for GRegex</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="properties">Properties</h2>&#x000A;&#x000A;<h3 id="pattern">pattern</h3>&#x000A;&#x000A;<p>Holds the regular expression string used to construct the regular expression.</p>&#x000A;<pre class="highlight moonscript"><span class="n">r</span><span class="p">(</span><span class="s1">'\\d+'</span><span class="p">).</span><span class="n">pattern</span><span class="w"> </span><span class="c1">-- =&gt; '\\d+'</span><span class="w">&#x000A;</span></pre>&#x000A;<h3 id="capture_count">capture_count</h3>&#x000A;&#x000A;<p>Holds the the number of capturing groups in the regular expression:</p>&#x000A;<pre class="highlight moonscript"><span class="n">r</span><span class="p">(</span><span class="s1">'foo(bar)(\\w+)'</span><span class="p">).</span><span class="n">capture_count</span><span class="w"> </span><span class="c1">-- =&gt; 2</span><span class="w">&#x000A;</span></pre>&#x000A;<h2 id="functions">Functions</h2>&#x000A;&#x000A;<h3 id="is_instance">is_instance <span class="arg-list">(v)</span></h3>&#x000A;&#x000A;<p>Returns true if <code>v</code> is a regular expression instance, and false otherwise.</p>&#x000A;&#x000A;<h3 id="r">r <span class="arg-list">(pattern)</span></h3>&#x000A;&#x000A;<p>Constructs a regular expression from <code>pattern</code>. As was noted in the overview,&#x000A;this is available globally as simple <code>r</code>. Raises an error if <code>pattern</code> is not a&#x000A;valid regular expression. This function also accepts regular expressions as&#x000A;parameters, in which case the passed regular expression is returned as is.</p>&#x000A;&#x000A;<h2 id="methods">Methods</h2>&#x000A;&#x000A;<h3 id="match">match <span class="arg-list">(string [, init])</span></h3>&#x000A;&#x000A;<p>Matches the regular expression against <code>string</code>. If <code>init</code> is specified, starts&#x000A;matching from that position. Has the same semantics as Lua&rsquo;s <a href="http://www.lua.org/manual/5.2/manual.html#pdf-string.match">string.match</a>,&#x000A;with the one significant difference that <code>init</code> as well as any returned&#x000A;positional captures are treated as character offsets.</p>&#x000A;<pre class="highlight lua"><span class="n">r</span><span class="s1">'(r\\w+)\\s+(\\S+)'</span><span class="p">:</span><span class="n">match</span><span class="p">(</span><span class="s1">'red right hand'</span><span class="p">)</span> <span class="c1">-- =&gt; "red", "right"</span>&#x000A;<span class="n">r</span><span class="s1">'()red()'</span><span class="p">:</span><span class="n">match</span><span class="p">(</span><span class="s1">'red'</span><span class="p">)</span> <span class="c1">-- =&gt; 1, 4</span>&#x000A;<span class="n">r</span><span class="s1">'</span><span class="se">\\</span><span class="s1">pL'</span><span class="p">:</span><span class="n">find</span><span class="p">(</span><span class="s1">'!äö'</span><span class="p">)</span> <span class="c1">-- =&gt; 2, 2</span>&#x000A;</pre>&#x000A;<h3 id="find">find <span class="arg-list">(s [, init])</span></h3>&#x000A;&#x000A;<p>Finds the first match of the regular expression in <code>s</code>, optionally starting at&#x000A;<code>init</code> if specified. Has the same semantics as Lua&rsquo;s <a href="http://www.lua.org/manual/5.2/manual.html#pdf-string.find">string.find</a>, with the&#x000A;one significant difference that <code>init</code> as well as any returned indices are&#x000A;treated as character offsets.</p>&#x000A;<pre class="highlight lua"><span class="kd">local</span> <span class="n">s</span> <span class="o">=</span> <span class="s1">'red right hand'</span>&#x000A;<span class="n">s</span><span class="p">:</span><span class="n">ufind</span><span class="p">(</span><span class="n">r</span><span class="s1">'(\\w+)'</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">-- =&gt; 5, 9, "right"</span>&#x000A;</pre>&#x000A;<h3 id="gmatch">gmatch <span class="arg-list">(s)</span></h3>&#x000A;&#x000A;<p>Returns an iterator function, where each consecutive call returns the next match&#x000A;of the regular expression in <code>s</code>. Has the same semantics as Lua&rsquo;s&#x000A;<a href="http://www.lua.org/manual/5.2/manual.html#pdf-string.gmatch">string.gmatch</a>, with the one significant difference that any positional&#x000A;captures are returned as character offsets.</p>&#x000A;<pre class="highlight moonscript"><span class="p">[</span><span class="n">m</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">r</span><span class="s1">'\\w+'</span><span class="o">\</span><span class="n">gmatch</span><span class="w"> </span><span class="s1">'well hello there'</span><span class="p">]</span><span class="w"> </span><span class="c1">-- =&gt; { 'well', 'hello', 'there' }</span><span class="w">&#x000A;</span><span class="p">[</span><span class="n">p</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">r</span><span class="s1">'()\\s+'</span><span class="o">\</span><span class="n">gmatch</span><span class="w"> </span><span class="s1">'ΘΙΚΛ ΞΟΠ '</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="c1">-- =&gt; { 5, 9 }</span><span class="w">&#x000A;</span></pre>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

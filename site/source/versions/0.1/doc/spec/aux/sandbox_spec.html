@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: Spec - howl.aux.Sandbox(env, options)</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+  </head>
+  <body class='doc doc_spec doc_spec_aux doc_spec_aux_sandbox_spec'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <div class="spec-group spec-group-1">&#x000A;&#x000A;<h1 id="howl.aux.sandbox(env,-options)">howl.aux.Sandbox(env, options)</h1>&#x000A;&#x000A;<h4 id="allows-running-a-function-with-a-specified-environment">allows running a function with a specified environment</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'bar!'</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'bar!'</span><span class="p">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">foo</span><span class="o">!</span></pre>&#x000A;&#x000A;<h4 id="allows-passing-parameters-to-the-function">allows passing parameters to the function</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="o">...</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'bar!'</span><span class="p">,</span><span class="w"> </span><span class="n">box</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar!'</span><span class="p">)</span></pre>&#x000A;&#x000A;<h4 id=".put-allows-modifiying-the-environment">.put allows modifiying the environment</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">box</span><span class="o">\</span><span class="n">put</span><span class="w"> </span><span class="ss">what:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'bar!'</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'bar!'</span><span class="p">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">what</span><span class="o">!</span></pre>&#x000A;&#x000A;<h4 id="allows-global-access-by-default">allows global access by default</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">table</span></pre>&#x000A;&#x000A;<h4 id="disallows-global-access-if-options.no_globals-is-set">disallows global access if options.no_globals is set</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="ss">no_globals:</span><span class="w"> </span><span class="kc">true</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">table</span></pre>&#x000A;<div class="spec-group spec-group-2">&#x000A;&#x000A;<h3 id=""><span class="arg-list">(when options.no_implicit_globals is set)</span></h3>&#x000A;&#x000A;<h4 id="raises-an-error-upon-implicit-global-writes">raises an error upon implicit global writes</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="ss">no_implicit_globals:</span><span class="w"> </span><span class="kc">true</span><span class="w">&#x000A;</span><span class="n">renegade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kd">export</span><span class="w"> </span><span class="n">frob</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar!'</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'implicit global'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="n">renegade</span></pre>&#x000A;</div>&#x000A;<div class="spec-group spec-group-2">&#x000A;&#x000A;<h3 id=""><span class="arg-list">(when options.no_implicit_globals is not set)</span></h3>&#x000A;&#x000A;<h4 id="collects-exports-into-.exports">collects exports into .exports</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kd">export</span><span class="w"> </span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">box</span><span class="p">.</span><span class="n">exports</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span></pre>&#x000A;</div>&#x000A;</div>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

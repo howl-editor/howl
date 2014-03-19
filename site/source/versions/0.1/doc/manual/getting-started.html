@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: Getting started</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+  </head>
+  <body class='doc doc_manual doc_manual_getting-started'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <h1 id="getting-started">Getting started</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>Getting started</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#the-visual-components" class="toc-group-header the_visual_components">The visual components</a>
+<li class=""><a href="#windows">Windows</a></li>
+<li class=""><a href="#views">Views </a></li>
+<li class=""><a href="#readline">Readline</a></li>
+</div>
+<div class="toc-group">
+<a href="#other-basic-concepts" class="toc-group-header other_basic_concepts">Other basic concepts</a>
+<li class=""><a href="#buffers">Buffers</a></li>
+<li class=""><a href="#modes">Modes</a></li>
+<li class=""><a href="#key-bindings">Key bindings</a></li>
+<li class=""><a href="#signals">Signals</a></li>
+</div>
+<div class="toc-group">
+<a href="#entering-commands" class="toc-group-header entering_commands">Entering commands</a>
+<li class=""><a href="#manual-entry">Manual entry</a></li>
+<li class=""><a href="#using-keyboard-shortcuts">Using keyboard shortcuts</a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<p>So you&rsquo;ve installed Howl, but how do you actually use it? (if you haven&rsquo;t installed it yet, see the <a href="../../getit.html">instructions</a> here). As you might have read earlier, Howl is rather minimalistic when it comes to the user interface, and it prefers text-based interfaces over the traditional graphical ones. As such, you will not find the typical menu or toolbar that might otherwise help you get started with other applications. In this section we&rsquo;ll look at the basic concepts of Howl, which will hopefully help you get a better understanding of what Howl is and how you can use it.</p>&#x000A;&#x000A;<h2 id="the-visual-components">The visual components</h2>&#x000A;&#x000A;<p>To begin with, let&rsquo;s examine the basic visual components that you see when you use Howl. Using one of the screen shots as an example:</p>&#x000A;&#x000A;<p><img alt="Visual components" src="/images/doc/visual-components.png" /></p>&#x000A;&#x000A;<p>As per the above image, the three basic visual components are windows, views and the readline.</p>&#x000A;&#x000A;<h3 id="windows">Windows</h3>&#x000A;&#x000A;<p>When you start up Howl you&rsquo;ll see one window, containing everything else. You could potentially have multiple windows open for the same Howl instance, even though this is not well-tested at the current time.</p>&#x000A;&#x000A;<h3 id="views">Views <span class="arg-list">(Editors)</span></h3>&#x000A;&#x000A;<p>A window can contain an arbitrary number of views, which are any type of graphical component. Currently there are only type of view available, called an &ldquo;editor&rdquo;. Editors are the source editing components you&rsquo;ll work with most of the time. Editors themselves contain other visual components, such as header and footer components with &ldquo;indicators&rdquo; used for displaying for example the current position in the file. An editor always displays exactly one <a href="#buffers">buffer</a>. As can be seen in one of the <a href="../../images/screenshots/howl-solarized.png">screen hots</a> it&rsquo;s possible to have multiple views/editors along each other in the same window.</p>&#x000A;&#x000A;<h3 id="readline">Readline</h3>&#x000A;&#x000A;<p>The readline component is where you enter your commands. As we will see, commands are the primary way of interacting with Howl, used for mostly anything within Howl. The readline allows you to input these commands, and provides completions as necessary.</p>&#x000A;&#x000A;<h2 id="other-basic-concepts">Other basic concepts</h2>&#x000A;&#x000A;<h3 id="buffers">Buffers</h3>&#x000A;&#x000A;<p>Buffers are what you work with when you edit. Buffers are typically associated with a file, used for storing the buffer contents on disk. This is not necessarily the case however, as buffers can just as well exist without any association to a given file (consider for instance the &ldquo;Untitled&rdquo; buffer you see when you first open Howl without passing any arguments). You can have as many buffers open as you want, only limited by the amount of available memory. You can choose to display a given buffer in an existing editor by switching buffers (via the <code>switch-buffer</code> command).</p>&#x000A;&#x000A;<h3 id="modes">Modes</h3>&#x000A;&#x000A;<p>All buffers have a mode associated with them. Modes handles everything language/format specific for a certain buffer, such as indentation support, syntax highlighting, etc. Modes are typically assigned to a buffer automatically, e.g. when a file is opened a mode is automatically selected based on the file&rsquo;s extension, etc.</p>&#x000A;&#x000A;<h3 id="key-bindings">Key bindings</h3>&#x000A;&#x000A;<p>Key bindings are used for triggering certain actions whenever a certain key combination is entered. Actions are typically commands, but can also be custom functions.</p>&#x000A;&#x000A;<h3 id="signals">Signals</h3>&#x000A;&#x000A;<p>Signals are fired as a result of different actions within Howl, and provides a generic way of receiving notification. You could for instance register to be notified whenever a buffer was saved.</p>&#x000A;&#x000A;<h2 id="entering-commands">Entering commands</h2>&#x000A;&#x000A;<h3 id="manual-entry">Manual entry</h3>&#x000A;&#x000A;<p>As said previously, most interactions with Howl will typically be the result of a command. So let&rsquo;s gets started with manually entering some basic commands. To enter you first command, you need to open the readline. In the default keymap, this is &ldquo;bound&rdquo; (mapped) to the <code>alt+x</code> key combination, so enter that to open the readline. You should now see the readline being opened, awaiting your command. If you want to, press <code>tab</code> to bring up a completion list of available commands.</p>&#x000A;&#x000A;<p>As an example, let&rsquo;s open a file for editing. Enter <code>open</code> and press <code>space</code> to open a file. You will automatically be presented with completions. Navigate up and down the directory tree as needed, using <code>backspace</code> and <code>enter</code>, and press <code>enter</code> once you&rsquo;ve found the file you wanted.</p>&#x000A;&#x000A;<h4 id="using-completions">Using completions</h4>&#x000A;&#x000A;<p>Completions are available within the readline, using the <code>tab</code> key. Completions are enabled by default for most commands as you will see, but they are not automatically shown when entering commands. To explicitly request completions of the available commands, press <code>tab</code>. To cancel completions, press <code>escape</code>. For commands that want some kind of hierarchal input, such as file commands, pressing <code>backspace</code> when at the beginning of a prompt allows you to move up in the hierarchy.</p>&#x000A;&#x000A;<p>The completion list will automatically filter itself to match whatever you type in the readline. It&rsquo;s not necessary to enter text precisely matching any available option, as the matching is fuzzy.</p>&#x000A;&#x000A;<h3 id="using-keyboard-shortcuts">Using keyboard shortcuts</h3>&#x000A;&#x000A;<p>Manually entering commands is typically not something you want to do for commands that you invoke often. Unsurprisingly, any command can be bound to a key combination as well. Howl comes with a default keymap for the most basic bindings (not complete by any measure, so please suggest missing additions). So in the previous example, you could have more quickly opened a file using the <code>ctrl+o</code> key binding. Assigning your own combinations is easy, and will be discussed later on in the manual. <em>Note</em>: If you bring up the completion list at the command prompt, you&rsquo;ll see that it includes the key bindings for the listed commands when available.</p>&#x000A;&#x000A;<p><em>VI users</em>:</p>&#x000A;&#x000A;<p>Howl ships with a basic VI bundle, which you can activate with the <code>vi-on</code> command. It&rsquo;s rather incomplete at this point and will be improved, but contains at least some of the basic editing functionality.</p>&#x000A;&#x000A;<p><em>Next</em>: <a href="configuration.html">Configuring Howl</a></p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

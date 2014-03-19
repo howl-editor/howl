@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: Using Howl completions</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+  </head>
+  <body class='doc doc_manual doc_manual_completions'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <h1 id="using-howl-completions">Using Howl completions</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>Using Howl completions</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header overview">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#using-completions" class="toc-group-header using_completions">Using completions</a>
+<li class=""><a href="#interacting-with-completions">Interacting with completions</a></li>
+<li class=""><a href="#configuring-completions">Configuring completions</a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>Howl is strongly in favor of completions, and will offer them whenever and&#x000A;wherever possible. This section aims to provide an overview of Howl completions&#x000A;work, and how to use them for best effect. Alternatively, if you consider&#x000A;auto-completions a nuisance and would like to cut down on them you&rsquo;ll learn how&#x000A;to do that here as well.</p>&#x000A;&#x000A;<h2 id="using-completions">Using completions</h2>&#x000A;&#x000A;<h3 id="interacting-with-completions">Interacting with completions</h3>&#x000A;&#x000A;<p>There are currently two different places where you&rsquo;ll encounter completions: In&#x000A;editors while editing text, and in the readline while entering commands. While&#x000A;the completions offered differs as one would expect, the way you interact with a&#x000A;completion list is the same:</p>&#x000A;&#x000A;<ul>&#x000A;<li><p>You can press <code>enter</code> to accept the completion given. This will cause the&#x000A;currently selected completion to be inserted at the cursor. The completion will&#x000A;either be simply inserted at the cursor, or it will optionally replace the&#x000A;current word. This behaviour is controlled by the <code>hungry_completion</code>&#x000A;configuration variable.</p></li>&#x000A;<li><p>You can press <code>escape</code> to remove the completion list.</p></li>&#x000A;<li><p>You can continue typing, which will update the available completions. One&#x000A;reason for this is that you want to narrow down the list of completions&#x000A;so that the desired completion becomes selected, and choosable by the <code>enter</code>&#x000A;key. Another is that the desired completion is not currently in the list of&#x000A;completions. Completions in Howl are not &ldquo;static&rdquo;, but are updated each&#x000A;time you type. So the initial list of alternatives are not necessarily&#x000A;the only alternatives for completion. We&rsquo;ll see next how completions are&#x000A;matched which will give you an idea of how to utilize this for less typing.</p></li>&#x000A;<li><p>You can navigate the current list of completions manually and choose one.&#x000A;Pressing <code>down</code> or <code>ctrl_n</code> will move down the list, while <code>up</code> and <code>ctrl_p</code>&#x000A;will move up the list. <code>page_up</code> will move one page up, and <code>page_down</code> will&#x000A;move one page down.</p></li>&#x000A;</ul>&#x000A;&#x000A;<p>When completing, Howl will try to match your input string against the available&#x000A;completions in three ways: <em>Exact matching</em>, <em>boundary matching</em> and <em>fuzzy&#x000A;matching</em>. An exact match means that your input string is found as-is in the&#x000A;completion. A boundary match means that your input string matches at one or more&#x000A;boundaries in the completion, typically defined as underscores, slashes, etc.&#x000A;Finally, fuzzy matching means that all characters in your input string matched&#x000A;somewhere in the completion (in order). The below image illustrates all three&#x000A;types of matches for a completion list:</p>&#x000A;&#x000A;<p><img alt="Completion types" src="/images/doc/completion_types.png" /></p>&#x000A;&#x000A;<p>In the above example we can see that &ldquo;aa&rdquo; matches &ldquo;attr_accessor&rdquo; as a boundary&#x000A;match, &ldquo;mraardvark&rdquo; as an exact match, and finally &ldquo;banana&rdquo; as a fuzzy match.&#x000A;The order of the completions above is no coincidence - boundary matches are&#x000A;preferred over exact matches, which are preferred over fuzzy matches.</p>&#x000A;&#x000A;<p><em>Finally, a note about a gotcha:</em></p>&#x000A;&#x000A;<p>As long as a completion list is showing, <code>enter</code> will always select the active&#x000A;completion. This is typically what you want. However, at times you just want add&#x000A;a new line, or enter the text as written. To avoid selecting the completion,&#x000A;enter <code>escape</code> to close the completion list first.</p>&#x000A;&#x000A;<h3 id="configuring-completions">Configuring completions</h3>&#x000A;&#x000A;<p>Here are some configuration variables you might want to tweak in order to&#x000A;control completions:</p>&#x000A;&#x000A;<ul>&#x000A;<li><strong>complete</strong>:</li>&#x000A;</ul>&#x000A;&#x000A;<p>Controls the mode of how completions are started. This is of interest&#x000A;particularly if you want turn off automatically shown completion lists. If you&#x000A;turn it off, you will have to explicitly request completions using the&#x000A;<code>editor-complete</code> command for editors (bound to <code>ctrl_space</code> by default) or by&#x000A;pressing <code>tab</code> in the readline.</p>&#x000A;&#x000A;<ul>&#x000A;<li><strong>completion_max_shown</strong>:</li>&#x000A;</ul>&#x000A;&#x000A;<p>Controls the number of completions shown in the completion list.</p>&#x000A;&#x000A;<ul>&#x000A;<li><strong>hungry_completion</strong>:</li>&#x000A;</ul>&#x000A;&#x000A;<p>Whether a selected completion will replace the current word or not.</p>&#x000A;&#x000A;<ul>&#x000A;<li><strong>completion_popup_after</strong>:</li>&#x000A;</ul>&#x000A;&#x000A;<p>When auto-complete is one, this variable controls after how many characters the&#x000A;completion list should pop up after.</p>&#x000A;&#x000A;<ul>&#x000A;<li><strong>inbuffer_completion_max_buffers</strong>:</li>&#x000A;</ul>&#x000A;&#x000A;<p>For the in-buffer completer, this controls the number of open buffers that are&#x000A;consulted for completions.</p>&#x000A;&#x000A;<ul>&#x000A;<li><strong>inbuffer_completion_same_mode_only</strong>:</li>&#x000A;</ul>&#x000A;&#x000A;<p>For the in-buffer completer, this controls whether only open buffers with the&#x000A;same mode as the current one is consulted or not.</p>&#x000A;&#x000A;<p><em>Next</em>: <a href="files.html">Working with files</a></p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

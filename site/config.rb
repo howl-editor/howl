@@ -31,11 +31,6 @@ set :markdown, {
 require 'middleware/auto_format'
 use AutoFormat
 
-# Build-specific configuration
-configure :build do
-  activate :relative_assets
-end
-
 helpers do
   def hdr_link(idx, title, path)
     "<h4>#{idx} <a href=\"#{path}\">#{title}</a></h4>"

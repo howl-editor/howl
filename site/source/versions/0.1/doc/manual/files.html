@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: Working with files</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+  </head>
+  <body class='doc doc_manual doc_manual_files'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <h1 id="working-with-files">Working with files</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>Working with files</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#opening-files" class="toc-group-header opening_files">Opening files</a>
+<li class=""><a href="#opening-a-file-within-a-project">Opening a file within a project</a></li>
+</div>
+<div class="toc-group">
+<a href="#saving-buffers" class="toc-group-header saving_buffers">Saving buffers</a>
+</div>
+<div class="toc-group">
+<a href="#switching-between-open-buffers" class="toc-group-header switching_between_open_buffers">Switching between open buffers</a>
+</div>
+<div class="toc-group">
+<a href="#creating-new-buffers-/-files" class="toc-group-header creating_new_buffers_/_files">Creating new buffers / files</a>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="opening-files">Opening files</h2>&#x000A;&#x000A;<p>Howl provides a text-oriented interface, and so you want see any traditional&#x000A;graphical open file dialogs. Instead you&rsquo;ll open files from the readline, using&#x000A;commands. First off, the <code>open-file</code> command lets you navigate the file system&#x000A;and select a file to open. It&rsquo;s bound to <code>ctrl_o</code> in the default keymap, and is&#x000A;also aliased as <code>e</code> for those more comfortable with VI. Triggering that command&#x000A;opens up the readline prompt and displays the contents of the current directory,&#x000A;as determined by the current buffer:</p>&#x000A;&#x000A;<p><img alt="File open" src="/images/doc/file-open.png" /></p>&#x000A;&#x000A;<p>Once you&rsquo;re in the prompt can then select the file of your choice. You can&#x000A;choose the file from the list by manually navigating using the arrow keys,&#x000A;<code>ctrl_p</code>, <code>ctrl_n</code>, etc., if you want. However, it&rsquo;s usually much faster to&#x000A;narrow down the list by typing something that matches the file you want. Just as&#x000A;with completions (as described in the <a href="completions.html">previous</a> section),&#x000A;your input string will be matched against the available files using boundary&#x000A;matching, exact matching or fuzzy matching. Once the selected file ends up at&#x000A;top, simply press enter to open it.</p>&#x000A;&#x000A;<p>If the file you selected is a directory, the list and prompt will update itself&#x000A;for the selected directory, letting you pick a file there. On the other hand, if&#x000A;you want to go up a directory level, press <code>backspace</code>. For convenience, if you&#x000A;type <code>~/</code> or <code>/</code> at the start of a prompt, you will be directly transferred to&#x000A;your home directory and the root directory respectively.</p>&#x000A;&#x000A;<h3 id="opening-a-file-within-a-project">Opening a file within a project</h3>&#x000A;&#x000A;<p>Navigating the file system and selecting a file for opening is all fine and good&#x000A;for the odd file you want to open. Most of the time however, you&rsquo;re likely&#x000A;working within the context of a project of some sort. In that case it can&#x000A;quickly get tedious to navigate directories up and down, and especially for&#x000A;larger projects, since you might not even be entirely sure where a desired file&#x000A;is placed. Fortunately, Howl offers the <code>project-open</code> command to help with&#x000A;this.</p>&#x000A;&#x000A;<p>Howl provides simple and light-weight support for projects. In Howl, a project&#x000A;is currently defined as root directory containing the project files below, with&#x000A;an optional version control system attached to it. The <code>project-open</code> command&#x000A;(bound to <code>ctrl_p</code> by default) provides a way of selecting a file to open from&#x000A;all the files contained in your project. Thanks to the matching capabilities,&#x000A;this often provides a much faster way of opening files than navigating the&#x000A;project directory structure do. Below you&rsquo;ll see an example for the Howl project&#x000A;itself:</p>&#x000A;&#x000A;<p><img alt="Project open" src="/images/doc/project-open.png" /></p>&#x000A;&#x000A;<h2 id="saving-buffers">Saving buffers</h2>&#x000A;&#x000A;<p>Invoke the <code>save</code> command to save the current buffer to a file. If the buffer&#x000A;has an associated file, it will get saved to that file, and otherwise you&rsquo;ll be&#x000A;prompted for the file name to save the buffer to. The <code>save</code> command is bound to&#x000A;<code>ctrl_s</code> in the default keymap, and is also aliased as <code>w</code>.</p>&#x000A;&#x000A;<p>To save a buffer with an associated file to another file, invoke the <code>save-as</code>&#x000A;command (bound to <code>ctrl_shift_s</code> in the default keymap). There&rsquo;s also a related&#x000A;command, <code>save-and-quit</code>, that allows you to save any modified buffers and exit&#x000A;Howl in one go.</p>&#x000A;&#x000A;<h2 id="switching-between-open-buffers">Switching between open buffers</h2>&#x000A;&#x000A;<p>While Howl provides the ability to view more than one buffer at a time by&#x000A;supporting multiple open views, you&rsquo;ll likely have more buffers open than you&#x000A;can fit on your screen. In order to switch to another buffer, you can use the&#x000A;<code>switch-buffer</code> command (bound to <code>ctrl_p</code> by default):</p>&#x000A;&#x000A;<p><img alt="switch-buffer" src="/images/doc/switch-buffer.png" /></p>&#x000A;&#x000A;<p>This let&rsquo;s you select an open buffer to display in the current view. The list as&#x000A;presented is ordered by access time, thus you&rsquo;ll see your most recent buffers at&#x000A;the top with less recently used buffers below. As always, you can type to narrow&#x000A;down the list.</p>&#x000A;&#x000A;<p>Another command that might prove useful to you is&#x000A;<code>switch-to-last-hidden-buffer</code>. This will switch to the most recently accessed&#x000A;buffer that is not currently showing in any view, and is thus useful for quickly&#x000A;switching between to related files in the same view.</p>&#x000A;&#x000A;<h2 id="creating-new-buffers-/-files">Creating new buffers / files</h2>&#x000A;&#x000A;<p>So what do you do if you just want to create a new buffer, that will eventually&#x000A;get saved to a new file? Well, there is a <code>new-buffer</code> command available for&#x000A;this, which will create a new buffer without an associated file, that you can&#x000A;later save to a named file. This is not bound to any key by default however, and&#x000A;the reason for that is that it&rsquo;s not considered that useful. Most of the time&#x000A;when you want to create a new file, you already know what the file should be&#x000A;named. And as is the case with some other editors, such as Emacs or Vim, it is&#x000A;not a requirement for a file to actually exists in order to successfully open&#x000A;it. Thus, if you want to create a new file whose name you already know, just&#x000A;open the file using the <code>open</code> command and enter the new name of the file.</p>&#x000A;&#x000A;<p>If this sounds strange to you, consider that a buffer and a file are two&#x000A;different entities, and that a buffer only has an association with a file. So&#x000A;when you open a non-existing file, you create a new buffer with an association&#x000A;to the specified file, which does not have to exist. As you save the buffer, the&#x000A;file will be created as necessary.</p>&#x000A;&#x000A;<p><em>Next</em>: <a href="editing.html">Editing</a></p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>
