@@ -41,7 +41,7 @@ copy_lines = (editor) ->
   else
     editor\with_position_restored ->
       with_lines_selected editor, state.count, (editor) ->
-        editor.selection\copy!
+        editor.selection\copy whole_lines: true
 
   state.reset!
 
@@ -83,7 +83,7 @@ map = {
 
       record editor, (editor) ->
         with_lines_selected editor, count, (editor) ->
-          editor.selection\cut!
+          editor.selection\cut whole_lines: true
 
     D: (editor) ->
       if state.has_modifier!

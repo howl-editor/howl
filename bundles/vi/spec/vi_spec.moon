@@ -100,7 +100,8 @@ describe 'VI', ->
     assert.equal 'insert', state.mode
 
   it 'dd removes the entire current line regardless of the current column', ->
-    cursor.column = 4
+    buffer.text = 'LinƏ 1\nSecond\nAnd third linƏ\n'
+    cursor.pos = 10
     press 'd', 'd'
     assert.equal 'LinƏ 1\nAnd third linƏ\n', buffer.text
 
@@ -134,7 +135,7 @@ describe 'VI', ->
 
   it '<y><y> yanks the current line', ->
     buffer.text = 'first\nsecond'
-    cursor.pos = 1
+    cursor.pos = 3
     press 'y', 'y'
     editor\paste!
     assert.equal 'first\nfirst\nsecond', buffer.text
@@ -195,26 +196,27 @@ describe 'VI', ->
       assert.equal 3, cursor.pos
 
     it 'dd cuts <count> lines', ->
-      buffer.text = 'line1\nline2'
-      cursor.pos = 1
+      buffer.text = 'line1\nline2\nline3'
+      cursor.pos = 3
       press '2', 'd', 'd'
-      assert.equals '', buffer.text
+      assert.equals 'line3', buffer.text
+      cursor.pos = 3
       editor\paste!
-      assert.equals 'line1\nline2', buffer.text
+      assert.equals 'line1\nline2\nline3', buffer.text
 
     it 'Y yanks <count> lines', ->
-      buffer.text = 'line1\nline2\n'
-      cursor.pos = 1
+      buffer.text = 'line1\nline2\nline3'
+      cursor.pos = 3
       press '2', 'Y'
       editor\paste!
-      assert.equals 'line1\nline2\nline1\nline2\n', buffer.text
+      assert.equals 'line1\nline2\nline1\nline2\nline3', buffer.text
 
     it 'yy yanks <count> lines', ->
-      buffer.text = 'line1\nline2\n'
-      cursor.pos = 1
+      buffer.text = 'line1\nline2\nline3'
+      cursor.pos = 3
       press '2', 'y', 'y'
       editor\paste!
-      assert.equals 'line1\nline2\nline1\nline2\n', buffer.text
+      assert.equals 'line1\nline2\nline1\nline2\nline3', buffer.text
 
   context 'insert mode', ->
     before_each -> press 'i'
