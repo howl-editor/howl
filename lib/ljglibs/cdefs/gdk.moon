@@ -108,4 +108,12 @@ ffi.cdef [[
   void gdk_window_get_position (GdkWindow *window,
                                 gint *x,
                                 gint *y);
+
+  /* GdkAtom
+
+  This is really an opaque struct, but we're going to have to break the
+  abstraction here, as it's ret-by-value */
+  typedef struct { gulong val; } GdkAtom;
+  GdkAtom gdk_atom_intern (const gchar *atom_name, gboolean only_if_exists);
+  gchar * gdk_atom_name (GdkAtom atom);
 ]]
