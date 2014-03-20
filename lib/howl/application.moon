@@ -4,7 +4,7 @@
 ffi = require 'ffi'
 
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs, timer from howl
+import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs, timer, clipboard from howl
 import File from howl.fs
 import PropertyObject from howl.aux.moon
 Gtk = require 'ljglibs.gtk'
@@ -146,6 +146,8 @@ class Application extends PropertyObject
     true
 
   synchronize: =>
+    clipboard.synchronize!
+
     reload_count = 0
     changed_count = 0
 

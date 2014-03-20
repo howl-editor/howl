@@ -3,7 +3,7 @@
 
 Gtk = require 'ljglibs.gtk'
 gobject_signal = require 'ljglibs.gobject.signal'
-import Scintilla, Completer, signal, bindings, config, command from howl
+import Scintilla, Completer, signal, bindings, config, command, clipboard from howl
 import PropertyObject from howl.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
 import Searcher, CompletionPopup from howl.ui
@@ -289,8 +289,23 @@ class Editor extends PropertyObject
       @selection\select @cursor.pos, end_pos
       @selection\cut!
 
-  copy_line: => @sci\line_copy!
-  paste: => @sci\paste!
+  copy_line: =>
+    clipboard.push text: @current_line.text, whole_lines: true
+
+  paste: =>
+    clip = clipboard.current
+    return unless clip
+    if not clip.whole_lines
+      @insert clip.text
+    else
+      @cursor\home!
+      unless clip.text\ends_with @buffer.eol
+        @newline!
+        @cursor\up!
+
+      @with_position_restored ->
+        @insert clip.text
+
   insert: (text) => @sci\add_text #text, text
   smart_tab: => @sci\tab!
   smart_back_tab: => @sci\back_tab!

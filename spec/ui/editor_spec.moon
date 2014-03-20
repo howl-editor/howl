@@ -1,8 +1,8 @@
 Gtk = require 'ljglibs.gtk'
 append = table.insert
 
-import Buffer, config, signal from howl
-import Editor from howl.ui
+{:Buffer, :config, :signal, :clipboard} = howl
+{:Editor} = howl.ui
 
 describe 'Editor', ->
   local buffer, lines
@@ -18,6 +18,7 @@ describe 'Editor', ->
     buffer.config.indent = 2
     lines = buffer.lines
     editor.buffer = buffer
+    selection\remove!
 
   it '.current_line is a shortcut for the current buffer line', ->
     buffer.text = 'hƏllo\nworld'
@@ -134,26 +135,51 @@ describe 'Editor', ->
     assert.equal 'hƏllo world', buffer.text
     assert.equal 12, cursor.pos, 12
 
-  it 'paste pastes the contents of the clipboard at the current position', ->
-    buffer.text = 'hƏllo'
-    editor.selection\set 1, 2
-    editor.selection\copy!
-    editor\paste!
-    assert.equal buffer.text, 'hhƏllo'
+  describe 'paste()', ->
+    it 'pastes the current clip of the clipboard at the current position', ->
+      buffer.text = 'hƏllo'
+      clipboard.push ' wörld'
+      cursor\eof!
+      editor\paste!
+      assert.equal 'hƏllo wörld', buffer.text
 
-  it 'delete_line deletes the current line', ->
+    context 'when the clip item has .whole_lines set', ->
+      it 'pastes the clip on a newly opened line above the current', ->
+        buffer.text = 'hƏllo\nworld'
+        clipboard.push text: 'cruel', whole_lines: true
+        cursor.line = 2
+        cursor.column = 3
+        editor\paste!
+        assert.equal 'hƏllo\ncruel\nworld', buffer.text
+
+      it 'pastes the clip at the start of a line if ends with a newline separator', ->
+        buffer.text = 'hƏllo\nworld'
+        clipboard.push text: 'cruel\n', whole_lines: true
+        cursor.line = 2
+        cursor.column = 3
+        editor\paste!
+        assert.equal 'hƏllo\ncruel\nworld', buffer.text
+
+      it 'positions the cursor at the start of the pasted clip', ->
+        buffer.text = 'paste'
+        clipboard.push text: 'much', whole_lines: true
+        cursor.column = 3
+        editor\paste!
+        assert.equal 1, cursor.pos
+
+  it 'delete_line() deletes the current line', ->
     buffer.text = 'hƏllo\nworld!'
     cursor.pos = 3
     editor\delete_line!
-    assert.equal buffer.text, 'world!'
+    assert.equal 'world!', buffer.text
 
-  it 'copy_line copies the current line', ->
+  it 'copy_line() copies the current line', ->
     buffer.text = 'hƏllo\n'
     cursor.pos = 3
     editor\copy_line!
     cursor.pos = 1
     editor\paste!
-    assert.equal buffer.text, 'hƏllo\nhƏllo\n'
+    assert.equal 'hƏllo\nhƏllo\n', buffer.text
 
   describe 'delete_to_end_of_line(no_copy)', ->
     it 'cuts text from cursor up to end of line', ->
@@ -162,7 +188,7 @@ describe 'Editor', ->
       editor\delete_to_end_of_line!
       assert.equal buffer.text, 'hƏllo\nnext'
       editor\paste!
-      assert.equal 'hƏllo world!\nnext', buffer.text
+      assert.equal buffer.text, 'hƏllo world!\nnext'
 
     it 'deletes without copying if no_copy is specified', ->
       buffer.text = 'hƏllo world!'

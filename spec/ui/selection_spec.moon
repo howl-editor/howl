@@ -1,6 +1,6 @@
 Gtk = require 'ljglibs.gtk'
-import Buffer, signal from howl
-import Editor, theme from howl.ui
+{:Buffer, :signal, :clipboard} =  howl
+{:Editor, :theme} = howl.ui
 
 text = 'Liñe 1 ʘf tƏxt\nLiñe 1 ʘf tƏxt'
 
@@ -121,11 +121,19 @@ describe 'Selection', ->
       selection\cut!
       assert.is_false selection.persistent
 
-    it 'places the contents on the clipboard, ready for pasting', ->
-      selection\set 1, 5
+    it 'pushes the selection to the clipboard, with any options as specified', ->
+      selection\set 1, 2
       selection\cut!
-      editor\paste!
-      assert.equal 'Liñe 1 ʘf tƏxt', buffer.lines[1].text
+
+      assert.equal 'L', clipboard.current.text
+
+      selection\set 1, 2
+      selection\cut whole_lines: true
+      assert.equal true, clipboard.current.whole_lines
+
+      selection\set 1, 3
+      selection\cut {}, to: 'abc'
+      assert.equal 'ñe', clipboard.registers.abc.text
 
     it 'signals "selection-cut"', ->
       with_signal_handler 'selection-cut', nil, (handler) ->
@@ -133,7 +141,7 @@ describe 'Selection', ->
         selection\cut!
         assert.spy(handler).was_called!
 
-  describe 'copy', ->
+  describe '(clip_options = nil, clipboard_options = nil)', ->
     it 'removes the selection', ->
       selection\set 1, 5
       selection\copy!
@@ -145,11 +153,19 @@ describe 'Selection', ->
       selection\copy!
       assert.is_false selection.persistent
 
-    it 'places the contents on the clipboard, ready for pasting', ->
+    it 'pushes the selection to the clipboard, with any options as specified', ->
       selection\set 1, 5
       selection\copy!
-      editor\paste!
-      assert.equal 'LiñeLiñe 1 ʘf tƏxt', buffer.lines[1].text
+
+      assert.equal 'Liñe', clipboard.current.text
+
+      selection\set 1, 5
+      selection\copy whole_lines: true
+      assert.equal true, clipboard.current.whole_lines
+
+      selection\set 1, 4
+      selection\copy {}, to: 'abc'
+      assert.equal 'Liñ', clipboard.registers.abc.text
 
     it 'signals "selection-copied"', ->
       with_signal_handler 'selection-copied', nil, (handler) ->

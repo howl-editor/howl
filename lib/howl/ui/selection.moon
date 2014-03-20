@@ -1,9 +1,9 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 ffi = require 'ffi'
 
-import Scintilla, signal from howl
+import Scintilla, signal, clipboard from howl
 import const_char_p from howl.cdefs
 import PropertyObject from howl.aux.moon
 import C from ffi
@@ -73,20 +73,27 @@ class Selection extends PropertyObject
       @sci\set_empty_selection @sci\get_current_pos!
       @persistent = false
 
-  copy: =>
+  copy: (clip_options = {}, clipboard_options) =>
     start_pos, end_pos = @_brange!
     return unless start_pos
-    @sci\copy_range start_pos - 1, end_pos - 1
+    @_copy_to_clipboard start_pos, end_pos, clip_options, clipboard_options
     @remove!
     signal.emit 'selection-copied'
 
-  cut: =>
+  cut: (clip_options = {}, clipboard_options) =>
     start_pos, end_pos = @_brange!
     return unless start_pos
-    @sci\copy_range start_pos - 1, end_pos - 1
+    @_copy_to_clipboard start_pos, end_pos, clip_options, clipboard_options
     @sci\delete_range start_pos - 1, end_pos - start_pos
     @persistent = false
     signal.emit 'selection-cut'
+
+  _copy_to_clipboard: (start_pos, end_pos, clip_options = {}, clipboard_options) =>
+    clip = moon.copy clip_options
+    clip.text = @text
+    if clip.text
+      @sci\copy_range start_pos - 1, end_pos - 1
+      clipboard.push clip, clipboard_options
 
   _brange: =>
     cursor = @sci\get_current_pos! + 1

@@ -15,6 +15,7 @@ instance yourself; instead you access a selection instance through
 _See also_:
 
 - The [spec](../../spec/ui/selection_spec.html) for Selection
+- The documentation for the [clipboard] module
 
 ## Properties
 
@@ -54,17 +55,25 @@ non-persistent selection would be removed upon any cursor movement.
 
 ## Methods
 
-### copy ()
+### copy (clip_options = {}, clipboard_options)
 
-Copies the current selection to the clipboard. If the selection was marked as
+Copies the current selection to the [clipboard]. If the selection was marked as
 [persistent](#persistent), it will be marked as non-persistent as a result of
 this call. The `selection-copied` signal is fired as a result of this call.
 
-### cut ()
+The optional `clip_options` can specify additional fields for the clipboard
+item, and `clipboard_options` any additional options to be passed along to
+[clipboard.push].
 
-Cuts the current selection to the clipboard. If the selection was marked as
+### cut (clip_options = {}, clipboard_options)
+
+Cuts the current selection to the [clipboard]. If the selection was marked as
 [persistent](#persistent), it will be marked as non-persistent as a result of
 this call. The `selection-cut` signal is fired as a result of this call.
+
+The optional `clip_options` can specify additional fields for the clipboard
+item, and `clipboard_options` any additional options to be passed along to
+[clipboard.push].
 
 ### range ()
 
@@ -92,3 +101,5 @@ Selects all the text in the associated editor.
 
 [empty]: #empty
 [Editor]: editor.html
+[clipboard]: ../clipboard.html
+[clipboard.push]: ../clipboard.html#push
