@@ -239,3 +239,29 @@ command.register
   handler: ->
     moonscript = require('moonscript')
     do_howl_eval moonscript.loadstring, 'moonscript'
+
+command.register
+  name: 'howl-moon-print'
+  description: 'Compiles and shows the Lua for the current buffer or selection'
+  handler: ->
+    moonscript = require('moonscript')
+    editor = app.editor
+    buffer = editor.buffer
+    title = "#{buffer.title} (compiled to Lua)"
+    text = buffer.text
+
+    unless editor.selection.empty
+      title = "#{buffer.title} (Lua - from selection)"
+      text = editor.selection.text
+
+    lua = moonscript.to_lua text
+    buf = Buffer mode.by_name 'lua'
+    buf.text = lua
+    buf.title = title
+    buf.modified = false
+
+    if #buf.lines > 20
+      editor.buffer = buf
+    else
+      buf\insert "-- #{title}\n", 1
+      editor\show_popup BufferPopup buf
