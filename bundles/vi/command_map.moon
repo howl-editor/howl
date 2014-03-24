@@ -3,12 +3,6 @@ base_map = bundle_load 'base_map'
 import apply, record, repeat_last from state
 import command, bindings from howl
 
-one_right = (editor) ->
-  if editor.cursor.at_end_of_line
-    editor\insert ' '
-  else
-    editor.cursor\right!
-
 to_insert = (editor) ->
   state.change_mode editor, 'insert'
   state.record editor, ->
@@ -53,7 +47,11 @@ map = {
       state.reset!
 
     a: (editor) ->
-      one_right editor
+      if editor.cursor.at_end_of_line
+        editor\insert ' '
+      else
+        editor.cursor\right!
+
       to_insert editor
 
     A: (editor) ->
@@ -109,8 +107,7 @@ map = {
       to_insert editor
 
     p: (editor) -> apply editor, (editor) ->
-      one_right editor
-      editor\paste!
+      editor\paste where: 'after'
 
     P: (editor) -> apply editor, (editor) -> editor\paste!
 

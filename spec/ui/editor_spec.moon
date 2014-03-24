@@ -135,13 +135,24 @@ describe 'Editor', ->
     assert.equal 'hƏllo world', buffer.text
     assert.equal 12, cursor.pos, 12
 
-  describe 'paste()', ->
+  describe 'paste(opts = {})', ->
     it 'pastes the current clip of the clipboard at the current position', ->
       buffer.text = 'hƏllo'
       clipboard.push ' wörld'
       cursor\eof!
       editor\paste!
       assert.equal 'hƏllo wörld', buffer.text
+
+    context 'when opts.where is set to "after"', ->
+      it 'pastes the clip to the right of the current position', ->
+        buffer.text = 'hƏllo'
+        clipboard.push 'yo'
+        cursor\eof!
+        editor\paste where: 'after'
+        assert.equal 'hƏllo yo', buffer.text
+        cursor.column = 8
+        editor\paste where: 'after'
+        assert.equal 'hƏllo yoyo', buffer.text
 
     context 'when the clip item has .whole_lines set', ->
       it 'pastes the clip on a newly opened line above the current', ->
@@ -166,6 +177,15 @@ describe 'Editor', ->
         cursor.column = 3
         editor\paste!
         assert.equal 1, cursor.pos
+
+      context 'when opts.where is set to "after"', ->
+        it 'pastes the clip on a newly opened line below the current', ->
+          buffer.text = 'hƏllo\nworld'
+          clipboard.push text: 'cruel', whole_lines: true
+          cursor.line = 1
+          cursor.column = 3
+          editor\paste where: 'after'
+          assert.equal 'hƏllo\ncruel\nworld', buffer.text
 
   it 'delete_line() deletes the current line', ->
     buffer.text = 'hƏllo\nworld!'

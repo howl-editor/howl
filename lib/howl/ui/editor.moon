@@ -292,16 +292,23 @@ class Editor extends PropertyObject
   copy_line: =>
     clipboard.push text: @current_line.text, whole_lines: true
 
-  paste: =>
+  paste: (opts = {})=>
     clip = clipboard.current
     return unless clip
     if not clip.whole_lines
+      if opts.where == 'after'
+        @cursor.at_end_of_line and @insert(' ') or @cursor\right!
+
       @insert clip.text
     else
-      @cursor\home!
-      unless clip.text\ends_with @buffer.eol
+      if opts.where == 'after'
+        @cursor\line_end!
         @newline!
-        @cursor\up!
+      else
+        @cursor\home!
+        unless clip.text\ends_with @buffer.eol
+          @newline!
+          @cursor\up!
 
       @with_position_restored ->
         @insert clip.text
