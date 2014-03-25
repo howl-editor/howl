@@ -37,9 +37,12 @@ Hello there
   it 'does not include the token being completed itself', ->
     buffer.text = [[
 text
-ter
+te
+noice
+test
 ]]
-    assert.same { 'text' }, complete_at lines[2].end_pos - 1
+    assert.same { 'text', 'test' }, complete_at lines[2].end_pos - 1
+    assert.same { 'test' }, complete_at 3
 
   it 'favours matches close to the current position', ->
     buffer.text = [[

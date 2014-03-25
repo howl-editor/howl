@@ -6,7 +6,7 @@ import config, signal, app from howl
 os = os
 append = table.insert
 
-RESCAN_STALE_AFTER = 30
+RESCAN_STALE_AFTER = 60
 
 signal.connect 'buffer-modified', (args) ->
     data = args.buffer.data.inbuffer_completer
@@ -51,7 +51,9 @@ close_chunk = (context) ->
   end_line = lines[math.min #lines, line.nr + 10]
   context.buffer\chunk start_line.start_pos, end_line.end_pos
 
-near_tokens = (part, context) ->
+near_tokens = (context) ->
+  part = context.word_prefix
+  cur_word = context.word.text
   chunk = close_chunk context
   line_pos = context.pos - chunk.start_pos
 
@@ -65,7 +67,7 @@ near_tokens = (part, context) ->
     start_pos, end_pos = chunk_text\ufind pattern, start_pos
     break unless start_pos
     token = chunk_text\usub start_pos, end_pos
-    if token != part
+    if token != part and token != cur_word
       rank = math.abs line_pos - start_pos
       info = tokens[token]
       rank = math.min info.rank, rank if info
@@ -80,17 +82,20 @@ near_tokens = (part, context) ->
 
 class InBufferCompleter
   new: (buffer, context) =>
-    @near_tokens = near_tokens context.word_prefix, context
+    @near_tokens = near_tokens context
     @matcher = Matcher load buffer
     @limit = buffer.config.completion_max_shown
 
   complete: (context) =>
     pattern = '^' .. context.word_prefix .. '.'
+    cur_part = context.word_prefix
     cur_word = context.word.text
     candidates = {}
 
+    current = (token) -> token == cur_word or token == cur_part
+
     for token in *@near_tokens
-      append candidates, token if token.text\match(pattern) and token.text != cur_word
+      append candidates, token if token.text\match(pattern) and not current(token.text)
 
     table.sort candidates, (a, b) -> a.rank < b.rank
     completions = {}
@@ -102,7 +107,7 @@ class InBufferCompleter
       i = 1
       while #completions < @limit and i <= #match_completions
         match_completion = match_completions[i]
-        append completions, match_completion unless seen[match_completion] or match_completion == cur_word
+        append completions, match_completion unless seen[match_completion] or current(match_completion)
         i += 1
 
     completions
@@ -111,7 +116,7 @@ with config
   .define
     name: 'inbuffer_completion_max_buffers'
     description: 'The maxium number of buffers that the inbuffer completer should search'
-    default: 4
+    default: 6
     type_of: 'number'
 
 with config
