@@ -71,6 +71,17 @@ describe 'Completer', ->
       completions = Completer(buffer, 1)\complete 1
       assert.same { 'yes' }, completions
 
+    it 'gives a final boost to case-matching completions, all else equal', ->
+      buffer.text = 'he'
+      append buffer.completers, -> complete: -> { 'Hello', 'hello' }
+      completions = Completer(buffer, 3)\complete 3
+      assert.same { 'hello', 'Hello' }, completions
+
+      buffer.text = 'He'
+      append buffer.completers, -> complete: -> { 'hello', 'Hello' }
+      completions = Completer(buffer, 3)\complete 3
+      assert.same { 'Hello', 'hello' }, completions
+
     context 'limiting completions', ->
       it 'returns at most `completion_max_shown` completions', ->
         completions = ["cand-#{i}" for i = 1,15]

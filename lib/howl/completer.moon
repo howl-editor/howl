@@ -29,6 +29,17 @@ at_most = (limit, t) ->
 
   t2
 
+differentiate_by_case = (prefix, completions) ->
+  for i = 2, #completions
+    first = completions[i - 1]
+    second = completions[i]
+    if first.ulower == second.ulower
+      if second[1] == prefix[1]
+        completions[i - 1] = second
+        completions[i] = first
+
+  completions
+
 class Completer
 
   new: (buffer, pos) =>
@@ -55,7 +66,8 @@ class Completer
             append completions, comp
             seen[comp] = true
 
-    return at_most(limit, completions), context.word_prefix
+    prefix = context.word_prefix
+    return differentiate_by_case(prefix, at_most(limit, completions)), prefix
 
   accept: (completion, pos) =>
     chunk = @buffer\context_at(pos).word
