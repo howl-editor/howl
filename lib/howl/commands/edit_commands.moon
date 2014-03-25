@@ -19,7 +19,7 @@ command.register
 command.register
   name: 'replace',
   description: 'Replaces text (within selection or globally)'
-  inputs: { 'replace' }
+  inputs: { '*replace' }
   handler: (values) ->
     { target, replacement } = values
     escaped = target\gsub '[%p%%]', '%%%1'
@@ -34,7 +34,7 @@ command.register
 command.register
   name: 'replace-pattern',
   description: 'Replaces text using Lua patterns (within selection or globally)'
-  inputs: { 'replace' }
+  inputs: { '*replace' }
   handler: (values) ->
     { target, replacement } = values
     chunk = app.editor.active_chunk
