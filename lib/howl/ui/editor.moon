@@ -301,14 +301,14 @@ class Editor extends PropertyObject
 
       @insert clip.text
     else
+      line = @current_line
+
       if opts.where == 'after'
-        @cursor\line_end!
-        @newline!
-      else
-        @cursor\home!
-        unless clip.text\ends_with @buffer.eol
-          @newline!
-          @cursor\up!
+        line = @buffer.lines\insert @current_line.nr + 1, ''
+      elseif not clip.text\ends_with @buffer.eol
+        line = @buffer.lines\insert line.nr, ''
+
+      @cursor.pos = line.start_pos
 
       @with_position_restored ->
         @insert clip.text
