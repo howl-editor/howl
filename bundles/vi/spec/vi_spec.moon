@@ -49,19 +49,21 @@ describe 'VI', ->
     press 'k'
     assert.equal 1, cursor.line
 
-  it '<h> moves to the left, or up a line if at the start of line', ->
+  it '<h> moves to the left unless at the start of line', ->
     cursor.column = 2
     press 'h'
     assert.equal 1, cursor.column
+    cur_pos = cursor.pos
     press 'h'
-    assert.equal 1, cursor.line
+    assert.equal cur_pos, cursor.pos
 
-  it '<l> moves to the right, or down a line if at the end of line', ->
+  it '<l> moves to the right unless at the end of line', ->
     press 'l'
     assert.equal 2, cursor.column
     cursor\line_end!
+    cur_pos = cursor.pos
     press 'l'
-    assert.equal 3, cursor.line
+    assert.equal cur_pos, cursor.pos
 
   it '<w> moves one word to the right', ->
     press 'w'

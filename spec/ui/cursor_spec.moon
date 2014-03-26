@@ -140,6 +140,12 @@ describe 'Cursor', ->
     cursor.column = 15
     assert.is_true cursor.at_end_of_line
 
+  it '.at_start_of_line returns true if cursor is at the start of the line', ->
+    cursor.pos = 1
+    assert.is_true cursor.at_start_of_line
+    cursor.line = 2
+    assert.is_true cursor.at_start_of_line
+
   it 'down! moves the cursor one line down, respecting the current column', ->
     cursor.pos = 4
     cursor\down!

@@ -62,6 +62,9 @@ class Cursor extends PropertyObject
   @property at_end_of_line:
     get: => @sci\get_line_end_position(@line - 1) == @sci\get_current_pos!
 
+  @property at_start_of_line:
+    get: => @column == 1
+
   _adjust_persistent_selection_if_needed: =>
     return unless @selection.persistent and @selection.includes_cursor
     selection_start = @selection.persistent_anchor

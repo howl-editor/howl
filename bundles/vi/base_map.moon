@@ -41,8 +41,18 @@ map = {
   editor: {
     j: (editor) -> apply editor, (editor) -> editor.cursor\down!
     k: (editor) -> apply editor, (editor) -> editor.cursor\up!
-    h: (editor) -> apply editor, (editor) -> editor.cursor\left!
-    l: (editor) -> apply editor, (editor) -> editor.cursor\right!
+
+    h: (editor) ->
+      if editor.cursor.at_start_of_line
+        state.reset!
+      else
+       apply editor, (editor) -> editor.cursor\left!
+
+    l: (editor) ->
+      if editor.cursor.at_end_of_line
+        state.reset!
+      else
+       apply editor, (editor) -> editor.cursor\right!
 
     e: (editor) -> apply editor, (editor) -> end_of_word editor.cursor
 

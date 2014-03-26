@@ -44,6 +44,10 @@ editor.cursor.column_index -- => 2
 
 True if the cursor is currently at the end of the line, and false otherwise.
 
+### at_start_of_line
+
+True if the cursor is currently at the start of the line, and false otherwise.
+
 ### blink_interval
 
 The interval at which the cursor blinks, in milliseconds. You would typically
