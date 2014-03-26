@@ -172,7 +172,8 @@ class List extends PropertyObject
     @clear!
 
     total = #@items
-    lines_left = @max_height or math.huge
+    max_height = @max_height or math.huge
+    nr_lines = 0
     pos = @start_pos
     buffer = @buffer
 
@@ -180,25 +181,28 @@ class List extends PropertyObject
       @_widths = calculate_column_widths @items, @headers
       @_multi_column = #@_widths > 1
 
-    if @caption and lines_left > 0
+    if @caption and nr_lines < max_height
       cap = @caption .. '\n'
       pos = buffer\insert cap, pos, 'list_caption'
-      lines_left -= line_count cap
+      nr_lines += line_count cap
 
-    if @headers and #@headers > 0 and lines_left > 0
+    if @headers and #@headers > 0 and nr_lines < max_height
       for column, header in ipairs @headers
         padding = column_padding header, column, @_widths
         pos = buffer\insert header, pos, 'list_header'
         pos = buffer\insert padding, pos
 
       pos = buffer\insert '\n', pos
-      lines_left -= 1
+      nr_lines += 1
 
-    @last_shown = if total > lines_left
-        math.min @offset + lines_left - 1, total
-      else
-       total
+    lines_left = max_height - nr_lines
 
+    if total > lines_left
+      @last_shown = math.min @offset + (lines_left - 2), total
+    else
+      @last_shown = total
+
+    @nr_shown = @last_shown - @offset + 1
     @item_start_pos = pos
     total_length = 0
     total_length += width for width in *@_widths
@@ -234,12 +238,15 @@ class List extends PropertyObject
       if row != @last_shown
         pos = buffer\insert '\n', pos
 
-    @nr_shown = @last_shown - @offset + 1
+      nr_lines += 1
 
-    if @nr_shown < total and lines_left > 0
+
+    -- truncated list
+    if total > lines_left and nr_lines < max_height
       info = string.format '\n[..] (showing %d - %d out of %d)',
         @offset, @last_shown, total
       pos = @buffer\insert info, pos, 'comment'
+      nr_lines += 1
 
     pos = @buffer\insert '\n', pos if @trailing_newline
     @_sel_row = @offset if not @_sel_row and @selection_enabled

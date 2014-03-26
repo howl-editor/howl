@@ -115,7 +115,7 @@ first    item one
     assert.equal list.last_shown, 3
 
   context 'when .offset is set', ->
-    it 'shows items starting from offset', ->
+    it 'shows items starting from #offset', ->
       list.items = {'one', 'two', 'three'}
       list.offset = 2
       list\show!
@@ -140,21 +140,21 @@ first    item one
     assert.equal sci\get_current_pos!, #buf.text
 
   context 'when .max_height is set', ->
-    it 'with only .items set it shows only up to max_height items', ->
+    it 'with only .items set it shows only up to max_height lines', ->
       list.items = {'one', 'two', 'three'}
       list.max_height = 2
       list\show!
-      assert.match buf.text, 'one\ntwo'
-      assert.is_not.match buf.text, 'three'
+      assert.match buf.text, 'one'
+      assert.is_not.match buf.text, 'two'
 
       list.max_height = math.huge
       list\show!
-      assert.equal buf.text, 'one\ntwo\nthree\n'
+      assert.equal 'one\ntwo\nthree\n', buf.text
 
     it 'it takes caption into account when set', ->
-      list.items = {'one', 'two'}
+      list.items = {'one', 'two', 'three'}
       list.caption = 'Two\nliner'
-      list.max_height = 3
+      list.max_height = 4
       list\show!
       assert.match buf.text, 'one'
       assert.is_not.match buf.text, 'two'
@@ -171,7 +171,7 @@ first    item one
       list.items = {'one', 'two', 'three'}
       list.max_height = 2
       list\show!
-      assert.match buf.text, 'showing 1 %- 2 out of 3'
+      assert.match buf.text, 'showing 1 %- 1 out of 3'
 
   it '.nr_shown is set to the amount of items shown', ->
     list.items = {'one', 'two', 'three'}
@@ -180,7 +180,7 @@ first    item one
 
     list.max_height = 2
     list\show!
-    assert.equal 2, list.nr_shown
+    assert.equal 1, list.nr_shown
 
   it 'all properties can be changed after initial assignment', ->
     list.items = { 'one', 'two' }
@@ -199,7 +199,7 @@ three    four
 
   it 'resets offset when items are reassigned', ->
     list.items = { 'one', 'two', 'three' }
-    list.max_height = 1
+    list.max_height = 2
     list\show!
     list\next_page!
     list.items = { 'one', 'two' }
@@ -263,7 +263,7 @@ three    four
       list\show!
 
     it 'selects the first item by default', ->
-      assert.equal list.selection, 'one'
+      assert.equal 'one', list.selection
 
     it '.selection is nil for an empty list', ->
       list.items = {}
@@ -271,8 +271,8 @@ three    four
       assert.is_nil list.selection
 
     it 'highlights the selected item with list_selection', ->
-      assert.same highlight.at_pos(buf, 1), { 'list_selection' }
-      assert.same highlight.at_pos(buf, buf.lines[2].start_pos), {}
+      assert.same { 'list_selection' }, highlight.at_pos(buf, 1)
+      assert.same {}, highlight.at_pos(buf, buf.lines[2].start_pos)
 
     it 'pads lines if neccessary to achieve a uniform selection highlight', ->
       assert.equal 5, #buf.lines[1]
@@ -327,7 +327,7 @@ three    four
         assert.equal list.selection, 'one'
 
       it 'scrolls to the next item if neccessary', ->
-        list.max_height = 1
+        list.max_height = 2
         list\show!
         list\select_next!
         assert.equal list.selection, 'two'
@@ -345,7 +345,7 @@ three    four
 
       it 'scrolls so that the previous item is at the bottom if neccessary', ->
         list.items = { 'one', 'two', 'three', 'four' }
-        list.max_height = 2
+        list.max_height = 3
         list.offset = 3
         list\show!
         list\select 3
@@ -362,7 +362,7 @@ three    four
       assert.match buf.text, 'one\ntwo\nthree\n'
 
     it 'changes the offset to start with <row> when all items are not shown', ->
-      list.max_height = 1
+      list.max_height = 2
       list\show!
       list\scroll_to 2
       assert.match buf.text, 'two'
@@ -370,14 +370,14 @@ three    four
 
     context 'when the remaining numbers are fewer than the max nr of visible items', ->
       it 'adjust the actual offset to always show the same number of items', ->
-        list.max_height = 2
+        list.max_height = 3
         list\show!
         list\scroll_to 3
         assert.match buf.text, 'two\nthree'
 
       it 'accounts for headers when determining the new offset', ->
         list.headers = { 'foo' }
-        list.max_height = 2
+        list.max_height = 3
         list\show!
         list\scroll_to 3
         assert.match buf.text, '^foo\nthree'
@@ -392,14 +392,14 @@ three    four
   describe 'next_page()', ->
     it 'scrolls to the next page', ->
       list.items = {'one', 'two', 'three'}
-      list.max_height = 1
+      list.max_height = 2
       list\show!
       list\next_page!
       assert.equal 2, list.offset
 
     it 'scrolls to the first page if at the end of the list', ->
       list.items = {'one', 'two', 'three'}
-      list.max_height = 1
+      list.max_height = 2
       list\show!
       list\scroll_to 3
       list\next_page!
@@ -408,7 +408,7 @@ three    four
   describe 'prev_page()', ->
     it 'scrolls to the previous page', ->
       list.items = {'one', 'two', 'three'}
-      list.max_height = 1
+      list.max_height = 2
       list\show!
       list\scroll_to 3
       list\prev_page!
@@ -416,7 +416,7 @@ three    four
 
     it 'scrolls to the last page if at the start of the list', ->
       list.items = {'one', 'two', 'three'}
-      list.max_height = 1
+      list.max_height = 2
       list\show!
       list\prev_page!
       assert.equal list.offset, 3
