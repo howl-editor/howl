@@ -344,8 +344,8 @@ class Application extends PropertyObject
     for dir in *{ @root_dir.parent, @root_dir }
       icon = dir\join('share/icons/hicolor/scalable/apps/howl.svg')
       if icon.exists
-        icon_set = Gtk.Window.set_default_icon_from_file icon.path
-        log.error "Failed to load application icon: #{err}" unless icon_set
+        status, err = pcall Gtk.Window.set_default_icon_from_file, icon.path
+        log.error "Failed to load application icon: #{err}" unless status
         return
 
     log.warn "Failed to find application icon"
