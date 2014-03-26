@@ -249,8 +249,15 @@ class List extends PropertyObject
       nr_lines += 1
 
     pos = @buffer\insert '\n', pos if @trailing_newline
+
+    if @min_height and nr_lines < @min_height
+      filler_text = @filler_text or ''
+      filler = filler_text\rep(@min_height - nr_lines, '\n') .. '\n'
+      pos = @buffer\insert filler, pos, 'comment'
+
     @_sel_row = @offset if not @_sel_row and @selection_enabled
     @end_pos = pos
+    @height = nr_lines
 
     @select @_sel_row if @_sel_row and #@items > 0
 

@@ -25,6 +25,7 @@ class Readline extends PropertyObject
     @sci\grab_focus!
     @bin\show_all!
     @showing = true
+    @min_list_height = 0
 
   hide: =>
     if @showing
@@ -106,16 +107,20 @@ class Readline extends PropertyObject
     @title = options.title if options.title
     list_position = 1
     list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
+
     if count > 0
       @completion_list = List @buffer, list_position
       list_options = options.list or {}
       with @completion_list
         .items = completions
         .max_height = @_max_list_lines!
+        .min_height = @min_list_height
+        .filler_text = '~'
         .selection_enabled = true
         .highlight_matches_for = text
         @completion_list[k] = v for k, v in pairs list_options
         \show!
+        @min_list_height = math.max .height, @min_list_height
 
     @_adjust_height!
 

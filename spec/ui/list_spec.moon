@@ -173,6 +173,33 @@ first    item one
       list\show!
       assert.match buf.text, 'showing 1 %- 1 out of 3'
 
+  context 'when .min_height is set', ->
+    it 'is ignored when the list is bigger than the value', ->
+      list.items = {'one', 'two', 'three'}
+      list.min_height = 2
+      list\show!
+      assert.equals 3, list.height
+
+    it 'is ignored when .max_height is greater', ->
+      list.items = {'one' }
+      list.min_height = 2
+      list.max_height = 1
+      list\show!
+      assert.equals 1, list.height
+
+    it 'adds lines to ensure the given value', ->
+      list.items = {'one' }
+      list.min_height = 3
+      list\show!
+      assert.equals 'one\n\n\n', buf.text
+
+    it 'sets .filler_text for each filler line if specified', ->
+      list.items = {'one' }
+      list.min_height = 2
+      list.filler_text = 'X'
+      list\show!
+      assert.equals 'one\nX\n', buf.text
+
   it '.nr_shown is set to the amount of items shown', ->
     list.items = {'one', 'two', 'three'}
     list\show!
@@ -181,6 +208,30 @@ first    item one
     list.max_height = 2
     list\show!
     assert.equal 1, list.nr_shown
+
+  describe '.height', ->
+    it 'is set to the number of lines used for displaying the list', ->
+      list.items = {'one', 'two', 'three'}
+      list\show!
+      assert.equal 3, list.height
+
+    it 'includes headers', ->
+      list.items = {'one', 'two', 'three'}
+      list.headers = { 'Column 1' }
+      list\show!
+      assert.equal 4, list.height
+
+    it 'includes caption', ->
+      list.items = {'one', 'two'}
+      list.caption = 'This is a\nfine list:'
+      list\show!
+      assert.equal 4, list.height
+
+    it 'accounts for a truncated list', ->
+      list.items = {'one', 'two', 'three'}
+      list.max_height = 3
+      list\show!
+      assert.equal 3, list.height
 
   it 'all properties can be changed after initial assignment', ->
     list.items = { 'one', 'two' }
