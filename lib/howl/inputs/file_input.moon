@@ -42,6 +42,10 @@ class FileInput
       @_chdir(root_dir(@directory), readline)
     else if text == "~#{separator}"
       @_chdir(home_dir!, readline)
+    else if text[-1] == separator
+      subdir = @directory / text
+      if subdir.exists and subdir.is_directory
+        @_chdir(subdir, readline)
 
     completion_options = {
       title: 'File'

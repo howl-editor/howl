@@ -45,6 +45,13 @@ describe 'File inputs', ->
             input\complete readline.text, readline
             assert.equals "open #{os.getenv('HOME')}/", readline.prompt
 
+          it 'automatically opens directory if text has trailing "/"', ->
+            sub = directory\join('sub')
+            sub\mkdir!
+            readline.text ..= 'sub/'
+            input\complete readline.text, readline
+            assert.equals "open #{sub.path}/", readline.prompt
+
         describe 'on_completed(path, readline)', ->
           it 'changes dir and returns false when <path> is a directory', ->
             sub = directory\join('sub')
