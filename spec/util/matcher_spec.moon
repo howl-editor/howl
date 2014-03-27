@@ -1,10 +1,17 @@
 import Matcher from howl.util
 
 describe 'Matcher(candidates)', ->
-  it 'matches if all characters are present', ->
-    c = { 'One', 'Green Fields', 'two', 'overflow' }
+
+  it 'matches if the search matches exactly', ->
+    c = { 'One', 'Green Fields', 'two' }
     m = Matcher c
-    assert.same { 'One', 'Green Fields' }, m('ne')
+    assert.same { 'One' }, m('ne')
+
+  it 'matches if the search matches at boundaries', ->
+    c = { 'green fields', 'green sfinx' }
+    m = Matcher c
+    assert.same { 'green fields' }, m('gf')
+    assert.same { 'apaass_so' }, Matcher({'apaass_so'})('as')
 
   it 'candidates are automatically converted to strings', ->
     candidate = setmetatable {}, __tostring: -> 'auto'
@@ -21,23 +28,22 @@ describe 'Matcher(candidates)', ->
     m = Matcher { { candidate, 'desc' } }
     assert.same { { candidate, 'desc' } }, m('auto')
 
-  it 'prefers boundary matches over straight ones over fuzzy ones', ->
+  it 'prefers boundary matches over exact ones', ->
     c = { 'kiss her', 'some/stuff/here', 'openssh', 'sss hhh' }
     m = Matcher c
     assert.same {
       'sss hhh',
       'some/stuff/here'
       'openssh',
-      'kiss her'
     }, m('ssh')
 
   it 'prefers early occurring matches over ones at the end', ->
-    c = { 'Two items to bind them tight', 'One item to match them' }
+    c = { 'Discard all apples', 'all aardvarks' }
     m = Matcher c
     assert.same {
-      'One item to match them',
-      'Two items to bind them tight'
-    }, m('ni')
+      'all aardvarks',
+      'Discard all apples'
+    }, m('aa')
 
   it 'prefers shorter matching candidates over longer ones', ->
     c = { 'src/tools.sh', 'TODO' }
@@ -48,23 +54,24 @@ describe 'Matcher(candidates)', ->
     }, m('to')
 
   it 'prefers tighter matches to longer ones', ->
-    c = { 'aa bb cc dd', 'zzzzzzzzzzzzzzz ad' }
+    c = { 'awesome_apples', 'an_aardvark'  }
 
     m = Matcher c
     assert.same {
-      'zzzzzzzzzzzzzzz ad',
-      'aa bb cc dd',
-    }, m('ad')
+      'an_aardvark',
+      'awesome_apples',
+    }, m('aa')
 
   it '"special" characters are matched as is', ->
     c = { 'Item 2. 1%w', 'Item 22 2a' }
     m = Matcher c
     assert.same { 'Item 2. 1%w' }, m('%w')
+    assert.same { }, m('.*')
 
-  it 'accepts ustring both for candidates and searches', ->
-    c = { 'one', 'two' }
-    m = Matcher c
-    assert.same { 'one', 'two' }, m('o')
+  it 'boundary matches can not skip separators', ->
+    m = Matcher { 'nih/says/knights' }
+    assert.same { 'nih/says/knights' }, m('sk')
+    assert.same {}, m('nk')
 
   describe 'explain(search, text)', ->
     it 'sets .how to the type of match', ->
@@ -72,7 +79,6 @@ describe 'Matcher(candidates)', ->
 
     it 'returns a list of character offsets indicating where <search> matched', ->
       assert.same { how: 'exact', 4, 5, 6 }, Matcher.explain 'ƒlu', 'sñaƒlux'
-      assert.same { how: 'fuzzy', 2, 4, 6 }, Matcher.explain 'hiʈ', 'Čhriʂʈmas'
       assert.same { how: 'boundary', 1, 4, 9, 10 }, Matcher.explain 'itʂo', 'iʂ that ʂo'
 
     it 'lower-cases the search and text just as for matching', ->
@@ -82,41 +88,50 @@ describe 'Matcher(candidates)', ->
     it 'accepts ustring both for <search> and <text>', ->
       assert.not_nil Matcher.explain 'FU', 'snafu'
 
-  it 'boundary matches can not skip separators', ->
-    assert.equal 'boundary', Matcher.explain('sk', 'nih/says/knights').how
-    assert.not_equal 'boundary', Matcher.explain('nk', 'nih/says/knights').how
+  it 'boundary matches are as tight as possible', ->
+    assert.same { how: 'boundary', 1, 6, 7 }, Matcher.explain 'hth', 'hail the howl'
 
   describe 'with reverse matching (reverse = true specified as an option)', ->
-    it 'prefers late occurring matches over ones at the end', ->
-      c = { 'match me', 'me match' }
+    it 'handles boundary matches', ->
+      m = Matcher { 'spec/aplication_spec.moon' }, reverse: true
+      assert.same { 'spec/aplication_spec.moon' }, m('as')
+
+    it 'prefers late occurring exact matches over ones at the start', ->
+      c = { 'xmatch me', 'me xmatch' }
       m = Matcher c, reverse: true
       assert.same {
-        'me match'
-        'match me',
+        'me xmatch'
+        'xmatch me',
       }, m('mat')
 
+    it 'prefers late occurring boundary matches over ones at the start', ->
+      c = { 'match natchos', 'me match now' }
+      m = Matcher c, reverse: true
+      assert.same {
+        'me match now'
+        'match natchos',
+      }, m('mn')
+
     it 'still prefers tighter matches to longer ones', ->
-      c = { 'aabbac', 'abbaca' }
+      c = { 'an_aardvark', 'a_apple' }
 
       m = Matcher c, reverse: true
       assert.same {
-        'aabbac',
-        'abbaca',
+        'a_apple',
+        'an_aardvark',
       }, m('aa')
 
-    it 'still prefers boundary matches over straight ones over fuzzy ones', ->
-      c = { 'just kiss her', 'some/stuff/here', 'sshopen', 'open/ssh', 'ss xh' }
+    it 'still prefers boundary matches over straight ones', ->
+      c = { 'some/stuff/here', 'sshopen', 'open/ssh', 'ss xh' }
       m = Matcher c, reverse: true
 
       assert.same {
         'open/ssh',
         'sshopen',
         'some/stuff/here'
-        'ss xh',
-        'just kiss her'
       }, m('ssh')
 
     it 'explain(search, text) works correctly', ->
       assert.same { how: 'exact', 7, 8, 9 }, Matcher.explain 'aƒl', 'ƒluxsñaƒlux', reverse: true
       assert.same { how: 'boundary', 1, 5 }, Matcher.explain 'as', 'app_spec.fu', reverse: true
-      assert.same { how: 'fuzzy', 5, 8 }, Matcher.explain 'sc', 'app_spec.fu', reverse: true
+

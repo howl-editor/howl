@@ -1,74 +1,52 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-lpeg = require 'lpeg'
-import B, P, V, S, Cp, Ct, Cc, Cg from lpeg
 append = table.insert
 
-separator = S ' \t-_:/\\'
+separator = ' \t-_:/'
+sep_p = "[#{separator}]"
+non_sep_p = "[^#{separator}]"
+leading_greedy_p = "(?:^|.*#{sep_p})"
+leading_p = "(?:^|.*?#{sep_p})"
 
-forward_boundary_pattern = (search) ->
-  pattern = P true
+boundary_part_p = (p) ->
+  "(?:#{p}|#{non_sep_p}*#{sep_p}#{p})()"
 
-  for i = 1, search.ulen do
-    c = P search[i]
-    boundary_p = separator * Cp! * c
-    pattern *= (Cp! * c) + (-boundary_p * -separator * P 1)^0 * boundary_p
+boundary_pattern = (search, reverse) ->
+  parts = [r.escape(search[i]) for i = 1, search.ulen]
+  leading = reverse and leading_greedy_p or leading_p
+  p = leading .. parts[1] .. '()'
+  p ..= table.concat [boundary_part_p(parts[i]) for i = 2, #parts]
+  r(p)
 
-  pattern
+score_for = (match, text, type, reverse, base_score) ->
+  if type == 'exact'
+    if reverse
+      return base_score + (text.ulen - match[2])
+    else
+      return text.ulen + (match[1] + base_score)
 
-reverse_boundary_pattern = (search) ->
-  pattern = P true
-  boundary_del = P(-1) + separator
+  -- boundary
+  if reverse
+    text.ulen - match[1]
+  else
+    start_pos = match[1]
+    end_pos = match[#match]
+    text.ulen + (end_pos - start_pos) + start_pos
 
-  prev_p = false
-  for i = 1, search.ulen do
-    c = P search[i]
-    next = search[i + 1]
-    next_p = next.is_empty and boundary_del or (#P(next) + boundary_del)
-    match_p = (Cp! * c * next_p)
-    pattern *= match_p + (-B(prev_p) * (-match_p * -next_p * P(1))^0) * match_p
-    prev_p = c
-
-  pattern
-
-match_pattern = (search, reverse) ->
-  search = search.ureverse if reverse
-  fuzzy = Cg Cc('fuzzy'), 'how'
-  boundary = Cg Cc('boundary'), 'how'
-  exact = Cg(Cc('exact'), 'how') * Cp! * P search
-
-  boundary *= reverse and reverse_boundary_pattern(search) or forward_boundary_pattern(search)
-
-  for i = 1, search.ulen do
-    c = P search[i]
-    fuzzy *= (-c * P 1)^0 * Cp! * c
-
-  Ct P {
-    boundary + V('exact') + fuzzy
-    exact: exact + P(1) * V 'exact'
-  }
-
-do_match = (text, pattern, base_score) ->
-  match = pattern\match text
-  return nil unless match
-  start_pos = match[1]
-  end_pos = match[#match]
-  len = text.ulen
-  switch match.how
-    when 'exact'
-      len + (start_pos + base_score)
-    when 'fuzzy'
-      len + (end_pos - start_pos) + base_score * 2
-    when 'boundary'
-      len + (end_pos - start_pos) + start_pos
+do_match = (text, boundary_p, search) ->
+  match = { boundary_p\match text }
+  return 'boundary', match if #match > 0
+  match = { text\ufind search, 1, true }
+  return 'exact', match if #match > 0
+  nil
 
 class Matcher
   new: (@candidates, @options = {}) =>
     @_load_candidates!
 
   __call: (search) =>
-    return [c for c in *@candidates] if not search or #search == 0
+    return [c for c in *@candidates] if not search or search.is_empty
 
     search = search.ulower
     prev_search = search\usub 1, -2
@@ -77,11 +55,13 @@ class Matcher
 
     lines = @cache.lines[search\usub 1, -2] or @lines
     matching_lines = {}
-    pattern = match_pattern search, @options.reverse
+    boundary_p = boundary_pattern search, @options.reverse
 
     for i, line in ipairs lines
-      score = do_match line.text, pattern, @base_score
-      if score
+      text = line.text
+      type, match = do_match text, boundary_p, search
+      if match
+        score = score_for match, text, type, @options.reverse, @base_score
         append matches, index: line.index, :score
         append matching_lines, line
 
@@ -93,24 +73,21 @@ class Matcher
     matching_candidates
 
   explain: (search, text, options = {}) ->
-    pattern = match_pattern search.ulower, options.reverse
-    text = text.ureverse if options.reverse
-    match = pattern\match text.ulower
+    search = search.ulower
+    boundary_p = boundary_pattern search, options.reverse
+    how, match = do_match text.ulower, boundary_p, search
     return nil unless match
-    how = match.how
     if how == 'exact'
-      for pos = match[1] + 1, match[1] + search.ulen - 1
-        append match, pos
+      { start_pos, end_pos } = match
+      i = 2
+      for pos = start_pos + 1, end_pos
+        match[i] = pos
+        i += 1
+    else -- boundary
+      match[i] -= 1 for i = 1, #match
 
-
-    char_match = text\char_offset match
-
-    if options.reverse
-      char_match = [text.ulen - p + 1 for p in * char_match]
-      table.sort char_match
-
-    char_match.how = how
-    return char_match
+    match.how = how
+    return match
 
   _load_candidates: =>
     max = math.max
@@ -126,10 +103,10 @@ class Matcher
         text = tostring candidate
 
       text = text.ulower
-      text = text.ureverse if @options.reverse
       append @lines, index: i, :text
       max_len = max max_len, #text
 
     @base_score = max_len * 3
+
 
 return Matcher

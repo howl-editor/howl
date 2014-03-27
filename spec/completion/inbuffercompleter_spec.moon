@@ -16,7 +16,7 @@ describe 'InBufferCompleter.complete()', ->
     buffer = Buffer {}
     lines = buffer.lines
 
-  it 'returns strict and fuzzy completions for local matches in the buffer', ->
+  it 'returns completions for local matches in the buffer', ->
     buffer.text = [[
 Hello there
   some symbol (foo) {
