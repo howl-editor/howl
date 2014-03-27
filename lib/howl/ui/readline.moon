@@ -145,7 +145,7 @@ class Readline extends PropertyObject
     return true if bindings.dispatch event, 'readline', { @keymap }, self
     return event.character == nil or event.ctrl or event.alt
 
-  _on_char_added: (event) =>
+  _on_user_added_text: =>
     @seen_interaction = true
     @_update_input!
     @_complete @completion_list != nil
@@ -210,7 +210,7 @@ class Readline extends PropertyObject
 
     @sci.listener =
       on_keypress: self\_on_keypress
-      on_char_added: self\_on_char_added
+      on_char_added: self\_on_user_added_text
       on_text_inserted: @buffer\_on_text_inserted
       on_text_deleted: @buffer\_on_text_deleted
       on_error: self\_on_error
@@ -266,7 +266,9 @@ class Readline extends PropertyObject
     escape: => @_cancel!
     ctrl_c: => @_cancel!
     ctrl_g: => @_cancel!
-    ctrl_v: => @sci\paste!
+    ctrl_v: =>
+      @sci\paste!
+      @_on_user_added_text!
 
     left: => @cursor\left! if not @_at_start!
     right: => @cursor\right!
