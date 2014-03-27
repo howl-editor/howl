@@ -7,7 +7,7 @@ class LineInput
   new: (@title, buffer, @lines = buffer.lines) =>
     @completion_options = title: @title, list: column_styles: { 'string' }
     items = [{tostring(l.nr), l.chunk} for l in *@lines]
-    @matcher = Matcher items
+    @matcher = Matcher items, preserve_order: true
     buffer\lex buffer.size
 
   complete: (text) =>

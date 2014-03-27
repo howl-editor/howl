@@ -135,3 +135,8 @@ describe 'Matcher(candidates)', ->
       assert.same { how: 'exact', 7, 8, 9 }, Matcher.explain 'aƒl', 'ƒluxsñaƒlux', reverse: true
       assert.same { how: 'boundary', 1, 5 }, Matcher.explain 'as', 'app_spec.fu', reverse: true
 
+  describe 'with preserve_order = true specified as an option', ->
+    it 'preserves order of matches, irrespective of match score', ->
+      c = {'xabx0', 'ax_bx1', 'xabx2', 'ax_bx3'}
+      m = Matcher c, preserve_order: true
+      assert.same c, m('ab')

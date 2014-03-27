@@ -67,7 +67,9 @@ class Matcher
 
     @cache.lines[search] = matching_lines
 
-    table.sort matches, (a ,b) -> a.score < b.score
+    unless @options.preserve_order
+      table.sort matches, (a ,b) -> a.score < b.score
+
     matching_candidates = [@candidates[match.index] for match in *matches]
     @cache.matches[search] = matching_candidates
     matching_candidates
