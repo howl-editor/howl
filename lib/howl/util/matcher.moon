@@ -20,19 +20,22 @@ boundary_pattern = (search, reverse) ->
   r(p)
 
 score_for = (match, text, type, reverse, base_score) ->
+  len = text.ulen
+
   if type == 'exact'
     if reverse
-      return base_score + (text.ulen - match[2])
+      return base_score + (len - match[2])
     else
-      return text.ulen + (match[1] + base_score)
+      return len + (match[1] + base_score)
 
   -- boundary
+  length_penalty = (len - base_score) / 3
   if reverse
-    text.ulen - match[1]
+    (len - match[1]) + length_penalty
   else
     start_pos = match[1]
     end_pos = match[#match]
-    text.ulen + (end_pos - start_pos) + start_pos
+    (end_pos - start_pos) + start_pos + length_penalty
 
 do_match = (text, boundary_p, search) ->
   match = { boundary_p\match text }

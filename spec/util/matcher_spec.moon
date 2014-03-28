@@ -46,11 +46,11 @@ describe 'Matcher(candidates)', ->
     }, m('aa')
 
   it 'prefers shorter matching candidates over longer ones', ->
-    c = { 'src/tools.sh', 'TODO' }
+    c = { 'x/tools.sh', 'x/torx' }
     m = Matcher c
     assert.same {
-      'TODO',
-      'src/tools.sh'
+      'x/torx',
+      'x/tools.sh'
     }, m('to')
 
   it 'prefers tighter matches to longer ones', ->
