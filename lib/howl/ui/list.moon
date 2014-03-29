@@ -240,7 +240,6 @@ class List extends PropertyObject
 
       nr_lines += 1
 
-
     -- truncated list
     if total > lines_left and nr_lines < max_height
       info = string.format '\n[..] (showing %d - %d out of %d)',
