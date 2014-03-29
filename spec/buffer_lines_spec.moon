@@ -89,13 +89,31 @@ describe 'BufferLines', ->
       assert.equal lines[1].next, lines[2]
       assert.is_nil lines[3].next
 
-    it '.chunk is a Chunk object for the line, disregarding the newline', ->
-      line = lines[1]
-      chunk = line.chunk
-      assert.equal 'Chunk', typeof chunk
-      assert.equal line.text, chunk.text
-      assert.equal line.start_pos, chunk.start_pos
-      assert.equal line.end_pos - #buf.eol, chunk.end_pos
+    describe '.chunk', ->
+      it 'a Chunk object for the line, disregarding the newline', ->
+        buf.text = 'hƏllØ\nbare'
+        chunk = lines[1].chunk
+        assert.equal 'Chunk', typeof chunk
+        assert.equal 'hƏllØ', chunk.text
+        assert.equal 1, chunk.start_pos
+        assert.equal 5, chunk.end_pos
+
+        chunk = lines[2].chunk
+        assert.equal 'bare', chunk.text
+        assert.equal 7, chunk.start_pos
+        assert.equal 10, chunk.end_pos
+
+      it 'is an empty chunk for empty lines', ->
+        buf.text = '\n'
+        chunk = lines[1].chunk
+        assert.equal '', chunk.text
+        assert.equal 1, chunk.start_pos
+        assert.equal 0, chunk.end_pos
+
+        chunk = lines[2].chunk
+        assert.equal '', chunk.text
+        assert.equal 2, chunk.start_pos
+        assert.equal 1, chunk.end_pos
 
     it '.indent() indents the line by <config.indent>', ->
       config.indent = 2

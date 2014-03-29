@@ -49,7 +49,11 @@ Line = (nr, buffer, sci) ->
       indentation: =>  sci\get_line_indentation nr - 1
       previous: => if nr > 1 then Line nr - 1, buffer, sci
       next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
-      chunk: => buffer\chunk @start_pos, @end_pos - #buffer.eol
+      chunk: =>
+        start_pos = @start_pos
+        end_pos = @end_pos
+        end_pos -= #buffer.eol unless nr == sci\get_line_count!
+        buffer\chunk start_pos, end_pos
 
       previous_non_blank: =>
         prev_line = @previous
