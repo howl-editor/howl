@@ -10,7 +10,7 @@ class Chunk extends PropertyObject
 
   @property text:
     get: =>
-      @_text or= @buffer.text\usub(@start_pos, @end_pos)
+      @_text or= @buffer\usub(@start_pos, @end_pos)
       @_text
 
     set: (text) =>
