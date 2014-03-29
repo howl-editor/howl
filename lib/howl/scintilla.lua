@@ -308,6 +308,13 @@ function sci:get_character_pointer()
   return ffi_cast(const_char_p, self:send(2520, 0, 0))
 end
 
+-- Return a read-only pointer to a range of characters in the document.
+-- May move the gap so that the range is contiguous, but will only move up
+-- to rangeLength bytes.
+function sci:get_range_pointer(position, range_length)
+  return ffi_cast(const_char_p, self:send(2643, position, range_length))
+end
+
 -- Change the document object used.
 function sci:set_doc_pointer(pointer)
   self.offsets:invalidate_from(0)
@@ -4168,13 +4175,6 @@ end
 -- Copy the selection, if selection empty copy the line with the caret
 function sci:copy_allow_line()
   self:send(2519, 0, 0)
-end
-
--- Return a read-only pointer to a range of characters in the document.
--- May move the gap so that the range is contiguous, but will only move up
--- to rangeLength bytes.
-function sci:get_range_pointer(position, range_length)
-  return tonumber(self:send(2643, position, range_length))
 end
 
 -- Return a position which, to avoid performance costs, should not be within
