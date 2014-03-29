@@ -7,6 +7,8 @@ import style from howl.ui
 import PropertyObject from howl.aux.moon
 import destructor from howl.aux
 
+ffi = require 'ffi'
+
 append = table.insert
 
 background_sci = Scintilla!
@@ -245,6 +247,19 @@ class Buffer extends PropertyObject
       error "Character offset '#{char_offset}' out of bounds (length = #{@length})", 2
 
     1 + @sci\byte_offset char_offset - 1
+
+  usub: (start_pos, end_pos) =>
+    if start_pos > end_pos
+      error "Offset start_pos '#{start_pos}' greater than end_pos '#{end_pos}'", 2
+    byte_start_pos = @\byte_offset(start_pos)
+    -- byte_end_pos must include the last byte in a multibyte character,
+    -- so we find the start of the next character, but this needs
+    -- special adjustment when end_pos is eof
+    byte_end_pos = @\byte_offset(end_pos + 1)
+    byte_size = byte_end_pos - byte_start_pos
+    if byte_size < 0 -- special case for eof
+      byte_size = 0
+    ffi.string(@sci\get_character_pointer! + byte_start_pos - 1, byte_size)
 
   reload: =>
     error "Cannot reload buffer '#{self}': no associated file", 2 unless @file
