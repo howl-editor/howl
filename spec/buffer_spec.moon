@@ -452,6 +452,18 @@ describe 'Buffer', ->
       assert.has_error -> buffer'äåö'\char_offset 0
       assert.has_error -> buffer'a'\char_offset -1
 
+  describe 'usub(start_pos, end_pos)', ->
+    it 'returns the text between start_pos and end_pos, both inclusive', ->
+      b = buffer 'hållö\nhållö\n'
+      assert.equal b\usub(1, 1), 'h'
+      assert.equal b\usub(2, 2), 'å'
+      assert.equal b\usub(1, 5), 'hållö'
+      assert.equal b\usub(1, 12), 'hållö\nhållö\n'
+      assert.equal b\usub(8, 11), 'ållö'
+
+    it 'raises error for start_pos > end_pos', ->
+      assert.has_error -> buffer'ab'\usub 2, 1
+
   describe 'reload()', ->
     it 'reloads the buffer contents from file', ->
       with_tmpfile (file) ->
