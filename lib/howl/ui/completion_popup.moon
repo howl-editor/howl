@@ -4,6 +4,9 @@
 import MenuPopup, style from howl.ui
 import Completer from howl
 
+is_character = (event) ->
+  event.character and event.character\umatch r'\\pL'
+
 class CompletionPopup extends MenuPopup
 
   new: (editor) =>
@@ -31,7 +34,7 @@ class CompletionPopup extends MenuPopup
 
   on_char_added: (editor, args) =>
     return unless @completer
-    if args.key_name == 'space'
+    unless is_character args
       @close!
       return
 
