@@ -19,6 +19,10 @@ _See also_:
 
 The corresponding [Buffer] for the chunk
 
+### empty
+
+True if the chunk is empty (i.e. includes zero characters), and false otherwise.
+
 ### end_pos
 
 The end position of the chunk. The end position is inclusive, meaning that the

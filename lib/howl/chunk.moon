@@ -8,6 +8,8 @@ class Chunk extends PropertyObject
   new: (@buffer, @start_pos, @end_pos) =>
     super!
 
+  @property empty: get: => @end_pos < @start_pos
+
   @property text:
     get: =>
       @_text or= @buffer.text\usub(@start_pos, @end_pos)
@@ -22,12 +24,15 @@ class Chunk extends PropertyObject
   @property styles:
     get: =>
       unless @_styles
-        b_start, b_end = @buffer\byte_offset(@start_pos), @buffer\byte_offset(@end_pos)
-        @_styles = styler.reverse @buffer, b_start, b_end
+        @_styles = if @empty
+          {}
+        else
+          b_start, b_end = @buffer\byte_offset(@start_pos), @buffer\byte_offset(@end_pos)
+          @_styles = styler.reverse @buffer, b_start, b_end
 
       @_styles
 
-  delete: => @buffer\delete @start_pos, @end_pos if @end_pos >= @start_pos
+  delete: => @buffer\delete @start_pos, @end_pos unless @empty
 
   @meta {
     __tostring: => @text
