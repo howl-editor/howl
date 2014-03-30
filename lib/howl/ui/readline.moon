@@ -1,4 +1,4 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 Gtk = require 'ljglibs.gtk'
@@ -8,6 +8,17 @@ import style, theme, Cursor, Selection, ActionBuffer, List, IndicatorBar from ho
 
 completion_text = (item) ->
   type(item) == 'table' and item[1] or item
+
+shorten = (text, length) ->
+  length = 10 if length < 10
+  local short
+  significant_end = text\ufind ' '
+  if significant_end and length - significant_end > 10
+    short = text\usub(1, significant_end) .. '[..]'
+  else
+    short = '[..]'
+
+  short .. text\usub(text.ulen - (length - short.ulen))
 
 class Readline extends PropertyObject
   new: (@window) =>
@@ -37,6 +48,7 @@ class Readline extends PropertyObject
       @_adjust_height!
       @completion_list = nil
       @notification = nil
+      @_nr_available_columns = nil
       @window.status\show!
 
       @last_focused\grab_focus! if @last_focused and has_focus
@@ -71,16 +83,23 @@ class Readline extends PropertyObject
     get: => @_prompt
     set: (prompt) =>
       @_prompt = tostring(prompt)
+      @_prompt_len = @_prompt.ulen
       @text = ''
 
   @property text:
     get: =>
       text = @buffer.lines[#@buffer.lines]
-      text\usub #@prompt + 1
+      text\usub @_prompt_len + 1
     set: (text) =>
-      @buffer.text = @prompt .. text
+      prompt = @prompt
+      if @_nr_available_columns and @_nr_available_columns - prompt.ulen < 10
+        prompt = shorten prompt, @_nr_available_columns - 10
+
+      @_prompt_len = prompt.ulen
+      @buffer.lines[#@buffer.lines].text = prompt .. text
       @_adjust_height!
       @cursor\eof!
+      @sci\set_xoffset 0
 
   @property title:
     get: => @indic_title.label
@@ -91,7 +110,7 @@ class Readline extends PropertyObject
         @header\to_gobject!\show!
         @indic_title.label = tostring text
 
-  _at_start: => @cursor.column <= #@prompt + 1
+  _at_start: => @cursor.column <= @_prompt_len + 1
 
   _complete: (force) =>
     @_show_only_cmd_line!
@@ -164,6 +183,11 @@ class Readline extends PropertyObject
     @gsci = @sci\to_gobject!
     @header = IndicatorBar 'header', 3
     @indic_title = @header\add 'left', 'title'
+    @gsci\on_size_allocate ->
+      unless @_nr_available_columns
+        char_width = @sci\text_width(Scintilla.STYLE_LINENUMBER, 'm')
+        @_nr_available_columns = math.floor @gsci.allocated_width / char_width
+        @text = @text
 
     sci_container = Gtk.EventBox {
       Gtk.Alignment {
