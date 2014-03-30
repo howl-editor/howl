@@ -44,20 +44,18 @@ completion list is the same:
   move one page down.
 
 When completing, Howl will try to match your input string against the available
-completions in three ways: _Exact matching_, _boundary matching_ and _fuzzy
-matching_. An exact match means that your input string is found as-is in the
-completion. A boundary match means that your input string matches at one or more
+completions in two ways: _Exact matching_ and _boundary matching_. An exact
+match means that your input string is found as-is in the completion. A boundary
+match means that all parts of your input string matches at one or more
 boundaries in the completion, typically defined as underscores, slashes, etc.
-Finally, fuzzy matching means that all characters in your input string matched
-somewhere in the completion (in order). The below image illustrates all three
-types of matches for a completion list:
+The below image illustrates the two different types of matches for a completion
+list:
 
 ![Completion types](/images/doc/completion_types.png)
 
 In the above example we can see that "aa" matches "attr_accessor" as a boundary
-match, "mraardvark" as an exact match, and finally "banana" as a fuzzy match.
-The order of the completions above is no coincidence - boundary matches are
-preferred over exact matches, which are preferred over fuzzy matches.
+match, while "mraardvark" is an exact match. The order of the completions above
+is no coincidence - boundary matches are preferred over exact matches.
 
 *Finally, a note about a gotcha:*
 
