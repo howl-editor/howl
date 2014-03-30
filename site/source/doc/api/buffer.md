@@ -216,6 +216,20 @@ trailing white-space and ensures that there's an eol at the end of the file,
 according to the `strip_trailing_whitespace` and `ensure_newline_at_eof`
 configuration variables.
 
+### sub(start_pos, end_pos)
+
+Returns the text from from character offset `start_pos` to `end_pos` (both
+inclusive). Returns an empty string when `start_pos` is larger than `end_pos`.
+Negative offsets count from end of the buffer.
+
+```lua
+local buffer = Buffer('abcde')
+print(buffer\sub(1, 2))
+-- => 'ab'
+print(buffer\sub(-2, -1))
+-- => de'
+```
+
 ### undo()
 
 Undo the last buffer modification.
