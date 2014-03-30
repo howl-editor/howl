@@ -22,6 +22,8 @@ amount of items in the completion list.
 - Overly long lines in the readline are now shortened to avoid horizontal
 scrolling.
 
+- `buffer-replace` command now works correctly with an empty replacement string.
+
 ### VI bundle
 
 - Fix pasting of line block yanks (i.e. <y><y>/<Y>/<d><d>)

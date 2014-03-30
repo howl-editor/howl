@@ -72,7 +72,7 @@ class State
       @update readline.text .. ' ', readline
 
     input_can_finish = @_dispatch('can_finish')
-    return false if input_can_finish == false
+    return input_can_finish if input_can_finish != nil
     #@arguments >= #cmd.inputs
 
   go_back: (readline) => @_dispatch 'go_back', readline
