@@ -218,7 +218,7 @@ configuration variables.
 
 ### sub(start_pos, end_pos)
 
-Returns the text from from character offset `start_pos` to `end_pos` (both
+Returns the text from character offset `start_pos` to `end_pos` (both
 inclusive). Returns an empty string when `start_pos` is larger than `end_pos`.
 Negative offsets count from end of the buffer.
 
