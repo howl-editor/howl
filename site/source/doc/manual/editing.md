@@ -56,7 +56,7 @@ provided.
 
 ## Buffer grep
 
-Buffer grep works as an alternative to the regular `search-forward` command for
+Buffer grep works as an alternative to the regular `buffer-search-forward` command for
 searching for something in the current buffer. It let's you grep all lines in
 the current buffer for a search string and displays all matching lines in
 real-time as you type:

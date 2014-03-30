@@ -5,14 +5,18 @@ import app, command, config from howl
 import style from howl.ui
 
 command.register
-  name: 'toggle-fullscreen',
+  name: 'window-toggle-fullscreen',
   description: 'Toggles fullscreen for the current window'
   handler: -> app.window.fullscreen = not app.window.fullscreen
 
+command.alias 'window-toggle-fullscreen', 'toggle-fullscreen', deprecated: true
+
 command.register
-  name: 'toggle-maximized',
+  name: 'window-toggle-maximized',
   description: 'Toggles maximized state for the current window'
   handler: -> app.window.maximized = not app.window.maximized
+
+command.alias 'window-toggle-maximized', 'toggle-maximized', deprecated: true
 
 command.register
   name: 'describe-style',
@@ -100,6 +104,8 @@ for cmd in *{
         howl.app\new_editor :placement
 
   command.register
-    name: "new-view-#{placement\gsub '_', '-'}",
+    name: "view-new-#{placement\gsub '_', '-'}",
     description: "Adds a new view #{human_placement} the current one"
     handler: -> howl.app\new_editor :placement
+
+  command.alias "view-new-#{placement\gsub '_', '-'}", "new-view-#{placement\gsub '_', '-'}", deprecated: true

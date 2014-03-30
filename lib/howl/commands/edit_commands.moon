@@ -5,19 +5,23 @@ import app, Buffer, command, mode from howl
 import BufferPopup from howl.ui
 
 command.register
-  name: 'search-forward',
+  name: 'buffer-search-forward',
   description: 'Starts an interactive forward search'
   inputs: { '*forward_search' }
   handler: -> app.editor.searcher\commit!
 
+command.alias 'buffer-search-forward', 'search-forward', deprecated: true
+
 command.register
-  name: 'repeat-search',
+  name: 'buffer-repeat-search',
   description: 'Repeats the last search'
   inputs: {}
   handler: -> app.editor.searcher\next!
 
+command.alias 'buffer-repeat-search', 'repeat-search', deprecated: true
+
 command.register
-  name: 'replace',
+  name: 'buffer-replace',
   description: 'Replaces text (within selection or globally)'
   inputs: { '*replace' }
   handler: (values) ->
@@ -31,8 +35,10 @@ command.register
     else
       log.warn "No occurrences of '#{target}' found"
 
+command.alias 'buffer-replace', 'replace', deprecated: true
+
 command.register
-  name: 'replace-pattern',
+  name: 'buffer-replace-pattern',
   description: 'Replaces text using Lua patterns (within selection or globally)'
   inputs: { '*replace' }
   handler: (values) ->
@@ -43,6 +49,8 @@ command.register
       log.info "Replaced #{count} occurrences of '#{target}' with '#{replacement}'"
     else
       log.warn "No occurrences of '#{target}' found"
+
+command.alias 'buffer-replace-pattern', 'replace-pattern', deprecated: true
 
 command.register
   name: 'show-doc-at-cursor',

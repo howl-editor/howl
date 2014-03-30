@@ -80,8 +80,8 @@ map = {
 
     f: (editor) -> bindings.capture forward_to_char
     F: (editor) -> bindings.capture back_to_char
-    '/': 'search-forward'
-    n: 'repeat-search'
+    '/': 'buffer-search-forward'
+    n: 'buffer-repeat-search'
 
     '$': (editor) -> apply editor, (editor) ->
       editor.cursor.column_index = math.max(1, #editor.current_line)

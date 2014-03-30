@@ -31,10 +31,10 @@ Below is a list of some useful commands that work with views:
 
 ### Creating views
 
-- `new-view-right-of`: Creates a new view, right of the current one.
-- `new-view-left-of`: Creates a new view, left of the current one.
-- `new-view-above`: Creates a new view, above the current one.
-- `new-view-below`: Creates a new view, below the current one.
+- `view-new-right-of`: Creates a new view, right of the current one.
+- `view-new-left-of`: Creates a new view, left of the current one.
+- `view-new-above`: Creates a new view, above the current one.
+- `view-new-below`: Creates a new view, below the current one.
 
 ### Navigating views
 

@@ -45,9 +45,13 @@ command.register
   handler: (buffer) -> app.editor.buffer = buffer
 
 command.register
-  name: 'reload-buffer',
+  name: 'buffer-reload',
   description: 'Reloads the current buffer from file'
-  handler: -> app.editor.buffer\reload!
+  handler: ->
+    app.editor.buffer\reload!
+    log.info "Buffer reloaded from file"
+
+command.alias 'buffer-reload', 'reload-buffer', deprecated: true
 
 command.register
   name: 'switch-to-last-hidden-buffer',
@@ -76,18 +80,22 @@ command.register
   handler: (assignment) -> set_variable assignment, config
 
 command.register
-  name: 'mode-set',
+  name: 'set-for-mode',
   description: 'Sets a configuration variable for the current mode'
   inputs: { '*variable_assignment' }
   handler: (assignment) ->
     set_variable assignment, app.editor.buffer.mode.config
 
+command.alias 'set-for-mode', 'mode-set', deprecated: true
+
 command.register
-  name: 'buffer-set',
+  name: 'set-for-buffer',
   description: 'Sets a configuration variable for the current buffer'
   inputs: { '*variable_assignment' }
   handler: (assignment) ->
     set_variable assignment, app.editor.buffer.config
+
+command.alias 'set-for-buffer', 'buffer-set', deprecated: true
 
 command.register
   name: 'describe-key',
