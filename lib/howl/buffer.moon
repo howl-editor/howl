@@ -248,18 +248,19 @@ class Buffer extends PropertyObject
 
     1 + @sci\byte_offset char_offset - 1
 
-  usub: (start_pos, end_pos) =>
-    if start_pos > end_pos
-      error "Offset start_pos '#{start_pos}' greater than end_pos '#{end_pos}'", 2
+  sub: (start_pos, end_pos = -1) =>
+    if start_pos < 0
+      start_pos = @length + start_pos + 1
+    if end_pos < 0
+      end_pos = @length + end_pos + 1
     byte_start_pos = @\byte_offset(start_pos)
-    -- byte_end_pos must include the last byte in a multibyte character,
-    -- so we find the start of the next character, but this needs
-    -- special adjustment when end_pos is eof
+    -- we find the start of the next character
+    -- to include the last byte in a multibyte character
     byte_end_pos = @\byte_offset(end_pos + 1)
     byte_size = byte_end_pos - byte_start_pos
-    if byte_size < 0 -- special case for eof
-      byte_size = 0
-    ffi.string(@sci\get_character_pointer! + byte_start_pos - 1, byte_size)
+    if byte_size <= 0
+      return ''
+    ffi.string @sci\get_range_pointer(byte_start_pos - 1, byte_size), byte_size
 
   reload: =>
     error "Cannot reload buffer '#{self}': no associated file", 2 unless @file
