@@ -12,7 +12,7 @@ accessible_names = {}
 -- command state
 resolve_command = (name) ->
   def = commands[name]
-  def = commands[def] if type(def) == 'string' -- alias
+  def = commands[def.alias_for] if def and def.alias_for -- alias
   def
 
 parse_cmd = (text) ->
@@ -172,16 +172,18 @@ unregister = (name) ->
   commands[name] = nil
 
   aliases = {}
-  for cmd_name, target in pairs commands
-    append aliases, cmd_name if target == name
+  for cmd_name, def in pairs commands
+    append aliases, cmd_name if def.alias_for == name
 
   commands[alias] = nil for alias in *aliases
   sane_name = accessible_name name
   accessible_names[sane_name] = nil if sane_name != name
 
-alias = (target, name) ->
+alias = (target, name, opts = {}) ->
   error 'Target ' .. target .. 'does not exist' if not commands[target]
-  commands[name] = target
+  def = moon.copy opts
+  def.alias_for = target
+  commands[name] = def
 
 get = (name) -> commands[name]
 
@@ -208,7 +210,10 @@ command_completer = ->
   items = {}
   for name in *cmd_names
     def = commands[name]
-    desc = type(def) == 'string' and "(Alias for #{def})" or def.description
+    desc = def.description
+    if def.alias_for
+      desc = "(Alias for #{def.alias_for})"
+      desc = "[deprecated] #{desc}" if def.deprecated
     binding = bindings[name] or ''
     append items, { name, binding, desc }
 

@@ -42,7 +42,7 @@ describe 'command', ->
     it 'allows for multiple names for the same command', ->
       command.register cmd
       command.alias 'foo', 'bar'
-      assert.equal 'foo', command.bar
+      assert.equal 'foo', command.bar.alias_for
       assert.includes command.names!, 'bar'
 
   it '.unregister(command) removes the command and any aliases', ->
