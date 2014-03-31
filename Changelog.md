@@ -11,6 +11,9 @@ amount of items in the completion list.
 
 - Removed fuzzy matching. It was noisy, and added little value.
 
+- Sped up chunk.text access, resulting in a giant speed-up for buffer-grep and
+buffer-structure commands when working with large files.
+
 ### Bugs
 
 - Completion popup now closes upon entering a non-character
