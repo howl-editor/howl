@@ -331,6 +331,7 @@ class Application extends PropertyObject
     require 'howl.inputs.search_inputs'
     require 'howl.inputs.bundle_inputs'
     require 'howl.inputs.signal_input'
+    require 'howl.inputs.input_input'
     require 'howl.inputs.line_input'
     require 'howl.inputs.mode_input'
     require 'howl.inputs.question_inputs'

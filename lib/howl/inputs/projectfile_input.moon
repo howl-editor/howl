@@ -66,5 +66,10 @@ class ProjectFileInput
 
   value_for: (path) => @project and (@project.root / path) or nil
 
-howl.inputs.register 'project_file', ProjectFileInput
+howl.inputs.register {
+  name: 'project_file',
+  description: 'Returns a File instance for a file within the current project'
+  factory: ProjectFileInput
+}
+
 return ProjectFileInput

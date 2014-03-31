@@ -21,5 +21,10 @@ class SignalInput
     completion_options = title: 'Signals'
     return self.matcher(text), completion_options
 
-howl.inputs.register 'signal', SignalInput
+howl.inputs.register {
+  name: 'signal',
+  description: 'Returns the name of a registered signal'
+  factory: SignalInput
+}
+
 return SignalInput

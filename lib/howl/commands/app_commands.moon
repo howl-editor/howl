@@ -122,6 +122,21 @@ command.register
         return false
 
 command.register
+  name: 'describe-input',
+  description: 'Shows information for an input'
+  inputs: { 'input' }
+  handler: (name) ->
+    def = inputs[name]
+    error "Unknown input '#{name}'" unless def
+    buffer = with ActionBuffer!
+      .title = "Input: #{name}"
+      \append "#{def.description}\n\n"
+
+    buffer.read_only = true
+    buffer.modified = false
+    editor = howl.app\add_buffer buffer
+
+command.register
   name: 'describe-signal',
   description: 'Describes a given signal'
   inputs: { 'signal' }

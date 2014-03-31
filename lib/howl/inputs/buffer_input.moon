@@ -33,5 +33,10 @@ class BufferInput
     with app\new_buffer!
       .title = title
 
-howl.inputs.register 'buffer', BufferInput
+howl.inputs.register {
+  name: 'buffer',
+  description: 'Returns a Buffer, existing or new',
+  factory: BufferInput
+}
+
 return BufferInput

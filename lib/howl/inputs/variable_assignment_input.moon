@@ -91,5 +91,10 @@ class VariableAssignmentInput
     name, value = parse_assignment text
     return :name, :value
 
-howl.inputs.register 'variable_assignment', VariableAssignmentInput
+howl.inputs.register {
+  name: 'variable_assignment',
+  description: 'Returns a table, where .name is the name of a variable and .value is the value to set',
+  factory: VariableAssignmentInput
+}
+
 return VariableAssignmentInput

@@ -3,16 +3,18 @@
 
 inputs = {}
 
-register = (name, func) ->
-  error 'Missing parameter `name` for parameter', 2 if not name
-  error 'Missing parameter `func` for parameter', 2 if not func
+register = (spec) ->
+  for field in *{'name', 'description', 'factory'}
+    error 'Missing field for input: "' .. field .. '"' if not spec[field]
 
-  inputs[name] = func
+  inputs[spec.name] = setmetatable spec, __call: (input, ...) -> input.factory ...
 
 unregister = (name) ->
   inputs[name] = nil
 
-return setmetatable { :register, :unregister }, {
+names = -> [name for name in pairs inputs]
+
+return setmetatable { :register, :unregister, :names }, {
   __index: (key) => inputs[key]
   __pairs: => (_, index) -> return next inputs, index
 }

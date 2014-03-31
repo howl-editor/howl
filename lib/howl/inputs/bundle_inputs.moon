@@ -29,5 +29,14 @@ class UnloadedBundleInput
     completion_options = title: 'Unloaded bundles'
     return self.matcher(text), completion_options
 
-howl.inputs.register 'loaded_bundle', LoadedBundleInput
-howl.inputs.register 'unloaded_bundle', UnloadedBundleInput
+howl.inputs.register {
+  name: 'loaded_bundle',
+  description: 'Returns the name of a currently loaded bundle',
+  factory: LoadedBundleInput
+}
+
+howl.inputs.register {
+  name: 'unloaded_bundle',
+  description: 'Returns the name of a currently unloaded bundle',
+  factory: UnloadedBundleInput
+}

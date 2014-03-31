@@ -91,9 +91,17 @@ class FileInput
     prompt ..= separator if not prompt\match separator .. '$'
     readline.prompt = prompt
 
-howl.inputs.register 'file', -> FileInput (directory) -> directory.children
+howl.inputs.register {
+  name: 'file',
+  description: 'Returns a File instance',
+  factory: -> FileInput (directory) -> directory.children
+}
 
-howl.inputs.register 'directory', -> FileInput (directory) ->
-  kids = [c for c in *directory.children when c.is_directory]
-  append kids, directory\join '.'
-  kids
+howl.inputs.register {
+  name: 'directory',
+  description: 'Returns a File instance for a directory'
+  factory: -> FileInput (directory) ->
+    kids = [c for c in *directory.children when c.is_directory]
+    append kids, directory\join '.'
+    kids
+}

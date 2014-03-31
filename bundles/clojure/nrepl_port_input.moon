@@ -20,5 +20,9 @@ class NReplPortInput
   value_for: (port) =>
     tonumber port
 
-howl.inputs.register 'nrepl_port', NReplPortInput
+howl.inputs.register {
+  name: 'nrepl_port',
+  description: 'A port (number) for an NRepl instance',
+  factory: NReplPortInput
+}
 return NReplPortInput

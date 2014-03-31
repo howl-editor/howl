@@ -23,4 +23,8 @@ class LineInput
   should_complete: => true
   close_on_cancel: => true
 
-howl.inputs.register 'line', LineInput
+howl.inputs.register {
+  name: 'line',
+  description: 'Return a Line object for a line in the current buffer'
+  factory: LineInput
+}

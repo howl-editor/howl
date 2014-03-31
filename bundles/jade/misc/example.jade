@@ -1,0 +1,30 @@
+h1 Welcome to Jade
+
+p
+  | Text can be included in a number of
+  | different ways.
+
+p.
+  This way is shortest if you need big
+  blocks of text spanning multiple
+  lines.
+
+h1(id="title") Welcome to Jade
+button(class="btn", data-action="bea").
+  Be Awesome
+
+h1#title Welcome to Jade
+h2#section(id="blurb") Welcome to Jade
+button.btn(data-action="bea") Awesome
+
+h1
+  | Maintainer:
+  = ' ' + maintainer.name
+  != ' ' + maintainer.name
+table
+  tr
+    td Twitter
+    td= maintainer.twitter
+  tr
+    td Blog
+    td= maintainer.blog

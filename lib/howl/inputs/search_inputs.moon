@@ -32,5 +32,14 @@ class ReplaceInput
 
   value_for: (text) => { @target, text }
 
-howl.inputs.register 'forward_search', ForwardSearchInput
-howl.inputs.register 'replace', ReplaceInput
+howl.inputs.register {
+  name: 'forward_search',
+  description: 'An input that interactively searches for the input text',
+  factory: ForwardSearchInput
+}
+
+howl.inputs.register {
+  name: 'replace',
+  description: 'Returns a table of two values, the target text and the replacement text',
+  factory: ReplaceInput
+}

@@ -121,10 +121,15 @@ keep the Readline open.
 
 ## Functions
 
-### register (name, factory)
+### register (def)
 
-Register a new input with name `name`. `factory` is a callable object that
-should return a new instance of the input when invoked.
+Registers a new input. `def` is a definition table for the input, which must
+contain the following fields:
+
+- `name`: _[required]_ The name of the input.
+- `description`: _[required]_ A short description of the input.
+- `factory`: _[required]_ A callable object that should return a new instance of
+the input when invoked.
 
 ### unregister (name)
 

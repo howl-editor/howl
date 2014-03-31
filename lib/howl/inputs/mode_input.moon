@@ -22,5 +22,10 @@ class ModeInput
   value_for: (text) =>
     mode.by_name text
 
-howl.inputs.register 'mode', ModeInput
+howl.inputs.register {
+  name: 'mode',
+  description: 'Returns a mode instance'
+  factory: ModeInput
+}
+
 return ModeInput

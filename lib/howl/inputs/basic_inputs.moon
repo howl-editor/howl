@@ -13,5 +13,14 @@ class IntegerInput
     error "Not a valid number: #{value}" unless num
     num
 
-howl.inputs.register 'string', StringInput
-howl.inputs.register 'integer', IntegerInput
+howl.inputs.register {
+  name: 'string',
+  description: 'Input for an arbitrary string',
+  factory: StringInput
+}
+
+howl.inputs.register {
+  name: 'integer',
+  description: 'Input for a number',
+  factory: IntegerInput
+}

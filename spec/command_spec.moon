@@ -75,30 +75,42 @@ describe 'command', ->
     local first_input, second_input
 
     before_each ->
-      inputs.register 'test_first', ->
-        first_input = {
-          complete: -> 'completions'
-          should_complete: -> 'perhaps'
-          close_on_cancel: -> true
-          value_for: -> 123
-          on_completed: Spy!
-          go_back: Spy!
-          on_cancelled: Spy!
-        }
-        first_input
+      inputs.register {
+        name: 'test_first',
+        description: 'command spec input 1',
+        factory: ->
+          first_input = {
+            complete: -> 'completions'
+            should_complete: -> 'perhaps'
+            close_on_cancel: -> true
+            value_for: -> 123
+            on_completed: Spy!
+            go_back: Spy!
+            on_cancelled: Spy!
+          }
+          first_input
+      }
 
-      inputs.register 'test_second', ->
-        second_input = {
-          complete: -> 'other completions'
-          should_complete: -> 'oh yes'
-          close_on_cancel: -> false
-          on_completed: Spy!
-          go_back: Spy!
-          on_cancelled: Spy!
-        }
-        second_input
+      inputs.register {
+        name: 'test_second',
+        description: 'command spec input 2',
+        factory: ->
+          second_input = {
+            complete: -> 'other completions'
+            should_complete: -> 'oh yes'
+            close_on_cancel: -> false
+            on_completed: Spy!
+            go_back: Spy!
+            on_cancelled: Spy!
+          }
+          second_input
+      }
 
-      inputs.register 'dummy', -> {}
+      inputs.register {
+        name: 'dummy',
+        description: 'command spec dummy input'
+        factory: -> {}
+      }
 
     after_each ->
       inputs.unregister 'test_first'

@@ -16,4 +16,8 @@ class YesOrNoInput
 
   value_for: (answer) => if answer == 'Yes' then true else false
 
-howl.inputs.register 'yes_or_no', YesOrNoInput
+howl.inputs.register {
+  name: 'yes_or_no',
+  description: 'Returns a boolean, corresponding to yes (true) or no (false)',
+  factory: YesOrNoInput
+}
