@@ -221,6 +221,13 @@ class Editor extends PropertyObject
 
       @sci\set_margin_width_n 0, width
 
+  @property line_padding:
+    get: => @sci\get_extra_ascent!
+    set: (value) =>
+      with @sci
+        \set_extra_ascent(value)
+        \set_extra_descent(value)
+
   @property active_lines: get: =>
     return if @selection.empty
       { @current_line }
@@ -402,6 +409,7 @@ class Editor extends PropertyObject
       @vertical_scrollbar = .vertical_scrollbar
       @cursor_line_highlighted = .cursor_line_highlighted
       @line_numbers = .line_numbers
+      @line_padding = .line_padding
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
@@ -621,6 +629,12 @@ with config
     default: 500
     type_of: 'number'
 
+  .define
+    name: 'line_padding'
+    description: 'Extra spacing above and below each line'
+    default: 0
+    type_of: 'number'
+
   for watched_property in *{
     'indentation_guides',
     'line_wrapping',
@@ -628,6 +642,7 @@ with config
     'vertical_scrollbar',
     'cursor_line_highlighted',
     'line_numbers',
+    'line_padding',
   }
     .watch watched_property, apply_property
 
