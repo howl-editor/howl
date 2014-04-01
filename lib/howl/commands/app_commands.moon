@@ -208,7 +208,7 @@ command.register
   inputs: {
     ->
       buffer = app.editor.buffer
-      inputs.line "Buffer grep in #{buffer.title}", buffer
+      inputs.line "Buffer grep in #{buffer.title}", buffer, app.editor
   }
   handler: (line) -> app.editor.cursor.line = line.nr
 
@@ -218,7 +218,7 @@ command.register
   inputs: {
     ->
       buffer = app.editor.buffer
-      inputs.line "Structure for #{buffer.title}", buffer, buffer.mode\structure app.editor
+      inputs.line "Structure for #{buffer.title}", buffer, app.editor, buffer.mode\structure app.editor
   }
   handler: (line) -> app.editor.cursor.line = tonumber line.nr
 

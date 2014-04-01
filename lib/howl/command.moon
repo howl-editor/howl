@@ -61,6 +61,8 @@ class State
   close_on_cancel: (readline) => @_dispatch 'close_on_cancel', readline
   complete: (text, readline) => @_dispatch 'complete', text, readline
   on_completed: (item, readline) => @_dispatch 'on_completed', item, readline
+  on_selection_changed: (item, readline) =>
+    @_dispatch 'on_selection_changed', item, readline
 
   on_submit: (text, readline) =>
     cmd = @cmd or resolve_command text
@@ -229,6 +231,7 @@ run = (cmd_string = nil) ->
     should_complete: (_, readline) -> state\should_complete readline
     close_on_cancel: (_, readline) -> state\close_on_cancel readline
     update: (_, text, readline) -> state\update text, readline
+    on_selection_changed: (_, item, readline) -> state\on_selection_changed item, readline
     on_completed: (_, item, readline) -> state\on_completed item, readline
     on_submit: (_, text, readline) -> state\on_submit text, readline
     go_back: (_, readline) -> state\go_back readline

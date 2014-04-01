@@ -142,6 +142,7 @@ class Readline extends PropertyObject
         @min_list_height = math.max .height, @min_list_height
 
     @_adjust_height!
+    @_selection_changed!
 
   _adjust_height: =>
     @gsci\set_size_request -1, @sci\text_height(0) * #@buffer.lines
@@ -248,10 +249,29 @@ class Readline extends PropertyObject
       \set_vscroll_bar false
       @gsci\set_size_request -1, \text_height(0)
 
-  _select_next: => @completion_list and @completion_list\select_next!
-  _select_prev: => @completion_list and @completion_list\select_prev!
-  _next_page: => @completion_list and @completion_list\next_page!
-  _prev_page: => @completion_list and @completion_list\prev_page!
+  _select_next: =>
+    if @completion_list
+      @completion_list\select_next!
+      @_selection_changed!
+
+  _select_prev: =>
+    if @completion_list
+      @completion_list\select_prev!
+      @_selection_changed!
+
+  _next_page: =>
+    if @completion_list
+      @completion_list\next_page!
+    @_selection_changed!
+
+  _prev_page: =>
+    if @completion_list
+      @completion_list\prev_page!
+      @_selection_changed!
+
+  _selection_changed: =>
+    if @input.on_selection_changed and @completion_list
+      @input\on_selection_changed @completion_list.selection, self
 
   _submit: =>
     value = @text
