@@ -322,8 +322,10 @@ common_auto_pairs = {
       }
       less_for: { 'else:%s*$'}
     }
-
     auto_pairs: common_auto_pairs
+    structure: (editor) =>
+      [l for l in *editor.buffer.lines when do
+        l\match('^%s*class%s') or l\match('^%s*def%s')]
 
   rstats:
     extensions: { 'r', 'rout', 'rhistory', 'rt' }
