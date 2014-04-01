@@ -471,6 +471,7 @@ class Editor extends PropertyObject
           @_brace_highlighted = true
         else
           matching_pos = @sci\brace_match current_pos - 1
+          current_pos -= 1 if matching_pos > 0
 
       if matching_pos >= 0
         @sci\brace_highlight current_pos, matching_pos
