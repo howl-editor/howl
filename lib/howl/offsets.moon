@@ -75,13 +75,15 @@ Offsets = {
 
     if byte_offset - m.b_offset > MIN_SPAN_BYTES
       m_offset_ptr = (ptr + byte_offset) - MIN_SPAN_BYTES
+      m_byte_offset = byte_offset
 
       -- position may be in the middle of a sequence here, so back up as needed
       while m_offset_ptr != p and band(m_offset_ptr[0], 0xc0) == 0x80
         m_offset_ptr -= 1
+        m_byte_offset -= 1
 
       c_offset = tonumber m.c_offset + C.g_utf8_pointer_to_offset(p, m_offset_ptr)
-      m = update_for mappings, c_offset, byte_offset - MIN_SPAN_BYTES
+      m = update_for mappings, c_offset, m_byte_offset - MIN_SPAN_BYTES
       p = m_offset_ptr
 
     offset_ptr = ptr + byte_offset
