@@ -7,6 +7,7 @@ import Scintilla, Completer, signal, bindings, config, command, clipboard from h
 import PropertyObject from howl.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
 import Searcher, CompletionPopup from howl.ui
+import auto_pair from howl.editing
 append = table.insert
 
 _editors = setmetatable {}, __mode: 'v'
@@ -439,11 +440,15 @@ class Editor extends PropertyObject
         @remove_popup!
       else
         if @popup.window.keymap
-          return true if bindings.dispatch event, 'completion', { @popup.window.keymap }, @popup.window
+          return true if bindings.dispatch event, 'popup', { @popup.window.keymap }, @popup.window
 
         @remove_popup! if not @popup.options.persistent
     else
       @searcher\cancel!
+
+    if auto_pair.handle event, @
+      @remove_popup!
+      return true
 
     maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
     bindings.process event, 'editor', maps, self

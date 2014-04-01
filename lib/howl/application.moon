@@ -222,7 +222,6 @@ class Application extends PropertyObject
       signal.connect 'mode-registered', self\_on_mode_registered
       signal.connect 'mode-unregistered', self\_on_mode_unregistered
       signal.connect 'buffer-saved', self\_on_buffer_saved
-      signal.connect 'key-press', (args) -> howl.editing.auto_pair.handle args.event, @editor
 
       window = @new_window!
       @_set_initial_status window
