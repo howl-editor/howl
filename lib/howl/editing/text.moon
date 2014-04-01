@@ -122,7 +122,7 @@ do_reflow = (editor, line, reflow_at) ->
   is_reflowing = false
 
 command.register
-  name: 'reflow-paragraph',
+  name: 'editor-reflow-paragraph',
   description: 'Reflows the current paragraph according to `hard_wrap_column`'
   handler: ->
     editor = app.editor
@@ -135,7 +135,8 @@ command.register
     else
       log.info 'Could not find paragraph to reflow'
 
-command.alias 'reflow-paragraph', 'fill-paragraph'
+command.alias 'editor-reflow-paragraph', 'reflow-paragraph', deprecated: true
+command.alias 'editor-reflow-paragraph', 'fill-paragraph', deprecated: true
 
 reflow_check = (args) ->
   editor = args.editor

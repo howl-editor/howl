@@ -669,7 +669,7 @@ for cmd_spec in *{
   { 'newline-and-format', 'Adds a new line, and formats as needed', 'newline_and_format' }
   { 'comment', 'Comments the selection or current line', 'comment' }
   { 'uncomment', 'Uncomments the selection or current line', 'uncomment' }
-  { 'toggle_comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
+  { 'toggle-comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
   { 'delete-line', 'Deletes the current line', 'delete_line' }
   { 'cut-to-end-of-line', 'Cuts to the end of line', 'delete_to_end_of_line' }
   { 'delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line', true }
@@ -695,6 +695,8 @@ for cmd_spec in *{
     name: "editor-#{cmd_spec[1]}"
     description: cmd_spec[2]
     handler: -> howl.app.editor[cmd_spec[3]] howl.app.editor, table.unpack args
+
+command.alias 'editor-toggle-comment', 'editor-toggle_comment', deprecated: true
 
 for sel_cmd_spec in *{
   { 'copy', 'Copies the current selection to the clipboard' }

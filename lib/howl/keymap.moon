@@ -25,7 +25,7 @@
     ctrl_Z:           'editor-redo'
     ctrl_q:           'show-doc-at-cursor'
     ctrl_space:       'editor-complete'
-    ctrl_slash:       'editor-toggle_comment'
+    ctrl_slash:       'editor-toggle-comment'
     ctrl_tab:         'view-next'
 
     shift_insert:     'editor-paste'
@@ -34,7 +34,7 @@
     ctrl_shift_a:     'editor-select-all'
 
     alt_s:            'buffer-structure'
-    alt_q:            'reflow-paragraph'
+    alt_q:            'editor-reflow-paragraph'
 
     left:             'cursor-left'
     right:            'cursor-right'

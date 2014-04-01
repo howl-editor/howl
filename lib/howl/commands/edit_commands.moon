@@ -76,10 +76,12 @@ command.register
     log.info "No documentation found for '#{ctx.word}'"
 
 command.register
-  name: 'force-mode',
-  description: 'Forces a specified mode for the current buffer'
+  name: 'buffer-mode',
+  description: 'Sets a specified mode for the current buffer'
   inputs: { 'mode' }
   handler: (mode) ->
     buffer = app.editor.buffer
     buffer.mode = mode
     log.info "Forced mode '#{mode.name}' for buffer '#{buffer}'"
+
+command.alias 'buffer-mode', 'force-mode', deprecated: true
