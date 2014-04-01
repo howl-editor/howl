@@ -14,9 +14,11 @@ amount of items in the completion list.
 - Sped up chunk.text access, resulting in a giant speed-up for buffer-grep and
 buffer-structure commands when working with large files.
 
-### Bugs
+### Bugs fixed
 
 - Completion popup now closes upon entering a non-character
+
+- Brace matching of braces before the cursor are now highlighted correctly.
 
 - Buffer grep fixed for buffers with empty lines
 
@@ -26,6 +28,8 @@ buffer-structure commands when working with large files.
 scrolling.
 
 - `buffer-replace` command now works correctly with an empty replacement string.
+
+- Boundary matching was not working correctly in all cases.
 
 ### VI bundle
 
@@ -42,11 +46,14 @@ renamed:
 * toggle-fullscreen -> window-toggle-fullscreen
 * toggle-maximized -> window-toggle-maximized
 
+* reflow-paragraph -> editor-reflow-paragraph
+
 * search-forward -> buffer-search-forward
 * repeat-search -> buffer-repeat-search
 * replace -> buffer-replace
 * replace-pattern -> buffer-replace-pattern
 * reload-buffer -> buffer-reload
+* force-mode -> buffer-mode
 
 * mode-set -> set-for-mode
 * buffer-set -> set-for-buffer
@@ -55,6 +62,10 @@ renamed:
 * new-view-below -> view-new-below
 * new-view-left-of -> view-new-left-of
 * new-view-right-of -> view-new-right-of
+
+In addition, the following alias has been deprecated:
+
+* fill-paragraph (alias for editor-reflow-paragraph)
 
 The old command names are still present and working, but are deprecated and will
 be removed in a future release.
