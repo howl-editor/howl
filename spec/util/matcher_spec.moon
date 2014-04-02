@@ -7,11 +7,18 @@ describe 'Matcher(candidates)', ->
     m = Matcher c
     assert.same { 'One' }, m('ne')
 
-  it 'matches if the search matches at boundaries', ->
-    c = { 'green fields', 'green sfinx' }
-    m = Matcher c
-    assert.same { 'green fields' }, m('gf')
-    assert.same { 'apaass_so' }, Matcher({'apaass_so'})('as')
+  describe '(boundary matches)', ->
+
+    it 'matches if the search matches at boundaries', ->
+      c = { 'green fields', 'green sfinx' }
+      m = Matcher c
+      assert.same { 'green fields' }, m('gf')
+      assert.same { 'apaass_so' }, Matcher({'apaass_so'})('as')
+
+    it 'matches if the search matches at upper case boundaries', ->
+      c = { 'camelCase', 'a CreditCard', 'chacha' }
+      m = Matcher c
+      assert.same { 'camelCase', 'a CreditCard' }, m('cc')
 
   it 'candidates are automatically converted to strings', ->
     candidate = setmetatable {}, __tostring: -> 'auto'

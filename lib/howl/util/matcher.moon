@@ -12,11 +12,22 @@ leading_p = "(?:^|.*?#{sep_p})"
 boundary_part_p = (p) ->
   "(?:#{p}|#{non_sep_p}*#{sep_p}#{p})()"
 
+case_boundary_part_p = (p) ->
+  upper = p.uupper
+  "(?:#{p}|#{upper}|\\p{Ll}*#{upper})()"
+
 boundary_pattern = (search, reverse) ->
   parts = [r.escape(search[i]) for i = 1, search.ulen]
   leading = reverse and leading_greedy_p or leading_p
   p = leading .. parts[1] .. '()'
   p ..= table.concat [boundary_part_p(parts[i]) for i = 2, #parts]
+  r(p)
+
+case_boundary_pattern = (search, reverse) ->
+  parts = [r.escape(search[i]) for i = 1, search.ulen]
+  leading = reverse and leading_greedy_p or leading_p
+  p = leading
+  p ..= table.concat [case_boundary_part_p(part) for part in *parts]
   r(p)
 
 score_for = (match, text, type, reverse, base_score) ->
@@ -37,14 +48,22 @@ score_for = (match, text, type, reverse, base_score) ->
     end_pos = match[#match]
     (end_pos - start_pos) + start_pos + length_penalty
 
-do_match = (text, boundary_p, search) ->
-  match = { boundary_p\match text }
-  return 'boundary', match if #match > 0
-  match = { text\ufind search, 1, true }
-  return 'exact', match if #match > 0
-  nil
+create_matcher = (search, reverse) ->
+  search = search.ulower
+  boundary_p = boundary_pattern search, reverse
+  case_boundary_p = case_boundary_pattern search, reverse
+
+  (text, case_text) ->
+    match = { boundary_p\match text }
+    return 'boundary', match if #match > 0
+    match = { case_boundary_p\match case_text }
+    return 'boundary', match if #match > 0
+    match = { text\ufind search, 1, true }
+    return 'exact', match if #match > 0
+    nil
 
 class Matcher
+
   new: (@candidates, @options = {}) =>
     @_load_candidates!
 
@@ -58,11 +77,11 @@ class Matcher
 
     lines = @cache.lines[search\usub 1, -2] or @lines
     matching_lines = {}
-    boundary_p = boundary_pattern search, @options.reverse
+    matcher = create_matcher search, reverse
 
     for i, line in ipairs lines
       text = line.text
-      type, match = do_match text, boundary_p, search
+      type, match = matcher text, line.case_text
       if match
         score = score_for match, text, type, @options.reverse, @base_score
         append matches, index: line.index, :score
@@ -78,9 +97,7 @@ class Matcher
     matching_candidates
 
   explain: (search, text, options = {}) ->
-    search = search.ulower
-    boundary_p = boundary_pattern search, options.reverse
-    how, match = do_match text.ulower, boundary_p, search
+    how, match = create_matcher(search, reverse)(text.ulower, text)
     return nil unless match
     if how == 'exact'
       { start_pos, end_pos } = match
@@ -107,11 +124,9 @@ class Matcher
       else
         text = tostring candidate
 
-      text = text.ulower
-      append @lines, index: i, :text
+      append @lines, index: i, text: text.ulower, case_text: text
       max_len = max max_len, #text
 
     @base_score = max_len * 3
-
 
 return Matcher
