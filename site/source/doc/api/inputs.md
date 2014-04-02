@@ -76,6 +76,12 @@ Called whenever the text in the Readline changes. `text` is the current text in
 the Readline, which is being completed. `readline` is the
 [Readline] instance.
 
+### on_selection_changed(input, item, readline)
+
+Called whenever the currently selected item in the completion list changes.
+`item` is the newly selected item - this is one of the items from the `list`
+originally returned by `complete()`. `readline` is the [Readline] instance.
+
 ### on_completed (input, item, readline)
 
 Called when the user has selected an item from the completion list. `item` is
