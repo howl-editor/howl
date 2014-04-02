@@ -211,6 +211,28 @@ class Editor extends PropertyObject
   @property lines_on_screen:
     get: => @sci\lines_on_screen!
 
+  @property first_visible_line:
+    get: => @sci\get_first_visible_line! + 1
+    set: (nr) =>
+      if nr < 1 or nr> #@buffer.lines
+        error("Line number #{nr} out of range", 2)
+      @sci\set_first_visible_line(nr - 1)
+
+  @property last_visible_line:
+    get: => @first_visible_line + @lines_on_screen - 1
+    set: (nr) =>
+      if nr < 1 or nr > #@buffer.lines
+        error("Line number #{nr} out of range", 2)
+      @first_visible_line = math.max(1, nr - @lines_on_screen + 1)
+
+  @property centered_visible_line:
+    get: => @first_visible_line + math.floor(@lines_on_screen / 2)
+    set: (nr) =>
+      if nr < 1 or nr > #@buffer.lines
+        error("Line number #{nr} out of range", 2)
+      first_nr = nr - math.floor(@lines_on_screen / 2) + 1
+      @first_visible_line = math.max(1, first_nr)
+
   @property line_numbers:
     get: => @sci\get_margin_width_n(0) > 0
     set: (flag) =>
