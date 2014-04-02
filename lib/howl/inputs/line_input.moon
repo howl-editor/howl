@@ -29,7 +29,7 @@ class LineInput
     highlight.remove_all 'search', @editor.buffer
     nr = tonumber(item[1])
     line = @editor.buffer.lines[nr]
-    self.editor.centered_visible_line = nr
+    @editor.centered_visible_line = nr
 
     if text and not text.is_empty
       -- highlight matched text
