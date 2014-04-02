@@ -5,11 +5,11 @@ import Matcher from howl.util
 import highlight from howl.ui
 
 class LineInput
-  new: (@title, buffer, @editor, @lines = buffer.lines) =>
+  new: (@title, @editor, @lines = editor.buffer.lines) =>
     @completion_options = title: @title, list: column_styles: { 'string' }
     items = [{tostring(l.nr), l.chunk} for l in *@lines]
     @matcher = Matcher items, preserve_order: true
-    buffer\lex buffer.size
+    @editor.buffer\lex @editor.buffer.size
 
   complete: (text) =>
     return self.matcher(text), @completion_options
@@ -29,7 +29,7 @@ class LineInput
     highlight.remove_all 'search', @editor.buffer
     nr = tonumber(item[1])
     line = @editor.buffer.lines[nr]
-    @editor.sci\scroll_range(line.byte_end_pos, line.byte_start_pos)
+    self.editor.centered_visible_line = nr
 
     if text and not text.is_empty
       -- highlight matched text
