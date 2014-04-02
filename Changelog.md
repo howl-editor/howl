@@ -9,27 +9,23 @@ amount of items in the completion list.
 
 - Added howl.clipboard, new module for handling multiple clipboard items.
 
+- Added a new configuration variable, `line_padding`, which allows for setting
+extra padding for lines (issue #14)
+
 - Removed fuzzy matching. It was noisy, and added little value.
 
-- Sped up chunk.text access, resulting in a giant speed-up for buffer-grep and
-buffer-structure commands when working with large files.
+- Added case boundary matching (e.g. 'cc' now match against 'CreditCard' and
+'camelCase').
 
-### Bugs fixed
+- Improved buffer-grep and buffer-structure commands:
+  * They are about an order of magnitude faster for large files (issue #7)
+  * The now provide live previews by automatically showing the currently
+selected line in the buffer with the search highlighting (issue #15)
 
-- Completion popup now closes upon entering a non-character
+- `open` command: Completing a directory with `/` now changes directory
+automatically (issue #5).
 
-- Brace matching of braces before the cursor are now highlighted correctly.
-
-- Buffer grep fixed for buffers with empty lines
-
-- Byte code compilation no longers requires a $DISPLAY
-
-- Overly long lines in the readline are now shortened to avoid horizontal
-scrolling.
-
-- `buffer-replace` command now works correctly with an empty replacement string.
-
-- Boundary matching was not working correctly in all cases.
+- Better structure view for Python mode (issue #12)
 
 ### VI bundle
 
@@ -69,6 +65,25 @@ In addition, the following alias has been deprecated:
 
 The old command names are still present and working, but are deprecated and will
 be removed in a future release.
+
+### Bugs fixed
+
+- Completion popup now closes upon entering a non-character (issue #9)
+
+- Brace matching of braces before the cursor are now highlighted correctly
+(issue #16)
+
+- Buffer grep fixed for buffers with empty lines
+
+- Byte code compilation no longers requires a $DISPLAY
+
+- Overly long lines in the readline caused horizontal scrolling (issue #8)
+
+- `buffer-replace` command failed to handle empty replacement strings
+
+- Boundary matching was not working correctly in all cases
+
+- Pasting in the readline did not update completions (issue #6)
 
 ## 0.1.1 (2014-03-15)
 
