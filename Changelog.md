@@ -33,6 +33,7 @@ automatically (issue #5).
 - Fix count handling for yank
 - Fix <y><y> to yank current line correctly
 - Support '<' and '>' in visual mode
+- New bindings: 'H', 'L', 'M'
 
 ### Command name changes
 

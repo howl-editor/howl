@@ -48,6 +48,9 @@ map = {
       else
        apply editor, (editor) -> editor.cursor\left!
 
+    H: (editor) -> apply editor, (editor) ->
+      editor.cursor.line = editor.first_visible_line
+
     l: (editor) ->
       if editor.cursor.at_end_of_line
         state.reset!
@@ -78,10 +81,16 @@ map = {
       if _state.count then editor.cursor.line = _state.count
       else editor.cursor\eof!
 
+    L: (editor) -> apply editor, (editor) ->
+      editor.cursor.line = editor.last_visible_line
+
     f: (editor) -> bindings.capture forward_to_char
     F: (editor) -> bindings.capture back_to_char
     '/': 'buffer-search-forward'
     n: 'buffer-repeat-search'
+
+    M: (editor) -> apply editor, (editor) ->
+      editor.cursor.line = editor.centered_visible_line
 
     '$': (editor) -> apply editor, (editor) ->
       editor.cursor.column_index = math.max(1, #editor.current_line)
