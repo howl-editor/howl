@@ -55,6 +55,7 @@ static gchar *get_app_root(const gchar *invocation_path)
   }
 
   path = g_file_get_path(root);
+  g_free(called_as);
   g_object_unref(app);
   g_object_unref(parent);
   g_object_unref(root);
