@@ -49,7 +49,7 @@ map = {
        apply editor, (editor) -> editor.cursor\left!
 
     H: (editor) -> apply editor, (editor) ->
-      editor.cursor.line = editor.first_visible_line
+      editor.cursor.line = editor.line_at_top
 
     l: (editor) ->
       if editor.cursor.at_end_of_line
@@ -82,7 +82,7 @@ map = {
       else editor.cursor\eof!
 
     L: (editor) -> apply editor, (editor) ->
-      editor.cursor.line = editor.last_visible_line
+      editor.cursor.line = editor.line_at_bottom
 
     f: (editor) -> bindings.capture forward_to_char
     F: (editor) -> bindings.capture back_to_char
@@ -90,7 +90,7 @@ map = {
     n: 'buffer-repeat-search'
 
     M: (editor) -> apply editor, (editor) ->
-      editor.cursor.line = editor.centered_visible_line
+      editor.cursor.line = editor.line_at_center
 
     '$': (editor) -> apply editor, (editor) ->
       editor.cursor.column_index = math.max(1, #editor.current_line)

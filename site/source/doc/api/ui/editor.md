@@ -35,12 +35,6 @@ Assigning another buffer to this property would cause that buffer to be
 displayed in the editor, and would cause the `before-buffer-switch` and
 `after-buffer-switch` signals to be emitted.
 
-### centered_visible_line
-
-Holds the line number of the line at the center of the editor window.
-Assigning this scrolls the editor window so the specified line is as close
-to the center as possible.
-
 ### cursor
 
 A [Cursor] instance for the particular editor. Can be used to access and
@@ -62,12 +56,6 @@ current cursor position. Read-only.
 
 Contains the currently active [line][Line], i.e. the line that the cursor is
 currently positioned on. Read-only.
-
-### first_visible_line
-
-Holds the line number of the line visible at the top of the editor window.
-Assigning this scrolls the editor window so the specified line is visible as
-close to the top as possible.
 
 ### horizontal_scrollbar
 
@@ -106,11 +94,23 @@ howl.bindings.push {
 
 ```
 
-### last_visible_line
+### line_at_bottom
 
 Holds the line number of the line visible at the bottom of the editor window.
 Assigning this scrolls the editor window so the specified line is visible as
 close to the bottom as possible.
+
+### line_at_center
+
+Holds the line number of the line at the center of the editor window.
+Assigning this scrolls the editor window so the specified line is as close
+to the center as possible.
+
+### line_at_top
+
+Holds the line number of the line visible at the top of the editor window.
+Assigning this scrolls the editor window so the specified line is visible as
+close to the top as possible.
 
 ### line_numbers
 
