@@ -86,6 +86,8 @@ be removed in a future release.
 
 - Pasting in the readline did not update completions (issue #6)
 
+- Lib directory not found when binary was invoked without path (issue #17)
+
 ## 0.1.1 (2014-03-15)
 
 - Fix incompatibility with older Gtk versions.
