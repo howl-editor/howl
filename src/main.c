@@ -37,10 +37,14 @@ static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 
 static gchar *get_app_root(const gchar *invocation_path)
 {
+  gchar *called_as = (g_file_test("/proc/self/exe", G_FILE_TEST_IS_SYMLINK)) ?
+                      g_file_read_link("/proc/self/exe", NULL) :
+                      g_strdup(invocation_path);
+
   gchar *path;
   GFile *root, *app, *parent, *share_dir;
 
-  app = g_file_new_for_path(invocation_path);
+  app = g_file_new_for_path(called_as);
   parent = g_file_get_parent(app);
   root = g_file_get_parent(parent);
   share_dir = g_file_get_child(root, "share/howl");
