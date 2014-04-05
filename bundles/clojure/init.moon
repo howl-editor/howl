@@ -17,7 +17,7 @@ register_commands = ->
   command.register
     name: 'nrepl-connect',
     description: 'Connects to an nrepl instance'
-    inputs: { 'nrepl_port' }
+    input: 'nrepl_port'
     handler: (port) ->
       nrepl.connect port
       log.info "Connected to nrepl at :#{port}"
@@ -25,7 +25,7 @@ register_commands = ->
   command.register
     name: 'nrepl-eval',
     description: 'Evaluates a given Clojure form'
-    inputs: { '*string' }
+    inputs: { 'string' }
     handler: (form) ->
       res = nrepl.eval form
       if res.value

@@ -19,13 +19,12 @@ prompt as well.
 
 From an implementation perspective, commands are specified as command
 definitions, which are simple tables, providing the name of the command, a
-description, a list of [inputs] and a handler that will be invoked for the
-command. While the [Readline] can be used directly to read input from the user,
-the command module provides an additional layer above the Readline that makes it
-easy to write a new command without having to deal with the Readline directly.
-It also offers a simple multiplexing over the readline, allowing for commands to
-have more than one input while handling the input instantiating and input
-switching.
+description, an optional [input](inputs.html) and a handler that will be invoked
+for the command. While the [Readline] can be used directly to read input from
+the user, the command module provides an additional layer above the Readline
+that makes it easy to write a new command without having to deal with the
+Readline directly. It also handles the selection of a specific command as the
+user types and the instantiation of the correct command.
 
 As an example, consider the `open` command (example slightly adapted to include
 the full paths of the needed howl components):
@@ -34,7 +33,7 @@ the full paths of the needed howl components):
 howl.command.register
   name: 'open',
   description: 'Open file'
-  inputs: { '*file' }
+  inputs: 'file'
   handler: (file) -> howl.app\open_file file
 ```
 
@@ -44,7 +43,7 @@ completions, etc., and will convert the user input to a File instance, which is
 what the `handler` will actually receive. The separation of [inputs] and command
 handlers allows for keeping commands rather simple. And since the inputs can be
 shared, most commands can simply re-use existing inputs. As an example, adding
-another command that works on a file would also use `file` input.
+another command that works on a file would also use the same `file` input.
 
 _See also_:
 
@@ -81,9 +80,9 @@ contain the following fields:
 - `handler`: _[required]_ A callable handler that will be invoked
  to execute the command. The handler will receive arguments corresponding to the
 specified inputs.
-- `inputs`: An optional list of inputs for the command. Each input is either a
-string, in which case it's looked up in [inputs], or an instance of an input
-factory, which will be invoked to instantiate the input as the command is run.
+- `input`: An optional input for the command. The value can be either a string,
+in which case it's looked up in [inputs], or an instance of an input factory,
+which will be invoked to instantiate the input as the command is run.
 
 ### run (cmd_string = nil)
 

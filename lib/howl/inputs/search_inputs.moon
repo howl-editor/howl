@@ -21,14 +21,15 @@ class ForwardSearchInput extends SearchInput
 
 class ReplaceInput
   close_on_cancel: -> true
-  can_finish: => @target != nil
 
   on_submit: (text, readline) =>
     unless @target
       @target = text
       readline.prompt ..= "'#{text}' with "
       readline.text = ''
-      false
+      return false
+
+    true
 
   value_for: (text) => { @target, text }
 

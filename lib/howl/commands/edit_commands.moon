@@ -7,7 +7,7 @@ import BufferPopup from howl.ui
 command.register
   name: 'buffer-search-forward',
   description: 'Starts an interactive forward search'
-  inputs: { '*forward_search' }
+  input: 'forward_search'
   handler: -> app.editor.searcher\commit!
 
 command.alias 'buffer-search-forward', 'search-forward', deprecated: true
@@ -15,7 +15,6 @@ command.alias 'buffer-search-forward', 'search-forward', deprecated: true
 command.register
   name: 'buffer-repeat-search',
   description: 'Repeats the last search'
-  inputs: {}
   handler: -> app.editor.searcher\next!
 
 command.alias 'buffer-repeat-search', 'repeat-search', deprecated: true
@@ -23,7 +22,7 @@ command.alias 'buffer-repeat-search', 'repeat-search', deprecated: true
 command.register
   name: 'buffer-replace',
   description: 'Replaces text (within selection or globally)'
-  inputs: { '*replace' }
+  input: 'replace'
   handler: (values) ->
     { target, replacement } = values
     escaped = target\gsub '[%p%%]', '%%%1'
@@ -40,7 +39,7 @@ command.alias 'buffer-replace', 'replace', deprecated: true
 command.register
   name: 'buffer-replace-pattern',
   description: 'Replaces text using Lua patterns (within selection or globally)'
-  inputs: { '*replace' }
+  input: 'replace'
   handler: (values) ->
     { target, replacement } = values
     chunk = app.editor.active_chunk
@@ -78,7 +77,7 @@ command.register
 command.register
   name: 'buffer-mode',
   description: 'Sets a specified mode for the current buffer'
-  inputs: { 'mode' }
+  input: 'mode'
   handler: (mode) ->
     buffer = app.editor.buffer
     buffer.mode = mode

@@ -1,4 +1,4 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 import inputs, config from howl
@@ -9,7 +9,6 @@ append = table.insert
 commands = {}
 accessible_names = {}
 
--- command state
 resolve_command = (name) ->
   def = commands[name]
   def = commands[def.alias_for] if def and def.alias_for -- alias
@@ -20,6 +19,15 @@ parse_cmd = (text) ->
   return resolve_command(cmd), cmd, rest if cmd
   return nil, nil, text
 
+load_input = (input) ->
+  return nil if not input
+  if type(input) == 'string'
+    factory = inputs[input]
+    if not factory then error "Could not find input for `#{input}`"
+    input = factory
+
+  input!
+
 class State
   new: =>
     @inputs = {}
@@ -29,114 +37,52 @@ class State
     if not @cmd
       @cmd, name, text = parse_cmd text
       return if not @cmd
-      if readline
-        readline.prompt ..= name .. ' '
-        readline.text = text or ''
 
-    @_parse_arguments text, readline
+      readline.prompt ..= name .. ' '
+      readline.text = text or ''
+      @input = load_input @cmd.input
 
-    -- we always want the next input loaded, since we might be on the next
-    -- incomplete argument
-    @_ensure_input_loaded #@arguments + 1
+    @_dispatch 'update', text, readline
 
-  _parse_arguments: (text, readline) =>
-    args = [ part for part in text\gmatch '(%S+)%s' ]
-
-    for index, arg in ipairs args
-      @_ensure_input_loaded #@arguments + 1
-      current_input = @inputs[#@inputs]
-      return unless current_input
-
-      if current_input.wildcard
-        @arguments[index] = table.concat args, ' ', index
-        return
-
-      append @arguments, arg
-      readline.prompt ..= arg .. ' ' if readline
-
-  should_complete: (readline) =>
-    should = @_dispatch 'should_complete', readline
-    return should != nil and should or config.complete == 'always'
-
-  close_on_cancel: (readline) => @_dispatch 'close_on_cancel', readline
   complete: (text, readline) => @_dispatch 'complete', text, readline
   on_completed: (item, readline) => @_dispatch 'on_completed', item, readline
+  close_on_cancel: (readline) => @_dispatch 'close_on_cancel', readline
+  go_back: (readline) => @_dispatch 'go_back', readline
+  on_cancelled: (readline) => @_dispatch 'on_cancelled', readline
+
+  should_complete: (readline) =>
+    return @_dispatch('should_complete', readline) if @input
+    config.complete == 'always'
+
   on_selection_changed: (item, readline) =>
     @_dispatch 'on_selection_changed', item, readline
 
   on_submit: (text, readline) =>
-    cmd = @cmd or resolve_command text
-    return false unless cmd
+    if not @cmd and resolve_command text
+      @update text .. ' ', readline
 
-    if readline
-      input_returned = @_dispatch 'on_submit', text, readline
-      return input_returned unless input_returned == nil
-      @update readline.text .. ' ', readline
+    return false unless @cmd
 
-    input_can_finish = @_dispatch('can_finish')
-    return input_can_finish if input_can_finish != nil
-    #@arguments >= #cmd.inputs
+    if @input
+      input_says = @_dispatch 'on_submit', text, readline
+      return input_says if input_says != nil
 
-  go_back: (readline) => @_dispatch 'go_back', readline
-  on_cancelled: (readline) =>
-    for input in *@inputs
-      if input.target.on_cancelled
-        input.target\on_cancelled readline
+      not readline.text.is_blank
 
   _dispatch: (handler, ...) =>
-    current_input = @inputs[#@inputs]
-    if current_input and current_input.target[handler]
-      return current_input.target[handler] current_input.target, ...
+    if @input and @input[handler]
+      return @input[handler] @input, ...
+
     nil
 
   submit: (value) =>
     cmd = @cmd or resolve_command value
     return false if not cmd
 
-    if #@arguments == 0 and @_dispatch('can_finish')
-      @arguments[1] = value
-
-    if #@arguments >= #cmd.inputs
-      values = {}
-      for i = 1, #@arguments
-        input = @inputs[i] or @inputs[#@inputs]
-        target = input.target
-        value = @arguments[i]
-        value = target\value_for(value) if target.value_for
-        append values, value
-
-      cmd table.unpack values
-      return true
-
-    return false
-
-  to_string: =>
-    return '' if not @cmd
-    s = @cmd.name
-    if #@arguments > 0
-      s ..= ' ' .. table.concat @arguments, ' '
-    s .. ' '
-
-  _ensure_input_loaded: (input_index) =>
-    input = @inputs[input_index]
-
-    if not input
-      return nil if not @cmd.inputs
-      input_spec = @cmd.inputs[input_index]
-      return nil if not input_spec
-      input_factory = input_spec.factory
-      if type(input_factory) == 'string'
-        factory = inputs[input_factory]
-        if not factory then error "Could not find input for `#{input_factory}`"
-        input_factory = factory
-
-      target = input_factory!
-      input = :target, wildcard: input_spec.wildcard
-      table.insert @inputs, input_index, input
-
-    input
-
--- command interface
+    values = { value }
+    values = { @input\value_for(value) } if @input and @input.value_for
+    cmd table.unpack values
+    true
 
 accessible_name = (name) ->
   name\lower!\gsub '[%s%p]+', '_'
@@ -146,15 +92,13 @@ parse_inputs = (inputs = {}) ->
 
   for i = 1, #inputs
     input = inputs[i]
-    wildcard = false
     wildcard_input = type(input) == 'string' and input\match('^%*(.+)$')
 
     if wildcard_input
       error('Wildcard input only allowed as last input') if i != #inputs
       input = wildcard_input
-      wildcard = true
 
-    append iputs, factory: input, :wildcard
+    append iputs, factory: input
 
   iputs
 
@@ -164,6 +108,7 @@ register = (spec) ->
 
   c = setmetatable moon.copy(spec), __call: (...) => spec.handler ...
   c.inputs = parse_inputs spec.inputs
+  c.input or= spec.inputs and spec.inputs[1]
   commands[spec.name] = c
   sane_name = accessible_name spec.name
   accessible_names[sane_name] = c if sane_name != spec.name
@@ -222,7 +167,19 @@ command_completer = ->
   matcher = Matcher items
   (text) -> matcher(text), completion_options
 
+direct_dispatch = (cmd_string) ->
+  return false if not cmd_string or cmd_string.is_blank
+  cmd = parse_cmd cmd_string
+  cmd or= resolve_command cmd_string
+  return false unless cmd
+  input = load_input cmd.input
+  return false if input
+  cmd!
+  true
+
 run = (cmd_string = nil) ->
+  return if direct_dispatch cmd_string
+
   cmd_completer = nil
   state = State!
 
@@ -233,6 +190,7 @@ run = (cmd_string = nil) ->
     update: (_, text, readline) -> state\update text, readline
     on_selection_changed: (_, item, readline) -> state\on_selection_changed item, readline
     on_completed: (_, item, readline) -> state\on_completed item, readline
+    on_cancelled: (_, readline) -> state\on_cancelled readline
     on_submit: (_, text, readline) -> state\on_submit text, readline
     go_back: (_, readline) -> state\go_back readline
 
@@ -243,26 +201,12 @@ run = (cmd_string = nil) ->
         cmd_completer or= command_completer!
         cmd_completer text
 
-  prompt = ':'
-  text = nil
-
-  if cmd_string and not cmd_string.is_empty
-    state\update cmd_string .. ' '
-    if state\on_submit ''
-      if state\submit!
-        return true
-    else
-      prompt ..= state\to_string!
-      text = cmd_string if not state.cmd
-
   readline = howl.app.window.readline
-  value = readline\read prompt, cmd_input, :text
-  if not value
-    state\on_cancelled readline
-  else
-    state\update readline.text .. ' ', readline
+  text = cmd_string
+  text = "#{cmd_string} " if cmd_string and not cmd_string\contains ' '
+  value = readline\read ':', cmd_input, :text
+  if value
     state\submit value
-
 
 return setmetatable { :register, :unregister, :alias, :run, :names, :get }, {
   __index: (key) => commands[key] or accessible_names[key]

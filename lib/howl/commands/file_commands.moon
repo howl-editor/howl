@@ -28,7 +28,7 @@ show_diff_buffer = (title, contents) ->
 command.register
   name: 'open',
   description: 'Open file'
-  inputs: { '*file' }
+  input: 'file'
   handler: (file) -> app\open_file file
 
 command.alias 'open', 'e'
@@ -54,7 +54,6 @@ command.register
 command.register
   name: 'save',
   description: 'Saves the current buffer to file'
-  inputs: {}
   handler: ->
     buffer = app.editor.buffer
     return command.run 'save-as' unless buffer.file
@@ -69,7 +68,7 @@ command.alias 'save', 'w'
 command.register
   name: 'save-as',
   description: 'Saves the current buffer to a given file'
-  inputs: { '*file' }
+  input: 'file'
   handler: (file) ->
     buffer = app.editor.buffer
     buffer.file = file
@@ -78,7 +77,6 @@ command.register
 command.register
   name: 'close',
   description: 'Closes the current buffer'
-  inputs: {}
   handler: ->
     buffer = app.editor.buffer
     app\close_buffer buffer

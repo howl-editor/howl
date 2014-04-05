@@ -66,6 +66,7 @@ class Readline extends PropertyObject
     @text = opts.text or ''
     @completion_unwanted = false
     @seen_interaction = false
+    @_update_input! unless @text.is_blank
     @_complete!
     coroutine.yield!
 
@@ -303,6 +304,7 @@ class Readline extends PropertyObject
       input_wants_close = @input.close_on_cancel and @input\close_on_cancel self
       return if @seen_interaction and not input_wants_close
 
+    @input\on_cancelled self if @input.on_cancelled
     @hide!
     coroutine.resume @co, nil
 

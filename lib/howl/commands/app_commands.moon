@@ -41,7 +41,7 @@ command.register
 command.register
   name: 'switch-buffer',
   description: 'Switches to another buffer'
-  inputs: { 'buffer' }
+  input: 'buffer'
   handler: (buffer) -> app.editor.buffer = buffer
 
 command.register
@@ -76,13 +76,13 @@ set_variable = (assignment, target) ->
 command.register
   name: 'set',
   description: 'Sets a configuration variable globally'
-  inputs: { '*variable_assignment' }
+  input: 'variable_assignment'
   handler: (assignment) -> set_variable assignment, config
 
 command.register
   name: 'set-for-mode',
   description: 'Sets a configuration variable for the current mode'
-  inputs: { '*variable_assignment' }
+  input: 'variable_assignment'
   handler: (assignment) ->
     set_variable assignment, app.editor.buffer.mode.config
 
@@ -91,7 +91,7 @@ command.alias 'set-for-mode', 'mode-set', deprecated: true
 command.register
   name: 'set-for-buffer',
   description: 'Sets a configuration variable for the current buffer'
-  inputs: { '*variable_assignment' }
+  input: 'variable_assignment'
   handler: (assignment) ->
     set_variable assignment, app.editor.buffer.config
 
@@ -124,7 +124,7 @@ command.register
 command.register
   name: 'describe-input',
   description: 'Shows information for an input'
-  inputs: { 'input' }
+  input: 'input'
   handler: (name) ->
     def = inputs[name]
     error "Unknown input '#{name}'" unless def
@@ -139,7 +139,7 @@ command.register
 command.register
   name: 'describe-signal',
   description: 'Describes a given signal'
-  inputs: { 'signal' }
+  input: 'signal'
   handler: (name) ->
     def = signal.all[name]
     error "Unknown signal '#{name}'" unless def
@@ -165,7 +165,7 @@ command.register
 command.register
   name: 'bundle-unload'
   description: 'Unloads a specified bundle'
-  inputs: { '*loaded_bundle' }
+  input: 'loaded_bundle'
   handler: (name) ->
     log.info "Unloading bundle '#{name}'.."
     bundle.unload name
@@ -174,7 +174,7 @@ command.register
 command.register
   name: 'bundle-load'
   description: 'Loads a specified, currently unloaded, bundle'
-  inputs: { '*unloaded_bundle' }
+  input: 'unloaded_bundle'
   handler: (name) ->
     log.info "Loading bundle '#{name}'.."
     bundle.load_by_name name
@@ -183,7 +183,7 @@ command.register
 command.register
   name: 'bundle-reload'
   description: 'Reloads a specified bundle'
-  inputs: { '*loaded_bundle' }
+  input: 'loaded_bundle'
   handler: (name) ->
     log.info "Reloading bundle '#{name}'.."
     bundle.unload name if _G.bundles[name]
@@ -205,21 +205,19 @@ command.register
 command.register
   name: 'buffer-grep'
   description: 'Matches certain buffer lines in realtime'
-  inputs: {
-    ->
-      buffer = app.editor.buffer
-      inputs.line "Buffer grep in #{buffer.title}", app.editor
-  }
+  input: ->
+    buffer = app.editor.buffer
+    inputs.line "Buffer grep in #{buffer.title}", app.editor
+
   handler: (line) -> app.editor.cursor.line = line.nr
 
 command.register
   name: 'buffer-structure'
   description: 'Shows the structure for the given buffer'
-  inputs: {
-    ->
-      buffer = app.editor.buffer
-      inputs.line "Structure for #{buffer.title}", app.editor, buffer.mode\structure app.editor
-  }
+  input: ->
+    buffer = app.editor.buffer
+    inputs.line "Structure for #{buffer.title}", app.editor, buffer.mode\structure app.editor
+
   handler: (line) -> app.editor.cursor.line = tonumber line.nr
 
 -----------------------------------------------------------------------

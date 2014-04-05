@@ -98,6 +98,10 @@ which is either the text currently in the Readline, or the selected item from a
 completion list. The callback can return `false` to halt further processing of
 the submit, in which case the Readline stays open.
 
+### on_cancelled (input, readline)
+
+Called if the user cancels the Readline, typically be pressing `escape`.
+
 ### value_for (input, value)
 
 Called as the final step in the readline processing, after a value has been
