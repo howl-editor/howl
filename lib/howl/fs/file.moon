@@ -30,6 +30,7 @@ class File extends PropertyObject
   separator: jit.os == 'Windows' and '\\' or '/'
 
   new: (target) =>
+    error "missing parameter #1 for File()", 3 unless target
     t = typeof target
     if t == 'File'
       @gfile = target.gfile

@@ -27,9 +27,9 @@ home_dir = -> File os.getenv 'HOME'
 
 class FileInput
   new: (text, @directory_reader) =>
-    @directory = File text
+    @directory = File text if text and not text.is_blank
 
-    unless @directory.exists and @directory.is_directory
+    unless @directory and @directory.exists and @directory.is_directory
       @directory = File glib.get_current_dir!
 
       if app.editor
