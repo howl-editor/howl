@@ -327,7 +327,10 @@ class Editor extends PropertyObject
     return unless clip
     if not clip.whole_lines
       if opts.where == 'after'
-        @cursor.at_end_of_line and @insert(' ') or @cursor\right!
+        if @cursor.at_end_of_line
+          @insert(' ')
+        else
+          @cursor\right!
 
       @insert clip.text
     else

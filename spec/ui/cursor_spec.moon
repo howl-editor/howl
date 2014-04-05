@@ -146,6 +146,13 @@ describe 'Cursor', ->
     cursor.line = 2
     assert.is_true cursor.at_start_of_line
 
+  it 'move_to(line, column) moves the cursor to the specified line and column', ->
+    buffer.text = 'hello\nworld'
+    cursor\move_to 1, 3
+    assert.equal 3, cursor.pos
+    cursor\move_to 2, 2
+    assert.equal 8, cursor.pos
+
   it 'down! moves the cursor one line down, respecting the current column', ->
     cursor.pos = 4
     cursor\down!

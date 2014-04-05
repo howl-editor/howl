@@ -145,14 +145,14 @@ describe 'Editor', ->
 
     context 'when opts.where is set to "after"', ->
       it 'pastes the clip to the right of the current position', ->
-        buffer.text = 'hƏllo'
+        buffer.text = 'hƏllo\n'
         clipboard.push 'yo'
+        cursor\move_to 1, 6
+        editor\paste where: 'after'
+        assert.equal 'hƏllo yo\n', buffer.text
         cursor\eof!
         editor\paste where: 'after'
-        assert.equal 'hƏllo yo', buffer.text
-        cursor.column = 8
-        editor\paste where: 'after'
-        assert.equal 'hƏllo yoyo', buffer.text
+        assert.equal 'hƏllo yo\n yo', buffer.text
 
     context 'when the clip item has .whole_lines set', ->
       it 'pastes the clip on a newly opened line above the current', ->

@@ -65,6 +65,10 @@ class Cursor extends PropertyObject
   @property at_start_of_line:
     get: => @column == 1
 
+  move_to: (line, column) =>
+    @line = line
+    @column = column
+
   _adjust_persistent_selection_if_needed: =>
     return unless @selection.persistent and @selection.includes_cursor
     selection_start = @selection.persistent_anchor
