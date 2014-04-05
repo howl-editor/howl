@@ -19,14 +19,14 @@ parse_cmd = (text) ->
   return resolve_command(cmd), cmd, rest if cmd
   return nil, nil, text
 
-load_input = (input) ->
+load_input = (input, text) ->
   return nil if not input
   if type(input) == 'string'
     factory = inputs[input]
     if not factory then error "Could not find input for `#{input}`"
     input = factory
 
-  input!
+  input text
 
 class State
   new: =>
@@ -40,7 +40,7 @@ class State
 
       readline.prompt ..= name .. ' '
       readline.text = text or ''
-      @input = load_input @cmd.input
+      @input = load_input @cmd.input, readline.text
 
     @_dispatch 'update', text, readline
 
@@ -169,10 +169,10 @@ command_completer = ->
 
 direct_dispatch = (cmd_string) ->
   return false if not cmd_string or cmd_string.is_blank
-  cmd = parse_cmd cmd_string
+  cmd, cmd_name, text = parse_cmd cmd_string
   cmd or= resolve_command cmd_string
   return false unless cmd
-  input = load_input cmd.input
+  input = load_input cmd.input, text
   return false if input
   cmd!
   true

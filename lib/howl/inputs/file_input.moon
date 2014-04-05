@@ -26,12 +26,15 @@ root_dir = (file) ->
 home_dir = -> File os.getenv 'HOME'
 
 class FileInput
-  new: (@directory_reader) =>
-    @directory = File glib.get_current_dir!
+  new: (text, @directory_reader) =>
+    @directory = File text
 
-    if app.editor
-      file = app.editor.buffer.file
-      @directory = file.parent if file
+    unless @directory.exists and @directory.is_directory
+      @directory = File glib.get_current_dir!
+
+      if app.editor
+        file = app.editor.buffer.file
+        @directory = file.parent if file
 
   should_complete: => true
 
@@ -94,13 +97,13 @@ class FileInput
 howl.inputs.register {
   name: 'file',
   description: 'Returns a File instance',
-  factory: -> FileInput (directory) -> directory.children
+  factory: (text) -> FileInput text, (directory) -> directory.children
 }
 
 howl.inputs.register {
   name: 'directory',
   description: 'Returns a File instance for a directory'
-  factory: -> FileInput (directory) ->
+  factory: (text) -> FileInput text, (directory) ->
     kids = [c for c in *directory.children when c.is_directory]
     append kids, directory\join '.'
     kids

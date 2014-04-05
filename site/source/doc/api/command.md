@@ -81,8 +81,10 @@ contain the following fields:
  to execute the command. The handler will receive arguments corresponding to the
 specified inputs.
 - `input`: An optional input for the command. The value can be either a string,
-in which case it's looked up in [inputs], or an instance of an input factory,
-which will be invoked to instantiate the input as the command is run.
+in which case it's looked up in [inputs], or an instance of an input factory.
+The resulting input factory will be be invoked to instantiate the input as the
+command is run, and will receive as its sole parameter any extra parameter text
+present in the command string.
 
 ### run (cmd_string = nil)
 

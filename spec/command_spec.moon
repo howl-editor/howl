@@ -119,6 +119,14 @@ describe 'command', ->
           assert.spy(readline.read).was_called(1)
           assert.equals "#{cmd.name} ", readline.text
 
+        it 'instantiates the input with any additional text', ->
+          cmd.input = spy.new -> {}
+          command.register cmd
+          command.run "#{cmd.name} hello"
+          assert.spy(readline.read).was_called(1)
+          assert.spy(cmd.input).was_called_with 'hello'
+          assert.equals "#{cmd.name} hello", readline.text
+
       context 'when it specifies a unknown command', ->
         it 'invokes readline.read with the text set to the given string', ->
           command.run 'what-the-heck now'
