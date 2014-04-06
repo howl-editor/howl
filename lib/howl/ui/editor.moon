@@ -1,4 +1,4 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 Gtk = require 'ljglibs.gtk'
@@ -116,6 +116,7 @@ class Editor extends PropertyObject
       on_focus_in_event: gobject_signal.unref_handle @bin\on_focus_in_event ->
         @line_numbers = @line_numbers -- force width calculation
         @sci\grab_focus!
+
       on_destroy: gobject_signal.unref_handle @bin\on_destroy ->
         theme.unregister_background_widget @sci\to_gobject!
         @buffer\remove_sci_ref @sci
@@ -214,22 +215,22 @@ class Editor extends PropertyObject
   @property line_at_top:
     get: => @sci\get_first_visible_line! + 1
     set: (nr) =>
-      if nr < 1 or nr> #@buffer.lines
-        error("Line number #{nr} out of range", 2)
+      if nr < 1 then nr = 1
+      elseif nr > #@buffer.lines then nr = #@buffer.lines
       @sci\set_first_visible_line(nr - 1)
 
   @property line_at_bottom:
     get: => @line_at_top + @lines_on_screen - 1
     set: (nr) =>
-      if nr < 1 or nr > #@buffer.lines
-        error("Line number #{nr} out of range", 2)
+      if nr < 1 then nr = 1
+      elseif nr > #@buffer.lines then nr = #@buffer.lines
       @line_at_top = math.max(1, nr - @lines_on_screen + 1)
 
   @property line_at_center:
     get: => @line_at_top + math.floor(@lines_on_screen / 2)
     set: (nr) =>
-      if nr < 1 or nr > #@buffer.lines
-        error("Line number #{nr} out of range", 2)
+      if nr < 1 then nr = 1
+      elseif nr > #@buffer.lines then nr = #@buffer.lines
       first_nr = nr - math.floor(@lines_on_screen / 2) + 1
       @line_at_top = math.max(1, first_nr)
 
