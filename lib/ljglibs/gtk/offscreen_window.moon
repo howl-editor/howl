@@ -7,9 +7,8 @@ gobject = require 'ljglibs.gobject'
 require 'ljglibs.gtk.window'
 
 C = ffi.C
-gc_ptr = gobject.gc_ptr
+ref_ptr = gobject.ref_ptr
 
 core.define 'GtkOffscreenWindow < GtkWindow', {
-  -- todo: gc_ptr below
-  new: -> C.gtk_offscreen_window_new!
+  new: -> ref_ptr C.gtk_offscreen_window_new!
 }, (spec) -> spec.new!
