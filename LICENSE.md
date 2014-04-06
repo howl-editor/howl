@@ -2,7 +2,7 @@
 
 Howl is is released under the [MIT License](http://opensource.org/licenses/MIT):
 
-    Copyright (c) 2012, 2014 Nils Nordman
+    Copyright (c) 2012 - 2014 Nils Nordman
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal

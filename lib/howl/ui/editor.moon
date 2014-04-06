@@ -139,6 +139,7 @@ class Editor extends PropertyObject
 
       if @_buf
         @_buf.properties.position = @cursor.pos
+        @_buf.properties.line_at_top = @line_at_top
         @_buf\remove_sci_ref @sci
 
       prev_buffer = @_buf
@@ -150,6 +151,9 @@ class Editor extends PropertyObject
       style.set_for_buffer @sci, buffer
       highlight.set_for_buffer @sci, buffer
       buffer\add_sci_ref @sci
+
+      if buffer.properties.line_at_top
+        @line_at_top = buffer.properties.line_at_top
 
       pos = buffer.properties.position or 1
       pos = math.max 1, math.min pos, #buffer

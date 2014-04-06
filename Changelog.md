@@ -18,14 +18,17 @@ extra padding for lines (issue #14)
 'camelCase').
 
 - Improved buffer-grep and buffer-structure commands:
-  * They are about an order of magnitude faster for large files (issue #7)
-  * The now provide live previews by automatically showing the currently
+  * They are now about an order of magnitude faster for large files (issue #7)
+  * They now provide live previews by automatically showing the currently
 selected line in the buffer with the search highlighting (issue #15)
 
 - `open` command: Completing a directory with `/` now changes directory
 automatically (issue #5).
 
 - Better structure view for Python mode (issue #12)
+
+- Scrolling is now remembered for buffers, in addition to the position that was
+previously remembered.
 
 ### VI bundle
 
