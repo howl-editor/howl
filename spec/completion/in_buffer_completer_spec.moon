@@ -1,6 +1,6 @@
 import Buffer, app, completion  from howl
 
-require 'howl.completion.inbuffercompleter'
+require 'howl.completion.in_buffer_completer'
 require 'howl.variables.core_variables'
 
 describe 'InBufferCompleter.complete()', ->

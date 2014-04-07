@@ -320,7 +320,7 @@ class Application extends PropertyObject
     require 'howl.modes'
 
   _load_core: =>
-    require 'howl.completion.inbuffercompleter'
+    require 'howl.completion.in_buffer_completer'
     require 'howl.completion.api_completer'
     require 'howl.inputs.basic_inputs'
     require 'howl.inputs.projectfile_input'
