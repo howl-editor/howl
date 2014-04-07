@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import signal from howl
-import File from howl.fs
+import File from howl.io
 import SandboxedLoader from howl.aux
 
 _G = _G

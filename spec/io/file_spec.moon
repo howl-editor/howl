@@ -1,4 +1,4 @@
-import File from howl.fs
+import File from howl.io
 
 describe 'File', ->
 

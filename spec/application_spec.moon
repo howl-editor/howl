@@ -1,4 +1,4 @@
-import File from howl.fs
+import File from howl.io
 import Application, Buffer, mode, Scintilla from howl
 import Editor from howl.ui
 

@@ -6,7 +6,7 @@ Gtk = require 'ljglibs.gtk'
 Gdk = require 'ljglibs.gdk'
 require 'ljglibs.gtk.widget'
 
-import File from howl.fs
+import File from howl.io
 import config, signal from howl
 import style, colors, highlight from howl.ui
 import PropertyTable, Sandbox from howl.aux

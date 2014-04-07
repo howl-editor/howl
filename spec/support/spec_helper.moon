@@ -1,7 +1,7 @@
 require 'busted'
 say = require('say')
 
-import File from howl.fs
+import File from howl.io
 import theme from howl.ui
 import signal, config from howl
 _G.Spy = require 'howl.spec.spy'

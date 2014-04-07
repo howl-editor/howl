@@ -4,7 +4,7 @@
 import app, Project from howl
 import Matcher from howl.util
 
-separator = howl.fs.File.separator
+separator = howl.io.File.separator
 
 display_name = (file, root) ->
   name = file\relative_to_parent root

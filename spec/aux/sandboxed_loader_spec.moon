@@ -1,4 +1,4 @@
-import File from howl.fs
+import File from howl.io
 import SandboxedLoader from howl.aux
 
 describe 'SandboxedLoader(dir, name, sandbox_options)', ->

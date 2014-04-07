@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import File from howl.fs
+import File from howl.io
 import Sandbox from howl.aux
 
 find_file = (dir, base) ->

@@ -70,6 +70,13 @@ In addition, the following alias has been deprecated:
 The old command names are still present and working, but are deprecated and will
 be removed in a future release.
 
+### API changes
+
+- howl.fs.File is now at howl.io.File
+
+The old path is deprecated and will be removed in future releases, but still
+works as of now.
+
 ### Bugs fixed
 
 - Completion popup now closes upon entering a non-character (issue #9)

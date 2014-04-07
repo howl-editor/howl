@@ -1,5 +1,5 @@
 import Settings from howl
-import File from howl.fs
+import File from howl.io
 
 describe 'Settings', ->
   local tmpdir, settings

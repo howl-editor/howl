@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import Scintilla, styler, BufferContext, BufferLines, Chunk, config, signal from howl
-import File from howl.fs
+import File from howl.io
 import style from howl.ui
 import PropertyObject from howl.aux.moon
 import destructor from howl.aux

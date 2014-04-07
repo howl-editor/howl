@@ -1,5 +1,5 @@
 import mode, config from howl
-import File from howl.fs
+import File from howl.io
 
 describe 'mode', ->
   after_each ->

@@ -1,5 +1,5 @@
 import Buffer, Scintilla, config, signal from howl
-import File from howl.fs
+import File from howl.io
 import with_tmpfile from File
 append = table.insert
 

@@ -1,5 +1,5 @@
 import app, inputs from howl
-import File from howl.fs
+import File from howl.io
 
 require 'howl.inputs.file_input'
 

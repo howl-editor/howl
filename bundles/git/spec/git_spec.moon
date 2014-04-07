@@ -1,5 +1,5 @@
 import bundle, config, VC from howl
-import File from howl.fs
+import File from howl.io
 import Spy from howl.spec
 
 describe 'Git bundle', ->

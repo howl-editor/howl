@@ -1,5 +1,5 @@
 import Project, VC from howl
-import File from howl.fs
+import File from howl.io
 
 describe 'Project', ->
   after_each ->

@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 import app, command, mode, Buffer, Project from howl
-import File from howl.fs
+import File from howl.io
 
 with_vc = (f) ->
   buffer = app.editor.buffer

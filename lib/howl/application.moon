@@ -5,7 +5,7 @@ ffi = require 'ffi'
 
 import Window, Editor, theme from howl.ui
 import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs, timer, clipboard from howl
-import File from howl.fs
+import File from howl.io
 import PropertyObject from howl.aux.moon
 Gtk = require 'ljglibs.gtk'
 

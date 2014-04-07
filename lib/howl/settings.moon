@@ -1,6 +1,6 @@
 serpent = require 'serpent'
 
-import File from howl.fs
+import File from howl.io
 import SandboxedLoader from howl.aux
 
 default_dir = ->

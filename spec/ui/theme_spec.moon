@@ -1,6 +1,6 @@
 import config, signal from howl
 import theme from howl.ui
-import File from howl.fs
+import File from howl.io
 Gtk = require 'ljglibs.gtk'
 
 serpent = require 'serpent'

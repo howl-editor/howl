@@ -1,5 +1,5 @@
 import mode from howl
-import File from howl.fs
+import File from howl.io
 import ScintilluaLexer from howl.aux
 
 describe 'ScintilluaLexer', ->

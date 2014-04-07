@@ -113,7 +113,7 @@ local function main(args)
     local signal = require 'ljglibs.gobject.signal'
     signal.configure({ dispatch_in_coroutine = true })
 
-    howl.app = howl.Application(howl.fs.File(app_root), args)
+    howl.app = howl.Application(howl.io.File(app_root), args)
 
     if os.getenv('BUSTED') then
       local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))

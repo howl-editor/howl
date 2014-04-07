@@ -1,5 +1,5 @@
 import bundle, mode, config, Buffer from howl
-import File from howl.fs
+import File from howl.io
 import Editor from howl.ui
 
 describe 'html mode', ->
