@@ -143,6 +143,16 @@ describe 'Editor', ->
       editor\paste!
       assert.equal 'hƏllo wörld', buffer.text
 
+    context 'when opts.clip is specified', ->
+      it 'pastes that clip at the current position', ->
+        clipboard.push 'hello'
+        clip = clipboard.current
+        clipboard.push 'wörld'
+        buffer.text = 'well '
+        cursor\eof!
+        editor\paste :clip
+        assert.equal 'well hello', buffer.text
+
     context 'when opts.where is set to "after"', ->
       it 'pastes the clip to the right of the current position', ->
         buffer.text = 'hƏllo\n'

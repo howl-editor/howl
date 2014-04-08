@@ -328,7 +328,7 @@ class Editor extends PropertyObject
     clipboard.push text: @current_line.text, whole_lines: true
 
   paste: (opts = {})=>
-    clip = clipboard.current
+    clip = opts.clip or clipboard.current
     return unless clip
     if not clip.whole_lines
       if opts.where == 'after'

@@ -249,9 +249,9 @@ Inserts a new line at the current cursor position.
 
 ### paste (opts = {})
 
-Pastes the contents of the clipboard at the current cursor position. `opts` is
-an optional table of options. It currently allows specifying one additional
-option:
+Pastes the current contents of the clipboard, or a specific clipboard item, at
+the current cursor position. `opts` is an optional table of options. It
+currently can contain the following options:
 
 - `where`: Specifies where the clip is pasted. By default, the clip is inserted
 at the current cursor position, or in the case of a multi-line clipboard item
@@ -259,6 +259,8 @@ above the current line. If `where` is specified as "after", the behaviour
 changes so that the clip is pasted one position to the right of the current
 cursor position, or in the case of a multi-line clipboard item below the current
 line.
+
+- `clip`: A specific clipboard item to paste.
 
 ### redo ()
 
