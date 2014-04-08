@@ -7,7 +7,9 @@ requires the eyes to move up and down. Now the readline will only grow during
 one read() invocation, and will keep the same fixed size regardless of the
 amount of items in the completion list.
 
-- Added howl.clipboard, new module for handling multiple clipboard items.
+- Added howl.clipboard, new module for handling multiple clipboard items. A new
+command, `editor-paste..`, was added as well that allows for pasting a selected
+clip from the clipboard.
 
 - Added a new configuration variable, `line_padding`, which allows for setting
 extra padding for lines (issue #14)
