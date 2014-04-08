@@ -19,6 +19,7 @@
     ctrl_s:           'save'
     ctrl_shift_s:     'save-as'
     ctrl_v:           'editor-paste'
+    ctrl_shift_v:     'editor-paste..'
 
     ctrl_x:           'editor-cut'
     ctrl_z:           'editor-undo'

@@ -52,6 +52,12 @@ command.register
 command.alias 'buffer-replace-pattern', 'replace-pattern', deprecated: true
 
 command.register
+  name: 'editor-paste..',
+  description: 'Pastes a selected clip from the clipboard at the current position'
+  input: 'clipboard_item'
+  handler: (clip) -> app.editor\paste :clip
+
+command.register
   name: 'show-doc-at-cursor',
   description: 'Shows documentation for symbol at cursor, if available'
   handler: ->

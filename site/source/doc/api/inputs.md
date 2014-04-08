@@ -69,7 +69,6 @@ completions" as the completions are shown.
 to strings before displaying. Choosing one of these from the completion list
 will cause the chosen number to be returned from the read(), as a number.
 
-
 ### update (input, text, readline)
 
 Called whenever the text in the Readline changes. `text` is the current text in

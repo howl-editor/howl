@@ -10,7 +10,7 @@ config.define {
   name: 'clipboard_max_items',
   description: 'The maximum number of anynomous clips to keep in the clipboard',
   type_of: 'number',
-  default: 20,
+  default: 50,
   scope: 'global'
 }
 

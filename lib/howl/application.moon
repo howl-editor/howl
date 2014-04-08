@@ -334,6 +334,7 @@ class Application extends PropertyObject
     require 'howl.inputs.line_input'
     require 'howl.inputs.mode_input'
     require 'howl.inputs.question_inputs'
+    require 'howl.inputs.clipboard_item_input'
     require 'howl.commands.file_commands'
     require 'howl.commands.app_commands'
     require 'howl.commands.ui_commands'
