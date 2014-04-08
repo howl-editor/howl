@@ -36,6 +36,10 @@ input = {
     matcher = Matcher completions
     return matcher(text), completion_options
 
+  on_submit: (value) =>
+    index = tonumber value
+    index != nil and index >=1 and index <= #clipboard.clips
+
   value_for: (position) =>
     clipboard.clips[tonumber(position)]
 }
