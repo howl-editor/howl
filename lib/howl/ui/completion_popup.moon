@@ -5,7 +5,7 @@ import MenuPopup, style from howl.ui
 import Completer from howl
 
 is_character = (event) ->
-  event.character and event.character\umatch r'\\pL'
+  event.character and event.character\umatch r'[\\pL_]'
 
 class CompletionPopup extends MenuPopup
 
