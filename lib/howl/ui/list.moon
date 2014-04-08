@@ -30,19 +30,9 @@ calculate_column_widths = (items, headers) ->
 
     widths
 
-column_padding = (text, column, widths) ->
+column_padding = (field, column, widths) ->
   return '' if column == #widths
-  string.rep ' ', (widths[column] - #tostring(text)) + 1
-
-line_count = (s) ->
-  count = -1
-  init = 0
-
-  while init
-    count += 1
-    _, init = s\find '\n', init + 1, true
-
-  count
+  string.rep ' ', (widths[column] - tostring(field).ulen) + 1
 
 highlighter = (search, text) ->
   Matcher.explain search, text
@@ -184,7 +174,7 @@ class List extends PropertyObject
     if @caption and nr_lines < max_height
       cap = @caption .. '\n'
       pos = buffer\insert cap, pos, 'list_caption'
-      nr_lines += line_count cap
+      nr_lines += cap\count '\n'
 
     if @headers and #@headers > 0 and nr_lines < max_height
       for column, header in ipairs @headers
@@ -219,7 +209,7 @@ class List extends PropertyObject
           pos = buffer\insert padding, pos
           text ..= tostring(field) .. padding
       else
-        text = tostring(item)
+        text = tostring item
         pos = buffer\insert text, pos, @_column_style(item, row, 1)
 
       if @highlight_matches_for and not @highlight_matches_for.is_blank
@@ -269,5 +259,6 @@ class List extends PropertyObject
   _column_style: (item, row, column) =>
     if callable @column_styles then return self.column_styles(item, row, column)
     @column_styles[column]
+
 
 return List
