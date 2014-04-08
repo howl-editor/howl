@@ -17,6 +17,11 @@ _See also_:
 
 ## Properties
 
+### width_in_columns
+
+Holds the width of the readline, in character columns. This only available when
+the Readline is showing, and is nil otherwise.
+
 ### prompt
 
 The prompt as shown in the Readline. Read/write.

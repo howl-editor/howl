@@ -48,7 +48,7 @@ class Readline extends PropertyObject
       @_adjust_height!
       @completion_list = nil
       @notification = nil
-      @_nr_available_columns = nil
+      @width_in_columns = nil
       @window.status\show!
 
       @last_focused\grab_focus! if @last_focused and has_focus
@@ -70,7 +70,7 @@ class Readline extends PropertyObject
     @_complete!
     coroutine.yield!
 
-  notify: (text, style) =>
+  notify: (text, style = 'info') =>
     @notification\delete! if @notification
     start_pos = @completion_list and @completion_list.end_pos or 1
     text ..= '\n' unless text\match '[\n\r]$'
@@ -93,8 +93,8 @@ class Readline extends PropertyObject
       text\usub @_prompt_len + 1
     set: (text) =>
       prompt = @prompt
-      if @_nr_available_columns and @_nr_available_columns - prompt.ulen < 10
-        prompt = shorten prompt, @_nr_available_columns - 10
+      if @width_in_columns and @width_in_columns - prompt.ulen < 10
+        prompt = shorten prompt, @width_in_columns - 10
 
       @_prompt_len = prompt.ulen
       @buffer.lines[#@buffer.lines].text = prompt .. text
@@ -186,9 +186,9 @@ class Readline extends PropertyObject
     @header = IndicatorBar 'header', 3
     @indic_title = @header\add 'left', 'title'
     @gsci\on_size_allocate ->
-      unless @_nr_available_columns
+      unless @width_in_columns
         char_width = @sci\text_width(Scintilla.STYLE_LINENUMBER, 'm')
-        @_nr_available_columns = math.floor @gsci.allocated_width / char_width
+        @width_in_columns = math.floor @gsci.allocated_width / char_width
         @text = @text
 
     sci_container = Gtk.EventBox {
