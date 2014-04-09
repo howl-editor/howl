@@ -60,6 +60,7 @@ class State
   on_submit: (text, readline) =>
     if not @cmd and resolve_command text
       @update text .. ' ', readline
+      return false if @input
 
     return false unless @cmd
 
