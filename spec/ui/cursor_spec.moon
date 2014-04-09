@@ -146,6 +146,12 @@ describe 'Cursor', ->
     cursor.line = 2
     assert.is_true cursor.at_start_of_line
 
+  it '.at_end_of_file returns true if cursor is at the end of the buffer', ->
+    cursor.pos = 1
+    assert.is_false cursor.at_end_of_file
+    cursor\eof!
+    assert.is_true cursor.at_end_of_file
+
   it 'move_to(line, column) moves the cursor to the specified line and column', ->
     buffer.text = 'hello\nworld'
     cursor\move_to 1, 3

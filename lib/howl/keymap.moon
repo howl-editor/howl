@@ -3,6 +3,7 @@
     tab:              'editor-smart-tab'
     shift_tab:        'editor-smart-back-tab'
     backspace:        'editor-delete-back'
+    delete:           'editor-delete-forward'
     return:           'editor-newline'
 
     ctrl_b:           'switch-buffer'

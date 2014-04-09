@@ -344,6 +344,35 @@ describe 'Editor', ->
         editor\delete_back!
         assert.equal buffer.text, ' hƏllo'
 
+    describe '.delete_forward()', ->
+      it 'deletes the character at cursor', ->
+        buffer.text = 'hƏllo'
+        cursor.pos = 2
+        editor\delete_forward!
+        assert.equal 'hllo', buffer.text
+
+      context 'when a selection is active', ->
+        it 'deletes the selection', ->
+          buffer.text = 'hƏllo'
+          editor.selection\set 2, 5
+          editor\delete_forward!
+          assert.equal 'ho', buffer.text
+          assert.not_equal 'Əll', clipboard.current.text
+
+      context 'when at the end of a line', ->
+        it 'deletes the line break', ->
+          buffer.text = 'hƏllo\nworld'
+          cursor\move_to 1, 6
+          editor\delete_forward!
+          assert.equal 'hƏlloworld', buffer.text
+
+      context 'when at the end of the buffer', ->
+        it 'does nothing', ->
+          buffer.text = 'hƏllo'
+          cursor\eof!
+          editor\delete_forward!
+          assert.equal 'hƏllo', buffer.text
+
     describe '.shift_right()', ->
       it 'right-shifts the lines included in a selection if any', ->
         config.indent = 2

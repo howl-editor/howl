@@ -65,6 +65,9 @@ class Cursor extends PropertyObject
   @property at_start_of_line:
     get: => @column == 1
 
+  @property at_end_of_file:
+    get: => @sci\get_length! == @sci\get_current_pos!
+
   move_to: (line, column) =>
     @line = line
     @column = column

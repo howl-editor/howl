@@ -356,6 +356,13 @@ class Editor extends PropertyObject
   smart_back_tab: => @sci\back_tab!
   delete_back: => @sci\delete_back!
 
+  delete_forward: =>
+    if @selection.empty
+      unless @cursor.at_end_of_file
+        @buffer\delete @cursor.pos, @cursor.pos
+    else
+      @active_chunk\delete!
+
   join_lines: =>
     @buffer\as_one_undo ->
       cur_line = @current_line
@@ -708,6 +715,7 @@ for cmd_spec in *{
   { 'smart-tab', 'Inserts tab or shifts selected text right', 'smart_tab' }
   { 'smart-back-tab', 'Moves to previous tab stop or shifts text left', 'smart_back_tab' }
   { 'delete-back', 'Deletes one character back', 'delete_back' }
+  { 'delete-forward', 'Deletes one character forward', 'delete_forward' }
   { 'shift-right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
   { 'shift-left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
   { 'indent', 'Indents the selected lines, or the current line', 'indent' }
