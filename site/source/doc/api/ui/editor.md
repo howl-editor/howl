@@ -199,6 +199,16 @@ Starts a completion at the current cursor position.
 
 Copies the current line to the clipboard.
 
+### delete_back ()
+
+Deletes the preceeding character, if one is present. With a selection present,
+deletes the selection.
+
+### delete_forward ()
+
+Deletes the the current character, if one is present. With a selection present,
+deletes the selection.
+
 ### delete_line ()
 
 Deletes the current line.
@@ -316,7 +326,7 @@ variables.
 - Whether an actual tab is inserted or not is dependent on the `use_tabs` variable.
 - Invoking `smart_tab` when in leading white-space causes the current line to be indented if the `tab_indents` variable is set to true.
 
-### smart_tab_back ()
+### smart_back_tab ()
 
 Dedents the current selection on indentation level to the left if a selection is
 present.
