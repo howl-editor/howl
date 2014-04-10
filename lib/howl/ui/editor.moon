@@ -553,7 +553,6 @@ class Editor extends PropertyObject
       return unless #@current_context.word_prefix >= config.completion_popup_after
       skip_styles = config.completion_skip_auto_within
       if skip_styles
-        moon.p skip_styles
         cur_style = @current_context.style
         for skip_style in *skip_styles
           return if cur_style\match skip_style
