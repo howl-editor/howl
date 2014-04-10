@@ -1,3 +1,5 @@
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE.md)
 append = table.insert
 
 values = {}
@@ -13,12 +15,31 @@ predefined_types =
       return false if value == 'false'
       value
   },
+
   number: {
     convert: (value) -> tonumber(value) or tonumber(tostring(value)) or value
     validate: (value) -> type(value) == 'number'
   },
+
   string: {
     convert: (value) -> tostring value
+  }
+
+  string_list: {
+    convert: (value) ->
+      what = type(value)
+      if what == 'table'
+        [tostring(v) for v in *value]
+      elseif what == 'string' and value\contains ','
+        [v.stripped for v in value\gmatch '[^,]+']
+      elseif what == 'string' and value.is_blank
+        {}
+       else
+        { tostring value }
+
+    validate: (value) -> type(value) == 'table'
+    tostring: (value) ->
+      type(value) == 'table' and table.concat(value, ', ') or tostring value
   }
 
 broadcast = (name, value, is_local) ->
@@ -37,8 +58,12 @@ get_def = (name) ->
 validate = (def, value) ->
   return if value == nil
 
-  if def.validate and not def.validate(value)
-    error 'Illegal value "' .. value .. '" for "' .. def.name .. '"'
+  def_valid = def.validate and def.validate(value)
+  if def_valid != nil
+    if not def_valid
+      error "Illegal option '#{value}' for '#{def.name}'"
+    else
+      return true
 
   if def.options
     options = type(def.options) == 'table' and def.options or def.options!
@@ -46,7 +71,7 @@ validate = (def, value) ->
       option = option[1] if type(option) == 'table'
       return if option == value
 
-    error 'Illegal option "' .. value .. '" for "' .. def.name .. '"'
+    error "Illegal option '#{value}' for '#{def.name}'"
 
 convert = (def, value) ->
   if def.convert

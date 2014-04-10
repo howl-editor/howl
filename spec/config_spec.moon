@@ -77,11 +77,13 @@ describe 'config', ->
       config.set 'validated', 'my_value'
       assert.spy(validate).was_called_with 'my_value'
 
-    it 'an error is raised if the function returns falsy for to-be set value', ->
+    it 'an error is raised if the function returns false for to-be set value', ->
       config.define name: 'validated', description: 'test', validate: -> false
       assert.error -> config.set 'validated', 'foo'
       config.define name: 'validated', description: 'test', validate: -> nil
-      assert.error -> config.set 'validated', 'foo'
+      assert.no_error -> config.set 'validated', 'foo'
+      config.define name: 'validated', description: 'test', validate: -> true
+      assert.no_error -> config.set 'validated', 'foo'
 
     it 'an error is not raised if the function returns truish for to-be set value', ->
       config.define name: 'validated', description: 'test', validate: -> true
@@ -189,6 +191,38 @@ describe 'config', ->
       it 'converts to number upon assignment', ->
         config.number = '1'
         assert.equal config.number, 1
+
+    context 'and is "string_list"', ->
+      def = nil
+      before_each ->
+        config.define name: 'string_list', description: 'foo', type_of: 'string_list'
+        def = config.definitions.string_list
+
+      describe 'convert', ->
+        it 'leaves string tables alone', ->
+          orig = { 'hi', 'there' }
+          assert.same orig, def.convert orig
+
+        it 'converts values in other tables as necessary', ->
+          orig = { 1, 2 }
+          assert.same { '1', '2', }, def.convert orig
+
+        it 'converts simple values into a table', ->
+          assert.same { '1' }, def.convert '1'
+          assert.same { '1' }, def.convert 1
+
+        it 'converts a blank string into an empty table', ->
+          assert.same {}, def.convert ''
+          assert.same {}, def.convert '  '
+
+        it 'converts a comma separated string into a list of values', ->
+          assert.same { '1', '2' }, def.convert '1,2'
+          assert.same { '1', '2' }, def.convert ' 1 ,   2 '
+
+      it 'validate returns true for table values', ->
+        assert.is_true def.validate {}
+        assert.is_false def.validate '1'
+        assert.is_false def.validate 23
 
   context 'watching', ->
     before_each -> config.define name: 'trigger', description: 'watchable'

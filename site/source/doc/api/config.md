@@ -85,6 +85,12 @@ Defines a new config variable. Options can contain the following fields:
   only via code, but also interactively through commands. In the latter case, values
   will invariably be strings.
 
+- `tostring`: A function that will be used for transforming a value into a
+string representation suitable for displaying. This would typically be used for
+more advanced option types. For symmetry it's recommended that any `convert`
+function is able to successfully convert the return value of `tostring` back
+into a native representation.
+
 - `options`: A list (table) of valid values for the variable. Any set value will
   be validated to be part of this list (after conversion), if set.
 
@@ -97,6 +103,7 @@ Defines a new config variable. Options can contain the following fields:
   - boolean
   - number
   - string
+  - string_list
 
 ### get (name)
 
