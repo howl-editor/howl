@@ -32,6 +32,14 @@ automatically (issue #5).
 - Scrolling is now remembered for buffers, in addition to the position that was
 previously remembered.
 
+- Command key bindings can contain partial text, enabling bindings such as `open
+/bin`, which for the example would open the readline with the open command
+displaying the contents of `/bin`.
+
+- Added a new config variable, `completion_skip_auto_within`, which allows for
+specifying a list of styles for which the completion list should not
+automatically pop up.
+
 ### VI bundle
 
 - Fix pasting of line block yanks (i.e. <y><y>/<Y>/<d><d>)
