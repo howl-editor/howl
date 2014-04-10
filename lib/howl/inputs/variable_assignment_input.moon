@@ -1,4 +1,4 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 import Matcher from howl.util
@@ -10,13 +10,14 @@ parse_assignment = (text) ->
   return name, val if name
   return text\match('%s*(%S+)%s*=')
 
-stringify = (value) ->
-  return tostring(value) if type(value) != 'table'
-  [stringify o for o in *value]
+stringify = (value, to_s) ->
+  return to_s(value) if type(value) != 'table'
+  [stringify o, to_s for o in *value]
 
-option_completions = (options) ->
+option_completions = (def) ->
+  options = def.options
   options = options! if callable options
-  options = stringify options
+  options = stringify options, def.tostring or tostring
 
   table.sort options, (a, b) ->
     return a < b if type(a) != 'table'
@@ -28,11 +29,12 @@ options_list_options = (options, def, text, current_buffer) ->
   selection = nil
   headers = { 'Option' }
   highlight_matches_for = text
+  to_s = def.tostring or tostring
 
   unless text
     cur_val = current_buffer and current_buffer.config[def.name] or config.get def.name
     if cur_val
-      cur_val = tostring(cur_val)
+      cur_val = to_s(cur_val)
       for option in *options
         if option == cur_val or type(option) == 'table' and option[1] == cur_val
           selection = option
@@ -42,10 +44,11 @@ options_list_options = (options, def, text, current_buffer) ->
 
   return :headers, :selection, :highlight_matches_for
 
-option_caption = (name, current_buffer) ->
-  caption = "Global value: #{config[name]}\n"
-  caption ..= "For current mode: #{current_buffer.mode.config[name]}\n"
-  caption .. "For current buffer: #{current_buffer.config[name]}"
+option_caption = (name, current_buffer, def) ->
+  to_s = def.tostring or tostring
+  caption = "Global value: #{to_s config[name]}\n"
+  caption ..= "For current mode: #{to_s current_buffer.mode.config[name]}\n"
+  caption .. "For current buffer: #{to_s current_buffer.config[name]}"
 
 class VariableAssignmentInput
   new: =>
@@ -66,14 +69,14 @@ class VariableAssignmentInput
 
       comp_options = {
         title: name
-        caption: def.description .. "\n\n" .. option_caption name, @current_buffer
+        caption: def.description .. "\n\n" .. option_caption name, @current_buffer, def
       }
       options = def.options
 
       if not options
         return {}, comp_options
 
-      completions = option_completions options
+      completions = option_completions def
       comp_options.list = options_list_options completions, def, val, @current_buffer
       matcher = Matcher completions
       return matcher(val or ''), comp_options
@@ -82,14 +85,17 @@ class VariableAssignmentInput
     return self.matcher(text), completion_options
 
   on_completed: (_, readline) =>
-    name, val = parse_assignment readline.text
-    return true if val
+    @name, @value = parse_assignment readline.text
+    return true if @value
     readline.text ..= '='
     return false
 
+  on_submit: => @name and @value
+
   value_for: (text) =>
     name, value = parse_assignment text
-    return :name, :value
+    return :name, :value if name
+    name: @name, value: @value
 
 howl.inputs.register {
   name: 'variable_assignment',

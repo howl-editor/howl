@@ -99,3 +99,16 @@ describe 'VariableAssignmentInput', ->
         it 'converts empty values to nil', ->
           value = input\value_for('foo=')
           assert.same value, name: 'foo', value: nil
+
+      describe 'interactive handling', ->
+        before_each ->
+          config.define name: 'foo', description: 'Yes!', options: { 'two', 'one' }
+          input = inputs.variable_assignment!
+
+        it 'returns a correct assignment upon completion', ->
+          readline.text = 'foo'
+          assert.is_false input\on_completed('foo', readline)
+          assert.equal 'foo=', readline.text
+          readline.text = 'foo=one'
+          assert.is_true input\on_completed('foo=one', readline)
+          assert.same { name: 'foo', value: 'one' }, input\value_for 'one'
