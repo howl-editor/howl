@@ -294,7 +294,10 @@ class Readline extends PropertyObject
     value = @input\value_for value if @input.value_for
     @_show_only_cmd_line!
     session_id = @session_id
-    coroutine.resume @co, value
+    status, error = coroutine.resume @co, value
+    unless status
+      _G.log.error "Error invoking readline handler for '#{@prompt}#{@text}': #{error}"
+
     @hide! if session_id == @session_id
 
   _cancel: =>
