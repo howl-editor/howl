@@ -548,10 +548,18 @@ class Editor extends PropertyObject
     if @popup
       @popup.window\on_char_added self, params if @popup.window.on_char_added
     else
-      complete_allowed = @buffer.config.complete != 'manual'
-      if complete_allowed and #@current_context.word_prefix >= config.completion_popup_after
-        @complete!
-        true
+      config = @buffer.config
+      return unless config.complete != 'manual'
+      return unless #@current_context.word_prefix >= config.completion_popup_after
+      skip_styles = config.completion_skip_auto_within
+      if skip_styles
+        moon.p skip_styles
+        cur_style = @current_context.style
+        for skip_style in *skip_styles
+          return if cur_style\match skip_style
+
+      @complete!
+      true
 
   _on_text_inserted: (args) =>
     args.at_pos += 1
@@ -615,6 +623,17 @@ with config
     description: 'Show completion after this many characters'
     default: 2
     type_of: 'number'
+
+  .define
+    name: 'completion_skip_auto_within'
+    description: 'Do not popup auto completions when inside these styles'
+    default: nil
+    type_of: 'string_list'
+    options: {
+      { 'string', 'Do not auto-complete within strings' },
+      { 'comment', 'Do not auto-complete within comments' },
+      { 'comment, string', 'Do not auto-complete within strings or comments' },
+    }
 
   .define
     name: 'indentation_guides'

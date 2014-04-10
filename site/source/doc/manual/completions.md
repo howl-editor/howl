@@ -90,6 +90,11 @@ Whether a selected completion will replace the current word or not.
 When auto-complete is one, this variable controls after how many characters the
 completion list should pop up after.
 
+- **completion_skip_auto_within**:
+
+This variable, unset by default, contains a list of style patterns where the
+completion list should not automatically pop up.
+
 - **inbuffer_completion_max_buffers**:
 
 For the in-buffer completer, this controls the number of open buffers that are
