@@ -16,8 +16,9 @@ class LineInput
 
   value_for: (value) =>
     nr = tonumber value
+    column = nr == @nr and @column or 1
     for line in *@lines
-      return line if nr == line.nr
+      return line, column if nr == line.nr
 
     value
 
@@ -27,15 +28,17 @@ class LineInput
   on_selection_changed: (item, readline) =>
     text = readline.text
     highlight.remove_all 'search', @editor.buffer
-    nr = tonumber(item[1])
-    line = @editor.buffer.lines[nr]
-    @editor.line_at_center = nr
+    @nr = tonumber(item[1])
+    @column = 1
+    line = @editor.buffer.lines[@nr]
+    @editor.line_at_center = @nr
 
     if text and not text.is_empty
       -- highlight matched text
       start_pos = line.start_pos
       positions = @matcher.explain text, line.text
       if positions
+        @column = positions[1]
         for hl_pos in *positions
           highlight.apply 'search', @editor.buffer, start_pos + hl_pos - 1, 1
     else

@@ -209,7 +209,7 @@ command.register
     buffer = app.editor.buffer
     inputs.line "Buffer grep in #{buffer.title}", app.editor
 
-  handler: (line) -> app.editor.cursor.line = line.nr
+  handler: (line, column) -> app.editor.cursor\move_to line.nr, column
 
 command.register
   name: 'buffer-structure'
@@ -218,7 +218,7 @@ command.register
     buffer = app.editor.buffer
     inputs.line "Structure for #{buffer.title}", app.editor, buffer.mode\structure app.editor
 
-  handler: (line) -> app.editor.cursor.line = tonumber line.nr
+  handler: (line, column) -> app.editor.cursor\move_to line.nr, column
 
 -----------------------------------------------------------------------
 -- Howl eval commands
