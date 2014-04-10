@@ -291,10 +291,11 @@ class Readline extends PropertyObject
       @_complete!
       return
 
-    value = @input\value_for value if @input.value_for
+    values = { value, n: 1 }
+    values = table.pack @input\value_for value if @input.value_for
     @_show_only_cmd_line!
     session_id = @session_id
-    status, error = coroutine.resume @co, value
+    status, error = coroutine.resume @co, table.unpack(values, 1, values.n)
     unless status
       _G.log.error "Error invoking readline handler for '#{@prompt}#{@text}': #{error}"
 
