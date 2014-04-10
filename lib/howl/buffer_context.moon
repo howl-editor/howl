@@ -3,6 +3,7 @@
 
 import Chunk from howl
 import PropertyObject from howl.aux.moon
+import style from howl.ui
 
 class Context extends PropertyObject
   new: (@buffer, @pos) =>
@@ -24,6 +25,7 @@ class Context extends PropertyObject
   @property suffix: get: => @line\usub (@pos - @line.start_pos) + 1
   @property next_char: get: => @suffix[1]
   @property prev_char: get: => @prefix[-1]
+  @property style: get: => style.at_pos @buffer, @pos
 
   @meta {
     __eq: (a, b) ->
