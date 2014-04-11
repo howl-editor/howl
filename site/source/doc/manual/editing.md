@@ -14,8 +14,10 @@ editing, or that might simplify your editing experience.
 Auto pairs, where a matching end character is inserted automatically as you type
 the starting character, is supported out of the box in Howl. This can save you
 some typing as you don't have to type out the ending character for every
-combination of `[]`, `{}`, etc. Exactly what pairs are enabled for a buffer is
-specified by the buffer's mode.
+combination of `[]`, `{}`, etc. If you select some text and type an auto pair
+character such as `[`, auto pairs will enclose the selection in matching start
+and end characters. Exactly what pairs are enabled for a buffer is specified
+by the buffer's mode.
 
 In case you find auto pairs annoying, the configuration variable
 `auto_pair` lets you specify whether you want this on or not.
