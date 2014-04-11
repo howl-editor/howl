@@ -8,6 +8,7 @@ append = table.insert
 
 commands = {}
 accessible_names = {}
+command_history = {}
 
 resolve_command = (name) ->
   def = commands[name]
@@ -28,6 +29,17 @@ load_input = (input, text) ->
 
   input text
 
+append_history = (command, text) ->
+  last_cmd = command_history[#command_history]
+  if last_cmd and last_cmd.command == command and last_cmd.text == text
+    return
+  append command_history, { :command, :text}
+
+get_historical_cmd = (index) ->
+  unless tonumber(index)
+    return nil
+  return command_history[#command_history - tonumber(index) + 1]
+
 class State
   new: =>
     @inputs = {}
@@ -44,7 +56,9 @@ class State
 
     @_dispatch 'update', text, readline
 
-  complete: (text, readline) => @_dispatch 'complete', text, readline
+  complete: (text, readline, completion_type) =>
+    @last_completed_text = text
+    @_dispatch 'complete', text, readline, completion_type
   on_completed: (item, readline) => @_dispatch 'on_completed', item, readline
   close_on_cancel: (readline) => @_dispatch 'close_on_cancel', readline
   go_back: (readline) => @_dispatch 'go_back', readline
@@ -61,8 +75,16 @@ class State
     if not @cmd and resolve_command text
       @update text .. ' ', readline
       return false if @input
+    elseif not @cmd
+      past_cmd = get_historical_cmd(text)
+      if past_cmd
+        @update past_cmd.command .. ' ' .. past_cmd.text, readline
+        return false
 
     return false unless @cmd
+
+    if @cmd
+      append_history @cmd.name, @last_completed_text
 
     if @input
       input_says = @_dispatch 'on_submit', text, readline
@@ -146,6 +168,20 @@ command_bindings = ->
 
   c_bindings
 
+history_completer = ->
+  completion_options =
+    list:
+      headers: { '#', 'Command', 'Text'},
+      column_styles: { 'comment', 'keyword', 'string' }
+    select_last: true
+  items = {}
+  for i = 1, #command_history
+    past_cmd = command_history[i]
+    append items, {tostring(#command_history - i + 1), past_cmd.command, past_cmd.text }
+
+  matcher = Matcher items, preserve_order: true
+  (text) -> matcher(text), completion_options
+
 command_completer = ->
   completion_options = list: {
     headers: { 'Command', 'Key binding', 'Description' }
@@ -195,12 +231,14 @@ run = (cmd_string = nil) ->
     on_submit: (_, text, readline) -> state\on_submit text, readline
     go_back: (_, readline) -> state\go_back readline
 
-    complete: (_, text, readline) ->
+    complete: (_, text, readline, completion_type) ->
       if state.cmd
         return state\complete(text, readline)
+      elseif completion_type == 'history'
+        cmd_completer = history_completer!
       else
         cmd_completer or= command_completer!
-        cmd_completer text
+      cmd_completer text
 
   readline = howl.app.window.readline
   text = cmd_string

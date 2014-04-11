@@ -113,15 +113,15 @@ class Readline extends PropertyObject
 
   _at_start: => @cursor.column <= @_prompt_len + 1
 
-  _complete: (force) =>
+  _complete: (opts = {}) =>
     @_show_only_cmd_line!
     text = @text
     return if @completion_unwanted
     config_says_complete = config.complete == 'always'
     input_says_complete = @input.should_complete and @input\should_complete self
-    should_complete = force or config_says_complete or input_says_complete
+    should_complete = opts.force or config_says_complete or input_says_complete
 
-    completions, options = if should_complete and @input.complete then @input\complete text, self
+    completions, options = if should_complete and @input.complete then @input\complete text, self, opts.type
     options or= {}
     count = completions and #completions or 0
     @title = options.title if options.title
@@ -141,6 +141,9 @@ class Readline extends PropertyObject
         @completion_list[k] = v for k, v in pairs list_options
         \show!
         @min_list_height = math.max .height, @min_list_height
+
+      if options.select_last
+        @completion_list\select #@completion_list.items
 
     @_adjust_height!
     @_selection_changed!
@@ -169,7 +172,7 @@ class Readline extends PropertyObject
   _on_user_added_text: =>
     @seen_interaction = true
     @_update_input!
-    @_complete @completion_list != nil
+    @_complete force: @completion_list != nil
 
   _on_error: (err) =>
     @notify err, 'error'
@@ -259,6 +262,8 @@ class Readline extends PropertyObject
     if @completion_list
       @completion_list\select_prev!
       @_selection_changed!
+    else
+      @_complete force: true, type: 'history'
 
   _next_page: =>
     if @completion_list
@@ -340,11 +345,11 @@ class Readline extends PropertyObject
       if not @_at_start!
         @sci\delete_back!
         @_update_input!
-        @_complete complete_again
+        @_complete force: complete_again
       else if @input.go_back
         @_show_only_cmd_line!
         @input\go_back self
-        @_complete complete_again
+        @_complete force: complete_again
 
     return: => @_submit!
 
@@ -352,7 +357,7 @@ class Readline extends PropertyObject
       if @completion_list then @_next_page!
       else
         @completion_unwanted = false
-        @_complete true
+        @_complete force: true
 
     shift_tab: => @_prev_page!
   }
