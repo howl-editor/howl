@@ -22,6 +22,7 @@ setfenv(1, _ENV) if setfenv
 capture_handler = nil
 keymap_options = setmetatable {}, __mode: 'k'
 export keymaps = {}
+export is_capturing = false
 
 alternate_names = {
   kp_up: 'up'
@@ -63,7 +64,7 @@ process_capture = (event, source, translations, ...) ->
   if capture_handler
     status, ret = pcall capture_handler, event, source, translations, ...
     if not status or ret != false
-      capture_handler = nil
+      cancel_capture!
 
     _G.log.error ret unless status
 
@@ -144,8 +145,13 @@ export process = (event, source, extra_keymaps = {},  ...) ->
 
 export capture = (handler) ->
   capture_handler = handler
+  is_capturing = true
 
 export cancel_capture = ->
   capture_handler = nil
+  is_capturing = false
+
+export is_capturing = ->
+  capture_handler != nil
 
 return _ENV

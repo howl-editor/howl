@@ -101,11 +101,60 @@ any particular key press, i.e. the key event and translations.
 
 ## Properties
 
+### .is_capturing
+
+True if there's currently a capture handler installed, and false otherwise.
+
 ### .keymaps
 
 This is a list of the currently active keymaps. This is a stack, with latter keymaps taking precedence over earlier ones.
 
 ## Functions
+
+### cancel_capture ()
+
+Removes any installed capture handler.
+
+### capture (handler)
+
+Installs a capture handler. The handler, which should be callable, will
+intercept any key events being sent to [process](#process) for processing. It
+will be invoked with the key event, source, key translations and any extra
+parameters passed to process. Unless the handler returns `false`, it will
+automatically be removed after the invocation. There can be only one capture
+handler installed at any given time. Installing a capture handler when an
+existing one is already set will simply override the previous one.
+
+### dispatch (key_event, source, keymaps, ...)
+
+Explicitly dispatches the key event against the specified list of keymaps.
+`source` is the source of the key press, e.g. "editor". `keymaps` is the
+list of keymaps that will be searched. Any additional arguments are passed
+as is to any callable actions.
+
+*Note*:
+
+Unlike [process](#process), dispatch will not automatically include any of the
+keymaps in the binding stack, it will only search `keymaps`.
+
+### pop ()
+
+Pops the top-most keymap of the stack. Raises an error if the stack is empty.
+
+### process (key_event, source, extra_keymaps = {},  ...)
+
+Processes the `key_event` by dispatching it against the list of keymaps present
+in the bindings stack. `source` is the source of the key press, e.g. "editor".
+`extra_keymaps` is an optional list of additional keymaps that will be searched;
+if specified these will be searched in order before any of the keymaps in the
+stack. Any additional arguments are passed as is to any callable
+actions.
+
+Should any capture handler be installed via [capture](#capture), this will be
+invoked first and further processing will be skipped.
+
+The `key-press` signal is emitted before dispatching, and further processing
+will be skipped if this is handled.
 
 ### push (keymap, options = {})
 
@@ -115,11 +164,8 @@ Pushes `keymap` onto the bindings stack. `options` can contain any of the follow
   matching actions, effectively making this the only keymap available.
 
 - *pop*: When set to true, this causes the keymap to be popped from the stack automatically
-  after the next key dispatch. If pop is set, the map is implicitly blocking as well.
-
-### pop ()
-
-Pops the top-most keymap of the stack. Raises an error if the stack is empty.
+  after the next key dispatch. If pop is set, the map is implicitly blocking as
+well.
 
 ### remove (keymap)
 
@@ -152,44 +198,3 @@ bindings.translate_key(key_event)
   "ctrl_shift_65"
 }
 ```
-
-### dispatch (key_event, source, keymaps, ...)
-
-Explicitly dispatches the key event against the specified list of keymaps.
-`source` is the source of the key press, e.g. "editor". `keymaps` is the
-list of keymaps that will be searched. Any additional arguments are passed
-as is to any callable actions.
-
-*Note*:
-
-Unlike [process](#process), dispatch will not automatically include any of the
-keymaps in the binding stack, it will only search `keymaps`.
-
-### process (key_event, source, extra_keymaps = {},  ...)
-
-Processes the `key_event` by dispatching it against the list of keymaps present
-in the bindings stack. `source` is the source of the key press, e.g. "editor".
-`extra_keymaps` is an optional list of additional keymaps that will be searched;
-if specified these will be searched in order before any of the keymaps in the
-stack. Any additional arguments are passed as is to any callable
-actions.
-
-Should any capture handler be installed via [capture](#capture), this will be
-invoked first and further processing will be skipped.
-
-The `key-press` signal is emitted before dispatching, and further processing
-will be skipped if this is handled.
-
-### capture (handler)
-
-Installs a capture handler. The handler, which should be callable, will intercept
-any key events being sent to [process](#process) for processing. It will be
-invoked with the key event, source, key translations and any extra parameters
-passed to process. Unless the handler returns `false`, it will automatically
-be removed after the invocation. There can be only one capture handler installed
-at any given time. Installing a capture handler when an existing one is already
-set will simply override the previous one.
-
-### cancel_capture ()
-
-Removes any installed capture handler.

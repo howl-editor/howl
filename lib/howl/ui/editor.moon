@@ -483,12 +483,12 @@ class Editor extends PropertyObject
     else
       @searcher\cancel!
 
-    maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
-    return true if bindings.process event, 'editor', maps, self
-
-    if auto_pair.handle event, @
+    if not bindings.is_capturing and auto_pair.handle event, @
       @remove_popup!
       return true
+
+    maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
+    return true if bindings.process event, 'editor', maps, self
 
   _on_selection_changed: =>
     @_update_position!

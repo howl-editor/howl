@@ -7,6 +7,8 @@ describe 'bindings', ->
     while #bindings.keymaps > 1
       bindings.pop!
 
+    bindings.cancel_capture
+
   describe 'push(map, options = {})', ->
     it 'pushes <map> to the keymap stack at .keymaps', ->
       map = {}
@@ -282,3 +284,11 @@ describe 'bindings', ->
         bindings.cancel_capture!
         bindings.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
         assert.spy(thief).was_not.called!
+
+  describe '.is_capturing', ->
+    it 'is true when a capture is active and false otherwise', ->
+      assert.is_false bindings.is_capturing
+      bindings.capture -> nil
+      assert.is_true bindings.is_capturing
+      bindings.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
+      assert.is_false bindings.is_capturing
