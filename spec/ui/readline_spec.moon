@@ -33,3 +33,26 @@ describe 'Readline', ->
       readline.text = 'bar'
       readline.keymap.escape readline
       assert.is_nil value
+
+    context 'keymap handling', ->
+      it "dispatches any key presses to the input's keymap if present", ->
+        input = keymap: a: spy.new -> true
+        coroutine.wrap(-> readline\read 'foo: ', input)!
+        readline.sci.listener.on_keypress character: 'a', key_name: 'a', key_code: 65
+        assert.spy(input.keymap.a).was_called_with(input, readline, nil)
+
+      it "does not process the key press any further if the key was handled by the input", ->
+        handled = true
+        input = keymap: backspace: spy.new -> handled
+        coroutine.wrap(-> readline\read 'foo: ', input)!
+        readline.text = 'foo'
+        backspace_event = character: '\8', key_name: 'backspace', key_code: 123
+        readline.sci.listener.on_keypress backspace_event
+        assert.equal 'foo', readline.text
+        handled = false
+        readline.sci.listener.on_keypress backspace_event
+        assert.equal 'fo', readline.text
+
+  describe 'complete(force = false)', ->
+    it 'raises an error if the readline is not showing', ->
+      assert.raises 'hidden', -> readline\complete!

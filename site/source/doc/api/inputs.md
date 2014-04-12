@@ -10,9 +10,10 @@ Inputs are used for controlling user input. The most common use of inputs is
 when defining commands using the [command] module, but they can also be used
 when working directly with [Readline] instances.
 
-An input is at its core nothing more than a table of callback functions. As the
-user interacts with the Readline, the various callbacks are invoked as
-necessary, if they are provided.
+An input is at its core nothing more than a table of optional callback
+functions, and an optional keymap. As the user interacts with the Readline, the
+various callbacks are invoked as necessary, if they are provided. Similarly, any
+key presses are dispatched first against the input's keymap if one is provided.
 
 ---
 
@@ -127,6 +128,42 @@ returned.
 Called when determining whether the Readline should hide if the cancels when in
 a completion list. The default behaviour is to close the completion list but
 keep the Readline open.
+
+## Input keymaps
+
+Aside from callback functions, an input can also provide a keymap of its own.
+Whenever a key press occurs within the Readline, the input's keymap is consulted
+first if present. The keymap itself is of the same format as all other keymaps
+in Howl - the [bindings](bindings.html) module contains more information about
+this and key handling in general. Any handlers found in the input's keymap will
+be invoked with three parameters; The input instance itself, the readline, and
+the completion list item if any.
+
+Example:
+
+```lua
+local input = {
+  my_input_value = 3,
+
+  keymap = {
+    ctrl_r = function(input, readline, item)
+      print(input.my_input_value)
+      print(readline.text)
+    end
+  }
+}
+```
+
+The above input would trap the `ctrl_r` binding in the Readline and print out
+`3`, as well as the Readline's text.
+
+*Note*:
+
+One case for trapping a key press in an input is to modify the currently
+selected item in some way. If this would cause the list of completions to
+change, make sure to request a new completion by invoking
+[Readline.complete](ui/readline.html#complete) after the modification.
+
 
 ## Functions
 

@@ -67,7 +67,7 @@ class Readline extends PropertyObject
     @completion_unwanted = false
     @seen_interaction = false
     @_update_input! unless @text.is_blank
-    @_complete!
+    @complete!
     coroutine.yield!
 
   notify: (text, style = 'info') =>
@@ -77,6 +77,41 @@ class Readline extends PropertyObject
     @buffer\insert text, start_pos, style
     @notification = @buffer\chunk start_pos, #text
     @_adjust_height!
+
+  complete: (force) =>
+    error "Cannot invoke Readline.complete() for a hidden readline", 2 unless @showing
+    @_show_only_cmd_line!
+    text = @text
+    should_complete = force
+    unless should_complete
+      return if @completion_unwanted
+      config_says_complete = config.complete == 'always'
+      input_says_complete = @input.should_complete and @input\should_complete self
+      should_complete = config_says_complete or input_says_complete
+
+    completions, options = if should_complete and @input.complete then @input\complete text, self
+    options or= {}
+    count = completions and #completions or 0
+    @title = options.title if options.title
+    list_position = 1
+    list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
+
+    if count > 0
+      @completion_list = List @buffer, list_position
+      list_options = options.list or {}
+      with @completion_list
+        .items = completions
+        .max_height = @_max_list_lines!
+        .min_height = @min_list_height
+        .filler_text = '~'
+        .selection_enabled = true
+        .highlight_matches_for = text
+        @completion_list[k] = v for k, v in pairs list_options
+        \show!
+        @min_list_height = math.max .height, @min_list_height
+
+    @_adjust_height!
+    @_selection_changed!
 
   to_gobject: => @bin
 
@@ -113,38 +148,6 @@ class Readline extends PropertyObject
 
   _at_start: => @cursor.column <= @_prompt_len + 1
 
-  _complete: (force) =>
-    @_show_only_cmd_line!
-    text = @text
-    return if @completion_unwanted
-    config_says_complete = config.complete == 'always'
-    input_says_complete = @input.should_complete and @input\should_complete self
-    should_complete = force or config_says_complete or input_says_complete
-
-    completions, options = if should_complete and @input.complete then @input\complete text, self
-    options or= {}
-    count = completions and #completions or 0
-    @title = options.title if options.title
-    list_position = 1
-    list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
-
-    if count > 0
-      @completion_list = List @buffer, list_position
-      list_options = options.list or {}
-      with @completion_list
-        .items = completions
-        .max_height = @_max_list_lines!
-        .min_height = @min_list_height
-        .filler_text = '~'
-        .selection_enabled = true
-        .highlight_matches_for = text
-        @completion_list[k] = v for k, v in pairs list_options
-        \show!
-        @min_list_height = math.max .height, @min_list_height
-
-    @_adjust_height!
-    @_selection_changed!
-
   _adjust_height: =>
     @gsci\set_size_request -1, @sci\text_height(0) * #@buffer.lines
 
@@ -163,13 +166,17 @@ class Readline extends PropertyObject
     max_lines
 
   _on_keypress: (event) =>
+    if @input.keymap
+      selected_item = @completion_list and completion_text @completion_list.selection
+      return true if bindings.dispatch event, 'readline', { @input.keymap }, @input, self, selected_item
+
     return true if bindings.dispatch event, 'readline', { @keymap }, self
     return event.character == nil or event.ctrl or event.alt
 
   _on_user_added_text: =>
     @seen_interaction = true
     @_update_input!
-    @_complete @completion_list != nil
+    @complete @completion_list != nil
 
   _on_error: (err) =>
     @notify err, 'error'
@@ -284,11 +291,11 @@ class Readline extends PropertyObject
       @text = @text\gsub('[^%s=]+$', '') .. value
       @_update_input!
       if @input.on_completed and @input\on_completed(item, self) == false
-        @_complete!
+        @complete!
         return
 
     if @input.on_submit and @input\on_submit(value, self) == false
-      @_complete!
+      @complete!
       return
 
     values = { value, n: 1 }
@@ -340,11 +347,11 @@ class Readline extends PropertyObject
       if not @_at_start!
         @sci\delete_back!
         @_update_input!
-        @_complete complete_again
+        @complete complete_again
       else if @input.go_back
         @_show_only_cmd_line!
         @input\go_back self
-        @_complete complete_again
+        @complete complete_again
 
     return: => @_submit!
 
@@ -352,7 +359,7 @@ class Readline extends PropertyObject
       if @completion_list then @_next_page!
       else
         @completion_unwanted = false
-        @_complete true
+        @complete true
 
     shift_tab: => @_prev_page!
   }

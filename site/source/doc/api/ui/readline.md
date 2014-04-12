@@ -37,6 +37,14 @@ The title of the Readline window. Read/write.
 
 ## Methods
 
+### complete (force = false)
+
+If the Readline is open, this requests that a completion should be attempted
+for the [text](#text) currently in the Readline.
+
+This would typically be used from inputs only - calling this when the Readline
+is not showing raises an error.
+
 ### hide ()
 
 Hides the Readline if it's currently showing. Done automatically by [read], and
