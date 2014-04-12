@@ -212,6 +212,22 @@ describe 'command', ->
           fake_return 'first'
           assert.spy(handler).was_called_with input\value_for!
 
+        context 'keymap handling', ->
+          it 'delegates .keymap accesses to the input', ->
+            run!
+            cmd_input\update 'p_cmd first', readline
+            assert.not_nil input
+            input.keymap = a: 1
+            assert.equal 1, cmd_input.keymap.a
+
+          it 'wraps any callbable objects to provide the correct input', ->
+            run!
+            cmd_input\update 'p_cmd first', readline
+            assert.not_nil input
+            input.keymap = a: spy.new -> true
+            cmd_input.keymap.a cmd_input, readline, nil
+            assert.spy(input.keymap.a).was_called_with input, readline, nil
+
       context 'when the user submits an unknown command', ->
         it 'the on_submit callback returns false to keep readline open', ->
           run!

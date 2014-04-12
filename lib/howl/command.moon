@@ -32,6 +32,12 @@ class State
   new: =>
     @inputs = {}
     @arguments = {}
+    @keymap = setmetatable {}, __index: (_, k) ->
+      v = @.input and @.input.keymap and @.input.keymap[k]
+      if callable v
+        (_, readline, item) -> v @.input, readline, item
+      else
+        v
 
   update: (text, readline) =>
     if not @cmd
@@ -194,6 +200,7 @@ run = (cmd_string = nil) ->
     on_cancelled: (_, readline) -> state\on_cancelled readline
     on_submit: (_, text, readline) -> state\on_submit text, readline
     go_back: (_, readline) -> state\go_back readline
+    keymap: state.keymap
 
     complete: (_, text, readline) ->
       if state.cmd
