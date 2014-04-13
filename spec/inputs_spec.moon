@@ -20,6 +20,14 @@ describe 'inputs', ->
 
     assert.is_nil inputs.foo
 
+  describe 'read(input, options)', ->
+    it 'raises an error unless options contains .prompt', ->
+      inputs.register name: 'foo', description: 'foo', factory: -> true
+      assert.raises 'prompt', -> inputs.read 'foo'
+
+    it 'raises an error for an unknown input', ->
+      assert.raises 'unknown input', -> inputs.read 'guargl', prompt: 'foo'
+
   it 'allows iterating through inputs using pairs()', ->
     inputs.register name: 'foo', description: 'foo', factory: -> true
     names = [name for name, func in pairs inputs when name == 'foo']
