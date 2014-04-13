@@ -73,6 +73,15 @@ factor for large buffers.
 The `editor-toggle-comment` is bound to `ctrl_slash` by default, and let's you
 quickly comment and uncomment code.
 
+## Clipboard history
+
+Howl manages its own clipboard, and lets you paste cut or copied text other than
+the latest text in the clipboard. The `editor-paste..` command (bound to
+`ctrl_shift_v` by default) opens a list of previous clips and pastes any
+available clip that you choose:
+
+![Clipboard paste](/images/doc/clipboard-paste.png)
+
 ## Word wrapping
 
 Howl provides optional support for hard wrapping of text paragraphs. The
