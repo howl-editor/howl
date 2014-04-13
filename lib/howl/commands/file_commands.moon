@@ -1,7 +1,7 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import app, command, mode, Buffer, Project from howl
+import app, command, mode, inputs, Buffer, Project from howl
 import File from howl.io
 
 with_vc = (f) ->
@@ -70,6 +70,12 @@ command.register
   description: 'Saves the current buffer to a given file'
   input: 'file'
   handler: (file) ->
+    if file.exists
+      input = inputs.yes_or_no false
+      unless inputs.read input, prompt: "File '#{file}' already exists, overwrite? "
+        log.info "Not overwriting; buffer not saved"
+        return
+
     buffer = app.editor.buffer
     buffer.file = file
     command.save!
