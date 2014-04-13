@@ -1,7 +1,7 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import app, signal, timer, config, command from howl
+import signal, timer, config, command from howl
 import style from howl.ui
 tinsert = table.insert
 
@@ -125,7 +125,7 @@ command.register
   name: 'editor-reflow-paragraph',
   description: 'Reflows the current paragraph according to `hard_wrap_column`'
   handler: ->
-    editor = app.editor
+    editor = howl.app.editor
     cur_line = editor.current_line
     paragraph = paragraph_at cur_line
     if #paragraph > 0

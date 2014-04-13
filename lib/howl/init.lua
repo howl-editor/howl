@@ -1,3 +1,6 @@
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE.md)
+
 local app_root, argv = ...
 
 local help = [=[
