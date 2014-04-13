@@ -40,6 +40,8 @@ displaying the contents of `/bin`.
 specifying a list of styles for which the completion list should not
 automatically pop up.
 
+- `save-as` command now prompts before overwriting an existing file.
+
 ### VI bundle
 
 - Fix pasting of line block yanks (i.e. <y><y>/<Y>/<d><d>)
@@ -107,6 +109,9 @@ works as of now.
 - Pasting in the readline did not update completions (issue #6)
 
 - Lib directory not found when binary was invoked without path (issue #17)
+
+- Readline keeps focus, avoids weird state e.g. when clicking in an editor while
+in the readline (issue #23).
 
 ## 0.1.1 (2014-03-15)
 
