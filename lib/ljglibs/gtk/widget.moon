@@ -51,6 +51,9 @@ core.define 'GtkWidget < GObject', {
     width_request: 'gint'
     window: 'GdkWindow*'
 
+    -- Added properties
+    in_destruction: => C.gtk_widget_in_destruction(@) != 0
+
     -- added properties
     screen: => ref_ptr C.gtk_widget_get_screen @
     style_context: => ref_ptr C.gtk_widget_get_style_context @

@@ -80,6 +80,7 @@ ffi.cdef [[
   /* GtkWidget */
   typedef struct {} GtkWidget;
 
+  gboolean gtk_widget_in_destruction (GtkWidget *widget);
   const gchar * gtk_widget_get_name (GtkWidget *widget);
   void gtk_widget_realize (GtkWidget *widget);
   void gtk_widget_show (GtkWidget *widget);
