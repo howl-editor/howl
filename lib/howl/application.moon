@@ -55,7 +55,6 @@ class Application extends PropertyObject
     window\set_default_size 800, 640
 
     window\on_delete_event ->
-      return false if @_ignore_modified_on_close
       if #@windows == 1
         modified = [b for b in *@_buffers when b.modified]
         if #modified > 0
@@ -100,8 +99,8 @@ class Application extends PropertyObject
   close_buffer: (buffer, force = false) =>
     if not force and buffer.modified
       input = inputs.yes_or_no false
-      wants_close = @window.readline\read "Buffer '#{buffer}' is modified, close anyway? ", input
-      return unless wants_close
+      prompt = "Buffer '#{buffer}' is modified, close anyway? "
+      return unless inputs.read input, :prompt
 
     @_buffers = [b for b in *@_buffers when b != buffer]
 
@@ -239,16 +238,13 @@ class Application extends PropertyObject
     @_loaded = true
 
   _should_abort_quit: =>
-    return if @_ignore_modified_on_close
-
     modified = [b for b in *@_buffers when b.modified]
     if #modified > 0
       input = inputs.yes_or_no false
-      wants_close = @window.readline\read "Modified buffers exist, close anyway? ", input
-      return true unless wants_close
-      @_ignore_modified_on_close = true
-      @window\destroy!
-      true
+      if not inputs.read input, prompt: "Modified buffers exist, close anyway? "
+        return true
+
+    false
 
   _on_quit: =>
     @save_session! unless #@args > 1
