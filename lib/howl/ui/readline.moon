@@ -178,9 +178,6 @@ class Readline extends PropertyObject
     @_update_input!
     @complete @completion_list != nil
 
-  _on_error: (err) =>
-    @notify err, 'error'
-
   _instantiate: =>
     @sci = Scintilla!
     @sci\set_style_bits 8
@@ -247,7 +244,7 @@ class Readline extends PropertyObject
       on_text_inserted: @buffer\_on_text_inserted
       on_text_deleted: @buffer\_on_text_deleted
       on_focus_lost: -> @sci\grab_focus! if @showing
-      on_error: self\_on_error
+      on_error: log.error
 
     style.register_sci @sci
     theme.register_sci @sci
@@ -303,11 +300,11 @@ class Readline extends PropertyObject
     values = table.pack @input\value_for value if @input.value_for
     @_show_only_cmd_line!
     session_id = @session_id
+    @hide! if session_id == @session_id
     status, error = coroutine.resume @co, table.unpack(values, 1, values.n)
     unless status
       _G.log.error "Error invoking readline handler for '#{@prompt}#{@text}': #{error}"
 
-    @hide! if session_id == @session_id
 
   _cancel: =>
     if @completion_list or @notification
