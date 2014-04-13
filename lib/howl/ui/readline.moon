@@ -42,8 +42,8 @@ class Readline extends PropertyObject
     if @showing
       has_focus = @sci\to_gobject!.is_focus
 
-      @bin\hide!
       @showing = false
+      @bin\hide!
       @buffer.text = ''
       @_adjust_height!
       @completion_list = nil
@@ -246,6 +246,7 @@ class Readline extends PropertyObject
       on_char_added: self\_on_user_added_text
       on_text_inserted: @buffer\_on_text_inserted
       on_text_deleted: @buffer\_on_text_deleted
+      on_focus_lost: -> @sci\grab_focus! if @showing
       on_error: self\_on_error
 
     style.register_sci @sci
