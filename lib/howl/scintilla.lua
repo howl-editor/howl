@@ -871,6 +871,7 @@ SCI_WORDENDPOSITION = 2267
 SC_WRAP_NONE = 0
 SC_WRAP_WORD = 1
 SC_WRAP_CHAR = 2
+SC_WRAP_WHITESPACE = 3
 SCI_SETWRAPMODE = 2268
 SCI_GETWRAPMODE = 2269
 SC_WRAPVISUALFLAG_NONE = 0x0000
@@ -1279,6 +1280,11 @@ SCI_VCHOMEDISPLAY = 2652
 SCI_VCHOMEDISPLAYEXTEND = 2653
 SCI_GETCARETLINEVISIBLEALWAYS = 2654
 SCI_SETCARETLINEVISIBLEALWAYS = 2655
+SC_LINE_END_TYPE_DEFAULT = 0
+SC_LINE_END_TYPE_UNICODE = 1
+SCI_SETLINEENDTYPESALLOWED = 2656
+SCI_GETLINEENDTYPESALLOWED = 2657
+SCI_GETLINEENDTYPESACTIVE = 2658
 SCI_SETREPRESENTATION = 2665
 SCI_GETREPRESENTATION = 2666
 SCI_CLEARREPRESENTATION = 2667
@@ -1305,6 +1311,16 @@ SC_TYPE_STRING = 2
 SCI_PROPERTYTYPE = 4015
 SCI_DESCRIBEPROPERTY = 4016
 SCI_DESCRIBEKEYWORDSETS = 4017
+SCI_GETLINEENDTYPESSUPPORTED = 4018
+SCI_ALLOCATESUBSTYLES = 4020
+SCI_GETSUBSTYLESSTART = 4021
+SCI_GETSUBSTYLESLENGTH = 4022
+SCI_GETSTYLEFROMSUBSTYLE = 4027
+SCI_GETPRIMARYSTYLEFROMSTYLE = 4028
+SCI_FREESUBSTYLES = 4023
+SCI_SETIDENTIFIERS = 4024
+SCI_DISTANCETOSECONDARYSTYLES = 4025
+SCI_GETSUBSTYLEBASES = 4026
 SC_MOD_INSERTTEXT = 0x1
 SC_MOD_DELETETEXT = 0x2
 SC_MOD_CHANGESTYLE = 0x4
@@ -1467,6 +1483,7 @@ SCLEX_STTXT = 109
 SCLEX_KVIRC = 110
 SCLEX_RUST = 111
 SCLEX_DMAP = 112
+SCLEX_AS = 113
 SCLEX_AUTOMATIC = 1000
 SCN_STYLENEEDED = 2000
 SCN_CHARADDED = 2001
@@ -1497,21 +1514,6 @@ SCN_AUTOCCHARDELETED = 2026
 SCN_HOTSPOTRELEASECLICK = 2027
 SCN_FOCUSIN = 2028
 SCN_FOCUSOUT = 2029
-SC_LINE_END_TYPE_DEFAULT = 0
-SC_LINE_END_TYPE_UNICODE = 1
-SCI_SETLINEENDTYPESALLOWED = 2656
-SCI_GETLINEENDTYPESALLOWED = 2657
-SCI_GETLINEENDTYPESACTIVE = 2658
-SCI_GETLINEENDTYPESSUPPORTED = 4018
-SCI_ALLOCATESUBSTYLES = 4020
-SCI_GETSUBSTYLESSTART = 4021
-SCI_GETSUBSTYLESLENGTH = 4022
-SCI_GETSTYLEFROMSUBSTYLE = 4027
-SCI_GETPRIMARYSTYLEFROMSTYLE = 4028
-SCI_FREESUBSTYLES = 4023
-SCI_SETIDENTIFIERS = 4024
-SCI_DISTANCETOSECONDARYSTYLES = 4025
-SCI_GETSUBSTYLEBASES = 4026
 SC_CP_DBCS = 1
 SCI_GETUSEPALETTE = 2139
 SCI_SETUSEPALETTE = 2039
@@ -4737,6 +4739,21 @@ function sci:set_caret_line_visible_always(always_visible)
   self:send(2655, (always_visible and 1 or 0), 0)
 end
 
+-- Set the line end types that the application wants to use. May not be used if incompatible with lexer or encoding.
+function sci:set_line_end_types_allowed(line_end_bit_set)
+  self:send(2656, line_end_bit_set, 0)
+end
+
+-- Get the line end types currently allowed.
+function sci:get_line_end_types_allowed()
+  return tonumber(self:send(2657, 0, 0))
+end
+
+-- Get the line end types currently recognised. May be a subset of the allowed types due to lexer limitation.
+function sci:get_line_end_types_active()
+  return tonumber(self:send(2658, 0, 0))
+end
+
 -- Set the way a character is drawn.
 function sci:set_representation(encoded_character, representation)
   self:send(2665, string_ptr(encoded_character), string_ptr(representation))
@@ -4848,21 +4865,6 @@ end
 -- Retrieve a '\n' separated list of descriptions of the keyword sets understood by the current lexer.
 function sci:describe_key_word_sets()
   return self:send_with_stringresult(4017)
-end
-
--- Set the line end types that the application wants to use. May not be used if incompatible with lexer or encoding.
-function sci:set_line_end_types_allowed(line_end_bit_set)
-  self:send(2656, line_end_bit_set, 0)
-end
-
--- Get the line end types currently allowed.
-function sci:get_line_end_types_allowed()
-  return tonumber(self:send(2657, 0, 0))
-end
-
--- Get the line end types currently recognised. May be a subset of the allowed types due to lexer limitation.
-function sci:get_line_end_types_active()
-  return tonumber(self:send(2658, 0, 0))
 end
 
 -- Bit set of LineEndType enumertion for which line ends beyond the standard
