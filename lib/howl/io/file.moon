@@ -3,8 +3,11 @@
 
 GFile = require 'ljglibs.gio.file'
 GFileInfo = require 'ljglibs.gio.file_info'
+glib = require 'ljglibs.glib'
 import PropertyObject from howl.aux.moon
 append = table.insert
+
+home_dir = glib.get_home_dir!
 
 class File extends PropertyObject
 
@@ -26,6 +29,10 @@ class File extends PropertyObject
 
   is_absolute: (path) ->
     (path\match('^/') or path\match('^%a:\\\\')) != nil
+
+  expand_path: (path) ->
+    res = path\gsub '~', home_dir
+    res
 
   separator: jit.os == 'Windows' and '\\' or '/'
 
@@ -57,6 +64,7 @@ class File extends PropertyObject
   @property readable: get: => @exists and @_info('access')\get_attribute_boolean 'access::can-read'
   @property etag: get: => @exists and @_info('etag').etag
   @property modified_at: get: => @exists and @_info('time')\get_attribute_uint64 'time::modified'
+  @property short_path: get: => @path\gsub "^#{home_dir}", '~'
 
   @property writeable: get: =>
     if @exists

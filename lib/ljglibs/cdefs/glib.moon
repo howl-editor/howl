@@ -209,4 +209,7 @@ ffi.cdef [[
   guint g_list_length (GList *list);
   GList * g_list_nth (GList *list, guint n);
   gpointer g_list_nth_data (GList *list, guint n);
+
+  /* Utility functions */
+  const gchar * g_get_home_dir (void);
 ]]

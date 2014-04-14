@@ -2,7 +2,7 @@ import File from howl.io
 
 describe 'File', ->
 
-  describe '.tmpfile', ->
+  describe 'tmpfile()', ->
     it 'returns a file instance pointing to an existing file', ->
       file = File.tmpfile!
       assert.is_true file.exists
@@ -25,12 +25,16 @@ describe 'File', ->
       assert.raises 'noo', -> File.with_tmpfile f
       assert.is_false tmpfile.exists
 
-  describe '.tmpdir', ->
+  describe 'tmpdir()', ->
     it 'returns a file instance pointing to an existing directory', ->
       file = File.tmpdir!
       assert.is_true file.exists
       assert.is_true file.is_directory
       file\delete_all!
+
+  describe 'expand_path(path)', ->
+    it 'expands "~" into the full path of the home directory', ->
+      assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '~/foo.txt')
 
   describe 'new(...)', ->
     it 'accepts a string as denothing a path', ->
@@ -64,6 +68,11 @@ describe 'File', ->
 
   it '.exists returns true if the path exists', ->
     File.with_tmpfile (file) -> assert.is_true file.exists
+
+  describe '.short_path', ->
+    it 'returns the path with the home directory replace by "~"', ->
+      file = File(os.getenv('HOME')) / 'foo.txt'
+      assert.equal '~/foo.txt', file.short_path
 
   describe 'contents', ->
     it 'assigning a string writes the string to the file', ->

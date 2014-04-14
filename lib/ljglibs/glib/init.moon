@@ -33,4 +33,5 @@ core.auto_loading 'glib', {
     ret
 
   get_current_dir: -> g_string C.g_get_current_dir!
+  get_home_dir: -> ffi_string C.g_get_home_dir!
 }
