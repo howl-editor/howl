@@ -42,6 +42,8 @@ automatically pop up.
 
 - `save-as` command now prompts before overwriting an existing file.
 
+- References to home directory are now shortened to '~' in the file prompt.
+
 ### VI bundle
 
 - Fix pasting of line block yanks (i.e. <y><y>/<Y>/<d><d>)
