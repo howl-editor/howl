@@ -23,11 +23,11 @@ root_dir = (file) ->
 
   file
 
-home_dir = -> File os.getenv 'HOME'
+home_dir = -> File glib.get_home_dir!
 
 class FileInput
   new: (text, @directory_reader) =>
-    @directory = File text if text and not text.is_blank
+    @directory = File(File.expand_path text) if text and not text.is_blank
 
     unless @directory and @directory.exists and @directory.is_directory
       @directory = File glib.get_current_dir!
@@ -90,7 +90,7 @@ class FileInput
     @directory = directory
 
     @base_prompt = readline.prompt unless @base_prompt
-    prompt = @base_prompt .. tostring directory
+    prompt = @base_prompt .. directory.short_path
     prompt ..= separator if not prompt\match separator .. '$'
     readline.prompt = prompt
 

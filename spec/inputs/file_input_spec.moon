@@ -27,7 +27,7 @@ describe 'File inputs', ->
       describe 'an instance', ->
         local input
 
-        before_each -> input = inputs[name] readline
+        before_each -> input = inputs[name]!
 
         it 'should_complete() returns true', ->
           assert.is_true input\should_complete!
@@ -43,7 +43,7 @@ describe 'File inputs', ->
             input\complete '', readline
             readline.text ..= '~/'
             input\complete readline.text, readline
-            assert.equals "open #{os.getenv('HOME')}/", readline.prompt
+            assert.equals "open ~/", readline.prompt
 
           it 'automatically opens directory if text has trailing "/"', ->
             sub = directory\join('sub')
@@ -74,7 +74,7 @@ describe 'File inputs', ->
   describe 'FileInput', ->
     describe 'complete(text, readline)', ->
       it 'returns all files matching <text>', ->
-        input = inputs.file readline
+        input = inputs.file!
         directory\join('test.lua')\touch!
         directory\join('foo.lua')\touch!
         directory\join('foodir')\mkdir!
@@ -85,7 +85,7 @@ describe 'File inputs', ->
 
   describe 'DirectoryInput', ->
     local input
-    before_each -> input = inputs.directory readline
+    before_each -> input = inputs.directory!
 
     describe 'complete(text, readline)', ->
       it 'returns all directories matching <text>', ->
