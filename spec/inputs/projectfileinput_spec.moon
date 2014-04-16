@@ -34,12 +34,11 @@ describe 'ProjectFile', ->
 
     it '.complete() returns a sorted list of relative paths', ->
       comps = input\complete ''
-      assert.same comps, {
+      assert.same {
         'Makefile',
         'simple.txt',
-        'subdir/',
         'subdir/foo'
-      }
+      }, comps
 
     it '.value_for(path) returns a File', ->
       assert.equal input\value_for('Makefile'), file

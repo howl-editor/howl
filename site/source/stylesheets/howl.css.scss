@@ -17,6 +17,10 @@ $border_radius: 10px;
 @mixin property-badge { @include badge('P', skyblue, aliceblue); }
 @mixin method-badge { @include badge('m', mediumseagreen, aliceblue); }
 @mixin function-badge { @include badge('F', mediumpurple, aliceblue); }
+@mixin meta-badge {
+  @include badge('Meta', seagreen, aliceblue);
+  font-style: italic;
+}
 
 @mixin toc-badge {
   margin-left: -2em;
@@ -201,6 +205,10 @@ body.doc {
 
   h2#methods ~ h3:before {
     @include method-badge();
+  }
+
+  h2#meta-methods ~ h3:before {
+    @include meta-badge();
   }
 }
 

@@ -85,14 +85,16 @@ describe 'Project', ->
     describe '.files()', ->
       it 'delegates to .vc.files() if it is available', ->
         vc = files: -> 'files'
-        assert.equal Project('root', vc)\files!, vc.files!
+        assert.equal vc.files!, Project('root', vc)\files!
 
-      it 'falls back to a FS scan, skipping hidden and backup files', ->
+      it 'falls back to a FS scan, skipping directories and hidden and backup files', ->
         with_tmpdir (dir) ->
           regular = dir / 'regular.lua'
           regular\touch!
+          sub_dir = dir / 'sub_dir'
+          sub_dir\mkdir!
           hidden = dir / '.config'
           hidden\touch!
           backup = dir / 'config~'
           backup\touch!
-          assert.same [f.path for f in *Project(dir)\files!], { regular.path }
+          assert.same { regular.path }, [f.path for f in *Project(dir)\files!]

@@ -43,8 +43,9 @@ class Project
 
   files: =>
     if @vc and @vc.files
-      return @vc\files!
+      @vc\files!
     else
-      return @root\find filter: (file) -> file.is_hidden or file.is_backup
+      files = @root\find filter: (file) -> file.is_hidden or file.is_backup
+      [f for f in *files when not f.is_directory]
 
 return Project

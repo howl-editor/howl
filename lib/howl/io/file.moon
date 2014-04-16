@@ -9,6 +9,15 @@ append = table.insert
 
 home_dir = glib.get_home_dir!
 
+file_types = {
+  [tonumber GFileInfo.TYPE_DIRECTORY]: 'directory',
+  [tonumber GFileInfo.TYPE_SYMBOLIC_LINK]: 'symlink',
+  [tonumber GFileInfo.TYPE_SPECIAL]: 'special',
+  [tonumber GFileInfo.TYPE_REGULAR]: 'regular',
+  [tonumber GFileInfo.TYPE_MOUNTABLE]: 'mountable',
+  [tonumber GFileInfo.TYPE_UNKNOWN]: 'unknown',
+}
+
 class File extends PropertyObject
 
   tmpfile: ->
@@ -43,7 +52,7 @@ class File extends PropertyObject
       @gfile = target.gfile
       @path = target.path
     else
-      @gfile = if t == 'string' or t == 'ustring' then @gfile = GFile.new_for_path tostring(target) else target
+      @gfile = if t == 'string' then @gfile = GFile.new_for_path tostring(target) else target
       @path = @gfile.path
 
     super!
@@ -51,14 +60,13 @@ class File extends PropertyObject
   @property basename: get: => @gfile.basename
   @property extension: get: => @basename\match('%.(%w+)$')
   @property uri: get: => @gfile.uri
-  @property is_directory: get: => @file_type == GFileInfo.TYPE_DIRECTORY
-  @property is_link: get: => @file_type == GFileInfo.TYPE_SYMBOLIC_LINK
-  @property is_special: get: => @file_type == GFileInfo.TYPE_SPECIAL
-  @property is_regular: get: => @file_type == GFileInfo.TYPE_REGULAR
-  @property is_shortcut: get: => @file_type == GFileInfo.TYPE_SHORTCUT
-  @property is_mountable: get: => @file_type == GFileInfo.TYPE_MOUNTABLE
-  @property is_hidden: get: => @_info!.is_hidden
-  @property is_backup: get: => @_info!.is_backup
+  @property is_directory: get: => @exists and @_file_type == GFileInfo.TYPE_DIRECTORY
+  @property is_link: get: => @exists and @_file_type == GFileInfo.TYPE_SYMBOLIC_LINK
+  @property is_special: get: => @exists and @_file_type == GFileInfo.TYPE_SPECIAL
+  @property is_regular: get: => @exists and @_file_type == GFileInfo.TYPE_REGULAR
+  @property is_mountable: get: => @exists and @_file_type == GFileInfo.TYPE_MOUNTABLE
+  @property is_hidden: get: => @exists and @_info!.is_hidden
+  @property is_backup: get: => @exists and @_info!.is_backup
   @property size: get: => @_info!.size
   @property exists: get: => @gfile.exists
   @property readable: get: => @exists and @_info('access')\get_attribute_boolean 'access::can-read'
@@ -72,9 +80,7 @@ class File extends PropertyObject
     else
       return @parent.exists and @parent.writeable
 
-  @property file_type: get: =>
-    @ft or= @_info!.filetype
-    @ft
+  @property file_type: get: => file_types[tonumber @_file_type]
 
   @property contents:
     get: => @gfile\load_contents!
@@ -100,20 +106,20 @@ class File extends PropertyObject
 
         append files, File @gfile\get_child info.name
 
-  open: (func) =>
-    fh = assert io.open @path
+  open: (mode = 'r', func) =>
+    fh = assert io.open @path, mode
 
     if func
-      ret = { pcall func, fh }
+      ret = table.pack pcall func, fh
       fh\close!
       error ret[2] unless ret[1]
-      return table.unpack ret, 2
+      return table.unpack ret, 2, ret.n
 
     fh
 
   read: (...) =>
     args = {...}
-    @open (fh) -> fh\read table.unpack args
+    @open 'r', (fh) -> fh\read table.unpack args
 
   join: (...) =>
     root = @gfile
@@ -143,7 +149,6 @@ class File extends PropertyObject
     error "Can't invoke find on a non-directory", 1 if not @is_directory
 
     filters = {}
-    if options.name then append filters, (entry) -> not entry\tostring!\match options.name
     if options.filter then append filters, options.filter
     filter = (entry) -> for f in *filters do return true if f entry
 
@@ -155,13 +160,14 @@ class File extends PropertyObject
       if options.sort then table.sort children, (a,b) -> a.basename < b.basename
 
       for entry in *children
+        continue if filter entry
         if entry.is_directory
           append directories, 1, entry
         else
-          append files, entry if not filter entry
+          append files, entry
 
       dir = table.remove directories
-      append(files, dir) if dir and not filter dir
+      append(files, dir) if dir
 
     files
 
@@ -174,6 +180,10 @@ class File extends PropertyObject
       namespace = 'standard::*'
 
     @gfile\query_info namespace, GFile.QUERY_INFO_NONE
+
+  @property _file_type: get: =>
+    @ft or= @_info!.filetype
+    @ft
 
   @meta {
     __tostring: => @tostring!

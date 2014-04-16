@@ -101,6 +101,11 @@ describe 'File', ->
       table.sort kids, (a,b) -> a.path < b.path
       assert.same [v.basename for v in *kids], { 'child1', 'child2' }
 
+  it '.file_type is a string describing the file type', ->
+    assert.equal 'directory', File('/bin').file_type
+    assert.equal 'regular', File('/bin/ls').file_type
+    assert.equal 'special', File('/dev/null').file_type
+
   it '.writeable is true if the file represents a entry that can be written to', ->
     with_tmpdir (dir) ->
       assert.is_true dir.writeable
@@ -128,7 +133,7 @@ describe 'File', ->
     File.with_tmpfile (file) ->
       assert.is.not_nil file.modified_at
 
-  describe 'open([function])', ->
+  describe 'open([mode, function])', ->
     context 'when <function> is nil', ->
       it 'returns a Lua file handle', ->
         File.with_tmpfile (file) ->
@@ -143,30 +148,30 @@ describe 'File', ->
         File.with_tmpfile (file) ->
           file.contents = 'first line\nsecond line\n'
           local first_line
-          file\open (fh) ->
+          file\open 'r', (fh) ->
             first_line = fh\read!
 
           assert.equal 'first line', first_line
 
-      it 'returns the value of the function', ->
+      it 'returns the returns values of the function', ->
         File.with_tmpfile (file) ->
-          assert.equal 'callback', file\open -> 'callback'
+          assert.same { 'callback', nil, 'last' }, { file\open 'r', -> 'callback', nil, 'last' }
 
       it 'closes the file automatically after invoking <function>', ->
         File.with_tmpfile (file) ->
           local handle
-          file\open (fh) -> handle = fh
+          file\open 'r', (fh) -> handle = fh
           assert.has_errors -> handle\read!
 
       context 'when <function> raises an error', ->
         it 'propagates that error', ->
           File.with_tmpfile (file) ->
-            assert.raises 'kaboom', -> file\open -> error 'kaboom'
+            assert.raises 'kaboom', -> file\open 'r', -> error 'kaboom'
 
         it 'still closes the file', ->
           File.with_tmpfile (file) ->
             local handle
-            pcall -> file\open (fh) ->
+            pcall -> file\open 'r', (fh) ->
               handle = fh
               error 'kaboom'
 
@@ -197,6 +202,9 @@ describe 'File', ->
         file\delete!
         file\mkdir!
         assert.is_true file.exists and file.is_directory
+
+    it 'raises an error if the directory could not be created', ->
+      assert.has_error -> File('/aksdjskjdgudfkj')\mkdir!
 
   describe 'mkdir_p()', ->
     it 'creates a directory for the path specified by the file, including parents', ->
@@ -284,14 +292,14 @@ describe 'File', ->
           files = dir\find!
           table.sort files, (a,b) -> a.path < b.path
           normalized = [f\relative_to_parent dir for f in *files]
-          assert.same normalized, {
+          assert.same {
             'child1',
             'child1/sandwich.lua',
             'child1/sub_child.txt',
             'child1/sub_dir',
             'child1/sub_dir/deep.lua',
             'child2'
-          }
+          }, normalized
 
     context 'when the sort parameter is given', ->
       it 'returns a list of all sub entries in a pleasing order', ->
@@ -307,19 +315,13 @@ describe 'File', ->
             'child1/sub_dir/deep.lua',
           }
 
-    context 'when name: is passed as an option', ->
-      it 'only returns files whose paths matches the specified value', ->
-        with_populated_dir (dir) ->
-          files = dir\find name: 'sub_[cd]'
-          names = [f.basename for f in *files]
-          table.sort names
-          assert.same names, { 'deep.lua', 'sub_child.txt', 'sub_dir' }
-
     context 'when filter: is passed as an option', ->
       it 'excludes files for which <filter(file)> returns true', ->
         with_populated_dir (dir) ->
-          files = dir\find filter: (file) -> file.basename != 'sandwich.lua'
-          assert.same [f.basename for f in *files], { 'sandwich.lua' }
+          files = dir\find filter: (file) ->
+            file.basename != 'sandwich.lua' and file.basename != 'child1'
+
+          assert.same { 'child1', 'sandwich.lua' }, [f.basename for f in *files]
 
   describe 'meta methods', ->
     it '/ and .. joins the file with the specified argument', ->
