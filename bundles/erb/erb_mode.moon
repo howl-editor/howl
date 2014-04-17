@@ -8,10 +8,11 @@ lexers = {}
 {
   lexer: (text, buffer) ->
     base = 'html'
-    target_ext = buffer.title\match '%.(%w+)%.erb'
-    if target_ext
-      m = mode.for_extension target_ext
-      base = m.name if m
+    if buffer
+      target_ext = buffer.title\match '%.(%w+)%.erb'
+      if target_ext
+        m = mode.for_extension target_ext
+        base = m.name if m
 
     l = lexers[base]
     unless l
