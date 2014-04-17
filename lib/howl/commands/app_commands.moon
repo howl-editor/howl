@@ -239,6 +239,7 @@ do_howl_eval = (load_f, mode_name, transform_f) ->
     buf = Buffer mode.by_name mode_name
     buf.text = "-- Howl eval (#{mode_name}) =>#{out}"
     editor\show_popup BufferPopup buf
+    howl.clipboard.push out
    else
     log.error "(ERROR) => #{ret[2]}"
 
