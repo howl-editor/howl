@@ -185,6 +185,17 @@ describe 'lpeg_lexer', ->
     it 'produces no captures', ->
       assert.equals 1, #{ p\match 'foo ' }
 
+  describe 'last_token_matches(pattern)', ->
+    it 'matches if the last non-blank token matches pattern', ->
+      p = l.blank^0 * l.digit^1 * l.blank^0 * l.last_token_matches(l.digit)
+      assert.is_not_nil p\match '123 '
+      assert.is_not_nil p\match '123 \t '
+      assert.is_not_nil p\match ' 123 '
+      assert.is_not_nil p\match ' 1 '
+      assert.is_not_nil p\match '1 '
+      assert.is_not_nil p\match '1 '
+      assert.is_not_nil p\match ' 1'
+
   describe 'match_back(name)', ->
     p = Cg(P'x', 'start') * 'y' * l.match_back('start')
 

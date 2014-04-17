@@ -59,6 +59,28 @@ skip_if_next = (subject, pos, token) ->
 match_if_equal = (subject, pos, value1, value2) ->
   return pos if value1 == value2
 
+last_token_matched = (subject, pos, pattern) ->
+  p = pos - 1
+
+  while p >= 1
+    c = subject\sub(p, p)
+    break if not c.is_blank
+    p -= 1
+
+  return pos unless p > 0
+  end_pos = p
+
+  p -= 1
+  while p >= 1
+    c = subject\sub(p, p)
+    break if c.is_blank
+    p -= 1
+
+  token = subject\sub p + 1, end_pos
+  return nil unless pattern\match token
+
+  pos
+
 sub_lex_capture_start = (sub_text, sub_start_pos, cur_pos) ->
   trailing_line_p = blank_p^0 * eol_p
   content_start = trailing_line_p\match sub_text
@@ -196,6 +218,9 @@ paired = (p, escape = nil, pair_style = nil, content_style = nil) ->
 match_back = (name) ->
   Cmt Cb(name), skip_if_next
 
+last_token_matches = (pattern) ->
+  Cmt Cc(pattern), last_token_matched
+
 back_was = (name, value) ->
   Cmt Cb(name) * Cc(value), match_if_equal
 
@@ -214,8 +239,14 @@ lenient_pattern = (p) ->
 sub_lex = (mode_name, stop_p) ->
   Cmt(Cc(mode_name) * C(scan_until(stop_p)), sub_lex_capture)
 
+sub_lex_match_time = (mode_name, match_time_p) ->
+  Cmt(Cc(mode_name) * C(match_time_p), sub_lex_capture)
+
 sub_lex_by_pattern = (mode_p, mode_style, stop_p) ->
   Cmt(C(mode_p) * Cc(mode_style) * C(scan_until(stop_p)), pattern_sub_lex_capture)
+
+sub_lex_by_pattern_match_time = (mode_p, mode_style, match_time_p) ->
+  Cmt(C(mode_p) * Cc(mode_style) * C(match_time_p), pattern_sub_lex_capture)
 
 compose = (mode_name, definition_p) ->
   m = mode.by_name mode_name
