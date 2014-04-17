@@ -44,6 +44,12 @@ automatically pop up.
 
 - References to home directory are now shortened to '~' in the file prompt.
 
+- HAML: Sub lex filters where possible
+
+- Ruby: Avoid over-eager lexing of regexes
+
+- HTML mode: Don't lex strings within HTML content
+
 ### VI bundle
 
 - Fix pasting of line block yanks (i.e. <y><y>/<Y>/<d><d>)
