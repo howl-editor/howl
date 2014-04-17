@@ -169,7 +169,7 @@ return {
 
     error:
       font: italic: true
-      color: white
+      color: deeppink
       background: darkred
 
     warning:
