@@ -159,7 +159,14 @@ howl.aux.lpeg_lexer ->
       (c('regex', '#') * V'regex_chunk')^-1
     }
     regex_modifiers: c 'special', lower^0
-    regex: V'regex_start' * V('regex_chunk') * V'regex_modifiers'
+    regex_continuation: -#sequence {
+      blank^0,
+      any {
+        digit,
+        #alpha * -any('or', 'and', 'unless')
+      }
+    }
+    regex: V'regex_start' * V('regex_chunk') * V'regex_modifiers' * V'regex_continuation'
 
     heredoc_end: c('string', eol) * S(' \t')^0 * c('constant', match_back('hd_del'))
     heredoc_chunk: c('string', scan_until(V'heredoc_end' + '#', '\\')) * any {

@@ -37,6 +37,12 @@ local = 2
 /foo(\w+)/ and  %r|(foo\|bar)| and %r'\d+#{local}\w+' and %r{'"\d+magic\pL} and /with 東京都 flags/im
 puts %r[PAIR #{local} ME!]
 
+# not regex
+i = 3 / 2
+i = (3 / 2) + (2 / 1)
+i = (foo / 2) + (2 / 1)
+i = (foo / bar) + (bar / foo)
+
 # but these are arithmetic expressions containing division
 foo = 4 / 2 * 3
 bar = foo / 23 * 7
