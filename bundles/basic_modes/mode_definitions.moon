@@ -69,12 +69,6 @@ common_auto_pairs = {
       '{': '}'
     }
 
-  coffeescript:
-    extensions: 'coffee'
-    aliases: 'coffe'
-    comment_syntax: '#'
-    auto_pairs: common_auto_pairs
-
   csharp:
     extensions: 'cs'
     comment_syntax: '//'
