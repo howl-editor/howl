@@ -44,11 +44,12 @@ automatically pop up.
 
 - References to home directory are now shortened to '~' in the file prompt.
 
-- HAML: Sub lex filters where possible
+- HAML: Filters are sub lexed where possible (e.g. JavaScript)
 
-- Ruby: Avoid over-eager lexing of regexes
+- Added proper CoffeeScript support
 
-- HTML mode: Don't lex strings within HTML content
+Includes extensive lexing, indentation and structure support. Also supports
+literate CoffeeScript.
 
 ### VI bundle
 
@@ -120,6 +121,10 @@ works as of now.
 
 - Readline keeps focus, avoids weird state e.g. when clicking in an editor while
 in the readline (issue #23).
+
+- Ruby: Avoid over-eager lexing of regexes
+
+- HTML mode: Don't lex strings within HTML content
 
 ## 0.1.1 (2014-03-15)
 
