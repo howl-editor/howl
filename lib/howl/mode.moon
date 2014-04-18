@@ -48,14 +48,14 @@ get_shebang = (file) ->
 
 for_file = (file) ->
   return by_name('default') unless file
-  def = file.extension and by_extension[file.extension\lower!]
 
   pattern_match = (value, patterns) ->
     return nil unless value
     for pattern, mode in pairs patterns
       return mode if value\umatch pattern
 
-  def or= pattern_match tostring(file), by_pattern
+  def = pattern_match tostring(file), by_pattern
+  def or= file.extension and by_extension[file.extension\lower!]
   def or= pattern_match get_shebang(file), by_shebang
   def or= modes['default']
   instance = def and instance_for_mode def
