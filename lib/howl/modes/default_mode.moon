@@ -162,13 +162,19 @@ class DefaultMode
 
     if prev_line
       spec = @indentation or {}
+
       dedent_delta = -indent_level if @patterns_match line.text, spec.less_for
       indent_delta = indent_level if @patterns_match prev_line.text, spec.more_after
+      indent_delta = indent_level if not indent_delta and @patterns_match line.text, spec.more_for
       same_delta = 0 if @patterns_match prev_line.text, spec.same_after
 
       if indent_delta or dedent_delta or same_delta
         delta = (dedent_delta or 0) + (indent_delta or 0) + (same_delta or 0)
-        return prev_line.indentation + delta
+        new = prev_line.indentation + delta
+        if new < prev_line.indentation and line.indentation <= new
+          return line.indentation unless spec.less_for.authoritive
+
+        return new
 
       -- unwarranted indents
       if spec.more_after and spec.more_after.authoritive != false and line.indentation > prev_line.indentation

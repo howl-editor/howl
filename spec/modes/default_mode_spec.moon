@@ -53,19 +53,27 @@ describe 'DefaultMode', ->
           indent!
           assert.equals '    bar\n  else\n  foo\n}\n', buffer.text
 
-        context 'when .dedent_patterns.authoritive is not false', ->
+        context 'when .authoritive is not false', ->
           it 'adjusts lines with unwarranted smaller indents to match the previous line', ->
             indentation.less_for = { 'else' }
             buffer.text = '  line\nwat?\n'
             indent!
             assert.equals '  line\n  wat?\n', buffer.text
 
-        context 'when .dedent_patterns.authoritive is false', ->
+        context 'when .authoritive is false', ->
           it 'does not adjust lines with unwarranted smaller indents to match the previous line', ->
             indentation.less_for = { 'else', authoritive: false }
             buffer.text = '  line\nwat?\n'
             indent!
             assert.equals '  line\nwat?\n', buffer.text
+
+    context 'when .indentation.more_for is set', ->
+      context 'and the current line matches one of the patterns', ->
+        it 'indents the line one level right of the previous line if it exists', ->
+          indentation.more_for = { '^.' }
+          buffer.text = 'bar\n.foo\n'
+          indent!
+          assert.equals 'bar\n  .foo\n', buffer.text
 
     context 'when .indentation.same_after patterns is set', ->
       context 'and the previous line matches one of the patterns', ->
