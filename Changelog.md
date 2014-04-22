@@ -51,6 +51,10 @@ automatically pop up.
 Includes extensive lexing, indentation and structure support. Also supports
 literate CoffeeScript.
 
+- Improve code block completions when the start and end delimiters are the same
+
+E.g. `///` for CoffeeScript, or fenced code blocks for Markdown.
+
 ### VI bundle
 
 - Fix pasting of line block yanks (i.e. <y><y>/<Y>/<d><d>)

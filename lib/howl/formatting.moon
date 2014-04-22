@@ -1,21 +1,34 @@
+ends_previous_block = (line, block_start_p) ->
+  line = line.previous
+  while line and not line.is_blank
+    return true if line\umatch block_start_p
+    line = line.previous
+
+  false
+
 {
   ensure_block: (editor, block_start_p, block_end_p, end_s) ->
     line = editor.current_line
-    prev_line = line.previous_non_blank
+    prev_line = line.previous
     return unless prev_line
     start_line_indent = prev_line.indentation
     modified = false
 
     if prev_line\umatch(block_start_p)
+      if prev_line\umatch(block_end_p) and ends_previous_block(prev_line, block_start_p)
+        return false
+
       lines = editor.buffer.lines
 
       -- check whether we need to add the end_s ourselves
       unless line.text\umatch(block_end_p)
         return false unless line.is_blank
         next_line = line.next_non_blank
-        if next_line
+        while next_line and not next_line.is_blank
           return false if next_line.indentation > start_line_indent
           return false if next_line.indentation == start_line_indent and next_line\umatch(block_end_p)
+          break if next_line\umatch block_start_p
+          next_line = next_line.next
 
         lines\insert line.nr + 1, end_s
         modified = true

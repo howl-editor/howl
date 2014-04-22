@@ -32,11 +32,25 @@ describe 'formatting', ->
         assert.equals '{\n  \n}\n', buffer.text
         assert.equals 2, cursor.line
 
-      it 'leaves an already ok block alone', ->
+      it 'is not fooled by subsequent blocks', ->
+        buffer.text = '{\n\n{\n}'
+        cursor.line = 2
+        assert.is_true formatting.ensure_block editor, '{$', '}', '}'
+        assert.equals '{\n  \n}\n{\n}', buffer.text
+        assert.equals 2, cursor.line
+
+      it 'leaves an already ok indented block alone', ->
         buffer.text = '{\n  \n}\n'
         cursor.line = 2
         assert.is_false formatting.ensure_block editor, '{%s*$', '}', '}'
         assert.equals '{\n  \n}\n', buffer.text
+        assert.equals 2, cursor.line
+
+      it 'leaves an already ok non-indented block alone', ->
+        buffer.text = '{\n\nfoo\n}\n'
+        cursor.line = 2
+        assert.is_false formatting.ensure_block editor, '{%s*$', '}', '}'
+        assert.equals '{\n\nfoo\n}\n', buffer.text
         assert.equals 2, cursor.line
 
       it 'leaves blocks with content in them alone', ->
@@ -53,6 +67,49 @@ describe 'formatting', ->
         assert.is_true formatting.ensure_block editor, '{$', '}', '}'
         assert.equals '{\n  {\n    \n  }\n}\n', buffer.text
         assert.equals 3, cursor.line
+
+      context 'when block_start_p equals block_end_p', ->
+        it 'formats an existing block as necessary', ->
+          buffer.text = '|\n|'
+          cursor.line = 2
+          assert.is_true formatting.ensure_block editor, '|$', '|', '|'
+          assert.equals '|\n  \n|', buffer.text
+          assert.equals 2, cursor.line
+
+        it 'completes an existing block as necessary', ->
+          buffer.text = '|\n'
+          cursor.line = 2
+          assert.is_true formatting.ensure_block editor, '|$', '|', '|'
+          assert.equals '|\n  \n|\n', buffer.text
+          assert.equals 2, cursor.line
+
+        it 'leaves an already ok indented block alone', ->
+          buffer.text = '|\n  \n|\n'
+          cursor.line = 2
+          assert.is_false formatting.ensure_block editor, '|$', '|', '|'
+          assert.equals '|\n  \n|\n', buffer.text
+          assert.equals 2, cursor.line
+
+        it 'leaves an already ok non-indented block alone', ->
+          buffer.text = '|\n\nfoo\n|\n'
+          cursor.line = 2
+          assert.is_false formatting.ensure_block editor, '|$', '|', '|'
+          assert.equals '|\n\nfoo\n|\n', buffer.text
+          assert.equals 2, cursor.line
+
+        it 'leaves an already ok non-indented block alone', ->
+          buffer.text = '|\n\nfoo\n|\n'
+          cursor.line = 2
+          assert.is_false formatting.ensure_block editor, '|$', '|', '|'
+          assert.equals '|\n\nfoo\n|\n', buffer.text
+          assert.equals 2, cursor.line
+
+        it 'recognizes a previous block if it is all non-blank lines', ->
+          buffer.text = '|\nfoo\n|\n'
+          cursor.line = 4
+          assert.is_false formatting.ensure_block editor, '|$', '|', '|'
+          assert.equals '|\nfoo\n|\n', buffer.text
+          assert.equals 4, cursor.line
 
       context 'indentation & cursor', ->
         it 'indents the new line using the "indent" config variable by default', ->
