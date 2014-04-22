@@ -25,7 +25,6 @@ local C, ffi_cast = ffi.C, ffi.cast
 local char_arr, char_p, const_char_p = cdefs.char_arr, cdefs.char_p, cdefs.const_char_p
 local glib = cdefs.glib
 local gchar_arr = glib.gchar_arr
-local u = u
 
 local sci = {}
 local sci_mt = { __index = sci }
