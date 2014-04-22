@@ -1,4 +1,4 @@
-src/deps/*
+src/deps/*/*
 src/*.o
 src/howl
 *.bc
