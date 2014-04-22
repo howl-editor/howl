@@ -1,7 +1,8 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import config, formatting, mode from howl
+import config, mode from howl
+import formatting from howl.editing
 import style from howl.ui
 append = table.insert
 

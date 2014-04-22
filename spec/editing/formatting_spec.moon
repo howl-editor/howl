@@ -1,5 +1,6 @@
-import Buffer, formatting from howl
+import Buffer from howl
 import Editor from howl.ui
+import formatting from howl.editing
 
 describe 'formatting', ->
   local buffer, editor, cursor, lines
