@@ -56,7 +56,7 @@ $(SCINTILLA):
 	@mv deps/scintilla $(SCINTILLA)
 	@perl -piorig -e 's/LINK_LEXER\(\w+\);//' $(SCINTILLA)/src/Catalogue.cxx
 	@echo Applying patches for Scintilla..
-	@cd $(SCINTILLA) && patch -p1 < ../patches/scintilla-gtk3-flicker.patch
+	@cd $(SCINTILLA) && patch -p1 < ../../deps-patches/scintilla-gtk3-flicker.patch
 
 $(SCINTILLA_ARCHIVE): $(SCINTILLA)
 	cd ${SCINTILLA}/gtk && $(MAKE) $(SCINTILLA_DEFS)
