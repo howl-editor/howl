@@ -55,9 +55,11 @@ $(SCINTILLA):
 	@tools/download $(SCINTILLA_URL) $(SCINTILLA_CHECKSUM) tar xzf {file} -C deps
 	@mv deps/scintilla $(SCINTILLA)
 	@perl -piorig -e 's/LINK_LEXER\(\w+\);//' $(SCINTILLA)/src/Catalogue.cxx
+	@echo Applying patches for Scintilla..
+	@cd $(SCINTILLA) && patch -p1 < ../patches/scintilla-gtk3-flicker.patch
 
 $(SCINTILLA_ARCHIVE): $(SCINTILLA)
-	cd ${SCINTILLA}/gtk && make $(SCINTILLA_DEFS)
+	cd ${SCINTILLA}/gtk && $(MAKE) $(SCINTILLA_DEFS)
 
 $(LUAJIT):
 	@tools/download $(LUAJIT_URL) $(LUAJIT_CHECKSUM) tar xzf {file} -C deps
@@ -70,6 +72,11 @@ deps-download: $(LUAJIT) $(SCINTILLA) $(LPEG)
 
 deps-purge:
 	rm -rf $(LUAJIT) $(LPEG) $(SCINTILLA)
+
+deps-clean:
+	@rm $(LPEG_OBJECT) || true
+	@cd $(SCINTILLA)/gtk && $(MAKE) clean
+	@cd $(LUAJIT) && $(MAKE) clean
 
 clean:
 	-rm -f ${OBJECTS}

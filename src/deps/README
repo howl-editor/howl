@@ -1,5 +1,0 @@
-This is where all dependencies are stored. The top-level
-Makefile contains a `deps` target that automatically downloads
-and builds the dependencies (provider you have wget and tar 
-installed).
-
