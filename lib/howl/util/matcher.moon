@@ -4,7 +4,7 @@
 append = table.insert
 
 separator = ' \t-_:/'
-sep_p = "[#{separator}]"
+sep_p = "[#{separator}]+"
 non_sep_p = "[^#{separator}]"
 leading_greedy_p = "(?:^|.*#{sep_p})"
 leading_p = "(?:^|.*?#{sep_p})"

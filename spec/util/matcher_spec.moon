@@ -10,15 +10,17 @@ describe 'Matcher(candidates)', ->
   describe '(boundary matches)', ->
 
     it 'matches if the search matches at boundaries', ->
-      c = { 'green fields', 'green sfinx' }
-      m = Matcher c
+      m = Matcher { 'green fields', 'green sfinx' }
       assert.same { 'green fields' }, m('gf')
       assert.same { 'apaass_so' }, Matcher({'apaass_so'})('as')
 
     it 'matches if the search matches at upper case boundaries', ->
-      c = { 'camelCase', 'a CreditCard', 'chacha' }
-      m = Matcher c
+      m = Matcher { 'camelCase', 'a CreditCard', 'chacha' }
       assert.same { 'camelCase', 'a CreditCard' }, m('cc')
+
+    it 'allows for multiple-character boundaries', ->
+      m = Matcher { 'green/_fields', 'green sfinx' }
+      assert.same { 'green/_fields' }, m('gf')
 
   it 'candidates are automatically converted to strings', ->
     candidate = setmetatable {}, __tostring: -> 'auto'
@@ -99,9 +101,14 @@ describe 'Matcher(candidates)', ->
     assert.same { how: 'boundary', 1, 6, 7 }, Matcher.explain 'hth', 'hail the howl'
 
   describe 'with reverse matching (reverse = true specified as an option)', ->
-    it 'handles boundary matches', ->
-      m = Matcher { 'spec/aplication_spec.moon' }, reverse: true
-      assert.same { 'spec/aplication_spec.moon' }, m('as')
+    describe 'handles boundary matches', ->
+      it 'handles boundary matches', ->
+        m = Matcher { 'spec/aplication_spec.moon' }, reverse: true
+        assert.same { 'spec/aplication_spec.moon' }, m('as')
+
+      it 'allows for multiple-character boundaries', ->
+        m = Matcher { 'spec/aplication/_spec.moon' }, reverse: true
+        assert.same { 'spec/aplication/_spec.moon' }, m('as')
 
     it 'prefers late occurring exact matches over ones at the start', ->
       c = { 'xmatch me', 'me xmatch' }
