@@ -34,7 +34,7 @@ local = 2
 "but this is just a # sign"
 
 # regex
-/foo(\w+)/ and  %r|(foo\|bar)| and %r'\d+#{local}\w+' and %r{'"\d+magic\pL} and /with 東京都 flags/im
+/foo(\w+)/ and  %r|(foo\|bar)| or %r'\d+#{local}\w+' and %r{'"\d+magic\pL} and /with 東京都 flags/im
 puts %r[PAIR #{local} ME!]
 
 # not regex
