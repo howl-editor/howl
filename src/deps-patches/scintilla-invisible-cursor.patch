@@ -1,0 +1,53 @@
+# Patch from https://sourceforge.net/p/scintilla/bugs/1592/
+diff -r ef86c57ee7eb -r 48c7ed031fb7 doc/ScintillaHistory.html
+--- a/doc/ScintillaHistory.html	Mon Apr 14 15:36:31 2014 +1000
++++ b/doc/ScintillaHistory.html	Tue Apr 15 14:47:02 2014 +1000
+@@ -472,6 +472,10 @@
+ 	C++ lexer supports Go back quoted raw string literals with lexer.cpp.backquoted.strings option.
+ 	<a href="http://sourceforge.net/p/scintilla/feature-requests/1047/">Feature #1047.</a>
+ 	</li>
++	<li>
++	Bug fixed where caret remained invisible when period set to 0.
++	<a href="http://sourceforge.net/p/scintilla/bugs/1592/">Bug #1592</a>.
++	</li>
+     </ul>
+     <h3>
+        <a href="http://prdownloads.sourceforge.net/scintilla/scite341.zip?download">Release 3.4.1</a>
+diff -r ef86c57ee7eb -r 48c7ed031fb7 src/Editor.cxx
+--- a/src/Editor.cxx	Mon Apr 14 15:36:31 2014 +1000
++++ b/src/Editor.cxx	Tue Apr 15 14:47:02 2014 +1000
+@@ -1542,6 +1542,14 @@
+ 	InvalidateCaret();
+ }
+
++void Editor::CaretSetPeriod(int period) {
++	if (caret.period != period) {
++		caret.period = period;
++		caret.on = true;
++		InvalidateCaret();
++	}
++}
++
+ void Editor::InvalidateCaret() {
+ 	if (posDrag.IsValid()) {
+ 		InvalidateRange(posDrag.Position(), posDrag.Position() + 1);
+@@ -7816,7 +7824,7 @@
+ 		return caret.period;
+
+ 	case SCI_SETCARETPERIOD:
+-		caret.period = wParam;
++		CaretSetPeriod(wParam);
+ 		break;
+
+ 	case SCI_GETWORDCHARS:
+diff -r ef86c57ee7eb -r 48c7ed031fb7 src/Editor.h
+--- a/src/Editor.h	Mon Apr 14 15:36:31 2014 +1000
++++ b/src/Editor.h	Tue Apr 15 14:47:02 2014 +1000
+@@ -420,6 +420,7 @@
+ 	void ScrollRange(SelectionRange range);
+ 	void ShowCaretAtCurrentPosition();
+ 	void DropCaret();
++	void CaretSetPeriod(int period);
+ 	void InvalidateCaret();
+ 	virtual void UpdateSystemCaret();
+

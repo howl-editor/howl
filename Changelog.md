@@ -130,6 +130,10 @@ in the readline (issue #23).
 
 - HTML mode: Don't lex strings within HTML content
 
+- Flickering for Gtk+-3 versions 3.9.2 or greater.
+
+- VI: The cursor could end up invisible when switching from insert to command
+
 ## 0.1.1 (2014-03-15)
 
 - Fix incompatibility with older Gtk versions.
