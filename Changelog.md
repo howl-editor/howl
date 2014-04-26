@@ -62,6 +62,39 @@ E.g. `///` for CoffeeScript, or fenced code blocks for Markdown.
 - Fix <y><y> to yank current line correctly
 - Support '<' and '>' in visual mode
 - New bindings: 'H', 'L', 'M'
+- Pulled in upstream Scintilla patch for bug where the cursor could end up
+invisible when switching from insert to command
+
+### Bugs fixed
+
+- Completion popup now closes upon entering a non-character (issue #9)
+
+- Brace matching of braces before the cursor are now highlighted correctly
+(issue #16)
+
+- Buffer grep fixed for buffers with empty lines
+
+- Byte code compilation no longers requires a $DISPLAY
+
+- Overly long lines in the readline caused horizontal scrolling (issue #8)
+
+- `buffer-replace` command failed to handle empty replacement strings
+
+- Boundary matching was not working correctly in all cases
+
+- Pasting in the readline did not update completions (issue #6)
+
+- Lib directory not found when binary was invoked without path (issue #17)
+
+- Readline keeps focus, avoids weird state e.g. when clicking in an editor while
+in the readline (issue #23).
+
+- Ruby: Avoid over-eager lexing of regexes
+
+- HTML mode: Don't lex strings within HTML content
+
+- Flickering for Gtk+-3 versions 3.9.2 or greater was alleviated. It's still
+pending a fully satisfactory fix however.
 
 ### Command name changes
 
@@ -101,38 +134,6 @@ be removed in a future release.
 
 The old path is deprecated and will be removed in future releases, but still
 works as of now.
-
-### Bugs fixed
-
-- Completion popup now closes upon entering a non-character (issue #9)
-
-- Brace matching of braces before the cursor are now highlighted correctly
-(issue #16)
-
-- Buffer grep fixed for buffers with empty lines
-
-- Byte code compilation no longers requires a $DISPLAY
-
-- Overly long lines in the readline caused horizontal scrolling (issue #8)
-
-- `buffer-replace` command failed to handle empty replacement strings
-
-- Boundary matching was not working correctly in all cases
-
-- Pasting in the readline did not update completions (issue #6)
-
-- Lib directory not found when binary was invoked without path (issue #17)
-
-- Readline keeps focus, avoids weird state e.g. when clicking in an editor while
-in the readline (issue #23).
-
-- Ruby: Avoid over-eager lexing of regexes
-
-- HTML mode: Don't lex strings within HTML content
-
-- Flickering for Gtk+-3 versions 3.9.2 or greater.
-
-- VI: The cursor could end up invisible when switching from insert to command
 
 ## 0.1.1 (2014-03-15)
 
