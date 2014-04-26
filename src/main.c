@@ -7,6 +7,9 @@
 #include <Scintilla.h>
 #include <ScintillaWidget.h>
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 {
   gchar *start_script;
@@ -40,6 +43,12 @@ static gchar *get_app_root(const gchar *invocation_path)
   gchar *called_as = (g_file_test("/proc/self/exe", G_FILE_TEST_IS_SYMLINK)) ?
                       g_file_read_link("/proc/self/exe", NULL) :
                       g_strdup(invocation_path);
+
+  /* Invoked from $PATH on non-linux system */
+  if (strcmp(called_as, "howl") == 0) {
+    g_free(called_as);
+    called_as = g_strconcat(TOSTRING(HOWL_PREFIX), "/bin/howl", NULL);
+  }
 
   gchar *path;
   GFile *root, *app, *parent, *share_dir;

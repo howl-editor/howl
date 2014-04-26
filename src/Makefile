@@ -30,7 +30,7 @@ LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
 SCI_GEN = tools/sci_gen.lua
 SCI_GEN_TARGET = ../lib/howl/scintilla.lua
 
-CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS)
+CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
 ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E
@@ -40,7 +40,7 @@ DEP_OBJECTS = $(LPEG_OBJECT)
 all: howl bytecode
 
 howl: ${OBJECTS} main.h $(ARCHIVES) $(DEP_OBJECTS) Makefile
-	${CC} -o howl ${CFLAGS} ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
+	${CC} -o howl ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
 
 ${OBJECTS}: %.o : %.c main.h $(SCINTILLA) $(LUAJIT)
 	${CC} -c $< ${CFLAGS}
@@ -89,7 +89,7 @@ bytecode: howl
 	-@find ../lib ../bundles -name '*.bc' | xargs rm
 	@find ../lib ../bundles -name '*.lua' -o -name '*.moon' | xargs ./howl --compile
 
-install: howl
+install: all
 	@echo Installing to $(DESTDIR)$(PREFIX)..
 	@mkdir -p $(DESTDIR)$(PREFIX)/bin/
 	@mkdir -p $(DESTDIR)$(PREFIX)/share/howl/
