@@ -217,26 +217,28 @@ class Editor extends PropertyObject
     get: => @sci\lines_on_screen!
 
   @property line_at_top:
-    get: => @sci\get_first_visible_line! + 1
+    get: =>
+      @sci\doc_line_from_visible(@sci\get_first_visible_line!) + 1
     set: (nr) =>
-      if nr < 1 then nr = 1
-      elseif nr > #@buffer.lines then nr = #@buffer.lines
-      @sci\set_first_visible_line(nr - 1)
+      visible_nr = @sci\visible_from_doc_line(nr - 1)
+      @sci\set_first_visible_line(visible_nr)
 
   @property line_at_bottom:
-    get: => @line_at_top + @lines_on_screen - 1
+    get: =>
+      visible_nr = @sci\get_first_visible_line! + @lines_on_screen
+      @sci\doc_line_from_visible(visible_nr) + 1
     set: (nr) =>
-      if nr < 1 then nr = 1
-      elseif nr > #@buffer.lines then nr = #@buffer.lines
-      @line_at_top = math.max(1, nr - @lines_on_screen + 1)
+      visible_nr = @sci\visible_from_doc_line(nr - 1)
+      @sci\set_first_visible_line(visible_nr - @lines_on_screen)
 
   @property line_at_center:
-    get: => @line_at_top + math.floor(@lines_on_screen / 2)
+    get: =>
+      visible_nr = @sci\get_first_visible_line! + @lines_on_screen / 2
+      @sci\doc_line_from_visible(visible_nr) + 1
     set: (nr) =>
-      if nr < 1 then nr = 1
-      elseif nr > #@buffer.lines then nr = #@buffer.lines
-      first_nr = nr - math.floor(@lines_on_screen / 2) + 1
-      @line_at_top = math.max(1, first_nr)
+      visible_nr = @sci\visible_from_doc_line(nr - 1)
+      top_visible_nr = visible_nr - math.floor(@lines_on_screen / 2)
+      @sci\set_first_visible_line top_visible_nr
 
   @property line_numbers:
     get: => @sci\get_margin_width_n(0) > 0
