@@ -16,7 +16,8 @@ class Git
     git_files = {}
     for path in output\gmatch '[^\n]+'
       file = @root\join path
-      append git_files, file if file.exists
+      append git_files, file if file.exists and not file.is_directory
+
     git_files
 
   diff: (file) =>
