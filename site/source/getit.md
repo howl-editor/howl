@@ -10,17 +10,24 @@ nothing the author is aware of that should prevent it from being ported to OSX
 or Window, should any brave soul like to try).
 
 You can install Howl by building it from source, either from a release or by
-cloning the repository from Github.
+cloning the repository from Github. If you're on ArchLinux you can install the
+Arch package available from the AUR.
 
-### Latest release
+## Latest release
 
-The latest release is Howl 0.1.1. It was released at 2014-03-15, and is
-available for download from
-[http://download.howl.io/release/howl-0.1.1.tgz](http://download.howl.io/release/howl-0.1.1.tgz)
+The latest release of Howl is 0.2. It was released at 2014-04-29, and is
+available for download from:
 
-__MD5 checksum__: b7fe35018a7016e66b93920a67444b0d
+[http://download.howl.io/release/howl-0.2.tgz](http://download.howl.io/release/howl-0.2.tgz)
 
-__SHA1 checksum__: 9542dd53c25045e33732f7210b0c68ebff156d41
+_MD5_: 616598045baa8633f67af0a21c3afacf
+
+_SHA1_: cbcebc01b1fe4762895e914d989c17457058f2ff
+
+__Release notes:__
+[Howl 0.2 Released](/blog/2014/04/30/howl-0-dot-2-released.html)
+
+## Building Howl from source
 
 ### Build requirements
 
@@ -36,9 +43,6 @@ dependencies).
 
 - `C/C++ compiler`: Howl has a very small C core itself, but it embedds dependencies built both
   in C and C++.
-
-This list is not guaranteed to be complete, so please let me know if there's anything missing
-(or if this works well for you I love to hear that as well).
 
 ### Building
 
@@ -89,11 +93,39 @@ Github and build as per the above instructions. To update just pull the latest
 additions, and issue make again from the src directory. Don't forget to make
 again, as this would cause stale code to be loaded.
 
-### Older releases
+## Distribution packages
 
-#### Howl 0.1, released 2014-03-15.
+### ArchLinux
+
+![ArchLinux](logos/archlinux-logo.png)
+
+Courtesy of Bartłomiej Piotrowski, Howl is available as a package in
+[Arch User Repository](https://aur.archlinux.org/) (AUR). You can install it
+using your AUR
+[helper](https://wiki.archlinux.org/index.php/AUR_Helpers) of choice, or by
+doing a manual install from AUR. As an example, using the `packer` helper you
+can install Howl by issuing:
+
+```shell
+$ sudo packer -S howl-editor
+```
+
+## Older releases
+
+### Howl 0.1.1, released 2014-03-15.
+
+[Download](http://download.howl.io/release/howl-0.1.1.tgz)
+
+_MD5_: b7fe35018a7016e66b93920a67444b0d
+
+_SHA1_: 9542dd53c25045e33732f7210b0c68ebff156d41
+
+---
+
+### Howl 0.1, released 2014-03-15.
+
 [Download](http://download.howl.io/release/howl-0.1.tgz)
 
-__MD5 checksum__: c8128a9d1510c91ae27603787b17010a
+_MD5_: c8128a9d1510c91ae27603787b17010a
 
-__SHA1 checksum__: 16cfdd89d537ca22881c1646832270165dd05d17
+_SHA1_: 16cfdd89d537ca22881c1646832270165dd05d17

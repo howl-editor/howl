@@ -42,7 +42,7 @@ $border_radius: 10px;
 }
 
 .masthead {
-  margin-bottom: 2em;
+  margin-bottom: 1em;
 }
 
 .jumbotron {
@@ -50,11 +50,70 @@ $border_radius: 10px;
     padding-top: 0.5em;
 }
 
+h1, h2 {
+  font-family: 'Open Sans Condensed', 'sans-serif';
+  color: slategray;
+}
+
+h2 {
+  font-size: 24px;
+}
+
 code {
   background-color: aliceblue;
   color: darkblue;
   border: 1px solid skyblue;
   padding: 1px 2px 0 2px;
+}
+
+.blog_entries {
+  img {
+    max-width: 10%;
+  }
+}
+
+.article {
+  background: url("/images/blog/lightpaperfibers.png") repeat scroll 0 0 rgba(0, 0, 0, 0);
+  border: 1px solid;
+  border-color: lightgray;
+  margin-top: 2em;
+  padding: 1em 2em 1em 2em;
+  border-radius: 15px;
+
+  .date {
+    font-family: Purisa, sans-serif;
+    font-style: italic;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 0.5em;
+  }
+
+  @media (min-width: 670px) {
+    h1 + p > img, h2 + p > img {
+      float: right;
+      padding: 0 1em 2em 2em;
+      margin-top: -4em;
+    }
+  }
+
+  @media (max-width: 669px) {
+    h1 + p > img, h2 + p > img {
+      float: left;
+      padding: 1em 1.5em 0.5em 0em;
+      max-width: 25%;
+    }
+  }
+
+  h3 {
+    display: inline-block;
+  }
+}
+
+img {
+  max-width: 100%;
+  weight: auto;
 }
 
 pre.highlight {
@@ -154,19 +213,6 @@ body.doc {
         margin-bottom: 0.2em;
         display: block;
         font-weight: bold;
-
-        /* &.properties:before { */
-        /*   @include property-badge(); */
-        /*   @include toc-badge(); */
-        /* } */
-        /* &.methods:before { */
-        /*   @include method-badge(); */
-        /*   @include toc-badge(); */
-        /* } */
-        /* &.functions:before { */
-        /*   @include function-badge(); */
-        /*   @include toc-badge(); */
-        /* } */
       }
     }
   }

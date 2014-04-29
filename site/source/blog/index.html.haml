@@ -1,0 +1,29 @@
+---
+pageable: true
+per_page: 5
+---
+
+.blog_entries
+
+  %h1
+    The Howl blog
+    = link_to image_tag('blog/feed-icon-28x28.png'), 'feed.xml'
+
+  - page_articles.each_with_index do |article, i|
+    .article
+      %h2
+        %span= article.date.strftime('%b %e %Y')
+        —
+        -# = link_to article.title, article
+        = article.title
+
+      = article.summary
+      .read-more= link_to '➥ Read more..', article
+
+  - if paginate && num_pages > 1
+    %ul.pager
+      - if prev_page
+        %li= link_to 'Previous page', prev_page
+
+      - if next_page
+        %li= link_to 'Next page', next_page

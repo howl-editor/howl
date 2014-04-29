@@ -1,0 +1,13 @@
+- wrap_layout :layout do
+  - if is_blog_article?
+    .article
+      .date
+        #{current_resource.date.strftime('%b %e %Y')},
+        = current_resource.metadata[:page]['location']
+        - puts current_resource.metadata
+      %h1= current_resource.metadata[:page]['title']
+
+      = preserve yield
+
+  - else
+    = preserve yield
