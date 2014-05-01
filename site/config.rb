@@ -15,7 +15,6 @@ activate :syntax
 activate :blog do |blog|
   blog.prefix = 'blog'
   blog.paginate = true
-
 end
 
 page "blog/*", :layout => :blog_layout
@@ -39,7 +38,9 @@ set :markdown, {
 }
 
 require 'middleware/auto_format'
+require 'middleware/blog_absolute_links'
 use AutoFormat
+use BlogAbsoluteLinks
 
 helpers do
   def hdr_link(idx, title, path)

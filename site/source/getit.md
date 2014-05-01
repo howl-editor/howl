@@ -99,9 +99,9 @@ again, as this would cause stale code to be loaded.
 
 ![ArchLinux](logos/archlinux-logo.png)
 
-Courtesy of Bartłomiej Piotrowski, Howl is available as a package in
-[Arch User Repository](https://aur.archlinux.org/) (AUR). You can install it
-using your AUR
+Courtesy of [Bartłomiej Piotrowski](http://bpiotrowski.pl), Howl is available as
+a package in the [Arch User Repository](https://aur.archlinux.org/) (AUR). You
+can install it using your AUR
 [helper](https://wiki.archlinux.org/index.php/AUR_Helpers) of choice, or by
 doing a manual install from AUR. As an example, using the `packer` helper you
 can install Howl by issuing:

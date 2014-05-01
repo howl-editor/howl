@@ -8,8 +8,9 @@ location: Stockholm, Sweden
 It's been only a short while since the first 0.1 release, yet the 0.2 release of
 the [Howl editor](http://howl.io) comes with a lot of improvements. It's not a
 revolutionary release, in that it does not contain any major changes, but
-instead it contains many smaller fixes, features and improvements. The full
-changelog between 0.1 and 0.2 is included below for you convenience, but here
+instead it contains many smaller fixes, features and improvements. The release
+is available for download [here](/getit.html). The full changelog between 0.1
+and 0.2 is included at the bottom of this page for your convenience, but here
 are some highlights for the 0.2 release:
 
 READMORE
@@ -51,7 +52,7 @@ The 0.1 release used the system clipboard. Starting with the 0.2 release, Howl
 keeps its own clipboard, which can be fully controlled and accessed via the
 [API](/doc/api/clipboard.html). An immediate benefit of this is that there's now
 a history of previous clips, that can be referenced for pasting. The new
-`paste..` command (bound to `ctrl_shift_v` in the default keymap) allows you
+`editor-paste..` command (bound to `ctrl_shift_v` in the default keymap) allows you
 paste any previous clip from the clipboard:
 
 ![Clipboard paste](doc/clipboard-paste.png)
@@ -72,9 +73,10 @@ And it also includes support for literate CoffeeScript!
 
 ![ArchLinux](logos/archlinux-logo.png)
 
-Starting with 0.2, and courtesy of Bartłomiej Piotrowski, Howl is now available
-as a package in [Arch User Repository](https://aur.archlinux.org/) (AUR). You
-can install it using your AUR
+Starting with 0.2, and courtesy of [Bartłomiej
+Piotrowski](http://bpiotrowski.pl), Howl is now available as a package in the
+[Arch User Repository](https://aur.archlinux.org/) (AUR). You can install it
+using your AUR
 [helper](https://wiki.archlinux.org/index.php/AUR_Helpers) of choice, or by
 doing a manual install from AUR. As an example, using the `packer` helper you
 can install Howl by issuing:
