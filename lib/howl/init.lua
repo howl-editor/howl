@@ -113,16 +113,16 @@ local function main(args)
   if args.compile then
     compile(args)
   else
-    local signal = require 'ljglibs.gobject.signal'
-    signal.configure({ dispatch_in_coroutine = true })
+    local callbacks = require 'ljglibs.callbacks'
+    callbacks.configure({ dispatch_in_coroutine = true })
 
     howl.app = howl.Application(howl.io.File(app_root), args)
 
     if os.getenv('BUSTED') then
-      local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
-      support()
       local busted = assert(loadfile(argv[2]))
       arg = {table.unpack(argv, 3, #argv)}
+      local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
+      support()
       busted()
     else
       howl.app:run()

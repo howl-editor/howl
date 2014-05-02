@@ -109,22 +109,3 @@ describe 'signal', ->
       assert.equal Type.from_name('gboolean'), info.return_type
       assert.equal 1, info.n_params
       assert.same { Type.from_name('GtkDirectionType') }, info.param_types
-
-  describe '(dispatching)', ->
-    it 'dispatches in the main coroutine if the dispatch_in_coroutine option is false', ->
-      handler = ->
-        _, is_main = coroutine.running!
-        assert.is_true is_main
-
-      signal.configure dispatch_in_coroutine: false
-      signal.connect('void2', widget, 'show', handler)
-      C.gtk_widget_show widget
-
-    it 'dispatches in a new coroutine if the dispatch_in_coroutine option is true', ->
-      handler = ->
-        _, is_main = coroutine.running!
-        assert.is_false is_main
-
-      signal.configure dispatch_in_coroutine: true
-      signal.connect('void2', widget, 'show', handler)
-      C.gtk_widget_show widget

@@ -1,40 +1,21 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-require 'ljglibs.cdefs.glib'
+callbacks = require 'ljglibs.callbacks'
+cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
 C = ffi.C
-unpack = table.unpack
 
-ref_id_cnt = 0
-callbacks = {}
-
-g_callback = ffi.cast 'GSourceFunc', (data) ->
-  ref_id = tonumber ffi.cast('gint', data)
-  cb = callbacks[ref_id]
-  if cb
-    co = coroutine.create (...) -> cb[1] ...
-    status, ret = coroutine.resume co, unpack(cb[2], 1, cb[2].maxn)
-
-    unless status
-      _G.log.error 'Error invoking timer handler: ' .. ret
-  false
-
-register_callback = (f, ...) ->
-  ref_id_cnt += 1
-  args = {...}
-  args.maxn = select '#', ...
-  callbacks[ref_id_cnt] = { f, args }
-  ffi.cast 'gpointer', ref_id_cnt
+timer_callback = ffi.cast 'GSourceFunc', callbacks.bool1
 
 asap = (f, ...) ->
-  cb_id = register_callback f, ...
-  C.g_idle_add_full C.G_PRIORITY_LOW, g_callback, cb_id, nil
+  handle = callbacks.register f, 'timer-asap', ...
+  C.g_idle_add_full C.G_PRIORITY_LOW, timer_callback, cast_arg(handle.id), nil
 
 after = (seconds, f, ...) ->
-  cb_id = register_callback f, ...
+  handle = callbacks.register f, "timer-after-#{seconds}", ...
   interval = seconds * 1000
-  C.g_timeout_add_full C.G_PRIORITY_LOW, interval, g_callback, cb_id, nil
+  C.g_timeout_add_full C.G_PRIORITY_LOW, interval, timer_callback, cast_arg(handle.id), nil
 
 {
   :asap
