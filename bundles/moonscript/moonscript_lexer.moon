@@ -24,7 +24,7 @@ howl.aux.lpeg_lexer ->
 
   identifier = capture 'identifier', ident
   member = capture 'member', (P'@' + 'self.') * ident^0
-  special = capture 'special', any { 'true', 'false', 'nil' }
+  special = capture 'special', word { 'true', 'false', 'nil' }
   clazz = capture 'class', upper^1 * (alpha + digit + '_')^0
 
   lua_keywords = capture 'error', word { 'function', 'goto', 'end' }

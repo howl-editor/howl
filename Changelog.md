@@ -2,6 +2,13 @@
 
 ## In master (unreleased)
 
+### Bugs fixed
+
+- Moonscript: Fix incorrect lexing of `nil`, `true`, and `false` when they are
+prefixes of an identifier.
+
+## 0.2 (2014-04-30)
+
 - Avoid having the readline grow and shrink as much, which is annoying since it
 requires the eyes to move up and down. Now the readline will only grow during
 one read() invocation, and will keep the same fixed size regardless of the
