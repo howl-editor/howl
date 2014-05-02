@@ -1,5 +1,6 @@
-require 'busted'
+busted = require 'busted'
 say = require('say')
+C = require('ffi').C
 
 import File from howl.io
 import theme from howl.ui
@@ -74,3 +75,16 @@ theme.apply!
 -- signal.connect_first 'error', (e) ->
 --   append errors, e
 --   true
+
+default_loop = require'busted.loop.default'
+
+howl_main_ctx = C.g_main_context_default!
+howl_loop = setmetatable {
+    step: (...) ->
+      jit.off!
+      C.g_main_context_iteration(howl_main_ctx, false)
+
+    pcall: pcall
+  }, __index: default_loop
+
+export set_howl_loop = -> setloop howl_loop
