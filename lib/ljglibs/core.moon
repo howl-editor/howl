@@ -158,6 +158,13 @@ construct = (spec, constructor, ...) ->
       error "Unknown member '#{k}'" unless kv
       bit.band(tonumber(t.value), tonumber(kv)) != 0
 
+  parse_flags: (prefix, flags) ->
+    return 0 unless flags
+    return flags if type(flags) != 'table'
+    f = 0
+    f = bit.bor(f, C["#{prefix}#{v}"]) for v in *flags
+    f
+
   optional: (v) ->
     if v == nil
       nil

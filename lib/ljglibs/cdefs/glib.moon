@@ -29,8 +29,17 @@ ffi.cdef [[
   typedef float         gfloat;
   typedef const void *  gconstpointer;
 
-  gchar * g_get_current_dir (void);
 
+  /* version definitions */
+  extern const guint glib_major_version;
+  extern const guint glib_minor_version;
+  extern const guint glib_micro_version;
+  extern const guint glib_binary_age;
+  extern const guint glib_interface_age;
+
+  const gchar * glib_check_version (guint required_major,
+                                    guint required_minor,
+                                    guint required_micro);
   /* GError definitions */
   typedef struct {
     GQuark  domain;
@@ -63,7 +72,6 @@ ffi.cdef [[
     GDK_MODIFIER_MASK = 0x5c001fff
   } GdkModifierType;
 
-  void g_free(gpointer mem);
 
   /* utf8 helper functions */
   glong   g_utf8_pointer_to_offset(const gchar *str, const gchar *pos);
@@ -210,6 +218,50 @@ ffi.cdef [[
   GList * g_list_nth (GList *list, guint n);
   gpointer g_list_nth_data (GList *list, guint n);
 
+  /* GBytes */
+  typedef struct {} GBytes;
+  GBytes * g_bytes_new_static (gconstpointer data, gsize size);
+  GBytes * g_bytes_new (gconstpointer data, gsize size);
+  gsize g_bytes_get_size (GBytes *bytes);
+  gconstpointer g_bytes_get_data (GBytes *bytes, gsize *size);
+  GBytes * g_bytes_ref (GBytes *bytes);
+  void g_bytes_unref (GBytes *bytes);
+
   /* Utility functions */
   const gchar * g_get_home_dir (void);
+  gchar * g_get_current_dir (void);
+  gchar * g_strndup (const gchar *str, gsize n);
+  void g_free(gpointer mem);
+
+  /* Process spawning */
+  typedef enum {
+    G_SPAWN_DEFAULT                = 0,
+    G_SPAWN_LEAVE_DESCRIPTORS_OPEN = 1 << 0,
+    G_SPAWN_DO_NOT_REAP_CHILD      = 1 << 1,
+    /* look for argv[0] in the path i.e. use execvp() */
+    G_SPAWN_SEARCH_PATH            = 1 << 2,
+    /* Dump output to /dev/null */
+    G_SPAWN_STDOUT_TO_DEV_NULL     = 1 << 3,
+    G_SPAWN_STDERR_TO_DEV_NULL     = 1 << 4,
+    G_SPAWN_CHILD_INHERITS_STDIN   = 1 << 5,
+    G_SPAWN_FILE_AND_ARGV_ZERO     = 1 << 6,
+    G_SPAWN_SEARCH_PATH_FROM_ENVP  = 1 << 7
+  } GSpawnFlags;
+
+  typedef int GPid;
+  typedef void (*GSpawnChildSetupFunc) (gpointer user_data);
+
+  gboolean g_spawn_async_with_pipes (const gchar *working_directory,
+                                     gchar **argv,
+                                     gchar **envp,
+                                     GSpawnFlags flags,
+                                     GSpawnChildSetupFunc child_setup,
+                                     gpointer user_data,
+                                     GPid *child_pid,
+                                     gint *standard_input,
+                                     gint *standard_output,
+                                     gint *standard_error,
+                                     GError **error);
+
+  void g_spawn_close_pid (GPid pid);
 ]]

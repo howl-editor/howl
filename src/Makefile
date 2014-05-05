@@ -2,7 +2,7 @@ PREFIX ?= /usr/local
 
 GTK = gtk+-3.0
 GTK_CFLAGS = $(shell pkg-config --cflags $(GTK))
-GTK_LIBS = $(shell pkg-config --libs $(GTK) gmodule-2.0)
+GTK_LIBS = $(shell pkg-config --libs $(GTK) gmodule-2.0 gio-unix-2.0)
 
 LUAJIT_VER = LuaJIT-2.0.3
 LUAJIT_CHECKSUM = f14e9104be513913810cd59c8c658dc0

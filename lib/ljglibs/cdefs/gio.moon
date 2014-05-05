@@ -1,4 +1,4 @@
--- Copyright 2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2013, 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 ffi = require 'ffi'
@@ -7,8 +7,15 @@ require 'ljglibs.cdefs.glib'
 ffi.cdef [[
   typedef void GCancellable;
 
+  /* GAsyncResult */
+  typedef struct {} GAsyncResult;
+
+  typedef void (*GAsyncReadyCallback) (GObject *source_object,
+                                       GAsyncResult *res,
+                                       gpointer user_data);
+
   /* GFileInfo */
-  typedef struct GFileInfo GFileInfo;
+  typedef struct {} GFileInfo;
 
   typedef enum {
     G_FILE_TYPE_UNKNOWN = 0,
@@ -128,4 +135,148 @@ ffi.cdef [[
   void g_application_release (GApplication *application);
   void g_application_quit (GApplication *application);
 
+  /* GInputStream */
+  typedef struct {} GInputStream;
+
+  gboolean g_input_stream_close (GInputStream *stream,
+                                 GCancellable *cancellable,
+                                 GError **error);
+
+  gssize g_input_stream_read (GInputStream *stream,
+                              void *buffer,
+                              gsize count,
+                              GCancellable *cancellable,
+                              GError **error);
+
+  gboolean g_input_stream_read_all (GInputStream *stream,
+                                    void *buffer,
+                                    gsize count,
+                                    gsize *bytes_read,
+                                    GCancellable *cancellable,
+                                    GError **error);
+
+  void g_input_stream_read_async (GInputStream *stream,
+                                  void *buffer,
+                                  gsize count,
+                                  int io_priority,
+                                  GCancellable *cancellable,
+                                  GAsyncReadyCallback callback,
+                                  gpointer user_data);
+
+  gssize g_input_stream_read_finish (GInputStream *stream,
+                                     GAsyncResult *result,
+                                     GError **error);
+
+  /* GOutputStream */
+  typedef struct {} GOutputStream;
+
+  gboolean g_output_stream_write_all (GOutputStream *stream,
+                                      const void *buffer,
+                                      gsize count,
+                                      gsize *bytes_written,
+                                      GCancellable *cancellable,
+                                      GError **error);
+
+  gboolean g_output_stream_close (GOutputStream *stream,
+                                  GCancellable *cancellable,
+                                  GError **error);
+
+  gboolean g_output_stream_flush (GOutputStream *stream,
+                                  GCancellable *cancellable,
+                                  GError **error);
+
+  /* GUnixInputStream */
+  typedef struct {} GUnixInputStream;
+  GUnixInputStream * g_unix_input_stream_new (gint fd, gboolean close_fd);
+
+  /* GUnixOutputStream */
+  typedef struct {} GUnixOutputStream;
+  GUnixOutputStream * g_unix_output_stream_new (gint fd, gboolean close_fd);
+
+  /* GSubProcess */
+  typedef struct {} GSubprocess;
+
+  typedef enum {
+    G_SUBPROCESS_FLAGS_NONE                  = 0,
+    G_SUBPROCESS_FLAGS_STDIN_PIPE            = (1 << 0),
+    G_SUBPROCESS_FLAGS_STDIN_INHERIT         = (1 << 1),
+    G_SUBPROCESS_FLAGS_STDOUT_PIPE           = (1 << 2),
+    G_SUBPROCESS_FLAGS_STDOUT_SILENCE        = (1 << 3),
+    G_SUBPROCESS_FLAGS_STDERR_PIPE           = (1 << 4),
+    G_SUBPROCESS_FLAGS_STDERR_SILENCE        = (1 << 5),
+    G_SUBPROCESS_FLAGS_STDERR_MERGE          = (1 << 6),
+    G_SUBPROCESS_FLAGS_INHERIT_FDS           = (1 << 7)
+  } GSubprocessFlags;
+
+  GSubprocess * g_subprocess_newv (const gchar * const *argv,
+                                   GSubprocessFlags flags,
+                                   GError **error);
+
+  gboolean g_subprocess_wait (GSubprocess *subprocess,
+                              GCancellable *cancellable,
+                              GError **error);
+
+  gboolean g_subprocess_wait_check (GSubprocess *subprocess,
+                                    GCancellable *cancellable,
+                                    GError **error);
+
+  void g_subprocess_wait_async (GSubprocess *subprocess,
+                                GCancellable *cancellable,
+                                GAsyncReadyCallback callback,
+                                gpointer user_data);
+
+  gboolean g_subprocess_wait_finish (GSubprocess *subprocess,
+                                     GAsyncResult *result,
+                                     GError **error);
+
+  gboolean g_subprocess_get_successful (GSubprocess *subprocess);
+  gint g_subprocess_get_exit_status (GSubprocess *subprocess);
+  void g_subprocess_send_signal (GSubprocess *subprocess, gint signal_num);
+  void g_subprocess_force_exit (GSubprocess *subprocess);
+  gboolean g_subprocess_get_if_signaled (GSubprocess *subprocess);
+  gboolean g_subprocess_get_if_exited (GSubprocess *subprocess);
+  gint g_subprocess_get_term_sig (GSubprocess *subprocess);
+  const gchar * g_subprocess_get_identifier (GSubprocess *subprocess);
+
+  GOutputStream * g_subprocess_get_stdin_pipe (GSubprocess *subprocess);
+  GInputStream * g_subprocess_get_stdout_pipe (GSubprocess *subprocess);
+  GInputStream * g_subprocess_get_stderr_pipe (GSubprocess *subprocess);
+
+  gboolean g_subprocess_communicate (GSubprocess *subprocess,
+                                     GBytes *stdin_buf,
+                                     GCancellable *cancellable,
+                                     GBytes **stdout_buf,
+                                     GBytes **stderr_buf,
+                                     GError **error);
+
+  gboolean g_subprocess_communicate_utf8 (GSubprocess *subprocess,
+                                          GBytes *stdin_buf,
+                                          GCancellable *cancellable,
+                                          GBytes **stdout_buf,
+                                          GBytes **stderr_buf,
+                                          GError **error);
+
+  void g_subprocess_communicate_async (GSubprocess *subprocess,
+                                       GBytes *stdin_buf,
+                                       GCancellable *cancellable,
+                                       GAsyncReadyCallback callback,
+                                       gpointer user_data);
+
+  void g_subprocess_communicate_async_utf8 (GSubprocess *subprocess,
+                                            GBytes *stdin_buf,
+                                            GCancellable *cancellable,
+                                            GAsyncReadyCallback callback,
+                                            gpointer user_data);
+
+  gboolean g_subprocess_communicate_finish (GSubprocess *subprocess,
+                                            GAsyncResult *result,
+                                            GBytes **stdout_buf,
+                                            GBytes **stderr_buf,
+                                            GError **error);
+
+  gboolean g_subprocess_communicate_utf8_finish (GSubprocess *subprocess,
+                                                 GAsyncResult *result,
+                                                 GBytes **stdout_buf,
+                                                 GBytes **stderr_buf,
+                                                 GError **error);
 ]]
