@@ -83,6 +83,7 @@ howl_loop = setmetatable {
     step: (...) ->
       jit.off!
       C.g_main_context_iteration(howl_main_ctx, false)
+      default_loop.step!
 
     pcall: pcall
   }, __index: default_loop
