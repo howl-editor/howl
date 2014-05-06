@@ -557,7 +557,6 @@ class Editor extends PropertyObject
 
   _on_focus: (args) =>
     howl.app.editor = self
-    @cursor.pos = @cursor.pos -- this ensures cursor is visible
     signal.emit 'editor-focused', editor: self
     false
 
