@@ -58,6 +58,13 @@ command.register
     buffer = app.editor.buffer
     return command.run 'save-as' unless buffer.file
 
+    if buffer.modified_on_disk
+      input = inputs.yes_or_no false
+      prompt = "Buffer '#{buffer}' has changed on disk, save anyway? "
+      unless inputs.read input, :prompt
+        log.info "Not overwriting; buffer not saved"
+        return
+
     buffer\save!
     nr_lines = #buffer.lines
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
