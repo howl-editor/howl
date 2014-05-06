@@ -6,6 +6,7 @@ glib = require 'ljglibs.glib'
 ffi = require 'ffi'
 core = require 'ljglibs.core'
 callbacks = require 'ljglibs.callbacks'
+jit = require 'jit'
 
 import catch_error, get_error from glib
 
@@ -13,7 +14,7 @@ C = ffi.C
 ffi_string, ffi_new = ffi.string, ffi.new
 buf_t = ffi.typeof 'unsigned char[?]'
 
-core.define 'GInputStream < GObject', {
+InputStream = core.define 'GInputStream < GObject', {
 
   close: => catch_error C.g_input_stream_close @, nil
 
@@ -50,3 +51,5 @@ core.define 'GInputStream < GObject', {
     handle = callbacks.register handler, 'input-read-async'
     C.g_input_stream_read_async @, buf, count, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
 }
+
+jit.off InputStream.read_async
