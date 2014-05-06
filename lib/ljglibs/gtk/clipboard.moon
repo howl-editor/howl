@@ -2,11 +2,14 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
 
 C = ffi.C
+
+jit.off!
 
 core.define 'GtkClipboard < GObject', {
   get: (atom) -> C.gtk_clipboard_get atom

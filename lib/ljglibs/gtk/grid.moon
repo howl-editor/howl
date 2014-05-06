@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
@@ -11,6 +12,8 @@ gc_ptr, ref_ptr = gobject.gc_ptr, gobject.ref_ptr
 C, ffi_cast = ffi.C, ffi.cast
 widget_t = ffi.typeof 'GtkWidget *'
 to_w = (o) -> ffi_cast widget_t, o
+
+jit.off!
 
 core.define 'GtkGrid < GtkContainer', {
   properties: {

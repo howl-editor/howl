@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 require 'ljglibs.gdk.window'
 require 'ljglibs.gobject.object'
@@ -12,6 +13,8 @@ C, ffi_cast = ffi.C, ffi.cast
 ref_ptr = gobject.ref_ptr
 widget_t = ffi.typeof 'GtkWidget *'
 to_w = (o) -> ffi_cast widget_t, o
+
+jit.off!
 
 core.define 'GtkWidget < GObject', {
   properties: {

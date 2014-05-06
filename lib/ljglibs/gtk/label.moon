@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
@@ -11,6 +12,8 @@ ffi_string = ffi.string
 gc_ptr = gobject.gc_ptr
 
 C = ffi.C
+
+jit.off!
 
 core.define 'GtkLabel < GtkMisc', {
   properties: {

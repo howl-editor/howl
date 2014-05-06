@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 glib = require 'ljglibs.glib'
 core = require 'ljglibs.core'
@@ -11,6 +12,8 @@ require 'ljglibs.gtk.bin'
 C, ffi_string = ffi.C, ffi.string
 catch_error = glib.catch_error
 ref_ptr = gobject.ref_ptr
+
+jit.off!
 
 core.define 'GtkWindow < GtkBin', {
   constants: {

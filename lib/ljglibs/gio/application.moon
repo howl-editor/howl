@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gio'
 glib = require 'ljglibs.glib'
 core = require 'ljglibs.core'
@@ -12,7 +13,7 @@ import catch_error from glib
 C = ffi.C
 ffi_string, ffi_cast = ffi.string, ffi.cast
 
-core.define 'GApplication < GObject', {
+Application = core.define 'GApplication < GObject', {
   constants: {
     prefix: 'G_APPLICATION_'
 
@@ -54,3 +55,7 @@ core.define 'GApplication < GObject', {
 
 },  (t, application_id, flags = t.FLAGS_NONE) ->
   gc_ptr(C.g_application_new application_id, flags)
+
+jit.off Application.run
+
+Application

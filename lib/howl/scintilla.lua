@@ -14,6 +14,7 @@ local setmetatable, tonumber, pcall, error, print, tostring, coroutine =
       setmetatable, tonumber, pcall, error, print, tostring, coroutine
 local string_format = string.format
 local ffi = require('ffi')
+local jit = require 'jit'
 local bit = require('bit')
 local cdefs = require('howl.cdefs')
 local offsets = require('howl.offsets')
@@ -4930,5 +4931,7 @@ function sci:set_use_palette(use_palette)
 end
 
 -- !! End auto generated content
+
+jit.off(sci.send)
 
 return sci

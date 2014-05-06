@@ -2,11 +2,12 @@
 -- License: MIT (see LICENSE.md)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gobject'
 callbacks = require 'ljglibs.callbacks'
 C, ffi_string = ffi.C, ffi.string
 
-{
+signal = {
   -- GConnectFlags
   CONNECT_AFTER: C.G_CONNECT_AFTER,
   CONNECT_SWAPPED: C.G_CONNECT_SWAPPED
@@ -73,3 +74,6 @@ C, ffi_string = ffi.C, ffi.string
     }
     info
 }
+
+jit.off signal.connect
+signal

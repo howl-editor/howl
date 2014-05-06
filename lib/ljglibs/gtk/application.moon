@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
@@ -9,6 +10,8 @@ require 'ljglibs.gio.application'
 import gc_ptr from gobject
 
 C = ffi.C
+
+jit.off!
 
 core.define 'GtkApplication < GApplication', {
 

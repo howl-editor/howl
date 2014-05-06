@@ -4,9 +4,12 @@
 callbacks = require 'ljglibs.callbacks'
 cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
+jit = require 'jit'
 C = ffi.C
 
 timer_callback = ffi.cast 'GSourceFunc', callbacks.bool1
+
+jit.off!
 
 asap = (f, ...) ->
   handle = callbacks.register f, 'timer-asap', ...

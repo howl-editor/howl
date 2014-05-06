@@ -2,12 +2,15 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
 import catch_error from glib
 
 C = ffi.C
+
+jit.off!
 
 core.define 'GtkCssProvider', {
   load_from_data: (data) =>

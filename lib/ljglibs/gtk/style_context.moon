@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
@@ -10,6 +11,8 @@ C, cast = ffi.C, ffi.cast
 gc_ptr = gobject
 
 provider_p = ffi.typeof 'GtkStyleProvider *'
+
+jit.off!
 
 core.define 'GtkStyleContext', {
 
