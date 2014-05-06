@@ -430,3 +430,51 @@ describe 'Editor', ->
       e = nil
       collectgarbage!
       assert.is_nil editors[1]
+
+  describe 'cycle_case()', ->
+    context 'with a selection active', ->
+      it 'changes all lowercase selection to all uppercase', ->
+        buffer.text = 'hello selectëd #world'
+        selection\set 7, 22
+        editor\cycle_case!
+        assert.equals 'hello SELECTËD #WORLD', buffer.text
+
+      it 'changes all uppercase selection to titlecase', ->
+        buffer.text = 'hello SELECTËD #WORLD HELLO'
+        selection\set 7, 28
+        editor\cycle_case!
+        -- #world is not capitalized because title case considers
+        -- words to be any contiguous non space chars
+        assert.equals 'hello Selectëd #world Hello', buffer.text
+
+      it 'changes mixed case selection to all lowercase', ->
+        buffer.text = 'hello SelectËD #WorLd'
+        selection\set 7, 22
+        editor\cycle_case!
+        assert.equals 'hello selectëd #world', buffer.text
+
+      it 'preserves selection', ->
+        buffer.text = 'select'
+        selection\set 3, 5
+        editor\cycle_case!
+        assert.equals 3, selection.anchor
+        assert.equals 5, selection.cursor
+
+    context 'with no selection active', ->
+      it 'changes all lowercase word to all uppercase', ->
+        buffer.text = 'hello wörld'
+        editor.cursor.pos = 7
+        editor\cycle_case!
+        assert.equals 'hello WÖRLD', buffer.text
+
+      it 'changes all uppercase word to titlecase', ->
+        buffer.text = 'hello WÖRLD'
+        editor.cursor.pos = 7
+        editor\cycle_case!
+        assert.equals 'hello Wörld', buffer.text
+
+      it 'changes mixed case word to all lowercase', ->
+        buffer.text = 'hello WörLd'
+        editor.cursor.pos = 7
+        editor\cycle_case!
+        assert.equals 'hello wörld', buffer.text

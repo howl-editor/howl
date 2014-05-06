@@ -2,6 +2,10 @@
 
 ## In master (unreleased)
 
+- Added a new command `editor-cycle-case` that changes the case of the current
+word or selection. The new case is automatically chosen based on the current
+case. The command cycles through lowercase -> uppercase -> titlecase.
+
 ### Bugs fixed
 
 - Moonscript: Fix incorrect lexing of `nil`, `true`, and `false` when they are

@@ -378,6 +378,28 @@ class Editor extends PropertyObject
 
   duplicate_current: => @sci\selection_duplicate!
 
+  cycle_case: =>
+    _capitalize = (word) ->
+      word\usub(1, 1).uupper .. word\usub(2).ulower
+
+    _cycle_case = (text) ->
+      is_lower = text.ulower == text
+      is_upper = text.uupper == text
+      if is_lower
+        text.uupper
+      elseif is_upper
+        text\gsub '%S+', _capitalize
+      else
+        text.ulower
+
+    if @selection.empty
+      curword = @current_context.word
+      curword.text = _cycle_case curword.text
+    else
+      anchor, cursor = @selection.anchor, @selection.cursor
+      @selection.text = _cycle_case @selection.text
+      @selection\set anchor, cursor
+
   forward_to_match: (str) =>
     pos = @current_line\ufind str, @cursor.column_index + 1, true
     @cursor.column_index = pos if pos
@@ -747,6 +769,7 @@ for cmd_spec in *{
   { 'scroll-up', 'Scrolls one line up', 'scroll_up' }
   { 'scroll-down', 'Scrolls one line down', 'scroll_down' }
   { 'duplicate-current', 'Duplicates the selection or current line', 'duplicate_current' }
+  { 'cycle-case', 'Changes case for current word or selection', 'cycle_case' }
 }
   args = { select 4, table.unpack cmd_spec }
   command.register
