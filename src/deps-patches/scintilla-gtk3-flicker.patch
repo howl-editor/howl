@@ -1,115 +1,88 @@
-commit 8e4c396e55b24a079d4f22b33223344bc256c267
-Author: Colomban Wendling <ban@herbesfolles.org>
-Date:   Wed Apr 23 18:53:22 2014 +0200
-
-    Avoid flickering on some redraws with GTK >= 3.9.2
-    
-    To avoid abandoning paints, we pre-compute everything that would
-    trigger it just before painting, and possibly extending the paint area
-    if needed.
-    
-    Most of the logic is taken from ScintillaCocoa::WillDraw().
-    
-    FIXME: check with older versions of GTK3 and add/remove version checks
-    as needed.
-
-diff --git a/gtk/ScintillaGTK.cxx b/gtk/ScintillaGTK.cxx
-index ee0758b..1fa80fd 100644
---- a/gtk/ScintillaGTK.cxx
-+++ b/gtk/ScintillaGTK.cxx
-@@ -241,6 +241,8 @@ private:
+--- gtk/ScintillaGTK.cxx.orig	2014-01-24 04:18:51.000000000 +0100
++++ gtk/ScintillaGTK.cxx	2014-05-06 23:05:44.857212117 +0200
+@@ -160,6 +160,7 @@
+ #else
+ 	GdkRegion *rgnUpdate;
  #endif
- 	static void SizeAllocate(GtkWidget *widget, GtkAllocation *allocation);
- #if GTK_CHECK_VERSION(3,0,0)
-+	void ResetTextClip(cairo_t *cr);
-+	void PrepareDrawText(cairo_t *cr);
- 	gboolean DrawTextThis(cairo_t *cr);
- 	static gboolean DrawText(GtkWidget *widget, cairo_t *cr, ScintillaGTK *sciThis);
- 	gboolean DrawThis(cairo_t *cr);
-@@ -2367,11 +2369,55 @@ void ScintillaGTK::Destroy(GObject *object) {
++	bool repaintFullWindow;
  
- #if GTK_CHECK_VERSION(3,0,0)
+ 	// Private so ScintillaGTK objects can not be copied
+ 	ScintillaGTK(const ScintillaGTK &);
+@@ -172,6 +173,7 @@
+ private:
+ 	virtual void Initialise();
+ 	virtual void Finalise();
++	virtual bool AbandonPaint();
+ 	virtual void DisplayCursor(Window::Cursor c);
+ 	virtual bool DragThreshold(Point ptStart, Point ptNow);
+ 	virtual void StartDrag();
+@@ -365,7 +367,8 @@
+ 		im_context(NULL),
+ 		lastWheelMouseDirection(0),
+ 		wheelMouseIntensity(0),
+-		rgnUpdate(0) {
++		rgnUpdate(0),
++		repaintFullWindow(false) {
+ 	sci = sci_;
+ 	wMain = GTK_WIDGET(sci);
  
-+// reset the Cairo clip to the whole area of wText
-+void ScintillaGTK::ResetTextClip(cairo_t *cr)
-+{
-+	GdkWindow *win = gtk_widget_get_window(PWidget(wText));
-+	PLATFORM_ASSERT(win != NULL);
-+	cairo_region_t *r = gdk_window_get_clip_region(win);
-+	cairo_rectangle_int_t e;
-+	cairo_region_get_extents(r, &e);
-+	cairo_region_destroy(r);
-+	cairo_reset_clip(cr);
-+	cairo_rectangle(cr, e.x, e.y, e.width, e.height);
-+	cairo_clip(cr);
-+
-+	// update the paint area
-+	rcPaint.left = e.x;
-+	rcPaint.top = e.y;
-+	rcPaint.right = e.x + e.width;
-+	rcPaint.bottom = e.y + e.height;
-+}
-+
-+void ScintillaGTK::PrepareDrawText(cairo_t *cr)
-+{
-+	// get the current clip in rcPaint
-+	double x1, y1, x2, y2;
-+	cairo_clip_extents(cr, &x1, &y1, &x2, &y2);
-+	rcPaint.left = x1;
-+	rcPaint.top = y1;
-+	rcPaint.right = x2;
-+	rcPaint.bottom = y2;
-+
-+	// flush pending updates and pre-compute to avoid abandoning the paint.
-+	// taken from ScintillaCocoa::WillDraw()
-+	RefreshStyleData();
-+	int posAfterRect = PositionAfterArea(rcPaint);
-+	pdoc->EnsureStyledTo(posAfterRect);
-+	NotifyUpdateUI();
-+	if (WrapLines(wsVisible)) {
-+		posAfterRect = PositionAfterArea(rcPaint);
-+		pdoc->EnsureStyledTo(posAfterRect);
-+		// clip probably won't be large enough, so extend it
-+		ResetTextClip(cr);
+@@ -756,10 +759,10 @@
+ #else
+ 	g_signal_connect(G_OBJECT(widtxt), "expose_event",
+ 			   G_CALLBACK(ScintillaGTK::ExposeText), this);
+-#endif
+-	gtk_widget_set_events(widtxt, GDK_EXPOSURE_MASK);
+ 	// Avoid background drawing flash
+ 	gtk_widget_set_double_buffered(widtxt, FALSE);
++#endif
++	gtk_widget_set_events(widtxt, GDK_EXPOSURE_MASK);
+ 	gtk_widget_set_size_request(widtxt, 100, 100);
+ 	adjustmentv = GTK_ADJUSTMENT(gtk_adjustment_new(0.0, 0.0, 201.0, 1.0, 20.0, 20.0));
+ #if GTK_CHECK_VERSION(3,0,0)
+@@ -825,6 +828,13 @@
+ 	ScintillaBase::Finalise();
+ }
+ 
++bool ScintillaGTK::AbandonPaint() {
++	if ((paintState == painting) && !paintingAllText) {
++		repaintFullWindow = true;
 +	}
++	return false;
 +}
 +
+ void ScintillaGTK::DisplayCursor(Window::Cursor c) {
+ 	if (cursorMode == SC_CURSORNORMAL)
+ 		wText.SetCursor(c);
+@@ -2370,6 +2380,7 @@
  gboolean ScintillaGTK::DrawTextThis(cairo_t *cr) {
  	try {
--		paintState = painting;
-+		PrepareDrawText(cr);
+ 		paintState = painting;
++		repaintFullWindow = false;
  
--		rcPaint = GetClientRectangle();
-+		paintState = painting;
+ 		rcPaint = GetClientRectangle();
  
- 		PLATFORM_ASSERT(rgnUpdate == NULL);
- 		rgnUpdate = cairo_copy_clip_rectangle_list(cr);
-@@ -2382,12 +2428,6 @@ gboolean ScintillaGTK::DrawTextThis(cairo_t *cr) {
- 			rgnUpdate = 0;
+@@ -2397,11 +2408,12 @@
+ 			surfaceWindow->Release();
+ 			delete surfaceWindow;
  		}
- 
--		double x1, y1, x2, y2;
--		cairo_clip_extents(cr, &x1, &y1, &x2, &y2);
--		rcPaint.left = x1;
--		rcPaint.top = y1;
--		rcPaint.right = x2;
--		rcPaint.bottom = y2;
- 		PRectangle rcClient = GetClientRectangle();
- 		paintingAllText = rcPaint.Contains(rcClient);
- 		Surface *surfaceWindow = Surface::Allocate(SC_TECHNOLOGY_DEFAULT);
-@@ -2399,6 +2439,7 @@ gboolean ScintillaGTK::DrawTextThis(cairo_t *cr) {
- 		}
- 		if (paintState == paintAbandoned) {
+-		if (paintState == paintAbandoned) {
++		if ((paintState == paintAbandoned) || repaintFullWindow) {
  			// Painting area was insufficient to cover new styling or brace highlight positions
-+			// This should never hit if PrepareDrawText() did its job correctly
  			FullPaint();
  		}
  		paintState = notPainting;
-@@ -2425,6 +2466,10 @@ gboolean ScintillaGTK::DrawThis(cairo_t *cr) {
++		repaintFullWindow = false;
+ 
+ 		if (rgnUpdate) {
+ 			cairo_rectangle_list_destroy(rgnUpdate);
+@@ -2425,6 +2437,13 @@
  		    GTK_CONTAINER(PWidget(wMain)), PWidget(scrollbarh), cr);
  		gtk_container_propagate_draw(
  		    GTK_CONTAINER(PWidget(wMain)), PWidget(scrollbarv), cr);
-+#if GTK_CHECK_VERSION(3,9,2) /* FIXME: test on older GTK3, test should not be needed */
++// Starting from the following version, the expose event are not propagated
++// for double buffered non native windows, so we need to call it ourselves
++// or keep the default handler
++#if GTK_CHECK_VERSION(3,9,2)
 +		gtk_container_propagate_draw(
 +		    GTK_CONTAINER(PWidget(wMain)), PWidget(wText), cr);
 +#endif
