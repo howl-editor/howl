@@ -1,4 +1,4 @@
--- Copyright 2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2013-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
 import style from howl.ui
@@ -38,9 +38,13 @@ howl.aux.lpeg_lexer ->
   escape = capture('operator', '\\') * (capture('default', 1) - eol)
   comment = capture 'comment', any('/', '-#') * scan_through_indented!
   doctype = capture 'haml_doctype', span('!!!', eol)
-  element = capture('haml_element', '%' * name) * (attributes + object_ref)^-1 * capture('haml_element', S'/<>')^-1
+  element = sequence {
+    capture('haml_element', '%' * name),
+    (attributes + object_ref)^-1,
+    capture('haml_element', S'/<>')^-1
+  }
   classes = capture('class', '.' * name) * attributes^-1
-  id = capture 'haml_id', "#" * name
+  id = capture('haml_id', "#" * name) * attributes^-1
   filter = sequence {
     capture('preproc', ':'),
     sub_lex_by_pattern_match_time(name, 'operator', scan_through_indented!)
