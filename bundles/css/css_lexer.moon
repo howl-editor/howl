@@ -44,7 +44,7 @@ howl.aux.lpeg_lexer ->
     capture('operator', S'!'),
     complement(S' \t;')^1,
   }
-  declaration = property * blank * (decl_value^0 + blank) * any(capture('operator', ';'), eol)
+  declaration = property * space^0 * (decl_value^0 + blank) * any(capture('operator', ';'), eol)
 
   at_rule = capture('css_at', P'@' * name) * (blank * dq_string)^-1
   pseudo = capture 'css_pseudo', P':' * name
