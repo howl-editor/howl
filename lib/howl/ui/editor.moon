@@ -332,6 +332,9 @@ class Editor extends PropertyObject
   paste: (opts = {})=>
     clip = opts.clip or clipboard.current
     return unless clip
+
+    @selection\cut! unless @selection.empty
+
     if not clip.whole_lines
       if opts.where == 'after'
         if @cursor.at_end_of_line
