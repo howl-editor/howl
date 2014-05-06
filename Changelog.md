@@ -6,10 +6,16 @@
 word or selection. The new case is automatically chosen based on the current
 case. The command cycles through lowercase -> uppercase -> titlecase.
 
+- Prompt before saving a buffer if the file on disk was modified (issue #25)
+
 ### Bugs fixed
 
 - Moonscript: Fix incorrect lexing of `nil`, `true`, and `false` when they are
 prefixes of an identifier.
+
+- Haml: Properly lex attribute lists after class and id declarations
+
+- `editor-paste` now cuts any existing selection before pasting (issue #26)
 
 ## 0.2 (2014-04-30)
 
