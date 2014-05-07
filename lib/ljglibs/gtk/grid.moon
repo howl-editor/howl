@@ -13,7 +13,7 @@ C, ffi_cast = ffi.C, ffi.cast
 widget_t = ffi.typeof 'GtkWidget *'
 to_w = (o) -> ffi_cast widget_t, o
 
-jit.off true
+jit.off true, true
 
 core.define 'GtkGrid < GtkContainer', {
   properties: {

@@ -12,7 +12,7 @@ gc_ptr = gobject
 
 provider_p = ffi.typeof 'GtkStyleProvider *'
 
-jit.off true
+jit.off true, true
 
 core.define 'GtkStyleContext', {
 

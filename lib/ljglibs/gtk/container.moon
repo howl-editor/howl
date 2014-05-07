@@ -20,7 +20,7 @@ container_t = ffi.typeof 'GtkContainer *'
 to_c = (o) -> ffi_cast container_t, o
 to_w = (o) -> ffi_cast widget_t, o
 
-jit.off true
+jit.off true, true
 
 core.define 'GtkContainer < GtkWidget', {
   properties: {

@@ -10,7 +10,7 @@ import catch_error from glib
 
 C = ffi.C
 
-jit.off true
+jit.off true, true
 
 core.define 'GtkCssProvider', {
   load_from_data: (data) =>

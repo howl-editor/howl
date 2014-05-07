@@ -11,7 +11,7 @@ import gc_ptr from gobject
 
 C = ffi.C
 
-jit.off true
+jit.off true, true
 
 core.define 'GtkApplication < GApplication', {
 

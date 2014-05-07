@@ -10,7 +10,7 @@ require 'ljglibs.gtk.window'
 C = ffi.C
 ref_ptr = gobject.ref_ptr
 
-jit.off true
+jit.off true, true
 
 core.define 'GtkOffscreenWindow < GtkWindow', {
   new: -> ref_ptr C.gtk_offscreen_window_new!

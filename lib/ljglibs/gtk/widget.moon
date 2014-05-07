@@ -14,7 +14,7 @@ ref_ptr = gobject.ref_ptr
 widget_t = ffi.typeof 'GtkWidget *'
 to_w = (o) -> ffi_cast widget_t, o
 
-jit.off true
+jit.off true, true
 
 core.define 'GtkWidget < GObject', {
   properties: {
