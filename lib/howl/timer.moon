@@ -9,7 +9,7 @@ C = ffi.C
 
 timer_callback = ffi.cast 'GSourceFunc', callbacks.bool1
 
-jit.off!
+jit.off true
 
 asap = (f, ...) ->
   handle = callbacks.register f, 'timer-asap', ...

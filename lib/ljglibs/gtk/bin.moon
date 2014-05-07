@@ -12,7 +12,7 @@ require 'ljglibs.gtk.container'
 C = ffi.C
 ref_ptr = gobject.ref_ptr
 
-jit.off!
+jit.off true
 
 core.define 'GtkBin < GtkContainer', {
   properties: {

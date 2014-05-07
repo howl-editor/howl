@@ -11,7 +11,7 @@ require 'ljglibs.gtk.widget'
 gc_ptr = gobject.gc_ptr
 C = ffi.C
 
-jit.off!
+jit.off true
 
 core.define 'GtkEntry < GtkWidget', {
   properties: {

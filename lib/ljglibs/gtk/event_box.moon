@@ -9,7 +9,7 @@ require 'ljglibs.gtk.bin'
 
 C = ffi.C
 
-jit.off!
+jit.off true
 
 core.define 'GtkEventBox < GtkBin', {
   new: -> C.gtk_event_box_new!

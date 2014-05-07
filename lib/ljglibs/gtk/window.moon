@@ -13,7 +13,7 @@ C, ffi_string = ffi.C, ffi.string
 catch_error = glib.catch_error
 ref_ptr = gobject.ref_ptr
 
-jit.off!
+jit.off true
 
 core.define 'GtkWindow < GtkBin', {
   constants: {

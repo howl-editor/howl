@@ -9,7 +9,7 @@ glib = require 'ljglibs.glib'
 
 C = ffi.C
 
-jit.off!
+jit.off true
 
 core.define 'GtkClipboard < GObject', {
   get: (atom) -> C.gtk_clipboard_get atom
