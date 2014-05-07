@@ -198,12 +198,13 @@ describe 'Editor', ->
           assert.equal 'hƏllo\ncruel\nworld', buffer.text
 
     context 'when a selection is present', ->
-      it 'cuts the selection before pasting', ->
+      it 'deletes the selection before pasting', ->
         buffer.text = 'hƏllo\nwonderful\nworld'
         clipboard.push text: 'cruel'
         selection\select lines[2].start_pos, lines[2].end_pos - 1
         editor\paste!
         assert.equal 'hƏllo\ncruel\nworld', buffer.text
+        assert.equal 'cruel', clipboard.current.text
 
   it 'delete_line() deletes the current line', ->
     buffer.text = 'hƏllo\nworld!'

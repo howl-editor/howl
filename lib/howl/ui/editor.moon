@@ -333,7 +333,7 @@ class Editor extends PropertyObject
     clip = opts.clip or clipboard.current
     return unless clip
 
-    @selection\cut! unless @selection.empty
+    @active_chunk\delete! unless @selection.empty
 
     if not clip.whole_lines
       if opts.where == 'after'
