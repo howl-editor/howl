@@ -1,6 +1,6 @@
 # Changelog
 
-## In master (unreleased)
+## 0.2.1 (2014-05-09)
 
 - Added a new command `editor-cycle-case` that changes the case of the current
 word or selection. The new case is automatically chosen based on the current
@@ -16,6 +16,10 @@ prefixes of an identifier.
 - Haml: Properly lex attribute lists after class and id declarations
 
 - `editor-paste` now cuts any existing selection before pasting (issue #26)
+
+- Cairo error introduced with patch for flickering on Gtk 3 in 0.2 (issue #28)
+
+- Sporadic and rare LuaJIT "bad callback" panic should be fixed.
 
 ## 0.2 (2014-04-30)
 
