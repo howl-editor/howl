@@ -19,13 +19,14 @@ and follow on [Twitter](https://twitter.com/howleditor) for updates.
 
 ## Quick installation instructions
 
-The home page contains more elaborate instructions, but below you'll find the
-basic instructions for how to install Howl.
+The home page contains more elaborate instruction, including pointers to
+existing distribution packages, but below you'll find the basic instructions for
+how to install Howl from source.
 
 ### Build requirements
 
-- `wget`: For auto-downloading build dependencies pre-downloaded dependencies).
-- `GTK+`: Version >= 3, with development files (e.g.`libgtk-3-dev` on Debian
+- `wget`: For auto-downloading build dependencies.
+- `GTK+`: Version >= 3, with development files (e.g. `libgtk-3-dev` on Debian
 based system).
 - `C/C++ compiler`: Howl has a very small C core itself, but it embedds
 dependencies built both in C and C++.
