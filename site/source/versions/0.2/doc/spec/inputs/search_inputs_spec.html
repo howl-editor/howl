@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: Spec - howl.inputs.search_inputs</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_spec doc_spec_inputs doc_spec_inputs_search_inputs_spec'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../../'>Howl 0.2 Documentation</a></li><li>Spec</li><li>Inputs</li><li>Spec - howl.inputs.search_inputs</li></ol>
+      <div class="spec-group spec-group-1">&#x000A;&#x000A;<h1 id="howl.inputs.search_inputs">howl.inputs.search_inputs</h1>&#x000A;&#x000A;<h4 id="registers-a-&quot;forward_search&quot;-input">registers a &quot;forward_search&quot; input</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">inputs</span><span class="p">.</span><span class="n">forward_search</span></pre>&#x000A;<div class="spec-group spec-group-2">&#x000A;&#x000A;<h2 id="forward_search-input">forward_search input</h2>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="kd">local</span><span class="w"> </span><span class="n">searcher</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="w">&#x000A;&#x000A;</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">&#x000A;  </span><span class="n">searcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">&#x000A;  </span><span class="n">app</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">:searcher</span><span class="w">&#x000A;  </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inputs</span><span class="p">.</span><span class="n">forward_search</span><span class="o">!</span><span class="w">&#x000A;&#x000A;</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span></pre>&#x000A;&#x000A;<h4 id="should_complete()-returns-true">should_complete() returns true</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">input</span><span class="o">\</span><span class="n">should_complete</span><span class="o">!</span></pre>&#x000A;&#x000A;<h4 id="complete(text)-searches-forward-for-&lt;text&gt;">complete(text) searches forward for &lt;text&gt;</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">searcher</span><span class="p">.</span><span class="n">forward_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">&#x000A;</span><span class="n">input</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">searcher</span><span class="p">.</span><span class="n">forward_to</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="w"> </span><span class="n">searcher</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span></pre>&#x000A;&#x000A;<h4 id="on_cancelled()-calls-cancel()-on-the-searcher">on_cancelled() calls cancel() on the searcher</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">searcher</span><span class="p">.</span><span class="n">cancel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">&#x000A;</span><span class="n">input</span><span class="o">\</span><span class="n">on_cancelled</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">searcher</span><span class="p">.</span><span class="n">cancel</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="w"> </span><span class="n">searcher</span></pre>&#x000A;&#x000A;<h4 id="value_for(text)-returns-&lt;text&gt;">value_for(text) returns &lt;text&gt;</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="o">\</span><span class="n">value_for</span><span class="w"> </span><span class="s1">'foo'</span></pre>&#x000A;</div>&#x000A;<div class="spec-group spec-group-2">&#x000A;&#x000A;<h2 id="replace-input">replace input</h2>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="kd">local</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span><span class="w">&#x000A;&#x000A;</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">&#x000A;  </span><span class="n">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inputs</span><span class="p">.</span><span class="n">replace</span><span class="o">!</span><span class="w">&#x000A;  </span><span class="n">readline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">prompt:</span><span class="w"> </span><span class="s1">'replace '</span><span class="p">,</span><span class="w"> </span><span class="ss">text:</span><span class="w"> </span><span class="s1">''</span></pre>&#x000A;<div class="spec-group spec-group-3">&#x000A;&#x000A;<h3 id="on_submit">on_submit</h3>&#x000A;<div class="spec-group spec-group-4">&#x000A;&#x000A;<h3 id=""><span class="arg-list">(when no target has been specified yet)</span></h3>&#x000A;&#x000A;<h4 id="returns-false">returns false</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">input</span><span class="o">\</span><span class="n">on_submit</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span></pre>&#x000A;&#x000A;<h4 id="changes-the-prompt-to-show-the-selected-target-and-resets-the-text">changes the prompt to show the selected target and resets the text</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">input</span><span class="o">\</span><span class="n">on_submit</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s2">"replace 'foo' with "</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span><span class="p">.</span><span class="n">prompt</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span><span class="p">.</span><span class="n">text</span></pre>&#x000A;</div>&#x000A;<div class="spec-group spec-group-4">&#x000A;&#x000A;<h3 id=""><span class="arg-list">(when target has been specified already)</span></h3>&#x000A;&#x000A;<h4 id="returns-non-false">returns non-false</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">input</span><span class="o">\</span><span class="n">on_submit</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_false</span><span class="w"> </span><span class="n">input</span><span class="o">\</span><span class="n">on_submit</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span></pre>&#x000A;&#x000A;<h4 id="returns-non-false-even-for-an-empty-string">returns non-false even for an empty string</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">input</span><span class="o">\</span><span class="n">on_submit</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_false</span><span class="w"> </span><span class="n">input</span><span class="o">\</span><span class="n">on_submit</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span></pre>&#x000A;</div>&#x000A;</div>&#x000A;<div class="spec-group spec-group-3">&#x000A;&#x000A;<h3 id="value_for">value_for</h3>&#x000A;&#x000A;<h4 id="returns-a-table-containing-target-and-replacement">returns a table containing target and replacement</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">input</span><span class="o">\</span><span class="n">on_submit</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span><span class="w">&#x000A;</span><span class="n">input</span><span class="o">\</span><span class="n">on_submit</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">input</span><span class="o">\</span><span class="n">value_for</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="n">readline</span></pre>&#x000A;</div>&#x000A;</div>&#x000A;</div>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;
+            <a class='alert-link' href='https://github.com/nilnor/howl/contributors'>et al.</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

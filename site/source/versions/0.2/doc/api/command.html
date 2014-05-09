@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.command</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_command'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../'>Howl 0.2 Documentation</a></li><li>Api</li><li>howl.command</li></ol>
+      <h1 id="howl.command">howl.command</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.command</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header overview">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#functions" class="toc-group-header functions">Functions</a>
+<li class=""><a href="#alias">alias </a></li>
+<li class=""><a href="#get">get </a></li>
+<li class=""><a href="#names">names </a></li>
+<li class=""><a href="#register">register </a></li>
+<li class=""><a href="#run">run </a></li>
+<li class=""><a href="#unregister">unregister </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>The howl.command module acts as the central registry of commands in Howl, and&#x000A;let&rsquo;s you register new commands, get information about currently available&#x000A;commands and execute commands directly.</p>&#x000A;&#x000A;<p>A command in howl is from the user&rsquo;s perspective just a named piece of&#x000A;functionality, such as <code>open</code> or <code>save</code>. The commands are then invoked either&#x000A;explicitly by opening the command prompt (Readline) and typing the name of the&#x000A;command, or indirectly via a key <a href="bindings.html">binding</a>. The command module&#x000A;keeps track of all available commands in Howl, and also handles the command&#x000A;prompt as well.</p>&#x000A;&#x000A;<p>From an implementation perspective, commands are specified as command&#x000A;definitions, which are simple tables, providing the name of the command, a&#x000A;description, an optional <a href="inputs.html">input</a> and a handler that will be invoked&#x000A;for the command. While the <a href="ui/readline.html">Readline</a> can be used directly to read input from&#x000A;the user, the command module provides an additional layer above the Readline&#x000A;that makes it easy to write a new command without having to deal with the&#x000A;Readline directly. It also handles the selection of a specific command as the&#x000A;user types and the instantiation of the correct command.</p>&#x000A;&#x000A;<p>As an example, consider the <code>open</code> command (example slightly adapted to include&#x000A;the full paths of the needed howl components):</p>&#x000A;<pre class="highlight moonscript"><span class="n">howl</span><span class="p">.</span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w">&#x000A;  </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'open'</span><span class="p">,</span><span class="w">&#x000A;  </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'Open file'</span><span class="w">&#x000A;  </span><span class="ss">inputs:</span><span class="w"> </span><span class="s1">'file'</span><span class="w">&#x000A;  </span><span class="ss">handler:</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">howl</span><span class="p">.</span><span class="n">app</span><span class="o">\</span><span class="n">open_file</span><span class="w"> </span><span class="n">file</span><span class="w">&#x000A;</span></pre>&#x000A;<p>The <code>handler</code> above will be invoked with the file to open once the user has&#x000A;selected one. The <code>file</code> input takes care of providing the user with&#x000A;completions, etc., and will convert the user input to a File instance, which is&#x000A;what the <code>handler</code> will actually receive. The separation of <a href="inputs.html">inputs</a> and command&#x000A;handlers allows for keeping commands rather simple. And since the inputs can be&#x000A;shared, most commands can simply re-use existing inputs. As an example, adding&#x000A;another command that works on a file would also use the same <code>file</code> input.</p>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../spec/command_spec.html">spec</a> for howl.command</li>&#x000A;<li>The documentation for <a href="inputs.html">inputs</a> for more information about inputs</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="functions">Functions</h2>&#x000A;&#x000A;<h3 id="alias">alias <span class="arg-list">(target, name, opts = {})</span></h3>&#x000A;&#x000A;<p>Creates an alias, <code>name</code> for an existing command, <code>target</code>. The command&#x000A;specified by <code>target</code> is required to exist when calling this function. <code>opts</code> is&#x000A;an optional table of options. Currently it can contain one field:</p>&#x000A;&#x000A;<p><code>deprecated</code>: If set to <code>true</code>, the alias is marked as deprecated. This will&#x000A;show in the command completion.</p>&#x000A;&#x000A;<h3 id="get">get <span class="arg-list">(name)</span></h3>&#x000A;&#x000A;<p>Retrieves the command definition for the command with name <code>name</code>, or <code>nil</code> if&#x000A;no such command is present.</p>&#x000A;&#x000A;<h3 id="names">names <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Returns a list of names for the currently available commands.</p>&#x000A;&#x000A;<h3 id="register">register <span class="arg-list">(def)</span></h3>&#x000A;&#x000A;<p>Registers a new command. <code>def</code> is a table of fields for the command, that can&#x000A;contain the following fields:</p>&#x000A;&#x000A;<ul>&#x000A;<li><code>name</code>: <em>[required]</em> The name of the command.</li>&#x000A;<li><code>description</code>: <em>[required]</em> A short description of the command.</li>&#x000A;<li><code>handler</code>: <em>[required]</em> A callable handler that will be invoked&#x000A;to execute the command. The handler will receive arguments corresponding to the&#x000A;specified inputs.</li>&#x000A;<li><code>input</code>: An optional input for the command. The value can be either a string,&#x000A;in which case it&rsquo;s looked up in <a href="inputs.html">inputs</a>, or an instance of an input factory.&#x000A;The resulting input factory will be be invoked to instantiate the input as the&#x000A;command is run, and will receive as its sole parameter any extra parameter text&#x000A;present in the command string.</li>&#x000A;</ul>&#x000A;&#x000A;<h3 id="run">run <span class="arg-list">(cmd_string = nil)</span></h3>&#x000A;&#x000A;<p>Parsed and runs <code>cmd_string</code>, if given. If <code>cmd_string</code> is not provided, then&#x000A;the <a href="ui/readline.html">Readline</a> is opened and the user is prompted for the command to run.&#x000A;<code>cmd_string</code> can also be a partial command string, in which case the <a href="ui/readline.html">Readline</a>&#x000A;is invoked to allow the user to add in any required parameters.</p>&#x000A;&#x000A;<h3 id="unregister">unregister <span class="arg-list">(name)</span></h3>&#x000A;&#x000A;<p>Unregisters the command with name <code>name</code>, along with any aliases pointing to&#x000A;the command.</p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;
+            <a class='alert-link' href='https://github.com/nilnor/howl/contributors'>et al.</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

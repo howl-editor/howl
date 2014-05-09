@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: Spec - howl.aux.destructor(callback, ...)</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_spec doc_spec_aux doc_spec_aux_destructor_spec'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../../'>Howl 0.2 Documentation</a></li><li>Spec</li><li>Aux</li><li>Spec - howl.aux.destructor(callback, ...)</li></ol>
+      <div class="spec-group spec-group-1">&#x000A;&#x000A;<h1 id="howl.aux.destructor(callback,-...)">howl.aux.destructor(callback, ...)</h1>&#x000A;&#x000A;<h4 id="returns-an-object,-for-which-&lt;callback&gt;-is-called-when-it-is-collected">returns an object, for which &lt;callback&gt; is called when it is collected</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">destructor</span><span class="w"> </span><span class="n">callback</span><span class="w">&#x000A;</span><span class="nb">collectgarbage</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">callback</span><span class="p">.</span><span class="n">called</span></pre>&#x000A;&#x000A;<h4 id="passes-any-additional-arguments-given-to-the-callback">passes any additional arguments given to the callback</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">destructor</span><span class="w"> </span><span class="n">callback</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">&#x000A;</span><span class="nb">collectgarbage</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">callback</span><span class="p">.</span><span class="n">called_with</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span></pre>&#x000A;&#x000A;<h4 id="each-destructor-is-unique">each destructor is unique</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">other_callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">destructor</span><span class="w"> </span><span class="n">callback</span><span class="w">&#x000A;</span><span class="n">destructor</span><span class="w"> </span><span class="n">other_callback</span><span class="w">&#x000A;</span><span class="nb">collectgarbage</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">callback</span><span class="p">.</span><span class="n">called</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">other_callback</span><span class="p">.</span><span class="n">called</span></pre>&#x000A;&#x000A;<h4 id="defuse()-disables-the-destructor">defuse() disables the destructor</h4>&#x000A;&#x000A;<pre class="highlight moonscript"><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">destructor</span><span class="w"> </span><span class="n">callback</span><span class="w">&#x000A;</span><span class="n">d</span><span class="p">.</span><span class="n">defuse</span><span class="o">!</span><span class="w">&#x000A;</span><span class="nb">collectgarbage</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">callback</span><span class="p">.</span><span class="n">called</span></pre>&#x000A;</div>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;
+            <a class='alert-link' href='https://github.com/nilnor/howl/contributors'>et al.</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

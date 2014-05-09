@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.ui.Readline</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_ui doc_api_ui_readline'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../../'>Howl 0.2 Documentation</a></li><li>Api</li><li>Ui</li><li>howl.ui.Readline</li></ol>
+      <h1 id="howl.ui.readline">howl.ui.Readline</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.ui.Readline</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#properties" class="toc-group-header properties">Properties</a>
+<li class=""><a href="#width_in_columns">width_in_columns</a></li>
+<li class=""><a href="#prompt">prompt</a></li>
+<li class=""><a href="#text">text</a></li>
+<li class=""><a href="#title">title</a></li>
+</div>
+<div class="toc-group">
+<a href="#methods" class="toc-group-header methods">Methods</a>
+<li class=""><a href="#complete">complete </a></li>
+<li class=""><a href="#hide">hide </a></li>
+<li class=""><a href="#notify">notify </a></li>
+<li class=""><a href="#read">read </a></li>
+<li class=""><a href="#show">show </a></li>
+<li class=""><a href="#to_gobject">to_gobject </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<p>Readline instances are the primary way of obtaining user input in Howl. Each&#x000A;<a href="window.html">Window</a> instance has an associated <a href="window.html#readline">.readline</a> field&#x000A;which you&rsquo;ll use to access the readline instance. Note that while interacting&#x000A;with a Readline instance directly is fine, you would typically write a <a href="../command.html">command</a>&#x000A;instead, which manages the Readline handling for you.</p>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../inputs.html">inputs</a> module for more information about inputs</li>&#x000A;<li>The <a href="../../spec/ui/readline_spec.html">spec</a> for Readline</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="properties">Properties</h2>&#x000A;&#x000A;<h3 id="width_in_columns">width_in_columns</h3>&#x000A;&#x000A;<p>Holds the width of the readline, in character columns. This only available when&#x000A;the Readline is showing, and is nil otherwise.</p>&#x000A;&#x000A;<h3 id="prompt">prompt</h3>&#x000A;&#x000A;<p>The prompt as shown in the Readline. Read/write.</p>&#x000A;&#x000A;<h3 id="text">text</h3>&#x000A;&#x000A;<p>The text currently in the Readline. The text is defined as being everything in&#x000A;the input line that is not part of the <a href="#prompt">prompt</a>. Read/write.</p>&#x000A;&#x000A;<h3 id="title">title</h3>&#x000A;&#x000A;<p>The title of the Readline window. Read/write.</p>&#x000A;&#x000A;<h2 id="methods">Methods</h2>&#x000A;&#x000A;<h3 id="complete">complete <span class="arg-list">(force = false)</span></h3>&#x000A;&#x000A;<p>If the Readline is open, this requests that a completion should be attempted&#x000A;for the <a href="#text">text</a> currently in the Readline.</p>&#x000A;&#x000A;<p>This would typically be used from inputs only - calling this when the Readline&#x000A;is not showing raises an error.</p>&#x000A;&#x000A;<h3 id="hide">hide <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Hides the Readline if it&rsquo;s currently showing. Done automatically by <a href="#read">read</a>, and&#x000A;thus not typically used.</p>&#x000A;&#x000A;<h3 id="notify">notify <span class="arg-list">(text, style)</span></h3>&#x000A;&#x000A;<p>Causes <code>text</code> to be shown above the input line in the Readline. As the status&#x000A;bar is hidden while the Readline is showing, this can be used to display&#x000A;notifications to the user when in the readline. <code>style</code> optionally specifies the&#x000A;style to use when displaying the text, and is one of the available styles from&#x000A;<a href="style.html">style</a>.</p>&#x000A;&#x000A;<h3 id="read">read <span class="arg-list">(prompt, input = {}, opts = {})</span></h3>&#x000A;&#x000A;<p>Prompts the user for input. <code>prompt</code> will be displayed as the Readline prompt.&#x000A;<code>input</code> specifies an optional &ldquo;input&rdquo; to use for controlling the user input.&#x000A;<code>opts</code> is an optional table, which if passed may contain the following keys:</p>&#x000A;&#x000A;<ul>&#x000A;<li><code>text</code>: The initial text to load into the Readline upon showing.</li>&#x000A;</ul>&#x000A;&#x000A;<p>The method returns the value as input from the user, or <code>nil</code> if the user&#x000A;cancels. Note that the type of the value returned is dependent on the <code>input</code>.</p>&#x000A;&#x000A;<p>To understand how to utilize for best effect, read through the documentation for&#x000A;<a href="../inputs.html">inputs</a>.</p>&#x000A;&#x000A;<h3 id="show">show <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Shows the Readline if it&rsquo;s currently hidden. Done automatically by <a href="#read">read</a>, and&#x000A;thus not typically used.</p>&#x000A;&#x000A;<h3 id="to_gobject">to_gobject <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Returns the underlying Gtk widget.</p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;
+            <a class='alert-link' href='https://github.com/nilnor/howl/contributors'>et al.</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

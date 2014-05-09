@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.ustring (String extensions)</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/justified-nav.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_ustring'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-justified'>
+          <li>
+            <a href='/'>Home</a>
+          </li>
+          <li>
+            <a href='/doc/'>Documentation</a>
+          </li>
+          <li>
+            <a href='/contact.html'>Contact</a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../'>Howl 0.2 Documentation</a></li><li>Api</li><li>howl.ustring (String extensions)</li></ol>
+      <h1 id="howl.ustring">howl.ustring</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.ustring</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header overview">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#properties" class="toc-group-header properties">Properties</a>
+<li class=""><a href="#ulen">ulen</a></li>
+<li class=""><a href="#multibyte">multibyte</a></li>
+<li class=""><a href="#ulower">ulower</a></li>
+<li class=""><a href="#uupper">uupper</a></li>
+<li class=""><a href="#ureverse">ureverse</a></li>
+<li class=""><a href="#is_empty">is_empty</a></li>
+<li class=""><a href="#is_blank">is_blank</a></li>
+</div>
+<div class="toc-group">
+<a href="#methods" class="toc-group-header methods">Methods</a>
+<li class=""><a href="#byte_offset">byte_offset </a></li>
+<li class=""><a href="#char_offset">char_offset </a></li>
+<li class=""><a href="#contains">contains </a></li>
+<li class=""><a href="#count">count </a></li>
+<li class=""><a href="#ends_with">ends_with </a></li>
+<li class=""><a href="#starts_with">starts_with </a></li>
+<li class=""><a href="#ucompare">ucompare </a></li>
+<li class=""><a href="#ufind">ufind </a></li>
+<li class=""><a href="#ugmatch">ugmatch </a></li>
+<li class=""><a href="#umatch">umatch </a></li>
+<li class=""><a href="#usub">usub </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>Lua provides string operations in its <a href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a> standard library. While they in&#x000A;themselves provide a powerful set of tools at your disposal, they have been&#x000A;supplemented in Howl. To make text strings easier to work with in Howl, strings&#x000A;are extended with additional methods and properties. For instance, the methods&#x000A;in Lua&rsquo;s string library operate on the byte level, which make them cumbersome to&#x000A;use with UTF-8, which is how Howl stores strings internally. To help with this,&#x000A;Howl provides a complementing set of UTF-8 aware operations. These operations,&#x000A;apart from being UTF-8 aware, are also aware of Howl&rsquo;s <a href="regex.html">regular&#x000A;expressions</a>, making these easier to use. Howl also adds properties&#x000A;to strings, which are accessed through the standard dot notation. Last, Howl&#x000A;adds the ability to index a string using the standard bracket notation, like so:</p>&#x000A;<pre class="highlight lua"><span class="n">s</span> <span class="o">=</span> <span class="s1">'åäö'</span>&#x000A;<span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1">-- =&gt; å</span>&#x000A;<span class="n">s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1">-- =&gt; ö</span>&#x000A;</pre>&#x000A;<p>All of these additional methods and properties are available on all strings,&#x000A;without the need for constructing special string instances.</p>&#x000A;&#x000A;<p>Finally, a note on terminology for the Unicode aware: The below documentation of&#x000A;methods and properties contains references to &ldquo;characters&rdquo;. In Howl, this&#x000A;currently means UTF-8 code points, as opposed to glyphs or graphemes.</p>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../spec/ustring_spec.html">spec</a> for ustring</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="properties">Properties</h2>&#x000A;&#x000A;<h3 id="ulen">ulen</h3>&#x000A;&#x000A;<p>The number of characters (code points) in the string.</p>&#x000A;<pre class="highlight lua"><span class="p">(</span><span class="s1">'åäö'</span><span class="p">).</span><span class="n">ulen</span> <span class="c1">-- =&gt; 3</span>&#x000A;</pre>&#x000A;<h3 id="multibyte">multibyte</h3>&#x000A;&#x000A;<p>True if the string if the string contains a multibyte UTF-8 sequence, and false&#x000A;otherwise.</p>&#x000A;&#x000A;<h3 id="ulower">ulower</h3>&#x000A;&#x000A;<p>A lower case version of the string&rsquo;s content.</p>&#x000A;<pre class="highlight lua"><span class="p">(</span><span class="s1">'aBCåÄÖ'</span><span class="p">).</span><span class="n">ulower</span> <span class="c1">-- =&gt; 'abcåäö'</span>&#x000A;</pre>&#x000A;<h3 id="uupper">uupper</h3>&#x000A;&#x000A;<p>A lower case version of the string&rsquo;s content.</p>&#x000A;<pre class="highlight lua"><span class="p">(</span><span class="s1">'abcåäö'</span><span class="p">).</span><span class="n">uupper</span> <span class="c1">-- =&gt; 'ABCÅÄÖ'</span>&#x000A;</pre>&#x000A;<h3 id="ureverse">ureverse</h3>&#x000A;&#x000A;<p>A reversed version of the string&rsquo;s content.</p>&#x000A;<pre class="highlight lua"><span class="p">(</span><span class="s1">'öäåcba'</span><span class="p">).</span><span class="n">ureverse</span> <span class="c1">-- =&gt; 'abcåäö'</span>&#x000A;</pre>&#x000A;<h3 id="is_empty">is_empty</h3>&#x000A;&#x000A;<p>True if the string is empty, that is contains zero bytes/characters.</p>&#x000A;&#x000A;<h3 id="is_blank">is_blank</h3>&#x000A;&#x000A;<p>True if the string is &ldquo;blank&rdquo;, that is contains only blank characters, if any.</p>&#x000A;&#x000A;<h2 id="methods">Methods</h2>&#x000A;&#x000A;<h3 id="byte_offset">byte_offset <span class="arg-list">(&hellip;)</span></h3>&#x000A;&#x000A;<p>Returns byte offsets for all numerical character offsets passed as parameters.&#x000A;The character offsets, when multiple offsets are passed, must be sorted in&#x000A;ascending order. If the first argument is a table, a new table is returned&#x000A;containing all offsets within that table translated. Any out-of-bounds offsets&#x000A;passed results in an error being raised.</p>&#x000A;<pre class="highlight lua"><span class="n">s</span> <span class="o">=</span> <span class="s1">'äåö'</span>&#x000A;<span class="n">s</span><span class="p">:</span><span class="n">byte_offset</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1">-- =&gt; 3</span>&#x000A;<span class="n">s</span><span class="p">:</span><span class="n">byte_offset</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="c1">-- =&gt; 3, 5</span>&#x000A;<span class="n">s</span><span class="p">:</span><span class="n">byte_offset</span><span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">}</span> <span class="c1">-- =&gt; { 3, 5 }</span>&#x000A;</pre>&#x000A;<h3 id="char_offset">char_offset <span class="arg-list">(&hellip;)</span></h3>&#x000A;&#x000A;<p>Returns character offsets for all numerical byte offsets passed as parameters.&#x000A;The byte offsets, when multiple offsets are passed, must be sorted in ascending&#x000A;order. If the first argument is a table, a new table is returned containing all&#x000A;offsets within that table translated. Any out-of-bounds offsets passed results&#x000A;in an error being raised.</p>&#x000A;<pre class="highlight lua"><span class="n">s</span> <span class="o">=</span> <span class="s1">'äåö'</span>&#x000A;<span class="n">s</span><span class="p">:</span><span class="n">char_offset</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="c1">-- =&gt; 2</span>&#x000A;<span class="n">s</span><span class="p">:</span><span class="n">char_offset</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">-- =&gt; 2, 3</span>&#x000A;<span class="n">s</span><span class="p">:</span><span class="n">char_offset</span><span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">}</span> <span class="c1">-- =&gt; { 2, 3 }</span>&#x000A;</pre>&#x000A;<h3 id="contains">contains <span class="arg-list">(s)</span></h3>&#x000A;&#x000A;<p>Returns true if the string contains <code>s</code>, and false otherwise.</p>&#x000A;&#x000A;<h3 id="count">count <span class="arg-list">(s, pattern = false)</span></h3>&#x000A;&#x000A;<p>Returns the number of occurrences of <code>s</code> within the string. If <code>pattern</code> is true,&#x000A;<code>s</code> is evaluated as a Lua pattern. <code>s</code> can also be a regex, in which case it&rsquo;s&#x000A;always evaluated as such, regardless of <code>pattern</code>.</p>&#x000A;&#x000A;<h3 id="ends_with">ends_with <span class="arg-list">(s)</span></h3>&#x000A;&#x000A;<p>Returns true if the string ends with <code>s</code>, and false otherwise.</p>&#x000A;&#x000A;<h3 id="starts_with">starts_with <span class="arg-list">(s)</span></h3>&#x000A;&#x000A;<p>Returns true if the string starts with <code>s</code>, and false otherwise.</p>&#x000A;&#x000A;<h3 id="ucompare">ucompare <span class="arg-list">(s)</span></h3>&#x000A;&#x000A;<p>Returns negative, 0 or positive if the string is smaller, equal or greater than&#x000A;<code>s</code>.</p>&#x000A;&#x000A;<h3 id="ufind">ufind <span class="arg-list">(pattern, [init [, plain]])</span></h3>&#x000A;&#x000A;<p>Corresponding UTF-8 version of Lua&rsquo;s <a href="http://www.lua.org/manual/5.2/manual.html#pdf-string.find">string.find</a>. Unlike the Lua counterpart,&#x000A;<code>pattern</code> can be both a Lua string pattern and a <a href="regex.html">regex</a>. If <code>pattern</code> is a&#x000A;regex, it is always evaluated as such regardless of <code>plain</code>.</p>&#x000A;&#x000A;<h3 id="ugmatch">ugmatch <span class="arg-list">(pattern)</span></h3>&#x000A;&#x000A;<p>Corresponding UTF-8 version of Lua&rsquo;s <a href="http://www.lua.org/manual/5.2/manual.html#pdf-string.gmatch">string.gmatch</a>. Unlike the Lua&#x000A;counterpart, <code>pattern</code> can be both a Lua string pattern and a <a href="regex.html">regex</a>.</p>&#x000A;&#x000A;<h3 id="umatch">umatch <span class="arg-list">(pattern [, init])</span></h3>&#x000A;&#x000A;<p>Corresponding UTF-8 version of Lua&rsquo;s <a href="http://www.lua.org/manual/5.2/manual.html#pdf-string.match">string.match</a>. Unlike the Lua counterpart,&#x000A;pattern can be both a Lua string pattern and a <a href="regex.html">regex</a>.</p>&#x000A;&#x000A;<h3 id="usub">usub <span class="arg-list">(i [, j])</span></h3>&#x000A;&#x000A;<p>Corresponding UTF-8 version of Lua&rsquo;s <a href="http://www.lua.org/manual/5.2/manual.html#pdf-string.sub">string.sub</a>.</p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2014 Nils Nordman &lt;nino at nordman.org&gt;
+            <a class='alert-link' href='https://github.com/nilnor/howl/contributors'>et al.</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>
