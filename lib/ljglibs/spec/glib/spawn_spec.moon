@@ -4,12 +4,12 @@ ffi = require 'ffi'
 
 describe 'spawn', ->
 
-  describe 'with_pipes(opts)', ->
+  describe 'async_with_pipes(opts)', ->
     it 'raises an error if the process could not be started', ->
-      assert.raises 'no such file', -> spawn.with_pipes argv: { 'jguarlghladkjskjk!!' }
+      assert.raises 'no such file', -> spawn.async_with_pipes argv: { 'jguarlghladkjskjk!!' }
 
     it 'returns an object representing the spawned process', ->
-      p = spawn.with_pipes {
+      p = spawn.async_with_pipes {
         argv: {'id'},
         flags: { 'SEARCH_PATH', 'STDOUT_TO_DEV_NULL' }
       }
@@ -19,7 +19,7 @@ describe 'spawn', ->
 
     context '(when opts.read_stdout is given)', ->
       it 'sets .stdout_pipe for the process to a fd', ->
-        p = spawn.with_pipes {
+        p = spawn.async_with_pipes {
           argv: {'sh', '-c', 'echo foo'},
           read_stdout: true,
           flags: { 'SEARCH_PATH' }
@@ -30,7 +30,7 @@ describe 'spawn', ->
 
     context '(when opts.write_stdin is given)', ->
       it 'sets .stdin_pipe for the process to a fd', ->
-        p = spawn.with_pipes {
+        p = spawn.async_with_pipes {
           argv: {'cat'},
           write_stdin: true,
           read_stdout: true,
@@ -45,7 +45,7 @@ describe 'spawn', ->
 
     context '(when opts.read_stderr is given)', ->
       it 'sets .stderr_pipe for the process to a fd', ->
-        p = spawn.with_pipes {
+        p = spawn.async_with_pipes {
           argv: {'sh', '-c', 'echo foo >&2'},
           read_stderr: true,
           flags: { 'SEARCH_PATH', 'STDOUT_TO_DEV_NULL' }
@@ -56,7 +56,7 @@ describe 'spawn', ->
 
     context 'when .env is set', ->
       it 'spawns the process with the set values as the environment', ->
-        p = spawn.with_pipes {
+        p = spawn.async_with_pipes {
           argv: { 'env' },
           read_stdout: true,
           flags: { 'SEARCH_PATH' },
@@ -67,7 +67,7 @@ describe 'spawn', ->
 
     context 'when .working_dir is set', ->
       it 'spawns the process with the value as the working directory', ->
-        p = spawn.with_pipes {
+        p = spawn.async_with_pipes {
           argv: { 'pwd' },
           read_stdout: true,
           flags: { 'SEARCH_PATH' },

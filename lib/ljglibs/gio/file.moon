@@ -54,6 +54,9 @@ core.define 'GFile', {
   make_directory_with_parents: => catch_error(C.g_file_make_directory_with_parents, @, nil) != 0
   delete: => catch_error(C.g_file_delete, @, nil) != 0
 
+  read: => gc_ptr catch_error(C.g_file_read, @, nil)
+  append_to: => gc_ptr catch_error(C.g_file_append_to, @, 0, nil)
+
   meta: {
     __tostring: (f) -> f.path
   }

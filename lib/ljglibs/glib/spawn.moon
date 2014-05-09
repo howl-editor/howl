@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+bit = require 'bit'
 core = require 'ljglibs.core'
 { :catch_error, :char_p_arr } = require 'ljglibs.glib'
 
@@ -27,12 +28,12 @@ get_envp = (env) ->
   char_p_arr ["#{k}=#{v}" for k,v in pairs env]
 
 spawn = {
-  with_pipes: (opts = {}) ->
+  async_with_pipes: (opts = {}) ->
     error '.argv not specified in opts', 2 unless opts.argv
 
     argv = char_p_arr opts.argv
     pid = ffi_new 'GPid[1]'
-    flags = core.parse_flags('G_SPAWN_', opts.flags)
+    spawn_flags = core.parse_flags('G_SPAWN_', opts.flags)
     envp = get_envp opts.env
 
     stdin = opts.write_stdin and ffi_new('gint[1]') or nil
@@ -41,19 +42,20 @@ spawn = {
 
     catch_error C.g_spawn_async_with_pipes,
       opts.working_directory,
-      argv, envp, flags,
+      argv, envp, spawn_flags,
       nil, nil,
       pid,
       stdin, stdout, stderr
 
     pid = tonumber pid[0]
 
-    destructor = ffi_gc ffi_new('struct {}'), ->
+    caller_will_reap = bit.band(flags['DO_NOT_REAP_CHILD'], spawn_flags) != 0
+    destructor = caller_will_reap and nil or ffi_gc ffi_new('struct {}'), ->
       C.g_spawn_close_pid pid
 
     {
       :pid
-      flags: flags
+      flags: spawn_flags
       stdin_pipe: stdin and stdin[0] or nil
       stdout_pipe: stdout and stdout[0] or nil
       stderr_pipe: stderr and stderr[0] or nil

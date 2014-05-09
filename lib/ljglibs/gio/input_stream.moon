@@ -30,7 +30,7 @@ InputStream = core.define 'GInputStream < GObject', {
     buf = ffi_new buf_t, count
     read = ffi_new 'gsize[1]'
     catch_error C.g_input_stream_read_all, @, buf, count, read, nil
-    return nil if read == 0
+    return nil if read[0] == 0
     ffi_string buf, read[0]
 
   read_async: (count = 4096, callback) =>
@@ -45,7 +45,8 @@ InputStream = core.define 'GInputStream < GObject', {
       if not status
         callback false, ret, err_code
       else
-        val = read == 0 and nil or ffi_string buf, read
+        read = ret
+        val = read != 0 and ffi_string(buf, read) or nil
         callback true, val
 
     handle = callbacks.register handler, 'input-read-async'
@@ -53,3 +54,4 @@ InputStream = core.define 'GInputStream < GObject', {
 }
 
 jit.off InputStream.read_async
+InputStream

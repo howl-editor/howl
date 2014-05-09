@@ -39,12 +39,12 @@ describe 'Subprocess', ->
         done!
         assert.is_true process\wait_finish result
 
-  describe '.succesful', ->
+  describe '.successful', ->
     it 'is true if the process exited cleanly with a zero exit code', ->
-      assert.is_true run('id').succesful
+      assert.is_true run('id').successful
 
     it 'is false if the process exited with a non-zero exit code', ->
-      assert.is_false run('false').succesful
+      assert.is_false run('false').successful
 
   describe '.exit_status', ->
     it 'returns the exit code of the process', ->

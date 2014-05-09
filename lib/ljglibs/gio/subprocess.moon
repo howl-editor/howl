@@ -37,7 +37,7 @@ core.define 'GSubprocess < GObject', {
   }
 
   properties: {
-    succesful: => C.g_subprocess_get_successful(@) != 0
+    successful: => C.g_subprocess_get_successful(@) != 0
     exit_status: => tonumber C.g_subprocess_get_exit_status @
     if_signaled: => C.g_subprocess_get_if_signaled(@) != 0
     if_exited: => C.g_subprocess_get_if_exited(@) != 0

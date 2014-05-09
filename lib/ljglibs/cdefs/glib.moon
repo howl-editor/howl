@@ -28,7 +28,7 @@ ffi.cdef [[
   typedef double        gdouble;
   typedef float         gfloat;
   typedef const void *  gconstpointer;
-
+  typedef int GPid;
 
   /* version definitions */
   extern const guint glib_major_version;
@@ -114,6 +114,8 @@ ffi.cdef [[
   /* main loop */
   typedef GCallback1 GSourceFunc;
   typedef GCallback1 GDestroyNotify;
+  typedef void (*GChildWatchFunc) (GPid pid, gint status, gpointer user_data);
+
   typedef gpointer GMainContext;
 
   GMainContext g_main_context_default(void);
@@ -129,6 +131,8 @@ ffi.cdef [[
                            GSourceFunc function,
                            gpointer data,
                            GDestroyNotify notify);
+
+  guint g_child_watch_add (GPid pid, GChildWatchFunc function, gpointer data);
 
   enum GPriority {
     G_PRIORITY_HIGH = -100,
@@ -232,6 +236,7 @@ ffi.cdef [[
   gchar * g_get_current_dir (void);
   gchar * g_strndup (const gchar *str, gsize n);
   void g_free(gpointer mem);
+  void g_strfreev (gchar **str_array);
 
   /* Process spawning */
   typedef enum {
@@ -248,7 +253,6 @@ ffi.cdef [[
     G_SPAWN_SEARCH_PATH_FROM_ENVP  = 1 << 7
   } GSpawnFlags;
 
-  typedef int GPid;
   typedef void (*GSpawnChildSetupFunc) (gpointer user_data);
 
   gboolean g_spawn_async_with_pipes (const gchar *working_directory,
@@ -264,4 +268,13 @@ ffi.cdef [[
                                      GError **error);
 
   void g_spawn_close_pid (GPid pid);
+
+  /* Shell-related Utilities */
+  gboolean g_shell_parse_argv (const gchar *command_line,
+                               gint *argcp,
+                               gchar ***argvp,
+                               GError **error);
+
+  gchar * g_shell_quote (const gchar *unquoted_string);
+  gchar * g_shell_unquote (const gchar *quoted_string, GError **error);
 ]]

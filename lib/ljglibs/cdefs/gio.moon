@@ -14,7 +14,79 @@ ffi.cdef [[
                                        GAsyncResult *res,
                                        gpointer user_data);
 
-  /* GFileInfo */
+  /* GInputStream */
+  typedef struct {} GInputStream;
+
+  gboolean g_input_stream_close (GInputStream *stream,
+                                 GCancellable *cancellable,
+                                 GError **error);
+
+  gssize g_input_stream_read (GInputStream *stream,
+                              void *buffer,
+                              gsize count,
+                              GCancellable *cancellable,
+                              GError **error);
+
+  gboolean g_input_stream_read_all (GInputStream *stream,
+                                    void *buffer,
+                                    gsize count,
+                                    gsize *bytes_read,
+                                    GCancellable *cancellable,
+                                    GError **error);
+
+  void g_input_stream_read_async (GInputStream *stream,
+                                  void *buffer,
+                                  gsize count,
+                                  int io_priority,
+                                  GCancellable *cancellable,
+                                  GAsyncReadyCallback callback,
+                                  gpointer user_data);
+
+  gssize g_input_stream_read_finish (GInputStream *stream,
+                                     GAsyncResult *result,
+                                     GError **error);
+
+  /* GOutputStream */
+  typedef struct {} GOutputStream;
+
+  gboolean g_output_stream_write_all (GOutputStream *stream,
+                                      const void *buffer,
+                                      gsize count,
+                                      gsize *bytes_written,
+                                      GCancellable *cancellable,
+                                      GError **error);
+
+  void g_output_stream_write_async (GOutputStream *stream,
+                                    const void *buffer,
+                                    gsize count,
+                                    int io_priority,
+                                    GCancellable *cancellable,
+                                    GAsyncReadyCallback callback,
+                                    gpointer user_data);
+
+  gssize g_output_stream_write_finish (GOutputStream *stream,
+                                       GAsyncResult *result,
+                                       GError **error);
+
+  gboolean g_output_stream_close (GOutputStream *stream,
+                                  GCancellable *cancellable,
+                                  GError **error);
+
+  gboolean g_output_stream_flush (GOutputStream *stream,
+                                  GCancellable *cancellable,
+                                  GError **error);
+
+  /* GUnixInputStream */
+  typedef struct {} GUnixInputStream;
+  GUnixInputStream * g_unix_input_stream_new (gint fd, gboolean close_fd);
+
+  /* GUnixOutputStream */
+  typedef struct {} GUnixOutputStream;
+  GUnixOutputStream * g_unix_output_stream_new (gint fd, gboolean close_fd);
+
+  /* GFile and friends */
+  typedef struct {} GFileInputStream;
+  typedef struct {} GFileOutputStream;
   typedef struct {} GFileInfo;
 
   typedef enum {
@@ -56,6 +128,12 @@ ffi.cdef [[
     G_FILE_QUERY_INFO_NONE              = 0,
     G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS = (1 << 0)   /*< nick=nofollow-symlinks >*/
   } GFileQueryInfoFlags;
+
+  typedef enum {
+    G_FILE_CREATE_NONE    = 0,
+    G_FILE_CREATE_PRIVATE = (1 << 0),
+    G_FILE_CREATE_REPLACE_DESTINATION = (1 << 1)
+  } GFileCreateFlags;
 
   GFile * g_file_new_for_path (const char *path);
 
@@ -100,6 +178,14 @@ ffi.cdef [[
                           GCancellable *cancellable,
                           GError **error);
 
+  GFileInputStream * g_file_read (GFile *file,
+                                  GCancellable *cancellable,
+                                  GError **error);
+
+  GFileOutputStream * g_file_append_to (GFile *file,
+                                        GFileCreateFlags flags,
+                                        GCancellable *cancellable,
+                                        GError **error);
 
   /* GApplication */
   typedef struct {} GApplication;
@@ -134,64 +220,6 @@ ffi.cdef [[
   int g_application_run (GApplication *application, int argc, char **argv);
   void g_application_release (GApplication *application);
   void g_application_quit (GApplication *application);
-
-  /* GInputStream */
-  typedef struct {} GInputStream;
-
-  gboolean g_input_stream_close (GInputStream *stream,
-                                 GCancellable *cancellable,
-                                 GError **error);
-
-  gssize g_input_stream_read (GInputStream *stream,
-                              void *buffer,
-                              gsize count,
-                              GCancellable *cancellable,
-                              GError **error);
-
-  gboolean g_input_stream_read_all (GInputStream *stream,
-                                    void *buffer,
-                                    gsize count,
-                                    gsize *bytes_read,
-                                    GCancellable *cancellable,
-                                    GError **error);
-
-  void g_input_stream_read_async (GInputStream *stream,
-                                  void *buffer,
-                                  gsize count,
-                                  int io_priority,
-                                  GCancellable *cancellable,
-                                  GAsyncReadyCallback callback,
-                                  gpointer user_data);
-
-  gssize g_input_stream_read_finish (GInputStream *stream,
-                                     GAsyncResult *result,
-                                     GError **error);
-
-  /* GOutputStream */
-  typedef struct {} GOutputStream;
-
-  gboolean g_output_stream_write_all (GOutputStream *stream,
-                                      const void *buffer,
-                                      gsize count,
-                                      gsize *bytes_written,
-                                      GCancellable *cancellable,
-                                      GError **error);
-
-  gboolean g_output_stream_close (GOutputStream *stream,
-                                  GCancellable *cancellable,
-                                  GError **error);
-
-  gboolean g_output_stream_flush (GOutputStream *stream,
-                                  GCancellable *cancellable,
-                                  GError **error);
-
-  /* GUnixInputStream */
-  typedef struct {} GUnixInputStream;
-  GUnixInputStream * g_unix_input_stream_new (gint fd, gboolean close_fd);
-
-  /* GUnixOutputStream */
-  typedef struct {} GUnixOutputStream;
-  GUnixOutputStream * g_unix_output_stream_new (gint fd, gboolean close_fd);
 
   /* GSubProcess */
   typedef struct {} GSubprocess;

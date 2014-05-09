@@ -1,10 +1,15 @@
 GFile = require 'ljglibs.gio.file'
 
 describe 'GFile', ->
-  tmpfile = ->
-    file = File assert os.tmpname!
-    file.touch if not file.exists
-    file
+
+  with_tmpfile = (contents, f) ->
+    p = os.tmpname!
+    fh = io.open p, 'w'
+    fh\write contents
+    fh\close!
+    status, err = pcall f, p
+    os.remove p
+    error err unless status
 
   it '.path contains the path', ->
     assert.equals '/bin/ls', GFile('/bin/ls').path
@@ -56,12 +61,8 @@ describe 'GFile', ->
 
   describe 'load_contents()', ->
     it 'returns the contents of the file', ->
-      p = os.tmpname!
-      fh = io.open p, 'w'
-      fh\write 'my content!'
-      fh\close!
-
-      assert.equal 'my content!', GFile(p)\load_contents!
+      with_tmpfile 'my content!', (p) ->
+        assert.equal 'my content!', GFile(p)\load_contents!
 
   describe 'meta methods', ->
 
