@@ -38,9 +38,9 @@ set :markdown, {
 }
 
 require 'middleware/auto_format'
-require 'middleware/blog_absolute_links'
+require 'middleware/blog_adjustments'
 use AutoFormat
-use BlogAbsoluteLinks
+use BlogAdjustments
 
 helpers do
   def hdr_link(idx, title, path)

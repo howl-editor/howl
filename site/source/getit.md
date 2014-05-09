@@ -15,17 +15,17 @@ Arch package available from the AUR.
 
 ## Latest release
 
-The latest release of Howl is 0.2. It was released at 2014-04-29, and is
+The latest release of Howl is 0.2.1. It was released at 2014-05-09, and is
 available for download from:
 
-[http://download.howl.io/release/howl-0.2.tgz](http://download.howl.io/release/howl-0.2.tgz)
+[http://download.howl.io/release/howl-0.2.1.tgz](http://download.howl.io/release/howl-0.2.1.tgz)
 
-_MD5_: 616598045baa8633f67af0a21c3afacf
+_MD5_: 8caf43a8631041677a4bc4df9c6c0f18
 
-_SHA1_: cbcebc01b1fe4762895e914d989c17457058f2ff
+_SHA1_: 79a582e4b31012073e2dc15678814d5c46596fa9
 
 __Release notes:__
-[Howl 0.2 Released](/blog/2014/04/30/howl-0-dot-2-released.html)
+[Howl 0.2.1 Released](/blog/2014/05/09/howl-0-dot-2-dot-1-released.html)
 
 ## Building Howl from source
 
@@ -111,6 +111,16 @@ $ sudo packer -S howl-editor
 ```
 
 ## Older releases
+
+### Howl 0.2, released 2014-04-29.
+
+[Download](http://download.howl.io/release/howl-0.2.tgz)
+
+_MD5_: 616598045baa8633f67af0a21c3afacf
+
+_SHA1_: cbcebc01b1fe4762895e914d989c17457058f2ff
+
+---
 
 ### Howl 0.1.1, released 2014-03-15.
 

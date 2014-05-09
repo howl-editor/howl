@@ -17,7 +17,8 @@ prefixes of an identifier.
 
 - `editor-paste` now cuts any existing selection before pasting (issue #26)
 
-- Cairo error introduced with patch for flickering on Gtk 3 in 0.2 (issue #28)
+- Cairo error introduced with patch for flickering on Gtk 3 in 0.2, that was
+seen on Gtk 3.4.2 (issue #28)
 
 - Sporadic and rare LuaJIT "bad callback" panic should be fixed.
 
