@@ -84,6 +84,21 @@ describe 'bindings', ->
         translations = bindings.translate_key key_code: 123, key_name: name
         assert.includes translations, alternative
 
+    it 'substitutes certain key names to prevent ambiguity', ->
+      for_keynames = {
+        alt_l: 'altL'
+        alt_r: 'altR'
+        shift_l: 'shiftL'
+        shift_r: 'shiftR'
+        control_l: 'controlL'
+        control_r: 'controlR'
+      }
+
+      for name, substitution in pairs for_keynames
+        translations = bindings.translate_key key_code: 123, key_name: name
+        assert.includes translations, substitution
+        assert.not_includes translations, name
+
   describe 'process(event, source, extra_keymaps, ..)', ->
 
     context 'when firing the key-press signal', ->

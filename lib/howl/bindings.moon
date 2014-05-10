@@ -35,9 +35,14 @@ alternate_names = {
   return: 'enter'
 }
 
-alternate_translation = (event) ->
-  name = event.key_name
-  return alternate_names[name] if name
+substituted_names = {
+  alt_l: 'altL'
+  alt_r: 'altR'
+  shift_l: 'shiftL'
+  shift_r: 'shiftR'
+  control_l: 'controlL'
+  control_r: 'controlR'
+}
 
 find_handlers = (event, source, translations, keymaps, ...) ->
   handlers = {}
@@ -92,13 +97,15 @@ export translate_key = (event) ->
   ctrl = (event.control and 'ctrl_') or ''
   shift = (event.shift and 'shift_') or ''
   alt = (event.alt and 'alt_') or ''
-  alternate = alternate_translation event
+
+  key_name = substituted_names[event.key_name] or event.key_name
+  alternate = alternate_names[key_name]
 
   translations = {}
   append translations, ctrl .. alt .. event.character if event.character
 
-  if event.key_name and event.key_name != event.character
-    append translations, ctrl .. shift .. alt .. event.key_name
+  if key_name and key_name != event.character
+    append translations, ctrl .. shift .. alt .. key_name
 
   append translations, ctrl .. shift .. alt .. alternate if alternate
   append translations, ctrl .. shift .. alt .. event.key_code
