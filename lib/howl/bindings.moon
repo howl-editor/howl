@@ -1,5 +1,8 @@
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE.md)
+
 _G = _G
-import table, coroutine from _G
+import table, coroutine, pairs from _G
 import tostring, pcall, callable, type, print, setmetatable, typeof from _G
 import signal, command from howl
 append = table.insert
@@ -33,16 +36,29 @@ alternate_names = {
   kp_page_down: 'page_down'
   iso_left_tab: 'tab'
   return: 'enter'
-}
+  altL: 'alt'
+  altR: 'alt'
+  shiftL: 'shift'
+  shiftR: 'shift'
+  ctrlL: 'ctrl'
+  ctrlR: 'ctrl'
+ }
 
 substituted_names = {
   alt_l: 'altL'
   alt_r: 'altR'
   shift_l: 'shiftL'
   shift_r: 'shiftR'
-  control_l: 'controlL'
-  control_r: 'controlR'
+  control_l: 'ctrlL'
+  control_r: 'ctrlR'
 }
+
+substitute_keyname = (event) ->
+  key_name = substituted_names[event.key_name]
+  return event unless key_name
+  copy = {k,v for k,v in pairs event}
+  copy.key_name = key_name
+  copy
 
 find_handlers = (event, source, translations, keymaps, ...) ->
   handlers = {}
@@ -97,21 +113,21 @@ export translate_key = (event) ->
   ctrl = (event.control and 'ctrl_') or ''
   shift = (event.shift and 'shift_') or ''
   alt = (event.alt and 'alt_') or ''
-
-  key_name = substituted_names[event.key_name] or event.key_name
-  alternate = alternate_names[key_name]
+  event = substitute_keyname event
+  alternate = alternate_names[event.key_name]
 
   translations = {}
   append translations, ctrl .. alt .. event.character if event.character
 
-  if key_name and key_name != event.character
-    append translations, ctrl .. shift .. alt .. key_name
+  if event.key_name and event.key_name != event.character
+    append translations, ctrl .. shift .. alt .. event.key_name
 
   append translations, ctrl .. shift .. alt .. alternate if alternate
   append translations, ctrl .. shift .. alt .. event.key_code
   translations
 
 export dispatch = (event, source, keymaps, ...) ->
+  event = substitute_keyname event
   translations = translate_key event
   handlers, halt_map, map_opts = find_handlers event, source, translations, keymaps, ...
   remove halt_map if halt_map and map_opts.pop
@@ -139,6 +155,7 @@ export dispatch = (event, source, keymaps, ...) ->
   false
 
 export process = (event, source, extra_keymaps = {},  ...) ->
+  event = substitute_keyname event
   translations = translate_key event
   return true if process_capture event, source, translations, ...
   return true if signal.emit 'key-press', :event, :source, :translations, parameters: {...}

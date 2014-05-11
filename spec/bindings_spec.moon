@@ -78,7 +78,13 @@ describe 'bindings', ->
         kp_page_down: 'page_down'
         iso_left_tab: 'tab' -- shifts are automatically prepended
         return: 'enter'
-      }
+        altL: 'alt'
+        altR: 'alt'
+        shiftL: 'shift'
+        shiftR: 'shift'
+        ctrlL: 'ctrl'
+        ctrlR: 'ctrl'
+       }
 
       for name, alternative in pairs for_keynames
         translations = bindings.translate_key key_code: 123, key_name: name
@@ -90,8 +96,8 @@ describe 'bindings', ->
         alt_r: 'altR'
         shift_l: 'shiftL'
         shift_r: 'shiftR'
-        control_l: 'controlL'
-        control_r: 'controlR'
+        control_l: 'ctrlL'
+        control_r: 'ctrlR'
       }
 
       for name, substitution in pairs for_keynames
