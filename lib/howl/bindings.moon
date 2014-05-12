@@ -42,15 +42,23 @@ alternate_names = {
   shiftR: 'shift'
   ctrlL: 'ctrl'
   ctrlR: 'ctrl'
+  metaL: 'meta'
+  metaR: 'meta'
+  superL: 'super'
+  superR: 'super'
  }
 
 substituted_names = {
+  meta_l: 'metaL'
+  meta_r: 'metaR'
   alt_l: 'altL'
   alt_r: 'altR'
   shift_l: 'shiftL'
   shift_r: 'shiftR'
   control_l: 'ctrlL'
   control_r: 'ctrlR'
+  super_l: 'superL'
+  super_r: 'superR'
 }
 
 substitute_keyname = (event) ->
