@@ -69,6 +69,7 @@ class Process
     @stdin = OutputStream(@_process.stdin_pipe) if @_process.stdin_pipe
     @stdout = InputStream(@_process.stdout_pipe) if @_process.stdout_pipe
     @stderr = InputStream(@_process.stderr_pipe) if @_process.stderr_pipe
+    @exited = false
 
     handle = callbacks.register child_exited, "process-watch-#{@_process.pid}", @
     C.g_child_watch_add ffi_cast('GPid', @_process.pid), child_watch_callback, callbacks.cast_arg(handle.id)
