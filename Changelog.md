@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased (in master)
+
+- Substituted certain key names to avoid ambiguity, e.g. `alt_l` now gets
+substituted for `altL` so that pressing left alt is distinguishable from
+pressing alt + l (issue #29)
+
 ## 0.2.1 (2014-05-09)
 
 - Added a new command `editor-cycle-case` that changes the case of the current
