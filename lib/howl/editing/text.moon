@@ -15,8 +15,8 @@ paragraph_break_line = (line) ->
 paragraph_at = (line) ->
   lines = {}
   start = line
-  start = start.previous if start.is_blank
-  start = line.next if start.is_blank
+  start = start.previous if start.is_blank and start.previous
+  start = line.next if start.is_blank and line.next
   return {} if start.is_blank
 
   back = start
