@@ -17,6 +17,12 @@ const_void_p = ffi.typeof 'const void *'
 
 OutputStream = core.define 'GOutputStream < GObject', {
 
+  properties: {
+    has_pending: => C.g_output_stream_has_pending(@) != 0
+    is_closed: => C.g_output_stream_is_closed(@) != 0
+    is_closing: => C.g_output_stream_is_closing(@) != 0
+  }
+
   close: => catch_error C.g_output_stream_close, @, nil
   flush: => catch_error C.g_output_stream_flush, @, nil
 
@@ -39,7 +45,21 @@ OutputStream = core.define 'GOutputStream < GObject', {
 
     handle = callbacks.register handler, 'output-write-async'
     C.g_output_stream_write_async @, ffi_cast(const_void_p, data), count, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
-}
+
+  close_async: (callback) =>
+    local handle
+
+    handler = (source, res) ->
+      callbacks.unregister handle
+      status, ret, err_code = get_error C.g_output_stream_close_finish, @, res
+      if not status
+        callback false, ret, err_code
+      else
+        callback true
+
+    handle = callbacks.register handler, 'output-close-async'
+    C.g_output_stream_close_async @, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
+ }
 
 jit.off OutputStream.write_async
 OutputStream

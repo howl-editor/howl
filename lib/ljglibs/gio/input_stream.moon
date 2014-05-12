@@ -16,7 +16,12 @@ buf_t = ffi.typeof 'unsigned char[?]'
 
 InputStream = core.define 'GInputStream < GObject', {
 
-  close: => catch_error C.g_input_stream_close @, nil
+  properties: {
+    has_pending: => C.g_input_stream_has_pending(@) != 0
+    is_closed: => C.g_input_stream_is_closed(@) != 0
+  }
+
+  close: => catch_error C.g_input_stream_close, @, nil
 
   read: (count = 4096) =>
     return '' if count == 0
@@ -51,6 +56,20 @@ InputStream = core.define 'GInputStream < GObject', {
 
     handle = callbacks.register handler, 'input-read-async'
     C.g_input_stream_read_async @, buf, count, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
+
+  close_async: (callback) =>
+    local handle
+
+    handler = (source, res) ->
+      callbacks.unregister handle
+      status, ret, err_code = get_error C.g_input_stream_close_finish, @, res
+      if not status
+        callback false, ret, err_code
+      else
+        callback true
+
+    handle = callbacks.register handler, 'input-close-async'
+    C.g_input_stream_close_async @, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
 }
 
 jit.off InputStream.read_async

@@ -64,3 +64,18 @@ describe 'InputStream', ->
           assert.is_true status
           assert.is_nil buf
           done!
+
+  describe 'close_async(handler)', ->
+    it 'invokes the handler with the status and any eventual error message', (done) ->
+      with_stream_for "foobar", (stream) ->
+        stream\close_async async (status, err) ->
+          assert.is_true status
+          assert.is_nil err
+          done!
+
+  describe '.is_closed', ->
+    it 'is true when the stream is closed and false otherwise', ->
+      with_stream_for "foobar", (stream) ->
+        assert.is_false stream.is_closed
+        stream\close!
+        assert.is_true stream.is_closed

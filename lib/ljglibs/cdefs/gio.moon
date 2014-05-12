@@ -21,6 +21,16 @@ ffi.cdef [[
                                  GCancellable *cancellable,
                                  GError **error);
 
+  void g_input_stream_close_async (GInputStream *stream,
+                                   int io_priority,
+                                   GCancellable *cancellable,
+                                   GAsyncReadyCallback callback,
+                                   gpointer user_data);
+
+  gboolean g_input_stream_close_finish (GInputStream *stream,
+                                        GAsyncResult *result,
+                                        GError **error);
+
   gssize g_input_stream_read (GInputStream *stream,
                               void *buffer,
                               gsize count,
@@ -45,6 +55,9 @@ ffi.cdef [[
   gssize g_input_stream_read_finish (GInputStream *stream,
                                      GAsyncResult *result,
                                      GError **error);
+
+  gboolean g_input_stream_has_pending (GInputStream *stream);
+  gboolean g_input_stream_is_closed (GInputStream *stream);
 
   /* GOutputStream */
   typedef struct {} GOutputStream;
@@ -72,9 +85,23 @@ ffi.cdef [[
                                   GCancellable *cancellable,
                                   GError **error);
 
+  void g_output_stream_close_async (GOutputStream *stream,
+                                    int io_priority,
+                                    GCancellable *cancellable,
+                                    GAsyncReadyCallback callback,
+                                    gpointer user_data);
+
+  gboolean g_output_stream_close_finish (GOutputStream *stream,
+                                         GAsyncResult *result,
+                                         GError **error);
+
   gboolean g_output_stream_flush (GOutputStream *stream,
                                   GCancellable *cancellable,
                                   GError **error);
+
+  gboolean g_output_stream_has_pending (GOutputStream *stream);
+  gboolean g_output_stream_is_closed (GOutputStream *stream);
+  gboolean g_output_stream_is_closing (GOutputStream *stream);
 
   /* GUnixInputStream */
   typedef struct {} GUnixInputStream;

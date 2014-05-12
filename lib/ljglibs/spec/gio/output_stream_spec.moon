@@ -18,15 +18,30 @@ describe 'OutputStream', ->
 
   describe 'write(contents)', ->
     it 'writes the contents to the file', ->
-      with_stream (p, f) ->
-        f\write_all 'foobar'
-        f\close!
+      with_stream (p, stream) ->
+        stream\write_all 'foobar'
+        stream\close!
         assert.equals 'foobar', File(p)\load_contents!
 
   describe 'write_async(data, count, handler)', ->
     it 'invokes the handler with the status and the number of bytes written', (done) ->
-      with_stream (p, f) ->
-        f\write_async 'foobar', nil, async (status, written) ->
+      with_stream (p, stream) ->
+        stream\write_async 'foobar', nil, async (status, written) ->
           assert.is_true status
           assert.equals 'number', type(written)
           done!
+
+  describe 'close_async(handler)', ->
+    it 'invokes the handler with the status and any eventual error message', (done) ->
+      with_stream (p, stream) ->
+        stream\close_async async (status, err) ->
+          assert.is_true status
+          assert.is_nil err
+          done!
+
+  describe '.is_closed', ->
+    it 'is true when the stream is closed and false otherwise', ->
+      with_stream (p, stream) ->
+        assert.is_false stream.is_closed
+        stream\close!
+        assert.is_true stream.is_closed
