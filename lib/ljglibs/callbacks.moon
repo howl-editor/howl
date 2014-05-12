@@ -11,6 +11,7 @@ handles = {}
 unrefed_handlers = setmetatable {}, __mode: 'v'
 options = {
   dispatch_in_coroutine: false
+  on_error: error
 }
 
 cb_cast = (cb_type, handler) -> ffi_cast('GCallback', ffi_cast(cb_type, handler))
@@ -36,7 +37,7 @@ dispatch = (data, ...) ->
 
       status, ret = pcall handler, unpack(args, 1, args.n + handle.args.n)
       return ret == true if status
-      error "*error in '#{handle.description}' callback handler: #{ret}"
+      options.on_error "*error in '#{handle.description}' callback handler: #{ret}"
     else
       unregister handle
 

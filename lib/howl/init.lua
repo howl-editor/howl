@@ -114,7 +114,10 @@ local function main(args)
     compile(args)
   else
     local callbacks = require 'ljglibs.callbacks'
-    callbacks.configure({ dispatch_in_coroutine = true })
+    callbacks.configure({
+      dispatch_in_coroutine = true,
+      on_error = _G.log.error
+    })
 
     howl.app = howl.Application(howl.io.File(app_root), args)
 
