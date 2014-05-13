@@ -73,6 +73,7 @@ class Editor extends PropertyObject
       on_text_inserted: self\_on_text_inserted
       on_text_deleted: self\_on_text_deleted
       on_error: log.error
+      on_readonly_mod_attempt: -> log.error "Attempt to modify a read-only buffer"
 
     @sci.listener = listener
 

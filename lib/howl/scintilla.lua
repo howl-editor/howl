@@ -361,6 +361,7 @@ function sci.dispatch(sci_ptr, event, args)
       end
     elseif code == SCN_FOCUSIN then handler = 'on_focus'
     elseif code == SCN_FOCUSOUT then handler = 'on_focus_lost'
+    elseif code == SCN_MODIFYATTEMPTRO then handler = 'on_readonly_mod_attempt'
     end
   elseif event == 'key-press' then handler = 'on_keypress'
   end
