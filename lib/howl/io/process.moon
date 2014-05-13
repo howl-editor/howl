@@ -43,12 +43,13 @@ launch = (argv, p_opts) ->
   flags = { 'SEARCH_PATH', 'DO_NOT_REAP_CHILD' }
   append flags, 'STDOUT_TO_DEV_NULL' unless p_opts.read_stdout
   append flags, 'STDERR_TO_DEV_NULL' unless p_opts.read_stderr
+  working_directory = p_opts.working_directory and tostring p_opts.working_directory
 
   opts = {
     write_stdin: p_opts.write_stdin
     read_stdout: p_opts.read_stdout
     read_stderr: p_opts.read_stderr
-    working_directory: p_opts.working_directory
+    working_directory: working_directory
     env: p_opts.env
 
     :flags
@@ -61,6 +62,25 @@ child_exited = (pid, status, process) ->
   process\_handle_finish ffi_cast('gint', status)
 
 class Process
+  execute: (cmd, opts = {}) ->
+    p_opts = {
+      :cmd,
+      working_directory: opts.working_directory,
+      env: opts.env,
+      read_stdout: true,
+      read_stderr: true,
+      write_stdin: opts.stdin != nil
+    }
+    p = Process p_opts
+    if opts.stdin
+      p.stdin\write opts.stdin
+      p.stdin\close!
+
+    p\wait!
+    out = p.stdout\read_all!
+    err = p.stderr\read_all!
+    out, err, p
+
   new: (opts) =>
     @argv = get_argv opts.cmd
     error 'opts.cmd missing or invalid', 2 unless @argv

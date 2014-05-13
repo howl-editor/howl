@@ -91,8 +91,8 @@ once the process has exited ([exited](#exited) is true).
 
 ### Process(options)
 
-Launches a new process with the specified options. `options`, a table, can
-contain the following fields:
+Launches a new process with the specified options, and returns a Process
+instance. `options`, a table, can contain the following fields:
 
 - `cmd`: _[required]_ The command to run. This can be either a string, in which
 case it's parsed as a shell command, or a table comprising the full command line
@@ -120,6 +120,47 @@ process' environment.
 An error will be raised if the specified command could not be started. Otherwise
 a process object is returned for the started command.
 
+### execute(cmd, options = {})
+
+Executes a process for `cmd` and returns the results in one go. `cmd` can be
+either a string, in which case it's parsed as a shell command, or a table
+comprising the full command line invocation. Note that since Howl is not a
+shell, shell specific expansions are not supported, but will instead be passed
+verbatim as is. `options`, a optional table of options, can contain the
+following optional fields:
+
+- `stdin`: When specified, the contents of this field will be written as the
+process's input.
+
+- `working_directory`: The path to set as the process' working directory.
+
+- `env`: A table of keys and values that will be used as the process'
+environment.
+
+An error will be raised if the specified command could not be started, or if an
+IO error occurs. Otherwise the function returns three values: The standard
+output of the command as a string, the error output of the command as a string,
+and the process object representing the terminated process.
+
+Examples:
+
+```moonscript
+howl.io.Process.execute 'echo "foo bar"'
+-- =>  "foo bar\n", "", <Process>
+
+howl.io.Process.execute {'sh', '-c', 'echo foo >&2' }
+-- =>  "", "foo\n", "", <Process>
+
+howl.io.Process.execute 'pwd', working_directory: '/bin'
+-- =>  "/bin\n", "", "", <Process>
+
+howl.io.Process.execute 'env', env: { foo: 'bar' }
+-- =>  "foo=bar\n", "", "", <Process>
+
+howl.io.Process.execute 'cat', stdin: 'give it back!'
+-- =>  "give it back!", "", "", <Process>
+```
+
 ## Methods
 
 ### send_signal (signal)
@@ -132,4 +173,4 @@ representation of the signal, such as `HUP`, `KILL`, etc.
 Waits for the process to terminate.
 
 [InputStream]: input_stream.html
-[OuputStream]: output_stream.html
+[OutputStream]: output_stream.html

@@ -1,17 +1,11 @@
 Process = howl.io.Process
 File = howl.io.File
-dispatch = howl.dispatch
-
-run = (...) ->
-  with Process cmd: ...
-    \wait!
-
-in_co = (f) ->
-  status, err = dispatch.launch async f
-  error err unless status
 
 describe 'Process', ->
-  setup -> set_howl_loop!
+
+  run = (...) ->
+    with Process cmd: ...
+      \wait!
 
   describe 'Process(opts)', ->
     it 'raises an error if opts.cmd is missing or invalid', ->
@@ -33,13 +27,34 @@ describe 'Process', ->
       p = Process cmd: 'echo "foo bar"'
       assert.same {'echo', 'foo bar'}, p.argv
 
+  describe 'Process.execute(cmd, stdin, opts)', ->
+    it 'executes the specified command and return <out, err, process>', (done) ->
+      howl_async ->
+        out, err, p = Process.execute {'sh', '-c', 'cat; echo foo >&2'}, stdin: 'reverb'
+        assert.equal 'reverb', out
+        assert.equal 'foo\n', err
+        assert.equal 'Process', typeof(p)
+        done!
+
+    it 'opts.working_directory sets the working working directory', (done) ->
+      howl_async ->
+        with_tmpdir (dir) ->
+          out = Process.execute 'pwd', working_directory: dir
+          assert.equal dir.path, out.stripped
+          done!
+
+    it 'opts.env sets the process environment', (done) ->
+      howl_async ->
+        out = Process.execute 'env', env: { foo: 'bar' }
+        assert.equal 'foo=bar', out.stripped
+        done!
+
   describe 'wait()', ->
     it 'waits until the process is finished', (done) ->
       settimeout 2
-      File.with_tmpfile (file) ->
-        file\delete!
-
-        in_co ->
+      howl_async ->
+        File.with_tmpfile (file) ->
+          file\delete!
           p = Process cmd: { 'sh', '-c', "sleep 1; touch '#{file.path}'" }
           p\wait!
           assert.is_true file.exists
@@ -48,7 +63,7 @@ describe 'Process', ->
   context 'signal handling', ->
     describe 'send_signal(signal) and .signalled', ->
       it 'sends the specified signal to the process', (done) ->
-        in_co ->
+        howl_async ->
           p = Process cmd: 'cat', write_stdin: true
           p\send_signal 9
           p\wait!
@@ -56,14 +71,14 @@ describe 'Process', ->
           done!
 
       it '.signalled is false for a non-signaled process', (done) ->
-        in_co ->
+        howl_async ->
           p = Process cmd: 'id'
           p\wait!
           assert.is_false p.signalled
           done!
 
       it '.signal holds the signal used for terminating the process', (done) ->
-        in_co ->
+        howl_async ->
           p = Process cmd: 'cat', write_stdin: true
           p\send_signal 9
           p\wait!
@@ -71,7 +86,7 @@ describe 'Process', ->
           done!
 
       it '.signal_name holds the name of the signal used for terminating the process', (done) ->
-        in_co ->
+        howl_async ->
           p = Process cmd: 'cat', write_stdin: true
           p\send_signal 9
           p\wait!
@@ -79,7 +94,7 @@ describe 'Process', ->
           done!
 
       it 'signals can be referred to by name as well', (done) ->
-        in_co ->
+        howl_async ->
           p = Process cmd: 'cat', write_stdin: true
           p\send_signal 'KILL'
           p\wait!
@@ -92,7 +107,7 @@ describe 'Process', ->
       assert.is_nil p.exit_status
 
     it 'is nil for a signalled process', (done) ->
-      in_co ->
+      howl_async ->
         p = Process cmd: 'cat', write_stdin: true
         p\send_signal 9
         p\wait!
@@ -100,7 +115,7 @@ describe 'Process', ->
         done!
 
     it 'is set to the exit status for a normally exited process', (done) ->
-      in_co ->
+      howl_async ->
         p = run 'echo foo'
         assert.equals 0, p.exit_status
 
@@ -114,17 +129,17 @@ describe 'Process', ->
 
   describe '.successful', ->
     it 'is true if the process exited cleanly with a zero exit code', (done) ->
-      in_co ->
+      howl_async ->
         assert.is_true run('id').successful
         done!
 
     it 'is false if the process exited with a non-zero exit code', (done) ->
-      in_co ->
+      howl_async ->
         assert.is_false run('false').successful
         done!
 
     it 'is false if the process exited due to a signal', (done) ->
-      in_co ->
+      howl_async ->
         p = Process cmd: 'cat', write_stdin: true
         p\send_signal 9
         p\wait!
@@ -133,7 +148,7 @@ describe 'Process', ->
 
   describe '.stdout', ->
     it 'allows reading process output', (done) ->
-      in_co ->
+      howl_async ->
         p = Process cmd: 'echo "one\ntwo"', read_stdout: true
         assert.equals 'one\ntwo\n', p.stdout\read!
         assert.is_nil p.stdout\read!
@@ -141,14 +156,14 @@ describe 'Process', ->
 
   describe '.stderr', ->
     it 'allows reading process error output', (done) ->
-      in_co ->
+      howl_async ->
         p = Process cmd: {'sh', '-c', 'echo foo >&2'}, read_stderr: true
         assert.equals 'foo\n', p.stderr\read!
         done!
 
   describe '.stdin', ->
     it 'allows writing to the process input', (done) ->
-      in_co ->
+      howl_async ->
         p = Process cmd: 'cat', write_stdin: true, read_stdout: true
         with p.stdin
           \write 'round-trip'
