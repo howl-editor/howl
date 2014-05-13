@@ -1,4 +1,5 @@
 import config from howl
+Process = howl.io.Process
 append = table.insert
 
 class Git
@@ -26,10 +27,5 @@ class Git
 
   run: (...) =>
     exec_path = config.git_path or 'git'
-    args = [tostring(s) for s in *{...}]
-    cmd = table.concat { "cd '#{@root}' &&", exec_path }, ' '
-    cmd ..= ' ' .. table.concat args, ' '
-    pipe = assert io.popen "sh -c '#{cmd}' 2>&1"
-    chunk = assert pipe\read '*a'
-    assert pipe\close!
-    chunk
+    args = table.concat [tostring(s) for s in *{...}], ' '
+    Process.execute "#{exec_path} #{args}", working_directory: @root
