@@ -38,6 +38,12 @@ minor_version = tonumber C.glib_minor_version
 micro_version = tonumber C.glib_micro_version
 
 core.auto_loading 'glib', {
+  PRIORITY_HIGH: -100
+  PRIORITY_DEFAULT: 0
+  PRIORITY_HIGH_IDLE: 100
+  PRIORITY_DEFAULT_IDLE: 200
+  PRIORITY_LOW: 300
+
   :major_version
   :minor_version
   :micro_version
@@ -63,7 +69,6 @@ core.auto_loading 'glib', {
 
   get_current_dir: -> g_string C.g_get_current_dir!
   get_home_dir: -> ffi_string C.g_get_home_dir!
-
 
   char_p_arr: (t = {}) ->
     arr = ffi_new 'gchar *[?]', #t + 1

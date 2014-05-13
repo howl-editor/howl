@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 dispatch = howl.dispatch
+glib = require 'ljglibs.glib'
 {:UnixInputStream} = require 'ljglibs.gio'
 {:PropertyObject} = howl.aux.moon
 append = table.insert
@@ -16,7 +17,7 @@ class InputStream extends PropertyObject
   read: (num = 4096) =>
     handle = dispatch.park 'input-stream-read'
 
-    @stream\read_async num, (status, ret, err_code) ->
+    @stream\read_async num, glib.PRIORITY_LOW, (status, ret, err_code) ->
       if status
         dispatch.resume handle, ret
       else

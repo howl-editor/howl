@@ -95,7 +95,7 @@ describe 'Subprocess', ->
 
     it 'allows reading process output asynchronously', (done) ->
       process = Subprocess(bit.bor(Subprocess.FLAGS_STDOUT_PIPE, Subprocess.FLAGS_STDIN_PIPE), 'cat')
-      process.stdout_pipe\read_async 4096, async (status, out) ->
+      process.stdout_pipe\read_async 4096, glib.PRIORITY_LOW, async (status, out) ->
         assert.equals "written\n", out
         done!
 

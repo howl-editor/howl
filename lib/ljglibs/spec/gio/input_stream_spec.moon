@@ -1,6 +1,7 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
+glib = require 'ljglibs.glib'
 {:File, :FileInputStream} = require 'ljglibs.gio'
 
 with_tmpfile = (contents, f) ->
@@ -42,17 +43,17 @@ describe 'InputStream', ->
         stream\read_all 10
         assert.is_nil stream\read_all!
 
-  describe 'read_async(count, handler)', ->
+  describe 'read_async(count, priority, handler)', ->
     it 'invokes the handler with the status and up to <count> bytes read', (done) ->
       with_stream_for "foobar", (stream) ->
-        stream\read_async 3, async (status, buf) ->
+        stream\read_async 3, glib.PRIORITY_LOW, async (status, buf) ->
           assert.is_true status
           assert.same 'foo', buf
           done!
 
     it 'reads up to EOF', (done) ->
       with_stream_for "foobar", (stream) ->
-        stream\read_async 10, async (status, buf) ->
+        stream\read_async 10, glib.PRIORITY_LOW, async (status, buf) ->
           assert.is_true status
           assert.same 'foobar', buf
           done!
@@ -60,7 +61,7 @@ describe 'InputStream', ->
     it 'passes <true, nil> when at EOF', (done) ->
       with_stream_for "foobar", (stream) ->
         stream\read_all!
-        stream\read_async 10, async (status, buf) ->
+        stream\read_async 10, glib.PRIORITY_LOW, async (status, buf) ->
           assert.is_true status
           assert.is_nil buf
           done!

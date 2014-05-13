@@ -38,7 +38,7 @@ InputStream = core.define 'GInputStream < GObject', {
     return nil if read[0] == 0
     ffi_string buf, read[0]
 
-  read_async: (count = 4096, callback) =>
+  read_async: (count = 4096, priority = glib.PRIORITY_DEFAULT, callback) =>
     if count == 0
       callback true, ''
       return
@@ -58,7 +58,7 @@ InputStream = core.define 'GInputStream < GObject', {
         callback true, val
 
     handle = callbacks.register handler, 'input-read-async'
-    C.g_input_stream_read_async @, buf, count, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
+    C.g_input_stream_read_async @, buf, count, priority, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
 
   close_async: (callback) =>
     local handle
