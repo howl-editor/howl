@@ -62,4 +62,6 @@ OutputStream = core.define 'GOutputStream < GObject', {
  }
 
 jit.off OutputStream.write_async
+jit.off OutputStream.close_async
+
 OutputStream

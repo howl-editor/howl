@@ -4,6 +4,8 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gio'
 require 'ljglibs.gio.file_info'
+require 'ljglibs.gio.file_input_stream'
+require 'ljglibs.gio.file_output_stream'
 core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
 import gc_ptr from require 'ljglibs.gobject'

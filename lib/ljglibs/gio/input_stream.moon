@@ -39,7 +39,10 @@ InputStream = core.define 'GInputStream < GObject', {
     ffi_string buf, read[0]
 
   read_async: (count = 4096, callback) =>
-    return '' if count == 0
+    if count == 0
+      callback true, ''
+      return
+
     buf = ffi_new buf_t, count
 
     local handle
@@ -73,4 +76,6 @@ InputStream = core.define 'GInputStream < GObject', {
 }
 
 jit.off InputStream.read_async
+jit.off InputStream.close_async
+
 InputStream
