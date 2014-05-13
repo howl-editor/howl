@@ -45,13 +45,14 @@ class ProjectFileInput
       file = app.editor.buffer.file
       if file
         @project = Project.for_file file
+        if @project
+          @matcher = load_matcher(@project)
 
   should_complete: -> true
   close_on_cancel: -> true
 
-  complete: (text) =>
+  complete: (text, readline) =>
     return {} if not @project
-    @matcher = load_matcher(@project) unless @matcher
 
     completion_options = {
       title: @project.root.path .. separator
