@@ -25,3 +25,8 @@ Closes the input stream.
 Reads up to `num` bytes from the input stream, returning the result as a string.
 The actual number of bytes read can be smaller than `num`. Returns `nil` upon
 end-of-file. Raises an error upon any IO error.
+
+### read_all ()
+
+Reads all of the stream's content, returning the result as a string. Raises an
+error upon any IO error.
