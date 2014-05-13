@@ -22,6 +22,12 @@ describe 'log', ->
         log[m] 'message\nline2\nline3'
         assert.spy(method).was.called_with app.window.status, 'message'
 
+      it 'removes any location info before propagating', ->
+        method = spy.new -> true
+        app.window = readline: {}, status: [m]: method
+        log[m] '[string "../foo/bar.lua"]:32: juicy bit'
+        assert.spy(method).was.called_with app.window.status, 'juicy bit'
+
   it 'warn() is the same as warning()', ->
     assert.same log.warn, log.warning
 

@@ -12,7 +12,10 @@ config.define
 log = {}
 setfenv 1, log
 
-first_line_of = (s) -> s\match '[^\n\r]*'
+essentials_of = (s) ->
+  first_line = s\match '[^\n\r]*'
+  essentials = first_line\match '^%[[^]]+%]:%d+: (.+)'
+  essentials or first_line
 
 dispatch = (level, message) ->
   entry = :message, :level
@@ -21,8 +24,9 @@ dispatch = (level, message) ->
   if window
     status = window.status
     readline = window.readline
-    status[level] status, first_line_of message
-    readline\notify message, level if readline.showing
+    essentials = essentials_of message
+    status[level] status, essentials
+    readline\notify essentials, level if readline.showing
     _G.print message if level == 'error' and not _G.os.getenv('BUSTED')
 
   while #entries > config.max_log_entries and #entries > 0
