@@ -25,35 +25,46 @@ describe 'dispatch', ->
         assert.is_false status
         assert.equals 'foo', err
 
-  it 'wait() yields until resumed using resume() on the parked handle', ->
-    handle = dispatch.park 'test'
-    done = false
+  describe 'wait()', ->
+    it 'yields until resumed using resume() on the parked handle', ->
+      handle = dispatch.park 'test'
+      done = false
 
-    dispatch.launch ->
-      dispatch.wait handle
-      done = true
+      dispatch.launch ->
+        dispatch.wait handle
+        done = true
 
-    assert.is_false done
-    dispatch.resume handle
-    assert.is_true done
+      assert.is_false done
+      dispatch.resume handle
+      assert.is_true done
 
-  it 'wait() returns any parameters passed to resume()', ->
-    handle = dispatch.park 'test'
-    local res
+    it 'returns any parameters passed to resume()', ->
+      handle = dispatch.park 'test'
+      local res
 
-    dispatch.launch ->
-      res = { dispatch.wait handle }
+      dispatch.launch ->
+        res = { dispatch.wait handle }
 
-    dispatch.resume handle, 1, nil, 'three', nil
-    assert.same { 1, nil, 'three', nil }, res
+      dispatch.resume handle, 1, nil, 'three', nil
+      assert.same { 1, nil, 'three', nil }, res
 
-  it 'wait() raises an error when resumed with resume_with_error()', ->
-    handle = dispatch.park 'test'
-    local err
+    it 'raises an error when resumed with resume_with_error()', ->
+      handle = dispatch.park 'test'
+      local err
 
-    dispatch.launch ->
-      status, err = pcall dispatch.wait, handle
-      assert.is_false status
+      dispatch.launch ->
+        status, err = pcall dispatch.wait, handle
+        assert.is_false status
 
-    dispatch.resume_with_error handle, 'blargh!'
-    assert.includes err, 'blargh!'
+      dispatch.resume_with_error handle, 'blargh!'
+      assert.includes err, 'blargh!'
+
+  describe 'resume()', ->
+    it 'propagates any error occurring during resuming', ->
+      handle = dispatch.park 'test'
+
+      dispatch.launch ->
+        dispatch.wait handle
+        error 'boom'
+
+      assert.raises 'boom', -> dispatch.resume handle

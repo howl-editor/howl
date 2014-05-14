@@ -19,7 +19,9 @@ get_parking = (handle) ->
     id_counter
 
   resume: (handle, ...) ->
-    coroutine.resume get_parking(handle).co, true, ...
+    ret = pack coroutine.resume get_parking(handle).co, true, ...
+    error(ret[2], ret[3]) unless ret[1]
+    unpack ret, 2, ret.n
 
   resume_with_error: (handle, err, level) ->
     coroutine.resume get_parking(handle).co, false, err, level
