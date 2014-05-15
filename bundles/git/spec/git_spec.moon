@@ -57,9 +57,9 @@ describe 'Git bundle', ->
           file = root / 'new.lua'
           file\touch!
           assert_same_files git\files!, { file }
-          git\run 'add ' .. file\relative_to_parent root
+          git\run 'add', file\relative_to_parent root
           assert_same_files git\files!, { file }
-          git\run 'commit -q -m "new" ' .. file\relative_to_parent root
+          git\run 'commit', '-q', '-m', 'new', file\relative_to_parent root
           assert_same_files git\files!, { file }
           file.contents = 'change'
           assert_same_files git\files!, { file }
@@ -102,7 +102,7 @@ describe 'Git bundle', ->
     describe 'run(...)', ->
       it 'runs git in the root dir with the given arguments and returns the output', (done) ->
         howl_async ->
-          assert.includes git\run('config --local -l'), "Howl Spec"
+          assert.includes git\run('config', '--local', '-l'), "Howl Spec"
           done!
 
       it 'uses the executable in variable `git_path` if specified', (done) ->

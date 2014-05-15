@@ -27,5 +27,7 @@ class Git
 
   run: (...) =>
     exec_path = config.git_path or 'git'
-    args = table.concat [tostring(s) for s in *{...}], ' '
-    Process.execute "#{exec_path} #{args}", working_directory: @root
+    argv = { exec_path, ... }
+    out, err, process = Process.execute argv, working_directory: @root
+    error "(git in '#{@root}'): #{err or 'Failed to execute'}" unless process.successful
+    out
