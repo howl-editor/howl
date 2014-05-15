@@ -277,4 +277,12 @@ ffi.cdef [[
 
   gchar * g_shell_quote (const gchar *unquoted_string);
   gchar * g_shell_unquote (const gchar *quoted_string, GError **error);
+
+  /* Environment utilities */
+  const gchar * g_getenv (const gchar *variable);
+  gboolean g_setenv (const gchar *variable,
+                     const gchar *value,
+                     gboolean overwrite);
+  void g_unsetenv (const gchar *variable);
+  gchar ** g_listenv (void);
 ]]

@@ -7,6 +7,7 @@ ffi = require 'ffi'
 C, ffi_string, ffi_gc, ffi_new = ffi.C, ffi.string, ffi.gc, ffi.new
 
 unpack = table.unpack
+append = table.insert
 
 g_string = (ptr) ->
   return nil if ptr == nil
@@ -69,6 +70,29 @@ core.auto_loading 'glib', {
 
   get_current_dir: -> g_string C.g_get_current_dir!
   get_home_dir: -> ffi_string C.g_get_home_dir!
+
+  getenv: (variable) ->
+    val = C.g_getenv variable
+    val != nil and ffi_string(val) or nil
+
+  setenv: (variable, value, overwrite = true) ->
+    C.g_setenv variable, value, overwrite
+
+  unsetenv: (variable) ->
+    C.g_unsetenv variable
+
+  listenv: ->
+    env_p = C.g_listenv!
+    list = {}
+    i = 0
+    while true
+      char_p = env_p[i]
+      break if char_p == nil
+      append list, ffi_string char_p
+      i += 1
+
+    C.g_strfreev env_p
+    list
 
   char_p_arr: (t = {}) ->
     arr = ffi_new 'gchar *[?]', #t + 1
