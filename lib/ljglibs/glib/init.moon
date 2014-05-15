@@ -97,7 +97,7 @@ core.auto_loading 'glib', {
   char_p_arr: (t = {}) ->
     arr = ffi_new 'gchar *[?]', #t + 1
     for i = 1, #t
-      arr[i - 1] = strdup t[i]
+      arr[i - 1] = strdup tostring(t[i])
 
     arr[#t] = nil
     arr
