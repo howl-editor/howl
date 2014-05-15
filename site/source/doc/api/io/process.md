@@ -87,6 +87,10 @@ field to be available.
 True if the process exited normally, with an exit code of zero. Only available
 once the process has exited ([exited](#exited) is true).
 
+### working_directory
+
+A [File] instance for the process' working directory.
+
 ## Functions
 
 ### Process(options)
@@ -171,3 +175,4 @@ Waits for the process to terminate.
 
 [InputStream]: input_stream.html
 [OutputStream]: output_stream.html
+[File]: file.html

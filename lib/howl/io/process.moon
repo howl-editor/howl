@@ -3,10 +3,10 @@
 
 ffi = require 'ffi'
 jit = require 'jit'
-{:spawn, :shell} = require 'ljglibs.glib'
+{:spawn, :shell, :get_current_dir} = require 'ljglibs.glib'
 callbacks = require 'ljglibs.callbacks'
 dispatch = howl.dispatch
-{:InputStream, :OutputStream} = howl.io
+{:File, :InputStream, :OutputStream} = howl.io
 sys = howl.sys
 
 C, ffi_cast = ffi.C, ffi.cast
@@ -88,6 +88,7 @@ class Process
     error 'opts.cmd missing or invalid', 2 unless @argv
     @_process = launch @argv, opts
     @pid = @_process.pid
+    @working_directory = File opts.working_directory or get_current_dir!
     @stdin = OutputStream(@_process.stdin_pipe) if @_process.stdin_pipe
     @stdout = InputStream(@_process.stdout_pipe) if @_process.stdout_pipe
     @stderr = InputStream(@_process.stderr_pipe) if @_process.stderr_pipe

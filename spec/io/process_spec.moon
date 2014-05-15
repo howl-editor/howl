@@ -1,6 +1,7 @@
 Process = howl.io.Process
 File = howl.io.File
 sys = howl.sys
+glib = require 'ljglibs.glib'
 
 describe 'Process', ->
 
@@ -137,6 +138,22 @@ describe 'Process', ->
         assert.equals 2, p.exit_status
 
         done!
+
+  describe '.working_directory', ->
+    context 'when provided during launch', ->
+      it 'is the same directory', ->
+        cwd = File '/bin'
+        p = Process(cmd: 'true', working_directory: cwd)
+        assert.equal cwd, p.working_directory
+
+      it 'is always a File instance', ->
+        p = Process(cmd: 'true', working_directory: '/bin')
+        assert.equal 'File', typeof  p.working_directory
+
+    context 'when not provided', ->
+      it 'is the current working directory', ->
+        p = Process(cmd: 'true')
+        assert.equal File(glib.get_current_dir!), p.working_directory
 
   describe '.successful', ->
     it 'is true if the process exited cleanly with a zero exit code', (done) ->
