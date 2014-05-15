@@ -7,6 +7,7 @@ jit = require 'jit'
 callbacks = require 'ljglibs.callbacks'
 dispatch = howl.dispatch
 {:InputStream, :OutputStream} = howl.io
+sys = howl.sys
 
 C, ffi_cast = ffi.C, ffi.cast
 append = table.insert
@@ -33,7 +34,8 @@ get_argv = (v) ->
   t = type v
 
   if t == 'string'
-    v = shell.parse_argv v
+    shell = sys.env.SHELL or '/bin/sh'
+    v = {shell, '-c', v}
   elseif t != 'table'
     return nil
 

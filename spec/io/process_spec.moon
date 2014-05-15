@@ -1,5 +1,6 @@
 Process = howl.io.Process
 File = howl.io.File
+sys = howl.sys
 
 describe 'Process', ->
 
@@ -18,14 +19,14 @@ describe 'Process', ->
       assert.equal 'Process', typeof Process cmd: 'true'
 
     it 'raises an error for an unknown command', ->
-      assert.raises 'howlblargh', -> Process cmd: 'howlblargh'
+      assert.raises 'howlblargh', -> Process cmd: {'howlblargh'}
 
     it 'sets .argv to the parsed command line', ->
       p = Process cmd: {'echo', 'foo'}
       assert.same {'echo', 'foo'}, p.argv
 
       p = Process cmd: 'echo "foo bar"'
-      assert.same {'echo', 'foo bar'}, p.argv
+      assert.same { sys.env.SHELL, '-c', 'echo "foo bar"'}, p.argv
 
   describe 'Process.execute(cmd, stdin, opts)', ->
     it 'executes the specified command and return <out, err, process>', (done) ->
@@ -34,6 +35,16 @@ describe 'Process', ->
         assert.equal 'reverb', out
         assert.equal 'foo\n', err
         assert.equal 'Process', typeof(p)
+        done!
+
+    it "executes string commands using user's shell'", (done) ->
+      orig_shell = sys.env.SHELL
+      sys.env.SHELL = '/bin/echo'
+      howl_async ->
+        status, out = pcall Process.execute, 'foo'
+        sys.env.SHELL = orig_shell
+        assert.is_true status
+        assert.equal '-c foo\n', out
         done!
 
     it 'opts.working_directory sets the working working directory', (done) ->
@@ -45,7 +56,7 @@ describe 'Process', ->
 
     it 'opts.env sets the process environment', (done) ->
       howl_async ->
-        out = Process.execute 'env', env: { foo: 'bar' }
+        out = Process.execute {'env'}, env: { foo: 'bar' }
         assert.equal 'foo=bar', out.stripped
         done!
 
@@ -119,10 +130,10 @@ describe 'Process', ->
         p = run 'echo foo'
         assert.equals 0, p.exit_status
 
-        p = run 'sh -c "exit 1"'
+        p = run {'sh', '-c', 'exit 1' }
         assert.equals 1, p.exit_status
 
-        p = run 'sh -c "exit 2"'
+        p = run {'sh', '-c', 'exit 2' }
         assert.equals 2, p.exit_status
 
         done!

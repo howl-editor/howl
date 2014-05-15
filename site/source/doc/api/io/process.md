@@ -95,9 +95,8 @@ Launches a new process with the specified options, and returns a Process
 instance. `options`, a table, can contain the following fields:
 
 - `cmd`: _[required]_ The command to run. This can be either a string, in which
-case it's parsed as a shell command, or a table comprising the full command line
-invocation. Note that since Howl is not a shell, shell specific expansions are
-not supported, but will instead be passed verbatim as is.
+case it's executed using the user's shell, or a table comprising the full
+command line invocation.
 
 - `read_stdout`: _[optional]_ When specified, a pipe will be opened for the
 process' standard out, and the [stdout](#stdout) field will be available for
@@ -123,14 +122,12 @@ a process object is returned for the started command.
 ### execute(cmd, options = {})
 
 Executes a process for `cmd` and returns the results in one go. `cmd` can be
-either a string, in which case it's parsed as a shell command, or a table
-comprising the full command line invocation. Note that since Howl is not a
-shell, shell specific expansions are not supported, but will instead be passed
-verbatim as is. `options`, a optional table of options, can contain the
-following optional fields:
+either a string, in which case it's executed using the user's shell, or a table
+comprising the full command line invocation. `options`, a optional table of
+options, can contain the following optional fields:
 
 - `stdin`: When specified, the contents of this field will be written as the
-process's input.
+process' input.
 
 - `working_directory`: The path to set as the process' working directory.
 
