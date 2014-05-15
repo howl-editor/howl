@@ -168,9 +168,10 @@ return {
     -- Markup and visual styles
 
     error:
-      font: italic: true
-      color: pink
-      background: darkred
+      font:
+        italic: true
+        bold: true
+      color: red
 
     warning:
       font: italic: true
