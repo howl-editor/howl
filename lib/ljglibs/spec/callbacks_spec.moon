@@ -13,11 +13,18 @@ dispatch = (handle, arg) ->
 describe 'callbacks', ->
 
   describe 'register(handler, description, handler, ...)', ->
-    it 'allows registering a handler that is be dispatched correctly', ->
+    it 'allows registering a handler that is dispatched to correctly', ->
       handler = spy.new -> nil
       handle = callbacks.register handler, 'test handler'
       dispatch handle, 123
       assert.spy(handler).was_called!
+
+    it 'keeps the handler, allowing multiple callbacks', ->
+      handler = spy.new -> nil
+      handle = callbacks.register handler, 'test handler'
+      dispatch handle, 123
+      dispatch handle, 123
+      assert.spy(handler).was_called(2)
 
     it 'passes along any additional arguments to the handler after the callback parameters', ->
       handler = spy.new -> nil
@@ -39,6 +46,20 @@ describe 'callbacks', ->
       callbacks.unregister handle
       dispatch handle, 123
       assert.spy(handler).was_not_called!
+
+    it 'releases any references', ->
+      ref = {}
+      holder = setmetatable {}, __mode: 'v'
+      table.insert holder, ref
+
+      handler = -> ref['foo']
+      handle = callbacks.register handler, 'test handler'
+      callbacks.unregister handle
+
+      ref = nil
+      handler = nil
+      collectgarbage!
+      assert.is_nil holder[1]
 
   describe 'unref_handle(handle)', ->
     it 'un-anchors a handle, allowing the handler to be garbage collected', ->

@@ -8,6 +8,7 @@
 -- a cyclic dependency that will prevent any garbage collection
 
 ffi = require 'ffi'
+unpack = table.unpack
 
 ctype = ffi.typeof 'struct {}'
 
