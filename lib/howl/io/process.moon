@@ -94,8 +94,8 @@ class Process
     @stderr = InputStream(@_process.stderr_pipe) if @_process.stderr_pipe
     @exited = false
 
-    handle = callbacks.register child_exited, "process-watch-#{@_process.pid}", @
-    C.g_child_watch_add ffi_cast('GPid', @_process.pid), child_watch_callback, callbacks.cast_arg(handle.id)
+    @_exit_handle = callbacks.register child_exited, "process-watch-#{@_process.pid}", @
+    C.g_child_watch_add ffi_cast('GPid', @_process.pid), child_watch_callback, callbacks.cast_arg(@_exit_handle.id)
 
   wait: =>
     return if @exited
@@ -107,6 +107,8 @@ class Process
     C.kill(@pid, signal)
 
   _handle_finish: (status) =>
+    callbacks.unregister @_exit_handle
+    @_exit_handle = nil
     @exited = true
     @successful = false
     @exited_normally = C.process_exited_normally(status) != 0

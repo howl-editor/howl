@@ -177,7 +177,7 @@ describe 'Process', ->
   describe '.stdout', ->
     it 'allows reading process output', (done) ->
       howl_async ->
-        p = Process cmd: 'echo "one\ntwo"', read_stdout: true
+        p = Process cmd: {'echo', 'one\ntwo'}, read_stdout: true
         assert.equals 'one\ntwo\n', p.stdout\read!
         assert.is_nil p.stdout\read!
         done!
@@ -192,7 +192,7 @@ describe 'Process', ->
   describe '.stdin', ->
     it 'allows writing to the process input', (done) ->
       howl_async ->
-        p = Process cmd: 'cat', write_stdin: true, read_stdout: true
+        p = Process cmd: {'cat'}, write_stdin: true, read_stdout: true
         with p.stdin
           \write 'round-trip'
           \close!
