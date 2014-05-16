@@ -49,6 +49,7 @@ class Readline extends PropertyObject
       @completion_list = nil
       @notification = nil
       @width_in_columns = nil
+      @window.status\clear!
       @window.status\show!
 
       @last_focused\grab_focus! if @last_focused and has_focus
@@ -80,7 +81,6 @@ class Readline extends PropertyObject
 
   complete: (force) =>
     error "Cannot invoke Readline.complete() for a hidden readline", 2 unless @showing
-    @_show_only_cmd_line!
     text = @text
     should_complete = force
     unless should_complete
@@ -93,6 +93,8 @@ class Readline extends PropertyObject
     options or= {}
     count = completions and #completions or 0
     @title = options.title if options.title
+
+    @_show_only_cmd_line!
     list_position = 1
     list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
 
