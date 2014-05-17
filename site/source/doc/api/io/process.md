@@ -23,6 +23,12 @@ _See also_:
 
 - The [spec](../../spec/io/process_spec.html) for Process
 
+## Class Properties
+
+### running
+
+A table containing all currently running processes, keyed by the process pid.
+
 ## Properties
 
 ### argv

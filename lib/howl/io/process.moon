@@ -64,6 +64,8 @@ child_exited = (pid, status, process) ->
   process\_handle_finish ffi_cast('gint', status)
 
 class Process
+  running: {}
+
   execute: (cmd, opts = {}) ->
     p_opts = {
       :cmd,
@@ -94,6 +96,8 @@ class Process
     @stderr = InputStream(@_process.stderr_pipe) if @_process.stderr_pipe
     @exited = false
 
+    @@running[@pid] = @
+
     @_exit_handle = callbacks.register child_exited, "process-watch-#{@_process.pid}", @
     C.g_child_watch_add ffi_cast('GPid', @_process.pid), child_watch_callback, callbacks.cast_arg(@_exit_handle.id)
 
@@ -108,6 +112,8 @@ class Process
 
   _handle_finish: (status) =>
     callbacks.unregister @_exit_handle
+    @@running[@pid] = nil
+
     @_exit_handle = nil
     @exited = true
     @successful = false

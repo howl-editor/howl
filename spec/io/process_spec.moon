@@ -198,4 +198,14 @@ describe 'Process', ->
           \close!
 
         assert.equals 'round-trip', p.stdout\read!
+        p\wait!
         done!
+
+  describe 'Process.running', ->
+    it 'is a table of currently running processes, keyed by pid', ->
+      assert.same {}, Process.running
+      p = Process cmd: {'cat'}, write_stdin: true
+      assert.same {[p.pid]: p}, Process.running
+      p.stdin\close!
+      p\wait!
+      assert.same {}, Process.running
