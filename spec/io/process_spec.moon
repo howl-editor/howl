@@ -86,7 +86,7 @@ describe 'Process', ->
           done!
 
     context 'when both handlers are provided', ->
-      it 'invokes both handlers for any output before returning', (done) ->
+      pending 'invokes both handlers for any output before returning', (done) ->
         howl_async ->
           on_stdout = spy.new -> nil
           on_stderr = spy.new -> nil
