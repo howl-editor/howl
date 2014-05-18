@@ -17,6 +17,26 @@ describe 'InputStream', ->
         assert.is_nil stream\read 10
         done!
 
+  describe 'read_async(num, handler)', ->
+    it 'invokes <handler> with the status and up to <num> bytes read from the stream', (done) ->
+      with_stream_for 'foobar', (stream) ->
+        handler = (status, read) ->
+          assert.is_true status
+          assert.equal 'foobar', read
+          done!
+
+        stream\read_async 10, handler
+
+    it 'invokes <handler> with true and nil upon EOF', (done) ->
+      with_stream_for 'foobar', (stream) ->
+        handler = (status, read) ->
+          assert.is_true status
+          assert.is_nil read
+          done!
+
+        stream\read 10
+        stream\read_async 10, handler
+
   describe 'read_all()', ->
     it 'reads all the streams content in one go', (done) ->
       content = string.rep 'This is my line of text. Rinse, wash and repeat', 500, '\n'

@@ -3,7 +3,7 @@
 
 ffi = require 'ffi'
 jit = require 'jit'
-{:spawn, :shell, :get_current_dir} = require 'ljglibs.glib'
+{:spawn, :shell, :get_current_dir, :PRIORITY_LOW} = require 'ljglibs.glib'
 callbacks = require 'ljglibs.callbacks'
 dispatch = howl.dispatch
 {:File, :InputStream, :OutputStream} = howl.io
@@ -63,6 +63,20 @@ launch = (argv, p_opts) ->
 child_exited = (pid, status, process) ->
   process\_handle_finish ffi_cast('gint', status)
 
+pump_stream = (stream, handler, parking) ->
+  local read_handler
+  read_handler = (status, ret, err_code) ->
+    if not status
+      dispatch.resume_with_error parking, "#{ret} (#{err_code})"
+    else
+      handler ret
+      if ret == nil
+        dispatch.resume parking
+      else
+        stream\read_async nil, read_handler
+
+  stream\read_async nil, read_handler
+
 class Process
   running: {}
 
@@ -93,22 +107,38 @@ class Process
     @working_directory = File opts.working_directory or get_current_dir!
     @stdin = OutputStream(@_process.stdin_pipe) if @_process.stdin_pipe
     @stdout = InputStream(@_process.stdout_pipe) if @_process.stdout_pipe
-    @stderr = InputStream(@_process.stderr_pipe) if @_process.stderr_pipe
+    @stderr = InputStream(@_process.stderr_pipe, PRIORITY_LOW - 10) if @_process.stderr_pipe
     @exited = false
 
     @@running[@pid] = @
 
-    @_exit_handle = callbacks.register child_exited, "process-watch-#{@_process.pid}", @
-    C.g_child_watch_add ffi_cast('GPid', @_process.pid), child_watch_callback, callbacks.cast_arg(@_exit_handle.id)
+    @_exit_handle = callbacks.register child_exited, "process-watch-#{@pid}", @
+    C.g_child_watch_add ffi_cast('GPid', @pid), child_watch_callback, callbacks.cast_arg(@_exit_handle.id)
 
   wait: =>
     return if @exited
-    @_exit = dispatch.park "process-wait-#{@_process.pid}"
-    dispatch.wait(@_exit)
+    @_exit = dispatch.park "process-wait-#{@pid}"
+    dispatch.wait @_exit
 
   send_signal: (signal) =>
     signal = signals[signal] if type(signal) == 'string'
     C.kill(@pid, signal)
+
+  pump: (on_stdout, on_stderr) =>
+    if on_stdout and not @stdout
+      error 'Can not pump process out: .stdout not set', 2
+
+    if on_stderr and not @stderr
+      error 'Can not pump process error: .stderr not set', 2
+
+    stdout_done = on_stdout and dispatch.park "process-wait-stdout-#{@pid}"
+    stderr_done = on_stderr and dispatch.park "process-wait-stderr-#{@pid}"
+    pump_stream(@stderr, on_stderr, stderr_done, true) if on_stderr
+    pump_stream(@stdout, on_stdout, stdout_done) if on_stdout
+
+    dispatch.wait(stderr_done) if on_stderr
+    dispatch.wait(stdout_done) if on_stdout
+    @wait!
 
   _handle_finish: (status) =>
     callbacks.unregister @_exit_handle

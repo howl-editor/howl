@@ -29,7 +29,7 @@ describe 'Process', ->
       p = Process cmd: 'echo "foo bar"'
       assert.same { sys.env.SHELL, '-c', 'echo "foo bar"'}, p.argv
 
-  describe 'Process.execute(cmd, stdin, opts)', ->
+  describe 'Process.execute(cmd, opts)', ->
     it 'executes the specified command and return <out, err, process>', (done) ->
       howl_async ->
         out, err, p = Process.execute {'sh', '-c', 'cat; echo foo >&2'}, stdin: 'reverb'
@@ -60,6 +60,44 @@ describe 'Process', ->
         out = Process.execute {'env'}, env: { foo: 'bar' }
         assert.equal 'foo=bar', out.stripped
         done!
+
+  describe 'pump(on_stdout, on_stderr)', ->
+
+    context 'when the <on_stdout> handler is provided', ->
+      it 'invokes the handler for any stdout output before returning', (done) ->
+        howl_async ->
+          on_stdout = spy.new -> nil
+          p = Process cmd: 'echo foo', read_stdout: true
+          p\pump on_stdout
+          assert.is_true p.exited
+          assert.spy(on_stdout).was_called_with 'foo\n'
+          assert.spy(on_stdout).was_called_with nil
+          done!
+
+    context 'when the <on_stderr> handler is provided', ->
+      it 'invokes the handler for any stderr output before returning', (done) ->
+        howl_async ->
+          on_stderr = spy.new -> nil
+          p = Process cmd: 'echo err >&2', read_stderr: true
+          p\pump nil, on_stderr
+          assert.is_true p.exited
+          assert.spy(on_stderr).was_called_with 'err\n'
+          assert.spy(on_stderr).was_called_with nil
+          done!
+
+    context 'when both handlers are provided', ->
+      it 'invokes both handlers for any output before returning', (done) ->
+        howl_async ->
+          on_stdout = spy.new -> nil
+          on_stderr = spy.new -> nil
+          p = Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
+          p\pump on_stdout, on_stderr
+          assert.is_true p.exited
+          assert.spy(on_stderr).was_called_with 'err\n'
+          assert.spy(on_stderr).was_called_with nil
+          assert.spy(on_stdout).was_called_with 'out\n'
+          assert.spy(on_stdout).was_called_with nil
+          done!
 
   describe 'wait()', ->
     it 'waits until the process is finished', (done) ->

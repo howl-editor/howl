@@ -16,7 +16,7 @@ execution. In the context of an interactive application, such as Howl, this is
 unacceptable is it means the application will be unresponsive while waiting for
 command termination or output. The howl.io.Process module provides a way of
 launching and interacting with external processses that, while still providing
-the appearance and ease of use of a synchronous API, is fully asynchrounous and
+the appearance and ease of use of a synchronous API, is fully asynchronous and
 ensures Howl remains responsive.
 
 _See also_:
@@ -169,6 +169,21 @@ howl.io.Process.execute 'cat', stdin: 'give it back!'
 ```
 
 ## Methods
+
+### pump (on_stdout, on_stderr)
+
+"Pumps" the process for any output, invoking either the `on_stdout` handler for
+any process output, or the `on_stderr` handler for any error output. The method
+will return once the process has exited. The `on_stdout` and `on_stderr`
+handlers will be invoked as soon as any output from the respective stream is
+available from the process, receiving as their sole argument the output as a
+string. As the process output streams are closed the handlers will be invoked a
+final time with nil, signifying end-of-file.
+
+Any of the two handlers (`on_stdout` and `on_stderr`) can be omitted in case
+you're only interested in one of the two. Note that you need to create the
+process with the corresponding `read_*` flag - `read_stdout` if `on_stdout` is
+specified, and `read_stderr` if `on_stderr` is specified.
 
 ### send_signal (signal)
 
