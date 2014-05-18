@@ -155,6 +155,7 @@ describe 'Process', ->
     it 'is nil for a running process', ->
       p = Process cmd: { 'sh', '-c', "sleep 1; true" }
       assert.is_nil p.exit_status
+      p\wait!
 
     it 'is nil for a signalled process', (done) ->
       howl_async ->
