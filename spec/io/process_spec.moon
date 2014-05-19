@@ -86,18 +86,18 @@ describe 'Process', ->
           done!
 
     context 'when both handlers are provided', ->
-      pending 'invokes both handlers for any output before returning', (done) ->
-        -- howl_async ->
-        --   on_stdout = spy.new -> nil
-        --   on_stderr = spy.new -> nil
-        --   p = Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
-        --   p\pump on_stdout, on_stderr
-        --   assert.is_true p.exited
-        --   assert.spy(on_stderr).was_called_with 'err\n'
-        --   assert.spy(on_stderr).was_called_with nil
-        --   assert.spy(on_stdout).was_called_with 'out\n'
-        --   assert.spy(on_stdout).was_called_with nil
-        --   done!
+      it 'invokes both handlers for any output before returning', (done) ->
+        howl_async ->
+          on_stdout = spy.new -> nil
+          on_stderr = spy.new -> nil
+          p = Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
+          p\pump on_stdout, on_stderr
+          assert.is_true p.exited
+          assert.spy(on_stdout).was_called_with 'out\n'
+          assert.spy(on_stdout).was_called_with nil
+          assert.spy(on_stderr).was_called_with 'err\n'
+          assert.spy(on_stderr).was_called_with nil
+          done!
 
   describe 'wait()', ->
     it 'waits until the process is finished', (done) ->

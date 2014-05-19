@@ -5,12 +5,19 @@ pack, unpack = table.pack, table.unpack
 parked = {}
 id_counter = 0
 
-get_parking = (handle) ->
+_resume = (handle, ...) ->
   parking = parked[handle]
   error "Unknown handle #{handle}", 3 unless parking
-  error "Nothing waiting on #{handle}", 3 unless parking.co
+  ret = if parking.co
+    pack coroutine.resume parking.co, ...
+  else
+    parking.resumer = coroutine.running!
+    parking.pending = pack ...
+    coroutine.yield!
+    { true }
+
   parked[handle] = nil
-  parking
+  ret
 
 {
   park: (description) ->
@@ -19,25 +26,33 @@ get_parking = (handle) ->
     id_counter
 
   resume: (handle, ...) ->
-    ret = pack coroutine.resume get_parking(handle).co, true, ...
+    ret = _resume handle, true, ...
     error(ret[2], ret[3]) unless ret[1]
     unpack ret, 2, ret.n
 
   resume_with_error: (handle, err, level) ->
-    coroutine.resume get_parking(handle).co, false, err, level
+    _resume handle, false, err, level
 
   wait: (handle) ->
     parking = parked[handle]
     error "Unknown handle #{handle}", 2 unless parking
     co, is_main = coroutine.running!
     error "Cannot invoke wait() from the main coroutine", 2 if is_main
-    parking.co = co
-    ret = pack coroutine.yield!
+
+    local ret
+
+    if parking.resumer
+      coroutine.resume parking.resumer
+      ret = parking.pending
+    else
+      parking.co = co
+      ret = pack coroutine.yield!
+
     error(ret[2], ret[3]) unless ret[1]
     unpack ret, 2, ret.n
 
   launch: (f, ...) ->
     co = coroutine.create (...) -> f ...
     status, err = coroutine.resume co, ...
-    status, status and coroutine.status(co) or err
+    status, (status and coroutine.status(co) or err)
 }

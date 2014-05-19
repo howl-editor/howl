@@ -68,3 +68,18 @@ describe 'dispatch', ->
         error 'boom'
 
       assert.raises 'boom', -> dispatch.resume handle
+
+    context 'when nothing is yet waiting on the parking', ->
+      it 'blocks until released by a wait', (done) ->
+        howl_async ->
+          handle = dispatch.park 'out-of-order'
+          launched, status = dispatch.launch -> dispatch.resume handle, 'resume-now!'
+          assert.is_true launched
+          assert.equals "suspended", status
+
+          launched, status = dispatch.launch ->
+            assert.equals 'resume-now!', dispatch.wait handle
+            done!
+
+          assert.is_true launched
+          assert.equals "dead", status
