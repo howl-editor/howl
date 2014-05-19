@@ -35,6 +35,14 @@ A table containing all currently running processes, keyed by the process pid.
 
 The argument list that was used to launch the process.
 
+### command_line
+
+A string representation of the command run. If the process was created using a
+string command (`cmd` was specified as a string), this will be equal to the
+passed in command. If the process was created using a argument table, this will
+be a space separated string with any arguments containing blanks being quoted
+using single quotes.
+
 ### exited
 
 True if the process has terminated, normally or not, and false otherwise.
@@ -69,6 +77,11 @@ once the process has exited ([exited](#exited) is true).
 A string representation of the signal that caused the process to terminate. Only
 available if the process was indeed terminated due to a signal
 ([signalled](#signalled) is true).
+
+### exit_status_string
+
+A string containing a human readable representation of the process exit status.
+Only available once the process has exited ([exited](#exited) is true).
 
 ### stderr
 
@@ -105,8 +118,8 @@ Launches a new process with the specified options, and returns a Process
 instance. `options`, a table, can contain the following fields:
 
 - `cmd`: _[required]_ The command to run. This can be either a string, in which
-case it's executed using the user's shell, or a table comprising the full
-command line invocation.
+case it's executed using `/bin/sh`, or a table comprising the
+full command line invocation.
 
 - `read_stdout`: _[optional]_ When specified, a pipe will be opened for the
 process' standard out, and the [stdout](#stdout) field will be available for
@@ -132,7 +145,7 @@ a process object is returned for the started command.
 ### execute(cmd, options = {})
 
 Executes a process for `cmd` and returns the results in one go. `cmd` can be
-either a string, in which case it's executed using the user's shell, or a table
+either a string, in which case it's executed using `/bin/sh`, or a table
 comprising the full command line invocation. `options`, a optional table of
 options, can contain the following optional fields:
 

@@ -1,6 +1,5 @@
 Process = howl.io.Process
 File = howl.io.File
-sys = howl.sys
 glib = require 'ljglibs.glib'
 
 describe 'Process', ->
@@ -27,7 +26,7 @@ describe 'Process', ->
       assert.same {'echo', 'foo'}, p.argv
 
       p = Process cmd: 'echo "foo bar"'
-      assert.same { sys.env.SHELL, '-c', 'echo "foo bar"'}, p.argv
+      assert.same { '/bin/sh', '-c', 'echo "foo bar"'}, p.argv
 
   describe 'Process.execute(cmd, opts)', ->
     it 'executes the specified command and return <out, err, process>', (done) ->
@@ -38,14 +37,11 @@ describe 'Process', ->
         assert.equal 'Process', typeof(p)
         done!
 
-    it "executes string commands using user's shell'", (done) ->
-      orig_shell = sys.env.SHELL
-      sys.env.SHELL = '/bin/echo'
+    it "executes string commands using /bin/sh'", (done) ->
       howl_async ->
-        status, out = pcall Process.execute, 'foo'
-        sys.env.SHELL = orig_shell
+        status, out = pcall Process.execute, 'echo $0'
         assert.is_true status
-        assert.equal '-c foo\n', out
+        assert.equal '/bin/sh\n', out
         done!
 
     it 'opts.working_directory sets the working working directory', (done) ->

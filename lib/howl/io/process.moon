@@ -40,8 +40,7 @@ get_command = (v) ->
   t = type v
 
   if t == 'string'
-    cmd_shell = sys.env.SHELL or '/bin/sh'
-    return {cmd_shell, '-c', v}, v
+    return { '/bin/sh', '-c', v }, v
   elseif t != 'table'
     return nil
 
