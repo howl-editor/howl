@@ -240,6 +240,26 @@ describe 'Process', ->
         p\wait!
         done!
 
+  describe '.command_line', ->
+    context 'when the command is specified as a string', ->
+      it 'is the same', ->
+        assert.equal 'echo command "bar"', run('echo command "bar"').command_line
+
+    context 'when the command is specified as a table', ->
+      it 'is a created shell command line', ->
+        assert.equal "echo command 'bar zed'", run({'echo', 'command', 'bar zed'}).command_line
+
+  describe '.exit_status_string', ->
+    it 'provides the exit code for a normally terminated process', ->
+      assert.equals 'exited normally with code 0', run('id').exit_status_string
+      assert.equals 'exited normally with code 1', run('exit 1').exit_status_string
+
+    it 'provides the signal name for a killed process', ->
+      p = Process cmd: {'cat'}, write_stdin: true, read_stdout: true
+      p\send_signal 'KILL'
+      p\wait!
+      assert.equals 'killed by signal 9 (KILL)', p.exit_status_string
+
   describe 'Process.running', ->
     it 'is a table of currently running processes, keyed by pid', ->
       assert.same {}, Process.running

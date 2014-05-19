@@ -3,7 +3,7 @@
 
 ffi = require 'ffi'
 jit = require 'jit'
-{:spawn, :shell, :get_current_dir, :PRIORITY_LOW} = require 'ljglibs.glib'
+{:spawn, :get_current_dir, :PRIORITY_LOW} = require 'ljglibs.glib'
 callbacks = require 'ljglibs.callbacks'
 dispatch = howl.dispatch
 {:File, :InputStream, :OutputStream} = howl.io
@@ -30,16 +30,22 @@ signal_name = (signal) ->
 
   'Unknown'
 
-get_argv = (v) ->
+shell_quote = (s) ->
+  if s\find '%s'
+    "'#{s}'"
+  else
+    s
+
+get_command = (v) ->
   t = type v
 
   if t == 'string'
-    shell = sys.env.SHELL or '/bin/sh'
-    v = {shell, '-c', v}
+    cmd_shell = sys.env.SHELL or '/bin/sh'
+    return {cmd_shell, '-c', v}, v
   elseif t != 'table'
     return nil
 
-  v
+  v, table.concat([shell_quote(tostring s) for s in *v], ' ')
 
 launch = (argv, p_opts) ->
   flags = { 'SEARCH_PATH', 'DO_NOT_REAP_CHILD' }
@@ -100,7 +106,7 @@ class Process
     out, err, p
 
   new: (opts) =>
-    @argv = get_argv opts.cmd
+    @argv, @command_line = get_command opts.cmd
     error 'opts.cmd missing or invalid', 2 unless @argv
     @_process = launch @argv, opts
     @pid = @_process.pid
@@ -136,8 +142,8 @@ class Process
     pump_stream(@stderr, on_stderr, stderr_done, true) if on_stderr
     pump_stream(@stdout, on_stdout, stdout_done) if on_stdout
 
-    dispatch.wait(stderr_done) if on_stderr
     dispatch.wait(stdout_done) if on_stdout
+    dispatch.wait(stderr_done) if on_stderr
     @wait!
 
   _handle_finish: (status) =>
@@ -152,12 +158,16 @@ class Process
     if @exited_normally
       @signalled = false
       @exit_status = tonumber C.process_exit_status(status)
+      @exit_status_string = "exited normally with code #{@exit_status}"
       @successful = @exit_status == 0
     else
       @signalled = C.process_was_signalled(status) != 0
       if @signalled
         @signal = tonumber(C.process_get_term_sig(status))
         @signal_name = signal_name @signal
+        @exit_status_string = "killed by signal #{@signal} (#{@signal_name})"
+      else
+        @exit_status_string = "exited abnormally for unknown reasons"
 
     if @_exit
       dispatch.resume(@_exit)
