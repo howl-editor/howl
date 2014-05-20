@@ -13,6 +13,20 @@ command_activity = (process) ->
     force_terminate: -> process\send_signal 'KILL'
   }
 
+resolve_location = (base_directory, line) ->
+  file, line = line\umatch r'([\\pL/.-_]+):(\\d+)'
+  if file
+    file = File(file, base_directory)
+    return { :file , line: tonumber line } if file.exists
+
+  nil
+
+goto_location = (location) ->
+  _, editor = app\open_file location.file
+  if editor
+    editor.cursor.line = location.line
+    editor.line_at_center = location.line
+
 class ProcessBuffer extends ActionBuffer
   new: (@process) =>
     super!
@@ -57,5 +71,16 @@ class ProcessBuffer extends ActionBuffer
   destroy: =>
     @process\send_signal('KILL') unless @process.exited
     super!
+
+  keymap: {
+    editor: {
+      return: (editor) ->
+        location = resolve_location editor.buffer.directory, editor.current_line
+        if location
+          goto_location(location)
+        else
+          log.error 'No file reference detected in the current line'
+    }
+  }
 
 return ProcessBuffer
