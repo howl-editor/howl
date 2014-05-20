@@ -269,7 +269,7 @@ class Buffer extends PropertyObject
 
   @property sci:
     get: =>
-      error 'Attempt to invoke operation on destroyed buffer', 2 if @destroyed
+      error 'Attempt to invoke operation on destroyed buffer', 3 if @destroyed
       if @_sci then return @_sci
 
       if background_buffer[1] != self

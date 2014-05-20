@@ -1,8 +1,9 @@
 -- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import app, Buffer, command, config, bindings, bundle, signal, inputs, mode from howl
-import ActionBuffer, BufferPopup, List from howl.ui
+import app, Buffer, command, config, bindings, bundle, signal, inputs, mode, Project from howl
+import ActionBuffer, ProcessBuffer, BufferPopup, List from howl.ui
+import File, Process from howl.io
 serpent = require 'serpent'
 
 command.register
@@ -287,3 +288,39 @@ command.register
     else
       buf\insert "-- #{title}\n", 1
       editor\show_popup BufferPopup buf
+
+-----------------------------------------------------------------------
+-- Launch commands
+-----------------------------------------------------------------------
+
+launch_cmd = (working_directory, cmd) ->
+  p = Process {
+    :cmd,
+    read_stdout: true,
+    read_stderr: true,
+    working_directory: working_directory
+  }
+
+  buffer = ProcessBuffer p
+  editor = app\add_buffer buffer
+  editor.cursor\eof!
+  buffer\pump!
+
+command.register
+  name: 'project-exec',
+  description: 'Runs an external command from within the project directory'
+
+  input: ->
+    file = app.editor and app.editor.buffer.file
+    error "No file associated with the current view" unless file
+    project = Project.get_for_file file
+    error "No project associated with #{file}" unless project
+    inputs.command nil, project.root
+
+  handler: launch_cmd
+
+command.register
+  name: 'exec',
+  description: 'Runs an external command'
+  input: 'command'
+  handler: launch_cmd

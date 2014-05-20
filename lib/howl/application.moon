@@ -5,7 +5,7 @@ ffi = require 'ffi'
 
 import Window, Editor, theme from howl.ui
 import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs, timer, clipboard from howl
-import File from howl.io
+import File, Process from howl.io
 import PropertyObject from howl.aux.moon
 Gtk = require 'ljglibs.gtk'
 
@@ -104,10 +104,16 @@ class Application extends PropertyObject
       @editor
 
   close_buffer: (buffer, force = false) =>
-    if not force and buffer.modified
+    unless force
       input = inputs.yes_or_no false
-      prompt = "Buffer '#{buffer}' is modified, close anyway? "
-      return unless inputs.read input, :prompt
+      local prompt
+      if buffer.modified
+        prompt = "Buffer is modified, close anyway? "
+      elseif buffer.activity and buffer.activity\is_running!
+        prompt = "Buffer has a running activity (#{buffer.activity.name}), close anyway? "
+
+      if prompt
+        return unless inputs.read input, :prompt
 
     @_buffers = [b for b in *@_buffers when b != buffer]
 
@@ -192,7 +198,11 @@ class Application extends PropertyObject
 
   quit: (force = false) =>
     if force or not @_should_abort_quit!
-      @_on_quit!
+      @save_session! unless #@args > 1
+
+      for _, process in pairs Process.running
+        process\send_signal 'KILL'
+
       win\destroy! for win in * moon.copy @windows
 
   save_session: =>
@@ -252,9 +262,6 @@ class Application extends PropertyObject
         return true
 
     false
-
-  _on_quit: =>
-    @save_session! unless #@args > 1
 
   _on_mode_registered: (args) =>
     -- check if any buffers with default_mode could use this new mode
@@ -338,6 +345,7 @@ class Application extends PropertyObject
     require 'howl.inputs.mode_input'
     require 'howl.inputs.question_inputs'
     require 'howl.inputs.clipboard_item_input'
+    require 'howl.inputs.command_input'
     require 'howl.commands.file_commands'
     require 'howl.commands.app_commands'
     require 'howl.commands.ui_commands'
