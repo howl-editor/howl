@@ -2,7 +2,7 @@
 title: howl.Application
 ---
 
-# Application
+# howl.Application
 
 The Application object acts as the main hub within the Howl editor. There exists
 one and only one instantiated application object per Howl instance, available as
@@ -52,6 +52,11 @@ the currently active editor.
 Removes `buffer` from [.buffers]. If the buffer is modified, and `force` is not
 true, the user  is prompted before closing the buffer.
 
+### editor_for_buffer (buffer)
+
+Returns the editor currently showing `buffer`, or `nil` if the buffer is not
+currently showing in any editor.
+
 ### new_buffer (buffer_mode = nil)
 
 Creates a new buffer, and adds it to [.buffers]. `buffer_mode` can optionally be
@@ -94,7 +99,8 @@ to [.windows] before the return of the method. Returns the newly created window.
 Opens the provided [file](fs/file.html). By default, unless `editor` specifies a
 specific editor to open the file into, the file is opened in the currently
 active editor. Emits the `file-opened` signal if the file was opened
-successfully.
+successfully. If the file was successfully opened, returns the [Buffer] and the
+[Editor] holding the buffer. Otherwise `nil` is returned.
 
 ### save_all ()
 

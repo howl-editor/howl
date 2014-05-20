@@ -84,6 +84,13 @@ class Application extends PropertyObject
     editor\grab_focus!
     editor
 
+  editor_for_buffer: (buffer) =>
+    for visible_editor in *@_editors
+      if visible_editor.buffer == buffer
+        return visible_editor
+
+    nil
+
   new_buffer: (buffer_mode) =>
     buffer_mode or= mode.by_name 'default'
     buffer = Buffer buffer_mode
@@ -115,7 +122,7 @@ class Application extends PropertyObject
     for b in *@buffers
       if b.file == file
         editor.buffer = b
-        return b
+        return b, editor
 
     buffer = @new_buffer mode.for_file file
     status, err = pcall ->
@@ -131,7 +138,7 @@ class Application extends PropertyObject
       nil
     else
       signal.emit 'file-opened', :file, :buffer
-      buffer
+      buffer, editor
 
   save_all: =>
     for b in *@buffers
