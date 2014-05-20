@@ -45,14 +45,21 @@ class File extends PropertyObject
 
   separator: jit.os == 'Windows' and '\\' or '/'
 
-  new: (target) =>
+  new: (target, cwd) =>
     error "missing parameter #1 for File()", 3 unless target
     t = typeof target
     if t == 'File'
       @gfile = target.gfile
       @path = target.path
     else
-      @gfile = if t == 'string' then @gfile = GFile.new_for_path tostring(target) else target
+      if t == 'string'
+        if cwd
+          @gfile = GFile.new_for_commandline_arg_and_cwd tostring(target), tostring(cwd)
+        else
+          @gfile = GFile.new_for_path tostring(target)
+      else
+        @gfile = target
+
       @path = @gfile.path
 
     super!

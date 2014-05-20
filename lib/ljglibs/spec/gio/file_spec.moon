@@ -11,6 +11,13 @@ describe 'GFile', ->
     os.remove p
     error err unless status
 
+  describe 'new_for_commandline_arg_and_cwd(path, cwd)', ->
+    it 'resolves a relative <path> from <cwd>', ->
+      assert.equals '/bin/ls', GFile.new_for_commandline_arg_and_cwd('ls', '/bin').path
+
+    it 'resolves an absolute <path> as is', ->
+      assert.equals '/bin/touch', GFile.new_for_commandline_arg_and_cwd('/bin/touch', '/home').path
+
   it '.path contains the path', ->
     assert.equals '/bin/ls', GFile('/bin/ls').path
 

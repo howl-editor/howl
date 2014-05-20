@@ -163,6 +163,8 @@ ffi.cdef [[
   } GFileCreateFlags;
 
   GFile * g_file_new_for_path (const char *path);
+  GFile * g_file_new_for_commandline_arg_and_cwd (const gchar *arg,
+                                                  const gchar *cwd);
 
   char * g_file_get_basename (GFile *file);
   char * g_file_get_uri (GFile *file);

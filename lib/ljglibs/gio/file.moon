@@ -27,6 +27,10 @@ core.define 'GFile', {
   }
 
   new_for_path: (p) -> gc_ptr C.g_file_new_for_path p
+
+  new_for_commandline_arg_and_cwd: (p, cwd) ->
+    gc_ptr C.g_file_new_for_commandline_arg_and_cwd p, cwd
+
   get_relative_path: (parent, descendant) ->
     g_string C.g_file_get_relative_path parent, descendant
 

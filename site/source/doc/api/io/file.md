@@ -151,10 +151,12 @@ The file's path, as a URI.
 
 ## Functions
 
-### File(target)
+### File(target, base_directory)
 
 Creates a new File instance, pointing to `target`. `target` can either a string,
-in which case it is considered a path, or another File instance.
+in which case it is considered a path, or another File instance. When target is
+a string holding a relative path, `base_directory` is used for resolving the
+relative path to an absolute path if given.
 
 ### expand_path (path)
 
