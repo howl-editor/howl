@@ -89,16 +89,17 @@ class Readline extends PropertyObject
       input_says_complete = @input.should_complete and @input\should_complete self
       should_complete = config_says_complete or input_says_complete
 
+    @_show_only_cmd_line!
     completions, options = if should_complete and @input.complete then @input\complete text, self
     options or= {}
     count = completions and #completions or 0
     @title = options.title if options.title
 
-    @_show_only_cmd_line!
     list_position = 1
     list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
 
     if count > 0
+      @_show_only_cmd_line!
       @completion_list = List @buffer, list_position
       list_options = options.list or {}
       with @completion_list
