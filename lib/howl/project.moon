@@ -1,4 +1,7 @@
-import VC from howl
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
+import VC, inputs from howl
 
 append = table.insert
 
@@ -29,6 +32,16 @@ class Project
       return project
 
     nil
+
+  get_for_file: (file) ->
+    project = Project.for_file file
+    if not project
+      directory = inputs.read 'directory', prompt: '(Please specify the project root): '
+      if directory
+        Project.add_root directory
+        project = Project.for_file file
+
+    project
 
   add_root: (root) ->
     for r in *Project.roots do return if r == root

@@ -39,15 +39,10 @@ command.register
   handler: ->
     file = app.editor and app.editor.buffer.file
     if file
-      project = Project.for_file file
+      project = Project.get_for_file file
       if project
         file = app.window.readline\read ':project-open ', 'project_file'
         app\open_file file if file
-      else
-        directory = app.window.readline\read '(Please specify the project root): ', 'directory'
-        if directory
-          Project.add_root directory
-          command.project_open!
     else
       log.warn "No current file nor project detected"
 
