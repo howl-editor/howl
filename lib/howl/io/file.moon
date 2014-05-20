@@ -53,10 +53,10 @@ class File extends PropertyObject
       @path = target.path
     else
       if t == 'string'
-        if cwd
-          @gfile = GFile.new_for_commandline_arg_and_cwd tostring(target), tostring(cwd)
-        else
-          @gfile = GFile.new_for_path tostring(target)
+        if cwd and not self.is_absolute target
+          target = GFile(tostring cwd)\get_child(target).path
+
+        @gfile = GFile tostring target
       else
         @gfile = target
 
