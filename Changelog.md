@@ -6,6 +6,8 @@
 substituted for `altL` so that pressing left alt is distinguishable from
 pressing alt + l (issue #29)
 
+- VI: Refuse to enter INSERT mode for a read-only buffer
+
 ## 0.2.1 (2014-05-09)
 
 - Added a new command `editor-cycle-case` that changes the case of the current

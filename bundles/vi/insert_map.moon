@@ -15,10 +15,17 @@ get_edit = (editor) ->
       (editor) -> editor\insert text
 
 insert_map = {
-  name: 'INSERT'
-  cursor_properties:
-    style: 'line'
-    blink_interval: config.cursor_blink_interval
+  __meta: {
+
+    on_enter: (editor) ->
+      error("Can not enter INSERT: buffer is read-only") if editor.buffer.read_only
+
+    name: 'INSERT'
+
+    cursor_properties:
+      style: 'line'
+      blink_interval: config.cursor_blink_interval
+  }
 
   escape: (editor) ->
     state.insert_edit = get_edit editor

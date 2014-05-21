@@ -40,7 +40,9 @@ copy_lines = (editor) ->
   state.reset!
 
 map = {
-  name: 'VI'
+  __meta: setmetatable {
+    name: 'VI'
+  }, __index: base_map.__meta
 
   editor: setmetatable {
     escape: (editor) ->

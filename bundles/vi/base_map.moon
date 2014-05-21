@@ -36,7 +36,9 @@ cursor_properties = {
 }
 
 map = {
-  :cursor_properties
+  __meta: {
+    :cursor_properties
+  }
 
   editor: {
     j: (editor) -> apply editor, (editor) -> editor.cursor\down!

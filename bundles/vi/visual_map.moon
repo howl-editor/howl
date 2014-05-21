@@ -23,7 +23,9 @@ substitute = (editor) ->
   cancel editor, 'insert'
 
 map = {
-  name: 'VISUAL'
+  __meta: setmetatable {
+    name: 'VISUAL'
+  }, __index: base_map.__meta
 
   editor: setmetatable {
     d: cut

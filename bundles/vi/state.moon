@@ -31,8 +31,10 @@ export change_mode = (editor, to, ...) ->
   error 'Invalid mode "' .. to .. '"' if not map
 
   if editor
-    editor.indicator.vi.label = '-- ' .. map.name .. ' --'
-    editor.cursor[k] = v for k,v in pairs map.cursor_properties
+    meta = map.__meta
+    meta.on_enter(editor) if meta.on_enter
+    editor.indicator.vi.label = '-- ' .. meta.name .. ' --'
+    editor.cursor[k] = v for k,v in pairs meta.cursor_properties
 
   mode = to
   bindings.pop! if active
