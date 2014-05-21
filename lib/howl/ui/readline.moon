@@ -95,11 +95,11 @@ class Readline extends PropertyObject
     count = completions and #completions or 0
     @title = options.title if options.title
 
-    list_position = 1
-    list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
-
     if count > 0
       @_show_only_cmd_line!
+      list_position = 1
+      list_position = @buffer\insert "#{options.caption}\n\n", 1 if options.caption
+
       @completion_list = List @buffer, list_position
       list_options = options.list or {}
       with @completion_list
