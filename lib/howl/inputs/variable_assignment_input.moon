@@ -46,8 +46,9 @@ options_list_options = (options, def, text, current_buffer) ->
 
 option_caption = (name, current_buffer, def) ->
   to_s = def.tostring or tostring
+  mode_val = current_buffer.mode.config and current_buffer.mode.config[name]
   caption = "Global value: #{to_s config[name]}\n"
-  caption ..= "For current mode: #{to_s current_buffer.mode.config[name]}\n"
+  caption ..= "For current mode: #{to_s mode_val}\n"
   caption .. "For current buffer: #{to_s current_buffer.config[name]}"
 
 class VariableAssignmentInput
