@@ -42,7 +42,7 @@ highlighter = (search, text) ->
 class ProjectFileInput
   new: =>
     if app.editor
-      file = app.editor.buffer.file
+      file = app.editor.buffer.file or app.editor.buffer.directory
       if file
         @project = Project.for_file file
         if @project

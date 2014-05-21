@@ -37,14 +37,15 @@ command.register
   name: 'project-open',
   description: 'Open project file'
   handler: ->
-    file = app.editor and app.editor.buffer.file
+    buffer = app.editor and app.editor.buffer
+    file = buffer and (buffer.file or buffer.directory)
     if file
       project = Project.get_for_file file
       if project
         file = app.window.readline\read ':project-open ', 'project_file'
         app\open_file file if file
     else
-      log.warn "No current file nor project detected"
+      log.warn "No file or directory associated with the current view"
 
 command.register
   name: 'save',

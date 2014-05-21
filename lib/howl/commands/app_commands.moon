@@ -311,7 +311,8 @@ command.register
   description: 'Runs an external command from within the project directory'
 
   input: ->
-    file = app.editor and app.editor.buffer.file
+    buffer = app.editor and app.editor.buffer
+    file = buffer.file or buffer.directory
     error "No file associated with the current view" unless file
     project = Project.get_for_file file
     error "No project associated with #{file}" unless project
