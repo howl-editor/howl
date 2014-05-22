@@ -9,6 +9,12 @@ describe 'inputs', ->
       assert.raises 'factory', -> inputs.register name: 'foo', description: 'foo'
       assert.raises 'description', -> inputs.register name: 'foo', factory: -> nil
 
+    it 'sets up a call meta method that correctly creates the input', ->
+      input = name: 'foo', description: 'call me!', factory: spy.new -> nil
+      inputs.register input
+      inputs.foo 1, 'two'
+      assert.spy(input.factory).was_called_with '', 1, 'two'
+
   it '.<name> allows direct indexing of inputs', ->
     def = name: 'foo', description: 'foo', factory: -> true
     inputs.register def

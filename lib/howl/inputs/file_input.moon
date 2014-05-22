@@ -38,9 +38,10 @@ class FileInput
 
   should_complete: => true
 
-  complete: (text, readline) =>
-    @_chdir(@directory, readline) unless @matcher
+  on_readline_available: (readline) =>
+    @_chdir(@directory, readline)
 
+  complete: (text, readline) =>
     if text == separator
       @_chdir(root_dir(@directory), readline)
     else if text == "~#{separator}"

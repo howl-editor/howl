@@ -28,10 +28,11 @@ Below you'll see a list of callbacks that inputs can provide. All callbacks are
 optional. All of the callbacks receive the input itself as the first parameter,
 which allows for inputs to be constructed as objects.
 
-### should_complete (input, readline)
+### close_on_cancel (readline)
 
-Called when determining whether the Readline should try to offer completions or
-not. `readline` is the [Readline] instance.
+Called when determining whether the Readline should hide if the cancels when in
+a completion list. The default behaviour is to close the completion list but
+keep the Readline open.
 
 ### complete (input, text, readline)
 
@@ -70,17 +71,9 @@ completions" as the completions are shown.
 to strings before displaying. Choosing one of these from the completion list
 will cause the chosen number to be returned from the read(), as a number.
 
-### update (input, text, readline)
+### on_cancelled (input, readline)
 
-Called whenever the text in the Readline changes. `text` is the current text in
-the Readline, which is being completed. `readline` is the
-[Readline] instance.
-
-### on_selection_changed(input, item, readline)
-
-Called whenever the currently selected item in the completion list changes.
-`item` is the newly selected item - this is one of the items from the `list`
-originally returned by `complete()`. `readline` is the [Readline] instance.
+Called if the user cancels the Readline, typically be pressing `escape`.
 
 ### on_completed (input, item, readline)
 
@@ -90,6 +83,17 @@ behaviour of the Readline after a completion has been accepted is to interpret
 it as a submit. However, if the *on_completed* callback returns `false`, the
 accept is considered as handled and further processing halted.
 
+### on_readline_available (input, readline)
+
+Called when the a Readline is available, indicating an interactive session.
+`readline` is the Readline instance.
+
+### on_selection_changed(input, item, readline)
+
+Called whenever the currently selected item in the completion list changes.
+`item` is the newly selected item - this is one of the items from the `list`
+originally returned by `complete()`. `readline` is the [Readline] instance.
+
 ### on_submit (input, value, readline)
 
 Called when the user submits the content in the Readline, either by accepting a
@@ -98,9 +102,16 @@ which is either the text currently in the Readline, or the selected item from a
 completion list. The callback can return `false` to halt further processing of
 the submit, in which case the Readline stays open.
 
-### on_cancelled (input, readline)
+### should_complete (input, readline)
 
-Called if the user cancels the Readline, typically be pressing `escape`.
+Called when determining whether the Readline should try to offer completions or
+not. `readline` is the [Readline] instance.
+
+### update (input, text, readline)
+
+Called whenever the text in the Readline changes. `text` is the current text in
+the Readline, which is being completed. `readline` is the
+[Readline] instance.
 
 ### value_for (input, value)
 
@@ -122,12 +133,6 @@ return howl.app.window.readline:read('Eval: ', eval_input)
 
 Entering "38 + 4" into the Readline and pressing `enter` now causes 42 to be
 returned.
-
-### close_on_cancel (readline)
-
-Called when determining whether the Readline should hide if the cancels when in
-a completion list. The default behaviour is to close the completion list but
-keep the Readline open.
 
 ## Input keymaps
 

@@ -7,7 +7,7 @@ class YesOrNoInput
   should_complete: -> true
   close_on_cancel: -> true
 
-  new: (@default) =>
+  new: (text, @default) =>
     @matcher = Matcher { 'Yes', 'No' }
 
   complete: (text) =>

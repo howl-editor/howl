@@ -7,7 +7,7 @@ register = (spec) ->
   for field in *{'name', 'description', 'factory'}
     error 'Missing field for input: "' .. field .. '"' if not spec[field]
 
-  inputs[spec.name] = setmetatable spec, __call: (input, ...) -> input.factory ...
+  inputs[spec.name] = setmetatable spec, __call: (input, ...) -> input.factory '', ...
 
 unregister = (name) ->
   inputs[name] = nil

@@ -27,7 +27,9 @@ describe 'File inputs', ->
       describe 'an instance', ->
         local input
 
-        before_each -> input = inputs[name]!
+        before_each ->
+          input = inputs[name]!
+          input\on_readline_available readline
 
         it 'should_complete() returns true', ->
           assert.is_true input\should_complete!
@@ -74,10 +76,12 @@ describe 'File inputs', ->
   describe 'FileInput', ->
     describe 'complete(text, readline)', ->
       it 'returns all files matching <text>', ->
-        input = inputs.file!
         directory\join('test.lua')\touch!
         directory\join('foo.lua')\touch!
         directory\join('foodir')\mkdir!
+
+        input = inputs.file!
+        input\on_readline_available readline
 
         readline.text = 'foo'
         files = input\complete 'foo', readline
@@ -92,12 +96,14 @@ describe 'File inputs', ->
         directory\join('foo.lua')\touch!
         directory\join('foodir')\mkdir!
         directory\join('bardir')\mkdir!
+        input\on_readline_available readline
 
         readline.text = 'foo'
         files = input\complete 'foo', readline
         assert.same { 'foodir/' }, files
 
       it 'always includes the current directory as well', ->
+        input\on_readline_available readline
         readline.text = ''
         files = input\complete '', readline
         assert.same { './' }, files

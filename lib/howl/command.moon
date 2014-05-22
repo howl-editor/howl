@@ -47,6 +47,7 @@ class State
       readline.prompt ..= name .. ' '
       readline.text = text or ''
       @input = load_input @cmd.input, readline.text
+      @_dispatch 'on_readline_available', readline
 
     @_dispatch 'update', text, readline
 

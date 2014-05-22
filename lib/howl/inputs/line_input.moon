@@ -5,7 +5,7 @@ import Matcher from howl.util
 import highlight from howl.ui
 
 class LineInput
-  new: (@title, @editor, @lines = editor.buffer.lines) =>
+  new: (text, @title, @editor, @lines = editor.buffer.lines) =>
     @completion_options = title: @title, list: column_styles: { 'string' }
     items = [{tostring(l.nr), l.chunk} for l in *@lines]
     @matcher = Matcher items, preserve_order: true
