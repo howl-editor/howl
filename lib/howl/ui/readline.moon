@@ -291,7 +291,7 @@ class Readline extends PropertyObject
       item = @completion_list.selection
       @_show_only_cmd_line!
       value = completion_text item
-      @text = @text\gsub('[^%s=]+$', '') .. value
+      @text = @text\gsub('[^%s=./]+$', '') .. value
       @_update_input!
       if @input.on_completed and @input\on_completed(item, self) == false
         @complete!

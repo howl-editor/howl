@@ -65,7 +65,15 @@ describe 'File', ->
       assert.is_false File.is_absolute 'bin\\ls'
 
   it '.basename returns the basename of the path', ->
-    assert.equal File('/foo/base.ext').basename, 'base.ext'
+    assert.equal 'base.ext', File('/foo/base.ext').basename
+
+  describe '.display_name', ->
+
+    it 'is the same as the basename for files', ->
+      assert.equal 'base.ext', File('/foo/base.ext').display_name
+
+    it 'has a trailing separator for directories', ->
+      assert.equal 'bin/', File('/usr/bin').display_name
 
   it '.extension returns the extension of the path', ->
     assert.equal File('/foo/base.ext').extension, 'ext'

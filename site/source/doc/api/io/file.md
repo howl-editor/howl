@@ -23,7 +23,7 @@ Holds the directory separator character.
 
 ### basename
 
-The basename of the file name.
+The basename of the file.
 
 ```lua
   File('/foo/base.ext').basename -- => 'base.ext'
@@ -45,6 +45,10 @@ A list of children for the file, as File instances.
 The contents of the file. Provides an easy way of reading a file's content in
 one go. This is also writeable - assigning to this causes the file's content on
 disk to be replaced with the assigned value.
+
+### display_name
+
+The basename of the file, but with a trailing separator for directories.
 
 ### etag
 

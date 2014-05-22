@@ -10,13 +10,6 @@ append = table.insert
 
 separator = File.separator
 
-display_name = (directory, file) ->
-  return ".#{separator}" if directory == file
-
-  name = file.basename
-  name ..= separator if file.is_directory
-  name
-
 root_dir = (file) ->
   while file.parent
     file = file.parent
@@ -24,6 +17,10 @@ root_dir = (file) ->
   file
 
 home_dir = -> File glib.get_home_dir!
+
+display_name = (file, base_directory) ->
+  return ".#{separator}" if file == base_directory
+  file.display_name
 
 class FileInput
   new: (text, @directory_reader) =>
@@ -86,7 +83,7 @@ class FileInput
       return false if d2 and not d1
       f1.path < f2.path
 
-    names = [display_name(directory, c) for c in *children]
+    names = [display_name(c, directory) for c in *children]
     @matcher = Matcher names
     @directory = directory
 
