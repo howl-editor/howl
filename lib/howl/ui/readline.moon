@@ -67,6 +67,8 @@ class Readline extends PropertyObject
     @text = opts.text or ''
     @completion_unwanted = false
     @seen_interaction = false
+
+    input\on_readline_available @ if input.on_readline_available
     @_update_input! unless @text.is_blank
     @complete!
     coroutine.yield!
