@@ -88,9 +88,9 @@ howl.aux.lpeg_lexer ->
       sequence({
         capture('operator', '('),
         any({
-          identifier,
           -#P')' * operator,
           special,
+          identifier,
           capture('whitespace', blank^1),
           number,
           V'string'
