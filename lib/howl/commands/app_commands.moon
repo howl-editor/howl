@@ -49,7 +49,14 @@ command.register
   name: 'buffer-reload',
   description: 'Reloads the current buffer from file'
   handler: ->
-    app.editor.buffer\reload!
+    buffer = app.editor.buffer
+    if buffer.modified
+      input = inputs.yes_or_no false
+      unless inputs.read input, prompt: "Buffer is modified, reload anyway? "
+        log.info "Not reloading; buffer is untouched"
+        return
+
+    buffer\reload true
     log.info "Buffer reloaded from file"
 
 command.alias 'buffer-reload', 'reload-buffer', deprecated: true

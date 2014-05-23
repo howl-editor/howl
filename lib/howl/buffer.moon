@@ -61,11 +61,14 @@ class Buffer extends PropertyObject
       @_file = file
       @title = file_title file
 
-      if file.exists and not @modified
+      if file.exists
         @text = file.contents
         @modified = false
         @can_undo = false
         @sync_etag = file.etag
+      else
+        @sync_etag = nil
+
 
   @property mode:
     get: => @_mode
@@ -262,10 +265,12 @@ class Buffer extends PropertyObject
       return ''
     ffi.string @sci\get_range_pointer(byte_start_pos - 1, byte_size), byte_size
 
-  reload: =>
+  reload: (force = false) =>
     error "Cannot reload buffer '#{self}': no associated file", 2 unless @file
+    return false if @modified and not force
     @file = @file
     signal.emit 'buffer-reloaded', buffer: self
+    true
 
   @property sci:
     get: =>

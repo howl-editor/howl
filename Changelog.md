@@ -8,6 +8,18 @@ pressing alt + l (issue #29)
 
 - VI: Refuse to enter INSERT mode for a read-only buffer
 
+- `buffer-reload` command: Prompt if a buffer is modified, and force a reload if
+requested (issue #31).
+
+### API changes
+
+- `Buffer.file`: Assigning a new file causes the buffer contents to always be
+reloaded if the file exists, regardless of the modification status.
+
+- `Buffer.reload()`: `reload` now takes an additional parameter, `force`, that
+allows reloading a buffer even if the buffer is currently modified.
+
+
 ## 0.2.1 (2014-05-09)
 
 - Added a new command `editor-cycle-case` that changes the case of the current

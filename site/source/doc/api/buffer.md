@@ -69,9 +69,10 @@ The line ending currently in effect for the buffer. One of:
 ### file
 
 An optional file associated with the current buffer. Assigning to this causes
-the buffer to be loaded with the file's contents, _provided_ that the file
-exists and that the buffer is not currently [modified](#modified). The buffer's
-[title](#title) is automatically updated from the file's name.
+the buffer to be associated with assigned file, and loaded with the file's
+contents. If the file does not exist, the buffer's current contents will be
+retained. The buffer's [title](#title) is automatically updated from the file's
+name as part of the assignment.
 
 ### last_shown
 
@@ -196,11 +197,13 @@ content is lexed up until `end_pos`.
 
 Redo the last, previously [undo](#undo)ne, buffer modification.
 
-### reload()
+### reload (force = false)
 
 Reloads the buffer contents from its associated [file](#file). Raises an error
 if the buffer does not have any associated file. Emits the `buffer-reloaded`
-signal.
+signal. Returns `true` if the buffer was successfully loaded and `false`
+otherwise. A modified buffer will not be reloaded (with `false` being returned),
+unless `force` is true.
 
 ### replace(pattern, replacement)
 

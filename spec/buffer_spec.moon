@@ -104,12 +104,12 @@ describe 'Buffer', ->
             b.file = file
             assert.is_false b.can_undo
 
-      it 'keeps the existing buffer text if the buffer is modified', ->
+      it 'overwrites any existing buffer text even if the buffer is modified', ->
         b.text = 'foo'
         with_tmpfile (file) ->
           file.contents = 'yes sir'
           b.file = file
-          assert.equal b.text, 'foo'
+          assert.equal b.text, 'yes sir'
 
     it 'keeps the existing buffer text if the file does not exist', ->
       b.text = 'foo'
@@ -475,18 +475,39 @@ describe 'Buffer', ->
       assert.has_error -> buffer'abc'\sub 1, 4
       assert.has_error -> buffer'abc'\sub 5, 6
 
-  describe 'reload()', ->
-    it 'reloads the buffer contents from file', ->
+  describe 'reload(force = false)', ->
+    it 'reloads the buffer contents from file and returns true', ->
       with_tmpfile (file) ->
         b = buffer ''
         file.contents = 'hello'
         b.file = file
         file.contents = 'there'
-        b\reload!
+        assert.is_true b\reload!
         assert.equal 'there', b.text
 
     it 'raises an error if the buffer is not associated with a file', ->
       assert.raises 'file', -> Buffer!\reload!
+
+    context 'when the buffer is modified', ->
+      it 'leaves the buffer alone and returns false', ->
+        with_tmpfile (file) ->
+          b = buffer ''
+          file.contents = 'hello'
+          b.file = file
+          b\append ' world'
+          file.contents = 'there'
+          assert.is_false b\reload!
+          assert.equal 'hello world', b.text
+
+      it 'specifying <force> as true reloads the buffer anyway', ->
+        with_tmpfile (file) ->
+          b = buffer ''
+          file.contents = 'hello'
+          b.file = file
+          b\append ' world'
+          file.contents = 'there'
+          assert.is_true b\reload true
+          assert.equal 'there', b.text
 
   it '#buffer returns the number of characters in the buffer', ->
     assert.equal 5, #buffer('hello')
