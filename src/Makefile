@@ -12,8 +12,8 @@ LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
 LUAJIT_URL = http://nordman.org/mirror/luajit/$(LUAJIT_VER).tar.gz
 
-SCINTILLA_VER = scintilla341
-SCINTILLA_CHECKSUM = d01e031bec3f72d1c5fd6f716f14e0ed
+SCINTILLA_VER = scintilla342
+SCINTILLA_CHECKSUM = 6a6fb89faf787b70f20a4df1cc7f3e6e
 SCINTILLA_URL = http://prdownloads.sourceforge.net/scintilla/$(SCINTILLA_VER).tgz?download
 SCINTILLA = deps/$(SCINTILLA_VER)
 SCINTILLA_IFACE = $(SCINTILLA)/include/Scintilla.iface
@@ -55,9 +55,6 @@ $(SCINTILLA):
 	@tools/download $(SCINTILLA_URL) $(SCINTILLA_CHECKSUM) tar xzf {file} -C deps
 	@mv deps/scintilla $(SCINTILLA)
 	@perl -piorig -e 's/LINK_LEXER\(\w+\);//' $(SCINTILLA)/src/Catalogue.cxx
-	@echo Applying patches for Scintilla..
-	@cd $(SCINTILLA) && patch -p0 < ../../deps-patches/scintilla-gtk3-flicker.patch
-	@cd $(SCINTILLA) && patch -p1 < ../../deps-patches/scintilla-invisible-cursor.patch
 
 $(SCINTILLA_ARCHIVE): $(SCINTILLA)
 	cd ${SCINTILLA}/gtk && $(MAKE) $(SCINTILLA_DEFS)
