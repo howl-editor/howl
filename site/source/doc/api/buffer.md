@@ -71,7 +71,7 @@ The line ending currently in effect for the buffer. One of:
 An optional file associated with the current buffer. Assigning to this causes
 the buffer to be associated with assigned file, and loaded with the file's
 contents. If the file does not exist, the buffer's current contents will be
-retained. The buffer's [title](#title) is automatically updated from the file's
+emptied. The buffer's [title](#title) is automatically updated from the file's
 name as part of the assignment.
 
 ### last_shown

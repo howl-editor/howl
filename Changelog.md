@@ -17,7 +17,8 @@ requested (issue #31).
 buffer's content to a specified file.
 
 - `Buffer.file`: Assigning a new file causes the buffer contents to always be
-reloaded if the file exists, regardless of the modification status.
+reloaded, regardless of the modification status. If the file does not exist, the
+buffer's contents will be emptied.
 
 - `Buffer.reload()`: `reload` now takes an additional parameter, `force`, that
 allows reloading a buffer even if the buffer is currently modified.

@@ -57,18 +57,17 @@ class Buffer extends PropertyObject
   @property file:
     get: => @_file
     set: (file) =>
-      buffer_titles[@_title] = nil if @_title
-      @_file = file
-      @title = file_title file
+      @_associate_with_file file
 
       if file.exists
         @text = file.contents
-        @modified = false
-        @can_undo = false
         @sync_etag = file.etag
       else
+        @text = ''
         @sync_etag = nil
 
+      @modified = false
+      @can_undo = false
 
   @property mode:
     get: => @_mode
@@ -231,8 +230,7 @@ class Buffer extends PropertyObject
       signal.emit 'buffer-saved', buffer: self
 
   save_as: (file) =>
-    file\delete! if file.exists
-    @file = file
+    @_associate_with_file file
     @save!
 
   as_one_undo: (f) =>
@@ -311,6 +309,11 @@ class Buffer extends PropertyObject
 
   @property scis: get: =>
     [sci for _, sci in pairs @_scis when sci != nil]
+
+  _associate_with_file: (file) =>
+    buffer_titles[@_title] = nil if @_title
+    @_file = file
+    @title = file_title file
 
   _on_text_inserted: (args) =>
     @_len = nil
