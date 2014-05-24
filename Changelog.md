@@ -2,6 +2,14 @@
 
 ## Unreleased (in master)
 
+- Added a new comprehensive API for launching and controlling external processes
+(howl.io.Process).
+
+- Added two new commands for launching external processes: `exec` and
+`project-exec`. The former opens up a prompt for launching an external process
+from the directory of the current file (if available), whereas the latter
+launches an external process from the base directory of the current project.
+
 - Substituted certain key names to avoid ambiguity, e.g. `alt_l` now gets
 substituted for `altL` so that pressing left alt is distinguishable from
 pressing alt + l (issue #29)
@@ -11,10 +19,10 @@ pressing alt + l (issue #29)
 - `buffer-reload` command: Prompt if a buffer is modified, and force a reload if
 requested (issue #31).
 
-### API changes
-
 - Added new method, `Buffer.save_as(file)`, for associating with and saving a
 buffer's content to a specified file.
+
+### API changes
 
 - `Buffer.file`: Assigning a new file causes the buffer contents to always be
 reloaded, regardless of the modification status. If the file does not exist, the
