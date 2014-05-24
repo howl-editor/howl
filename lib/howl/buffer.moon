@@ -230,6 +230,11 @@ class Buffer extends PropertyObject
       @sync_etag = @file.etag
       signal.emit 'buffer-saved', buffer: self
 
+  save_as: (file) =>
+    file\delete! if file.exists
+    @file = file
+    @save!
+
   as_one_undo: (f) =>
     @sci\begin_undo_action!
     status, ret = pcall f

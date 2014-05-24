@@ -13,6 +13,9 @@ requested (issue #31).
 
 ### API changes
 
+- Added new method, `Buffer.save_as(file)`, for associating with and saving a
+buffer's content to a specified file.
+
 - `Buffer.file`: Assigning a new file causes the buffer contents to always be
 reloaded if the file exists, regardless of the modification status.
 

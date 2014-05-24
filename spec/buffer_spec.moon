@@ -420,6 +420,34 @@ describe 'Buffer', ->
             assert.equal 'look mah no newline!', b.text
             assert.equal file.contents, b.text
 
+  describe 'save_as(file)', ->
+    context 'when <file> does not exist', ->
+      it 'saves the buffer content in the newly created file', ->
+        with_tmpfile (file) ->
+          file\delete!
+          b = buffer 'new'
+          b\save_as file
+          assert.equal 'new', file.contents
+
+    context 'when <file> exists', ->
+      it 'overwrites any previous content with the buffer contents', ->
+        with_tmpfile (file) ->
+          file.contents = 'old'
+          b = buffer 'new'
+          b\save_as file
+          assert.equal 'new', file.contents
+
+    it 'associates the buffer with <file> henceforth', ->
+      with_tmpfile (file) ->
+        file.contents = 'orig'
+        b = buffer ''
+        b.file = file
+        with_tmpfile (new_file) ->
+          b.text = 'nuevo'
+          b\save_as new_file
+          assert.equal 'nuevo', new_file.contents
+          assert.equal new_file, b.file
+
   describe 'byte_offset(char_offset)', ->
     it 'returns the byte offset for the given <char_offset>', ->
       b = buffer 'äåö'

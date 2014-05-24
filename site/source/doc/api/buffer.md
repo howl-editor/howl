@@ -219,6 +219,11 @@ trailing white-space and ensures that there's an eol at the end of the file,
 according to the `strip_trailing_whitespace` and `ensure_newline_at_eof`
 configuration variables.
 
+### save_as (file)
+
+Associates the buffer with, and saves the buffer's content to `file`. The save
+is performed using the same semantics as for [save()](#save).
+
 ### sub(start_pos, end_pos)
 
 Returns the text from character offset `start_pos` to `end_pos` (both

@@ -62,9 +62,8 @@ command.register
         return
 
     buffer\save!
-    nr_lines = #buffer.lines
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
-      nr_lines, #buffer
+      #buffer.lines, #buffer
 
 command.alias 'save', 'w'
 
@@ -80,8 +79,9 @@ command.register
         return
 
     buffer = app.editor.buffer
-    buffer.file = file
-    command.save!
+    buffer\save_as file
+    log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
+      #buffer.lines, #buffer
 
 command.register
   name: 'close',
