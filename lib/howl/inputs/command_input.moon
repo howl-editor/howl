@@ -83,7 +83,9 @@ command_input = {
       return match_command text
 
   on_readline_available: (readline) =>
+    text = readline.text
     @chdir(@directory, readline)
+    readline.text = text
 
   on_completed: (value, readline) =>
     text = readline.text

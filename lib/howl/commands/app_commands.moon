@@ -323,7 +323,7 @@ command.register
     error "No file associated with the current view" unless file
     project = Project.get_for_file file
     error "No project associated with #{file}" unless project
-    inputs.command nil, project.root
+    inputs.command project.root
 
   handler: launch_cmd
 

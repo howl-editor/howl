@@ -22,9 +22,9 @@ parse_cmd = (text) ->
 load_input = (input, text) ->
   return nil if not input
   if type(input) == 'string'
-    factory = inputs[input]
-    if not factory then error "Could not find input for `#{input}`"
-    input = factory
+    def = inputs[input]
+    if not def then error "Could not find input for `#{input}`"
+    input = def.factory
 
   input text
 
