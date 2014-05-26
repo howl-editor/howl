@@ -41,11 +41,11 @@ signal.connect 'buffer-title-set', (args) ->
 
 class Editor extends PropertyObject
 
-  register_indicator: (id, placement = 'bottom_right') ->
+  register_indicator: (id, placement = 'bottom_right', factory) ->
     if not indicator_placements[placement]
       error('Illegal placement "' .. placement .. '"', 2)
 
-    indicators[id] = :id, :placement
+    indicators[id] = :id, :placement, :factory
 
   unregister_indicator: (id) ->
     e\_remove_indicator id for e in *editors!
@@ -146,6 +146,16 @@ class Editor extends PropertyObject
       prev_buffer = @_buf
       @_buf = buffer
       @indicator.title.label = buffer.title
+
+      if buffer.activity and buffer.activity.is_running!
+        with @indicator.activity
+          \start!
+          \show!
+      elseif rawget(@indicator, 'activity')
+        with @indicator.activity
+          \stop!
+          \hide!
+
       @sci\set_doc_pointer(buffer.doc)
 
       @_set_config_settings!
@@ -482,7 +492,8 @@ class Editor extends PropertyObject
     error 'Invalid indicator id "' .. id .. '"', 2 if not def
     y, x = def.placement\match('^(%w+)_(%w+)$')
     bar = y == 'top' and @header or @footer
-    indic = bar\add x, id
+    widget = def.factory and def.factory! or nil
+    indic = bar\add x, id, widget
     indics[id] = indic
     indic
 
@@ -610,6 +621,7 @@ class Editor extends PropertyObject
 with Editor
   .register_indicator 'title', 'top_left'
   .register_indicator 'position', 'bottom_right'
+  .register_indicator 'activity', 'top_right', -> Gtk.Spinner!
 
 -- Config variables
 

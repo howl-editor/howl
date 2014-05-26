@@ -165,7 +165,7 @@ Constructs a new Editor instance, displaying the specified `buffer`. You would
 typically not use this directly, but instead create a new editor via
 [Application.new_editor](../application.html#new_editor).
 
-### register_indicator (id, placement = 'bottom_right')
+### register_indicator (id, placement = 'bottom_right', factory = nil)
 
 Registers an indicator with the specified `id`. Placement indicates where the
 indicator should be place. Possible values (strings) are:
@@ -174,6 +174,10 @@ indicator should be place. Possible values (strings) are:
 - `top_right`: Adds the the indicator to the top indicator bar, to the right.
 - `bottom_left`: Adds the the indicator to the bottom indicator bar, to the left.
 - `bottom_right`: Adds the the indicator to the bottom indicator bar, to the right.
+
+An indicator is a simple label by default, but it's possible to add an arbitrary
+widget as an indicator via the `factory` parameter. If specified, `factory` must
+be a callable object that when called returns a Gtk widget.
 
 ### unregister_indicator (id)
 

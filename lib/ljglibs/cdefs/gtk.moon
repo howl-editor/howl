@@ -263,4 +263,10 @@ ffi.cdef [[
   void gtk_clipboard_set_text (GtkClipboard *clipboard,
                                const gchar *text,
                                gint len);
+
+  /* GtkSpinner */
+  typedef struct {} GtkSpinner;
+  GtkSpinner * gtk_spinner_new (void);
+  void gtk_spinner_start (GtkSpinner *spinner);
+  void gtk_spinner_stop (GtkSpinner *spinner);
 ]]
