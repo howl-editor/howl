@@ -484,25 +484,27 @@ describe 'Buffer', ->
   describe 'sub(start_pos, end_pos)', ->
     it 'returns the text between start_pos and end_pos, both inclusive', ->
       b = buffer 'hållö\nhållö\n'
-      assert.equal b\sub(1, 1), 'h'
-      assert.equal b\sub(2, 2), 'å'
-      assert.equal b\sub(1, 5), 'hållö'
-      assert.equal b\sub(1, 12), 'hållö\nhållö\n'
-      assert.equal b\sub(8, 11), 'ållö'
+      assert.equal 'h', b\sub(1, 1)
+      assert.equal 'å', b\sub(2, 2)
+      assert.equal 'hållö', b\sub(1, 5)
+      assert.equal 'hållö\nhållö\n', b\sub(1, 12)
+      assert.equal 'ållö', b\sub(8, 11)
+      assert.equal '\n', b\sub(12, 12)
+      assert.equal '\n', b\sub(12, 13)
 
     it 'handles negative indices by counting from end', ->
       b = buffer 'hållö\nhållö\n'
-      assert.equal b\sub(-1, -1), '\n'
-      assert.equal b\sub(-6, -1), 'hållö\n'
-      assert.equal b\sub(-12, -1), 'hållö\nhållö\n'
+      assert.equal '\n', b\sub(-1, -1)
+      assert.equal 'hållö\n', b\sub(-6, -1)
+      assert.equal 'hållö\nhållö\n', b\sub(-12, -1)
 
     it 'returns empty string for start_pos > end_pos', ->
       b = buffer 'abc'
       assert.equal '', b\sub(2, 1)
 
-    it 'raises error for out of bounds offsets', ->
-      assert.has_error -> buffer'abc'\sub 1, 4
-      assert.has_error -> buffer'abc'\sub 5, 6
+    it 'handles out-of-bounds offsets gracefully', ->
+      assert.equals '', buffer'abc'\sub 4, 6
+      assert.equals 'abc', buffer'abc'\sub 1, 6
 
   describe 'reload(force = false)', ->
     it 'reloads the buffer contents from file and returns true', ->
