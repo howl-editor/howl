@@ -1,7 +1,7 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
-import app from howl
+import app, mode from howl
 import ActionBuffer from howl.ui
 import File from howl.io
 append = table.insert
@@ -27,6 +27,40 @@ goto_location = (location) ->
     editor.cursor.line = location.line
     editor.line_at_center = location.line
 
+ProcessMode = {
+
+  keymap: {
+    editor: {
+      return: (editor) ->
+        location = resolve_location editor.buffer.directory, editor.current_line
+        if location
+          goto_location(location)
+        else
+          log.error 'No file reference detected in the current line'
+
+      ctrl_c: (editor) ->
+        if editor.selection.empty
+          process = editor.buffer.process
+          if process.exited
+            log.info "#{process.pid}: SIGINT is superflous - already terminated"
+          else
+            process\send_signal 'INT'
+            log.info "Sent SIGINT to #{process.pid}"
+       else
+         editor.selection\copy!
+
+      ctrl_backslash: (editor) ->
+        process = editor.buffer.process
+        if process.exited
+          log.info "#{process.pid}: SIGKILL is superflous - already terminated"
+        else
+          process\send_signal 'KILL'
+          log.info "Sent SIGKILL to #{process.pid}"
+     }
+  }
+
+}
+
 class ProcessBuffer extends ActionBuffer
   new: (@process) =>
     super!
@@ -34,6 +68,7 @@ class ProcessBuffer extends ActionBuffer
     @activity = command_activity @process
     @directory = @process.working_directory
     @title = "[#{@directory.short_path}]$ #{@process.command_line} (running)"
+    @mode = mode.by_name 'process'
 
     @append '[', 'operator'
     @append tostring(@process.working_directory.short_path), 'special'
@@ -75,34 +110,9 @@ class ProcessBuffer extends ActionBuffer
     @process\send_signal('KILL') unless @process.exited
     super!
 
-  keymap: {
-    editor: {
-      return: (editor) ->
-        location = resolve_location editor.buffer.directory, editor.current_line
-        if location
-          goto_location(location)
-        else
-          log.error 'No file reference detected in the current line'
-
-      ctrl_c: (editor) ->
-        if editor.selection.empty
-          process = editor.buffer.process
-          if process.exited
-            log.info "#{process.pid}: SIGINT is superflous - already terminated"
-          else
-            process\send_signal 'INT'
-            log.info "Sent SIGINT to #{process.pid}"
-       else
-         editor.selection\copy!
-
-      ctrl_backslash: (editor) ->
-        process = editor.buffer.process
-        if process.exited
-          log.info "#{process.pid}: SIGKILL is superflous - already terminated"
-        else
-          process\send_signal 'KILL'
-          log.info "Sent SIGKILL to #{process.pid}"
-     }
-  }
+howl.mode.register {
+  name: 'process'
+  create: -> ProcessMode
+}
 
 return ProcessBuffer
