@@ -169,7 +169,6 @@ return {
 
     bracebad:
       color: red
-      background: orange
 
     h1:
       color: white

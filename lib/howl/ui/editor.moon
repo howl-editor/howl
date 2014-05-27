@@ -550,6 +550,7 @@ class Editor extends PropertyObject
         if is_brace
           @sci\brace_bad_light current_pos
           @_brace_highlighted = true
+          return
         else
           matching_pos = @sci\brace_match current_pos - 1
           current_pos -= 1 if matching_pos > 0

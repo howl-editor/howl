@@ -16,11 +16,16 @@ pressing alt + l (issue #29)
 
 - VI: Refuse to enter INSERT mode for a read-only buffer
 
+- Added new method, `Buffer.save_as(file)`, for associating with and saving a
+buffer's content to a specified file.
+
+### Bugs fixed
+
 - `buffer-reload` command: Prompt if a buffer is modified, and force a reload if
 requested (issue #31).
 
-- Added new method, `Buffer.save_as(file)`, for associating with and saving a
-buffer's content to a specified file.
+- Fix highlighting of "bad braces", i.e. braches for which no match could be
+found.
 
 ### API changes
 

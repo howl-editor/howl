@@ -191,7 +191,7 @@ return {
       background: blue
 
     bracebad:
-      color: red
+      color: white
       background: orange
 
     h1:
