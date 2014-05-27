@@ -83,7 +83,26 @@ class ProcessBuffer extends ActionBuffer
           goto_location(location)
         else
           log.error 'No file reference detected in the current line'
-    }
+
+      ctrl_c: (editor) ->
+        if editor.selection.empty
+          process = editor.buffer.process
+          if process.exited
+            log.info "#{process.pid}: SIGINT is superflous - already terminated"
+          else
+            process\send_signal 'INT'
+            log.info "Sent SIGINT to #{process.pid}"
+       else
+         editor.selection\copy!
+
+      ctrl_backslash: (editor) ->
+        process = editor.buffer.process
+        if process.exited
+          log.info "#{process.pid}: SIGKILL is superflous - already terminated"
+        else
+          process\send_signal 'KILL'
+          log.info "Sent SIGKILL to #{process.pid}"
+     }
   }
 
 return ProcessBuffer
