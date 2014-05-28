@@ -41,22 +41,21 @@ describe 'ActionBuffer', ->
         buf\insert 'hello', 1, 'what?'
         assert.equal style.at_pos(buf, 1), 'default'
 
-    context 'when object is a Chunk', ->
-      it 'inserts the corresponding text and returns the next position', ->
+    context 'when object is a styled object (.styles is present)', ->
+      it 'inserts the corresponding .text and returns the next position', ->
         buf\insert 'foo', 1
         chunk = buf\chunk(1, 3)
         assert.equal 7, buf\insert chunk, 4
         assert.equal 'foofoo', buf.text
 
-      it 'styles the inserted text using the same styling as for the chunk', ->
-        buf\insert 'foo', 1, 'keyword'
-        buf\insert 'bar', 4, 'number'
-        chunk = buf\chunk(1, 6)
-        buf\insert chunk, 7
-        assert.equal 'foobarfoobar', buf.text
-        chunk = buf\chunk(7, 12)
-        assert.equal 'keyword', (style.at_pos(buf, 7))
-        assert.equal 'number', (style.at_pos(buf, 10))
+      it 'styles the inserted .text using .styles for the styling', ->
+        buf\insert {text: 'styled', styles: { 2, 'keyword', 3, 3, 'number', 6}}, 1
+        assert.equal 'default', (style.at_pos(buf, 1))
+        assert.equal 'keyword', (style.at_pos(buf, 2))
+        assert.equal 'number', (style.at_pos(buf, 3))
+        assert.equal 'number', (style.at_pos(buf, 5))
+        assert.equal 'default', (style.at_pos(buf, 6))
+        assert.equal 'styled', buf.text
 
   describe '.append(text, style)', ->
 

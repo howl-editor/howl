@@ -1,4 +1,4 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 import Buffer, Scintilla, styler from howl
@@ -11,8 +11,8 @@ class ActionBuffer extends Buffer
     @sci\set_lexer Scintilla.SCLEX_NULL
 
   insert: (object, pos, style_name) =>
-    pos_after = if typeof(object) == 'Chunk'
-      @_insert_chunk(object, pos)
+    pos_after = if object.styles
+      @_insert_styled_object(object, pos)
     else
       super object, pos
 
@@ -23,8 +23,8 @@ class ActionBuffer extends Buffer
 
   append: (object, style_name) =>
     start_pos = @length
-    pos_after = if typeof(object) == 'Chunk'
-      @_insert_chunk(object, @length + 1)
+    pos_after = if object.styles
+      @_insert_styled_object(object, @length + 1)
     else
       super object
 
@@ -39,10 +39,10 @@ class ActionBuffer extends Buffer
     @sci\start_styling start_pos - 1, 0xff
     @sci\set_styling end_pos - start_pos, style_num
 
-  _insert_chunk: (chunk, pos) =>
-    super\insert chunk.text, pos
+  _insert_styled_object: (object, pos) =>
+    super\insert object.text, pos
     b_start = @byte_offset pos
-    styler.apply self, b_start, b_start + #chunk.text, chunk.styles
-    pos + #chunk
+    styler.apply self, b_start, b_start + #object.text, object.styles
+    pos + #object.text
 
 return ActionBuffer
