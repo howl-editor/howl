@@ -323,12 +323,12 @@ command.register
     error "No file associated with the current view" unless file
     project = Project.get_for_file file
     error "No project associated with #{file}" unless project
-    inputs.command project.root
+    inputs.external_command project.root
 
   handler: launch_cmd
 
 command.register
   name: 'exec',
   description: 'Runs an external command'
-  input: 'command'
+  input: 'external_command'
   handler: launch_cmd

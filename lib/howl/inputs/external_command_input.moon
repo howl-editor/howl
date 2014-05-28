@@ -71,7 +71,7 @@ get_cwd = ->
   directory = buffer.file and buffer.file.parent or buffer.directory
   directory or glib.get_current_dir!
 
-command_input = {
+external_command_input = {
   should_complete: (readline) => should_auto_match_file readline.text
 
   complete: (text, readline) =>
@@ -115,9 +115,9 @@ command_input = {
 }
 
 howl.inputs.register {
-  name: 'command',
+  name: 'external_command',
   description: 'Returns a directory and a command to run within the directory',
   factory: (text, working_directory) ->
     directory = File(working_directory or get_cwd!)
-    setmetatable {:directory}, __index: command_input
+    setmetatable {:directory}, __index: external_command_input
 }
