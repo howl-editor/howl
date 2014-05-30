@@ -21,21 +21,45 @@ class Searcher
   new: (editor) =>
     @editor = editor
     @last_search = nil
+    @last_method = 'forward_to'
 
-  forward_to: (search) =>
+  forward_to: (search) => @jump_to search, 'forward'
+
+  backward_to: (search) => @jump_to search, 'backward'
+
+  jump_to: (search, direction = 'forward') =>
     highlight.remove_all 'search', @editor.buffer
 
     pos = @editor.cursor.pos
+    if @active and direction == 'backward'
+        -- adjust pos so current match can grow to right of cursor
+        pos += search.ulen - 1
+
     unless @active
       @_init!
-      pos += 1
+      if direction == 'forward'
+        pos += 1
+      else
+        pos -= 1
 
-    start_pos, end_pos = @text\ufind search, pos, true
+    find = nil
+    wrap_pos = nil
+    wrap_msg = ''
+    if direction == 'forward'
+      find = @text.ufind
+      wrap_pos = 1
+      wrap_msg = 'Search hit BOTTOM, continuing at TOP'
+    else
+      find = @text.urfind
+      wrap_pos = -1
+      wrap_msg = 'Search hit TOP, continuing at BOTTOM'
+
+    start_pos, end_pos = find @text, search, pos, true
 
     if not start_pos and config.search_wraps
-      start_pos, end_pos = @text\ufind search, 1, true
+      start_pos, end_pos = find @text, search, wrap_pos, true
       if start_pos
-        log.info 'Search hit BOTTOM, continuing at TOP'
+        log.info wrap_msg
 
     if start_pos
       @editor.cursor.pos = start_pos
@@ -44,11 +68,24 @@ class Searcher
       log.error "No matches found for '#{search}'"
 
     @last_search = search
+    @last_direction = direction
 
   next: =>
+    if @last_direction == 'forward'
+      @next_forward!
+    else
+      @next_backward!
+
+  next_forward: =>
     if @last_search
       log.info "Next match for '#{@last_search}'"
       @forward_to @last_search
+      @commit!
+
+  next_backward: =>
+    if @last_search
+      log.info "Previous match for '#{@last_search}'"
+      @backward_to @last_search
       @commit!
 
   commit: =>

@@ -50,6 +50,35 @@ describe 'Searcher', ->
       searcher\forward_to 'foo'
       assert.equal 1, cursor.pos
 
+  describe 'backward_to(string)', ->
+    it 'moves the cursor to the previous occurrence of <string>', ->
+      buffer.text = 'hellö\nworld!'
+      cursor.pos = 11
+      searcher\backward_to 'l'
+      assert.equal 10, cursor.pos
+      searcher\backward_to 'lö'
+      assert.equal 4, cursor.pos
+
+    it 'skips any matches at the current position by default', ->
+      buffer.text = 'no means no'
+      cursor.pos = 10
+      searcher\backward_to 'no'
+      assert.equal 1, cursor.pos
+
+    it 'does not skip any matches at the current position if the searcher is active', ->
+      buffer.text = 'no means no'
+      cursor.pos = 11
+      searcher\backward_to 'n'
+      assert.equal 10, cursor.pos
+      searcher\forward_to 'no'
+      assert.equal 10, cursor.pos
+
+    it 'does not move the cursor when there is no match', ->
+      buffer.text = 'hello!'
+      cursor.pos = 3
+      searcher\backward_to 'f'
+      assert.equal 3, cursor.pos
+
   it 'cancel() moves the cursor back to the original position', ->
     buffer.text = 'hello!'
     cursor.pos = 1

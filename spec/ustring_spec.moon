@@ -112,6 +112,24 @@ describe 'ustrings', ->
     it 'accepts regexes', ->
       assert.same { 2, 2 }, { '!ä öx'\ufind r'\\pL' }
 
+    it 'returns empty match at init for empty string', ->
+      assert.same { 2, 1 }, { 'abc'\ufind '', 2 }
+
+  describe 'urfind(text [, init])', ->
+    it 'searches backwards from end', ->
+      assert.same { 4, 4 }, { 'äöxäöx'\urfind 'ä' }
+      assert.same { 1, 1 }, { 'äöxaöx'\urfind 'ä' }
+      assert.same { 3, 5 }, { 'äöxböx'\urfind 'xbö' }
+
+    it 'searches backwards from init, when provided', ->
+      assert.same { 1, 2 }, { 'äöxäöx'\urfind 'äö', 4 }
+      assert.same { 1, 2 }, { 'äöxäöx'\urfind 'äö', -3 }
+      assert.same { 4, 5 }, { 'äöxäöx'\urfind 'äö', 5 }
+      assert.same { 4, 5 }, { 'äöxäöx'\urfind 'äö', -2 }
+
+    it 'returns empty match before init for empty string', ->
+      assert.same { 2, 1 }, { 'abc'\urfind '', 2 }
+
   it 'starts_with(s) returns true if the string starts with the specified string', ->
     assert.is_true 'foobar'\starts_with 'foo'
     assert.is_true 'foobar'\starts_with 'foobar'

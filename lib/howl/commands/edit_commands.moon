@@ -10,6 +10,12 @@ command.register
   input: 'forward_search'
   handler: -> app.editor.searcher\commit!
 
+command.register
+  name: 'buffer-search-backward',
+  description: 'Starts an interactive backward search'
+  input: 'backward_search'
+  handler: -> app.editor.searcher\commit!
+
 command.alias 'buffer-search-forward', 'search-forward', deprecated: true
 
 command.register
@@ -18,6 +24,16 @@ command.register
   handler: -> app.editor.searcher\next!
 
 command.alias 'buffer-repeat-search', 'repeat-search', deprecated: true
+
+command.register
+  name: 'buffer-repeat-search-forward',
+  description: 'Repeats the last search forward'
+  handler: -> app.editor.searcher\next_forward!
+
+command.register
+  name: 'buffer-repeat-search-backward',
+  description: 'Repeats the last search backward'
+  handler: -> app.editor.searcher\next_backward!
 
 command.register
   name: 'buffer-replace',
