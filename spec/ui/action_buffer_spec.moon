@@ -1,4 +1,4 @@
-import ActionBuffer, style from howl.ui
+import ActionBuffer, style, StyledText from howl.ui
 import Scintilla from howl
 append = table.insert
 
@@ -57,6 +57,10 @@ describe 'ActionBuffer', ->
         assert.equal 'default', (style.at_pos(buf, 6))
         assert.equal 'styled', buf.text
 
+      it 'ignores any given <style> parameter', ->
+        buf\insert StyledText('foo', { 1, 'number', 4 }), 1, 'keyword'
+        assert.equal 'number', (style.at_pos(buf, 1))
+
   describe '.append(text, style)', ->
 
     context 'with no specified style', ->
@@ -79,22 +83,25 @@ describe 'ActionBuffer', ->
         buf\append 'again', 'what?'
         assert.equal 'default', (style.at_pos(buf, buf.length - 1))
 
-    context 'when object is a Chunk', ->
+    context 'when object is a styled object', ->
       it 'appends the corresponding text and returns the next position', ->
         buf\insert 'foo', 1
         chunk = buf\chunk(1, 3)
         assert.equals 7, buf\append chunk
         assert.equal 'foofoo', buf.text
 
-      it 'styles the inserted text using the same styling as for the chunk', ->
-        buf\insert 'foo', 1, 'keyword'
-        buf\insert 'bar', 4, 'number'
-        chunk = buf\chunk(1, 6)
-        buf\append chunk
-        assert.equal 'foobarfoobar', buf.text
-        chunk = buf\chunk(7, 12)
-        assert.equal 'keyword', (style.at_pos(buf, 7))
-        assert.equal 'number', (style.at_pos(buf, 10))
+      it 'styles the inserted text using .styles for the styling', ->
+        buf.text = 'foo'
+        object = StyledText('bar', {1, 'number', 2, 2, 'keyword', 3})
+        buf\insert object, 4
+        assert.equal 'foobar', buf.text
+        assert.equal 'number', (style.at_pos(buf, 4))
+        assert.equal 'keyword', (style.at_pos(buf, 5))
+        assert.equal 'default', (style.at_pos(buf, 6))
+
+      it 'ignores any given <style> parameter', ->
+        buf\append StyledText('foo', { 1, 'number', 4 }), 'keyword'
+        assert.equal 'number', (style.at_pos(buf, 1))
 
   describe 'style(start_pos, end_pos, style)', ->
     it 'applies <style> for the inclusive text range given', ->

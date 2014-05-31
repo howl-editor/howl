@@ -11,25 +11,27 @@ class ActionBuffer extends Buffer
     @sci\set_lexer Scintilla.SCLEX_NULL
 
   insert: (object, pos, style_name) =>
-    pos_after = if object.styles
-      @_insert_styled_object(object, pos)
+    local pos_after
+    if object.styles
+      pos_after = @_insert_styled_object(object, pos)
     else
-      super object, pos
+      pos_after = super object, pos
 
-    if style_name
-      @style pos, pos_after - 1, style_name
+      if style_name
+        @style pos, pos_after - 1, style_name
 
     pos_after
 
   append: (object, style_name) =>
     start_pos = @length
-    pos_after = if object.styles
-      @_insert_styled_object(object, @length + 1)
+    local pos_after
+    if object.styles
+      pos_after = @_insert_styled_object(object, @length + 1)
     else
-      super object
+      pos_after = super object
 
-    if style_name
-      @style start_pos + 1, @length, style_name
+      if style_name
+        @style start_pos + 1, @length, style_name
 
     pos_after
 
