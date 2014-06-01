@@ -135,9 +135,6 @@ command.register
     else
       log.info 'Could not find paragraph to reflow'
 
-command.alias 'editor-reflow-paragraph', 'reflow-paragraph', deprecated: true
-command.alias 'editor-reflow-paragraph', 'fill-paragraph', deprecated: true
-
 reflow_check = (args) ->
   editor = args.editor
   return if args.as_undo or args.as_redo or not editor

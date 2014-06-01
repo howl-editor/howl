@@ -793,8 +793,6 @@ for cmd_spec in *{
     description: cmd_spec[2]
     handler: -> howl.app.editor[cmd_spec[3]] howl.app.editor, table.unpack args
 
-command.alias 'editor-toggle-comment', 'editor-toggle_comment', deprecated: true
-
 for sel_cmd_spec in *{
   { 'copy', 'Copies the current selection to the clipboard' }
   { 'cut', 'Cuts the current selection to the clipboard' }

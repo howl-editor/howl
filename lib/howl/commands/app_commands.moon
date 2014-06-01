@@ -59,8 +59,6 @@ command.register
     buffer\reload true
     log.info "Buffer reloaded from file"
 
-command.alias 'buffer-reload', 'reload-buffer', deprecated: true
-
 command.register
   name: 'switch-to-last-hidden-buffer',
   description: 'Switches to the last active hidden buffer'
@@ -94,16 +92,12 @@ command.register
   handler: (assignment) ->
     set_variable assignment, app.editor.buffer.mode.config
 
-command.alias 'set-for-mode', 'mode-set', deprecated: true
-
 command.register
   name: 'set-for-buffer',
   description: 'Sets a configuration variable for the current buffer'
   input: 'variable_assignment'
   handler: (assignment) ->
     set_variable assignment, app.editor.buffer.config
-
-command.alias 'set-for-buffer', 'buffer-set', deprecated: true
 
 command.register
   name: 'describe-key',

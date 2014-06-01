@@ -42,6 +42,9 @@ buffer's contents will be emptied.
 - `Buffer.reload()`: `reload` now takes an additional parameter, `force`, that
 allows reloading a buffer even if the buffer is currently modified.
 
+### Deprecations removed
+
+Command names deprecated in the 0.2 release has now been removed.
 
 ## 0.2.1 (2014-05-09)
 
