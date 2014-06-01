@@ -1,4 +1,4 @@
-import Window, Readline from howl.ui
+import Window, Readline, StyledText, style from howl.ui
 
 describe 'Readline', ->
   window = Window!
@@ -33,6 +33,31 @@ describe 'Readline', ->
       readline.text = 'bar'
       readline.keymap.escape readline
       assert.is_nil value
+
+    context 'formatting', ->
+      it 'adds the prompt to the underlying buffer', ->
+        co = coroutine.create -> readline\read 'foo'
+        assert coroutine.resume co
+        assert.equals "foo", readline.buffer.text
+
+      it 'adds any specified text to the underlying buffer', ->
+        co = coroutine.create -> readline\read 'foo', nil, text: 'bar'
+        assert coroutine.resume co
+        assert.equals "foobar", readline.buffer.text
+
+      it 'supports using StyledText for the prompt', ->
+        styled_prompt = StyledText('foo', {1, 'number', 3})
+        co = coroutine.create -> readline\read styled_prompt
+        assert coroutine.resume co
+        assert.equals "foo", readline.buffer.text
+        assert.equal 'number', (style.at_pos(readline.buffer, 1))
+
+      it 'supports using StyledText for the text', ->
+        styled_text = StyledText('foo', {1, 'number', 3})
+        co = coroutine.create -> readline\read '', nil, text: styled_text
+        assert coroutine.resume co
+        assert.equals "foo", readline.buffer.text
+        assert.equal 'number', (style.at_pos(readline.buffer, 1))
 
     context 'keymap handling', ->
       it "dispatches any key presses to the input's keymap if present", ->

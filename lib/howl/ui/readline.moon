@@ -76,14 +76,14 @@ class Readline extends PropertyObject
   notify: (text, style = 'info') =>
     @notification\delete! if @notification
     start_pos = @completion_list and @completion_list.end_pos or 1
-    text ..= '\n' unless text\match '[\n\r]$'
-    @buffer\insert text, start_pos, style
-    @notification = @buffer\chunk start_pos, #text
+    insert_pos = @buffer\insert text, start_pos, style
+    insert_pos = @buffer\insert '\n', insert_pos, style unless text\match '[\n\r]$'
+    @notification = @buffer\chunk start_pos, insert_pos - 1
     @_adjust_height!
 
   complete: (force) =>
     error "Cannot invoke Readline.complete() for a hidden readline", 2 unless @showing
-    text = @text
+    text = tostring @text
     should_complete = force
     unless should_complete
       return if @completion_unwanted
@@ -92,7 +92,9 @@ class Readline extends PropertyObject
       should_complete = config_says_complete or input_says_complete
 
     @_show_only_cmd_line!
-    completions, options = if should_complete and @input.complete then @input\complete text, self
+    completions, options = if should_complete and @input.complete
+      @input\complete text, self
+
     options or= {}
     count = completions and #completions or 0
     @title = options.title if options.title
@@ -123,7 +125,7 @@ class Readline extends PropertyObject
   @property prompt:
     get: => @_prompt
     set: (prompt) =>
-      @_prompt = tostring(prompt)
+      @_prompt = prompt
       @_prompt_len = @_prompt.ulen
       @text = ''
 
@@ -131,13 +133,17 @@ class Readline extends PropertyObject
     get: =>
       text = @buffer.lines[#@buffer.lines]
       text\usub @_prompt_len + 1
+
     set: (text) =>
       prompt = @prompt
       if @width_in_columns and @width_in_columns - prompt.ulen < 10
         prompt = shorten prompt, @width_in_columns - 10
 
       @_prompt_len = prompt.ulen
-      @buffer.lines[#@buffer.lines].text = prompt .. text
+      last_line = @buffer.lines[#@buffer.lines]
+      last_line.text = ''
+      pos = @buffer\insert prompt, last_line.start_pos
+      @buffer\insert text, pos
       @_adjust_height!
       @cursor\eof!
       @sci\set_xoffset 0
@@ -163,7 +169,7 @@ class Readline extends PropertyObject
     @_adjust_height!
 
   _update_input: =>
-    if @input and @input.update then @input\update @text, self
+    if @input and @input.update then @input\update tostring(@text), self
 
   _max_list_lines: =>
     win_lines = @window.allocated_height / @sci\text_height 0
@@ -285,7 +291,7 @@ class Readline extends PropertyObject
       @input\on_selection_changed @completion_list.selection, self
 
   _submit: =>
-    value = @text
+    value = tostring @text
 
     if @completion_list
       item = @completion_list.selection
