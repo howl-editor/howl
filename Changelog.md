@@ -19,6 +19,12 @@ pressing alt + l (issue #29)
 - Added new method, `Buffer.save_as(file)`, for associating with and saving a
 buffer's content to a specified file.
 
+- Added a new StyledText (howl.ui.StyledText) class in the API, used for holding
+a chunk of text along with corresponding styles. ActionBuffer now supports
+inserting or appending such instances. Along with this a new simple markup
+parser was added (Howl Markup, howl.ui.markup.howl) that can be used to easily
+create StyledText instances.
+
 ### Bugs fixed
 
 - `buffer-reload` command: Prompt if a buffer is modified, and force a reload if
