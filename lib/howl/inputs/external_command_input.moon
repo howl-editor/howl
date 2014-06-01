@@ -6,6 +6,7 @@ import app, sys from howl
 import File from howl.io
 import Matcher from howl.util
 FileInput = howl.inputs.file
+m = howl.ui.markup.howl
 append = table.insert
 
 command_matcher = nil
@@ -108,9 +109,8 @@ external_command_input = {
     @directory, text
 
   chdir: (directory, readline) =>
-    @base_prompt = readline.prompt unless @base_prompt
     trailing = directory.path == File.separator and '' or File.separator
-    readline.prompt = "[#{directory.short_path}#{trailing}] $ "
+    readline.prompt = m "<operator>[</><keyword>#{directory.short_path}#{trailing}</><operator>] $</> "
     @directory = directory
 }
 
