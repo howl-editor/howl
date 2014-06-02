@@ -2,16 +2,6 @@
 
 ## Unreleased (in master)
 
-- Added two new commands `buffer-repeat-search-backward` and
-`buffer-repeat-search-forward` that repeat the previous interactive search but
-in the direction specified.
-
-- Added a new command `buffer-search-backward` that implements an interactive
-search backwards from the cursor position for the text typed by the user.
-
-- Added a new method `ustring.urfind` that implements reverse search
-for a plain string within the string.
-
 - Added a new comprehensive API for launching and controlling external processes
 (howl.io.Process).
 
@@ -29,6 +19,13 @@ pressing alt + l (issue #29)
 - Added new method, `Buffer.save_as(file)`, for associating with and saving a
 buffer's content to a specified file.
 
+- Added a new command `buffer-search-backward` that implements an interactive
+search backwards from the cursor position for the text typed by the user.
+
+- Added two new commands `buffer-repeat-search-backward` and
+`buffer-repeat-search-forward` that repeat the previous interactive search but
+in the direction specified.
+
 ### Bugs fixed
 
 - `buffer-reload` command: Prompt if a buffer is modified, and force a reload if
@@ -45,6 +42,9 @@ buffer's contents will be emptied.
 
 - `Buffer.reload()`: `reload` now takes an additional parameter, `force`, that
 allows reloading a buffer even if the buffer is currently modified.
+
+- `ustring.urfind`: new method that implements reverse search for a plain string
+within the string.
 
 
 ## 0.2.1 (2014-05-09)
