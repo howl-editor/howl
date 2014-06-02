@@ -25,6 +25,13 @@ inserting or appending such instances. Along with this a new simple markup
 parser was added (Howl Markup, howl.ui.markup.howl) that can be used to easily
 create StyledText instances.
 
+- Added a new command `buffer-search-backward` that implements an interactive
+search backwards from the cursor position for the text typed by the user.
+
+- Added two new commands `buffer-repeat-search-backward` and
+`buffer-repeat-search-forward` that repeat the previous interactive search but
+in the direction specified.
+
 ### Bugs fixed
 
 - `buffer-reload` command: Prompt if a buffer is modified, and force a reload if
@@ -42,9 +49,13 @@ buffer's contents will be emptied.
 - `Buffer.reload()`: `reload` now takes an additional parameter, `force`, that
 allows reloading a buffer even if the buffer is currently modified.
 
+- `ustring.urfind`: new method that implements reverse search for a plain string
+within the string.
+
 ### Deprecations removed
 
 Command names deprecated in the 0.2 release has now been removed.
+
 
 ## 0.2.1 (2014-05-09)
 

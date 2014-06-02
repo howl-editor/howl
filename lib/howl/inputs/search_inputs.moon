@@ -19,6 +19,9 @@ class SearchInput
 class ForwardSearchInput extends SearchInput
   new: => super('forward_to', 'Forward search')
 
+class BackwardSearchInput extends SearchInput
+  new: => super('backward_to', 'Backward search')
+
 class ReplaceInput
   close_on_cancel: -> true
 
@@ -35,8 +38,14 @@ class ReplaceInput
 
 howl.inputs.register {
   name: 'forward_search',
-  description: 'An input that interactively searches for the input text',
+  description: 'An input that interactively searches forward from cursor for the input text',
   factory: ForwardSearchInput
+}
+
+howl.inputs.register {
+  name: 'backward_search',
+  description: 'An input that interactively searches backwards from cursor for the input text',
+  factory: BackwardSearchInput
 }
 
 howl.inputs.register {
