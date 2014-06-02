@@ -2,6 +2,16 @@
 
 ## Unreleased (in master)
 
+- Added two new commands `buffer-repeat-search-backward` and
+`buffer-repeat-search-forward` that repeat the previous interactive search but
+in the direction specified.
+
+- Added a new command `buffer-search-backward` that implements an interactive
+search backwards from the cursor position for the text typed by the user.
+
+- Added a new method `ustring.urfind` that implements reverse search
+for a plain string within the string.
+
 - Added a new comprehensive API for launching and controlling external processes
 (howl.io.Process).
 

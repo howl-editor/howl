@@ -30,34 +30,39 @@ class Searcher
   jump_to: (search, direction = 'forward') =>
     highlight.remove_all 'search', @editor.buffer
 
+    return if search.is_empty
+
     pos = @editor.cursor.pos
+
     if @active and direction == 'backward'
-        -- adjust pos so current match can grow to right of cursor
-        pos += search.ulen - 1
+      -- allow active match to continue to match
+      pos += #search - 1
 
     unless @active
       @_init!
       if direction == 'forward'
         pos += 1
       else
-        pos -= 1
+        -- match cannot start at pos but can overlap it
+        pos += #search - 2
 
     find = nil
     wrap_pos = nil
     wrap_msg = ''
+
     if direction == 'forward'
-      find = @text.ufind
+      find = (text, search, pos) -> text\ufind search, pos, true
       wrap_pos = 1
       wrap_msg = 'Search hit BOTTOM, continuing at TOP'
     else
-      find = @text.urfind
+      find = (text, search, pos) -> text\urfind search, pos
       wrap_pos = -1
       wrap_msg = 'Search hit TOP, continuing at BOTTOM'
 
-    start_pos, end_pos = find @text, search, pos, true
+    start_pos, end_pos = find @text, search, pos
 
     if not start_pos and config.search_wraps
-      start_pos, end_pos = find @text, search, wrap_pos, true
+      start_pos, end_pos = find @text, search, wrap_pos
       if start_pos
         log.info wrap_msg
 

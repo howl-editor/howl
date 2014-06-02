@@ -117,15 +117,21 @@ describe 'ustrings', ->
 
   describe 'urfind(text [, init])', ->
     it 'searches backwards from end', ->
-      assert.same { 4, 4 }, { 'äöxäöx'\urfind 'ä' }
-      assert.same { 1, 1 }, { 'äöxaöx'\urfind 'ä' }
-      assert.same { 3, 5 }, { 'äöxböx'\urfind 'xbö' }
+      assert.same { 4, 5 }, { 'äöxäöx'\urfind 'äö' }
+      assert.same { 3, 6 }, { 'äöxböx'\urfind 'xböx' }
+      assert.same { 1, 3 }, { 'äöxböx'\urfind 'äöx' }
+
+    it 'returns nothing for no matches', ->
+      assert.same {}, { 'hello'\urfind 'x' }
 
     it 'searches backwards from init, when provided', ->
       assert.same { 1, 2 }, { 'äöxäöx'\urfind 'äö', 4 }
       assert.same { 1, 2 }, { 'äöxäöx'\urfind 'äö', -3 }
       assert.same { 4, 5 }, { 'äöxäöx'\urfind 'äö', 5 }
       assert.same { 4, 5 }, { 'äöxäöx'\urfind 'äö', -2 }
+
+    it 'matches text entirely before init', ->
+      assert.same {1, 2}, { 'abcabc'\urfind 'ab', 4 }
 
     it 'returns empty match before init for empty string', ->
       assert.same { 2, 1 }, { 'abc'\urfind '', 2 }

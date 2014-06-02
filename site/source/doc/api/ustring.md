@@ -153,6 +153,11 @@ counterpart, `pattern` can be both a Lua string pattern and a [regex].
 Corresponding UTF-8 version of Lua's [string.match]. Unlike the Lua counterpart,
 pattern can be both a Lua string pattern and a [regex].
 
+### urfind (text [, init])
+
+Similar to ufind() but searches backwards for `text` from end of string,
+or `init`, if provided. Searches for plain strings only (no regex or patterns).
+
 ### usub (i [, j])
 
 Corresponding UTF-8 version of Lua's [string.sub].

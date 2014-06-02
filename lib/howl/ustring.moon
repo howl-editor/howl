@@ -138,27 +138,32 @@ urfind = (s, text, init = s.ulen) ->
   if init < 0
     init = s.ulen + init + 1
 
-  if text\len! == 0
+  if text.is_empty
     return init, init - 1
 
-  s_len = s\len!
-  text_len = text\len!
+  -- get offset of last byte of char at init
+  init = s\byte_offset(init) + #s\usub(init, init) - 1
 
-  -- we use byte offsets for the search
-  -- adjust init to last byte of char at s[init]
-  init = s\byte_offset(init) + s\usub(init, init)\len! - 1
+  -- adjust for 0-based indexing
+  init -= 1
 
+  s_len = #s
+  text_len = #text
+  s_bytes = const_char_p(s)
+  text_bytes = const_char_p(text)
   matched = false
-  -- s_idx and text_idx are negative indices
-  for s_idx = -s_len + init - 1, -s_len + text_len - 1, -1
-    for text_idx= -1, -text_len, -1
-      text_byte = text\byte text_idx
-      s_byte = s\byte s_idx + text_idx + 1
+
+  for s_idx = init - text_len + 1, 0, -1
+    for text_idx = text_len - 1, 0, -1
+      text_byte = text_bytes[text_idx]
+      s_byte = s_bytes[s_idx + text_idx]
       matched = text_byte == s_byte
+
       if not matched
         break
+
     if matched
-      match_pos = s_len + s_idx - text_len + 2
+      match_pos = s_idx + 1
       return transform_rets s, match_pos, match_pos + text_len - 1
 
 ucompare = (s1, s2) ->
