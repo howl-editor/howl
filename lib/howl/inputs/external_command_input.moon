@@ -39,10 +39,10 @@ sort_files = (files) ->
     return false if d2 and not d1
     f1.path < f2.path
 
-match_file = (directory, text) ->
+match_file = (directory, text, directories_only) ->
   path = directory\join(text)
 
-  if path.is_directory
+  if path.is_directory and (text.is_blank or text\ends_with File.separator)
     directory = path
     text = ''
   else
@@ -50,8 +50,13 @@ match_file = (directory, text) ->
     directory = path.parent
 
   children = directory.children
+
+  if directories_only
+    children = [c for c in *children when c.is_directory]
+
   sort_files children
   names = [c.display_name for c in *children]
+  table.insert names, 1, '.' if directories_only
   matcher = Matcher names
 
   completion_options = {
@@ -64,8 +69,27 @@ match_file = (directory, text) ->
   }
   matcher(text), completion_options
 
-should_auto_match_file = (text) ->
-  text\match('%s*%./') or text\match('%S%s+%./')
+text_parts = (text) ->
+  parts = [p for p in text\gmatch '%S+']
+  append parts, '' if text\ends_with ' '
+  parts
+
+last_text_part = (text) ->
+  parts = text_parts text
+  parts[#parts]
+
+should_auto_match_file = (directory, text) ->
+  for p in *{
+    '^%s*%./%S*$', -- './'
+    '^%S%s+%./', -- 'command ./'
+    r'^\\s*cd\\s+(.+/\\s*)?$' -- 'cd '
+  }
+    return true if text\umatch p
+
+  last_part = last_text_part text
+  return false if not last_part or if last_part\ends_with "#{File.separator}."
+  path = directory / last_part
+  path.is_directory and not (path == directory)
 
 get_cwd = ->
   buffer = app.editor and app.editor.buffer
@@ -73,13 +97,13 @@ get_cwd = ->
   directory or glib.get_current_dir!
 
 external_command_input = {
-  should_complete: (readline) => should_auto_match_file readline.text
+  should_complete: (readline) => should_auto_match_file @directory, readline.text
+  close_on_cancel: -> false
 
   complete: (text, readline) =>
-    parts = [p for p in text\gmatch '%S+']
-    append parts, '' if text\ends_with ' '
-    if should_auto_match_file(text) or #parts > 1
-      return match_file @directory, parts[#parts]
+    parts = text_parts text
+    if should_auto_match_file(@directory, text) or #parts > 1
+      return match_file @directory, parts[#parts], parts[1] == 'cd'
     else
       return match_command text
 
@@ -89,17 +113,26 @@ external_command_input = {
     readline.text = text
 
   on_completed: (value, readline) =>
-    text = readline.text
-    cd_dir = text\match '^%s*cd%s+(.+)%s*$'
-    text = cd_dir if cd_dir
-    path = @directory / text
-
+    parts = text_parts readline.text
+    last_part = parts[#parts]
+    path = @directory / last_part
     if path.is_directory
-      @chdir path, readline
+      return true if last_part\ends_with "#{File.separator}."
     else
       readline.text ..= ' '
 
     false
+
+  on_submit: (value, readline) =>
+    dir = readline.text\match '^%s*cd%s+(.+)%s*$'
+    if dir
+      path = @directory / dir
+      if path.is_directory
+        @chdir path, readline
+      else
+        readline\notify "Not a directory: #{path.short_path}", 'error'
+
+      false
 
   go_back: (readline) =>
     parent = @directory.parent
