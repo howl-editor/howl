@@ -107,6 +107,9 @@ class ProcessBuffer extends ActionBuffer
     log_msg = "=> Command '#{@process.command_line}' terminated (#{@process.exit_status_string})"
     log[@process.exited_normally and 'info' or 'warn'] log_msg
 
+    if #@lines == 2 -- no output
+      app\close_buffer @
+
   destroy: =>
     @process\send_signal('KILL') unless @process.exited
     super!
