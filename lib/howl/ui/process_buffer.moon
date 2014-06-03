@@ -73,7 +73,7 @@ class ProcessBuffer extends ActionBuffer
     @append '[', 'operator'
     @append tostring(@process.working_directory.short_path), 'special'
     @append ']$', 'operator'
-    @append " #{@process.command_line}\n", 'string'
+    @append " #{@process.command_line}\n"
 
   insert: (object, pos, style_name) =>
     @read_only = false
@@ -98,7 +98,8 @@ class ProcessBuffer extends ActionBuffer
     @title = "[#{@directory.short_path}]$ #{@process.command_line} (done)"
 
     unless @destroyed
-      @append "\n=> Process terminated (#{@process.exit_status_string})", 'comment'
+      @append '\n' unless @lines[#@lines].is_blank
+      @append "=> Process terminated (#{@process.exit_status_string})", 'comment'
 
     editor = app\editor_for_buffer @
     editor.indicator.activity.visible = false if editor
