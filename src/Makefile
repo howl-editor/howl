@@ -15,7 +15,7 @@ LUAJIT_URL = http://nordman.org/mirror/luajit/$(LUAJIT_VER).tar.gz
 SCINTILLA_VER = scintilla342
 SCINTILLA_CHECKSUM = 6a6fb89faf787b70f20a4df1cc7f3e6e
 SCINTILLA_URL = http://prdownloads.sourceforge.net/scintilla/$(SCINTILLA_VER).tgz?download
-SCINTILLA = deps/$(SCINTILLA_VER)
+SCINTILLA = deps/$(SCINTILLA_VER)-howl-1
 SCINTILLA_IFACE = $(SCINTILLA)/include/Scintilla.iface
 SCINTILLA_CFLAGS = -I$(SCINTILLA)/include -DGTK=1
 SCINTILLA_ARCHIVE = $(SCINTILLA)/bin/scintilla.a
@@ -55,6 +55,8 @@ $(SCINTILLA):
 	@tools/download $(SCINTILLA_URL) $(SCINTILLA_CHECKSUM) tar xzf {file} -C deps
 	@mv deps/scintilla $(SCINTILLA)
 	@perl -piorig -e 's/LINK_LEXER\(\w+\);//' $(SCINTILLA)/src/Catalogue.cxx
+	@echo Applying patches for Scintilla..
+	@cd $(SCINTILLA) && patch -p0 < ../../deps-patches/scintilla-older-gtk-bug.patch
 
 $(SCINTILLA_ARCHIVE): $(SCINTILLA)
 	cd ${SCINTILLA}/gtk && $(MAKE) $(SCINTILLA_DEFS)
