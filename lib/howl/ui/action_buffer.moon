@@ -45,6 +45,6 @@ class ActionBuffer extends Buffer
     super\insert object.text, pos
     b_start = @byte_offset pos
     styler.apply self, b_start, b_start + #object.text, object.styles
-    pos + #object.text
+    pos + object.text.ulen
 
 return ActionBuffer

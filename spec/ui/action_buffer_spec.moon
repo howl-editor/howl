@@ -57,6 +57,9 @@ describe 'ActionBuffer', ->
         assert.equal 'default', (style.at_pos(buf, 6))
         assert.equal 'styled', buf.text
 
+      it 'still returns the next position', ->
+        assert.equal 3, buf\insert StyledText('åö', {}), 1
+
       it 'ignores any given <style> parameter', ->
         buf\insert StyledText('foo', { 1, 'number', 4 }), 1, 'keyword'
         assert.equal 'number', (style.at_pos(buf, 1))
@@ -98,6 +101,9 @@ describe 'ActionBuffer', ->
         assert.equal 'number', (style.at_pos(buf, 4))
         assert.equal 'keyword', (style.at_pos(buf, 5))
         assert.equal 'default', (style.at_pos(buf, 6))
+
+      it 'still returns the next position', ->
+        assert.equal 3, buf\append StyledText('åö', {})
 
       it 'ignores any given <style> parameter', ->
         buf\append StyledText('foo', { 1, 'number', 4 }), 'keyword'
