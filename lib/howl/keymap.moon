@@ -14,8 +14,6 @@
     ctrl_i:           'editor-indent'
     ctrl_k:           'editor-delete-to-end-of-line'
     ctrl_shift_i:     'editor-indent-all'
-    ctrl_o:           'open'
-    ctrl_p:           'project-open'
     ctrl_h:           'buffer-replace'
     ctrl_s:           'save'
     ctrl_shift_s:     'save-as'
@@ -69,6 +67,9 @@
     home:             'cursor-home'
     shift_home:       'cursor-home-extend'
   }
+
+  ctrl_o:           'open'
+  ctrl_p:           'project-open'
 
   ctrl_w:           'view-close'
   'ctrl_-':         'zoom-out'
