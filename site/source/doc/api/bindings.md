@@ -111,6 +111,29 @@ This is a list of the currently active keymaps. This is a stack, with latter key
 
 ## Functions
 
+### binding_for (action, source)
+
+Finds the first key binding that is bound to the specified `action`. `source`,
+if given, specifies the source specified keymaps to search. Returns the binding,
+or `nil` if no binding was found.
+
+For example:
+
+```lua
+-- look up the binding for the `project-open` command:
+howl.bindings.binding_for('project-open')
+-- => 'ctrl_p'
+
+-- look up the binding for the `buffer-search-forward` command:
+howl.bindings.binding_for('buffer-search-forward', 'editor')
+-- => 'ctrl_f'
+
+-- but since that's a command only bound for editor sources,
+-- it's not bound globally
+howl.bindings.binding_for('buffer-search-forward')
+-- => nil
+```
+
 ### cancel_capture ()
 
 Removes any installed capture handler.

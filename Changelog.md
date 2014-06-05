@@ -19,6 +19,9 @@ pressing alt + l (issue #29)
 - Added new method, `Buffer.save_as(file)`, for associating with and saving a
 buffer's content to a specified file.
 
+- Added new function, `bindings.binding_for`, for finding a binding for a
+particular action.
+
 - Added a new StyledText (howl.ui.StyledText) class in the API, used for holding
 a chunk of text along with corresponding styles. ActionBuffer now supports
 inserting or appending such instances. Along with this a new simple markup

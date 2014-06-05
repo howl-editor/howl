@@ -313,3 +313,22 @@ describe 'bindings', ->
       assert.is_true bindings.is_capturing
       bindings.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor'
       assert.is_false bindings.is_capturing
+
+  describe 'binding_for(handler, source)', ->
+    it 'returns the first key binding that maps to <handler>', ->
+      bindings.push ctrl_y: 'my-command'
+      bindings.push ctrl_x: 'my-command'
+      assert.equals 'ctrl_x', bindings.binding_for 'my-command'
+
+    it 'returns nil if not binding was found', ->
+      assert.is_nil bindings.binding_for 'my-command'
+
+    it 'gives precedence to source specific bindings', ->
+      bindings.push {
+        ctrl_x: 'my-command'
+        my_source: {
+          ctrl_y: 'my-command'
+        }
+      }
+      assert.equals 'ctrl_y', bindings.binding_for 'my-command', 'my_source'
+

@@ -186,4 +186,17 @@ export cancel_capture = ->
 export is_capturing = ->
   capture_handler != nil
 
+export binding_for = (handler, source = nil) ->
+  for i = #keymaps, 1, -1
+    km = keymaps[i]
+    source_km = km[source]
+    if source_km
+      for binding, h in pairs source_km
+        return binding if h == handler
+
+    for binding, h in pairs km
+      return binding if h == handler
+
+  nil
+
 return _ENV
