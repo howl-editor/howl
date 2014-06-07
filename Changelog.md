@@ -29,11 +29,23 @@ parser was added (Howl Markup, howl.ui.markup.howl) that can be used to easily
 create StyledText instances.
 
 - Added a new command `buffer-search-backward` that implements an interactive
-search backwards from the cursor position for the text typed by the user.
+search for the text typed by the user, backwards from the cursor position. Bound
+this command to `ctrl_r`.
 
-- Added two new commands `buffer-repeat-search-backward` and
-`buffer-repeat-search-forward` that repeat the previous interactive search but
-in the direction specified.
+- Enabled jumping to the next or previous match while an interactive search is
+running. The bindings for `buffer-search-backward` or `buffer-search-forward`
+(`ctrl_r` and `ctrl_f` by default) are used for this while either command is
+active.
+
+- Added two new commands `buffer-search-word-backward` and
+`buffer-search-word-forward` that do an exact word match, using the configured
+word pattern, for the current word at cursor. Bound these commands to
+`ctrl_comma` and `ctrl_period`.
+
+- Updated interactive `buffer-search-backward` and `buffer-search-forward`
+commands to highlight all matches on screen in addition to the primary match.
+Added a new highlight style called `search_secondary` for the non primary
+matches.
 
 ### Bugs fixed
 
@@ -52,12 +64,17 @@ buffer's contents will be emptied.
 - `Buffer.reload()`: `reload` now takes an additional parameter, `force`, that
 allows reloading a buffer even if the buffer is currently modified.
 
-- `ustring.urfind`: new method that implements reverse search for a plain string
-within the string.
+- `Buffer.find()`, `Buffer.rfind()`: new methods that implement forward and
+reverse search on the entire buffer text, or starting at `init` argument if
+provided. These methods work with character offsets.
+
+- `ustring.urfind()`, `ustring.rfind()`: new methods that implement reverse
+search for a given string within the string. The `urfind` method uses character
+offsets while `rfind` uses byte offsets.
 
 ### Deprecations removed
 
-Command names deprecated in the 0.2 release has now been removed.
+Command names deprecated in the 0.2 release have now been removed.
 
 
 ## 0.2.1 (2014-05-09)

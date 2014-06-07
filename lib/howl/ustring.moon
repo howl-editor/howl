@@ -134,19 +134,8 @@ ufind = (s, pattern, init = 1, plain = false) ->
   init = char_to_byte_offset s, init
   transform_rets s, string.find s, pattern, init, plain
 
-urfind = (s, text, init = s.ulen) ->
-  if init < 0
-    init = s.ulen + init + 1
-
-  if text.is_empty
-    return init, init - 1
-
-  -- get offset of last byte of char at init
-  init = s\byte_offset(init) + #s\usub(init, init) - 1
-
-  -- adjust for 0-based indexing
-  init -= 1
-
+rfind = (s, text, init = #s) ->
+  init -= 1  -- 0-based indexing
   s_len = #s
   text_len = #text
   s_bytes = const_char_p(s)
@@ -164,7 +153,21 @@ urfind = (s, text, init = s.ulen) ->
 
     if matched
       match_pos = s_idx + 1
-      return transform_rets s, match_pos, match_pos + text_len - 1
+      return match_pos, match_pos + text_len - 1
+
+urfind = (s, text, init = s.ulen) ->
+  if init < 0
+    init = s.ulen + init + 1
+
+  if text.is_empty
+    return init, init - 1
+
+  -- get offset of last byte of char at init
+  init = s\byte_offset(init) + #s\usub(init, init) - 1
+
+  start_pos, end_pos = rfind s, text, init
+
+  return transform_rets s, start_pos, end_pos
 
 ucompare = (s1, s2) ->
   C.g_utf8_collate const_char_p(s1), const_char_p(s2)
@@ -197,6 +200,7 @@ with string
   .umatch = umatch
   .ugmatch = ugmatch
   .ufind = ufind
+  .rfind = rfind
   .urfind = urfind
   .ucompare = ucompare
   .byte_offset = byte_offset

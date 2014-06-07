@@ -1,4 +1,5 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 import Scintilla, styler, BufferContext, BufferLines, Chunk, config, signal from howl
@@ -269,6 +270,23 @@ class Buffer extends PropertyObject
     byte_size = byte_end_pos - byte_start_pos
     return '' if byte_size <= 0
     ffi.string @sci\get_range_pointer(byte_start_pos - 1, byte_size), byte_size
+
+  find: (search, init = 1) =>
+    if init < 1
+      init = @length - init + 1
+    byte_start_pos = @text\find search, @byte_offset(init), true
+    if byte_start_pos
+      start_pos = @char_offset byte_start_pos
+      return start_pos, start_pos + search.ulen - 1
+
+  rfind: (search, init = @length) =>
+    if init < 1
+      init = @length + init + 1
+    -- use byte offset of last byte of char at init
+    byte_start_pos = @text\rfind search, @byte_offset(init + 1) - 1
+    if byte_start_pos
+      start_pos = @char_offset byte_start_pos
+      return start_pos, start_pos + search.ulen - 1
 
   reload: (force = false) =>
     error "Cannot reload buffer '#{self}': no associated file", 2 unless @file

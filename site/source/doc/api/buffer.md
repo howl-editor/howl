@@ -183,6 +183,12 @@ Returns a [Context] for the specified position.
 Deletes the text between `start_pos` and `end_pos`, which specify an inclusive
 range.
 
+### find(search, init = 1)
+
+Searches for the text `search` in the the buffer's text starting at character
+position `init`. Returns character offsets `start_pos`, `end_pos` of the first
+match, or `nil` if no match was found.
+
 ### insert(text, pos)
 
 Inserts `text` at the position given by `pos`, and returns the position right
@@ -210,6 +216,10 @@ unless `force` is true.
 Replaces all occurrences of `pattern` with `replacement`, and returns the number
 of replacements made. `pattern` can be either a Lua pattern, or a [regular
 expression].
+
+### rfind(search, init = @length)
+
+Reverse search - similar to `find()` but searches backwards from `init`.
 
 ### save()
 

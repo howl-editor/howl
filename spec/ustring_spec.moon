@@ -115,8 +115,15 @@ describe 'ustrings', ->
     it 'returns empty match at init for empty string', ->
       assert.same { 2, 1 }, { 'abc'\ufind '', 2 }
 
+  describe 'rfind(pattern [, init])', ->
+    it 'searches backward from end using byte offsets', ->
+      assert.same { 5, 6 }, { 'äöxx'\rfind 'xx' }
+
+    it 'searches backward from init, when provided', ->
+      assert.same { 5, 5 }, { 'äöxxx'\rfind 'x', 5 }
+
   describe 'urfind(text [, init])', ->
-    it 'searches backwards from end', ->
+    it 'searches backwards from end using char offsets', ->
       assert.same { 4, 5 }, { 'äöxäöx'\urfind 'äö' }
       assert.same { 3, 6 }, { 'äöxböx'\urfind 'xböx' }
       assert.same { 1, 3 }, { 'äöxböx'\urfind 'äöx' }
