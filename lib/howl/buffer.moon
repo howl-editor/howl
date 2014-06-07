@@ -1,5 +1,4 @@
 -- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 import Scintilla, styler, BufferContext, BufferLines, Chunk, config, signal from howl
