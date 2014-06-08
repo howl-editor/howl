@@ -3,6 +3,7 @@
 
 import app, mode from howl
 import ActionBuffer from howl.ui
+import terminal from howl.ui.markup
 import File from howl.io
 append = table.insert
 
@@ -26,6 +27,10 @@ goto_location = (location) ->
   if editor
     editor.cursor.line = location.line
     editor.line_at_center = location.line
+
+parse_output = (text) ->
+  leading_bs, rest = text\match '^(\008*)(.*)$'
+  #leading_bs, terminal(rest)
 
 ProcessMode = {
 
@@ -76,22 +81,32 @@ class ProcessBuffer extends ActionBuffer
     @append " #{@process.command_line}\n"
 
   insert: (object, pos, style_name) =>
-    @read_only = false
-    super object, pos, style_name
-    @read_only = true
-    @modified = false
+    @modify ->
+      super object, pos, style_name
 
   append: (object, style_name) =>
+    @modify ->
+      editor = app\editor_for_buffer @
+      at_end_of_file = editor and editor.cursor.at_end_of_file
+      super object, style_name
+      editor.cursor\eof! if at_end_of_file
+
+  modify: (f) =>
     @read_only = false
-    editor = app\editor_for_buffer @
-    at_end_of_file = editor and editor.cursor.at_end_of_file
-    super object, style_name
+    f!
     @read_only = true
     @modified = false
-    editor.cursor\eof! if at_end_of_file
 
   pump: =>
-    on_stdout = (read) -> @append(read) if read and not @destroyed
+    on_stdout = (read) ->
+      if read and not @destroyed
+        delete_back, output = parse_output read
+        if delete_back > 0
+          len = @length
+          @modify ->  @delete len- (delete_back - 1), len
+
+        @append output
+
     on_stderr = (read) -> @append(read, 'error') if read and not @destroyed
 
     @process\pump on_stdout, on_stderr
