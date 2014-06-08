@@ -272,8 +272,10 @@ class Buffer extends PropertyObject
 
   find: (search, init = 1) =>
     if init < 1
-      init = @length - init + 1
+      init = @length + init + 1
+
     byte_start_pos = @text\find search, @byte_offset(init), true
+
     if byte_start_pos
       start_pos = @char_offset byte_start_pos
       return start_pos, start_pos + search.ulen - 1
@@ -281,8 +283,10 @@ class Buffer extends PropertyObject
   rfind: (search, init = @length) =>
     if init < 1
       init = @length + init + 1
+
     -- use byte offset of last byte of char at init
     byte_start_pos = @text\rfind search, @byte_offset(init + 1) - 1
+
     if byte_start_pos
       start_pos = @char_offset byte_start_pos
       return start_pos, start_pos + search.ulen - 1

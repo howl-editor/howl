@@ -187,7 +187,8 @@ range.
 
 Searches for the text `search` in the the buffer's text starting at character
 position `init`. Returns character offsets `start_pos`, `end_pos` of the first
-match, or `nil` if no match was found.
+match, or `nil` if no match was found. A negative `init` specifies an offset
+from the end, where -1 means the last character of the buffer.
 
 ### insert(text, pos)
 
@@ -219,7 +220,8 @@ expression].
 
 ### rfind(search, init = @length)
 
-Reverse search - similar to `find()` but searches backwards from `init`.
+Reverse search - similar to [find()](#find), but searches backwards from end of
+buffer, or `init` if provided.
 
 ### save()
 
