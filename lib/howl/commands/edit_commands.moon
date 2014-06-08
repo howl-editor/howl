@@ -31,7 +31,7 @@ command.register
     app.editor.searcher\commit!
 
 command.register
-  name: 'buffer-search-repeat',
+  name: 'buffer-repeat-search',
   description: 'Repeats the last search'
   handler: -> app.editor.searcher\repeat_last!
 
