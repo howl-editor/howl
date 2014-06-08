@@ -1,7 +1,8 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 import config from howl
+import colors from howl.ui
 
 default_style_numbers = {
   unstyled: 0
@@ -241,6 +242,16 @@ at_pos = (buffer, pos) ->
   style_num = buffer.sci\get_style_at b_pos - 1
   name = default_style_numbers[style_num] or get_buffer_styles(buffer)[style_num]
   name, styles[name]
+
+-- define some default styles
+define 'black', color: colors.black
+define 'red', color: colors.red
+define 'green', color: colors.green
+define 'yellow', color: colors.yellow
+define 'blue', color: colors.blue
+define 'magenta', color: colors.magenta
+define 'cyan', color: colors.cyan
+define 'white', color: colors.white
 
 -- alias some default styles
 define 'symbol', 'key'

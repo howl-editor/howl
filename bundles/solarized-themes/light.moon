@@ -89,6 +89,13 @@ return {
       :background
       color: foreground
 
+    red: color: red
+    green: color: green
+    yellow: color: yellow
+    blue: color: blue
+    magenta: color: magenta
+    cyan: color: cyan
+
     popup:
       background: current
       color: foreground
