@@ -27,14 +27,18 @@ ansi_colors = {
 
 define_style = (name, state) ->
   def = {
-    color: colors[state.fg]
-    background: colors[state.bg]
     underline: state.underline
     font: {
       italic: state.italic
       bold: state.bold
     }
   }
+  if state.fg
+    def.color = style[state.fg].color
+
+  if state.bg
+    def.background = style[state.bg].color
+
   style.define name, def
 
 style_from_state = (state) ->
