@@ -9,6 +9,8 @@
 `project-exec`. The former opens up a prompt for launching an external process
 from the directory of the current file (if available), whereas the latter
 launches an external process from the base directory of the current project.
+Both opens up a new process buffer for displaying any process output (ANSI color
+sequences supported).
 
 - Substituted certain key names to avoid ambiguity, e.g. `alt_l` now gets
 substituted for `altL` so that pressing left alt is distinguishable from
