@@ -15,8 +15,8 @@ int kill(pid_t pid, int sig);
 /* process helpers */
 int process_exited_normally(int status);
 int process_exit_status(int status);
-int process_was_signalled(int status) { return WIFSIGNALED(status);  }
-int process_get_term_sig(int status) { return WTERMSIG(status);  }
+int process_was_signalled(int status);
+int process_get_term_sig(int status);
 
 int sig_HUP;
 int sig_INT;
