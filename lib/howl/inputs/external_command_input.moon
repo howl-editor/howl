@@ -132,7 +132,13 @@ external_command_input = {
       else
         readline\notify "Not a directory: #{path.short_path}", 'error'
 
-      false
+      return false
+
+    else
+      path = @directory / readline.text
+      if path.is_directory
+        @chdir path, readline
+        false
 
   go_back: (readline) =>
     parent = @directory.parent
