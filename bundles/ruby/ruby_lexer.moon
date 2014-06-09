@@ -123,9 +123,12 @@ howl.aux.lpeg_lexer ->
 
     dq_string_start: any {
       c('string', Cg(S'"`', 'del')),
-      c(del_style, P'%' * S'Qx' * any {
+      c(del_style, P'%' * any {
+        S'Qx' * any {
+          capture_pair_as('del'),
+          Cg(P(1), 'del')
+        },
         capture_pair_as('del'),
-        Cg(P(1), 'del')
       })
     }
     dq_string_end: any {

@@ -49,6 +49,9 @@ commands to highlight all matches on screen in addition to the primary match.
 Added a new highlight style called `search_secondary` for the non primary
 matches.
 
+- Ruby: Update lexer to properly lex bare general delimited strings, e.g.
+`my_string = %{string here}`.
+
 ### Bugs fixed
 
 - `buffer-reload` command: Prompt if a buffer is modified, and force a reload if

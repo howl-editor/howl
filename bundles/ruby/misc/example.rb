@@ -29,6 +29,12 @@ local = 2
 %Q/dq again/ and %Q|dq again| and %Q#esca\#ed# and %Q|inter#{'pol' + :at.to_s}ed|
 %Q(paired) and %Q{paired} and %Q[yes paired]
 # string end
+%{
+  and dq again
+  with #{interpolation}
+  ends here
+}
+# string end
 "Double interpolation: #{ "Why why oh #{1 + 2} why" } is twice as fun?"
 # string end
 "but this is just a # sign"
