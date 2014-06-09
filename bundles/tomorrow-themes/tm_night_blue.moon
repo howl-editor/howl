@@ -65,15 +65,14 @@ return {
   highlights:
     search:
       style: highlight.ROUNDBOX
-      color: white
-      alpha: 80
-      outline_alpha: 100
+      color: yellow
+      alpha: 120
+      outline_alpha: 255
 
     search_secondary:
-      style: highlight.ROUNDBOX
-      color: white
-      alpha: 0
-      outline_alpha: 100
+      style: highlight.COMPOSITIONTHICK
+      color: '#fffce4'
+      outline_alpha: 50
 
     list_selection:
       style: highlight.ROUNDBOX
