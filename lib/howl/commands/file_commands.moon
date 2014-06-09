@@ -84,11 +84,13 @@ command.register
       #buffer.lines, #buffer
 
 command.register
-  name: 'close',
+  name: 'buffer-close',
   description: 'Closes the current buffer'
   handler: ->
     buffer = app.editor.buffer
     app\close_buffer buffer
+
+command.alias 'buffer-close', 'close'
 
 command.register
   name: 'vc-diff-file',
