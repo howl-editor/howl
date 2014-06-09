@@ -13,19 +13,20 @@ _ENV = setmetatable {}, __index: highlights
 setfenv 1, _ENV
 
 -- Highlight styles
-export PLAIN       = Scintilla.INDIC_PLAIN
-export SQUIGGLE    = Scintilla.INDIC_SQUIGGLEPIXMAP
-export TT          = Scintilla.INDIC_TT
-export DIAGONAL    = Scintilla.INDIC_DIAGONAL
-export STRIKE      = Scintilla.INDIC_STRIKE
-export HIDDEN      = Scintilla.INDIC_HIDDEN
-export BOX         = Scintilla.INDIC_BOX
-export ROUNDBOX    = Scintilla.INDIC_ROUNDBOX
-export STRAIGHTBOX = Scintilla.INDIC_STRAIGHTBOX
-export DASH        = Scintilla.INDIC_DASH
-export DOTS        = Scintilla.INDIC_DOTS
-export SQUIGGLELOW = Scintilla.INDIC_SQUIGGLELOW
-export DOTBOX      = Scintilla.INDIC_DOTBOX
+export PLAIN            = Scintilla.INDIC_PLAIN
+export SQUIGGLE         = Scintilla.INDIC_SQUIGGLEPIXMAP
+export TT               = Scintilla.INDIC_TT
+export DIAGONAL         = Scintilla.INDIC_DIAGONAL
+export STRIKE           = Scintilla.INDIC_STRIKE
+export HIDDEN           = Scintilla.INDIC_HIDDEN
+export BOX              = Scintilla.INDIC_BOX
+export ROUNDBOX         = Scintilla.INDIC_ROUNDBOX
+export STRAIGHTBOX      = Scintilla.INDIC_STRAIGHTBOX
+export DASH             = Scintilla.INDIC_DASH
+export DOTS             = Scintilla.INDIC_DOTS
+export SQUIGGLELOW      = Scintilla.INDIC_SQUIGGLELOW
+export DOTBOX           = Scintilla.INDIC_DOTBOX
+export COMPOSITIONTHICK = Scintilla.INDIC_COMPOSITIONTHICK
 
 get_buffer_highlights = (buffer) ->
   buffer_highlights[buffer] = _next_number: 0 if not buffer_highlights[buffer]
