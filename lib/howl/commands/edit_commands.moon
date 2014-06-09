@@ -17,19 +17,23 @@ command.register
   handler: -> app.editor.searcher\commit!
 
 command.register
+  name: 'buffer-search-word-forward',
+  description: 'Jumps to next occurence of word at cursor'
+  input: 'forward_search_word'
+  handler: ->
+    app.editor.searcher\commit!
+
+command.register
+  name: 'buffer-search-word-backward',
+  description: 'Jumps to previous occurence of word at cursor'
+  input: 'backward_search_word'
+  handler: ->
+    app.editor.searcher\commit!
+
+command.register
   name: 'buffer-repeat-search',
   description: 'Repeats the last search'
-  handler: -> app.editor.searcher\next!
-
-command.register
-  name: 'buffer-repeat-search-forward',
-  description: 'Repeats the last search forward'
-  handler: -> app.editor.searcher\next_forward!
-
-command.register
-  name: 'buffer-repeat-search-backward',
-  description: 'Repeats the last search backward'
-  handler: -> app.editor.searcher\next_backward!
+  handler: -> app.editor.searcher\repeat_last!
 
 command.register
   name: 'buffer-replace',

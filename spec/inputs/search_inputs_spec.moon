@@ -23,7 +23,7 @@ describe 'search_inputs', ->
     it 'complete(text) searches forward for <text>', ->
       searcher.forward_to = spy.new -> true
       input\complete 'foo'
-      assert.spy(searcher.forward_to).was.called_with searcher, 'foo'
+      assert.spy(searcher.forward_to).was.called_with searcher, 'foo', 'plain'
 
     it 'on_cancelled() calls cancel() on the searcher', ->
       searcher.cancel = spy.new -> true

@@ -10,6 +10,13 @@ highlight.define_default 'search', {
   outline_alpha: 100
 }
 
+highlight.define_default 'search_secondary', {
+  style: highlight.ROUNDBOX,
+  color: '#ffffff'
+  alpha: 0
+  outline_alpha: 150
+}
+
 with config
   .define
     name: 'search_wraps'
@@ -21,92 +28,164 @@ class Searcher
   new: (editor) =>
     @editor = editor
     @last_search = nil
-    @last_method = 'forward_to'
+    @last_direction = nil
+    @last_type = nil
 
-  forward_to: (search) => @jump_to search, 'forward'
+  forward_to: (search, type = 'plain', match_at_cursor = true) =>
+    @jump_to search, direction: 'forward', type: type, match_at_cursor: match_at_cursor
 
-  backward_to: (search) => @jump_to search, 'backward'
+  backward_to: (search, type = 'plain', match_at_cursor = @active) =>
+    @jump_to search, direction: 'backward', type: type, match_at_cursor: match_at_cursor
 
-  jump_to: (search, direction = 'forward') =>
-    highlight.remove_all 'search', @editor.buffer
-
+  jump_to: (search, opts = {}) =>
+    @_clear_highlights!
     return if search.is_empty
 
-    pos = @editor.cursor.pos
-
-    if @active and direction == 'backward'
-      -- allow active match to continue to match
-      pos += #search - 1
+    direction = opts.direction or 'forward'
+    ensure_word = opts.type == 'word'
+    match_at_cursor = opts.match_at_cursor or false
 
     unless @active
       @_init!
-      if direction == 'forward'
-        pos += 1
-      else
-        -- match cannot start at pos but can overlap it
-        pos += #search - 2
 
-    find = nil
-    wrap_pos = nil
-    wrap_msg = ''
+    init = @editor.cursor.pos
 
     if direction == 'forward'
-      find = (text, search, pos) -> text\ufind search, pos, true
-      wrap_pos = 1
-      wrap_msg = 'Search hit BOTTOM, continuing at TOP'
+      if not match_at_cursor
+        init += 1
     else
-      find = (text, search, pos) -> text\urfind search, pos
-      wrap_pos = -1
-      wrap_msg = 'Search hit TOP, continuing at BOTTOM'
+      init += search.ulen - 2
+      if match_at_cursor
+        init += 1
 
-    start_pos, end_pos = find @text, search, pos
-
-    if not start_pos and config.search_wraps
-      start_pos, end_pos = find @text, search, wrap_pos
-      if start_pos
-        log.info wrap_msg
+    start_pos, end_pos = @_find_match search, init, direction, ensure_word
 
     if start_pos
       @editor.cursor.pos = start_pos
-      highlight.apply 'search', @editor.buffer, start_pos, (end_pos - start_pos) + 1
+      @_highlight_matches search, start_pos, ensure_word
     else
-      log.error "No matches found for '#{search}'"
+      if ensure_word
+        log.error "No word matches found for '#{search}'"
+      else
+        log.error "No matches found for '#{search}'"
 
     @last_search = search
     @last_direction = direction
+    @last_type = opts.type
+
+  repeat_last: =>
+    @_init!
+    if @last_direction == 'forward'
+      @next!
+    else
+      @previous!
+    @commit!
 
   next: =>
-    if @last_direction == 'forward'
-      @next_forward!
-    else
-      @next_backward!
-
-  next_forward: =>
     if @last_search
-      log.info "Next match for '#{@last_search}'"
-      @forward_to @last_search
-      @commit!
+      if @last_type == 'word'
+        log.info "Next match for word '#{@last_search}'"
+      else
+        log.info "Next match for'#{@last_search}'"
+      @forward_to @last_search, @last_type, false
 
-  next_backward: =>
+  previous: =>
     if @last_search
-      log.info "Previous match for '#{@last_search}'"
-      @backward_to @last_search
-      @commit!
+      if @last_type == 'word'
+        log.info "Previous match for word '#{@last_search}'"
+      else
+        log.info "Previous match for '#{@last_search}'"
+      @backward_to @last_search, @last_type, false
 
   commit: =>
-    @text = nil
+    @buffer = nil
     @start_pos = nil
     @active = false
 
   cancel: =>
-    highlight.remove_all 'search', @editor.buffer
+    @_clear_highlights!
 
     if @active
       @editor.cursor.pos = @start_pos
       @commit!
 
+  _find_match: (search, init, direction, ensure_word) =>
+    finder = nil
+    wrap_pos = nil
+    wrap_msg = ''
+
+    if direction == 'forward'
+      finder = @buffer.find
+      wrap_pos = 1
+      wrap_msg = 'Search hit BOTTOM, continuing at TOP'
+    else
+      finder = @buffer.rfind
+      wrap_pos = -1
+      wrap_msg = 'Search hit TOP, continuing at BOTTOM'
+
+    wrapped = false
+    while true
+      start_pos, end_pos = finder @buffer, search, init
+      if start_pos
+        if not ensure_word or @_is_word(start_pos, search)
+          return start_pos, end_pos
+        -- the match wasn't a word, continue searching
+        if direction == 'forward'
+          init = end_pos + 1
+        else
+          init = start_pos - 1
+      else
+        if wrapped or init == wrap_pos
+          -- already wrapped, or no need to wrap
+          return
+        else
+          init = wrap_pos
+          log.info wrap_msg
+          wrapped = true
+
+  _is_word: (match_pos, word) =>
+      match_ctx = @editor.buffer\context_at match_pos
+      return match_ctx.word.text == word
+
+  _highlight_matches: (search, match_pos, ensure_word) =>
+    return unless search
+    buffer = @editor.buffer
+
+    -- scan the displayed lines and a few more for good measure
+    start_boundary = buffer.lines[math.max(1, @editor.line_at_top - 5)].start_pos
+    end_boundary = buffer.lines[math.min(#buffer.lines, @editor.line_at_bottom + 5)].end_pos
+
+    -- match at match_pos gets a different highlight than other matches
+    for start_pos, end_pos in @_find_matches search, start_boundary, end_boundary
+      if not ensure_word or @_is_word(start_pos, search)
+        if start_pos == match_pos
+          highlight.apply 'search', buffer, start_pos, end_pos - start_pos + 1
+        else
+          highlight.apply 'search_secondary', buffer, start_pos, end_pos - start_pos + 1
+
+  _find_matches: (search, start_boundary, end_boundary) =>
+    match_start_pos = nil
+    match_end_pos = nil
+    text = @buffer\sub start_boundary, end_boundary
+    init = 1
+    return ->
+      while true
+        if init > #text
+          return
+
+        match_start_pos, match_end_pos = text\ufind search, init, true
+        return if not match_start_pos
+
+        init = match_end_pos + 1
+
+        return match_start_pos + start_boundary - 1, match_end_pos + start_boundary - 1
+
+  _clear_highlights: =>
+    highlight.remove_all 'search', @editor.buffer
+    highlight.remove_all 'search_secondary', @editor.buffer
+
   _init: =>
     @start_pos = @editor.cursor.pos
-    @text = @editor.buffer.text
+    @buffer = @editor.buffer
     @active = true
 

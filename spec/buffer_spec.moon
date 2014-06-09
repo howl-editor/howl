@@ -506,6 +506,45 @@ describe 'Buffer', ->
       assert.equals '', buffer'abc'\sub 4, 6
       assert.equals 'abc', buffer'abc'\sub 1, 6
 
+  describe 'find(pattern [, init ])', ->
+    it 'searches forward', ->
+      b = buffer 'ä öx'
+      assert.same { 1, 4 }, { b\find 'ä öx' }
+      assert.same { 2, 3 }, { b\find ' ö' }
+      assert.same { 3, 4 }, { b\find 'öx' }
+      assert.same { 4, 4 }, { b\find 'x' }
+
+    it 'searches forward from init when specified', ->
+      b = buffer 'öååååö'
+      assert.same { 2, 3 }, { b\find 'åå', 2 }
+      assert.same { 3, 4 }, { b\find 'åå', 3 }
+      assert.is_nil, { b\find 'åå', 4 }
+
+    it 'negative init specifies offset from end', ->
+      b = buffer 'öååååö'
+      assert.same { 4, 5 }, { b\find 'åå', -3 }
+      assert.same { 2, 3 }, { b\find 'åå', -5 }
+      assert.is_nil, { b\find 'åå', -2 }
+
+  describe 'rfind(pattern [, init ])', ->
+    it 'searches backward from end', ->
+      b = buffer 'äöxöx'
+      assert.same { 1, 3 }, { b\rfind 'äöx' }
+      assert.same { 4, 5 }, { b\rfind 'öx' }
+      assert.same { 5, 5 }, { b\rfind 'x' }
+
+    it 'searches backward from init when specified', ->
+      b = buffer 'öååååö'
+      assert.same { 4, 5 }, { b\rfind 'åå', 5 }
+      assert.same { 3, 4 }, { b\rfind 'åå', 4 }
+      assert.is_nil, { b\rfind 'åå', 2 }
+
+    it 'negative init specifies offset from end', ->
+      b = buffer 'öååååö'
+      assert.same { 4, 5 }, { b\rfind 'åå', -2 }
+      assert.same { 2, 3 }, { b\rfind 'åå', -4 }
+      assert.is_nil, { b\rfind 'åå', -5 }
+
   describe 'reload(force = false)', ->
     it 'reloads the buffer contents from file and returns true', ->
       with_tmpfile (file) ->

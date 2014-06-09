@@ -128,6 +128,13 @@ always evaluated as such, regardless of `pattern`.
 
 Returns true if the string ends with `s`, and false otherwise.
 
+### rfind (text [, init])
+
+Searches backwards for `text` from end of string, or from byte offset `init`, if
+provided. Searches for plain strings only (no regex or patterns).  Returns byte
+offsets `start_pos`, `end_pos` for the closest match or `nil` when no match was
+found.
+
 ### starts_with (s)
 
 Returns true if the string starts with `s`, and false otherwise.
@@ -155,8 +162,10 @@ pattern can be both a Lua string pattern and a [regex].
 
 ### urfind (text [, init])
 
-Similar to ufind() but searches backwards for `text` from end of string,
-or `init`, if provided. Searches for plain strings only (no regex or patterns).
+Similar to ufind() but searches backwards for `text` from end of string, or
+character offset `init`, if provided. Searches for plain strings only (no regex
+or patterns). Returns character offsets `start_pos`, `end_pos` for the closest
+match, or `nil`, if no match was found.
 
 ### usub (i [, j])
 

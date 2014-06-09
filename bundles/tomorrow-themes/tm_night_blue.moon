@@ -69,6 +69,12 @@ return {
       alpha: 80
       outline_alpha: 100
 
+    search_secondary:
+      style: highlight.ROUNDBOX
+      color: white
+      alpha: 0
+      outline_alpha: 100
+
     list_selection:
       style: highlight.ROUNDBOX
       color: white
