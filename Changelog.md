@@ -16,7 +16,9 @@ sequences supported).
 substituted for `altL` so that pressing left alt is distinguishable from
 pressing alt + l (issue #29)
 
-- VI: Refuse to enter INSERT mode for a read-only buffer
+- VI:
+  * Refuse to enter INSERT mode for a read-only buffer
+  * Bind `?` to `buffer-search-backward`
 
 - Added new method, `Buffer.save_as(file)`, for associating with and saving a
 buffer's content to a specified file.

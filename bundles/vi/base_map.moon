@@ -89,6 +89,7 @@ map = {
     f: (editor) -> bindings.capture forward_to_char
     F: (editor) -> bindings.capture back_to_char
     '/': 'buffer-search-forward'
+    '?': 'buffer-search-backward'
     n: 'buffer-repeat-search'
 
     M: (editor) -> apply editor, (editor) ->
