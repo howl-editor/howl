@@ -40,7 +40,7 @@ sort_files = (files) ->
     f1.path < f2.path
 
 match_file = (directory, text, directories_only) ->
-  path = directory\join(text)
+  path = directory\join(File.expand_path text)
 
   if path.is_directory and (text.is_blank or text\ends_with File.separator)
     directory = path
@@ -80,7 +80,9 @@ last_text_part = (text) ->
 
 should_auto_match_file = (directory, text) ->
   for p in *{
+    '^%s*/%S*$', -- './'
     '^%s*%./%S*$', -- './'
+    '^%s*~/%S*$', -- '~/'
     '^%S%s+%./', -- 'command ./'
     r'^\\s*cd\\s+(.+/\\s*)?$' -- 'cd '
   }
@@ -115,7 +117,7 @@ external_command_input = {
   on_completed: (value, readline) =>
     parts = text_parts readline.text
     last_part = parts[#parts]
-    path = @directory / last_part
+    path = @directory / File.expand_path last_part
     if path.is_directory
       return true if last_part\ends_with "#{File.separator}."
     else
@@ -126,7 +128,7 @@ external_command_input = {
   on_submit: (value, readline) =>
     dir = readline.text\match '^%s*cd%s+(.+)%s*$'
     if dir
-      path = @directory / dir
+      path = @directory / File.expand_path dir
       if path.is_directory
         @chdir path, readline
       else
@@ -135,7 +137,7 @@ external_command_input = {
       return false
 
     else
-      path = @directory / readline.text
+      path = @directory / File.expand_path readline.text
       if path.is_directory
         @chdir path, readline
         false
