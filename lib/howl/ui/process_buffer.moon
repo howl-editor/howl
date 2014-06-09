@@ -34,6 +34,9 @@ parse_output = (text) ->
 
 ProcessMode = {
 
+  default_config:
+    cursor_line_highlighted: false
+
   keymap: {
     editor: {
       return: (editor) ->
