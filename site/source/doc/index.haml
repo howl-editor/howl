@@ -32,9 +32,17 @@ title: Howl Documentation (0.3-dev)
 
 %h2#api-reference API reference
 
-- howl_api_docs.each do |doc|
-  %h4
-    = link_to doc.data[:title], doc.url
+.row
+  - sliced_for_columns(3, howl_api_docs) do |col|
+    .col-lg-4
+      - col.each do |slice|
+        %h3
+          %small Module:
+          = slice[:package]
+        - slice[:docs].each do |doc|
+          %h4
+            = link_to doc.data[:title], doc.url
+
 %h4 (.. WIP)
 
 %h2#howl-specs Howl specs (tests)
@@ -44,7 +52,13 @@ title: Howl Documentation (0.3-dev)
   better understanding the API, as well as providing some code examples.
   Bundle specs are currently not included in the below list.
 
-- howl_specs.each do |spec|
-  %h4
-    = link_to spec.data[:title], spec.url
-
+.row
+  - sliced_for_columns(3, howl_specs) do |col|
+    .col-lg-4
+      - col.each do |slice|
+        %h3
+          %small Module:
+          = slice[:package]
+        - slice[:docs].each do |doc|
+          %h4
+            = link_to doc.data[:title], doc.url
