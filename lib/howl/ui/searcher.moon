@@ -48,6 +48,10 @@ class Searcher
     unless @active
       @_init!
 
+    if direction == 'forward' and ensure_word
+      -- back up to start of current word
+      @editor.cursor.pos = @editor.current_context.word.start_pos
+
     init = @editor.cursor.pos
 
     if direction == 'forward'

@@ -137,17 +137,20 @@ describe 'Searcher', ->
         assert.equal 2, cursor.pos
 
   describe 'forward_to(string, "word")', ->
-    it 'moves the cursor to the next occurrence of word match <string>', ->
+    it 'moves the cursor to the start of the current word', ->
       buffer.text = 'hello helloo hello'
       cursor.pos = 2
       searcher\forward_to 'hello', 'word'
-      assert.equal 14, cursor.pos
-
-    it 'matches at the current position', ->
-      buffer.text = 'no means no'
-      cursor.pos = 1
-      searcher\forward_to 'no', 'word'
       assert.equal 1, cursor.pos
+
+    it 'highlights current word with "search" and other word matches with "search_secondary"', ->
+      buffer.text = 'hello hola hello hola hello'
+      cursor.pos = 13
+      searcher\forward_to 'hello', 'word'
+      assert.same { 'search' }, highlight.at_pos buffer, 12
+      assert.same { 'search' }, highlight.at_pos buffer, 16
+      assert.same { 'search_secondary' }, highlight.at_pos buffer, 1
+      assert.same { 'search_secondary' }, highlight.at_pos buffer, 23
 
     describe 'next()', ->
       it 'moves to the next word match', ->
