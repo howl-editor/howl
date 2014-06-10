@@ -1,6 +1,6 @@
 import destructor from howl.aux
 
-describe 'destructor(callback, ...)', ->
+describe 'destructor', ->
   it 'returns an object, for which <callback> is called when it is collected', ->
     callback = Spy!
     destructor callback

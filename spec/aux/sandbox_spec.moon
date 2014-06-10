@@ -1,6 +1,6 @@
 import Sandbox from howl.aux
 
-describe 'Sandbox(env, options)', ->
+describe 'Sandbox', ->
   it 'allows running a function with a specified environment', ->
     box = Sandbox foo: -> 'bar!'
     assert.equal 'bar!', box -> return foo!

@@ -1,6 +1,6 @@
 import Matcher from howl.util
 
-describe 'Matcher(candidates)', ->
+describe 'Matcher', ->
 
   it 'matches if the search matches exactly', ->
     c = { 'One', 'Green Fields', 'two' }

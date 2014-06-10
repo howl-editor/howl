@@ -3,7 +3,7 @@ import Buffer from howl
 import completion from howl
 import DefaultMode from howl.modes
 
-describe 'api_completer(api, resolver)', ->
+describe 'api_completer', ->
 
   factory = completion.api.factory
 

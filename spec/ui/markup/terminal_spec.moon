@@ -1,7 +1,7 @@
 m = howl.ui.markup.terminal
 StyledText = howl.ui.StyledText
 
-describe 'terminal(text)', ->
+describe 'terminal', ->
 
   it 'returns a StyledText instance with empty styles if no markup is detected', ->
     assert.same StyledText('foo', {}), m 'foo'

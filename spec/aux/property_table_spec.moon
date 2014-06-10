@@ -1,6 +1,6 @@
 import PropertyTable from howl.aux
 
-describe 'PropertyTable(table)', ->
+describe 'PropertyTable', ->
   it 'returns a table with the properties in the passed table', ->
     pt = PropertyTable foo:
       get: (t) -> t.value
