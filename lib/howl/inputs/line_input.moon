@@ -47,15 +47,16 @@ class LineInput
           highlight.apply 'search', buffer, start_pos + hl_pos - 1, 1
 
       -- highlight nearby secondary matches
-      for match in *@matches
-        nr = tonumber(match[1])
+      if @matches
+        for match in *@matches
+          nr = tonumber(match[1])
 
-        if (nr != @nr) and (nr > @editor.line_at_top - 5) and (nr < @editor.line_at_bottom + 5)
-          line = buffer.lines[nr]
-          start_pos = line.start_pos
+          if (nr != @nr) and (nr > @editor.line_at_top - 5) and (nr < @editor.line_at_bottom + 5)
+            line = buffer.lines[nr]
+            start_pos = line.start_pos
 
-          for hl_pos in *@matcher.explain text, line.text
-            highlight.apply 'search_secondary', buffer, start_pos + hl_pos - 1, 1
+            for hl_pos in *@matcher.explain text, line.text
+              highlight.apply 'search_secondary', buffer, start_pos + hl_pos - 1, 1
 
     else
       -- highlight entire line
