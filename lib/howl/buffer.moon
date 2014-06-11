@@ -271,8 +271,11 @@ class Buffer extends PropertyObject
     ffi.string @sci\get_range_pointer(byte_start_pos - 1, byte_size), byte_size
 
   find: (search, init = 1) =>
-    if init < 1
+    if init < 0
       init = @length + init + 1
+
+    if init < 1 or init > @length
+      return nil
 
     byte_start_pos = @text\find search, @byte_offset(init), true
 
@@ -281,8 +284,11 @@ class Buffer extends PropertyObject
       return start_pos, start_pos + search.ulen - 1
 
   rfind: (search, init = @length) =>
-    if init < 1
+    if init < 0
       init = @length + init + 1
+
+    if init < 1 or init > @length
+      return nil
 
     -- use byte offset of last byte of char at init
     byte_start_pos = @text\rfind search, @byte_offset(init + 1) - 1

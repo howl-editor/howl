@@ -152,6 +152,12 @@ describe 'Searcher', ->
       assert.same { 'search_secondary' }, highlight.at_pos buffer, 1
       assert.same { 'search_secondary' }, highlight.at_pos buffer, 23
 
+    it 'does not move the cursor when there is no match', ->
+      buffer.text = 'hello!'
+      cursor.pos = 1
+      searcher\forward_to 'foo', 'word'
+      assert.equal 1, cursor.pos
+
     describe 'next()', ->
       it 'moves to the next word match', ->
         buffer.text = 'hello helloo hello'
@@ -169,11 +175,47 @@ describe 'Searcher', ->
         searcher\previous!
         assert.equal 1, cursor.pos
 
+  describe 'backward_to(string, "word")', ->
+    it 'moves the cursor to the previous occurrence of word match <string>', ->
+      buffer.text = 'hello helloo hello'
+      cursor.pos = 14
+      searcher\backward_to 'hello', 'word'
+      assert.equal 1, cursor.pos
+
+    it 'skips match at the current position by default', ->
+      buffer.text = 'no means no'
+      cursor.pos = 9
+      searcher\backward_to 'no', 'word'
+      assert.equal 1, cursor.pos
+
     it 'does not move the cursor when there is no match', ->
       buffer.text = 'hello!'
-      cursor.pos = 1
-      searcher\forward_to 'foo'
-      assert.equal 1, cursor.pos
+      cursor.pos = 2
+      searcher\backward_to 'foo', 'word'
+      assert.equal 2, cursor.pos
+
+    it 'handles substring match at start of file gracefully', ->
+      buffer.text = 'abcd  abc'
+      cursor.pos = 6
+      searcher\backward_to 'abc', 'word'
+      assert.equal 7, cursor.pos
+
+    describe 'next()', ->
+      it 'moves to the next word match', ->
+        buffer.text = 'hello helloo hello'
+        cursor.pos = 14
+        searcher\backward_to 'hello', 'word'
+        searcher\next!
+        assert.equal 14, cursor.pos
+
+    describe 'previous()', ->
+      it 'moves to the previous word match', ->
+        buffer.text = 'hello helloo hello'
+        cursor.pos = 14
+        searcher\backward_to 'hello', 'word'
+        searcher\next!
+        searcher\previous!
+        assert.equal 1, cursor.pos
 
   it 'cancel() moves the cursor back to the original position', ->
     buffer.text = 'hello!'
