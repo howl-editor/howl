@@ -96,8 +96,12 @@ keymap, which will be [pushed](#push) using the `pop` option.
 
 *Protip*:
 
-You can use the `describe-key` command to interactively view information for
-any particular key press, i.e. the key event and translations.
+You can use the `describe-key` command to interactively view information for any
+particular key press, i.e. the key event and translations.
+
+_See also_:
+
+- The [spec](../spec/bindings_spec.html) for howl.bindings
 
 ## Properties
 

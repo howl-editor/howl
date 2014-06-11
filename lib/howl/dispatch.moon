@@ -30,7 +30,7 @@ _resume = (handle, ...) ->
     error(ret[2], ret[3]) unless ret[1]
     unpack ret, 2, ret.n
 
-  resume_with_error: (handle, err, level) ->
+  resume_with_error: (handle, err, level = 1) ->
     _resume handle, false, err, level
 
   wait: (handle) ->
