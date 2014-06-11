@@ -1,0 +1,9 @@
+#! /bin/sh
+
+ROOT=$(cd $(dirname $0)/.. && pwd)
+cd $ROOT
+
+for d in spec bundles lib/ljglibs/spec; do
+  echo "$d >>"
+  ./bin/howl-spec $d || exit 1
+done

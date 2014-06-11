@@ -11,7 +11,7 @@ before_install:
 install:
   - (cd src && make -j 4)
 
-script: "./bin/howl-spec && ./bin/howl-spec bundles && ./bin/howl-spec lib/ljglibs/spec"
+script: "./bin/run-all-specs"
 
 notifications:
   email:
