@@ -283,6 +283,8 @@ class Buffer extends PropertyObject
       start_pos = @char_offset byte_start_pos
       return start_pos, start_pos + search.ulen - 1
 
+    nil
+
   rfind: (search, init = @length) =>
     if init < 0
       init = @length + init + 1
@@ -296,6 +298,8 @@ class Buffer extends PropertyObject
     if byte_start_pos
       start_pos = @char_offset byte_start_pos
       return start_pos, start_pos + search.ulen - 1
+
+    nil
 
   reload: (force = false) =>
     error "Cannot reload buffer '#{self}': no associated file", 2 unless @file

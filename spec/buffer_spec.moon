@@ -515,21 +515,21 @@ describe 'Buffer', ->
       assert.same { 4, 4 }, { b\find 'x' }
 
     it 'searches forward from init when specified', ->
-      b = buffer 'öååååö'
+      b = buffer 'öåååö'
       assert.same { 2, 3 }, { b\find 'åå', 2 }
       assert.same { 3, 4 }, { b\find 'åå', 3 }
-      assert.is_nil, { b\find 'åå', 4 }
+      assert.is_nil b\find('åå', 4)
 
     it 'negative init specifies offset from end', ->
       b = buffer 'öååååö'
       assert.same { 4, 5 }, { b\find 'åå', -3 }
       assert.same { 2, 3 }, { b\find 'åå', -5 }
-      assert.is_nil, { b\find 'åå', -2 }
+      assert.is_nil b\find('åå', -2)
 
     it 'returns nil for out of bounds init', ->
       b = buffer 'abcde'
-      assert.is_nil b\find 'a', -6
-      assert.is_nil b\find 'a', 6
+      assert.is_nil b\find('a', -6)
+      assert.is_nil b\find('a', 6)
 
   describe 'rfind(pattern [, init ])', ->
     it 'searches backward from end', ->
@@ -542,18 +542,18 @@ describe 'Buffer', ->
       b = buffer 'öååååö'
       assert.same { 4, 5 }, { b\rfind 'åå', 5 }
       assert.same { 3, 4 }, { b\rfind 'åå', 4 }
-      assert.is_nil, { b\rfind 'åå', 2 }
+      assert.is_nil b\rfind('åå', 2)
 
     it 'negative init specifies offset from end', ->
       b = buffer 'öååååö'
       assert.same { 4, 5 }, { b\rfind 'åå', -2 }
       assert.same { 2, 3 }, { b\rfind 'åå', -4 }
-      assert.is_nil, { b\rfind 'åå', -5 }
+      assert.is_nil b\rfind('åå', -5)
 
     it 'returns nil for out of bounds init', ->
       b = buffer 'abcde'
-      assert.is_nil b\rfind 'a', -6
-      assert.is_nil b\rfind 'a', 6
+      assert.is_nil b\rfind('a', -6)
+      assert.is_nil b\rfind('a', 6)
 
   describe 'reload(force = false)', ->
     it 'reloads the buffer contents from file and returns true', ->
