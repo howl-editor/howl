@@ -14,8 +14,6 @@ install:
 script: "./bin/howl-spec && ./bin/howl-spec bundles && ./bin/howl-spec lib/ljglibs/spec"
 
 notifications:
-  recipients:
-    - nino@nordman.org
   email:
     on_success: always
     on_failure: always
