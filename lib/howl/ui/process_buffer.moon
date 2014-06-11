@@ -36,6 +36,7 @@ ProcessMode = {
 
   default_config:
     cursor_line_highlighted: false
+    line_wrapping: 'character'
 
   keymap: {
     editor: {
