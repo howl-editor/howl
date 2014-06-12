@@ -5,6 +5,7 @@ glib = require 'ljglibs.glib'
 import app from howl
 import File from howl.io
 import Matcher from howl.util
+import markup, style from howl.ui
 
 append = table.insert
 
@@ -88,9 +89,12 @@ class FileInput
     @directory = directory
 
     @base_prompt = readline.prompt unless @base_prompt
-    prompt = @base_prompt .. directory.short_path
-    prompt ..= separator if not prompt\match separator .. '$'
+    basename = directory.short_path
+    basename ..= separator if not basename\ends_with separator
+    prompt = markup.howl "<prompt>#{@base_prompt}</><directory>#{basename}</>"
     readline.prompt = prompt
+
+style.define_default 'directory', 'key'
 
 howl.inputs.register {
   name: 'file',

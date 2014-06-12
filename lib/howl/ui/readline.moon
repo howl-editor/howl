@@ -142,7 +142,7 @@ class Readline extends PropertyObject
       @_prompt_len = prompt.ulen
       last_line = @buffer.lines[#@buffer.lines]
       last_line.text = ''
-      pos = @buffer\insert prompt, last_line.start_pos
+      pos = @buffer\insert prompt, last_line.start_pos, 'prompt'
       @buffer\insert text, pos
       @_adjust_height!
       @cursor\eof!
@@ -372,5 +372,7 @@ class Readline extends PropertyObject
 
     shift_tab: => @_prev_page!
   }
+
+style.define_default 'prompt', 'keyword'
 
 return Readline

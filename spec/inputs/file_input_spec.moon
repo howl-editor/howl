@@ -39,20 +39,20 @@ describe 'File inputs', ->
             input\complete '', readline
             readline.text ..= '/'
             input\complete readline.text, readline
-            assert.equals 'open /', readline.prompt
+            assert.equals 'open /', tostring readline.prompt
 
           it 'automatically switches to the home dir if the text is "~/"', ->
             input\complete '', readline
             readline.text ..= '~/'
             input\complete readline.text, readline
-            assert.equals "open ~/", readline.prompt
+            assert.equals "open ~/", tostring readline.prompt
 
           it 'automatically opens directory if text has trailing "/"', ->
             sub = directory\join('sub')
             sub\mkdir!
             readline.text ..= 'sub/'
             input\complete readline.text, readline
-            assert.equals "open #{sub.path}/", readline.prompt
+            assert.equals "open #{sub.path}/", tostring readline.prompt
 
         describe 'on_completed(path, readline)', ->
           it 'changes dir and returns false when <path> is a directory', ->

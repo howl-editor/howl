@@ -151,7 +151,7 @@ external_command_input = {
 
   chdir: (directory, readline) =>
     trailing = directory.path == File.separator and '' or File.separator
-    readline.prompt = m "<operator>[</><keyword>#{directory.short_path}#{trailing}</><operator>] $</> "
+    readline.prompt = m "<operator>[</><directory>#{directory.short_path}#{trailing}</><operator>] $</> "
     @directory = directory
 }
 
