@@ -1,0 +1,225 @@
+-- Copyright 2014 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
+Buffer = require 'aullar.buffer'
+
+ffi = require 'ffi'
+
+describe 'Buffer', ->
+
+  parts = (b) ->
+    p = {}
+    if b.gap_start > 0
+      p[#p + 1] = ffi.string(b.bytes, b.gap_start)
+
+    post_count = b.size - b.gap_start
+    if post_count > 0
+      p[#p + 1] = ffi.string(b.bytes + b.gap_end, post_count)
+
+    p
+
+  it 'starts out with the gap at the end of the buffer', ->
+    b = Buffer 'hello'
+    assert.equals 5, b.gap_start
+    assert.equals b\gap_size! + b.gap_start, b.gap_end
+
+  describe 'move_gap_to(offset)', ->
+    it 'moves the gap to the specified offset', ->
+      b = Buffer 'hello'
+      b\move_gap_to 2 -- first 'l'
+      assert.equals 2, b.gap_start
+      assert.equals b\gap_size! + b.gap_start, b.gap_end
+      assert.same { 'he', 'llo' }, parts(b)
+
+      b\move_gap_to 4 -- 'o'
+      assert.equals 4, b.gap_start
+      assert.equals b\gap_size! + b.gap_start, b.gap_end
+      assert.same { 'hell', 'o' }, parts(b)
+
+  describe 'extend_gap_at(offset, new_size)', ->
+    it 'extends the gap to be the specified size at the specified offset', ->
+      b = Buffer 'hello'
+      new_size = b\gap_size! + 10
+      b\extend_gap_at 2, new_size -- first 'l'
+      assert.equals new_size, b\gap_size!
+      assert.equals 2, b.gap_start
+      assert.equals b\gap_size! + b.gap_start, b.gap_end
+      assert.same { 'he', 'llo' }, parts(b)
+
+      b\extend_gap_at 4, new_size -- 'o'
+      assert.equals new_size, b\gap_size!
+      assert.equals 4, b.gap_start
+      assert.equals b\gap_size! + b.gap_start, b.gap_end
+      assert.same { 'hell', 'o' }, parts(b)
+
+  it 'tostring() returns a lua string representation of the buffer', ->
+    b = Buffer 'hello world'
+    assert.equals 'hello world', b\tostring!
+
+    b\move_gap_to 0
+    assert.equals 'hello world', b\tostring!
+
+    b\move_gap_to 4
+    assert.equals 'hello world', b\tostring!
+
+  describe 'lines([start_line, end_line])', ->
+    all_lines = (b) -> [ffi.string(l.text, l.size) for l in b\lines 1]
+
+    context 'with no parameters passed', ->
+      it 'returns a generator for all available lines in the buffer', ->
+        b = Buffer 'line 1\nline 2\nline 3'
+        assert.same {
+          'line 1',
+          'line 2',
+          'line 3',
+        }, all_lines(b)
+
+    it 'considers an empty last line as a line', ->
+      b = Buffer 'line 1\n'
+      assert.same {
+        'line 1',
+        '',
+      }, all_lines(b)
+
+    it 'handles different types of line breaks', ->
+      b = Buffer 'line 1\nline 2\r\nline 3\r'
+      assert.same {
+        'line 1',
+        'line 2',
+        'line 3',
+         '',
+      }, all_lines(b)
+
+    it 'handles various gap positions automatically', ->
+      b = Buffer 'line 1\nline 2'
+      b\move_gap_to 0
+      assert.same { 'line 1', 'line 2' }, all_lines(b)
+
+      b\insert 2, 'x'
+      assert.same { 'lixne 1', 'line 2' }, all_lines(b)
+
+      b\insert 8, 'air'
+      assert.same { 'lixne 1', 'airline 2' }, all_lines(b)
+
+      b\delete 2, 1
+      assert.same { 'line 1', 'airline 2' }, all_lines(b)
+
+      b\delete 7, 3
+      assert.same { 'line 1', 'line 2' }, all_lines(b)
+
+      b\move_gap_to b.size
+      assert.same { 'line 1', 'line 2' }, all_lines(b)
+
+    it 'provides useful information about the line', ->
+      b = Buffer 'line 1\nline 2'
+      gen = b\lines!
+      line = gen!
+      assert.equals 1, line.nr
+      assert.equals 6, line.size
+      assert.equals 0, line.start_offset
+      assert.equals 7, line.end_offset
+
+      line = gen!
+      assert.equals 2, line.nr
+      assert.equals 6, line.size
+      assert.equals 7, line.start_offset
+      assert.equals 13, line.end_offset
+
+  describe 'get_line(nr)', ->
+    it 'returns line information for the specified line', ->
+      b = Buffer 'line 1\nline 2'
+      line = b\get_line 2
+      assert.equals 2, line.nr
+      assert.equals 6, line.size
+      assert.equals 7, line.start_offset
+      assert.equals 13, line.end_offset
+
+    it 'return nil for an out-of-bounds line', ->
+      b = Buffer 'line 1\nline 2'
+      assert.is_nil b\get_line 0
+      assert.is_nil b\get_line 3
+
+  describe 'get_line_at_offset(offset)', ->
+    it 'returns line information for the line at the specified offset', ->
+      b = Buffer 'line 1\nline 2'
+      line = b\get_line_at_offset 7
+      assert.equals 2, line.nr
+      assert.equals 6, line.size
+      assert.equals 7, line.start_offset
+      assert.equals 13, line.end_offset
+
+    it 'handles boundaries correctly', ->
+      b = Buffer 'line 1\n\nline 2'
+      assert.is_nil b\get_line_at_offset -1
+      assert.equals 1, b\get_line_at_offset(0).nr
+      assert.equals 1, b\get_line_at_offset(6).nr
+      assert.equals 2, b\get_line_at_offset(7).nr
+      assert.equals 3, b\get_line_at_offset(8).nr
+      assert.equals 3, b\get_line_at_offset(13).nr
+      assert.is_nil b\get_line_at_offset(14)
+
+  describe 'get_ptr(offset, size)', ->
+    it 'returns a pointer to a char buffer starting at offset, valid for <size> bytes', ->
+      b = Buffer '0123456789'
+      assert.equals '3456', ffi.string(b\get_ptr(3, 4), 4)
+
+    it 'returns a valid pointer even if the range overlaps the gap', ->
+      b = Buffer '0123456789'
+      b\insert 4, 'X'
+      b\move_gap_to 4
+      assert.equals '3X45', ffi.string(b\get_ptr(3, 4), 4)
+
+    it 'returns a valid pointer for an offset greater than the gap start', ->
+      b = Buffer '0123456789'
+      b\move_gap_to 4
+      assert.equals '567', ffi.string(b\get_ptr(5, 3), 3)
+
+    it 'returns a valid pointer for an offset and size smaller than the gap start', ->
+      b = Buffer '0123456789'
+      b\insert 6, 'X'
+      b\move_gap_to 6
+      assert.equals '45', ffi.string(b\get_ptr(4, 2), 2)
+
+    it 'handles boundary conditions', ->
+      b = Buffer '0123'
+      assert.equals '0123', ffi.string(b\get_ptr(0, 4), 4)
+      assert.equals '0', ffi.string(b\get_ptr(0, 1), 1)
+      assert.equals '3', ffi.string(b\get_ptr(3, 1), 1)
+
+    it 'raises errors for illegal values of offset and size', ->
+      b = Buffer '0123'
+      assert.raises 'Illegal', -> b\get_ptr -1, 2
+      assert.raises 'Illegal', -> b\get_ptr 0, 5
+      assert.raises 'Illegal', -> b\get_ptr 3, 2
+
+  describe 'insert(offset, text, size)', ->
+    it 'inserts the given text at the specified position', ->
+      b = Buffer 'hello world'
+      b\insert 6, 'brave '
+      assert.equals 'hello brave world', b\tostring!
+
+    it 'automatically extends the buffer as needed', ->
+      b = Buffer 'hello world'
+      big_text = string.rep 'x', b\gap_size! + 10
+      b\insert 6, big_text
+      assert.equals "hello #{big_text}world", b\tostring!
+
+  describe 'delete(offset, count)', ->
+    it 'deletes <count> bytes back from <offset>', ->
+      b = Buffer 'goodbye world'
+
+      b\delete 4, 3 -- random access delete
+      assert.same { 'good', ' world' }, parts(b)
+
+      b\delete 3, 1 -- delete back from gap start
+      assert.same { 'goo', ' world' }, parts(b)
+
+      b\delete 3, 1 -- delete forward at gap end
+      assert.same { 'goo', 'world' }, parts(b)
+
+      assert.equals 'gooworld', b\tostring!
+
+  context 'meta methods', ->
+    it 'tostring returns a lua string representation of the buffer', ->
+      b = Buffer 'hello world'
+      assert.equals 'hello world', tostring b
