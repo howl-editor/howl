@@ -5,6 +5,7 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.gdk'
 require 'ljglibs.cdefs.glib'
 require 'ljglibs.cdefs.gio'
+require 'ljglibs.cdefs.pango'
 
 ffi.cdef [[
   /* standard enums */
@@ -106,6 +107,17 @@ ffi.cdef [[
                                              gint src_y,
                                              gint *dest_x,
                                              gint *dest_y);
+
+  PangoContext * gtk_widget_create_pango_context (GtkWidget *widget);
+  PangoContext * gtk_widget_get_pango_context (GtkWidget *widget);
+  void gtk_widget_add_events (GtkWidget *widget, gint events);
+
+  void gtk_widget_queue_draw (GtkWidget *widget);
+  void gtk_widget_queue_draw_area (GtkWidget *widget,
+                                   gint x,
+                                   gint y,
+                                   gint width,
+                                   gint height);
   /* GtkBin */
   typedef struct {} GtkBin;
   GtkWidget * gtk_bin_get_child (GtkBin *bin);
@@ -269,4 +281,8 @@ ffi.cdef [[
   GtkSpinner * gtk_spinner_new (void);
   void gtk_spinner_start (GtkSpinner *spinner);
   void gtk_spinner_stop (GtkSpinner *spinner);
+
+  /* GtkDrawingArea */
+  typedef struct {} GtkDrawingArea;
+  GtkDrawingArea * gtk_drawing_area_new (void);
 ]]

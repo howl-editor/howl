@@ -26,6 +26,10 @@ core.define 'GdkWindow', {
 
   properties: {
     state: => bit_flags @, 'STATE_', C.gdk_window_get_state @
+    events: {
+      get: => C.gdk_window_get_events @
+      set: (events) => C.gdk_window_set_events @, events
+    }
   }
 
   get_position: =>

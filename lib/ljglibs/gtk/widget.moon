@@ -6,12 +6,16 @@ jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 require 'ljglibs.gdk.window'
 require 'ljglibs.gobject.object'
+Cairo = require 'ljglibs.cairo.cairo'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 
 C, ffi_cast = ffi.C, ffi.cast
-ref_ptr = gobject.ref_ptr
+ref_ptr, signal = gobject.ref_ptr, gobject.signal
 widget_t = ffi.typeof 'GtkWidget *'
+cairo_t = ffi.typeof 'cairo_t *'
+pack, unpack = table.pack, table.unpack
+
 to_w = (o) -> ffi_cast widget_t, o
 
 jit.off true, true
@@ -60,6 +64,7 @@ core.define 'GtkWidget < GObject', {
     -- added properties
     screen: => ref_ptr C.gtk_widget_get_screen @
     style_context: => ref_ptr C.gtk_widget_get_style_context @
+    pango_context: => C.gtk_widget_get_pango_context @
     allocated_width: => C.gtk_widget_get_allocated_width @
     allocated_height: => C.gtk_widget_get_allocated_height @
     toplevel: => ref_ptr C.gtk_widget_get_toplevel @
@@ -82,4 +87,20 @@ core.define 'GtkWidget < GObject', {
 
   override_background_color: (state, color) =>
     C.gtk_widget_override_background_color @, state, color
+
+  create_pango_context: => gc_ptr C.gtk_widget_create_pango_context @
+
+  add_events: (events) => C.gtk_widget_add_events @, events
+
+  queue_draw: => C.gtk_widget_queue_draw @
+
+  queue_draw_area: (x, y, width, height) =>
+    C.gtk_widget_queue_draw_area @, x, y, width, height
+
+  on_draw: (handler, ...) =>
+    this = @
+    args = pack(...)
+    signal.connect 'bool3', @, 'draw', (widget, cr) ->
+      handler this, cairo_t(cr), unpack(args, args.n)
+
 }

@@ -51,7 +51,7 @@ Application = core.define 'GApplication < GObject', {
       for i = 1, n_files
         gfiles[#gfiles + 1] = gc_ptr object.ref files[i - 1]
 
-      handler @, gfiles, ffi_string hint
+      handler app, gfiles, ffi_string hint
 
 },  (t, application_id, flags = t.FLAGS_NONE) ->
   gc_ptr(C.g_application_new application_id, flags)

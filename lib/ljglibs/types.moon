@@ -1,3 +1,6 @@
+-- Copyright 2014 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE)
+
 Type = require 'ljglibs.gobject.type'
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gtk'

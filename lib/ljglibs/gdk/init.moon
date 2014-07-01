@@ -1,3 +1,85 @@
 core = require 'ljglibs.core'
+ffi = require 'ffi'
+C = ffi.C
 
-core.auto_loading 'gdk', {}
+constants = {
+  -- GdkEventType;
+  'NOTHING',
+  'DELETE',
+  'DESTROY',
+  'EXPOSE',
+  'MOTION_NOTIFY',
+  'BUTTON_PRESS',
+  '2BUTTON_PRESS',
+  'DOUBLE_BUTTON_PRESS',
+  '3BUTTON_PRESS',
+  'TRIPLE_BUTTON_PRESS',
+  'BUTTON_RELEASE',
+  'KEY_PRESS',
+  'KEY_RELEASE',
+  'ENTER_NOTIFY',
+  'LEAVE_NOTIFY',
+  'FOCUS_CHANGE',
+  'CONFIGURE',
+  'MAP',
+  'UNMAP',
+  'PROPERTY_NOTIFY',
+  'SELECTION_CLEAR',
+  'SELECTION_REQUEST',
+  'SELECTION_NOTIFY',
+  'PROXIMITY_IN',
+  'PROXIMITY_OUT',
+  'DRAG_ENTER',
+  'DRAG_LEAVE',
+  'DRAG_MOTION',
+  'DRAG_STATUS',
+  'DROP_START',
+  'DROP_FINISHED',
+  'CLIENT_EVENT',
+  'VISIBILITY_NOTIFY',
+  'SCROLL',
+  'WINDOW_STATE',
+  'SETTING',
+  'OWNER_CHANGE',
+  'GRAB_BROKEN',
+  'DAMAGE',
+  'TOUCH_BEGIN',
+  'TOUCH_UPDATE',
+  'TOUCH_END',
+  'TOUCH_CANCEL',
+  'EVENT_LAST',
+
+  -- GdkEventMask;
+  'EXPOSURE_MASK',
+  'POINTER_MOTION_MASK',
+  'POINTER_MOTION_HINT_MASK',
+  'BUTTON_MOTION_MASK',
+  'BUTTON1_MOTION_MASK',
+  'BUTTON2_MOTION_MASK',
+  'BUTTON3_MOTION_MASK',
+  'BUTTON_PRESS_MASK',
+  'BUTTON_RELEASE_MASK',
+  'KEY_PRESS_MASK',
+  'KEY_RELEASE_MASK',
+  'ENTER_NOTIFY_MASK',
+  'LEAVE_NOTIFY_MASK',
+  'FOCUS_CHANGE_MASK',
+  'STRUCTURE_MASK',
+  'PROPERTY_CHANGE_MASK',
+  'VISIBILITY_NOTIFY_MASK',
+  'PROXIMITY_OUT_MASK',
+  'SUBSTRUCTURE_MASK',
+  'SCROLL_MASK',
+  'TOUCH_MASK',
+  'SMOOTH_SCROLL_MASK',
+  'ALL_EVENTS_MASK'
+}
+
+def = {}
+
+for constant in *constants
+  def[constant] = C["GDK_#{constant}"]
+
+def.KEY_Return = 0xff0d
+
+core.auto_loading 'gdk', def

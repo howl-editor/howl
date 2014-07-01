@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md)
 
 require 'ljglibs.cdefs.glib'
+require 'ljglibs.cdefs.cairo'
 ffi = require 'ffi'
 
 ffi.cdef [[
@@ -53,6 +54,35 @@ ffi.cdef [[
     GDK_EVENT_LAST        /* helper variable for decls */
   } GdkEventType;
 
+  typedef enum
+  {
+    GDK_EXPOSURE_MASK             = 1 << 1,
+    GDK_POINTER_MOTION_MASK       = 1 << 2,
+    GDK_POINTER_MOTION_HINT_MASK  = 1 << 3,
+    GDK_BUTTON_MOTION_MASK        = 1 << 4,
+    GDK_BUTTON1_MOTION_MASK       = 1 << 5,
+    GDK_BUTTON2_MOTION_MASK       = 1 << 6,
+    GDK_BUTTON3_MOTION_MASK       = 1 << 7,
+    GDK_BUTTON_PRESS_MASK         = 1 << 8,
+    GDK_BUTTON_RELEASE_MASK       = 1 << 9,
+    GDK_KEY_PRESS_MASK            = 1 << 10,
+    GDK_KEY_RELEASE_MASK          = 1 << 11,
+    GDK_ENTER_NOTIFY_MASK         = 1 << 12,
+    GDK_LEAVE_NOTIFY_MASK         = 1 << 13,
+    GDK_FOCUS_CHANGE_MASK         = 1 << 14,
+    GDK_STRUCTURE_MASK            = 1 << 15,
+    GDK_PROPERTY_CHANGE_MASK      = 1 << 16,
+    GDK_VISIBILITY_NOTIFY_MASK    = 1 << 17,
+    GDK_PROXIMITY_IN_MASK         = 1 << 18,
+    GDK_PROXIMITY_OUT_MASK        = 1 << 19,
+    GDK_SUBSTRUCTURE_MASK         = 1 << 20,
+    GDK_SCROLL_MASK               = 1 << 21,
+    GDK_TOUCH_MASK                = 1 << 22,
+    GDK_SMOOTH_SCROLL_MASK        = 1 << 23,
+    GDK_ALL_EVENTS_MASK           = 0xFFFFFE
+  } GdkEventMask;
+
+
   typedef struct {
     GdkEventType type;
     gpointer window;
@@ -69,6 +99,8 @@ ffi.cdef [[
 
   gchar * gdk_keyval_name(guint keyval);
   guint32 gdk_keyval_to_unicode(guint keyval);
+
+  typedef cairo_rectangle_int_t         GdkRectangle;
 
   /* screen */
   typedef struct {} GdkScreen;
@@ -109,6 +141,8 @@ ffi.cdef [[
                                 gint *x,
                                 gint *y);
 
+  GdkEventMask gdk_window_get_events (GdkWindow *window);
+  void gdk_window_set_events (GdkWindow *window, GdkEventMask event_mask);
   /* GdkAtom
 
   This is really an opaque struct, but we're going to have to break the
