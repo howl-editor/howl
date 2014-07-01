@@ -7,7 +7,7 @@ Type = require 'ljglibs.gobject.type'
 ffi = require 'ffi'
 bit = require 'bit'
 C, ffi_cast = ffi.C, ffi.cast
-unpack = table.unpack
+pack, unpack = table.pack, table.unpack
 
 defs = {}
 
@@ -75,13 +75,12 @@ setup_signals = (name, def, gtype, instance_cast) ->
       cb_type = "#{ret_type}#{info.n_params + 2}"
       def[name] = (instance, handler, ...) ->
         casting_handler = (...) ->
-          n = select '#', ...
-          args = {...}
+          args = pack ...
           args[1] = instance_cast args[1]
           for i = 2, info.n_params + 1
             args[i] = types.cast info.param_types[i], args[i]
 
-          handler unpack(args, 1, n)
+          handler unpack(args, 1, args.n)
 
         signal.connect cb_type, instance, info.signal_name, casting_handler, ...
 
