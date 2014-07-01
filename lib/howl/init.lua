@@ -18,6 +18,7 @@ local function parse_args(argv)
     ['--help'] = 'help',
     ['--reuse'] = 'reuse',
     ['--compile'] = 'compile',
+    ['--run'] = 'run',
   }
   local args = {}
 
@@ -127,6 +128,8 @@ local function main(args)
       local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
       support()
       busted()
+    elseif args.run then
+      loadfile(args[2])(table.unpack(args, 3))
     else
       howl.app:run()
     end
