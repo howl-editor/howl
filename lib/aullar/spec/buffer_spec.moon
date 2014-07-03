@@ -21,46 +21,36 @@ describe 'Buffer', ->
   it 'starts out with the gap at the end of the buffer', ->
     b = Buffer 'hello'
     assert.equals 5, b.gap_start
-    assert.equals b\gap_size! + b.gap_start, b.gap_end
+    assert.equals b.gap_size + b.gap_start, b.gap_end
 
   describe 'move_gap_to(offset)', ->
     it 'moves the gap to the specified offset', ->
       b = Buffer 'hello'
       b\move_gap_to 2 -- first 'l'
       assert.equals 2, b.gap_start
-      assert.equals b\gap_size! + b.gap_start, b.gap_end
+      assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { 'he', 'llo' }, parts(b)
 
       b\move_gap_to 4 -- 'o'
       assert.equals 4, b.gap_start
-      assert.equals b\gap_size! + b.gap_start, b.gap_end
+      assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { 'hell', 'o' }, parts(b)
 
   describe 'extend_gap_at(offset, new_size)', ->
     it 'extends the gap to be the specified size at the specified offset', ->
       b = Buffer 'hello'
-      new_size = b\gap_size! + 10
+      new_size = b.gap_size + 10
       b\extend_gap_at 2, new_size -- first 'l'
-      assert.equals new_size, b\gap_size!
+      assert.equals new_size, b.gap_size
       assert.equals 2, b.gap_start
-      assert.equals b\gap_size! + b.gap_start, b.gap_end
+      assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { 'he', 'llo' }, parts(b)
 
       b\extend_gap_at 4, new_size -- 'o'
-      assert.equals new_size, b\gap_size!
+      assert.equals new_size, b.gap_size
       assert.equals 4, b.gap_start
-      assert.equals b\gap_size! + b.gap_start, b.gap_end
+      assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { 'hell', 'o' }, parts(b)
-
-  it 'tostring() returns a lua string representation of the buffer', ->
-    b = Buffer 'hello world'
-    assert.equals 'hello world', b\tostring!
-
-    b\move_gap_to 0
-    assert.equals 'hello world', b\tostring!
-
-    b\move_gap_to 4
-    assert.equals 'hello world', b\tostring!
 
   describe 'lines([start_line, end_line])', ->
     all_lines = (b) -> [ffi.string(l.text, l.size) for l in b\lines 1]
@@ -117,13 +107,15 @@ describe 'Buffer', ->
       assert.equals 1, line.nr
       assert.equals 6, line.size
       assert.equals 0, line.start_offset
-      assert.equals 7, line.end_offset
+      assert.equals 6, line.end_offset
+      assert.is_true line.has_eol
 
       line = gen!
       assert.equals 2, line.nr
       assert.equals 6, line.size
       assert.equals 7, line.start_offset
-      assert.equals 13, line.end_offset
+      assert.equals 12, line.end_offset
+      assert.is_false line.has_eol
 
   describe 'get_line(nr)', ->
     it 'returns line information for the specified line', ->
@@ -132,7 +124,7 @@ describe 'Buffer', ->
       assert.equals 2, line.nr
       assert.equals 6, line.size
       assert.equals 7, line.start_offset
-      assert.equals 13, line.end_offset
+      assert.equals 12, line.end_offset
 
     it 'return nil for an out-of-bounds line', ->
       b = Buffer 'line 1\nline 2'
@@ -146,7 +138,7 @@ describe 'Buffer', ->
       assert.equals 2, line.nr
       assert.equals 6, line.size
       assert.equals 7, line.start_offset
-      assert.equals 13, line.end_offset
+      assert.equals 12, line.end_offset
 
     it 'handles boundaries correctly', ->
       b = Buffer 'line 1\n\nline 2'
@@ -157,6 +149,20 @@ describe 'Buffer', ->
       assert.equals 3, b\get_line_at_offset(8).nr
       assert.equals 3, b\get_line_at_offset(13).nr
       assert.is_nil b\get_line_at_offset(14)
+
+  describe '.nr_lines', ->
+    it 'is the number lines in the buffer', ->
+      b = Buffer 'line 1\nline 2'
+      assert.equals 2, b.nr_lines
+
+      b\insert 2, '\n\n'
+      assert.equals 4, b.nr_lines
+
+      b\insert b.size, '\n'
+      assert.equals 5, b.nr_lines
+
+      b\delete 2, 1
+      assert.equals 4, b.nr_lines
 
   describe 'get_ptr(offset, size)', ->
     it 'returns a pointer to a char buffer starting at offset, valid for <size> bytes', ->
@@ -196,13 +202,18 @@ describe 'Buffer', ->
     it 'inserts the given text at the specified position', ->
       b = Buffer 'hello world'
       b\insert 6, 'brave '
-      assert.equals 'hello brave world', b\tostring!
+      assert.equals 'hello brave world', tostring(b)
 
     it 'automatically extends the buffer as needed', ->
       b = Buffer 'hello world'
-      big_text = string.rep 'x', b\gap_size! + 10
+      big_text = string.rep 'x', b.gap_size + 10
       b\insert 6, big_text
-      assert.equals "hello #{big_text}world", b\tostring!
+      assert.equals "hello #{big_text}world", tostring(b)
+
+    it 'handles insertion at the end of the buffer (i.e. appending)', ->
+      b = Buffer 'hello'
+      b\insert 5, ' world'
+      assert.equals 'hello world', tostring(b)
 
   describe 'delete(offset, count)', ->
     it 'deletes <count> bytes back from <offset>', ->
@@ -217,9 +228,15 @@ describe 'Buffer', ->
       b\delete 3, 1 -- delete forward at gap end
       assert.same { 'goo', 'world' }, parts(b)
 
-      assert.equals 'gooworld', b\tostring!
+      assert.equals 'gooworld', tostring(b)
 
   context 'meta methods', ->
     it 'tostring returns a lua string representation of the buffer', ->
       b = Buffer 'hello world'
+      assert.equals 'hello world', tostring b
+
+      b\move_gap_to 0
+      assert.equals 'hello world', tostring b
+
+      b\move_gap_to 4
       assert.equals 'hello world', tostring b

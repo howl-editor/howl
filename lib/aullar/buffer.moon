@@ -4,6 +4,7 @@
 ffi = require 'ffi'
 C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
 {:max, :min, :abs} = math
+{:Object} = require 'aullar.util'
 
 char_arr = ffi.typeof 'char [?]'
 const_char_p = ffi.typeof 'const char *'
@@ -48,10 +49,18 @@ Buffer = {
       _lines: {}
     }
 
+  properties: {
+    gap_size: => (@gap_end - @gap_start)
+
+    nr_lines: =>
+      @_scan_lines_to {}
+      @_last_scanned_line
+  }
+
   insert: (offset, text, size = #text) =>
     @_invalidate_lines_from_offset offset
 
-    if size <= @gap_size!
+    if size <= @gap_size
       @move_gap_to offset
     else
       @extend_gap_at offset, size + GAP_SIZE
@@ -65,7 +74,7 @@ Buffer = {
 
     if offset + count == @gap_start -- adjust gap start backwards
       @gap_start -= count
-    elseif offset == @gap_end - @gap_size! -- adjust gap end forward
+    elseif offset == @gap_end - @gap_size -- adjust gap end forward
       @gap_end += count
     else
       @move_gap_to offset + count
@@ -95,7 +104,7 @@ Buffer = {
 
     for i = start_at, end_at, step
       line = @_lines[i]
-      if offset >= line.start_offset and offset < line.end_offset
+      if offset >= line.start_offset and offset <= line.end_offset
         return line
 
     nil
@@ -105,7 +114,7 @@ Buffer = {
       error "Illegal range: offset=#{offset}, size=#{size} for buffer of size #{@size}"
 
     if offset > @gap_start
-      @bytes + @gap_size! + offset
+      @bytes + @gap_size + offset
     elseif size < @gap_start
       @bytes + offset
     else
@@ -133,7 +142,7 @@ Buffer = {
     else -- offset > gap start, move stuff down
       C.memmove base + @gap_start, base + @gap_end, delta
 
-    gap_size = @gap_size!
+    gap_size = @gap_size
     @gap_start = offset
     @gap_end = offset + gap_size
 
@@ -174,8 +183,6 @@ Buffer = {
   compact: =>
     @move_gap_to @size
 
-  gap_size: => (@gap_end - @gap_start)
-
   tostring: =>
     @compact! if @gap_size != 0
     return ffi_string @bytes, @size
@@ -188,32 +195,32 @@ Buffer = {
     nr = 0
     lines = @_lines
     size = @size
-    bytes_size = @size + @gap_size!
+    bytes_size = @size + @gap_size
     last_was_eol = false
 
     if @_last_scanned_line > 0
       with lines[@_last_scanned_line]
-        offset = .end_offset
+        offset = .end_offset + 1
         nr = .nr
-        last_was_eol = .end_offset - .start_offset != .size
+        last_was_eol = .has_eol
 
     stop_scan_at = bytes_size
 
     if offset >= @gap_start
-      base_offset += @gap_size!
-      offset += @gap_size!
+      base_offset += @gap_size
+      offset += @gap_size
     else
       stop_scan_at = @gap_start
 
-    while (not to.line or nr < to.line) and (not to.offset or offset <= to.offset)
+    while (not to.line or nr < to.line) and (not to.offset or (offset - base_offset) <= to.offset)
       text_ptr = base + offset
       start_p = offset - base_offset
-      end_p, l_size, was_eol = scan_line base, offset, stop_scan_at
+      next_p, l_size, was_eol = scan_line base, offset, stop_scan_at
 
       if not was_eol and stop_scan_at != bytes_size -- at gap
-        base_offset += @gap_size!
+        base_offset += @gap_size
         stop_scan_at = bytes_size
-        end_p, cont_l_size, was_eol = scan_line bytes, @gap_end, stop_scan_at
+        next_p, cont_l_size, was_eol = scan_line bytes, @gap_end, stop_scan_at
         if cont_l_size > 0 -- else gap is at end, nothing left
           gap_line = char_arr(l_size + cont_l_size)
           ffi_copy gap_line, text_ptr, l_size
@@ -221,7 +228,7 @@ Buffer = {
           text_ptr = gap_line
           l_size += cont_l_size
 
-      break if end_p == offset and not last_was_eol
+      break if next_p == offset and not last_was_eol
 
       nr += 1
 
@@ -230,9 +237,10 @@ Buffer = {
         text: text_ptr
         size: l_size
         start_offset: start_p
-        end_offset: end_p - base_offset
+        end_offset: (next_p - base_offset) - 1
+        has_eol: was_eol
       }
-      offset = end_p
+      offset = next_p
       last_was_eol = was_eol
 
     @_last_scanned_line = max(nr, @_last_scanned_line)
@@ -240,13 +248,12 @@ Buffer = {
   _invalidate_lines_from_offset: (offset) =>
     for i = 1, @_last_scanned_line
       line = @_lines[i]
-      if line.end_offset >= offset
+      if line.end_offset >= offset or not line.has_eol
         @_last_scanned_line = line.nr - 1
         break
 
 }
 
-(...) -> setmetatable Buffer.new(...), {
-  __index: Buffer,
+(...) -> Object Buffer.new(...), Buffer, {
   __tostring: (b) -> b\tostring!
 }

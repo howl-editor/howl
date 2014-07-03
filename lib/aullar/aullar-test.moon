@@ -23,9 +23,9 @@ on_key_press = (view, event) ->
   key_name = event.key_name
 
   if key_name == 'right'
-    view\move_cursor view.cursor + 1
+    view.cursor\forward!
   elseif key_name == 'left'
-    view\move_cursor math.max(view.cursor - 1, 0)
+    view.cursor\backward!
   elseif key_name == 'backspace'
     view\delete_back!
    else

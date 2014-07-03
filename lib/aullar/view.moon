@@ -10,6 +10,7 @@ Pango = require 'ljglibs.pango'
 Layout = Pango.Layout
 require 'ljglibs.cairo.cairo'
 pango_cairo = Pango.cairo
+Cursor = require 'aullar.cursor'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs} = math
 
@@ -46,14 +47,15 @@ signals = {
 View = {
   new: ->
     o = {
-      _first_visible_line: 1
-      cursor: 0
       cursor_width: 1.5
       line_spacing: 0.1
+      _first_visible_line: 1
       _display_lines: {}
 
       area: Gtk.DrawingArea!
     }
+
+    o.cursor = Cursor o
 
     with o.area
       .can_focus = true
@@ -68,45 +70,31 @@ View = {
   set_buffer: (buffer) =>
     @buffer = buffer
 
-  move_cursor: (pos) =>
-    old_line = @buffer\get_line_at_offset @cursor
-    new_line = @buffer\get_line_at_offset pos
-
-    @cursor = pos
-
-    old_dl = @_display_lines[old_line.nr]
-    new_dl = @_display_lines[new_line.nr]
-    if old_dl and new_dl
-      update_y = min(old_dl.y, new_dl.y)
-      @area\queue_draw_area min(old_dl.x, new_dl.x),
-        update_y,
-        max(old_dl.width, new_dl.width),
-        (max(old_dl.y, new_dl.y) - update_y) + max(old_dl.height, new_dl.height)
-      else
-        @area\queue_draw!
-
   insert: (text) =>
-    @_invalidate_display_lines from: @cursor
-    @buffer\insert @cursor, text
-    @cursor += #text
+    @buffer\insert @cursor.pos - 1, text
+    cur_line = @cursor.line
+    @cursor.pos += #text
+    @refresh_display @cursor.pos if cur_line != @cursor.line
 
   delete_back: =>
-    return if @cursor == 0
-    @buffer\delete @cursor - 1, 1 -- xxx
-    @cursor -= 1 -- xxx
-    @_invalidate_display_lines from: @cursor
+    return if @cursor.pos == 1
+    cur_line = @cursor.line
+    @buffer\delete @cursor.pos - 2, 1 -- xxx
+    @cursor.pos -= 1 -- xxx
+    @refresh_display @cursor.pos if cur_line != @cursor.line
 
   to_gobject: => @area
 
   _draw: (cr) =>
     p_ctx = @area.pango_context
     line_spacing = @line_spacing
-    cursor = @cursor
+    cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
 
     cr\move_to 0, 0
     cr\set_source_rgb 0, 0, 0
     x, y = 0, 0
+    last_visible_line = 0
 
     for line in @buffer\lines @_first_visible_line
       d_line = @_display_lines[line.nr]
@@ -123,28 +111,38 @@ View = {
       if d_line.y >= clip.y1
         pango_cairo.show_layout cr, d_line.layout
 
-        if cursor >= line.start_offset and cursor < line.end_offset
-          draw_cursor y, cursor - line.start_offset, cr, d_line.layout, height, @
+        if cursor_pos >= line.start_offset and cursor_pos <= line.end_offset
+          draw_cursor y, cursor_pos - line.start_offset, cr, d_line.layout, height, @
 
       y += d_line.height + (d_line.height * line_spacing)
       cr\move_to x, y
+      last_visible_line = line.nr
 
-  _invalidate_display_lines: (what) =>
+    @_last_visible_line = max(@_last_visible_line or 0, last_visible_line)
+
+  refresh_display: (from_offset, to_offset) =>
+    return unless @_last_visible_line
     d_lines = @_display_lines
-    line = @_first_visible_line
-    min_y, max_width = nil, 0
+    line_nr = @_first_visible_line
+    min_y, max_y = nil, nil
 
-    while d_lines[line]
-      d_line = d_lines[line]
-      if d_line.line.end_offset >= what.from
-        d_lines[line] = nil
+    for line_nr = @_first_visible_line, @_last_visible_line
+      d_line = d_lines[line_nr]
+      continue unless d_line
+      line = d_line.line
+      after = to_offset and line.start_offset > to_offset
+      break if after
+      before = line.end_offset < from_offset
+
+      if not(before or after) or (after and not to_offset)
+        d_lines[line_nr] = nil
         min_y or= d_line.y
-        max_width = max(max_width, d_line.width)
+        max_y = d_line.y + d_line.height
 
-      line += 1
+      line_nr += 1
 
     if min_y
-      @area\queue_draw_area 0, min_y, max_width, @height - min_y
+      @area\queue_draw_area 0, min_y, @width, max_y - min_y
 
   _on_screen_changed: =>
     @_display_lines = {}
