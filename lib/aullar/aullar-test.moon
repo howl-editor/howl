@@ -26,7 +26,11 @@ on_key_press = (view, event) ->
     view.cursor\forward!
   elseif key_name == 'left'
     view.cursor\backward!
-  elseif key_name == 'backspace'
+  elseif key_name == 'up'
+    view.cursor\up!
+  elseif key_name == 'down'
+    view.cursor\down!
+   elseif key_name == 'backspace'
     view\delete_back!
    else
     return false
@@ -43,6 +47,7 @@ new_edit = ->
 add_window = (app) ->
   window = Gtk.Window()
   window\set_default_size 800, 600
+  window\move 300, 100
   window.title = 'Edit redux'
   window\add new_edit!
   app\add_window window

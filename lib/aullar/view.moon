@@ -50,7 +50,7 @@ View = {
       cursor_width: 1.5
       line_spacing: 0.1
       _first_visible_line: 1
-      _display_lines: {}
+      display_lines: {}
 
       area: Gtk.DrawingArea!
     }
@@ -74,14 +74,14 @@ View = {
     @buffer\insert @cursor.pos - 1, text
     cur_line = @cursor.line
     @cursor.pos += #text
-    @refresh_display @cursor.pos if cur_line != @cursor.line
+    @refresh_display @cursor.pos - 1 if cur_line != @cursor.line
 
   delete_back: =>
-    return if @cursor.pos == 1
     cur_line = @cursor.line
-    @buffer\delete @cursor.pos - 2, 1 -- xxx
-    @cursor.pos -= 1 -- xxx
-    @refresh_display @cursor.pos if cur_line != @cursor.line
+    cur_pos = @cursor.pos
+    @cursor\backward!
+    @buffer\delete @cursor.pos - 1, cur_pos - @cursor.pos
+    @refresh_display @cursor.pos - 1 if cur_line != @cursor.line
 
   to_gobject: => @area
 
@@ -97,14 +97,14 @@ View = {
     last_visible_line = 0
 
     for line in @buffer\lines @_first_visible_line
-      d_line = @_display_lines[line.nr]
+      d_line = @display_lines[line.nr]
 
       unless d_line
         layout = Layout p_ctx
         layout\set_text line.text, line.size
         width, height = layout\get_pixel_size!
-        d_line = { :x, :y, width: width + @cursor_width, :height, :line, :layout }
-        @_display_lines[line.nr] = d_line
+        d_line = { :x, :y, width: width + @cursor_width, :height, :layout }
+        @display_lines[line.nr] = d_line
 
       break if d_line.y >= clip.y2
 
@@ -122,14 +122,14 @@ View = {
 
   refresh_display: (from_offset, to_offset) =>
     return unless @_last_visible_line
-    d_lines = @_display_lines
+    d_lines = @display_lines
     line_nr = @_first_visible_line
     min_y, max_y = nil, nil
 
     for line_nr = @_first_visible_line, @_last_visible_line
       d_line = d_lines[line_nr]
       continue unless d_line
-      line = d_line.line
+      line = @buffer\get_line line_nr
       after = to_offset and line.start_offset > to_offset
       break if after
       before = line.end_offset < from_offset
@@ -145,10 +145,10 @@ View = {
       @area\queue_draw_area 0, min_y, @width, max_y - min_y
 
   _on_screen_changed: =>
-    @_display_lines = {}
+    @display_lines = {}
 
   _on_size_allocate: (allocation) =>
-    @_display_lines = {}
+    @display_lines = {}
     @width = allocation.width
     @height = allocation.height
 }

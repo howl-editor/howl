@@ -14,6 +14,9 @@ Cursor = {
     }
 
   properties: {
+    display_line: => @view.display_lines[@line]
+    buffer_line: => @view.buffer\get_line @line
+
     line: {
       get: => @_line
       set: (line) =>
@@ -29,7 +32,7 @@ Cursor = {
       set: (pos) =>
         dest_line = @view.buffer\get_line_at_offset pos - 1
         return unless dest_line
-        old_line = @view.buffer\get_line @line
+        old_line = @buffer_line
 
         @_pos = pos
         @view\refresh_display old_line.start_offset, old_line.end_offset
@@ -41,11 +44,32 @@ Cursor = {
   }
 
   forward: =>
-    @pos += 1 -- xxx
+    return if @_pos - 1 == @view.buffer.size
+    line_start, line_end = @buffer_line.start_offset, @buffer_line.end_offset
+    new_index, new_trailing = @display_line.layout\move_cursor_visually true, @_pos - 1 - line_start, 0, 1
+    if new_index > @buffer_line.size
+      @pos += 1
+    else
+      @pos = line_start + new_index + new_trailing + 1
 
   backward: =>
     return if @_pos == 1
-    @pos -= 1 -- xxx
+    line_start = @buffer_line.start_offset
+    new_index = @display_line.layout\move_cursor_visually true, @_pos - 1 - line_start, 0, -1
+    @pos = line_start + new_index + 1
+
+  up: =>
+    prev = @_get_line @line - 1
+    if prev
+      @pos = prev.start_offset + 1
+
+  down: =>
+    next = @_get_line @line + 1
+    if next
+      @pos = next.start_offset + 1
+
+  _get_line: (nr) =>
+    @view.buffer\get_line nr
 
 }
 
