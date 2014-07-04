@@ -1,7 +1,7 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
--- {:max, :min, :abs} = math
+{:max, :min, :abs} = math
 {:Object} = require 'aullar.util'
 
 Cursor = {
@@ -30,14 +30,15 @@ Cursor = {
     pos: {
       get: => @_pos
       set: (pos) =>
-        dest_line = @view.buffer\get_line_at_offset pos - 1
-        return unless dest_line
+        pos = min(@view.buffer.size, pos)
+        pos = max(pos, 0)
         old_line = @buffer_line
-
         @_pos = pos
         @view\refresh_display old_line.start_offset, old_line.end_offset
 
-        if dest_line.nr != @line
+        if pos - 1 < old_line.start_offset or pos - 1 > old_line.end_offset
+          dest_line = @view.buffer\get_line_at_offset pos - 1
+
           @view\refresh_display dest_line.start_offset, dest_line.end_offset
           @_line = dest_line.nr
     }
