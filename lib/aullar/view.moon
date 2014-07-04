@@ -11,6 +11,7 @@ Layout = Pango.Layout
 require 'ljglibs.cairo.cairo'
 pango_cairo = Pango.cairo
 Cursor = require 'aullar.cursor'
+{:Object} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs} = math
 
@@ -50,6 +51,7 @@ View = {
       cursor_width: 1.5
       line_spacing: 0.1
       _first_visible_line: 1
+      _last_visible_line: 1
       display_lines: {}
 
       area: Gtk.DrawingArea!
@@ -67,11 +69,35 @@ View = {
 
     o
 
-  set_buffer: (buffer) =>
-    @buffer = buffer
+  properties: {
+
+    first_visible_line: {
+      get: => @_first_visible_line
+      set: (line) =>
+        if line != @_first_visible_line
+          @_first_visible_line = line
+          @_last_visible_line = line
+          @_reset_display!
+          @area\queue_draw!
+    }
+
+    last_visible_line: {
+      get: => @_last_visible_line
+      set: (line) =>
+        @first_visible_line = (line - @lines_showing) + 1
+        @_last_visible_line = nil
+    }
+
+    lines_showing: => @last_visible_line - @first_visible_line + 1
+
+    buffer: {
+      get: => @_buffer
+      set: (buffer) => @_buffer = buffer
+    }
+  }
 
   insert: (text) =>
-    @buffer\insert @cursor.pos - 1, text
+    @_buffer\insert @cursor.pos - 1, text
     cur_line = @cursor.line
     @cursor.pos += #text
     @refresh_display @cursor.pos - 1 if cur_line != @cursor.line
@@ -80,7 +106,7 @@ View = {
     cur_line = @cursor.line
     cur_pos = @cursor.pos
     @cursor\backward!
-    @buffer\delete @cursor.pos - 1, cur_pos - @cursor.pos
+    @_buffer\delete @cursor.pos - 1, cur_pos - @cursor.pos
     @refresh_display @cursor.pos - 1 if cur_line != @cursor.line
 
   to_gobject: => @area
@@ -96,7 +122,7 @@ View = {
     x, y = 0, 0
     last_visible_line = 0
 
-    for line in @buffer\lines @_first_visible_line
+    for line in @_buffer\lines @_first_visible_line
       d_line = @display_lines[line.nr]
 
       unless d_line
@@ -106,7 +132,7 @@ View = {
         d_line = { :x, :y, width: width + @cursor_width, :height, :layout }
         @display_lines[line.nr] = d_line
 
-      break if d_line.y >= clip.y2
+      break if y >= clip.y2
 
       if d_line.y >= clip.y1
         pango_cairo.show_layout cr, d_line.layout
@@ -129,7 +155,7 @@ View = {
     for line_nr = @_first_visible_line, @_last_visible_line
       d_line = d_lines[line_nr]
       continue unless d_line
-      line = @buffer\get_line line_nr
+      line = @_buffer\get_line line_nr
       after = to_offset and line.start_offset > to_offset
       break if after
       before = line.end_offset < from_offset
@@ -151,6 +177,9 @@ View = {
     @display_lines = {}
     @width = allocation.width
     @height = allocation.height
+
+  _reset_display: =>
+    @display_lines = {}
 }
 
--> setmetatable View.new!, __index: View
+-> Object View.new!, View

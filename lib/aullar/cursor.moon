@@ -4,6 +4,9 @@
 {:max, :min, :abs} = math
 {:Object} = require 'aullar.util'
 
+is_showing_line = (view, line) ->
+  line >= view.first_visible_line and line <= view.last_visible_line
+
 Cursor = {
   new: (view) ->
     {
@@ -34,13 +37,22 @@ Cursor = {
         pos = max(pos, 0)
         old_line = @buffer_line
         @_pos = pos
-        @view\refresh_display old_line.start_offset, old_line.end_offset
 
+        -- are we moving to another line?
         if pos - 1 < old_line.start_offset or pos - 1 > old_line.end_offset
           dest_line = @view.buffer\get_line_at_offset pos - 1
-
-          @view\refresh_display dest_line.start_offset, dest_line.end_offset
           @_line = dest_line.nr
+
+          if is_showing_line @view, dest_line.nr
+            @view\refresh_display dest_line.start_offset, dest_line.end_offset
+          else -- scroll
+            if dest_line.nr < @view.first_visible_line
+              @view.first_visible_line = dest_line.nr
+            else
+              @view.last_visible_line = dest_line.nr
+            return
+
+        @view\refresh_display old_line.start_offset, old_line.end_offset
     }
   }
 

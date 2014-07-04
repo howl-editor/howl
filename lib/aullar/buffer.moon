@@ -105,6 +105,7 @@ Buffer = {
     for i = start_at, end_at, step
       line = @_lines[i]
       if offset >= line.start_offset and offset <= line.end_offset
+        -- print "scanned: #{abs(i - start_at)}"
         return line
 
     nil

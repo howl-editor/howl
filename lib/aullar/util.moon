@@ -12,7 +12,10 @@
     meta.__newindex = (o, k, ...) ->
       p = props[k]
       p = p.set if p
-      p and p o, ...
+      if p
+        p o, ...
+      else
+        rawset o, k, ...
 
     setmetatable o, meta
 }

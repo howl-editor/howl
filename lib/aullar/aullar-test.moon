@@ -40,13 +40,13 @@ on_key_press = (view, event) ->
 new_edit = ->
   buffer = aullar.Buffer text
   view = aullar.View!
-  view\set_buffer buffer
+  view.buffer = buffer
   view.on_key_press = on_key_press
   view\to_gobject!
 
 add_window = (app) ->
   window = Gtk.Window()
-  window\set_default_size 800, 600
+  window\set_default_size 800, 480
   window\move 300, 100
   window.title = 'Edit redux'
   window\add new_edit!
