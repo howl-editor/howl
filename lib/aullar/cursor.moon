@@ -20,6 +20,9 @@ Cursor = {
     line: {
       get: => @_line
       set: (line) =>
+        b_line = @view.buffer\get_line line
+        if b_line
+          @pos = b_line.start_offset + 1
     }
 
     column: {
@@ -30,6 +33,8 @@ Cursor = {
     pos: {
       get: => @_pos
       set: (pos) =>
+        return if pos == @_pos
+
         pos = min(@view.buffer.size, pos)
         pos = max(pos, 0)
         old_line = @buffer_line
@@ -52,6 +57,12 @@ Cursor = {
         @view\refresh_display old_line.start_offset, old_line.end_offset
     }
   }
+
+  start_of_file: =>
+    @pos = 1
+
+  end_of_file: =>
+    @pos = @view.buffer.size
 
   forward: =>
     return if @_pos - 1 == @view.buffer.size
@@ -77,6 +88,27 @@ Cursor = {
     next = @_get_line @line + 1
     if next
       @pos = next.start_offset + 1
+
+  page_up: =>
+    if @view.first_visible_line == 1
+      @start_of_file!
+      return
+
+    first_visible = max(@view.first_visible_line - @view.lines_showing, 1)
+    cursor_line_offset = max(@line - @view.first_visible_line, 1)
+    @view.first_visible_line = first_visible
+    @line = first_visible + cursor_line_offset
+
+  page_down: =>
+    if @view.last_visible_line == @view.buffer.nr_lines
+      @end_of_file!
+      return
+
+    cursor_line_offset = max(@line - @view.first_visible_line, 1)
+    first_visible = min(@view.last_visible_line, @view.buffer.nr_lines - @view.lines_showing)
+
+    @view.first_visible_line = first_visible
+    @line = first_visible + cursor_line_offset
 
   _get_line: (nr) =>
     @view.buffer\get_line nr

@@ -21,6 +21,7 @@ if #args > 0
 
 on_key_press = (view, event) ->
   key_name = event.key_name
+  -- print "key_name: #{key_name}"
 
   if key_name == 'right'
     view.cursor\forward!
@@ -30,9 +31,13 @@ on_key_press = (view, event) ->
     view.cursor\up!
   elseif key_name == 'down'
     view.cursor\down!
-   elseif key_name == 'backspace'
+  elseif key_name == 'page_down'
+    view.cursor\page_down!
+  elseif key_name == 'page_up'
+    view.cursor\page_up!
+  elseif key_name == 'backspace'
     view\delete_back!
-   else
+  else
     return false
 
   true
