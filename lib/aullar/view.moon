@@ -12,6 +12,7 @@ require 'ljglibs.cairo.cairo'
 pango_cairo = Pango.cairo
 Cursor = require 'aullar.cursor'
 Buffer = require 'aullar.buffer'
+LineGutter = require 'aullar.line_gutter'
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs} = math
@@ -33,12 +34,12 @@ on_key_press = (area, event, view) ->
   if insertable_character(event)
     view\insert event.character
 
-draw_cursor = (base_y, column, cr, layout, height, view) ->
+draw_cursor = (base_x, base_y, column, cr, layout, height, view) ->
   cr\save!
   rect = layout\index_to_pos column
   cr\set_source_rgb 1, 0, 0
-  base_x = math.max rect.x / 1024 - 1, 0
-  cr\rectangle base_x, base_y + rect.y / 1024, view.cursor_width, rect.height / 1024
+  x = math.max(rect.x / 1024 - 1, 0) + base_x
+  cr\rectangle x, base_y + rect.y / 1024, view.cursor_width, rect.height / 1024
   cr\fill!
   cr\restore!
 
@@ -125,10 +126,11 @@ View = {
     line_spacing = @line_spacing
     cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
+    line_gutter = LineGutter @, cr, p_ctx, clip
 
-    cr\move_to 0, 0
+    x, y = line_gutter.width, 0
+    cr\move_to x, y
     cr\set_source_rgb 0, 0, 0
-    x, y = 0, 0
     last_visible_line = 0
 
     for line in @_buffer\lines @_first_visible_line
@@ -138,8 +140,10 @@ View = {
       if y >= clip.y1
         pango_cairo.show_layout cr, d_line.layout
 
+        line_gutter\draw_for_line line.nr, 0, y, d_line
+
         if cursor_pos >= line.start_offset and cursor_pos <= line.end_offset
-          draw_cursor y, cursor_pos - line.start_offset, cr, d_line.layout, height, @
+          draw_cursor x, y, cursor_pos - line.start_offset, cr, d_line.layout, height, @
 
       if y + d_line.height < clip.y2
         last_visible_line = line.nr

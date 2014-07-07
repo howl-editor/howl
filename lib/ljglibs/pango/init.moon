@@ -4,7 +4,17 @@ core = require 'ljglibs.core'
 
 require 'ljglibs.cdefs.pango'
 ffi = require 'ffi'
-C, ffi_string, ffi_gc, ffi_new = ffi.C, ffi.string, ffi.gc, ffi.new
+C = ffi.C
 
-core.auto_loading 'pango', {
+constants = {
+  'ALIGN_LEFT',
+  'ALIGN_CENTER',
+  'ALIGN_RIGHT',
 }
+
+def = {}
+
+for constant in *constants
+  def[constant] = C["PANGO_#{constant}"]
+
+core.auto_loading 'pango', def

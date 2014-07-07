@@ -11,6 +11,23 @@ C, ffi_new = ffi.C, ffi.new
 PangoRectangle = ffi.typeof 'PangoRectangle'
 
 core.define 'PangoLayout', {
+
+  properties: {
+    text: {
+      set: (text) => @set_text text
+    }
+
+    width: {
+      get: => C.pango_layout_get_width @
+      set: (width) => C.pango_layout_set_width @, width
+    }
+
+    alignment: {
+      get: => C.pango_layout_get_alignment @
+      set: (alignment) => C.pango_layout_set_alignment @, alignment
+    }
+  }
+
   new: (ctx) -> gc_ptr C.pango_layout_new ctx
 
   set_text: (text, length = -1) =>
