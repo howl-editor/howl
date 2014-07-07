@@ -23,6 +23,16 @@ describe 'Buffer', ->
     assert.equals 5, b.gap_start
     assert.equals b.gap_size + b.gap_start, b.gap_end
 
+  describe '.text', ->
+    it 'is a string representation of the contents', ->
+      b = Buffer 'hello'
+      assert.equals 'hello', b.text
+
+    it 'setting it replaces the text completely with the new specified text', ->
+      b = Buffer 'hello'
+      b.text = 'brave new world'
+      assert.equals 'brave new world', tostring b
+
   describe 'move_gap_to(offset)', ->
     it 'moves the gap to the specified offset', ->
       b = Buffer 'hello'
@@ -78,6 +88,25 @@ describe 'Buffer', ->
         'line 2',
         'line 3',
          '',
+      }, all_lines(b)
+
+    it 'is not confused by CR line breaks at the gap boundaries', ->
+      b = Buffer 'line 1\r\nline 2'
+      b\move_gap_to 7
+      assert.same { 'line 1', '', 'line 2' }, all_lines(b)
+
+      b = Buffer 'line 1\n\nline 2'
+      b\move_gap_to 7
+      assert.same { 'line 1', '', 'line 2' }, all_lines(b)
+
+    it 'is not confused by multiple consecutive line breaks', ->
+      b = Buffer 'line 1\n\nline 2'
+      b\delete 7, 1
+      b\delete 6, 1
+      b\insert 6, '\n'
+      assert.same {
+        'line 1',
+        'line 2',
       }, all_lines(b)
 
     it 'handles various gap positions automatically', ->

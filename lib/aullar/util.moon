@@ -1,5 +1,5 @@
 {
-  Object: (o, base, meta = {}) ->
+  define_class: (base, meta = {}) ->
     props = base.properties
 
     meta.__index = (o, k) ->
@@ -17,5 +17,11 @@
       else
         rawset o, k, ...
 
-    setmetatable o, meta
+    setmetatable {}, {
+      __call: (t, ...) ->
+        o = setmetatable {}, meta
+        if base.new
+          base.new o, ...
+        o
+    }
 }

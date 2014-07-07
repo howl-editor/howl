@@ -4,7 +4,7 @@
 ffi = require 'ffi'
 C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
 {:max, :min, :abs} = math
-{:Object} = require 'aullar.util'
+{:define_class} = require 'aullar.util'
 
 char_arr = ffi.typeof 'char [?]'
 const_char_p = ffi.typeof 'const char *'
@@ -28,7 +28,7 @@ scan_line = (base, offset, end_offset) ->
     eol_byte = byte
     was_eol = true
     offset += 1
-    if eol_byte == 13
+    if eol_byte == 13 and offset < end_offset
       byte = base[offset]
       if byte == 10
         offset += 1
@@ -37,17 +37,8 @@ scan_line = (base, offset, end_offset) ->
 
 
 Buffer = {
-  new: (text) ->
-    size = #text
-    arr_size = size + GAP_SIZE
-    {
-      bytes: char_arr(arr_size, text),
-      :size,
-      gap_start: size,
-      gap_end: arr_size,
-      _last_scanned_line: 0,
-      _lines: {}
-    }
+  new: (text) =>
+    @text = text
 
   properties: {
     gap_size: => (@gap_end - @gap_start)
@@ -55,6 +46,18 @@ Buffer = {
     nr_lines: =>
       @_scan_lines_to {}
       @_last_scanned_line
+
+    text: {
+      get: => @tostring!
+      set: (text) =>
+        @size = #text
+        arr_size = @size + GAP_SIZE
+        @bytes = char_arr(arr_size, text)
+        @gap_start = @size
+        @gap_end = arr_size
+        @_last_scanned_line = 0
+        @_lines = {}
+    }
   }
 
   insert: (offset, text, size = #text) =>
@@ -105,7 +108,6 @@ Buffer = {
     for i = start_at, end_at, step
       line = @_lines[i]
       if offset >= line.start_offset and offset <= line.end_offset
-        -- print "scanned: #{abs(i - start_at)}"
         return line
 
     nil
@@ -255,6 +257,7 @@ Buffer = {
 
 }
 
-(...) -> Object Buffer.new(...), Buffer, {
+define_class Buffer, {
   __tostring: (b) -> b\tostring!
 }
+

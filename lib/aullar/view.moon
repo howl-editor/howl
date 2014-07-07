@@ -11,13 +11,17 @@ Layout = Pango.Layout
 require 'ljglibs.cairo.cairo'
 pango_cairo = Pango.cairo
 Cursor = require 'aullar.cursor'
-{:Object} = require 'aullar.util'
+Buffer = require 'aullar.buffer'
+{:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs} = math
 
 insertable_character = (event) ->
   return false if event.ctrl or event.alt or event.meta or event.super or not event.character
   true
+
+contains_newlines = (s) ->
+  s\find('[\n\r]') != nil
 
 on_key_press = (area, event, view) ->
   event = parse_key_event event
@@ -46,28 +50,23 @@ signals = {
 }
 
 View = {
-  new: ->
-    o = {
-      cursor_width: 1.5
-      line_spacing: 0.1
-      _first_visible_line: 1
-      _last_visible_line: 1
-      display_lines: {}
+  new: (@_buffer = Buffer('')) =>
+    @cursor_width = 1.5
+    @line_spacing = 0.1
+    @_first_visible_line = 1
+    @_last_visible_line = 1
+    @area = Gtk.DrawingArea!
+    @cursor = Cursor @
 
-      area: Gtk.DrawingArea!
-    }
-
-    o.cursor = Cursor o
-
-    with o.area
+    with @area
       .can_focus = true
       \add_events Gdk.KEY_PRESS_MASK
-      \on_key_press_event on_key_press, o
-      \on_draw signals.on_draw, o
-      \on_screen_changed signals.on_screen_changed, o
-      \on_size_allocate signals.on_size_allocate, o
+      \on_key_press_event on_key_press, @
+      \on_draw signals.on_draw, @
+      \on_screen_changed signals.on_screen_changed, @
+      \on_size_allocate signals.on_size_allocate, @
 
-    o
+    @_reset_display!
 
   properties: {
 
@@ -77,37 +76,47 @@ View = {
         if line != @_first_visible_line
           @_first_visible_line = line
           @_last_visible_line = line
-          @_reset_display!
           @area\queue_draw!
     }
 
     last_visible_line: {
       get: => @_last_visible_line
       set: (line) =>
+        -- todo: variable height lines
         @first_visible_line = (line - @lines_showing) + 1
-        @_last_visible_line = nil
+        @_last_visible_line = line
     }
 
     lines_showing: => @last_visible_line - @first_visible_line + 1
 
     buffer: {
       get: => @_buffer
-      set: (buffer) => @_buffer = buffer
+      set: (buffer) =>
+        @_buffer = buffer
     }
   }
 
   insert: (text) =>
-    @_buffer\insert @cursor.pos - 1, text
-    cur_line = @cursor.line
+    cur_pos = @cursor.pos
+    @_buffer\insert cur_pos - 1, text
+
+    if contains_newlines(text)
+      @refresh_display cur_pos - 1, nil, true
+    else
+      @refresh_display cur_pos - 1, cur_pos + #text - 1, true
+
     @cursor.pos += #text
-    @refresh_display @cursor.pos - 1 if cur_line != @cursor.line
 
   delete_back: =>
     cur_line = @cursor.line
     cur_pos = @cursor.pos
     @cursor\backward!
     @_buffer\delete @cursor.pos - 1, cur_pos - @cursor.pos
-    @refresh_display @cursor.pos - 1 if cur_line != @cursor.line
+
+    if cur_line != @cursor.line -- lines changed, everything after is invalid
+      @refresh_display @cursor.pos - 1, nil, true
+    else -- within the current line
+      @refresh_display @cursor.pos - 1, cur_pos - 1, true
 
   to_gobject: => @area
 
@@ -124,62 +133,82 @@ View = {
 
     for line in @_buffer\lines @_first_visible_line
       d_line = @display_lines[line.nr]
-
-      unless d_line
-        layout = Layout p_ctx
-        layout\set_text line.text, line.size
-        width, height = layout\get_pixel_size!
-        d_line = { :x, :y, width: width + @cursor_width, :height, :layout }
-        @display_lines[line.nr] = d_line
-
       break if y >= clip.y2
 
-      if d_line.y >= clip.y1
+      if y >= clip.y1
         pango_cairo.show_layout cr, d_line.layout
 
         if cursor_pos >= line.start_offset and cursor_pos <= line.end_offset
           draw_cursor y, cursor_pos - line.start_offset, cr, d_line.layout, height, @
 
-      y += d_line.height + (d_line.height * line_spacing)
+      if y + d_line.height < clip.y2
+        last_visible_line = line.nr
+
+      y += d_line.height + d_line.spacing_bottom
       cr\move_to x, y
-      last_visible_line = line.nr
 
     @_last_visible_line = max(@_last_visible_line or 0, last_visible_line)
 
-  refresh_display: (from_offset, to_offset) =>
-    return unless @_last_visible_line
+  refresh_display: (from_offset, to_offset, invalidate = false) =>
+    return unless @_last_visible_line and @width
     d_lines = @display_lines
-    line_nr = @_first_visible_line
     min_y, max_y = nil, nil
+    y = 0
+    last_valid = 0
 
     for line_nr = @_first_visible_line, @_last_visible_line
       d_line = d_lines[line_nr]
-      continue unless d_line
       line = @_buffer\get_line line_nr
       after = to_offset and line.start_offset > to_offset
       break if after
       before = line.end_offset < from_offset
 
       if not(before or after) or (after and not to_offset)
-        d_lines[line_nr] = nil
-        min_y or= d_line.y
-        max_y = d_line.y + d_line.height
+        d_lines[line.nr] = nil if invalidate
+        min_y or= y
+        max_y = y + d_line.height + d_line.spacing_bottom
+      else
+        last_valid = max last_valid, line.nr
 
-      line_nr += 1
+      y += d_line.height + d_line.spacing_bottom
+
+
+    if invalidate and not to_offset
+      max_y = @height
+      for line_nr = last_valid + 1, @_max_display_line
+        d_lines[line_nr] = nil
+
+      @_max_display_line = last_valid
 
     if min_y
       @area\queue_draw_area 0, min_y, @width, max_y - min_y
 
   _on_screen_changed: =>
-    @display_lines = {}
+    @_reset_display!
 
   _on_size_allocate: (allocation) =>
-    @display_lines = {}
+    @_reset_display!
     @width = allocation.width
     @height = allocation.height
 
   _reset_display: =>
-    @display_lines = {}
+    @_max_display_line = 0
+    v = @
+    @display_lines = setmetatable {}, {
+      __index: (t, nr) ->
+        line = v.buffer\get_line nr
+        layout = Layout v.area.pango_context
+        layout\set_text line.text, line.size
+        width, height = layout\get_pixel_size!
+        spacing_bottom = height * v.line_spacing
+        d_line = {
+          width: width + v.cursor_width, :height,
+          :layout, :spacing_bottom
+        }
+        v._max_display_line = max v._max_display_line, nr
+        rawset t, nr, d_line
+        d_line
+    }
 }
 
--> Object View.new!, View
+define_class View

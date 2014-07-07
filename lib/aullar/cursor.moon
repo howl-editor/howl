@@ -2,19 +2,16 @@
 -- License: MIT (see LICENSE)
 
 {:max, :min, :abs} = math
-{:Object} = require 'aullar.util'
+{:define_class} = require 'aullar.util'
 
 is_showing_line = (view, line) ->
   line >= view.first_visible_line and line <= view.last_visible_line
 
 Cursor = {
-  new: (view) ->
-    {
-      :view
-      _line: 1
-      _column: 1
-      _pos: 1
-    }
+  new: (@view) =>
+    @_line = 1
+    @_column = 1
+    @_pos = 1
 
   properties: {
     display_line: => @view.display_lines[@line]
@@ -86,4 +83,4 @@ Cursor = {
 
 }
 
-(...) -> Object Cursor.new(...), Cursor
+define_class Cursor
