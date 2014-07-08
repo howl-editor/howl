@@ -135,6 +135,8 @@ core.define 'cairo_t', {
       a = ffi.new 'double[4]'
       C.cairo_clip_extents @, a, a + 1, a + 2, a + 3
       { x1: tonumber(a[0]), y1: tonumber(a[1]), x2: tonumber(a[2]), y2: tonumber(a[3]) }
+
+    status: => C.cairo_status @
   }
 
   create: (surface) -> cairo_gc_ptr C.cairo_create surface
@@ -145,7 +147,9 @@ core.define 'cairo_t', {
   set_source_rgba: (r, g, b, a) => C.cairo_set_source_rgba @, r, g, b, a
 
   stroke: => C.cairo_stroke @
+  stroke_preserve: => C.cairo_stroke_preserve @
   fill: => C.cairo_fill @
+  fill_preserve: => C.cairo_fill_preserve @
   line_to: (x, y) => C.cairo_line_to @, x, y
   move_to: (x, y) => C.cairo_move_to @, x, y
   rel_move_to: (x, y) => C.cairo_rel_move_to @, x, y

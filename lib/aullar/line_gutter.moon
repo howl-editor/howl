@@ -22,10 +22,10 @@ LineGutter = {
 
   draw_for_line: (line_nr, x, y, display_line) =>
     cr = @cairo_context
+    cr\save!
     cr\move_to x, y
     @layout.text = tostring line_nr
     pango_cairo.show_layout cr, @layout
-    cr\save!
     cr\restore!
 
   _draw_background: =>

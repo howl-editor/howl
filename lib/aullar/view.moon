@@ -34,17 +34,17 @@ on_key_press = (area, event, view) ->
   if insertable_character(event)
     view\insert event.character
 
-draw_cursor = (base_x, base_y, column, cr, layout, height, view) ->
+draw_current_line_background = (x, y, display_line, cr, clip) ->
   cr\save!
-  rect = layout\index_to_pos column
-  cr\set_source_rgb 1, 0, 0
-  x = math.max(rect.x / 1024 - 1, 0) + base_x
-  cr\rectangle x, base_y + rect.y / 1024, view.cursor_width, rect.height / 1024
+  cr\set_source_rgb 0.85, 0.85, 0.85
+  cr\rectangle x, y, clip.x2 - x, display_line.height
   cr\fill!
   cr\restore!
 
 signals = {
   on_draw: (_, cr, view) -> view._draw view, cr
+  on_focus_in: (_, _, view) -> view._on_focus_in view
+  on_focus_out: (_, _, view) -> view._on_focus_out view
   on_screen_changed: (_, _, view) -> view._on_screen_changed view
   on_size_allocate: (_, allocation, view) ->
     view._on_size_allocate view, ffi_cast('GdkRectangle *', allocation)
@@ -52,8 +52,9 @@ signals = {
 
 View = {
   new: (@_buffer = Buffer('')) =>
-    @cursor_width = 1.5
     @line_spacing = 0.1
+    @margin = 3
+
     @_first_visible_line = 1
     @_last_visible_line = 1
     @area = Gtk.DrawingArea!
@@ -66,6 +67,8 @@ View = {
       \on_draw signals.on_draw, @
       \on_screen_changed signals.on_screen_changed, @
       \on_size_allocate signals.on_size_allocate, @
+      \on_focus_in_event signals.on_focus_in, @
+      \on_focus_out_event signals.on_focus_out, @
 
     @_reset_display!
 
@@ -128,7 +131,7 @@ View = {
     clip = cr.clip_extents
     line_gutter = LineGutter @, cr, p_ctx, clip
 
-    x, y = line_gutter.width, 0
+    x, y = line_gutter.width + @margin, @margin
     cr\move_to x, y
     cr\set_source_rgb 0, 0, 0
     last_visible_line = 0
@@ -138,12 +141,18 @@ View = {
       break if y >= clip.y2
 
       if y >= clip.y1
-        pango_cairo.show_layout cr, d_line.layout
+        is_current_line = cursor_pos >= line.start_offset and cursor_pos <= line.end_offset
 
+        if is_current_line
+          draw_current_line_background x, y, d_line, cr, clip
+
+        cr\move_to x, y
+        pango_cairo.show_layout cr, d_line.layout
         line_gutter\draw_for_line line.nr, 0, y, d_line
 
-        if cursor_pos >= line.start_offset and cursor_pos <= line.end_offset
-          draw_cursor x, y, cursor_pos - line.start_offset, cr, d_line.layout, height, @
+
+        if is_current_line
+          @cursor\draw x, y, cursor_pos - line.start_offset, cr, d_line
 
       if y + d_line.height < clip.y2
         last_visible_line = line.nr
@@ -157,7 +166,7 @@ View = {
     return unless @_last_visible_line and @width
     d_lines = @display_lines
     min_y, max_y = nil, nil
-    y = 0
+    y = @margin
     last_valid = 0
 
     for line_nr = @_first_visible_line, @_last_visible_line
@@ -187,14 +196,6 @@ View = {
     if min_y
       @area\queue_draw_area 0, min_y, @width, max_y - min_y
 
-  _on_screen_changed: =>
-    @_reset_display!
-
-  _on_size_allocate: (allocation) =>
-    @_reset_display!
-    @width = allocation.width
-    @height = allocation.height
-
   _reset_display: =>
     @_max_display_line = 0
     v = @
@@ -206,13 +207,28 @@ View = {
         width, height = layout\get_pixel_size!
         spacing_bottom = height * v.line_spacing
         d_line = {
-          width: width + v.cursor_width, :height,
+          width: width + v.cursor.width, :height,
           :layout, :spacing_bottom
         }
         v._max_display_line = max v._max_display_line, nr
         rawset t, nr, d_line
         d_line
     }
+
+  _on_focus_in: =>
+    @cursor.active = true
+
+  _on_focus_out: =>
+    @cursor.active = false
+
+  _on_screen_changed: =>
+    @_reset_display!
+
+  _on_size_allocate: (allocation) =>
+    @_reset_display!
+    @width = allocation.width
+    @height = allocation.height
+
 }
 
 define_class View
