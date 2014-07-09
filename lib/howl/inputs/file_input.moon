@@ -19,9 +19,12 @@ root_dir = (file) ->
 
 home_dir = -> File glib.get_home_dir!
 
-display_name = (file, base_directory) ->
+display_name = (file, is_directory, base_directory) ->
   return ".#{separator}" if file == base_directory
-  file.display_name
+  if is_directory
+    file.basename .. separator
+  else
+    file.basename
 
 class FileInput
   new: (text, @directory_reader) =>
@@ -73,7 +76,14 @@ class FileInput
   value_for: (basename) => @directory / basename
 
   _chdir: (directory, readline) =>
-    children = self.directory_reader directory
+    children = {}
+
+    for c in *self.directory_reader directory
+      is_directory = c.is_directory
+      append children,
+        display_name: display_name(c, is_directory, directory),
+        :is_directory,
+        is_hidden: c.is_hidden
 
     table.sort children, (f1, f2) ->
       d1, d2 = f1.is_directory, f2.is_directory
@@ -82,9 +92,9 @@ class FileInput
       return true if h2 and not h1
       return true if d1 and not d2
       return false if d2 and not d1
-      f1.path < f2.path
+      f1.display_name < f2.display_name
 
-    names = [display_name(c, directory) for c in *children]
+    names = [c.display_name for c in *children]
     @matcher = Matcher names
     @directory = directory
 
