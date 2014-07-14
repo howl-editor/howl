@@ -3,6 +3,7 @@
 
 Cursor = require 'aullar.cursor'
 View = require 'aullar.view'
+Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
 
 describe 'Cursor', ->
@@ -11,7 +12,8 @@ describe 'Cursor', ->
   before_each ->
     buffer = Buffer ''
     view = View buffer
-    cursor = Cursor view
+    selection = Selection view
+    cursor = Cursor view, selection
 
   it 'starts at out pos 1, line 1', ->
     assert.equals 1, cursor.pos

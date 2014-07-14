@@ -15,7 +15,7 @@ is_showing_line = (view, line) ->
   line >= view.first_visible_line and line <= view.last_visible_line
 
 Cursor = {
-  new: (@view) =>
+  new: (@view, @selection) =>
     @blink_interval = 500
     @width = 1.5
 
@@ -31,10 +31,7 @@ Cursor = {
 
     line: {
       get: => @_line
-      set: (line) =>
-        b_line = @view.buffer\get_line line
-        if b_line
-          @pos = b_line.start_offset + 1
+      set: (line) => @move_to :line
     }
 
     column: {
@@ -44,30 +41,7 @@ Cursor = {
 
     pos: {
       get: => @_pos
-      set: (pos) =>
-        return if pos == @_pos
-
-        pos = min(@view.buffer.size, pos)
-        pos = max(pos, 0)
-        old_line = @buffer_line
-        @_pos = pos
-
-        -- are we moving to another line?
-        if pos - 1 < old_line.start_offset or pos - 1 > old_line.end_offset
-          dest_line = @view.buffer\get_line_at_offset pos - 1
-          @_line = dest_line.nr
-
-          if is_showing_line @view, dest_line.nr
-            @view\refresh_display dest_line.start_offset, dest_line.end_offset
-          else -- scroll
-            if dest_line.nr < @view.first_visible_line
-              @view.first_visible_line = dest_line.nr
-            else
-              @view.last_visible_line = dest_line.nr
-            return
-
-        @view\refresh_display old_line.start_offset, old_line.end_offset
-        @_force_show = true
+      set: (pos) => @move_to :pos
     }
 
     active: {
@@ -83,64 +57,116 @@ Cursor = {
     }
   }
 
-  start_of_file: =>
-    @pos = 1
+  in_line: (line) =>
+    byte_pos = @_pos - 1
+    byte_pos >= line.start_offset and byte_pos <= line.end_offset
 
-  end_of_file: =>
+  move_to: (opts) =>
+    pos = opts.pos
+    if pos
+      pos = min(@view.buffer.size, pos)
+      pos = max(pos, 0)
+    elseif opts.line
+      b_line = @view.buffer\get_line opts.line
+      if b_line
+        pos = b_line.start_offset + 1
+
+    error 2, "Illegal argument #1 to Cursor.move_to" unless 2
+
+    return if pos == @_pos
+
+    if not @selection.is_empty and not opts.extend
+      @selection\clear!
+
+    old_line = @buffer_line
+
+    -- are we moving to another line?
+    if pos - 1 < old_line.start_offset or pos - 1 > old_line.end_offset
+      dest_line = @view.buffer\get_line_at_offset pos - 1
+      @_line = dest_line.nr
+
+      if is_showing_line @view, dest_line.nr
+        if abs(dest_line.nr - old_line.nr) == 1 -- moving to an adjacent line, do one refresh
+          @view\refresh_display min(dest_line.start_offset, old_line.start_offset), max(dest_line.end_offset, old_line.end_offset)
+        else -- separated lines, refresh each line separately
+          @view\refresh_display old_line.start_offset, old_line.end_offset
+          @view\refresh_display dest_line.start_offset, dest_line.end_offset
+      else -- scroll
+        if dest_line.nr < @view.first_visible_line
+          @view.first_visible_line = dest_line.nr
+        else
+          @view.last_visible_line = dest_line.nr
+    else -- staying on same line, refresh it
+      @view\refresh_display old_line.start_offset, old_line.end_offset
+
+    if opts.extend
+      @selection\extend @_pos, pos
+
+    @_pos = pos
+    @_force_show = true
+    @_showing = true
+
+  start_of_file: (opts = {}) =>
+    @move_to pos: 1, extend: opts.extend
+
+  end_of_file: (opts = {}) =>
     @pos = @view.buffer.size
 
-  forward: =>
+  forward: (opts = {}) =>
     return if @_pos - 1 == @view.buffer.size
     line_start, line_end = @buffer_line.start_offset, @buffer_line.end_offset
     new_index, new_trailing = @display_line.layout\move_cursor_visually true, @_pos - 1 - line_start, 0, 1
     if new_index > @buffer_line.size
-      @pos += 1
+      @move_to pos: @pos + 1, extend: opts.extend
     else
-      @pos = line_start + new_index + new_trailing + 1
+      @move_to pos: line_start + new_index + new_trailing + 1, extend: opts.extend
 
-  backward: =>
+  backward: (opts = {}) =>
     return if @_pos == 1
     line_start = @buffer_line.start_offset
     new_index = @display_line.layout\move_cursor_visually true, @_pos - 1 - line_start, 0, -1
-    @pos = line_start + new_index + 1
+    @move_to pos: line_start + new_index + 1, extend: opts.extend
 
-  up: =>
+  up: (opts = {}) =>
     prev = @_get_line @line - 1
     if prev
-      @pos = prev.start_offset + 1
+      @move_to pos: prev.start_offset + 1, extend: opts.extend
 
-  down: =>
+  down: (opts = {}) =>
     next = @_get_line @line + 1
     if next
-      @pos = next.start_offset + 1
+      @move_to pos: next.start_offset + 1, extend: opts.extend
 
-  page_up: =>
+  page_up: (opts = {}) =>
     if @view.first_visible_line == 1
-      @start_of_file!
+      @start_of_file opts
       return
 
     first_visible = max(@view.first_visible_line - @view.lines_showing, 1)
     cursor_line_offset = max(@line - @view.first_visible_line, 1)
     @view.first_visible_line = first_visible
-    @line = first_visible + cursor_line_offset
+    @move_to line: first_visible + cursor_line_offset, extend: opts.extend
 
-  page_down: =>
+  page_down: (opts = {}) =>
     if @view.last_visible_line == @view.buffer.nr_lines
-      @end_of_file!
+      @end_of_file opts
       return
 
     cursor_line_offset = max(@line - @view.first_visible_line, 1)
     first_visible = min(@view.last_visible_line, @view.buffer.nr_lines - @view.lines_showing)
 
     @view.first_visible_line = first_visible
-    @line = first_visible + cursor_line_offset
+    @move_to line: first_visible + cursor_line_offset, extend: opts.extend
 
   _blink: =>
     return false if not @active
+    if @_force_show
+      @_force_show = false
+      return true
+
     cur_line = @buffer_line
-    @_showing = (not @_showing) or @_force_show
+    @_showing = not @_showing
     @view\refresh_display cur_line.start_offset, cur_line.end_offset
-    @_force_show = false
     true
 
   draw: (base_x, base_y, column, cr, display_line) =>
@@ -149,7 +175,7 @@ Cursor = {
     rect = display_line.layout\index_to_pos column
     cr\set_source_rgb 1, 0, 0
     x = math.max(rect.x / 1024 - 1, 0) + base_x
-    cr\rectangle x, base_y + rect.y / 1024, @width, rect.height / 1024
+    cr\rectangle x, base_y, @width, display_line.height + 1
     cr\fill!
     cr\restore!
 

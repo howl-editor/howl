@@ -33,6 +33,10 @@ ffi.cdef [[
   PangoAlignment pango_layout_get_alignment (PangoLayout *layout);
   void pango_layout_set_width (PangoLayout *layout, int width);
   int pango_layout_get_width (PangoLayout *layout);
+  void pango_layout_set_height (PangoLayout *layout, int height);
+  int pango_layout_get_height (PangoLayout *layout);
+  void pango_layout_set_spacing (PangoLayout *layout, int spacing);
+  int pango_layout_get_spacing (PangoLayout *layout);
 
   void pango_layout_index_to_pos (PangoLayout *layout, int index, PangoRectangle *pos);
   void pango_layout_move_cursor_visually (PangoLayout *layout,

@@ -22,6 +22,16 @@ core.define 'PangoLayout', {
       set: (width) => C.pango_layout_set_width @, width
     }
 
+    height: {
+      get: => C.pango_layout_get_height @
+      set: (height) => C.pango_layout_set_height @, height
+    }
+
+    spacing: {
+      get: => C.pango_layout_get_spacing @
+      set: (spacing) => C.pango_layout_set_spacing @, spacing
+    }
+
     alignment: {
       get: => C.pango_layout_get_alignment @
       set: (alignment) => C.pango_layout_set_alignment @, alignment

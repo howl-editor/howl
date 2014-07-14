@@ -21,20 +21,21 @@ if #args > 0
 
 on_key_press = (view, event) ->
   key_name = event.key_name
-  -- print "key_name: #{key_name}"
+
+  cursor_opts = extend: event.shift
 
   if key_name == 'right'
-    view.cursor\forward!
+    view.cursor\forward cursor_opts
   elseif key_name == 'left'
-    view.cursor\backward!
+    view.cursor\backward cursor_opts
   elseif key_name == 'up'
-    view.cursor\up!
+    view.cursor\up cursor_opts
   elseif key_name == 'down'
-    view.cursor\down!
+    view.cursor\down cursor_opts
   elseif key_name == 'page_down'
-    view.cursor\page_down!
+    view.cursor\page_down cursor_opts
   elseif key_name == 'page_up'
-    view.cursor\page_up!
+    view.cursor\page_up cursor_opts
   elseif key_name == 'backspace'
     view\delete_back!
   else
@@ -44,8 +45,7 @@ on_key_press = (view, event) ->
 
 new_edit = ->
   buffer = aullar.Buffer text
-  view = aullar.View!
-  view.buffer = buffer
+  view = aullar.View buffer
   view.on_key_press = on_key_press
   view\to_gobject!
 

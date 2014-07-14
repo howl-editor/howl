@@ -136,6 +136,11 @@ core.define 'cairo_t', {
       C.cairo_clip_extents @, a, a + 1, a + 2, a + 3
       { x1: tonumber(a[0]), y1: tonumber(a[1]), x2: tonumber(a[2]), y2: tonumber(a[3]) }
 
+    fill_extents: =>
+      a = ffi.new 'double[4]'
+      C.cairo_fill_extents @, a, a + 1, a + 2, a + 3
+      { x1: tonumber(a[0]), y1: tonumber(a[1]), x2: tonumber(a[2]), y2: tonumber(a[3]) }
+
     status: => C.cairo_status @
   }
 
