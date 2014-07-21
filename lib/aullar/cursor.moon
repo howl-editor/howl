@@ -143,7 +143,7 @@ Cursor = {
       return
 
     first_visible = max(@view.first_visible_line - @view.lines_showing, 1)
-    cursor_line_offset = max(@line - @view.first_visible_line, 1)
+    cursor_line_offset = max(@line - @view.first_visible_line, 0)
     @view.first_visible_line = first_visible
     @move_to line: first_visible + cursor_line_offset, extend: opts.extend
 
@@ -152,8 +152,8 @@ Cursor = {
       @end_of_file opts
       return
 
-    cursor_line_offset = max(@line - @view.first_visible_line, 1)
-    first_visible = min(@view.last_visible_line, @view.buffer.nr_lines - @view.lines_showing)
+    cursor_line_offset = max(@line - @view.first_visible_line, 0)
+    first_visible = min(@view.last_visible_line, @view.buffer.nr_lines - (@view.lines_showing - 1))
 
     @view.first_visible_line = first_visible
     @move_to line: first_visible + cursor_line_offset, extend: opts.extend

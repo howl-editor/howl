@@ -1,5 +1,7 @@
+ffi = require 'ffi'
 core = require 'ljglibs.core'
 require 'ljglibs.cdefs.gtk'
+C = ffi.C
 
 core.auto_loading 'gtk', {
   constants: {
@@ -40,5 +42,15 @@ core.auto_loading 'gtk', {
     'WIN_POS_MOUSE'
     'WIN_POS_CENTER_ALWAYS'
     'WIN_POS_CENTER_ON_PARENT'
+
+    -- GtkAlign
+    'ALIGN_FILL',
+    'ALIGN_START',
+    'ALIGN_END',
+    'ALIGN_CENTER',
+    'ALIGN_BASELINE',
   }
+
+  cairo_should_draw_window: (cr, window) ->
+    C.gtk_cairo_should_draw_window(cr, window) != 0
 }

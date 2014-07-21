@@ -1,6 +1,6 @@
 {
   define_class: (base, meta = {}) ->
-    props = base.properties
+    props = base.properties or {}
 
     meta.__index = (o, k) ->
       m = base[k]

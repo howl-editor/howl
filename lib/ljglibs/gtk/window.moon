@@ -11,7 +11,7 @@ require 'ljglibs.gtk.bin'
 
 C, ffi_string = ffi.C, ffi.string
 catch_error = glib.catch_error
-ref_ptr = gobject.ref_ptr
+{:ref_ptr, :gc_ptr} = gobject
 
 jit.off true, true
 
@@ -65,7 +65,7 @@ core.define 'GtkWindow < GtkBin', {
       set: (focus) => C.gtk_window_set_focus @, focus
   }
 
-  new: (type = C.GTK_WINDOW_TOPLEVEL) -> C.gtk_window_new type
+  new: (type = C.GTK_WINDOW_TOPLEVEL) -> ref_ptr C.gtk_window_new type
 
   set_default_size: (width, height) => C.gtk_window_set_default_size @, width, height
   resize: (width, height) => C.gtk_window_resize @, width, height

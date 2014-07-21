@@ -10,17 +10,19 @@ pango_cairo = Pango.cairo
 CLayout = require 'ljglibs.pango.layout'
 
 LineGutter = {
-  new: (@view, @cairo_context, @pango_context, @clip) =>
+  new: (@view) =>
     @width = 50
+
+  start_draw: (@cairo_context, pango_context, @clip) =>
+    return if @clip.x1 > @width
     @_draw_background!
-    @layout = Layout @pango_context
+    @layout = Layout pango_context
     @layout.width = (@width - 5) * 1024
     @layout.alignment = Pango.ALIGN_RIGHT
 
-  properties: {
-  }
-
   draw_for_line: (line_nr, x, y, display_line) =>
+    return unless @layout
+
     cr = @cairo_context
     cr\save!
     cr\move_to x, y
@@ -28,14 +30,16 @@ LineGutter = {
     pango_cairo.show_layout cr, @layout
     cr\restore!
 
-  _draw_background: =>
-    cr = @cairo_context
+  end_draw: =>
+    @cairo_context, @clip, @layout = nil, nil, nil
 
-    cr\save!
-    cr\set_source_rgb 0.5, 0.6, 0.4
-    cr\rectangle @clip.x1, @clip.y1, min(@clip.x2, @width), @clip.y2
-    cr\fill!
-    cr\restore!
+  _draw_background: =>
+    with @cairo_context
+      \save!
+      \set_source_rgb 0.5, 0.6, 0.4
+      \rectangle @clip.x1, @clip.y1, min(@clip.x2 - @clip.x1, @width), @clip.y2 - @clip.y1
+      \fill!
+      \restore!
 }
 
 define_class LineGutter

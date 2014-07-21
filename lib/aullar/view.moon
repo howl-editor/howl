@@ -14,6 +14,7 @@ Cursor = require 'aullar.cursor'
 Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
 LineGutter = require 'aullar.line_gutter'
+
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs} = math
@@ -57,10 +58,12 @@ View = {
     @margin = 3
 
     @_first_visible_line = 1
-    @_last_visible_line = 1
+    @_last_visible_line = nil
+
     @area = Gtk.DrawingArea!
     @selection = Selection @
     @cursor = Cursor @, @selection
+    @line_gutter = LineGutter @
 
     with @area
       .can_focus = true
@@ -72,28 +75,49 @@ View = {
       \on_focus_in_event signals.on_focus_in, @
       \on_focus_out_event signals.on_focus_out, @
 
+    @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
+    with @horizontal_scrollbar.adjustment
+      \configure 0, 0, 1000, 1, 100, 100
+      \on_value_changed (adjustment) ->
+        line = math.floor adjustment.value + 0.5
+        @scroll_to line
+
+    @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
+      { expand: true, @area },
+      @horizontal_scrollbar
+    }
+
     @_reset_display!
 
   properties: {
 
     first_visible_line: {
       get: => @_first_visible_line
-      set: (line) =>
-        if line != @_first_visible_line
-          @_first_visible_line = line
-          @_last_visible_line = line
-          @area\queue_draw!
+      set: (line) => @scroll_to line
     }
 
     last_visible_line: {
-      get: => @_last_visible_line
+      get: =>
+        unless @_last_visible_line
+          error "Can't determine last visible line until shown", 2 unless @height
+
+          y = @margin
+          for line in @_buffer\lines @_first_visible_line
+            d_line = @display_lines[line.nr]
+            break if y + d_line.text_height > @height
+            @_last_visible_line = line.nr
+            y += d_line.height + 1
+
+        @_last_visible_line
+
       set: (line) =>
         -- todo: variable height lines
         @first_visible_line = (line - @lines_showing) + 1
         @_last_visible_line = line
     }
 
-    lines_showing: => @last_visible_line - @first_visible_line + 1
+    lines_showing: =>
+      @last_visible_line - @first_visible_line + 1
 
     buffer: {
       get: => @_buffer
@@ -101,6 +125,18 @@ View = {
         @_buffer = buffer
     }
   }
+
+  scroll_to: (line, column = 1) =>
+    return if @first_visible_line == line
+    @_first_visible_line = line
+    @_last_visible_line = nil
+    @_sync_scrollbar!
+    @area\queue_draw!
+
+  _sync_scrollbar: =>
+    page_size = @lines_showing - 1
+    adjustment = @horizontal_scrollbar.adjustment
+    adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
 
   insert: (text) =>
     cur_pos = @cursor.pos
@@ -124,53 +160,13 @@ View = {
     else -- within the current line
       @refresh_display @cursor.pos - 1, cur_pos - 1, invalidate: true
 
-  to_gobject: => @area
-
-  _draw: (cr) =>
-    p_ctx = @area.pango_context
-    line_spacing = @line_spacing
-    cursor_pos = @cursor.pos - 1
-    clip = cr.clip_extents
-    line_gutter = LineGutter @, cr, p_ctx, clip
-
-    x, y = line_gutter.width + @margin, @margin
-    cr\move_to x, y
-    cr\set_source_rgb 0, 0, 0
-    last_visible_line = 0
-
-    for line in @_buffer\lines @_first_visible_line
-      d_line = @display_lines[line.nr]
-      break if y >= clip.y2
-
-      if y >= clip.y1
-        is_current_line = @cursor\in_line line
-
-        if is_current_line
-          draw_current_line_background x, y, d_line, cr, clip
-
-        if @selection\affects_line line
-          @selection\draw x, y, cr, d_line, line
-
-        cr\move_to x + (d_line.spacing / 2), y
-        pango_cairo.show_layout cr, d_line.layout
-        line_gutter\draw_for_line line.nr, 0, y, d_line
-
-        if is_current_line
-          @cursor\draw x, y, cursor_pos - line.start_offset, cr, d_line
-
-      if y + d_line.text_height < clip.y2
-        last_visible_line = line.nr
-
-      y += d_line.height + 1
-      cr\move_to x, y
-
-    @_last_visible_line = max(@_last_visible_line or 0, last_visible_line)
+  to_gobject: => @bin
 
   refresh_display: (from_offset, to_offset, opts = {}) =>
     return unless @_last_visible_line and @width
     d_lines = @display_lines
     min_y, max_y = nil, nil
-    x, y = 0, @margin
+    y = @margin
     last_valid = 0
 
     for line_nr = @_first_visible_line, @_last_visible_line
@@ -197,29 +193,68 @@ View = {
       @_max_display_line = last_valid
 
     if min_y
-      @area\queue_draw_area 0, min_y, @width, (max_y - min_y) + 1
+      start_x = @line_gutter.width + 1
+      width = @width - @line_gutter.width
+      @area\queue_draw_area start_x, min_y, width, (max_y - min_y) + 1
+
+  _draw: (cr) =>
+    p_ctx = @area.pango_context
+    line_spacing = @line_spacing
+    cursor_pos = @cursor.pos - 1
+    clip = cr.clip_extents
+
+    @line_gutter\start_draw cr, p_ctx, clip
+
+    x, y = @line_gutter.width + @margin, @margin
+    cr\move_to x, y
+    cr\set_source_rgb 0, 0, 0
+
+    for line in @_buffer\lines @_first_visible_line
+      d_line = @display_lines[line.nr]
+      break if y >= clip.y2
+
+      if y + d_line.height > clip.y1
+        is_current_line = @cursor\in_line line
+
+        if is_current_line
+          draw_current_line_background x, y, d_line, cr, clip
+
+        if @selection\affects_line line
+          @selection\draw x, y, cr, d_line, line
+
+        cr\move_to x + (d_line.spacing / 2), y
+        pango_cairo.show_layout cr, d_line.layout
+        @line_gutter\draw_for_line line.nr, 0, y, d_line
+
+        if is_current_line
+          @cursor\draw x, y, cursor_pos - line.start_offset, cr, d_line
+
+      y += d_line.height + 1
+      cr\move_to x, y
+
+    @line_gutter\end_draw!
 
   _reset_display: =>
     @_max_display_line = 0
-    v = @
-    @display_lines = setmetatable {}, {
-      __index: (t, nr) ->
-        line = v.buffer\get_line nr
-        layout = Layout v.area.pango_context
-        layout\set_text line.text, line.size
-        width, text_height = layout\get_pixel_size!
-        spacing = math.ceil (text_height * v.line_spacing) - 0.5
+    @display_lines = setmetatable {}, __index: (t, nr) ->
+      d_line = @_get_display_line nr
+      @_max_display_line = max @_max_display_line, nr
+      rawset t, nr, d_line
+      d_line
 
-        d_line = {
-          width: width + v.cursor.width,
-          height: text_height + spacing,
-          :text_height,
-          :layout,
-          :spacing
-        }
-        v._max_display_line = max v._max_display_line, nr
-        rawset t, nr, d_line
-        d_line
+  _get_display_line: (nr) =>
+    line = @buffer\get_line nr
+    layout = Layout @area.pango_context
+    layout\set_text line.text, line.size
+    width, text_height = layout\get_pixel_size!
+    spacing = math.ceil (text_height * @line_spacing) - 0.5
+
+    {
+      width: width + @cursor.width,
+      height: text_height + spacing,
+      :text_height,
+      :layout,
+      :spacing
     }
 
   _on_focus_in: =>
@@ -232,10 +267,10 @@ View = {
     @_reset_display!
 
   _on_size_allocate: (allocation) =>
-    @_reset_display!
     @width = allocation.width
     @height = allocation.height
-
+    @_reset_display!
+    @_sync_scrollbar!
 }
 
 define_class View

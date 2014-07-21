@@ -1,4 +1,4 @@
--- Copyright 2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2013-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 ffi = require 'ffi'
@@ -52,6 +52,13 @@ ffi.cdef [[
     GTK_WIN_POS_CENTER_ON_PARENT
   } GtkWindowPosition;
 
+  typedef enum {
+    GTK_ALIGN_FILL,
+    GTK_ALIGN_START,
+    GTK_ALIGN_END,
+    GTK_ALIGN_CENTER,
+    GTK_ALIGN_BASELINE,
+  } GtkAlign;
 
   /* GtkCssProvider */
   typedef struct {} GtkStyleProvider;
@@ -285,4 +292,87 @@ ffi.cdef [[
   /* GtkDrawingArea */
   typedef struct {} GtkDrawingArea;
   GtkDrawingArea * gtk_drawing_area_new (void);
+
+  /* GtkAdjustment */
+  typedef struct {} GtkAdjustment;
+
+  GtkAdjustment * gtk_adjustment_new (gdouble value,
+                                      gdouble lower,
+                                      gdouble upper,
+                                      gdouble step_increment,
+                                      gdouble page_increment,
+                                      gdouble page_size);
+
+  gdouble gtk_adjustment_get_value (GtkAdjustment *adjustment);
+
+  void gtk_adjustment_set_value (GtkAdjustment *adjustment,
+                                 gdouble value);
+
+  void gtk_adjustment_clamp_page (GtkAdjustment *adjustment,
+                                  gdouble lower,
+                                  gdouble upper);
+
+  void gtk_adjustment_changed (GtkAdjustment *adjustment);
+
+  void gtk_adjustment_value_changed (GtkAdjustment *adjustment);
+
+  void gtk_adjustment_configure (GtkAdjustment *adjustment,
+                                 gdouble value,
+                                 gdouble lower,
+                                 gdouble upper,
+                                 gdouble step_increment,
+                                 gdouble page_increment,
+                                 gdouble page_size);
+
+  gdouble gtk_adjustment_get_lower (GtkAdjustment *adjustment);
+  gdouble gtk_adjustment_get_page_increment (GtkAdjustment *adjustment);
+  gdouble gtk_adjustment_get_page_size (GtkAdjustment *adjustment);
+  gdouble gtk_adjustment_get_step_increment (GtkAdjustment *adjustment);
+  gdouble gtk_adjustment_get_minimum_increment (GtkAdjustment *adjustment);
+  gdouble gtk_adjustment_get_upper (GtkAdjustment *adjustment);
+  void gtk_adjustment_set_lower (GtkAdjustment *adjustment,
+                                 gdouble lower);
+  void gtk_adjustment_set_page_increment (GtkAdjustment *adjustment,
+                                          gdouble page_increment);
+  void gtk_adjustment_set_page_size (GtkAdjustment *adjustment,
+                                     gdouble page_size);
+  void gtk_adjustment_set_step_increment (GtkAdjustment *adjustment,
+                                          gdouble step_increment);
+  void gtk_adjustment_set_upper (GtkAdjustment *adjustment,
+                                 gdouble upper);
+
+  /* GtkScrolledWindow */
+  typedef struct {} GtkScrolledWindow;
+  GtkScrolledWindow * gtk_scrolled_window_new (GtkAdjustment *hadjustment,
+                                               GtkAdjustment *vadjustment);
+
+  GtkAdjustment *
+  gtk_scrolled_window_get_hadjustment (GtkScrolledWindow *scrolled_window);
+
+  void
+  gtk_scrolled_window_set_hadjustment (GtkScrolledWindow *scrolled_window,
+                                       GtkAdjustment *hadjustment);
+
+  GtkAdjustment *
+  gtk_scrolled_window_get_vadjustment (GtkScrolledWindow *scrolled_window);
+
+  void
+  gtk_scrolled_window_set_vadjustment (GtkScrolledWindow *scrolled_window,
+                                       GtkAdjustment *vadjustment);
+
+  /* GtkRange */
+  typedef struct {} GtkRange;
+
+  /* GtkScrollbar */
+  typedef struct {} GtkScrollbar;
+  GtkScrollbar * gtk_scrollbar_new (GtkOrientation orientation,
+                                    GtkAdjustment *adjustment);
+  /* GtkViewport */
+  typedef struct {} GtkViewport;
+  GtkViewport * gtk_viewport_new (GtkAdjustment *hadjustment,
+                                  GtkAdjustment *vadjustment);
+
+  /* Misc */
+  gboolean gtk_cairo_should_draw_window (cairo_t *cr,
+                                         GdkWindow *window);
 ]]

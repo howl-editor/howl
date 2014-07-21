@@ -5,6 +5,7 @@ Cursor = require 'aullar.cursor'
 View = require 'aullar.view'
 Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
+Gtk = require 'ljglibs.gtk'
 
 describe 'Cursor', ->
   local view, buffer, cursor
@@ -14,6 +15,9 @@ describe 'Cursor', ->
     view = View buffer
     selection = Selection view
     cursor = Cursor view, selection
+    window = Gtk.OffscreenWindow!
+    window\add view\to_gobject!
+    window\show_all!
 
   it 'starts at out pos 1, line 1', ->
     assert.equals 1, cursor.pos
