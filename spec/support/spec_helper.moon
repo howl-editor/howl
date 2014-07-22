@@ -76,6 +76,7 @@ theme.apply!
 --   append errors, e
 --   true
 
+
 default_loop = require'busted.loop.default'
 
 howl_main_ctx = C.g_main_context_default!
@@ -95,3 +96,9 @@ export howl_async = (f) ->
   co = coroutine.create busted.async(f)
   status, err = coroutine.resume co
   error err unless status
+
+export pump_mainloop = ->
+  jit.off!
+  count = 0
+  while count < 100 and C.g_main_context_iteration(howl_main_ctx, false) != 0
+    count += 1

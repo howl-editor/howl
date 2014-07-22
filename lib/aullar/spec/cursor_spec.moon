@@ -18,6 +18,7 @@ describe 'Cursor', ->
     window = Gtk.OffscreenWindow!
     window\add view\to_gobject!
     window\show_all!
+    pump_mainloop!
 
   it 'starts at out pos 1, line 1', ->
     assert.equals 1, cursor.pos
@@ -36,26 +37,26 @@ describe 'Cursor', ->
       cursor\backward!
       assert.equals 3, cursor.pos
 
-  -- describe 'up()', ->
-  --   it 'moves the cursor one line up', ->
-  --     buffer.text = 'line 1\nline 2'
-  --     cursor.pos = 8
-  --     cursor\up!
-  --     assert.equals 1, cursor.line
+  describe 'up()', ->
+    it 'moves the cursor one line up', ->
+      buffer.text = 'line 1\nline 2'
+      cursor.pos = 8
+      cursor\up!
+      assert.equals 1, cursor.line
 
-  --   it 'does nothing if the cursor is at the first line', ->
-  --     buffer.text = 'line 1\nline 2'
-  --     cursor\up!
-  --     assert.equals 1, cursor.pos
+    it 'does nothing if the cursor is at the first line', ->
+      buffer.text = 'line 1\nline 2'
+      cursor\up!
+      assert.equals 1, cursor.pos
 
-  -- describe 'down()', ->
-  --   it 'moves the cursor one line down', ->
-  --     buffer.text = 'line 1\nline 2'
-  --     cursor\down!
-  --     assert.equals 2, cursor.line
+  describe 'down()', ->
+    it 'moves the cursor one line down', ->
+      buffer.text = 'line 1\nline 2'
+      cursor\down!
+      assert.equals 2, cursor.line
 
-  --   it 'does nothing if the cursor is at the last line', ->
-  --     buffer.text = 'line 1\nline 2'
-  --     cursor.pos = 8
-  --     cursor\down!
-  --     assert.equals 8, cursor.pos
+    it 'does nothing if the cursor is at the last line', ->
+      buffer.text = 'line 1\nline 2'
+      cursor.pos = 8
+      cursor\down!
+      assert.equals 8, cursor.pos
