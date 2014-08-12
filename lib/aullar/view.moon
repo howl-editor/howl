@@ -56,9 +56,11 @@ View = {
   new: (@_buffer = Buffer('')) =>
     @line_spacing = 0.1
     @margin = 3
+    @base_x = 0
 
     @_first_visible_line = 1
     @_last_visible_line = nil
+    @_x_offset = 0
 
     @area = Gtk.DrawingArea!
     @selection = Selection @
@@ -116,6 +118,9 @@ View = {
         @_last_visible_line = line
     }
 
+    edit_area_x: => @line_gutter.width + @margin
+    edit_area_width: => @width - @edit_area_x
+
     lines_showing: =>
       @last_visible_line - @first_visible_line + 1
 
@@ -162,7 +167,7 @@ View = {
 
   to_gobject: => @bin
 
-  refresh_display: (from_offset, to_offset, opts = {}) =>
+  refresh_display: (from_offset = 0, to_offset, opts = {}) =>
     return unless @_last_visible_line and @width
     d_lines = @display_lines
     min_y, max_y = nil, nil
@@ -195,7 +200,9 @@ View = {
     if min_y
       start_x = @line_gutter.width + 1
       width = @width - @line_gutter.width
-      @area\queue_draw_area start_x, min_y, width, (max_y - min_y) + 1
+      height = (max_y - min_y) + 1
+      if width > 0
+        @area\queue_draw_area start_x, min_y, width, height
 
   _draw: (cr) =>
     p_ctx = @area.pango_context
@@ -205,8 +212,8 @@ View = {
 
     @line_gutter\start_draw cr, p_ctx, clip
 
-    x, y = @line_gutter.width + @margin, @margin
-    cr\move_to x, y
+    edit_area_x, y = @edit_area_x, @margin
+    cr\move_to edit_area_x, y
     cr\set_source_rgb 0, 0, 0
 
     for line in @_buffer\lines @_first_visible_line
@@ -217,20 +224,28 @@ View = {
         is_current_line = @cursor\in_line line
 
         if is_current_line
-          draw_current_line_background x, y, d_line, cr, clip
+          draw_current_line_background edit_area_x, y, d_line, cr, clip
 
         if @selection\affects_line line
-          @selection\draw x, y, cr, d_line, line
+          @selection\draw edit_area_x, y, cr, d_line, line
 
-        cr\move_to x + (d_line.spacing / 2), y
+        -- draw line
+        if @base_x > 0
+          cr\save!
+          cr\rectangle edit_area_x, y, clip.x2 - edit_area_x, clip.y2
+          cr\clip!
+
+        cr\move_to edit_area_x - @base_x, y
         pango_cairo.show_layout cr, d_line.layout
+        cr\restore! if @base_x > 0
+
         @line_gutter\draw_for_line line.nr, 0, y, d_line
 
         if is_current_line
-          @cursor\draw x, y, cursor_pos - line.start_offset, cr, d_line
+          @cursor\draw edit_area_x, y, cr, d_line
 
       y += d_line.height + 1
-      cr\move_to x, y
+      cr\move_to edit_area_x, y
 
     @line_gutter\end_draw!
 

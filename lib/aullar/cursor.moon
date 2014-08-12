@@ -35,7 +35,7 @@ Cursor = {
     }
 
     column: {
-      get: => @_colum
+      get: => @pos - @buffer_line.start_offset - 1
       set: (colum) =>
     }
 
@@ -64,14 +64,13 @@ Cursor = {
   move_to: (opts) =>
     pos = opts.pos
     if pos
-      pos = min(@view.buffer.size, pos)
-      pos = max(pos, 0)
+      pos = max min(@view.buffer.size, pos), 0
     elseif opts.line
       b_line = @view.buffer\get_line opts.line
       if b_line
         pos = b_line.start_offset + 1
 
-    error 2, "Illegal argument #1 to Cursor.move_to" unless 2
+    error("Illegal argument #1 to Cursor.move_to", 2) unless pos
 
     return if pos == @_pos
 
@@ -105,6 +104,19 @@ Cursor = {
     @_pos = pos
     @_force_show = true
     @_showing = true
+
+    -- finally, do we need to scroll horizontally to show the new position?
+    rect = @display_line.layout\index_to_pos @column
+    col_pos = rect.x / 1024
+    char_width = rect.width / 1024
+    x_pos = col_pos - @view.base_x + @view.edit_area_x + @width
+
+    if x_pos + char_width > @view.width
+      @view.base_x = col_pos - @view.edit_area_width + char_width
+      @view\refresh_display!
+    elseif x_pos < @view.edit_area_x
+      @view.base_x = col_pos
+      @view\refresh_display!
 
   start_of_file: (opts = {}) =>
     @move_to pos: 1, extend: opts.extend
@@ -169,16 +181,15 @@ Cursor = {
     @view\refresh_display cur_line.start_offset, cur_line.end_offset
     true
 
-  draw: (base_x, base_y, column, cr, display_line) =>
+  draw: (x, base_y, cr, display_line) =>
     return unless @_showing
     cr\save!
-    rect = display_line.layout\index_to_pos column
+    rect = display_line.layout\index_to_pos @column
     cr\set_source_rgb 1, 0, 0
-    x = math.max(rect.x / 1024 - 1, 0) + base_x
+    x = math.max((rect.x / 1024) - 1, 0) + x - @view.base_x
     cr\rectangle x, base_y, @width, display_line.height + 1
     cr\fill!
     cr\restore!
-
 
   _get_line: (nr) =>
     @view.buffer\get_line nr

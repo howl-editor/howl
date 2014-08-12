@@ -160,6 +160,7 @@ core.define 'cairo_t', {
   rel_move_to: (x, y) => C.cairo_rel_move_to @, x, y
 
   in_clip: (x, y) => C.cairo_in_clip(@, x, y) != 0
+  clip: => C.cairo_clip @
 
   -- Path operations
   rectangle: (x, y, width, height) => C.cairo_rectangle @, x, y, width, height

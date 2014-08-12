@@ -57,28 +57,25 @@ Selection = {
 
     stop - 1 >= line.start_offset
 
-  draw: (base_x, base_y, cr, display_line, line) =>
-    x, width = base_x, display_line.width
+  draw: (x, y, cr, display_line, line) =>
+    start_x, width = x, display_line.width
     start, stop = @range!
 
     if (start - 1) > line.start_offset -- sel starts on line
       start_col = (start - 1) - line.start_offset
       rect = display_line.layout\index_to_pos start_col
-      x = base_x + (rect.x / 1024)
-      width -= (x - base_x)
+      start_x = x + (rect.x / 1024)
+      width -= (start_x - x)
 
     if (stop - 1) < line.end_offset -- sel ends on line
       end_col = (stop - 1) - line.start_offset
       rect = display_line.layout\index_to_pos end_col
-      width = (base_x + rect.x / 1024) - x
+      width = (x + rect.x / 1024) - start_x
 
     cr\save!
     cr\set_source_rgb 0.6, 0.8, 0.8
-    cr\rectangle x, base_y, width, display_line.height + 1
+    cr\rectangle start_x - @view.base_x, y, width, display_line.height + 1
     cr\fill!
-    -- print "fill_extents"
-    -- moon.p cr.fill_extents
-    -- cr\stroke!
     cr\restore!
 }
 
