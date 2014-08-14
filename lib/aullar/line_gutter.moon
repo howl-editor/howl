@@ -14,7 +14,7 @@ LineGutter = {
     @width = 50
 
   start_draw: (@cairo_context, pango_context, @clip) =>
-    return if @clip.x1 > @width
+    return if @clip.x1 >= @width
     @_draw_background!
     @layout = Layout pango_context
     @layout.width = (@width - 5) * 1024

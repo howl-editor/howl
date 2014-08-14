@@ -56,7 +56,7 @@ View = {
   new: (@_buffer = Buffer('')) =>
     @line_spacing = 0.1
     @margin = 3
-    @base_x = 0
+    @_base_x = 0
 
     @_first_visible_line = 1
     @_last_visible_line = nil
@@ -77,16 +77,32 @@ View = {
       \on_focus_in_event signals.on_focus_in, @
       \on_focus_out_event signals.on_focus_out, @
 
-    @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
-    with @horizontal_scrollbar.adjustment
-      \configure 0, 0, 1000, 1, 100, 100
-      \on_value_changed (adjustment) ->
-        line = math.floor adjustment.value + 0.5
-        @scroll_to line
+    @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_HORIZONTAL
+    @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
+      return if @_updating_scrolling
+      @base_x = adjustment.value
+      @area\queue_draw!
+
+    @horizontal_scrollbar_alignment = Gtk.Alignment {
+      left_padding: @line_gutter.width,
+      @horizontal_scrollbar
+    }
+
+    @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
+    @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
+      return if @_updating_scrolling
+      line = math.floor adjustment.value + 0.5
+      @scroll_to line
 
     @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
-      { expand: true, @area },
-      @horizontal_scrollbar
+      {
+        expand: true,
+        Gtk.Box(Gtk.ORIENTATION_VERTICAL, {
+          { expand: true, @area },
+          @horizontal_scrollbar_alignment
+        })
+      },
+      @vertical_scrollbar
     }
 
     @_reset_display!
@@ -118,6 +134,13 @@ View = {
         @_last_visible_line = line
     }
 
+    base_x: {
+      get: => @_base_x
+      set: (x) =>
+        @_base_x = x
+        @_sync_scrollbars!
+    }
+
     edit_area_x: => @line_gutter.width + @margin
     edit_area_width: => @width - @edit_area_x
 
@@ -131,17 +154,31 @@ View = {
     }
   }
 
-  scroll_to: (line, column = 1) =>
+  scroll_to: (line) =>
     return if @first_visible_line == line
     @_first_visible_line = line
     @_last_visible_line = nil
-    @_sync_scrollbar!
+    @_sync_scrollbars!
     @area\queue_draw!
 
-  _sync_scrollbar: =>
+  _sync_scrollbars: =>
+    @_updating_scrolling = true
     page_size = @lines_showing - 1
-    adjustment = @horizontal_scrollbar.adjustment
+    adjustment = @vertical_scrollbar.adjustment
     adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
+
+    max_width = 0
+    for i = @first_visible_line, @last_visible_line
+      max_width = max max_width, @display_lines[i].width
+
+    if max_width <= @edit_area_width
+      @horizontal_scrollbar\hide!
+    else
+      adjustment = @horizontal_scrollbar.adjustment
+      adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, @edit_area_width, @edit_area_width
+      @horizontal_scrollbar\show!
+
+    @_updating_scrolling = false
 
   insert: (text) =>
     cur_pos = @cursor.pos
@@ -174,12 +211,13 @@ View = {
     y = @margin
     last_valid = 0
 
-    for line_nr = @_first_visible_line, @_last_visible_line
-      d_line = d_lines[line_nr]
+    for line_nr = @_first_visible_line, @_last_visible_line + 1
       line = @_buffer\get_line line_nr
+      break unless line
       after = to_offset and line.start_offset > to_offset
       break if after
       before = line.end_offset < from_offset
+      d_line = d_lines[line_nr]
 
       if not(before or after) or (after and not to_offset)
         d_lines[line.nr] = nil if opts.invalidate
@@ -259,6 +297,7 @@ View = {
 
   _get_display_line: (nr) =>
     line = @buffer\get_line nr
+    return nil unless line
     layout = Layout @area.pango_context
     layout\set_text line.text, line.size
     width, text_height = layout\get_pixel_size!
@@ -285,7 +324,7 @@ View = {
     @width = allocation.width
     @height = allocation.height
     @_reset_display!
-    @_sync_scrollbar!
+    @_sync_scrollbars!
 }
 
 define_class View

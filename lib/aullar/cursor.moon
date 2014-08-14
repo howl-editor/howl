@@ -170,6 +170,12 @@ Cursor = {
     @view.first_visible_line = first_visible
     @move_to line: first_visible + cursor_line_offset, extend: opts.extend
 
+  start_of_line: (opts = {}) =>
+    @move_to pos: @buffer_line.start_offset + 1, extend: opts.extend
+
+  end_of_line: (opts = {}) =>
+    @move_to pos: @buffer_line.start_offset + @buffer_line.size + 1, extend: opts.extend
+
   _blink: =>
     return false if not @active
     if @_force_show
