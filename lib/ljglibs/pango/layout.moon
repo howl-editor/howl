@@ -53,6 +53,11 @@ core.define 'PangoLayout', {
     C.pango_layout_index_to_pos @, index, rect
     rect
 
+  xy_to_index: (x, y) =>
+    arr = ffi_new 'int[2]'
+    inside = C.pango_layout_xy_to_index(@, x, y, arr, arr + 1) != 0
+    inside, tonumber(arr[0]), tonumber(arr[1])
+
   move_cursor_visually: (strong, old_index, old_trailing, direction) =>
     arr = ffi_new 'int[2]'
     C.pango_layout_move_cursor_visually @, strong, old_index, old_trailing, direction, arr, arr + 1

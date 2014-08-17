@@ -23,19 +23,24 @@ on_key_press = (view, event) ->
   key_name = event.key_name
 
   cursor_opts = extend: event.shift
+  cursor = view.cursor
 
   if key_name == 'right'
-    view.cursor\forward cursor_opts
+    cursor\forward cursor_opts
   elseif key_name == 'left'
-    view.cursor\backward cursor_opts
+    cursor\backward cursor_opts
   elseif key_name == 'up'
-    view.cursor\up cursor_opts
+    cursor\up cursor_opts
   elseif key_name == 'down'
-    view.cursor\down cursor_opts
+    cursor\down cursor_opts
   elseif key_name == 'page_down'
-    view.cursor\page_down cursor_opts
+    cursor\page_down cursor_opts
   elseif key_name == 'page_up'
-    view.cursor\page_up cursor_opts
+    cursor\page_up cursor_opts
+  elseif key_name == 'home'
+    cursor\start_of_line cursor_opts
+  elseif key_name == 'end'
+    cursor\end_of_line cursor_opts
   elseif key_name == 'backspace'
     view\delete_back!
   else
@@ -51,7 +56,7 @@ new_edit = ->
 
 add_window = (app) ->
   window = Gtk.Window()
-  window\set_default_size 800, 480
+  window\set_default_size 400, 480
   window\move 300, 100
   window.title = 'Edit redux'
   window\add new_edit!

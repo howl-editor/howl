@@ -49,30 +49,6 @@ ffi.cdef [[
 
   void g_error_free (GError *error);
 
-  typedef enum {
-    GDK_SHIFT_MASK    = 1 << 0,
-    GDK_LOCK_MASK     = 1 << 1,
-    GDK_CONTROL_MASK  = 1 << 2,
-    GDK_MOD1_MASK     = 1 << 3,
-    GDK_MOD2_MASK     = 1 << 4,
-    GDK_MOD3_MASK     = 1 << 5,
-    GDK_MOD4_MASK     = 1 << 6,
-    GDK_MOD5_MASK     = 1 << 7,
-    GDK_BUTTON1_MASK  = 1 << 8,
-    GDK_BUTTON2_MASK  = 1 << 9,
-    GDK_BUTTON3_MASK  = 1 << 10,
-    GDK_BUTTON4_MASK  = 1 << 11,
-    GDK_BUTTON5_MASK  = 1 << 12,
-    GDK_SUPER_MASK    = 1 << 26,
-    GDK_HYPER_MASK    = 1 << 27,
-    GDK_META_MASK     = 1 << 28,
-
-    GDK_RELEASE_MASK  = 1 << 30,
-
-    GDK_MODIFIER_MASK = 0x5c001fff
-  } GdkModifierType;
-
-
   /* utf8 helper functions */
   glong   g_utf8_pointer_to_offset(const gchar *str, const gchar *pos);
   gchar * g_utf8_offset_to_pointer(const gchar *str, glong offset);

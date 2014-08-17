@@ -39,6 +39,11 @@ ffi.cdef [[
   int pango_layout_get_spacing (PangoLayout *layout);
 
   void pango_layout_index_to_pos (PangoLayout *layout, int index, PangoRectangle *pos);
+  gboolean pango_layout_xy_to_index (PangoLayout *layout,
+                                     int x,
+                                     int y,
+                                     int *index_,
+                                     int *trailing);
   void pango_layout_move_cursor_visually (PangoLayout *layout,
                                           gboolean strong,
                                           int old_index,

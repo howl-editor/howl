@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
+bit = require 'bit'
 ffi_cast = ffi.cast
 
 Gdk = require 'ljglibs.gdk'
@@ -50,6 +51,8 @@ signals = {
   on_screen_changed: (_, _, view) -> view._on_screen_changed view
   on_size_allocate: (_, allocation, view) ->
     view._on_size_allocate view, ffi_cast('GdkRectangle *', allocation)
+  on_button_press: (_, event, view) ->
+    view._on_button_press view, ffi_cast('GdkEventButton *', event)
 }
 
 View = {
@@ -69,8 +72,9 @@ View = {
 
     with @area
       .can_focus = true
-      \add_events Gdk.KEY_PRESS_MASK
+      \add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK)
       \on_key_press_event on_key_press, @
+      \on_button_press_event signals.on_button_press, @
       \on_draw signals.on_draw, @
       \on_screen_changed signals.on_screen_changed, @
       \on_size_allocate signals.on_size_allocate, @
@@ -242,6 +246,31 @@ View = {
       if width > 0
         @area\queue_draw_area start_x, min_y, width, height
 
+  position_from_coordinates: (x, y) =>
+    return unless @_last_visible_line and @width
+    cur_y = @margin
+
+    for line_nr = @_first_visible_line, @_last_visible_line + 1
+      d_line = @display_lines[line_nr]
+      end_y = cur_y + d_line.height
+      return nil unless d_line
+      if (y >= cur_y and y <= end_y)
+        pango_x = (x - @edit_area_x + @base_x) * 1024
+        inside, index = d_line.layout\xy_to_index pango_x, 1
+        if not inside
+          index += 1 if index > 0 -- move to the ending new line
+        else
+          -- are we aiming for the next grapheme?
+          rect = d_line.layout\index_to_pos index
+          if pango_x - rect.x > rect.width * 0.7
+            index = d_line.layout\move_cursor_visually true, index, 0, 1
+
+        return @_buffer\get_line(line_nr).start_offset + index + 1
+
+      cur_y = end_y + 1
+
+    nil
+
   _draw: (cr) =>
     p_ctx = @area.pango_context
     line_spacing = @line_spacing
@@ -319,6 +348,13 @@ View = {
 
   _on_screen_changed: =>
     @_reset_display!
+
+  _on_button_press: (event) =>
+    return if event.x <= @line_gutter.width
+    return if event.button != 1
+
+    new_pos = @position_from_coordinates(event.x, event.y)
+    @cursor.pos = new_pos if new_pos
 
   _on_size_allocate: (allocation) =>
     @width = allocation.width
