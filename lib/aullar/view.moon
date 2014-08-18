@@ -153,8 +153,16 @@ View = {
     base_x: {
       get: => @_base_x
       set: (x) =>
+        if x < 0
+          x = 0
+        else
+          adjustment = @horizontal_scrollbar.adjustment
+          x = min x, adjustment.upper - adjustment.page_size
+
+        return if x == @_base_x
         @_base_x = x
         @_sync_scrollbars!
+        @area\queue_draw!
     }
 
     edit_area_x: => @line_gutter.width + @margin
@@ -390,6 +398,10 @@ View = {
       @scroll_to @first_visible_line - 1
     elseif event.direction == Gdk.SCROLL_DOWN
       @scroll_to @first_visible_line + 1
+    elseif event.direction == Gdk.SCROLL_RIGHT
+      @base_x += 20
+    elseif event.direction == Gdk.SCROLL_LEFT
+      @base_x -= 20
 
   _on_size_allocate: (allocation) =>
     @width = allocation.width

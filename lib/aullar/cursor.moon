@@ -114,10 +114,8 @@ Cursor = {
 
     if x_pos + char_width > @view.width
       @view.base_x = col_pos - @view.edit_area_width + char_width
-      @view\refresh_display!
     elseif x_pos < @view.edit_area_x
       @view.base_x = col_pos
-      @view\refresh_display!
 
   start_of_file: (opts = {}) =>
     @move_to pos: 1, extend: opts.extend
