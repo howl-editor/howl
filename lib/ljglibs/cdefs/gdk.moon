@@ -1,4 +1,4 @@
--- Copyright 2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2013-2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 
 require 'ljglibs.cdefs.glib'
@@ -129,6 +129,15 @@ ffi.cdef [[
     GDK_MODIFIER_MASK = 0x5c001fff
   } GdkModifierType;
 
+  typedef enum
+  {
+    GDK_SCROLL_UP,
+    GDK_SCROLL_DOWN,
+    GDK_SCROLL_LEFT,
+    GDK_SCROLL_RIGHT,
+    GDK_SCROLL_SMOOTH
+  } GdkScrollDirection;
+
   gchar * gdk_keyval_name(guint keyval);
   guint32 gdk_keyval_to_unicode(guint keyval);
 
@@ -206,6 +215,35 @@ ffi.cdef [[
     GdkDevice *device;
     gdouble x_root, y_root;
   } GdkEventButton;
+
+  typedef struct {
+    GdkEventType type;
+    GdkWindow *window;
+    gint8 send_event;
+    guint32 time;
+    gdouble x;
+    gdouble y;
+    gdouble *axes;
+    guint state;
+    gint16 is_hint;
+    GdkDevice *device;
+    gdouble x_root, y_root;
+  } GdkEventMotion;
+
+  typedef struct {
+    GdkEventType type;
+    GdkWindow *window;
+    gint8 send_event;
+    guint32 time;
+    gdouble x;
+    gdouble y;
+    guint state;
+    GdkScrollDirection direction;
+    GdkDevice *device;
+    gdouble x_root, y_root;
+    gdouble delta_x;
+    gdouble delta_y;
+  } GdkEventScroll;
 
   /* GdkAtom
 

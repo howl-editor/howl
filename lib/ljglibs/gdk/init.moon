@@ -114,6 +114,13 @@ def = {
     'MODIFIER_RESERVED_29_MASK',
     'RELEASE_MASK',
     'MODIFIER_MASK',
+
+    -- GdkScrollDirection;
+    'SCROLL_UP',
+    'SCROLL_DOWN',
+    'SCROLL_LEFT',
+    'SCROLL_RIGHT',
+    'SCROLL_SMOOTH'
    }
 }
 

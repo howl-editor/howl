@@ -53,6 +53,12 @@ signals = {
     view._on_size_allocate view, ffi_cast('GdkRectangle *', allocation)
   on_button_press: (_, event, view) ->
     view._on_button_press view, ffi_cast('GdkEventButton *', event)
+  on_button_release: (_, event, view) ->
+    view._on_button_release view, ffi_cast('GdkEventButton *', event)
+  on_motion_event: (_, event, view) ->
+    view._on_motion_event view, ffi_cast('GdkEventMotion *', event)
+  on_scroll_event: (_, event, view) ->
+    view._on_scroll view, ffi_cast('GdkEventScroll *', event)
 }
 
 View = {
@@ -72,9 +78,12 @@ View = {
 
     with @area
       .can_focus = true
-      \add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK)
+      \add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK, Gdk.BUTTON_RELEASE_MASK, Gdk.POINTER_MOTION_MASK, Gdk.SCROLL_MASK)
       \on_key_press_event on_key_press, @
       \on_button_press_event signals.on_button_press, @
+      \on_button_release_event signals.on_button_release, @
+      \on_motion_notify_event signals.on_motion_event, @
+      \on_scroll_event signals.on_scroll_event, @
       \on_draw signals.on_draw, @
       \on_screen_changed signals.on_screen_changed, @
       \on_size_allocate signals.on_size_allocate, @
@@ -138,6 +147,9 @@ View = {
         @_last_visible_line = line
     }
 
+    lines_showing: =>
+      @last_visible_line - @first_visible_line + 1
+
     base_x: {
       get: => @_base_x
       set: (x) =>
@@ -148,9 +160,6 @@ View = {
     edit_area_x: => @line_gutter.width + @margin
     edit_area_width: => @width - @edit_area_x
 
-    lines_showing: =>
-      @last_visible_line - @first_visible_line + 1
-
     buffer: {
       get: => @_buffer
       set: (buffer) =>
@@ -160,6 +169,8 @@ View = {
 
   scroll_to: (line) =>
     return if @first_visible_line == line
+    return if line < 1 or line > @buffer.nr_lines - @lines_showing
+
     @_first_visible_line = line
     @_last_visible_line = nil
     @_sync_scrollbars!
@@ -353,8 +364,32 @@ View = {
     return if event.x <= @line_gutter.width
     return if event.button != 1
 
-    new_pos = @position_from_coordinates(event.x, event.y)
-    @cursor.pos = new_pos if new_pos
+    extend = bit.band(event.state, Gdk.SHIFT_MASK) != 0
+
+    pos = @position_from_coordinates(event.x, event.y)
+    if pos
+      @cursor\move_to :pos, :extend
+      @_selection_active = true
+
+  _on_button_release: (event) =>
+    return if event.button != 1
+    @_selection_active = false
+
+  _on_motion_event: (event) =>
+    return unless @_selection_active
+    pos = @position_from_coordinates(event.x, event.y)
+    if pos
+      @cursor\move_to :pos, extend: true
+    elseif event.y < 0
+      @cursor\up extend: true
+    else
+      @cursor\down extend: true
+
+  _on_scroll: (event) =>
+    if event.direction == Gdk.SCROLL_UP
+      @scroll_to @first_visible_line - 1
+    elseif event.direction == Gdk.SCROLL_DOWN
+      @scroll_to @first_visible_line + 1
 
   _on_size_allocate: (allocation) =>
     @width = allocation.width
