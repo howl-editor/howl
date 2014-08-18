@@ -162,10 +162,10 @@ class Searcher
     -- match at match_pos gets a different highlight than other matches
     for start_pos, end_pos in @_find_matches search, start_boundary, end_boundary
       if not ensure_word or @_is_word(start_pos, search)
-        if start_pos == match_pos
-          highlight.apply 'search', buffer, start_pos, end_pos - start_pos + 1
-        else
+        if start_pos != match_pos
           highlight.apply 'search_secondary', buffer, start_pos, end_pos - start_pos + 1
+
+    highlight.apply 'search', buffer, match_pos, search.ulen
 
   _find_matches: (search, start_boundary, end_boundary) =>
     match_start_pos = nil

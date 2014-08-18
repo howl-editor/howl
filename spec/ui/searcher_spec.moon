@@ -152,6 +152,15 @@ describe 'Searcher', ->
       assert.same { 'search_secondary' }, highlight.at_pos buffer, 1
       assert.same { 'search_secondary' }, highlight.at_pos buffer, 23
 
+    it 'highlights overlapping matches correctly', ->
+      buffer.text = 'aaa'
+      cursor.pos = 2
+      searcher\forward_to 'aa'
+      assert.equal 2, cursor.pos
+      assert.same { 'search_secondary' }, highlight.at_pos buffer, 1
+      assert.same { 'search_secondary', 'search' }, highlight.at_pos buffer, 2
+      assert.same { 'search' }, highlight.at_pos buffer, 3
+
     it 'does not move the cursor when there is no match', ->
       buffer.text = 'hello!'
       cursor.pos = 1
