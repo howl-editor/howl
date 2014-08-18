@@ -63,14 +63,15 @@ Cursor = {
 
   move_to: (opts) =>
     pos = opts.pos
-    if pos
-      pos = max min(@view.buffer.size, pos), 0
-    elseif opts.line
+    if opts.line
       b_line = @view.buffer\get_line opts.line
       if b_line
         pos = b_line.start_offset + 1
 
-    error("Illegal argument #1 to Cursor.move_to", 2) unless pos
+    if pos
+      pos = max min(@view.buffer.size, pos), 0
+    else
+      error("Illegal argument #1 to Cursor.move_to", 2)
 
     return if pos == @_pos
 
