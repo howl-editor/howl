@@ -58,25 +58,26 @@ Selection = {
     stop - 1 >= line.start_offset
 
   draw: (x, y, cr, display_line, line) =>
-    start_x, width = x, display_line.width
+    start_x, width = x, display_line.width - @view.base_x
     start, stop = @range!
 
     if (start - 1) > line.start_offset -- sel starts on line
       start_col = (start - 1) - line.start_offset
       rect = display_line.layout\index_to_pos start_col
       start_x = x + (rect.x / 1024)
-      width -= (start_x - x)
+      width -= (start_x - x) + @view.base_x
 
     if (stop - 1) < line.end_offset -- sel ends on line
       end_col = (stop - 1) - line.start_offset
       rect = display_line.layout\index_to_pos end_col
-      width = (x + rect.x / 1024) - start_x
+      width = (x + rect.x / 1024) - start_x - @view.base_x
 
-    cr\save!
-    cr\set_source_rgb 0.6, 0.8, 0.8
-    cr\rectangle start_x - @view.base_x, y, width, display_line.height + 1
-    cr\fill!
-    cr\restore!
+    if width > 0
+      cr\save!
+      cr\set_source_rgb 0.6, 0.8, 0.8
+      cr\rectangle start_x, y, width, display_line.height + 1
+      cr\fill!
+      cr\restore!
 }
 
 define_class Selection
