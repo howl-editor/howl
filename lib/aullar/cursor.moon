@@ -81,7 +81,8 @@ Cursor = {
     old_line = @buffer_line
 
     -- are we moving to another line?
-    if pos - 1 < old_line.start_offset or pos - 1 > old_line.end_offset
+    is_other_line = pos - 1 < old_line.start_offset or pos - 1 > old_line.end_offset
+    if is_other_line or not is_showing_line @view, old_line.nr
       dest_line = @view.buffer\get_line_at_offset pos - 1
       @_line = dest_line.nr
 
