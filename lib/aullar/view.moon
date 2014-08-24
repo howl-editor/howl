@@ -131,6 +131,7 @@ View = {
       get: =>
         unless @_last_visible_line
           error "Can't determine last visible line until shown", 2 unless @height
+          @_last_visible_line = 1
 
           y = @margin
           for line in @_buffer\lines @_first_visible_line
@@ -208,7 +209,7 @@ View = {
     @_buffer\insert cur_pos - 1, text
 
     if contains_newlines(text)
-      @refresh_display cur_pos - 1, nil, invalidate: true
+      @refresh_display cur_pos - 1, nil, invalidate: true, gutter: true
     else
       @refresh_display cur_pos - 1, cur_pos + #text - 1, invalidate: true
 
@@ -221,7 +222,7 @@ View = {
     @_buffer\delete @cursor.pos - 1, cur_pos - @cursor.pos
 
     if cur_line != @cursor.line -- lines changed, everything after is invalid
-      @refresh_display @cursor.pos - 1, nil, invalidate: true
+      @refresh_display @cursor.pos - 1, nil, invalidate: true, gutter: true
     else -- within the current line
       @refresh_display @cursor.pos - 1, cur_pos - 1, invalidate: true
 
@@ -256,10 +257,11 @@ View = {
       for line_nr = last_valid + 1, @_max_display_line
         d_lines[line_nr] = nil
 
+      @_last_visible_line = nil
       @_max_display_line = last_valid
 
     if min_y
-      start_x = @line_gutter.width + 1
+      start_x = opts.gutter and 0 or @line_gutter.width + 1
       width = @width - @line_gutter.width
       height = (max_y - min_y) + 1
       if width > 0
@@ -271,8 +273,8 @@ View = {
 
     for line_nr = @_first_visible_line, @_last_visible_line + 1
       d_line = @display_lines[line_nr]
-      end_y = cur_y + d_line.height
       return nil unless d_line
+      end_y = cur_y + d_line.height
       if (y >= cur_y and y <= end_y)
         pango_x = (x - @edit_area_x + @base_x) * 1024
         inside, index = d_line.layout\xy_to_index pango_x, 1
@@ -321,9 +323,12 @@ View = {
           cr\rectangle edit_area_x, y, clip.x2 - edit_area_x, clip.y2
           cr\clip!
 
-        cr\move_to edit_area_x - @base_x, y
+        cr\move_to edit_area_x - @base_x, y + d_line.spacing / 2
         pango_cairo.show_layout cr, d_line.layout
         cr\restore! if @base_x > 0
+
+        if @selection\affects_line line
+          @selection\draw_overlay edit_area_x, y, cr, d_line, line
 
         @line_gutter\draw_for_line line.nr, 0, y, d_line
 

@@ -56,7 +56,7 @@ new_edit = ->
 
 add_window = (app) ->
   window = Gtk.Window()
-  window\set_default_size 400, 480
+  window\set_default_size 800, 480
   window\move 300, 100
   window.title = 'Edit redux'
   window\add new_edit!

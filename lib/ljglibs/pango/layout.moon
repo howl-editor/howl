@@ -36,6 +36,11 @@ core.define 'PangoLayout', {
       get: => C.pango_layout_get_alignment @
       set: (alignment) => C.pango_layout_set_alignment @, alignment
     }
+
+    attributes: {
+      get: => C.pango_layout_get_attributes @
+      set: (attributes) => C.pango_layout_set_attributes @, attributes
+    }
   }
 
   new: (ctx) -> gc_ptr C.pango_layout_new ctx

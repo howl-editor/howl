@@ -14,6 +14,7 @@ LineGutter = {
     @width = 50
 
   start_draw: (@cairo_context, pango_context, @clip) =>
+    @layout = nil
     return if @clip.x1 >= @width
     @_draw_background!
     @layout = Layout pango_context
@@ -25,8 +26,9 @@ LineGutter = {
 
     cr = @cairo_context
     cr\save!
-    cr\move_to x, y
     @layout.text = tostring line_nr
+    _, text_height = @layout\get_pixel_size!
+    cr\move_to x, y + (display_line.height - text_height) / 2
     pango_cairo.show_layout cr, @layout
     cr\restore!
 
