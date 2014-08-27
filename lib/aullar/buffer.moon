@@ -107,6 +107,7 @@ Buffer = {
 
     for i = start_at, end_at, step
       line = @_lines[i]
+
       if offset >= line.start_offset and offset <= line.end_offset
         return line
 
@@ -231,7 +232,10 @@ Buffer = {
           text_ptr = gap_line
           l_size += cont_l_size
 
-      break if next_p == offset and not last_was_eol
+      -- break if we're not advancing - unless the last char scanned
+      -- was an end-of-line character or the absolute first line
+      -- in those cases we still want the line represented
+      break if next_p == offset and not (last_was_eol or nr == 0)
 
       nr += 1
 
@@ -240,7 +244,7 @@ Buffer = {
         text: text_ptr
         size: l_size
         start_offset: start_p
-        end_offset: (next_p - base_offset) - 1
+        end_offset: max (next_p - base_offset) - 1, start_p
         has_eol: was_eol
       }
       offset = next_p

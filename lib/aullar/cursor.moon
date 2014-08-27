@@ -14,6 +14,10 @@ timer_callback = ffi.cast 'GSourceFunc', callbacks.bool1
 is_showing_line = (view, line) ->
   line >= view.first_visible_line and line <= view.last_visible_line
 
+pos_is_in_line = (pos, line) ->
+  byte_pos = pos - 1
+  byte_pos >= line.start_offset and (byte_pos <= line.end_offset or not line.has_eol)
+
 Cursor = {
   new: (@view, @selection) =>
     @blink_interval = 500
@@ -58,8 +62,7 @@ Cursor = {
   }
 
   in_line: (line) =>
-    byte_pos = @_pos - 1
-    byte_pos >= line.start_offset and byte_pos <= line.end_offset
+    pos_is_in_line @_pos, line
 
   move_to: (opts) =>
     pos = opts.pos
@@ -69,7 +72,7 @@ Cursor = {
         pos = b_line.start_offset + 1
 
     if pos
-      pos = max min(@view.buffer.size, pos), 0
+      pos = max min(@view.buffer.size + 1, pos), 0
     else
       error("Illegal argument #1 to Cursor.move_to", 2)
 
@@ -81,8 +84,7 @@ Cursor = {
     old_line = @buffer_line
 
     -- are we moving to another line?
-    is_other_line = pos - 1 < old_line.start_offset or pos - 1 > old_line.end_offset
-    if is_other_line or not is_showing_line @view, old_line.nr
+    if not pos_is_in_line(pos, old_line) or not is_showing_line @view, old_line.nr
       dest_line = @view.buffer\get_line_at_offset pos - 1
       @_line = dest_line.nr
 
@@ -126,7 +128,7 @@ Cursor = {
 
   forward: (opts = {}) =>
     return if @_pos - 1 == @view.buffer.size
-    line_start, line_end = @buffer_line.start_offset, @buffer_line.end_offset
+    line_start = @buffer_line.start_offset
     new_index, new_trailing = @display_line.layout\move_cursor_visually true, @_pos - 1 - line_start, 0, 1
     if new_index > @buffer_line.size
       @move_to pos: @pos + 1, extend: opts.extend

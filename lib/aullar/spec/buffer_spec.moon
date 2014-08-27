@@ -25,6 +25,9 @@ describe 'Buffer', ->
 
   describe '.text', ->
     it 'is a string representation of the contents', ->
+      b = Buffer ''
+      assert.equals '', b.text
+
       b = Buffer 'hello'
       assert.equals 'hello', b.text
 
@@ -78,6 +81,12 @@ describe 'Buffer', ->
       b = Buffer 'line 1\n'
       assert.same {
         'line 1',
+        '',
+      }, all_lines(b)
+
+    it 'considers an empty buffer as having one line', ->
+      b = Buffer ''
+      assert.same {
         '',
       }, all_lines(b)
 
@@ -160,6 +169,12 @@ describe 'Buffer', ->
       assert.is_nil b\get_line 0
       assert.is_nil b\get_line 3
 
+    it 'returns an empty first line for an empty buffer', ->
+      b = Buffer ''
+      line = b\get_line 1
+      assert.not_nil line
+      assert.equals 0, line.size
+
   describe 'get_line_at_offset(offset)', ->
     it 'returns line information for the line at the specified offset', ->
       b = Buffer 'line 1\nline 2'
@@ -179,6 +194,12 @@ describe 'Buffer', ->
       assert.equals 3, b\get_line_at_offset(13).nr
       assert.is_nil b\get_line_at_offset(14)
 
+    it 'returns an empty first line for an empty buffer', ->
+      b = Buffer ''
+      line = b\get_line_at_offset 0
+      assert.not_nil line
+      assert.equals 0, line.size
+
   describe '.nr_lines', ->
     it 'is the number lines in the buffer', ->
       b = Buffer 'line 1\nline 2'
@@ -192,6 +213,10 @@ describe 'Buffer', ->
 
       b\delete 2, 1
       assert.equals 4, b.nr_lines
+
+    it 'is 1 for an empty string', ->
+      b = Buffer ''
+      assert.equals 1, b.nr_lines
 
   describe 'get_ptr(offset, size)', ->
     it 'returns a pointer to a char buffer starting at offset, valid for <size> bytes', ->
@@ -240,12 +265,13 @@ describe 'Buffer', ->
       assert.equals "hello #{big_text}world", tostring(b)
 
     it 'handles insertion at the end of the buffer (i.e. appending)', ->
-      b = Buffer 'hello'
+      b = Buffer ''
+      b\insert 0, 'hello'
       b\insert 5, ' world'
       assert.equals 'hello world', tostring(b)
 
   describe 'delete(offset, count)', ->
-    it 'deletes <count> bytes back from <offset>', ->
+    it 'deletes <count> bytes from <offset>', ->
       b = Buffer 'goodbye world'
 
       b\delete 4, 3 -- random access delete
@@ -258,6 +284,11 @@ describe 'Buffer', ->
       assert.same { 'goo', 'world' }, parts(b)
 
       assert.equals 'gooworld', tostring(b)
+
+    -- it 'handles over-deletes (i.e. out-of-bounds offsets)', ->
+    --   b = Buffer 'short'
+    --   b\delete 5, 1
+    --   assert.equals 'short', tostring(b)
 
   context 'meta methods', ->
     it 'tostring returns a lua string representation of the buffer', ->
