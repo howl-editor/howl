@@ -252,6 +252,13 @@ describe 'Buffer', ->
       assert.raises 'Illegal', -> b\get_ptr 0, 5
       assert.raises 'Illegal', -> b\get_ptr 3, 2
 
+  describe 'sub(start_index, end_index)', ->
+    it 'returns a string for the given inclusive range', ->
+      b = Buffer '0123456789'
+      assert.equals '234', b\sub(2, 4)
+      b\move_gap_to 6
+      assert.equals '567', b\sub(5, 7)
+
   describe 'insert(offset, text, size)', ->
     it 'inserts the given text at the specified position', ->
       b = Buffer 'hello world'
@@ -285,11 +292,6 @@ describe 'Buffer', ->
 
       assert.equals 'gooworld', tostring(b)
 
-    -- it 'handles over-deletes (i.e. out-of-bounds offsets)', ->
-    --   b = Buffer 'short'
-    --   b\delete 5, 1
-    --   assert.equals 'short', tostring(b)
-
   context 'meta methods', ->
     it 'tostring returns a lua string representation of the buffer', ->
       b = Buffer 'hello world'
@@ -300,3 +302,21 @@ describe 'Buffer', ->
 
       b\move_gap_to 4
       assert.equals 'hello world', tostring b
+
+  context 'notifications', ->
+    it 'sends inserted notifications to all interested listeners', ->
+      l1 = on_inserted: spy.new -> nil
+      l2 = on_inserted: spy.new -> nil
+      b = Buffer 'hello'
+      b\add_listener l1
+      b\add_listener l2
+      b\insert 2, 'xx'
+      assert.spy(l1.on_inserted).was_called_with l1, b, offset: 2, text: 'xx', size: 2
+      assert.spy(l2.on_inserted).was_called_with l2, b, offset: 2, text: 'xx', size: 2
+
+    it 'sends deleted notifications to listeners', ->
+      l1 = on_deleted: spy.new -> nil
+      b = Buffer 'hello'
+      b\add_listener l1
+      b\delete 2, 2
+      assert.spy(l1.on_deleted).was_called_with l1, b, offset: 2, text: 'll', size: 2

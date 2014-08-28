@@ -38,6 +38,7 @@ scan_line = (base, offset, end_offset) ->
 
 Buffer = {
   new: (text) =>
+    @listeners = {}
     @text = text
 
   properties: {
@@ -57,8 +58,16 @@ Buffer = {
         @gap_end = arr_size
         @_last_scanned_line = 0
         @_lines = {}
+
+        @_notify 'inserted', offset: 0, :text, size: @size
     }
   }
+
+  add_listener: (listener) =>
+    @listeners[#@listeners + 1] = listener
+
+  remove_listener: (listener) =>
+    @listeners = [l for l in *@listeners when l != listener]
 
   insert: (offset, text, size = #text) =>
     @_invalidate_lines_from_offset offset
@@ -72,8 +81,11 @@ Buffer = {
     @size += size
     @gap_start += size
 
+    @_notify 'inserted', :offset, :text, :size
+
   delete: (offset, count) =>
     @_invalidate_lines_from_offset offset
+    text = @sub offset, offset + count - 1
 
     if offset + count == @gap_start -- adjust gap start backwards
       @gap_start -= count
@@ -84,6 +96,7 @@ Buffer = {
       @gap_start -= count
 
     @size -= count
+    @_notify 'deleted', :offset, :text, size: count
 
   lines: (start_line = 1, end_line) =>
     i = start_line - 1
@@ -127,6 +140,10 @@ Buffer = {
       ffi_copy arr, @bytes + offset, pregap_size
       ffi_copy arr + pregap_size, @bytes + @gap_end, size - pregap_size
       arr
+
+  sub: (start_index, end_index) =>
+    size = (end_index - start_index) + 1
+    ffi_string(@get_ptr(start_index, size), size)
 
   move_gap_to: (offset) =>
     if offset > @size
@@ -259,6 +276,12 @@ Buffer = {
         @_last_scanned_line = line.nr - 1
         break
 
+  _notify: (event, parameters) =>
+    for listener in *@listeners
+      callback = listener["on_#{event}"]
+      if callback
+        status, err = pcall callback, listener, @, parameters
+        print "Error emitting '#{event}': #{err}" unless status
 }
 
 define_class Buffer, {

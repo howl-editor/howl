@@ -62,14 +62,13 @@ signals = {
 }
 
 View = {
-  new: (@_buffer = Buffer('')) =>
+  new: (buffer = Buffer('')) =>
     @line_spacing = 0.1
     @margin = 3
     @_base_x = 0
 
     @_first_visible_line = 1
     @_last_visible_line = nil
-    @_x_offset = 0
 
     @area = Gtk.DrawingArea!
     @selection = Selection @
@@ -118,7 +117,12 @@ View = {
       @vertical_scrollbar
     }
 
-    @_reset_display!
+    @_buffer_listener = {
+      on_inserted: (_, b, args) -> @\_on_buffer_modified b, args
+      on_deleted: (_, b, args) -> @\_on_buffer_modified b, args
+    }
+
+    @buffer = buffer
 
   properties: {
 
@@ -172,7 +176,11 @@ View = {
     buffer: {
       get: => @_buffer
       set: (buffer) =>
+        @_buffer\remove_listener(@) if @_buffer
         @_buffer = buffer
+        buffer\add_listener @_buffer_listener
+        @_reset_display!
+        @area\queue_draw!
     }
   }
 
@@ -207,24 +215,14 @@ View = {
   insert: (text) =>
     cur_pos = @cursor.pos
     @_buffer\insert cur_pos - 1, text
-
-    if contains_newlines(text)
-      @refresh_display cur_pos - 1, nil, invalidate: true, gutter: true
-    else
-      @refresh_display cur_pos - 1, cur_pos + #text - 1, invalidate: true
-
     @cursor.pos += #text
 
   delete_back: =>
     cur_line = @cursor.line
     cur_pos = @cursor.pos
     @cursor\backward!
-    @_buffer\delete @cursor.pos - 1, cur_pos - @cursor.pos
-
-    if cur_line != @cursor.line -- lines changed, everything after is invalid
-      @refresh_display @cursor.pos - 1, nil, invalidate: true, gutter: true
-    else -- within the current line
-      @refresh_display @cursor.pos - 1, cur_pos - 1, invalidate: true
+    size = cur_pos - @cursor.pos
+    @_buffer\delete(@cursor.pos - 1, size) if size > 0
 
   to_gobject: => @bin
 
@@ -341,7 +339,11 @@ View = {
     @line_gutter\end_draw!
 
   _reset_display: =>
+    @_first_visible_line = 1
+    @_last_visible_line = nil
+    @_base_x = 0
     @_max_display_line = 0
+
     @display_lines = setmetatable {}, __index: (t, nr) ->
       d_line = @_get_display_line nr
       @_max_display_line = max @_max_display_line, nr
@@ -363,6 +365,15 @@ View = {
       :layout,
       :spacing
     }
+
+  _on_buffer_modified: (buffer, args) =>
+    last_line = buffer\get_line @last_visible_line
+    return if args.offset > last_line.end_offset and last_line.has_eol
+
+    if contains_newlines(args.text)
+      @refresh_display args.offset, nil, invalidate: true, gutter: true
+    else
+      @refresh_display args.offset, args.offset + args.size, invalidate: true
 
   _on_focus_in: =>
     @cursor.active = true

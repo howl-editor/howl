@@ -24,14 +24,13 @@ describe 'Cursor', ->
     assert.equals 1, cursor.line
 
   describe 'forward()', ->
-    pending 'moves the cursor one character forward', ->
-
+    it 'moves the cursor one character forward', ->
       buffer.text = 'åäö'
       cursor\forward!
       assert.equals 3, cursor.pos -- 'å' is two bytes
 
   describe 'backward()', ->
-    pending 'moves the cursor one character backwards', ->
+    it 'moves the cursor one character backwards', ->
       buffer.text = 'åäö'
       cursor.pos = 5 -- at 'ö'
       cursor\backward!
