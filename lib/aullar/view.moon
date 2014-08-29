@@ -370,10 +370,20 @@ View = {
     last_line = buffer\get_line @last_visible_line
     return if args.offset > last_line.end_offset and last_line.has_eol
 
-    if contains_newlines(args.text)
-      @refresh_display args.offset, nil, invalidate: true, gutter: true
-    else
+    if not contains_newlines(args.text)
+      -- refresh only the single line, but verify that the height doesn't change
+      line_nr = buffer\get_line_at_offset(args.offset).nr
+      d_line = @display_lines[line_nr]
+      cur_height = d_line and d_line.height
+
       @refresh_display args.offset, args.offset + args.size, invalidate: true
+
+      new_height = cur_height and @display_lines[line_nr].height
+      -- we're ok, no height changes that we know about
+      if not new_height or new_height == cur_height
+        return
+
+    @refresh_display args.offset, nil, invalidate: true, gutter: true
 
   _on_focus_in: =>
     @cursor.active = true
