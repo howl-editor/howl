@@ -130,10 +130,11 @@ Cursor = {
     return if @_pos - 1 == @view.buffer.size
     line_start = @buffer_line.start_offset
     new_index, new_trailing = @display_line.layout\move_cursor_visually true, @_pos - 1 - line_start, 0, 1
+    new_index = @buffer_line.size if new_trailing > 0
     if new_index > @buffer_line.size
       @move_to pos: @pos + 1, extend: opts.extend
     else
-      @move_to pos: line_start + new_index + new_trailing + 1, extend: opts.extend
+      @move_to pos: line_start + new_index + 1, extend: opts.extend
 
   backward: (opts = {}) =>
     return if @_pos == 1
