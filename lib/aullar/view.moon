@@ -32,7 +32,7 @@ on_key_press = (area, event, view) ->
 
   if view.on_key_press
     handled = view.on_key_press view, event
-    return if handled == true
+    return true if handled == true
 
   if insertable_character(event)
     view\insert event.character
@@ -238,7 +238,7 @@ View = {
       break unless line
       after = to_offset and line.start_offset > to_offset
       break if after
-      before = line.end_offset < from_offset
+      before = line.end_offset < from_offset and line.has_eol
       d_line = d_lines[line_nr]
 
       if not(before or after) or (after and not to_offset)
@@ -392,6 +392,7 @@ View = {
 
     pos = @position_from_coordinates(event.x, event.y)
     if pos
+      @area\grab_focus! unless @area.has_focus
       @cursor\move_to :pos, :extend
       @_selection_active = true
 
