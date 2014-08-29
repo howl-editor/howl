@@ -367,6 +367,7 @@ View = {
     }
 
   _on_buffer_modified: (buffer, args) =>
+    return unless @area.visible
     last_line = buffer\get_line @last_visible_line
     return if args.offset > last_line.end_offset and last_line.has_eol
 
