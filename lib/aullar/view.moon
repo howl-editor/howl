@@ -260,7 +260,7 @@ View = {
 
     if min_y
       start_x = opts.gutter and 0 or @line_gutter.width + 1
-      width = @width - @line_gutter.width
+      width = @width - start_x
       height = (max_y - min_y) + 1
       if width > 0
         @area\queue_draw_area start_x, min_y, width, height
