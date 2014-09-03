@@ -8,6 +8,7 @@ C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
 
 char_arr = ffi.typeof 'char [?]'
 const_char_p = ffi.typeof 'const char *'
+append = table.insert
 
 ffi.cdef 'void *memmove(void *dest, const void *src, size_t n);'
 
@@ -35,11 +36,12 @@ scan_line = (base, offset, end_offset) ->
 
   offset, l_size, was_eol
 
-
 Buffer = {
   new: (text) =>
     @listeners = {}
     @text = text
+    @styling = {}
+    @last_styled_line = 0
 
   properties: {
     gap_size: => (@gap_end - @gap_start)
@@ -54,12 +56,12 @@ Buffer = {
         @size = #text
         arr_size = @size + GAP_SIZE
         @bytes = char_arr(arr_size, text)
-        @gap_start = @size
-        @gap_end = arr_size
+        @gap_start = @size + 1
+        @gap_end = arr_size + 1
         @_last_scanned_line = 0
         @_lines = {}
 
-        @_notify 'inserted', offset: 0, :text, size: @size
+        @_notify 'inserted', offset: 1, :text, size: @size
     }
   }
 
@@ -77,7 +79,7 @@ Buffer = {
     else
       @extend_gap_at offset, size + GAP_SIZE
 
-    ffi_copy @bytes + @gap_start, const_char_p(text), size
+    ffi_copy @bytes + @gap_start - 1, const_char_p(text), size
     @size += size
     @gap_start += size
 
@@ -127,41 +129,78 @@ Buffer = {
     nil
 
   get_ptr: (offset, size) =>
-    if offset < 0 or offset >= @size or offset + size > @size or size < 0
+    if offset < 1 or offset > @size or (offset + size - 1) > @size or size < 0
       error "Illegal range: offset=#{offset}, size=#{size} for buffer of size #{@size}"
 
     if offset > @gap_start
-      @bytes + @gap_size + offset
+      @bytes + @gap_size + offset - 1
     elseif size < @gap_start
-      @bytes + offset
+      @bytes + offset - 1
     else
       arr = char_arr(size)
       pregap_size = @gap_start - offset
-      ffi_copy arr, @bytes + offset, pregap_size
-      ffi_copy arr + pregap_size, @bytes + @gap_end, size - pregap_size
+      ffi_copy arr, @bytes + offset - 1, pregap_size
+      ffi_copy arr + pregap_size, @bytes + @gap_end - 1, size - pregap_size
       arr
 
   sub: (start_index, end_index) =>
     size = (end_index - start_index) + 1
     ffi_string(@get_ptr(start_index, size), size)
 
+  style: (offset, styling) =>
+    line = @get_line_at_offset offset
+    error "Invalid offset #{offset} passed to style()", 2 unless line
+
+    nr = line.nr
+    base = line.start_offset + offset - 1
+    line_offset = offset - line.start_offset
+    line_styling = @styling[line.nr] or {}
+
+    for i = 1, #styling, 3
+      start_offset = styling[i] + line_offset
+      style = styling[i + 1]
+      continue if style == 'whitespace'
+
+      if start_offset > line.size -- entering a new line
+        @styling[line.nr] = line_styling
+        while line and line.end_offset < base + styling[i]
+          line = @get_line(line.nr + 1)
+
+        return unless line
+        line_offset = base - line.start_offset
+        line_styling = @styling[line.nr] or {}
+        start_offset = styling[i] + line_offset
+
+      end_offset = styling[i + 2] + line_offset
+
+      append line_styling, start_offset
+      append line_styling, style
+      append line_styling, end_offset
+
+    @styling[line.nr] = line_styling
+
+  styling_for_line: (nr) =>
+    @styling[nr]
+
   move_gap_to: (offset) =>
-    if offset > @size
-      offset = @size
+    b_offset = offset - 1
+
+    if b_offset > @size
+      b_offset = @size
     elseif offset < 0
-      offset = 0
+      b_offset = 0
 
     delta = offset - @gap_start
     return if delta == 0
     base = @bytes
 
     if delta < 0 -- offset < gap start, move stuff up
-      dest = base + @gap_end + delta
-      src = base + offset
+      dest = base + (@gap_end - 1) + delta
+      src = base + b_offset
       C.memmove dest, src, -delta
 
     else -- offset > gap start, move stuff down
-      C.memmove base + @gap_start, base + @gap_end, delta
+      C.memmove base + (@gap_start - 1), base + (@gap_end - 1), delta
 
     gap_size = @gap_size
     @gap_start = offset
@@ -169,28 +208,28 @@ Buffer = {
 
   extend_gap_at: (offset, gap_size) =>
     arr_size = @size + gap_size
-    arr = char_arr(arr_size, string.rep('x', arr_size))
+    arr = char_arr(arr_size)
     src_ptr = @bytes
     dest_ptr = arr
 
     -- chunk up to gap start or offset
-    count = min @gap_start, offset
+    count = min(@gap_start, offset) - 1
     ffi_copy dest_ptr, src_ptr, count
 
     if @gap_start < offset -- fill from post gap
-      src_ptr = @bytes + @gap_end
+      src_ptr = @bytes + (@gap_end - 1)
       dest_ptr += count
-      count = offset - count
+      count = (offset - 1) - count
       ffi_copy dest_ptr, src_ptr, count
 
     -- now at dest post gap
     src_ptr += count
-    dest_ptr = arr + offset + gap_size
+    dest_ptr = arr + (offset - 1) + gap_size
 
     if @gap_start > offset -- fill remainder from pre gap
       count = @gap_start - offset
       ffi_copy dest_ptr, src_ptr, count
-      src_ptr = @bytes + @gap_end
+      src_ptr = @bytes + (@gap_end - 1)
       dest_ptr += count
 
     -- the rest
@@ -202,7 +241,7 @@ Buffer = {
     @gap_end = offset + gap_size
 
   compact: =>
-    @move_gap_to @size
+    @move_gap_to @size + 1
 
   tostring: =>
     @compact! if @gap_size != 0
@@ -218,22 +257,24 @@ Buffer = {
     size = @size
     bytes_size = @size + @gap_size
     last_was_eol = false
+    z_gap_start = @gap_start - 1
+    z_gap_end = @gap_end - 1
 
     if @_last_scanned_line > 0
       with lines[@_last_scanned_line]
-        offset = .end_offset + 1
+        offset = .end_offset
         nr = .nr
         last_was_eol = .has_eol
 
     stop_scan_at = bytes_size
 
-    if offset >= @gap_start
+    if offset >= z_gap_start
       base_offset += @gap_size
       offset += @gap_size
     else
-      stop_scan_at = @gap_start
+      stop_scan_at = z_gap_start
 
-    while (not to.line or nr < to.line) and (not to.offset or (offset - base_offset) <= to.offset)
+    while (not to.line or nr < to.line) and (not to.offset or (offset - base_offset) < to.offset)
       text_ptr = base + offset
       start_p = offset - base_offset
       next_p, l_size, was_eol = scan_line base, offset, stop_scan_at
@@ -241,11 +282,11 @@ Buffer = {
       if not was_eol and stop_scan_at != bytes_size -- at gap
         base_offset += @gap_size
         stop_scan_at = bytes_size
-        next_p, cont_l_size, was_eol = scan_line bytes, @gap_end, stop_scan_at
+        next_p, cont_l_size, was_eol = scan_line bytes, z_gap_end, stop_scan_at
         if cont_l_size > 0 -- else gap is at end, nothing left
           gap_line = char_arr(l_size + cont_l_size)
           ffi_copy gap_line, text_ptr, l_size
-          ffi_copy gap_line + l_size, bytes + @gap_end, cont_l_size
+          ffi_copy gap_line + l_size, bytes + z_gap_end, cont_l_size
           text_ptr = gap_line
           l_size += cont_l_size
 
@@ -260,8 +301,8 @@ Buffer = {
         :nr
         text: text_ptr
         size: l_size
-        start_offset: start_p
-        end_offset: max (next_p - base_offset) - 1, start_p
+        start_offset: start_p + 1
+        end_offset: max next_p - base_offset, start_p + 1
         has_eol: was_eol
       }
       offset = next_p
@@ -280,8 +321,8 @@ Buffer = {
     for listener in *@listeners
       callback = listener["on_#{event}"]
       if callback
-        status, err = pcall callback, listener, @, parameters
-        print "Error emitting '#{event}': #{err}" unless status
+        status, ret = pcall callback, listener, @, parameters
+        print "Error emitting '#{event}': #{ret}" unless status
 }
 
 define_class Buffer, {

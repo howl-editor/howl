@@ -85,23 +85,23 @@ Selection = {
     return false if @is_empty
     start, stop = @range!
 
-    if (start - 1) >= line.start_offset
-      return (start - 1) <= line.end_offset
+    if start >= line.start_offset
+      return start <= line.end_offset
 
-    stop - 1 >= line.start_offset
+    stop >= line.start_offset
 
   draw: (x, y, cr, display_line, line) =>
     start_x, width = x, display_line.width - @view.base_x
     start, stop = @range!
 
-    if (start - 1) > line.start_offset -- sel starts on line
-      start_col = (start - 1) - line.start_offset
+    if start > line.start_offset -- sel starts on line
+      start_col = start - line.start_offset
       rect = display_line.layout\index_to_pos start_col
       start_x = x + (rect.x / 1024)
       width -= (start_x - x) + @view.base_x
 
-    if (stop - 1) < line.end_offset -- sel ends on line
-      end_col = (stop - 1) - line.start_offset
+    if stop < line.end_offset -- sel ends on line
+      end_col = stop - line.start_offset
       rect = display_line.layout\index_to_pos end_col
       width = (x + rect.x / 1024) - start_x - @view.base_x
 
@@ -115,8 +115,8 @@ Selection = {
   draw_overlay: (x, y, cr, display_line, line) =>
     layout = display_line.layout
     start, stop = @range!
-    start_col = (start - 1) - line.start_offset
-    end_col = (stop - 1) - line.start_offset
+    start_col = start - line.start_offset
+    end_col = stop - line.start_offset
     bg_ranges = get_background_ranges layout.attributes, start_col, end_col
     return unless #bg_ranges > 0
 

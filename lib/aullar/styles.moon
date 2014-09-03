@@ -8,7 +8,6 @@ Color = Pango.Color
 append = table.insert
 ffi = require 'ffi'
 
-
 styles = {}
 attributes = {}
 
@@ -80,4 +79,12 @@ apply = (list, name, start_index = Pango.ATTR_INDEX_FROM_TEXT_BEGINNING, end_ind
     attr.end_index = end_index
     list\insert_before attr
 
-:define, :apply
+get_attributes = (styling) ->
+  list = AttrList()
+  return list unless styling
+
+  for i = 1, #styling, 3
+    apply list, styling[i + 1], styling[i] - 1, styling[i + 2] - 1
+  list
+
+:define, :apply, :get_attributes

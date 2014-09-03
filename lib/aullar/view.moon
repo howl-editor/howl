@@ -16,6 +16,8 @@ Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
 LineGutter = require 'aullar.line_gutter'
 
+styles = require 'aullar.styles'
+
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs} = math
@@ -179,14 +181,18 @@ View = {
         @_buffer\remove_listener(@) if @_buffer
         @_buffer = buffer
         buffer\add_listener @_buffer_listener
+
+        @_first_visible_line = 1
+        @_base_x = 0
         @_reset_display!
         @area\queue_draw!
     }
   }
 
   scroll_to: (line) =>
+    return if line < 1
+    line = min line, (@buffer.nr_lines - @lines_showing) + 1
     return if @first_visible_line == line
-    return if line < 1 or line > @buffer.nr_lines - @lines_showing
 
     @_first_visible_line = line
     @_last_visible_line = nil
@@ -213,8 +219,7 @@ View = {
     @_updating_scrolling = false
 
   insert: (text) =>
-    cur_pos = @cursor.pos
-    @_buffer\insert cur_pos - 1, text
+    @_buffer\insert @cursor.pos, text
     @cursor.pos += #text
 
   delete_back: =>
@@ -222,7 +227,7 @@ View = {
     cur_pos = @cursor.pos
     @cursor\backward!
     size = cur_pos - @cursor.pos
-    @_buffer\delete(@cursor.pos - 1, size) if size > 0
+    @_buffer\delete(@cursor.pos, size) if size > 0
 
   to_gobject: => @bin
 
@@ -339,9 +344,7 @@ View = {
     @line_gutter\end_draw!
 
   _reset_display: =>
-    @_first_visible_line = 1
     @_last_visible_line = nil
-    @_base_x = 0
     @_max_display_line = 0
 
     @display_lines = setmetatable {}, __index: (t, nr) ->
@@ -355,6 +358,8 @@ View = {
     return nil unless line
     layout = Layout @area.pango_context
     layout\set_text line.text, line.size
+    layout.attributes = styles.get_attributes @buffer\styling_for_line(nr)
+
     width, text_height = layout\get_pixel_size!
     spacing = math.ceil (text_height * @line_spacing) - 0.5
 

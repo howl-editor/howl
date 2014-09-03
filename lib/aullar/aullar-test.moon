@@ -6,6 +6,16 @@ aullar = require 'aullar'
 
 gobject = require('ljglibs.gobject')
 gsignal = gobject.signal
+styles = require 'aullar.styles'
+
+{:mode, :bundle} = howl
+{:theme} = howl.ui
+
+bundle.load_all!
+theme.apply!
+
+for name, def in pairs theme.current.styles
+  styles.define name, def
 
 callbacks.configure on_error: error
 io.stdout\setvbuf 'no'
@@ -16,8 +26,15 @@ text = [[
   Draw me, and let me edit goddamnit.
 ]]
 
+local buffer_mode
+styling = {}
+
 if #args > 0
-  text = howl.io.File(args[1]).contents
+  file = howl.io.File(args[1])
+  text = file.contents
+  buffer_mode = mode.for_file file
+  if buffer_mode and buffer_mode.lexer
+    styling = buffer_mode.lexer text
 
 on_key_press = (view, event) ->
   key_name = event.key_name
@@ -55,6 +72,7 @@ new_edit = (buffer) ->
 
 add_window = (app) ->
   buffer = aullar.Buffer text
+  buffer\style 1, styling
   window = Gtk.Window()
   window\set_default_size 800, 480
   window\move 300, 100
@@ -62,7 +80,7 @@ add_window = (app) ->
   -- window\add new_edit buffer
   window\add Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
     { expand: true, new_edit buffer },
-    { expand: true, new_edit buffer }
+    -- { expand: true, new_edit buffer }
   }
 
   app\add_window window

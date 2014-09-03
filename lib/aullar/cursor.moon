@@ -15,8 +15,7 @@ is_showing_line = (view, line) ->
   line >= view.first_visible_line and line <= view.last_visible_line
 
 pos_is_in_line = (pos, line) ->
-  byte_pos = pos - 1
-  byte_pos >= line.start_offset and (byte_pos <= line.end_offset or not line.has_eol)
+  pos >= line.start_offset and (pos <= line.end_offset or not line.has_eol)
 
 Cursor = {
   new: (@view, @selection) =>
@@ -39,7 +38,7 @@ Cursor = {
     }
 
     column: {
-      get: => @pos - @buffer_line.start_offset - 1
+      get: => (@pos - @buffer_line.start_offset) + 1
       set: (colum) =>
     }
 
@@ -67,14 +66,14 @@ Cursor = {
   move_to: (opts) =>
     pos = opts.pos
     if opts.line
-      b_line = @view.buffer\get_line opts.line
+      b_line = @view.buffer\get_line min(opts.line, @view.buffer.nr_lines)
       if b_line
-        pos = b_line.start_offset + 1
+        pos = b_line.start_offset
 
     if pos
       pos = max min(@view.buffer.size + 1, pos), 0
     else
-      error("Illegal argument #1 to Cursor.move_to", 2)
+      error("Illegal argument #1 to Cursor.move_to (pos: #{opts.pos}, line: #{opts.line})", 2)
 
     return if pos == @_pos
 
@@ -85,7 +84,7 @@ Cursor = {
 
     -- are we moving to another line?
     if not pos_is_in_line(pos, old_line) or not is_showing_line @view, old_line.nr
-      dest_line = @view.buffer\get_line_at_offset pos - 1
+      dest_line = @view.buffer\get_line_at_offset pos
       @_line = dest_line.nr
 
       if is_showing_line @view, dest_line.nr
@@ -124,33 +123,35 @@ Cursor = {
     @move_to pos: 1, extend: opts.extend
 
   end_of_file: (opts = {}) =>
-    @pos = @view.buffer.size
+    @pos = @view.buffer.size + 1
 
   forward: (opts = {}) =>
-    return if @_pos - 1 == @view.buffer.size
+    return if @_pos == @view.buffer.size
     line_start = @buffer_line.start_offset
-    new_index, new_trailing = @display_line.layout\move_cursor_visually true, @_pos - 1 - line_start, 0, 1
+    z_col = (@_pos - line_start)
+    new_index, new_trailing = @display_line.layout\move_cursor_visually true, z_col, 0, 1
     new_index = @buffer_line.size if new_trailing > 0
     if new_index > @buffer_line.size
       @move_to pos: @pos + 1, extend: opts.extend
     else
-      @move_to pos: line_start + new_index + 1, extend: opts.extend
+      @move_to pos: line_start + new_index, extend: opts.extend
 
   backward: (opts = {}) =>
     return if @_pos == 1
     line_start = @buffer_line.start_offset
-    new_index = @display_line.layout\move_cursor_visually true, @_pos - 1 - line_start, 0, -1
-    @move_to pos: line_start + new_index + 1, extend: opts.extend
+    z_col = (@_pos - line_start)
+    new_index = @display_line.layout\move_cursor_visually true, z_col, 0, -1
+    @move_to pos: line_start + new_index, extend: opts.extend
 
   up: (opts = {}) =>
     prev = @_get_line @line - 1
     if prev
-      @move_to pos: prev.start_offset + 1, extend: opts.extend
+      @move_to pos: prev.start_offset, extend: opts.extend
 
   down: (opts = {}) =>
     next = @_get_line @line + 1
     if next
-      @move_to pos: next.start_offset + 1, extend: opts.extend
+      @move_to pos: next.start_offset, extend: opts.extend
 
   page_up: (opts = {}) =>
     if @view.first_visible_line == 1
@@ -174,10 +175,10 @@ Cursor = {
     @move_to line: first_visible + cursor_line_offset, extend: opts.extend
 
   start_of_line: (opts = {}) =>
-    @move_to pos: @buffer_line.start_offset + 1, extend: opts.extend
+    @move_to pos: @buffer_line.start_offset, extend: opts.extend
 
   end_of_line: (opts = {}) =>
-    @move_to pos: @buffer_line.start_offset + @buffer_line.size + 1, extend: opts.extend
+    @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
 
   _blink: =>
     return false if not @active
@@ -193,7 +194,7 @@ Cursor = {
   draw: (x, base_y, cr, display_line) =>
     return unless @_showing
     cr\save!
-    rect = display_line.layout\index_to_pos @column
+    rect = display_line.layout\index_to_pos @column - 1
     cr\set_source_rgb 1, 0, 0
     x = math.max((rect.x / 1024) - 1, 0) + x - @view.base_x
     cr\rectangle x, base_y, @width, display_line.height + 1
