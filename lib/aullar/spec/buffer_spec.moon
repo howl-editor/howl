@@ -144,6 +144,7 @@ describe 'Buffer', ->
       line = gen!
       assert.equals 1, line.nr
       assert.equals 6, line.size
+      assert.equals 7, line.full_size
       assert.equals 1, line.start_offset
       assert.equals 7, line.end_offset
       assert.is_true line.has_eol
@@ -151,9 +152,22 @@ describe 'Buffer', ->
       line = gen!
       assert.equals 2, line.nr
       assert.equals 6, line.size
+      assert.equals 6, line.full_size
       assert.equals 8, line.start_offset
       assert.equals 13, line.end_offset
       assert.is_false line.has_eol
+
+    it 'correctly return line sizes given multi-byte line breaks', ->
+      b = Buffer 'line 1\r\nline 2'
+      gen = b\lines!
+      line = gen!
+      assert.equals 6, line.size
+      assert.equals 8, line.full_size
+      assert.is_true line.has_eol
+
+      line = gen!
+      assert.equals 6, line.size
+      assert.equals 6, line.full_size
 
   describe 'get_line(nr)', ->
     it 'returns line information for the specified line', ->
@@ -161,6 +175,7 @@ describe 'Buffer', ->
       line = b\get_line 2
       assert.equals 2, line.nr
       assert.equals 6, line.size
+      assert.equals 6, line.full_size
       assert.equals 8, line.start_offset
       assert.equals 13, line.end_offset
 
@@ -292,30 +307,6 @@ describe 'Buffer', ->
       assert.same { 'goo', 'world' }, parts(b)
 
       assert.equals 'gooworld', tostring(b)
-
-  describe 'style(offset, styling)', ->
-    it 'sets the styling for the relevant buffer portion', ->
-      b = Buffer 'a flair or two'
-      b\style 1, { 3, 'keyword', 8 }
-      assert.same { 3, 'keyword', 8 }, b\styling_for_line 1
-
-    it 'handles <offset> not being at the start of the line', ->
-      b = Buffer 'not from whence it commenced'
-      b\style 5, { 1, 'keyword', 5 }
-      assert.same { 5, 'keyword', 9 }, b\styling_for_line 1
-
-    it 'allows styling multiple lines in one call', ->
-      b = Buffer 'style\nplease'
-      b\style 3, { 1, 'string', 4, 6, 'comment', 8 } -- 'yle', 'le'
-      assert.same { 3, 'string', 6 }, b\styling_for_line 1
-      assert.same { 2, 'comment', 4 }, b\styling_for_line 2
-
-    it 'handles some lines not being styled at all', ->
-      b = Buffer '12\n456\n89'
-      b\style 1, { 1, 'string', 2, 8, 'comment', 9 }
-      assert.same { 1, 'string', 2 }, b\styling_for_line 1
-      assert.is_nil b\styling_for_line(2)
-      assert.same { 1, 'comment', 2 }, b\styling_for_line 3
 
   context 'meta methods', ->
     it 'tostring returns a lua string representation of the buffer', ->

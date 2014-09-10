@@ -5,6 +5,7 @@ ffi = require 'ffi'
 C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
+Styling = require 'aullar.styling'
 
 char_arr = ffi.typeof 'char [?]'
 const_char_p = ffi.typeof 'const char *'
@@ -37,10 +38,10 @@ scan_line = (base, offset, end_offset) ->
   offset, l_size, was_eol
 
 Buffer = {
-  new: (text) =>
+  new: (text = '') =>
     @listeners = {}
     @text = text
-    @styling = {}
+    @styling = Styling @
     @last_styled_line = 0
 
   properties: {
@@ -148,39 +149,10 @@ Buffer = {
     ffi_string(@get_ptr(start_index, size), size)
 
   style: (offset, styling) =>
-    line = @get_line_at_offset offset
-    error "Invalid offset #{offset} passed to style()", 2 unless line
-
-    nr = line.nr
-    base = line.start_offset + offset - 1
-    line_offset = offset - line.start_offset
-    line_styling = @styling[line.nr] or {}
-
-    for i = 1, #styling, 3
-      start_offset = styling[i] + line_offset
-      style = styling[i + 1]
-      continue if style == 'whitespace'
-
-      if start_offset > line.size -- entering a new line
-        @styling[line.nr] = line_styling
-        while line and line.end_offset < base + styling[i]
-          line = @get_line(line.nr + 1)
-
-        return unless line
-        line_offset = base - line.start_offset
-        line_styling = @styling[line.nr] or {}
-        start_offset = styling[i] + line_offset
-
-      end_offset = styling[i + 2] + line_offset
-
-      append line_styling, start_offset
-      append line_styling, style
-      append line_styling, end_offset
-
-    @styling[line.nr] = line_styling
+    @styling\apply offset, styling
 
   styling_for_line: (nr) =>
-    @styling[nr]
+    @styling.lines[nr]
 
   move_gap_to: (offset) =>
     b_offset = offset - 1
@@ -296,13 +268,15 @@ Buffer = {
       break if next_p == offset and not (last_was_eol or nr == 0)
 
       nr += 1
+      end_offset = max next_p - base_offset, start_p + 1
 
       lines[nr] = {
         :nr
         text: text_ptr
         size: l_size
+        full_size: end_offset - (start_p + 1) + 1
         start_offset: start_p + 1
-        end_offset: max next_p - base_offset, start_p + 1
+        :end_offset
         has_eol: was_eol
       }
       offset = next_p
