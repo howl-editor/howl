@@ -7,6 +7,7 @@ Attribute = Pango.Attribute
 Color = Pango.Color
 append = table.insert
 ffi = require 'ffi'
+{:copy} = moon
 
 styles = {}
 attributes = {}
@@ -62,14 +63,44 @@ create_attributes = (def) ->
   attrs
 
 define = (name, def) ->
+  def = copy def
+  def.name = name
   styles[name] = def
+  attributes[name] = nil
+
+def_for = (name) ->
+  def = styles[name]
+  if not def
+    base, ext = name\match '^([^:]+):(%S+)$'
+    if base
+      base, ext = styles[base], styles[ext]
+
+      if base
+        return base unless ext
+
+        def = font: copy(base.font or {})
+        for k in *{
+          'background',
+          'color',
+          'underline',
+          'letter_spacing',
+          'strike_through'
+        }
+          def[k] = ext[k] or base[k]
+
+        if ext.font
+          for k in *{ 'family', 'italic', 'bold', 'size' }
+            def.font[k] or= ext.font[k]
+
+  def
 
 apply = (list, name, start_index = Pango.ATTR_INDEX_FROM_TEXT_BEGINNING, end_index = Pango.ATTR_INDEX_TO_TEXT_END) ->
-  def = styles[name]
-  return unless def
-
   attrs = attributes[name]
+
   unless attrs
+    def = def_for name
+    return unless def
+
     attrs = create_attributes def
     attributes[name] = attrs
 
@@ -87,4 +118,4 @@ get_attributes = (styling) ->
     apply list, styling[i + 1], styling[i] - 1, styling[i + 2] - 1
   list
 
-:define, :apply, :get_attributes
+:define, :apply, :get_attributes, :def_for
