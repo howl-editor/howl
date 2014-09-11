@@ -42,7 +42,7 @@ on_key_press = (area, event, view) ->
 draw_current_line_background = (x, y, display_line, cr, clip) ->
   cr\save!
   cr\set_source_rgb 0.85, 0.85, 0.85
-  cr\rectangle x, y, clip.x2 - x, display_line.height + 1
+  cr\rectangle x, y, clip.x2 - x, display_line.height
   cr\fill!
   cr\restore!
 
@@ -65,7 +65,8 @@ signals = {
 
 View = {
   new: (buffer = Buffer('')) =>
-    @line_spacing = 0.1
+    -- @line_spacing = 0.1
+    @line_spacing = 0
     @margin = 3
     @_base_x = 0
 
@@ -144,7 +145,7 @@ View = {
             d_line = @display_lines[line.nr]
             break if y + d_line.text_height > @height
             @_last_visible_line = line.nr
-            y += d_line.height + 1
+            y += d_line.height
 
         @_last_visible_line
 
@@ -253,7 +254,7 @@ View = {
       else
         last_valid = max last_valid, line.nr
 
-      y += d_line.height + 1
+      y += d_line.height
 
     if opts.invalidate and not to_offset
       max_y = @height
@@ -291,7 +292,7 @@ View = {
 
         return @_buffer\get_line(line_nr).start_offset + index + 1
 
-      cur_y = end_y + 1
+      cur_y = end_y
 
     nil
 
@@ -338,7 +339,7 @@ View = {
         if is_current_line
           @cursor\draw edit_area_x, y, cr, d_line
 
-      y += d_line.height + 1
+      y += d_line.height
       cr\move_to edit_area_x, y
 
     @line_gutter\end_draw!

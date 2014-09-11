@@ -13,6 +13,7 @@ get_background_ranges = (attributes, sel_start, sel_end) ->
   itr = attributes.iterator
   ranges = {}
   local start_index, end_index
+
   push = ->
     if start_index
       if start_index < sel_end and end_index > sel_start
@@ -108,7 +109,7 @@ Selection = {
     if width > 0
       cr\save!
       cr\set_source_rgb 0.6, 0.8, 0.8
-      cr\rectangle start_x, y, width, display_line.height + 1
+      cr\rectangle start_x, y, width, display_line.height
       cr\fill!
       cr\restore!
 
@@ -129,8 +130,8 @@ Selection = {
       width = (x + rect.x / 1024) - start_x - @view.base_x
       break if width < 0
 
-      cr\set_source_rgba 0.6, 0.8, 0.8, 0.7
-      cr\rectangle start_x, y, width, display_line.height + 1
+      cr\set_source_rgba 0.6, 0.8, 0.8, 0.6
+      cr\rectangle start_x, y, width, display_line.height
       cr\fill!
 
     cr\restore!
