@@ -30,6 +30,8 @@ get_background_ranges = (attributes, sel_start, sel_end) ->
       if start_index
         if bg_attr.start_index > end_index
           push!
+        else
+          end_index = bg_attr.end_index
 
       unless start_index
         start_index = bg_attr.start_index
