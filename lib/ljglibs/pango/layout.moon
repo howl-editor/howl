@@ -68,4 +68,12 @@ core.define 'PangoLayout', {
     C.pango_layout_move_cursor_visually @, strong, old_index, old_trailing, direction, arr, arr + 1
     tonumber(arr[0]), tonumber(arr[1])
 
+  get_line: (nr) =>
+    line = C.pango_layout_get_line @, nr
+    line != nil and line or nil
+
+  get_line_readonly: (nr) =>
+    line = C.pango_layout_get_line_readonly @, nr
+    line != nil and line or nil
+
 }, (t, ...) -> t.new ...

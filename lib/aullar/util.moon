@@ -23,5 +23,7 @@
         if base.new
           base.new o, ...
         o
+
+      __index: meta.__index
     }
 }

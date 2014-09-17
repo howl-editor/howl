@@ -15,12 +15,47 @@ Cursor = require 'aullar.cursor'
 Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
 LineGutter = require 'aullar.line_gutter'
+CurrentLineMarker = require 'aullar.current_line_marker'
 
 styles = require 'aullar.styles'
 
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs} = math
+
+get_attribute_ranges = (display_line, attr_type, start_offset, end_offset) ->
+  ranges = {}
+  done = false
+  itr = display_line.layout.attributes.iterator
+  local start_index, end_index
+
+  push = ->
+    if start_index
+      if start_index < end_offset and end_index > start_offset
+        ranges[#ranges + 1] = {
+          start_index: math.max(start_index, start_offset)
+          end_index: math.min(end_index, end_offset)
+        }
+
+      start_index = nil
+
+  while not done
+    bg_attr = itr\get attr_type
+    if bg_attr
+      if start_index
+        if bg_attr.start_index > end_index
+          push!
+        else
+          end_index = bg_attr.end_index
+
+      unless start_index
+        start_index = bg_attr.start_index
+        end_index = bg_attr.end_index
+
+    done = not itr\next!
+
+  push!
+  ranges
 
 insertable_character = (event) ->
   return false if event.ctrl or event.alt or event.meta or event.super or not event.character
@@ -38,13 +73,6 @@ on_key_press = (area, event, view) ->
 
   if insertable_character(event)
     view\insert event.character
-
-draw_current_line_background = (x, y, display_line, cr, clip) ->
-  cr\save!
-  cr\set_source_rgb 0.85, 0.85, 0.85
-  cr\rectangle x, y, clip.x2 - x, display_line.height
-  cr\fill!
-  cr\restore!
 
 signals = {
   on_draw: (_, cr, view) -> view._draw view, cr
@@ -65,8 +93,6 @@ signals = {
 
 View = {
   new: (buffer = Buffer('')) =>
-    -- @line_spacing = 0.1
-    @line_spacing = 0
     @margin = 3
     @_base_x = 0
 
@@ -77,6 +103,7 @@ View = {
     @selection = Selection @
     @cursor = Cursor @, @selection
     @line_gutter = LineGutter @
+    @current_line_marker = CurrentLineMarker @
 
     with @area
       .can_focus = true
@@ -290,7 +317,7 @@ View = {
           if pango_x - rect.x > rect.width * 0.7
             index = d_line.layout\move_cursor_visually true, index, 0, 1
 
-        return @_buffer\get_line(line_nr).start_offset + index + 1
+        return @_buffer\get_line(line_nr).start_offset + index
 
       cur_y = end_y
 
@@ -298,7 +325,6 @@ View = {
 
   _draw: (cr) =>
     p_ctx = @area.pango_context
-    line_spacing = @line_spacing
     cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
 
@@ -316,7 +342,7 @@ View = {
         is_current_line = @cursor\in_line line
 
         if is_current_line
-          draw_current_line_background edit_area_x, y, d_line, cr, clip
+          @current_line_marker\draw_before edit_area_x, y, d_line, cr, clip
 
         if @selection\affects_line line
           @selection\draw edit_area_x, y, cr, d_line, line
@@ -327,7 +353,7 @@ View = {
           cr\rectangle edit_area_x, y, clip.x2 - edit_area_x, clip.y2
           cr\clip!
 
-        cr\move_to edit_area_x - @base_x, y + d_line.spacing / 2
+        cr\move_to edit_area_x - @base_x, y
         pango_cairo.show_layout cr, d_line.layout
         cr\restore! if @base_x > 0
 
@@ -337,6 +363,7 @@ View = {
         @line_gutter\draw_for_line line.nr, 0, y, d_line
 
         if is_current_line
+          @current_line_marker\draw_after edit_area_x, y, d_line, cr, clip
           @cursor\draw edit_area_x, y, cr, d_line
 
       y += d_line.height
@@ -359,17 +386,18 @@ View = {
     return nil unless line
     layout = Layout @area.pango_context
     layout\set_text line.text, line.size
-    layout.attributes = styles.get_attributes @buffer\styling_for_line(nr)
+    layout.attributes = styles.get_attributes @buffer.styling.lines[nr]
 
     width, text_height = layout\get_pixel_size!
-    spacing = math.ceil (text_height * @line_spacing) - 0.5
 
     {
       width: width + @cursor.width,
-      height: text_height + spacing,
+      height: text_height,
       :text_height,
       :layout,
-      :spacing
+      view: @,
+
+      :get_attribute_ranges
     }
 
   _on_buffer_modified: (buffer, args) =>

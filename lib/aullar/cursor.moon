@@ -1,6 +1,7 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
+Flair = require 'aullar.flair'
 callbacks = require 'ljglibs.callbacks'
 cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
@@ -27,6 +28,19 @@ Cursor = {
     @_pos = 1
     @_active = false
     @_showing = true
+
+    @normal_flair = Flair(Flair.RECTANGLE, {
+      background: '#c30000'
+      background_alpha: 0.9
+      width: @width
+    })
+
+    -- @normal_flair = Flair(Flair.RECTANGLE, {
+    --   foreground: '#c30000'
+    --   background: '#c30000'
+    --   background_alpha: 0.2
+    --   min_width: 3
+    -- })
 
   properties: {
     display_line: => @view.display_lines[@line]
@@ -114,9 +128,9 @@ Cursor = {
     char_width = rect.width / 1024
     x_pos = col_pos - @view.base_x + @view.edit_area_x + @width
 
-    if x_pos + char_width > @view.width
-      @view.base_x = col_pos - @view.edit_area_width + char_width
-    elseif x_pos < @view.edit_area_x
+    if x_pos + char_width > @view.width -- scroll to the right
+      @view.base_x = col_pos - @view.edit_area_width + char_width + @width
+    elseif x_pos < @view.edit_area_x -- scroll to the left
       @view.base_x = col_pos
 
   start_of_file: (opts = {}) =>
@@ -193,13 +207,7 @@ Cursor = {
 
   draw: (x, base_y, cr, display_line) =>
     return unless @_showing
-    cr\save!
-    rect = display_line.layout\index_to_pos @column - 1
-    cr\set_source_rgb 1, 0, 0
-    x = math.max((rect.x / 1024) - 1, 0) + x - @view.base_x
-    cr\rectangle x, base_y, @width, display_line.height + 1
-    cr\fill!
-    cr\restore!
+    @normal_flair\draw display_line, @column - 1, @column, x, base_y, cr
 
   _get_line: (nr) =>
     @view.buffer\get_line nr

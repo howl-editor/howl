@@ -242,6 +242,17 @@ ffi.cdef [[
   /* PangoLayout */
 
   typedef struct {} PangoLayout;
+
+  typedef struct {
+    PangoLayout *layout;
+    gint         start_index;     /* start of line as byte index into layout->text */
+    gint         length;		/* length of line in bytes */
+    void         *runs;
+    //GSList      *runs;
+    guint        is_paragraph_start : 1;  /* TRUE if this is the first line of the paragraph */
+    guint        resolved_dir : 3;  /* Resolved PangoDirection of line */
+  } PangoLayoutLine;
+
   PangoLayout * pango_layout_new (PangoContext *context);
   void pango_layout_set_text (PangoLayout *layout, const char *text, int length);
   void pango_layout_get_pixel_size (PangoLayout *layout, int *width, int *height);
@@ -269,6 +280,9 @@ ffi.cdef [[
                                           int direction,
                                           int *new_index,
                                           int *new_trailing);
+
+  PangoLayoutLine * pango_layout_get_line (PangoLayout *layout, int line);
+  PangoLayoutLine * pango_layout_get_line_readonly (PangoLayout *layout, int line);
 
   /* PangoCairo */
   PangoContext * pango_cairo_create_context (cairo_t *cr);

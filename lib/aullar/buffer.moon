@@ -151,9 +151,6 @@ Buffer = {
   style: (offset, styling) =>
     @styling\apply offset, styling
 
-  styling_for_line: (nr) =>
-    @styling.lines[nr]
-
   move_gap_to: (offset) =>
     b_offset = offset - 1
 
