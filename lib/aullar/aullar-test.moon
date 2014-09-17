@@ -74,10 +74,10 @@ add_window = (app) ->
   buffer = aullar.Buffer text
   buffer\style 1, styling
   window = Gtk.Window()
+  window.style_context\add_class 'main'
   window\set_default_size 800, 480
   window\move 300, 100
   window.title = 'Edit redux'
-  -- window\add new_edit buffer
   window\add Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
     { expand: true, new_edit buffer },
     -- { expand: true, new_edit buffer }

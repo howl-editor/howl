@@ -38,7 +38,7 @@ LineGutter = {
   _draw_background: =>
     with @cairo_context
       \save!
-      \set_source_rgb 0.5, 0.6, 0.4
+      \set_source_rgba 0.5, 0.6, 0.4, 0.4
       \rectangle @clip.x1, @clip.y1, min(@clip.x2 - @clip.x1, @width), @clip.y2 - @clip.y1
       \fill!
       \restore!

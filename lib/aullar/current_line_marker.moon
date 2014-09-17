@@ -9,7 +9,8 @@ Flair = require 'aullar.flair'
 CurrentLineMarker = {
   new: (@view) =>
     @background_flair = Flair Flair.RECTANGLE, {
-      background: '#e3e3e3'
+      background: '#d3d3d3'
+      background_alpha: 0.3
       width: 'full'
     }
 
