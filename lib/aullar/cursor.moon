@@ -137,7 +137,7 @@ Cursor = {
     @move_to pos: 1, extend: opts.extend
 
   end_of_file: (opts = {}) =>
-    @pos = @view.buffer.size + 1
+    @move_to pos: @view.buffer.size + 1, extend: opts.extend
 
   forward: (opts = {}) =>
     return if @_pos == @view.buffer.size
