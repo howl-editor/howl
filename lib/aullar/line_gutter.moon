@@ -4,6 +4,7 @@
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
 Pango = require 'ljglibs.pango'
+{:RGBA} = require 'ljglibs.gdk'
 Layout = Pango.Layout
 pango_cairo = Pango.cairo
 
@@ -38,7 +39,8 @@ LineGutter = {
   _draw_background: =>
     with @cairo_context
       \save!
-      \set_source_rgba 0.5, 0.6, 0.4, 0.4
+      color = RGBA('#8294ab')
+      \set_source_rgba color.red, color.green, color.blue, 0.3
       \rectangle @clip.x1, @clip.y1, min(@clip.x2 - @clip.x1, @width), @clip.y2 - @clip.y1
       \fill!
       \restore!

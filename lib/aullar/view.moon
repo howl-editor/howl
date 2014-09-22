@@ -7,55 +7,17 @@ ffi_cast = ffi.cast
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
-Pango = require 'ljglibs.pango'
-Layout = Pango.Layout
 require 'ljglibs.cairo.cairo'
-pango_cairo = Pango.cairo
+DisplayLine = require 'aullar.display_line'
 Cursor = require 'aullar.cursor'
 Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
 LineGutter = require 'aullar.line_gutter'
 CurrentLineMarker = require 'aullar.current_line_marker'
 
-styles = require 'aullar.styles'
-
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs} = math
-
-get_attribute_ranges = (display_line, attr_type, start_offset, end_offset) ->
-  ranges = {}
-  done = false
-  itr = display_line.layout.attributes.iterator
-  local start_index, end_index
-
-  push = ->
-    if start_index
-      if start_index < end_offset and end_index > start_offset
-        ranges[#ranges + 1] = {
-          start_index: math.max(start_index, start_offset)
-          end_index: math.min(end_index, end_offset)
-        }
-
-      start_index = nil
-
-  while not done
-    bg_attr = itr\get attr_type
-    if bg_attr
-      if start_index
-        if bg_attr.start_index > end_index
-          push!
-        else
-          end_index = bg_attr.end_index
-
-      unless start_index
-        start_index = bg_attr.start_index
-        end_index = bg_attr.end_index
-
-    done = not itr\next!
-
-  push!
-  ranges
 
 insertable_character = (event) ->
   return false if event.ctrl or event.alt or event.meta or event.super or not event.character
@@ -348,14 +310,7 @@ View = {
           @selection\draw edit_area_x, y, cr, d_line, line
 
         -- draw line
-        if @base_x > 0
-          cr\save!
-          cr\rectangle edit_area_x, y, clip.x2 - edit_area_x, clip.y2
-          cr\clip!
-
-        cr\move_to edit_area_x - @base_x, y
-        pango_cairo.show_layout cr, d_line.layout
-        cr\restore! if @base_x > 0
+        d_line\draw edit_area_x, y, cr, clip
 
         if @selection\affects_line line
           @selection\draw_overlay edit_area_x, y, cr, d_line, line
@@ -384,21 +339,7 @@ View = {
   _get_display_line: (nr) =>
     line = @buffer\get_line nr
     return nil unless line
-    layout = Layout @area.pango_context
-    layout\set_text line.text, line.size
-    layout.attributes = styles.get_attributes @buffer.styling.lines[nr]
-
-    width, text_height = layout\get_pixel_size!
-
-    {
-      width: width + @cursor.width,
-      height: text_height,
-      :text_height,
-      :layout,
-      view: @,
-
-      :get_attribute_ranges
-    }
+    DisplayLine @, @area.pango_context, @buffer, line
 
   _on_buffer_modified: (buffer, args) =>
     return unless @area.visible

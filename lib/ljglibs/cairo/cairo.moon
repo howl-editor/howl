@@ -142,6 +142,11 @@ core.define 'cairo_t', {
       { x1: tonumber(a[0]), y1: tonumber(a[1]), x2: tonumber(a[2]), y2: tonumber(a[3]) }
 
     status: => C.cairo_status @
+
+    operator: {
+      get: => C.cairo_get_operator @
+      set: (operator) => C.cairo_set_operator @, operator
+    }
   }
 
   create: (surface) -> cairo_gc_ptr C.cairo_create surface

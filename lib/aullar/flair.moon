@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE)
 
 {:RGBA} = require 'ljglibs.gdk'
+Cairo = require 'ljglibs.cairo.cairo'
 {:define_class} = require 'aullar.util'
 {:max} = math
 copy = moon.copy
@@ -55,12 +56,12 @@ define_class {
     @opts.background = parse_color opts.background
     @opts.foreground = parse_color opts.foreground
 
-  draw: (display_line, start_offset, end_offset, base_x, base_y, cr) =>
+  draw: (display_line, start_offset, end_offset, x, y, cr) =>
     {:layout, :view} = display_line
-    rect = layout\index_to_pos start_offset
-    start_x = base_x + max((rect.x / 1024) - 1, 0) - view.base_x
+    rect = layout\index_to_pos start_offset - 1
+    start_x = x + max((rect.x / 1024) - 1, 0) - view.base_x
     start_x = max(start_x, view.edit_area_x)
-    rect = layout\index_to_pos end_offset
+    rect = layout\index_to_pos end_offset - 1
 
     get_defined_width = (x, opts, cr) ->
       return opts.width if not opts.width or type(opts.width) == 'number'
@@ -68,11 +69,11 @@ define_class {
         cr.clip_extents.x2 - x
 
     width = get_defined_width(start_x, @opts, cr)
-    width or= (base_x + rect.x / 1024) - start_x - view.base_x
+    width or= (x + rect.x / 1024) - start_x - view.base_x
     width = @opts.min_width if width == 0 and @opts.min_width
     return if width <= 0
 
     cr\save!
-    self._draw start_x, base_y, width, display_line.height, cr, @opts
+    self._draw start_x, y, width, display_line.height, cr, @opts
     cr\restore!
 }

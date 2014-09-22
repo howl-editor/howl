@@ -12,6 +12,9 @@ styles = require 'aullar.styles'
 {:theme} = howl.ui
 
 bundle.load_all!
+theme_file = howl.app.root_dir / 'lib/aullar/misc/test-theme.moon'
+theme.register 'aullar-test', theme_file
+howl.config.theme = 'aullar-test'
 theme.apply!
 
 for name, def in pairs theme.current.styles

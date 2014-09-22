@@ -27,10 +27,6 @@ create_attributes = (def) ->
     c = Color def.color
     append attrs, Attribute.Foreground(c.red, c.green, c.blue)
 
-  if def.background
-    c = Color def.background
-    append attrs, Attribute.Background(c.red, c.green, c.blue)
-
   if def.strike_through
     append attrs, Attribute.Strikethrough(true)
     if type(def.strike_through) == 'string'
@@ -116,6 +112,7 @@ get_attributes = (styling) ->
 
   for i = 1, #styling, 3
     apply list, styling[i + 1], styling[i] - 1, styling[i + 2] - 1
+
   list
 
 :define, :apply, :get_attributes, :def_for

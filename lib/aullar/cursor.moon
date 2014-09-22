@@ -207,7 +207,7 @@ Cursor = {
 
   draw: (x, base_y, cr, display_line) =>
     return unless @_showing
-    @normal_flair\draw display_line, @column - 1, @column, x, base_y, cr
+    @normal_flair\draw display_line, @column, @column + 1, x, base_y, cr
 
   _get_line: (nr) =>
     @view.buffer\get_line nr

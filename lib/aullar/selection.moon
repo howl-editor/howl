@@ -21,7 +21,7 @@ Selection = {
 
     @overlay_flair = Flair(Flair.RECTANGLE, {
       background: '#c3e5ea'
-      background_alpha: 0.5
+      background_alpha: 0.4,
     })
 
 
@@ -74,25 +74,29 @@ Selection = {
   draw: (x, y, cr, display_line, line) =>
     start_x, width = x, display_line.width - @view.base_x
     start, stop = @range!
-    start_col, end_col = 0, line.size
+    start_col, end_col = 1, line.size + 1
 
     if start > line.start_offset -- sel starts on line
-      start_col = start - line.start_offset
+      start_col = (start - line.start_offset) + 1
 
     if stop < line.end_offset -- sel ends on line
-      end_col = stop - line.start_offset
+      end_col = (stop - line.start_offset) + 1
 
     @background_flair\draw display_line, start_col, end_col, x, y, cr
 
   draw_overlay: (x, y, cr, display_line, line) =>
-    start, stop = @range!
-    start_col = start - line.start_offset
-    end_col = stop - line.start_offset
-    bg_ranges = display_line\get_attribute_ranges Attribute.BACKGROUND, start_col, end_col
+    bg_ranges = display_line.background_ranges
     return unless #bg_ranges > 0
+    start, stop = @range!
+    start_col = (start - line.start_offset) + 1
+    end_col = (stop - line.start_offset) + 1
 
     for range in *bg_ranges
-      @overlay_flair\draw display_line, range.start_index, range.end_index, x, y, cr
+      break if range.start_offset > end_col
+      if range.end_offset > start_col
+        start_o = max start_col, range.start_offset
+        end_o = min end_col, range.end_offset
+        @overlay_flair\draw display_line, start_o, end_o, x, y, cr
 
 }
 

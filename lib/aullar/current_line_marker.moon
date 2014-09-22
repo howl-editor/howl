@@ -9,8 +9,8 @@ Flair = require 'aullar.flair'
 CurrentLineMarker = {
   new: (@view) =>
     @background_flair = Flair Flair.RECTANGLE, {
-      background: '#d3d3d3'
-      background_alpha: 0.3
+      background: '#8294ab'
+      background_alpha: 0.2
       width: 'full'
     }
 
@@ -19,14 +19,14 @@ CurrentLineMarker = {
     }
 
   draw_before: (x, y, display_line, cr, clip) =>
-    @background_flair\draw display_line, 0, 0, x, y, cr
+    @background_flair\draw display_line, 1, 1, x, y, cr
 
   draw_after: (x, y, display_line, cr, clip) =>
-    bg_ranges = display_line\get_attribute_ranges Attribute.BACKGROUND, 0, math.huge
+    bg_ranges = display_line.background_ranges
     return unless #bg_ranges > 0
 
     for range in *bg_ranges
-      @overlay_flair\draw display_line, range.start_index, range.end_index, x, y, cr
+      @overlay_flair\draw display_line, range.start_offset, range.end_offset, x, y, cr
 }
 
 define_class CurrentLineMarker
