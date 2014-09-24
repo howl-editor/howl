@@ -8,7 +8,7 @@ ffi_cast = ffi.cast
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 require 'ljglibs.cairo.cairo'
-DisplayLine = require 'aullar.display_line'
+DisplayLines = require 'aullar.display_lines'
 Cursor = require 'aullar.cursor'
 Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
@@ -132,7 +132,7 @@ View = {
           y = @margin
           for line in @_buffer\lines @_first_visible_line
             d_line = @display_lines[line.nr]
-            break if y + d_line.text_height > @height
+            break if y + d_line.height > @height
             @_last_visible_line = line.nr
             y += d_line.height
 
@@ -247,11 +247,11 @@ View = {
 
     if opts.invalidate and not to_offset
       max_y = @height
-      for line_nr = last_valid + 1, @_max_display_line
+      for line_nr = last_valid + 1, @display_lines.max
         d_lines[line_nr] = nil
 
       @_last_visible_line = nil
-      @_max_display_line = last_valid
+      @display_lines.max = last_valid
 
     if min_y
       start_x = opts.gutter and 0 or @line_gutter.width + 1
@@ -328,18 +328,7 @@ View = {
 
   _reset_display: =>
     @_last_visible_line = nil
-    @_max_display_line = 0
-
-    @display_lines = setmetatable {}, __index: (t, nr) ->
-      d_line = @_get_display_line nr
-      @_max_display_line = max @_max_display_line, nr
-      rawset t, nr, d_line
-      d_line
-
-  _get_display_line: (nr) =>
-    line = @buffer\get_line nr
-    return nil unless line
-    DisplayLine @, @area.pango_context, @buffer, line
+    @display_lines = DisplayLines @, @buffer, @area.pango_context
 
   _on_buffer_modified: (buffer, args) =>
     return unless @area.visible
@@ -347,16 +336,20 @@ View = {
     return if args.offset > last_line.end_offset and last_line.has_eol
 
     if not contains_newlines(args.text)
-      -- refresh only the single line, but verify that the height doesn't change
+      -- refresh only the single line, but verify that the modification does not
+      -- have other more significant percussions
       line_nr = buffer\get_line_at_offset(args.offset).nr
-      d_line = @display_lines[line_nr]
-      cur_height = d_line and d_line.height
+      {:height, :block} = @display_lines[line_nr]
 
       @refresh_display args.offset, args.offset + args.size, invalidate: true
 
-      new_height = cur_height and @display_lines[line_nr].height
-      -- we're ok, no height changes that we know about
-      if not new_height or new_height == cur_height
+      d_line = @display_lines[line_nr]
+      if d_line.height == height -- height remains the same
+        new_block = d_line.block -- but might still need to adjust for block changes
+        if (block and not new_block) or (new_block and not block) or (block and block.width != new_block.width)
+          block or= new_block
+          @refresh_display block.start_line.start_offset, block.end_line.end_offset --, invalidate: true
+
         return
 
     @refresh_display args.offset, nil, invalidate: true, gutter: true

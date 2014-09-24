@@ -16,7 +16,7 @@ Selection = {
 
     @background_flair = Flair(Flair.RECTANGLE, {
       background: '#a3d5da'
-      background_alpha: 0.3
+      background_alpha: 0.6
     })
 
     @overlay_flair = Flair(Flair.RECTANGLE, {

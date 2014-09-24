@@ -22,11 +22,17 @@ CurrentLineMarker = {
     @background_flair\draw display_line, 1, 1, x, y, cr
 
   draw_after: (x, y, display_line, cr, clip) =>
-    bg_ranges = display_line.background_ranges
-    return unless #bg_ranges > 0
+    block = display_line.block
+    if block
+      @overlay_flair.opts.width = block.width
+      @overlay_flair\draw display_line, 1, 1, x, y, cr
+    else
+      @overlay_flair.opts.width = nil
+      bg_ranges = display_line.background_ranges
+      return unless #bg_ranges > 0
 
-    for range in *bg_ranges
-      @overlay_flair\draw display_line, range.start_offset, range.end_offset, x, y, cr
+      for range in *bg_ranges
+        @overlay_flair\draw display_line, range.start_offset, range.end_offset, x, y, cr
 }
 
 define_class CurrentLineMarker
