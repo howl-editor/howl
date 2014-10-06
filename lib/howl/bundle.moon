@@ -22,6 +22,7 @@ available_bundles = ->
   avail = {}
 
   for dir in *dirs
+    continue if not dir.is_directory
     for c in *dir.children
       if c.is_directory and not c.is_hidden
         avail[module_name c.basename] = c
