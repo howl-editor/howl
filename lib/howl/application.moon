@@ -230,6 +230,8 @@ class Application extends PropertyObject
     unless @_loaded
       @settings = Settings!
       @_load_core!
+      if @settings.dir
+        append bundle.dirs, @settings.dir\join 'bundles'
       bundle.load_all!
       @settings\load_user!
       theme.apply!
