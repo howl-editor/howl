@@ -56,6 +56,34 @@ How well this works is depending on the language mode - should the mode not
 provide custom support for this a general, indentation-based, structure is
 provided.
 
+## Buffer search
+
+The `buffer-search-forward` and `buffer-search-backward` commands (bound to
+`ctrl_f` and `ctrl_r` respectively) provide an easy way to find exact matches
+near the cursor. The visible matches are highlighted in real-time, as you type
+your search text.
+
+![Buffer search](/images/doc/buffer-search.png)
+
+The match closest to the cursor is focused and you can use the `up` and `down`
+keys to jump between different matches. Hitting `enter` moves the cursor to the
+focused match.
+
+## Whole word search
+
+Looking only for whole word matches can be useful when there happen to be many
+sub-string matches that you want to ignore. The `buffer-search-word-forward` and
+`buffer-search-word-backward` commands (bound to `ctrl_period` and `ctrl_comma`)
+work similar to the buffer search commands above, but they only match whole
+words and they also automatically search for the current word at the cursor.
+
+![Whole word search](/images/doc/whole-word-search.png)
+
+Note that the match within 'text_len' is not highlighted in the screenshot
+above.
+
+The `up` and `down` keys jump between the matches for these commands as well.
+
 ## Buffer grep
 
 Buffer grep works as an alternative to the regular `buffer-search-forward` command for
