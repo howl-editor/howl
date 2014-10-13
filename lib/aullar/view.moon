@@ -112,11 +112,15 @@ View = {
     @_buffer_listener = {
       on_inserted: (_, b, args) -> @\_on_buffer_modified b, args
       on_deleted: (_, b, args) -> @\_on_buffer_modified b, args
+      on_styled: (_, b, args) -> @\_on_buffer_styled b, args
+      last_line_shown: (_, b) -> @last_visible_line
     }
 
     @buffer = buffer
 
   properties: {
+
+    showing: => @height != nil
 
     first_visible_line: {
       get: => @_first_visible_line
@@ -126,6 +130,7 @@ View = {
     last_visible_line: {
       get: =>
         unless @_last_visible_line
+          return 0 unless @height
           error "Can't determine last visible line until shown", 2 unless @height
           @_last_visible_line = 1
 
@@ -158,8 +163,8 @@ View = {
 
         return if x == @_base_x
         @_base_x = x
-        @_sync_scrollbars!
         @area\queue_draw!
+        @_sync_scrollbars horizontal: true
     }
 
     edit_area_x: => @line_gutter.width + @margin
@@ -180,31 +185,35 @@ View = {
   }
 
   scroll_to: (line) =>
-    return if line < 1
+    return if line < 1 or not @showing
     line = min line, (@buffer.nr_lines - @lines_showing) + 1
     return if @first_visible_line == line
 
     @_first_visible_line = line
     @_last_visible_line = nil
     @_sync_scrollbars!
+    @buffer\ensure_styled_to @last_visible_line + 1
     @area\queue_draw!
 
-  _sync_scrollbars: =>
+  _sync_scrollbars: (opts = { horizontal: true, vertical: true })=>
     @_updating_scrolling = true
-    page_size = @lines_showing - 1
-    adjustment = @vertical_scrollbar.adjustment
-    adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
 
-    max_width = 0
-    for i = @first_visible_line, @last_visible_line
-      max_width = max max_width, @display_lines[i].width
+    if opts.vertical
+      page_size = @lines_showing - 1
+      adjustment = @vertical_scrollbar.adjustment
+      adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
 
-    if max_width <= @edit_area_width
-      @horizontal_scrollbar\hide!
-    else
-      adjustment = @horizontal_scrollbar.adjustment
-      adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, @edit_area_width, @edit_area_width
-      @horizontal_scrollbar\show!
+    if opts.horizontal
+      max_width = 0
+      for i = @first_visible_line, @last_visible_line
+        max_width = max max_width, @display_lines[i].width
+
+      if max_width <= @edit_area_width
+        @horizontal_scrollbar\hide!
+      else
+        adjustment = @horizontal_scrollbar.adjustment
+        adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, @edit_area_width, @edit_area_width
+        @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
 
@@ -222,13 +231,13 @@ View = {
   to_gobject: => @bin
 
   refresh_display: (from_offset = 0, to_offset, opts = {}) =>
-    return unless @_last_visible_line and @width
+    return unless @width
     d_lines = @display_lines
     min_y, max_y = nil, nil
     y = @margin
     last_valid = 0
 
-    for line_nr = @_first_visible_line, @_last_visible_line + 1
+    for line_nr = @_first_visible_line, @last_visible_line + 1
       line = @_buffer\get_line line_nr
       break unless line
       after = to_offset and line.start_offset > to_offset
@@ -247,7 +256,7 @@ View = {
 
     if opts.invalidate and not to_offset
       max_y = @height
-      for line_nr = last_valid + 1, @display_lines.max
+      for line_nr = last_valid + 1, d_lines.max
         d_lines[line_nr] = nil
 
       @_last_visible_line = nil
@@ -261,10 +270,10 @@ View = {
         @area\queue_draw_area start_x, min_y, width, height
 
   position_from_coordinates: (x, y) =>
-    return unless @_last_visible_line and @width
+    return unless @width
     cur_y = @margin
 
-    for line_nr = @_first_visible_line, @_last_visible_line + 1
+    for line_nr = @_first_visible_line, @last_visible_line + 1
       d_line = @display_lines[line_nr]
       return nil unless d_line
       end_y = cur_y + d_line.height
@@ -296,32 +305,44 @@ View = {
     cr\move_to edit_area_x, y
     cr\set_source_rgb 0, 0, 0
 
+    lines = {}
+    start_y = nil
+
     for line in @_buffer\lines @_first_visible_line
       d_line = @display_lines[line.nr]
-      break if y >= clip.y2
 
       if y + d_line.height > clip.y1
-        is_current_line = @cursor\in_line line
-
-        if is_current_line
-          @current_line_marker\draw_before edit_area_x, y, d_line, cr, clip
-
-        if @selection\affects_line line
-          @selection\draw edit_area_x, y, cr, d_line, line
-
-        -- draw line
-        d_line\draw edit_area_x, y, cr, clip
-
-        if @selection\affects_line line
-          @selection\draw_overlay edit_area_x, y, cr, d_line, line
-
-        @line_gutter\draw_for_line line.nr, 0, y, d_line
-
-        if is_current_line
-          @current_line_marker\draw_after edit_area_x, y, d_line, cr, clip
-          @cursor\draw edit_area_x, y, cr, d_line
+        d_line.block -- force evaluation of any block
+        lines[#lines + 1] = :line, display_line: d_line
+        start_y or= y
 
       y += d_line.height
+      break if y >= clip.y2
+
+    current_line = @cursor.line
+    y = start_y
+
+    for line_info in *lines
+      {:display_line, :line} = line_info
+
+      if line.nr == current_line
+        @current_line_marker\draw_before edit_area_x, y, display_line, cr, clip
+
+      if @selection\affects_line line
+        @selection\draw edit_area_x, y, cr, display_line, line
+
+      display_line\draw edit_area_x, y, cr, clip
+
+      if @selection\affects_line line
+        @selection\draw_overlay edit_area_x, y, cr, display_line, line
+
+      @line_gutter\draw_for_line line.nr, 0, y, display_line
+
+      if line.nr == current_line
+        @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip
+        @cursor\draw edit_area_x, y, cr, display_line
+
+      y += display_line.height
       cr\move_to edit_area_x, y
 
     @line_gutter\end_draw!
@@ -330,29 +351,57 @@ View = {
     @_last_visible_line = nil
     @display_lines = DisplayLines @, @buffer, @area.pango_context
 
-  _on_buffer_modified: (buffer, args) =>
-    return unless @area.visible
+  _on_buffer_styled: (buffer, args) =>
+    return unless @showing
     last_line = buffer\get_line @last_visible_line
-    return if args.offset > last_line.end_offset and last_line.has_eol
+    return if args.start_line > last_line.nr + 1 and last_line.has_eol
+    start_line = @buffer\get_line args.start_line
 
-    if not contains_newlines(args.text)
+    prev_block = @display_lines[start_line.nr].block
+    prev_block_width = prev_block and prev_block.width
+
+    changed_block = ->
+      new_block = @display_lines[start_line.nr].block
+      return new_block if new_block and not prev_block
+      return prev_block if prev_block and not new_block
+      if prev_block and prev_block_width != new_block.width
+        prev_block
+
+    if not args.invalidated and args.start_line == args.end_line
       -- refresh only the single line, but verify that the modification does not
-      -- have other more significant percussions
-      line_nr = buffer\get_line_at_offset(args.offset).nr
-      {:height, :block} = @display_lines[line_nr]
+      -- have other significant percussions
+      prev_height = @display_lines[start_line.nr].height
 
-      @refresh_display args.offset, args.offset + args.size, invalidate: true
+      @refresh_display start_line.start_offset, start_line.end_offset, invalidate: true
 
-      d_line = @display_lines[line_nr]
-      if d_line.height == height -- height remains the same
-        new_block = d_line.block -- but might still need to adjust for block changes
-        if (block and not new_block) or (new_block and not block) or (block and block.width != new_block.width)
-          block or= new_block
-          @refresh_display block.start_line.start_offset, block.end_line.end_offset --, invalidate: true
+      d_line = @display_lines[start_line.nr]
+      if d_line.height == prev_height -- height remains the same
+        block = changed_block! -- but might still need to adjust for block changes
+        if block
+          @refresh_display block.start_line.start_offset, block.end_line.end_offset
 
+        @_sync_scrollbars horizontal: true
         return
 
-    @refresh_display args.offset, nil, invalidate: true, gutter: true
+    @refresh_display start_line.start_offset, nil, invalidate: true, gutter: true
+    block = changed_block! -- but might still need to adjust for block changes
+    if block
+      @refresh_display block.start_line.start_offset, start_line.start_offset, invalidate: true
+
+    @_sync_scrollbars!
+
+  _on_buffer_modified: (buffer, args) =>
+    return unless @showing
+
+    if args.styled
+      @_on_buffer_styled buffer, args.styled
+    else
+      if not contains_newlines(args.text)
+        @refresh_display args.offset, args.offset + args.size, invalidate: true
+        @_sync_scrollbars horizontal: true
+      else
+        @refresh_display args.offset, nil, invalidate: true, gutter: true
+        @_sync_scrollbars!
 
   _on_focus_in: =>
     @cursor.active = true
@@ -404,6 +453,7 @@ View = {
     @height = allocation.height
     @_reset_display!
     @_sync_scrollbars!
+    @buffer\ensure_styled_to @last_visible_line + 1
 }
 
 define_class View

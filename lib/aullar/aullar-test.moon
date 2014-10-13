@@ -30,14 +30,11 @@ text = [[
 ]]
 
 local buffer_mode
-styling = {}
 
 if #args > 0
   file = howl.io.File(args[1])
   text = file.contents
   buffer_mode = mode.for_file file
-  if buffer_mode and buffer_mode.lexer
-    styling = buffer_mode.lexer text
 
 on_key_press = (view, event) ->
   key_name = event.key_name
@@ -75,7 +72,7 @@ new_edit = (buffer) ->
 
 add_window = (app) ->
   buffer = aullar.Buffer text
-  buffer\style 1, styling
+  buffer.lexer = buffer_mode and buffer_mode.lexer
   window = Gtk.Window()
   window.style_context\add_class 'main'
   window\set_default_size 800, 480

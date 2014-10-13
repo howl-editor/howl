@@ -42,7 +42,6 @@ Buffer = {
     @listeners = {}
     @text = text
     @styling = Styling @
-    @last_styled_line = 0
 
   properties: {
     gap_size: => (@gap_end - @gap_start)
@@ -50,6 +49,13 @@ Buffer = {
     nr_lines: =>
       @_scan_lines_to {}
       @_last_scanned_line
+
+    lexer: {
+      get: => @_lexer
+      set: (lexer) =>
+        @_lexer = lexer
+        @styling\invalidate_from 1
+    }
 
     text: {
       get: => @tostring!
@@ -62,7 +68,7 @@ Buffer = {
         @_last_scanned_line = 0
         @_lines = {}
 
-        @_notify 'inserted', offset: 1, :text, size: @size
+        @_on_modification 'inserted', 1, text, @size
     }
   }
 
@@ -73,8 +79,6 @@ Buffer = {
     @listeners = [l for l in *@listeners when l != listener]
 
   insert: (offset, text, size = #text) =>
-    @_invalidate_lines_from_offset offset
-
     if size <= @gap_size
       @move_gap_to offset
     else
@@ -84,22 +88,23 @@ Buffer = {
     @size += size
     @gap_start += size
 
-    @_notify 'inserted', :offset, :text, :size
+    @_on_modification 'inserted', offset, text, size
 
   delete: (offset, count) =>
-    @_invalidate_lines_from_offset offset
     text = @sub offset, offset + count - 1
 
     if offset + count == @gap_start -- adjust gap start backwards
       @gap_start -= count
+      @_invalidate_lines_from_offset offset
     elseif offset == @gap_end - @gap_size -- adjust gap end forward
       @gap_end += count
+      @_invalidate_lines_from_offset offset
     else
       @move_gap_to offset + count
       @gap_start -= count
 
     @size -= count
-    @_notify 'deleted', :offset, :text, size: count
+    @_on_modification 'deleted', offset, text, count
 
   lines: (start_line = 1, end_line) =>
     i = start_line - 1
@@ -131,11 +136,11 @@ Buffer = {
 
   get_ptr: (offset, size) =>
     if offset < 1 or offset > @size or (offset + size - 1) > @size or size < 0
-      error "Illegal range: offset=#{offset}, size=#{size} for buffer of size #{@size}"
+      error "Buffer.get_ptr(): Illegal range: offset=#{offset}, size=#{size} for buffer of size #{@size}"
 
     if offset > @gap_start
       @bytes + @gap_size + offset - 1
-    elseif size < @gap_start
+    elseif (offset + size - 1) < @gap_start
       @bytes + offset - 1
     else
       arr = char_arr(size)
@@ -145,13 +150,19 @@ Buffer = {
       arr
 
   sub: (start_index, end_index) =>
+    return '' if start_index > @size
+    end_index or= @size
+    end_index = @size if end_index > @size
     size = (end_index - start_index) + 1
+    return '' if size == 0
     ffi_string(@get_ptr(start_index, size), size)
 
   style: (offset, styling) =>
     @styling\apply offset, styling
 
   move_gap_to: (offset) =>
+    @_invalidate_lines_from_offset min(offset, @gap_start)
+
     b_offset = offset - 1
 
     if b_offset > @size
@@ -176,6 +187,8 @@ Buffer = {
     @gap_end = offset + gap_size
 
   extend_gap_at: (offset, gap_size) =>
+    @_invalidate_lines_from_offset 1
+
     arr_size = @size + gap_size
     arr = char_arr(arr_size)
     src_ptr = @bytes
@@ -215,6 +228,18 @@ Buffer = {
   tostring: =>
     @compact! if @gap_size != 0
     return ffi_string @bytes, @size
+
+  ensure_styled_to: (line) =>
+    return if @styling.last_line_styled >= line
+    return unless @lexer
+    @styling\style_to min(line + 20, @nr_lines), @lexer
+
+  notify: (event, parameters) =>
+    for listener in *@listeners
+      callback = listener["on_#{event}"]
+      if callback
+        status, ret = pcall callback, listener, @, parameters
+        print "Error emitting '#{event}': #{ret}" unless status
 
   _scan_lines_to: (to) =>
     bytes = @bytes
@@ -282,18 +307,38 @@ Buffer = {
     @_last_scanned_line = max(nr, @_last_scanned_line)
 
   _invalidate_lines_from_offset: (offset) =>
-    for i = 1, @_last_scanned_line
-      line = @_lines[i]
-      if line.end_offset >= offset or not line.has_eol
-        @_last_scanned_line = line.nr - 1
-        break
+    if offset == 1
+      @_last_scanned_line = 0
+      @_lines = {}
+    else
+      for i = 1, @_last_scanned_line
+        line = @_lines[i]
+        if line.end_offset >= offset or not line.has_eol
+          for j = i, @_last_scanned_line
+            @_lines[j] = nil
 
-  _notify: (event, parameters) =>
-    for listener in *@listeners
-      callback = listener["on_#{event}"]
-      if callback
-        status, ret = pcall callback, listener, @, parameters
-        print "Error emitting '#{event}': #{ret}" unless status
+          @_last_scanned_line = line.nr - 1
+          break
+
+  _on_modification: (type, offset, text, size) =>
+    args = :offset, :text, :size
+    contains_newlines = text\find('[\n\r]') != nil
+
+    if @lexer
+      at_line = @get_line_at_offset(offset)
+      if at_line -- else at eof
+        last_line_shown = at_line.nr
+        for listener in *@listeners
+          if listener.last_line_shown
+            last_line_shown = max last_line_shown, listener.last_line_shown!
+
+        style_to = min(last_line_shown + 20, @nr_lines)
+        args.styled = @styling\refresh_at at_line.nr, style_to, @lexer, {
+          force_full: contains_newlines
+          no_notify: true
+        }
+
+    @notify type, args
 }
 
 define_class Buffer, {

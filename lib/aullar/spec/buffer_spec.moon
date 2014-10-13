@@ -49,6 +49,13 @@ describe 'Buffer', ->
       assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { 'hell', 'o' }, parts(b)
 
+    it 'invalidates any previous line information', ->
+      b = Buffer '123\n456\n789'
+      b\move_gap_to 7
+      line1_text_ptr = b\get_line(1).text
+      b\move_gap_to 1
+      assert.not_equals line1_text_ptr, b\get_line(1).text
+
   describe 'extend_gap_at(offset, new_size)', ->
     it 'extends the gap to be the specified size at the specified offset', ->
       b = Buffer 'hello'
@@ -64,6 +71,12 @@ describe 'Buffer', ->
       assert.equals 5, b.gap_start
       assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { 'hell', 'o' }, parts(b)
+
+    it 'invalidates any and all previous line information', ->
+      b = Buffer '123\n456\n789'
+      line1_text_ptr = b\get_line(1).text
+      b\extend_gap_at 7, b.gap_size + 2
+      assert.not_equals line1_text_ptr, b\get_line(1).text
 
   describe 'lines([start_line, end_line])', ->
     all_lines = (b) -> [ffi.string(l.text, l.size) for l in b\lines 1]
@@ -190,6 +203,11 @@ describe 'Buffer', ->
       assert.not_nil line
       assert.equals 0, line.size
 
+    it 'works fine with a last empty line', ->
+      b = Buffer '123\n'
+      assert.is_not_nil b\get_line 2
+      assert.equals 2, b\get_line(2).nr
+
   describe 'get_line_at_offset(offset)', ->
     it 'returns line information for the line at the specified offset', ->
       b = Buffer 'line 1\nline 2'
@@ -215,6 +233,11 @@ describe 'Buffer', ->
       line = b\get_line_at_offset 1
       assert.not_nil line
       assert.equals 0, line.size
+
+    it 'works fine with a last empty line', ->
+      b = Buffer '123\n'
+      assert.is_not_nil b\get_line_at_offset(5)
+      assert.equals 2, b\get_line_at_offset(5).nr
 
   describe '.nr_lines', ->
     it 'is the number lines in the buffer', ->
@@ -244,15 +267,16 @@ describe 'Buffer', ->
       b\insert 4, 'X'
       b\move_gap_to 4
       assert.equals '3X45', ffi.string(b\get_ptr(3, 4), 4)
+      assert.equals '3X4', ffi.string(b\get_ptr(3, 3), 3)
 
     it 'returns a valid pointer for an offset greater than the gap start', ->
       b = Buffer '123456789'
       b\move_gap_to 4
       assert.equals '567', ffi.string(b\get_ptr(5, 3), 3)
+      assert.equals '456', ffi.string(b\get_ptr(4, 3), 3)
 
     it 'returns a valid pointer for an offset and size smaller than the gap start', ->
       b = Buffer '123456789'
-      b\insert 6, 'X'
       b\move_gap_to 6
       assert.equals '45', ffi.string(b\get_ptr(4, 2), 2)
 
@@ -268,12 +292,34 @@ describe 'Buffer', ->
       assert.raises 'Illegal', -> b\get_ptr 1, 4
       assert.raises 'Illegal', -> b\get_ptr 3, 2
 
-  describe 'sub(start_index, end_index)', ->
+  describe 'sub(start_index [, end_index])', ->
     it 'returns a string for the given inclusive range', ->
       b = Buffer '123456789'
       assert.equals '234', b\sub(2, 4)
       b\move_gap_to 5
       assert.equals '567', b\sub(5, 7)
+      assert.equals '123456789', b\sub(1, 9)
+
+    it 'omitting end_index retrieves the contents until the end', ->
+      b = Buffer '12345'
+      assert.equals '2345', b\sub(2)
+      assert.equals '5', b\sub(5)
+
+    it 'specifying an end_index greater than size retrieves the contents until the end', ->
+      b = Buffer '12345'
+      assert.equals '2345', b\sub(2, 6)
+      assert.equals '45', b\sub(4, 10)
+
+    it 'specifying an start_index greater than size return an empty string', ->
+      b = Buffer '12345'
+      assert.equals '', b\sub(6, 6)
+      assert.equals '', b\sub(6, 10)
+      assert.equals '', b\sub(10, 12)
+
+    it 'works fine with a last empty line', ->
+      b = Buffer '123\n'
+      assert.equals 2, b.nr_lines
+      assert.equals '123\n', b\sub b\get_line(1).start_offset, b\get_line(2).end_offset
 
   describe 'insert(offset, text, size)', ->
     it 'inserts the given text at the specified position', ->
@@ -320,19 +366,22 @@ describe 'Buffer', ->
       assert.equals 'hello world', tostring b
 
   context 'notifications', ->
-    it 'sends inserted notifications to all interested listeners', ->
-      l1 = on_inserted: spy.new -> nil
-      l2 = on_inserted: spy.new -> nil
-      b = Buffer 'hello'
-      b\add_listener l1
-      b\add_listener l2
-      b\insert 3, 'xx'
-      assert.spy(l1.on_inserted).was_called_with l1, b, offset: 3, text: 'xx', size: 2
-      assert.spy(l2.on_inserted).was_called_with l2, b, offset: 3, text: 'xx', size: 2
+    describe 'on_inserted', ->
+      it 'is fired upon insertions to all interested listeners', ->
+        l1 = on_inserted: spy.new -> nil
+        l2 = on_inserted: spy.new -> nil
+        b = Buffer 'hello'
+        b\add_listener l1
+        b\add_listener l2
+        b\insert 3, 'xx'
+        args = offset: 3, text: 'xx', size: 2
+        assert.spy(l1.on_inserted).was_called_with l1, b, args
+        assert.spy(l2.on_inserted).was_called_with l2, b, args
 
-    it 'sends deleted notifications to listeners', ->
-      l1 = on_deleted: spy.new -> nil
-      b = Buffer 'hello'
-      b\add_listener l1
-      b\delete 3, 2
-      assert.spy(l1.on_deleted).was_called_with l1, b, offset: 3, text: 'll', size: 2
+    describe 'on_deleted', ->
+      it 'is fired upon deletions to listeners', ->
+        l1 = on_deleted: spy.new -> nil
+        b = Buffer 'hello'
+        b\add_listener l1
+        b\delete 3, 2
+        assert.spy(l1.on_deleted).was_called_with l1, b, offset: 3, text: 'll', size: 2
