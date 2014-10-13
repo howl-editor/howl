@@ -6,7 +6,7 @@ howl.aux.lpeg_lexer ->
     'extends', 'super', 'do', 'using', 'switch', 'when', 'unless', 'continue'
   }
 
-  comment = capture 'comment', span('--', eol)
+  comment = capture 'comment', P'--' * scan_until(eol)
 
   hexadecimal_number =  P'0' * S'xX' * xdigit^1 * (P'.' * xdigit^1)^0 * (S'pP' * S'-+'^0 * xdigit^1)^0
   float = digit^0 * P'.' * digit^1
