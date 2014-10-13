@@ -210,11 +210,16 @@ return {
       color: white
       background: yellow
       eol_filled: true
-      font: bold: true
+      font:
+        bold: true
+        size: 24
 
     h2:
       color: white
       background: comment
+      font:
+        size: 18
+        italic: true
 
     h3:
       color: violet
