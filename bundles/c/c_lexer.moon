@@ -10,7 +10,7 @@ howl.aux.lpeg_lexer ->
 
   keyword = c 'keyword', word {
     'auto', '_Bool', 'break', 'case', 'char', '_Complex', 'const', 'continue',
-    'default', 'do', 'double', 'else', 'enum', 'extern', 'float', 'for', 'goto',
+    'default', 'double', 'do', 'else', 'enum', 'extern', 'float', 'for', 'goto',
     'if', '_Imaginary', 'inline', 'int', 'long', 'register', 'restrict',
     'return', 'short', 'signed', 'sizeof', 'static', 'struct', 'switch',
     'typedef', 'union', 'unsigned', 'void', 'volatile', 'while'
