@@ -101,11 +101,8 @@ DisplayLine = define_class {
 
   properties: {
     block: =>
-      unless @_block
-        if #@background_ranges == 1
-          range = @background_ranges[1]
-          if range.start_offset == 1 and range.end_offset > @line.full_size
-            @_block = get_block @display_lines, @
+      if not @_block and @_full_background
+        @_block = get_block @display_lines, @
 
       @_block
    }
@@ -116,10 +113,11 @@ DisplayLine = define_class {
     block = @block
 
     for bg_range in *@background_ranges
+      width = block and block.width and block.width - base_x or nil
       flair = Flair(Flair.RECTANGLE, {
         background: bg_range.style.background
         background_alpha: 0.3
-        width: block and block.width or nil
+        :width
       })
       flair\draw @, bg_range.start_offset, bg_range.end_offset, x, y, cr
 
