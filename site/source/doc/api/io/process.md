@@ -118,8 +118,8 @@ Launches a new process with the specified options, and returns a Process
 instance. `options`, a table, can contain the following fields:
 
 - `cmd`: _[required]_ The command to run. This can be either a string, in which
-case it's executed using `/bin/sh`, or a table comprising the
-full command line invocation.
+case it's executed using `/bin/sh` (or using the shell specified by `shell`), or
+a table comprising the full command line invocation.
 
 - `read_stdout`: _[optional]_ When specified, a pipe will be opened for the
 process' standard out, and the [stdout](#stdout) field will be available for
@@ -139,6 +139,11 @@ directory.
 - `env`: _[optional]_ A table of keys and values that will be used as the
 process' environment.
 
+- `shell`: _[optional]_ A string specifying the shell to use for executing the
+command. The specified shell will be invoked with the `-c` parameter, with the
+command parameters directly following. This parameter is only respected if `cmd`
+is a string.
+
 An error will be raised if the specified command could not be started. Otherwise
 a process object is returned for the started command.
 
@@ -156,6 +161,11 @@ process' input.
 
 - `env`: A table of keys and values that will be used as the process'
 environment.
+
+- `shell`: _[optional]_ A string specifying the shell to use for executing the
+command. The specified shell will be invoked with the `-c` parameter, with the
+command parameters directly following. This parameter is only respected if `cmd`
+is a string.
 
 An error will be raised if the specified command could not be started, or if an
 IO error occurs. Otherwise the function returns three values: The standard

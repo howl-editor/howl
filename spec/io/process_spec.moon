@@ -28,6 +28,10 @@ describe 'Process', ->
       p = Process cmd: 'echo "foo bar"'
       assert.same { '/bin/sh', '-c', 'echo "foo bar"'}, p.argv
 
+    it 'allows specifying a different shell', ->
+      p = Process cmd: 'foo', shell: '/bin/echo'
+      assert.same { '/bin/echo', '-c', 'foo'}, p.argv
+
   describe 'Process.execute(cmd, opts)', ->
     it 'executes the specified command and return <out, err, process>', (done) ->
       howl_async ->
@@ -37,11 +41,19 @@ describe 'Process', ->
         assert.equal 'Process', typeof(p)
         done!
 
-    it "executes string commands using /bin/sh'", (done) ->
+    it "executes string commands using /bin/sh by default", (done) ->
       howl_async ->
         status, out = pcall Process.execute, 'echo $0'
         assert.is_true status
         assert.equal '/bin/sh\n', out
+        done!
+
+    it "allows specifying a different shell", (done) ->
+      howl_async ->
+        status, out, err, process = pcall Process.execute, 'blargh', shell: '/bin/echo'
+        assert.is_true status
+        assert.match out, 'blargh'
+        assert.equal 'blargh', process.command_line
         done!
 
     it 'opts.working_directory sets the working working directory', (done) ->

@@ -36,11 +36,11 @@ shell_quote = (s) ->
   else
     s
 
-get_command = (v) ->
+get_command = (v, shell = '/bin/sh') ->
   t = type v
 
   if t == 'string'
-    return { '/bin/sh', '-c', v }, v
+    return { shell, '-c', v }, v
   elseif t != 'table'
     return nil
 
@@ -90,6 +90,7 @@ class Process
       :cmd,
       working_directory: opts.working_directory,
       env: opts.env,
+      shell: opts.shell,
       read_stdout: true,
       read_stderr: true,
       write_stdin: opts.stdin != nil
@@ -105,7 +106,7 @@ class Process
     out, err, p
 
   new: (opts) =>
-    @argv, @command_line = get_command opts.cmd
+    @argv, @command_line = get_command opts.cmd, opts.shell
     error 'opts.cmd missing or invalid', 2 unless @argv
     @_process = launch @argv, opts
     @pid = @_process.pid
