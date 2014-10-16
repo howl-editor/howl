@@ -295,11 +295,13 @@ command.register
 -----------------------------------------------------------------------
 
 launch_cmd = (working_directory, cmd) ->
+  shell = howl.sys.env.SHELL or '/bin/sh'
   p = Process {
     :cmd,
+    :shell,
     read_stdout: true,
     read_stderr: true,
-    working_directory: working_directory
+    working_directory: working_directory,
   }
 
   buffer = ProcessBuffer p
