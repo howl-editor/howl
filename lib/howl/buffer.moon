@@ -330,6 +330,7 @@ class Buffer extends PropertyObject
     @_sci = sci
     if background_buffer[1] == self
       background_sci.listener = nil
+      background_buffer[1] = nil
 
     sci\set_code_page Scintilla.SC_CP_UTF8
     sci\set_style_bits 8
