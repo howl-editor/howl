@@ -73,6 +73,8 @@
 
   ctrl_o:           'open'
   ctrl_p:           'project-open'
+  ctrl_shift_r:     'exec'
+  ctrl_alt_r:       'project-exec'
 
   ctrl_w:           'view-close'
   'ctrl_-':         'zoom-out'
