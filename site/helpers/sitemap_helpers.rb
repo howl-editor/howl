@@ -8,6 +8,7 @@ module SitemapHelpers
   end
 
   def sliced_for_columns(nr_cols, packages)
+    return if packages.empty?
     header_size = 3
     avg_length = packages.values.reduce(0) { |s, a| s + a.size } / nr_cols
     longest = packages.values.map(&:size).max
