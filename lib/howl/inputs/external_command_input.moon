@@ -40,23 +40,26 @@ sort_files = (files) ->
     f1.path < f2.path
 
 match_file = (directory, text, directories_only) ->
+  comp_directory = directory
   path = directory\join(File.expand_path text)
 
   if path.is_directory and (text.is_blank or text\ends_with File.separator)
-    directory = path
+    comp_directory = path
     text = ''
-  else
+  else if not text\match '^%.+$'
     text = path.basename
-    directory = path.parent
+    comp_directory = path.parent
 
-  children = directory.children
+  children = comp_directory.children
 
   if directories_only
     children = [c for c in *children when c.is_directory]
 
   sort_files children
   names = [c.display_name for c in *children]
-  table.insert names, 1, '.' if directories_only
+  if directories_only and directory != comp_directory
+    table.insert names, 1, '.'
+
   matcher = Matcher names
 
   completion_options = {
@@ -64,7 +67,7 @@ match_file = (directory, text, directories_only) ->
     list:
       highlight_matches_for: text
       column_styles: (name, row, column) ->
-        file = directory / name
+        file = comp_directory / name
         file.is_directory and 'keyword' or 'string'
   }
   matcher(text), completion_options
