@@ -32,12 +32,19 @@ class State
   new: =>
     @inputs = {}
     @arguments = {}
-    @keymap = setmetatable {}, __index: (_, k) ->
-      v = @.input and @.input.keymap and @.input.keymap[k]
-      if callable v
-        (_, readline, item) -> v @.input, readline, item
-      else
-        v
+    local wrapped
+    wrapped = (kf) ->
+      __index: (_, k) ->
+        tbl = kf!
+        return unless tbl
+        v = tbl[k]
+        if callable v
+          (_, readline, item) -> v @.input, readline, item
+        elseif typeof(v) == 'table'
+          setmetatable {}, wrapped(-> v)
+        else
+          v
+    @keymap = setmetatable {}, wrapped -> @.input and @.input.keymap
 
   update: (text, readline) =>
     if not @cmd

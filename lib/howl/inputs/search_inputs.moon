@@ -6,14 +6,13 @@ import app from howl
 class SearchInput
   new: (@operation, @type, @title) =>
     @searcher = app.editor.searcher
-    @keymap = {
-      [howl.bindings.binding_for('buffer-search-backward', 'editor')]: ->
-        @searcher\previous!
-      [howl.bindings.binding_for('buffer-search-forward', 'editor')]: ->
-        @searcher\next!
-      up: -> @searcher\previous!
-      down: -> @searcher\next!
-    }
+
+  keymap:
+    up: => @searcher\previous!
+    down: => @searcher\next!
+    binding_for:
+      ['buffer-search-backward']: => @searcher\previous!
+      ['buffer-search-forward']: => @searcher\next!
 
   complete: (text) =>
     @searcher[@operation] @searcher, text, @type
@@ -34,14 +33,13 @@ class BackwardSearchInput extends SearchInput
 class SearchWordInput extends SearchInput
   new: (operation, type, title) =>
     super(operation, type, title)
-    @keymap = {
-      [howl.bindings.binding_for('buffer-search-word-backward', 'editor')]: ->
-        @searcher\previous!
-      [howl.bindings.binding_for('buffer-search-word-forward', 'editor')]: ->
-        @searcher\next!
-      up: -> @searcher\previous!
-      down: -> @searcher\next!
-    }
+
+  keymap:
+    up: => @searcher\previous!
+    down: => @searcher\next!
+    binding_for:
+      ['buffer-search-word-backward']: => @searcher\previous!
+      ['buffer-search-word-forward']: => @searcher\next!
 
   on_readline_available: (input, readline) ->
     readline.text = app.editor.current_context.word.text
