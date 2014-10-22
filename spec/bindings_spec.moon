@@ -174,6 +174,14 @@ describe 'bindings', ->
           bindings.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
           assert.spy(handler).was.called!
 
+      context 'when .binding_for is defined and keys are not found in a keymap', ->
+        it 'is looked up by keys bound to the commands in .binding_for', ->
+          handler = spy.new ->
+          bindings.push a: 'my-command'
+          bindings.push binding_for: ['my-command']: handler
+          bindings.process {character: 'A', key_name: 'a', key_code: 65}, ''
+          assert.spy(handler).was.called!
+
       context 'when a keymap was pushed with options.block set to true', ->
         it 'looks no further down the stack than that keymap', ->
           base = k: spy.new -> nil
@@ -332,3 +340,19 @@ describe 'bindings', ->
       }
       assert.equals 'ctrl_y', bindings.binding_for 'my-command', 'my_source'
 
+  describe 'command_for(translation, source)', ->
+    before_each ->
+      bindings.keymaps = {}
+
+    it 'returns the first command string bound to <translation>', ->
+      bindings.push ctrl_x: 'my-old-command'
+      bindings.push ctrl_x: 'my-new-command'
+      assert.equals 'my-new-command', bindings.command_for 'ctrl_x'
+
+    it 'returns nil if no command was found', ->
+      assert.is_nil bindings.command_for 'ctrl_x'
+
+    it 'returns nil if first binding is not a string', ->
+      bindings.push ctrl_x: 'my-command'
+      bindings.push ctrl_x: -> 'not a string'
+      assert.is_nil bindings.command_for 'ctrl_x'
