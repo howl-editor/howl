@@ -115,6 +115,13 @@ command.register
       buffer\append serpent.block translations, comment: false
       buffer\append '\n\nKey event:\n', 'comment'
       buffer\append serpent.block event, comment: false
+      bound_commands = {}
+      for t in *translations
+        cmd = bindings.command_for t
+        cmd = '<function>' if typeof(cmd) == 'function'
+        bound_commands[t] = cmd
+      buffer\append '\n\nBound command:\n', 'comment'
+      buffer\append serpent.block bound_commands, comment: false
 
       if event.key_name == 'escape'
         buffer.lines[1] = '(Snooping done, close this buffer at your leisure)'
