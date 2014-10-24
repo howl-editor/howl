@@ -75,17 +75,20 @@ find_handlers = (event, source, translations, keymaps, ...) ->
     source_map = map[source] or {}
     handler = nil
 
-    source_map_binding_for = source_map.binding_for or {}
-    map_binding_for = map.binding_for or {}
+    source_map_binding_for = source_map.binding_for
+    map_binding_for = map.binding_for
 
     for t in *translations
       handler = source_map[t] or map[t]
       break if handler
 
-      cmd = command_for t
-      continue if not cmd
-      handler = source_map_binding_for[cmd] or map_binding_for[cmd]
-      break if handler
+      if source_map_binding_for or map_binding_for
+        cmd = command_for t
+        if typeof(cmd) == 'string'
+          handler = source_map_binding_for and source_map_binding_for[cmd]
+          break if handler
+          handler = map_binding_for and map_binding_for[cmd]
+          break if handler
 
     if not handler and callable map.on_unhandled
       handler = map.on_unhandled event, source, translations, ...
@@ -211,14 +214,9 @@ export command_for = (translation, source='editor') ->
   for i = #keymaps, 1, -1
     km = keymaps[i]
     continue unless km
-
     source_km = km[source] or {}
     handler = source_km[translation] or km[translation]
-
-    if handler
-      return handler if typeof(handler) == 'string'
-      return nil
-
+    return handler if handler
   nil
 
 return _ENV
