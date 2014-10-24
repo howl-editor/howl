@@ -140,7 +140,7 @@ describe 'bindings', ->
       it 'tries each translated key and .on_unhandled in order for a keymap, and optional source specific map', ->
         keymap = Spy!
         bindings.process { character: 'A', key_name: 'a', key_code: 65 }, 'my_source', { keymap }
-        assert.same { 'my_source', 'A', 'a', '65', 'on_unhandled' }, keymap.reads
+        assert.same { 'my_source', 'binding_for', 'A', 'a', '65', 'on_unhandled' }, keymap.reads
 
       it 'prefers source specific bindings', ->
         specific_map = A: spy.new -> nil
@@ -158,7 +158,7 @@ describe 'bindings', ->
         stack_map = Spy!
         bindings.push stack_map
         bindings.process key_args, 'editor', { extra_map }
-        assert.equal 5, #stack_map.reads
+        assert.equal 6, #stack_map.reads
         assert.same stack_map.reads, extra_map.reads
 
       context 'when .on_unhandled is defined and keys are not found in a keymap', ->
@@ -179,7 +179,7 @@ describe 'bindings', ->
           handler = spy.new ->
           bindings.push a: 'my-command'
           bindings.push binding_for: ['my-command']: handler
-          bindings.process {character: 'A', key_name: 'a', key_code: 65}, ''
+          bindings.process {character: 'a', key_name: 'a', key_code: 97}, ''
           assert.spy(handler).was.called!
 
       context 'when a keymap was pushed with options.block set to true', ->
@@ -340,19 +340,20 @@ describe 'bindings', ->
       }
       assert.equals 'ctrl_y', bindings.binding_for 'my-command', 'my_source'
 
-  describe 'command_for(translation, source)', ->
+  describe 'command_for(translation)', ->
+    local saved_keymaps
+
     before_each ->
+      saved_keymaps = bindings.keymaps
       bindings.keymaps = {}
 
-    it 'returns the first command string bound to <translation>', ->
+    after_each ->
+      bindings.keymaps = saved_keymaps
+
+    it 'returns the command bound to translation', ->
       bindings.push ctrl_x: 'my-old-command'
       bindings.push ctrl_x: 'my-new-command'
       assert.equals 'my-new-command', bindings.command_for 'ctrl_x'
 
     it 'returns nil if no command was found', ->
-      assert.is_nil bindings.command_for 'ctrl_x'
-
-    it 'returns nil if first binding is not a string', ->
-      bindings.push ctrl_x: 'my-command'
-      bindings.push ctrl_x: -> 'not a string'
       assert.is_nil bindings.command_for 'ctrl_x'
