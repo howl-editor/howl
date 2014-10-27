@@ -94,6 +94,27 @@ The key event will be considered handled unless the handler returns false.
 - It can be an ordinary, non-callable, table. This table is interpreted as an additional
 keymap, which will be [pushed](#push) using the `pop` option.
 
+### Indirect bindings
+
+When writing keymaps for non-editor sources, a special key called `binding_for`
+can be used in the keymap to bind an action to a key press indirectly by using a
+command name as the key. For example, if you wanted to support *pasting* in your
+readline input, instead of binding the action directly to the `ctrl_v` key
+press, you might want to bind whichever key is bound to the `editor-paste`
+command. This can be specified by the following keymap:
+
+```lua
+{
+  binding_for = {
+    ['editor-paste']: function() ... end
+  }
+}
+```
+
+This ensures that if the user binds a new key press to the `editor-paste`
+command, that new key press will now trigger the bound action above, providing a
+better experience for the user.
+
 *Protip*:
 
 You can use the `describe-key` command to interactively view information for any
@@ -151,6 +172,12 @@ parameters passed to process. Unless the handler returns `false`, it will
 automatically be removed after the invocation. There can be only one capture
 handler installed at any given time. Installing a capture handler when an
 existing one is already set will simply override the previous one.
+
+### command_for (translation)
+
+Searches the stack of kemaps for the given key translation and returns the first
+bound action found. If no binding can be found for the translation, `nil` is
+returned.
 
 ### dispatch (key_event, source, keymaps, ...)
 

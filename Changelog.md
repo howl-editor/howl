@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- The `describe-key` command now shows the commands bound to the key press.
+
+- Added inderect bindings support to keymaps using the `binding_for` field.
+
 - Added a new comprehensive API for launching and controlling external processes
 (howl.io.Process).
 
