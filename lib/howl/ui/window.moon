@@ -37,8 +37,8 @@ class Window extends PropertyObject
       Gtk.Box Gtk.ORIENTATION_VERTICAL, {
         spacing: 3,
         { expand: true, @grid },
-        @status\to_gobject!,
         @readline\to_gobject!
+        @status\to_gobject!,
       }
     }
 

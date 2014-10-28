@@ -107,11 +107,12 @@ class ProcessBuffer extends ActionBuffer
         delete_back, output = parse_output read
         if delete_back > 0
           len = @length
-          @modify ->  @delete len- (delete_back - 1), len
+          @modify ->  @delete len - (delete_back - 1), len
 
         @append output
 
-    on_stderr = (read) -> @append(read, 'error') if read and not @destroyed
+    on_stderr = (read) ->
+      @append(read, 'error') if read and not @destroyed
 
     @process\pump on_stdout, on_stderr
     @title = "[#{@directory.short_path}]$ #{@process.command_line} (done)"
