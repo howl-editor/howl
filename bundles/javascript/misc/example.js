@@ -1,6 +1,8 @@
 // Some example JavaScript syntax, a lot of it borrowed from Wikipedia
 // http://en.wikipedia.org/wiki/JavaScript_syntax
 
+const TEST_FILE = 'yes';
+
 a = b + c // comment at end of line
 
 /* this is a long,

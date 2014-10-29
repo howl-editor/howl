@@ -9,7 +9,7 @@ howl.aux.lpeg_lexer ->
   identifer = c 'identifer', ident
 
   keyword = c 'keyword', word {
-    'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete',
+    'break', 'case', 'catch', 'continue', 'const', 'debugger', 'default', 'delete',
     'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof',
     'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
     'void', 'while', 'with'
