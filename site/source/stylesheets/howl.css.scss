@@ -41,13 +41,23 @@ $border_radius: 10px;
   border-bottom: 1px solid lightgray;
 }
 
-.masthead {
+.nav {
+  display: inline-flex;
   margin-bottom: 1em;
+  background-color: aliceblue;
+  border-radius: 5px;
+
+  li {
+    text-align: center;
+  }
 }
 
 .jumbotron {
-    padding-bottom: 0.5em;
+    padding-bottom: 0;
     padding-top: 0.5em;
+    margin-bottom: 0;
+    text-align: center;
+    background-color: transparent;
 }
 
 h1, h2 {
@@ -69,6 +79,39 @@ code {
 .blog_entries {
   img {
     max-width: 10%;
+  }
+}
+
+.info-box {
+  background-color: aliceblue;
+  border: 1px solid lightblue;
+  border-radius: 5px;
+  padding: 0 1em 1em 1em;
+  margin: 0 1em 0 1em;
+  text-align: center;
+  box-sizing: border-box;
+
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+
+  h1 {
+    font-size:  14px;
+  }
+
+  .news {
+    margin: auto;
+  }
+  .news td {
+    text-align: left;
+  }
+
+  a.download {
+    background-color: lightblue;
+    border-bottom-right-radius: 0.5em;
+    border-bottom-left-radius: 0.5em;
+    padding: 0 0.5em 0.5em 0.5em;
+    color: steelblue;
   }
 }
 
@@ -130,6 +173,12 @@ pre.highlight {
   &.moonscript:before { @include code-info('Moonscript') };
 }
 
+.footer {
+  border-top: 1px solid #eee;
+  margin-top: 40px;
+  padding-top: 1em;
+}
+
 .footer-logo {
   float: left;
 }
@@ -169,10 +218,6 @@ h4 {
 }
 
 body.doc {
-  li {
-    margin-top: 0.3em;
-  }
-
   img {
     margin: 0.5em 0;
   }
@@ -203,7 +248,7 @@ body.doc {
 
     .toc-group {
       margin: 0.5em;
-      /* margin-left: 1.5em; */
+
       li {
         list-style: none;
         margin-left: 1em;

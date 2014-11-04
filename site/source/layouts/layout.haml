@@ -9,20 +9,32 @@
 
     %title= "Howl :: #{current_page.data.title || 'Editor'}"
 
-    = stylesheet_link_tag "bootstrap.min", "justified-nav.css", "syntax", "howl"
+    = stylesheet_link_tag "bootstrap.min", "syntax", "howl"
     %link(href='http://fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css')
     %link(href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css')
 
   %body(class="#{page_classes}")
     .container
       .masthead
-        %ul.nav.nav-justified
+        %ul.nav.nav-pills
           %li
-            %a(href="/") Home
+            %a(href="/")
+              %span.glyphicon.glyphicon-home
+              Home
           %li
-            %a(href="/doc/") Documentation
+            %a(href="/doc/")
+              %span.glyphicon.glyphicon-book
+              Documentation
           %li
-            %a(href="/contact.html") Contact
+            %a(href="/blog/")
+              %span.glyphicon.glyphicon-bullhorn
+              Blog
+
+          %li
+            %a(href="/contact.html")
+              %span.glyphicon.glyphicon-inbox
+              Contact
+
 
       = breadcrumbs
 

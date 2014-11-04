@@ -5,12 +5,23 @@
     The Howl Editor
   %p.lead
     A general purpose, light-weight customizable editor.
-  %p
-    %a.btn.btn-success(href="getit.html")
-      Current version: [0.2.1]
-  %p
-    = link_to image_tag('screenshots/howl-midnight-t.png'), "images/screenshots/howl-midnight.png"
-    = link_to image_tag('screenshots/howl-solarized-t.png'), "images/screenshots/howl-solarized.png"
+
+.text-center
+  .info-box
+    %p
+      %a.btn.btn-success(href="getit.html")
+        Current version: 0.2.1
+        %span.glyphicon.glyphicon-download
+
+    %p
+      = link_to image_tag('screenshots/howl-midnight-t.png'), "images/screenshots/howl-midnight.png"
+      = link_to image_tag('screenshots/howl-solarized-t.png'), "images/screenshots/howl-solarized.png"
+    %h1 Latest news
+    %table.news
+      - blog.articles[0..1].each do |article|
+        %tr
+          %td.date= article.date.strftime('%b %e %Y') + ' - '
+          %td.title= link_to article.title, article
 
 .row
   .col-lg-4
