@@ -340,7 +340,7 @@ describe 'bindings', ->
       }
       assert.equals 'ctrl_y', bindings.binding_for 'my-command', 'my_source'
 
-  describe 'command_for(translation)', ->
+  describe 'action_for(translation)', ->
     local saved_keymaps
 
     before_each ->
@@ -353,7 +353,7 @@ describe 'bindings', ->
     it 'returns the command bound to translation', ->
       bindings.push ctrl_x: 'my-old-command'
       bindings.push ctrl_x: 'my-new-command'
-      assert.equals 'my-new-command', bindings.command_for 'ctrl_x'
+      assert.equals 'my-new-command', bindings.action_for 'ctrl_x'
 
     it 'returns nil if no command was found', ->
-      assert.is_nil bindings.command_for 'ctrl_x'
+      assert.is_nil bindings.action_for 'ctrl_x'

@@ -136,6 +136,13 @@ This is a list of the currently active keymaps. This is a stack, with latter key
 
 ## Functions
 
+### action_for (translation)
+
+Searches the stack of kemaps for the given key translation and returns the first
+bound action found. An action may be a string (i.e. a command name) or a
+function object. If no binding can be found for the translation, `nil` is
+returned.
+
 ### binding_for (action, source)
 
 Finds the first key binding that is bound to the specified `action`. `source`,
@@ -172,12 +179,6 @@ parameters passed to process. Unless the handler returns `false`, it will
 automatically be removed after the invocation. There can be only one capture
 handler installed at any given time. Installing a capture handler when an
 existing one is already set will simply override the previous one.
-
-### command_for (translation)
-
-Searches the stack of kemaps for the given key translation and returns the first
-bound action found. If no binding can be found for the translation, `nil` is
-returned.
 
 ### dispatch (key_event, source, keymaps, ...)
 

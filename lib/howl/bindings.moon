@@ -83,7 +83,7 @@ find_handlers = (event, source, translations, keymaps, ...) ->
       break if handler
 
       if source_map_binding_for or map_binding_for
-        cmd = command_for t
+        cmd = action_for t
         if typeof(cmd) == 'string'
           handler = source_map_binding_for and source_map_binding_for[cmd]
           break if handler
@@ -210,7 +210,7 @@ export binding_for = (handler, source = nil) ->
 
   nil
 
-export command_for = (translation, source='editor') ->
+export action_for = (translation, source='editor') ->
   for i = #keymaps, 1, -1
     km = keymaps[i]
     continue unless km
