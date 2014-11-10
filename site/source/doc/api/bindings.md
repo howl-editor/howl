@@ -143,29 +143,6 @@ bound action found. An action may be a string (i.e. a command name) or a
 function object. If no binding can be found for the translation, `nil` is
 returned.
 
-### binding_for (action, source)
-
-Finds the first key binding that is bound to the specified `action`. `source`,
-if given, specifies the source specified keymaps to search. Returns the binding,
-or `nil` if no binding was found.
-
-For example:
-
-```lua
--- look up the binding for the `project-open` command:
-howl.bindings.binding_for('project-open')
--- => 'ctrl_p'
-
--- look up the binding for the `buffer-search-forward` command:
-howl.bindings.binding_for('buffer-search-forward', 'editor')
--- => 'ctrl_f'
-
--- but since that's a command only bound for editor sources,
--- it's not bound globally
-howl.bindings.binding_for('buffer-search-forward')
--- => nil
-```
-
 ### cancel_capture ()
 
 Removes any installed capture handler.
@@ -191,6 +168,30 @@ as is to any callable actions.
 
 Unlike [process](#process), dispatch will not automatically include any of the
 keymaps in the binding stack, it will only search `keymaps`.
+
+### keystrokes_for (action, source)
+
+Finds all keystrokes (i.e. translations) that are bound to the specified
+`action`. `source`, if given, specifies the source specific keymaps to search as
+well. Returns a table containing all keystrokes found, or an empty table if no
+binding was found.
+
+For example:
+
+```lua
+-- look up the binding for the `project-open` command:
+howl.bindings.keystrokes_for('project-open')
+-- => { 'ctrl_p' }
+
+-- look up the binding for the `buffer-search-forward` command:
+howl.bindings.keystrokes_for('buffer-search-forward', 'editor')
+-- => { 'ctrl_f' }
+
+-- but since that's a command only bound for editor sources,
+-- it's not bound globally
+howl.bindings.keystrokes_for('buffer-search-forward')
+-- => {}
+```
 
 ### pop ()
 

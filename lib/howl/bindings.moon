@@ -197,18 +197,21 @@ export cancel_capture = ->
 export is_capturing = ->
   capture_handler != nil
 
-export binding_for = (handler, source = nil) ->
+export keystrokes_for = (handler, source = nil) ->
+  keystrokes = {}
   for i = #keymaps, 1, -1
     km = keymaps[i]
     source_km = km[source]
     if source_km
-      for binding, h in pairs source_km
-        return binding if h == handler
+      for keystroke, h in pairs source_km
+        if h == handler
+          append keystrokes, keystroke
 
-    for binding, h in pairs km
-      return binding if h == handler
+    for keystroke, h in pairs km
+      if h == handler
+        append keystrokes, keystroke
 
-  nil
+  keystrokes
 
 export action_for = (translation, source='editor') ->
   for i = #keymaps, 1, -1
