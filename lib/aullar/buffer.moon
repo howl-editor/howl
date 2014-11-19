@@ -6,6 +6,7 @@ C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
 Styling = require 'aullar.styling'
+Offsets = require 'aullar.offsets'
 
 char_arr = ffi.typeof 'char [?]'
 const_char_p = ffi.typeof 'const char *'
@@ -42,6 +43,7 @@ Buffer = {
     @listeners = {}
     @text = text
     @styling = Styling @
+    @offsets = Offsets!
 
   properties: {
     gap_size: => (@gap_end - @gap_start)
@@ -87,6 +89,7 @@ Buffer = {
     ffi_copy @bytes + @gap_start - 1, const_char_p(text), size
     @size += size
     @gap_start += size
+    @offsets\invalidate_from offset - 1
 
     @_on_modification 'inserted', offset, text, size
 
@@ -104,6 +107,8 @@ Buffer = {
       @gap_start -= count
 
     @size -= count
+    @offsets\invalidate_from offset - 1
+
     @_on_modification 'deleted', offset, text, count
 
   lines: (start_line = 1, end_line) =>
@@ -233,6 +238,14 @@ Buffer = {
     return if @styling.last_line_styled >= line
     return unless @lexer
     @styling\style_to min(line + 20, @nr_lines), @lexer
+
+  char_offset: (byte_offset) =>
+    @compact! if byte_offset > @gap_start
+    @offsets\char_offset(@bytes, byte_offset - 1) + 1
+
+  byte_offset: (char_offset) =>
+    @compact!
+    @offsets\byte_offset(@bytes, char_offset - 1) + 1
 
   notify: (event, parameters) =>
     for listener in *@listeners

@@ -2,8 +2,10 @@
 -- License: MIT (see LICENSE)
 
 Buffer = require 'aullar.buffer'
+require 'ljglibs.cdefs.glib'
 
 ffi = require 'ffi'
+C = ffi.C
 
 describe 'Buffer', ->
 
@@ -353,6 +355,85 @@ describe 'Buffer', ->
       assert.same { 'goo', 'world' }, parts(b)
 
       assert.equals 'gooworld', tostring(b)
+
+  describe 'char_offset(byte_offset)', ->
+    it 'returns the char_offset for the given byte_offset', ->
+      b = Buffer 'äåö'
+      for p in *{
+        {1, 1},
+        {3, 2},
+        {5, 3},
+        {7, 4},
+      }
+        assert.equal p[2], b\char_offset p[1]
+
+  describe 'byte_offset(char_offset)', ->
+    it 'returns byte offsets for all character offsets passed as parameters', ->
+      b = Buffer 'äåö'
+      for p in *{
+        {1, 1},
+        {3, 2},
+        {5, 3},
+        {7, 4},
+      }
+        assert.equal p[1], b\byte_offset p[2]
+
+  -- context '(offset consistency management)', ->
+  --   it 'accounts for deletes', ->
+  --     b = Buffer 'äå5ö8ä'
+  --     assert.equal 8, b\byte_offset 5
+  --     assert.equal 5, b\char_offset 8
+
+  --     b\delete 5, 1
+
+  --     -- äåö8ä
+  --     assert.equal 7, b\byte_offset 4
+  --     assert.equal 4, b\char_offset 7
+
+  context '(offset handling stress test)', ->
+    it 'returns the correct result as compared to glib', ->
+      glib_byte_offset = (ptr, char_offset) ->
+        next_ptr = C.g_utf8_offset_to_pointer ptr, char_offset - 1
+        (next_ptr - ptr) + 1
+
+      glib_char_offset = (ptr, byte_offset) ->
+        next_ptr = ptr + (byte_offset - 1)
+        C.g_utf8_pointer_to_offset(ptr, next_ptr) + 1
+
+      build = {}
+      line = 'äåöLinƏΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣbutnowforsomesingleΤΥΦΧĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏ'
+      for i = 1,3000
+        build[#build + 1] = line
+
+      b = Buffer table.concat(build, '\n')
+      ptr = b\get_ptr 1, b.size
+
+      for i = 1, 3000 * line.ulen, 3007
+        assert.equal glib_byte_offset(ptr, i), b\byte_offset(i)
+
+      for i = 1, 3000 * #line, 3007
+        assert.equal glib_char_offset(ptr, i), b\char_offset(i)
+
+      for i = 1, 20
+        offset = math.floor math.random! * (b.size - 2000)
+        replacement = 'ordinary ascii text here'
+
+        -- alternate between deletes and inserts
+        if (offset % 2) == 0
+          b\delete i, 20
+        else
+          b\insert i, replacement
+
+        ptr = b\get_ptr 1, b.size
+
+        c_offset = b\char_offset(offset + 2000)
+        assert.equal glib_char_offset(ptr, offset + 2000), c_offset
+        assert.equal glib_byte_offset(ptr, c_offset), b\byte_offset(c_offset)
+
+        if offset > 2001
+          c_offset = b\char_offset(offset - 2000)
+          assert.equal glib_char_offset(ptr, offset - 2000), c_offset
+          assert.equal glib_byte_offset(ptr, c_offset), b\byte_offset(c_offset)
 
   context 'meta methods', ->
     it 'tostring returns a lua string representation of the buffer', ->
