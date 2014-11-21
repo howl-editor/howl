@@ -20,7 +20,7 @@ pos_is_in_line = (pos, line) ->
 
 Cursor = {
   new: (@view, @selection) =>
-    @blink_interval = 500
+    @_blink_interval = 500
     @width = 1.5
 
     @_line = 1
@@ -45,6 +45,13 @@ Cursor = {
   properties: {
     display_line: => @view.display_lines[@line]
     buffer_line: => @view.buffer\get_line @line
+
+    blink_interval: {
+      get: => @_blink_interval
+      set: (interval) =>
+        @_disable_blink!
+        @_enable_blink! if interval > 0
+    }
 
     line: {
       get: => @_line
