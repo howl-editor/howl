@@ -389,3 +389,34 @@ describe 'Styling', ->
           1, 's1', 2,
           2, 's1:s3', 3
         }, styling.lines[2]
+
+  describe 'reverse(start_offset, end_offset)', ->
+    it 'returns a table of styles and positions for the given range, same as styles argument to apply', ->
+      buffer.text = 'foo'
+      styles = { 1, 's1', 2, 2, 's2', 4 }
+      styling\apply 1, styles
+      assert.same styles, styling\reverse(1, buffer.size)
+
+    it 'handles multi-line ranges', ->
+      buffer.text = '123\n56\n89'
+      styles = { 1, 's1', 5, 5, 's2', 8, 8, 's3', 10 }
+      styling\apply 1, styles
+      assert.same styles, styling\reverse 1, buffer.size
+
+    it 'handles gaps', ->
+      buffer.text = '123\n56\n89'
+      styles = { 2, 's1', 3, 9, 's2', 10 }
+      styling\apply 1, styles
+      assert.same styles, styling\reverse 1, buffer.size
+
+    it 'end_pos is inclusive', ->
+      buffer.text = 'foo'
+      styles = { 1, 's1', 2, 2, 's2', 4 }
+      styling\apply 1, styles
+      assert.same { 1, 's1', 2 }, styling\reverse 1, 1
+
+    it 'indexes are byte offsets', ->
+      buffer.text = 'Liñe'
+      styles = { 1, 's1', 2 }
+      styling\apply 5, styles
+      assert.same { 1, 's1', 2 }, styling\reverse 5, 5

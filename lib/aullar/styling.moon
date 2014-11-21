@@ -137,6 +137,47 @@ define_class {
 
           styling_start = nil
 
+  reverse: (start_offset, end_offset) =>
+    start_line = @buffer\get_line_at_offset(start_offset)
+    end_line = @buffer\get_line_at_offset(end_offset)
+    return {} unless start_line and end_line
+
+    line = start_line
+    spec = {}
+    cur = 0
+    offset = 0
+
+    while line and line.nr <= end_line.nr
+      line_styling = @_line_stylings[line.nr]
+
+      if line_styling
+        arr = line_styling.arr
+        start_index = max(0, start_offset - line.start_offset)
+        end_index = min(line_styling.size - 1, end_offset - line.start_offset)
+
+        for i = start_index, end_index
+          offset += 1
+          style = arr[i]
+
+          if style != cur -- style changes
+            if cur > 0 -- end the existing style if any
+              spec[#spec + 1] = offset
+
+            if style != 0 -- start new style
+              spec[#spec + 1] = offset
+              spec[#spec + 1] = style_map[style]
+
+            cur = style
+      else
+        offset += line.size + 1
+
+      line = @buffer\get_line line.nr + 1
+
+    if cur > 0 -- end off the hanging style
+      spec[#spec + 1] = offset + 1
+
+    spec
+
 
   invalidate_from: (line) =>
     for nr = line, @last_line_styled
