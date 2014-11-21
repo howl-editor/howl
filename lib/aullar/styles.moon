@@ -58,14 +58,25 @@ create_attributes = (def) ->
 
   attrs
 
-define = (name, def) ->
-  def = copy def
-  def.name = name
-  styles[name] = def
+define = (name, definition) ->
+  error "Missing argument #1 (name)", 2 unless name
+  error "Missing argument #2 (definition)", 2 unless definition
+
+  if type(definition) != 'string'
+    definition = copy definition
+    definition.name = name
+
+  styles[name] = definition
   attributes[name] = nil
+
+define_default = (name, attributes) ->
+  define name, attributes unless styles[name]
 
 def_for = (name) ->
   def = styles[name]
+  while type(def) == 'string'
+    def = styles[def]
+
   if not def
     base, ext = name\match '^([^:]+):(%S+)$'
     if base
@@ -115,4 +126,4 @@ get_attributes = (styling) ->
 
   list
 
-:define, :apply, :get_attributes, :def_for
+:define, :define_default, :apply, :get_attributes, :def_for

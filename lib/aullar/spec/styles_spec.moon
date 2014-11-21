@@ -11,6 +11,20 @@ describe 'styles', ->
       def = styles.def_for 'foo'
       assert.same { name: 'foo', strike_through: true }, def
 
+    it 'defines a style alias if <def> is a string', ->
+      styles.define 'foo', strike_through: true
+      styles.define 'bar', 'foo'
+      def = styles.def_for 'bar'
+      assert.same { name: 'foo', strike_through: true }, def
+
+  describe 'define_default(name, definition)', ->
+    it 'defines the style only if it is not already defined', ->
+      styles.define_default 'preset', color: '#334455'
+      assert.equal '#334455', styles.def_for('preset').color
+
+      styles.define_default 'preset', color: '#667788'
+      assert.equal '#334455', styles.def_for('preset').color
+
   context 'sub styling', ->
     it 'supports styles being composed of a base and an override', ->
       styles.define 'base', {
