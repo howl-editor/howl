@@ -194,6 +194,11 @@ define_class {
 
     nil
 
+  at_offset: (offset) =>
+    line = @buffer\get_line_at_offset offset
+    return nil unless line
+    @at line.nr, (offset - line.start_offset) + 1
+
   style_to: (to_line, lexer, opts = {}) =>
     return unless to_line > @last_line_styled
     start_line_nr = @last_line_styled + 1

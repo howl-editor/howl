@@ -111,6 +111,18 @@ describe 'Styling', ->
       assert.equals 'string', styling\at 1, -1
       assert.equals 'keyword', styling\at 1, -2
 
+  describe 'at_offset(offset)', ->
+    it 'returns the style at the specified offset', ->
+      buffer.text = '123\n5'
+      styling\set 1, 2, 'keyword'
+      styling\set 2, 5, 'string'
+      styling\set 5, 6, 'operator'
+
+      assert.equals 'keyword', styling\at_offset 1
+      assert.equals 'string', styling\at_offset 2
+      assert.equals 'string', styling\at_offset 4
+      assert.equals 'operator', styling\at_offset 5
+
   describe 'refresh_at(line_nr, to_line, lexer [, opts])', ->
 
     context 'and <offset> is not part of a block', ->
