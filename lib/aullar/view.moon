@@ -26,20 +26,25 @@ insertable_character = (event) ->
 contains_newlines = (s) ->
   s\find('[\n\r]') != nil
 
-on_key_press = (area, event, view) ->
-  event = parse_key_event event
-
-  if view.on_key_press
-    handled = view.on_key_press view, event
+notify = (view, event, ...) ->
+  listener = view.listener
+  if listener and listener[event]
+    handled = listener[event] view, ...
     return true if handled == true
 
-  if insertable_character(event)
-    view\insert event.character
+  false
 
 signals = {
   on_draw: (_, cr, view) -> view._draw view, cr
-  on_focus_in: (_, _, view) -> view._on_focus_in view
-  on_focus_out: (_, _, view) -> view._on_focus_out view
+
+  on_focus_in: (_, _, view) ->
+    view._on_focus_in view
+    notify view, 'on_focus_in'
+
+  on_focus_out: (_, _, view) ->
+    view._on_focus_out view
+    notify view, 'on_focus_out'
+
   on_screen_changed: (_, _, view) -> view._on_screen_changed view
   on_size_allocate: (_, allocation, view) ->
     view._on_size_allocate view, ffi_cast('GdkRectangle *', allocation)
@@ -51,6 +56,13 @@ signals = {
     view._on_motion_event view, ffi_cast('GdkEventMotion *', event)
   on_scroll_event: (_, event, view) ->
     view._on_scroll view, ffi_cast('GdkEventScroll *', event)
+
+  on_key_press: (_, event, view) ->
+    event = parse_key_event event
+    return if notify view, 'on_key_press', event
+
+    if insertable_character(event)
+      view\insert event.character
 }
 
 View = {
@@ -70,7 +82,7 @@ View = {
     with @area
       .can_focus = true
       \add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK, Gdk.BUTTON_RELEASE_MASK, Gdk.POINTER_MOTION_MASK, Gdk.SCROLL_MASK)
-      \on_key_press_event on_key_press, @
+      \on_key_press_event signals.on_key_press, @
       \on_button_press_event signals.on_button_press, @
       \on_button_release_event signals.on_button_release, @
       \on_motion_notify_event signals.on_motion_event, @
@@ -183,6 +195,8 @@ View = {
         @area\queue_draw!
     }
   }
+
+  grab_focus: => @area\grab_focus!
 
   scroll_to: (line) =>
     return if line < 1 or not @showing

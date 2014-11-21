@@ -67,7 +67,7 @@ on_key_press = (view, event) ->
 
 new_edit = (buffer) ->
   view = aullar.View buffer
-  view.on_key_press = on_key_press
+  view.listener = :on_key_press
   view\to_gobject!
 
 add_window = (app) ->
