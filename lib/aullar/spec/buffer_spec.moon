@@ -356,6 +356,14 @@ describe 'Buffer', ->
 
       assert.equals 'gooworld', tostring(b)
 
+  describe 'replace(offset, count, replacement, replacement_size)', ->
+    it 'replaces the specified number of characters with the replacement', ->
+      b = Buffer '12 456 890'
+      b\replace 1, 2, 'oh'
+      b\replace 4, 3, 'hai'
+      b\replace 8, 3, 'cat'
+      assert.equals 'oh hai cat', b.text
+
   describe 'char_offset(byte_offset)', ->
     it 'returns the char_offset for the given byte_offset', ->
       b = Buffer 'äåö'

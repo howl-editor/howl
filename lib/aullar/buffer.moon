@@ -111,6 +111,10 @@ Buffer = {
 
     @_on_modification 'deleted', offset, text, count
 
+  replace: (offset, count, replacement, replacement_size = #replacement) =>
+    @delete offset, count
+    @insert offset, replacement, replacement_size
+
   lines: (start_line = 1, end_line) =>
     i = start_line - 1
     lines = @_lines
