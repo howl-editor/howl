@@ -9,22 +9,6 @@ C = ffi.C
 
 describe 'Buffer', ->
 
-  parts = (b) ->
-    p = {}
-    if b.gap_start > 1
-      p[#p + 1] = ffi.string(b.bytes, b.gap_start - 1)
-
-    post_count = b.size - (b.gap_start - 1)
-    if post_count > 0
-      p[#p + 1] = ffi.string(b.bytes + b.gap_end - 1, post_count)
-
-    p
-
-  it 'starts out with the gap at the end of the buffer', ->
-    b = Buffer 'hello'
-    assert.equals 6, b.gap_start
-    assert.equals b.gap_size + b.gap_start, b.gap_end
-
   describe '.text', ->
     it 'is a string representation of the contents', ->
       b = Buffer ''
@@ -37,48 +21,6 @@ describe 'Buffer', ->
       b = Buffer 'hello'
       b.text = 'brave new world'
       assert.equals 'brave new world', tostring b
-
-  describe 'move_gap_to(offset)', ->
-    it 'moves the gap to the specified offset', ->
-      b = Buffer 'hello'
-      b\move_gap_to 3 -- first 'l'
-      assert.equals 3, b.gap_start
-      assert.equals b.gap_size + b.gap_start, b.gap_end
-      assert.same { 'he', 'llo' }, parts(b)
-
-      b\move_gap_to 5 -- 'o'
-      assert.equals 5, b.gap_start
-      assert.equals b.gap_size + b.gap_start, b.gap_end
-      assert.same { 'hell', 'o' }, parts(b)
-
-    it 'invalidates any previous line information', ->
-      b = Buffer '123\n456\n789'
-      b\move_gap_to 7
-      line1_text_ptr = b\get_line(1).text
-      b\move_gap_to 1
-      assert.not_equals line1_text_ptr, b\get_line(1).text
-
-  describe 'extend_gap_at(offset, new_size)', ->
-    it 'extends the gap to be the specified size at the specified offset', ->
-      b = Buffer 'hello'
-      new_size = b.gap_size + 10
-      b\extend_gap_at 3, new_size -- first 'l'
-      assert.equals new_size, b.gap_size
-      assert.equals 3, b.gap_start
-      assert.equals b.gap_size + b.gap_start, b.gap_end
-      assert.same { 'he', 'llo' }, parts(b)
-
-      b\extend_gap_at 5, new_size -- 'o'
-      assert.equals new_size, b.gap_size
-      assert.equals 5, b.gap_start
-      assert.equals b.gap_size + b.gap_start, b.gap_end
-      assert.same { 'hell', 'o' }, parts(b)
-
-    it 'invalidates any and all previous line information', ->
-      b = Buffer '123\n456\n789'
-      line1_text_ptr = b\get_line(1).text
-      b\extend_gap_at 7, b.gap_size + 2
-      assert.not_equals line1_text_ptr, b\get_line(1).text
 
   describe 'lines([start_line, end_line])', ->
     all_lines = (b) -> [ffi.string(l.text, l.size) for l in b\lines 1]
@@ -116,11 +58,11 @@ describe 'Buffer', ->
 
     it 'is not confused by CR line breaks at the gap boundaries', ->
       b = Buffer 'line 1\r\nline 2'
-      b\move_gap_to 8
+      b.gap_buffer\move_gap_to 7
       assert.same { 'line 1', '', 'line 2' }, all_lines(b)
 
       b = Buffer 'line 1\n\nline 2'
-      b\move_gap_to 8
+      b.gap_buffer\move_gap_to 7
       assert.same { 'line 1', '', 'line 2' }, all_lines(b)
 
     it 'is not confused by multiple consecutive line breaks', ->
@@ -135,7 +77,7 @@ describe 'Buffer', ->
 
     it 'handles various gap positions automatically', ->
       b = Buffer 'line 1\nline 2'
-      b\move_gap_to 1
+      b.gap_buffer\move_gap_to 0
       assert.same { 'line 1', 'line 2' }, all_lines(b)
 
       b\insert 3, 'x'
@@ -150,7 +92,7 @@ describe 'Buffer', ->
       b\delete 8, 3
       assert.same { 'line 1', 'line 2' }, all_lines(b)
 
-      b\move_gap_to b.size + 1
+      b.gap_buffer\move_gap_to b.size
       assert.same { 'line 1', 'line 2' }, all_lines(b)
 
     it 'provides useful information about the line', ->
@@ -264,24 +206,6 @@ describe 'Buffer', ->
       b = Buffer '123456789'
       assert.equals '3456', ffi.string(b\get_ptr(3, 4), 4)
 
-    it 'returns a valid pointer even if the range overlaps the gap', ->
-      b = Buffer '123456789'
-      b\insert 4, 'X'
-      b\move_gap_to 4
-      assert.equals '3X45', ffi.string(b\get_ptr(3, 4), 4)
-      assert.equals '3X4', ffi.string(b\get_ptr(3, 3), 3)
-
-    it 'returns a valid pointer for an offset greater than the gap start', ->
-      b = Buffer '123456789'
-      b\move_gap_to 4
-      assert.equals '567', ffi.string(b\get_ptr(5, 3), 3)
-      assert.equals '456', ffi.string(b\get_ptr(4, 3), 3)
-
-    it 'returns a valid pointer for an offset and size smaller than the gap start', ->
-      b = Buffer '123456789'
-      b\move_gap_to 6
-      assert.equals '45', ffi.string(b\get_ptr(4, 2), 2)
-
     it 'handles boundary conditions', ->
       b = Buffer '123'
       assert.equals '123', ffi.string(b\get_ptr(1, 3), 3)
@@ -298,9 +222,10 @@ describe 'Buffer', ->
     it 'returns a string for the given inclusive range', ->
       b = Buffer '123456789'
       assert.equals '234', b\sub(2, 4)
-      b\move_gap_to 5
-      assert.equals '567', b\sub(5, 7)
-      assert.equals '123456789', b\sub(1, 9)
+      b\delete 4, 1
+      assert.equals '678', b\sub(5, 7)
+      b\insert 4, 'X'
+      assert.equals '123X56789', b\sub(1, 9)
 
     it 'omitting end_index retrieves the contents until the end', ->
       b = Buffer '12345'
@@ -331,7 +256,7 @@ describe 'Buffer', ->
 
     it 'automatically extends the buffer as needed', ->
       b = Buffer 'hello world'
-      big_text = string.rep 'x', b.gap_size + 10
+      big_text = string.rep 'x', 5000
       b\insert 7, big_text
       assert.equals "hello #{big_text}world", tostring(b)
 
@@ -341,20 +266,33 @@ describe 'Buffer', ->
       b\insert 6, ' world'
       assert.equals 'hello world', tostring(b)
 
+    it 'invalidates any previous line information', ->
+      b = Buffer '\n456\n789'
+      line_text_ptr = b\get_line(3).text
+      b\insert 1, '123'
+      assert.not_equals line_text_ptr, b\get_line(3).text
+
   describe 'delete(offset, count)', ->
     it 'deletes <count> bytes from <offset>', ->
       b = Buffer 'goodbye world'
 
       b\delete 5, 3 -- random access delete
-      assert.same { 'good', ' world' }, parts(b)
+      assert.equals 'good world', tostring(b)
 
-      b\delete 4, 1 -- delete back from gap start
-      assert.same { 'goo', ' world' }, parts(b)
+    it 'handles boundary conditions', ->
+      b = Buffer '123'
+      b\delete 1, 3
+      assert.equals '', tostring(b)
 
-      b\delete 4, 1 -- delete forward at gap end
-      assert.same { 'goo', 'world' }, parts(b)
+      b.text = '123'
+      b\delete 3, 1
+      assert.equals '12', tostring(b)
 
-      assert.equals 'gooworld', tostring(b)
+    it 'invalidates any previous line information', ->
+      b = Buffer '123\n456\n789'
+      line_text_ptr = b\get_line(3).text
+      b\delete 1, 1
+      assert.not_equals line_text_ptr, b\get_line(3).text
 
   describe 'replace(offset, count, replacement, replacement_size)', ->
     it 'replaces the specified number of characters with the replacement', ->
@@ -385,18 +323,6 @@ describe 'Buffer', ->
         {7, 4},
       }
         assert.equal p[1], b\byte_offset p[2]
-
-  -- context '(offset consistency management)', ->
-  --   it 'accounts for deletes', ->
-  --     b = Buffer 'äå5ö8ä'
-  --     assert.equal 8, b\byte_offset 5
-  --     assert.equal 5, b\char_offset 8
-
-  --     b\delete 5, 1
-
-  --     -- äåö8ä
-  --     assert.equal 7, b\byte_offset 4
-  --     assert.equal 4, b\char_offset 7
 
   context '(offset handling stress test)', ->
     it 'returns the correct result as compared to glib', ->
@@ -446,12 +372,6 @@ describe 'Buffer', ->
   context 'meta methods', ->
     it 'tostring returns a lua string representation of the buffer', ->
       b = Buffer 'hello world'
-      assert.equals 'hello world', tostring b
-
-      b\move_gap_to 1
-      assert.equals 'hello world', tostring b
-
-      b\move_gap_to 5
       assert.equals 'hello world', tostring b
 
   context 'notifications', ->

@@ -7,14 +7,9 @@ C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
 {:define_class} = require 'aullar.util'
 Styling = require 'aullar.styling'
 Offsets = require 'aullar.offsets'
+GapBuffer = require 'aullar.gap_buffer'
 
 char_arr = ffi.typeof 'char [?]'
-const_char_p = ffi.typeof 'const char *'
-append = table.insert
-
-ffi.cdef 'void *memmove(void *dest, const void *src, size_t n);'
-
-GAP_SIZE = 100
 
 scan_line = (base, offset, end_offset) ->
   start_offset = offset
@@ -46,7 +41,7 @@ Buffer = {
     @offsets = Offsets!
 
   properties: {
-    gap_size: => (@gap_end - @gap_start)
+    size: => @gap_buffer.size
 
     nr_lines: =>
       @_scan_lines_to {}
@@ -62,15 +57,12 @@ Buffer = {
     text: {
       get: => @tostring!
       set: (text) =>
-        @size = #text
-        arr_size = @size + GAP_SIZE
-        @bytes = char_arr(arr_size, text)
-        @gap_start = @size + 1
-        @gap_end = arr_size + 1
+        size = #text
+        @gap_buffer = GapBuffer 'char', size, initial: text
         @_last_scanned_line = 0
         @_lines = {}
 
-        @_on_modification 'inserted', 1, text, @size
+        @_on_modification 'inserted', 1, text, size
     }
   }
 
@@ -81,32 +73,16 @@ Buffer = {
     @listeners = [l for l in *@listeners when l != listener]
 
   insert: (offset, text, size = #text) =>
-    if size <= @gap_size
-      @move_gap_to offset
-    else
-      @extend_gap_at offset, size + GAP_SIZE
-
-    ffi_copy @bytes + @gap_start - 1, const_char_p(text), size
-    @size += size
-    @gap_start += size
+    @gap_buffer\insert offset - 1, text
+    @_invalidate_lines_from_offset offset
     @offsets\invalidate_from offset - 1
 
     @_on_modification 'inserted', offset, text, size
 
   delete: (offset, count) =>
     text = @sub offset, offset + count - 1
-
-    if offset + count == @gap_start -- adjust gap start backwards
-      @gap_start -= count
-      @_invalidate_lines_from_offset offset
-    elseif offset == @gap_end - @gap_size -- adjust gap end forward
-      @gap_end += count
-      @_invalidate_lines_from_offset offset
-    else
-      @move_gap_to offset + count
-      @gap_start -= count
-
-    @size -= count
+    @gap_buffer\delete offset - 1, count
+    @_invalidate_lines_from_offset offset
     @offsets\invalidate_from offset - 1
 
     @_on_modification 'deleted', offset, text, count
@@ -144,19 +120,7 @@ Buffer = {
     nil
 
   get_ptr: (offset, size) =>
-    if offset < 1 or offset > @size or (offset + size - 1) > @size or size < 0
-      error "Buffer.get_ptr(): Illegal range: offset=#{offset}, size=#{size} for buffer of size #{@size}"
-
-    if offset > @gap_start
-      @bytes + @gap_size + offset - 1
-    elseif (offset + size - 1) < @gap_start
-      @bytes + offset - 1
-    else
-      arr = char_arr(size)
-      pregap_size = @gap_start - offset
-      ffi_copy arr, @bytes + offset - 1, pregap_size
-      ffi_copy arr + pregap_size, @bytes + @gap_end - 1, size - pregap_size
-      arr
+    @gap_buffer\get_ptr offset - 1, size
 
   sub: (start_index, end_index) =>
     return '' if start_index > @size
@@ -169,74 +133,9 @@ Buffer = {
   style: (offset, styling) =>
     @styling\apply offset, styling
 
-  move_gap_to: (offset) =>
-    @_invalidate_lines_from_offset min(offset, @gap_start)
-
-    b_offset = offset - 1
-
-    if b_offset > @size
-      b_offset = @size
-    elseif offset < 0
-      b_offset = 0
-
-    delta = offset - @gap_start
-    return if delta == 0
-    base = @bytes
-
-    if delta < 0 -- offset < gap start, move stuff up
-      dest = base + (@gap_end - 1) + delta
-      src = base + b_offset
-      C.memmove dest, src, -delta
-
-    else -- offset > gap start, move stuff down
-      C.memmove base + (@gap_start - 1), base + (@gap_end - 1), delta
-
-    gap_size = @gap_size
-    @gap_start = offset
-    @gap_end = offset + gap_size
-
-  extend_gap_at: (offset, gap_size) =>
-    @_invalidate_lines_from_offset 1
-
-    arr_size = @size + gap_size
-    arr = char_arr(arr_size)
-    src_ptr = @bytes
-    dest_ptr = arr
-
-    -- chunk up to gap start or offset
-    count = min(@gap_start, offset) - 1
-    ffi_copy dest_ptr, src_ptr, count
-
-    if @gap_start < offset -- fill from post gap
-      src_ptr = @bytes + (@gap_end - 1)
-      dest_ptr += count
-      count = (offset - 1) - count
-      ffi_copy dest_ptr, src_ptr, count
-
-    -- now at dest post gap
-    src_ptr += count
-    dest_ptr = arr + (offset - 1) + gap_size
-
-    if @gap_start > offset -- fill remainder from pre gap
-      count = @gap_start - offset
-      ffi_copy dest_ptr, src_ptr, count
-      src_ptr = @bytes + (@gap_end - 1)
-      dest_ptr += count
-
-    -- the rest
-    count = (arr + arr_size) - dest_ptr
-    ffi_copy dest_ptr, src_ptr, count
-
-    @bytes = arr
-    @gap_start = offset
-    @gap_end = offset + gap_size
-
-  compact: =>
-    @move_gap_to @size + 1
-
   tostring: =>
-    @compact! if @gap_size != 0
-    return ffi_string @bytes, @size
+    @gap_buffer\compact! if @gap_buffer.gap_size != 0
+    return ffi_string @gap_buffer.array, @gap_buffer.size
 
   ensure_styled_to: (line) =>
     return if @styling.last_line_styled >= line
@@ -244,12 +143,12 @@ Buffer = {
     @styling\style_to min(line + 20, @nr_lines), @lexer
 
   char_offset: (byte_offset) =>
-    @compact! if byte_offset > @gap_start
-    @offsets\char_offset(@bytes, byte_offset - 1) + 1
+    @gap_buffer\compact! if byte_offset > @gap_buffer.gap_start
+    @offsets\char_offset(@gap_buffer.array, byte_offset - 1) + 1
 
   byte_offset: (char_offset) =>
-    @compact!
-    @offsets\byte_offset(@bytes, char_offset - 1) + 1
+    @gap_buffer\compact!
+    @offsets\byte_offset(@gap_buffer.array, char_offset - 1) + 1
 
   notify: (event, parameters) =>
     for listener in *@listeners
@@ -259,17 +158,18 @@ Buffer = {
         print "Error emitting '#{event}': #{ret}" unless status
 
   _scan_lines_to: (to) =>
-    bytes = @bytes
-    base_offset = 0
-    base = @bytes
+    gb = @gap_buffer
+    bytes = gb.array
     offset = 0
+    base_offset = 0
+    base = bytes
     nr = 0
     lines = @_lines
-    size = @size
-    bytes_size = @size + @gap_size
+    size = gb.size
+    bytes_size = size + gb.gap_size
     last_was_eol = false
-    z_gap_start = @gap_start - 1
-    z_gap_end = @gap_end - 1
+    z_gap_start = gb.gap_start
+    z_gap_end = gb.gap_end
 
     if @_last_scanned_line > 0
       with lines[@_last_scanned_line]
@@ -280,8 +180,8 @@ Buffer = {
     stop_scan_at = bytes_size
 
     if offset >= z_gap_start
-      base_offset += @gap_size
-      offset += @gap_size
+      base_offset += gb.gap_size
+      offset += gb.gap_size
     else
       stop_scan_at = z_gap_start
 
@@ -291,7 +191,7 @@ Buffer = {
       next_p, l_size, was_eol = scan_line base, offset, stop_scan_at
 
       if not was_eol and stop_scan_at != bytes_size -- at gap
-        base_offset += @gap_size
+        base_offset += gb.gap_size
         stop_scan_at = bytes_size
         next_p, cont_l_size, was_eol = scan_line bytes, z_gap_end, stop_scan_at
         if cont_l_size > 0 -- else gap is at end, nothing left
