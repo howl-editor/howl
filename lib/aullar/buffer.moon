@@ -37,11 +37,10 @@ Buffer = {
   new: (text = '') =>
     @listeners = {}
     @text = text
-    @styling = Styling @
     @offsets = Offsets!
 
   properties: {
-    size: => @gap_buffer.size
+    size: => @text_buffer.size
 
     nr_lines: =>
       @_scan_lines_to {}
@@ -58,7 +57,8 @@ Buffer = {
       get: => @tostring!
       set: (text) =>
         size = #text
-        @gap_buffer = GapBuffer 'char', size, initial: text
+        @text_buffer = GapBuffer 'char', size, initial: text
+        @styling = Styling size + 1 -- +1 to account for dangling virtual line
         @_last_scanned_line = 0
         @_lines = {}
 
@@ -73,17 +73,19 @@ Buffer = {
     @listeners = [l for l in *@listeners when l != listener]
 
   insert: (offset, text, size = #text) =>
-    @gap_buffer\insert offset - 1, text
+    @text_buffer\insert offset - 1, text
     @_invalidate_lines_from_offset offset
     @offsets\invalidate_from offset - 1
+    @styling\insert offset, size
 
     @_on_modification 'inserted', offset, text, size
 
   delete: (offset, count) =>
     text = @sub offset, offset + count - 1
-    @gap_buffer\delete offset - 1, count
+    @text_buffer\delete offset - 1, count
     @_invalidate_lines_from_offset offset
     @offsets\invalidate_from offset - 1
+    @styling\delete offset, count
 
     @_on_modification 'deleted', offset, text, count
 
@@ -120,7 +122,7 @@ Buffer = {
     nil
 
   get_ptr: (offset, size) =>
-    @gap_buffer\get_ptr offset - 1, size
+    @text_buffer\get_ptr offset - 1, size
 
   sub: (start_index, end_index) =>
     return '' if start_index > @size
@@ -133,22 +135,67 @@ Buffer = {
   style: (offset, styling) =>
     @styling\apply offset, styling
 
-  tostring: =>
-    @gap_buffer\compact! if @gap_buffer.gap_size != 0
-    return ffi_string @gap_buffer.array, @gap_buffer.size
+  refresh_styling_at: (line_nr, to_line, opts = {}) =>
+    lexer = @lexer
+    at_line = @get_line line_nr
+    return unless at_line and lexer
 
-  ensure_styled_to: (line) =>
-    return if @styling.last_line_styled >= line
+    last_styled_line = 1
+    start_line = at_line
+    if (@styling.last_pos_styled + 1) < start_line.start_offset
+      start_line = @get_line_at_offset(@styling.last_pos_styled + 1)
+
+    -- find the starting line to lex from
+    while start_line.nr > 1
+      prev_eol_style = @styling\at start_line.start_offset - 1
+      break if not prev_eol_style or prev_eol_style == 'whitespace'
+      start_line = @get_line(start_line.nr - 1)
+
+    start_offset = start_line.start_offset
+    at_line_eol_style = @styling\at(at_line.end_offset) or 'whitespace'
+
+    styled = nil
+
+    if not opts.force_full
+      -- try lexing only up to this line
+      text = @sub start_offset, at_line.end_offset
+      -- moon.p lexer(text)
+      @styling\clear start_offset, at_line.end_offset
+      @styling\apply start_offset, lexer(text)
+      new_at_line_eol_style = @styling\at(at_line.end_offset) or 'whitespace'
+      if new_at_line_eol_style == at_line_eol_style
+        styled = start_line: at_line.nr, end_line: at_line.nr, invalidated: false
+
+    unless styled
+      @styling\invalidate_from at_line.start_offset
+      end_line = @get_line(to_line) or @get_line(@nr_lines)
+      text = @sub start_offset, end_line.end_offset
+      @styling\apply start_offset, lexer(text)
+      @styling.last_pos_styled = end_line.end_offset
+      styled = start_line: at_line.nr, end_line: end_line.nr, invalidated: true
+
+    @notify('styled', styled) unless opts.no_notify
+    styled
+
+  ensure_styled_to: (line_nr) =>
     return unless @lexer
-    @styling\style_to min(line + 20, @nr_lines), @lexer
+    to_line = @get_line min(line_nr + 20, @nr_lines)
+    return unless to_line and @styling.last_pos_styled < to_line.end_offset
+
+    from_line = @get_line_at_offset max(1, @styling.last_pos_styled)
+    @refresh_styling_at from_line.nr, to_line.nr, force_full: true
+
+  tostring: =>
+    @text_buffer\compact! if @text_buffer.gap_size != 0
+    return ffi_string @text_buffer.array, @text_buffer.size
 
   char_offset: (byte_offset) =>
-    @gap_buffer\compact! if byte_offset > @gap_buffer.gap_start
-    @offsets\char_offset(@gap_buffer.array, byte_offset - 1) + 1
+    @text_buffer\compact! if byte_offset > @text_buffer.gap_start
+    @offsets\char_offset(@text_buffer.array, byte_offset - 1) + 1
 
   byte_offset: (char_offset) =>
-    @gap_buffer\compact!
-    @offsets\byte_offset(@gap_buffer.array, char_offset - 1) + 1
+    @text_buffer\compact!
+    @offsets\byte_offset(@text_buffer.array, char_offset - 1) + 1
 
   notify: (event, parameters) =>
     for listener in *@listeners
@@ -158,18 +205,18 @@ Buffer = {
         print "Error emitting '#{event}': #{ret}" unless status
 
   _scan_lines_to: (to) =>
-    gb = @gap_buffer
-    bytes = gb.array
+    tb = @text_buffer
+    bytes = tb.array
     offset = 0
     base_offset = 0
     base = bytes
     nr = 0
     lines = @_lines
-    size = gb.size
-    bytes_size = size + gb.gap_size
+    size = tb.size
+    bytes_size = size + tb.gap_size
     last_was_eol = false
-    z_gap_start = gb.gap_start
-    z_gap_end = gb.gap_end
+    z_gap_start = tb.gap_start
+    z_gap_end = tb.gap_end
 
     if @_last_scanned_line > 0
       with lines[@_last_scanned_line]
@@ -180,8 +227,8 @@ Buffer = {
     stop_scan_at = bytes_size
 
     if offset >= z_gap_start
-      base_offset += gb.gap_size
-      offset += gb.gap_size
+      base_offset += tb.gap_size
+      offset += tb.gap_size
     else
       stop_scan_at = z_gap_start
 
@@ -191,7 +238,7 @@ Buffer = {
       next_p, l_size, was_eol = scan_line base, offset, stop_scan_at
 
       if not was_eol and stop_scan_at != bytes_size -- at gap
-        base_offset += gb.gap_size
+        base_offset += tb.gap_size
         stop_scan_at = bytes_size
         next_p, cont_l_size, was_eol = scan_line bytes, z_gap_end, stop_scan_at
         if cont_l_size > 0 -- else gap is at end, nothing left
@@ -250,7 +297,7 @@ Buffer = {
             last_line_shown = max last_line_shown, listener.last_line_shown!
 
         style_to = min(last_line_shown + 20, @nr_lines)
-        args.styled = @styling\refresh_at at_line.nr, style_to, @lexer, {
+        args.styled = @refresh_styling_at at_line.nr, style_to, {
           force_full: contains_newlines
           no_notify: true
         }
@@ -261,4 +308,3 @@ Buffer = {
 define_class Buffer, {
   __tostring: (b) -> b\tostring!
 }
-

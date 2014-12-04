@@ -406,11 +406,14 @@ View = {
 
   _on_buffer_modified: (buffer, args) =>
     return unless @showing
+    lines_changed =  contains_newlines(args.text)
+    if lines_changed
+      @_last_visible_line = nil
 
     if args.styled
       @_on_buffer_styled buffer, args.styled
     else
-      if not contains_newlines(args.text)
+      if lines_changed
         @refresh_display args.offset, args.offset + args.size, invalidate: true
         @_sync_scrollbars horizontal: true
       else

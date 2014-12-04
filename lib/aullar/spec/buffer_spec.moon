@@ -58,11 +58,11 @@ describe 'Buffer', ->
 
     it 'is not confused by CR line breaks at the gap boundaries', ->
       b = Buffer 'line 1\r\nline 2'
-      b.gap_buffer\move_gap_to 7
+      b.text_buffer\move_gap_to 7
       assert.same { 'line 1', '', 'line 2' }, all_lines(b)
 
       b = Buffer 'line 1\n\nline 2'
-      b.gap_buffer\move_gap_to 7
+      b.text_buffer\move_gap_to 7
       assert.same { 'line 1', '', 'line 2' }, all_lines(b)
 
     it 'is not confused by multiple consecutive line breaks', ->
@@ -77,7 +77,7 @@ describe 'Buffer', ->
 
     it 'handles various gap positions automatically', ->
       b = Buffer 'line 1\nline 2'
-      b.gap_buffer\move_gap_to 0
+      b.text_buffer\move_gap_to 0
       assert.same { 'line 1', 'line 2' }, all_lines(b)
 
       b\insert 3, 'x'
@@ -92,7 +92,7 @@ describe 'Buffer', ->
       b\delete 8, 3
       assert.same { 'line 1', 'line 2' }, all_lines(b)
 
-      b.gap_buffer\move_gap_to b.size
+      b.text_buffer\move_gap_to b.size
       assert.same { 'line 1', 'line 2' }, all_lines(b)
 
     it 'provides useful information about the line', ->
@@ -272,6 +272,12 @@ describe 'Buffer', ->
       b\insert 1, '123'
       assert.not_equals line_text_ptr, b\get_line(3).text
 
+    it 'updates the styling to keep the existing styling', ->
+      b = Buffer '123\n567'
+      b.styling\set 1, 7, 'keyword'
+      b\insert 5, 'XX'
+      assert.same { 1, 'keyword', 5, 7, 'keyword', 10 }, b.styling\get(1, 9)
+
   describe 'delete(offset, count)', ->
     it 'deletes <count> bytes from <offset>', ->
       b = Buffer 'goodbye world'
@@ -293,6 +299,13 @@ describe 'Buffer', ->
       line_text_ptr = b\get_line(3).text
       b\delete 1, 1
       assert.not_equals line_text_ptr, b\get_line(3).text
+
+    it 'updates the styling to keep the existing styling', ->
+      b = Buffer '123\n567'
+      b.styling\set 1, 3, 'keyword'
+      b.styling\set 5, 7, 'string'
+      b\delete 3, 3
+      assert.same { 1, 'keyword', 3, 3, 'string', 5 }, b.styling\get(1, 4)
 
   describe 'replace(offset, count, replacement, replacement_size)', ->
     it 'replaces the specified number of characters with the replacement', ->
@@ -368,6 +381,160 @@ describe 'Buffer', ->
           c_offset = b\char_offset(offset - 2000)
           assert.equal glib_char_offset(ptr, offset - 2000), c_offset
           assert.equal glib_byte_offset(ptr, c_offset), b\byte_offset(c_offset)
+
+  -- describe 'style_up_to(offset, lexer)', ->
+    -- it 'styles from up to <to_line>', ->
+  --     buffer.text = '123\n56\n89'
+  --     lexer = spy.new -> {}
+  --     styling\style_to 3, lexer
+  --     assert.spy(lexer).was_called_with '123\n56\n89'
+
+  --   it 'starts styling from .last_pos_styled', ->
+  --     buffer.text = '123\n56\n89'
+  --     styling\set 1, 3, 'keyword'
+  --     lexer = spy.new -> {}
+  --     styling\style_to 3, lexer
+  --     assert.spy(lexer).was_called_with '56\n89'
+
+  describe 'refresh_styling_at(line_nr, to_line [, opts])', ->
+    local b, styling, mode
+
+    before_each ->
+      b = Buffer ''
+      mode = {}
+      b.mode = mode
+
+    context 'and <offset> is not part of a block', ->
+      it 'refreshes only the current line', ->
+        b.text = '123\n56\n89\n'
+        b.lexer = spy.new -> { 1, 'operator', 2 }
+
+        b.styling\apply 1, {
+          1, 'keyword', 4,
+          5, 'string', 7,
+          8, 'string', 9,
+        }
+
+        b\refresh_styling_at 2, 3
+
+        assert.spy(b.lexer).was_called_with '56\n'
+        assert.same { 1, 'operator', 2 }, b.styling\get(5, 7)
+
+      it 'falls back to a full lexing if newly lexed line is part of a block', ->
+        b.text = '123\n56\n'
+
+        lexers = {
+          spy.new -> { 1, 'string', 5 },
+          spy.new -> { 1, 'string', 7 },
+        }
+        call_count = 1
+        b.lexer = (text) ->
+          l = lexers[call_count]
+          assert.is_not_nil l
+          call_count += 1
+          l(text)
+
+        b\refresh_styling_at 1, 3
+
+        assert.spy(lexers[1]).was_called_with '123\n'
+        assert.spy(lexers[2]).was_called_with '123\n56\n'
+        assert.same { 1, 'string', 7 }, b.styling\get(1, 7)
+
+    context 'and <offset> is at the last line of a block', ->
+      it 'starts from the first non-block line', ->
+        b.text = '123\n56\n89\n'
+        b.lexer = spy.new -> { 1, 'operator', 6 }
+
+        b.styling\apply 1, {
+          1, 'keyword', 4,
+          5, 'string', 10, -- block of line 2 & 3
+        }
+
+        b\refresh_styling_at 3, 4
+
+        assert.spy(b.lexer).was_called_with '56\n89\n'
+        assert.same { 1, 'operator', 4 }, b.styling\get(5, 7)
+        assert.same { 1, 'operator', 3 }, b.styling\get(8, 10)
+
+    context 'and <offset> is at a line within a block', ->
+      it 'only lexes up to the current line if the new styling ends in the same block style', ->
+        b.text = '123\n56\n89\n'
+        b.lexer = spy.new -> { 1, 'my_block', 8 }
+        b.styling\set 1, 10, 'my_block'
+        res = b\refresh_styling_at 2, 3
+        assert.spy(b.lexer).was_called(1)
+        assert.spy(b.lexer).was_called_with '123\n56\n'
+        assert.same { start_line: 2, end_line: 2, invalidated: false }, res
+
+      it 'lexes the full range if the new styling indicates a block change', ->
+        b.text = '123\n56\n89\n'
+        b.lexer = spy.new -> { 1, 'operator', 2 }
+        b.styling\set 1, 10, 'my_block'
+        res = b\refresh_styling_at 2, 3
+        assert.spy(b.lexer).was_called(2)
+        assert.spy(b.lexer).was_called_with '123\n56\n'
+        assert.spy(b.lexer).was_called_with '123\n56\n89\n'
+        assert.same { start_line: 2, end_line: 3, invalidated: true }, res
+
+    it 'returns the styled range', ->
+      b.text = '123\n56\n89\n'
+      b.lexer = spy.new -> { 1, 'operator', 2 }
+      res = b\refresh_styling_at 1, 3
+      assert.same { start_line: 1, end_line: 1, invalidated: false }, res
+
+    context 'when opts.force_full is set', ->
+      it 'always lexes the full range', ->
+        b.text = '123\n56\n89\n'
+        b.lexer = spy.new -> { 1, 'operator', 2 }
+        res = b\refresh_styling_at 1, 3, force_full: true
+        assert.spy(b.lexer).was_called_with '123\n56\n89\n'
+        assert.same { start_line: 1, end_line: 3, invalidated: true }, res
+
+    context 'notifications', ->
+      it 'fires the on_styled notification', ->
+        listener = on_styled: spy.new ->
+        b\add_listener listener
+        b.text = '123\n56\n89\n'
+        b.lexer = -> { 1, 'operator', 2 }
+        b\refresh_styling_at 1, 3, force_full: true
+        assert.spy(listener.on_styled).was_called_with listener, b, {
+          start_line: 1, end_line: 3, invalidated: true
+        }
+
+      it 'sets the start offset from the first affected line regardless of the lexing', ->
+        b.text = '123\n56\n89\n'
+        b.lexer = spy.new -> { 1, 'string', 7 }
+        b.styling\set 1, 6, 'string' -- block from 1st to 2nd line
+        res = b\refresh_styling_at 2, 3
+        assert.spy(b.lexer).was_called_with '123\n56\n' -- both lines b.lexer due to block
+        -- but only the second line is effectively restyled
+        assert.same { start_line: 2, end_line: 2, invalidated: false }, res
+
+    it 'supresses the on_styled notification if opts.no_notify is set', ->
+      listener = on_styled: spy.new ->
+      b\add_listener listener
+      b.text = '123\n56\n89\n'
+      b.lexer = -> { 1, 'operator', 2 }
+      b\refresh_styling_at 1, 3, force_full: true, no_notify: true
+      assert.spy(listener.on_styled).was_not_called!
+
+    context 'when lexing the full range', ->
+      before_each ->
+        b.text = '123\n56\n89\n'
+        b.styling\set 1, 10, 'keyword'
+
+      it 'invalidates all subsequent styling', ->
+        b.lexer = -> { 1, 'operator', 2 }
+        res = b\refresh_styling_at 1, 2, force_full: true
+        assert.same {}, b.styling\get(8, 10)
+
+      it 'sets the styling last_pos_styled to the last line styled', ->
+        b.lexer = -> { 1, 'operator', 2 }
+        b\refresh_styling_at 1, 2, force_full: true
+        assert.equals 7, b.styling.last_pos_styled
+
+        b\refresh_styling_at 1, 3, force_full: true
+        assert.equals 10, b.styling.last_pos_styled
 
   context 'meta methods', ->
     it 'tostring returns a lua string representation of the buffer', ->

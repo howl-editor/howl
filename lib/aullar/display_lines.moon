@@ -87,7 +87,7 @@ DisplayLine = define_class {
     @layout = Layout pango_context
     @layout\set_text line.text, line.size
     @nr = line.nr
-    styling = buffer.styling.lines[line.nr]
+    styling = buffer.styling\get(line.start_offset, line.end_offset)
     @layout.attributes = styles.get_attributes styling
 
     width, height = @layout\get_pixel_size!

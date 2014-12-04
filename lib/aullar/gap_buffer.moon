@@ -2,13 +2,9 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
-C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
+C, ffi_copy, ffi_fill = ffi.C, ffi.copy, ffi.fill
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
-
-char_arr = ffi.typeof 'char [?]'
-short_arr = ffi.typeof 'uint16_t [?]'
-const_char_p = ffi.typeof 'const char *'
 
 ffi.cdef 'void *memmove(void *dest, const void *src, size_t n);'
 
@@ -17,7 +13,8 @@ GAP_SIZE = 100
 define_class {
   new: (@type, size, opts = {}) =>
     initial = opts.initial or 0
-    @new_arr = ffi.typeof "#{@type} [?]"
+    @type_size = ffi.sizeof @type
+    @new_arr = ffi.typeof "#{@type}[?]"
     @arr_ptr = ffi.typeof "const #{@type} *"
     @set initial, size
 
@@ -31,13 +28,14 @@ define_class {
 
     if offset > @gap_start -- post gap ptr
       @array + @gap_size + offset
-    elseif offset + size < @gap_start -- pre gap ptr
+    elseif offset + size <= @gap_start -- pre gap ptr
       @array + offset
     else -- ephemeral copy pointer
-      arr = char_arr(size)
+      arr = self.new_arr(size)
       pregap_size = @gap_start - offset
-      ffi_copy arr, @array + offset, pregap_size
-      ffi_copy arr + pregap_size, @array + @gap_end, size - pregap_size
+      postgap_size = size - pregap_size
+      ffi_copy arr, @array + offset, pregap_size * @type_size
+      ffi_copy arr + pregap_size, @array + @gap_end, postgap_size * @type_size
       arr
 
   move_gap_to: (offset) =>
@@ -52,10 +50,10 @@ define_class {
     if delta < 0 -- offset < gap start, move stuff up
       dest = @array + @gap_end + delta
       src = @array + offset
-      C.memmove dest, src, -delta
+      C.memmove dest, src, (-delta) * @type_size
 
     else -- offset > gap start, move stuff down
-      C.memmove @array + @gap_start, @array + @gap_end, delta
+      C.memmove @array + @gap_start, @array + @gap_end, delta * @type_size
 
     gap_size = @gap_size
     @gap_start = offset
@@ -69,13 +67,13 @@ define_class {
 
     -- chunk up to gap start or offset
     count = min(@gap_start, offset)
-    ffi_copy dest_ptr, src_ptr, count
+    ffi_copy dest_ptr, src_ptr, count * @type_size
 
     if @gap_start < offset -- fill from post gap
       src_ptr = @array + @gap_end
       dest_ptr += count
       count = offset - count
-      ffi_copy dest_ptr, src_ptr, count
+      ffi_copy dest_ptr, src_ptr, count * @type_size
 
     -- now at dest post gap
     src_ptr += count
@@ -83,13 +81,13 @@ define_class {
 
     if @gap_start > offset -- fill remainder from pre gap
       count = @gap_start - offset
-      ffi_copy dest_ptr, src_ptr, count
+      ffi_copy dest_ptr, src_ptr, count * @type_size
       src_ptr = @array + @gap_end
       dest_ptr += count
 
     -- the rest
     count = (arr + arr_size) - dest_ptr
-    ffi_copy dest_ptr, src_ptr, count
+    ffi_copy dest_ptr, src_ptr, count * @type_size
 
     @array = arr
     @gap_start = offset
@@ -104,7 +102,11 @@ define_class {
     else
       @extend_gap_at offset, size + GAP_SIZE
 
-    ffi_copy @array + @gap_start, self.arr_ptr(data), size
+    if data
+      ffi_copy @array + @gap_start, self.arr_ptr(data), size * @type_size
+    else
+      ffi_fill @array + @gap_start, size * @type_size
+
     @size += size
     @gap_start += size
 
@@ -123,9 +125,26 @@ define_class {
     @delete offset, count
     @insert offset, replacement, replacement_size
 
+  fill: (start_offset, end_offset, val) =>
+    if start_offset < 0 or start_offset >= @size or end_offset >= @size
+      error "GapBuffer#fill(#{start_offset}, #{end_offset}): Illegal offsets (size #{@size})", 2
+
+    arr = @array
+    i = start_offset
+    offset = start_offset
+    offset += @gap_size if offset >= @gap_start
+
+    while i <= end_offset
+      if offset >= @gap_start and offset < @gap_end -- entering into gap
+        offset += @gap_size
+
+      arr[offset] = val
+      i += 1
+      offset += 1
+
   set: (data, size = #data) =>
     arr_size = size + GAP_SIZE
-    @array = self.new_arr arr_size, data
+    @array = self.new_arr(arr_size, data)
     @size = size
     @gap_start = size
     @gap_end = arr_size

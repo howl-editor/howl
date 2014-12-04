@@ -34,6 +34,52 @@ describe 'GapBuffer', ->
       b\set 'second'
       assert.equals 'second', get_text(b)
 
+  describe 'fill(start_offset, end_offset, value)', ->
+    it 'fills the specified range with <value>', ->
+      b = buffer '0123456789'
+      b\fill 2, 6, string.byte('x')
+      assert.equals '01xxxxx789', get_text(b)
+
+    it 'handles filling over the buffer gap', ->
+      b = buffer '0123456789'
+      b\move_gap_to 5
+      b\fill 3, 8, string.byte('x')
+      assert.equals '012xxxxxx9', get_text(b)
+      b\fill 3, 5, string.byte('y')
+      assert.equals '012yyyxxx9', get_text(b)
+
+      b\fill 5, 9, string.byte('z')
+      assert.equals '012yyzzzzz', get_text(b)
+
+      b\fill 8, 9, string.byte('0')
+      assert.equals '012yyzzz00', get_text(b)
+
+    -- it 'handles filling after the buffer gap', ->
+    --   b = GapBuffer 'char', 5000
+    --   b\move_gap_to 0
+    --   b\fill b.gap_size + 1, b.gap_size + 2, string.byte('x')
+    --   assert.equals '012xxxxxx9', get_text(b)
+
+      -- b = buffer '0123456789'
+      -- b\fill 3, 5, string.byte('y')
+      -- assert.equals '012yyyxxx9', get_text(b)
+
+      -- b\fill 5, 9, string.byte('z')
+      -- assert.equals '012yyzzzzz', get_text(b)
+
+      -- b\fill 8, 9, string.byte('0')
+      -- assert.equals '012yyzzz00', get_text(b)
+
+    it 'works with non-byte-sized types', ->
+      b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
+      b\fill 0, 0, 10
+      b\fill 1, 2, 23
+
+      ptr = b\get_ptr 0, 3
+      assert.equals 10, ptr[0]
+      assert.equals 23, ptr[1]
+      assert.equals 23, ptr[2]
+
   describe 'move_gap_to(offset)', ->
     it 'moves the gap to the specified offset', ->
       b = buffer '01234'
@@ -63,6 +109,19 @@ describe 'GapBuffer', ->
       assert.equals new_size, b.gap_size
       assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { '0123', '4' }, parts(b)
+
+    it 'works with non-byte-sized types', ->
+      b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
+      new_size = b.gap_size + 10
+      b\extend_gap_at 2, new_size
+      assert.equals 2, b.gap_start
+      assert.equals new_size, b.gap_size
+      assert.equals b.gap_size + b.gap_start, b.gap_end
+
+      ptr = b\get_ptr 0, 3
+      assert.equals 1, ptr[0]
+      assert.equals 2, ptr[1]
+      assert.equals 3, ptr[2]
 
   describe 'get_ptr(offset, size)', ->
     it 'returns a pointer to an array starting at offset, valid for <size> bytes', ->
@@ -99,11 +158,48 @@ describe 'GapBuffer', ->
       assert.raises 'Illegal', -> b\get_ptr 0, 5
       assert.raises 'Illegal', -> b\get_ptr 3, 2
 
+    it 'works with non-byte-sized types', ->
+      b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
+      ptr = b\get_ptr 0, 3
+      assert.equals 1, ptr[0]
+      assert.equals 2, ptr[1]
+      assert.equals 3, ptr[2]
+
+      b\move_gap_to 1
+      ptr = b\get_ptr 0, 3
+      assert.equals 1, ptr[0]
+      assert.equals 2, ptr[1]
+      assert.equals 3, ptr[2]
+
   describe 'insert(offset, data, size)', ->
-    it 'inserts the given data at the specified position', ->
-      b = buffer 'hello world'
-      b\insert 6, 'brave '
-      assert.equals 'hello brave world', get_text(b)
+    context 'when <data> is provided', ->
+      it 'inserts the given data at the specified position', ->
+        b = buffer 'hello world'
+        b\insert 6, 'brave '
+        assert.equals 'hello brave world', get_text(b)
+
+    context 'when <data> is not provided', ->
+      it 'inserts <size> zero-filled units', ->
+        -- c = ffi.typeof 'uint16_t[?]'
+        -- a = c 3, {1,2,3}
+        -- assert.equals 1, a[0]
+        -- assert.equals 2, a[1]
+        -- assert.equals 3, a[2]
+
+        b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
+        ptr = b\get_ptr 0, 3
+        -- ptr = b.array
+        assert.equals 1, ptr[0]
+        assert.equals 2, ptr[1]
+        assert.equals 3, ptr[2]
+
+        b\insert 1, nil, 2
+        ptr = b\get_ptr 0, 5
+        assert.equals 1, ptr[0]
+        assert.equals 0, ptr[1]
+        assert.equals 0, ptr[2]
+        assert.equals 2, ptr[3]
+        assert.equals 3, ptr[4]
 
     it 'automatically extends the buffer as needed', ->
       b = buffer 'hello world'
@@ -116,6 +212,15 @@ describe 'GapBuffer', ->
       b\insert 0, 'hello'
       b\insert 5, ' world'
       assert.equals 'hello world', get_text(b)
+
+    it 'works with non-byte-sized types', ->
+      b = GapBuffer 'uint16_t', 3, initial: {1,4}
+      b\insert 1, ffi.new('uint16_t[2]', {2,3}), 2
+      ptr = b\get_ptr 0, 4
+      assert.equals 1, ptr[0]
+      assert.equals 2, ptr[1]
+      assert.equals 3, ptr[2]
+      assert.equals 4, ptr[3]
 
   describe 'delete(offset, count)', ->
     it 'deletes <count> units from <offset>', ->

@@ -26,8 +26,8 @@ describe 'DisplayLines', ->
     describe 'background_ranges(line)', ->
       it 'returns ranges along with the style definition for styles runs with backgrounds', ->
         buffer.text = 'back to back'
-        buffer.styling\set 1, 5, 'b1'
-        buffer.styling\set 9, 13, 'b2'
+        buffer.styling\set 1, 4, 'b1'
+        buffer.styling\set 9, 12, 'b2'
 
         ranges = display_lines[1].background_ranges
         assert.equals 2, #ranges
@@ -37,7 +37,7 @@ describe 'DisplayLines', ->
       it 'merges adjacent ranges', ->
         buffer.text = 'background'
         buffer.styling\set 1, 5, 'b1'
-        buffer.styling\set 5, 11, 'b3'
+        buffer.styling\set 5, 10, 'b3'
 
         ranges = display_lines[1].background_ranges
         assert.equals 1, #ranges
@@ -47,8 +47,8 @@ describe 'DisplayLines', ->
     it 'multiple adjacent lines with whole-line backgrounds are part of a single block', ->
       --                     8        16       24
       buffer.text = 'before\nblock 1\nblock 2\nafter'
-      buffer.styling\set 1, 7, 'b1' -- styled up until eol
-      buffer.styling\set 8, 24, 'b2' -- styled over eols
+      buffer.styling\set 1, 6, 'b1' -- styled up until eol
+      buffer.styling\set 8, 23, 'b2' -- styled over eols
       assert.is_nil display_lines[1].block
       assert.is_not_nil display_lines[2].block
       assert.is_not_nil display_lines[3].block
@@ -62,12 +62,12 @@ describe 'DisplayLines', ->
     it 'a single line with a whole-line background does not belong to a block', ->
       --                     8       15
       buffer.text = 'before\nblock?\nafter'
-      buffer.styling\set 8, 15, 'b2' -- styled over eols
+      buffer.styling\set 8, 14, 'b2' -- styled over eols
       assert.is_nil display_lines[2].block
 
     it 'the width of a block is the width of the longest line + 5', ->
       buffer.text = 'block 1\nblock 2 longer'
-      buffer.styling\set 1, #buffer.text + 1, 'b1'
+      buffer.styling\set 1, #buffer.text, 'b1'
       block = display_lines[1].block
       assert.not_equals display_lines[1].width, block.width
       assert.equals display_lines[2].width + 5, block.width
