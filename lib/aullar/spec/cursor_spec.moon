@@ -29,6 +29,21 @@ describe 'Cursor', ->
       cursor\forward!
       assert.equals 3, cursor.pos -- 'å' is two bytes
 
+    it 'handles forwarding over the eof correctly', ->
+      buffer.text = 'x\n'
+      cursor.pos = 2
+      cursor\forward!
+      assert.equals 3, cursor.pos
+      cursor\forward!
+      assert.equals 3, cursor.pos
+
+      buffer.text = 'x'
+      cursor.pos = 1
+      cursor\forward!
+      assert.equals 2, cursor.pos
+      cursor\forward!
+      assert.equals 2, cursor.pos
+
     it 'moves to the next line if needed', ->
       buffer.text = 'å\nnext'
       cursor\forward!

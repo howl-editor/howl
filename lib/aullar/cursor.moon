@@ -147,7 +147,7 @@ Cursor = {
     @move_to pos: @view.buffer.size + 1, extend: opts.extend
 
   forward: (opts = {}) =>
-    return if @_pos == @view.buffer.size
+    return if @_pos > @view.buffer.size
     line_start = @buffer_line.start_offset
     z_col = (@_pos - line_start)
     new_index, new_trailing = @display_line.layout\move_cursor_visually true, z_col, 0, 1
