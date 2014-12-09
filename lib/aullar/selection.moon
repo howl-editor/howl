@@ -30,12 +30,16 @@ Selection = {
 
     anchor: {
       get: => @_anchor
-      set: (anchor) => @_anchor = anchor
+      set: (anchor) =>
+        error "Can't set anchor when selection is empty", 2 if @is_empty
+        @_anchor = anchor
     }
 
     end_pos: {
       get: => @_end_pos
-      set: (end_pos) => @_end_pos = end_pos
+      set: (end_pos) =>
+        error "Can't set end_pos when selection is empty", 2 if @is_empty
+        @_end_pos = end_pos
     }
   }
 
