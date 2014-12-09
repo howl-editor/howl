@@ -185,7 +185,11 @@ View = {
     buffer: {
       get: => @_buffer
       set: (buffer) =>
-        @_buffer\remove_listener(@) if @_buffer
+        if @_buffer
+          @_buffer\remove_listener(@)
+          @cursor.pos = 1
+          @selection\clear!
+
         @_buffer = buffer
         buffer\add_listener @_buffer_listener
 
