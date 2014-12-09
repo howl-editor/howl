@@ -224,7 +224,9 @@ Cursor = {
     @blink_cb_id = C.g_timeout_add_full C.G_PRIORITY_LOW, @blink_interval, timer_callback, cast_arg(@blink_cb_handle.id), nil
 
   _disable_blink: =>
-    callbacks.unregister @blink_cb_handle
+    if @blink_cb_handle
+      callbacks.unregister @blink_cb_handle
+
     @_showing = true
     -- todo unregister source? will be auto-cancelled by callbacks module though
 }
