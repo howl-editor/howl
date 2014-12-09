@@ -13,6 +13,7 @@ GAP_SIZE = 100
 define_class {
   new: (@type, size, opts = {}) =>
     initial = opts.initial or 0
+    @default_gap_size = opts.gap_size or GAP_SIZE
     @type_size = ffi.sizeof @type
     @new_arr = ffi.typeof "#{@type}[?]"
     @arr_ptr = ffi.typeof "const #{@type} *"
@@ -26,16 +27,17 @@ define_class {
     if offset < 0 or offset > (@size - 1) or (offset + size) > @size or size < 0
       error "GapBuffer.get_ptr(): Illegal range: offset=#{offset}, size=#{size} for buffer of size #{@size}"
 
-    if offset > @gap_start -- post gap ptr
+    if offset >= @gap_start -- post gap ptr
       @array + @gap_size + offset
     elseif offset + size <= @gap_start -- pre gap ptr
       @array + offset
     else -- ephemeral copy pointer
-      arr = self.new_arr(size)
+      arr = self.new_arr(size + 1)
       pregap_size = @gap_start - offset
       postgap_size = size - pregap_size
       ffi_copy arr, @array + offset, pregap_size * @type_size
       ffi_copy arr + pregap_size, @array + @gap_end, postgap_size * @type_size
+      arr[size] = 0
       arr
 
   move_gap_to: (offset) =>
@@ -58,6 +60,7 @@ define_class {
     gap_size = @gap_size
     @gap_start = offset
     @gap_end = offset + gap_size
+    ffi_fill @array + @gap_start, @gap_size * @type_size
 
   extend_gap_at: (offset, gap_size) =>
     arr_size = @size + gap_size
@@ -100,7 +103,7 @@ define_class {
     if size <= @gap_size
       @move_gap_to offset
     else
-      @extend_gap_at offset, size + GAP_SIZE
+      @extend_gap_at offset, size + @default_gap_size
 
     if data
       ffi_copy @array + @gap_start, self.arr_ptr(data), size * @type_size
@@ -143,8 +146,9 @@ define_class {
       offset += 1
 
   set: (data, size = #data) =>
-    arr_size = size + GAP_SIZE
-    @array = self.new_arr(arr_size, data)
+    arr_size = size + @default_gap_size
+    @array = self.new_arr(arr_size + 1, data) -- + 1 = one final zero
+    @array[arr_size] = 0 -- which we set here
     @size = size
     @gap_start = size
     @gap_end = arr_size

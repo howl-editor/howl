@@ -6,8 +6,8 @@ ffi = require 'ffi'
 C = ffi.C
 
 describe 'GapBuffer', ->
-  buffer = (s) ->
-    GapBuffer 'char', #s, initial: s
+  buffer = (s, gap_size) ->
+    GapBuffer 'char', #s, initial: s, :gap_size
 
   parts = (b) ->
     p = {}
@@ -54,22 +54,6 @@ describe 'GapBuffer', ->
       b\fill 8, 9, string.byte('0')
       assert.equals '012yyzzz00', get_text(b)
 
-    -- it 'handles filling after the buffer gap', ->
-    --   b = GapBuffer 'char', 5000
-    --   b\move_gap_to 0
-    --   b\fill b.gap_size + 1, b.gap_size + 2, string.byte('x')
-    --   assert.equals '012xxxxxx9', get_text(b)
-
-      -- b = buffer '0123456789'
-      -- b\fill 3, 5, string.byte('y')
-      -- assert.equals '012yyyxxx9', get_text(b)
-
-      -- b\fill 5, 9, string.byte('z')
-      -- assert.equals '012yyzzzzz', get_text(b)
-
-      -- b\fill 8, 9, string.byte('0')
-      -- assert.equals '012yyzzz00', get_text(b)
-
     it 'works with non-byte-sized types', ->
       b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
       b\fill 0, 0, 10
@@ -82,16 +66,24 @@ describe 'GapBuffer', ->
 
   describe 'move_gap_to(offset)', ->
     it 'moves the gap to the specified offset', ->
-      b = buffer '01234'
+      b = buffer '01234', 10
       b\move_gap_to 2
       assert.equals 2, b.gap_start
+      assert.equals 12, b.gap_end
       assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { '01', '234' }, parts(b)
 
       b\move_gap_to 4
       assert.equals 4, b.gap_start
+      assert.equals 14, b.gap_end
       assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { '0123', '4' }, parts(b)
+
+    it 'zero-fills the gap', ->
+      b = buffer '01234'
+      b\move_gap_to 3
+      for i = 3, b.gap_end - 1
+        assert.equals 0, b.array[i]
 
   describe 'extend_gap_at(offset, new_size)', ->
     it 'extends the gap to be the specified size at the specified offset', ->
@@ -122,6 +114,15 @@ describe 'GapBuffer', ->
       assert.equals 1, ptr[0]
       assert.equals 2, ptr[1]
       assert.equals 3, ptr[2]
+
+    it 'zero-fills the gap', ->
+      b = buffer '01234', 10
+      b\extend_gap_at 2, 20
+      assert.equals 2, b.gap_start
+      assert.equals 22, b.gap_end
+
+      for i = 2, b.gap_end - 1
+        assert.equals 0, b.array[i]
 
   describe 'get_ptr(offset, size)', ->
     it 'returns a pointer to an array starting at offset, valid for <size> bytes', ->
@@ -171,6 +172,19 @@ describe 'GapBuffer', ->
       assert.equals 2, ptr[1]
       assert.equals 3, ptr[2]
 
+    it 'always returns pointers that are zero terminated at the boundaries', ->
+      for i = 1,20
+        b = buffer '0123456789', 10
+        b\move_gap_to 5
+        pre_gap_ptr = b\get_ptr(0, 4)
+        assert.equals 0, pre_gap_ptr[5]
+
+        cross_gap_ptr = b\get_ptr(4, 2)
+        assert.equals 0, cross_gap_ptr[2]
+
+        post_gap_ptr = b\get_ptr(5, 1)
+        assert.equals 0, post_gap_ptr[5]
+
   describe 'insert(offset, data, size)', ->
     context 'when <data> is provided', ->
       it 'inserts the given data at the specified position', ->
@@ -180,15 +194,8 @@ describe 'GapBuffer', ->
 
     context 'when <data> is not provided', ->
       it 'inserts <size> zero-filled units', ->
-        -- c = ffi.typeof 'uint16_t[?]'
-        -- a = c 3, {1,2,3}
-        -- assert.equals 1, a[0]
-        -- assert.equals 2, a[1]
-        -- assert.equals 3, a[2]
-
         b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
         ptr = b\get_ptr 0, 3
-        -- ptr = b.array
         assert.equals 1, ptr[0]
         assert.equals 2, ptr[1]
         assert.equals 3, ptr[2]
