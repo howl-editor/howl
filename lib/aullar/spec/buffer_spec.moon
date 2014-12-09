@@ -92,9 +92,6 @@ describe 'Buffer', ->
       b\delete 8, 3
       assert.same { 'line 1', 'line 2' }, all_lines(b)
 
-      b.text_buffer\move_gap_to b.size
-      assert.same { 'line 1', 'line 2' }, all_lines(b)
-
     it 'provides useful information about the line', ->
       b = Buffer 'line 1\nline 2'
       gen = b\lines!
