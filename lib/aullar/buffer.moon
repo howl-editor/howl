@@ -56,11 +56,15 @@ Buffer = {
     text: {
       get: => @tostring!
       set: (text) =>
+        old_text = @text_buffer and @tostring!
         size = #text
         @text_buffer = GapBuffer 'char', size, initial: text
         @styling = Styling size + 1 -- +1 to account for dangling virtual line
         @_last_scanned_line = 0
         @_lines = {}
+
+        if old_text
+          @_on_modification 'deleted', 1, old_text, #old_text
 
         @_on_modification 'inserted', 1, text, size
     }
