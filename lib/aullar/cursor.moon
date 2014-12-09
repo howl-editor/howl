@@ -92,16 +92,21 @@ Cursor = {
         pos = b_line.start_offset
 
     if pos
-      pos = max min(@view.buffer.size + 1, pos), 0
+      pos = max min(@view.buffer.size + 1, pos), 1
     else
       error("Illegal argument #1 to Cursor.move_to (pos: #{opts.pos}, line: #{opts.line})", 2)
 
     return if pos == @_pos
 
-    if not @selection.is_empty and not opts.extend
+    extend_selection = opts.extend or @selection.persistent
+
+    if not extend_selection and not @selection.is_empty
       @selection\clear!
 
     old_line = @buffer_line
+    unless old_line
+      @_pos = @view.buffer.size + 1
+      old_line = @view.buffer\get_line(@view.buffer.nr_lines)
 
     -- are we moving to another line?
     if not pos_is_in_line(pos, old_line) or not is_showing_line @view, old_line.nr
@@ -122,7 +127,7 @@ Cursor = {
     else -- staying on same line, refresh it
       @view\refresh_display old_line.start_offset, old_line.end_offset
 
-    if opts.extend
+    if extend_selection
       @selection\extend @_pos, pos
 
     @_pos = pos
@@ -200,6 +205,16 @@ Cursor = {
 
   end_of_line: (opts = {}) =>
     @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
+
+  ensure_in_bounds: =>
+    buffer = @view.buffer
+    if @_pos > buffer.size
+      @_line = buffer.nr_lines
+      last_line = buffer\get_line(@_line)
+      if last_line.has_eol
+        @_pos = buffer.size + 1
+      else
+        @_pos = buffer.size
 
   _blink: =>
     return false if not @active

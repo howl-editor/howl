@@ -414,6 +414,8 @@ View = {
     if lines_changed
       @_last_visible_line = nil
 
+    @cursor\ensure_in_bounds!
+
     if args.styled
       @_on_buffer_styled buffer, args.styled
     else
