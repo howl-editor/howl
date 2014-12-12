@@ -9,6 +9,7 @@ Usage: howl [options] [<file> [, <file>, ..]]
 Where options can be any of:
   --reuse       Opens any named files in an existing instance of Howl, if present
   --compile     Compiles the given files to bytecode
+  --run         Loads and runs the specified file from within Howl
   -h, --help    This help
 ]=]
 
@@ -121,6 +122,7 @@ local function main(args)
     })
 
     howl.app = howl.Application(howl.io.File(app_root), args)
+    assert(jit.status(), "JIT is inadvertently switched off")
 
     if os.getenv('BUSTED') then
       local busted = assert(loadfile(argv[2]))

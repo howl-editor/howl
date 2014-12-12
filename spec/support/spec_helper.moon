@@ -98,7 +98,7 @@ export howl_async = (f) ->
   error err unless status
 
 export pump_mainloop = ->
-  jit.off!
+  jit.off true, false
   count = 0
   while count < 100 and C.g_main_context_iteration(howl_main_ctx, false) != 0
     count += 1

@@ -106,6 +106,8 @@ class Process
     out, err, p
 
   new: (opts) =>
+    jit.off true, true
+
     @argv, @command_line = get_command opts.cmd, opts.shell
     error 'opts.cmd missing or invalid', 2 unless @argv
     @_process = launch @argv, opts
@@ -172,7 +174,3 @@ class Process
     if @_exit
       dispatch.resume(@_exit)
       @_exit = nil
-
-jit.off Process.new
-
-Process
