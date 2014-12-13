@@ -360,7 +360,7 @@ describe 'Buffer', ->
         assert.equal glib_char_offset(ptr, i), b\char_offset(i)
 
       for i = 1, 100
-        offset = math.floor math.random! * (b.size - 2000)
+        offset = math.max(4, math.floor(math.random! * (b.size - 5)))
 
         -- avoid creating invalid UTF-8
         if offset != 1
@@ -368,24 +368,24 @@ describe 'Buffer', ->
           if bit.band(o_ptr[0], 0x80) != 0 or bit.band(o_ptr[1], 0x80) != 0
             continue
 
-        -- alternate between deletes and inserts
-        if (offset % 2) == 0
-          b\delete i, 20
-        else
-          b\insert i, '|insΣrt|'
+        b\insert offset, '|insΣrt|'
 
         ptr = b\get_ptr 1, b.size
+        valid = C.g_utf8_validate(ptr, -1, nil) != 0
+        assert(valid, "Incorrect test setup: Invalid UTF-8 produced")
+        c_offset = glib_char_offset ptr, offset
 
         -- verify offsets after modification offset
-        c_offset = b\char_offset(offset + 2000)
-        assert.equal glib_char_offset(ptr, offset + 2000), c_offset
-        assert.equal glib_byte_offset(ptr, c_offset), b\byte_offset(c_offset)
+        g_post_b_offset = glib_byte_offset(ptr, c_offset + 4)
+        assert.equal g_post_b_offset, b\byte_offset(c_offset + 4)
+        g_post_c_offset = glib_char_offset(ptr, g_post_b_offset)
+        assert.equal g_post_c_offset, b\char_offset(g_post_b_offset)
 
         -- verify offsets before modification offset
-        if offset > 2001
-          c_offset = b\char_offset(offset - 2000)
-          assert.equal glib_char_offset(ptr, offset - 2000), c_offset
-          assert.equal glib_byte_offset(ptr, c_offset), b\byte_offset(c_offset)
+        g_post_b_offset = glib_byte_offset(ptr, c_offset - 4)
+        assert.equal g_post_b_offset, b\byte_offset(c_offset - 4)
+        g_post_c_offset = glib_char_offset(ptr, g_post_b_offset)
+        assert.equal g_post_c_offset, b\char_offset(g_post_b_offset)
 
   -- describe 'style_up_to(offset, lexer)', ->
     -- it 'styles from up to <to_line>', ->
