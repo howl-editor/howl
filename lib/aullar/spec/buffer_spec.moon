@@ -5,6 +5,7 @@ Buffer = require 'aullar.buffer'
 require 'ljglibs.cdefs.glib'
 
 ffi = require 'ffi'
+bit = require 'bit'
 C = ffi.C
 
 describe 'Buffer', ->
@@ -345,7 +346,7 @@ describe 'Buffer', ->
         C.g_utf8_pointer_to_offset(ptr, next_ptr) + 1
 
       build = {}
-      line = 'äåöLinƏΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣbutnowforsomesingleΤΥΦΧĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏ'
+      line = 'äåöLinƏΑΒ_ascii_ΓΔΕΖΗΘΙΚΛΜΝΞ(normal)ΟΠΡΣbutnowΤΥΦΧĶķĸĹĺĻļĽBLANKľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏ'
       for i = 1,3000
         build[#build + 1] = line
 
@@ -358,22 +359,29 @@ describe 'Buffer', ->
       for i = 1, 3000 * #line, 3007
         assert.equal glib_char_offset(ptr, i), b\char_offset(i)
 
-      for i = 1, 20
+      for i = 1, 100
         offset = math.floor math.random! * (b.size - 2000)
-        replacement = 'ordinary ascii text here'
+
+        -- avoid creating invalid UTF-8
+        if offset != 1
+          o_ptr = b\get_ptr(offset - 1, 2)
+          if bit.band(o_ptr[0], 0x80) != 0 or bit.band(o_ptr[1], 0x80) != 0
+            continue
 
         -- alternate between deletes and inserts
         if (offset % 2) == 0
           b\delete i, 20
         else
-          b\insert i, replacement
+          b\insert i, '|insΣrt|'
 
         ptr = b\get_ptr 1, b.size
 
+        -- verify offsets after modification offset
         c_offset = b\char_offset(offset + 2000)
         assert.equal glib_char_offset(ptr, offset + 2000), c_offset
         assert.equal glib_byte_offset(ptr, c_offset), b\byte_offset(c_offset)
 
+        -- verify offsets before modification offset
         if offset > 2001
           c_offset = b\char_offset(offset - 2000)
           assert.equal glib_char_offset(ptr, offset - 2000), c_offset
