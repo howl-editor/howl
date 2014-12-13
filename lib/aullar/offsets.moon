@@ -65,7 +65,32 @@ update_for = (mappings, char_offset, byte_offset) ->
   m.b_offset = byte_offset
   m
 
+pointer_to_offset = (p, p_end) ->
+  count = p_end - p
+  i = 0
+  offset = 0
+
+  while i < count
+    i = i + 1
+    while p[i] ~= 0 and band(p[i], 0xc0) == 0x80 -- continuation byte
+      i = i + 1
+
+    offset = offset + 1
+
+  offset
+
+offset_to_pointer = (p, offset) ->
+  while offset > 0
+    p += 1
+    while p[0] != 0 and band(p[0], 0xc0) == 0x80
+      p += 1
+
+    offset -= 1
+
+  p
+
 Offsets = {
+  :pointer_to_offset
 
   char_offset: (ptr, byte_offset) =>
     mappings = @mappings
@@ -81,13 +106,12 @@ Offsets = {
         m_offset_ptr -= 1
         m_byte_offset -= 1
 
-      c_offset = tonumber m.c_offset + C.g_utf8_pointer_to_offset(p, m_offset_ptr)
+      c_offset = m.c_offset + pointer_to_offset(p, m_offset_ptr)
       m = update_for mappings, c_offset, m_byte_offset - MIN_SPAN_BYTES
       p = m_offset_ptr
 
     offset_ptr = ptr + byte_offset
-
-    tonumber m.c_offset + C.g_utf8_pointer_to_offset(p, offset_ptr)
+    m.c_offset + pointer_to_offset(p, offset_ptr)
 
   byte_offset: (ptr, char_offset) =>
     mappings = @mappings
@@ -96,12 +120,12 @@ Offsets = {
 
     if char_offset - m.c_offset > MIN_SPAN
       span_offset = char_offset - (char_offset % MIN_SPAN)
-      next_ptr = C.g_utf8_offset_to_pointer(p, span_offset - m.c_offset)
+      next_ptr = offset_to_pointer(p, span_offset - m.c_offset)
       n = tonumber (next_ptr - p) + m.b_offset
       m = update_for mappings, span_offset, n
       p = ptr + m.b_offset
 
-    next_ptr = C.g_utf8_offset_to_pointer(p, char_offset - m.c_offset)
+    next_ptr = offset_to_pointer(p, char_offset - m.c_offset)
     tonumber (next_ptr - p) + m.b_offset
 
   invalidate_from: (byte_offset) =>

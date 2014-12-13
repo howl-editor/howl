@@ -2,6 +2,7 @@ require 'ljglibs.cdefs.glib'
 Offsets = require 'aullar.offsets'
 ffi = require 'ffi'
 C = ffi.C
+bit = require 'bit'
 
 describe 'offsets', ->
 
@@ -34,14 +35,8 @@ describe 'offsets', ->
       }
         assert.equal p[1], offsets\byte_offset ptr, p[2]
 
-  context '(offset handling stress test)', ->
+  describe '(char_offset/byte_offset stress test)', ->
     it 'returns the correct result as compared to glib', ->
-      build = {}
-      line = 'äåöLinƏΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣbutnowforsomesingleΤΥΦΧĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏ'
-      for i = 1,3000
-        build[#build + 1] = line
-      s = table.concat build, '\n'
-      ptr = char_p s
 
       glib_byte_offset = (ptr, char_offset) ->
         next_ptr = C.g_utf8_offset_to_pointer ptr, char_offset
@@ -51,25 +46,40 @@ describe 'offsets', ->
         next_ptr = ptr + byte_offset
         C.g_utf8_pointer_to_offset ptr, next_ptr
 
-      for i = 1, 3000 * line.ulen, 3007
-        assert.equal glib_byte_offset(ptr, i), offsets\byte_offset(ptr, i)
+      line = 'äåöLinƏΑΒ_ascii_ΓΔΕΖΗΘΙΚΛΜΝΞ(normal)ΟΠΡΣbutnowΤΥΦΧĶķĸĹĺĻļĽBLANKľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏ'
+      s = string.rep line, 400
+      ptr = char_p s
 
-      for i = 1, 3000 * #line, 3007
-        assert.equal glib_char_offset(ptr, i), offsets\char_offset(ptr, i)
+      -- random access verification test
+      for i = 1, 200
+        offset = math.floor math.random! * #s
+        c_offset = offsets\char_offset ptr, offset
+        glib_c_offset = glib_char_offset ptr, offset
+        assert.equal glib_c_offset, c_offset
 
-      new_s = s
-      for i = 1, 20
-        offset = math.floor math.random! * (#new_s - 2000)
-        replacement = 'ordinary ascii text here'
-        new_s = s\sub(1, offset) .. replacement .. s\sub(offset + 20)
-        ptr = char_p new_s
-        offsets\invalidate_from i - 1
+        b_offset = offsets\byte_offset ptr, c_offset
+        glib_b_offset = glib_byte_offset ptr, c_offset
+        assert.equal glib_b_offset, b_offset
 
-        c_offset = offsets\char_offset(ptr, offset + 2000)
-        assert.equal glib_char_offset(ptr, offset + 2000), c_offset
-        assert.equal glib_byte_offset(ptr, c_offset), offsets\byte_offset(ptr, c_offset)
+      -- random access modification test
+      for i = 1, 1000
+        offset = math.max(1, math.floor math.random! * #s - 1)
+        -- but let's not get into differences in handling broken UTF-8,
+        -- so don't insert new stuff in the middle of a continuation but
+        -- let's just insert stuff if we happen upon an ascii range
+        if offset == 1 or bit.band(ptr[offset], 0x80) != 0 or bit.band(ptr[offset - 1], 0x80) != 0
+          continue
 
-        if offset > 2000
-          c_offset = offsets\char_offset(ptr, offset - 2000)
-          assert.equal glib_char_offset(ptr, offset - 2000), c_offset
-          assert.equal glib_byte_offset(ptr, c_offset), offsets\byte_offset(ptr, c_offset)
+        s = s\sub(1, offset) .. '|insΣrt|' .. s\sub(offset + 1)
+        ptr = char_p s
+        valid = C.g_utf8_validate(ptr, -1, nil) != 0
+        assert(valid, "Incorrect test setup: Invalid UTF-8 produced")
+        offsets\invalidate_from offset - 1
+
+        c_offset = offsets\char_offset ptr, offset
+        glib_c_offset = glib_char_offset ptr, offset
+        assert.equal glib_c_offset, c_offset
+
+        b_offset = offsets\byte_offset ptr, c_offset
+        glib_b_offset = glib_byte_offset ptr, c_offset
+        assert.equal glib_b_offset, b_offset
