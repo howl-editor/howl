@@ -235,6 +235,8 @@ Cursor = {
     @view.buffer\get_line nr
 
   _enable_blink: =>
+    jit.off true, true
+
     @blink_cb_handle = callbacks.register self._blink, "cursor-blink", @
     @blink_cb_id = C.g_timeout_add_full C.G_PRIORITY_LOW, @blink_interval, timer_callback, cast_arg(@blink_cb_handle.id), nil
 
