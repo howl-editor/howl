@@ -79,7 +79,7 @@ Buffer = {
   insert: (offset, text, size = #text) =>
     @text_buffer\insert offset - 1, text
     @_invalidate_lines_from_offset offset
-    @offsets\invalidate_from offset - 1
+    @offsets\adjust_for_insert offset - 1, text, size
     @styling\insert offset, size
 
     @_on_modification 'inserted', offset, text, size
@@ -88,7 +88,7 @@ Buffer = {
     text = @sub offset, offset + count - 1
     @text_buffer\delete offset - 1, count
     @_invalidate_lines_from_offset offset
-    @offsets\invalidate_from offset - 1
+    @offsets\adjust_for_delete offset - 1, text, count
     @styling\delete offset, count
 
     @_on_modification 'deleted', offset, text, count

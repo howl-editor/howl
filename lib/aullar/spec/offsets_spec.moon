@@ -100,12 +100,12 @@ describe 'offsets', ->
         assert.equal glib_c_offset, c_offset
 
     it 'returns the correct result for a changing buffer as compared to glib', ->
-      replacement = '<insΣrt>'
+      replacement = '<insΣΓt>'
       replacement_len = tonumber C.g_utf8_strlen(ffi.cast('const char *', replacement), #replacement)
       glib_gb = GapBuffer 'char', #test_data, initial: test_data
 
       for i = 1, 100
-        pos = math.floor math.random! * (nr_chars - replacement_len)
+        pos = math.floor math.random! * (nr_chars - 20)
         glib_b_offset = glib_byte_offset glib_gb.array, pos
         b_offset = offsets\byte_offset gb, pos
         assert.equal glib_b_offset, b_offset
@@ -115,7 +115,20 @@ describe 'offsets', ->
         assert.equal pos, glib_c_offset
         assert.equal glib_c_offset, c_offset
 
+        -- insert
         glib_gb\insert tonumber(b_offset), replacement
-        glib_gb\compact!
         gb\insert tonumber(b_offset), replacement
-        offsets\invalidate_from b_offset
+        offsets\adjust_for_insert b_offset, replacement, #replacement
+
+        -- remove
+        del_start_pos = b_offset + #replacement
+        del_end_pos = offsets\byte_offset gb, pos + replacement_len + 5
+        size = del_end_pos - del_start_pos
+        del_text = ffi.string(gb\get_ptr(del_start_pos, size), size)
+        assert.is_true(C.g_utf8_validate(ffi.cast('const char *', del_text), size, nil) != 0)
+
+        glib_gb\delete del_start_pos, size
+        gb\delete del_start_pos, size
+        offsets\adjust_for_delete del_start_pos, del_text, size
+
+        glib_gb\compact!

@@ -7,6 +7,7 @@
 
 ffi = require 'ffi'
 bit = require 'bit'
+require 'ljglibs.cdefs.glib'
 
 tonumber, max, abs = tonumber, math.max, math.abs
 C = ffi.C
@@ -19,7 +20,7 @@ ffi.cdef [[
   }
 ]]
 
-NR_MAPPINGS = 10
+NR_MAPPINGS = 20
 IDX_LAST = NR_MAPPINGS - 1
 MIN_SPAN_CHARS = 1000
 MIN_SPAN_BYTES = 1500
@@ -131,11 +132,29 @@ Offsets = {
 
     m.b_offset + gb_byte_offset(gb, m.b_offset, char_offset - m.c_offset)
 
+  adjust_for_insert: (byte_offset, text, size) =>
+    ptr = ffi.cast('const char *', text)
+    len = C.g_utf8_strlen(ptr, size)
+    @_adjust_mappings byte_offset, size, len
+
+  adjust_for_delete: (byte_offset, text, size) =>
+    ptr = ffi.cast('const char *', text)
+    len = C.g_utf8_strlen(ptr, size)
+    @_adjust_mappings byte_offset, -size, -len
+
   invalidate_from: (byte_offset) =>
     mappings = @mappings
     for i = 0, IDX_LAST
       nm = mappings[i]
       nm.c_offset = 0 if nm.b_offset > byte_offset
+
+  _adjust_mappings: (byte_offset, b_delta, c_delta) =>
+    mappings = @mappings
+    for i = 0, IDX_LAST
+      m = mappings[i]
+      if m.b_offset > byte_offset
+        m.b_offset += b_delta
+        m.c_offset += c_delta
 }
 
 -> setmetatable { mappings: ffi.new "struct ao_mapping[#{NR_MAPPINGS}]" }, __index: Offsets
