@@ -194,12 +194,10 @@ Buffer = {
     return ffi_string @text_buffer.array, @text_buffer.size
 
   char_offset: (byte_offset) =>
-    @text_buffer\compact! if byte_offset > @text_buffer.gap_start
-    @offsets\char_offset(@text_buffer.array, byte_offset - 1) + 1
+    @offsets\char_offset(@text_buffer, byte_offset - 1) + 1
 
   byte_offset: (char_offset) =>
-    @text_buffer\compact!
-    @offsets\byte_offset(@text_buffer.array, char_offset - 1) + 1
+    @offsets\byte_offset(@text_buffer, char_offset - 1) + 1
 
   notify: (event, parameters) =>
     for listener in *@listeners

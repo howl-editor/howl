@@ -1,8 +1,9 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE.md)
 --
--- This supports efficient mappings of character (code points) <->
--- byte offsets for buffer contents
+-- This supports more efficient mappings of character (code points) <->
+-- byte offsets for gap buffer contents, by caching offsets and thus
+-- making scans shorter
 
 ffi = require 'ffi'
 bit = require 'bit'
@@ -20,7 +21,7 @@ ffi.cdef [[
 
 NR_MAPPINGS = 10
 IDX_LAST = NR_MAPPINGS - 1
-MIN_SPAN = 1000
+MIN_SPAN_CHARS = 1000
 MIN_SPAN_BYTES = 1500
 zero_mapping = ffi.new 'struct ao_mapping'
 
@@ -65,68 +66,70 @@ update_for = (mappings, char_offset, byte_offset) ->
   m.b_offset = byte_offset
   m
 
-pointer_to_offset = (p, p_end) ->
-  count = p_end - p
-  i = 0
-  offset = 0
+gb_char_offset = (gb, start_offset, end_offset) ->
+  idx = start_offset
+  idx += gb.gap_size if idx >= gb.gap_start
+  b_end = end_offset > gb.gap_start and (end_offset + gb.gap_size) or end_offset
+  c_offset = 0
+  p = gb.array
 
-  while i < count
-    i = i + 1
-    while p[i] ~= 0 and band(p[i], 0xc0) == 0x80 -- continuation byte
-      i = i + 1
+  while idx < b_end
+    if idx >= gb.gap_start and idx < gb.gap_end
+      idx += gb.gap_size
 
-    offset = offset + 1
+    idx = idx + 1
+    while p[idx] != 0 and band(p[idx], 0xc0) == 0x80 -- continuation byte
+      idx = idx + 1
 
-  offset
+    c_offset += 1
 
-offset_to_pointer = (p, offset) ->
-  while offset > 0
-    p += 1
-    while p[0] != 0 and band(p[0], 0xc0) == 0x80
-      p += 1
+  c_offset
 
-    offset -= 1
+gb_byte_offset = (gb, start_offset, char_offset) ->
+  idx = start_offset
+  idx += gb.gap_size if idx >= gb.gap_start
+  p = gb.array
 
-  p
+  while char_offset > 0
+    if idx >= gb.gap_start and idx < gb.gap_end
+      idx += gb.gap_size
+
+    idx += 1
+    char_offset -= 1
+    while p[idx] != 0 and band(p[idx], 0xc0) == 0x80 -- continuation byte
+      idx += 1
+
+  delta = idx >= gb.gap_end and gb.gap_size or 0
+  (idx - start_offset) - delta
 
 Offsets = {
-  :pointer_to_offset
 
-  char_offset: (ptr, byte_offset) =>
-    mappings = @mappings
-    m = mapping_for_byte mappings, byte_offset
-    p = ptr + m.b_offset
+  char_offset: (gb, byte_offset) =>
+    m = mapping_for_byte @mappings, byte_offset
 
+    -- should we create a new mapping, closer this offset?
     if (byte_offset - m.b_offset) > MIN_SPAN_BYTES
-      m_offset_ptr = (ptr + byte_offset) - MIN_SPAN_BYTES
-      m_byte_offset = byte_offset
+      m_b_offset = byte_offset - (byte_offset % MIN_SPAN_BYTES)
 
       -- position may be in the middle of a sequence here, so back up as needed
-      while m_offset_ptr != p and band(m_offset_ptr[0], 0xc0) == 0x80
-        m_offset_ptr -= 1
-        m_byte_offset -= 1
+      while m_b_offset > 0 and band(gb\get_ptr(m_b_offset, 1)[0], 0xc0) == 0x80
+        m_b_offset -= 1
 
-      c_offset = m.c_offset + pointer_to_offset(p, m_offset_ptr)
-      m = update_for mappings, c_offset, m_byte_offset - MIN_SPAN_BYTES
-      p = m_offset_ptr
+      c_offset = m.c_offset + gb_char_offset(gb, m.b_offset, m_b_offset)
+      m = update_for @mappings, c_offset, m_b_offset
 
-    offset_ptr = ptr + byte_offset
-    m.c_offset + pointer_to_offset(p, offset_ptr)
+    m.c_offset + gb_char_offset(gb, m.b_offset, byte_offset)
 
-  byte_offset: (ptr, char_offset) =>
-    mappings = @mappings
-    m = mapping_for_char mappings, char_offset
-    p = ptr + m.b_offset
+  byte_offset: (gb, char_offset) =>
+    m = mapping_for_char(@mappings, char_offset), char_offset
 
-    if char_offset - m.c_offset > MIN_SPAN
-      span_offset = char_offset - (char_offset % MIN_SPAN)
-      next_ptr = offset_to_pointer(p, span_offset - m.c_offset)
-      n = tonumber (next_ptr - p) + m.b_offset
-      m = update_for mappings, span_offset, n
-      p = ptr + m.b_offset
+    -- should we create a new mapping, closer this offset?
+    if char_offset - m.c_offset > MIN_SPAN_CHARS
+      m_c_offset = char_offset - (char_offset % MIN_SPAN_CHARS)
+      b_offset = m.b_offset + gb_byte_offset(gb, m.b_offset, m_c_offset - m.c_offset)
+      m = update_for(@mappings, m_c_offset, b_offset)
 
-    next_ptr = offset_to_pointer(p, char_offset - m.c_offset)
-    tonumber (next_ptr - p) + m.b_offset
+    m.b_offset + gb_byte_offset(gb, m.b_offset, char_offset - m.c_offset)
 
   invalidate_from: (byte_offset) =>
     mappings = @mappings

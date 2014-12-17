@@ -69,7 +69,7 @@ define_class {
     dest_ptr = arr
 
     -- chunk up to gap start or offset
-    count = min(@gap_start, offset)
+    count = min(@gap_start, tonumber(offset))
     ffi_copy dest_ptr, src_ptr, count * @type_size
 
     if @gap_start < offset -- fill from post gap
