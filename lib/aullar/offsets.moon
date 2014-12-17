@@ -119,7 +119,7 @@ Offsets = {
       c_offset = m.c_offset + gb_char_offset(gb, m.b_offset, m_b_offset)
       m = update_for @mappings, c_offset, m_b_offset
 
-    m.c_offset + gb_char_offset(gb, m.b_offset, byte_offset)
+    tonumber m.c_offset + gb_char_offset(gb, m.b_offset, byte_offset)
 
   byte_offset: (gb, char_offset) =>
     m = mapping_for_char(@mappings, char_offset), char_offset
@@ -130,17 +130,13 @@ Offsets = {
       b_offset = m.b_offset + gb_byte_offset(gb, m.b_offset, m_c_offset - m.c_offset)
       m = update_for(@mappings, m_c_offset, b_offset)
 
-    m.b_offset + gb_byte_offset(gb, m.b_offset, char_offset - m.c_offset)
+    tonumber m.b_offset + gb_byte_offset(gb, m.b_offset, char_offset - m.c_offset)
 
-  adjust_for_insert: (byte_offset, text, size) =>
-    ptr = ffi.cast('const char *', text)
-    len = C.g_utf8_strlen(ptr, size)
-    @_adjust_mappings byte_offset, size, len
+  adjust_for_insert: (byte_offset, bytes, characters) =>
+    @_adjust_mappings byte_offset, bytes, characters
 
-  adjust_for_delete: (byte_offset, text, size) =>
-    ptr = ffi.cast('const char *', text)
-    len = C.g_utf8_strlen(ptr, size)
-    @_adjust_mappings byte_offset, -size, -len
+  adjust_for_delete: (byte_offset, bytes, characters) =>
+    @_adjust_mappings byte_offset, -bytes, -characters
 
   invalidate_from: (byte_offset) =>
     mappings = @mappings

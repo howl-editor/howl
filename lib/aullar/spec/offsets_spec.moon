@@ -116,9 +116,9 @@ describe 'offsets', ->
         assert.equal glib_c_offset, c_offset
 
         -- insert
-        glib_gb\insert tonumber(b_offset), replacement
-        gb\insert tonumber(b_offset), replacement
-        offsets\adjust_for_insert b_offset, replacement, #replacement
+        glib_gb\insert b_offset, replacement
+        gb\insert b_offset, replacement
+        offsets\adjust_for_insert b_offset, #replacement, replacement_len
 
         -- remove
         del_start_pos = b_offset + #replacement
@@ -129,6 +129,6 @@ describe 'offsets', ->
 
         glib_gb\delete del_start_pos, size
         gb\delete del_start_pos, size
-        offsets\adjust_for_delete del_start_pos, del_text, size
+        offsets\adjust_for_delete del_start_pos, size, 5
 
         glib_gb\compact!

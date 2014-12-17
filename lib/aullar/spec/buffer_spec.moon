@@ -335,6 +335,30 @@ describe 'Buffer', ->
       }
         assert.equal p[1], b\byte_offset p[2]
 
+  describe '.length', ->
+    it 'is the number of code points in the buffer', ->
+      b = Buffer ''
+      assert.equal 0, b.length
+
+      b.text = '123'
+      assert.equal 3, b.length
+
+      b.text = 'äåö'
+      assert.equal 3, b.length
+
+    it 'updates automatically with modification', ->
+      b = Buffer string.rep('äåö', 100)
+      assert.equal 300, b.length
+      for i = 1, 40
+        cur_length = b.length
+
+        pos = math.floor math.random(b.size - 10)
+        insert_pos = b\byte_offset(b\char_offset(pos))
+        b\insert insert_pos, 'äåö'
+        assert.equal cur_length + 3, b.length
+        b\delete insert_pos, 2 -- delete 'ä'
+        assert.equal cur_length + 2, b.length
+
   -- describe 'style_up_to(offset, lexer)', ->
     -- it 'styles from up to <to_line>', ->
   --     buffer.text = '123\n56\n89'

@@ -2,12 +2,13 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
-C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
+C, ffi_string, ffi_copy, ffi_cast = ffi.C, ffi.string, ffi.copy, ffi.cast
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
 Styling = require 'aullar.styling'
 Offsets = require 'aullar.offsets'
 GapBuffer = require 'aullar.gap_buffer'
+require 'ljglibs.cdefs.glib'
 
 char_arr = ffi.typeof 'char [?]'
 
@@ -40,6 +41,7 @@ Buffer = {
 
   properties: {
     size: => @text_buffer.size
+    length: => @_length
 
     nr_lines: =>
       @_scan_lines_to {}
@@ -67,6 +69,7 @@ Buffer = {
 
         @_on_modification 'inserted', 1, text, size
         @offsets = Offsets!
+        @_length = @offsets\char_offset(@text_buffer, @text_buffer.size)
     }
   }
 
@@ -77,18 +80,22 @@ Buffer = {
     @listeners = [l for l in *@listeners when l != listener]
 
   insert: (offset, text, size = #text) =>
+    len = C.g_utf8_strlen ffi_cast('const char *', text), size
     @text_buffer\insert offset - 1, text
+    @_length += len
     @_invalidate_lines_from_offset offset
-    @offsets\adjust_for_insert offset - 1, text, size
+    @offsets\adjust_for_insert offset - 1, size, len
     @styling\insert offset, size
 
     @_on_modification 'inserted', offset, text, size
 
   delete: (offset, count) =>
     text = @sub offset, offset + count - 1
+    len = C.g_utf8_strlen ffi_cast('const char *', text), count
     @text_buffer\delete offset - 1, count
+    @_length -= len
     @_invalidate_lines_from_offset offset
-    @offsets\adjust_for_delete offset - 1, text, count
+    @offsets\adjust_for_delete offset - 1, count, len
     @styling\delete offset, count
 
     @_on_modification 'deleted', offset, text, count
