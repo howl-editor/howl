@@ -37,7 +37,6 @@ Buffer = {
   new: (text = '') =>
     @listeners = {}
     @text = text
-    @offsets = Offsets!
 
   properties: {
     size: => @text_buffer.size
@@ -67,6 +66,7 @@ Buffer = {
           @_on_modification 'deleted', 1, old_text, #old_text
 
         @_on_modification 'inserted', 1, text, size
+        @offsets = Offsets!
     }
   }
 
@@ -190,7 +190,11 @@ Buffer = {
     @refresh_styling_at from_line.nr, to_line.nr, force_full: true
 
   tostring: =>
-    @text_buffer\compact! if @text_buffer.gap_size != 0
+    if @text_buffer.gap_size != 0
+      @text_buffer\compact!
+      @offsets\invalidate_from 0
+      @_invalidate_lines_from_offset 0
+
     return ffi_string @text_buffer.array, @text_buffer.size
 
   char_offset: (byte_offset) =>
