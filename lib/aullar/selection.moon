@@ -26,7 +26,7 @@ Selection = {
 
 
   properties: {
-    is_empty: => @_anchor == nil
+    is_empty: => (@_anchor == nil) or (@_anchor == @_end_pos)
 
     anchor: {
       get: => @_anchor
