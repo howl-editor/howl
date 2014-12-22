@@ -168,7 +168,8 @@ describe 'Buffer', ->
       assert.equals 2, b\get_line_at_offset(8).nr
       assert.equals 3, b\get_line_at_offset(9).nr
       assert.equals 3, b\get_line_at_offset(14).nr
-      assert.is_nil b\get_line_at_offset(15)
+      assert.equals 3, b\get_line_at_offset(15).nr
+      assert.is_nil b\get_line_at_offset(16)
 
     it 'returns an empty first line for an empty buffer', ->
       b = Buffer ''

@@ -129,8 +129,9 @@ Buffer = {
     for i = start_at, end_at, step
       line = @_lines[i]
 
-      if offset >= line.start_offset and offset <= line.end_offset
-        return line
+      if offset >= line.start_offset
+        if offset <= line.end_offset or (not line.has_eol and offset == line.end_offset + 1)
+          return line
 
     nil
 
@@ -172,7 +173,6 @@ Buffer = {
     if not opts.force_full
       -- try lexing only up to this line
       text = @sub start_offset, at_line.end_offset
-      -- moon.p lexer(text)
       @styling\clear start_offset, at_line.end_offset
       @styling\apply start_offset, lexer(text)
       new_at_line_eol_style = @styling\at(at_line.end_offset) or 'whitespace'
