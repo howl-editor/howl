@@ -25,7 +25,7 @@ define_class {
 
   get_ptr: (offset, size) =>
     if offset < 0 or offset > (@size - 1) or (offset + size) > @size or size < 0
-      error "GapBuffer.get_ptr(): Illegal range: offset=#{offset}, size=#{size} for buffer of size #{@size}"
+      error "GapBuffer.get_ptr(): Illegal range: offset=#{offset}, size=#{size} for buffer of size #{@size}", 2
 
     if offset >= @gap_start -- post gap ptr
       @array + @gap_size + offset
