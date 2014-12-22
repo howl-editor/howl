@@ -17,6 +17,7 @@ options = {
 cb_cast = (cb_type, handler) -> ffi_cast('GCallback', ffi_cast(cb_type, handler))
 
 unregister = (handle) ->
+  error "callbacks.unregister(): Missing argument #1 (handle)", 2 unless handle
   unrefed_handlers[handle.handler] = nil if type(handle.handler) == 'number'
   handles[handle.id] = nil
 
