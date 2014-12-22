@@ -2,7 +2,7 @@ ffi = require 'ffi'
 core = require 'ljglibs.core'
 Type = require 'ljglibs.gobject.type'
 Gtk = require 'ljglibs.gtk'
-import Window, Box from Gtk
+import OffscreenWindow, Window, Box from Gtk
 
 describe 'core', ->
   describe 'define(name, spec, constructor)', ->
@@ -134,14 +134,14 @@ describe 'core', ->
     context '(signals)', ->
 
       it 'sets up signal hook functions automatically based on the gtype', ->
-        win = Window!
+        win = OffscreenWindow!
         show_handler = spy.new ->
         win\on_show show_handler, nil, 123
         win\show!
         assert.spy(show_handler).was_called_with win, nil, 123
 
       it 'casts arguments of known types', ->
-        win = Window!
+        win = OffscreenWindow!
         show_handler = (signal_win) ->
           assert.equal Window.show, signal_win.show
         win\on_show show_handler
