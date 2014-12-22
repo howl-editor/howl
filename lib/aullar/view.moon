@@ -7,6 +7,7 @@ ffi_cast = ffi.cast
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
+Pango = require 'ljglibs.pango'
 require 'ljglibs.cairo.cairo'
 DisplayLines = require 'aullar.display_lines'
 Cursor = require 'aullar.cursor'
@@ -14,6 +15,7 @@ Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
 LineGutter = require 'aullar.line_gutter'
 CurrentLineMarker = require 'aullar.current_line_marker'
+config = require 'aullar.config'
 
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
@@ -93,6 +95,12 @@ View = {
       \on_focus_in_event signals.on_focus_in, @
       \on_focus_out_event signals.on_focus_out, @
 
+      font_desc = Pango.FontDescription {
+        family: config.font_name,
+        size: config.font_size * Pango.SCALE
+      }
+      \override_font font_desc
+
     @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_HORIZONTAL
     @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
@@ -129,6 +137,15 @@ View = {
     }
 
     @buffer = buffer
+    config.add_listener self\_on_config_changed
+
+  _on_config_changed: (option, val, old_val) =>
+    if option == 'font_name' or option == 'font_size'
+      @area\override_font Pango.FontDescription {
+        family: config.font_name,
+        size: config.font_size * Pango.SCALE
+      }
+      @refresh_display 0, nil, invalidate: true
 
   properties: {
 

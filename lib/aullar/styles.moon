@@ -4,6 +4,7 @@
 Pango = require 'ljglibs.pango'
 AttrList = Pango.AttrList
 Attribute = Pango.Attribute
+SCALE = Pango.SCALE
 Color = Pango.Color
 append = table.insert
 ffi = require 'ffi'
@@ -47,14 +48,14 @@ create_attributes = (def) ->
         append attrs, Attribute.UnderlineColor(c.red, c.green, c.blue)
 
   if def.letter_spacing
-    append attrs, Attribute.LetterSpacing(def.letter_spacing * 1024)
+    append attrs, Attribute.LetterSpacing(def.letter_spacing * SCALE)
 
   if def.font
     font = def.font
     append attrs, Attribute.Family(font.family) if font.family
     append attrs, Attribute.Style(Pango.STYLE_ITALIC) if font.italic
     append attrs, Attribute.Weight(Pango.WEIGHT_BOLD) if font.bold
-    append attrs, Attribute.Size(font.size * 1024) if font.size
+    append attrs, Attribute.Size(font.size * SCALE) if font.size
 
   attrs
 
