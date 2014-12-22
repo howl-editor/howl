@@ -6,8 +6,26 @@ require 'ljglibs.cdefs.glib'
 require 'ljglibs.cdefs.cairo'
 
 ffi.cdef [[
+
+  /* PangoFontDescription */
+  typedef struct {} PangoFontDescription;
+
+  PangoFontDescription * pango_font_description_new (void);
+  void pango_font_description_free (PangoFontDescription *desc);
+  void pango_font_description_set_family (PangoFontDescription *desc, const char *family);
+  const char * pango_font_description_get_family (const PangoFontDescription *desc);
+  void pango_font_description_set_size (PangoFontDescription *desc, gint size);
+  gint pango_font_description_get_size (const PangoFontDescription *desc);
+  void pango_font_description_set_absolute_size (PangoFontDescription *desc, double size);
+  gboolean pango_font_description_get_size_is_absolute (const PangoFontDescription *desc);
+  PangoFontDescription * pango_font_description_from_string (const char *str);
+  char * pango_font_description_to_string (const PangoFontDescription *desc);
+
   /* PangoContext */
   typedef struct {} PangoContext;
+
+  PangoFontDescription * pango_context_get_font_description (PangoContext *context);
+  void pango_context_set_font_description (PangoContext *context, const PangoFontDescription *desc);
 
   typedef struct {
     int x;
@@ -21,9 +39,6 @@ ffi.cdef [[
     PANGO_ALIGN_CENTER,
     PANGO_ALIGN_RIGHT
   } PangoAlignment;
-
-
-  typedef struct {} PangoFontDescription;
 
   /* PangoColor */
   typedef struct {
@@ -266,6 +281,8 @@ ffi.cdef [[
   int pango_layout_get_spacing (PangoLayout *layout);
   void pango_layout_set_attributes (PangoLayout *layout, PangoAttrList *attrs);
   PangoAttrList * pango_layout_get_attributes (PangoLayout *layout);
+  void pango_layout_set_font_description (PangoLayout *layout, const PangoFontDescription *desc);
+  const PangoFontDescription * pango_layout_get_font_description (PangoLayout *layout);
 
   void pango_layout_index_to_pos (PangoLayout *layout, int index, PangoRectangle *pos);
   gboolean pango_layout_xy_to_index (PangoLayout *layout,

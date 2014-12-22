@@ -4,6 +4,7 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.pango'
 core = require 'ljglibs.core'
+require 'ljglibs.pango.font_description'
 import gc_ptr from require 'ljglibs.gobject'
 
 C, ffi_new = ffi.C, ffi.new
@@ -40,6 +41,14 @@ core.define 'PangoLayout', {
     attributes: {
       get: => C.pango_layout_get_attributes @
       set: (attributes) => C.pango_layout_set_attributes @, attributes
+    }
+
+    font_description: {
+      get: =>
+        desc = C.pango_layout_get_font_description @
+        desc != nil and desc or nil
+
+      set: (desc) => C.pango_layout_set_font_description @, desc
     }
   }
 

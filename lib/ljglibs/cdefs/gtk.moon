@@ -98,6 +98,8 @@ ffi.cdef [[
   void gtk_widget_override_background_color (GtkWidget *widget,
                                              GtkStateFlags state,
                                              const GdkRGBA *color);
+  void gtk_widget_override_font (GtkWidget *widget,
+                          const PangoFontDescription *font_desc);
   GdkWindow * gtk_widget_get_window (GtkWidget *widget);
   GdkScreen * gtk_widget_get_screen (GtkWidget *widget);
   void gtk_widget_grab_focus (GtkWidget *widget);
@@ -371,6 +373,12 @@ ffi.cdef [[
   typedef struct {} GtkViewport;
   GtkViewport * gtk_viewport_new (GtkAdjustment *hadjustment,
                                   GtkAdjustment *vadjustment);
+
+  /* GtkSettings */
+  typedef struct {} GtkSettings;
+  GtkSettings * gtk_settings_get_default (void);
+  GtkSettings * gtk_settings_get_for_screen (GdkScreen *screen);
+
 
   /* Misc */
   gboolean gtk_cairo_should_draw_window (cairo_t *cr,

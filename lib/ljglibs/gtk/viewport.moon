@@ -19,7 +19,6 @@ core.define 'GtkViewport < GtkBin', {
   }
 
   new: (hadjustment, vadjustment) ->
-    print 'new'
     gc_ptr C.gtk_viewport_new hadjustment, vadjustment
 
 }, (spec, ...) ->

@@ -7,6 +7,7 @@ require 'ljglibs.cdefs.gtk'
 require 'ljglibs.gdk.window'
 require 'ljglibs.gobject.object'
 Cairo = require 'ljglibs.cairo.cairo'
+require 'ljglibs.pango.context'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 
@@ -87,6 +88,9 @@ core.define 'GtkWidget < GObject', {
 
   override_background_color: (state, color) =>
     C.gtk_widget_override_background_color @, state, color
+
+  override_font: (font_description) =>
+    C.gtk_widget_override_font @, font_description
 
   create_pango_context: => gc_ptr C.gtk_widget_create_pango_context @
 

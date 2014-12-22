@@ -75,6 +75,7 @@ core.auto_loading 'pango', {
     -- PangoAttributeConstants
     'ATTR_INDEX_FROM_TEXT_BEGINNING',
     'ATTR_INDEX_TO_TEXT_END'
+  },
 
-  }
+  SCALE: 1024
 }
