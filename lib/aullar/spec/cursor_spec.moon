@@ -80,3 +80,18 @@ describe 'Cursor', ->
       cursor.pos = 8
       cursor\down!
       assert.equals 8, cursor.pos
+
+  describe 'ensure_in_bounds', ->
+    it 'moves to the end of the buffer if neccessary', ->
+      buffer.text = '1234\n678\n'
+      cursor.pos = 10
+      cursor\ensure_in_bounds!
+      assert.equals 10, cursor.pos
+
+      buffer\delete 6, 4 -- leaving trailing newline
+      cursor\ensure_in_bounds!
+      assert.equals 6, cursor.pos
+
+      buffer\delete 5, 1 -- leaving no trailing newline
+      cursor\ensure_in_bounds!
+      assert.equals 5, cursor.pos

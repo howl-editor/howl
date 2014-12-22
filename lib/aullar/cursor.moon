@@ -208,13 +208,9 @@ Cursor = {
 
   ensure_in_bounds: =>
     buffer = @view.buffer
-    if @_pos > buffer.size
+    if @_pos > buffer.size + 1
       @_line = buffer.nr_lines
-      last_line = buffer\get_line(@_line)
-      if last_line.has_eol
-        @_pos = buffer.size + 1
-      else
-        @_pos = buffer.size
+      @_pos = buffer.size + 1
 
   _blink: =>
     return false if not @active
