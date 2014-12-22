@@ -60,7 +60,7 @@ Cursor = {
 
     column: {
       get: => (@pos - @buffer_line.start_offset) + 1
-      set: (colum) =>
+      set: (colum) => @pos = @buffer_line.start_offset + colum - 1
     }
 
     pos: {
@@ -87,7 +87,8 @@ Cursor = {
   move_to: (opts) =>
     pos = opts.pos
     if opts.line
-      b_line = @view.buffer\get_line min(opts.line, @view.buffer.nr_lines)
+      line_nr = max(1, min(opts.line, @view.buffer.nr_lines))
+      b_line = @view.buffer\get_line line_nr
       if b_line
         pos = b_line.start_offset
 
@@ -140,7 +141,7 @@ Cursor = {
     char_width = rect.width / 1024
     x_pos = col_pos - @view.base_x + @view.edit_area_x + @width
 
-    if x_pos + char_width > @view.width -- scroll to the right
+    if @view.width and x_pos + char_width > @view.width -- scroll to the right
       @view.base_x = col_pos - @view.edit_area_width + char_width + @width
     elseif x_pos < @view.edit_area_x -- scroll to the left
       @view.base_x = col_pos
