@@ -24,7 +24,7 @@ describe 'Buffer', ->
       assert.equals 'brave new world', tostring b
 
   describe 'lines([start_line, end_line])', ->
-    all_lines = (b) -> [ffi.string(l.text, l.size) for l in b\lines 1]
+    all_lines = (b) -> [ffi.string(l.ptr, l.size) for l in b\lines 1]
 
     context 'with no parameters passed', ->
       it 'returns a generator for all available lines in the buffer', ->
@@ -102,6 +102,7 @@ describe 'Buffer', ->
       assert.equals 7, line.full_size
       assert.equals 1, line.start_offset
       assert.equals 7, line.end_offset
+      assert.equals 'line 1', line.text
       assert.is_true line.has_eol
 
       line = gen!
@@ -110,6 +111,7 @@ describe 'Buffer', ->
       assert.equals 6, line.full_size
       assert.equals 8, line.start_offset
       assert.equals 13, line.end_offset
+      assert.equals 'line 2', line.text
       assert.is_false line.has_eol
 
     it 'correctly return line sizes given multi-byte line breaks', ->
@@ -133,6 +135,7 @@ describe 'Buffer', ->
       assert.equals 6, line.full_size
       assert.equals 8, line.start_offset
       assert.equals 13, line.end_offset
+      assert.equals 'line 2', line.text
 
     it 'return nil for an out-of-bounds line', ->
       b = Buffer 'line 1\nline 2'
@@ -147,8 +150,10 @@ describe 'Buffer', ->
 
     it 'works fine with a last empty line', ->
       b = Buffer '123\n'
-      assert.is_not_nil b\get_line 2
-      assert.equals 2, b\get_line(2).nr
+      line = b\get_line 2
+      assert.is_not_nil line
+      assert.equals 2, line.nr
+      assert.equals '', line.text
 
   describe 'get_line_at_offset(offset)', ->
     it 'returns line information for the line at the specified offset', ->
@@ -261,15 +266,18 @@ describe 'Buffer', ->
 
     it 'handles insertion at the end of the buffer (i.e. appending)', ->
       b = Buffer ''
-      b\insert 1, 'hello'
-      b\insert 6, ' world'
-      assert.equals 'hello world', tostring(b)
+      b\insert 1, 'hello\n'
+      assert.equals 'hello\n', tostring(b)
+      assert.equals 'hello', b\get_line(1).text
+      b\insert b.size + 1, 'world'
+      assert.equals 'hello\nworld', tostring(b)
+      assert.equals 'world', b\get_line(2).text
 
     it 'invalidates any previous line information', ->
       b = Buffer '\n456\n789'
-      line_text_ptr = b\get_line(3).text
+      line_text_ptr = b\get_line(3).ptr
       b\insert 1, '123'
-      assert.not_equals line_text_ptr, b\get_line(3).text
+      assert.not_equals line_text_ptr, b\get_line(3).ptr
 
     it 'updates the styling to keep the existing styling', ->
       b = Buffer '123\n567'
@@ -295,9 +303,9 @@ describe 'Buffer', ->
 
     it 'invalidates any previous line information', ->
       b = Buffer '123\n456\n789'
-      line_text_ptr = b\get_line(3).text
+      line_text_ptr = b\get_line(3).ptr
       b\delete 1, 1
-      assert.not_equals line_text_ptr, b\get_line(3).text
+      assert.not_equals line_text_ptr, b\get_line(3).ptr
 
     it 'updates the styling to keep the existing styling', ->
       b = Buffer '123\n567'

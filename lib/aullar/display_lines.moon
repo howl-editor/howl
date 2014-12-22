@@ -85,7 +85,7 @@ get_block = (display_lines, d_line) ->
 DisplayLine = define_class {
   new: (@display_lines, @view, buffer, pango_context, @line) =>
     @layout = Layout pango_context
-    @layout\set_text line.text, line.size
+    @layout\set_text line.ptr, line.size
     @nr = line.nr
     styling = buffer.styling\get(line.start_offset, line.end_offset)
     @layout.attributes = styles.get_attributes styling
@@ -106,7 +106,6 @@ DisplayLine = define_class {
 
       @_block
    }
-
 
   draw: (x, y, cr, clip) =>
     base_x = @view.base_x

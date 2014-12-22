@@ -34,6 +34,12 @@ scan_line = (base, offset, end_offset) ->
 
   offset, l_size, was_eol
 
+LineMt = {
+  __index: (line, k) ->
+    if k == 'text'
+      ffi_string line.ptr, line.size
+}
+
 Buffer = {
   new: (text = '') =>
     @listeners = {}
@@ -271,15 +277,16 @@ Buffer = {
       nr += 1
       end_offset = max next_p - base_offset, start_p + 1
 
-      lines[nr] = {
+      lines[nr] = setmetatable {
         :nr
-        text: text_ptr
+        ptr: text_ptr
         size: l_size
         full_size: end_offset - (start_p + 1) + 1
         start_offset: start_p + 1
         :end_offset
         has_eol: was_eol
-      }
+      }, LineMt
+
       offset = next_p
       last_was_eol = was_eol
 
