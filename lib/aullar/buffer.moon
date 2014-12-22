@@ -116,7 +116,7 @@ Buffer = {
       lines[i]
 
   get_line: (line) =>
-    @_scan_lines_to :line
+    @_scan_lines_to(:line) if @_last_scanned_line < line
     @_lines[line]
 
   get_line_at_offset: (offset) =>
