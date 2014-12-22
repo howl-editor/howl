@@ -80,21 +80,23 @@ Buffer = {
     @listeners = [l for l in *@listeners when l != listener]
 
   insert: (offset, text, size = #text) =>
+    invalidate_offset = min(offset, @text_buffer.gap_start + 1)
     len = C.g_utf8_strlen ffi_cast('const char *', text), size
     @text_buffer\insert offset - 1, text
     @_length += len
-    @_invalidate_lines_from_offset offset
+    @_invalidate_lines_from_offset invalidate_offset
     @offsets\adjust_for_insert offset - 1, size, len
     @styling\insert offset, size
 
     @_on_modification 'inserted', offset, text, size
 
   delete: (offset, count) =>
+    invalidate_offset = min(offset, @text_buffer.gap_start + 1)
     text = @sub offset, offset + count - 1
     len = C.g_utf8_strlen ffi_cast('const char *', text), count
     @text_buffer\delete offset - 1, count
     @_length -= len
-    @_invalidate_lines_from_offset offset
+    @_invalidate_lines_from_offset invalidate_offset
     @offsets\adjust_for_delete offset - 1, count, len
     @styling\delete offset, count
 
