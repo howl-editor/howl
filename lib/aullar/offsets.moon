@@ -15,8 +15,8 @@ band = bit.band
 
 ffi.cdef [[
   struct ao_mapping {
-    long c_offset;
-    long b_offset;
+    size_t c_offset;
+    size_t b_offset;
   }
 ]]
 
