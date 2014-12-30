@@ -72,7 +72,8 @@ define_class {
     count = min(tonumber(@gap_start), tonumber(offset))
     ffi_copy dest_ptr, src_ptr, count * @type_size
 
-    if @gap_start < offset -- fill from post gap
+    -- fill from current post gap if the new gap is above the old
+    if @gap_start < offset
       src_ptr = @array + @gap_end
       dest_ptr += count
       count = offset - count
@@ -87,6 +88,8 @@ define_class {
       ffi_copy dest_ptr, src_ptr, count * @type_size
       src_ptr = @array + @gap_end
       dest_ptr += count
+    elseif @gap_start == offset
+      src_ptr = @array + @gap_end
 
     -- the rest
     count = (arr + arr_size) - dest_ptr
@@ -100,6 +103,8 @@ define_class {
     @move_gap_to @size + 1
 
   insert: (offset, data, size = #data) =>
+    return if size == 0
+
     if size <= @gap_size
       @move_gap_to offset
     else
@@ -114,6 +119,8 @@ define_class {
     @gap_start += size
 
   delete: (offset, count) =>
+    return if count == 0
+
     if offset + count == @gap_start -- adjust gap start backwards
       @gap_start -= count
     elseif offset == @gap_end - @gap_size -- adjust gap end forward
