@@ -150,6 +150,7 @@ View = {
   properties: {
 
     showing: => @height != nil
+    has_focus: => @area.is_focus
 
     first_visible_line: {
       get: => @_first_visible_line
