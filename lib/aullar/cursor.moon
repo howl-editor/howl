@@ -208,12 +208,6 @@ Cursor = {
   end_of_line: (opts = {}) =>
     @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
 
-  ensure_in_bounds: =>
-    buffer = @view.buffer
-    if @_pos > buffer.size + 1
-      @_line = buffer.nr_lines
-      @_pos = buffer.size + 1
-
   _blink: =>
     return false if not @active
     if @_force_show

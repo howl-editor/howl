@@ -130,8 +130,8 @@ View = {
     }
 
     @_buffer_listener = {
-      on_inserted: (_, b, args) -> @\_on_buffer_modified b, args
-      on_deleted: (_, b, args) -> @\_on_buffer_modified b, args
+      on_inserted: (_, b, args) -> @\_on_buffer_modified b, args, 'insert'
+      on_deleted: (_, b, args) -> @\_on_buffer_modified b, args, 'delete'
       on_styled: (_, b, args) -> @\_on_buffer_styled b, args
       last_line_shown: (_, b) -> @last_visible_line
     }
@@ -442,23 +442,30 @@ View = {
 
     @_sync_scrollbars!
 
-  _on_buffer_modified: (buffer, args) =>
-    return unless @showing
-    lines_changed =  contains_newlines(args.text)
+  _on_buffer_modified: (buffer, args, type) =>
+    unless @showing
+      @_reset_display!
+      return
+
+    lines_changed = contains_newlines(args.text)
     if lines_changed
       @_last_visible_line = nil
 
-    @cursor\ensure_in_bounds!
+    -- adjust cursor if neccessary
+    if type == 'insert' and args.offset <= @cursor.pos
+      @cursor.pos += #args.text
+    elseif type == 'delete' and args.offset < @cursor.pos
+      @cursor.pos -= #args.text
 
     if args.styled
       @_on_buffer_styled buffer, args.styled
     else
       if lines_changed
-        @refresh_display args.offset, args.offset + args.size, invalidate: true
-        @_sync_scrollbars horizontal: true
-      else
         @refresh_display args.offset, nil, invalidate: true, gutter: true
         @_sync_scrollbars!
+      else
+        @refresh_display args.offset, args.offset + args.size, invalidate: true
+        @_sync_scrollbars horizontal: true
 
   _on_focus_in: =>
     @cursor.active = true
