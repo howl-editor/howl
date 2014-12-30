@@ -172,9 +172,19 @@ View = {
         @_last_visible_line
 
       set: (line) =>
-        -- todo: variable height lines
-        @first_visible_line = (line - @lines_showing) + 1
-        @_last_visible_line = line
+        return unless @showing
+
+        available = @height - @margin
+        first_visible = line
+        while first_visible > 1 and available > 0
+          d_line = @display_lines[first_visible]
+          break if available < d_line.height
+          available -= d_line.height
+          first_visible -= 1
+
+        @first_visible_line = first_visible
+        -- we don't actually set _last_visible_line here as it might
+        -- end up different than requested
     }
 
     lines_showing: =>
