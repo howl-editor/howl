@@ -133,24 +133,33 @@ Offsets = {
     tonumber m.b_offset + gb_byte_offset(gb, m.b_offset, char_offset - m.c_offset)
 
   adjust_for_insert: (byte_offset, bytes, characters) =>
-    @_adjust_mappings byte_offset, bytes, characters
+    mappings = @mappings
+    for i = 0, IDX_LAST
+      m = mappings[i]
+      if m.c_offset != 0 and m.b_offset > byte_offset
+        m.b_offset += bytes
+        m.c_offset += characters
 
   adjust_for_delete: (byte_offset, bytes, characters) =>
-    @_adjust_mappings byte_offset, -bytes, -characters
+    mappings = @mappings
+    for i = 0, IDX_LAST
+      m = mappings[i]
+      if m.c_offset != 0 and m.b_offset > byte_offset
+        -- update the mapping if we can
+        if m.b_offset > bytes
+          m.b_offset -= bytes
+          m.c_offset -= characters
+        else
+          -- but if the result would wrap around we give up
+          -- and invalidate all subsequent mapping
+          @invalidate_from m.b_offset
+          break
 
   invalidate_from: (byte_offset) =>
     mappings = @mappings
     for i = 0, IDX_LAST
       nm = mappings[i]
       nm.c_offset = 0 if nm.b_offset > byte_offset
-
-  _adjust_mappings: (byte_offset, b_delta, c_delta) =>
-    mappings = @mappings
-    for i = 0, IDX_LAST
-      m = mappings[i]
-      if m.b_offset > byte_offset
-        m.b_offset += b_delta
-        m.c_offset += c_delta
 }
 
 -> setmetatable { mappings: ffi.new "struct ao_mapping[#{NR_MAPPINGS}]" }, __index: Offsets
