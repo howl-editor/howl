@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
-C, ffi_string, ffi_copy, ffi_cast = ffi.C, ffi.string, ffi.copy, ffi.cast
+C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
 Styling = require 'aullar.styling'
@@ -71,9 +71,9 @@ Buffer = {
         @_lines = {}
 
         if old_text
-          @_on_modification 'deleted', 1, old_text, #old_text
+          @_on_modification 'deleted', 1, old_text, #old_text, 0
 
-        @_on_modification 'inserted', 1, text, size
+        @_on_modification 'inserted', 1, text, size, 0
         @offsets = Offsets!
         @_length = @offsets\char_offset(@text_buffer, @text_buffer.size)
     }
@@ -86,27 +86,31 @@ Buffer = {
     @listeners = [l for l in *@listeners when l != listener]
 
   insert: (offset, text, size = #text) =>
+    return if size == 0
+
     invalidate_offset = min(offset, @text_buffer.gap_start + 1)
-    len = C.g_utf8_strlen ffi_cast('const char *', text), size
+    len = C.g_utf8_strlen text, size
     @text_buffer\insert offset - 1, text
     @_length += len
     @_invalidate_lines_from_offset invalidate_offset
-    @offsets\adjust_for_insert offset - 1, size, len
+    @offsets\adjust_for_insert invalidate_offset - 1, size, len
     @styling\insert offset, size
 
-    @_on_modification 'inserted', offset, text, size
+    @_on_modification 'inserted', offset, text, size, invalidate_offset
 
   delete: (offset, count) =>
+    return if count == 0
+
     invalidate_offset = min(offset, @text_buffer.gap_start + 1)
     text = @sub offset, offset + count - 1
-    len = C.g_utf8_strlen ffi_cast('const char *', text), count
+    len = C.g_utf8_strlen text, count
     @text_buffer\delete offset - 1, count
     @_length -= len
     @_invalidate_lines_from_offset invalidate_offset
-    @offsets\adjust_for_delete offset - 1, count, len
+    @offsets\adjust_for_delete invalidate_offset - 1, count, len
     @styling\delete offset, count
 
-    @_on_modification 'deleted', offset, text, count
+    @_on_modification 'deleted', offset, text, count, invalidate_offset
 
   replace: (offset, count, replacement, replacement_size = #replacement) =>
     @delete offset, count
@@ -306,8 +310,8 @@ Buffer = {
           @_last_scanned_line = line.nr - 1
           break
 
-  _on_modification: (type, offset, text, size) =>
-    args = :offset, :text, :size
+  _on_modification: (type, offset, text, size, invalidate_offset) =>
+    args = :offset, :text, :size, :invalidate_offset
     contains_newlines = text\find('[\n\r]') != nil
 
     if @lexer

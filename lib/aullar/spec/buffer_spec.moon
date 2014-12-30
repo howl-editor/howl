@@ -536,7 +536,7 @@ describe 'Buffer', ->
         b\add_listener l1
         b\add_listener l2
         b\insert 3, 'xx'
-        args = offset: 3, text: 'xx', size: 2
+        args = offset: 3, text: 'xx', size: 2, invalidate_offset: 3
         assert.spy(l1.on_inserted).was_called_with l1, b, args
         assert.spy(l2.on_inserted).was_called_with l2, b, args
 
@@ -546,4 +546,9 @@ describe 'Buffer', ->
         b = Buffer 'hello'
         b\add_listener l1
         b\delete 3, 2
-        assert.spy(l1.on_deleted).was_called_with l1, b, offset: 3, text: 'll', size: 2
+        assert.spy(l1.on_deleted).was_called_with l1, b, {
+          offset: 3,
+          text: 'll',
+          size: 2,
+          invalidate_offset: 3
+        }
