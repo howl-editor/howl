@@ -339,6 +339,13 @@ View = {
 
     nil
 
+  text_dimensions: (text) =>
+    p_ctx = @area.pango_context
+    layout = Pango.Layout p_ctx
+    layout.text = text
+    width, height = layout\get_pixel_size!
+    :width, :height
+
   _draw: (cr) =>
     p_ctx = @area.pango_context
     cursor_pos = @cursor.pos - 1
