@@ -145,7 +145,7 @@ View = {
         family: config.font_name,
         size: config.font_size * Pango.SCALE
       }
-      @refresh_display 0, nil, invalidate: true
+      @_reset_display!
 
   properties: {
 
