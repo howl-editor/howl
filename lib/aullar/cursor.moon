@@ -105,9 +105,10 @@ Cursor = {
       @selection\clear!
 
     old_line = @buffer_line
-    unless old_line
+    unless old_line -- old pos/line is gone
       @_pos = @view.buffer.size + 1
-      old_line = @view.buffer\get_line(@view.buffer.nr_lines)
+      @_line = @view.buffer.nr_lines
+      old_line = @view.buffer\get_line(@_line)
 
     -- are we moving to another line?
     if not pos_is_in_line(pos, old_line) or not is_showing_line @view, old_line.nr
