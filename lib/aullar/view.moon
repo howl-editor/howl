@@ -160,7 +160,6 @@ View = {
       get: =>
         unless @_last_visible_line
           return 0 unless @height
-          error "Can't determine last visible line until shown", 2 unless @height
           @_last_visible_line = 1
 
           y = @margin
@@ -280,7 +279,7 @@ View = {
       before = line.end_offset < from_offset and line.has_eol
       d_line = d_lines[line_nr]
 
-      if not(before or after) or (after and not to_offset)
+      if not before
         d_lines[line.nr] = nil if opts.invalidate
         min_y or= y
         max_y = y + d_line.height
