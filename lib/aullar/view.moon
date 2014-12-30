@@ -346,6 +346,18 @@ View = {
     width, height = layout\get_pixel_size!
     :width, :height
 
+  _invalidate_display: (from_offset, to_offset) =>
+    return unless @width
+    for line_nr = @_first_visible_line, @last_visible_line + 1
+      d_line = rawget @display_lines, line_nr
+      continue unless d_line
+      line = d_line.line
+      after = line.start_offset > to_offset
+      break if after
+      before = line.end_offset < from_offset and line.has_eol
+      if not before
+        @display_lines[line_nr] = nil
+
   _draw: (cr) =>
     p_ctx = @area.pango_context
     cursor_pos = @cursor.pos - 1
@@ -456,6 +468,9 @@ View = {
       @cursor.pos += #args.text
     elseif type == 'delete' and args.offset < @cursor.pos
       @cursor.pos -= #args.text
+
+    if args.offset > args.invalidate_offset
+      @_invalidate_display args.invalidate_offset, args.offset
 
     if args.styled
       @_on_buffer_styled buffer, args.styled
