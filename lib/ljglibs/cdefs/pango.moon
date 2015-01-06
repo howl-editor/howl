@@ -268,8 +268,11 @@ ffi.cdef [[
     guint        resolved_dir : 3;  /* Resolved PangoDirection of line */
   } PangoLayoutLine;
 
+  typedef struct {} PangoLayoutIter;
+
   PangoLayout * pango_layout_new (PangoContext *context);
   void pango_layout_set_text (PangoLayout *layout, const char *text, int length);
+  const char *pango_layout_get_text (PangoLayout *layout);
   void pango_layout_get_pixel_size (PangoLayout *layout, int *width, int *height);
   void pango_layout_set_alignment (PangoLayout *layout, PangoAlignment alignment);
   PangoAlignment pango_layout_get_alignment (PangoLayout *layout);
@@ -283,13 +286,22 @@ ffi.cdef [[
   PangoAttrList * pango_layout_get_attributes (PangoLayout *layout);
   void pango_layout_set_font_description (PangoLayout *layout, const PangoFontDescription *desc);
   const PangoFontDescription * pango_layout_get_font_description (PangoLayout *layout);
+  int pango_layout_get_baseline (PangoLayout *layout);
 
   void pango_layout_index_to_pos (PangoLayout *layout, int index, PangoRectangle *pos);
+
   gboolean pango_layout_xy_to_index (PangoLayout *layout,
                                      int x,
                                      int y,
                                      int *index_,
                                      int *trailing);
+
+  void pango_layout_index_to_line_x (PangoLayout *layout,
+                                     int index_,
+                                     gboolean trailing,
+                                     int *line,
+                                     int *x_pos);
+
   void pango_layout_move_cursor_visually (PangoLayout *layout,
                                           gboolean strong,
                                           int old_index,
@@ -298,8 +310,26 @@ ffi.cdef [[
                                           int *new_index,
                                           int *new_trailing);
 
+  /* PangoLayoutLine */
+  PangoLayoutLine * pango_layout_line_ref (PangoLayoutLine *line);
+  void pango_layout_line_unref (PangoLayoutLine *line);
   PangoLayoutLine * pango_layout_get_line (PangoLayout *layout, int line);
   PangoLayoutLine * pango_layout_get_line_readonly (PangoLayout *layout, int line);
+  void pango_layout_line_get_pixel_extents (PangoLayoutLine *layout_line,
+                                     PangoRectangle *ink_rect,
+                                     PangoRectangle *logical_rect);
+
+  /* PangoLayoutIter */
+  PangoLayoutIter * pango_layout_get_iter (PangoLayout *layout);
+  void pango_layout_iter_free (PangoLayoutIter *iter);
+  gboolean pango_layout_iter_next_line (PangoLayoutIter *iter);
+  gboolean pango_layout_iter_at_last_line (PangoLayoutIter *iter);
+  int pango_layout_iter_get_baseline (PangoLayoutIter *iter);
+  PangoLayoutLine * pango_layout_iter_get_line (PangoLayoutIter *iter);
+  PangoLayoutLine * pango_layout_iter_get_line_readonly (PangoLayoutIter *iter);
+  void pango_layout_iter_get_line_yrange (PangoLayoutIter *iter,
+                                   int *y0_,
+                                   int *y1_);
 
   /* PangoCairo */
   PangoContext * pango_cairo_create_context (cairo_t *cr);

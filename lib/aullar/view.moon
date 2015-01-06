@@ -315,7 +315,7 @@ View = {
         @area\queue_draw_area start_x, min_y, width, height
 
   position_from_coordinates: (x, y) =>
-    return unless @width
+    return nil unless @showing
     cur_y = @margin
 
     for line_nr = @_first_visible_line, @last_visible_line + 1
@@ -323,7 +323,7 @@ View = {
       return nil unless d_line
       end_y = cur_y + d_line.height
       if (y >= cur_y and y <= end_y)
-        pango_x = (x - @edit_area_x + @base_x) * 1024
+        pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
         inside, index = d_line.layout\xy_to_index pango_x, 1
         if not inside
           index += 1 if index > 0 -- move to the ending new line
@@ -336,6 +336,46 @@ View = {
         return @_buffer\get_line(line_nr).start_offset + index
 
       cur_y = end_y
+
+    nil
+
+  coordinates_from_position: (pos) =>
+    return nil unless @showing
+    line = @buffer\get_line_at_offset pos
+    return nil unless line
+    return nil if line.nr < @_first_visible_line or line.nr > @last_visible_line
+    y = @margin
+    x = @edit_area_x
+
+    for line_nr = @_first_visible_line, @last_visible_line
+      d_line = @display_lines[line_nr]
+      line = d_line.line
+
+      if pos >= line.start_offset and (pos <= line.end_offset or not line.has_eol)
+        -- it's somewhere within this line..
+        layout = d_line.layout
+        index = pos - line.start_offset -- <-- at this byte index
+
+        -- get the x bounds
+        layout_line_nr, x_start = layout\index_to_line_x index, 0
+        _, x_end = layout\index_to_line_x index, 1
+
+        -- now we have the x bounds, but so far only the nr of the layout line,
+        -- and we don't know where the y bounds are (think line wrapping)
+        -- we need to iterate through due to the Pango API
+        iter = layout.iter
+        for nr = 0, layout_line_nr do iter\next_line!
+        yrange = iter.yrange
+
+        -- ..and we're set
+        return {
+          x: x + (x_start / Pango.SCALE),
+          x2: x + (x_end / Pango.SCALE),
+          y: y + (yrange.y0 / Pango.SCALE),
+          y2: y + (yrange.y1 / Pango.SCALE)
+        }
+
+      y += d_line.height
 
     nil
 
