@@ -267,7 +267,7 @@ View = {
 
   insert: (text) =>
     @_buffer\insert @cursor.pos, text
-    @cursor.pos += #text
+    notify @, 'on_insert_at_cursor', :text
 
   delete_back: =>
     cur_line = @cursor.line
