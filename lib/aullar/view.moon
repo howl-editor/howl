@@ -71,9 +71,9 @@ View = {
   new: (buffer = Buffer('')) =>
     @margin = 3
     @_base_x = 0
-
     @_first_visible_line = 1
     @_last_visible_line = nil
+    @config = config.local_proxy!
 
     @area = Gtk.DrawingArea!
     @selection = Selection @
@@ -96,8 +96,8 @@ View = {
       \on_focus_out_event signals.on_focus_out, @
 
       font_desc = Pango.FontDescription {
-        family: config.font_name,
-        size: config.font_size * Pango.SCALE
+        family: @config.view_font_name,
+        size: @config.view_font_size * Pango.SCALE
       }
       \override_font font_desc
 
@@ -108,7 +108,7 @@ View = {
       @area\queue_draw!
 
     @horizontal_scrollbar_alignment = Gtk.Alignment {
-      left_padding: @line_gutter.width,
+      left_padding: @gutter_width,
       @horizontal_scrollbar
     }
 
@@ -137,20 +137,23 @@ View = {
     }
 
     @buffer = buffer
-    config.add_listener self\_on_config_changed
+    @config\add_listener self\_on_config_changed
 
   _on_config_changed: (option, val, old_val) =>
-    if option == 'font_name' or option == 'font_size'
+    if option == 'view_font_name' or option == 'view_font_size'
       @area\override_font Pango.FontDescription {
-        family: config.font_name,
-        size: config.font_size * Pango.SCALE
+        family: @config.view_font_name,
+        size: @config.view_font_size * Pango.SCALE
       }
+
+    if option\match '^view_'
       @_reset_display!
 
   properties: {
 
     showing: => @height != nil
     has_focus: => @area.is_focus
+    gutter_width: =>  @config.view_show_line_numbers and @line_gutter.width or 0
 
     first_visible_line: {
       get: => @_first_visible_line
@@ -206,7 +209,7 @@ View = {
         @_sync_scrollbars horizontal: true
     }
 
-    edit_area_x: => @line_gutter.width + @margin
+    edit_area_x: => @gutter_width + @margin
     edit_area_width: => @width - @edit_area_x
 
     buffer: {
@@ -308,7 +311,8 @@ View = {
       @display_lines.max = last_valid
 
     if min_y
-      start_x = opts.gutter and 0 or @line_gutter.width + 1
+      start_x = @gutter_width + 1
+      start_x = 0 if opts.gutter or start_x == 1
       width = @width - start_x
       height = (max_y - min_y) + 1
       if width > 0
@@ -403,7 +407,8 @@ View = {
     cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
 
-    @line_gutter\start_draw cr, p_ctx, clip
+    if @config.view_show_line_numbers
+      @line_gutter\start_draw cr, p_ctx, clip
 
     edit_area_x, y = @edit_area_x, @margin
     cr\move_to edit_area_x, y
@@ -440,7 +445,8 @@ View = {
       if @selection\affects_line line
         @selection\draw_overlay edit_area_x, y, cr, display_line, line
 
-      @line_gutter\draw_for_line line.nr, 0, y, display_line
+      if @config.view_show_line_numbers
+        @line_gutter\draw_for_line line.nr, 0, y, display_line
 
       if line.nr == current_line
         @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip
@@ -532,7 +538,7 @@ View = {
     @_reset_display!
 
   _on_button_press: (event) =>
-    return if event.x <= @line_gutter.width
+    return if event.x <= @gutter_width
     return if event.button != 1
 
     extend = bit.band(event.state, Gdk.SHIFT_MASK) != 0
