@@ -23,10 +23,16 @@ describe 'GapBuffer', ->
   get_text = (b) ->
     ffi.string(b\get_ptr(0, b.size), b.size)
 
-  it 'starts out with the gap at the end of the buffer', ->
-    b = buffer '01234'
-    assert.equals 5, b.gap_start
-    assert.equals b.gap_size + b.gap_start, b.gap_end
+  describe 'a new gap buffer', ->
+    it 'starts out with the gap at the end of the buffer', ->
+      b = buffer '01234'
+      assert.equals 5, b.gap_start
+      assert.equals b.gap_size + b.gap_start, b.gap_end
+
+    it 'zero-fills the gap', ->
+      b = buffer '01234'
+      for i = b.gap_start, b.gap_end - 1
+        assert.equals 0, b.array[i]
 
   describe 'set(data, size)', ->
     it 'replaces the buffer contents with the given data', ->
@@ -133,6 +139,16 @@ describe 'GapBuffer', ->
       assert.equals new_size, b.gap_size
       assert.equals b.gap_size + b.gap_start, b.gap_end
       assert.same { '01', '234' }, parts(b)
+
+    it 'handles extending the gap at the end of the buffer', ->
+      b = buffer '01234', 4
+      b\move_gap_to 2
+      new_size = b.gap_size + 10
+      b\extend_gap_at 5, new_size
+      assert.equals 5, b.gap_start
+      assert.equals new_size, b.gap_size
+      assert.equals b.gap_size + b.gap_start, b.gap_end
+      assert.same { '01234' }, parts(b)
 
   describe 'get_ptr(offset, size)', ->
     it 'returns a pointer to an array starting at offset, valid for <size> bytes', ->
@@ -253,6 +269,22 @@ describe 'GapBuffer', ->
       assert.same { 'goo', 'world' }, parts(b)
 
       assert.equals 'gooworld', get_text(b)
+
+    it 'zero-fills the deleted content', ->
+      b = buffer 'goodbye world'
+
+      assert_zero_filled = ->
+        for i = b.gap_start, b.gap_end - 1
+          assert.equals 0, b.array[i]
+
+      b\delete 4, 3 -- random access delete
+      assert_zero_filled!
+
+      b\delete 3, 1 -- delete back from gap start
+      assert_zero_filled!
+
+      b\delete 3, 1 -- delete forward at gap end
+      assert_zero_filled!
 
   describe 'replace(offset, count, replacement, replacement_size)', ->
     it 'replaces the specified number of unit with the replacement', ->

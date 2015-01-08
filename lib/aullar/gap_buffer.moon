@@ -41,10 +41,8 @@ define_class {
       arr
 
   move_gap_to: (offset) =>
-    if offset > @size
-      offset = @size
-    elseif offset < 0
-      offset = 0
+    if offset < 0 or offset > @size
+      error "GapBuffer#move_gap_to: Illegal offset #{offset} (size #{@size})", 2
 
     delta = offset - @gap_start
     return if delta == 0
@@ -63,6 +61,9 @@ define_class {
     ffi_fill @array + @gap_start, @gap_size * @type_size
 
   extend_gap_at: (offset, gap_size) =>
+    if offset < 0 or offset > @size
+      error "GapBuffer#extend_gap_at: Illegal offset #{offset} (size #{@size})", 2
+
     arr_size = @size + gap_size
     arr = self.new_arr arr_size
     src_ptr = @array
@@ -100,10 +101,12 @@ define_class {
     @gap_end = offset + gap_size
 
   compact: =>
-    @move_gap_to @size + 1
+    @move_gap_to @size
 
   insert: (offset, data, size = #data) =>
     return if size == 0
+    if offset < 0 or offset > @size
+      error "GapBuffer#insert: Illegal offset #{offset} (size #{@size})", 2
 
     if size <= @gap_size
       @move_gap_to offset
@@ -121,13 +124,17 @@ define_class {
   delete: (offset, count) =>
     return if count == 0
 
-    if offset + count == @gap_start -- adjust gap start backwards
-      @gap_start -= count
-    elseif offset == @gap_end - @gap_size -- adjust gap end forward
+    if offset == @gap_end - @gap_size -- adjust gap end forward
+      ffi_fill @array + @gap_end, count * @type_size -- zero fill
       @gap_end += count
     else
-      @move_gap_to offset + count
-      @gap_start -= count
+      if offset + count == @gap_start -- adjust gap start backwards
+        @gap_start -= count
+      else
+        @move_gap_to offset + count
+        @gap_start -= count
+
+      ffi_fill @array + @gap_start, count * @type_size -- zero fill
 
     @size -= count
 
@@ -159,4 +166,5 @@ define_class {
     @size = size
     @gap_start = size
     @gap_end = arr_size
+    ffi_fill @array + @gap_start, @gap_size * @type_size
 }
