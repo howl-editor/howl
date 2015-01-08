@@ -455,7 +455,8 @@ View = {
       y += display_line.height
       cr\move_to edit_area_x, y
 
-    @line_gutter\end_draw!
+    if @config.view_show_line_numbers
+      @line_gutter\end_draw!
 
   _reset_display: =>
     @_last_visible_line = nil
