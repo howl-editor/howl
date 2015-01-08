@@ -86,6 +86,7 @@ DisplayLine = define_class {
   new: (@display_lines, @view, buffer, pango_context, @line) =>
     @layout = Layout pango_context
     @layout\set_text line.ptr, line.size
+    @layout.tabs = display_lines.tab_array
     @nr = line.nr
     styling = buffer.styling\get(line.start_offset, line.end_offset)
     @layout.attributes = styles.get_attributes styling
@@ -130,9 +131,10 @@ DisplayLine = define_class {
     cr\restore! if base_x > 0
 }
 
-(view, buffer, pango_context) ->
+(view, tab_array, buffer, pango_context) ->
   setmetatable {
     max: 0
+    tab_array: tab_array
   }, {
     __index: (nr) =>
       line = buffer\get_line nr

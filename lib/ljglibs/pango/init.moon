@@ -74,7 +74,10 @@ core.auto_loading 'pango', {
 
     -- PangoAttributeConstants
     'ATTR_INDEX_FROM_TEXT_BEGINNING',
-    'ATTR_INDEX_TO_TEXT_END'
+    'ATTR_INDEX_TO_TEXT_END',
+
+    -- PangoTabAlign
+    'TAB_LEFT'
   },
 
   SCALE: 1024

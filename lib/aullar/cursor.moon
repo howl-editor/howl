@@ -208,6 +208,10 @@ Cursor = {
   end_of_line: (opts = {}) =>
     @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
 
+  draw: (x, base_y, cr, display_line) =>
+    return unless @_showing
+    @normal_flair\draw display_line, @column, @column + 1, x, base_y, cr
+
   _blink: =>
     return false if not @active
     if @_force_show
@@ -218,10 +222,6 @@ Cursor = {
     @_showing = not @_showing
     @view\refresh_display cur_line.start_offset, cur_line.end_offset
     true
-
-  draw: (x, base_y, cr, display_line) =>
-    return unless @_showing
-    @normal_flair\draw display_line, @column, @column + 1, x, base_y, cr
 
   _get_line: (nr) =>
     @view.buffer\get_line nr

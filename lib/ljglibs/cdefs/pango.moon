@@ -21,6 +21,34 @@ ffi.cdef [[
   PangoFontDescription * pango_font_description_from_string (const char *str);
   char * pango_font_description_to_string (const PangoFontDescription *desc);
 
+  /* PangoTabArray */
+  typedef enum {
+    PANGO_TAB_LEFT
+  } PangoTabAlign;
+
+  typedef struct {} PangoTabArray;
+  PangoTabArray * pango_tab_array_new (gint initial_size, gboolean positions_in_pixels);
+  PangoTabArray * pango_tab_array_new_with_positions (gint size,
+                                                      gboolean positions_in_pixels,
+                                                      PangoTabAlign first_alignment,
+                                                      gint first_position,
+                                                      ...);
+
+  void pango_tab_array_free (PangoTabArray *tab_array);
+  gint pango_tab_array_get_size (PangoTabArray *tab_array);
+
+  void pango_tab_array_set_tab (PangoTabArray *tab_array,
+                                gint tab_index,
+                                PangoTabAlign alignment,
+                                gint location);
+
+  void pango_tab_array_get_tab (PangoTabArray *tab_array,
+                                gint tab_index,
+                                PangoTabAlign *alignment,
+                                gint *location);
+
+  gboolean pango_tab_array_get_positions_in_pixels (PangoTabArray *tab_array);
+
   /* PangoContext */
   typedef struct {} PangoContext;
 
@@ -330,6 +358,9 @@ ffi.cdef [[
   void pango_layout_iter_get_line_yrange (PangoLayoutIter *iter,
                                    int *y0_,
                                    int *y1_);
+
+  void pango_layout_set_tabs (PangoLayout *layout, PangoTabArray *tabs);
+  PangoTabArray * pango_layout_get_tabs (PangoLayout *layout);
 
   /* PangoCairo */
   PangoContext * pango_cairo_create_context (cairo_t *cr);

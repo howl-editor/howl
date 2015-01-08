@@ -5,6 +5,7 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.pango'
 core = require 'ljglibs.core'
 require 'ljglibs.pango.font_description'
+require 'ljglibs.pango.tab_array'
 import gc_ptr from require 'ljglibs.gobject'
 
 C, ffi_new, ffi_string, ffi_gc = ffi.C, ffi.new, ffi.string, ffi.gc
@@ -84,6 +85,11 @@ core.define 'PangoLayout', {
         desc != nil and desc or nil
 
       set: (desc) => C.pango_layout_set_font_description @, desc
+    }
+
+    tabs: {
+      get: => C.pango_layout_get_tabs @
+      set: (tabs) => C.pango_layout_set_tabs @, tabs
     }
 
     iter: =>

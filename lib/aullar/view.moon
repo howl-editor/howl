@@ -460,7 +460,15 @@ View = {
 
   _reset_display: =>
     @_last_visible_line = nil
-    @display_lines = DisplayLines @, @buffer, @area.pango_context
+    p_ctx = @area.pango_context
+    layout = Pango.Layout p_ctx
+    layout.text = ' '
+    width_of_space = layout\get_pixel_size!
+    tab_size = @config.view_tab_size
+    location = width_of_space * tab_size
+    @_tab_array = Pango.TabArray(1, true, location)
+
+    @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
 
   _on_buffer_styled: (buffer, args) =>
     return unless @showing
