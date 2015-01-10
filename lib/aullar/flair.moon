@@ -43,11 +43,19 @@ draw_ops = {
     cr\rel_line_to width, 0
     cr\stroke!
 
+  underline: (x, y, width, height, cr, opts) ->
+    set_source_from_color cr, 'foreground', opts
+    cr.line_width = opts.line_width or 0.5
+
+    cr\move_to x, y + height - 0.5
+    cr\rel_line_to width, 0
+    cr\stroke!
 }
 
 define_class {
   RECTANGLE: 'rectangle'
   SANDWICH: 'sandwich'
+  UNDERLINE: 'underline'
 
   new: (flair_type, opts) =>
     @_draw = draw_ops[flair_type]
