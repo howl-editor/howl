@@ -19,10 +19,6 @@ describe 'Cursor', ->
     window\show_all!
     pump_mainloop!
 
-  it 'starts at out pos 1, line 1', ->
-    assert.equals 1, cursor.pos
-    assert.equals 1, cursor.line
-
   describe 'forward()', ->
     it 'moves the cursor one character forward', ->
       buffer.text = 'åäö'
@@ -47,6 +43,7 @@ describe 'Cursor', ->
 
     it 'moves to the next line if needed', ->
       buffer.text = 'å\nnext'
+      cursor.pos = 1
       cursor\forward!
       cursor\forward!
       assert.equals 2, cursor.line
@@ -67,12 +64,28 @@ describe 'Cursor', ->
 
     it 'does nothing if the cursor is at the first line', ->
       buffer.text = 'line 1\nline 2'
+      cursor.pos = 1
       cursor\up!
       assert.equals 1, cursor.pos
+
+    it 'respects the remembered column', ->
+      buffer.text = '12345\n12\n1234'
+      cursor.line = 3
+      cursor.column = 4
+      cursor\remember_column!
+
+      cursor\up!
+      assert.equal 2, cursor.line
+      assert.equal 3, cursor.column
+
+      cursor\up!
+      assert.equal 1, cursor.line
+      assert.equal 4, cursor.column
 
   describe 'down()', ->
     it 'moves the cursor one line down', ->
       buffer.text = 'line 1\nline 2'
+      cursor.pos = 1
       cursor\down!
       assert.equals 2, cursor.line
 
@@ -81,3 +94,16 @@ describe 'Cursor', ->
       cursor.pos = 8
       cursor\down!
       assert.equals 8, cursor.pos
+
+    it 'respects the remembered column', ->
+      buffer.text = '12345\n12\n1234'
+      cursor.pos = 4
+      cursor\remember_column!
+
+      cursor\down!
+      assert.equal 2, cursor.line
+      assert.equal 3, cursor.column
+
+      cursor\down!
+      assert.equal 3, cursor.line
+      assert.equal 4, cursor.column

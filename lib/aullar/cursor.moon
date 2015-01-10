@@ -28,6 +28,7 @@ Cursor = {
     @_pos = 1
     @_active = false
     @_showing = true
+    @_sticky_x = nil
 
     @normal_flair = Flair(Flair.RECTANGLE, {
       background: '#c30000'
@@ -60,7 +61,7 @@ Cursor = {
 
     column: {
       get: => (@pos - @buffer_line.start_offset) + 1
-      set: (colum) => @pos = @buffer_line.start_offset + colum - 1
+      set: (column) => @move_to pos: @buffer_line.start_offset + column - 1
     }
 
     pos: {
@@ -80,6 +81,10 @@ Cursor = {
         @_active = active
     }
   }
+
+  remember_column: =>
+    cur_rect = @display_line.layout\index_to_pos @column - 1
+    @_sticky_x = cur_rect.x
 
   in_line: (line) =>
     pos_is_in_line @_pos, line
@@ -126,6 +131,13 @@ Cursor = {
           @view.first_visible_line = dest_line.nr
         else
           @view.last_visible_line = dest_line.nr
+
+      -- adjust for the remembered column if appropriate
+      if @_sticky_x and opts.line
+        inside, index = @display_line.layout\xy_to_index @_sticky_x, 1
+        index += 1 if not inside and index > 0 -- move to the ending new line
+        pos = dest_line.start_offset + index
+
     else -- staying on same line, refresh it
       @view\refresh_display old_line.start_offset, old_line.end_offset
 
@@ -135,6 +147,9 @@ Cursor = {
     @_pos = pos
     @_force_show = true
     @_showing = true
+
+    if not opts.line or not @_sticky_x
+      @remember_column!
 
     -- finally, do we need to scroll horizontally to show the new position?
     rect = @display_line.layout\index_to_pos @column
@@ -172,14 +187,14 @@ Cursor = {
     @move_to pos: line_start + new_index, extend: opts.extend
 
   up: (opts = {}) =>
-    prev = @_get_line @line - 1
-    if prev
-      @move_to pos: prev.start_offset, extend: opts.extend
+    prev = @line - 1
+    if prev >= 1
+      @move_to line: prev, extend: opts.extend
 
   down: (opts = {}) =>
-    next = @_get_line @line + 1
-    if next
-      @move_to pos: next.start_offset, extend: opts.extend
+    next = @line + 1
+    if next <= @view.buffer.nr_lines
+      @move_to line: next, extend: opts.extend
 
   page_up: (opts = {}) =>
     if @view.first_visible_line == 1
