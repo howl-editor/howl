@@ -272,11 +272,14 @@ View = {
     notify @, 'on_insert_at_cursor', :text
 
   delete_back: =>
-    cur_line = @cursor.line
     cur_pos = @cursor.pos
     @cursor\backward!
     size = cur_pos - @cursor.pos
-    @_buffer\delete(@cursor.pos, size) if size > 0
+
+    if size > 0
+      text = @_buffer\sub @cursor.pos, @cursor.pos + size
+      @_buffer\delete(@cursor.pos, size)
+      notify @, 'on_delete_back', :text, pos: cur_pos
 
   to_gobject: => @bin
 
