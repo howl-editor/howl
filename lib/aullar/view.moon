@@ -361,24 +361,12 @@ View = {
         -- it's somewhere within this line..
         layout = d_line.layout
         index = pos - line.start_offset -- <-- at this byte index
-
-        -- get the x bounds
-        layout_line_nr, x_start = layout\index_to_line_x index, 0
-        _, x_end = layout\index_to_line_x index, 1
-
-        -- now we have the x bounds, but so far only the nr of the layout line,
-        -- and we don't know where the y bounds are (think line wrapping)
-        -- we need to iterate through due to the Pango API
-        iter = layout.iter
-        for nr = 0, layout_line_nr do iter\next_line!
-        yrange = iter.yrange
-
-        -- ..and we're set
+        rect =  layout\index_to_pos index
         return {
-          x: x + (x_start / Pango.SCALE),
-          x2: x + (x_end / Pango.SCALE),
-          y: y + (yrange.y0 / Pango.SCALE),
-          y2: y + (yrange.y1 / Pango.SCALE)
+          x: x + (rect.x / Pango.SCALE)
+          x2: x + ((rect.x + rect.width) / Pango.SCALE)
+          y: y + (rect.y / Pango.SCALE)
+          y2: y + ((rect.y + rect.height) / Pango.SCALE)
         }
 
       y += d_line.height
