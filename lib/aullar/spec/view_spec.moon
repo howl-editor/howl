@@ -1,4 +1,4 @@
--- Copyright 2012-2014 The Howl Developers
+-- Copyright 2014 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Cursor = require 'aullar.cursor'

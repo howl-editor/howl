@@ -178,11 +178,13 @@ View = {
       set: (line) =>
         return unless @showing
 
+        last_line_height = @display_lines[line].height
         available = @height - @margin
         first_visible = line
-        while first_visible > 1 and available > 0
+
+        while first_visible > 1
           d_line = @display_lines[first_visible]
-          break if available < d_line.height
+          break if (available - d_line.height) < last_line_height
           available -= d_line.height
           first_visible -= 1
 
