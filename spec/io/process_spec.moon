@@ -69,6 +69,16 @@ describe 'Process', ->
         assert.equal 'foo=bar', out.stripped
         done!
 
+    it 'works with large process outputs', (done) ->
+      howl_async ->
+        File.with_tmpfile (f) ->
+          file_contents = string.rep "xxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzz\n", 5000
+          f.contents = file_contents
+          status, out = pcall Process.execute, "cat #{f.path}"
+          assert.is_true status
+          assert.equal file_contents, out
+          done!
+
   describe 'pump(on_stdout, on_stderr)', ->
 
     context 'when the <on_stdout> handler is provided', ->

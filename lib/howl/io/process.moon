@@ -100,10 +100,12 @@ class Process
       p.stdin\write opts.stdin
       p.stdin\close!
 
-    p\wait!
-    out = p.stdout\read_all!
-    err = p.stderr\read_all!
-    out, err, p
+    stdout = {}
+    stderr = {}
+    on_stdout = (out) -> stdout[#stdout + 1] = out
+    on_stderr = (err) -> stderr[#stderr + 1] = err
+    p\pump on_stdout, on_stderr
+    table.concat(stdout), table.concat(stderr), p
 
   new: (opts) =>
     jit.off true, true
