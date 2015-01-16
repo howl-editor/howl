@@ -261,20 +261,6 @@ common_auto_pairs = {
     auto_pairs: common_auto_pairs
     parent: 'curly_mode'
 
-  php:
-    extensions: { 'inc', 'php', 'php3', 'php4', 'phtml' }
-    shebangs: '[/ ]php.*$'
-    comment_syntax: '//'
-    auto_pairs: {
-      '(': ')'
-      '[': ']'
-      '{': '}'
-      '"': '"'
-      "'": "'"
-      '<': '>'
-    }
-    parent: 'curly_mode'
-
   pike:
     extensions: { 'pike', 'pmod' }
     comment_syntax: '//'
