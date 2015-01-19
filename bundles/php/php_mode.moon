@@ -17,7 +17,6 @@ local lexers
 
   lexer: (text, buffer, opts) ->
     lexers or= bundle_load('php_lexer')
-    moon.p opts
     lexer = opts and opts.sub_lexing and lexers.php
     if not lexer and buffer
       buf_start = buffer\sub 1, 30
