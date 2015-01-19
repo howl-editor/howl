@@ -109,7 +109,7 @@ sub_lex_capture = (subject, cur_pos, mode_name, sub_text) ->
     append ret, 'embedded'
     append ret, cur_pos
   else
-    append ret, m.lexer(sub_text)
+    append ret, m.lexer(sub_text, nil, sub_lexing: true)
     append ret, "#{mode_name}|embedded"
 
   unpack ret
@@ -130,7 +130,7 @@ pattern_sub_lex_capture = (subject, cur_pos, mode_name, mode_style, sub_text) ->
     append ret, 'embedded'
     append ret, cur_pos
   else
-    append ret, m.lexer(sub_text)
+    append ret, m.lexer(sub_text, nil, sub_lexing: true)
     append ret, "#{mode_name}|embedded"
 
   unpack ret
