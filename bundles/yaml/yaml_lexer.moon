@@ -3,11 +3,11 @@
 
 howl.aux.lpeg_lexer ->
 
-  comment = capture 'comment', span('#' * space^1, eol)
+  comment = capture 'comment', span('#', eol)
   directive = capture 'preproc', span('---', eol)
   delimiter = capture('special', '...') * eol
   operator = capture 'operator', S'-:&*?!(){}[]'
-  key = capture('key', alpha * (alpha + S'-_')^0) * #(space^0 * ':' * space^1)
+  key = capture('key', alpha * (alnum + S'-_')^0) * #(space^0 * ':' * space^1)
   dq_string = capture 'string', span('"', '"', '\\')
   sq_string = capture 'string', span("'", "'")
   string = any{ dq_string, sq_string }

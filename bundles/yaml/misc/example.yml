@@ -1,8 +1,12 @@
 --- !clarkevans.com/^invoice
 
 # comment
+#
+
 invoice: 34843
 date   : 2001-01-23
+a1_foo : other
+
 bill-to: &id001
     given  : 'Chris'
     family : "Dumars"
