@@ -17,7 +17,7 @@ config.define {
 config.define {
   name: 'word_pattern'
   description: 'A pattern determining what constitutes a "word" in a buffer'
-  default: r'[\\pL_][\\pL\\d_]*'
+  default: r'\\b[\\pL_][\\pL\\d_]*\\b'
 }
 
 config.define

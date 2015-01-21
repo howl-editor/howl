@@ -10,7 +10,7 @@ is_header = (line) ->
   lexer: bundle_load('markdown_lexer')
 
   default_config:
-    word_pattern: '%w[%w%d_-]+'
+    word_pattern: r'\\b\\w[\\w\\d_-]+\\b'
     cursor_line_highlighted: false
 
   auto_pairs: {

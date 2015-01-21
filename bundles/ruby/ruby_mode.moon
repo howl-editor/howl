@@ -40,7 +40,7 @@ continuation_indent = (line, indent_level) ->
   comment_syntax: '#'
 
   default_config:
-    word_pattern: '%w[%w%d_]+[?!=]?'
+    word_pattern: r'\\b\\w[\\w\\d_]+[?!=]?\\b'
 
   indentation: {
     more_after: {
