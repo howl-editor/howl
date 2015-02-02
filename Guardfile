@@ -17,7 +17,7 @@ end
 
 guard :shell do
 
-  directories %w(lib spec)
+  directories %w(lib spec bundles)
 
   watch %r|.*_spec\.moon$| do |m|
     process_spec m[0]
