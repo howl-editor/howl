@@ -85,3 +85,13 @@ describe 'View', ->
       buffer\delete 3, 1
       assert.equals 3, cursor.pos
 
+    it 'only adjust the cursor by the affected amount', ->
+      buffer.text = '12345'
+      cursor.pos = 3
+      buffer\delete 2, 3
+      assert.equals 2, cursor.pos
+
+      buffer.text = '123456789'
+      cursor.pos = 8
+      buffer\delete 2, 3
+      assert.equals 5, cursor.pos

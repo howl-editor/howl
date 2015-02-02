@@ -503,6 +503,12 @@ View = {
     @_sync_scrollbars!
 
   _on_buffer_modified: (buffer, args, type) =>
+    -- adjust cursor if neccessary
+    if type == 'insert' and args.offset <= @cursor.pos
+      @cursor.pos += #args.text
+    elseif type == 'delete' and args.offset < @cursor.pos
+      @cursor.pos -= min(@cursor.pos - args.offset, #args.text)
+
     unless @showing
       @_reset_display!
       return
@@ -510,12 +516,6 @@ View = {
     lines_changed = contains_newlines(args.text)
     if lines_changed
       @_last_visible_line = nil
-
-    -- adjust cursor if neccessary
-    if type == 'insert' and args.offset <= @cursor.pos
-      @cursor.pos += #args.text
-    elseif type == 'delete' and args.offset < @cursor.pos
-      @cursor.pos -= #args.text
 
     if args.offset > args.invalidate_offset
       @_invalidate_display args.invalidate_offset, args.offset
