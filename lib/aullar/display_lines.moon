@@ -74,10 +74,11 @@ get_block = (display_lines, d_line) ->
 
   unless block
     next_d_line = display_lines[d_line.nr + 1]
-    block = if next_d_line._block
-      next_d_line._block
-    elseif next_d_line._full_background
-      scan_block display_lines, d_line
+    if next_d_line
+      block = if next_d_line._block
+        next_d_line._block
+      elseif next_d_line._full_background
+        scan_block display_lines, d_line
 
   block.width = max(block.width, d_line.width) if block
   block
