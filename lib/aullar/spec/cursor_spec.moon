@@ -116,3 +116,12 @@ describe 'Cursor', ->
       cursor\down!
       assert.equal 3, cursor.line
       assert.equal 4, cursor.column
+
+  describe 'when .listener is set', ->
+    it 'calls listener.on_pos_changed with (listener, cursor) when moved', ->
+      buffer.text = '12345'
+      cursor.pos = 1
+      on_pos_changed = spy.new -> nil
+      cursor.listener = :on_pos_changed
+      cursor.pos = 3
+      assert.spy(on_pos_changed).was_called_with(cursor.listener, cursor)

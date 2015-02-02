@@ -181,6 +181,10 @@ Cursor = {
     elseif x_pos < @view.edit_area_x -- scroll to the left
       @view.base_x = col_pos
 
+    -- alert listener if set
+    if @listener and @listener.on_pos_changed
+      @listener.on_pos_changed @listener, self
+
   start_of_file: (opts = {}) =>
     @move_to pos: 1, extend: opts.extend
 
