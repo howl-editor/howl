@@ -6,10 +6,11 @@ ffi = require 'ffi'
 
 describe 'Styling', ->
 
-  local styling
+  local styling, listener
 
   before_each ->
-    styling = Styling 50
+    listener = on_changed: spy.new -> nil
+    styling = Styling 50, listener
 
   describe 'set(start_offset, end_offset, style)', ->
     it 'sets the specified style for the range [start_offset, end_offset)', ->
@@ -42,6 +43,10 @@ describe 'Styling', ->
 
       styling\set 6, 7, 'keyword'
       assert.equals 9, styling.last_pos_styled
+
+    it 'notifies the listener', ->
+      styling\set 8, 9, 'keyword'
+      assert.spy(listener.on_changed).was_called_with listener, 8, 9
 
   describe 'get(start_offset, end_offset)', ->
     it 'returns a table of styles and positions for the given range, same as styles argument to apply', ->
@@ -82,6 +87,11 @@ describe 'Styling', ->
       styling\invalidate_from 1
       assert.equals 0, styling.last_pos_styled
 
+    it 'notifies the listener about the invalidated range', ->
+      styling\set 1, 10, 'keyword'
+      styling\invalidate_from 4
+      assert.spy(listener.on_changed).was_called_with listener, 4, 10
+
   describe 'insert(offset, count)', ->
     it 'inserts <count> positions, shifting existing styling up', ->
       styling\set 1, 5, 'keyword'
@@ -92,6 +102,11 @@ describe 'Styling', ->
       styling\set 1, 5, 'keyword'
       styling\insert 3, 2
       assert.equals 7, styling.last_pos_styled
+
+    it 'notifies the listener about the new unstyled span', ->
+      styling\set 1, 10, 'keyword'
+      styling\insert 3, 2
+      assert.spy(listener.on_changed).was_called_with listener, 3, 4
 
   describe 'delete(offset, count)', ->
     it 'deletes <count> positions, shifting existing styling down', ->
@@ -107,13 +122,23 @@ describe 'Styling', ->
       styling\delete 2, 1
       assert.equals 3, styling.last_pos_styled
 
-  describe 'clear(offset, count)', ->
-    it 'clears the styling for <count> positions starting from <offset>', ->
+    it 'notifies the listener about the deleted span', ->
+      styling\set 1, 10, 'keyword'
+      styling\delete 3, 2
+      assert.spy(listener.on_changed).was_called_with listener, 3, 4
+
+  describe 'clear(start_offset, end_offset)', ->
+    it 'clears the styling for positions [start_offset - end_offset]', ->
       styling\set 1, 5, 'keyword'
       styling\clear 2, 2
       assert.same { 1, 'keyword', 2, 3, 'keyword', 6 }, styling\get(1, 5)
       styling\clear 3, 5
       assert.same { 1, 'keyword', 2 }, styling\get(1, 5)
+
+    it 'notifies the listener about the cleared span', ->
+      styling\set 1, 10, 'keyword'
+      styling\clear 3, 5
+      assert.spy(listener.on_changed).was_called_with listener, 3, 5
 
   describe 'at(offset)', ->
     it 'returns the style at the specified position', ->
@@ -181,6 +206,10 @@ describe 'Styling', ->
       styling\apply 1, { 3, 'keyword',  8 }
       assert.same { 3, 'keyword', 8 }, styling\get(1, 10)
 
+    it 'notifies the listener about the actually styled span', ->
+      styling\apply 1, { 2, 'operator', 3, 4, 'string', 5 }
+      assert.spy(listener.on_changed).was_called_with listener, 2, 4
+
     context 'sub lexing', ->
       it 'automatically styles using extended styles when requested', ->
         styling\apply 1, {
@@ -225,6 +254,12 @@ describe 'Styling', ->
           3, 's1', 4,
           4, 's1:s3', 5
         }, styling\get(1, 5)
+
+      it 'notifies the listener about the actually styled span', ->
+        styling\apply 1, {
+          3, { 2, 's3', 3 }, 'my_sub|s1'
+        }
+        assert.spy(listener.on_changed).was_called_with listener, 3, 5
 
   describe '(run-through)', ->
     it 'generally works', ->

@@ -368,20 +368,6 @@ describe 'Buffer', ->
         b\delete insert_pos, 2 -- delete 'ä'
         assert.equal cur_length + 2, b.length
 
-  -- describe 'style_up_to(offset, lexer)', ->
-    -- it 'styles from up to <to_line>', ->
-  --     buffer.text = '123\n56\n89'
-  --     lexer = spy.new -> {}
-  --     styling\style_to 3, lexer
-  --     assert.spy(lexer).was_called_with '123\n56\n89'
-
-  --   it 'starts styling from .last_pos_styled', ->
-  --     buffer.text = '123\n56\n89'
-  --     styling\set 1, 3, 'keyword'
-  --     lexer = spy.new -> {}
-  --     styling\style_to 3, lexer
-  --     assert.spy(lexer).was_called_with '56\n89'
-
   describe 'refresh_styling_at(line_nr, to_line [, opts])', ->
     local b, styling, mode
 
@@ -483,6 +469,7 @@ describe 'Buffer', ->
         b.text = '123\n56\n89\n'
         b.lexer = -> { 1, 'operator', 2 }
         b\refresh_styling_at 1, 3, force_full: true
+        assert.spy(listener.on_styled).was_called 1
         assert.spy(listener.on_styled).was_called_with listener, b, {
           start_line: 1, end_line: 3, invalidated: true
         }
@@ -552,3 +539,14 @@ describe 'Buffer', ->
           size: 2,
           invalidate_offset: 3
         }
+
+    it 'fires on_styled notifications for styling changes outside of lexing', ->
+      b = Buffer '12\n45'
+      l = on_styled: spy.new -> nil
+      b\add_listener l
+      b.styling\set 1, 5, 'string'
+      assert.spy(l.on_styled).was_called_with l, b, {
+        start_line: 1,
+        end_line: 2,
+        invalidated: false
+      }

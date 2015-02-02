@@ -43,6 +43,7 @@ LineMt = {
 Buffer = {
   new: (text = '') =>
     @listeners = {}
+    @_style_listener = on_changed: self\_on_style_changed
     @text = text
 
   properties: {
@@ -66,7 +67,8 @@ Buffer = {
         old_text = @text_buffer and @tostring!
         size = #text
         @text_buffer = GapBuffer 'char', size, initial: text
-        @styling = Styling size + 1 -- +1 to account for dangling virtual line
+        -- +1 on styling size to account for dangling virtual line
+        @styling = Styling size + 1, @_style_listener
         @_last_scanned_line = 0
         @_lines = {}
 
@@ -94,7 +96,7 @@ Buffer = {
     @_length += len
     @_invalidate_lines_from_offset invalidate_offset
     @offsets\adjust_for_insert invalidate_offset - 1, size, len
-    @styling\insert offset, size
+    @styling\insert offset, size, no_notify: true
 
     @_on_modification 'inserted', offset, text, size, invalidate_offset
 
@@ -108,7 +110,7 @@ Buffer = {
     @_length -= len
     @_invalidate_lines_from_offset invalidate_offset
     @offsets\adjust_for_delete invalidate_offset - 1, count, len
-    @styling\delete offset, count
+    @styling\delete offset, count, no_notify: true
 
     @_on_modification 'deleted', offset, text, count, invalidate_offset
 
@@ -183,17 +185,17 @@ Buffer = {
     if not opts.force_full
       -- try lexing only up to this line
       text = @sub start_offset, at_line.end_offset
-      @styling\clear start_offset, at_line.end_offset
-      @styling\apply start_offset, lexer(text)
+      @styling\clear start_offset, at_line.end_offset, no_notify: true
+      @styling\apply start_offset, lexer(text), no_notify: true
       new_at_line_eol_style = @styling\at(at_line.end_offset) or 'whitespace'
       if new_at_line_eol_style == at_line_eol_style
         styled = start_line: at_line.nr, end_line: at_line.nr, invalidated: false
 
     unless styled
-      @styling\invalidate_from at_line.start_offset
+      @styling\invalidate_from at_line.start_offset, no_notify: true
       end_line = @get_line(to_line) or @get_line(@nr_lines)
       text = @sub start_offset, end_line.end_offset
-      @styling\apply start_offset, lexer(text)
+      @styling\apply start_offset, lexer(text), no_notify: true
       @styling.last_pos_styled = end_line.end_offset
       styled = start_line: at_line.nr, end_line: end_line.nr, invalidated: true
 
@@ -329,6 +331,16 @@ Buffer = {
         }
 
     @notify type, args
+
+  _on_style_changed: (_, start_offset, end_offset) =>
+    start_line = @get_line_at_offset start_offset
+    end_line = start_line
+    if end_offset > start_line.end_offset and start_line.has_eol
+      end_line = @get_line_at_offset end_offset
+
+    styled = start_line: start_line.nr, end_line: end_line.nr, invalidated: false
+    @notify('styled', styled)
+
 }
 
 define_class Buffer, {
