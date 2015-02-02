@@ -114,11 +114,12 @@ Cursor = {
       b_line = @view.buffer\get_line line_nr
       if b_line
         pos = b_line.start_offset
+        pos += (opts.column - 1) if opts.column
 
     if pos
       pos = max min(@view.buffer.size + 1, pos), 1
     else
-      error("Illegal argument #1 to Cursor.move_to (pos: #{opts.pos}, line: #{opts.line})", 2)
+      error("Illegal argument #1 to Cursor.move_to (pos: #{opts.pos}, line: #{opts.line}, column: #{opts.column})", 2)
 
     return if pos == @_pos
 
@@ -151,7 +152,7 @@ Cursor = {
           @view.last_visible_line = dest_line.nr
 
       -- adjust for the remembered column if appropriate
-      if @_sticky_x and opts.line
+      if @_sticky_x and (opts.line and not opts.column)
         inside, index = @display_line.layout\xy_to_index @_sticky_x, 1
         index += 1 if not inside and index > 0 -- move to the ending new line
         pos = dest_line.start_offset + index
