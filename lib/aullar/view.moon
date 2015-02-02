@@ -320,7 +320,7 @@ View = {
       start_x = 0 if opts.gutter or start_x == 1
       width = @width - start_x
       height = (max_y - min_y) + 1
-      if width > 0
+      if width > 0 and height > 0
         @area\queue_draw_area start_x, min_y, width, height
 
   position_from_coordinates: (x, y) =>
