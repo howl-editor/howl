@@ -19,6 +19,15 @@ describe 'Cursor', ->
     window\show_all!
     pump_mainloop!
 
+  describe '.style', ->
+    it 'is "line" by default', ->
+      assert.equal 'line', cursor.style
+
+    it 'raises an error if set to anything else than "block" or "line"', ->
+      cursor.style = 'block'
+      cursor.style = 'line'
+      assert.raises 'foo', -> cursor.style = 'foo'
+
   describe 'forward()', ->
     it 'moves the cursor one character forward', ->
       buffer.text = 'åäö'

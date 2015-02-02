@@ -29,23 +29,41 @@ Cursor = {
     @_active = false
     @_showing = true
     @_sticky_x = nil
+    @_style = 'line'
 
-    @normal_flair = Flair(Flair.RECTANGLE, {
+    @_normal_flair = Flair(Flair.RECTANGLE, {
       background: '#c30000'
       background_alpha: 0.9
       width: @width
     })
 
-    -- @normal_flair = Flair(Flair.RECTANGLE, {
-    --   foreground: '#c30000'
-    --   background: '#c30000'
-    --   background_alpha: 0.2
-    --   min_width: 3
-    -- })
+    @_block_flair = Flair(Flair.RECTANGLE, {
+      foreground: '#c30000'
+      background: '#c30000'
+      background_alpha: 0.2
+      min_width: 10
+    })
+
+    @_cursor_flair = @_normal_flair
 
   properties: {
     display_line: => @view.display_lines[@line]
     buffer_line: => @view.buffer\get_line @line
+
+    style: {
+      get: => @_style
+      set: (style) =>
+        return if style == @_style
+        if style == 'block'
+          @_cursor_flair = @_block_flair
+        elseif style == 'line'
+          @_cursor_flair = @_normal_flair
+        else
+          error 'Invalid style ' .. style, 2
+
+        @_style = style
+        @_refresh_current_line!
+    }
 
     blink_interval: {
       get: => @_blink_interval
@@ -225,7 +243,7 @@ Cursor = {
 
   draw: (x, base_y, cr, display_line) =>
     return unless @_showing
-    @normal_flair\draw display_line, @column, @column + 1, x, base_y, cr
+    @_cursor_flair\draw display_line, @column, @column + 1, x, base_y, cr
 
   _blink: =>
     return false if not @active
@@ -233,9 +251,8 @@ Cursor = {
       @_force_show = false
       return true
 
-    cur_line = @buffer_line
     @_showing = not @_showing
-    @view\refresh_display cur_line.start_offset, cur_line.end_offset
+    @_refresh_current_line!
     true
 
   _get_line: (nr) =>
@@ -253,6 +270,10 @@ Cursor = {
 
     @_showing = true
     -- todo unregister source? will be auto-cancelled by callbacks module though
-}
+
+  _refresh_current_line: =>
+    cur_line = @buffer_line
+    @view\refresh_display cur_line.start_offset, cur_line.end_offset
+ }
 
 define_class Cursor
