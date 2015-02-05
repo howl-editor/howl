@@ -60,6 +60,10 @@ on_key_press = (view, event) ->
     cursor\end_of_line cursor_opts
   elseif key_name == 'backspace'
     view\delete_back!
+  elseif key_name == 'z' and event.control and event.shift
+    view.buffer\redo!
+  elseif key_name == 'z' and event.control
+    view.buffer\undo!
   else
     return false
 

@@ -95,3 +95,23 @@ describe 'View', ->
       cursor.pos = 8
       buffer\delete 2, 3
       assert.equals 5, cursor.pos
+
+  describe 'when a buffer operation is undone', ->
+    it 'moves the cursor to the position before action', ->
+      buffer.text = '12345'
+      cursor.pos = 2
+      buffer\delete 4, 1
+      cursor.pos = 1
+      buffer\undo!
+      assert.equals 2, cursor.pos
+
+  describe 'when a buffer operation is redone', ->
+    it 'moves the cursor to the position after the action', ->
+      buffer.text = '12345'
+      cursor.pos = 2
+      buffer\insert 2, 'xx'
+      assert.equals 4, cursor.pos
+      buffer\undo!
+      assert.equals 2, cursor.pos
+      buffer\redo!
+      assert.equals 4, cursor.pos

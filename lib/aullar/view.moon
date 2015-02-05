@@ -133,6 +133,8 @@ View = {
       on_inserted: (_, b, args) -> @\_on_buffer_modified b, args, 'insert'
       on_deleted: (_, b, args) -> @\_on_buffer_modified b, args, 'delete'
       on_styled: (_, b, args) -> @\_on_buffer_styled b, args
+      on_undo: (_, b, args) -> @\_on_buffer_undo b, args
+      on_redo: (_, b, args) -> @\_on_buffer_redo b, args
       last_line_shown: (_, b) -> @last_visible_line
     }
 
@@ -504,6 +506,8 @@ View = {
 
   _on_buffer_modified: (buffer, args, type) =>
     -- adjust cursor if neccessary
+    cur_pos = @cursor.pos
+
     if type == 'insert' and args.offset <= @cursor.pos
       @cursor.pos += #args.text
     elseif type == 'delete' and args.offset < @cursor.pos
@@ -512,6 +516,11 @@ View = {
     unless @showing
       @_reset_display!
       return
+
+    if @has_focus and args.revision
+      with args.revision.meta
+        .cursor_before or= cur_pos
+        .cursor_after = @cursor.pos
 
     lines_changed = contains_newlines(args.text)
     if lines_changed
@@ -529,6 +538,14 @@ View = {
       else
         @refresh_display args.offset, args.offset + args.size, invalidate: true
         @_sync_scrollbars horizontal: true
+
+  _on_buffer_undo: (buffer, revision) =>
+    pos = revision.meta.cursor_before or revision.offset
+    @cursor.pos = pos
+
+  _on_buffer_redo: (buffer, revision) =>
+    pos = revision.meta.cursor_after or revision.offset
+    @cursor.pos = pos
 
   _on_focus_in: =>
     @cursor.active = true

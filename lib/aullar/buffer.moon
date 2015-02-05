@@ -8,6 +8,7 @@ C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
 Styling = require 'aullar.styling'
 Offsets = require 'aullar.offsets'
 GapBuffer = require 'aullar.gap_buffer'
+Revisions = require 'aullar.revisions'
 require 'ljglibs.cdefs.glib'
 
 char_arr = ffi.typeof 'char [?]'
@@ -44,11 +45,14 @@ Buffer = {
   new: (text = '') =>
     @listeners = {}
     @_style_listener = on_changed: self\_on_style_changed
+    @revisions = Revisions!
     @text = text
+    @revisions\clear!
 
   properties: {
     size: => @text_buffer.size
     length: => @_length
+    can_undo: => #@revisions > 0
 
     nr_lines: =>
       @_scan_lines_to {}
@@ -72,10 +76,12 @@ Buffer = {
         @_last_scanned_line = 0
         @_lines = {}
 
-        if old_text
-          @_on_modification 'deleted', 1, old_text, #old_text, 0
+        @as_one_undo ->
+          if old_text
+            @_on_modification 'deleted', 1, old_text, #old_text, 0
 
-        @_on_modification 'inserted', 1, text, size, 0
+          @_on_modification 'inserted', 1, text, size, 0
+
         @offsets = Offsets!
         @_length = @offsets\char_offset(@text_buffer, @text_buffer.size)
     }
@@ -224,6 +230,22 @@ Buffer = {
   byte_offset: (char_offset) =>
     @offsets\byte_offset(@text_buffer, char_offset - 1) + 1
 
+  undo: =>
+    revision = @revisions\pop @
+    @notify('undo', revision) if revision
+
+  redo: =>
+    revision = @revisions\forward @
+    @notify('redo', revision) if revision
+
+  as_one_undo: (f) =>
+    @revisions\start_group!
+    status, ret = pcall f
+    @revisions\end_group!
+    error ret unless status
+
+  clear_revisions: => @revisions\clear!
+
   notify: (event, parameters) =>
     for listener in *@listeners
       callback = listener["on_#{event}"]
@@ -313,7 +335,9 @@ Buffer = {
           break
 
   _on_modification: (type, offset, text, size, invalidate_offset) =>
-    args = :offset, :text, :size, :invalidate_offset
+    revision = @revisions\push(type, offset, text)
+
+    args = :offset, :text, :size, :invalidate_offset, :revision
     contains_newlines = text\find('[\n\r]') != nil
 
     if @lexer

@@ -23,6 +23,12 @@ describe 'Buffer', ->
       b.text = 'brave new world'
       assert.equals 'brave new world', tostring b
 
+    it 'sets the text as one undo', ->
+      b = Buffer 'hello'
+      b.text = 'brave new world'
+      b\undo!
+      assert.equals 'hello', b.text
+
   describe 'lines([start_line, end_line])', ->
     all_lines = (b) -> [ffi.string(l.ptr, l.size) for l in b\lines 1]
 
@@ -368,6 +374,44 @@ describe 'Buffer', ->
         b\delete insert_pos, 2 -- delete 'ä'
         assert.equal cur_length + 2, b.length
 
+  describe 'undo', ->
+    it 'undoes the last operation', ->
+      b = Buffer 'hello'
+      b\delete 1, 1
+      b\undo!
+      assert.equal 'hello', b.text
+
+  describe '.can_undo', ->
+    it 'returns true if there are any revisions to undo in the buffer', ->
+      b = Buffer 'hello'
+      assert.is_false b.can_undo
+      b\insert 1, 'hola '
+      assert.is_true b.can_undo
+
+  describe 'as_one_undo(f)', ->
+    it 'invokes <f>, grouping all modification as one undo', ->
+      b = Buffer 'hello'
+      b\as_one_undo ->
+        b\insert 6, ' world'
+        b\delete 1, 5
+        b\insert 1, 'cruel'
+
+      assert.equal 'cruel world', b.text
+      b\undo!
+      assert.equal 'hello', b.text
+
+    it 'bubbles up any errors in <f>', ->
+      b = Buffer 'hello'
+      assert.raises 'BOOM', -> b\as_one_undo -> error 'BOOM'
+
+  describe 'redo', ->
+    it 'redoes the last undone operation', ->
+      b = Buffer 'hello'
+      b\delete 1, 1
+      b\undo!
+      b\redo!
+      assert.equal 'ello', b.text
+
   describe 'refresh_styling_at(line_nr, to_line [, opts])', ->
     local b, styling, mode
 
@@ -523,7 +567,13 @@ describe 'Buffer', ->
         b\add_listener l1
         b\add_listener l2
         b\insert 3, 'xx'
-        args = offset: 3, text: 'xx', size: 2, invalidate_offset: 3
+        args = {
+          offset: 3,
+          text: 'xx',
+          size: 2,
+          invalidate_offset: 3,
+          revision: b.revisions[1]
+        }
         assert.spy(l1.on_inserted).was_called_with l1, b, args
         assert.spy(l2.on_inserted).was_called_with l2, b, args
 
@@ -537,7 +587,8 @@ describe 'Buffer', ->
           offset: 3,
           text: 'll',
           size: 2,
-          invalidate_offset: 3
+          invalidate_offset: 3,
+          revision: b.revisions[1]
         }
 
     it 'fires on_styled notifications for styling changes outside of lexing', ->
