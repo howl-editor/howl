@@ -470,7 +470,7 @@ View = {
   _on_buffer_styled: (buffer, args) =>
     return unless @showing
     last_line = buffer\get_line @last_visible_line
-    return if args.start_line > last_line.nr + 1 and last_line.has_eol
+    return if args.start_line > @display_lines.max + 1 and last_line.has_eol
     start_line = @buffer\get_line args.start_line
 
     prev_block = @display_lines[start_line.nr].block
