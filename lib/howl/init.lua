@@ -10,7 +10,6 @@ Where options can be any of:
   --reuse       Opens any named files in an existing instance of Howl, if present
   --compile     Compiles the given files to bytecode
   --run         Loads and runs the specified file from within Howl
-  --spec        Runs the specified Howl spec file(s)
   -h, --help    This help
 ]=]
 
@@ -20,7 +19,6 @@ local function parse_args(argv)
     ['--help'] = 'help',
     ['--reuse'] = 'reuse',
     ['--compile'] = 'compile',
-    ['--spec'] = 'spec',
     ['--run'] = 'run',
   }
   local args = {}
@@ -34,7 +32,7 @@ local function parse_args(argv)
     end
   end
 
-  if args.help and not args.spec then
+  if args.help then
     print(help)
     os.exit(0)
   end
@@ -126,9 +124,8 @@ local function main(args)
     howl.app = howl.Application(howl.io.File(app_root), args)
     assert(jit.status(), "JIT is inadvertently switched off")
 
-    if args.spec then
-      set_package_path('lib/ext/spec-support')
-      local busted = assert(loadfile(app_root .. '/lib/ext/spec-support/busted/busted_bootstrap'))
+    if os.getenv('BUSTED') then
+      local busted = assert(loadfile(argv[2]))
       arg = {table.unpack(argv, 3, #argv)}
       local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
       support()

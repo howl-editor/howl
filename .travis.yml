@@ -4,7 +4,9 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sudo apt-get update
+  - sudo apt-get install luarocks
   - sudo apt-get install libgtk-3-dev
+  - sudo luarocks install busted 1.11.1-1
 
 install:
   - (cd src && make -j 4)

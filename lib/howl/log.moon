@@ -27,7 +27,7 @@ dispatch = (level, message) ->
     essentials = essentials_of message
     status[level] status, essentials
     readline\notify essentials, level if readline.showing
-    _G.print message if level == 'error' and not _G.howl.app.args.spec
+    _G.print message if level == 'error' and not _G.os.getenv('BUSTED')
 
   while #entries > config.max_log_entries and #entries > 0
     table.remove entries, 1
