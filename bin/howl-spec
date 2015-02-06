@@ -1,7 +1,4 @@
 #! /bin/sh
-#
-# Copyright 2012-2013 Nils Nordman <nino at nordman.org>
-# License: MIT (see LICENSE)
 
 ROOT=$(cd $(dirname $0)/.. && pwd)
 for howl in $ROOT/bin/howl $ROOT/src/howl; do
@@ -16,31 +13,4 @@ if [ -z "$HOWL" ]; then
   exit 1
 fi
 
-busted=$(luarocks list busted|grep installed|head -n 1)
-if [ -n "$busted" ]; then
-  version=$(echo "$busted" | awk '{ print $1 }')
-  path=$(echo "$busted" | awk '{ print $4 }')
-  busted_script="$path/busted/$version/bin/busted_bootstrap"
-  if [ ! -f $busted_script ]; then
-    busted_script="$path/busted/$version/bin/busted"
-  fi
-
-  if [ -f $busted_script ]; then
-    export BUSTED='yes'
-    exec $HOWL $busted_script --pattern=_spec.moon $*
-  fi
-fi
-
-cat <<ERR
-Error: 'busted' not found
----------------------------------
-
-To run $0 you need to have the busted testing framework installed via luarocks.
-With luarocks installed, execute:
-
-$ luarocks install busted
-
-luarocks might be available from your package manager, or you can install
-it using the instructions from http://luarocks.org
-ERR
-exit 1
+exec $HOWL --spec --pattern=_spec.moon $*
