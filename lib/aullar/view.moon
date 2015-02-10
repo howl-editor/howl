@@ -238,7 +238,7 @@ View = {
 
   scroll_to: (line) =>
     return if line < 1 or not @showing
-    line = min line, (@buffer.nr_lines - @lines_showing) + 1
+    line = max(1, min(line, (@buffer.nr_lines - @lines_showing) + 1))
     return if @first_visible_line == line
 
     @_first_visible_line = line
@@ -389,7 +389,7 @@ View = {
 
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width
-    for line_nr = @_first_visible_line, @last_visible_line + 1
+    for line_nr = @_first_visible_line, @display_lines.max
       d_line = rawget @display_lines, line_nr
       continue unless d_line
       line = d_line.line
@@ -529,6 +529,8 @@ View = {
       @_last_visible_line = nil
 
     if args.offset > args.invalidate_offset
+      -- we have lines before the offset of the modification that are
+      -- invalid - they need to be invalidated but not visually refreshed
       @_invalidate_display args.invalidate_offset, args.offset
 
     if args.styled

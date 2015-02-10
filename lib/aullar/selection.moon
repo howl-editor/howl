@@ -24,7 +24,6 @@ Selection = {
       background_alpha: 0.4,
     })
 
-
   properties: {
     is_empty: => (@_anchor == nil) or (@_anchor == @_end_pos)
 

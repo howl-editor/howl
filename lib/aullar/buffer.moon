@@ -75,6 +75,8 @@ Buffer = {
         @styling = Styling size + 1, @_style_listener
         @_last_scanned_line = 0
         @_lines = {}
+        @offsets = Offsets!
+        @_length = @offsets\char_offset(@text_buffer, @text_buffer.size)
 
         @as_one_undo ->
           if old_text
@@ -82,8 +84,6 @@ Buffer = {
 
           @_on_modification 'inserted', 1, text, size, 0
 
-        @offsets = Offsets!
-        @_length = @offsets\char_offset(@text_buffer, @text_buffer.size)
     }
   }
 
@@ -97,6 +97,9 @@ Buffer = {
     return if size == 0
 
     invalidate_offset = min(offset, @text_buffer.gap_start + 1)
+    if size > @text_buffer.gap_size
+      invalidate_offset = 1
+
     len = C.g_utf8_strlen text, size
     @text_buffer\insert offset - 1, text
     @_length += len
@@ -321,7 +324,7 @@ Buffer = {
     @_last_scanned_line = max(nr, @_last_scanned_line)
 
   _invalidate_lines_from_offset: (offset) =>
-    if offset == 1
+    if offset <= 1
       @_last_scanned_line = 0
       @_lines = {}
     else
