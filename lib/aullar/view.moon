@@ -135,6 +135,7 @@ View = {
       on_styled: (_, b, args) -> @\_on_buffer_styled b, args
       on_undo: (_, b, args) -> @\_on_buffer_undo b, args
       on_redo: (_, b, args) -> @\_on_buffer_redo b, args
+      on_marker_changed: (_, b, args) -> @\_on_buffer_marker_changed b, args
       last_line_shown: (_, b) -> @last_visible_line
     }
 
@@ -542,6 +543,10 @@ View = {
       else
         @refresh_display args.offset, args.offset + args.size, invalidate: true
         @_sync_scrollbars horizontal: true
+
+  _on_buffer_marker_changed: (buffer, marker) =>
+    if marker.flair
+      @refresh_display marker.start_offset, marker.end_offset
 
   _on_buffer_undo: (buffer, revision) =>
     pos = revision.meta.cursor_before or revision.offset

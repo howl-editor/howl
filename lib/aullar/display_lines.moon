@@ -84,6 +84,19 @@ get_block = (display_lines, d_line) ->
   block.width = max(block.width, d_line.width) if block
   block
 
+get_flairs = (buffer, line) ->
+  start_offset = line.start_offset
+
+  translate = (m) ->
+    m = copy m
+    m.start_offset = max 1, (m.start_offset - start_offset) + 1
+    m.end_offset = (m.end_offset - start_offset) + 1
+    m
+
+  markers = buffer.markers\for_range start_offset, line.end_offset
+  markers = [translate(m) for m in *markers when m.flair]
+  markers
+
 DisplayLine = define_class {
   new: (@display_lines, @view, buffer, pango_context, @line) =>
     @layout = Layout pango_context
@@ -130,7 +143,12 @@ DisplayLine = define_class {
       cr\clip!
 
     cr\move_to x - base_x, y
+
     pango_cairo.show_layout cr, @layout
+
+    for f in *get_flairs(@view.buffer, @line)
+      flair.draw f.flair, @, f.start_offset, f.end_offset, x, y, cr
+
     cr\restore! if base_x > 0
 }
 
