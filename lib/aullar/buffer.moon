@@ -7,6 +7,7 @@ C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
 {:define_class} = require 'aullar.util'
 Styling = require 'aullar.styling'
 Offsets = require 'aullar.offsets'
+Markers = require 'aullar.markers'
 GapBuffer = require 'aullar.gap_buffer'
 Revisions = require 'aullar.revisions'
 require 'ljglibs.cdefs.glib'
@@ -46,6 +47,10 @@ Buffer = {
     @listeners = {}
     @_style_listener = on_changed: self\_on_style_changed
     @revisions = Revisions!
+    @markers = Markers {
+      on_markers_added: self\_on_markers_changed
+      on_markers_removed: self\_on_markers_changed
+    }
     @text = text
     @revisions\clear!
 
@@ -73,6 +78,7 @@ Buffer = {
         @text_buffer = GapBuffer 'char', size, initial: text
         -- +1 on styling size to account for dangling virtual line
         @styling = Styling size + 1, @_style_listener
+        @markers\remove!
         @_last_scanned_line = 0
         @_lines = {}
         @offsets = Offsets!
@@ -83,7 +89,6 @@ Buffer = {
             @_on_modification 'deleted', 1, old_text, #old_text, 0
 
           @_on_modification 'inserted', 1, text, size, 0
-
     }
   }
 
@@ -105,6 +110,7 @@ Buffer = {
     @_length += len
     @_invalidate_lines_from_offset invalidate_offset
     @offsets\adjust_for_insert invalidate_offset - 1, size, len
+    @markers\expand offset, size
     @styling\insert offset, size, no_notify: true
 
     @_on_modification 'inserted', offset, text, size, invalidate_offset
@@ -113,19 +119,22 @@ Buffer = {
     return if count == 0
 
     invalidate_offset = min(offset, @text_buffer.gap_start + 1)
+
     text = @sub offset, offset + count - 1
     len = C.g_utf8_strlen text, count
     @text_buffer\delete offset - 1, count
     @_length -= len
     @_invalidate_lines_from_offset invalidate_offset
     @offsets\adjust_for_delete invalidate_offset - 1, count, len
+    @markers\shrink offset, count
     @styling\delete offset, count, no_notify: true
 
     @_on_modification 'deleted', offset, text, count, invalidate_offset
 
   replace: (offset, count, replacement, replacement_size = #replacement) =>
-    @delete offset, count
-    @insert offset, replacement, replacement_size
+    @as_one_undo ->
+      @delete offset, count
+      @insert offset, replacement, replacement_size
 
   lines: (start_line = 1, end_line) =>
     i = start_line - 1
@@ -367,6 +376,10 @@ Buffer = {
 
     styled = start_line: start_line.nr, end_line: end_line.nr, invalidated: false
     @notify('styled', styled)
+
+  _on_markers_changed: (_, markers) =>
+    for marker in *markers
+      @notify('marker_changed', marker)
 
 }
 

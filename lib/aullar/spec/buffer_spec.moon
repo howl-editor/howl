@@ -132,6 +132,34 @@ describe 'Buffer', ->
       assert.equals 6, line.size
       assert.equals 6, line.full_size
 
+  describe 'markers', ->
+    local buffer, markers
+
+    before_each ->
+      buffer = Buffer '123456789'
+      markers = buffer.markers
+
+    it 'updates markers with inserts', ->
+      markers\add name: 'test', start_offset: 2, end_offset: 4
+      buffer\insert 1, '!'
+      assert.same {}, markers\at 2
+      assert.same { name: 'test', start_offset: 3, end_offset: 5 }, markers\at(3)[1]
+
+      buffer\insert 4, '!'
+      assert.same { name: 'test', start_offset: 3, end_offset: 6 }, markers\at(3)[1]
+
+    it 'updates markers with deletes', ->
+      markers\add name: 'test', start_offset: 2, end_offset: 5
+      buffer\delete 1, 1
+      assert.same {}, markers\at 5
+      assert.same { name: 'test', start_offset: 1, end_offset: 4 }, markers\at(1)[1]
+
+      buffer\delete 2, 1
+      assert.same { name: 'test', start_offset: 1, end_offset: 3 }, markers\at(1)[1]
+
+      buffer\delete 1, 2
+      assert.same {}, markers\at 1
+
   describe 'get_line(nr)', ->
     it 'returns line information for the specified line', ->
       b = Buffer 'line 1\nline 2'
