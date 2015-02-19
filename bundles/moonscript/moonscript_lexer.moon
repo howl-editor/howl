@@ -11,7 +11,8 @@ howl.aux.lpeg_lexer ->
   hexadecimal_number =  P'0' * S'xX' * xdigit^1 * (P'.' * xdigit^1)^0 * (S'pP' * S'-+'^0 * xdigit^1)^0
   float = digit^0 * P'.' * digit^1
   number = capture 'number', any({
-    hexadecimal_number,
+    hexadecimal_number * any('LL', 'll', 'ULL', 'ull')^-1,
+    digit^1 * any('LL', 'll', 'ULL', 'ull'),
     (float + digit^1) * (S'eE' * P('-')^0 * digit^1)^0
   })
 

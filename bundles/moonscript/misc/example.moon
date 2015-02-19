@@ -14,6 +14,11 @@ a_table = {
   do: 'keyword'
 }
 
+numbers = {
+  3, 3.0, 3.1416, 314.16e-2, 0.31416E1, 0xff,
+  2LL, 2ULL, 3ll, 3ull -- luajit 64-bit cdata extensions
+}
+
 short_table_def = foo: 'bar', interpolated: "foo-#{other.stuff 2 + 3}"
 scoped_table = :util, :a_table
 
