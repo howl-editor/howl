@@ -73,18 +73,20 @@ return {
 
   highlights:
     search:
-      style: highlight.ROUNDBOX
-      color: darkgreen
-      alpha: 60
-      outline_alpha: 250
+      type: highlight.RECTANGLE
+      foreground: darkgreen
+      foreground_alpha: 1
+      background: darkgreen
+      background_alpha: 0.4
 
     search_secondary:
-      style: highlight.COMPOSITIONTHICK
-      color: green
+      type: highlight.UNDERLINE
+      foreground: green
+      line_width: 2
 
     list_selection:
-      style: highlight.ROUNDBOX
-      color: blue
+      type: highlight.RECTANGLE
+      foreground: blue
       alpha: 40
       outline_alpha: 100
 

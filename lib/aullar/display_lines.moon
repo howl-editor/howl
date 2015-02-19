@@ -6,9 +6,10 @@ styles = require 'aullar.styles'
 Pango = require 'ljglibs.pango'
 Layout = Pango.Layout
 pango_cairo = Pango.cairo
-Flair = require 'aullar.flair'
+flair = require 'aullar.flair'
 
 {:max, :min} = math
+{:copy} = moon
 
 parse_background_ranges = (styling) ->
   ranges = {}
@@ -115,12 +116,13 @@ DisplayLine = define_class {
 
     for bg_range in *@background_ranges
       width = block and block.width and block.width - base_x or nil
-      flair = Flair(Flair.RECTANGLE, {
+      bg_flair = flair.build {
+        type: flair.RECTANGLE,
         background: bg_range.style.background
         background_alpha: 0.3
         :width
-      })
-      flair\draw @, bg_range.start_offset, bg_range.end_offset, x, y, cr
+      }
+      flair.draw bg_flair, @, bg_range.start_offset, bg_range.end_offset, x, y, cr
 
     if base_x > 0
       cr\save!

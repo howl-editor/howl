@@ -1,11 +1,26 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
-Flair = require 'aullar.flair'
+flair = require 'aullar.flair'
 callbacks = require 'ljglibs.callbacks'
 cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
 C = ffi.C
+
+flair.define 'cursor', {
+  type: flair.RECTANGLE,
+  background: '#c30000'
+  background_alpha: 0.9
+  width: 1.5
+}
+
+flair.define 'block_cursor', {
+  type: flair.RECTANGLE,
+  foreground: '#c30000'
+  background: '#c30000'
+  background_alpha: 0.2
+  min_width: 10
+}
 
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
@@ -30,21 +45,7 @@ Cursor = {
     @_showing = true
     @_sticky_x = nil
     @_style = 'line'
-
-    @_normal_flair = Flair(Flair.RECTANGLE, {
-      background: '#c30000'
-      background_alpha: 0.9
-      width: @width
-    })
-
-    @_block_flair = Flair(Flair.RECTANGLE, {
-      foreground: '#c30000'
-      background: '#c30000'
-      background_alpha: 0.2
-      min_width: 10
-    })
-
-    @_cursor_flair = @_normal_flair
+    @_flair = 'cursor'
 
   properties: {
     display_line: => @view.display_lines[@line]
@@ -55,9 +56,9 @@ Cursor = {
       set: (style) =>
         return if style == @_style
         if style == 'block'
-          @_cursor_flair = @_block_flair
+          @_flair = 'block_cursor'
         elseif style == 'line'
-          @_cursor_flair = @_normal_flair
+          @_flair = 'cursor'
         else
           error 'Invalid style ' .. style, 2
 
@@ -248,7 +249,7 @@ Cursor = {
 
   draw: (x, base_y, cr, display_line) =>
     return unless @_showing
-    @_cursor_flair\draw display_line, @column, @column + 1, x, base_y, cr
+    flair.draw @_flair, display_line,  @column, @column + 1, x, base_y, cr
 
   _blink: =>
     return false if not @active

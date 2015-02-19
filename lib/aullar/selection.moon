@@ -7,22 +7,24 @@ ffi = require 'ffi'
 C = ffi.C
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
-Flair = require 'aullar.flair'
+flair = require 'aullar.flair'
+
+flair.define 'selection', {
+  type: flair.RECTANGLE,
+  background: '#a3d5da',
+  background_alpha: 0.6
+}
+
+flair.define 'selection-overlay', {
+  type: flair.RECTANGLE,
+  background: '#c3e5ea',
+  background_alpha: 0.4,
+}
 
 Selection = {
   new: (@view) =>
     @_anchor = nil
     @_end_pos = nil
-
-    @background_flair = Flair(Flair.RECTANGLE, {
-      background: '#a3d5da'
-      background_alpha: 0.6
-    })
-
-    @overlay_flair = Flair(Flair.RECTANGLE, {
-      background: '#c3e5ea'
-      background_alpha: 0.4,
-    })
 
   properties: {
     is_empty: => (@_anchor == nil) or (@_anchor == @_end_pos)
@@ -85,7 +87,7 @@ Selection = {
     if stop < line.end_offset -- sel ends on line
       end_col = (stop - line.start_offset) + 1
 
-    @background_flair\draw display_line, start_col, end_col, x, y, cr
+    flair.draw 'selection', display_line, start_col, end_col, x, y, cr
 
   draw_overlay: (x, y, cr, display_line, line) =>
     bg_ranges = display_line.background_ranges
@@ -99,8 +101,7 @@ Selection = {
       if range.end_offset > start_col
         start_o = max start_col, range.start_offset
         end_o = min end_col, range.end_offset
-        @overlay_flair\draw display_line, start_o, end_o, x, y, cr
-
+        flair.draw 'selection-overlay', display_line, start_o, end_o, x, y, cr
 }
 
 define_class Selection
