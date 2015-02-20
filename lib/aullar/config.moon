@@ -28,6 +28,21 @@ define_options = ->
     view_show_line_numbers: {
       type: 'boolean',
       default: true
+    },
+
+    view_show_h_scrollbar: {
+      type: 'boolean',
+      default: true
+    },
+
+    view_show_v_scrollbar: {
+      type: 'boolean',
+      default: true
+    },
+
+    view_show_cursor: {
+      type: 'boolean',
+      default: true
     }
 
   }

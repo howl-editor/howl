@@ -142,16 +142,6 @@ View = {
     @buffer = buffer
     @config\add_listener self\_on_config_changed
 
-  _on_config_changed: (option, val, old_val) =>
-    if option == 'view_font_name' or option == 'view_font_size'
-      @area\override_font Pango.FontDescription {
-        family: @config.view_font_name,
-        size: @config.view_font_size * Pango.SCALE
-      }
-
-    if option\match '^view_'
-      @_reset_display!
-
   properties: {
 
     showing: => @height != nil
@@ -404,8 +394,9 @@ View = {
     p_ctx = @area.pango_context
     cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
+    conf = @config
 
-    if @config.view_show_line_numbers
+    if conf.view_show_line_numbers
       @line_gutter\start_draw cr, p_ctx, clip
 
     edit_area_x, y = @edit_area_x, @margin
@@ -443,17 +434,18 @@ View = {
       if @selection\affects_line line
         @selection\draw_overlay edit_area_x, y, cr, display_line, line
 
-      if @config.view_show_line_numbers
+      if conf.view_show_line_numbers
         @line_gutter\draw_for_line line.nr, 0, y, display_line
 
       if line.nr == current_line
         @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip
-        @cursor\draw edit_area_x, y, cr, display_line
+        if conf.view_show_cursor
+          @cursor\draw edit_area_x, y, cr, display_line
 
       y += display_line.height
       cr\move_to edit_area_x, y
 
-    if @config.view_show_line_numbers
+    if conf.view_show_line_numbers
       @line_gutter\end_draw!
 
   _reset_display: =>
@@ -614,6 +606,23 @@ View = {
 
     @_sync_scrollbars!
     @buffer\ensure_styled_to @last_visible_line + 1
+
+  _on_config_changed: (option, val, old_val) =>
+    if option == 'view_font_name' or option == 'view_font_size'
+      @area\override_font Pango.FontDescription {
+        family: @config.view_font_name,
+        size: @config.view_font_size * Pango.SCALE
+      }
+      @_reset_display!
+    elseif option == 'view_show_v_scrollbar'
+      @vertical_scrollbar.visible = val
+      @vertical_scrollbar.no_show_all = true
+    elseif option == 'view_show_h_scrollbar'
+      @horizontal_scrollbar_alignment.visible = val
+      @horizontal_scrollbar_alignment.no_show_all = true
+    elseif option\match '^view_'
+      @_reset_display!
+
 }
 
 define_class View
