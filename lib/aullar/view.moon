@@ -61,10 +61,11 @@ signals = {
 
   on_key_press: (_, event, view) ->
     event = parse_key_event event
-    return if notify view, 'on_key_press', event
+    unless notify view, 'on_key_press', event
+      if insertable_character(event)
+        view\insert event.character
 
-    if insertable_character(event)
-      view\insert event.character
+    true
 }
 
 View = {
