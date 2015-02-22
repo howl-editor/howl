@@ -108,7 +108,7 @@ define = (name, opts) ->
 
     width = get_defined_width(start_x, flair, cr)
     width or= (x + rect.x / 1024) - start_x - view.base_x
-    width = flair.min_width if width == 0 and flair.min_width
+    width = max(flair.min_width, width) if flair.min_width
     return if width <= 0
 
     cr\save!
