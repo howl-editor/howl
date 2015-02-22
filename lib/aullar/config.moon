@@ -1,4 +1,4 @@
--- Copyright 2014 The Howl Developers
+-- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 GtkSettings = require 'ljglibs.gtk.settings'
@@ -43,7 +43,12 @@ define_options = ->
     view_show_cursor: {
       type: 'boolean',
       default: true
-    }
+    },
+
+    view_highlight_current_line: {
+      type: 'boolean',
+      default: true
+    },
 
   }
 

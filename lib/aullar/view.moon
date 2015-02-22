@@ -423,7 +423,7 @@ View = {
     for line_info in *lines
       {:display_line, :line} = line_info
 
-      if line.nr == current_line
+      if line.nr == current_line and conf.view_highlight_current_line
         @current_line_marker\draw_before edit_area_x, y, display_line, cr, clip
 
       if @selection\affects_line line
@@ -438,7 +438,9 @@ View = {
         @line_gutter\draw_for_line line.nr, 0, y, display_line
 
       if line.nr == current_line
-        @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip
+        if conf.view_highlight_current_line
+          @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip
+
         if conf.view_show_cursor
           @cursor\draw edit_area_x, y, cr, display_line
 
