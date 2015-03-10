@@ -69,7 +69,7 @@ Howl in one go.
 While Howl provides the ability to view more than one buffer at a time by
 supporting multiple open views, you'll likely have more buffers open than you
 can fit on your screen. In order to switch to another buffer, you can use the
-`switch-buffer` command (bound to `ctrl_p` by default):
+`switch-buffer` command (bound to `ctrl_b` by default):
 
 ![switch-buffer](/images/doc/switch-buffer.png)
 
