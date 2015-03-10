@@ -31,7 +31,6 @@ apply_property = (name, value) ->
 signal.connect 'buffer-saved', (args) ->
   for e in *editors!
     e\remove_popup! if e.buffer == args.buffer
-    break
 
 signal.connect 'buffer-title-set', (args) ->
   buffer = args.buffer
