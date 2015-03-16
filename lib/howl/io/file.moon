@@ -1,5 +1,5 @@
--- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 GFile = require 'ljglibs.gio.file'
 GFileInfo = require 'ljglibs.gio.file_info'
@@ -40,7 +40,7 @@ class File extends PropertyObject
     (path\match('^/') or path\match('^%a:\\\\')) != nil
 
   expand_path: (path) ->
-    res = path\gsub '~', home_dir
+    res = path\gsub "~#{File.separator}", home_dir .. File.separator
     res
 
   separator: jit.os == 'Windows' and '\\' or '/'

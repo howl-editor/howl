@@ -1,5 +1,5 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
 Gtk = require 'ljglibs.gtk'
@@ -53,10 +53,6 @@ GtkWindow.main {
   color: ${status_color};
 }
 
-.readline_box {
-  border-width: 1px 3px 3px 1px;
-  background-color: ${editor_border_color};
-}
 ]]
 
 status_template = [[

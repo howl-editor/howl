@@ -1,7 +1,10 @@
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 Gtk = require 'ljglibs.gtk'
 
-import app, Buffer, bindings, bundle from howl
-import Editor from howl.ui
+import app, Buffer, bindings, bundle, dispatch from howl
+import Editor, Window from howl.ui
 
 bundle.load_by_name 'vi'
 state = bundles.vi.state
@@ -21,6 +24,8 @@ describe 'VI', ->
   window\add editor\to_gobject!
   window\show_all!
 
+  howl.app = window: Window!
+
   before_each ->
     buffer = Buffer {}
     buffer.text = text
@@ -35,7 +40,7 @@ describe 'VI', ->
     state.deactivate!
     app.editor = nil
 
-  teardown -> bundle.unload 'vi'
+  teardown -> dispatch.launch -> bundle.unload 'vi'
 
   press = (...) ->
     for key in *{...}
@@ -323,8 +328,11 @@ Next LinƏ
         assert.equal 'nƏ 1', selection.text
 
   describe 'unloading', ->
-    before_each -> bundle.unload 'vi'
-    after_each -> bundle.load_by_name 'vi'
+    before_each ->
+      dispatch.launch -> bundle.unload 'vi'
+
+    after_each ->
+      dispatch.launch -> bundle.load_by_name 'vi'
 
     it 'pops any active keymaps, leaving only the default one', ->
       assert.equals 1, #bindings.keymaps

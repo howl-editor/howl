@@ -1,28 +1,31 @@
-import app, Project from howl
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-class NReplPortInput
-  should_complete: -> true
-  close_on_cancel: -> true
+import app, Project, interact from howl
 
-  new: =>
-    if editor
-      file = editor.buffer.file
-      if file
-        project = Project.for_file file
-        if project
-          port_file = project.root / '.nrepl-port'
-          @ports = { { port_file.contents, tostring(project.root) } } if port_file.exists
+interact.register
+  name: 'read_nrepl_port'
+  description: 'A port (number) for an NRepl instance'
+  handler: ->
+    items = {}
+    file = app.editor.buffer.file
+    if file
+      project = Project.for_file file
+      if project
+        port_file = project.root / '.nrepl-port'
+        if port_file.exists
+          items = { { port_file.contents, tostring(project.root) } }
 
-  complete: (text) =>
-    completion_options = title: 'NRepl instances', list: column_styles: { 'string', 'comment' }
-    return @ports, completion_options
+    selected = interact.select
+      :items
+      allow_new_value: true
+      columns: {
+            { style: 'string' },
+            { style: 'comment' },
+      }
 
-  value_for: (port) =>
-    tonumber port
-
-howl.inputs.register {
-  name: 'nrepl_port',
-  description: 'A port (number) for an NRepl instance',
-  factory: NReplPortInput
-}
-return NReplPortInput
+    if selected
+      if selected.selection
+        return tonumber selected.selection[1]
+      elseif selected.text and not selected.text.is_empty
+        return tonumber selected.text

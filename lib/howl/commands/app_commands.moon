@@ -1,8 +1,8 @@
--- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, Buffer, command, config, bindings, bundle, signal, inputs, mode, Project from howl
-import ActionBuffer, ProcessBuffer, BufferPopup, List from howl.ui
+import app, Buffer, command, config, bindings, bundle, dispatch, interact, signal, inputs, mode, Project from howl
+import ActionBuffer, ProcessBuffer, BufferPopup, StyledTable from howl.ui
 import File, Process from howl.io
 serpent = require 'serpent'
 
@@ -42,8 +42,10 @@ command.register
 command.register
   name: 'switch-buffer',
   description: 'Switches to another buffer'
-  input: 'buffer'
-  handler: (buffer) -> app.editor.buffer = buffer
+  handler: ->
+    buf = interact.select_buffer!
+    if buf
+      app.editor.buffer = buf
 
 command.register
   name: 'buffer-reload',
@@ -51,8 +53,7 @@ command.register
   handler: ->
     buffer = app.editor.buffer
     if buffer.modified
-      input = inputs.yes_or_no false
-      unless inputs.read input, prompt: "Buffer is modified, reload anyway? "
+      unless interact.yes_or_no prompt: 'Buffer is modified, reload anyway? '
         log.info "Not reloading; buffer is untouched"
         return
 
@@ -71,7 +72,7 @@ command.register
     _G.log.error 'No hidden buffer found'
 
 set_variable = (assignment, target) ->
-  if assignment.name
+  if assignment
     value = assignment.value
     if config.definitions[assignment.name]
       target[assignment.name] = value
@@ -82,22 +83,17 @@ set_variable = (assignment, target) ->
 command.register
   name: 'set',
   description: 'Sets a configuration variable globally'
-  input: 'variable_assignment'
-  handler: (assignment) -> set_variable assignment, config
+  handler: -> set_variable interact.get_variable_assignment!, config
 
 command.register
   name: 'set-for-mode',
   description: 'Sets a configuration variable for the current mode'
-  input: 'variable_assignment'
-  handler: (assignment) ->
-    set_variable assignment, app.editor.buffer.mode.config
+  handler: -> set_variable interact.get_variable_assignment!, app.editor.buffer.mode.config
 
 command.register
   name: 'set-for-buffer',
   description: 'Sets a configuration variable for the current buffer'
-  input: 'variable_assignment'
-  handler: (assignment) ->
-    set_variable assignment, app.editor.buffer.config
+  handler: -> set_variable interact.get_variable_assignment!, app.editor.buffer.config
 
 command.register
   name: 'describe-key',
@@ -131,25 +127,10 @@ command.register
         return false
 
 command.register
-  name: 'describe-input',
-  description: 'Shows information for an input'
-  input: 'input'
-  handler: (name) ->
-    def = inputs[name]
-    error "Unknown input '#{name}'" unless def
-    buffer = with ActionBuffer!
-      .title = "Input: #{name}"
-      \append "#{def.description}\n\n"
-
-    buffer.read_only = true
-    buffer.modified = false
-    editor = howl.app\add_buffer buffer
-
-command.register
   name: 'describe-signal',
   description: 'Describes a given signal'
-  input: 'signal'
-  handler: (name) ->
+  handler: ->
+    name = interact.select_signal!
     def = signal.all[name]
     error "Unknown signal '#{name}'" unless def
     buffer = with ActionBuffer!
@@ -162,10 +143,10 @@ command.register
       buffer\append "None"
     else
       buffer\append '\n\n'
-      list = List buffer, #buffer + 1
-      list.items = [ { name, desc } for name, desc in pairs params ]
-      list.headers = { 'Name', 'Description' }
-      list\show!
+      buffer\append StyledTable [ { name, desc } for name, desc in pairs params ], {
+        { header: 'Name', style: 'string'},
+        { header: 'Description', style: 'comment' }
+      }
 
     buffer.read_only = true
     buffer.modified = false
@@ -174,8 +155,10 @@ command.register
 command.register
   name: 'bundle-unload'
   description: 'Unloads a specified bundle'
-  input: 'loaded_bundle'
-  handler: (name) ->
+  handler: ->
+    name = interact.select_loaded_bundle!
+    return if not name
+
     log.info "Unloading bundle '#{name}'.."
     bundle.unload name
     log.info "Unloaded bundle '#{name}'"
@@ -183,8 +166,10 @@ command.register
 command.register
   name: 'bundle-load'
   description: 'Loads a specified, currently unloaded, bundle'
-  input: 'unloaded_bundle'
-  handler: (name) ->
+  handler: ->
+    name = interact.select_unloaded_bundle!
+    return if not name
+
     log.info "Loading bundle '#{name}'.."
     bundle.load_by_name name
     log.info "Loaded bundle '#{name}'"
@@ -192,8 +177,10 @@ command.register
 command.register
   name: 'bundle-reload'
   description: 'Reloads a specified bundle'
-  input: 'loaded_bundle'
-  handler: (name) ->
+  handler: ->
+    name = interact.select_loaded_bundle!
+    return if not name
+
     log.info "Reloading bundle '#{name}'.."
     bundle.unload name if _G.bundles[name]
     bundle.load_by_name name
@@ -206,7 +193,8 @@ command.register
     for buffer in *app.buffers
       bundle_name = buffer.file and bundle.from_file(buffer.file) or nil
       if bundle_name
-        command.run "bundle-reload #{bundle_name}"
+        howl.app.window.command_line\run_after_finish ->
+          command.run "bundle-reload #{bundle_name}"
         return
 
     log.warn 'Could not find any currently active bundle to reload'
@@ -214,20 +202,30 @@ command.register
 command.register
   name: 'buffer-grep'
   description: 'Matches certain buffer lines in realtime'
-  input: ->
+  handler: ->
     buffer = app.editor.buffer
-    inputs.line "Buffer grep in #{buffer.title}", app.editor
+    position = interact.select_match
+      title: "Buffer grep in #{buffer.title}"
+      editor: app.editor
 
-  handler: (line, column) -> app.editor.cursor\move_to line.nr, column
+    if position
+       app.editor.cursor\move_to position.row, position.col
+
 
 command.register
   name: 'buffer-structure'
   description: 'Shows the structure for the given buffer'
-  input: ->
+  handler: ->
     buffer = app.editor.buffer
-    inputs.line "Structure for #{buffer.title}", app.editor, buffer.mode\structure app.editor
+    lines = buffer.mode\structure app.editor
+    position = interact.select_match
+      title: "Structure for #{buffer.title}"
+      editor: app.editor
+      :lines
+      selected_line: app.editor.cursor.line
 
-  handler: (line, column) -> app.editor.cursor\move_to line.nr, column
+    if position
+       app.editor.cursor\move_to position.row, position.col
 
 -----------------------------------------------------------------------
 -- Howl eval commands
@@ -302,36 +300,38 @@ command.register
 -----------------------------------------------------------------------
 
 launch_cmd = (working_directory, cmd) ->
-  shell = howl.sys.env.SHELL or '/bin/sh'
-  p = Process {
-    :cmd,
-    :shell,
-    read_stdout: true,
-    read_stderr: true,
-    working_directory: working_directory,
-  }
+  dispatch.launch ->
+    shell = howl.sys.env.SHELL or '/bin/sh'
+    p = Process {
+      :cmd,
+      :shell,
+      read_stdout: true,
+      read_stderr: true,
+      working_directory: working_directory,
+    }
 
-  buffer = ProcessBuffer p
-  editor = app\add_buffer buffer
-  editor.cursor\eof!
-  buffer\pump!
+    buffer = ProcessBuffer p
+    editor = app\add_buffer buffer
+    editor.cursor\eof!
+    buffer\pump!
 
 command.register
   name: 'project-exec',
   description: 'Runs an external command from within the project directory'
-
-  input: ->
+  handler: ->
     buffer = app.editor and app.editor.buffer
     file = buffer.file or buffer.directory
     error "No file associated with the current view" unless file
     project = Project.get_for_file file
     error "No project associated with #{file}" unless project
-    inputs.external_command project.root
-
-  handler: launch_cmd
+    working_directory, cmd = interact.get_external_command path: project.root
+    if cmd
+      launch_cmd working_directory, cmd
 
 command.register
   name: 'exec',
   description: 'Runs an external command'
-  input: 'external_command'
-  handler: launch_cmd
+  handler: ->
+    working_directory, cmd = interact.get_external_command!
+    if cmd
+      launch_cmd working_directory, cmd

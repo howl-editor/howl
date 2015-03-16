@@ -1,7 +1,7 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, mode, inputs, Buffer, Project from howl
+import app, command, mode, inputs, interact, Buffer, Project from howl
 import File from howl.io
 
 with_vc = (f) ->
@@ -28,8 +28,9 @@ show_diff_buffer = (title, contents) ->
 command.register
   name: 'open',
   description: 'Open file'
-  input: 'file'
-  handler: (file) -> app\open_file file
+  handler: ->
+    file = interact.select_file allow_new: true
+    app\open_file file if file
 
 command.alias 'open', 'e'
 
@@ -42,7 +43,7 @@ command.register
     if file
       project = Project.get_for_file file
       if project
-        file = app.window.readline\read ':project-open ', 'project_file'
+        file = interact.select_file_in_project :project
         app\open_file file if file
     else
       log.warn "No file or directory associated with the current view"
@@ -50,14 +51,19 @@ command.register
 command.register
   name: 'save',
   description: 'Saves the current buffer to file'
+  evade_history: true
   handler: ->
     buffer = app.editor.buffer
-    return command.run 'save-as' unless buffer.file
+    if not buffer.file
+      app.window.command_line\run_after_finish ->
+        command.run 'save-as' unless buffer.file
+      return
 
     if buffer.modified_on_disk
-      input = inputs.yes_or_no false
-      prompt = "Buffer '#{buffer}' has changed on disk, save anyway? "
-      unless inputs.read input, :prompt
+      overwrite = interact.yes_or_no
+        prompt: "Buffer '#{buffer}' has changed on disk, save anyway? "
+        default: false
+      unless overwrite
         log.info "Not overwriting; buffer not saved"
         return
 
@@ -70,13 +76,17 @@ command.alias 'save', 'w'
 command.register
   name: 'save-as',
   description: 'Saves the current buffer to a given file'
-  input: 'file'
-  handler: (file) ->
+  evade_history: true
+  handler: ->
+    file = interact.select_file allow_new: true
+    return unless file
     if file.exists
-      input = inputs.yes_or_no false
-      unless inputs.read input, prompt: "File '#{file}' already exists, overwrite? "
+      unless interact.yes_or_no prompt: "File '#{file}' already exists, overwrite? "
         log.info "Not overwriting; buffer not saved"
         return
+
+    unless file.parent.exists
+      file.parent\mkdir_p!
 
     buffer = app.editor.buffer
     buffer\save_as file
@@ -86,6 +96,7 @@ command.register
 command.register
   name: 'buffer-close',
   description: 'Closes the current buffer'
+  evade_history: true
   handler: ->
     buffer = app.editor.buffer
     app\close_buffer buffer
@@ -95,6 +106,7 @@ command.alias 'buffer-close', 'close'
 command.register
   name: 'vc-diff-file',
   description: 'Shows a diff against the VC for the current file'
+  evade_history: true
   handler: ->
     with_vc (vc, buffer) ->
       diff = vc\diff buffer.file
@@ -106,6 +118,7 @@ command.register
 command.register
   name: 'vc-diff',
   description: 'Shows a diff against the VC for the current project'
+  evade_history: true
   handler: ->
     with_vc (vc, buffer, project) ->
       diff = vc\diff!

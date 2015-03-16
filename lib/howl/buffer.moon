@@ -1,5 +1,5 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Scintilla, styler, BufferContext, BufferLines, Chunk, config, signal from howl
 import File from howl.io
@@ -277,11 +277,12 @@ class Buffer extends PropertyObject
     if init < 1 or init > @length
       return nil
 
-    byte_start_pos = @text\find search, @byte_offset(init), true
+    byte_start_pos, byte_end_pos = @text\find search, @byte_offset(init), true
 
     if byte_start_pos
       start_pos = @char_offset byte_start_pos
-      return start_pos, start_pos + search.ulen - 1
+      end_pos = @char_offset(byte_end_pos + 1) - 1
+      return start_pos, end_pos
 
     nil
 

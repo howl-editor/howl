@@ -1,5 +1,5 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
 import signal from howl
@@ -29,8 +29,10 @@ class Status
       @level = nil
       @text = nil
 
-  hide: => @label.visible = false
-  show: => @label.visible = true
+  hide: =>
+    @label.visible = false
+  show: =>
+    @label.visible = true
 
   _set: (level, text) =>
     if @level and level != @level

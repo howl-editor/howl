@@ -1,3 +1,6 @@
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 import app, config from howl
 
 describe 'log', ->
@@ -12,19 +15,19 @@ describe 'log', ->
     describe m .. '(text)', ->
       it 'propages the message to howl.app.window.status\\' .. m .. '() if available', ->
         method = spy.new -> true
-        app.window = readline: {}, status: [m]: method
+        app.window = command_line: {}, status: [m]: method
         log[m] 'message'
         assert.spy(method).was.called_with app.window.status, 'message'
 
       it 'only propagates the first line of the message', ->
         method = spy.new -> true
-        app.window = readline: {}, status: [m]: method
+        app.window = command_line: {}, status: [m]: method
         log[m] 'message\nline2\nline3'
         assert.spy(method).was.called_with app.window.status, 'message'
 
       it 'removes any location info before propagating', ->
         method = spy.new -> true
-        app.window = readline: {}, status: [m]: method
+        app.window = command_line: {}, status: [m]: method
         log[m] '[string "../foo/bar.lua"]:32: juicy bit'
         assert.spy(method).was.called_with app.window.status, 'juicy bit'
 

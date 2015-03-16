@@ -1,3 +1,6 @@
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 --[[-
 LuaJIT-based Scintilla interface.
 
@@ -1531,7 +1534,14 @@ end
 
 -- Insert string at a position.
 function sci:insert_text(pos, text)
-  self:send(2003, pos, string_ptr(text))
+  ok, result = pcall(function()
+    self:send(2003, pos, string_ptr(text))
+  end)
+  if ok then return result end
+  io = _G.require('io')
+  debug = _G.require('debug')
+  s = _G.require('serpent')
+  io.stderr:write('ERROR ERROR\n', debug.traceback(), s.block(text))
 end
 
 -- Delete all text in the document.

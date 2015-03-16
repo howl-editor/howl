@@ -4,7 +4,7 @@ C = require('ffi').C
 
 import File from howl.io
 import theme from howl.ui
-import signal, config from howl
+import dispatch, signal, config from howl
 _G.Spy = require 'howl.spec.spy'
 
 -- additional aliases
@@ -102,3 +102,21 @@ export pump_mainloop = ->
   count = 0
   while count < 100 and C.g_main_context_iteration(howl_main_ctx, false) != 0
     count += 1
+
+export within_activity = (activity_function, on_show) ->
+  command_line = howl.app.window.command_line
+  command_line.orig_show = command_line.show
+  command_line.show = spy.new =>
+    @orig_show!
+    on_show!
+
+  ok, error = dispatch.launch activity_function
+  if not ok
+    print error
+
+  command_line.show = command_line.orig_show
+
+export get_list_items = (column=1, widget_name='completion_list') ->
+  items = howl.app.window.command_line\get_widget(widget_name).items
+  items = [row[column] for row in *items]
+  return [item.text or item for item in *items]

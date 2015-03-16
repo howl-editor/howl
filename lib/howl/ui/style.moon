@@ -1,5 +1,5 @@
--- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import config from howl
 import colors from howl.ui
@@ -233,6 +233,19 @@ set_for_theme = (theme) ->
   -- redefine all extended styles
   for name in pairs styles
     define_extended name if is_extended name
+
+ -- set status styles
+  status = theme.window and theme.window.status
+  if status
+    for level in *{'info', 'warning', 'error'}
+      values = status[level]
+      if values
+        font = moon.copy values.font or status.font
+        color = values.color or status.color
+        values.font = font
+        values.color = color
+
+      styles['status-'..level] = values
 
   -- and rebase all existing scis
   rebase_on default_style, styles[default_style], sci for sci, default_style in pairs scis
