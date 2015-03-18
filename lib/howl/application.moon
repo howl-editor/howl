@@ -203,7 +203,9 @@ class Application extends PropertyObject
       for _, process in pairs Process.running
         process\send_signal 'KILL'
 
-      win\destroy! for win in * moon.copy @windows
+      for win in * moon.copy @windows
+        win.readline\hide!
+        win\destroy!
 
   save_session: =>
     session = {
