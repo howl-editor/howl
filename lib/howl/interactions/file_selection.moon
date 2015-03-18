@@ -227,10 +227,6 @@ class FileSelector
     else
       @list_widget\update text
 
-    if not @list_widget.selection
-
-      log.error "Invalid path: #{text} does not exist"
-
   keymap:
     enter: =>
       name = @list_widget.selection and @list_widget.selection.name
