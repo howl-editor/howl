@@ -32,19 +32,25 @@ howl.aux.lpeg_lexer ->
   property = capture('css_property', (alpha + '-')^1) * blank^0 * capture('operator', ':')
   value_identifier = any(S'-:.', alpha)^1
   named_parameter = capture('key', name) * blank^0 * capture('operator', S'*^='^1)
+  func_value = any(alpha, S'-:.')^1 * '(' * complement(')')^1 * ')'
+
   decl_value = any {
     comment,
     num,
     color,
-    operator,
     blank,
     named_parameter,
+    func_value,
     value_identifier,
     string,
     capture('operator', S'!'),
-    complement(S' \t;')^1,
+    complement(S' \t;{},')^1,
   }
-  declaration = property * space^0 * (decl_value^0 + blank) * any(capture('operator', ';'), eol)
+  declaration = property * space^0 * (decl_value^0 + blank) * any {
+    capture('operator', ';'),
+    space^0 * capture('operator', '}'),
+    eol,
+  }
 
   at_rule = capture('css_at', P'@' * name) * (blank * dq_string)^-1
   pseudo = capture 'css_pseudo', P':' * name

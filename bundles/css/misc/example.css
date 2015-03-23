@@ -6,19 +6,29 @@ body {
 
 .one_line { padding: 10px; border-top: 10; }
 
+/* feast your eyes on the below id
+   and this multi-line comment */
+#id { margin: 5 5 5 5; }
+
+/* with pseudo element */
+a:visited { color: blue; }
+
+and { no-ending-semi-colon: true }
+and:pseudo-with { no-ending-semi-colon: true }
+
+a:visited { color: blue }
+
 a:hover {
   background-color: #eabc;
 }
+
+a:visited { color: blue; }
 
 .footer {
   border-top: 1em solid #eee;
   padding-bottom: 40px;
   foo: 40px #dfeac;
 }
-
-/* feast your eyes on the below id
-   and this multi-line comment */
-#id { margin: 5 5 5 5; }
 
 .class {
   text-align: /* in-place comment */ center;
