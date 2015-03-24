@@ -55,8 +55,8 @@ Buffer = {
     @revisions\clear!
 
   properties: {
-    size: => @text_buffer.size
-    length: => @_length
+    size: => tonumber @text_buffer.size
+    length: => tonumber @_length
     can_undo: => #@revisions > 0
 
     nr_lines: =>
