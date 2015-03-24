@@ -155,7 +155,7 @@ Cursor = {
       -- adjust for the remembered column if appropriate
       if @_sticky_x and (opts.line and not opts.column)
         inside, index = @display_line.layout\xy_to_index @_sticky_x, 1
-        index += 1 if not inside and index > 0 -- move to the ending new line
+        index = @display_line.size if not inside and index > 0 -- move to the ending new line
         pos = dest_line.start_offset + index
 
     else -- staying on same line, refresh it
