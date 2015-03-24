@@ -86,9 +86,9 @@ Buffer = {
 
         @as_one_undo ->
           if old_text
-            @_on_modification 'deleted', 1, old_text, #old_text, 0
+            @_on_modification 'deleted', 1, old_text, #old_text, 1
 
-          @_on_modification 'inserted', 1, text, size, 0
+          @_on_modification 'inserted', 1, text, size, 1
     }
   }
 
