@@ -33,10 +33,11 @@ draw_ops = {
 
     if flair.foreground
       set_source_from_color cr, 'foreground', flair
-      cr.line_width = flair.line_width or 0.5
+      line_width = flair.line_width or 0.5
+      cr.line_width = line_width
       cr.line_join = Cairo.LINE_JOIN_ROUND
       cr.line_cap = Cairo.LINE_CAP_ROUND
-      cr\rectangle x, y + 0.5, width, height - 1
+      cr\rectangle x, y + (line_width / 2), width, height - line_width
       cr\stroke!
 
   sandwich: (x, y, width, height, cr, flair) ->
