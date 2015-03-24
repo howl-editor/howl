@@ -1,13 +1,12 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
+config = require 'aullar.config'
 Pango = require 'ljglibs.pango'
-AttrList = Pango.AttrList
-Attribute = Pango.Attribute
-SCALE = Pango.SCALE
-Color = Pango.Color
+{:AttrList, :Attribute, :SCALE, :Color} = Pango
 append = table.insert
 ffi = require 'ffi'
+{:cast} = ffi
 {:copy} = moon
 
 styles = {}
@@ -20,6 +19,27 @@ underline_options = {
   low: Pango.UNDERLINE_LOW,
   error: Pango.UNDERLINE_ERROR
 }
+
+font_size_deltas = {
+  'xx-small': -4
+  'x-small': -3
+  smaller: -2
+  small: -1
+  medium: 0
+  large: 1
+  larger: 2
+  'x-large': 3
+  'xx-large': 4
+}
+
+pango_attr_p = ffi.typeof('PangoAttribute *')
+attr_ptr = (a) -> cast pango_attr_p, a
+
+get_font_size = (v) ->
+  return v unless type(v) == 'string'
+  delta = font_size_deltas[v]
+  error "Invalid font size specification '#{v}'", 2 unless delta
+  config.view_font_size + delta
 
 create_attributes = (def) ->
   attrs = {}
@@ -55,7 +75,7 @@ create_attributes = (def) ->
     append attrs, Attribute.Family(font.family) if font.family
     append attrs, Attribute.Style(Pango.STYLE_ITALIC) if font.italic
     append attrs, Attribute.Weight(Pango.WEIGHT_BOLD) if font.bold
-    append attrs, Attribute.Size(font.size * SCALE) if font.size
+    append attrs, Attribute.Size(get_font_size(font.size) * SCALE) if font.size
 
   attrs
 

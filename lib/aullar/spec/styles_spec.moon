@@ -2,6 +2,9 @@
 -- License: MIT (see LICENSE)
 
 styles = require 'aullar.styles'
+config = require 'aullar.config'
+{:cast} = require 'ffi'
+{:SCALE} = require 'ljglibs.pango'
 
 describe 'styles', ->
 
@@ -24,6 +27,17 @@ describe 'styles', ->
 
       styles.define_default 'preset', color: '#667788'
       assert.equal '#334455', styles.def_for('preset').color
+
+  describe 'font handling', ->
+    it 'allows for proportional font size specifications', ->
+      default = config.view_font_size
+      size_for = (attr) ->
+        attrs = styles.create_attributes attr
+        cast('PangoAttrSize *', attrs[1]).size / SCALE
+
+      assert.equals default - 1, size_for font: { size: 'small' }
+      assert.equals default, size_for font: { size: 'medium' }
+      assert.equals default + 1, size_for font: { size: 'large' }
 
   context 'sub styling', ->
     it 'supports styles being composed of a base and an override', ->
