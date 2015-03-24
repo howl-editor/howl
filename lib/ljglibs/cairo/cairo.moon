@@ -147,6 +147,16 @@ core.define 'cairo_t', {
       get: => C.cairo_get_operator @
       set: (operator) => C.cairo_set_operator @, operator
     }
+
+    line_join: {
+      get: => C.cairo_get_line_join @
+      set: (lj) => C.cairo_set_line_join @, lj
+    }
+
+    line_cap: {
+      get: => C.cairo_get_line_cap @
+      set: (lc) => C.cairo_set_line_cap @, lc
+    }
   }
 
   create: (surface) -> cairo_gc_ptr C.cairo_create surface

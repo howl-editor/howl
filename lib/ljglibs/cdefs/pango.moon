@@ -347,6 +347,16 @@ ffi.cdef [[
                                      PangoRectangle *ink_rect,
                                      PangoRectangle *logical_rect);
 
+  void pango_layout_line_index_to_x (PangoLayoutLine *line,
+                                    int index_,
+                                    gboolean trailing,
+                                    int *x_pos);
+
+  gboolean pango_layout_line_x_to_index (PangoLayoutLine *line,
+                                         int x_pos,
+                                         int *index_,
+                                         int *trailing);
+
   /* PangoLayoutIter */
   PangoLayoutIter * pango_layout_get_iter (PangoLayout *layout);
   void pango_layout_iter_free (PangoLayoutIter *iter);

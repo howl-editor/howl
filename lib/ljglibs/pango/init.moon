@@ -78,6 +78,31 @@ core.auto_loading 'pango', {
 
     -- PangoTabAlign
     'TAB_LEFT'
+
+    -- PangoAttrType
+    'ATTR_INVALID'
+    'ATTR_LANGUAGE'
+    'ATTR_FAMILY'
+    'ATTR_STYLE'
+    'ATTR_WEIGHT'
+    'ATTR_VARIANT'
+    'ATTR_STRETCH'
+    'ATTR_SIZE'
+    'ATTR_FONT_DESC'
+    'ATTR_FOREGROUND'
+    'ATTR_BACKGROUND'
+    'ATTR_UNDERLINE'
+    'ATTR_STRIKETHROUGH'
+    'ATTR_RISE'
+    'ATTR_SHAPE'
+    'ATTR_SCALE'
+    'ATTR_FALLBACK'
+    'ATTR_LETTER_SPACING'
+    'ATTR_UNDERLINE_COLOR'
+    'ATTR_STRIKETHROUGH_COLOR'
+    'ATTR_ABSOLUTE_SIZE'
+    'ATTR_GRAVITY'
+    'ATTR_GRAVITY_HINT'
   },
 
   SCALE: 1024

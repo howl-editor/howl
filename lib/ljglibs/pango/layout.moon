@@ -48,7 +48,7 @@ core.define 'PangoLayout', {
 
   properties: {
     text: {
-      get: => ffi_string C.pango_layout_get_text @
+      get: => ffi_string @get_text
       set: (text) => @set_text text
     }
 
@@ -97,6 +97,8 @@ core.define 'PangoLayout', {
   }
 
   new: (ctx) -> gc_ptr C.pango_layout_new ctx
+
+  get_text: => C.pango_layout_get_text @
 
   set_text: (text, length = -1) =>
     C.pango_layout_set_text @, text, length
