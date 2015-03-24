@@ -199,8 +199,8 @@ Cursor = {
     line_start = @buffer_line.start_offset
     z_col = (@_pos - line_start)
     new_index, new_trailing = @display_line.layout\move_cursor_visually true, z_col, 0, 1
-    new_index = @buffer_line.size if new_trailing > 0
-    if new_index > @buffer_line.size
+    new_index = @display_line.size if new_trailing > 0
+    if new_index > @display_line.size
       @move_to pos: @pos + 1, extend: opts.extend
     else
       @move_to pos: line_start + new_index, extend: opts.extend
@@ -251,7 +251,15 @@ Cursor = {
 
   draw: (x, base_y, cr, display_line) =>
     return unless @_showing
-    flair.draw @_flair, display_line,  @column, @column + 1, x, base_y, cr
+    start_offset = @column
+    end_offset, new_trailing = display_line.layout\move_cursor_visually true, start_offset - 1, 0, 1
+
+    if new_trailing > 0 or end_offset > display_line.size + 1
+      end_offset = display_line.size + 1
+    else
+      end_offset += 1
+
+    flair.draw @_flair, display_line, start_offset, end_offset, x, base_y, cr
 
   _blink: =>
     return false if not @active
