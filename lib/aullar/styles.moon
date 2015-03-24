@@ -102,29 +102,40 @@ def_for = (name) ->
 
   def
 
-apply = (list, name, start_index = Pango.ATTR_INDEX_FROM_TEXT_BEGINNING, end_index = Pango.ATTR_INDEX_TO_TEXT_END) ->
+_exclude_attribute_list = {
+  [tonumber Pango.ATTR_FOREGROUND]: 'color'
+}
+
+_exclude_attribute = (attr, exclude) ->
+  attr_type = tonumber attr_ptr(attr).klass.type
+  key = _exclude_attribute_list[attr_type]
+  key and exclude[key]
+
+apply = (list, name, start_index = Pango.ATTR_INDEX_FROM_TEXT_BEGINNING, end_index = Pango.ATTR_INDEX_TO_TEXT_END, opts = {}) ->
   attrs = attributes[name]
+  exclude = opts.exclude
 
   unless attrs
     def = def_for name
     return unless def
 
-    attrs = create_attributes def
+    attrs = create_attributes def, opts
     attributes[name] = attrs
 
   for attr in *attrs
+    continue if exclude and _exclude_attribute attr, exclude
     attr = attr\copy!
     attr.start_index = start_index
     attr.end_index = end_index
     list\insert_before attr
 
-get_attributes = (styling) ->
+get_attributes = (styling, opts = {}) ->
   list = AttrList()
   return list unless styling
 
   for i = 1, #styling, 3
-    apply list, styling[i + 1], styling[i] - 1, styling[i + 2] - 1
+    apply list, styling[i + 1], styling[i] - 1, styling[i + 2] - 1, opts
 
   list
 
-:define, :define_default, :apply, :get_attributes, :def_for
+:define, :define_default, :apply, :create_attributes, :get_attributes, :def_for
