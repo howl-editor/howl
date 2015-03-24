@@ -7,19 +7,21 @@ cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
 C = ffi.C
 
-flair.define 'cursor', {
+flair.define_default 'cursor', {
   type: flair.RECTANGLE,
-  background: '#c30000'
-  background_alpha: 0.9
-  width: 1.5
+  background: '#000000',
+  width: 1.5,
+  height: 'text'
 }
 
-flair.define 'block_cursor', {
+flair.define_default 'block_cursor', {
   type: flair.RECTANGLE,
-  foreground: '#c30000'
-  background: '#c30000'
-  background_alpha: 0.2
-  min_width: 10
+  foreground: '#c3c3c3',
+  background: '#000000',
+  background_alpha: 0.5,
+  min_width: 5,
+  height: 'text'
+  text_color: '#dddddd'
 }
 
 {:max, :min, :abs} = math
