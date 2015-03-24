@@ -3,8 +3,12 @@
 
 {:RGBA} = require 'ljglibs.gdk'
 Cairo = require 'ljglibs.cairo.cairo'
+{:SCALE, :Layout, :AttrList, :Attribute, :Color, :cairo} = require 'ljglibs.pango'
+
 {:define_class} = require 'aullar.util'
-{:max} = math
+styles = require 'aullar.styles'
+Styling = require 'aullar.styling'
+{:min, :max, :ceil} = math
 copy = moon.copy
 
 flairs = {}
@@ -73,6 +77,27 @@ define = (name, opts) ->
   flair = build opts
   flairs[name] = flair
 
+get_text_object = (display_line, start_offset, end_offset, flair) ->
+  layout = Layout display_line.pango_context
+  dline_layout = display_line.layout
+  text_size = end_offset - start_offset
+  t_ptr = dline_layout\get_text!
+  layout\set_text t_ptr + start_offset - 1, text_size
+  layout.tabs = dline_layout.tabs
+
+  if flair.text_color
+    styling = Styling.sub display_line.styling, start_offset, end_offset
+    attributes = styles.get_attributes styling, exclude: { color: true }
+    color = Color flair.text_color
+    attributes\insert_before Attribute.Foreground(color.red, color.green, color.blue)
+    layout.attributes = attributes
+
+  width, height = layout\get_pixel_size!
+  :layout, :width, :height
+
+need_text_object = (flair) ->
+  flair.text_color or flair.height == 'text'
+
 {
   RECTANGLE: 'rectangle'
   SANDWICH: 'sandwich'
@@ -93,26 +118,62 @@ define = (name, opts) ->
     else
       flairs = {}
 
-  draw: (flair, display_line, start_offset, end_offset, x, y, cr) ->
+  compile: (flair, start_offset, end_offset, display_line) ->
     flair = flairs[flair] if type(flair) == 'string'
-    return unless flair
-    {:layout, :view} = display_line
-    rect = layout\index_to_pos start_offset - 1
-    start_x = x + max((rect.x / 1024) - 1, 0) - view.base_x
-    start_x = max(start_x, view.edit_area_x)
-    rect = layout\index_to_pos end_offset - 1
+    return nil unless flair
+    if need_text_object flair
+      flair = moon.copy flair
+      flair.text_object = get_text_object display_line, start_offset, end_offset, flair
 
-    get_defined_width = (x, flair, cr) ->
+    flair
+
+  draw: (flair, display_line, start_offset, end_offset, x, y, cr) ->
+    cursor = flair == 'block_cursor'
+
+    get_defined_width = (x, flair, cr, clip) ->
       return flair.width if not flair.width or type(flair.width) == 'number'
       if flair.width == 'full'
-        cr.clip_extents.x2 - x
+        clip.x2 - x
 
-    width = get_defined_width(start_x, flair, cr)
-    width or= (x + rect.x / 1024) - start_x - view.base_x
-    width = max(flair.min_width, width) if flair.min_width
+    flair = flairs[flair] if type(flair) == 'string'
+    return unless flair
+
+    {:layout, :view} = display_line
+    clip = cr.clip_extents
+    base_x = view.base_x
+    rect = layout\index_to_pos start_offset - 1
+    text_start_x = x + max((rect.x / SCALE) - 1, 0) - base_x
+    start_x = max(text_start_x, view.edit_area_x)
+    rect = layout\index_to_pos end_offset - 1
+    width = get_defined_width(start_x, flair, cr, clip)
+    width or= x + (rect.x / SCALE) - start_x - base_x
+    if flair.min_width
+      width = max(flair.min_width - base_x, width) if flair.min_width
     return if width <= 0
 
+    text_object = flair.text_object
+
+    if not text_object and need_text_object(flair)
+      text_object = get_text_object display_line, start_offset, end_offset, flair, cursor
+
+    height = display_line.height
+
+    if flair.height == 'text' and height > text_object.height
+      y += ceil( (height - text_object.height) / 2) + 1
+      height = text_object.height
+
     cr\save!
-    flair._draw start_x, y, width, display_line.height, cr, flair
+    flair._draw start_x, y, width, height, cr, flair
     cr\restore!
+
+    if flair.text_color
+      cr\save!
+      if base_x > 0
+        cr\rectangle x, y, clip.x2 - x, clip.y2
+        cr\clip!
+
+      cr\move_to text_start_x, y
+      cairo.show_layout cr, text_object.layout
+      cr\restore!
+
 }

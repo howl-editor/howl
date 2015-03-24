@@ -3,6 +3,7 @@
 
 {:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
+Styling = require 'aullar.styling'
 Pango = require 'ljglibs.pango'
 Layout = Pango.Layout
 pango_cairo = Pango.cairo
@@ -84,36 +85,39 @@ get_block = (display_lines, d_line) ->
   block.width = max(block.width, d_line.width) if block
   block
 
-get_flairs = (buffer, line) ->
+get_flairs = (buffer, line, display_line) ->
   start_offset = line.start_offset
 
   translate = (m) ->
-    m = copy m
-    m.start_offset = max 1, (m.start_offset - start_offset) + 1
-    m.end_offset = (m.end_offset - start_offset) + 1
-    m
+    f = copy m
+    f.start_offset = max 1, (f.start_offset - start_offset) + 1
+    f.end_offset = (f.end_offset - start_offset) + 1
+    f.flair = flair.compile f.flair, f.start_offset, f.end_offset, display_line
+    f
 
   markers = buffer.markers\for_range start_offset, line.end_offset
   markers = [translate(m) for m in *markers when m.flair]
   markers
 
 DisplayLine = define_class {
-  new: (@display_lines, @view, buffer, pango_context, @line) =>
+  new: (@display_lines, @view, buffer, @pango_context, line) =>
     @layout = Layout pango_context
     @layout\set_text line.ptr, line.size
     @layout.tabs = display_lines.tab_array
     @nr = line.nr
-    styling = buffer.styling\get(line.start_offset, line.end_offset)
-    @layout.attributes = styles.get_attributes styling
+    @size = line.size
+    @styling = buffer.styling\get(line.start_offset, line.end_offset)
+    @layout.attributes = styles.get_attributes @styling
 
     width, height = @layout\get_pixel_size!
     @height = height
     @width = width + view.cursor.width
-    @background_ranges = parse_background_ranges styling
+    @flairs = get_flairs buffer, line, @
+    @background_ranges = parse_background_ranges @styling
 
     if #@background_ranges == 1
       range = @background_ranges[1]
-      @_full_background = range.start_offset == 1 and range.end_offset > @line.full_size
+      @_full_background = range.start_offset == 1 and range.end_offset > line.full_size
 
   properties: {
     block: =>
@@ -143,10 +147,9 @@ DisplayLine = define_class {
       cr\clip!
 
     cr\move_to x - base_x, y
-
     pango_cairo.show_layout cr, @layout
 
-    for f in *get_flairs(@view.buffer, @line)
+    for f in *@flairs
       flair.draw f.flair, @, f.start_offset, f.end_offset, x, y, cr
 
     cr\restore! if base_x > 0

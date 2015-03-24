@@ -17,7 +17,6 @@ define_options = ->
     view_font_name: {
       type: 'string',
       default: 'Monospace'
-
     },
 
     view_font_size: {

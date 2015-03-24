@@ -303,7 +303,7 @@ View = {
 
       y += d_line.height
 
-    if opts.invalidate and not to_offset
+    if opts.invalidate and not to_offset -- xxx 'not to_offset?'
       max_y = @height
       for line_nr = last_valid + 1, d_lines.max
         d_lines[line_nr] = nil
@@ -354,9 +354,8 @@ View = {
 
     for line_nr = @_first_visible_line, @last_visible_line
       d_line = @display_lines[line_nr]
-      line = d_line.line
 
-      if pos >= line.start_offset and (pos <= line.end_offset or not line.has_eol)
+      if d_line.nr == line.nr or (d_line.nr > line.nr and not line.has_eol)
         -- it's somewhere within this line..
         layout = d_line.layout
         index = pos - line.start_offset -- <-- at this byte index
@@ -381,15 +380,13 @@ View = {
 
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width
-    for line_nr = @_first_visible_line, @display_lines.max
-      d_line = rawget @display_lines, line_nr
-      continue unless d_line
-      line = d_line.line
-      after = line.start_offset > to_offset
-      break if after
-      before = line.end_offset < from_offset and line.has_eol
-      if not before
-        @display_lines[line_nr] = nil
+
+    to_offset = max to_offset, @buffer.size
+    from_line = min @first_visible_line, @buffer\get_line_at_offset(from_offset).nr
+    to_line = max @display_lines.max, @buffer\get_line_at_offset(to_offset).nr
+
+    for line_nr = from_line, to_line
+      @display_lines[line_nr] = nil
 
   _draw: (cr) =>
     p_ctx = @area.pango_context
@@ -460,7 +457,6 @@ View = {
     tab_size = @config.view_tab_size
     location = width_of_space * tab_size
     @_tab_array = Pango.TabArray(1, true, location)
-
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
 
   _on_buffer_styled: (buffer, args) =>
@@ -541,7 +537,7 @@ View = {
 
   _on_buffer_marker_changed: (buffer, marker) =>
     if marker.flair
-      @refresh_display marker.start_offset, marker.end_offset
+      @refresh_display marker.start_offset, marker.end_offset, invalidate: true
 
   _on_buffer_undo: (buffer, revision) =>
     pos = revision.meta.cursor_before or revision.offset
