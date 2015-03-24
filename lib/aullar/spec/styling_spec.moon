@@ -12,6 +12,33 @@ describe 'Styling', ->
     listener = on_changed: spy.new -> nil
     styling = Styling 50, listener
 
+  describe 'Styling.sub(styling, start_offset, end_offset)', ->
+    it 'extracts a sub set of styling for [start_offset, end_offset) from styling', ->
+      styles = {
+        3, 'keyword', 5,
+        6, 'string', 8,
+      }
+
+      assert.same styles, Styling.sub(styles, 1, 10)
+      assert.same {}, Styling.sub(styles, 1, 3)
+      assert.same {}, Styling.sub(styles, 8, 10)
+
+      -- precise hit
+      assert.same { 1, 'keyword', 3 }, Styling.sub(styles, 3, 5)
+
+      -- overlap from start
+      assert.same { 1, 'keyword', 2 }, Styling.sub(styles, 3, 4)
+
+      -- overlap from end
+      assert.same { 1, 'string', 2 }, Styling.sub(styles, 7, 10)
+
+      -- overlap in the middle
+      assert.same {
+        1, 'keyword', 2,
+        3, 'string', 4
+      }, Styling.sub(styles, 4, 7)
+
+
   describe 'set(start_offset, end_offset, style)', ->
     it 'sets the specified style for the range [start_offset, end_offset)', ->
       styling\set 3, 8, 'keyword'

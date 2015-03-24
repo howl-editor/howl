@@ -1,5 +1,5 @@
--- Copyright 2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE)
+-- Copyright 2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:fill} = require 'ffi'
 {:define_class} = require 'aullar.util'
@@ -25,6 +25,21 @@ define_class {
   new: (size, @listener) =>
     @style_buffer = GapBuffer 'uint16_t', size
     @last_pos_styled = 0
+
+  sub: (styling, start_offset, end_offset) ->
+    styles = {}
+
+    for i = 1, #styling - 1, 3
+      s_offset = styling[i]
+      s_name = styling[i + 1]
+      e_offset = styling[i + 2]
+      break if s_offset >= end_offset -- we're past our section of interest
+      if e_offset > start_offset
+        append styles, max(s_offset, start_offset) - start_offset + 1
+        append styles, s_name
+        append styles, min(e_offset, end_offset) - start_offset + 1
+
+    styles
 
   get: (start_offset, end_offset) =>
     return {} if start_offset > @last_pos_styled
