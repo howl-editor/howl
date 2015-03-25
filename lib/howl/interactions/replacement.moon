@@ -291,6 +291,7 @@ class Replacement
   _switch_to: (cmd) =>
     captured_text = @command_line.text
     @command_line\run_after_finish ->
+      app.editor.selection\select @start_pos, @end_pos
       command.run cmd .. ' ' .. captured_text
     @_restore_return!
 
