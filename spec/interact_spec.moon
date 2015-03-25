@@ -97,17 +97,22 @@ describe 'interact', ->
         assert.is_same {'r1', 'r2', n:2}, multi_value
 
     context 'nested transactions', ->
-      it 'disallows finishing anything except the topmost interaction', ->
+      it 'raises an error when attempting to finishing not active interaction', ->
         local captured_finish
         capture_finish = (finish) -> captured_finish = finish
 
         run_in_coroutine -> interact.interaction_with_factory capture_finish
         finish1 = captured_finish
+        finish1!
 
+        assert.has_error finish1, 'Cannot finish - no running activities'
+
+      it 'allows cancelling outer interactions, when nested interactions present', ->
+        local captured_finish
+        capture_finish = (finish) -> captured_finish = finish
+
+        run_in_coroutine -> interact.interaction_with_factory capture_finish
         run_in_coroutine -> interact.interaction_with_factory capture_finish
         finish2 = captured_finish
 
-        assert.has_error finish1, 'Cannot finish - not current activity'
         assert.has_no_error finish2
-        assert.has_error finish2, 'Cannot finish - not current activity'
-        assert.has_no_error finish1

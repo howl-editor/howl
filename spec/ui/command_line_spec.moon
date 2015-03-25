@@ -228,7 +228,7 @@ describe 'commandline', ->
 
         assert.same { 0, 1, 2, 3, 2, 1, 0 }, depths
 
-      it '\abort_all! cancels all running activities', ->
+      it '\\abort_all! cancels all running activities', ->
         depths = {}
         table.insert depths, command_line.stack_depth
         within_activity ->
@@ -242,5 +242,21 @@ describe 'commandline', ->
 
         assert.same { 0, 1, 2, 3, 0 }, depths
 
+      it 'finishing any activity aborts all nested activities', ->
+        depths = {}
+        table.insert depths, command_line.stack_depth
+        within_activity ->
+          dispatch.launch ->
+            table.insert depths, command_line.stack_depth
+            p = dispatch.park 'command_line_test'
+            dispatch.launch ->
+              within_activity -> within_activity ->
+                  table.insert depths, command_line.stack_depth
+                  dispatch.resume p
+
+            dispatch.wait p
+            table.insert depths, command_line.stack_depth
+
+        assert.same {0, 1, 3, 1}, depths
 
 

@@ -136,14 +136,25 @@ class CommandLine extends PropertyObject
       break unless f
       f!
 
+  _is_active: (activity_id) =>
+    for activity in *@running
+      if activity.activity_id == activity_id
+        return true
+    return false
+
   _finish: (activity_id, results={}) =>
     if @aborted[activity_id]
       @aborted[activity_id] = nil
       return
     if not @current
       error 'Cannot finish - no running activities'
+
     if activity_id != @current.activity_id
-      error 'Cannot finish - not current activity'
+      if @_is_active activity_id
+        while @current.activity_id != activity_id
+          @_abort_current!
+      else
+        error "Cannot finish - invalid activity_id #{activity_id}"
 
     @current.state = 'stopping'
 
@@ -164,23 +175,23 @@ class CommandLine extends PropertyObject
       @auto_submit_once = false
       @_process_run_after_finish!
 
+  _abort_current: =>
+    activity_id = @current.activity_id
+    handle = @current.parked_handle
+
+    @_finish activity_id
+    @aborted[activity_id] = true
+
+    if handle
+      dispatch.launch -> dispatch.resume handle
+
+    if @current and activity_id == @current.activity_id
+      -- hard clear, polite attempt didn't work
+      @running[#@running] = nil
+
   abort_all: =>
-    activity_id = nil
-
     while @current
-      if activity_id == @current.activity_id
-        -- hard clear, previous attempt to _finish didn't work
-        @running[#@running] = nil
-        continue
-
-      activity_id = @current.activity_id
-      handle = @current.parked_handle
-
-      @_finish activity_id
-      @aborted[activity_id] = true
-
-      if handle
-        dispatch.launch -> dispatch.resume handle
+      @_abort_current!
 
   _cursor_to_end: =>
     @command_widget.cursor\eof!
