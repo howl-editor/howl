@@ -19,6 +19,34 @@ describe 'View', ->
     window\show_all!
     pump_mainloop!
 
+  context 'visible line orientation properties', ->
+    local nr_lines_in_screen
+
+    before_each ->
+      line_height = view\text_dimensions('M').height
+      nr_lines_in_screen = math.floor view.height / line_height
+      buffer.text = string.rep '123456789\n', nr_lines_in_screen * 3
+      view.first_visible_line = 1
+
+    describe '.first_visible_line', ->
+      it 'is the first visible line', ->
+        assert.equals 1, view.first_visible_line
+        view\scroll_to 10
+        assert.equals 10, view.first_visible_line
+
+    describe '.middle_visible_line', ->
+      it 'is the center vertical line', ->
+        assert.equals math.ceil(nr_lines_in_screen / 2), view.middle_visible_line
+
+      it 'scrolls the view to show the specified line in the center when set', ->
+        view.middle_visible_line = nr_lines_in_screen
+        assert.equals nr_lines_in_screen, view.middle_visible_line
+        assert.equals math.ceil(nr_lines_in_screen / 2), view.first_visible_line
+
+    describe '.last_visible_line', ->
+      it 'is the last visible line', ->
+        assert.equals math.floor(nr_lines_in_screen), view.last_visible_line
+
   context '(coordinate translation)', ->
     before_each -> view.margin = 0
 

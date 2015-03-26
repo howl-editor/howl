@@ -154,6 +154,29 @@ View = {
       set: (line) => @scroll_to line
     }
 
+    middle_visible_line: {
+      get: =>
+        return 0 unless @height
+        y = @margin
+        middle = @height / 2
+
+        for line = @_first_visible_line, @_last_visible_line
+          d_line = @display_lines[line]
+          y += d_line.height
+          return line if y >= middle
+
+        @_last_visible_line
+
+      set: (line) =>
+        y = @height / 2
+        for nr = line, 1, -1
+          d_line = @display_lines[nr]
+          y -= d_line.height
+          if y <= @margin or nr == 1
+            @first_visible_line = nr
+            break
+    }
+
     last_visible_line: {
       get: =>
         unless @_last_visible_line
