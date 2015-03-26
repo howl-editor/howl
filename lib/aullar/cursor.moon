@@ -101,7 +101,19 @@ Cursor = {
 
         @_active = active
     }
+
+    in_view: =>
+      @line >= @view.first_visible_line and @line <= @view.last_visible_line
   }
+
+  ensure_in_view: =>
+    return if @in_view
+    new_line = if @line < @view.first_visible_line
+      @view.first_visible_line
+    else
+      @view.last_visible_line
+
+    @move_to line: new_line
 
   remember_column: =>
     cur_rect = @display_line.layout\index_to_pos @column - 1
