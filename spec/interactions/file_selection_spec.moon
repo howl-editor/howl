@@ -42,7 +42,6 @@ describe 'file_selection', ->
     it 'opens the home directory by default', ->
       local prompt
       within_activity interact.select_file, ->
-        print 'running activity!'
         prompt = command_line.prompt
       assert.same '~/', prompt
 
