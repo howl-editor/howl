@@ -7,7 +7,7 @@ import style, markup, StyledText from howl.ui
 
 append = table.insert
 
-style.define_default 'commandname', 'keyword'
+style.define_default 'command_name', 'keyword'
 
 commands = {}
 
@@ -104,7 +104,7 @@ class CommandRunner
   run: (@finish, opts={}) =>
     @command_line = howl.app.window.command_line
     cmd = nil
-    cmdname = ''
+    cmd_name = ''
     @command_line.prompt = ':'
     @command_line.title = 'Command'
     if opts.directory
@@ -113,13 +113,13 @@ class CommandRunner
       @run_command opts.cmd_string
 
   run_command: (cmd_string) =>
-    cmd, cmdname, text = parse_cmd cmd_string
+    cmd, cmd_name, text = parse_cmd cmd_string
 
     if cmd
       @command_line\write_spillover text
     else
       cmd = resolve_command cmd_string
-      cmdname = cmd and cmd.name
+      cmd_name = cmd and cmd.name
 
     if not cmd
       @command_line.text = cmd_string
@@ -127,17 +127,17 @@ class CommandRunner
       return
 
     @command_line\clear!
-    @command_line.prompt = markup.howl "<prompt>:</><commandname>#{cmdname}</> "
+    @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
 
     local results
 
-    ok, error = pcall ->
+    ok, err = pcall ->
       results = table.pack howl.app.window.command_line\run cmd
 
     if not ok
-      log.error error
+      log.error err
 
-    self.finish results and unpack results
+    self.finish(results and unpack results)
 
   on_update: (text) =>
     if text\find ' '
@@ -146,20 +146,20 @@ class CommandRunner
   command_completion: =>
     text = @command_line.text
     @command_line\clear!
-    cmdname = interact.select_command
+    cmd_name = interact.select_command
       :text
       title: 'Command'
 
-    if cmdname
-      @run_command cmdname
+    if cmd_name
+      @run_command cmd_name
 
   run_historical: =>
     text = @command_line.text
     @command_line\clear!
     @command_line\write_spillover text
-    cmdname = interact.select_historical_command!
-    if cmdname
-      @run_command cmdname
+    cmd_name = interact.select_historical_command!
+    if cmd_name
+      @run_command cmd_name
 
   keymap:
     tab: => @command_completion!
@@ -193,6 +193,7 @@ howl.interact.register
   description: 'Selection list for all commands'
   evade_history: true
   handler: (opts={}) ->
+    opts = moon.copy opts
     with opts
       .items = get_command_items!
       .headers = { 'Command', 'Key binding', 'Description' }
@@ -218,11 +219,13 @@ interact.register
   handler: ->
     line_items = {}
     for idx, item in ipairs get_command_history!
-      table.insert line_items, {idx, item, command: tostring(item)}
+      append line_items, {idx, item, command: tostring(item)}
+
     result = interact.select
       matcher: Matcher line_items, preserve_order: true
       reverse: true
       title: 'Command History'
+
     if result
       return result.selection.command\sub 2
 
