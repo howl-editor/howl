@@ -20,6 +20,7 @@ register_commands = ->
   command.register
     name: 'nrepl-connect',
     description: 'Connects to an nrepl instance'
+    interactive: true
     handler: ->
       port = interact.read_nrepl_port!
       nrepl.connect port
@@ -28,6 +29,7 @@ register_commands = ->
   command.register
     name: 'nrepl-eval',
     description: 'Evaluates a given Clojure form'
+    interactive: true
     handler: ->
       res = nrepl.eval interact.read_text!
       if res.value

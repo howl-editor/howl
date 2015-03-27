@@ -28,6 +28,7 @@ show_diff_buffer = (title, contents) ->
 command.register
   name: 'open',
   description: 'Open file'
+  interactive: true
   handler: ->
     file = interact.select_file allow_new: true
     app\open_file file if file
@@ -37,6 +38,7 @@ command.alias 'open', 'e'
 command.register
   name: 'project-open',
   description: 'Open project file'
+  interactive: true
   handler: ->
     buffer = app.editor and app.editor.buffer
     file = buffer and (buffer.file or buffer.directory)
@@ -76,6 +78,7 @@ command.alias 'save', 'w'
 command.register
   name: 'save-as',
   description: 'Saves the current buffer to a given file'
+  interactive: true
   evade_history: true
   handler: ->
     file = interact.select_file allow_new: true

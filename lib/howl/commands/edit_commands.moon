@@ -7,6 +7,7 @@ import BufferPopup from howl.ui
 command.register
   name: 'buffer-search-forward',
   description: 'Starts an interactive forward search'
+  interactive: true
   handler: ->
     if interact.forward_search!
       app.editor.searcher\commit!
@@ -16,6 +17,7 @@ command.register
 command.register
   name: 'buffer-search-backward',
   description: 'Starts an interactive backward search'
+  interactive: true
   handler: ->
     if interact.backward_search!
       app.editor.searcher\commit!
@@ -25,6 +27,7 @@ command.register
 command.register
   name: 'buffer-search-word-forward',
   description: 'Jumps to next occurence of word at cursor'
+  interactive: true
   handler: ->
     app.window.command_line\write_spillover app.editor.current_context.word.text
     if interact.forward_search_word!
@@ -35,6 +38,7 @@ command.register
 command.register
   name: 'buffer-search-word-backward',
   description: 'Jumps to previous occurence of word at cursor'
+  interactive: true
   handler: ->
     app.window.command_line\write_spillover app.editor.current_context.word.text
     if interact.backward_search_word!
@@ -50,6 +54,7 @@ command.register
 howl.command.register
   name: 'buffer-replace'
   description: 'Replaces text (within selection or globally)'
+  interactive: true
   handler: ->
     buffer = app.editor.buffer
     chunk = app.editor.active_chunk
@@ -73,6 +78,7 @@ howl.command.register
 command.register
   name: 'buffer-replace-regex',
   description: 'Replaces text using regular expressions (within selection or globally)'
+  interactive: true
   handler: ->
     buffer = app.editor.buffer
     chunk = app.editor.active_chunk
@@ -96,6 +102,7 @@ command.register
 command.register
   name: 'editor-paste..',
   description: 'Pastes a selected clip from the clipboard at the current position'
+  interactive: true
   handler: ->
     clip = interact.select_clipboard_item!
     if clip
@@ -127,6 +134,7 @@ command.register
 command.register
   name: 'buffer-mode',
   description: 'Sets a specified mode for the current buffer'
+  interactive: true
   handler: ->
     selected_mode = interact.select_mode!
     return unless selected_mode

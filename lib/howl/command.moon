@@ -17,9 +17,8 @@ resolve_command = (name) ->
   def
 
 parse_cmd = (text) ->
-  cmd_start, cmd_end, cmd, rest = text\find '^%s*([^%s]+)%s+(.*)$'
-  return resolve_command(cmd), cmd, rest if cmd
-  return nil, nil, text
+  cmd_start, cmd_end, cmd_name, rest = text\find '^%s*([^%s]+)%s+(.*)$'
+  return resolve_command(cmd_name), cmd_name, rest if cmd_name
 
 register = (spec) ->
   for field in *{'name', 'description'}
@@ -110,24 +109,35 @@ class CommandRunner
     if opts.directory
       @command_line.directory = opts.directory
     if opts.cmd_string
-      @run_command opts.cmd_string
+      cmd = resolve_command opts.cmd_string
+      if cmd
+        @run_command cmd, opts.cmd_string
+      else
+        @command_line\write opts.cmd_string
+        @on_update opts.cmd_string
 
-  run_command: (cmd_string) =>
+  on_update: (cmd_string) =>
+    return unless cmd_string\find ' '
+
     cmd, cmd_name, text = parse_cmd cmd_string
-
-    if cmd
-      @command_line\write_spillover text
-    else
-      cmd = resolve_command cmd_string
-      cmd_name = cmd and cmd.name
 
     if not cmd
       @command_line.text = cmd_string
-      log.error 'No such command'
+      log.error "No such command '#{cmd_string}'"
       return
 
+    if not cmd.interactive
+      @command_line.text = cmd_name
+      log.error "Command '#{cmd_name}' takes no arguments, press <enter> to run."
+      return
+
+    @run_command cmd, cmd_name, text
+
+  run_command: (cmd, cmd_name, spillover) =>
     @command_line\clear!
     @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
+    if spillover
+      @command_line\write_spillover spillover
 
     local results
 
@@ -139,10 +149,6 @@ class CommandRunner
 
     self.finish(results and unpack results)
 
-  on_update: (text) =>
-    if text\find ' '
-      @run_command text
-
   command_completion: =>
     text = @command_line.text
     @command_line\clear!
@@ -151,15 +157,16 @@ class CommandRunner
       title: 'Command'
 
     if cmd_name
-      @run_command cmd_name
+      cmd = resolve_command(cmd_name)
+      @run_command cmd, cmd_name, nil
 
   run_historical: =>
     text = @command_line.text
     @command_line\clear!
     @command_line\write_spillover text
-    cmd_name = interact.select_historical_command!
-    if cmd_name
-      @run_command cmd_name
+    cmd_string = interact.select_historical_command!
+    if cmd_string
+      @command_line\write cmd_string.stripped
 
   keymap:
     tab: => @command_completion!
@@ -168,9 +175,11 @@ class CommandRunner
     escape: => self.finish!
     enter: =>
       if @command_line.text
-        @run_command @command_line.text
-      else
-        @command_completion!
+        cmd = resolve_command(@command_line.text)
+        if not cmd
+          log.error "No such command '#{@command_line.text}'"
+          return
+        @run_command cmd, @command_line.text, nil
 
 command_runner = {
   name: 'command-runner'
@@ -202,8 +211,6 @@ howl.interact.register
         { style: 'keyword' }
         { style: 'comment' }
       }
-      .submit_on_space = true
-
     result = interact.select opts
 
     if result

@@ -33,6 +33,7 @@ command.register
   name: 'run'
   description: 'Runs a command'
   handler: -> command.run!
+  interactive: true
 
 command.register
   name: 'new-buffer',
@@ -42,6 +43,7 @@ command.register
 command.register
   name: 'switch-buffer',
   description: 'Switches to another buffer'
+  interactive: true
   handler: ->
     buf = interact.select_buffer!
     if buf
@@ -83,16 +85,19 @@ set_variable = (assignment, target) ->
 command.register
   name: 'set',
   description: 'Sets a configuration variable globally'
+  interactive: true
   handler: -> set_variable interact.get_variable_assignment!, config
 
 command.register
   name: 'set-for-mode',
   description: 'Sets a configuration variable for the current mode'
+  interactive: true
   handler: -> set_variable interact.get_variable_assignment!, app.editor.buffer.mode.config
 
 command.register
   name: 'set-for-buffer',
   description: 'Sets a configuration variable for the current buffer'
+  interactive: true
   handler: -> set_variable interact.get_variable_assignment!, app.editor.buffer.config
 
 command.register
@@ -129,6 +134,7 @@ command.register
 command.register
   name: 'describe-signal',
   description: 'Describes a given signal'
+  interactive: true
   handler: ->
     name = interact.select_signal!
     def = signal.all[name]
@@ -155,6 +161,7 @@ command.register
 command.register
   name: 'bundle-unload'
   description: 'Unloads a specified bundle'
+  interactive: true
   handler: ->
     name = interact.select_loaded_bundle!
     return if not name
@@ -166,6 +173,7 @@ command.register
 command.register
   name: 'bundle-load'
   description: 'Loads a specified, currently unloaded, bundle'
+  interactive: true
   handler: ->
     name = interact.select_unloaded_bundle!
     return if not name
@@ -177,6 +185,7 @@ command.register
 command.register
   name: 'bundle-reload'
   description: 'Reloads a specified bundle'
+  interactive: true
   handler: ->
     name = interact.select_loaded_bundle!
     return if not name
@@ -202,6 +211,7 @@ command.register
 command.register
   name: 'buffer-grep'
   description: 'Matches certain buffer lines in realtime'
+  interactive: true
   handler: ->
     buffer = app.editor.buffer
     position = interact.select_match
@@ -215,6 +225,7 @@ command.register
 command.register
   name: 'buffer-structure'
   description: 'Shows the structure for the given buffer'
+  interactive: true
   handler: ->
     buffer = app.editor.buffer
     lines = buffer.mode\structure app.editor
@@ -318,6 +329,7 @@ launch_cmd = (working_directory, cmd) ->
 command.register
   name: 'project-exec',
   description: 'Runs an external command from within the project directory'
+  interactive: true
   handler: ->
     buffer = app.editor and app.editor.buffer
     file = buffer.file or buffer.directory
@@ -331,6 +343,7 @@ command.register
 command.register
   name: 'exec',
   description: 'Runs an external command'
+  interactive: true
   handler: ->
     working_directory, cmd = interact.get_external_command!
     if cmd

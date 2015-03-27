@@ -100,6 +100,40 @@ describe 'command', ->
           run 'aliascmd'
           assert.spy(cmd.handler).was_called 1
 
+      context 'and it contains <interactive-command>space<args>', ->
+        it 'the command is invoked with the args passed in spillover', ->
+          spy_handler = spy.new -> app.window.command_line\pop_spillover!
+          command.register
+            name: 'foo-interactive'
+            description: 'test'
+            interactive: true
+            handler: spy_handler
+          result = run 'foo-interactive hello cmd'
+          assert.spy(spy_handler).was_called 1
+          assert.equal 'hello cmd', result
+
+      context 'and it contains <non-interactive-command>space<args>', ->
+        before_each ->
+          log.clear!
+          command.register cmd
+
+        it 'logs an error', ->
+          run cmd.name .. ' args'
+          assert.not_nil log.last_error
+
+        it 'the command line contains the command name', ->
+          run cmd.name .. ' args'
+          assert.equals cmd.name, app.window.command_line.text
+
+      context 'and it contains <invalid-command>space<args>', ->
+        it 'logs an error', ->
+          run 'no-such-command hello cmd'
+          assert.not_nil log.last_error
+
+        it 'the command line contains the passed text', ->
+          run 'no-such-command hello cmd'
+          assert.equals 'no-such-command hello cmd', app.window.command_line.text
+
       context 'when directory: is provided', ->
         it 'sets command_line.directory for invoked command', ->
           local dir
