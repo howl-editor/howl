@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 _G = _G
-import table, coroutine, pairs, io from _G
+import table, coroutine, pairs from _G
 import tostring, pcall, callable, type, print, setmetatable, typeof from _G
 import signal, command from howl
 append = table.insert
