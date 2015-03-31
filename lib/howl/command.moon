@@ -134,10 +134,6 @@ class CommandRunner
     @run_command cmd, cmd_name, text
 
   run_command: (cmd, cmd_name, spillover) =>
-    if cmd.interactive
-      @command_line.title = 'Loading...'
-      @command_line\show!
-
     @command_line\clear!
     @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
     if spillover
