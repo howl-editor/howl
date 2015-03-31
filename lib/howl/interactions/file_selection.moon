@@ -36,12 +36,18 @@ display_name = (file, is_directory, base_directory) ->
   return is_directory and rel_path .. separator or rel_path
 
 parse_path = (path) ->
-  if not path or path.is_blank
+  if not path or path.is_blank or not File.is_absolute path
+    local directory
     if app.editor and app.editor.buffer
       file = app.editor.buffer.file
       directory = file.parent if file
-      return directory, '' if directory
-    return home_dir!, ''
+    if not directory
+      directory = home_dir!
+
+    if not path or path.is_blank
+      return directory, ''
+    else
+      path = tostring directory / path
 
   path = File.expand_path path
   root_marker = separator .. separator

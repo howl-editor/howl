@@ -38,6 +38,10 @@ describe 'file_selection', ->
     it 'unmatched part can contain slashes', ->
       assert.same {tmpdir, 'unmatched/no/such/file'}, {file_selection.parse_path tostring(tmpdir / 'unmatched/no/such/file')}
 
+    context 'is given a non absolute path', ->
+      it 'uses the home dir as the base path', ->
+        assert.same {file_selection.home_dir!, 'unmatched-asdf98y23903943masgb sdf'}, {file_selection.parse_path 'unmatched-asdf98y23903943masgb sdf'}
+
   describe 'interact.select_file', ->
     it 'opens the home directory by default', ->
       local prompt
@@ -91,6 +95,27 @@ describe 'file_selection', ->
 
       assert.same files, items
       assert.same {'ab1', 'ab2'}, items2
+
+    context 'spillover', ->
+      context 'when spillover is not an absolute path', ->
+        it 'opens the home directory and matches the spillover text', ->
+          local prompt, text
+          command_line\write_spillover 'matchthis'
+          within_activity interact.select_file, ->
+            prompt = command_line.prompt
+            text = command_line.text
+          assert.same '~/', prompt
+          assert.same 'matchthis', text
+
+      context 'when spillover is an absolute path', ->
+        it 'opens the specified path', ->
+          local prompt, text
+          command_line\write_spillover tostring(tmpdir / 'matchthis')
+          within_activity interact.select_file, ->
+            prompt = command_line.prompt
+            text = command_line.text
+          assert.same tostring(tmpdir)..'/', prompt
+          assert.same 'matchthis', text
 
     context 'when config.hidden_file_extensions is set', ->
       local files
