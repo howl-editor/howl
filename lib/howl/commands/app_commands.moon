@@ -137,6 +137,7 @@ command.register
   interactive: true
   handler: ->
     name = interact.select_signal!
+    return unless name
     def = signal.all[name]
     error "Unknown signal '#{name}'" unless def
     buffer = with ActionBuffer!
