@@ -25,6 +25,14 @@ show_diff_buffer = (title, contents) ->
   buffer.can_undo = false
   app\add_buffer buffer
 
+auto_mkdir = (directory) ->
+  return true if directory.exists
+
+  if interact.yes_or_no prompt: "Directory #{directory} doesn't exist, create? "
+    directory\mkdir_p!
+    return true
+  return false
+
 command.register
   name: 'open',
   description: 'Open file'
@@ -69,12 +77,9 @@ command.register
         log.info "Not overwriting; buffer not saved"
         return
 
-    unless buffer.file.parent.exists
-      if interact.yes_or_no prompt: "Directory #{buffer.file.parent} doesn't exist, create?'"
-        buffer.file.parent\mkdir_p!
-      else
-        log.info "Parent directory doesn't exist; buffer not saved"
-        return
+    unless auto_mkdir buffer.file.parent
+      log.info "Parent directory doesn't exist; buffer not saved"
+      return
 
     buffer\save!
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
@@ -95,12 +100,9 @@ command.register
         log.info "Not overwriting; buffer not saved"
         return
 
-    unless file.parent.exists
-      if interact.yes_or_no prompt: "Directory #{file.parent} doesn't exist, create?'"
-        file.parent\mkdir_p!
-      else
-        log.info "Parent directory doesn't exist; buffer not saved"
-        return
+    unless auto_mkdir file.parent
+      log.info "Parent directory doesn't exist; buffer not saved"
+      return
 
     buffer = app.editor.buffer
     buffer\save_as file
