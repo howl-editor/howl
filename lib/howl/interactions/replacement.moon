@@ -18,6 +18,17 @@ parse_replacement = (text, marker) ->
     return target, replacement
   return text
 
+default_find = (buffer, target, init) ->
+  init = buffer\byte_offset init
+  text = buffer.text
+  ->
+    start_pos, end_pos  = text\find target, init, true
+    if not start_pos
+      return
+    init = end_pos + 1
+    return { start_pos: buffer\char_offset(start_pos), end_pos: buffer\char_offset(end_pos) }
+
+
 class Replacement
   run: (@finish, opts={}) =>
     @command_line = app.window.command_line
@@ -40,15 +51,7 @@ class Replacement
 
     @runner = TaskRunner!
 
-    self.find = opts.find or (buffer, target, init) ->
-      init = buffer\byte_offset init
-      text = buffer.text
-      ->
-        start_pos, end_pos  = text\find target, init, true
-        if not start_pos
-          return
-        init = end_pos + 1
-        return { start_pos: buffer\char_offset(start_pos), end_pos: buffer\char_offset(end_pos) }
+    self.find = opts.find or default_find
 
     self.replace = opts.replace or (match, replacement) -> replacement
 
