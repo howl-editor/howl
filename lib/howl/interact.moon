@@ -15,8 +15,6 @@ register = (spec) ->
   interactions[spec.name] = moon.copy spec
 
 unregister = (name) ->
-  interaction = interactions[name]
-  return if not interaction
   interactions[name] = nil
 
 get = (name) -> interactions[name]
