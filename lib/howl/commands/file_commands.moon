@@ -58,7 +58,7 @@ command.register
     buffer = app.editor.buffer
     if not buffer.file
       app.window.command_line\run_after_finish ->
-        command.run 'save-as' unless buffer.file
+        command.run 'save-as'
       return
 
     if buffer.modified_on_disk
