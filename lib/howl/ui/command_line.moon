@@ -70,6 +70,7 @@ class CommandLine extends PropertyObject
         if @current and @current.activity_id == activity_id
           @current.state = 'running'
           @show!
+          bindings.cancel_capture!
           if @spillover
             @write @spillover if not @spillover.is_empty
             @spillover = nil
@@ -117,7 +118,9 @@ class CommandLine extends PropertyObject
       @current.evade_history = previous.evade_history or activity_spec.evade_history
       @current.command_line_directory = previous.command_line_directory
 
+    bindings.capture -> false
     ok, err = pcall -> handler!
+    bindings.cancel_capture!
     if not ok
       if @current and activity_id == @current.activity_id
         @_finish(activity_id)
