@@ -176,6 +176,7 @@ class CommandLine extends PropertyObject
     else
       @hide!
       @auto_submit_once = false
+      @pop_spillover!
       @_process_run_after_finish!
 
   _abort_current: =>
