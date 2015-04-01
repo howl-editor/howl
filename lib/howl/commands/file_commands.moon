@@ -69,6 +69,13 @@ command.register
         log.info "Not overwriting; buffer not saved"
         return
 
+    unless buffer.file.parent.exists
+      if interact.yes_or_no prompt: "Directory #{buffer.file.parent} doesn't exist, create?'"
+        buffer.file.parent\mkdir_p!
+      else
+        log.info "Parent directory doesn't exist; buffer not saved"
+        return
+
     buffer\save!
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
       #buffer.lines, #buffer
@@ -89,7 +96,11 @@ command.register
         return
 
     unless file.parent.exists
-      file.parent\mkdir_p!
+      if interact.yes_or_no prompt: "Directory #{file.parent} doesn't exist, create?'"
+        file.parent\mkdir_p!
+      else
+        log.info "Parent directory doesn't exist; buffer not saved"
+        return
 
     buffer = app.editor.buffer
     buffer\save_as file
