@@ -94,6 +94,8 @@ class Replacement
     if target != @target
       @target = target
       @_reload_matches!
+      if @replacement
+        @_reload_replacements!
     if replacement != @replacement
       @replacement = replacement
       if not @replacement
