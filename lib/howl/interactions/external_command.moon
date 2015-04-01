@@ -56,11 +56,11 @@ class ExternalCommandEntry
     elseif @opts.path
       directory = File @opts.path
 
-    unless directory
-      directory = get_cwd!
-    else
-      unless directory.exists and directory.is_directory
+    if directory
+      unless directory.is_directory
         error "No such directory: #{directory}"
+    else
+      directory = get_cwd!
 
     @_chdir directory
 
