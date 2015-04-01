@@ -204,7 +204,7 @@ command.register
       bundle_name = buffer.file and bundle.from_file(buffer.file) or nil
       if bundle_name
         howl.app.window.command_line\run_after_finish ->
-          command.run "bundle-reload #{bundle_name}"
+          command.run "bundle-reload #{bundle_name}", submit: true
         return
 
     log.warn 'Could not find any currently active bundle to reload'
