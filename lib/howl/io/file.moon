@@ -85,6 +85,13 @@ class File extends PropertyObject
   @property modified_at: get: => @exists and @_info('time')\get_attribute_uint64 'time::modified'
   @property short_path: get: => @path\gsub "^#{home_dir}", '~'
 
+  @property root_dir:
+    get: =>
+      file = @
+      while file.parent
+        file = file.parent
+      return file
+
   @property writeable: get: =>
     if @exists
       return @_info('access')\get_attribute_boolean 'access::can-write'
@@ -217,6 +224,7 @@ class File extends PropertyObject
     error @tostring! .. ': ' .. msg, 3 if not status
     ...
 
+File.home_dir = File home_dir
 File.__base.rm = File.delete
 File.__base.unlink = File.delete
 File.__base.rm_r = File.delete_all

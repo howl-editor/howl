@@ -25,29 +25,28 @@ describe 'file_selection', ->
     assert.not_nil interact.select_file_in_project
     assert.not_nil interact.select_directory
 
-  describe 'parse_path', ->
-    it 'returns the home dir for empty input', ->
-      assert.same {file_selection.home_dir!, ''}, {file_selection.parse_path ''}
-
-    it 'returns the root directory for "/"', ->
-      assert.same {file_selection.root_dir!, ''}, {file_selection.parse_path '/'}
-
-    it 'returns the matched path and unmatched parts of a path', ->
-      assert.same {tmpdir, 'unmatched'}, {file_selection.parse_path tostring(tmpdir / 'unmatched')}
-
-    it 'unmatched part can contain slashes', ->
-      assert.same {tmpdir, 'unmatched/no/such/file'}, {file_selection.parse_path tostring(tmpdir / 'unmatched/no/such/file')}
-
-    context 'is given a non absolute path', ->
-      it 'uses the home dir as the base path', ->
-        assert.same {file_selection.home_dir!, 'unmatched-asdf98y23903943masgb sdf'}, {file_selection.parse_path 'unmatched-asdf98y23903943masgb sdf'}
-
   describe 'interact.select_file', ->
     it 'opens the home directory by default', ->
       local prompt
       within_activity interact.select_file, ->
         prompt = command_line.prompt
       assert.same '~/', prompt
+
+    context 'when a buffer associated with a file is open', ->
+      local buf
+      before_each ->
+        buf, app.editor = app\open_file tmpdir / 'f'
+        print buf.file
+
+      after_each ->
+        app\close_buffer buf
+        app.editor = nil
+
+      it 'opens the directory of the current buffer, if any', ->
+        local prompt
+        within_activity interact.select_file, ->
+          prompt = command_line.prompt
+        assert.same tostring(tmpdir)..'/', prompt
 
     it 'typing a path opens the closest parent', ->
       prompts = {}

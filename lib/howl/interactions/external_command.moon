@@ -4,9 +4,8 @@
 glib = require 'ljglibs.glib'
 import app, interact, sys from howl
 import File from howl.io
-import Matcher from howl.util
 import ListWidget, markup from howl.ui
-import file_matcher, parse_path from howl.interactions.file_selection
+import file_matcher, parse_path from howl.util.paths
 append = table.insert
 
 available_commands = ->
@@ -35,8 +34,8 @@ get_cwd = ->
 looks_like_path = (text) ->
   return unless text
   for p in *{
-    '^%s*./',
-    '^%s*../',
+    '^%s*%./',
+    '^%s*%.%./',
     '^%s*/',
     '^%s*~/',
   }
@@ -56,8 +55,13 @@ class ExternalCommandEntry
       directory = @command_line.directory
     elseif @opts.path
       directory = File @opts.path
-    if not (directory and directory.exists and directory.is_directory)
+
+    unless directory
       directory = get_cwd!
+    else
+      unless directory.exists and directory.is_directory
+        error "No such directory: #{directory}"
+
     @_chdir directory
 
   on_update: (text) =>
@@ -82,17 +86,16 @@ class ExternalCommandEntry
       @_chdir @directory.parent
 
   _initialize_list_widget: =>
-    @list_widget = ListWidget nil,
-      never_shrink: true
+    @list_widget = ListWidget nil, never_shrink: true
     @list_widget.max_height = math.floor app.window.allocated_height * 0.5
     @list_widget.columns =  { {style: 'filename'} }
     @command_line\add_widget 'completion_list', @list_widget
 
   _auto_complete_file: (opts={}) =>
-    if not @list_widget
+    unless @list_widget
       @_initialize_list_widget!
 
-    if not @list_widget.showing
+    unless @list_widget.showing
       @list_widget\show!
 
     if opts.directories_only
@@ -109,7 +112,7 @@ class ExternalCommandEntry
     return unless @list_widget and @list_widget.showing
     last_part = last_text_part @command_line.text
 
-    if not last_part
+    unless last_part
       @list_widget\hide!
       return
 
@@ -120,8 +123,7 @@ class ExternalCommandEntry
     @list_widget_unmatched = unmatched
 
   _auto_complete_command: (text) =>
-    if not @commands
-      @commands = available_commands!
+    @commands or= available_commands!
 
     if @list_widget
       @list_widget\hide!
@@ -146,7 +148,7 @@ class ExternalCommandEntry
     new_path = @list_widget_path / filename
     @command_line.text = @command_line.text\sub(1, -#@list_widget_unmatched - 1)
     @command_line\write filename
-    if not new_path.is_directory
+    unless new_path.is_directory
       @command_line\write ' '
       @list_widget\hide!
 
@@ -157,10 +159,13 @@ class ExternalCommandEntry
 
   keymap:
     enter: =>
+      unless @list_widget and @list_widget.showing
+        return @_submit!
+
       text = @command_line.text
       cd_cmd = text\umatch '^%s*cd%s+'
-      if cd_cmd and @list_widget and @list_widget.showing
-        if (@list_widget.selection and @list_widget.selection.name == './') or not @list_widget.selection
+
+      if cd_cmd and (not @list_widget.selection or @list_widget.selection.name == './')
           dir = @command_line.text\umatch '^%s*cd%s+(.+)'
           path = @directory / dir
           if path.exists and path.is_directory
@@ -168,13 +173,8 @@ class ExternalCommandEntry
             @list_widget\hide!
             @command_line.text = ''
           return
-        @_select_completion!
-        return
 
-      if @list_widget and @list_widget.showing
-        @_select_completion!
-      else
-        @_submit!
+      @_select_completion!
 
     escape: =>
       if @list_widget and @list_widget.showing
