@@ -103,8 +103,8 @@ local identifier = token(l.IDENTIFIER, l.word)
 -- Operators.
 local operator = token(l.OPERATOR, S('!%^&*()[]{}-=+/|:;.,?<>~`'))
 
-local decorator = token('decorator',
-                        #P('@') * l.starts_line('@' * l.word^0))
+local dotted_name = l.word * ('.' * l.word)^0
+local decorator = token('decorator', S'@' * dotted_name^-1)
 
 M._rules = {
   {'whitespace', ws},
