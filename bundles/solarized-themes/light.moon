@@ -87,6 +87,10 @@ return {
       alpha: 40
       outline_alpha: 100
 
+    replace_strikeout:
+      style: highlight.STRIKE
+      color: darkgreen
+
   styles:
 
     default:
