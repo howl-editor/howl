@@ -99,7 +99,7 @@ class Replacement
       @_reload_matches!
       if @replacement
         @_reload_replacements!
-    if replacement != @replacement
+    elseif replacement != @replacement
       @replacement = replacement
       if not @replacement
         @_reload_matches!
