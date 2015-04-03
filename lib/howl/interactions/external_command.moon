@@ -62,6 +62,7 @@ class ExternalCommandEntry
     else
       directory = get_cwd!
 
+    @command_line\clear_all!
     @_chdir directory
 
   on_update: (text) =>
@@ -79,7 +80,7 @@ class ExternalCommandEntry
   _chdir: (directory) =>
     @directory = directory
     trailing = directory.path == File.separator and '' or File.separator
-    @command_line.prompt = markup.howl "\n<operator>[</><directory>#{@directory.short_path}#{trailing}</><operator>] $</> "
+    @command_line.prompt = markup.howl "<operator>[</><directory>#{@directory.short_path}#{trailing}</><operator>] $</> "
 
   _updir: =>
     if @directory.parent

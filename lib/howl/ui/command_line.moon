@@ -166,8 +166,12 @@ class CommandLine extends PropertyObject
 
     @clear!
     @prompt = nil
+
     for name, _ in pairs @_widgets
       @remove_widget name
+
+    if @current.saved_command_line
+      @command_widget\insert @current.saved_command_line, 1
 
     @running[#@running] = nil
 
@@ -222,9 +226,9 @@ class CommandLine extends PropertyObject
         table.insert @_command_history, 1, command_line
       @history_recorded = true
 
-  _capture_command_line: =>
+  _capture_command_line: (end_pos)=>
       buf = @command_widget.buffer
-      chunk = buf\chunk 1, #buf
+      chunk = buf\chunk 1, (end_pos or #buf)
       return StyledText chunk.text, chunk.styles
 
   to_gobject: => @bin
@@ -356,7 +360,10 @@ class CommandLine extends PropertyObject
     @command_widget\delete @_prompt_end, @command_widget.text.ulen
     @\_cursor_to_end!
 
-  clear_all: => @write '\n'
+  clear_all: =>
+    @current.saved_command_line = @_capture_command_line @_left_stop - 1
+    @command_widget\delete 1, @command_widget.text.ulen
+    @current.command_line_left_stop = 1
 
   write: (text) =>
     @command_widget\append text

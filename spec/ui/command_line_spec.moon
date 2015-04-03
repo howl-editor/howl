@@ -259,4 +259,18 @@ describe 'commandline', ->
 
         assert.same {0, 1, 3, 1}, depths
 
+      it '\\clear_all! clears the entire command line and restores on exit', ->
+        texts = {}
+        within_activity ->
+          command_line.prompt = 'outér:'
+          command_line.text = '0'
+          within_activity ->
+            table.insert texts, command_line.command_widget.text
+            command_line\clear_all!
+            table.insert texts, command_line.command_widget.text
+            command_line.prompt = 'innér:'
+            command_line.text = '1'
+            table.insert texts, command_line.command_widget.text
+          table.insert texts, command_line.command_widget.text
+        assert.same { 'outér:0', '', 'innér:1', 'outér:0' }, texts
 
