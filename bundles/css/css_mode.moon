@@ -10,7 +10,7 @@ class CSSMode
     @completers = { completer, 'in_buffer' }
 
   default_config:
-    word_pattern: r'\\b[-_%w]+\\b'
+    word_pattern: r'\\b[-_\\w]+\\b'
 
   comment_syntax: { '/*', '*/' }
 
