@@ -308,10 +308,10 @@ class Editor extends PropertyObject
   with_position_restored: (f) =>
     line, column, indentation, top_line = @cursor.line, @cursor.column, @current_line.indentation, @line_at_top
     status, ret = pcall f, self
+    @line_at_top = top_line
     @cursor.line = line
     delta = @current_line.indentation - indentation
     @cursor.column = column + delta
-    @line_at_top = top_line
     error ret unless status
 
   indent: => if @buffer.mode.indent then @buffer.mode\indent self
