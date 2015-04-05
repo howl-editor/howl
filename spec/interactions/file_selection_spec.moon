@@ -34,9 +34,9 @@ describe 'file_selection', ->
 
     context 'when a buffer associated with a file is open', ->
       local buf
+
       before_each ->
         buf, app.editor = app\open_file tmpdir / 'f'
-        print buf.file
 
       after_each ->
         app\close_buffer buf
