@@ -466,14 +466,14 @@ class Editor extends PropertyObject
   scroll_up: => @sci\line_scroll_up!
   scroll_down: => @sci\line_scroll_down!
 
-  is_visible: (start_pos, end_pos) =>
+  range_is_visible: (start_pos, end_pos) =>
     start_line = 1 + @sci\line_from_position start_pos - 1
     end_line = 1 + @sci\line_from_position end_pos - 1
 
     return start_line >= @line_at_top and end_line <= @line_at_bottom
 
   ensure_visible: (pos) =>
-    return if @is_visible pos, pos
+    return if @range_is_visible pos, pos
     line = @sci\line_from_position(pos - 1) + 1
     if @line_at_top > line
       @line_at_top = math.max 1,  line - 2
