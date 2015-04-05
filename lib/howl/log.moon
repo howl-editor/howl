@@ -4,8 +4,6 @@
 _G = _G
 import table from _G
 import config from howl
-io = require 'io'
-serpent = require 'serpent'
 
 append = table.insert
 
@@ -51,6 +49,5 @@ error = (message) -> last_error = dispatch 'error', message
 clear = ->
   entries = {}
   last_error = nil
-debug = (msg, ...) -> io.stderr\write '\n'..msg, serpent.block {...}
 
 return log
