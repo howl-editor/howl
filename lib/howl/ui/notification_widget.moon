@@ -4,7 +4,7 @@
 import TextWidget from howl.ui
 
 class NotificationWidget
-  new: (...) => @swidget = TextWidget ...
+  new: (...) => @text_widget = TextWidget ...
 
   caption: (text) => @notify nil, text
 
@@ -14,17 +14,17 @@ class NotificationWidget
 
   error: (text) => @notify 'error', text
 
-  clear: => @swidget.text = ''
+  clear: => @text_widget.text = ''
 
   notify: (level, text) =>
     @\clear!
-    @swidget.buffer\append text, level and 'status-'..level
-    @swidget.height_rows = #@swidget.buffer.lines
+    @text_widget.buffer\append text, level and 'status-'..level
+    @text_widget.height_rows = #@text_widget.buffer.lines
 
-  hide: => @swidget\hide!
+  hide: => @text_widget\hide!
 
-  show: => @swidget\show!
+  show: => @text_widget\show!
 
-  to_gobject: => @swidget\to_gobject!
+  to_gobject: => @text_widget\to_gobject!
 
 return NotificationWidget

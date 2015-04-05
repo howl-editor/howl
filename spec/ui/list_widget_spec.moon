@@ -11,20 +11,20 @@ describe 'ListWidget', ->
   throwaway = ListWidget -> { 'H' }
   throwaway\show!
   throwaway\update!
-  row_height = throwaway.swidget.sci\text_height 0
+  row_height = throwaway.text_widget.sci\text_height 0
 
   before_each ->
     list = ListWidget -> {}
     list.max_height = math.huge
     list\show!
-    buf = list.swidget.buffer
+    buf = list.text_widget.buffer
 
   it 'shows empty list until update() is called', ->
     list = ListWidget -> {'one', 'two', 'three'}
     list\show!
-    assert.equal '(no items)', list.swidget.buffer.text
+    assert.equal '(no items)', list.text_widget.buffer.text
     list\update!
-    assert.not_equal '(no items)', list.swidget.buffer.text
+    assert.not_equal '(no items)', list.text_widget.buffer.text
 
   it 'shows single column items, each on one line', ->
     list.matcher = -> {'one', 'two', 'three'}
@@ -332,7 +332,7 @@ three    four    ]] .. '\n', buf.text
       matcher = -> { 'one', 'two', 'three' }
       rlist = ListWidget matcher, reverse: true
       rlist\show!
-      rbuf = rlist.swidget.buffer
+      rbuf = rlist.text_widget.buffer
       rlist\update!
 
     it 'shows the items in reverse order', ->
