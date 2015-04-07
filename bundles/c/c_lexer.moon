@@ -37,7 +37,7 @@ howl.aux.lpeg_lexer ->
     "\\" * any {
       R('07') * R('07') * R('07'),
       'x' * xdigit * xdigit,
-      any{'a', 'b', 'f', 'n', 'r', 't', 'v', '\\', "'", '"', '?'},
+      S'abfnrtv\\\'"?'
     },
     1
   }) * "'"
