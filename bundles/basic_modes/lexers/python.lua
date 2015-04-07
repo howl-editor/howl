@@ -103,6 +103,9 @@ local identifier = token(l.IDENTIFIER, l.word)
 -- Operators.
 local operator = token(l.OPERATOR, S('!%^&*()[]{}-=+/|:;.,?<>~`'))
 
+local dotted_name = l.word * ('.' * l.word)^0
+local decorator = token('decorator', S'@' * dotted_name^-1)
+
 M._rules = {
   {'whitespace', ws},
   {'keyword', keyword},
@@ -112,6 +115,7 @@ M._rules = {
   {'comment', comment},
   {'string', string},
   {'number', number},
+  {'decorator', decorator},
   {'operator', operator},
   {'any_char', l.any_char},
 }
