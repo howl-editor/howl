@@ -28,10 +28,10 @@ class ListWidget extends PropertyObject
     with @opts
       .filler_text or= '~'
 
-    @_max_height = 10 * @text_widget.row_height * 10
-    @_min_height = 1 * @text_widget.row_height * 1
+    @_max_height = 10 * @text_widget.row_height
+    @_min_height = 1 * @text_widget.row_height
 
-    @_columns = { { } }
+    @_columns = { {} }
     @_items = {}
     @page_start_idx = 1
     @page_size = 1
@@ -72,7 +72,7 @@ class ListWidget extends PropertyObject
   @property has_items:
     get: => #@_items > 0
 
-  @property num_columns:
+  @property nr_columns:
     get: => #@_columns
 
   _write_page: =>
@@ -133,7 +133,7 @@ class ListWidget extends PropertyObject
 
     if idx < 1
       idx = 1
-    if idx > #@_items
+    elseif idx > #@_items
       idx = #@_items
 
     @selected_idx = idx
