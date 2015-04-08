@@ -31,7 +31,7 @@ float f_a = { 1.34, 1.23E2, 3.14e-2, 0xfep2, 0XAP-3 };
 float f_ill = { 0xfgp2, 0XAe-3 };
 
 const char *p = "my_string";
-char[] c_a = { 'c', '\'', '\324', '\xef' };
+char[] c_a = { 'c', '\'', '\324', '\xef', '\"', '\n', '\\' };
 int array[100];
 
 printf(__FILE__ ": %d: Hello "
