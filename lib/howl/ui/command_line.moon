@@ -38,36 +38,28 @@ class CommandLine extends PropertyObject
     @auto_submit_once = true
     @run ...
 
-  run: (activity_spec, ...) =>
-    if not activity_spec.name or not (activity_spec.handler or activity_spec.factory)
-      error 'activity_spec requires "name" and one of "handler" or "factory" fields'
-
-    args = table.pack ...
-    parked_handle = nil
-    activity = nil
-    handler = nil
-    id_counter += 1
-    activity_id = id_counter
-    results = {}
-
-    if activity_spec.factory
-      activity = activity_spec.factory!
+  _init_activity_from_factory: (activity_frame) =>
+      activity = activity_frame.activity_spec.factory!
       if not activity
-        error 'activity factory returned nil'
+        error "activity '#{activity_frame.name}' factory returned nil"
+
+      activity_frame.activity = activity
 
       parked_handle = dispatch.park 'activity'
+      activity_frame.parked_handle = parked_handle
 
       finish = (...) ->
         results = table.pack ...
-        @_finish(activity_id, results)
+        activity_frame.results = results
+        @_finish(activity_frame.activity_id, results)
         dispatch.launch -> dispatch.resume parked_handle
         true  -- finish() is often the last function in a key handler
 
-      handler = ->
-        table.pack activity\run finish, unpack args
+      activity_frame.runner = ->
+        table.pack activity\run(finish, unpack activity_frame.args)
 
         -- check that run didn't call finish
-        if @current and @current.activity_id == activity_id
+        if @current and @current.activity_id == activity_frame.activity_id
           @current.state = 'running'
           @show!
           bindings.cancel_capture!
@@ -82,26 +74,44 @@ class CommandLine extends PropertyObject
               activity.keymap.enter activity
 
         dispatch.wait parked_handle
-    else
-      if not callable activity_spec.handler
-        error 'activity handler is not callable'
 
-      activity = { handler: activity_spec.handler }
+  _init_activity_from_handler: (activity_frame) =>
+      if not callable activity_frame.activity_spec.handler
+        error "activity '#{activity_frame.name}' handler is not callable"
 
-      handler = ->
+      activity = { handler: activity_frame.activity_spec.handler }
+
+      activity_frame.activity = activity
+
+      activity_frame.runner = ->
         @current.state = 'running'
-        r = table.pack activity.handler(unpack args)
-        if @current and @current.activity_id == activity_id
-          results = r
-          @_finish(activity_id, results)
+        results = table.pack activity.handler(unpack activity_frame.args)
+        if @current and @current.activity_id == activity_frame.activity_id
+          activity_frame.results = results
+          @_finish(activity_frame.activity_id, results)
 
-    table.insert @running, {
-      :activity_id
-      :parked_handle
-      :activity
-      state: 'starting'
+  run: (activity_spec, ...) =>
+    if not activity_spec.name or not (activity_spec.handler or activity_spec.factory)
+      error 'activity_spec requires "name" and one of "handler" or "factory" fields'
+
+    id_counter += 1
+    activity_id = id_counter
+
+    activity_frame = {
       name: activity_spec.name
+      :activity_id
+      :activity_spec
+      args: table.pack ...
+      state: 'starting'
+      results: {}
     }
+
+    if activity_spec.factory
+      @_init_activity_from_factory activity_frame
+    else
+      @_init_activity_from_handler activity_frame
+
+    table.insert @running, activity_frame
 
     @_initialize! if not @box
 
@@ -119,14 +129,16 @@ class CommandLine extends PropertyObject
       @current.command_line_directory = previous.command_line_directory
 
     bindings.capture -> false
-    ok, err = pcall -> handler!
+    ok, err = pcall -> activity_frame.runner!
     bindings.cancel_capture!
+    results = activity_frame.results
+
     if not ok
       if @current and activity_id == @current.activity_id
         @_finish(activity_id)
       error 'Error running '..activity_spec.name..':'..err
 
-    unpack results
+    unpack activity_frame.results
 
   run_after_finish: (f) =>
     if not (@stack_depth > 0)
@@ -362,7 +374,7 @@ class CommandLine extends PropertyObject
 
   clear_all: =>
     @current.saved_command_line = @_capture_command_line @_left_stop - 1
-    @command_widget\delete 1, @command_widget.text.ulen
+    @command_widget\delete 1, @_left_stop - 1
     @current.command_line_left_stop = 1
 
   write: (text) =>
