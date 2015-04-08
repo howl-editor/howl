@@ -184,6 +184,7 @@ class CommandLine extends PropertyObject
 
     if @current.saved_command_line
       @command_widget\insert @current.saved_command_line, 1
+      @current.saved_command_line = nil
 
     @running[#@running] = nil
 
@@ -234,6 +235,11 @@ class CommandLine extends PropertyObject
   _record_history: =>
     unless @current.evade_history or @history_recorded
       command_line = @_capture_command_line!
+
+      for frame in *@running
+        if frame.saved_command_line
+          command_line = frame.saved_command_line .. command_line
+
       unless @_command_history[1] == command_line or command_line\find '\n' or command_line\find '\r'
         table.insert @_command_history, 1, command_line
       @history_recorded = true
