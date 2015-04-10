@@ -10,25 +10,31 @@ append = table.insert
 style.define_default 'command_name', 'keyword'
 
 commands = {}
+accessible_names = {}
 
 resolve_command = (name) ->
   def = commands[name]
   def = commands[def.alias_for] if def and def.alias_for -- alias
   def
 
+accessible_name = (name) ->
+  name\lower!\gsub '[%s%p]+', '_'
+
 parse_cmd = (text) ->
   cmd_start, cmd_end, cmd_name, rest = text\find '^%s*([^%s]+)%s+(.*)$'
   return resolve_command(cmd_name), cmd_name, rest if cmd_name
 
-register = (spec) ->
+register = (cmd_def) ->
   for field in *{'name', 'description'}
-    error 'Missing field for command: "' .. field .. '"' if not spec[field]
+    error 'Missing field for command: "' .. field .. '"' if not cmd_def[field]
 
-  if not (spec.factory or spec.handler) or (spec.factory and spec.handler)
+  if not (cmd_def.factory or cmd_def.handler) or (cmd_def.factory and cmd_def.handler)
     error 'One of "factory" or "handler" required'
 
-  c = setmetatable moon.copy(spec), __call: (...) => spec.handler ...
-  commands[spec.name] = c
+  cmd_def = moon.copy cmd_def
+  commands[cmd_def.name] = cmd_def
+  sane_name = accessible_name cmd_def.name
+  accessible_names[sane_name] = cmd_def if sane_name != cmd_def.name
 
 unregister = (name) ->
   cmd = commands[name]
@@ -40,6 +46,8 @@ unregister = (name) ->
     append aliases, cmd_name if def.alias_for == name
 
   commands[alias] = nil for alias in *aliases
+  sane_name = accessible_name name
+  accessible_names[sane_name] = nil if sane_name != name
 
 alias = (target, name, opts = {}) ->
   error 'Target ' .. target .. 'does not exist' if not commands[target]
@@ -106,8 +114,9 @@ class CommandRunner
     cmd_name = ''
     @command_line.prompt = ':'
     @command_line.title = 'Command'
-    if opts.directory
-      @command_line.directory = opts.directory
+
+    @cmd_args = opts.cmd_args
+
     if opts.cmd_string
       cmd = resolve_command opts.cmd_string
       if cmd
@@ -131,18 +140,16 @@ class CommandRunner
       log.error "Command '#{cmd_name}' takes no arguments, press <enter> to run."
       return
 
-    @run_command cmd, cmd_name, text
+    @command_line\write_spillover text
+    @run_command cmd, cmd_name
 
-  run_command: (cmd, cmd_name, spillover) =>
+  run_command: (cmd, cmd_name) =>
     @command_line\clear!
     @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
-    if spillover
-      @command_line\write_spillover spillover
 
     local results
-
     ok, err = pcall ->
-      results = table.pack howl.app.window.command_line\run cmd
+      results = table.pack howl.app.window.command_line\run cmd, unpack @cmd_args
 
     if not ok
       log.error err
@@ -158,7 +165,7 @@ class CommandRunner
 
     if cmd_name
       cmd = resolve_command(cmd_name)
-      @run_command cmd, cmd_name, nil
+      @run_command cmd, cmd_name
 
   run_historical: =>
     text = @command_line.text
@@ -179,23 +186,21 @@ class CommandRunner
         if not cmd
           log.error "No such command '#{@command_line.text}'"
           return
-        @run_command cmd, @command_line.text, nil
+        @run_command cmd, @command_line.text
 
 command_runner = {
   name: 'command-runner'
   factory: CommandRunner
 }
 
-run = (cmd_string = nil, opts={}) ->
+run = (cmd_string = nil, ...) ->
   if not howl.app.window
     error "Cannot run command '#{cmd_string}', application not initialized. Try using the 'app-ready' signal.", 2
 
   cmd_string = nil if cmd_string == 'run'
+  cmd_args = table.pack ...
   command_line = howl.app.window.command_line
-  if opts.submit
-    command_line\run_auto_submit command_runner, cmd_string: cmd_string, directory: opts.directory
-  else
-    command_line\run command_runner, cmd_string: cmd_string, directory: opts.directory
+  command_line\run command_runner, :cmd_string, :cmd_args
 
 howl.interact.register
   name: 'select_command'
@@ -236,4 +241,9 @@ interact.register
     if result
       return result.selection.command\sub 2
 
-return { :register, :unregister, :alias, :run, :names, :get }
+return setmetatable {:register, :unregister, :alias, :run, :names, :get}, {
+  __index: (key) =>
+    command = commands[key] or accessible_names[key]
+    return unless command
+    (...) -> run command.name, ...
+}

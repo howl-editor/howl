@@ -26,17 +26,12 @@ class CommandLine extends PropertyObject
     @_command_history = {}
     @aborted = {}
     @next_run_queue = {}
-    @auto_submit_once = false
 
   @property current: get: => @running[#@running]
 
   @property stack_depth: get: => #@running
 
   @property command_history: get: => moon.copy @_command_history
-
-  run_auto_submit: (...) =>
-    @auto_submit_once = true
-    @run ...
 
   _init_activity_from_factory: (activity_frame) =>
       activity = activity_frame.activity_spec.factory!
@@ -66,12 +61,6 @@ class CommandLine extends PropertyObject
           if @spillover
             @write @spillover if not @spillover.is_empty
             @spillover = nil
-          if @auto_submit_once
-            @auto_submit_once = false
-            if activity.auto_submit
-              activity\auto_submit!
-            elseif activity.keymap and activity.keymap.enter
-              activity.keymap.enter activity
 
         dispatch.wait parked_handle
 
@@ -174,7 +163,7 @@ class CommandLine extends PropertyObject
     @current.state = 'stopping'
 
     if #results > 0
-      @_record_history!
+      @record_history!
 
     @clear!
     @prompt = nil
@@ -192,7 +181,6 @@ class CommandLine extends PropertyObject
       @title = @title
     else
       @hide!
-      @auto_submit_once = false
       @pop_spillover!
       @_process_run_after_finish!
 
@@ -232,17 +220,17 @@ class CommandLine extends PropertyObject
       height_rows -= 1
       @command_widget.height_rows = height_rows
 
-  _record_history: =>
-    unless @current.evade_history or @history_recorded
-      command_line = @_capture_command_line!
+  record_history: =>
+    return if @current.evade_history or @history_recorded
+    command_line = @_capture_command_line!
 
-      for frame in *@running
-        if frame.saved_command_line
-          command_line = frame.saved_command_line .. command_line
+    for frame in *@running
+      if frame.saved_command_line
+        command_line = frame.saved_command_line .. command_line
 
-      unless @_command_history[1] == command_line or command_line\find '\n' or command_line\find '\r'
-        table.insert @_command_history, 1, command_line
-      @history_recorded = true
+    unless @_command_history[1] == command_line or command_line\find '\n' or command_line\find '\r'
+      table.insert @_command_history, 1, command_line
+    @history_recorded = true
 
   _capture_command_line: (end_pos)=>
       buf = @command_widget.buffer
@@ -426,7 +414,7 @@ class CommandLine extends PropertyObject
 
   handle_keypress: (event) =>
     -- keymaps checked in order:
-    --   @preemptive_keymap - keys that cannot be remapped by activitys
+    --   @preemptive_keymap - keys that cannot be remapped by activities
     --   @_activity.keymap
     --   widget.keymap for widget in @_widgets
     --   @keymap

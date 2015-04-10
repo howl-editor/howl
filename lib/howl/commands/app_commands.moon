@@ -4,6 +4,7 @@
 import app, Buffer, command, config, bindings, bundle, dispatch, interact, signal, inputs, mode, Project from howl
 import ActionBuffer, ProcessBuffer, BufferPopup, StyledTable from howl.ui
 import File, Process from howl.io
+import get_cwd from howl.util.paths
 serpent = require 'serpent'
 
 command.register
@@ -163,8 +164,8 @@ command.register
   name: 'bundle-unload'
   description: 'Unloads a specified bundle'
   interactive: true
-  handler: ->
-    name = interact.select_loaded_bundle!
+  handler: (name) ->
+    name or= interact.select_loaded_bundle!
     return if not name
 
     log.info "Unloading bundle '#{name}'.."
@@ -175,8 +176,8 @@ command.register
   name: 'bundle-load'
   description: 'Loads a specified, currently unloaded, bundle'
   interactive: true
-  handler: ->
-    name = interact.select_unloaded_bundle!
+  handler: (name) ->
+    name or= interact.select_unloaded_bundle!
     return if not name
 
     log.info "Loading bundle '#{name}'.."
@@ -187,8 +188,8 @@ command.register
   name: 'bundle-reload'
   description: 'Reloads a specified bundle'
   interactive: true
-  handler: ->
-    name = interact.select_loaded_bundle!
+  handler: (name) ->
+    name or= interact.select_loaded_bundle!
     return if not name
 
     log.info "Reloading bundle '#{name}'.."
@@ -203,8 +204,8 @@ command.register
     for buffer in *app.buffers
       bundle_name = buffer.file and bundle.from_file(buffer.file) or nil
       if bundle_name
-        howl.app.window.command_line\run_after_finish ->
-          command.run "bundle-reload #{bundle_name}", submit: true
+        howl.app.window.command_line\record_history!
+        command.bundle_reload bundle_name
         return
 
     log.warn 'Could not find any currently active bundle to reload'
@@ -331,13 +332,20 @@ command.register
   name: 'project-exec',
   description: 'Runs an external command from within the project directory'
   interactive: true
-  handler: ->
+  handler: (opts={})->
     buffer = app.editor and app.editor.buffer
     file = buffer.file or buffer.directory
     error "No file associated with the current view" unless file
     project = Project.get_for_file file
     error "No project associated with #{file}" unless project
-    working_directory, cmd = interact.get_external_command path: project.root
+
+    local working_directory, cmd
+    if opts.cmd
+      working_directory = howl.io.File project.root
+      cmd = opts.cmd
+    else
+      working_directory, cmd = interact.get_external_command path: project.root
+
     if cmd
       launch_cmd working_directory, cmd
 
@@ -345,7 +353,14 @@ command.register
   name: 'exec',
   description: 'Runs an external command'
   interactive: true
-  handler: ->
-    working_directory, cmd = interact.get_external_command!
+  handler: (opts={})->
+    local working_directory, cmd
+    if opts.cmd
+      working_directory = opts.path and howl.io.File opts.path
+      working_directory or= get_cwd!
+      cmd = opts.cmd
+    else
+      working_directory, cmd = interact.get_external_command path: opts.path
+
     if cmd
       launch_cmd working_directory, cmd

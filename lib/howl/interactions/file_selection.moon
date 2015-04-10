@@ -40,11 +40,8 @@ class FileSelector
 
     @command_line\add_widget 'completion_list', @list_widget
 
-    parent = @command_line.directory
-    unless parent
-      parent = app.editor and app.editor.buffer and app.editor.buffer.file and app.editor.buffer.file.parent
-    unless parent
-      parent = File.home_dir
+    parent = app.editor and app.editor.buffer and app.editor.buffer.file and app.editor.buffer.file.parent
+    parent or= File.home_dir
 
     path = @command_line\pop_spillover!
 

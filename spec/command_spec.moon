@@ -33,6 +33,12 @@ describe 'command', ->
     command.register cmd
     assert.equal command.get('foo').handler, cmd.handler
 
+  it 'calling .<name>(args) invokes command, passing arguments', ->
+    command.register cmd
+    dispatch.launch -> command.foo('arg1', 'arg2')
+    assert.spy(cmd.handler).was_called 1
+    assert.spy(cmd.handler).was_called_with 'arg1', 'arg2'
+
   describe '.alias(target, name)', ->
     it 'raises an error if target does not exist', ->
       assert.raises 'exist', -> command.alias 'nothing', 'something'
@@ -55,18 +61,24 @@ describe 'command', ->
   context 'when command name is a non-lua identifier', ->
     before_each -> cmd.name = 'foo-cmd:bar'
 
-    it 'register() adds accessible aliases for the direct indexing', ->
+    it 'register() adds accessible aliases', ->
       command.register cmd
-      assert.equal command.get('foo-cmd:bar').handler, cmd.handler
+      assert.not_nil command.foo_cmd_bar
 
     it 'the accessible alias is not part of names()', ->
       command.register cmd
       assert.same command.names!, { 'foo-cmd:bar' }
 
+    it 'calling .<accessible_name>(args) invokes command, passing arguments', ->
+      command.register cmd
+      dispatch.launch -> command.foo_cmd_bar('arg1', 'arg2')
+      assert.spy(cmd.handler).was_called 1
+      assert.spy(cmd.handler).was_called_with 'arg1', 'arg2'
+
     it 'unregister() removes the accessible name as well', ->
       command.register cmd
       command.unregister 'foo-cmd:bar'
-      assert.is_nil command.get('foo_cmd_bar')
+      assert.is_nil command.foo_cmd_bar
 
   describe '.run(cmd_string)', ->
     context 'when <cmd_string> is empty or missing', ->
@@ -134,15 +146,16 @@ describe 'command', ->
           run 'no-such-command hello cmd'
           assert.equals 'no-such-command hello cmd', app.window.command_line.text
 
-      context 'when directory: is provided', ->
-        it 'sets command_line.directory for invoked command', ->
-          local dir
+      context 'when args are provided', ->
+        it 'passes through args to the invoked command', ->
+          local captured_args
           command.register
             name: 'testcmd'
             description: 'test'
-            handler: -> dir = app.window.command_line.directory
-          run 'testcmd', directory: howl.io.File('/a/b/c')
-          assert.same '/a/b/c', tostring dir
+            handler: (...) -> captured_args = table.pack ...
+          run 'testcmd', 'arg1', opt1: 'a', opt2: 'b'
+          assert.same 'arg1', captured_args[1]
+          assert.same { opt1: 'a', opt2: 'b' } , captured_args[2]
 
       context 'and it matches a factory based command', ->
         it 'that command is invoked', ->
@@ -153,20 +166,6 @@ describe 'command', ->
             factory: -> { run: runf }
           run 'testcmdfactory'
           assert.spy(runf).was_called 1
-
-        context 'when submit: true is provided', ->
-          it 'invokes keymap.enter on the command', ->
-            keymap_enter = spy.new ->
-            command.register
-              name: 'testcmd2'
-              description: 'test'
-              factory: -> {
-                run: ->
-                keymap: enter: keymap_enter
-              }
-            run 'testcmd2', submit: true
-            assert.spy(keymap_enter).was_called 1
-
 
       context 'when it specifies a unknown command', ->
         it 'displays the <cmd_string> in the commandline text', ->

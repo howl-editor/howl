@@ -37,8 +37,8 @@ command.register
   name: 'open',
   description: 'Open file'
   interactive: true
-  handler: ->
-    file = interact.select_file allow_new: true
+  handler: (file) ->
+    file or= interact.select_file allow_new: true
     app\open_file file if file
 
 command.alias 'open', 'e'

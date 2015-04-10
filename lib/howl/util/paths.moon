@@ -1,3 +1,4 @@
+glib = require 'ljglibs.glib'
 import config from howl
 import File from howl.io
 import markup from howl.ui
@@ -12,6 +13,11 @@ howl.config.define
   scope: 'global'
   type_of: 'string_list'
   default: {'a', 'bc', 'git', 'hg', 'o', 'pyc', 'so'}
+
+get_cwd = ->
+  buffer = howl.app.editor and howl.app.editor.buffer
+  directory = buffer and (buffer.file and buffer.file.parent or buffer.directory)
+  return directory or File glib.get_current_dir!
 
 should_hide = (file) ->
   extensions = config.hidden_file_extensions
@@ -145,4 +151,4 @@ subtree_matcher = (root, files=nil) ->
   sort_paths paths
   return Matcher paths, reverse: true
 
-return { :file_matcher, :parse_path, :subtree_matcher }
+return { :file_matcher, :get_cwd, :parse_path, :subtree_matcher }

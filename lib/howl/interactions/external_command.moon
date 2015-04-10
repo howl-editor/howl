@@ -5,7 +5,7 @@ glib = require 'ljglibs.glib'
 import app, interact, sys from howl
 import File from howl.io
 import ListWidget, markup from howl.ui
-import file_matcher, parse_path from howl.util.paths
+import file_matcher, get_cwd, parse_path from howl.util.paths
 append = table.insert
 
 available_commands = ->
@@ -26,11 +26,6 @@ last_text_part = (text) ->
   parts = text_parts text
   parts[#parts]
 
-get_cwd = ->
-  buffer = app.editor and app.editor.buffer
-  directory = buffer and (buffer.file and buffer.file.parent or buffer.directory)
-  directory or File glib.get_current_dir!
-
 looks_like_path = (text) ->
   return unless text
   for p in *{
@@ -48,19 +43,10 @@ class ExternalCommandEntry
     @commands = nil
     @list_widget = nil
     @auto_show_list = true
-    local directory
-    if @command_line.directory and @opts.path
-      directory = @command_line.directory / @opts.path
-    elseif @command_line.directory
-      directory = @command_line.directory
-    elseif @opts.path
-      directory = File @opts.path
 
-    if directory
-      unless directory.is_directory
-        error "No such directory: #{directory}"
-    else
-      directory = get_cwd!
+    directory = File @opts.path if @opts.path
+    directory or= get_cwd!
+    error "No such directory: #{directory}" unless directory.is_directory
 
     @command_line\clear_all!
     @_chdir directory
@@ -73,9 +59,6 @@ class ExternalCommandEntry
         @_auto_complete_file directories_only: true
       elseif looks_like_path last_text_part @command_line.text
         @_auto_complete_file!
-
-  auto_submit: =>
-    @_submit!
 
   _chdir: (directory) =>
     @directory = directory
