@@ -93,16 +93,15 @@ class Replacement
     marker = text[1]
     target, replacement = parse_replacement text\usub(2), marker
 
-    local loader
-    if target != @target
-      @target = target
+    refresh_matches = (target != @target) or (@replacement and not replacement)
+    refresh_replacement = refresh_matches or (replacement != @replacement)
+
+    @target = target
+    @replacement = replacement
+
+    if refresh_matches
       @_reload_matches!
-      if @replacement
-        @_reload_replacements!
-    elseif replacement != @replacement
-      @replacement = replacement
-      if not @replacement
-        @_reload_matches!
+    if refresh_replacement
       @_reload_replacements!
 
   _reload_matches: =>
@@ -244,7 +243,7 @@ class Replacement
     @_preview_highlights!
     return last_idx
 
-  _preview_highlights: () =>
+  _preview_highlights: =>
     if @matches[@selected_idx]
       app.editor\ensure_visible @matches[@selected_idx].start_pos
     else
