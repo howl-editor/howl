@@ -6,6 +6,7 @@ import app, interact from howl
 interact.register
   name: 'yes_or_no'
   description: "Get choice made by user to a yes/no question"
+  evade_history: true
   handler: (opts={}) ->
     opts = moon.copy opts
     with opts
