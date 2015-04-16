@@ -4,8 +4,8 @@
 import app, dispatch, interact from howl
 import Window from howl.ui
 
-describe 'commandline', ->
-  local command_line, within_activity
+describe 'CommandLine', ->
+  local command_line, run_as_handler
 
   run_in_coroutine = (f) ->
     wrapped = coroutine.wrap -> f!
@@ -14,7 +14,7 @@ describe 'commandline', ->
   before_each ->
     app.window = Window!
     command_line = app.window.command_line
-    within_activity = (f) ->
+    run_as_handler = (f) ->
       command_line\run
         name: 'within-activity'
         handler: -> f!
@@ -23,7 +23,7 @@ describe 'commandline', ->
     ok, result = pcall -> app.window.command_line\abort_all!
     if not ok
       print result
-    within_activity = nil
+    run_as_handler = nil
     command_line = nil
     app.window = nil
 
@@ -108,14 +108,14 @@ describe 'commandline', ->
         assert.equals nil, command_line.text
 
       it 'updates the text displayed in the command_widget', ->
-        within_activity ->
+        run_as_handler ->
           command_line.text = 'hello'
           assert.equal 'hello', command_line.command_widget.text
           command_line.text = 'bye'
           assert.equal 'bye', command_line.command_widget.text
 
       it 'returns the text previously set', ->
-        within_activity ->
+        run_as_handler ->
           assert.equal command_line.text, ''
           command_line.text = 'hi'
           assert.equal 'hi', command_line.text
@@ -126,41 +126,41 @@ describe 'commandline', ->
         assert.has_error f, 'Cannot set prompt - no running activity'
 
       it 'updates the prompt displayed in the command_widget', ->
-        within_activity ->
+        run_as_handler ->
           command_line.prompt = 'hello'
           assert.equal 'hello', command_line.command_widget.text
           command_line.prompt = 'bye'
           assert.equal 'bye', command_line.command_widget.text
 
       it 'returns the prompt previously set', ->
-        within_activity ->
+        run_as_handler ->
           command_line.prompt = 'set'
           assert.equal 'set', command_line.prompt
 
     describe 'title', ->
       it 'is hidden by default', ->
-        within_activity ->
+        run_as_handler ->
           assert.equal false, command_line.header\to_gobject!.visible
 
       it 'is shown and updated by setting .title', ->
-        within_activity ->
+        run_as_handler ->
           command_line.title = 'Nice Title'
           assert.equal 'Nice Title', command_line.indic_title.label
           assert.equal true, command_line.header\to_gobject!.visible
 
       it 'is hidden by setting title to empty string', ->
-        within_activity ->
+        run_as_handler ->
           command_line.title = 'Nice Title'
           assert.equal true, command_line.header\to_gobject!.visible
           command_line.title = ''
           assert.equal false, command_line.header\to_gobject!.visible
 
       it 'is restored to the one set by the current interaction', ->
-        within_activity ->
+        run_as_handler ->
           command_line.title = 'Title 0'
           assert.equal 'Title 0', command_line.indic_title.label
 
-          within_activity ->
+          run_as_handler ->
             command_line.title = 'Title 1'
             assert.equal 'Title 1', command_line.indic_title.label
 
@@ -168,13 +168,13 @@ describe 'commandline', ->
 
     describe 'when using both .prompt and .text', ->
       it 'the prompt is displayed before the text', ->
-        within_activity ->
+        run_as_handler ->
           command_line.prompt = 'prómpt:'
           command_line.text = 'téxt'
           assert.equal 'prómpt:téxt', command_line.command_widget.text
 
       it 'preserves text when updating prompt', ->
-        within_activity ->
+        run_as_handler ->
           command_line.prompt = 'héllo:'
           command_line.text = 'téxt'
           assert.equal 'héllo:téxt', command_line.command_widget.text
@@ -182,7 +182,7 @@ describe 'commandline', ->
           assert.equal 'hóla:téxt', command_line.command_widget.text
 
       it 'preserves prompt when updating téxt ', ->
-        within_activity ->
+        run_as_handler ->
           command_line.prompt = 'héllo:'
           command_line.text = 'téxt '
           assert.equal 'héllo:téxt ', command_line.command_widget.text
@@ -191,7 +191,7 @@ describe 'commandline', ->
 
       context 'clear()', ->
         it 'clears the text only, leaving prompt intact', ->
-          within_activity ->
+          run_as_handler ->
             command_line.prompt = 'héllo:'
             command_line.text = 'téxt'
             command_line\clear!
@@ -199,12 +199,12 @@ describe 'commandline', ->
 
     describe 'when using nested interactions', ->
       it 'each interaction has independent prompt and text', ->
-        within_activity ->
+        run_as_handler ->
           command_line.prompt = 'outer:'
           command_line.text = '0'
           assert.equal 'outer:0', command_line.command_widget.text
 
-          within_activity ->
+          run_as_handler ->
             command_line.prompt = 'inner:'
             command_line.text = '1'
             assert.equal 'outer:0inner:1', command_line.command_widget.text
@@ -216,11 +216,11 @@ describe 'commandline', ->
       it '.stack_depth returns number of running activities', ->
         depths = {}
         table.insert depths, command_line.stack_depth
-        within_activity ->
+        run_as_handler ->
           table.insert depths, command_line.stack_depth
-          within_activity ->
+          run_as_handler ->
             table.insert depths, command_line.stack_depth
-            within_activity ->
+            run_as_handler ->
               table.insert depths, command_line.stack_depth
             table.insert depths, command_line.stack_depth
           table.insert depths, command_line.stack_depth
@@ -231,11 +231,11 @@ describe 'commandline', ->
       it '\\abort_all! cancels all running activities', ->
         depths = {}
         table.insert depths, command_line.stack_depth
-        within_activity ->
+        run_as_handler ->
           table.insert depths, command_line.stack_depth
-          within_activity ->
+          run_as_handler ->
             table.insert depths, command_line.stack_depth
-            within_activity ->
+            run_as_handler ->
               table.insert depths, command_line.stack_depth
               command_line\abort_all!
               table.insert depths, command_line.stack_depth
@@ -245,12 +245,12 @@ describe 'commandline', ->
       it 'finishing any activity aborts all nested activities', ->
         depths = {}
         table.insert depths, command_line.stack_depth
-        within_activity ->
+        run_as_handler ->
           dispatch.launch ->
             table.insert depths, command_line.stack_depth
             p = dispatch.park 'command_line_test'
             dispatch.launch ->
-              within_activity -> within_activity ->
+              run_as_handler -> run_as_handler ->
                   table.insert depths, command_line.stack_depth
                   dispatch.resume p
 
@@ -261,10 +261,10 @@ describe 'commandline', ->
 
       it '\\clear_all! clears the entire command line and restores on exit', ->
         texts = {}
-        within_activity ->
+        run_as_handler ->
           command_line.prompt = 'outér:'
           command_line.text = '0'
-          within_activity ->
+          run_as_handler ->
             table.insert texts, command_line.command_widget.text
             command_line\clear_all!
             table.insert texts, command_line.command_widget.text
