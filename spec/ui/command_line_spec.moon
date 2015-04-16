@@ -31,7 +31,7 @@ describe 'CommandLine', ->
     describe '\\run(activity_spec)', ->
       it 'errors if handler or factory field not in spec', ->
         f = -> command_line\run {}
-        assert.has_error f, 'activity_spec requires "name" and one of "handler" or "factory" fields'
+        assert.raises 'requires "name" and one of "handler" or "factory" fields', f
 
       describe 'for activity with handler', ->
         it 'calls activity handler', ->
@@ -102,7 +102,7 @@ describe 'CommandLine', ->
     describe '.text', ->
       it 'cannot be set when no running activity', ->
         f = -> command_line.text = 'hello'
-        assert.has_error f, 'Cannot set text - no running activity'
+        assert.raises 'no running activity', f
 
       it 'returns nil when no running activity', ->
         assert.equals nil, command_line.text
@@ -123,7 +123,7 @@ describe 'CommandLine', ->
     describe '.prompt', ->
       it 'does not work when no running activity', ->
         f = -> command_line.prompt = 'hello'
-        assert.has_error f, 'Cannot set prompt - no running activity'
+        assert.raises 'no running activity', f
 
       it 'updates the prompt displayed in the command_widget', ->
         run_as_handler ->
