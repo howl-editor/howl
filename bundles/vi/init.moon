@@ -1,6 +1,3 @@
--- Copyright 2012-2015 The Howl Developers
--- License: MIT (see LICENSE.md at the top-level directory of the distribution)
-
 import app, signal, config, bindings, command from howl
 import Editor from howl.ui
 
@@ -53,12 +50,12 @@ vi_commands = {
   {
     name: 'vi-toggle',
     description: 'Toggles VI mode'
-    handler: -> if state.active then command.run('vi-off') else command.run('vi-on')
+    handler: -> if state.active then command.vi_off! else command.vi_on!
   }
 }
 
 unload = ->
-  command.run 'vi-off'
+  command.vi_off!
 
   for name, handler in pairs signal_handlers
     signal.disconnect name, handler
