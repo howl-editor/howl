@@ -2,7 +2,6 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import style, StyledText from howl.ui
-serpent = require 'serpent'
 append = table.insert
 
 style.define_default 'list_header', color: '#5E5E5E', underline: true
