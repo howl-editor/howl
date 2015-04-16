@@ -51,7 +51,7 @@ command.register
   description: 'Repeats the last search'
   handler: -> app.editor.searcher\repeat_last!
 
-howl.command.register
+command.register
   name: 'buffer-replace'
   description: 'Replaces text (within selection or globally)'
   interactive: true
