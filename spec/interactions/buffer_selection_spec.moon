@@ -34,14 +34,14 @@ describe 'buffer_selection', ->
     it 'displays a list of active buffers', ->
       local buflist
       within_activity interact.select_buffer, ->
-        buflist = get_list_items!
+        buflist = get_ui_list_widget_column!
       assert.same {'a1-buffer', 'a2-buffer', 'b-buffer', 'c-buffer'}, normalize_titles buflist
 
     it 'filters the buffer list based on entered text', ->
       local buflist
       within_activity interact.select_buffer, ->
         command_line\write 'a-b'
-        buflist = get_list_items!
+        buflist = get_ui_list_widget_column!
       assert.same {'a1-buffer', 'a2-buffer'}, normalize_titles buflist
 
     context 'sending binding_for("close")', ->
@@ -65,7 +65,7 @@ describe 'buffer_selection', ->
         within_activity interact.select_buffer, ->
           command_line\handle_keypress close_event
           command_line\handle_keypress close_event
-          buflist = get_list_items!
+          buflist = get_ui_list_widget_column!
         assert.same {'b-buffer', 'c-buffer'}, normalize_titles buflist
 
       it 'preserves filter', ->
@@ -73,5 +73,5 @@ describe 'buffer_selection', ->
         within_activity interact.select_buffer, ->
           command_line\write 'a-b'
           command_line\handle_keypress close_event
-          buflist = get_list_items!
+          buflist = get_ui_list_widget_column!
         assert.same {'a2-buffer'}, normalize_titles buflist

@@ -28,20 +28,20 @@ describe 'grep_search', ->
     it 'shows all lines in the completion list by default', ->
       local lines
       within_activity (-> interact.select_match(:editor)), ->
-        lines = get_list_items 2
+        lines = get_ui_list_widget_column 2
       assert.same {'one', 'two', 'three'}, lines
 
     it 'shows lines that match text entered', ->
       lines = {}
       within_activity (-> interact.select_match(:editor)), ->
-        append lines, get_list_items 2
+        append lines, get_ui_list_widget_column 2
         command_line\write 'o'
-        append lines, get_list_items 2
+        append lines, get_ui_list_widget_column 2
         command_line\write 'n'
-        append lines, get_list_items 2
+        append lines, get_ui_list_widget_column 2
         command_line\clear!
         command_line\write ''
-        append lines, get_list_items 2
+        append lines, get_ui_list_widget_column 2
 
       assert.same {'one', 'two', 'three'}, lines[1]
       assert.same {'one', 'two'}, lines[2]
@@ -52,5 +52,5 @@ describe 'grep_search', ->
       it 'shows opts.lines in the completion list', ->
         local lines
         within_activity (-> interact.select_match(:editor, lines:{buffer.lines[1]})), ->
-          lines = get_list_items 2
+          lines = get_ui_list_widget_column 2
         assert.same {'one'}, lines
