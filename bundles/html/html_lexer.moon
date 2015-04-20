@@ -78,6 +78,17 @@ howl.aux.lpeg_lexer ->
     })^-1
   }
 
+  inline_css = sequence {
+    opening_tag * back_was 'tagname', 'style'
+    sub_lex('css', (eol * blank^1)^-1 * '</style'),
+
+    sequence({
+      c('operator', '</'),
+      c('special', 'style'),
+      c('operator', '>'),
+    })^-1
+  }
+
   error = c('error', S'&<>') * blank^1
 
   any {
@@ -85,6 +96,7 @@ howl.aux.lpeg_lexer ->
     comment,
     cdata,
     javascript,
+    inline_css,
     opening_tag,
     closing_tag,
     attribute,

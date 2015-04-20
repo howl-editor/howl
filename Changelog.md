@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- HTML mode: Sub lex inline styling
+
 - New PHP bundle, featuring a new PHP mode with advanced syntax highlighting.
 
 - The `describe-key` command now shows the commands bound to the key press.
