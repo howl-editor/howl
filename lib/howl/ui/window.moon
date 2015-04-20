@@ -169,7 +169,7 @@ class Window extends PropertyObject
 
     nil
 
-  _remember_focus: =>
+  remember_focus: =>
     @data.focus_child = @grid.focus_child
 
   _as_rows: (views) =>

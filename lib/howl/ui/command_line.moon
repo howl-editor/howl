@@ -480,7 +480,7 @@ class CommandLine extends PropertyObject
   show: =>
     return if @showing
     @last_focused = @window.focus if not @last_focused
-    @window\_remember_focus!
+    @window\remember_focus!
 
     @_initialize! if not @box
 
