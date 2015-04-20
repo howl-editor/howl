@@ -5,7 +5,7 @@ glib = require 'ljglibs.glib'
 import app, interact, sys from howl
 import File from howl.io
 import ListWidget, markup from howl.ui
-import file_matcher, get_cwd, parse_path from howl.util.paths
+import file_matcher, get_cwd, get_dir_and_leftover from howl.util.paths
 append = table.insert
 
 available_commands = ->
@@ -100,7 +100,7 @@ class ExternalCommandEntry
       @list_widget\hide!
       return
 
-    path, unmatched = parse_path @directory.path .. File.separator .. last_part
+    path, unmatched = get_dir_and_leftover @directory.path .. File.separator .. last_part
     @list_widget.matcher = file_matcher self.directory_reader(path), path
     @list_widget\update unmatched
     @list_widget_path = path

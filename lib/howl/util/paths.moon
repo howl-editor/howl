@@ -35,7 +35,7 @@ display_name = (file, is_directory, base_directory) ->
   rel_path = file\relative_to_parent(base_directory)
   return is_directory and rel_path .. separator or rel_path
 
-parse_path = (path) ->
+get_dir_and_leftover = (path) ->
   if not path or path.is_blank or not File.is_absolute path
     directory = File.home_dir
 
@@ -151,4 +151,4 @@ subtree_matcher = (root, files=nil) ->
   sort_paths paths
   return Matcher paths, reverse: true
 
-return { :file_matcher, :get_cwd, :parse_path, :subtree_matcher }
+return { :file_matcher, :get_cwd, :get_dir_and_leftover, :subtree_matcher }

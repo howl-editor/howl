@@ -6,7 +6,7 @@ glib = require 'ljglibs.glib'
 import app, clipboard, interact, log, Project from howl
 import File from howl.io
 import markup, style, ListWidget from howl.ui
-import file_matcher, subtree_matcher, parse_path from howl.util.paths
+import file_matcher, subtree_matcher, get_dir_and_leftover from howl.util.paths
 
 append = table.insert
 separator = File.separator
@@ -50,7 +50,7 @@ class FileSelector
     else
       path = tostring parent / path
 
-    directory, unmatched = parse_path path
+    directory, unmatched = get_dir_and_leftover path
     @_chdir directory, unmatched
 
   _chdir: (directory, text) =>
@@ -67,7 +67,7 @@ class FileSelector
 
   on_update: (text) =>
     path = @directory.path .. '/' .. text
-    directory, text = parse_path path
+    directory, text = get_dir_and_leftover path
 
     if directory != @directory
       @_chdir directory, text
