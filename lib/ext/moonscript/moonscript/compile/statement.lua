@@ -1,12 +1,8 @@
 local util = require("moonscript.util")
-local data = require("moonscript.data")
 local reversed, unpack
 reversed, unpack = util.reversed, util.unpack
 local ntype
-do
-  local _obj_0 = require("moonscript.types")
-  ntype = _obj_0.ntype
-end
+ntype = require("moonscript.types").ntype
 local concat, insert
 do
   local _obj_0 = table
@@ -79,7 +75,7 @@ return {
         _with_0:append(declare)
       else
         if #undeclared > 0 then
-          self:add(declare)
+          self:add(declare, node[-1])
         end
         _with_0:append_list((function()
           local _accum_0 = { }

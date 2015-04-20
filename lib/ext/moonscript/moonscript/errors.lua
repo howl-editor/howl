@@ -18,7 +18,7 @@ local lookup_line
 lookup_line = function(fname, pos, cache)
   if not cache[fname] then
     do
-      local _with_0 = io.open(fname)
+      local _with_0 = assert(io.open(fname))
       cache[fname] = _with_0:read("*a")
       _with_0:close()
     end
@@ -78,8 +78,8 @@ rewrite_traceback = function(text, err)
   local cache = { }
   local rewrite_single
   rewrite_single = function(trace)
-    local fname, line, msg = trace:match('^%[string "(.-)"]:(%d+): (.*)$')
-    local tbl = line_tables[fname]
+    local fname, line, msg = trace:match('^(.-):(%d+): (.*)$')
+    local tbl = line_tables["@" .. tostring(fname)]
     if fname and tbl then
       return concat({
         fname,

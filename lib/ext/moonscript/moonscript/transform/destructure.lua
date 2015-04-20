@@ -4,26 +4,13 @@ do
   ntype, mtype, build = _obj_0.ntype, _obj_0.mtype, _obj_0.build
 end
 local NameProxy
-do
-  local _obj_0 = require("moonscript.transform.names")
-  NameProxy = _obj_0.NameProxy
-end
+NameProxy = require("moonscript.transform.names").NameProxy
 local insert
-do
-  local _obj_0 = table
-  insert = _obj_0.insert
-end
+insert = table.insert
 local unpack
-do
-  local _obj_0 = require("moonscript.util")
-  unpack = _obj_0.unpack
-end
+unpack = require("moonscript.util").unpack
 local user_error
-do
-  local _obj_0 = require("moonscript.errors")
-  user_error = _obj_0.user_error
-end
-local util = require("moonscript.util")
+user_error = require("moonscript.errors").user_error
 local join
 join = function(...)
   do
@@ -125,7 +112,7 @@ build_assign = function(scope, destruct_literal, receiver)
     values
   }
   local obj
-  if scope:is_local(receiver) then
+  if scope:is_local(receiver) or #extracted_names == 1 then
     obj = receiver
   else
     do
@@ -144,7 +131,13 @@ build_assign = function(scope, destruct_literal, receiver)
   for _index_0 = 1, #extracted_names do
     local tuple = extracted_names[_index_0]
     insert(names, tuple[1])
-    insert(values, NameProxy.chain(obj, unpack(tuple[2])))
+    local chain
+    if obj then
+      chain = NameProxy.chain(obj, unpack(tuple[2]))
+    else
+      chain = "nil"
+    end
+    insert(values, chain)
   end
   return build.group({
     {

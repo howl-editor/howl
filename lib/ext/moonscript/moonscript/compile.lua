@@ -7,10 +7,7 @@ do
   NameProxy, LocalName = _obj_0.NameProxy, _obj_0.LocalName
 end
 local Set
-do
-  local _obj_0 = require("moonscript.data")
-  Set = _obj_0.Set
-end
+Set = require("moonscript.data").Set
 local ntype, has_value
 do
   local _obj_0 = require("moonscript.types")
@@ -61,6 +58,7 @@ do
         local _exp_0 = mtype(l)
         if "string" == _exp_0 or DelayedLine == _exp_0 then
           line_no = line_no + 1
+          out[line_no] = posmap[i]
           for _ in l:gmatch("\n") do
             line_no = line_no + 1
           end
@@ -101,7 +99,6 @@ do
             end
           end
           insert(buffer, "\n")
-          local last = l
         elseif Lines == _exp_0 then
           l:flatten(indent and indent .. indent_char or indent_char, buffer)
         else
@@ -150,38 +147,30 @@ end
 do
   local _base_0 = {
     pos = nil,
-    _append_single = function(self, item)
-      if Line == mtype(item) then
-        if not (self.pos) then
-          self.pos = item.pos
-        end
-        for _index_0 = 1, #item do
-          local value = item[_index_0]
-          self:_append_single(value)
-        end
-      else
-        insert(self, item)
-      end
-      return nil
-    end,
     append_list = function(self, items, delim)
       for i = 1, #items do
-        self:_append_single(items[i])
+        self:append(items[i])
         if i < #items then
           insert(self, delim)
         end
       end
       return nil
     end,
-    append = function(self, ...)
-      local _list_0 = {
-        ...
-      }
-      for _index_0 = 1, #_list_0 do
-        local item = _list_0[_index_0]
-        self:_append_single(item)
+    append = function(self, first, ...)
+      if Line == mtype(first) then
+        if not (self.pos) then
+          self.pos = first.pos
+        end
+        for _index_0 = 1, #first do
+          local value = first[_index_0]
+          self:append(value)
+        end
+      else
+        insert(self, first)
       end
-      return nil
+      if ... then
+        return self:append(...)
+      end
     end,
     render = function(self, buffer)
       local current = { }
@@ -209,7 +198,7 @@ do
           insert(current, chunk)
         end
       end
-      if #current > 0 then
+      if current[1] then
         add_current()
       end
       return buffer
@@ -267,6 +256,7 @@ do
     export_all = false,
     export_proper = false,
     value_compilers = value_compilers,
+    statement_compilers = statement_compilers,
     __tostring = function(self)
       local h
       if "string" == type(self.header) then
@@ -299,6 +289,22 @@ do
         end
       end
     end,
+    extract_assign_name = function(self, node)
+      local is_local = false
+      local real_name
+      local _exp_0 = mtype(node)
+      if LocalName == _exp_0 then
+        is_local = true
+        real_name = node:get_name(self)
+      elseif NameProxy == _exp_0 then
+        real_name = node:get_name(self)
+      elseif "table" == _exp_0 then
+        real_name = node[1] == "ref" and node[2]
+      elseif "string" == _exp_0 then
+        real_name = node
+      end
+      return real_name, is_local
+    end,
     declare = function(self, names)
       local undeclared
       do
@@ -308,19 +314,7 @@ do
           local _continue_0 = false
           repeat
             local name = names[_index_0]
-            local is_local = false
-            local real_name
-            local _exp_0 = mtype(name)
-            if LocalName == _exp_0 then
-              is_local = true
-              real_name = name:get_name(self)
-            elseif NameProxy == _exp_0 then
-              real_name = name:get_name(self)
-            elseif "table" == _exp_0 then
-              real_name = name[1] == "ref" and name[2]
-            elseif "string" == _exp_0 then
-              real_name = name
-            end
+            local real_name, is_local = self:extract_assign_name(name)
             if not (is_local or real_name and not self:has_name(real_name, true)) then
               _continue_0 = true
               break
@@ -423,8 +417,14 @@ do
       })
       return name
     end,
-    add = function(self, item)
-      self._lines:add(item)
+    add = function(self, item, pos)
+      do
+        local _with_0 = self._lines
+        _with_0:add(item)
+        if pos then
+          _with_0:mark_pos(pos)
+        end
+      end
       return item
     end,
     render = function(self, buffer)
@@ -455,7 +455,7 @@ do
       end
     end,
     is_stm = function(self, node)
-      return statement_compilers[ntype(node)] ~= nil
+      return self.statement_compilers[ntype(node)] ~= nil
     end,
     is_value = function(self, node)
       local t = ntype(node)
@@ -521,7 +521,7 @@ do
       node = self.transform.statement(node)
       local result
       do
-        local fn = statement_compilers[ntype(node)]
+        local fn = self.statement_compilers[ntype(node)]
         if fn then
           result = fn(self, node, ...)
         else
@@ -703,7 +703,6 @@ tree = function(tree, options)
   if not (success) then
     local error_msg, error_pos
     if type(err) == "table" then
-      local error_type = err[1]
       local _exp_0 = err[1]
       if "user-error" == _exp_0 or "compile-error" == _exp_0 then
         error_msg, error_pos = unpack(err, 2)

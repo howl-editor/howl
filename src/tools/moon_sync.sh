@@ -14,7 +14,7 @@ fi
 echo "Updating $target_dir from $source_dir.."
 rm -rf $target_dir/*
 
-for file in README.md moon moonscript moonscript/compile moonscript/transform; do
+for file in README.md moon moonscript moonscript/compile moonscript/transform moonscript/parse; do
   target=$target_dir/$file
   source=$source_dir/$file
   echo "* $file"
