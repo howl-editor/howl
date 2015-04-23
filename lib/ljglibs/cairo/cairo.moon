@@ -157,6 +157,14 @@ core.define 'cairo_t', {
       get: => C.cairo_get_line_cap @
       set: (lc) => C.cairo_set_line_cap @, lc
     }
+
+    dash: {
+      get: => @get_dash!
+      set: (a) => @set_dash a
+    }
+
+    dash_count: =>
+      tonumber C.cairo_get_dash_count(@)
   }
 
   create: (surface) -> cairo_gc_ptr C.cairo_create surface
@@ -165,6 +173,23 @@ core.define 'cairo_t', {
 
   set_source_rgb: (r, g, b) => C.cairo_set_source_rgb @, r, g, b
   set_source_rgba: (r, g, b, a) => C.cairo_set_source_rgba @, r, g, b, a
+
+  set_dash: (dashes, offset = 1) =>
+    count = (#dashes - offset) + 1
+    a = ffi.new 'double[?]', count
+    for i = 1, count
+      a[i - 1] = dashes[offset + i - 1]
+
+    C.cairo_set_dash @, a, count, 0
+
+  get_dash: =>
+    count = @dash_count
+    return {} if count < 1
+    a = ffi.new 'double[?]', count
+    C.cairo_get_dash @, a, nil
+    dashes = {}
+    for i = 1, count
+      dashes[i] = a[i - 1]
 
   stroke: => C.cairo_stroke @
   stroke_preserve: => C.cairo_stroke_preserve @

@@ -1,6 +1,7 @@
 -- Copyright 2014 Nils Nordman <nino at nordman.org>
 -- License: MIT (see LICENSE)
 
+flair = require 'aullar.flair'
 {:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
@@ -11,6 +12,20 @@ flair = require 'aullar.flair'
 
 {:max, :min} = math
 {:copy} = moon
+
+flair.define_default 'indentation_guide', {
+  type: flair.PIPE,
+  foreground: '#aaaaaa',
+  line_type: 'dotted'
+  line_width: 1
+}
+
+flair.define_default 'edge_line', {
+  type: flair.PIPE,
+  foreground: '#aa0000',
+  foreground_alpha: 0.2,
+  line_width: 1
+}
 
 parse_background_ranges = (styling) ->
   ranges = {}
@@ -99,6 +114,54 @@ get_flairs = (buffer, line, display_line) ->
   markers = [translate(m) for m in *markers when m.flair]
   markers
 
+get_indent = (view, line) ->
+  ptr = line.ptr
+  spaces = 0
+  tabs = 0
+
+  for i = 0, line.size - 1
+    c = ptr[i]
+    if c == 0x20
+      spaces += 1
+    elseif c == 0x9
+      tabs += 1
+    else
+      break
+
+  spaces + tabs * view.config.view_tab_size
+
+draw_indentation_guides = (x, y, base_x, line, cr, config, width_of_space) ->
+  indent = line.indent
+  view_indent = config.view_indent
+  prev_indent = line.prev and line.prev.indent
+
+  if line.size == 0
+    return unless prev_indent and prev_indent > view_indent
+    next_indent = line.next and line.next.indent
+    return unless next_indent and next_indent > view_indent
+    indent = min prev_indent, next_indent
+
+  cr\save!
+  guide_x = x
+  indentation_flair = flair.get 'indentation_guide'
+
+  for i = 1, (indent / view_indent) - 1
+    guide_x += width_of_space * view_indent
+    adjusted_x = guide_x - base_x
+    continue if adjusted_x < 0
+    f = flair.get("indentation_guide_#{i}") or indentation_flair
+    f\draw adjusted_x, y, f.line_width or 0.5, line.height, cr
+
+  cr\restore!
+
+draw_edge_line = (at_col, x, y, base_x, line, cr, width_of_space) ->
+  x += (width_of_space * at_col) - base_x
+  if x > 0
+    cr\save!
+    f = flair.get "edge_line"
+    f\draw x, y, f.line_width or 0.5, line.height, cr
+    cr\restore!
+
 DisplayLine = define_class {
   new: (@display_lines, @view, buffer, @pango_context, line) =>
     @layout = Layout pango_context
@@ -106,6 +169,7 @@ DisplayLine = define_class {
     @layout.tabs = display_lines.tab_array
     @nr = line.nr
     @size = line.size
+    @indent = get_indent view, line
     @styling = buffer.styling\get(line.start_offset, line.end_offset)
     @layout.attributes = styles.get_attributes @styling
 
@@ -125,9 +189,15 @@ DisplayLine = define_class {
         @_block = get_block @display_lines, @
 
       @_block
+
+    prev: =>
+      @nr > 1 and @display_lines[@nr - 1] or nil
+
+     next: =>
+      @display_lines[@nr + 1]
    }
 
-  draw: (x, y, cr, clip) =>
+  draw: (x, y, cr, clip, opts = {}) =>
     base_x = @view.base_x
     block = @block
 
@@ -151,6 +221,13 @@ DisplayLine = define_class {
 
     for f in *@flairs
       flair.draw f.flair, @, f.start_offset, f.end_offset, x, y, cr
+
+    if opts.config.view_show_indentation_guides
+      draw_indentation_guides x, y, base_x, @, cr, opts.config, opts.width_of_space
+
+    edge_column = opts.config.view_edge_column
+    if edge_column and edge_column > 0
+      draw_edge_line edge_column, x, y, base_x, @, cr, opts.width_of_space
 
     cr\restore! if base_x > 0
 }

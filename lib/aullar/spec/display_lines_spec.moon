@@ -10,7 +10,7 @@ ffi = require 'ffi'
 
 describe 'DisplayLines', ->
 
-  local buffer, display_lines
+  local view, buffer, display_lines
 
   setup ->
     styles.define 'b1', background: '#112233'
@@ -42,6 +42,16 @@ describe 'DisplayLines', ->
         ranges = display_lines[1].background_ranges
         assert.equals 1, #ranges
         assert.same { start_offset: 1, end_offset: 11, style: { background: '#112233' } }, ranges[1]
+
+    describe '.indentation', ->
+      it 'is the indentation level for the line', ->
+        buffer.text = "zero\n  two\n    four\n\ttab\n"
+        view.config.view_tab_size = 5
+
+        assert.equals 0, display_lines[1].indent
+        assert.equals 2, display_lines[2].indent
+        assert.equals 4, display_lines[3].indent
+        assert.equals 5, display_lines[4].indent
 
   context 'display blocks', ->
     it 'multiple adjacent lines with whole-line backgrounds are part of a single block', ->

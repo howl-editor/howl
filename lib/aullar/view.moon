@@ -19,7 +19,7 @@ config = require 'aullar.config'
 
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
-{:max, :min, :abs} = math
+{:max, :min, :abs, :floor} = math
 
 insertable_character = (event) ->
   return false if event.ctrl or event.alt or event.meta or event.super or not event.character
@@ -105,7 +105,7 @@ View = {
     @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_HORIZONTAL
     @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
-      @base_x = adjustment.value
+      @base_x = floor adjustment.value
       @area\queue_draw!
 
     @horizontal_scrollbar_alignment = Gtk.Alignment {
@@ -222,6 +222,7 @@ View = {
           adjustment = @horizontal_scrollbar.adjustment
           x = min x, adjustment.upper - adjustment.page_size
 
+        x = floor x
         return if x == @_base_x
         @_base_x = x
         @area\queue_draw!
@@ -416,6 +417,7 @@ View = {
     cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
     conf = @config
+    line_draw_opts = config: conf, width_of_space: @width_of_space
 
     if conf.view_show_line_numbers
       @line_gutter\start_draw cr, p_ctx, clip
@@ -450,7 +452,7 @@ View = {
       if @selection\affects_line line
         @selection\draw edit_area_x, y, cr, display_line, line
 
-      display_line\draw edit_area_x, y, cr, clip
+      display_line\draw edit_area_x, y, cr, clip, line_draw_opts
 
       if @selection\affects_line line
         @selection\draw_overlay edit_area_x, y, cr, display_line, line
@@ -474,12 +476,9 @@ View = {
   _reset_display: =>
     @_last_visible_line = nil
     p_ctx = @area.pango_context
-    layout = Pango.Layout p_ctx
-    layout.text = ' '
-    width_of_space = layout\get_pixel_size!
+    @width_of_space = @text_dimensions(' ').width
     tab_size = @config.view_tab_size
-    location = width_of_space * tab_size
-    @_tab_array = Pango.TabArray(1, true, location)
+    @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
 
   _on_buffer_styled: (buffer, args) =>

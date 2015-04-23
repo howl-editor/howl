@@ -25,10 +25,16 @@ set_source_from_color = (cr, name, opts) ->
     else
       cr\set_source_rgb color.red, color.green, color.blue
 
+set_line_type_from_flair = (cr, flair) ->
+  cr.line_width = flair._line_width
+  switch flair.line_type
+    when 'dotted'
+      cr.dash = {1, 1.5}
+    when 'dashed'
+      cr.dash = {6, 3}
+
 draw_ops = {
-  rectangle: (x, y, width, height, cr, flair) ->
-    cr.line_join = Cairo.LINE_JOIN_ROUND
-    cr.line_cap = Cairo.LINE_CAP_ROUND
+  rectangle: (flair, x, y, width, height, cr) ->
 
     if flair.background
       set_source_from_color cr, 'background', flair
@@ -37,16 +43,14 @@ draw_ops = {
 
     if flair.foreground
       set_source_from_color cr, 'foreground', flair
-      line_width = flair.line_width or 0.5
-      cr.line_width = line_width
-      cr.line_join = Cairo.LINE_JOIN_ROUND
-      cr.line_cap = Cairo.LINE_CAP_ROUND
+      set_line_type_from_flair cr, flair
+      line_width = flair._line_width
       cr\rectangle x, y + (line_width / 2), width, height - line_width
       cr\stroke!
 
-  sandwich: (x, y, width, height, cr, flair) ->
+  sandwich: (flair, x, y, width, height, cr) ->
     set_source_from_color cr, 'foreground', flair
-    cr.line_width = flair.line_width or 0.5
+    set_line_type_from_flair cr, flair
 
     cr\move_to x, y + 0.5
     cr\rel_line_to width, 0
@@ -56,22 +60,32 @@ draw_ops = {
     cr\rel_line_to width, 0
     cr\stroke!
 
-  underline: (x, y, width, height, cr, flair) ->
+  underline: (flair, x, y, width, height, cr) ->
     set_source_from_color cr, 'foreground', flair
-    cr.line_width = flair.line_width or 0.5
+    set_line_type_from_flair cr, flair
 
     cr\move_to x, y + height - 0.5
     cr\rel_line_to width, 0
     cr\stroke!
+
+  pipe: (flair, x, y, width, height, cr) ->
+    if flair.foreground
+      set_source_from_color cr, 'foreground', flair
+      set_line_type_from_flair cr, flair
+      line_width = flair.line_width or 0.5
+      cr\move_to x + 0.5, y
+      cr\rel_line_to 0, height
+      cr\stroke!
 }
 
 build = (params) ->
-  params = copy params
-  params._draw = draw_ops[params.type]
-  error "Invalid flair type '#{params.type}'", 2 unless params._draw
-  params._background = parse_color params.background
-  params._foreground = parse_color params.foreground
-  params
+  flair = copy params
+  flair.draw = draw_ops[params.type]
+  error "Invalid flair type '#{params.type}'", 2 unless flair.draw
+  flair._background = parse_color params.background
+  flair._foreground = parse_color params.foreground
+  flair._line_width = params.line_width or 0.5
+  flair
 
 define = (name, opts) ->
   flair = build opts
@@ -102,6 +116,7 @@ need_text_object = (flair) ->
   RECTANGLE: 'rectangle'
   SANDWICH: 'sandwich'
   UNDERLINE: 'underline'
+  PIPE: 'pipe'
 
   :build
   :define
@@ -131,7 +146,7 @@ need_text_object = (flair) ->
     cursor = flair == 'block_cursor'
 
     get_defined_width = (x, flair, cr, clip) ->
-      return flair.width if not flair.width or type(flair.width) == 'number'
+      return flair.width if type(flair.width) == 'number'
       if flair.width == 'full'
         clip.x2 - x
 
@@ -163,7 +178,7 @@ need_text_object = (flair) ->
       height = text_object.height
 
     cr\save!
-    flair._draw start_x, y, width, height, cr, flair
+    flair.draw flair, start_x, y, width, height, cr
     cr\restore!
 
     if flair.text_color

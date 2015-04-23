@@ -19,6 +19,11 @@ define_options = ->
       default: 'Monospace'
     },
 
+    view_indent: {
+      type: 'number',
+      default: 2
+    },
+
     view_font_size: {
       type: 'number',
       default: gtk_font.size / Pango.SCALE
@@ -27,6 +32,16 @@ define_options = ->
     view_show_line_numbers: {
       type: 'boolean',
       default: true
+    },
+
+    view_show_indentation_guides: {
+      type: 'boolean',
+      default: false
+    },
+
+    view_edge_column: {
+      type: 'number',
+      default: nil
     },
 
     view_show_h_scrollbar: {
