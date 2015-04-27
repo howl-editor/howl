@@ -59,11 +59,11 @@ describe 'lisp-mode', ->
       editor\indent!
       assert.equal 6, editor.current_line.indentation
 
-    -- it 'aligns with any subsequent forms following an opening bracket', ->
-    --   buffer.text = '(list-me (bar)\n'
-    --   cursor.line = 2
-    --   editor\indent!
-    --   assert.equal 9, editor.current_line.indentation
+    it 'aligns with any subsequent forms following an opening bracket', ->
+      buffer.text = '[xyz [\n  [a b]\n'
+      cursor.line = 3
+      editor\indent!
+      assert.equal 2, editor.current_line.indentation
 
     it 'shrewdly avoids misaligning with any subsequent forms to far away', ->
       for ex in *{ '(defn list-me ()\n', '(fn []\n' }

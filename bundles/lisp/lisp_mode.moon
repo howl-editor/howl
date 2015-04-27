@@ -55,19 +55,18 @@ class LispMode
           indentation = col - 1
         elseif status == 'open'
           if brace == '('
-            -- align with following form on the same line if present
-            -- _, form_start = start_line\ufind '^%S+%s+[({]', col + 1
-            form_start = false
-            if form_start
-              indentation = form_start - 1
+            prev_char = start_line[col - 1]
+            if prev_char == "`" or prev_char == "'" -- quoted form
+              indentation = col + indent_level - 2
             else
-              prev_char = start_line[col - 1]
-              if prev_char == "`" or prev_char == "'" -- quoted form
-                indentation = col + indent_level - 2
-              else
-                indentation = col + indent_level - 1
+              indentation = col + indent_level - 1
           else -- [ {
             indentation = col
+
+        -- respect the indentation of the previous line if
+        -- it's different from the form start
+        if start_line.nr < prev_line.nr and prev_line.indentation < indentation
+          indentation = prev_line.indentation
 
     indentation
 
