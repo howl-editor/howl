@@ -33,8 +33,7 @@ command.alias 'quit-without-save', 'q!'
 command.register
   name: 'run'
   description: 'Runs a command'
-  handler: -> command.run!
-  interactive: true
+  handler: command.run
 
 command.register
   name: 'new-buffer',
@@ -44,11 +43,8 @@ command.register
 command.register
   name: 'switch-buffer',
   description: 'Switches to another buffer'
-  interactive: true
-  handler: ->
-    buf = interact.select_buffer!
-    if buf
-      app.editor.buffer = buf
+  input: interact.select_buffer
+  handler: (buf) -> app.editor.buffer = buf
 
 command.register
   name: 'buffer-reload',
@@ -86,20 +82,22 @@ set_variable = (assignment, target) ->
 command.register
   name: 'set',
   description: 'Sets a configuration variable globally'
-  interactive: true
-  handler: -> set_variable interact.get_variable_assignment!, config
+  input: interact.get_variable_assignment
+  handler: (variable_assignment) -> set_variable variable_assignment, config
 
 command.register
   name: 'set-for-mode',
   description: 'Sets a configuration variable for the current mode'
-  interactive: true
-  handler: -> set_variable interact.get_variable_assignment!, app.editor.buffer.mode.config
+  input: interact.get_variable_assignment
+  handler: (variable_assignment) ->
+    set_variable variable_assignment, app.editor.buffer.mode.config
 
 command.register
   name: 'set-for-buffer',
   description: 'Sets a configuration variable for the current buffer'
-  interactive: true
-  handler: -> set_variable interact.get_variable_assignment!, app.editor.buffer.config
+  input: interact.get_variable_assignment
+  handler: (variable_assignment) ->
+    set_variable variable_assignment, app.editor.buffer.config
 
 command.register
   name: 'describe-key',
@@ -135,10 +133,8 @@ command.register
 command.register
   name: 'describe-signal',
   description: 'Describes a given signal'
-  interactive: true
-  handler: ->
-    name = interact.select_signal!
-    return unless name
+  input: interact.select_signal
+  handler: (name) ->
     def = signal.all[name]
     error "Unknown signal '#{name}'" unless def
     buffer = with ActionBuffer!
@@ -163,11 +159,8 @@ command.register
 command.register
   name: 'bundle-unload'
   description: 'Unloads a specified bundle'
-  interactive: true
+  input: interact.select_loaded_bundle
   handler: (name) ->
-    name or= interact.select_loaded_bundle!
-    return if not name
-
     log.info "Unloading bundle '#{name}'.."
     bundle.unload name
     log.info "Unloaded bundle '#{name}'"
@@ -175,11 +168,8 @@ command.register
 command.register
   name: 'bundle-load'
   description: 'Loads a specified, currently unloaded, bundle'
-  interactive: true
+  input: interact.select_unloaded_bundle
   handler: (name) ->
-    name or= interact.select_unloaded_bundle!
-    return if not name
-
     log.info "Loading bundle '#{name}'.."
     bundle.load_by_name name
     log.info "Loaded bundle '#{name}'"
@@ -187,11 +177,8 @@ command.register
 command.register
   name: 'bundle-reload'
   description: 'Reloads a specified bundle'
-  interactive: true
+  input: interact.select_loaded_bundle
   handler: (name) ->
-    name or= interact.select_loaded_bundle!
-    return if not name
-
     log.info "Reloading bundle '#{name}'.."
     bundle.unload name if _G.bundles[name]
     bundle.load_by_name name
@@ -204,7 +191,7 @@ command.register
     for buffer in *app.buffers
       bundle_name = buffer.file and bundle.from_file(buffer.file) or nil
       if bundle_name
-        howl.app.window.command_line\record_history!
+        app.window.command_line\record_history!
         command.bundle_reload bundle_name
         return
 
@@ -213,32 +200,28 @@ command.register
 command.register
   name: 'buffer-grep'
   description: 'Matches certain buffer lines in realtime'
-  interactive: true
-  handler: ->
+  input: ->
     buffer = app.editor.buffer
-    position = interact.select_match
+    return interact.select_match
       title: "Buffer grep in #{buffer.title}"
       editor: app.editor
-
-    if position
-       app.editor.cursor\move_to position.row, position.col
+  handler: (position) ->
+    app.editor.cursor\move_to position.row, position.col
 
 
 command.register
   name: 'buffer-structure'
   description: 'Shows the structure for the given buffer'
-  interactive: true
-  handler: ->
+  input: ->
     buffer = app.editor.buffer
     lines = buffer.mode\structure app.editor
-    position = interact.select_match
+    return interact.select_match
       title: "Structure for #{buffer.title}"
       editor: app.editor
       :lines
       selected_line: app.editor.cursor.line
-
-    if position
-       app.editor.cursor\move_to position.row, position.col
+  handler: (position) ->
+    app.editor.cursor\move_to position.row, position.col
 
 -----------------------------------------------------------------------
 -- Howl eval commands
@@ -313,54 +296,34 @@ command.register
 -----------------------------------------------------------------------
 
 launch_cmd = (working_directory, cmd) ->
-  dispatch.launch ->
-    shell = howl.sys.env.SHELL or '/bin/sh'
-    p = Process {
-      :cmd,
-      :shell,
-      read_stdout: true,
-      read_stderr: true,
-      working_directory: working_directory,
-    }
+  shell = howl.sys.env.SHELL or '/bin/sh'
+  p = Process {
+    :cmd,
+    :shell,
+    read_stdout: true,
+    read_stderr: true,
+    working_directory: working_directory,
+  }
 
-    buffer = ProcessBuffer p
-    editor = app\add_buffer buffer
-    editor.cursor\eof!
-    buffer\pump!
+  buffer = ProcessBuffer p
+  editor = app\add_buffer buffer
+  editor.cursor\eof!
+  buffer\pump!
 
 command.register
   name: 'project-exec',
   description: 'Runs an external command from within the project directory'
-  interactive: true
-  handler: (opts={})->
+  input: ->
     buffer = app.editor and app.editor.buffer
     file = buffer.file or buffer.directory
     error "No file associated with the current view" unless file
     project = Project.get_for_file file
     error "No project associated with #{file}" unless project
-
-    local working_directory, cmd
-    if opts.cmd
-      working_directory = howl.io.File project.root
-      cmd = opts.cmd
-    else
-      working_directory, cmd = interact.get_external_command path: project.root
-
-    if cmd
-      launch_cmd working_directory, cmd
+    return interact.get_external_command path: project.root
+  handler: launch_cmd
 
 command.register
   name: 'exec',
   description: 'Runs an external command'
-  interactive: true
-  handler: (opts={})->
-    local working_directory, cmd
-    if opts.cmd
-      working_directory = opts.path and howl.io.File opts.path
-      working_directory or= get_cwd!
-      cmd = opts.cmd
-    else
-      working_directory, cmd = interact.get_external_command path: opts.path
-
-    if cmd
-      launch_cmd working_directory, cmd
+  input: (path=nil) -> interact.get_external_command :path
+  handler: launch_cmd

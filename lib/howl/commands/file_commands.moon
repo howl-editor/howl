@@ -36,27 +36,26 @@ auto_mkdir = (directory) ->
 command.register
   name: 'open',
   description: 'Open file'
-  interactive: true
-  handler: (file) ->
-    file or= interact.select_file allow_new: true
-    app\open_file file if file
+  input: -> interact.select_file allow_new: true
+  handler: (file) -> app\open_file file
 
 command.alias 'open', 'e'
 
 command.register
   name: 'project-open',
   description: 'Open project file'
-  interactive: true
-  handler: ->
+  input: ->
     buffer = app.editor and app.editor.buffer
     file = buffer and (buffer.file or buffer.directory)
     if file
       project = Project.get_for_file file
       if project
-        file = interact.select_file_in_project :project
-        app\open_file file if file
+        return interact.select_file_in_project :project
     else
       log.warn "No file or directory associated with the current view"
+      return
+  handler: (file) ->
+    app\open_file file
 
 command.register
   name: 'save',
@@ -65,8 +64,7 @@ command.register
   handler: ->
     buffer = app.editor.buffer
     if not buffer.file
-      app.window.command_line\run_after_finish ->
-        command.run 'save-as'
+      command.run 'save-as'
       return
 
     if buffer.modified_on_disk
@@ -90,11 +88,11 @@ command.alias 'save', 'w'
 command.register
   name: 'save-as',
   description: 'Saves the current buffer to a given file'
-  interactive: true
   evade_history: true
-  handler: ->
+  input: ->
     file = interact.select_file allow_new: true
     return unless file
+
     if file.exists
       unless interact.yes_or_no prompt: "File '#{file}' already exists, overwrite? "
         log.info "Not overwriting; buffer not saved"
@@ -104,6 +102,9 @@ command.register
       log.info "Parent directory doesn't exist; buffer not saved"
       return
 
+    return file
+
+  handler: (file) ->
     buffer = app.editor.buffer
     buffer\save_as file
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,

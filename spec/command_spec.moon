@@ -35,7 +35,7 @@ describe 'command', ->
 
   it 'calling .<name>(args) invokes command, passing arguments', ->
     command.register cmd
-    dispatch.launch -> command.foo('arg1', 'arg2')
+    command.foo('arg1', 'arg2')
     assert.spy(cmd.handler).was_called 1
     assert.spy(cmd.handler).was_called_with 'arg1', 'arg2'
 
@@ -93,17 +93,71 @@ describe 'command', ->
           run cmd.name
           assert.spy(cmd.handler).was_called 1
 
-        it 'returns the result of running the command', ->
-          command.register cmd
-          result = run cmd.name
-          assert.equals 'foo-result', result
+        context 'and the command specifies an input function', ->
+          local cmd
 
-        it 'displays the ":<cmd_string> " in the commandline', ->
-          local prompt
-          cmd = name: 'getp', description: 'desc', handler: -> prompt = app.window.command_line.command_widget.text
-          command.register cmd
-          run 'getp'
-          assert.equals ':'..cmd.name..' ', prompt
+          before_each ->
+            cmd =
+              name: 'with-input'
+              description: 'test'
+              input: spy.new -> 'input-result1', 'input-result2'
+              handler: spy.new ->
+            command.register cmd
+
+          it 'calls the command input function, passing through extra args', ->
+            run cmd.name, 'arg1', 'arg2'
+            assert.spy(cmd.input).was_called 1
+            assert.spy(cmd.input).was_called_with 'arg1', 'arg2'
+
+          it 'passes the result of the input function into the handler', ->
+            run cmd.name
+            assert.spy(cmd.handler).was_called 1
+            assert.spy(cmd.handler).was_called_with 'input-result1', 'input-result2'
+
+          it 'does not call handler if input function returns nil', ->
+            cmd = {
+              name: 'cancelled-input'
+              description: 'test'
+              input: ->
+              handler: spy.new ->
+            }
+            command.register cmd
+            run cmd.name
+            assert.spy(cmd.handler).was_called 0
+
+          it 'sets spillover to any text arguments before invoking the input', ->
+            local spillover
+            command.register
+              name: 'with-input'
+              description: 'test'
+              input: -> spillover = app.window.command_line\pop_spillover!
+              handler: ->
+            run 'with-input hello cmd'
+            assert.equal 'hello cmd', spillover
+
+          it 'displays the ":<cmd_string> " in the command line during input', ->
+            local prompt
+            cmd = {
+              name: 'getp'
+              description: 'desc'
+              input: -> prompt = app.window.command_line.command_widget.text
+              handler: ->
+            }
+            command.register cmd
+            run 'getp'
+            assert.equals ':'..cmd.name..' ', prompt
+
+        context 'and the command does not specify an input function', ->
+          it 'calls the command handler, passing through extra args', ->
+            cmd = {
+              name: 'without-input'
+              description: 'test'
+              handler: spy.new ->
+            }
+            command.register cmd
+            run cmd.name, 'arg1', 'arg2'
+            assert.spy(cmd.handler).was_called 1
+            assert.spy(cmd.handler).was_called_with 'arg1', 'arg2'
 
       context 'and it matches an alias', ->
         it 'the aliased command is invoked', ->
@@ -111,18 +165,6 @@ describe 'command', ->
           command.alias cmd.name, 'aliascmd'
           run 'aliascmd'
           assert.spy(cmd.handler).was_called 1
-
-      context 'and it contains <interactive-command>space<args>', ->
-        it 'the command is invoked with the args passed in spillover', ->
-          spy_handler = spy.new -> app.window.command_line\pop_spillover!
-          command.register
-            name: 'foo-interactive'
-            description: 'test'
-            interactive: true
-            handler: spy_handler
-          result = run 'foo-interactive hello cmd'
-          assert.spy(spy_handler).was_called 1
-          assert.equal 'hello cmd', result
 
       context 'and it contains <non-interactive-command>space<args>', ->
         before_each ->
@@ -145,27 +187,6 @@ describe 'command', ->
         it 'the command line contains the passed text', ->
           run 'no-such-command hello cmd'
           assert.equals 'no-such-command hello cmd', app.window.command_line.text
-
-      context 'when args are provided', ->
-        it 'passes through args to the invoked command', ->
-          local captured_args
-          command.register
-            name: 'testcmd'
-            description: 'test'
-            handler: (...) -> captured_args = table.pack ...
-          run 'testcmd', 'arg1', opt1: 'a', opt2: 'b'
-          assert.same 'arg1', captured_args[1]
-          assert.same { opt1: 'a', opt2: 'b' } , captured_args[2]
-
-      context 'and it matches a factory based command', ->
-        it 'that command is invoked', ->
-          runf = spy.new ->
-          command.register
-            name: 'testcmdfactory'
-            description: 'test'
-            factory: -> { run: runf }
-          run 'testcmdfactory'
-          assert.spy(runf).was_called 1
 
       context 'when it specifies a unknown command', ->
         it 'displays the <cmd_string> in the commandline text', ->

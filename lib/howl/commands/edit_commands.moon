@@ -7,44 +7,40 @@ import BufferPopup from howl.ui
 command.register
   name: 'buffer-search-forward',
   description: 'Starts an interactive forward search'
-  interactive: true
-  handler: ->
+  input: ->
     if interact.forward_search!
-      app.editor.searcher\commit!
-    else
-      app.editor.searcher\cancel!
+      return true
+    app.editor.searcher\cancel!
+  handler: -> app.editor.searcher\commit!
 
 command.register
   name: 'buffer-search-backward',
   description: 'Starts an interactive backward search'
-  interactive: true
-  handler: ->
+  input: ->
     if interact.backward_search!
-      app.editor.searcher\commit!
-    else
-      app.editor.searcher\cancel!
+      return true
+    app.editor.searcher\cancel!
+  handler: -> app.editor.searcher\commit!
 
 command.register
   name: 'buffer-search-word-forward',
   description: 'Jumps to next occurence of word at cursor'
-  interactive: true
-  handler: ->
+  input: ->
     app.window.command_line\write_spillover app.editor.current_context.word.text
     if interact.forward_search_word!
-      app.editor.searcher\commit!
-    else
-      app.editor.searcher\cancel!
+      return true
+    app.editor.searcher\cancel!
+  handler: -> app.editor.searcher\commit!
 
 command.register
   name: 'buffer-search-word-backward',
   description: 'Jumps to previous occurence of word at cursor'
-  interactive: true
-  handler: ->
+  input: ->
     app.window.command_line\write_spillover app.editor.current_context.word.text
     if interact.backward_search_word!
-      app.editor.searcher\commit!
-    else
-      app.editor.searcher\cancel!
+      return true
+    app.editor.searcher\cancel!
+  handler: -> app.editor.searcher\commit!
 
 command.register
   name: 'buffer-repeat-search',
@@ -54,59 +50,58 @@ command.register
 command.register
   name: 'buffer-replace'
   description: 'Replaces text (within selection or globally)'
-  interactive: true
-  handler: ->
+  input: ->
     buffer = app.editor.buffer
     chunk = app.editor.active_chunk
-    result = interact.get_replacement
+    replacement = interact.get_replacement
       title: 'Preview replacements for ' .. buffer.title
       editor: app.editor
 
-    if result
-      if result.text
-        app.editor\with_position_restored ->
-          buffer\as_one_undo ->
-            buffer.text = result.text
-        log.info "Replaced #{result.num_replaced} instances"
-      if result.cursor_pos
-        app.editor.cursor.pos = result.cursor_pos
-      if result.line_at_top
-        app.editor.line_at_top = result.line_at_top
-    else
-      log.info "Cancelled - buffer untouched"
+    return replacement if replacement
+    log.info "Cancelled - buffer untouched"
+
+  handler: (replacement) ->
+    if replacement.text
+      buffer = app.editor.buffer
+      app.editor\with_position_restored ->
+        buffer\as_one_undo ->
+          buffer.text = replacement.text
+      log.info "Replaced #{replacement.num_replaced} instances"
+    if replacement.cursor_pos
+      app.editor.cursor.pos = replacement.cursor_pos
+    if replacement.line_at_top
+      app.editor.line_at_top = replacement.line_at_top
 
 command.register
   name: 'buffer-replace-regex',
   description: 'Replaces text using regular expressions (within selection or globally)'
-  interactive: true
-  handler: ->
+  input: ->
     buffer = app.editor.buffer
     chunk = app.editor.active_chunk
-    result = interact.get_replacement_regex
+    replacement = interact.get_replacement_regex
       title: 'Preview replacements for ' .. buffer.title
       editor: app.editor
 
-    if result
-      if result.text
-        app.editor\with_position_restored ->
-          buffer\as_one_undo ->
-            buffer.text = result.text
-        log.info "Replaced #{result.num_replaced} instances"
-      if result.cursor_pos
-        app.editor.cursor.pos = result.cursor_pos
-      if result.line_at_top
-        app.editor.line_at_top = result.line_at_top
-    else
-      log.info "Cancelled - buffer untouched"
+    return replacement if replacement
+    log.info "Cancelled - buffer untouched"
+
+  handler: (replacement) ->
+    buffer = app.editor.buffer
+    if replacement.text
+      app.editor\with_position_restored ->
+        buffer\as_one_undo ->
+          buffer.text = replacement.text
+      log.info "Replaced #{replacement.num_replaced} instances"
+    if replacement.cursor_pos
+      app.editor.cursor.pos = replacement.cursor_pos
+    if replacement.line_at_top
+      app.editor.line_at_top = replacement.line_at_top
 
 command.register
   name: 'editor-paste..',
   description: 'Pastes a selected clip from the clipboard at the current position'
-  interactive: true
-  handler: ->
-    clip = interact.select_clipboard_item!
-    if clip
-      app.editor\paste :clip
+  input: interact.select_clipboard_item
+  handler: (clip) -> app.editor\paste :clip
 
 command.register
   name: 'show-doc-at-cursor',
@@ -134,10 +129,8 @@ command.register
 command.register
   name: 'buffer-mode',
   description: 'Sets a specified mode for the current buffer'
-  interactive: true
-  handler: ->
-    selected_mode = interact.select_mode!
-    return unless selected_mode
+  input: interact.select_mode
+  handler: (selected_mode) ->
     buffer = app.editor.buffer
     buffer.mode = selected_mode
     log.info "Forced mode '#{selected_mode.name}' for buffer '#{buffer}'"

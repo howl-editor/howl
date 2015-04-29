@@ -118,14 +118,14 @@ class CommandLine extends PropertyObject
       @current.command_line_directory = previous.command_line_directory
 
     bindings.capture -> false
-    ok, err = pcall -> activity_frame.runner!
+    ok, err = pcall activity_frame.runner
     bindings.cancel_capture!
-    results = activity_frame.results
 
-    if not ok
+    unless ok
       if @current and activity_id == @current.activity_id
         @_finish(activity_id)
-      error 'Error running '..activity_spec.name..':'..err
+      log.error err
+      return
 
     unpack activity_frame.results
 

@@ -107,23 +107,17 @@ get_command_items = ->
 
   return items
 
-class CommandRunner
-  run: (@finish, opts={}) =>
+class CommandInput
+  run: (@finish, cmd_string='', @cmd_args) =>
     @command_line = howl.app.window.command_line
-    cmd = nil
-    cmd_name = ''
     @command_line.prompt = ':'
     @command_line.title = 'Command'
+    @command_line.text = cmd_string
 
-    @cmd_args = opts.cmd_args
-
-    if opts.cmd_string
-      cmd = resolve_command opts.cmd_string
-      if cmd
-        @run_command cmd, opts.cmd_string
-      else
-        @command_line\write opts.cmd_string
-        @on_update opts.cmd_string
+    if resolve_command cmd_string
+      @on_update cmd_string .. ' '
+    else
+      @on_update cmd_string
 
   on_update: (cmd_string) =>
     return unless cmd_string\find ' '
@@ -135,26 +129,32 @@ class CommandRunner
       log.error "No such command '#{cmd_string}'"
       return
 
-    if not cmd.interactive
+    if not cmd.input
       @command_line.text = cmd_name
-      log.error "Command '#{cmd_name}' takes no arguments, press <enter> to run."
+      log.error "Command '#{cmd_name}' takes no input, press <enter> to run."
       return
 
     @command_line\write_spillover text
-    @run_command cmd, cmd_name
+    @read_command_input cmd, cmd_name
 
-  run_command: (cmd, cmd_name) =>
+  read_command_input: (cmd, cmd_name) =>
+    unless cmd.input
+      self.finish cmd, {}
+      return
+
     @command_line\clear!
     @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
 
-    local results
-    ok, err = pcall ->
-      results = table.pack howl.app.window.command_line\run cmd, unpack @cmd_args
+    input_reader =
+      name: cmd.name
+      handler: cmd.input
 
-    if not ok
-      log.error err
+    results = table.pack howl.app.window.command_line\run input_reader, unpack @cmd_args
 
-    self.finish(results and unpack results)
+    if results.n > 0
+      self.finish cmd, results
+    else
+      self.finish!
 
   command_completion: =>
     text = @command_line.text
@@ -165,7 +165,7 @@ class CommandRunner
 
     if cmd_name
       cmd = resolve_command(cmd_name)
-      @run_command cmd, cmd_name
+      @read_command_input cmd, cmd_name
 
   run_historical: =>
     text = @command_line.text
@@ -186,21 +186,34 @@ class CommandRunner
         if not cmd
           log.error "No such command '#{@command_line.text}'"
           return
-        @run_command cmd, @command_line.text
+        @read_command_input cmd, @command_line.text
 
-command_runner = {
-  name: 'command-runner'
-  factory: CommandRunner
+command_input_reader = {
+  name: 'command-input-reader'
+  factory: CommandInput
 }
 
-run = (cmd_string = nil, ...) ->
-  if not howl.app.window
+launch_cmd = (cmd, args) ->
+  dispatch.launch ->
+    ok, err = pcall -> cmd.handler table.unpack args
+    if not ok
+      log.error err
+
+run = (cmd_string=nil, ...) ->
+  unless howl.app.window
     error "Cannot run command '#{cmd_string}', application not initialized. Try using the 'app-ready' signal.", 2
 
-  cmd_string = nil if cmd_string == 'run'
-  cmd_args = table.pack ...
-  command_line = howl.app.window.command_line
-  command_line\run command_runner, :cmd_string, :cmd_args
+  local args
+  cmd = resolve_command cmd_string
+
+  if not cmd or cmd.input
+    cmd, args = howl.app.window.command_line\run command_input_reader, cmd_string, table.pack ...
+    return unless cmd
+  else
+    args = table.pack ...
+
+  if cmd
+    launch_cmd cmd, args
 
 howl.interact.register
   name: 'select_command'
@@ -245,5 +258,5 @@ return setmetatable {:register, :unregister, :alias, :run, :names, :get}, {
   __index: (key) =>
     command = commands[key] or accessible_names[key]
     return unless command
-    (...) -> run command.name, ...
+    (...) -> launch_cmd command, table.pack ...
 }
