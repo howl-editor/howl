@@ -99,8 +99,8 @@ factor for large buffers.
 ## Replacement
 
 The `buffer-replace` and `buffer-replace-regex` commands provide a way to
-replace multiple instances that match some text or a regular expression in the
-current buffer.
+replace multiple matches of some text or a regular expression in the current
+buffer.
 
 The simpler `buffer-replace` command is used for replacing exact matches of some
 text. After invoking `buffer-replace`, you type the text you want to match (also
@@ -121,7 +121,7 @@ Once you are happy with the replacements as displayed in the preview buffer, you
 can press `enter` to commit the replacements - this updates the original buffer.
 
 If you want to use '/' as part of your target text, you need to use a different
-separator. To specify this, type `backspace` immedidately after invoking
+separator. To specify this, type `backspace` immediately after invoking
 `buffer-replace` - this deletes the automatically inserted leading '/'. Now type
 a separator of your choice (for example, '#'), followed by the target text, the
 chosen spearator, and then the replacement text.
