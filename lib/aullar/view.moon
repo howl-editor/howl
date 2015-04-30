@@ -1,5 +1,5 @@
--- Copyright 2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE)
+-- Copyright 2014-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
 bit = require 'bit'
@@ -59,11 +59,14 @@ signals = {
   on_scroll_event: (_, event, view) ->
     view._on_scroll view, ffi_cast('GdkEventScroll *', event)
 
-  on_key_press: (_, event, view) ->
-    event = parse_key_event event
+  on_key_press: (_, e, view) ->
+    if view.in_preedit
+      ret = view.im_context\filter_keypress(e)
+      return true
+
+    event = parse_key_event e
     unless notify view, 'on_key_press', event
-      if insertable_character(event)
-        view\insert event.character
+      view.im_context\filter_keypress e
 
     true
 }
@@ -81,6 +84,22 @@ View = {
     @cursor = Cursor @, @selection
     @line_gutter = LineGutter @
     @current_line_marker = CurrentLineMarker @
+
+    @im_context = Gtk.ImContextSimple!
+    with @im_context
+      \on_commit (ctx, s)-> @insert s
+
+      \on_preedit_start ->
+        @in_preedit = true
+        notify @, 'on_preedit_start'
+
+      \on_preedit_changed (ctx) ->
+        str, attr_list, cursor_pos = ctx\get_preedit_string!
+        notify @, 'on_preedit_change', :str, :attr_list, :cursor_pos
+
+      \on_preedit_end ->
+        @in_preedit = false
+        notify @, 'on_preedit_end'
 
     with @area
       .can_focus = true
@@ -570,9 +589,11 @@ View = {
     @cursor.pos = pos
 
   _on_focus_in: =>
+    @im_context\focus_in!
     @cursor.active = true
 
   _on_focus_out: =>
+    @im_context\focus_out!
     @cursor.active = false
 
   _on_screen_changed: =>
@@ -617,6 +638,7 @@ View = {
   _on_size_allocate: (allocation) =>
     prev_height = @height
     cur_last_visible = @_last_visible_line
+    @im_context.client_window = @area.window
 
     @width = allocation.width
     @height = allocation.height
