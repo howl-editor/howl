@@ -31,12 +31,12 @@ dispatch_property = (o, prop, k, v) ->
   if type(prop) == 'string'
     k = k\gsub '_', '-'
     return o\get_typed k, prop unless v != nil
-    o\set_typed k, prop, v
+    o\set_typed k, prop, v.value
   else
     if v != nil
       setter = prop.set
       error "Attempt to set read-only property: '#{k}'" unless setter
-      setter o, v
+      setter o, v.value
     else
       return prop o if type(prop) == 'function'
       return prop.get o
@@ -121,7 +121,7 @@ construct = (spec, constructor, ...) ->
 
     meta_t = spec.meta or {}
     meta_t.__index = (o, k) -> dispatch spec, base, o, k
-    meta_t.__newindex = (o, k, v) -> dispatch spec, base, o, k, v
+    meta_t.__newindex = (o, k, v) -> dispatch spec, base, o, k, value: v
     ffi.metatype name, meta_t
     spec.properties or= {}
     set_constants spec
