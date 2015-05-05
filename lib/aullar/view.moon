@@ -187,6 +187,7 @@ View = {
         @_last_visible_line
 
       set: (line) =>
+        return unless @height
         y = @height / 2
         for nr = line, 1, -1
           d_line = @display_lines[nr]
