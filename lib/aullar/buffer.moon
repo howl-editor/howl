@@ -179,6 +179,77 @@ Buffer = {
   style: (offset, styling) =>
     @styling\apply offset, styling
 
+  pair_match_forward: (offset, closing, end_offset = @size) =>
+    error "`closing` must be one byte long", 2 if #closing != 1
+    tb = @text_buffer
+    arr = tb.array
+    i = offset - 1
+    offset_delta = 0
+    end_offset = min @size, end_offset
+
+    if i >= tb.gap_start
+      offset_delta = tb.gap_size
+      i += offset_delta
+      end_offset += offset_delta
+
+    opening = arr[i]
+    closing = string.byte closing
+    delta = 1
+    i += 1 -- start at following byte
+
+    while i < end_offset
+      c = arr[i]
+
+      if c == opening
+        delta += 1
+      elseif c == closing
+        delta -= 1
+        if delta == 0
+          return (i - offset_delta) + 1
+
+      i += 1
+      if i >= tb.gap_start and offset_delta == 0
+        offset_delta = tb.gap_size
+        i += offset_delta
+        end_offset += offset_delta
+
+    nil
+
+  pair_match_backward: (offset, opening, end_offset = 1) =>
+    error "`opening` must be one byte long", 2 if #opening != 1
+    tb = @text_buffer
+    arr = tb.array
+    i = offset - 1
+    offset_delta = 0
+    end_offset -= 1
+
+    if i >= tb.gap_start
+      offset_delta = tb.gap_size
+      i += offset_delta
+      end_offset += offset_delta
+
+    closing = arr[i]
+    opening = string.byte opening
+    delta = 0
+
+    while i >= end_offset
+      c = arr[i]
+
+      if c == closing
+        delta += 1
+      elseif c == opening
+        delta -= 1
+        if delta == 0
+          return (i - offset_delta) + 1
+
+      i -= 1
+      if i > tb.gap_start and i < tb.gap_end
+        offset_delta = 0
+        i = tb.gap_start - 1
+        end_offset -= tb.gap_size
+
+    nil
+
   refresh_styling_at: (line_nr, to_line, opts = {}) =>
     lexer = @lexer
     at_line = @get_line line_nr

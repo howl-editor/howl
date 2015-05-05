@@ -132,6 +132,58 @@ describe 'Buffer', ->
       assert.equals 6, line.size
       assert.equals 6, line.full_size
 
+  describe 'pair_match_forward(offset, closing [, end_offset])', ->
+    it 'returns the offset of the closing pair character', ->
+      b = Buffer '1[34]6'
+      assert.equals 5, b\pair_match_forward 2, ']'
+
+    it 'handles nested pairs', ->
+      b = Buffer '1[3[56]8]0'
+      assert.equals 9, b\pair_match_forward 2, ']'
+
+    it 'accounts for the gap', ->
+      b = Buffer '1[3[56]8]0'
+      gap_buffer = b.text_buffer
+      for gap_pos = 1, 10
+        gap_buffer\move_gap_to gap_pos - 1
+        assert.equals 9, b\pair_match_forward 2, ']'
+
+    it 'returns nil if no match was found', ->
+      b = Buffer '1[3'
+      assert.is_nil b\pair_match_forward 2, ']'
+
+    it 'stops the search at <end_offset>', ->
+      b = Buffer '1[34]6'
+      assert.equals 5, b\pair_match_forward 2, ']', 6
+      assert.equals 5, b\pair_match_forward 2, ']', 5
+      assert.is_nil b\pair_match_forward 2, ']', 4
+
+  describe 'pair_match_backward(offset, opening [, end_offset])', ->
+    it 'returns the offset of the closing preceeding pair character', ->
+      b = Buffer '1[34]6'
+      assert.equals 2, b\pair_match_backward 5, '['
+
+    it 'handles nested pairs', ->
+      b = Buffer '1[3[56]8]0'
+      assert.equals 2, b\pair_match_backward 9, '['
+
+    it 'accounts for the gap', ->
+      b = Buffer '1[3[56]8]0'
+      gap_buffer = b.text_buffer
+      for gap_pos = 1, 10
+        gap_buffer\move_gap_to gap_pos - 1
+        assert.equals 2, b\pair_match_backward 9, '['
+
+    it 'returns nil if no match was found', ->
+      b = Buffer '12]4'
+      assert.is_nil b\pair_match_backward 3, '['
+
+    it 'stops the search at <end_offset>', ->
+      b = Buffer '1[34]6'
+      assert.equals 2, b\pair_match_backward 5, '[', 1
+      assert.equals 2, b\pair_match_backward 5, '[', 2
+      assert.is_nil b\pair_match_backward 5, '[', 3
+
   describe 'markers', ->
     local buffer, markers
 
