@@ -13,7 +13,7 @@ examples of this.
 
 A window has, apart from the grid components described above, always two
 graphical elements associated with it; A [Status] instance used for displaying
-informational message to the user, and a [Readline] instance allowing for user
+informational message to the user, and a [CommandLine] instance allowing for user
 input.
 
 The currently focused window is accessible as
@@ -34,6 +34,10 @@ _See also_:
 
 ## Properties
 
+### command_line
+
+A [CommandLine] instance associated with the window.
+
 ### current_view
 
 The currently focused view. The return value is a table with same fields as is
@@ -52,10 +56,6 @@ force a particular state.
 
 A boolean indicating whether the window is maximized or not. Assign to this to
 force a particular state.
-
-### readline
-
-A [Readline] instance associated with the window.
 
 ### status
 
@@ -122,6 +122,6 @@ Gets the view information for the object `o`. The return value is a table with
 same fields as is documented in [views](#views). Returns `nil` if `o` is not in
 the window grid.
 
+[CommandLine]: command_line.html
 [Editor]: editor.html
 [Status]: status.html
-[Readline]: readline.html

@@ -60,8 +60,8 @@ _G.my_explicit_global = 2
 Things that are meant to be configurable in Howl are exposed as "configuration
 variables". Configuration variables can be set either interactively from within
 Howl, using the `set` command, or programmatically from code. To get an overview
-of currently available variables, type `set` and press `space` at the readline to
-view a list.
+of currently available variables, type `set` and press `space` at the command
+line to view a list.
 
 Configuration variables can be specified at three different levels in Howl,
 in ascending order of priority:
