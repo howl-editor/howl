@@ -7,7 +7,7 @@ class ReadText
   run: (@finish, opts = {}) =>
     with app.window.command_line
       .prompt = opts.prompt or ''
-      .title = title
+      .title = opts.title
 
   keymap:
     enter: =>
