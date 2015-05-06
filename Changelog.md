@@ -2,6 +2,16 @@
 
 ## Unreleased (in master)
 
+- Replaced the readline and input system with a new command line and
+interactions system resulting in new API.
+
+- Updated the `buffer-replace` command and added a new `buffer-replace-regex`
+command. Both show live previews of replacements and allow selective exclusion.
+
+- Command history is now recorded and can be viewed by using the `up` key from
+the command line. Previously run commands can be re-run by selecting them from
+the history.
+
 - New PHP bundle, featuring a new PHP mode with advanced syntax highlighting.
 
 - The `describe-key` command now shows the commands bound to the key press.
