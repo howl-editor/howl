@@ -115,7 +115,6 @@ class CommandLine extends PropertyObject
     else
       previous = @running[@stack_depth - 1]
       @current.evade_history = previous.evade_history or activity_spec.evade_history
-      @current.command_line_directory = previous.command_line_directory
 
     bindings.capture -> false
     ok, err = pcall activity_frame.runner
@@ -343,14 +342,6 @@ class CommandLine extends PropertyObject
 
       @clear!
       @write text
-
-  @property directory:
-    get: => @current and @current.command_line_directory
-    set: (directory) =>
-      if not @current
-        error 'Cannot set directory - no running activity', 2
-
-      @current.command_line_directory = directory
 
   notify: (text, style='info') =>
     if @notification_widget
