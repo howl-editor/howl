@@ -51,11 +51,12 @@ Commands can be invoked via code by calling `howl.command.run` or calling the
 command name directly as a field of command module, for example
 `howl.command.save`, which invokes the "save" command.
 
+---
+
 _See also_:
 
 - The [spec](../spec/command_spec.html) for howl.command
-- The documentation for the [interact](interact.html) module for more
-information about interactions.
+- The [interact](interact.html) module for more information about interactions
 
 ## Functions
 
@@ -97,10 +98,10 @@ If `cmd_string` refers to an interactive command, the `input` function is called
 first, and the results of the input function are passed to the `handler`
 function.
 
-Interactive commands can be invoked with a string containing additional command
-line text, which then gets handled by the command `input` function. For example
-`command.run "open path/to/folder"` behaves the same as running `open` and then
-typing "path/to/folder"
+Interactive commands can be invoked with a string containing the command name
+followed by a space and some additional text, which then gets handled by the
+command's `input` function. For example `command.run "open path/to/folder"`
+behaves the same as running `open` and then typing "path/to/folder".
 
 ### unregister (name)
 

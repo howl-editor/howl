@@ -9,9 +9,9 @@ title: howl.interact
 The howl.interact module acts as the central registry of interactions in Howl
 and lets you register new interactions as well as invoke interactions. An
 interaction is a piece of functionality that is invoked as a function call and
-it retrieves some information from the user. Interactions typically use the
-command line, and optionally additional widgets, to get information from the
-user. For example, consider this call to the `read_text` interaction:
+it retrieves some information from the user. Interactions use the command line,
+and optionally additional widgets, to get information from the user. For
+example, consider this call to the `read_text` interaction:
 
 ```moonscript
 name = howl.interact.read_text prompt: 'Enter your name:'
@@ -22,7 +22,7 @@ and lets the user type some text. When the user presses `enter`, the command
 line is closed and the `read_text` function returns the text entered by user. If
 the user presses `escape`, the function returns `nil`.
 
-Interactions are commonly used to read user input when implementing
+Interactions are commonly used to read user input when implementing interactive
 [commands](command.html). Howl includes a number of built-in interactions, such
 as `select_file`, which lets the user choose a file, and `select`, which lets
 the user choose an item from a list of options - see [Built-in
@@ -37,11 +37,18 @@ interactions. Details for both handler and factory based interactions are in
 [register](#register) below.
 
 Interactions are run by the [command line], which maintains a stack of running
-interactions. See the [command line] module for more details. While one or more
-interactions are running, the command line API can be used to display prompts in
-the command line, read and update the command line text, as well as attach
-helper widgets above the command line (for example, a [ListWidget] may show a
-completion list).
+interactions. While one or more interactions are running, the command line API
+can be used to display prompts in the command line, read and update the command
+line text, as well as attach helper widgets above the command line (for example,
+a [ListWidget] may show a completion list).
+
+---
+
+_See also:_
+
+- The [CommandLine](ui/command_line.html) module for details about the command
+line API
+- The [command](command.html) module for more information about commands in Howl
 
 ## Functions
 
@@ -181,7 +188,8 @@ filtered list of items matching the given text.
 - `prompt`: _[optional]_ The prompt displayed in the command line.
 - `title`: _[optional]_ The title displayed in the command line title bar.
 - `columns`: _[optional]_ A table containing the header text and style for each
-column. Identical to the `columns` definition in [ListWidget](ui/list_widget.html).
+column. Identical to the `columns` definition in
+[StyledTable](ui/styled_table.html#columns).
 - `keymap`: _[optional]_ An additional keymap to used for this interaction.
 - `on_selection_change`: _[optional]_ A function callback that is called
 whenever the user changes the currently selected item (usually by using the
@@ -304,7 +312,7 @@ Lets the user select either 'Yes' or 'No' as an answer to a question. Returns
 the user presses `escape`. `opts` is table containing:
 
 - `prompt`: _[optional]_ The prompt displayed in the command line. Default is no prompt.
-- `title`: _[optional]_ The title displayed in the command line title bar. Default is 'Buffers'.
+- `title`: _[optional]_ The title displayed in the command line title bar. Default is no title.
 
 [command line]: ui/command_line.html
 [File]: io/file.html
