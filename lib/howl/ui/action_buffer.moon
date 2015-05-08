@@ -1,5 +1,5 @@
--- Copyright 2012-2015 The Howl Developers
--- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+-- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE.md)
 
 import Buffer, Scintilla, styler from howl
 import style from howl.ui
@@ -27,10 +27,6 @@ class ActionBuffer extends Buffer
     local pos_after
     if object.styles
       pos_after = @_insert_styled_object(object, @length + 1)
-    elseif typeof(object) == 'table'
-      pos_after = start_pos + 1
-      for obj in *object
-        pos_after = @append obj, style_name
     else
       pos_after = super object
 

@@ -4,7 +4,7 @@
 import Buffer from howl
 import StyledTable, StyledText from howl.ui
 
-render = (t) -> table.concat [tostring item for item in *t]
+render = (t) -> t.text
 
 describe 'StyledTable', ->
   it 'returns a table containing rows padded and newline terminated', ->
@@ -12,15 +12,12 @@ describe 'StyledTable', ->
 
   it 'converts numbers to string', ->
     tbl = StyledTable { 33 }
-    assert.includes tbl, '33'
+    assert.includes render(tbl), '33'
 
   context 'when items contain chunks', ->
     buf = Buffer!
     buf.text = ' two '
     chunk = buf\chunk 2, 4
-
-    it 'preserves chunks intact', ->
-      assert.includes StyledTable({'one', chunk, 'three'}), chunk
 
     it 'pads chunks correctly', ->
       tbl = StyledTable {'one', chunk, 'three'}
@@ -29,15 +26,16 @@ describe 'StyledTable', ->
   context 'when column style is provided', ->
     it 'applies column style', ->
       tbl = StyledTable { 'one' }, { {style: 'string'} }
-      assert.includes tbl, StyledText 'one', {1, 'string', 4}
+      assert.same tbl.text, 'one\n'
+      assert.same tbl.styles, {1, 'string', 4}
 
 
-    it 'StyledText objects are left intact', ->
-      tbl = StyledTable {'one', StyledText('a', {1, 'string', 2}), 'three'}, {
+    it 'style for StyledText objects is preserved', ->
+      tbl = StyledTable {'one', StyledText('two', {1, 'string', 4}), 'three'}, {
         { style: 'comment' }
       }
-      assert.includes tbl, StyledText('a', {1, 'string', 2})
-      assert.includes tbl, StyledText('one', {1, 'comment', 4})
+
+      assert.same tbl.styles, {1, 'comment', 4, 7, 'string', 10, 13, 'comment', 18}
 
   context 'when a header is provided', ->
     it 'includes header row', ->
@@ -48,7 +46,7 @@ describe 'StyledTable', ->
 
     it 'styles headers with header_list', ->
       tbl = StyledTable { 'one' }, { {header: 'Head'} }
-      assert.includes tbl, StyledText('Head', {1, 'list_header', 5})
+      assert.same tbl.styles, {1, 'list_header', 5}
 
   context 'when multiple columns are provided', ->
     it 'returns a table containing multi columns rows', ->

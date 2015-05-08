@@ -1,6 +1,3 @@
--- Copyright 2012-2015 The Howl Developers
--- License: MIT (see LICENSE.md at the top-level directory of the distribution)
-
 import ActionBuffer, style, StyledText from howl.ui
 import Scintilla from howl
 append = table.insert
@@ -111,45 +108,6 @@ describe 'ActionBuffer', ->
       it 'ignores any given <style> parameter', ->
         buf\append StyledText('foo', { 1, 'number', 4 }), 'keyword'
         assert.equal 'number', (style.at_pos(buf, 1))
-
-    context 'when object is a table', ->
-      it 'appends each object in table to buffer and returns the next position', ->
-        buf.text = 'hello'
-        assert.equal #'hello happy world' + 1, buf\append {' happy', ' world'}
-        assert.equal style.at_pos(buf, 7), 'unstyled'
-
-      it 'applies given style to each object', ->
-        buf.text = 'hello'
-        buf\append {' happy', ' world'}, 'string'
-        assert.equal style.at_pos(buf, 7), 'string'
-
-      context 'when objects are styled objects', ->
-        it 'appends the texts and returns the next position', ->
-          buf\insert 'foo', 1
-          chunk = buf\chunk(1, 3)
-          assert.equals 10, buf\append { chunk, chunk }
-          assert.equal 'foofoofoo', buf.text
-
-        it 'styles the inserted texts using .styles', ->
-          buf.text = 'foo'
-          obj1 = StyledText('bar', {1, 'number', 2, 2, 'keyword', 3})
-          obj2 = StyledText('bear', {1, 'string', 2, 2, 'key', 3})
-          buf\append { obj1, obj2 }
-          assert.equal 'foobarbear', buf.text
-          assert.equal 'number', (style.at_pos(buf, 4))
-          assert.equal 'keyword', (style.at_pos(buf, 5))
-          assert.equal 'default', (style.at_pos(buf, 6))
-          assert.equal 'string', (style.at_pos(buf, 7))
-          assert.equal 'key', (style.at_pos(buf, 8))
-
-        it 'still returns the next position', ->
-          assert.equal 3, buf\append { StyledText('åö', {}) }
-
-        context 'when object is an empty table', ->
-          it 'returns the current position without modifying buffer', ->
-            buf.text = 'abc'
-            assert.equal 4, buf\append {}
-
 
   describe 'style(start_pos, end_pos, style)', ->
     it 'applies <style> for the inclusive text range given', ->

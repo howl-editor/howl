@@ -34,13 +34,28 @@ display_str = (col) ->
   is_styled(col) and col or tostring(col)
 
 (items, columns=nil) ->
-  output = {}
+  text_parts = {}
+  styles = {}
+  offset = 0
 
   write = (text, style=nil) ->
+    append text_parts, tostring text
+
     if style
-      append output, StyledText text, {1, style, 1 + #text}
-    else
-      append output, text
+      append styles, offset + 1
+      append styles, style
+      append styles, offset + #text + 1
+    elseif text.styles
+      i = 1
+      while text.styles[i]
+        append styles, text.styles[i] + offset
+        i += 1
+        append styles, text.styles[i]
+        i += 1
+        append styles, text.styles[i] + offset
+        i += 1
+
+    offset += #text
 
   column_widths = compute_column_widths columns, items
 
@@ -67,6 +82,5 @@ display_str = (col) ->
 
     write '\n'
 
-  return output
-
-
+  text = table.concat text_parts
+  return { :text, :styles }
