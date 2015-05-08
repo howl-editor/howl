@@ -3,7 +3,7 @@
 
 import Matcher from howl.util
 import app, config, interact from howl
-import ListWidget, NotificationWidget, StyledTable from howl.ui
+import ListWidget, NotificationWidget, StyledTable, StyledText from howl.ui
 
 append = table.insert
 
@@ -38,14 +38,14 @@ option_current_value = (def, options, current_buffer) ->
 
 option_caption = (name, current_buffer, def) ->
   to_s = def.tostring or tostring
-  caption = { def.description, '\n\n' }
+  caption = StyledText def.description .. '\n\n', {}
   mode_val = current_buffer.mode.config and current_buffer.mode.config[name]
-  append caption, StyledTable {
+  value_table = StyledTable {
     { "Global value:", to_s config[name] },
     { "For current mode:", to_s mode_val },
     { "For current buffer:", to_s current_buffer.config[name] }
   }, { {}, { style: 'string' } }
-  return caption
+  return caption .. StyledText value_table.text, value_table.styles
 
 class VariableAssignment
   run: (@finish) =>
