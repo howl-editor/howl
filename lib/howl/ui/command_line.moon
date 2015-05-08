@@ -249,7 +249,7 @@ class CommandLine extends PropertyObject
         @box
       }
     }
-    theme.register_background_widget border_box
+    border_box.style_context\add_class 'editor'
     @bin\add border_box
 
     @command_widget = TextWidget
