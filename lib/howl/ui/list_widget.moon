@@ -3,7 +3,7 @@
 
 import Scintilla from howl
 import PropertyObject from howl.aux.moon
-import highlight, style, TextWidget, StyledTable from howl.ui
+import highlight, style, TextWidget, StyledText from howl.ui
 import Matcher from howl.util
 
 append = table.insert
@@ -86,7 +86,7 @@ class ListWidget extends PropertyObject
     for idx = @page_start_idx, math.min(last_idx, #@_items)
       append items, @_items[idx]
 
-    @text_widget.buffer\append StyledTable items, @columns
+    @text_widget.buffer\append StyledText.for_table items, @columns
 
     for i = 1, last_idx - #@_items
       @text_widget.buffer\append @opts.filler_text..'\n', 'comment'

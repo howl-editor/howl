@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import app, Buffer, command, config, bindings, bundle, dispatch, interact, signal, inputs, mode, Project from howl
-import ActionBuffer, ProcessBuffer, BufferPopup, StyledTable from howl.ui
+import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
 import File, Process from howl.io
 import get_cwd from howl.util.paths
 serpent = require 'serpent'
@@ -147,7 +147,7 @@ command.register
       buffer\append "None"
     else
       buffer\append '\n\n'
-      buffer\append StyledTable [ { name, desc } for name, desc in pairs params ], {
+      buffer\append StyledText.for_table [ { name, desc } for name, desc in pairs params ], {
         { header: 'Name', style: 'string'},
         { header: 'Description', style: 'comment' }
       }
