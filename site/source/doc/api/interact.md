@@ -118,6 +118,8 @@ Here is an example implementation of an interaction using a factor:
     keymap:
       enter: => self.finish @command_line.text
       escape: => self.finish!
+      binding_for:
+        ['view-close']: => self.finish!
   }
 ```
 
@@ -126,6 +128,16 @@ enter any text in the command line. Whenever the text is updated by the user,
 the interaction shows it in an info message. When the user presses `enter`, the
 interaction finishes, returning the text entered by the user. If the user
 presses `escape`, the interaction finishes, returning `nil`.
+
+Note the special key called `binding_for` in the keymap. This demonstrates how a
+keystroke can be specified [indirectly](bindings.html#indirect-bindings) instead
+of by hard-coding. In the above example, the "view-close" key within
+"binding-for" refers to the keystroke currently bound to the "view-close"
+command. This means if the user presses the keystroke that is bound to the
+"view-close" command - which is `alt_w` by default - the associated function
+will be invoked, closing the command line and returning `nil`. If the user has
+changed the key binding for the "view-close" command, that keystroke will be
+bound to the function above instead.
 
 ### unregister (name)
 

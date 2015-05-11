@@ -99,8 +99,8 @@ Shows the notification bar containing the `text` message. The `level` can be
 
 ### pop_spillover ()
 
-Returns and clears any unprocessed spillover text. See [write_spillover] for a
-description of spillover.
+Returns and clears any unprocessed spillover text. See
+[write_spillover](#write_spillover) for a description of spillover.
 
 ### remove_widget (name)
 
