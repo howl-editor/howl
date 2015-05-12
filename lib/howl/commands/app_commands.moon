@@ -191,7 +191,6 @@ command.register
     for buffer in *app.buffers
       bundle_name = buffer.file and bundle.from_file(buffer.file) or nil
       if bundle_name
-        app.window.command_line\record_history!
         command.bundle_reload bundle_name
         return
 

@@ -60,7 +60,6 @@ command.register
 command.register
   name: 'save',
   description: 'Saves the current buffer to file'
-  evade_history: true
   handler: ->
     buffer = app.editor.buffer
     if not buffer.file
@@ -88,7 +87,6 @@ command.alias 'save', 'w'
 command.register
   name: 'save-as',
   description: 'Saves the current buffer to a given file'
-  evade_history: true
   input: ->
     file = interact.select_file allow_new: true
     return unless file
@@ -113,7 +111,6 @@ command.register
 command.register
   name: 'buffer-close',
   description: 'Closes the current buffer'
-  evade_history: true
   handler: ->
     buffer = app.editor.buffer
     app\close_buffer buffer
@@ -123,7 +120,6 @@ command.alias 'buffer-close', 'close'
 command.register
   name: 'vc-diff-file',
   description: 'Shows a diff against the VC for the current file'
-  evade_history: true
   handler: ->
     with_vc (vc, buffer) ->
       diff = vc\diff buffer.file
@@ -135,7 +131,6 @@ command.register
 command.register
   name: 'vc-diff',
   description: 'Shows a diff against the VC for the current project'
-  evade_history: true
   handler: ->
     with_vc (vc, buffer, project) ->
       diff = vc\diff!

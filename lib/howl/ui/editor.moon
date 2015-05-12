@@ -806,7 +806,6 @@ for cmd_spec in *{
   command.register
     name: "editor-#{cmd_spec[1]}"
     description: cmd_spec[2]
-    evade_history: true
     handler: -> howl.app.editor[cmd_spec[3]] howl.app.editor, table.unpack args
 
 for sel_cmd_spec in *{
@@ -817,7 +816,6 @@ for sel_cmd_spec in *{
   command.register
     name: "editor-#{sel_cmd_spec[1]}"
     description: sel_cmd_spec[2]
-    evade_history: true
     handler: -> howl.app.editor.selection[sel_cmd_spec[1]\gsub '-', '_'] howl.app.editor.selection
 
 -- signals

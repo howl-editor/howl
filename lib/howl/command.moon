@@ -138,12 +138,13 @@ class CommandInput
     @read_command_input cmd, cmd_name
 
   read_command_input: (cmd, cmd_name) =>
-    unless cmd.input
-      self.finish cmd, {}
-      return
-
     @command_line\clear!
     @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
+
+    unless cmd.input
+      @command_line\record_history!
+      self.finish cmd, {}
+      return
 
     input_reader =
       name: cmd.name
