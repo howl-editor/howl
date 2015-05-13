@@ -111,6 +111,14 @@ view in the grid. Valid values for `placement` are:
 - `above`: Places the view above `anchor`.
 - `below`:Places the view below `anchor`.
 
+### remember_focus ()
+
+Remember the currently focussed view as the focussed view until the focus
+switches to another view in the grid. This means even when the focus switches to
+a view outside the grid, peroperties and methods that use the current view - for
+example, [`current_view`](#current_view) - will continue to use the remembered
+view.
+
 ### remove_view (view = nil)
 
 Removes the specified `view`, or the currently focused view if not specified,
