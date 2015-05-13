@@ -4,18 +4,22 @@ title: howl.ui.CommandLine
 
 # howl.ui.CommandLine
 
-Instances of `CommandLine` are used to control the command line widget while
-obtaining user input in Howl. Each [Window] instance has an associated
-[.command_line](window.html#command_line) field which is used to access the
-command line instance.
+Instances of `CommandLine` are used to control the command line widget to obtain
+user input while running an [interaction](../interact.html). Each [Window]
+instance has an associated [.command_line](window.html#command_line) field which
+is used to access the command line instance.
 
-[Interactions] work closely with the command line to obtain user input.
-Interactions are run by the command line and the command line API is used from
-within a running interaction to update things like the displayed prompt. When no
-interaction is running the command line functionality is not available.
+[Interactions] work closely with the command line to obtain user input - the
+command line API is used from within a running interaction to update things like
+the displayed prompt. When no interaction is running the command line
+functionality is not available.
+
+Using the command line API is essential only when implementing new interactions.
+Various [built-in interactions](../interact.html#built-in-interactions) can be
+used to obtain user input and should be preferred where applicable.
 
 The command line maintains a stack of running interactions. Whenever an
-interaction is invoked, the new interaction is *pushed* onto the stack of
+interaction is started, the new interaction is *pushed* onto the stack of
 running interactions. When an interaction finishes, it is popped off the stack.
 The command line maintains state for each running interaction independently. The
 topmost interaction on the stack is called the *active* interaction.
