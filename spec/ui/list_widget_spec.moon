@@ -8,10 +8,10 @@ s = require 'serpent'
 
 describe 'ListWidget', ->
   local list, buf
-  throwaway = ListWidget -> { 'H' }
-  throwaway\show!
-  throwaway\update!
-  row_height = throwaway.text_widget.sci\text_height 0
+  list_widget = ListWidget -> { 'H' }
+  list_widget\show!
+  list_widget\update!
+  row_height = list_widget.text_widget.sci\text_height 0
 
   before_each ->
     list = ListWidget -> {}

@@ -140,20 +140,20 @@ describe 'CommandLine', ->
     describe 'title', ->
       it 'is hidden by default', ->
         run_as_handler ->
-          assert.equal false, command_line.header\to_gobject!.visible
+          assert.is_false command_line.header\to_gobject!.visible
 
       it 'is shown and updated by setting .title', ->
         run_as_handler ->
           command_line.title = 'Nice Title'
           assert.equal 'Nice Title', command_line.indic_title.label
-          assert.equal true, command_line.header\to_gobject!.visible
+          assert.is_true command_line.header\to_gobject!.visible
 
       it 'is hidden by setting title to empty string', ->
         run_as_handler ->
           command_line.title = 'Nice Title'
-          assert.equal true, command_line.header\to_gobject!.visible
+          assert.is_true command_line.header\to_gobject!.visible
           command_line.title = ''
-          assert.equal false, command_line.header\to_gobject!.visible
+          assert.is_false command_line.header\to_gobject!.visible
 
       it 'is restored to the one set by the current interaction', ->
         run_as_handler ->
