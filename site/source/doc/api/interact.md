@@ -200,8 +200,8 @@ filtered list of items matching the given text.
 - `prompt`: _[optional]_ The prompt displayed in the command line.
 - `title`: _[optional]_ The title displayed in the command line title bar.
 - `columns`: _[optional]_ A table containing the header text and style for each
-column. Identical to the `columns` definition in
-[StyledTable](ui/styled_table.html#columns).
+column. Identical to the `columns` argument in the
+[StyledText.for_table](ui/styled_text.html#styledtext.for_table) function.
 - `keymap`: _[optional]_ An additional keymap to used for this interaction.
 - `on_selection_change`: _[optional]_ A function callback that is called
 whenever the user changes the currently selected item (usually by using the
