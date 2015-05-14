@@ -123,7 +123,7 @@ class Replacement
         batch_start = @start_pos
         preview_start = 1
         find = self.find
-        for found_match in find @buffer, @target, @start_pos
+        for found_match in find @buffer, @target, @start_pos, @end_pos
           if found_match.end_pos > @end_pos
             break
 
@@ -355,32 +355,49 @@ interact.register
   handler: (opts) ->
     opts = moon.copy opts
     with opts
-      .find = (buffer, target, init) ->
-        text = buffer.text
-        init = buffer\byte_offset init
-        ok, rex = pcall -> howl.Regex(target)
+      .find = (buffer, target, start_pos=1, end_pos=buffer.length) ->
+        ok, rex = pcall -> r('()' .. target .. '()')
 
         if not target or target.is_blank or not ok
           return ->
 
+        line = buffer.lines\at_pos start_pos
+        offset = start_pos - line.start_pos
+        text = line.text\usub offset + 1
+        if line.end_pos > end_pos
+          text = text\usub 1, end_pos - line.end_pos
+        matcher = rex\gmatch text
+
         return ->
-          result = { rex\find(text, init) }
-          start_pos = result[1]
-          end_pos = result[2]
-          return if not start_pos
-          init = end_pos + 1
-          return {
-            start_pos: buffer\char_offset(start_pos)
-            end_pos: buffer\char_offset(end_pos)
-            :result
-          }
+          while line
+            result = table.pack matcher!
+
+            if #result> 0
+              captures = {}
+              for i=1, result.n - 2
+                append captures, result[i+1]
+              return {
+                start_pos: line.start_pos + offset + result[1] - 1
+                end_pos: line.start_pos + offset + result[result.n] - 2
+                :captures
+              }
+            else
+              line = line.next
+              return unless line
+
+              text = line.text
+              if line.end_pos > end_pos
+                text = text\usub 1, end_pos - line.end_pos
+
+              matcher = rex\gmatch text
+              offset = 0
 
       .replace = (match, replacement) ->
         if replacement
           result = replacement\gsub '(\\%d+)', (ref) ->
             ref_idx = tonumber(ref\sub(2))
             if ref_idx > 0
-              return match.result[ref_idx + 2] or ''
+              return match.captures[ref_idx] or ''
             return ''
           return result
 
