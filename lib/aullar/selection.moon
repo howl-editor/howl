@@ -32,24 +32,35 @@ Selection = {
     anchor: {
       get: => @_anchor
       set: (anchor) =>
+        return if anchor == @_anchor
+
         error "Can't set anchor when selection is empty", 2 if @is_empty
         @_anchor = anchor
+        @view\refresh_display @range!
+        @_notify_change!
     }
 
     end_pos: {
       get: => @_end_pos
       set: (end_pos) =>
+        return if end_pos == @_end_pos
+
         error "Can't set end_pos when selection is empty", 2 if @is_empty
         @_end_pos = end_pos
+        @view\refresh_display @range!
+        @_notify_change!
     }
   }
 
   set: (anchor, end_pos) =>
+    return if anchor == @_anchor and end_pos == @_end_pos
+
     @clear! unless @is_empty
 
     @_anchor = anchor
     @_end_pos = end_pos
     @view\refresh_display @range!
+    @_notify_change!
 
   extend: (from_pos, to_pos) =>
     if @is_empty
@@ -57,12 +68,14 @@ Selection = {
     else
       @view\refresh_display min(to_pos, @_end_pos), max(to_pos, @_end_pos)
       @_end_pos = to_pos
+      @_notify_change!
 
   clear: =>
-    return if @is_empty
+    return unless @_anchor and @_end_pos
 
     @view\refresh_display @range!
     @_anchor, @_end_pos = nil, nil
+    @_notify_change!
 
   range: =>
     min(@_anchor, @_end_pos), max(@_anchor, @_end_pos)
@@ -102,6 +115,10 @@ Selection = {
         start_o = max start_col, range.start_offset
         end_o = min end_col, range.end_offset
         flair.draw 'selection-overlay', display_line, start_o, end_o, x, y, cr
+
+  _notify_change: =>
+    if @listener and @listener.on_selection_changed
+      @listener.on_selection_changed @listener, self
 }
 
 define_class Selection
