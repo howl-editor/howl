@@ -60,8 +60,11 @@ Buffer = {
     can_undo: => #@revisions > 0
 
     nr_lines: =>
-      @_scan_lines_to {}
-      @_last_scanned_line
+      unless @_nr_lines
+        @_scan_lines_to {}
+        @_nr_lines = @_last_scanned_line
+
+      @_nr_lines
 
     lexer: {
       get: => @_lexer
@@ -141,7 +144,9 @@ Buffer = {
     lines = @_lines
     ->
       i += 1
-      @_scan_lines_to line: i
+      if i > @_last_scanned_line
+        @_scan_lines_to line: i
+
       return nil if i > @_last_scanned_line
       lines[i]
 
@@ -427,7 +432,8 @@ Buffer = {
     revision = @revisions\push(type, offset, text)
 
     args = :offset, :text, :size, :invalidate_offset, :revision
-    contains_newlines = text\find('[\n\r]') != nil
+    lines_modified = text\find('[\n\r]') != nil
+    @_nr_lines = nil if lines_modified
 
     if @lexer
       at_line = @get_line_at_offset(offset)
@@ -439,7 +445,7 @@ Buffer = {
 
         style_to = min(last_line_shown + 20, @nr_lines)
         args.styled = @refresh_styling_at at_line.nr, style_to, {
-          force_full: contains_newlines
+          force_full: lines_modified
           no_notify: true
         }
 
