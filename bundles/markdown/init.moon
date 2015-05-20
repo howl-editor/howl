@@ -1,6 +1,6 @@
 mode_reg =
   name: 'markdown'
-  extensions: 'md'
+  extensions: {'md', 'markdown'}
   create: -> bundle_load('markdown_mode')
 
 howl.mode.register mode_reg
