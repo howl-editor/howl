@@ -7,6 +7,8 @@ config = require 'aullar.config'
 {:SCALE} = require 'ljglibs.pango'
 
 describe 'styles', ->
+  before_each ->
+    styles.define 'default', {}
 
   describe 'define(name, def)', ->
     it 'defines the style', ->
@@ -18,7 +20,7 @@ describe 'styles', ->
       styles.define 'foo', strike_through: true
       styles.define 'bar', 'foo'
       def = styles.def_for 'bar'
-      assert.same { name: 'foo', strike_through: true }, def
+      assert.same { name: 'bar', strike_through: true }, def
 
   describe 'define_default(name, definition)', ->
     it 'defines the style only if it is not already defined', ->
@@ -38,6 +40,14 @@ describe 'styles', ->
       assert.equals default - 1, size_for font: { size: 'small' }
       assert.equals default, size_for font: { size: 'medium' }
       assert.equals default + 1, size_for font: { size: 'large' }
+
+  describe 'style stacking', ->
+    it 'bases all styles upon the default style', ->
+      styles.define 'default', color: '#112233', font: { bold: true }
+      styles.define 'bar', {}
+      def = styles.def_for 'bar'
+      assert.equal '#112233', def.color
+      assert.is_true def.font.bold
 
   context 'sub styling', ->
     it 'supports styles being composed of a base and an override', ->

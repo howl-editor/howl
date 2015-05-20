@@ -171,12 +171,13 @@ DisplayLine = define_class {
     @size = line.size
     @indent = get_indent view, line
     @styling = buffer.styling\get(line.start_offset, line.end_offset)
-    @layout.attributes = styles.get_attributes @styling
+    @layout.attributes = styles.get_attributes @styling, line.size
 
     width, height = @layout\get_pixel_size!
     @height = height
     @width = width + view.cursor.width
     @flairs = get_flairs buffer, line, @
+
     @background_ranges = parse_background_ranges @styling
 
     if #@background_ranges == 1

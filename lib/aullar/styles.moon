@@ -1,5 +1,5 @@
--- Copyright 2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 config = require 'aullar.config'
 Pango = require 'ljglibs.pango'
@@ -9,7 +9,9 @@ ffi = require 'ffi'
 {:cast} = ffi
 {:copy} = moon
 
-styles = {}
+styles = {
+  default: {}
+}
 attributes = {}
 
 underline_options = {
@@ -94,33 +96,37 @@ define_default = (name, attributes) ->
   define name, attributes unless styles[name]
 
 def_for = (name) ->
+  base = styles.default
   def = styles[name]
+
   while type(def) == 'string'
     def = styles[def]
 
   if not def
-    base, ext = name\match '^([^:]+):(%S+)$'
-    if base
-      base, ext = styles[base], styles[ext]
+    -- look for sub styling (base:style)
+    sub_base, ext = name\match '^([^:]+):(%S+)$'
+    if sub_base
+      base, def = styles[sub_base] or base, styles[ext]
 
-      if base
-        return base unless ext
+  return base unless def
 
-        def = font: copy(base.font or {})
-        for k in *{
-          'background',
-          'color',
-          'underline',
-          'letter_spacing',
-          'strike_through'
-        }
-          def[k] = ext[k] or base[k]
+  live = name: name, font: base.font
+  for k in *{
+    'background',
+    'color',
+    'underline',
+    'letter_spacing',
+    'strike_through'
+  }
+    live[k] = def[k] or base[k]
 
-        if ext.font
-          for k in *{ 'family', 'italic', 'bold', 'size' }
-            def.font[k] or= ext.font[k]
+  if def.font
+    live.font = copy(live.font or {})
+    for k in *{ 'family', 'italic', 'bold', 'size' }
+      if def.font[k]
+        live.font[k] = def.font[k]
 
-  def
+  live
 
 _exclude_attribute_list = {
   [tonumber Pango.ATTR_FOREGROUND]: 'color'
@@ -149,12 +155,24 @@ apply = (list, name, start_index = Pango.ATTR_INDEX_FROM_TEXT_BEGINNING, end_ind
     attr.end_index = end_index
     list\insert_before attr
 
-get_attributes = (styling, opts = {}) ->
+get_attributes = (styling, end_offset, opts = {}) ->
   list = AttrList()
   return list unless styling
 
+  last_pos_styled = 0
+
   for i = 1, #styling, 3
-    apply list, styling[i + 1], styling[i] - 1, styling[i + 2] - 1, opts
+    start_index = styling[i] - 1
+    end_index = styling[i + 2] - 1
+    style_name = styling[i + 1]
+
+    if start_index > last_pos_styled
+      apply list, 'default', last_pos_styled, start_index - 1, opts
+
+    apply list, style_name, start_index, end_index, opts
+
+  if last_pos_styled < end_offset
+    apply list, 'default', last_pos_styled, end_offset, opts
 
   list
 

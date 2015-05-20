@@ -101,7 +101,7 @@ get_text_object = (display_line, start_offset, end_offset, flair) ->
 
   if flair.text_color
     styling = Styling.sub display_line.styling, start_offset, end_offset
-    attributes = styles.get_attributes styling, exclude: { color: true }
+    attributes = styles.get_attributes styling, text_size, exclude: { color: true }
     color = Color flair.text_color
     attributes\insert_before Attribute.Foreground(color.red, color.green, color.blue)
     layout.attributes = attributes
