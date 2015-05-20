@@ -8,12 +8,13 @@ Buffer = require 'aullar.buffer'
 Gtk = require 'ljglibs.gtk'
 
 describe 'Cursor', ->
-  local view, buffer, cursor
+  local view, buffer, cursor, selection
 
   before_each ->
     buffer = Buffer ''
     view = View buffer
     cursor = view.cursor
+    selection = view.selection
     window = Gtk.OffscreenWindow default_width: 800, default_height: 640
     window\add view\to_gobject!
     window\show_all!
@@ -116,6 +117,17 @@ describe 'Cursor', ->
       cursor\down!
       assert.equal 3, cursor.line
       assert.equal 4, cursor.column
+
+  describe 'when the selection is marked as persistent', ->
+    it 'is updated as part of cursor movement', ->
+      buffer.text = '12345678'
+      cursor.pos = 4
+      selection\set 2, 4
+      selection.persistent = true
+      cursor\forward!
+      assert.equal 5, selection.end_pos
+      cursor.pos = 1
+      assert.equal 1, selection.end_pos
 
   describe 'when .listener is set', ->
     it 'calls listener.on_pos_changed with (listener, cursor) when moved', ->
