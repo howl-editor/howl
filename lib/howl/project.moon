@@ -1,7 +1,7 @@
--- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import VC, inputs from howl
+import VC, interact from howl
 
 append = table.insert
 
@@ -36,7 +36,9 @@ class Project
   get_for_file: (file) ->
     project = Project.for_file file
     if not project
-      directory = inputs.read 'directory', prompt: '(Please specify the project root): '
+      directory = interact.select_directory
+          title: '(Please specify the project root): '
+          prompt: '\n'
       if directory
         Project.add_root directory
         project = Project.for_file file

@@ -7,23 +7,23 @@ title: Working with files
 ## Opening files
 
 Howl provides a text-oriented interface, and so you want see any traditional
-graphical open file dialogs. Instead you'll open files from the readline, using
-commands. First off, the `open-file` command lets you navigate the file system
+graphical open file dialogs. Instead you'll open files from the command line,
+using commands. First off, the `open` command lets you navigate the file system
 and select a file to open. It's bound to `ctrl_o` in the default keymap, and is
 also aliased as `e` for those more comfortable with VI. Triggering that command
-opens up the readline prompt and displays the contents of the current directory,
-as determined by the current buffer:
+opens up the command line prompt and displays the contents of the current
+directory, as determined by the current buffer:
 
 ![File open](/images/doc/file-open.png)
 
-Once you're in the prompt can then select the file of your choice. You can
+Once you're in the prompt, you  can then select the file of your choice. You can
 choose the file from the list by manually navigating using the arrow keys,
 `ctrl_p`, `ctrl_n`, etc., if you want. However, it's usually much faster to
 narrow down the list by typing something that matches the file you want. Just as
 with completions (as described in the [previous](completions.html) section),
 your input string will be matched against the available files using boundary
-matching, exact matching or fuzzy matching. Once the selected file ends up at
-top, simply press enter to open it.
+matching or exact matching. Once the selected file ends up at top, simply press
+enter to open it.
 
 If the file you selected is a directory, the list and prompt will update itself
 for the selected directory, letting you pick a file there. On the other hand, if

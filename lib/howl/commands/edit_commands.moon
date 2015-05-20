@@ -1,34 +1,46 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, Buffer, command, mode from howl
+import app, Buffer, command, interact, mode from howl
 import BufferPopup from howl.ui
 
 command.register
   name: 'buffer-search-forward',
   description: 'Starts an interactive forward search'
-  input: 'forward_search'
+  input: ->
+    if interact.forward_search!
+      return true
+    app.editor.searcher\cancel!
   handler: -> app.editor.searcher\commit!
 
 command.register
   name: 'buffer-search-backward',
   description: 'Starts an interactive backward search'
-  input: 'backward_search'
+  input: ->
+    if interact.backward_search!
+      return true
+    app.editor.searcher\cancel!
   handler: -> app.editor.searcher\commit!
 
 command.register
   name: 'buffer-search-word-forward',
   description: 'Jumps to next occurence of word at cursor'
-  input: 'forward_search_word'
-  handler: ->
-    app.editor.searcher\commit!
+  input: ->
+    app.window.command_line\write_spillover app.editor.current_context.word.text
+    if interact.forward_search_word!
+      return true
+    app.editor.searcher\cancel!
+  handler: -> app.editor.searcher\commit!
 
 command.register
   name: 'buffer-search-word-backward',
   description: 'Jumps to previous occurence of word at cursor'
-  input: 'backward_search_word'
-  handler: ->
-    app.editor.searcher\commit!
+  input: ->
+    app.window.command_line\write_spillover app.editor.current_context.word.text
+    if interact.backward_search_word!
+      return true
+    app.editor.searcher\cancel!
+  handler: -> app.editor.searcher\commit!
 
 command.register
   name: 'buffer-repeat-search',
@@ -36,37 +48,59 @@ command.register
   handler: -> app.editor.searcher\repeat_last!
 
 command.register
-  name: 'buffer-replace',
+  name: 'buffer-replace'
   description: 'Replaces text (within selection or globally)'
-  input: 'replace'
-  handler: (values) ->
-    { target, replacement } = values
-    escaped = target\gsub '[%p%%]', '%%%1'
-    escaped_replacement = replacement\gsub('%%%d', '%%%1')
+  input: ->
+    buffer = app.editor.buffer
     chunk = app.editor.active_chunk
-    chunk.text, count = chunk.text\gsub escaped, escaped_replacement
-    if count > 0
-      log.info "Replaced #{count} occurrences of '#{target}' with '#{replacement}'"
-    else
-      log.warn "No occurrences of '#{target}' found"
+    replacement = interact.get_replacement
+      title: 'Preview replacements for ' .. buffer.title
+      editor: app.editor
+
+    return replacement if replacement
+    log.info "Cancelled - buffer untouched"
+
+  handler: (replacement) ->
+    if replacement.text
+      buffer = app.editor.buffer
+      app.editor\with_position_restored ->
+        buffer\as_one_undo ->
+          buffer.text = replacement.text
+      log.info "Replaced #{replacement.num_replaced} instances"
+    if replacement.cursor_pos
+      app.editor.cursor.pos = replacement.cursor_pos
+    if replacement.line_at_top
+      app.editor.line_at_top = replacement.line_at_top
 
 command.register
-  name: 'buffer-replace-pattern',
-  description: 'Replaces text using Lua patterns (within selection or globally)'
-  input: 'replace'
-  handler: (values) ->
-    { target, replacement } = values
+  name: 'buffer-replace-regex',
+  description: 'Replaces text using regular expressions (within selection or globally)'
+  input: ->
+    buffer = app.editor.buffer
     chunk = app.editor.active_chunk
-    chunk.text, count = chunk.text\gsub target, replacement
-    if count > 0
-      log.info "Replaced #{count} occurrences of '#{target}' with '#{replacement}'"
-    else
-      log.warn "No occurrences of '#{target}' found"
+    replacement = interact.get_replacement_regex
+      title: 'Preview replacements for ' .. buffer.title
+      editor: app.editor
+
+    return replacement if replacement
+    log.info "Cancelled - buffer untouched"
+
+  handler: (replacement) ->
+    buffer = app.editor.buffer
+    if replacement.text
+      app.editor\with_position_restored ->
+        buffer\as_one_undo ->
+          buffer.text = replacement.text
+      log.info "Replaced #{replacement.num_replaced} instances"
+    if replacement.cursor_pos
+      app.editor.cursor.pos = replacement.cursor_pos
+    if replacement.line_at_top
+      app.editor.line_at_top = replacement.line_at_top
 
 command.register
   name: 'editor-paste..',
   description: 'Pastes a selected clip from the clipboard at the current position'
-  input: 'clipboard_item'
+  input: interact.select_clipboard_item
   handler: (clip) -> app.editor\paste :clip
 
 command.register
@@ -95,8 +129,8 @@ command.register
 command.register
   name: 'buffer-mode',
   description: 'Sets a specified mode for the current buffer'
-  input: 'mode'
-  handler: (mode) ->
+  input: interact.select_mode
+  handler: (selected_mode) ->
     buffer = app.editor.buffer
-    buffer.mode = mode
-    log.info "Forced mode '#{mode.name}' for buffer '#{buffer}'"
+    buffer.mode = selected_mode
+    log.info "Forced mode '#{selected_mode.name}' for buffer '#{buffer}'"

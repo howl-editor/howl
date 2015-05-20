@@ -1,10 +1,10 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
 
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, bindings, keymap, signal, inputs, timer, clipboard from howl
+import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard from howl
 import File, Process from howl.io
 import PropertyObject from howl.aux.moon
 Gtk = require 'ljglibs.gtk'
@@ -105,7 +105,6 @@ class Application extends PropertyObject
 
   close_buffer: (buffer, force = false) =>
     unless force
-      input = inputs.yes_or_no false
       local prompt
       if buffer.modified
         prompt = "Buffer is modified, close anyway? "
@@ -113,7 +112,7 @@ class Application extends PropertyObject
         prompt = "Buffer has a running activity (#{buffer.activity.name}), close anyway? "
 
       if prompt
-        return unless inputs.read input, :prompt
+        return unless interact.yes_or_no :prompt
 
     @_buffers = [b for b in *@_buffers when b != buffer]
 
@@ -204,7 +203,7 @@ class Application extends PropertyObject
         process\send_signal 'KILL'
 
       for win in * moon.copy @windows
-        win.readline\hide!
+        win.command_line\abort_all!
         win\destroy!
 
   save_session: =>
@@ -253,16 +252,16 @@ class Application extends PropertyObject
       @_restore_session window, #files == 0
 
     if #@editors == 0
-      @new_editor @_buffers[1] or @new_buffer!
+      @editor = @new_editor @_buffers[1] or @new_buffer!
 
     window\show_all! if window
     @_loaded = true
+    signal.emit 'app-ready'
 
   _should_abort_quit: =>
     modified = [b for b in *@_buffers when b.modified]
     if #modified > 0
-      input = inputs.yes_or_no false
-      if not inputs.read input, prompt: "Modified buffers exist, close anyway? "
+      if not interact.yes_or_no prompt: "Modified buffers exist, close anyway? "
         return true
 
     false
@@ -336,20 +335,20 @@ class Application extends PropertyObject
   _load_core: =>
     require 'howl.completion.in_buffer_completer'
     require 'howl.completion.api_completer'
-    require 'howl.inputs.basic_inputs'
-    require 'howl.inputs.projectfile_input'
-    require 'howl.inputs.file_input'
-    require 'howl.inputs.buffer_input'
-    require 'howl.inputs.variable_assignment_input'
-    require 'howl.inputs.search_inputs'
-    require 'howl.inputs.bundle_inputs'
-    require 'howl.inputs.signal_input'
-    require 'howl.inputs.input_input'
-    require 'howl.inputs.line_input'
-    require 'howl.inputs.mode_input'
-    require 'howl.inputs.question_inputs'
-    require 'howl.inputs.clipboard_item_input'
-    require 'howl.inputs.external_command_input'
+    require 'howl.interactions.basic'
+    require 'howl.interactions.buffer_selection'
+    require 'howl.interactions.bundle_selection'
+    require 'howl.interactions.clipboard'
+    require 'howl.interactions.external_command'
+    require 'howl.interactions.file_selection'
+    require 'howl.interactions.grep_search'
+    require 'howl.interactions.mode_selection'
+    require 'howl.interactions.replacement'
+    require 'howl.interactions.search'
+    require 'howl.interactions.selection_list'
+    require 'howl.interactions.signal_selection'
+    require 'howl.interactions.text_entry'
+    require 'howl.interactions.variable_assignment'
     require 'howl.commands.file_commands'
     require 'howl.commands.app_commands'
     require 'howl.commands.ui_commands'
@@ -371,5 +370,8 @@ signal.register 'file-opened',
   parameters:
     buffer: 'The buffer that the file was opened into'
     file: 'The file that was opened'
+
+signal.register 'app-ready',
+  description: 'Signaled right after the application has completed initialization'
 
 return Application

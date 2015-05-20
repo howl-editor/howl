@@ -1,9 +1,9 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
 import PropertyObject from howl.aux.moon
-import Status, Readline, theme from howl.ui
+import Status, CommandLine, theme from howl.ui
 import signal from howl
 append = table.insert
 
@@ -21,7 +21,7 @@ placements = {
 class Window extends PropertyObject
   new: (properties = {}) =>
     @status = Status!
-    @readline = Readline self
+    @command_line = CommandLine self
 
     @grid = Gtk.Grid
       row_spacing: 4
@@ -37,7 +37,7 @@ class Window extends PropertyObject
       Gtk.Box Gtk.ORIENTATION_VERTICAL, {
         spacing: 3,
         { expand: true, @grid },
-        @readline\to_gobject!
+        @command_line\to_gobject!
         @status\to_gobject!,
       }
     }
@@ -52,7 +52,6 @@ class Window extends PropertyObject
     theme.register_background_widget @win
 
     @data = {}
-
     super @win
 
   @property views: get: =>
@@ -170,7 +169,7 @@ class Window extends PropertyObject
 
     nil
 
-  _remember_focus: =>
+  remember_focus: =>
     @data.focus_child = @grid.focus_child
 
   _as_rows: (views) =>

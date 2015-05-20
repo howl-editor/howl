@@ -96,6 +96,45 @@ real-time as you type:
 This is decidedly less effective than doing a plain search, which can be a
 factor for large buffers.
 
+## Replacement
+
+The `buffer-replace` and `buffer-replace-regex` commands provide a way to
+replace multiple matches of some text or a regular expression in the current
+buffer.
+
+The simpler `buffer-replace` command is used for replacing exact matches of some
+text. After invoking `buffer-replace`, you type the text you want to match (also
+called the *target* text), followed by `/` (the forward slash is the default
+separator), followed by the replacement text. As an example, if you want to
+replace all instances of 'showing' with 'visible', you would invoke
+`buffer-replace` and then type 'showing/visible'.
+
+![Buffer replace](/images/doc/buffer-replace.png)
+
+As you type, the displayed preview buffer is updated to show the effect of your
+replacement. You can use the `up` and `down` arrow keys to jump between
+different matches in the preview buffer. You can press `alt_enter` to toggle
+whether or not the currently focussed match should be replaced with the target -
+this lets you selectively preserve some matches from being replaced.
+
+Once you are happy with the replacements as displayed in the preview buffer, you
+can press `enter` to commit the replacements - this updates the original buffer.
+
+If you want to use '/' as part of your target text, you need to use a different
+separator. To specify this, type `backspace` immediately after invoking
+`buffer-replace` - this deletes the automatically inserted leading '/'. Now type
+a separator of your choice (for example, '#'), followed by the target text, the
+chosen spearator, and then the replacement text.
+
+The `buffer-replace-regex` command works similarly to `buffer-replace` but the
+target text is specified as a regular expression and not as an exact match. In
+addition, the replacement text can contain back-references to specific parts of
+the target. A back-reference is specified as '\' followed by a number. For
+example, '\1' refers to the first group in the matched text.
+
+Selecting some text in the editor before invoking a replace command restricts
+the replacement to the selected text only.
+
 ## Comments
 
 The `editor-toggle-comment` is bound to `ctrl_slash` by default, and let's you

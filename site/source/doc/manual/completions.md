@@ -17,7 +17,7 @@ to do that here as well.
 ### Interacting with completions
 
 There are currently two different places where you'll encounter completions: In
-editors while editing text, and in the readline while entering commands. While
+editors while editing text, and in the command line while entering commands. While
 the completions offered differs as one would expect, the way you interact with a
 completion list is the same:
 
@@ -75,7 +75,7 @@ Controls the mode of how completions are started. This is of interest
 particularly if you want turn off automatically shown completion lists. If you
 turn it off, you will have to explicitly request completions using the
 `editor-complete` command for editors (bound to `ctrl_space` by default) or by
-pressing `tab` in the readline.
+pressing `tab` in the command line.
 
 - **completion_max_shown**:
 

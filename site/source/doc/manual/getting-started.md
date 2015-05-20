@@ -21,7 +21,7 @@ use Howl. Using one of the screen shots as an example:
 ![Visual components](doc/visual-components.png)
 
 As per the above image, the three basic visual components are windows, views and
-the readline.
+the command line.
 
 ### Windows
 
@@ -41,11 +41,11 @@ As can be seen in one of the [screen
 shots](/images/screenshots/howl-solarized.png) it's possible to have multiple
 views/editors along each other in the same window.
 
-### Readline
+### Command line
 
-The readline component is where you enter your commands. As we will see,
+The command line component is where you enter your commands. As we will see,
 commands are the primary way of interacting with Howl, used for mostly anything
-within Howl. The readline allows you to input these commands, and provides
+within Howl. The command line allows you to input these commands, and provides
 completions as necessary.
 
 ## Other basic concepts
@@ -87,9 +87,9 @@ notified whenever a buffer was saved.
 
 As said previously, most interactions with Howl will typically be the result of
 a command. So let's gets started with manually entering some basic commands. To
-enter you first command, you need to open the readline. In the default keymap,
+enter you first command, you need to open the command line. In the default keymap,
 this is "bound" (mapped) to the `alt+x` key combination, so enter that to open
-the readline. You should now see the readline being opened, awaiting your
+the command line. You should now see the command line being opened, awaiting your
 command. If you want to, press `tab` to bring up a completion list of available
 commands.
 
@@ -100,7 +100,7 @@ and down the directory tree as needed, using `backspace` and `enter`, and press
 
 #### Using completions
 
-Completions are available within the readline, using the `tab` key. Completions
+Completions are available within the command line, using the `tab` key. Completions
 are enabled by default for most commands as you will see, but they are not
 automatically shown when entering commands. To explicitly request completions of
 the available commands, press `tab`. To cancel completions, press `escape`. For
@@ -109,7 +109,7 @@ pressing `backspace` when at the beginning of a prompt allows you to move up in
 the hierarchy.
 
 The completion list will automatically filter itself to match whatever you type
-in the readline.
+in the command line.
 
 ### Using keyboard shortcuts
 

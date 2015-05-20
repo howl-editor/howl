@@ -1,7 +1,7 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, mode, inputs, Buffer, Project from howl
+import app, command, mode, inputs, interact, Buffer, Project from howl
 import File from howl.io
 
 with_vc = (f) ->
@@ -25,10 +25,18 @@ show_diff_buffer = (title, contents) ->
   buffer.can_undo = false
   app\add_buffer buffer
 
+auto_mkdir = (directory) ->
+  return true if directory.exists
+
+  if interact.yes_or_no prompt: "Directory #{directory} doesn't exist, create? "
+    directory\mkdir_p!
+    return true
+  return false
+
 command.register
   name: 'open',
   description: 'Open file'
-  input: 'file'
+  input: -> interact.select_file allow_new: true
   handler: (file) -> app\open_file file
 
 command.alias 'open', 'e'
@@ -36,30 +44,39 @@ command.alias 'open', 'e'
 command.register
   name: 'project-open',
   description: 'Open project file'
-  handler: ->
+  input: ->
     buffer = app.editor and app.editor.buffer
     file = buffer and (buffer.file or buffer.directory)
     if file
       project = Project.get_for_file file
       if project
-        file = app.window.readline\read ':project-open ', 'project_file'
-        app\open_file file if file
+        return interact.select_file_in_project :project
     else
       log.warn "No file or directory associated with the current view"
+      return
+  handler: (file) ->
+    app\open_file file
 
 command.register
   name: 'save',
   description: 'Saves the current buffer to file'
   handler: ->
     buffer = app.editor.buffer
-    return command.run 'save-as' unless buffer.file
+    if not buffer.file
+      command.run 'save-as'
+      return
 
     if buffer.modified_on_disk
-      input = inputs.yes_or_no false
-      prompt = "Buffer '#{buffer}' has changed on disk, save anyway? "
-      unless inputs.read input, :prompt
+      overwrite = interact.yes_or_no
+        prompt: "Buffer '#{buffer}' has changed on disk, save anyway? "
+        default: false
+      unless overwrite
         log.info "Not overwriting; buffer not saved"
         return
+
+    unless auto_mkdir buffer.file.parent
+      log.info "Parent directory doesn't exist; buffer not saved"
+      return
 
     buffer\save!
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
@@ -70,14 +87,22 @@ command.alias 'save', 'w'
 command.register
   name: 'save-as',
   description: 'Saves the current buffer to a given file'
-  input: 'file'
-  handler: (file) ->
+  input: ->
+    file = interact.select_file allow_new: true
+    return unless file
+
     if file.exists
-      input = inputs.yes_or_no false
-      unless inputs.read input, prompt: "File '#{file}' already exists, overwrite? "
+      unless interact.yes_or_no prompt: "File '#{file}' already exists, overwrite? "
         log.info "Not overwriting; buffer not saved"
         return
 
+    unless auto_mkdir file.parent
+      log.info "Parent directory doesn't exist; buffer not saved"
+      return
+
+    return file
+
+  handler: (file) ->
     buffer = app.editor.buffer
     buffer\save_as file
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,

@@ -1,5 +1,5 @@
--- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
 gobject_signal = require 'ljglibs.gobject.signal'
@@ -306,11 +306,12 @@ class Editor extends PropertyObject
     @buffer\as_one_undo -> f lines
 
   with_position_restored: (f) =>
-    line, column, indentation = @cursor.line, @cursor.column, @current_line.indentation
+    line, column, indentation, top_line = @cursor.line, @cursor.column, @current_line.indentation, @line_at_top
     status, ret = pcall f, self
     @cursor.line = line
     delta = @current_line.indentation - indentation
     @cursor.column = column + delta
+    @line_at_top = top_line
     error ret unless status
 
   indent: => if @buffer.mode.indent then @buffer.mode\indent self
@@ -464,6 +465,21 @@ class Editor extends PropertyObject
   redo: => @buffer\redo!
   scroll_up: => @sci\line_scroll_up!
   scroll_down: => @sci\line_scroll_down!
+
+  range_is_visible: (start_pos, end_pos) =>
+    start_line = 1 + @sci\line_from_position start_pos - 1
+    end_line = 1 + @sci\line_from_position end_pos - 1
+
+    return start_line >= @line_at_top and end_line <= @line_at_bottom
+
+  ensure_visible: (pos) =>
+    return if @range_is_visible pos, pos
+    line = @sci\line_from_position(pos - 1) + 1
+    if @line_at_top > line
+      @line_at_top = math.max 1,  line - 2
+    else
+      @line_at_bottom = math.min #@buffer.lines, line + 2
+
 
   -- private
   _set_config_settings: =>

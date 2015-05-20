@@ -1,10 +1,13 @@
--- Copyright 2012-2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import inputs, config from howl
+import dispatch, interact, config from howl
 import Matcher from howl.util
+import style, markup, StyledText from howl.ui
 
 append = table.insert
+
+style.define_default 'command_name', 'keyword'
 
 commands = {}
 accessible_names = {}
@@ -14,119 +17,24 @@ resolve_command = (name) ->
   def = commands[def.alias_for] if def and def.alias_for -- alias
   def
 
-parse_cmd = (text) ->
-  cmd_start, cmd_end, cmd, rest = text\find '^%s*([^%s]+)%s+(.*)$'
-  return resolve_command(cmd), cmd, rest if cmd
-  return nil, nil, text
-
-load_input = (input, text) ->
-  return nil if not input
-  if type(input) == 'string'
-    def = inputs[input]
-    if not def then error "Could not find input for `#{input}`"
-    input = def.factory
-
-  input text
-
-class State
-  new: =>
-    @inputs = {}
-    @arguments = {}
-    local wrapped
-    wrapped = (kf) ->
-      __index: (_, k) ->
-        tbl = kf!
-        return unless tbl
-        v = tbl[k]
-        if callable v
-          (_, readline, item) -> v @.input, readline, item
-        elseif typeof(v) == 'table'
-          setmetatable {}, wrapped(-> v)
-        else
-          v
-    @keymap = setmetatable {}, wrapped -> @.input and @.input.keymap
-
-  update: (text, readline) =>
-    if not @cmd
-      @cmd, name, text = parse_cmd text
-      return if not @cmd
-
-      readline.prompt ..= name .. ' '
-      readline.text = text or ''
-      @input = load_input @cmd.input, readline.text
-      @_dispatch 'on_readline_available', readline
-
-    @_dispatch 'update', text, readline
-
-  complete: (text, readline) => @_dispatch 'complete', text, readline
-  on_completed: (item, readline) => @_dispatch 'on_completed', item, readline
-  close_on_cancel: (readline) => @_dispatch 'close_on_cancel', readline
-  go_back: (readline) => @_dispatch 'go_back', readline
-  on_cancelled: (readline) => @_dispatch 'on_cancelled', readline
-
-  should_complete: (readline) =>
-    return @_dispatch('should_complete', readline) if @input
-    config.complete == 'always'
-
-  on_selection_changed: (item, readline) =>
-    @_dispatch 'on_selection_changed', item, readline
-
-  on_submit: (text, readline) =>
-    if not @cmd and resolve_command text
-      @update text .. ' ', readline
-      return false if @input
-
-    return false unless @cmd
-
-    if @input
-      input_says = @_dispatch 'on_submit', text, readline
-      return input_says if input_says != nil
-
-      not readline.text.is_blank
-
-  _dispatch: (handler, ...) =>
-    if @input and @input[handler]
-      return @input[handler] @input, ...
-
-    nil
-
-  submit: (value) =>
-    cmd = @cmd or resolve_command value
-    return false if not cmd
-
-    values = { value }
-    values = { @input\value_for(value) } if @input and @input.value_for
-    cmd table.unpack values
-    true
-
 accessible_name = (name) ->
   name\lower!\gsub '[%s%p]+', '_'
 
-parse_inputs = (inputs = {}) ->
-  iputs = {}
+parse_cmd = (text) ->
+  cmd_start, cmd_end, cmd_name, rest = text\find '^%s*([^%s]+)%s+(.*)$'
+  return resolve_command(cmd_name), cmd_name, rest if cmd_name
 
-  for i = 1, #inputs
-    input = inputs[i]
-    wildcard_input = type(input) == 'string' and input\match('^%*(.+)$')
+register = (cmd_def) ->
+  for field in *{'name', 'description'}
+    error 'Missing field for command: "' .. field .. '"' if not cmd_def[field]
 
-    if wildcard_input
-      error('Wildcard input only allowed as last input') if i != #inputs
-      input = wildcard_input
+  if not (cmd_def.factory or cmd_def.handler) or (cmd_def.factory and cmd_def.handler)
+    error 'One of "factory" or "handler" required'
 
-    append iputs, factory: input
-
-  iputs
-
-register = (spec) ->
-  for field in *{'name', 'description', 'handler'}
-    error 'Missing field for command: "' .. field .. '"' if not spec[field]
-
-  c = setmetatable moon.copy(spec), __call: (...) => spec.handler ...
-  c.inputs = parse_inputs spec.inputs
-  c.input or= spec.inputs and spec.inputs[1]
-  commands[spec.name] = c
-  sane_name = accessible_name spec.name
-  accessible_names[sane_name] = c if sane_name != spec.name
+  cmd_def = moon.copy cmd_def
+  commands[cmd_def.name] = cmd_def
+  sane_name = accessible_name cmd_def.name
+  accessible_names[sane_name] = cmd_def if sane_name != cmd_def.name
 
 unregister = (name) ->
   cmd = commands[name]
@@ -182,48 +90,174 @@ command_completer = ->
   matcher = Matcher items
   (text) -> matcher(text), completion_options
 
-direct_dispatch = (cmd_string) ->
-  return false if not cmd_string or cmd_string.is_blank
-  cmd, cmd_name, text = parse_cmd cmd_string
-  cmd or= resolve_command cmd_string
-  return false unless cmd
-  input = load_input cmd.input, text
-  return false if input
-  cmd!
-  true
+get_command_items = ->
+  cmd_names = names!
+  bindings = command_bindings!
 
-run = (cmd_string = nil) ->
-  return if direct_dispatch cmd_string
+  table.sort cmd_names
+  items = {}
+  for name in *cmd_names
+    def = commands[name]
+    desc = def.description
+    if def.alias_for
+      desc = "(Alias for #{def.alias_for})"
+      desc = "[deprecated] #{desc}" if def.deprecated
+    binding = bindings[name] or ''
+    append items, { name, binding, desc }
 
-  cmd_completer = nil
-  state = State!
+  return items
 
-  cmd_input =
-    title: 'Command'
-    should_complete: (_, readline) -> state\should_complete readline
-    close_on_cancel: (_, readline) -> state\close_on_cancel readline
-    update: (_, text, readline) -> state\update text, readline
-    on_selection_changed: (_, item, readline) -> state\on_selection_changed item, readline
-    on_completed: (_, item, readline) -> state\on_completed item, readline
-    on_cancelled: (_, readline) -> state\on_cancelled readline
-    on_submit: (_, text, readline) -> state\on_submit text, readline
-    go_back: (_, readline) -> state\go_back readline
-    keymap: state.keymap
+class CommandInput
+  run: (@finish, cmd_string='', @cmd_args) =>
+    @command_line = howl.app.window.command_line
+    @command_line.prompt = ':'
+    @command_line.title = 'Command'
+    @command_line.text = cmd_string
 
-    complete: (_, text, readline) ->
-      if state.cmd
-        return state\complete(text, readline)
-      else
-        cmd_completer or= command_completer!
-        cmd_completer text
+    if resolve_command cmd_string
+      @on_update cmd_string .. ' '
+    else
+      @on_update cmd_string
 
-  readline = howl.app.window.readline
-  text = cmd_string
-  text = "#{cmd_string} " if cmd_string and not cmd_string\contains ' '
-  value = readline\read ':', cmd_input, :text
-  if value
-    state\submit value
+  on_update: (cmd_string) =>
+    return unless cmd_string\find ' '
 
-return setmetatable { :register, :unregister, :alias, :run, :names, :get }, {
-  __index: (key) => commands[key] or accessible_names[key]
+    cmd, cmd_name, text = parse_cmd cmd_string
+
+    if not cmd
+      @command_line.text = cmd_string
+      log.error "No such command '#{cmd_string}'"
+      return
+
+    if not cmd.input
+      @command_line.text = cmd_name
+      log.error "Command '#{cmd_name}' takes no input, press <enter> to run."
+      return
+
+    @command_line\write_spillover text
+    @read_command_input cmd, cmd_name
+
+  read_command_input: (cmd, cmd_name) =>
+    @command_line\clear!
+    @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
+
+    unless cmd.input
+      @command_line\record_history!
+      self.finish cmd, {}
+      return
+
+    input_reader =
+      name: cmd.name
+      handler: cmd.input
+
+    results = table.pack howl.app.window.command_line\run input_reader, unpack @cmd_args
+
+    if results.n > 0
+      self.finish cmd, results
+    else
+      self.finish!
+
+  command_completion: =>
+    text = @command_line.text
+    @command_line\clear!
+    cmd_name = interact.select_command
+      :text
+      title: 'Command'
+
+    if cmd_name
+      cmd = resolve_command(cmd_name)
+      @read_command_input cmd, cmd_name
+
+  run_historical: =>
+    text = @command_line.text
+    @command_line\clear!
+    @command_line\write_spillover text
+    cmd_string = interact.select_historical_command!
+    if cmd_string
+      @command_line\write cmd_string.stripped
+
+  keymap:
+    tab: => @command_completion!
+    up: => @run_historical!
+    ctrl_r: => @run_historical!
+    escape: => self.finish!
+    enter: =>
+      if @command_line.text
+        cmd = resolve_command(@command_line.text)
+        if not cmd
+          log.error "No such command '#{@command_line.text}'"
+          return
+        @read_command_input cmd, @command_line.text
+
+command_input_reader = {
+  name: 'command-input-reader'
+  factory: CommandInput
+}
+
+launch_cmd = (cmd, args) ->
+  dispatch.launch ->
+    ok, err = pcall -> cmd.handler table.unpack args
+    if not ok
+      log.error err
+
+run = (cmd_string=nil, ...) ->
+  unless howl.app.window
+    error "Cannot run command '#{cmd_string}', application not initialized. Try using the 'app-ready' signal.", 2
+
+  local args
+  cmd = resolve_command cmd_string
+
+  if not cmd or cmd.input
+    cmd, args = howl.app.window.command_line\run command_input_reader, cmd_string, table.pack ...
+    return unless cmd
+  else
+    args = table.pack ...
+
+  if cmd
+    launch_cmd cmd, args
+
+howl.interact.register
+  name: 'select_command'
+  description: 'Selection list for all commands'
+  evade_history: true
+  handler: (opts={}) ->
+    opts = moon.copy opts
+    with opts
+      .items = get_command_items!
+      .headers = { 'Command', 'Key binding', 'Description' }
+      .columns = {
+        { style: 'string' }
+        { style: 'keyword' }
+        { style: 'comment' }
+      }
+    result = interact.select opts
+
+    if result
+      return result.selection[1]
+
+get_command_history = ->
+  howl.app.window.command_line.command_history
+
+interact.register
+  name: 'select_historical_command'
+  description: 'Selection list for previously run commands'
+  evade_history: true
+  handler: ->
+    line_items = {}
+    for idx, item in ipairs get_command_history!
+      append line_items, {idx, item, command: tostring(item)}
+
+    result = interact.select
+      matcher: Matcher line_items, preserve_order: true
+      reverse: true
+      title: 'Command History'
+
+    if result
+      return result.selection.command\sub 2
+
+return setmetatable {:register, :unregister, :alias, :run, :names, :get}, {
+  __index: (key) =>
+    command = commands[key] or accessible_names[key]
+    return unless command
+    (...) -> launch_cmd command, table.pack ...
 }
