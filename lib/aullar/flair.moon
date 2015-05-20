@@ -143,7 +143,6 @@ need_text_object = (flair) ->
     flair
 
   draw: (flair, display_line, start_offset, end_offset, x, y, cr) ->
-    cursor = flair == 'block_cursor'
 
     get_defined_width = (x, flair, cr, clip) ->
       return flair.width if type(flair.width) == 'number'
@@ -169,19 +168,24 @@ need_text_object = (flair) ->
     text_object = flair.text_object
 
     if not text_object and need_text_object(flair)
-      text_object = get_text_object display_line, start_offset, end_offset, flair, cursor
+      text_object = get_text_object display_line, start_offset, end_offset, flair
 
     height = display_line.height
+    adjusted_for_text_height = false
 
     if flair.height == 'text' and height > text_object.height
       y += ceil( (height - text_object.height) / 2) + 1
       height = text_object.height
+      adjusted_for_text_height = false
 
     cr\save!
     flair.draw flair, start_x, y, width, height, cr
     cr\restore!
 
     if flair.text_color
+      if not adjusted_for_text_height and height > text_object.height
+        y += ceil( (height - text_object.height) / 2) + 1
+
       cr\save!
       if base_x > 0
         cr\rectangle x, y, clip.x2 - x, clip.y2
