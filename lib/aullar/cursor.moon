@@ -24,6 +24,15 @@ flair.define_default 'block_cursor', {
   text_color: '#dddddd'
 }
 
+flair.define_default 'inactive_cursor', {
+  type: flair.RECTANGLE,
+  foreground: '#cc3333',
+  min_width: 5,
+  line_width: 1.5,
+  height: 'text',
+  line_type: 'dotted'
+}
+
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
 
@@ -37,9 +46,9 @@ pos_is_in_line = (pos, line) ->
 
 Cursor = {
   new: (@view, @selection) =>
-    @_blink_interval = 500
     @width = 1.5
-
+    @show_when_inactive = true
+    @_blink_interval = 500
     @_line = 1
     @_column = 1
     @_pos = 1
@@ -72,6 +81,8 @@ Cursor = {
       get: => @_blink_interval
       set: (interval) =>
         @_disable_blink!
+        @_blink_interval = interval
+        @_showing = true
         @_enable_blink! if interval > 0
     }
 
@@ -95,11 +106,22 @@ Cursor = {
       set: (active) =>
         return if active == @_active
         if active
+          @_flair = @_prev_flair if @_prev_flair
           @_enable_blink!
+          @_showing = true
         else
           @_disable_blink!
 
+          if @show_when_inactive
+            @_prev_flair = @_flair
+            @_flair = 'inactive_cursor'
+            @_showing = true
+          else
+            @_prev_flair = @_flair
+            @_showing = false
+
         @_active = active
+        @_refresh_current_line!
     }
 
     in_view: =>
@@ -262,7 +284,7 @@ Cursor = {
     @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
 
   draw: (x, base_y, cr, display_line) =>
-    return unless @_showing
+    return unless @_showing and (@active or @show_when_inactive)
     start_offset = @column
     end_offset, new_trailing = display_line.layout\move_cursor_visually true, start_offset - 1, 0, 1
 
@@ -287,16 +309,17 @@ Cursor = {
     @view.buffer\get_line nr
 
   _enable_blink: =>
+    return if @_blink_cb_handle
     jit.off true, true
 
-    @blink_cb_handle = callbacks.register self._blink, "cursor-blink", @
-    @blink_cb_id = C.g_timeout_add_full C.G_PRIORITY_LOW, @blink_interval, timer_callback, cast_arg(@blink_cb_handle.id), nil
+    @_blink_cb_handle = callbacks.register self._blink, "cursor-blink", @
+    @blink_cb_id = C.g_timeout_add_full C.G_PRIORITY_LOW, @blink_interval, timer_callback, cast_arg(@_blink_cb_handle.id), nil
 
   _disable_blink: =>
-    if @blink_cb_handle
-      callbacks.unregister @blink_cb_handle
+    if @_blink_cb_handle
+      callbacks.unregister @_blink_cb_handle
+      @_blink_cb_handle = nil
 
-    @_showing = true
     -- todo unregister source? will be auto-cancelled by callbacks module though
 
   _refresh_current_line: =>
