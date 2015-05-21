@@ -16,14 +16,13 @@ describe 'buffer_selection', ->
     app.window\realize!
     command_line = app.window.command_line
 
+    for b in *app.buffers
+      app\close_buffer b
+
     for title in *{'a1-buffer', 'b-buffer', 'c-buffer', 'a2-buffer'}
       b = app\new_buffer!
       b.title = title
       table.insert buffers, b
-
-  after_each ->
-      for b in *app.buffers
-        app\close_buffer b
 
   normalize_titles = (titles) -> [t\gsub('<.*>', '') for t in *titles]
 
