@@ -6,12 +6,12 @@ import ListWidget, style, highlight from howl.ui
 import Matcher from howl.util
 s = require 'serpent'
 
+get_row_height = (list_widget) ->
+  list_widget\update!
+  list_widget.text_widget.sci\text_height 0
+
 describe 'ListWidget', ->
   local list, buf
-  list_widget = ListWidget -> { 'H' }
-  list_widget\show!
-  list_widget\update!
-  row_height = list_widget.text_widget.sci\text_height 0
 
   before_each ->
     list = ListWidget -> {}
@@ -107,9 +107,9 @@ first    item one
   context 'when .max_height is set', ->
     it 'shows only up to max_height pixels', ->
       list.matcher = -> {'one', 'two', 'three'}
-      list.max_height = 2 * row_height
+      list.max_height = 2 * get_row_height(list)
       list\update!
-      assert.equal 2 * row_height, list.height
+      assert.equal 2 * get_row_height(list), list.height
       assert.match buf.text, 'one'
       assert.is_not.match buf.text, 'two'
 
@@ -119,20 +119,20 @@ first    item one
 
     it 'errors if height is insufficient to show at least one item', ->
       list.matcher = -> {'one', 'two' }
-      list.max_height = row_height
+      list.max_height = get_row_height(list)
       assert.raises 'insufficient height', -> list\update!
 
     it 'it takes headers into account when set', ->
       list.matcher = -> {'one', 'two', 'three'}
       list.columns = { {header:'Takes up one line' } }
-      list.max_height = 3 * row_height
+      list.max_height = 3 * get_row_height(list)
       list\update!
       assert.match buf.text, 'one'
       assert.is_not.match buf.text, 'two'
 
     it 'displays info about the currently shown items', ->
       list.matcher = -> {'one', 'two', 'three'}
-      list.max_height = 2 * row_height
+      list.max_height = 2 * get_row_height(list)
       list\update!
       assert.match buf.text, 'showing 1 to 1 out of 3'
 
@@ -141,18 +141,18 @@ first    item one
       list.matcher = -> {'one', 'two', 'three'}
       list.min_height = 1  -- pixel
       list\update!
-      assert.equals 3, list.height / row_height
+      assert.equals 3, list.height / get_row_height(list)
 
     it 'adds lines to ensure the given value', ->
       list.matcher = -> {'one'}
-      list.min_height = 3 * row_height
+      list.min_height = 3 * get_row_height(list)
       list\update!
       assert.equals 'one\n~\n~\n', buf.text
 
     it 'sets .filler_text for each filler line if specified', ->
       list.matcher = -> {'one'}
       list.opts.filler_text = '##'
-      list.min_height = 2 * row_height
+      list.min_height = 2 * get_row_height(list)
       list\update!
       assert.equals 'one\n##\n', buf.text
 
@@ -160,13 +160,13 @@ first    item one
     it 'is set to the number of pixels used for displaying the list', ->
       list.matcher = -> {'one', 'two', 'three'}
       list\update!
-      assert.equal 3 * row_height, list.height
+      assert.equal 3 * get_row_height(list), list.height
 
     it 'includes headers', ->
       list.matcher = -> {'one', 'two', 'three'}
       list.columns = { { header: 'Header 1' } }
       list\update!
-      assert.equal 4 * row_height, list.height
+      assert.equal 4 * get_row_height(list), list.height
 
   it 'all properties can be changed after initial assignment', ->
     list.matcher = -> { 'one', 'two' }
@@ -253,7 +253,7 @@ three    four    ]] .. '\n', buf.text
         assert.same {}, highlight.at_pos(buf, 1)
 
       it 'scrolls the list if needed', ->
-        list.max_height = 2 * row_height
+        list.max_height = 2 * get_row_height(list)
         list\update!
         list.selection = 'three'
         assert.match buf.text, 'three'
@@ -269,7 +269,7 @@ three    four    ]] .. '\n', buf.text
         assert.equal 'one', list.selection
 
       it 'scrolls to the item if neccessary', ->
-        list.max_height = 2 * row_height
+        list.max_height = 2 * get_row_height(list)
         list\update!
         list\select_next!
         assert.equal 'two', list.selection
@@ -286,7 +286,7 @@ three    four    ]] .. '\n', buf.text
         assert.equal list.selection, 'three'
 
       it 'scrolls to the item if neccessary', ->
-        list.max_height = 2 * row_height
+        list.max_height = 2 * get_row_height(list)
         list\update!
         list.selection = 'three'
         list\select_prev!
@@ -296,14 +296,14 @@ three    four    ]] .. '\n', buf.text
   describe 'next_page()', ->
     it 'scrolls to the next page', ->
       list.matcher = -> {'one', 'two', 'three'}
-      list.max_height = 2 * row_height
+      list.max_height = 2 * get_row_height(list)
       list\update!
       list\next_page!
       assert.equal 2, list.offset
 
     it 'scrolls to the first page if at the end of the list', ->
       list.matcher = -> {'one', 'two', 'three'}
-      list.max_height = 2 * row_height
+      list.max_height = 2 * get_row_height(list)
       list\update!
       list.selection = 'three'
       list\next_page!
@@ -312,7 +312,7 @@ three    four    ]] .. '\n', buf.text
   describe 'prev_page()', ->
     it 'scrolls to the previous page', ->
       list.matcher = -> {'one', 'two', 'three'}
-      list.max_height = 2 * row_height
+      list.max_height = 2 * get_row_height(list)
       list\update!
       list.selection = 'three'
       list\prev_page!
@@ -320,7 +320,7 @@ three    four    ]] .. '\n', buf.text
 
     it 'scrolls to the last page if at the start of the list', ->
       list.matcher = -> {'one', 'two', 'three'}
-      list.max_height = 2 * row_height
+      list.max_height = 2 * get_row_height(list)
       list\update!
       list\prev_page!
       assert.equal list.offset, 3
