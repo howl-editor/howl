@@ -29,6 +29,10 @@ Clipboard = {
       table.insert clips, 1, item
       clips[config.clipboard_max_items + 1] = nil
       system_clipboard.text = item.text
+      system_clipboard\set_can_store!
+
+  store: ->
+    system_clipboard\store!
 
   clear: ->
     clips = {}

@@ -206,6 +206,8 @@ class Application extends PropertyObject
         win.command_line\abort_all!
         win\destroy!
 
+      howl.clipboard.store!
+
   save_session: =>
     session = {
       version: 1

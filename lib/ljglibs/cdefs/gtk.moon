@@ -276,6 +276,12 @@ ffi.cdef [[
   typedef struct {} GtkEntry;
   GtkEntry * gtk_entry_new (void);
 
+  typedef struct {
+    gchar *target;
+    guint  flags;
+    guint  info;
+  } GtkTargetEntry;
+
   /* GtkClipboard */
   typedef struct {} GtkClipboard;
   GtkClipboard * gtk_clipboard_get (GdkAtom selection);
@@ -284,6 +290,10 @@ ffi.cdef [[
   void gtk_clipboard_set_text (GtkClipboard *clipboard,
                                const gchar *text,
                                gint len);
+  void gtk_clipboard_store (GtkClipboard *clipboard);
+  void gtk_clipboard_set_can_store (GtkClipboard *clipboard,
+                                    const GtkTargetEntry *targets,
+                                    gint n_targets);
 
   /* GtkSpinner */
   typedef struct {} GtkSpinner;
