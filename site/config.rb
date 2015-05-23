@@ -1,4 +1,5 @@
 require 'pathname'
+require 'yaml'
 
 set :css_dir, 'stylesheets'
 set :js_dir, 'javascripts'
@@ -20,6 +21,18 @@ end
 page "blog/*", :layout => :blog_layout
 
 activate :s3_sync do |s3_sync|
+  auth_file = File.expand_path('~/.howl-auth')
+  if File.exists?(auth_file)
+    if File.stat(auth_file).world_readable?
+      raise "'#{auth_file}' is world readable, please fix"
+    end
+    creds = YAML.load_file(auth_file)
+    s3_sync.aws_access_key_id = creds['access_key']
+    s3_sync.aws_secret_access_key = creds['secret_key']
+  else
+    $stderr.puts "WARN: #{auth_file} not present"
+  end
+
   s3_sync.bucket = 'howl.io'
   s3_sync.region = 'eu-west-1'
   s3_sync.add_caching_policy :default, max_age: 60 * 30
