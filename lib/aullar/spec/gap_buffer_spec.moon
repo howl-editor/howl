@@ -61,7 +61,8 @@ describe 'GapBuffer', ->
       assert.equals '012yyzzz00', get_text(b)
 
     it 'works with non-byte-sized types', ->
-      b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
+      initial = ffi.new 'uint16_t[?]', 3, {1,2,3}
+      b = GapBuffer 'uint16_t', 3, :initial
       b\fill 0, 0, 10
       b\fill 1, 2, 23
 
@@ -109,7 +110,8 @@ describe 'GapBuffer', ->
       assert.same { '0123', '4' }, parts(b)
 
     it 'works with non-byte-sized types', ->
-      b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
+      initial = ffi.new 'uint16_t[?]', 3, {1,2,3}
+      b = GapBuffer 'uint16_t', 3, :initial
       new_size = b.gap_size + 10
       b\extend_gap_at 2, new_size
       assert.equals 2, b.gap_start
@@ -186,7 +188,8 @@ describe 'GapBuffer', ->
       assert.raises 'Illegal', -> b\get_ptr 3, 2
 
     it 'works with non-byte-sized types', ->
-      b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
+      initial = ffi.new 'uint16_t[?]', 3, {1,2,3}
+      b = GapBuffer 'uint16_t', 3, :initial
       ptr = b\get_ptr 0, 3
       assert.equals 1, ptr[0]
       assert.equals 2, ptr[1]
@@ -220,7 +223,8 @@ describe 'GapBuffer', ->
 
     context 'when <data> is not provided', ->
       it 'inserts <size> zero-filled units', ->
-        b = GapBuffer 'uint16_t', 3, initial: {1,2,3}
+        initial = ffi.new 'uint16_t[?]', 3, {1,2,3}
+        b = GapBuffer 'uint16_t', 3, :initial
         ptr = b\get_ptr 0, 3
         assert.equals 1, ptr[0]
         assert.equals 2, ptr[1]
@@ -247,7 +251,8 @@ describe 'GapBuffer', ->
       assert.equals 'hello world', get_text(b)
 
     it 'works with non-byte-sized types', ->
-      b = GapBuffer 'uint16_t', 3, initial: {1,4}
+      initial = ffi.new 'uint16_t[?]', 2, {1,4}
+      b = GapBuffer 'uint16_t', 3, :initial
       b\insert 1, ffi.new('uint16_t[2]', {2,3}), 2
       ptr = b\get_ptr 0, 4
       assert.equals 1, ptr[0]

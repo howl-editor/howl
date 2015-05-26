@@ -2,22 +2,27 @@
 -- License: MIT (see LICENSE)
 
 ffi = require 'ffi'
-C, ffi_copy, ffi_fill = ffi.C, ffi.copy, ffi.fill
+C, ffi_copy, ffi_fill, ffi_gc, ffi_cast = ffi.C, ffi.copy, ffi.fill, ffi.gc, ffi.cast
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
 
-ffi.cdef 'void *memmove(void *dest, const void *src, size_t n);'
+ffi.cdef [[
+  void *calloc(size_t nmemb, size_t size);
+  void free(void *ptr);
+  void *memmove(void *dest, const void *src, size_t n);
+]]
 
 GAP_SIZE = 100
 
 define_class {
   new: (@type, size, opts = {}) =>
-    initial = opts.initial or 0
     @default_gap_size = opts.gap_size or GAP_SIZE
-    @type_size = ffi.sizeof @type
-    @new_arr = ffi.typeof "#{@type}[?]"
-    @arr_ptr = ffi.typeof "const #{@type} *"
-    @set initial, size
+    @type_size = ffi.sizeof type
+    @arr_ptr = ffi.typeof "const #{type} *"
+    @new_arr = (size) ->
+      ffi_gc(ffi_cast("#{@type} *", C.calloc(size, @type_size)), C.free)
+
+    @set opts.initial, size
 
   properties: {
     gap_size: => (@gap_end - @gap_start)
@@ -161,8 +166,10 @@ define_class {
 
   set: (data, size = #data) =>
     arr_size = size + @default_gap_size
-    @array = self.new_arr(arr_size + 1, data) -- + 1 = one final zero
+    @array = self.new_arr(arr_size + 1) -- + 1 = one final zero
     @array[arr_size] = 0 -- which we set here
+    if data
+      ffi_copy @array, data, size * @type_size
     @size = size
     @gap_start = size
     @gap_end = arr_size
