@@ -291,6 +291,11 @@ describe 'GapBuffer', ->
       b\delete 3, 1 -- delete forward at gap end
       assert_zero_filled!
 
+    it 'handles deleting at the end correctly', ->
+      b = buffer 'x\n'
+      b\delete 2, 1
+      assert.equals 'x\n', get_text(b)
+
   describe 'replace(offset, count, replacement, replacement_size)', ->
     it 'replaces the specified number of unit with the replacement', ->
       b = buffer '12 456 890'

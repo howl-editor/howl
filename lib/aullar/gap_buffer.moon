@@ -99,7 +99,8 @@ define_class {
 
     -- the rest
     count = (arr + arr_size) - dest_ptr
-    ffi_copy dest_ptr, src_ptr, count * @type_size
+    if count > 0
+      ffi_copy dest_ptr, src_ptr, count * @type_size
 
     @array = arr
     @gap_start = offset
@@ -127,7 +128,7 @@ define_class {
     @gap_start += size
 
   delete: (offset, count) =>
-    return if count == 0
+    return if count == 0 or offset >= @size
 
     if offset == @gap_end - @gap_size -- adjust gap end forward
       ffi_fill @array + @gap_end, count * @type_size -- zero fill
