@@ -208,7 +208,7 @@ Cursor = {
       @remember_column!
 
     -- finally, do we need to scroll horizontally to show the new position?
-    rect = @display_line.layout\index_to_pos @column
+    rect = @display_line.layout\index_to_pos @column - 1
     col_pos = rect.x / 1024
     char_width = rect.width / 1024
     x_pos = col_pos - @view.base_x + @view.edit_area_x + @width
