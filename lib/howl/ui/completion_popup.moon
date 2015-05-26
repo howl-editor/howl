@@ -53,7 +53,7 @@ class CompletionPopup extends MenuPopup
 
   _init_completer: =>
     @completer = Completer @editor.buffer, @editor.cursor.pos
-    comp_style = style.at_pos(@editor.buffer, @completer.start_pos) or style.default
+    comp_style = style.at_pos(@editor.buffer, @completer.start_pos) or 'default'
     @list.column_styles = { comp_style, style.comment }
 
   _on_completed: (item) =>
