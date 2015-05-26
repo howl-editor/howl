@@ -8,7 +8,7 @@ Cairo = require 'ljglibs.cairo.cairo'
 {:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
-{:min, :max, :ceil} = math
+{:min, :max, :floor} = math
 copy = moon.copy
 
 flairs = {}
@@ -174,9 +174,9 @@ need_text_object = (flair) ->
     adjusted_for_text_height = false
 
     if flair.height == 'text' and height > text_object.height
-      y += ceil( (height - text_object.height) / 2) + 1
+      y += floor( (height - text_object.height) / 2 + 1)
       height = text_object.height
-      adjusted_for_text_height = false
+      adjusted_for_text_height = true
 
     cr\save!
     flair.draw flair, start_x, y, width, height, cr
@@ -184,7 +184,7 @@ need_text_object = (flair) ->
 
     if flair.text_color
       if not adjusted_for_text_height and height > text_object.height
-        y += ceil( (height - text_object.height) / 2) + 1
+        y += floor( (height - text_object.height) / 2 + 1)
 
       cr\save!
       if base_x > 0
