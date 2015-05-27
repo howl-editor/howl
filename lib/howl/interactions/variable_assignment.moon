@@ -117,6 +117,7 @@ class VariableAssignment
       if name
         if @list_widget.showing and @list_widget.selection
           val = @list_widget.selection
+          val = val[1] if type(val) == 'table'
           @command_line.text = name .. '=' .. val
         self.finish
           name: name
