@@ -28,9 +28,8 @@ flair.define_default 'inactive_cursor', {
   type: flair.RECTANGLE,
   foreground: '#cc3333',
   min_width: 5,
-  line_width: 1.5,
+  line_width: 1,
   height: 'text',
-  line_type: 'dotted'
 }
 
 {:max, :min, :abs} = math
