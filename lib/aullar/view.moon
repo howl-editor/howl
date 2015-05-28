@@ -639,17 +639,10 @@ View = {
       @base_x -= 20
 
   _on_size_allocate: (allocation) =>
-    prev_height = @height
-    cur_last_visible = @_last_visible_line
     @im_context.client_window = @area.window
-
     @width = allocation.width
     @height = allocation.height
     @_reset_display!
-
-    if cur_last_visible and prev_height < @height
-      @last_visible_line = cur_last_visible
-
     @_sync_scrollbars!
     @buffer\ensure_styled_to line: @last_visible_line + 1
 
