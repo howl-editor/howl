@@ -178,6 +178,7 @@ class Application extends PropertyObject
         log.info msg
 
   run: =>
+    jit.off true, true
     @g_app = Gtk.Application 'io.howl.Editor', Gtk.Application.HANDLES_OPEN
     @g_app\on_activate -> @_load!
     @g_app\on_open (_, files) -> @_load [File(path) for path in *files]
