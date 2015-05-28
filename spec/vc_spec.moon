@@ -27,7 +27,7 @@ describe 'VC', ->
 
   describe 'for_file(file)', ->
     it 'returns the first non-nil find()-result from handlers', ->
-      vc = root: '', files: -> {}
+      vc = root: '', name: 'vc', files: -> {}
       VC.register 'foo', find: -> nil
       VC.register 'no', find: -> nil
       VC.register 'yes', find: -> vc
@@ -49,4 +49,9 @@ describe 'VC', ->
 
       it 'raises an error if vc.root is missing', ->
         vc.files = -> {}
+        assert.raises 'root', -> VC.for_file 'file'
+
+      it 'raises an error if vc.name is missing', ->
+        vc.files = -> {}
+        vc.name = 'vc'
         assert.raises 'root', -> VC.for_file 'file'

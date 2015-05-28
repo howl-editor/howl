@@ -33,7 +33,7 @@ describe 'Project', ->
         assert.is_nil Project.for_file file
 
     context 'when there is VC found for the file', ->
-      vc = root: 'foo_root', files: -> {}
+      vc = name: 'vc', root: 'foo_root', files: -> {}
       before_each -> VC.register 'vc', find: -> vc
       after_each -> VC.unregister 'vc'
 
@@ -64,7 +64,7 @@ describe 'Project', ->
         with_tmpdir (dir) ->
           Project.add_root dir
           file = dir / 'test.moon'
-          vc = root: dir, files: -> {}
+          vc = name: 'vc', root: dir, files: -> {}
           VC.register 'vc', find: (file) -> return vc if file == file
           p = Project.for_file file
           VC.unregister 'vc'

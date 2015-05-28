@@ -6,6 +6,7 @@ class Git
   new: (root, git_dir) =>
     @root = root
     @git_dir = git_dir
+    @name = 'Git'
 
   files: =>
     output = @run "ls-files",

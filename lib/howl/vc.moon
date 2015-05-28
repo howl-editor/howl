@@ -1,6 +1,7 @@
 validate_vc = (name, vc) ->
   error '.files() missing from "' .. name .. '"', 3 if not vc.files
   error '.root missing from "' .. name .. '"', 3 if not vc.root
+  error '.name missing from "' .. name .. '"', 3 if not vc.name
 
 class VC
   available: {}

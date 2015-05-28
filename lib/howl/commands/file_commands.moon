@@ -124,7 +124,7 @@ command.register
     with_vc (vc, buffer) ->
       diff = vc\diff buffer.file
       if diff
-        show_diff_buffer buffer.file.basename, diff
+        show_diff_buffer "[#{vc.name}] #{buffer.file.basename}", diff
       else
         log.info "VC: No differences found for #{buffer.file.basename}"
 
@@ -135,7 +135,7 @@ command.register
     with_vc (vc, buffer, project) ->
       diff = vc\diff!
       if diff
-        show_diff_buffer vc.root, diff
+        show_diff_buffer "[#{vc.name}]: #{vc.root}", diff
       else
         log.info "VC: No differences found for #{project.root}"
 
