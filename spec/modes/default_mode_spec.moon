@@ -418,10 +418,10 @@ describe 'DefaultMode', ->
       assert.is_true mode\patterns_match 'foo zed', { p }
       assert.is_false mode\patterns_match 'foo bar', { p }
 
-  context 'when a newline is added', ->
+  describe 'when a newline is added', ->
     it 'sets the indentation for the new line to the indentation of the previous non-blank line', ->
-      buffer.text = '  line1\n\nline3'
-      cursor.line = 3
+      buffer.text = '  34\n\n78'
+      cursor.pos = 7
       editor\newline!
       assert.equals 2, editor.current_line.indentation
 

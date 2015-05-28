@@ -1,4 +1,4 @@
-import Chunk, Buffer, styler from howl
+import Chunk, Buffer from howl
 
 describe 'Chunk', ->
 
@@ -38,10 +38,10 @@ describe 'Chunk', ->
       assert.equal 3, chunk.end_pos
       assert.equal 'Zen', chunk.text
 
-  describe '.styling', ->
+  describe '.styles', ->
     it 'is a table of offsets and styles, { start, "style", end [,..]}', ->
       styles = { 1, 'keyword', 3 }
-      styler.apply buffer, 1, buffer.size, styles
+      buffer._buffer.styling\apply 1, styles
       assert.same { 1, 'keyword', 2 }, Chunk(buffer, 2, 2).styles
 
     it 'is an empty table for an empty chunk', ->

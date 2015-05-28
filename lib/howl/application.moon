@@ -21,7 +21,7 @@ sort_buffers = (buffers) ->
     a.title < b.title
 
 class Application extends PropertyObject
-  title: 'Howl'
+  title: 'Howl (AULLAR !!!)'
 
   new: (@root_dir, @args) =>
     @windows = {}
@@ -120,8 +120,6 @@ class Application extends PropertyObject
       for editor in *@editors
         if editor.buffer == buffer
           editor.buffer = @next_buffer
-
-    buffer\destroy!
 
   open_file: (file, editor = @editor) =>
     for b in *@buffers

@@ -8,7 +8,7 @@ import highlight, ListWidget, NotificationWidget from howl.ui
 append = table.insert
 
 highlight.define_default 'replace_strikeout', {
-  style: highlight.STRIKE,
+  type: highlight.SANDWICH,
   color: '#f0f0f0'
 }
 
@@ -273,9 +273,10 @@ class Replacement
         break
       hlt = @selected_idx == i and 'search' or 'search_secondary'
       len = @replacements_applied[i] and @replacements_applied[i].ulen or match.end_pos - match.start_pos + 1
-      @_highlight_match hlt, preview_position, len
       if @strikeouts[i]
         @_highlight_match 'replace_strikeout', preview_position, len
+      else
+        @_highlight_match hlt, preview_position, len
 
   _clear_highlights: (start_idx=1) =>
     highlight.remove_all 'search', @preview_buffer

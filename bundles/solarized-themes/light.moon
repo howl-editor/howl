@@ -42,6 +42,7 @@ return {
   editor:
     border_color: base1
     divider_color: base1
+    :background
 
     header:
       background: 'sprinkles.png'
@@ -70,32 +71,97 @@ return {
 
     selection: background: selection
 
-  highlights:
+    gutter:
+      foreground: base1
+      background: base2
+
+  flairs:
+    indentation_guide:
+      type: flair.PIPE,
+      foreground: '#aaaaaa',
+      line_type: 'dotted'
+      line_width: 1
+
+    indentation_guide_1:
+      type: flair.PIPE,
+      foreground: blue,
+      foreground_alpha: 0.3
+      line_width: 1
+
+    indentation_guide_2:
+      type: flair.PIPE,
+      foreground: green,
+      foreground_alpha: 0.4
+      line_width: 1
+
+    indentation_guide_3:
+      type: flair.PIPE,
+      foreground: green,
+      line_type: 'dotted'
+      line_width: 1
+
+    edge_line:
+      type: flair.PIPE,
+      foreground: green,
+      foreground_alpha: 0.3,
+      line_type: 'dotted'
+      line_width: 1
+
     search:
-      style: highlight.ROUNDBOX
-      color: darkgreen
-      alpha: 60
-      outline_alpha: 250
+      type: highlight.RECTANGLE
+      foreground: darkgreen
+      foreground_alpha: 1
+      background: blue
+      text_color: white
+      height: 'text'
 
     search_secondary:
-      style: highlight.COMPOSITIONTHICK
-      color: green
-
-    list_selection:
-      style: highlight.ROUNDBOX
-      color: blue
-      alpha: 40
-      outline_alpha: 100
+      foreground: lightblue
+      line_width: 1
+      type: highlight.RECTANGLE
+      background: black
+      background_alpha: 0.6
+      text_color: white
+      height: 'text'
 
     replace_strikeout:
-      style: highlight.STRIKE
-      color: darkgreen
+      type: highlight.RECTANGLE
+      foreground: black
+      background: red
+      text_color: lightgray
+      background_alpha: 0.7
+      height: 'text'
+
+    brace_highlight:
+      type: highlight.RECTANGLE
+      text_color: white
+      background: blue
+      background_alpha: 0.6
+
+    list_selection:
+      type: highlight.RECTANGLE
+      foreground: blue
+      foreground_alpha: 0.5
+      background: blue
+      background_alpha: 0.2
+
+    cursor:
+      type: highlight.RECTANGLE
+      background: base01
+      width: 2
+      height: 'text'
+
+    block_cursor:
+      type: highlight.RECTANGLE,
+      background: base01
+      text_color: background
+      min_width: 5
+      height: 'text'
 
   styles:
 
     default:
-      :background
-      color: foreground
+      color: black
 
     red: color: red
     green: color: green
@@ -138,7 +204,15 @@ return {
 
     class:
       color: class_name
-      font: bold: true
+      font:
+        bold: true
+
+    type_def:
+      color: class_name
+      font:
+        bold: true
+        size: 'large'
+        family: 'Purisa'
 
     definition: color: yellow
     function: color: blue
@@ -196,18 +270,6 @@ return {
       color: foreground
       underline: true
       font: bold: true
-
-    indentguide:
-      :background
-      color: foreground
-
-    bracelight:
-      color: white
-      background: blue
-
-    bracebad:
-      color: white
-      background: orange
 
     h1:
       color: white

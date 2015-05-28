@@ -68,28 +68,6 @@ command_bindings = ->
 
   c_bindings
 
-command_completer = ->
-  completion_options = list: {
-    headers: { 'Command', 'Key binding', 'Description' }
-    column_styles: { 'string', 'keyword', 'comment' }
-  }
-  cmd_names = names!
-  bindings = command_bindings!
-
-  table.sort cmd_names
-  items = {}
-  for name in *cmd_names
-    def = commands[name]
-    desc = def.description
-    if def.alias_for
-      desc = "(Alias for #{def.alias_for})"
-      desc = "[deprecated] #{desc}" if def.deprecated
-    binding = bindings[name] or ''
-    append items, { name, binding, desc }
-
-  matcher = Matcher items
-  (text) -> matcher(text), completion_options
-
 get_command_items = ->
   cmd_names = names!
   bindings = command_bindings!

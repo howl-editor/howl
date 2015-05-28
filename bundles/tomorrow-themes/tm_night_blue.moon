@@ -27,6 +27,7 @@ return {
   editor:
     border_color: '#333333'
     divider_color: darkblue
+    :background
 
     header:
       background: [[
@@ -62,31 +63,87 @@ return {
 
     selection: background: selection
 
-  highlights:
+    gutter:
+      foreground: comment
+      :background
+
+  flairs:
+    indentation_guide:
+      type: flair.PIPE,
+      foreground: comment,
+      :background,
+      line_width: 1
+
+    indentation_guide_1:
+      type: flair.PIPE,
+      foreground: blue,
+      foreground_alpha: 0.5
+      line_width: 1
+
+    indentation_guide_2:
+      type: flair.PIPE,
+      foreground: green,
+      foreground_alpha: 0.5
+      line_width: 1
+
+    indentation_guide_3:
+      type: flair.PIPE,
+      foreground: green,
+      foreground_alpha: 0.3
+      line_width: 1
+
+    edge_line:
+      type: flair.PIPE,
+      foreground: green,
+      foreground_alpha: 0.3,
+      line_width: 1
+
     search:
-      style: highlight.ROUNDBOX
-      color: yellow
-      alpha: 120
-      outline_alpha: 255
+      type: highlight.RECTANGLE
+      foreground: black
+      foreground_alpha: 1
+      background: green
+      text_color: darkgreen
+      height: 'text'
 
     search_secondary:
-      style: highlight.COMPOSITIONTHICK
-      color: '#fffce4'
-      outline_alpha: 50
-
-    list_selection:
-      style: highlight.ROUNDBOX
-      color: white
-      outline_alpha: 100
+      type: flair.RECTANGLE
+      background: lightblue
+      text_color: black
 
     replace_strikeout:
-      style: highlight.STRIKE
-      color: yellow
+      type: flair.RECTANGLE
+      foreground: black
+      background: red
+      text_color: black
+      height: 'text'
+
+    brace_highlight:
+      type: flair.RECTANGLE
+      text_color: foreground
+      background: '#0064b1'
+
+    list_selection:
+      type: flair.RECTANGLE
+      background: white
+      background_alpha: 0.4
+
+    cursor:
+      type: flair.RECTANGLE
+      background: foreground
+      width: 2
+      height: 'text'
+
+    block_cursor:
+      type: flair.RECTANGLE,
+      background: foreground
+      text_color: background
+      min_width: 5
+      height: 'text'
 
   styles:
 
     default:
-      :background
       color: foreground
 
     red: color: red
@@ -109,10 +166,6 @@ return {
     label:
       color: orange
       font: italic: true
-
-    line_number:
-      color: comment
-      :background
 
     key:
       color: blue
@@ -174,17 +227,6 @@ return {
     list_highlight:
       color: white
       underline: true
-
-    indentguide:
-      :background
-      color: foreground
-
-    bracelight:
-      color: foreground
-      background: '#0064b1'
-
-    bracebad:
-      color: red
 
     h1:
       color: white

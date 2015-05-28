@@ -2,8 +2,6 @@ Gtk = require 'ljglibs.gtk'
 {:Buffer, :signal, :clipboard} =  howl
 {:Editor, :theme} = howl.ui
 
-text = 'Liñe 1 ʘf tƏxt\nLiñe 1 ʘf tƏxt'
-
 describe 'Selection', ->
 
   buffer = Buffer {}
@@ -13,50 +11,76 @@ describe 'Selection', ->
   window = Gtk.OffscreenWindow!
   window\add editor\to_gobject!
   window\show_all!
+  pump_mainloop!
 
   before_each ->
-    buffer.text = text
-    selection.sci\set_empty_selection 0
+    editor.view.selection\clear!
+    buffer.text = 'Liñe 1 ʘf tƏxt\nLiñe 1 ʘf tƏxt'
 
-  it 'set(anchor, pos) sets the anchor and cursor at the same time', ->
-    selection\set 1, 5
-    assert.equal 'Liñe', selection.text
+  describe 'set(anchor, pos)', ->
+    it 'sets the anchor and cursor at the same time', ->
+      buffer.text = 'Liñe 1'
+      selection\set 1, 5
+      assert.equal 'Liñe', selection.text
 
-  it 'select(anchor, pos) adjusts the selection to include the specified range', ->
-    selection\select 1, 4
-    assert.equal 5, selection.cursor
-    assert.equal 'Liñe', selection.text
+    it 'moves the editor cursor to <pos>', ->
+      buffer.text = '12345'
+      selection\set 2, 4
+      assert.equal 4, cursor.pos
 
-    selection\select 4, 2
-    assert.equal 5, selection.anchor
-    assert.equal 'iñe', selection.text
+  describe 'select(anchor, pos)', ->
+    it 'adjusts the selection to include the specified range', ->
+      buffer.text = 'Liñe 1 ʘf tƏxt'
+      selection\select 1, 4
+      assert.equal 1, selection.anchor
+      assert.equal 5, selection.cursor
+      assert.equal 'Liñe', selection.text
 
-  it 'select_all() adjusts the selection to include the entire buffer', ->
-    selection\select_all!
-    assert.equal 1, selection.anchor
-    assert.equal text.ulen + 1, selection.cursor
+      selection\select 4, 2
+      assert.equal 5, selection.anchor
+      assert.equal 2, selection.cursor
+      assert.equal 'iñe', selection.text
+
+    it 'moves the editor cursor to <pos>', ->
+      buffer.text = '12345'
+      selection\select 2, 4
+      assert.equal 5, cursor.pos
+
+  describe 'select_all()', ->
+    it 'adjusts the selection to include the entire buffer', ->
+      buffer.text = 'Liñe 1 ʘf tƏxt'
+      selection\select_all!
+      assert.equal 1, selection.anchor
+      assert.equal buffer.text.ulen + 1, selection.cursor
+
+    it 'moves the editor cursor to the end of the buffer', ->
+      buffer.text = '12345'
+      cursor.pos = 1
+      selection\select_all!
+      assert.equal 6, cursor.pos
 
   describe '.anchor', ->
-    it 'returns the current position if nothing is selected', ->
-      cursor.pos = 3
-      assert.equal 3, selection.anchor
+    it 'is nil if nothing is selected', ->
+      assert.is_nil selection.anchor
 
     it 'returns the start position of the selection with a selection active', ->
       selection\set 2, 5
       assert.equal 2, selection.anchor
 
     it 'setting it to <pos> sets the selection to the text range [pos..<cursor>)', ->
-      cursor.pos = 3
+      buffer.text = 'Liñe 1 ʘf tƏxt'
+      cursor.pos = 4
       selection.anchor = 1
       assert.equal 1, selection.anchor
-      assert.equal 'Li', selection.text
+      assert.equal 4, selection.cursor
+      assert.equal 'Liñ', selection.text
 
   describe '.cursor', ->
-    it 'returns the current position if nothing is selected', ->
-      cursor.pos = 3
-      assert.equal 3, selection.cursor
+    it 'returns nil if nothing is selected', ->
+      assert.is_nil selection.cursor
 
     it 'returns the end position of the selection with a selection active', ->
+      buffer.text = 'Liñe 1 ʘf tƏxt'
       selection\set 2, 5
       assert.equal 5, selection.cursor
 
@@ -72,10 +96,11 @@ describe 'Selection', ->
 
   describe '.persistent', ->
     it 'causes the selection to be extended with movement when true', ->
+      buffer.text = 'line1\nline2'
       cursor.pos = 1
       selection.persistent = true
       cursor\down!
-      assert.equal 'Liñe 1 ʘf tƏxt\n', selection.text
+      assert.equal 'line1\n', selection.text
 
   it 'range() returns the [start, stop) range of the selection in ascending order', ->
     selection\set 2, 5
@@ -95,20 +120,17 @@ describe 'Selection', ->
       assert.is_true selection.empty
 
     it 'does not remove the selected text', ->
+      buffer.text = 'foobar'
       selection\set 2, 5
       selection\remove!
-      assert.equal text, buffer.text
-
-    it 'does not change the cursor position', ->
-      selection\set 2, 5
-      selection\remove!
-      assert.equal 5, cursor.pos
+      assert.equal 'foobar', buffer.text
 
   describe 'cut', ->
     it 'removes the selected text', ->
+      buffer.text = 'Liñe 1 ʘf tƏxt'
       selection\set 1, 5
       selection\cut!
-      assert.equal ' 1 ʘf tƏxt', buffer.lines[1].text
+      assert.equal ' 1 ʘf tƏxt', buffer.text
 
     it 'removes the selection', ->
       selection\set 2, 5
@@ -122,6 +144,7 @@ describe 'Selection', ->
       assert.is_false selection.persistent
 
     it 'pushes the selection to the clipboard, with any options as specified', ->
+      buffer.text = 'Liñe 1 ʘf tƏxt'
       selection\set 1, 2
       selection\cut!
 
@@ -141,7 +164,7 @@ describe 'Selection', ->
         selection\cut!
         assert.spy(handler).was_called!
 
-  describe '(clip_options = nil, clipboard_options = nil)', ->
+  describe 'copy(clip_options = nil, clipboard_options = nil)', ->
     it 'removes the selection', ->
       selection\set 1, 5
       selection\copy!
@@ -154,6 +177,7 @@ describe 'Selection', ->
       assert.is_false selection.persistent
 
     it 'pushes the selection to the clipboard, with any options as specified', ->
+      buffer.text = 'Liñe 1 ʘf tƏxt'
       selection\set 1, 5
       selection\copy!
 
@@ -183,9 +207,10 @@ describe 'Selection', ->
 
     describe '.text = <text>', ->
       it 'replaces the selection with <text> and removes the selection', ->
+        buffer.text = 'Liñe 1 ʘf tƏxt'
         selection\set 1, 3
         selection.text = 'Shi'
-        assert.equal 'Shiñe 1 ʘf tƏxt', buffer.lines[1].text
+        assert.equal 'Shiñe 1 ʘf tƏxt', buffer.text
         assert.is_true selection.empty
 
       it 'raises an error if the selection is empty', ->
@@ -196,13 +221,20 @@ describe 'Selection', ->
     after_each -> selection.includes_cursor = false
 
     it 'select(anchor, pos) adjusts pos if needed to only point at the end of selection', ->
+      buffer.text = 'Liñe 1 ʘf tƏxt'
       selection\select 1, 4
       assert.equal 4, selection.cursor
       assert.equal 'Liñe', selection.text
 
       selection\select 4, 2
       assert.equal 5, selection.anchor
+      assert.equal 2, selection.cursor
       assert.equal 'iñe', selection.text
+
+      selection\select 1, 1
+      assert.equal 1, selection.anchor
+      assert.equal 1, selection.cursor
+      assert.equal 'L', selection.text
 
     it '.text includes the current character', ->
       selection\set 1, 3
@@ -251,9 +283,14 @@ describe 'Selection', ->
       editor\paste!
       assert.equal 'LiñeLiñe 1 ʘf tƏxt', buffer.lines[1].text
 
-    it '.empty is still true if anchor and pos are the same sans the includes_cursor', ->
-      selection\set 1, 1
-      assert.is_true selection.empty
+    describe '.empty', ->
+      it 'is true if the selection is really removed', ->
+        assert.is_true selection.empty
 
-      selection\set 1, 2
-      assert.is_false selection.empty
+      it 'is only empty at EOF if a selection is set', ->
+        buffer.text = '123'
+        selection\select 1, 1
+        assert.is_false selection.empty
+
+        selection\select 4, 4
+        assert.is_true selection.empty

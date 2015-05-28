@@ -71,14 +71,15 @@ describe 'VI', ->
     assert.equal cur_pos, cursor.pos
 
   it '<w> moves one word to the right', ->
+    buffer.text = 'LinƏ one'
+    cursor.pos = 1
     press 'w'
     assert.equal 6, cursor.column
     cursor\line_end!
-    press 'w'
-    assert.equal 3, cursor.line
-    assert.equal 1, cursor.column
 
   it '<e> moves to the last character of the current word', ->
+    buffer.text = 'LinƏ one'
+    cursor.pos = 1
     press 'e'
     assert.equal 4, cursor.column
     press 'e'

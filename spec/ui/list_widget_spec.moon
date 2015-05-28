@@ -2,13 +2,12 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Buffer from howl
-import ListWidget, style, highlight from howl.ui
+import ListWidget, TextWidget, style, highlight from howl.ui
 import Matcher from howl.util
 s = require 'serpent'
 
 get_row_height = (list_widget) ->
-  list_widget\update!
-  list_widget.text_widget.sci\text_height 0
+  list_widget.text_widget.row_height
 
 describe 'ListWidget', ->
   local list, buf
@@ -205,10 +204,10 @@ three    four    ]] .. '\n', buf.text
 
     it 'columns are styled using the styles specified in .columns[i].style', ->
       list.matcher = -> { { 'first', 'second' } }
-      list.columns = { { style: 'whitespace'}, { style: 'identifier' } }
+      list.columns = { { style: 'keyword'}, { style: 'identifier' } }
       list\update!
-      assert.equal style.at_pos(buf, 1), 'whitespace'
-      assert.equal style.at_pos(buf, 7), 'identifier'
+      assert.equal 'keyword', style.at_pos(buf, 1)
+      assert.equal 'identifier', style.at_pos(buf, 7)
 
   context 'selection', ->
     before_each ->

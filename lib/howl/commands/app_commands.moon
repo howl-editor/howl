@@ -206,7 +206,7 @@ command.register
       editor: app.editor
       lines: buffer.lines
   handler: (selection) ->
-    app.editor.cursor\move_to selection.line.nr, selection.column
+    app.editor.cursor\move_to line: selection.line.nr, column: selection.column
 
 command.register
   name: 'buffer-structure'
@@ -229,7 +229,7 @@ command.register
       :selected_line
 
   handler: (selection) ->
-    app.editor.cursor\move_to selection.line.nr, selection.column
+    app.editor.cursor\move_to line: selection.line.nr, column: selection.column
 
 -----------------------------------------------------------------------
 -- Howl eval commands
@@ -277,7 +277,7 @@ command.register
   name: 'howl-moon-print'
   description: 'Compiles and shows the Lua for the current buffer or selection'
   handler: ->
-    moonscript = require('moonscript')
+    moonscript = require('moonscript.base')
     editor = app.editor
     buffer = editor.buffer
     title = "#{buffer.title} (compiled to Lua)"
@@ -287,9 +287,15 @@ command.register
       title = "#{buffer.title} (Lua - from selection)"
       text = editor.selection.text
 
-    lua = moonscript.to_lua text
-    buf = Buffer mode.by_name 'lua'
-    buf.text = lua
+    lua, err = moonscript.to_lua text
+    local buf
+    if not lua
+      buf = ActionBuffer!
+      buf\append howl.ui.markup.howl "<error>#{err}</error>"
+    else
+      buf = Buffer mode.by_name 'lua'
+      buf.text = lua
+
     buf.title = title
     buf.modified = false
 

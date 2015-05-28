@@ -1,7 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import Scintilla from howl
 import PropertyObject from howl.aux.moon
 import highlight, style, TextWidget, StyledText from howl.ui
 import Matcher from howl.util
@@ -11,7 +10,7 @@ append = table.insert
 style.define_default 'list_highlight', color: '#ffffff', underline: true
 
 highlight.define_default 'list_selection', {
-  style: highlight.ROUNDBOX,
+  type: highlight.RECTANGLE,
   color: '#888888'
   alpha: 50
   outline_alpha: 100
@@ -97,6 +96,7 @@ class ListWidget extends PropertyObject
       @_highlight_matches line.text, line.start_pos
 
     @_write_status!
+    @text_widget.view.first_visible_line = 1
 
   _highlight_matches: (text, start_pos) =>
     if not @highlight_matches_for or @highlight_matches_for.is_empty
@@ -246,6 +246,7 @@ class ListWidget extends PropertyObject
     @text_widget\adjust_width_to_fit!
 
   show: =>
+    return if @showing
     @text_widget\show!
     @_adjust_height!
     @_write_page!

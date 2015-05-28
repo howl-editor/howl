@@ -7,6 +7,7 @@ return {
   editor:
     border_color: '#000000'
     divider_color: '#000000'
+    background: red
 
     header:
       background: '#000000'
@@ -19,5 +20,4 @@ return {
   styles:
     default:
       color: blue
-      background: red
 }
