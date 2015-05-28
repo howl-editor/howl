@@ -324,7 +324,7 @@ View = {
 
   to_gobject: => @bin
 
-  refresh_display: (from_offset = 0, to_offset, opts = {}) =>
+  refresh_display: (from_offset = 1, to_offset, opts = {}) =>
     return unless @width
     d_lines = @display_lines
     min_y, max_y = nil, nil
@@ -360,7 +360,7 @@ View = {
       start_x = @gutter_width + 1
       start_x = 0 if opts.gutter or start_x == 1
       width = @width - start_x
-      height = (max_y - min_y) + 1
+      height = (max_y - min_y)
       if width > 0 and height > 0
         @area\queue_draw_area start_x, min_y, width, height
 
@@ -459,7 +459,7 @@ View = {
         start_y or= y
 
       y += d_line.height
-      break if y >= clip.y2
+      break if y + 1 >= clip.y2
 
     current_line = @cursor.line
     y = start_y
