@@ -123,53 +123,7 @@ local function main(args)
     })
 
     howl.app = howl.Application(howl.io.File(app_root), args)
-    -- jit.off()
-    -- assert(not jit.status(), "JIT is inadvertently switched off")
-
-    local s = require 'socket'
-    local lvl = 0
-    local cur_trace = nil
-    local cur_count = 0
-    local cur_ind = nil
-    local add = 0
-
-    _G.time = function(name, f)
-      local ind = string.rep('  ', lvl)
-      lvl = lvl + 1
-      local same = name == cur_trace
-      local ret = nil
-
-      if not same then
-        print(ind .. '-> ' .. name .. '..')
-        cur_trace = name
-        cur_count = 1
-        cur_ind = ind
-      else
-        cur_count = cur_count + 1
-      end
-
-      local t1 = socket.gettime()
-      ret = f()
-      local t2 = socket.gettime()
-      elapsed = t2 - t1
-
-      if same then
-        add = add + elapsed
-      else
-        if cur_count > 1 then
-          print(cur_ind .. '<- ' .. cur_trace .. '(' .. cur_count .. '): ' .. string.format('%.3f', add))
-        end
-
-        print(ind .. '<- ' .. name .. ': ' .. string.format('%.5f', elapsed))
-        add = 0
-      end
-      lvl = lvl - 1
-      return ret
-    end
-
-    _G.time = function(_, f)
-      return f()
-    end
+    assert(jit.status(), "JIT is inadvertently switched off")
 
     if os.getenv('BUSTED') then
       local busted = assert(loadfile(argv[2]))
