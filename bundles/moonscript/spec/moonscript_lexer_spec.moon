@@ -70,8 +70,11 @@ describe 'Moonscript lexer', ->
   it 'lexes true, false and nil as special', ->
     assert.same { 'true', 'false', 'nil' }, result "if true then false else nil", 'special'
 
-  it 'lexes capitalized identifiers as class', ->
-    assert.same { 'Foo' }, result "class Foo", 'class'
+  it 'lexes capitalized identifiers as type', ->
+    assert.same { 'Foo' }, result "Foo", 'type'
+
+  it 'lexes class definition names as type_def', ->
+    assert.same { 'Foo' }, result "class Foo", 'type_def'
 
   it 'lexes all valid key formats as key', ->
     assert.same { ':ref', 'plain:', "'string key':" }, result ":ref, plain: true, 'string key': oh_yes", 'key'

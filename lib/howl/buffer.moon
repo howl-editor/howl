@@ -1,19 +1,18 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import Scintilla, styler, BufferContext, BufferLines, Chunk, config, signal from howl
+import BufferContext, BufferLines, BufferMarkers, Chunk, config, signal from howl
 import File from howl.io
 import style from howl.ui
 import PropertyObject from howl.aux.moon
 import destructor from howl.aux
+aullar = require 'aullar'
 
 ffi = require 'ffi'
 
 append = table.insert
+min = math.min
 
-background_sci = Scintilla!
-background_sci\set_lexer Scintilla.SCLEX_NULL
-background_buffer = setmetatable {}, __mode: 'v'
 buffer_titles = setmetatable {}, __mode: 'v'
 title_counters = {}
 
@@ -32,27 +31,25 @@ title_counter = (title) ->
   title_counters[title]
 
 class Buffer extends PropertyObject
-  new: (mode = {}, sci) =>
+  new: (mode = {}) =>
     super!
-    @_scis = setmetatable {}, __mode: 'v'
 
-    if sci
-      @_sci = sci
-      @doc = sci\get_doc_pointer!
-      append @_scis, sci
-    else
-      @doc = background_sci\create_document!
-      @destructor = destructor background_sci\release_document, @doc
-
+    @_buffer = aullar.Buffer!
     @config = config.local_proxy!
+    @markers = BufferMarkers @_buffer
     @completers = {}
     @mode = mode
     @properties = {}
     @data = {}
+    @read_only = false
     @_len = nil
-    @sci_listener =
-      on_text_inserted: self\_on_text_inserted
-      on_text_deleted: self\_on_text_deleted
+    @_eol = '\n'
+    @_views = {}
+    @modified = false
+
+    @_buffer\add_listener
+      on_inserted: self\_on_text_inserted
+      on_deleted: self\_on_text_deleted
 
   @property file:
     get: => @_file
@@ -73,18 +70,9 @@ class Buffer extends PropertyObject
     get: => @_mode
     set: (mode = {}) =>
       old_mode = @_mode
-      had_lexer = old_mode and old_mode.lexer
       @_mode = mode
       @config.chain_to mode.config
-      has_lexer = mode.lexer
-      lexer = has_lexer and Scintilla.SCLEX_CONTAINER or Scintilla.SCLEX_NULL
-      sci\set_lexer lexer for sci in *@scis
-
-      if has_lexer
-        @sci\colourise 0, @sci\get_end_styled!
-      elseif had_lexer
-        styler.clear_styling @sci, self
-
+      @_buffer.lexer = mode.lexer
       signal.emit 'buffer-mode-set', buffer: self, :mode, :old_mode
 
   @property title:
@@ -97,91 +85,67 @@ class Buffer extends PropertyObject
       signal.emit 'buffer-title-set', buffer: self
 
   @property text:
-    get: => @sci\get_text!
+    get: => @_buffer.text
     set: (text) =>
-      @sci\clear_all!
-      @sci\set_code_page Scintilla.SC_CP_UTF8
-      @sci\add_text #text, text
+      @_ensure_writable!
+      @_buffer.text = text
 
-  @property modified:
-    get: => @sci\get_modify!
-    set: (status) =>
-      if not status then @sci\set_save_point!
-      else -- there's no specific message for marking as modified
-        @append ' '
-        @sci\delete_range @size - 1, 1
+  -- @property modified:
+  --   get: => @sci\get_modify!
+  --   set: (status) =>
+  --     if not status then @sci\set_save_point!
+  --     else -- there's no specific message for marking as modified
+  --       @append ' '
+  --       @sci\delete_range @size - 1, 1
 
   @property can_undo:
-    get: => @sci\can_undo!
-    set: (value) => @sci\empty_undo_buffer! if not value
+    get: => @_buffer.can_undo
+    set: (value) => @_buffer\clear_revisions! if not value
 
-  @property size: get: => @sci\get_text_length!
-
-  @property length: get: =>
-    @_len or= @sci\character_count!
-    @_len
-
-  @property lines: get: => BufferLines self, @sci
+  @property size: get: => @_buffer.size
+  @property length: get: => @_buffer.length
+  @property lines: get: => BufferLines self, @_buffer
 
   @property eol:
-    get: =>
-      switch @sci\get_eolmode!
-        when Scintilla.SC_EOL_LF then '\n'
-        when Scintilla.SC_EOL_CRLF then '\r\n'
-        when Scintilla.SC_EOL_CR then '\r'
+    get: => @_eol
     set: (eol) =>
-      s_mode = switch eol
-        when '\n' then Scintilla.SC_EOL_LF
-        when '\r\n' then Scintilla.SC_EOL_CRLF
-        when '\r' then Scintilla.SC_EOL_CR
-        else error 'Unknown eol mode'
-      @sci\set_eolmode s_mode
+      if eol != '\n' and eol != '\r' and eol != '\r\n'
+        error 'Unknown eol mode'
 
-  @property showing: get: => #@scis > 0
+      @_eol = eol
+
+  @property showing: get: => #@_views > 0
 
   @property last_shown:
-    get: => #@scis > 0 and os.time! or @_last_shown
+    get: => #@views > 0 and os.time! or @_last_shown
     set: (timestamp) => @_last_shown = timestamp
 
-  @property destroyed: get: => @doc == nil
-
-  @property multibyte: get: => @sci\is_multibyte!
+  @property multibyte: get: =>
+    @_buffer.size != @_buffer.length
 
   @property modified_on_disk: get: =>
     return false if not @file or not @file.exists
     @file and @file.etag != @sync_etag
-
-  @property read_only:
-    get: => @sci\get_read_only!
-    set: (status) => @sci\set_read_only status
-
-  destroy: =>
-    return if @destroyed
-    error 'Cannot destroy a currently showing buffer', 2 if @showing
-
-    if @destructor
-      @destructor.defuse!
-      @sci\release_document @doc
-      @destructor = nil
-
-    @doc = nil
 
   chunk: (start_pos, end_pos) => Chunk self, start_pos, end_pos
 
   context_at: (pos) => BufferContext self, pos
 
   delete: (start_pos, end_pos) =>
+    @_ensure_writable!
     return if start_pos > end_pos
     b_start, b_end = @byte_offset(start_pos), @byte_offset(end_pos + 1)
-    @sci\delete_range b_start - 1, b_end - b_start
+    @_buffer\delete b_start, b_end - b_start
 
   insert: (text, pos) =>
+    @_ensure_writable!
     b_pos = @byte_offset pos
-    @sci\insert_text b_pos - 1, text
+    @_buffer\insert b_pos, text
     pos + text.ulen
 
   append: (text) =>
-    @sci\append_text #text, text
+    @_ensure_writable!
+    @_buffer\insert @_buffer.size + 1, text
     @length + 1
 
   replace: (pattern, replacement) =>
@@ -206,11 +170,7 @@ class Buffer extends PropertyObject
     for i = #b_offsets, 1, -2
       start_pos = b_offsets[i - 1]
       end_pos = b_offsets[i]
-
-      with @sci
-        \set_target_start start_pos - 1
-        \set_target_end end_pos
-        \replace_target -1, replacement
+      @_buffer\replace start_pos, (end_pos - start_pos) + 1, replacement
 
     #matches / 2
 
@@ -233,26 +193,22 @@ class Buffer extends PropertyObject
     @_associate_with_file file
     @save!
 
-  as_one_undo: (f) =>
-    @sci\begin_undo_action!
-    status, ret = pcall f
-    @sci\end_undo_action!
-    error ret if not status
+  as_one_undo: (f) => @_buffer\as_one_undo f
 
-  undo: => @sci\undo!
-  redo: => @sci\redo!
+  undo: => @_buffer\undo!
+  redo: => @_buffer\redo!
 
   char_offset: (byte_offset) =>
     if byte_offset < 1 or byte_offset > @size + 1
       error "Byte offset '#{byte_offset}' out of bounds (size = #{@size})", 2
 
-    1 + @sci\char_offset byte_offset - 1
+    @_buffer\char_offset byte_offset
 
   byte_offset: (char_offset) =>
     if char_offset < 1 or char_offset > @length + 1
       error "Character offset '#{char_offset}' out of bounds (length = #{@length})", 2
 
-    1 + @sci\byte_offset char_offset - 1
+    @_buffer\byte_offset char_offset
 
   sub: (start_pos, end_pos = -1) =>
     len = @length
@@ -262,13 +218,13 @@ class Buffer extends PropertyObject
     start_pos = 1 if start_pos < 1
     end_pos = len if end_pos > len
 
-    byte_start_pos = @\byte_offset(start_pos)
+    byte_start_pos = @byte_offset(start_pos)
     -- we find the start of the next character
     -- to include the last byte in a multibyte character
-    byte_end_pos = @\byte_offset(end_pos + 1)
+    byte_end_pos = min @byte_offset(end_pos + 1), @_buffer.size + 1
     byte_size = byte_end_pos - byte_start_pos
     return '' if byte_size <= 0
-    ffi.string @sci\get_range_pointer(byte_start_pos - 1, byte_size), byte_size
+    ffi.string @_buffer\get_ptr(byte_start_pos, byte_size), byte_size
 
   find: (search, init = 1) =>
     if init < 0
@@ -309,54 +265,40 @@ class Buffer extends PropertyObject
     signal.emit 'buffer-reloaded', buffer: self
     true
 
-  @property sci:
-    get: =>
-      error 'Attempt to invoke operation on destroyed buffer', 3 if @destroyed
-      if @_sci then return @_sci
-
-      if background_buffer[1] != self
-        background_sci\set_doc_pointer self.doc
-        background_sci\set_code_page Scintilla.SC_CP_UTF8
-        background_buffer[1] = self
-        background_sci.listener = @sci_listener
-
-      background_sci
-
   lex: (end_pos = @size) =>
     if @_mode.lexer
-      styler.style_text self, end_pos, @_mode.lexer
+      print "Buffer.lex"
+      -- styler.style_text self, end_pos, @_mode.lexer
 
-  add_sci_ref: (sci) =>
-    append @_scis, sci
-    @_sci = sci
-    if background_buffer[1] == self
-      background_sci.listener = nil
-      background_buffer[1] = nil
+  add_view_ref: (view) =>
+    append @_views, view
 
-    sci\set_code_page Scintilla.SC_CP_UTF8
-    sci\set_style_bits 8
-    sci\set_lexer @_mode.lexer and Scintilla.SCLEX_CONTAINER or Scintilla.SCLEX_NULL
+  remove_view_ref: (view) =>
+    @_views = [v for v in *@_views when v != view and v != nil]
 
-  remove_sci_ref: (sci) =>
-    @_scis = [s for s in *@_scis when s != sci and s != nil]
-    @_sci = @_scis[1] if sci == @_sci
+  @property views: get: =>
+    [view for _, view in pairs @_views when view != nil]
 
-  @property scis: get: =>
-    [sci for _, sci in pairs @_scis when sci != nil]
+  _ensure_writable: =>
+    if @read_only
+      error "Attempt to modify read-only buffer '#{@title}'", 2
 
   _associate_with_file: (file) =>
     buffer_titles[@_title] = nil if @_title
     @_file = file
     @title = file_title file
 
-  _on_text_inserted: (args) =>
+  _on_text_inserted: (_, _, args) =>
     @_len = nil
+    @modified = true
     args.buffer = self
+
     signal.emit 'text-inserted', args
     signal.emit 'buffer-modified', buffer: self
 
-  _on_text_deleted: (args) =>
+  _on_text_deleted: (_, _, args) =>
     @_len = nil
+    @modified = true
 
     args.buffer = self
     signal.emit 'text-deleted', args

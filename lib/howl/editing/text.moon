@@ -10,7 +10,7 @@ paragraph_break_line = (line) ->
   return mode_check(line) if mode_check
   return true if line.is_blank or line\umatch '^[ \t]'
   start_style = style.at_pos line.buffer, line.start_pos
-  start_style\contains 'embedded'
+  start_style and start_style\contains 'embedded'
 
 paragraph_at = (line) ->
   lines = {}

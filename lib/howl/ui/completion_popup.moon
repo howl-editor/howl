@@ -5,7 +5,7 @@ import MenuPopup, style from howl.ui
 import Completer from howl
 
 is_character = (event) ->
-  event.character and event.character\umatch r'[\\pL_]'
+  event.text and event.text.ulen == 1 and event.text\umatch r'[\\pL_]'
 
 class CompletionPopup extends MenuPopup
 
@@ -25,7 +25,7 @@ class CompletionPopup extends MenuPopup
     @completer = nil
     super!
 
-  on_char_added: (editor, args) =>
+  on_insert_at_cursor: (editor, args) =>
     return unless @completer
     unless is_character args
       @close!
@@ -33,7 +33,7 @@ class CompletionPopup extends MenuPopup
 
     @_load_completions!
 
-  on_text_deleted: (editor, args) =>
+  on_delete_back: (editor, args) =>
     return unless @completer
     if args.at_pos < @completer.start_pos or editor.current_line != @completer.line
       @close!

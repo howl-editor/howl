@@ -69,14 +69,14 @@ describe 'BufferContext', ->
   it '.line holds the current line object', ->
     assert.equal b.lines[1], context_at(1).line
 
-  it '.style holds the style at point', ->
+  it '.style holds the style at point, if any', ->
     buf = ActionBuffer!
     buf\append '[', 'operator'
     buf\append '"foo"', 'string'
     buf\append ' normal'
     assert.equal 'operator', BufferContext(buf, 1).style
     assert.equal 'string', BufferContext(buf, 2).style
-    assert.equal 'unstyled', BufferContext(buf, 7).style
+    assert.is_nil BufferContext(buf, 7).style
 
   it 'contexts are equal for the same buffer and pos', ->
     assert.equal context_at(2), context_at(2)

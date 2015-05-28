@@ -1,5 +1,5 @@
 import File from howl.io
-import Application, Buffer, mode, Scintilla from howl
+import Application, Buffer, mode from howl
 import Editor from howl.ui
 
 describe 'Application', ->
@@ -62,12 +62,13 @@ describe 'Application', ->
         assert.spy(handler).was_called!
 
   it '.buffers are sorted by visibility status and last_shown', ->
-    sci = Scintilla!
+    view = {}
     hidden_buffer = application\new_buffer!
     hidden_buffer.title = 'hidden'
 
     last_shown_buffer = application\new_buffer!
-    editor = Editor last_shown_buffer
+    last_shown_buffer\add_view_ref view
+    last_shown_buffer\remove_view_ref view
     last_shown_buffer.title = 'last_shown'
 
     visible_buffer = application\new_buffer!

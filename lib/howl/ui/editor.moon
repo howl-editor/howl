@@ -2,12 +2,16 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
+aullar = require 'aullar'
 gobject_signal = require 'ljglibs.gobject.signal'
-import Scintilla, Completer, signal, bindings, config, command, clipboard from howl
+import Completer, signal, bindings, config, command, clipboard from howl
+import View from aullar
+aullar_config = aullar.config
 import PropertyObject from howl.aux.moon
 import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
 import Searcher, CompletionPopup from howl.ui
 import auto_pair from howl.editing
+{:max, :min, :abs} = math
 append = table.insert
 
 _editors = setmetatable {}, __mode: 'v'
@@ -20,10 +24,9 @@ indicator_placements =
   bottom_left: true
   bottom_right: true
 
-apply_variable = (method, value) ->
+apply_variable = (option, value) ->
   for e in *editors!
-    sci = e.sci
-    sci[method] sci, value
+    e.view.config[option] = value
 
 apply_property = (name, value) ->
   e[name] = value for e in *editors!
@@ -55,28 +58,30 @@ class Editor extends PropertyObject
     super!
 
     @indicator = setmetatable {}, __index: self\_create_indicator
-
-    @sci = Scintilla!
-
-    style.register_sci @sci
-    theme.register_sci @sci
+    @view = aullar.View!
 
     listener =
-      on_style_needed: self\_on_style_needed
-      on_keypress: self\_on_keypress
-      on_selection_changed: self\_on_selection_changed
-      on_changed: self\_on_changed
-      on_focus: self\_on_focus
-      on_focus_lost: self\_on_focus_lost
-      on_char_added: self\_on_char_added
-      on_text_inserted: self\_on_text_inserted
-      on_text_deleted: self\_on_text_deleted
-      on_error: log.error
-      on_readonly_mod_attempt: -> log.error "Attempt to modify a read-only buffer"
+      on_key_press: self\_on_keypress
+      -- on_selection_changed: self\_on_selection_changed
+      -- on_changed: self\_on_changed
+      on_focus_in: self\_on_focus
+      on_focus_out: self\_on_focus_lost
+      -- on_character_added: self\_on_char_added
+      on_insert_at_cursor: self\_on_insert_at_cursor
+      on_delete_back: self\_on_delete_back
+      -- on_readonly_mod_attempt: -> log.error "Attempt to modify a read-only buffer"
 
-    @sci.listener = listener
+      on_preedit_start: -> log.info "In pre-edit mode.."
+      on_preedit_change: (_, args) ->
+        log.info "Pre-edit: #{args.str} (Enter to submit, escape to cancel)"
+      on_preedit_end: -> log.info "Pre-edit mode finished"
 
-    @selection = Selection @sci
+    @view.listener = listener
+    @view.cursor.listener = {
+      on_pos_changed: self\_on_pos_changed
+    }
+
+    @selection = Selection @view
     @cursor = Cursor self, @selection
     @searcher = Searcher self
     @completion_popup = CompletionPopup self
@@ -84,13 +89,13 @@ class Editor extends PropertyObject
     @header = IndicatorBar 'header', 3
     @footer = IndicatorBar 'footer', 3
 
-    sci_box = Gtk.EventBox {
-      Gtk.Alignment {
-        top_padding: 1
-        bottom_padding: 1
-        @sci\to_gobject!
-      }
-    }
+    aullar_box = Gtk.EventBox { @view\to_gobject! }
+
+    hdr_divider = Gtk.EventBox height_request: 1
+    hdr_divider.style_context\add_class 'divider'
+
+    ftr_divider = Gtk.EventBox height_request: 1
+    ftr_divider.style_context\add_class 'divider'
 
     @bin = Gtk.EventBox {
       Gtk.Alignment {
@@ -99,32 +104,33 @@ class Editor extends PropertyObject
         right_padding: 3,
         bottom_padding: 3,
         Gtk.Box Gtk.ORIENTATION_VERTICAL, {
-          @header\to_gobject!
+          @header\to_gobject!,
+          hdr_divider,
           {
             expand: true,
-            sci_box
+            aullar_box
           }
+          ftr_divider,
           @footer\to_gobject!
         }
       }
     }
-    @bin.style_context\add_class 'editor'
-    sci_box.style_context\add_class 'sci_box'
+    @bin.style_context\add_class 'content_box'
+    aullar_box.style_context\add_class 'aullar_box'
     @bin.can_focus = true
 
     @signal_handlers = {
       on_focus_in_event: gobject_signal.unref_handle @bin\on_focus_in_event ->
-        @line_numbers = @line_numbers -- force width calculation
-        @sci\grab_focus!
+        @view\grab_focus!
 
       on_destroy: gobject_signal.unref_handle @bin\on_destroy ->
-        theme.unregister_background_widget @sci\to_gobject!
-        @buffer\remove_sci_ref @sci
+        theme.unregister_background_widget @view\to_gobject!
+        @buffer\remove_view_ref @view
         @buffer.last_shown = os.time! unless @_is_previewing
         signal.emit 'editor-destroyed', editor: self
     }
 
-    theme.register_background_widget @sci\to_gobject!
+    -- theme.register_background_widget @view\to_gobject!
 
     @buffer = buffer
     @_is_previewing = false
@@ -145,104 +151,81 @@ class Editor extends PropertyObject
 
   @property indentation_guides:
     get: =>
-      sci_val = @sci\get_indentation_guides!
-      switch sci_val
-        when Scintilla.SC_IV_NONE then 'none'
-        when Scintilla.SC_IV_REAL then 'real'
-        when Scintilla.SC_IV_LOOKBOTH then 'on'
-        else '(unknown)'
+      show = @view.config.view_show_indentation_guides
+      show and 'on' or 'none'
 
     set: (value) =>
-      sci_value = switch value
-        when 'none' then Scintilla.SC_IV_NONE
-        when 'real' then Scintilla.SC_IV_REAL
-        when 'on' then Scintilla.SC_IV_LOOKBOTH
-      error "Unknown value for indentation_guides: #{value}", 2 unless sci_value
-      @sci\set_indentation_guides sci_value
+      val = switch value
+        when 'none' then false
+        when 'on' then true
+        else
+          error "Unknown value for indentation_guides: #{value}"
+
+      @view.config.view_show_indentation_guides = val
+
+  @property edge_column:
+    get: => @view.config.view_edge_column
+    set: (v) => @view.config.view_edge_column = v
 
   @property line_wrapping:
     get: =>
-      sci_val = @sci\get_wrap_mode!
-      switch sci_val
-        when Scintilla.SC_WRAP_NONE then 'none'
-        when Scintilla.SC_WRAP_WORD then 'word'
-        when Scintilla.SC_WRAP_CHAR then 'character'
-        else '(unknown)'
+      -- sci_val = @sci\get_wrap_mode!
+      -- switch sci_val
+      --   when Scintilla.SC_WRAP_NONE then 'none'
+      --   when Scintilla.SC_WRAP_WORD then 'word'
+      --   when Scintilla.SC_WRAP_CHAR then 'character'
+      --   else '(unknown)'
 
     set: (value) =>
-      sci_value = switch value
-        when 'none' then Scintilla.SC_WRAP_NONE
-        when 'word' then Scintilla.SC_WRAP_WORD
-        when 'character' then Scintilla.SC_WRAP_CHAR
-      error "Unknown value for line_wrapping: #{value}", 2 unless sci_value
-      @sci\set_wrap_mode sci_value
+      -- sci_value = switch value
+      --   when 'none' then Scintilla.SC_WRAP_NONE
+      --   when 'word' then Scintilla.SC_WRAP_WORD
+      --   when 'character' then Scintilla.SC_WRAP_CHAR
+      -- error "Unknown value for line_wrapping: #{value}", 2 unless sci_value
+      -- @sci\set_wrap_mode sci_value
 
   @property cursor_line_highlighted:
-    get: => @sci\get_caret_line_visible!
-    set: (flag) => @sci\set_caret_line_visible flag
+    get: => @view.config.view_highlight_current_line
+    set: (flag) =>
+      @view.config.view_highlight_current_line = flag
 
   @property horizontal_scrollbar:
-    get: => @sci\get_hscroll_bar!
-    set: (flag) => @sci\set_hscroll_bar flag
+    get: => @view.config.view_show_h_scrollbar
+    set: (flag) => @view.config.view_show_h_scrollbar = flag
 
   @property vertical_scrollbar:
-    get: => @sci\get_vscroll_bar!
-    set: (flag) => @sci\set_vscroll_bar flag
+    get: => @view.config.view_show_v_scrollbar
+    set: (flag) =>
+      @view.config.view_show_v_scrollbar = flag
 
-  @property overtype:
-    get: => @sci\get_overtype!
-    set: (flag) => @sci\set_overtype flag
+  -- @property overtype:
+  --   get: => @sci\get_overtype!
+  --   set: (flag) => @sci\set_overtype flag
 
   @property lines_on_screen:
-    get: => @sci\lines_on_screen!
+    get: => @view.lines_showing
 
   @property line_at_top:
-    get: =>
-      @sci\doc_line_from_visible(@sci\get_first_visible_line!) + 1
-    set: (nr) =>
-      visible_nr = @sci\visible_from_doc_line(nr - 1)
-      @sci\set_first_visible_line(visible_nr)
+    get: => @view.first_visible_line
+    set: (nr) => @view.first_visible_line = nr
 
   @property line_at_bottom:
-    get: =>
-      visible_nr = @sci\get_first_visible_line! + @lines_on_screen
-      @sci\doc_line_from_visible(visible_nr) + 1
-    set: (nr) =>
-      visible_nr = @sci\visible_from_doc_line(nr - 1)
-      @sci\set_first_visible_line(visible_nr - @lines_on_screen)
+    get: => @view.last_visible_line
+    set: (nr) => @view.last_visible_line = nr
 
   @property line_at_center:
-    get: =>
-      visible_nr = @sci\get_first_visible_line! + @lines_on_screen / 2
-      @sci\doc_line_from_visible(visible_nr) + 1
-    set: (nr) =>
-      visible_nr = @sci\visible_from_doc_line(nr - 1)
-      top_visible_nr = visible_nr - math.floor(@lines_on_screen / 2)
-      @sci\set_first_visible_line top_visible_nr
+    get: => @view.middle_visible_line
+    set: (nr) => @view.middle_visible_line = nr
 
   @property line_numbers:
-    get: => @sci\get_margin_width_n(0) > 0
-    set: (flag) =>
-      width = 0
-      if flag
-        needed_for_buffer = math.max(#tostring(@sci\get_line_count!) + 1, 4)
-        width_for_char = @sci\text_width(Scintilla.STYLE_LINENUMBER, '9')
-        width = 4 + needed_for_buffer * width_for_char
-
-      @sci\set_margin_width_n 0, width
-
-  @property line_padding:
-    get: => @sci\get_extra_ascent!
-    set: (value) =>
-      with @sci
-        \set_extra_ascent(value)
-        \set_extra_descent(value)
+    get: => @view.config.view_show_line_numbers
+    set: (flag) => @view.config.view_show_line_numbers = flag
 
   @property active_lines: get: =>
     return if @selection.empty
       { @current_line }
     else
-      @buffer.lines\for_text_range @selection.anchor, @cursor.pos
+      @buffer.lines\for_text_range @selection.anchor, @selection.cursor
 
   @property active_chunk: get: =>
     return if @selection.empty
@@ -251,25 +234,29 @@ class Editor extends PropertyObject
       start, stop = @selection\range!
       @buffer\chunk start, stop - 1
 
-  grab_focus: => @sci\grab_focus!
-  newline: => @buffer\as_one_undo -> @sci\new_line!
+  refresh_display: => @view\refresh_display 1, nil, invalidate: true
+  grab_focus: => @view\grab_focus!
+  newline: => @view\insert @buffer.eol
 
   shift_right: =>
-    if @selection.empty
-      column = @cursor.column
-      @current_line\indent!
-      @cursor.column = column + @buffer.config.indent
-    else
-      @sci\tab!
+    column = @cursor.column
+    @transform_active_lines (lines) ->
+      for line in *lines
+        line\indent!
+
+    @cursor.column = min(@current_line.size + 1, column + @buffer.config.indent)
 
   shift_left: =>
-    if @selection.empty
-      column = @cursor.column
-      if @current_line.indentation > 0
-        @current_line\unindent!
-        @cursor.column = math.max(column - @buffer.config.indent, 0)
-    else
-      @sci\back_tab!
+    column = @cursor.column
+    shift_cursor = @current_line.indentation > 0
+
+    @transform_active_lines (lines) ->
+      for line in *lines
+        if line.indentation > 0
+          line\unindent!
+
+    if shift_cursor
+      @cursor.column = max(column - @buffer.config.indent, 1)
 
   transform_active_lines: (f) =>
     lines = @active_lines
@@ -280,7 +267,7 @@ class Editor extends PropertyObject
     status, ret = pcall f, self
     @cursor.line = line
     delta = @current_line.indentation - indentation
-    @cursor.column = column + delta
+    @cursor.column = max 1, column + delta
     @line_at_top = top_line
     error ret unless status
 
@@ -298,13 +285,13 @@ class Editor extends PropertyObject
   uncomment: => if @buffer.mode.uncomment then @buffer.mode\uncomment self
   toggle_comment: => if @buffer.mode.toggle_comment then @buffer.mode\toggle_comment self
 
-  delete_line: => @sci\line_delete!
+  delete_line: => @buffer.lines[@cursor.line] = nil
 
-  delete_to_end_of_line: (no_copy) =>
-    if no_copy
-      @sci\del_line_right!
+  delete_to_end_of_line: (opts = {}) =>
+    cur_line = @current_line
+    if opts.no_copy
+      cur_line.text = cur_line.text\usub 1, @cursor.column_index - 1
     else
-      cur_line = @current_line
       end_pos = cur_line.end_pos
       end_pos -= 1 if cur_line.next
       @selection\select @cursor.pos, end_pos
@@ -340,10 +327,51 @@ class Editor extends PropertyObject
       @with_position_restored ->
         @insert clip.text
 
-  insert: (text) => @sci\add_text #text, text
-  smart_tab: => @sci\tab!
-  smart_back_tab: => @sci\back_tab!
-  delete_back: => @sci\delete_back!
+  insert: (text) => @view\insert text
+
+  smart_tab: =>
+    if not @selection.empty
+      @shift_right!
+      return
+
+    conf = @buffer.config
+    if conf.tab_indents and @current_context.prefix.is_blank
+      cur_line = @current_line
+      next_indent = cur_line.indentation + config.indent
+      next_indent -= (next_indent % config.indent)
+      cur_line.indentation = next_indent
+      @cursor.column = next_indent + 1
+    else if conf.use_tabs
+      @view\insert '\t'
+    else
+      @view\insert string.rep(' ', conf.indent)
+
+  smart_back_tab: =>
+    if not @selection.empty
+      @shift_left!
+      return
+
+    conf = @buffer.config
+    if conf.tab_indents and @current_context.prefix.is_blank
+      cur_line = @current_line
+      cur_line\unindent!
+      @cursor.column = cur_line.indentation + 1
+    else
+      return if @cursor.column == 1
+      tab_stops = math.floor (@cursor.column - 1) / conf.tab_width
+      col = tab_stops * conf.tab_width + 1
+      col -= conf.tab_width if col == @cursor.column
+      @cursor.column = col
+
+  delete_back: =>
+    if @current_context.prefix\match '^%s+$'
+      if @buffer.config.backspace_unindents
+        cur_line = @current_line
+        cur_line\unindent!
+        @cursor.column = cur_line.indentation + 1
+        return
+
+    @view\delete_back!
 
   delete_forward: =>
     if @selection.empty
@@ -357,13 +385,14 @@ class Editor extends PropertyObject
       cur_line = @current_line
       next_line = cur_line.next
       return unless next_line
-      @cursor\line_end!
-      target_pos = @cursor.pos
-      content_start = next_line\ufind('[^%s]') or 1
-      @buffer\delete target_pos, next_line.start_pos + content_start - 2
-      @buffer\insert ' ', target_pos
+      target_column = #cur_line + 1
+      content_start = next_line\ufind('%S') or 1
+      cur_line.text ..= ' ' .. next_line.text\sub content_start, -1
+      @cursor.column_index = target_column
+      @buffer.lines[next_line.nr] = nil
+      @cursor.column_index = target_column
 
-  duplicate_current: => @sci\selection_duplicate!
+  -- duplicate_current: => @sci\selection_duplicate!
 
   cycle_case: =>
     _capitalize = (word) ->
@@ -400,28 +429,14 @@ class Editor extends PropertyObject
   show_popup: (popup, options = {}) =>
     @remove_popup!
 
-    char_width = @sci\text_width 32, ' '
-    char_height = @sci\text_height 0
-
+    dimensions = @view\text_dimensions 'M'
     x_adjust = 0
-    pos = options.position
-    pos = @cursor.pos if not pos
-    pos = @buffer\byte_offset pos
+    pos = @buffer\byte_offset options.position or @cursor.pos
+    coordinates = @view\coordinates_from_position pos
+    x = coordinates.x
+    y = coordinates.y2 + 2
 
-    line = @sci\line_from_position pos - 1
-    at_eol = @sci\get_line_end_position(line) == pos - 1
-
-    if at_eol
-      pos -= 1
-      x_adjust = char_width
-
-    x = @sci\point_xfrom_position(pos) + x_adjust
-    y = @sci\point_yfrom_position pos
-
-    x -= char_width
-    y += char_height + 2
-
-    popup\show @sci\to_gobject!, :x, :y
+    popup\show @view\to_gobject!, :x, :y
     @popup = window: popup, :options
 
   remove_popup: =>
@@ -436,18 +451,24 @@ class Editor extends PropertyObject
 
   undo: => @buffer\undo!
   redo: => @buffer\redo!
-  scroll_up: => @sci\line_scroll_up!
-  scroll_down: => @sci\line_scroll_down!
+  scroll_up: =>
+    @view.first_visible_line -= 1
+    @view.cursor\ensure_in_view!
+
+  scroll_down: =>
+    @view.first_visible_line += 1
+    @view.cursor\ensure_in_view!
 
   range_is_visible: (start_pos, end_pos) =>
-    start_line = 1 + @sci\line_from_position start_pos - 1
-    end_line = 1 + @sci\line_from_position end_pos - 1
+    start_line = @buffer.lines\at_pos(start_pos).nr
+    end_line = @buffer.lines\at_pos(end_pos).nr
 
     return start_line >= @line_at_top and end_line <= @line_at_bottom
 
   ensure_visible: (pos) =>
     return if @range_is_visible pos, pos
-    line = @sci\line_from_position(pos - 1) + 1
+
+    line = @buffer.lines\at_pos(pos).nr
     if @line_at_top > line
       @line_at_top = math.max 1,  line - 2
     else
@@ -461,7 +482,7 @@ class Editor extends PropertyObject
     if @_buf
       @_buf.properties.position = @cursor.pos
       @_buf.properties.line_at_top = @line_at_top
-      @_buf\remove_sci_ref @sci
+      @_buf\remove_view_ref @view
       unless @_is_previewing
         @_buf.last_shown = os.time!
 
@@ -479,30 +500,25 @@ class Editor extends PropertyObject
         \stop!
         \hide!
 
-    @sci\set_doc_pointer(buffer.doc)
+    @view.buffer = buffer._buffer
 
     @_set_config_settings!
-    style.set_for_buffer @sci, buffer
-    highlight.set_for_buffer @sci, buffer
-    buffer\add_sci_ref @sci
+    buffer\add_view_ref @view
 
     if buffer.properties.line_at_top
       @line_at_top = buffer.properties.line_at_top
 
     pos = buffer.properties.position or 1
-    pos = math.max 1, math.min pos, #buffer
-    @cursor.pos = pos
+    pos = max 1, min pos, #buffer
+    if @cursor.pos != pos
+      @cursor.pos = pos
+    else
+      @_on_pos_changed!
 
   _set_config_settings: =>
     buf = @buffer
     config = buf.config
-    with @sci
-      \set_tab_width config.tab_width
-      \set_use_tabs config.use_tabs
-      \set_indent config.indent
-      \set_tab_indents config.tab_indents
-      \set_back_space_un_indents config.backspace_unindents
-      \set_wrap_visual_flags Scintilla.SC_WRAPVISUALFLAG_END
+    view_conf = @view.config
 
     with config
       @indentation_guides = .indentation_guides
@@ -512,6 +528,7 @@ class Editor extends PropertyObject
       @cursor_line_highlighted = .cursor_line_highlighted
       @line_numbers = .line_numbers
       @line_padding = .line_padding
+      view_conf.cursor_blink_interval = .cursor_blink_interval
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
@@ -531,10 +548,7 @@ class Editor extends PropertyObject
     bar\remove id
     @indicator[id] = nil
 
-  _on_style_needed: (...) =>
-    @buffer\lex ...
-
-  _on_keypress: (event) =>
+  _on_keypress: (view, event) =>
     @remove_popup! if event.key_name == 'escape'
 
     if @popup
@@ -542,53 +556,77 @@ class Editor extends PropertyObject
         @remove_popup!
       else
         if @popup.window.keymap
-          return true if bindings.dispatch event, 'popup', { @popup.window.keymap }, @popup.window
+          return true if bindings.dispatch(event, 'popup', { @popup.window.keymap }, @popup.window)
 
         @remove_popup! if not @popup.options.persistent
     else
       @searcher\cancel!
 
-    if not bindings.is_capturing and auto_pair.handle event, @
-      @remove_popup!
-      return true
-
     maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
-    return true if bindings.process event, 'editor', maps, self
+    handled = bindings.process event, 'editor', maps, self
+
+    unless handled
+      if auto_pair.handle event, @
+        @remove_popup!
+        handled = true
+
+    return true if handled
 
   _on_selection_changed: =>
     @_update_position!
     @_brace_highlight!
     signal.emit 'selection-changed', editor: self, selection: @selection
 
-  _on_changed: =>
+  _on_pos_changed: =>
     @_update_position!
     @_brace_highlight!
-    signal.emit 'editor-changed', editor: self
+    signal.emit 'cursor-changed', editor: self, cursor: @cursor
 
   _brace_highlight: =>
-    should_highlight = @buffer.config.matching_braces_highlighted
+    return unless @view.showing
 
-    if should_highlight
-      current_pos = @sci\get_current_pos!
-      matching_pos = @sci\brace_match current_pos
-      if matching_pos < 0
-        is_brace = @current_context.suffix\find '^[][()<>{}]'
-        if is_brace
-          @sci\brace_bad_light current_pos
-          @_brace_highlighted = true
-          return
-        else
-          matching_pos = @sci\brace_match current_pos - 1
-          current_pos -= 1 if matching_pos >= 0
-
-      if matching_pos >= 0
-        @sci\brace_highlight current_pos, matching_pos
-        @_brace_highlighted = true
-        return
+    {:buffer, :cursor} = @view
 
     if @_brace_highlighted
-      @sci\brace_highlight -1, -1
+      buffer.markers\remove name: 'brace_highlight'
       @_brace_highlighted = false
+
+    should_highlight = @buffer.config.matching_braces_highlighted
+    return unless should_highlight
+    auto_pairs = @buffer.mode.auto_pairs
+    return unless auto_pairs
+
+    get_brace_pos = (buffer, pos, auto_pairs) ->
+      cur_char = buffer\sub pos, pos
+      matching = auto_pairs[cur_char]
+      return cur_char, pos, matching, true if matching
+
+      for k, v in pairs auto_pairs
+        if v == cur_char
+          return cur_char, pos, k, false
+
+    pos = cursor.pos
+    cur_char, start_pos, matching, forward = get_brace_pos buffer, pos, auto_pairs
+    if not matching and pos > 1
+      cur_char, start_pos, matching, forward = get_brace_pos buffer, pos - 1, auto_pairs
+
+    return if not matching or cur_char == matching
+
+    match_pos = if forward
+      search_to = buffer\get_line(@view.last_visible_line).end_offset
+      buffer\pair_match_forward(start_pos, matching, search_to)
+    else
+      search_to = buffer\get_line(@view.first_visible_line).start_offset
+      buffer\pair_match_backward(start_pos, matching, search_to)
+
+    if match_pos and abs(match_pos - start_pos) > 1
+      buffer.markers\add {
+        name: 'brace_highlight',
+        flair: 'brace_highlight',
+        start_offset: match_pos,
+        end_offset: match_pos + 1
+      }
+      @_brace_highlighted = true
 
   _update_position: =>
     pos = @cursor.line .. ':' .. @cursor.column
@@ -604,15 +642,15 @@ class Editor extends PropertyObject
     signal.emit 'editor-defocused', editor: self
     false
 
-  _on_char_added: (args) =>
+  _on_insert_at_cursor: (_, args) =>
     params = moon.copy args
     params.editor = self
-    return if signal.emit 'character-added', params
-    return if @buffer.mode.on_char_added and @buffer.mode\on_char_added params, self
+    return if signal.emit 'insert-at-cursor', params
+    return if @buffer.mode.on_insert_at_cursor and @buffer.mode\on_insert_at_cursor(params, self)
 
     if @popup
-      @popup.window\on_char_added self, params if @popup.window.on_char_added
-    else
+      @popup.window\on_insert_at_cursor(self, params) if @popup.window.on_insert_at_cursor
+    elseif args.text.ulen == 1
       config = @buffer.config
       return unless config.complete != 'manual'
       return unless #@current_context.word_prefix >= config.completion_popup_after
@@ -625,23 +663,10 @@ class Editor extends PropertyObject
       @complete!
       true
 
-  _on_text_inserted: (args) =>
-    args.at_pos += 1
-    args.editor = self
-    args.lines_added = args.lines_affected
-    @buffer.sci_listener.on_text_inserted args
-
+  _on_delete_back: (_, args) =>
     if @popup
-      @popup.window\on_text_inserted self, args if @popup.window.on_text_inserted
-
-  _on_text_deleted: (args) =>
-    args.at_pos += 1
-    args.editor = self
-    args.lines_deleted = args.lines_affected
-    @buffer.sci_listener.on_text_deleted args
-
-    if @popup
-      @popup.window\on_text_deleted self, args if @popup.window.on_text_deleted
+      params = text: args.text, editor: self, at_pos: @buffer\char_offset(args.pos)
+      @popup.window\on_delete_back self, params if @popup.window.on_delete_back
 
 -- Default indicators
 
@@ -702,13 +727,18 @@ with config
 
   .define
     name: 'indentation_guides'
-    description: 'Controls how indentation guides are shown'
+    description: 'Controls whether indentation guides are shown'
     default: 'on'
     options: {
       { 'none', 'No indentation guides are shown' }
-      { 'real', 'Indentation guides are shown inside real indentation white space' }
       { 'on', 'Indentation guides are shown' }
     }
+
+  .define
+    name: 'edge_column'
+    description: 'Shows an edge line at the specified column, if set'
+    default: nil
+    type_of: 'number'
 
   .define
     name: 'line_wrapping'
@@ -764,6 +794,7 @@ with config
 
   for watched_property in *{
     'indentation_guides',
+    'edge_column',
     'line_wrapping',
     'horizontal_scrollbar',
     'vertical_scrollbar',
@@ -774,12 +805,10 @@ with config
     .watch watched_property, apply_property
 
   for live_update in *{
-    { 'tab_width', 'set_tab_width' }
-    { 'use_tabs', 'set_use_tabs' }
-    { 'indent', 'set_indent' }
-    { 'tab_indents', 'set_tab_indents' }
-    { 'backspace_unindents', 'set_back_space_un_indents' }
-    { 'cursor_blink_interval', 'set_caret_period' }
+    { 'tab_width', 'view_tab_size' }
+    { 'line_numbers', 'view_show_line_numbers' }
+    { 'indent', 'view_indent' }
+    { 'cursor_blink_interval', 'cursor_blink_interval' }
 
   }
     .watch live_update[1], (_, value) -> apply_variable live_update[2], value
@@ -793,7 +822,7 @@ for cmd_spec in *{
   { 'toggle-comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
   { 'delete-line', 'Deletes the current line', 'delete_line' }
   { 'cut-to-end-of-line', 'Cuts to the end of line', 'delete_to_end_of_line' }
-  { 'delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line', true }
+  { 'delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line', no_copy: true }
   { 'copy-line', 'Copies the current line to the clipboard', 'copy_line' }
   { 'paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
   { 'smart-tab', 'Inserts tab or shifts selected text right', 'smart_tab' }
@@ -831,14 +860,6 @@ for sel_cmd_spec in *{
 
 -- signals
 
-signal.register 'editor-changed',
-  description: [[Signaled when the editor has been changed in some way.
-This could be the result of the text, or the styling of the text being changed,
-or it could also be that the selection or scroll position has changed.
-]]
-  parameters:
-    editor: 'The editor for which the change occurred'
-
 signal.register 'before-buffer-switch',
   description: 'Signaled right before a buffer is set for an editor'
   parameters:
@@ -868,17 +889,16 @@ signal.register 'editor-destroyed',
   parameters:
     editor: 'The editor that is being destroyed'
 
-signal.register 'character-added',
-  description: 'Signaled when a character has been typed into an editor'
+signal.register 'insert-at-cursor',
+  description: 'Signaled when text has been inserted into an editor at the cursor position'
   parameters:
-    editor: 'The editor that received the character'
-    key_code: 'The unique numeric code for the key pressed'
-    key_name: "A string representation of the key's name, if available"
-    character: 'A string representation of the key pressed, if available'
-    control: 'A boolean indicating whether the control key was held down'
-    shift: 'A boolean indicating whether the shift key was held down'
-    alt: 'A boolean indicating whether the alt key was held down'
-    super: 'A boolean indicating whether the super key was held down'
-    meta: 'A boolean indicating whether the meta key was held down'
+    editor: 'The editor for which the text was inserted'
+    text: 'The inserted text'
+
+signal.register 'cursor-changed',
+  description: 'Signaled when the cursor position has changed'
+  parameters:
+    editor: 'The editor for which the text was inserted'
+    cursor: 'The cursor object'
 
 return Editor

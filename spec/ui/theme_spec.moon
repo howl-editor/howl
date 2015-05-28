@@ -17,6 +17,7 @@ spec_theme = {
   editor:
     border_color: '#000000'
     divider_color: '#000000'
+    background: 'blue'
 
     header:
       background: '#000000'

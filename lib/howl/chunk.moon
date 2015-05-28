@@ -1,7 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import styler from howl
 import PropertyObject from howl.aux.moon
 
 class Chunk extends PropertyObject
@@ -27,8 +26,11 @@ class Chunk extends PropertyObject
         @_styles = if @empty
           {}
         else
-          b_start, b_end = @buffer\byte_offset(@start_pos), @buffer\byte_offset(@end_pos)
-          @_styles = styler.reverse @buffer, b_start, b_end
+          a_buf = @buffer._buffer
+          b_start, b_end = a_buf\byte_offset(@start_pos), a_buf\byte_offset(@end_pos)
+          a_buf\ensure_styled_to pos: b_end
+
+          @_styles = @buffer._buffer.styling\get b_start, b_end
 
       @_styles
 

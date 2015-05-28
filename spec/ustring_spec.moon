@@ -121,6 +121,10 @@ describe 'ustrings', ->
     it 'returns empty match at init for empty string', ->
       assert.same { 2, 1 }, { 'abc'\ufind '', 2 }
 
+    it 'converts position matches correctly', ->
+      assert.same { 1, 3, 1, 4 }, { 'åäö'\ufind '()%S+()' }
+
+
   describe 'rfind(pattern [, init])', ->
     it 'searches backward from end using byte offsets', ->
       assert.same { 5, 6 }, { 'äöxx'\rfind 'xx' }

@@ -57,8 +57,10 @@ handle = (event, editor) ->
     if not same_chars or not overwrite_check or uneven_count context.line.text, char
       pos = editor.cursor.pos
       buffer\insert "#{char}#{mate}", pos
+      editor.cursor.pos = pos + char.ulen
+    else
+      editor.cursor\right!
 
-    editor.cursor\right!
     return true
 
   elseif overwrite_check

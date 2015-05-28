@@ -255,7 +255,7 @@ class CommandLine extends PropertyObject
         @box
       }
     }
-    border_box.style_context\add_class 'editor'
+    border_box.style_context\add_class 'content_box'
     @bin\add border_box
 
     @command_widget = TextWidget
