@@ -1,4 +1,5 @@
 ffi = require 'ffi'
+bit = require 'bit'
 GRegex = require 'ljglibs.glib.regex'
 
 import type, tonumber from _G
@@ -116,9 +117,21 @@ mt = {
 
 is_instance = (v) -> getmetatable(v) == mt
 
-r = (pattern) ->
+r = (pattern, compile_options, match_options) ->
+  comp_flags = 0
+
+  if compile_options
+    for flag in *compile_options
+      comp_flags = bit.bor(comp_flags, flag)
+
+  match_flags = 0
+
+  if match_options
+    for flag in *match_options
+      match_flags = bit.bor(match_flags, flag)
+
   return pattern if is_instance pattern
-  re = GRegex pattern
+  re = GRegex pattern, comp_flags, match_flags
   setmetatable {:re}, mt
 
 return setmetatable {
@@ -127,4 +140,5 @@ return setmetatable {
   :is_instance
 }, {
   __call: (...) => r ...
+  __index: GRegex
 }

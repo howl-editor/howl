@@ -9,6 +9,14 @@ describe 'Regex', ->
     it 'accepts a regex as well', ->
       assert.is_not_nil r r'foo()\\d+'
 
+    it 'accepts and optional table of compile flags', ->
+      reg = r '.', {r.DOTALL}
+      assert.is_truthy reg\match "\n"
+
+    it 'accepts and optional table of match flags', ->
+      reg = r 'x', nil, {r.MATCH_ANCHORED}
+      assert.is_falsy reg\match "ax"
+
   it '.pattern holds the regex used for construction', ->
     assert.equal 'foo(bar)', r('foo(bar)').pattern
 
