@@ -320,7 +320,7 @@ View = {
     if size > 0
       text = @_buffer\sub prev_pos, cur_pos
       @_buffer\delete(prev_pos, size)
-      notify @, 'on_delete_back', :text, pos: cur_pos
+      notify @, 'on_delete_back', :text, pos: prev_pos
 
   to_gobject: => @bin
 
