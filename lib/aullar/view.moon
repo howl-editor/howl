@@ -256,7 +256,7 @@ View = {
       get: => @_buffer
       set: (buffer) =>
         if @_buffer
-          @_buffer\remove_listener(@)
+          @_buffer\remove_listener(@_buffer_listener)
           @cursor.pos = 1
           @selection\clear!
 
