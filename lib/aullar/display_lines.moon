@@ -141,7 +141,6 @@ draw_indentation_guides = (x, y, base_x, line, cr, config, width_of_space) ->
     return unless next_indent and next_indent > view_indent
     indent = min prev_indent, next_indent
 
-  cr\save!
   guide_x = x
   indentation_flair = flair.get 'indentation_guide'
 
@@ -150,9 +149,9 @@ draw_indentation_guides = (x, y, base_x, line, cr, config, width_of_space) ->
     adjusted_x = guide_x - base_x
     continue if adjusted_x < 0
     f = flair.get("indentation_guide_#{i}") or indentation_flair
+    cr\save!
     f\draw adjusted_x, y, f.line_width or 0.5, line.height, cr
-
-  cr\restore!
+    cr\restore!
 
 draw_edge_line = (at_col, x, y, base_x, line, cr, width_of_space) ->
   x += (width_of_space * at_col) - base_x
