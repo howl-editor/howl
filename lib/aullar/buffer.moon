@@ -71,6 +71,9 @@ Buffer = {
       set: (lexer) =>
         @_lexer = lexer
         @styling\invalidate_from 1
+        last_line_shown = @_get_last_line_shown!
+        if last_line_shown > 0
+          @ensure_styled_to line: last_line_shown
     }
 
     text: {
@@ -435,6 +438,15 @@ Buffer = {
           @_last_scanned_line = line.nr - 1
           break
 
+  _get_last_line_shown: =>
+    last_line_shown = 0
+
+    for listener in *@listeners
+      if listener.last_line_shown
+        last_line_shown = max last_line_shown, listener.last_line_shown!
+
+    last_line_shown
+
   _on_modification: (type, offset, text, size, invalidate_offset) =>
     revision = @revisions\push(type, offset, text)
 
@@ -445,11 +457,7 @@ Buffer = {
     if @lexer
       at_line = @get_line_at_offset(offset)
       if at_line -- else at eof
-        last_line_shown = at_line.nr
-        for listener in *@listeners
-          if listener.last_line_shown
-            last_line_shown = max last_line_shown, listener.last_line_shown!
-
+        last_line_shown = max at_line.nr, @_get_last_line_shown!
         style_to = min(last_line_shown + 20, @nr_lines)
         args.styled = @refresh_styling_at at_line.nr, style_to, {
           force_full: lines_modified
