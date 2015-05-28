@@ -296,8 +296,15 @@ Buffer = {
     @notify('styled', styled) unless opts.no_notify
     styled
 
-  ensure_styled_to: (line_nr) =>
+  ensure_styled_to: (opts = {}) =>
     return unless @lexer
+    line_nr = opts.line
+
+    unless line_nr
+      line = @get_line_at_offset(opts.pos)
+      error "Illegal `pos` specified '#{opts.pos}'", 2 unless line
+      line_nr = line.nr
+
     to_line = @get_line min(line_nr + 20, @nr_lines)
     return unless to_line and @styling.last_pos_styled < to_line.end_offset
 

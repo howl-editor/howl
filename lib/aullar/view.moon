@@ -267,6 +267,7 @@ View = {
         @_base_x = 0
         @_reset_display!
         @area\queue_draw!
+        @buffer\ensure_styled_to line: @last_visible_line + 1
     }
   }
 
@@ -280,7 +281,7 @@ View = {
     @_first_visible_line = line
     @_last_visible_line = nil
     @_sync_scrollbars!
-    @buffer\ensure_styled_to @last_visible_line + 1
+    @buffer\ensure_styled_to line: @last_visible_line + 1
     @area\queue_draw!
 
   _sync_scrollbars: (opts = { horizontal: true, vertical: true })=>
@@ -649,7 +650,7 @@ View = {
       @last_visible_line = cur_last_visible
 
     @_sync_scrollbars!
-    @buffer\ensure_styled_to @last_visible_line + 1
+    @buffer\ensure_styled_to line: @last_visible_line + 1
 
   _on_config_changed: (option, val, old_val) =>
     if option == 'view_font_name' or option == 'view_font_size'
