@@ -131,8 +131,11 @@ View = {
       left_padding: @gutter_width,
       @horizontal_scrollbar
     }
+    @horizontal_scrollbar_alignment.no_show_all = not config.view_show_h_scrollbar
 
     @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
+    @vertical_scrollbar.no_show_all = not config.view_show_v_scrollbar
+
     @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
       line = math.floor adjustment.value + 0.5
