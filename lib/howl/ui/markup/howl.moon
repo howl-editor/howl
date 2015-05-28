@@ -4,7 +4,7 @@
 StyledText = howl.ui.StyledText
 append = table.insert
 
-style_chunk_p = r'<(\\w+)>(.*?)</(?:\\1>|>)'
+style_chunk_p = r '<(\\w+)>(.*?)</(?:\\1>|>)', {r.DOTALL}
 
 (text) ->
   pos = 1

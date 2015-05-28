@@ -20,3 +20,9 @@ describe 'howl', ->
       7, 'error', 13,
     }
     assert.same expected, m 'hi <string>my</string> <error>prompt</>!'
+
+  it 'content can contain newlines', ->
+    expected = StyledText 'x\nx', {
+      1, 'string', 4
+    }
+    assert.same expected, m "<string>x\nx</string>"
