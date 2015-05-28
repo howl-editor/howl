@@ -13,7 +13,7 @@ DisplayLines = require 'aullar.display_lines'
 Cursor = require 'aullar.cursor'
 Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
-LineGutter = require 'aullar.line_gutter'
+Gutter = require 'aullar.gutter'
 CurrentLineMarker = require 'aullar.current_line_marker'
 config = require 'aullar.config'
 
@@ -82,7 +82,10 @@ View = {
     @area = Gtk.DrawingArea!
     @selection = Selection @
     @cursor = Cursor @, @selection
-    @line_gutter = LineGutter @
+    @cursor.show_when_inactive = @config.view_show_inactive_cursor
+    @cursor.blink_interval = @config.cursor_blink_interval
+
+    @gutter = Gutter @
     @current_line_marker = CurrentLineMarker @
 
     @im_context = Gtk.ImContextSimple!
@@ -169,7 +172,7 @@ View = {
 
     showing: => @height != nil
     has_focus: => @area.is_focus
-    gutter_width: =>  @config.view_show_line_numbers and @line_gutter.width or 0
+    gutter_width: =>  @config.view_show_line_numbers and @gutter.width or 0
 
     first_visible_line: {
       get: => @_first_visible_line
@@ -442,9 +445,10 @@ View = {
     clip = cr.clip_extents
     conf = @config
     line_draw_opts = config: conf, width_of_space: @width_of_space
+    draw_gutter = conf.view_show_line_numbers and clip.x1 < @gutter_width
 
-    if conf.view_show_line_numbers
-      @line_gutter\start_draw cr, p_ctx, clip
+    if draw_gutter
+      @gutter\start_draw cr, p_ctx, clip, conf.gutter_styling
 
     edit_area_x, y = @edit_area_x, @margin
     cr\move_to edit_area_x, y
@@ -481,8 +485,8 @@ View = {
       if @selection\affects_line line
         @selection\draw_overlay edit_area_x, y, cr, display_line, line
 
-      if conf.view_show_line_numbers
-        @line_gutter\draw_for_line line.nr, 0, y, display_line
+      if draw_gutter
+        @gutter\draw_for_line line.nr, 0, y, display_line
 
       if line.nr == current_line
         if conf.view_highlight_current_line
@@ -494,8 +498,8 @@ View = {
       y += display_line.height
       cr\move_to edit_area_x, y
 
-    if conf.view_show_line_numbers
-      @line_gutter\end_draw!
+    if draw_gutter
+      @gutter\end_draw!
 
   _reset_display: =>
     @_last_visible_line = nil
@@ -656,13 +660,23 @@ View = {
         size: @config.view_font_size * Pango.SCALE
       }
       @_reset_display!
+
+    elseif option == 'view_show_inactive_cursor'
+      @cursor.show_when_inactive = val
+
+    elseif option == 'cursor_blink_interval'
+      @cursor.blink_interval = val
+
     elseif option == 'view_show_v_scrollbar'
       @vertical_scrollbar.visible = val
       @vertical_scrollbar.no_show_all = true
+
     elseif option == 'view_show_h_scrollbar'
       @horizontal_scrollbar_alignment.visible = val
       @horizontal_scrollbar_alignment.no_show_all = true
-    elseif option\match '^view_'
+      @horizontal_scrollbar_alignment.left_padding = @gutter_width
+
+    elseif option\match('^view_') or option\match('^gutter')
       @_reset_display!
 
 }
