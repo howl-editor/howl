@@ -31,7 +31,7 @@ define_options = ->
 
     view_show_line_numbers: {
       type: 'boolean',
-      default: true
+      default: false
     },
 
     view_show_indentation_guides: {
@@ -46,12 +46,12 @@ define_options = ->
 
     view_show_h_scrollbar: {
       type: 'boolean',
-      default: true
+      default: false
     },
 
     view_show_v_scrollbar: {
       type: 'boolean',
-      default: true
+      default: false
     },
 
     view_show_cursor: {
@@ -59,10 +59,27 @@ define_options = ->
       default: true
     },
 
-    view_highlight_current_line: {
+    view_show_inactive_cursor: {
       type: 'boolean',
       default: true
     },
+
+    view_highlight_current_line: {
+      type: 'boolean',
+      default: false
+    },
+
+    cursor_blink_interval: {
+      type: 'number',
+      default: 500
+    },
+
+    gutter_styling: {
+      type: 'table',
+      default:
+        foreground: '#008000'
+        background: '#ff69b4'
+    }
 
   }
 
