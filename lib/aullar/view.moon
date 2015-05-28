@@ -226,7 +226,7 @@ View = {
           first_visible -= 1
 
         @first_visible_line = first_visible
-        -- we don't actually set _last_visible_line here as it might
+        -- we don't actually set @_last_visible_line here as it might
         -- end up different than requested
     }
 
@@ -501,6 +501,7 @@ View = {
     tab_size = @config.view_tab_size
     @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
+    @horizontal_scrollbar_alignment.left_padding = @gutter_width
 
   _on_buffer_styled: (buffer, args) =>
     return unless @showing
