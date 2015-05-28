@@ -90,7 +90,13 @@ define = (name, definition) ->
     definition.name = name
 
   styles[name] = definition
-  attributes[name] = nil
+
+  if name == 'default'
+    attributes = {}
+  else
+    attributes[name] = nil
+    for k in pairs attributes
+      attributes[k] = nil if k\match "^#{name}:"
 
 define_default = (name, attributes) ->
   define name, attributes unless styles[name]
