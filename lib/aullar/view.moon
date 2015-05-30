@@ -313,20 +313,29 @@ View = {
     @_updating_scrolling = false
 
   insert: (text) =>
-    @_buffer\insert @cursor.pos, text
+    if @selection.is_empty
+      @_buffer\insert @cursor.pos, text
+    else
+      start_pos = @selection\range!
+      @_buffer\replace start_pos, @selection.size, text
+
     notify @, 'on_insert_at_cursor', :text
 
   delete_back: =>
-    cur_pos = @cursor.pos
-    @cursor\backward!
-    prev_pos = @cursor.pos
-    size = cur_pos - prev_pos
-    @cursor.pos = cur_pos
+    if @selection.is_empty
+      cur_pos = @cursor.pos
+      @cursor\backward!
+      prev_pos = @cursor.pos
+      size = cur_pos - prev_pos
+      @cursor.pos = cur_pos
 
-    if size > 0
-      text = @_buffer\sub prev_pos, cur_pos
-      @_buffer\delete(prev_pos, size)
-      notify @, 'on_delete_back', :text, pos: prev_pos
+      if size > 0
+        text = @_buffer\sub prev_pos, cur_pos
+        @_buffer\delete(prev_pos, size)
+        notify @, 'on_delete_back', :text, pos: prev_pos
+    else
+      start_pos = @selection\range!
+      @_buffer\delete start_pos, @selection.size
 
   to_gobject: => @bin
 

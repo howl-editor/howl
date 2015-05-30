@@ -29,6 +29,10 @@ Selection = {
   properties: {
     is_empty: => (@_anchor == nil) or (@_anchor == @_end_pos)
 
+    size: =>
+      return 0 if @is_empty
+      abs @_anchor - @_end_pos
+
     anchor: {
       get: => @_anchor
       set: (anchor) =>

@@ -16,6 +16,20 @@ describe 'Selection', ->
   it 'starts at out empty', ->
     assert.is_true selection.is_empty
 
+  describe '.size', ->
+    it 'is zero for an empty selection', ->
+      assert.equals 0, selection.size
+
+    it 'is the number of bytes selected', ->
+      buffer.text = '123456789'
+      selection\set 2, 6
+      assert.equals 4, selection.size
+
+    it 'reports the size correctly for backward selection', ->
+      buffer.text = '123456789'
+      selection\set 6, 2
+      assert.equals 4, selection.size
+
   describe 'affects_line(line)', ->
     line = (nr) -> buffer\get_line nr
 
