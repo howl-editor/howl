@@ -167,6 +167,10 @@ class Editor extends PropertyObject
     get: => @view.config.view_edge_column
     set: (v) => @view.config.view_edge_column = v
 
+  @property line_padding:
+    get: => @view.config.view_line_padding
+    set: (v) => @view.config.view_line_padding = v
+
   @property line_wrapping:
     get: =>
       -- sci_val = @sci\get_wrap_mode!

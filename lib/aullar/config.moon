@@ -69,6 +69,11 @@ define_options = ->
       default: false
     },
 
+    view_line_padding: {
+      type: 'number',
+      default: 1
+    }
+
     cursor_blink_interval: {
       type: 'number',
       default: 500

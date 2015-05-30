@@ -10,7 +10,7 @@ Layout = Pango.Layout
 pango_cairo = Pango.cairo
 flair = require 'aullar.flair'
 
-{:max, :min} = math
+{:max, :min, :floor} = math
 {:copy} = moon
 
 flair.define_default 'indentation_guide', {
@@ -173,7 +173,9 @@ DisplayLine = define_class {
     @layout.attributes = styles.get_attributes @styling, line.size
 
     width, height = @layout\get_pixel_size!
-    @height = height
+    @y_offset = floor @view.config.view_line_padding
+    @text_height = height
+    @height = height + @y_offset * 2
     @width = width + view.cursor.width
     @flairs = get_flairs buffer, line, @
 
@@ -216,7 +218,7 @@ DisplayLine = define_class {
       cr\rectangle x, y, clip.x2 - x, clip.y2
       cr\clip!
 
-    cr\move_to x - base_x, y
+    cr\move_to x - base_x, y + @y_offset
     pango_cairo.show_layout cr, @layout
 
     for f in *@flairs
