@@ -567,6 +567,8 @@ View = {
     elseif type == 'delete' and args.offset < @cursor.pos
       @cursor.pos -= min(@cursor.pos - args.offset, #args.text)
 
+    @selection\clear!
+
     unless @showing
       @_reset_display!
       return
