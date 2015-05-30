@@ -5,7 +5,7 @@ ffi = require 'ffi'
 ffi_string = ffi.string
 import string, type from _G
 append = table.insert
-{:min} = math
+{:min, :max} = math
 
 line_mt =
   __index: (k) =>
@@ -41,9 +41,11 @@ Line = (nr, buffer, sci) ->
     indent: => @indentation += buffer.config.indent
 
     unindent: =>
-      new_indent = @indentation - buffer.config.indent
-      if new_indent >= 0
-        @indentation = new_indent
+      buffer_indent = buffer.config.indent
+      new_indent = max 0, @indentation - buffer_indent
+      if new_indent != @indentation
+        incorrect = new_indent % buffer_indent
+        @indentation = new_indent + incorrect
 
     replace: (i, j, replacement) =>
       b_i, b_j = @byte_offset i, j + 1

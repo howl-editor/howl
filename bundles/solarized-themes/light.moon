@@ -137,6 +137,7 @@ return {
       text_color: white
       background: blue
       background_alpha: 0.6
+      height: 'text'
 
     list_selection:
       type: highlight.RECTANGLE
