@@ -72,7 +72,11 @@ class Buffer extends PropertyObject
       old_mode = @_mode
       @_mode = mode
       @config.chain_to mode.config
-      @_buffer.lexer = mode.lexer
+      if mode.lexer
+        @_buffer.lexer = (text) -> mode.lexer text, @
+      else
+        @_buffer.lexer = nil
+
       signal.emit 'buffer-mode-set', buffer: self, :mode, :old_mode
 
   @property title:
