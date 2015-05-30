@@ -122,6 +122,7 @@ return {
       type: flair.RECTANGLE
       text_color: foreground
       background: '#0064b1'
+      height: 'text'
 
     list_selection:
       type: flair.RECTANGLE

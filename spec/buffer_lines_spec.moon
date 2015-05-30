@@ -171,15 +171,28 @@ describe 'BufferLines', ->
       buf.lines[3]\indent!
       assert.equal '  hƏllØ\n  wØrld\n again!', buf.text
 
-    it '.unindent() unindents the line by <config.indent>', ->
-      buf.text = '  first\n  second'
-      config.indent = 2
-      buf.lines[1]\unindent!
-      assert.equal buf.text, 'first\n  second'
+    it 'describe .unindent()', ->
+      it 'unindents the line by <config.indent>', ->
+        buf.text = '  first\n  second'
+        config.indent = 2
+        buf.lines[1]\unindent!
+        assert.equal buf.text, 'first\n  second'
 
-      buf.config.indent = 1
-      buf.lines[2]\unindent!
-      assert.equal buf.text, 'first\n second'
+        buf.config.indent = 1
+        buf.lines[2]\unindent!
+        assert.equal buf.text, 'first\n second'
+
+      it 'unindents back to a valid indentation line for uneven indents', ->
+        buf.text = '   first\n  second'
+        buf.config.indent = 2
+        buf.lines[1]\unindent!
+        assert.equal '  first\n  second', buf.text
+
+      it 'unindents back to zero for a 1-space indent', ->
+        buf.text = ' first\n  second'
+        buf.config.indent = 2
+        buf.lines[1]\unindent!
+        assert.equal 'first\n  second', buf.text
 
     describe 'replace(i, j, replacement)', ->
       it 'replaces the range [i,j] with <replacement>', ->
