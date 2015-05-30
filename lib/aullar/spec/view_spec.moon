@@ -23,7 +23,7 @@ describe 'View', ->
     local nr_lines_in_screen
 
     before_each ->
-      line_height = view\text_dimensions('M').height
+      line_height = view.display_lines[1].height
       nr_lines_in_screen = math.floor view.height / line_height
       buffer.text = string.rep '123456789\n', nr_lines_in_screen * 3
       view.first_visible_line = 1
@@ -54,8 +54,9 @@ describe 'View', ->
       it 'returns the matching buffer position', ->
         dim = view\text_dimensions 'M'
         buffer.text = '1234\n6789'
+        line_height = view.display_lines[1].height
         assert.equals 2, view\position_from_coordinates(view.edit_area_x + dim.width + 1, 0)
-        assert.equals 8, view\position_from_coordinates(view.edit_area_x + (dim.width * 2) + 1, dim.height + 1)
+        assert.equals 8, view\position_from_coordinates(view.edit_area_x + (dim.width * 2) + 1, line_height + 1)
 
       it 'favours the preceeding character slightly when in doubt', ->
         dim = view\text_dimensions 'M'
@@ -71,6 +72,7 @@ describe 'View', ->
       it 'returns the bounding rectangle for the character at pos', ->
         dim = view\text_dimensions 'M'
         buffer.text = '1234\n6789'
+        line_height = view.display_lines[1].height
         assert.same {
           x: view.edit_area_x + dim.width
           x2: view.edit_area_x + (dim.width * 2)
@@ -81,8 +83,8 @@ describe 'View', ->
         assert.same {
           x: view.edit_area_x + (dim.width * 2)
           x2: view.edit_area_x + (dim.width * 3)
-          y: dim.height
-          y2: dim.height * 2
+          y: line_height
+          y2: line_height + dim.height
         }, view\coordinates_from_position(8)
 
   describe '(when text is inserted)', ->

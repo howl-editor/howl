@@ -170,11 +170,11 @@ need_text_object = (flair) ->
     if not text_object and need_text_object(flair)
       text_object = get_text_object display_line, start_offset, end_offset, flair
 
-    height = display_line.height
+    {:height, :y_offset} = display_line
     adjusted_for_text_height = false
 
     if flair.height == 'text' and height > text_object.height
-      y += floor( (height - text_object.height) / 2 + 1)
+      y += y_offset + (display_line.layout.baseline - text_object.layout.baseline) / SCALE
       height = text_object.height
       adjusted_for_text_height = true
 
@@ -184,7 +184,7 @@ need_text_object = (flair) ->
 
     if flair.text_color
       if not adjusted_for_text_height and height > text_object.height
-        y += floor( (height - text_object.height) / 2 + 1)
+        y += y_offset + (display_line.layout.baseline - text_object.layout.baseline) / SCALE
 
       cr\save!
       if base_x > 0
