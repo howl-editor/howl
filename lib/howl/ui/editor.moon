@@ -368,7 +368,7 @@ class Editor extends PropertyObject
       @cursor.column = col
 
   delete_back: =>
-    if @current_context.prefix\match '^%s+$'
+    if @selection.empty and @current_context.prefix\match '^%s+$'
       if @buffer.config.backspace_unindents
         cur_line = @current_line
         cur_line\unindent!
