@@ -477,6 +477,14 @@ describe 'Editor', ->
         editor\delete_back!
         assert.equal buffer.text, ' hƏllo'
 
+      context 'with a selection', ->
+        it 'deletes the selection', ->
+          buffer.text = ' 2\n 5'
+          selection\set 1, 5
+          cursor.pos = 5
+          editor\delete_back!
+          assert.equal buffer.text, '5'
+
     describe '.delete_forward()', ->
       it 'deletes the character at cursor', ->
         buffer.text = 'hƏllo'
