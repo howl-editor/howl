@@ -228,7 +228,12 @@ describe 'BufferLines', ->
         buf.text = '\t56'
         line = buf.lines[1]
         assert.raises 'column', -> line\real_column 0
-        assert.raises 'column', -> line\real_column 8
+
+      it 'returns the last real column if the virtual column overshoots', ->
+        buf.text = '\t56'
+        line = buf.lines[1]
+        assert.equal 4, line\real_column 8
+        assert.equal 4, line\real_column 9
 
     describe 'virtual_column(column)', ->
       it 'returns the virtual column, accounting for tabs', ->
