@@ -139,8 +139,8 @@ return {
       type: flair.RECTANGLE,
       background: foreground
       text_color: background
-      min_width: 5
-      height: 'text'
+      height: 'text',
+      min_width: 'letter'
 
   styles:
 
