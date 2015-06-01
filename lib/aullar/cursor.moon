@@ -11,7 +11,7 @@ flair.define_default 'cursor', {
   type: flair.RECTANGLE,
   background: '#000000',
   width: 1.5,
-  height: 'text'
+  height: 'text',
 }
 
 flair.define_default 'block_cursor', {
@@ -21,7 +21,8 @@ flair.define_default 'block_cursor', {
   background_alpha: 0.5,
   min_width: 5,
   height: 'text'
-  text_color: '#dddddd'
+  text_color: '#dddddd',
+  min_width: 'letter'
 }
 
 flair.define_default 'inactive_cursor', {
@@ -30,6 +31,7 @@ flair.define_default 'inactive_cursor', {
   min_width: 5,
   line_width: 1,
   height: 'text',
+  min_width: 'letter'
 }
 
 {:max, :min, :abs} = math

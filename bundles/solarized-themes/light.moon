@@ -156,8 +156,8 @@ return {
       type: highlight.RECTANGLE,
       background: base01
       text_color: background
-      min_width: 5
-      height: 'text'
+      height: 'text',
+      min_width: 'letter'
 
   styles:
 
