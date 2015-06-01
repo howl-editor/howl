@@ -12,13 +12,15 @@ flair = require 'aullar.flair'
 flair.define 'selection', {
   type: flair.RECTANGLE,
   background: '#a3d5da',
-  background_alpha: 0.6
+  background_alpha: 0.6,
+  min_width: 'letter'
 }
 
 flair.define 'selection-overlay', {
   type: flair.RECTANGLE,
   background: '#c3e5ea',
   background_alpha: 0.4,
+  min_width: 'letter'
 }
 
 Selection = {
@@ -96,14 +98,18 @@ Selection = {
   draw: (x, y, cr, display_line, line) =>
     start_x, width = x, display_line.width - @view.base_x
     start, stop = @range!
-    start_col, end_col = 1, line.size + 1
+    start_col, end_col = 1, line.full_size
+    sel_start, sel_end = false, false
 
     if start > line.start_offset -- sel starts on line
       start_col = (start - line.start_offset) + 1
+      sel_start = true
 
-    if stop < line.end_offset -- sel ends on line
+    if stop <= line.end_offset -- sel ends on line
       end_col = (stop - line.start_offset) + 1
+      sel_end = true
 
+    return if start_col == end_col and (sel_start or sel_end)
     flair.draw 'selection', display_line, start_col, end_col, x, y, cr
 
   draw_overlay: (x, y, cr, display_line, line) =>
@@ -112,12 +118,15 @@ Selection = {
     start, stop = @range!
     start_col = (start - line.start_offset) + 1
     end_col = (stop - line.start_offset) + 1
+    sel_start = start > line.start_offset
+    sel_end = stop <= line.end_offset
 
     for range in *bg_ranges
       break if range.start_offset > end_col
       if range.end_offset > start_col
         start_o = max start_col, range.start_offset
         end_o = min end_col, range.end_offset
+        continue if start_o == end_o and (sel_start or sel_end)
         flair.draw 'selection-overlay', display_line, start_o, end_o, x, y, cr
 
   _notify_change: =>
