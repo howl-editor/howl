@@ -453,7 +453,7 @@ View = {
     cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
     conf = @config
-    line_draw_opts = config: conf, width_of_space: @width_of_space
+    line_draw_opts = config: conf
     draw_gutter = conf.view_show_line_numbers and clip.x1 < @gutter_width
 
     if draw_gutter
