@@ -178,6 +178,7 @@ DisplayLine = define_class {
     @height = height + @y_offset * 2
     @width = width + view.cursor.width
     @flairs = get_flairs buffer, line, @
+    @width_of_space = @view.width_of_space
 
     @background_ranges = parse_background_ranges @styling
 
@@ -225,11 +226,11 @@ DisplayLine = define_class {
       flair.draw f.flair, @, f.start_offset, f.end_offset, x, y, cr
 
     if opts.config.view_show_indentation_guides
-      draw_indentation_guides x, y, base_x, @, cr, opts.config, opts.width_of_space
+      draw_indentation_guides x, y, base_x, @, cr, opts.config, @width_of_space
 
     edge_column = opts.config.view_edge_column
     if edge_column and edge_column > 0
-      draw_edge_line edge_column, x, y, base_x, @, cr, opts.width_of_space
+      draw_edge_line edge_column, x, y, base_x, @, cr, @width_of_space
 
     cr\restore! if base_x > 0
 }

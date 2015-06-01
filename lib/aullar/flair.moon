@@ -161,8 +161,15 @@ need_text_object = (flair) ->
     rect = layout\index_to_pos end_offset - 1
     width = get_defined_width(start_x, flair, cr, clip)
     width or= x + (rect.x / SCALE) - start_x - base_x
+
     if flair.min_width
-      width = max(flair.min_width - base_x, width) if flair.min_width
+      flair_min_width = flair.min_width
+
+      if flair_min_width == 'letter'
+        flair_min_width = display_line.width_of_space
+
+      width = max(flair_min_width - base_x, width)
+
     return if width <= 0
 
     text_object = flair.text_object
