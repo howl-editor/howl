@@ -8,12 +8,13 @@ Buffer = require 'aullar.buffer'
 Gtk = require 'ljglibs.gtk'
 
 describe 'View', ->
-  local view, buffer, cursor
+  local view, buffer, cursor, selection
 
   before_each ->
     buffer = Buffer ''
     view = View buffer
     cursor = view.cursor
+    selection = view.selection
     window = Gtk.OffscreenWindow default_width: 800, default_height: 640
     window\add view\to_gobject!
     window\show_all!
@@ -133,6 +134,16 @@ describe 'View', ->
       buffer\delete 4, 1
       cursor.pos = 1
       buffer\undo!
+      assert.equals 2, cursor.pos
+
+    it 'restores the selection', ->
+      buffer.text = '12345'
+      cursor.pos = 2
+      selection\set 5, 2
+      view\delete_back!
+      buffer\undo!
+      assert.equals 5, selection.anchor
+      assert.equals 2, selection.end_pos
       assert.equals 2, cursor.pos
 
   describe 'when a buffer operation is redone', ->

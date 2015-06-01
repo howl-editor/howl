@@ -64,6 +64,9 @@ describe 'Selection', ->
         assert.same { 2, 1 }, { selection.anchor, selection.end_pos }
 
   describe 'range()', ->
+    it 'is {nil, nil} for an empty selection', ->
+      assert.same {nil, nil}, { selection\range! }
+
     it 'returns the start and stop position, in ascending order', ->
       selection\set 2, 4
       assert.same { 2, 4 }, { selection\range! }
