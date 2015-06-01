@@ -559,9 +559,10 @@ View = {
     @_sync_scrollbars!
 
   _on_buffer_modified: (buffer, args, type) =>
-    -- adjust cursor if neccessary
     cur_pos = @cursor.pos
+    sel_anchor, sel_end = @selection.anchor, @selection.end_pos
 
+    -- adjust cursor if neccessary
     if type == 'insert' and args.offset <= @cursor.pos
       @cursor.pos += #args.text
     elseif type == 'delete' and args.offset < @cursor.pos
@@ -577,6 +578,8 @@ View = {
       with args.revision.meta
         .cursor_before or= cur_pos
         .cursor_after = @cursor.pos
+        .selection_anchor = sel_anchor
+        .selection_end_pos = sel_end
 
     lines_changed = contains_newlines(args.text)
     if lines_changed
@@ -604,6 +607,9 @@ View = {
   _on_buffer_undo: (buffer, revision) =>
     pos = revision.meta.cursor_before or revision.offset
     @cursor.pos = pos
+    {:selection_anchor, :selection_end_pos} = revision.meta
+    if selection_anchor
+      @selection\set selection_anchor, selection_end_pos
 
   _on_buffer_redo: (buffer, revision) =>
     pos = revision.meta.cursor_after or revision.offset

@@ -254,6 +254,9 @@ describe 'Selection', ->
         assert.equal 'liñe1', selection.text
 
     describe 'range()', ->
+      it 'is {nil, nil} for an empty selection', ->
+        assert.same {nil, nil}, { selection\range! }
+
       it 'includes the cursor position if needed', ->
         selection\set 2, 5
         start, stop = selection\range!

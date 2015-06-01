@@ -84,6 +84,7 @@ Selection = {
     @_notify_change!
 
   range: =>
+    return nil, nil if @is_empty
     min(@_anchor, @_end_pos), max(@_anchor, @_end_pos)
 
   affects_line: (line) =>
