@@ -517,16 +517,23 @@ describe 'Editor', ->
     describe '.shift_right()', ->
       before_each ->
         config.use_tabs = false
-
-      it 'right-shifts the lines included in a selection if any', ->
         config.indent = 2
-        buffer.text = 'hƏllo\nselected\nworld!'
-        selection\set 2, 10
-        editor\shift_right!
-        assert.equal '  hƏllo\n  selected\nworld!', buffer.text
+
+      context 'with a selection', ->
+        it 'right-shifts the lines included in the selection', ->
+          buffer.text = 'hƏllo\nselected\nworld!'
+          selection\set 2, 10
+          editor\shift_right!
+          assert.equal '  hƏllo\n  selected\nworld!', buffer.text
+
+        it 'adjusts and keeps the selection', ->
+          buffer.text = '  xx\nyy zz'
+          selection\set 3, 8 -- 'xx\nyy'
+          editor\shift_right!
+          assert.equal 'xx\n  yy', selection.text
+          assert.same { 5, 12 }, { selection\range! }
 
       it 'right-shifts the current line when nothing is selected, remembering column', ->
-        config.indent = 2
         buffer.text = 'hƏllo\nworld!'
         cursor.pos = 3
         editor\shift_right!
@@ -534,12 +541,20 @@ describe 'Editor', ->
         assert.equal 5, cursor.pos
 
     describe '.shift_left()', ->
-      it 'left-shifts the lines included in a selection if any', ->
-        config.indent = 2
-        buffer.text = '  hƏllo\n  selected\nworld!'
-        selection\set 4, 12
-        editor\shift_left!
-        assert.equal 'hƏllo\nselected\nworld!', buffer.text
+      context 'with a selection', ->
+        it 'left-shifts the lines included in the selection', ->
+          config.indent = 2
+          buffer.text = '  hƏllo\n  selected\nworld!'
+          selection\set 4, 12
+          editor\shift_left!
+          assert.equal 'hƏllo\nselected\nworld!', buffer.text
+
+        it 'adjusts and keeps the selection', ->
+          buffer.text = '    xx\n  yy zz'
+          selection\set 3, 12 -- '  xx\nyy'
+          editor\shift_left!
+          assert.equal '  xx\nyy', selection.text
+          assert.same { 1, 8 }, { selection\range! }
 
       it 'left-shifts the current line when nothing is selected, remembering column', ->
         config.indent = 2
