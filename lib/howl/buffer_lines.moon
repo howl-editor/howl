@@ -63,7 +63,6 @@ Line = (nr, buffer, sci) ->
         c_col += 1
         break if v_col >= col
 
-      error "Illegal column #{col}", 2 if col != v_col
       c_col
 
     virtual_column: (col) =>
