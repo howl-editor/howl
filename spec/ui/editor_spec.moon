@@ -596,21 +596,45 @@ describe 'Editor', ->
     context 'with no selection active', ->
       it 'changes all lowercase word to all uppercase', ->
         buffer.text = 'hello wörld'
-        editor.cursor.pos = 7
+        cursor.pos = 7
         editor\cycle_case!
         assert.equals 'hello WÖRLD', buffer.text
 
       it 'changes all uppercase word to titlecase', ->
         buffer.text = 'hello WÖRLD'
-        editor.cursor.pos = 7
+        cursor.pos = 7
         editor\cycle_case!
         assert.equals 'hello Wörld', buffer.text
 
       it 'changes mixed case word to all lowercase', ->
         buffer.text = 'hello WörLd'
-        editor.cursor.pos = 7
+        cursor.pos = 7
         editor\cycle_case!
         assert.equals 'hello wörld', buffer.text
+
+  describe 'duplicate_current', ->
+    context 'with an active selection', ->
+      it 'duplicates the selection', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 2
+        selection\set 2, 5 -- 'ell'
+        editor\duplicate_current!
+        assert.equals 'hellello\nwörld', buffer.text
+
+      it 'keeps the cursor and current selection', ->
+        buffer.text = '123456'
+        selection\set 5, 2
+        editor\duplicate_current!
+        assert.equals 2, cursor.pos
+        assert.equals 2, selection.cursor
+        assert.equals 5, selection.anchor
+
+    context 'with no active selection', ->
+      it 'duplicates the current line', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 3
+        editor\duplicate_current!
+        assert.equals 'hello\nhello\nwörld', buffer.text
 
   context 'resource management', ->
     pending 'editors are collected as they should', ->

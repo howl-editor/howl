@@ -430,7 +430,14 @@ class Editor extends PropertyObject
       @buffer.lines[next_line.nr] = nil
       @cursor.column_index = target_column
 
-  -- duplicate_current: => @sci\selection_duplicate!
+  duplicate_current: =>
+    if @selection.empty
+      line = @current_line
+      @buffer.lines\insert line.nr + 1, line.text
+    else
+      {:anchor, :cursor} = @selection
+      @buffer\insert @selection.text, max(anchor, cursor)
+      @selection\set anchor, cursor
 
   cycle_case: =>
     _capitalize = (word) ->
