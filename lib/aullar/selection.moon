@@ -99,7 +99,7 @@ Selection = {
   draw: (x, y, cr, display_line, line) =>
     start_x, width = x, display_line.width - @view.base_x
     start, stop = @range!
-    start_col, end_col = 1, line.full_size
+    start_col, end_col = 1, line.size + 1
     sel_start, sel_end = false, false
 
     if start > line.start_offset -- sel starts on line
