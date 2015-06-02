@@ -13,7 +13,7 @@ describe 'View', ->
   before_each ->
     buffer = Buffer ''
     view = View buffer
-    view.config.view_line_padding = 2
+    view.config.view_line_padding = 0
     cursor = view.cursor
     selection = view.selection
     window = Gtk.OffscreenWindow default_width: 800, default_height: 640
