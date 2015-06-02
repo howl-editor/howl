@@ -827,7 +827,7 @@ with config
   .define
     name: 'line_padding'
     description: 'Extra spacing above and below each line'
-    default: 0
+    default: 1
     type_of: 'number'
 
   for watched_property in *{
