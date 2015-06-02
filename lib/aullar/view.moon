@@ -424,7 +424,7 @@ View = {
           x: x + (rect.x / Pango.SCALE)
           x2: x + ((rect.x + rect.width) / Pango.SCALE)
           y: y + (rect.y / Pango.SCALE)
-          y2: y + ((rect.y + rect.height) / Pango.SCALE)
+          y2: y + (rect.y / Pango.SCALE) + d_line.height
         }
 
       y += d_line.height
@@ -436,7 +436,7 @@ View = {
     layout = Pango.Layout p_ctx
     layout.text = text
     width, height = layout\get_pixel_size!
-    :width, :height
+    :width, height: height + (@config.view_line_padding * 2)
 
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width

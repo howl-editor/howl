@@ -13,6 +13,7 @@ describe 'View', ->
   before_each ->
     buffer = Buffer ''
     view = View buffer
+    view.config.view_line_padding = 2
     cursor = view.cursor
     selection = view.selection
     window = Gtk.OffscreenWindow default_width: 800, default_height: 640
@@ -46,7 +47,7 @@ describe 'View', ->
 
     describe '.last_visible_line', ->
       it 'is the last visible line', ->
-        assert.equals math.floor(nr_lines_in_screen), view.last_visible_line
+        assert.equals nr_lines_in_screen, view.last_visible_line
 
   context '(coordinate translation)', ->
     before_each -> view.margin = 0
@@ -73,7 +74,6 @@ describe 'View', ->
       it 'returns the bounding rectangle for the character at pos', ->
         dim = view\text_dimensions 'M'
         buffer.text = '1234\n6789'
-        line_height = view.display_lines[1].height
         assert.same {
           x: view.edit_area_x + dim.width
           x2: view.edit_area_x + (dim.width * 2)
@@ -84,8 +84,8 @@ describe 'View', ->
         assert.same {
           x: view.edit_area_x + (dim.width * 2)
           x2: view.edit_area_x + (dim.width * 3)
-          y: line_height
-          y2: line_height + dim.height
+          y: dim.height
+          y2: dim.height + dim.height
         }, view\coordinates_from_position(8)
 
   describe '(when text is inserted)', ->
