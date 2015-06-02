@@ -29,7 +29,7 @@ line_mt =
   __len: => @text.ulen
   __eq: (op1, op2) -> tostring(op1) == tostring(op2)
 
-Line = (nr, buffer, sci) ->
+Line = (nr, buffer) ->
   a_buf = buffer._buffer
 
   get_line = -> a_buf\get_line nr

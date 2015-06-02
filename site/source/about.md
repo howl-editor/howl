@@ -89,11 +89,6 @@ Quoted from the above page, LuaJIT is "a Just-In-Time Compiler (JIT) for the Lua
 programming language". What Howl uses for it's runtime. Very fast and lean, and
 offers excellent C integration via its ffi interface.
 
-#### [Scintilla](http://www.scintilla.org)
-
-A free source code editing component. Howl builds its editing support on top of
-Scintilla.
-
 #### [Moonscript](http://www.moonscript.org)
 
 "MoonScript is a dynamic scripting language that compiles into Lua. It gives you
