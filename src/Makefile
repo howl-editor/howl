@@ -11,14 +11,6 @@ LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
 LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
 LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
-SCINTILLA_VER = scintilla342
-SCINTILLA_CHECKSUM = 6a6fb89faf787b70f20a4df1cc7f3e6e
-SCINTILLA_URL = http://prdownloads.sourceforge.net/scintilla/$(SCINTILLA_VER).tgz?download
-SCINTILLA = deps/$(SCINTILLA_VER)-howl-1
-SCINTILLA_IFACE = $(SCINTILLA)/include/Scintilla.iface
-SCINTILLA_CFLAGS = -I$(SCINTILLA)/include -DGTK=1
-SCINTILLA_ARCHIVE = $(SCINTILLA)/bin/scintilla.a
-SCINTILLA_DEFS = GTK=1 GTK3=1 LEXOBJS=
 
 LPEG_VER = lpeg-0.10.2
 LPEG_CHECKSUM = 1402433f02e37ddadff04a3d4118b026
@@ -26,11 +18,8 @@ LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
 LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
 
-SCI_GEN = tools/sci_gen.lua
-SCI_GEN_TARGET = ../lib/howl/scintilla.lua
-
-CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
-ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE)
+CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
+ARCHIVES = $(LUAJIT_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
 LD_FLAGS = -Wl,-E
 OBJECTS = main.o process_helpers.o
@@ -41,7 +30,7 @@ all: howl bytecode
 howl: ${OBJECTS} main.h $(ARCHIVES) $(DEP_OBJECTS) Makefile
 	${CC} -o howl ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
 
-${OBJECTS}: %.o : %.c main.h $(SCINTILLA) $(LUAJIT)
+${OBJECTS}: %.o : %.c main.h $(LUAJIT)
 	${CC} -c $< ${CFLAGS}
 
 $(LPEG):
@@ -50,16 +39,6 @@ $(LPEG):
 $(LPEG_OBJECT): $(LPEG) $(LUAJIT)
 	cd ${LPEG} && $(MAKE) lpeg.o LUADIR=../../$(LUAJIT)/src
 
-$(SCINTILLA):
-	@tools/download $(SCINTILLA_URL) $(SCINTILLA_CHECKSUM) tar xzf {file} -C deps
-	@mv deps/scintilla $(SCINTILLA)
-	@perl -piorig -e 's/LINK_LEXER\(\w+\);//' $(SCINTILLA)/src/Catalogue.cxx
-	@echo Applying patches for Scintilla..
-	@cd $(SCINTILLA) && patch -p0 < ../../deps-patches/scintilla-older-gtk-bug.patch
-
-$(SCINTILLA_ARCHIVE): $(SCINTILLA)
-	cd ${SCINTILLA}/gtk && $(MAKE) $(SCINTILLA_DEFS)
-
 $(LUAJIT):
 	@tools/download $(LUAJIT_URL) $(LUAJIT_CHECKSUM) tar xzf {file} -C deps
 	@perl -piorig -e 's/LUA_IDSIZE\s*\d+/LUA_IDSIZE 120/' $(LUAJIT)/src/luaconf.h
@@ -67,21 +46,17 @@ $(LUAJIT):
 $(LUAJIT_ARCHIVE): $(LUAJIT)
 	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT"
 
-deps-download: $(LUAJIT) $(SCINTILLA) $(LPEG)
+deps-download: $(LUAJIT) $(LPEG)
 
 deps-purge:
-	rm -rf $(LUAJIT) $(LPEG) $(SCINTILLA)
+	rm -rf $(LUAJIT) $(LPEG)
 
 deps-clean:
 	@rm $(LPEG_OBJECT) || true
-	@cd $(SCINTILLA)/gtk && $(MAKE) clean
 	@cd $(LUAJIT) && $(MAKE) clean
 
 clean:
 	-rm -f ${OBJECTS}
-
-scigen: $(LUAJIT_ARCHIVE) $(SCINTILLA)
-	$(LUAJIT)/src/luajit $(SCI_GEN) $(SCINTILLA_IFACE) $(SCI_GEN_TARGET)
 
 bytecode: howl
 	-@find ../lib ../bundles -name '*.bc' | xargs rm
