@@ -3,6 +3,7 @@
 
 Atom = require 'ljglibs.gdk.atom'
 GtkClipboard = require 'ljglibs.gtk.clipboard'
+ffi = require 'ffi'
 
 {:config} = howl
 
@@ -17,6 +18,7 @@ config.define {
 clips = {}
 registers = {}
 system_clipboard = GtkClipboard.get(Atom.SELECTION_CLIPBOARD)
+sync_counter = ffi.new 'uint64_t'
 
 local Clipboard
 Clipboard = {
@@ -30,6 +32,7 @@ Clipboard = {
       clips[config.clipboard_max_items + 1] = nil
       system_clipboard.text = item.text
       system_clipboard\set_can_store!
+      sync_counter += 1
 
   store: ->
     system_clipboard\store!
@@ -39,11 +42,12 @@ Clipboard = {
     registers = {}
 
   synchronize: ->
-    system_text = system_clipboard.text
-    return unless system_text
-    cur = clips[1]
-    if not cur or cur.text != system_text
-      Clipboard.push system_text
+    sync_id = sync_counter
+    system_clipboard\request_text (_, text) ->
+      if sync_id == sync_counter and text
+        cur = clips[1]
+        if not cur or cur.text != text
+          Clipboard.push text
 
   current: get: ->
     clips[1]
