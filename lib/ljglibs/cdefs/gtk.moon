@@ -284,8 +284,13 @@ ffi.cdef [[
 
   /* GtkClipboard */
   typedef struct {} GtkClipboard;
+  typedef GVCallback3 GtkClipboardTextReceivedFunc;
+
   GtkClipboard * gtk_clipboard_get (GdkAtom selection);
   gchar * gtk_clipboard_wait_for_text (GtkClipboard *clipboard);
+  void gtk_clipboard_request_text (GtkClipboard *clipboard,
+                                   GtkClipboardTextReceivedFunc callback,
+                                   gpointer user_data);
   void gtk_clipboard_clear (GtkClipboard *clipboard);
   void gtk_clipboard_set_text (GtkClipboard *clipboard,
                                const gchar *text,
