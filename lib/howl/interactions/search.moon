@@ -33,8 +33,8 @@ interact.register
   handler: ->
     interact.search 'forward_to', 'plain'
       title: 'Forward Search'
-      forward_keys: howl.bindings.keystrokes_for('buffer-search-word-forward', 'editor')
-      backward_keys: howl.bindings.keystrokes_for('buffer-search-word-backward', 'editor')
+      forward_keys: howl.bindings.keystrokes_for('buffer-search-forward', 'editor')
+      backward_keys: howl.bindings.keystrokes_for('buffer-search-backward', 'editor')
 
 interact.register
   name: 'backward_search'
@@ -42,8 +42,8 @@ interact.register
   handler: ->
     interact.search 'backward_to', 'plain'
       title: 'Backward Search'
-      forward_keys: howl.bindings.keystrokes_for('buffer-search-word-forward', 'editor')
-      backward_keys: howl.bindings.keystrokes_for('buffer-search-word-backward', 'editor')
+      forward_keys: howl.bindings.keystrokes_for('buffer-search-forward', 'editor')
+      backward_keys: howl.bindings.keystrokes_for('buffer-search-backward', 'editor')
 
 interact.register
   name: 'forward_search_word'
