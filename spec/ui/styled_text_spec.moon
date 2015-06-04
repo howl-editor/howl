@@ -58,7 +58,7 @@ describe 'StyledText', ->
 
         tbl = StyledText.for_table {chunk, chunk}
         assert.equal 'hëllo \nhëllo \n', tostring tbl
-        assert.equal tbl.styles, {1, 'string', 7, 9, 'string', 15}
+        assert.same tbl.styles, {1, 'string', 7, 9, 'string', 15}
 
 
     context 'when column style is provided', ->
