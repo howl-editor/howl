@@ -1,30 +1,31 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import BufferPopup, ActionBuffer, List from howl.ui
+import style, ListWidget, Popup from howl.ui
 
-class MenuPopup extends BufferPopup
+class MenuPopup extends Popup
+  new: (@items, @callback) =>
+    error('Missing argument #1: items', 3) if not @items
+    error('Missing argument #2: callback', 3) if not @callback
 
-  new: (items, callback, list_options = {}) =>
-    error('Missing argument #1: items', 3) if not items
-    error('Missing argument #2: callback', 3) if not callback
-    @callback = callback
-    buffer = ActionBuffer!
-    @list = List buffer, 1
-    @list.trailing_newline = false
-    @list.selection_enabled = true
-    @list.items = items
-    @list[k] = v for k,v in pairs list_options
+    @list = ListWidget (-> @items),
+      default_style: style.popup and 'popup'
+      top_border: 0
+      auto_fit_width: true
+    @highlight_matches_for = ''
+    super @list\to_gobject!
     @list\show!
-    super buffer
 
-  @property items:
-    get: => @list.items
-    set: (items) =>
-      @list\clear!
-      @list.items = items
-      @list\show!
-      @resize!
+  refresh: =>
+    @list\update @highlight_matches_for
+
+  show: (...) =>
+    @refresh!
+    super ...
+    @resize!
+
+  resize: =>
+    super @list.padded_width, @list.padded_height
 
   choose: =>
     if self.callback @list.selection

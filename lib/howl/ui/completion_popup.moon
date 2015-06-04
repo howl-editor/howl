@@ -1,5 +1,5 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import MenuPopup, style from howl.ui
 import Completer from howl
@@ -12,21 +12,14 @@ class CompletionPopup extends MenuPopup
   new: (editor) =>
     error('Missing argument #1: editor', 3) if not editor
     @editor = editor
-    @candidates = {}
-    super {}, self\_on_completed
-    @buffer.title = 'completion'
+    super {}, @\_on_completed
 
   @property position: get: => @completer.start_pos
-  @property empty: get: => #@candidates == 0
+  @property empty: get: => #@items == 0
 
   complete: =>
     @_init_completer!
-    @candidates, @search = @completer\complete @editor.cursor.pos
-
-  show: (...) =>
-    @list.highlight_matches_for = @search
-    @items = @candidates
-    super ...
+    @_load_completions!
 
   close: =>
     @completer = nil
@@ -38,12 +31,7 @@ class CompletionPopup extends MenuPopup
       @close!
       return
 
-    items, search = @completer\complete @editor.cursor.pos
-    if #items == 0
-      @close!
-    else
-      @list.highlight_matches_for = search
-      @items = items
+    @_load_completions!
 
   on_text_deleted: (editor, args) =>
     return unless @completer
@@ -54,7 +42,16 @@ class CompletionPopup extends MenuPopup
   _init_completer: =>
     @completer = Completer @editor.buffer, @editor.cursor.pos
     comp_style = style.at_pos(@editor.buffer, @completer.start_pos) or 'default'
-    @list.column_styles = { comp_style, style.comment }
+    @list.columns = { { style: comp_style } }
+
+  _load_completions: =>
+    @items, @highlight_matches_for = @completer\complete @editor.cursor.pos
+
+    if #@items > 0
+      @refresh!
+      @resize!
+    else
+      @close!
 
   _on_completed: (item) =>
     @editor.cursor.pos = @completer\accept item, @editor.cursor.pos
