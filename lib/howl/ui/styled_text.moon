@@ -82,13 +82,10 @@ for_table = (items, columns=nil) ->
   offset = 0
 
   write = (text, style=nil) ->
+    return unless #text > 0
     append text_parts, tostring text
 
-    if style
-      append styles, offset + 1
-      append styles, style
-      append styles, offset + #text + 1
-    elseif text.styles
+    if text.styles
       i = 1
       while text.styles[i]
         append styles, text.styles[i] + offset
@@ -97,8 +94,12 @@ for_table = (items, columns=nil) ->
         i += 1
         append styles, text.styles[i] + offset
         i += 1
+    elseif style
+      append styles, offset + 1
+      append styles, style
+      append styles, offset + #text + 1
 
-    offset += #text
+    offset += #(tostring text)
 
   column_widths = compute_column_widths columns, items
 
@@ -106,10 +107,9 @@ for_table = (items, columns=nil) ->
     for i = 1, #columns
       header = columns[i].header
       continue unless header
-      write header, 'list_header'
-      pad_width = column_widths[i] - #header
+      pad_width = column_widths[i] - header.ulen
       pad_width += 1 if i < #columns
-      write padding pad_width
+      write header..padding(pad_width), 'list_header'
 
     write '\n'
 
@@ -118,10 +118,11 @@ for_table = (items, columns=nil) ->
       item = { item }
     for i = 1, column_widths.num
       cell = display_str item[i]
-      write cell, not is_styled(cell) and columns and columns[i] and columns[i].style
-      pad_width = column_widths[i] - #tostring(cell)
+      cell_style = columns and columns[i] and columns[i].style
+      pad_width = column_widths[i] - tostring(cell).ulen
       pad_width += 1 if i < column_widths.num
-      write padding pad_width
+      write cell, cell_style
+      write padding(pad_width), cell_style
 
     write '\n'
 

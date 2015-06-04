@@ -43,43 +43,53 @@ describe 'StyledText', ->
       assert.includes tostring(tbl), '33'
 
     context 'when items contain chunks', ->
-      buf = Buffer!
-      buf.text = ' two '
-      chunk = buf\chunk 2, 4
 
       it 'pads chunks correctly', ->
-        tbl = StyledText.for_table {'one', chunk, 'three'}
-        assert.equal 'one  \ntwo  \nthree\n', tostring tbl
+        buf = Buffer howl.mode.by_name 'moonscript'
+        buf.text = ' twë '
+        chunk = buf\chunk 2, 4
+        tbl = StyledText.for_table {'onë', chunk, 'three'}
+        assert.equal 'onë  \ntwë  \nthree\n', tostring tbl
+
+      it 'preserves chunks styles', ->
+        buf = howl.ui.ActionBuffer!
+        buf\append 'hëllo', 'string'
+        chunk = buf\chunk 1, 5
+
+        tbl = StyledText.for_table {chunk, chunk}
+        assert.equal 'hëllo \nhëllo \n', tostring tbl
+        assert.equal tbl.styles, {1, 'string', 7, 9, 'string', 15}
+
 
     context 'when column style is provided', ->
-      it 'applies column style', ->
-        tbl = StyledText.for_table { 'one' }, { {style: 'string'} }
-        assert.same tbl.text, 'one\n'
-        assert.same tbl.styles, {1, 'string', 4}
+      it 'applies column style to text and padding', ->
+        tbl = StyledText.for_table { 'one', 'twooo' }, { {style: 'string'} }
+        assert.same tbl.text, 'one  \ntwooo\n'
+        assert.same tbl.styles, {1, 'string', 4, 4, 'string', 6, 7, 'string', 12}
 
 
-      it 'style for StyledText objects is preserved', ->
+      it 'preserves style for StyledText objects', ->
         tbl = StyledText.for_table {'one', StyledText('two', {1, 'string', 4}), 'three'}, {
           { style: 'comment' }
         }
+        assert.same tbl.styles, {1, 'comment', 4, 4, 'comment', 6, 7, 'string', 10, 10, 'comment', 12, 13, 'comment', 18}
 
-        assert.same tbl.styles, {1, 'comment', 4, 7, 'string', 10, 13, 'comment', 18}
 
     context 'when a header is provided', ->
       it 'includes header row', ->
         assert.equal 'Header\none   \n', tostring StyledText.for_table { 'one' }, { {header: 'Header'}}
 
       it 'pads header', ->
-        assert.equal 'Head      \nfirst item\n', tostring StyledText.for_table { 'first item' }, { {header: 'Head'}}
+        assert.equal 'Heád      \nfirst item\n', tostring StyledText.for_table { 'first item' }, { {header: 'Heád'}}
 
-      it 'styles headers with header_list', ->
-        tbl = StyledText.for_table { 'one' }, { {header: 'Head'} }
-        assert.same tbl.styles, {1, 'list_header', 5}
+      it 'styles headers with header_list, including padding', ->
+        tbl = StyledText.for_table { 'one-long-column' }, { {header: 'Head'} }
+        assert.same tbl.styles, {1, 'list_header', 16}
 
     context 'when multiple columns are provided', ->
       it 'returns a table containing multi columns rows', ->
-        assert.equal 'one   first \ntwo   second\nthree third \n', tostring StyledText.for_table {
-          {'one', 'first'}
+        assert.equal 'oná   first \ntwo   second\nthree third \n', tostring StyledText.for_table {
+          {'oná', 'first'}
           {'two', 'second'}
           {'three', 'third'}
         }

@@ -22,9 +22,9 @@ reversed = (list) -> [item for item in *list[#list, 1, -1]]
 class ListWidget extends PropertyObject
   new: (@matcher, opts={}) =>
     super!
-    @text_widget = TextWidget!
-
     @opts = moon.copy opts
+    @text_widget = TextWidget opts
+
     with @opts
       .filler_text or= '~'
 
@@ -224,6 +224,9 @@ class ListWidget extends PropertyObject
       @_adjust_height!
 
   @property height: get: => @text_widget.height
+  @property padded_height: get: => @text_widget.padded_height
+  @property width: get: => @text_widget.width
+  @property padded_width: get: => @text_widget.padded_width
 
   _adjust_height: =>
     row_height = @text_widget.row_height
@@ -238,10 +241,15 @@ class ListWidget extends PropertyObject
 
     @text_widget.height_rows = new_height_rows
 
+  _adjust_width: =>
+    return unless @opts.auto_fit_width
+    @text_widget\adjust_width_to_fit!
+
   show: =>
     @text_widget\show!
     @_adjust_height!
     @_write_page!
+    @_adjust_width!
     if not @selected_idx and @_items
       @_select @opts.reverse and #@_items or 1
 
@@ -264,6 +272,7 @@ class ListWidget extends PropertyObject
     if @text_widget.showing
       @_adjust_height!
       @_write_page!
+      @_adjust_width!
       @_select idx
 
   keymap:
