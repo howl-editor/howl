@@ -172,6 +172,9 @@ class Window extends PropertyObject
   remember_focus: =>
     @data.focus_child = @grid.focus_child
 
+  save_screenshot: (filename, format='png') =>
+    @to_gobject!\save_screenshot filename, format
+
   _as_rows: (views) =>
     rows = {}
     row = {}
