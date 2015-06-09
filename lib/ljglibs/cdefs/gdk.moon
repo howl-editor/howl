@@ -254,10 +254,12 @@ ffi.cdef [[
                                           gint width,
                                           gint height);
 
-  gboolean gdk_pixbuf_save (GdkPixbuf *pixbuf,
-                            const char *filename,
-                            const char *type,
-                            GError **error, ...);
+  gboolean gdk_pixbuf_savev (GdkPixbuf *pixbuf,
+                             const char *filename,
+                             const char *type,
+                             char **option_keys,
+                             char **option_values,
+                             GError **error);
 
   /* GdkAtom
 

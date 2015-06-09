@@ -83,14 +83,4 @@ core.define 'GtkWindow < GtkBin', {
   set_default_icon_from_file: (filename) ->
     catch_error(C.gtk_window_set_default_icon_from_file, filename) != 0
 
-  save_screenshot: (filename, format='png') =>
-    gdkwindow = ffi.C.gtk_widget_get_window ffi.cast 'GtkWidget*', @
-    shot = ffi.C.gdk_pixbuf_get_from_window gdkwindow, 0, 0, @allocated_width, @allocated_height
-    err = ffi.new 'GError *[1]'
-    ffi.C.gdk_pixbuf_save shot, filename, format, err, nil
-
-    if err[0] != nil
-      err_s = ffi_string err[0].message
-      error err_s
-
 }, (spec, type) -> spec.new type
