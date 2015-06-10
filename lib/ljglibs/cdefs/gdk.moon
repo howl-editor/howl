@@ -245,6 +245,22 @@ ffi.cdef [[
     gdouble delta_y;
   } GdkEventScroll;
 
+  /* GdkPixbuf */
+  typedef struct{} GdkPixbuf;
+
+  GdkPixbuf * gdk_pixbuf_get_from_window (GdkWindow *window,
+                                          gint src_x,
+                                          gint src_y,
+                                          gint width,
+                                          gint height);
+
+  gboolean gdk_pixbuf_savev (GdkPixbuf *pixbuf,
+                             const char *filename,
+                             const char *type,
+                             char **option_keys,
+                             char **option_values,
+                             GError **error);
+
   /* GdkAtom
 
   This is really an opaque struct, but we're going to have to break the

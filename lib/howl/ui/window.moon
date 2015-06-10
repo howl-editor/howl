@@ -1,6 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 import PropertyObject from howl.aux.moon
 import Status, CommandLine, theme from howl.ui
@@ -171,6 +172,10 @@ class Window extends PropertyObject
 
   remember_focus: =>
     @data.focus_child = @grid.focus_child
+
+  save_screenshot: (filename, type='png', image_opts={}) =>
+    pixbuf = Gdk.Pixbuf.get_from_window @window, 0, 0, @allocated_width, @allocated_height
+    pixbuf\save filename, type, image_opts
 
   _as_rows: (views) =>
     rows = {}
