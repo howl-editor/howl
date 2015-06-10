@@ -32,7 +32,7 @@ get_error = (f, ...) ->
 
 strdup = (s) ->
   return nil unless s
-  ffi.gc(C.g_strndup(s, #s), C.g_free)
+  ffi_gc(C.g_strndup(s, #s), C.g_free)
 
 major_version = tonumber C.glib_major_version
 minor_version = tonumber C.glib_minor_version
@@ -95,9 +95,16 @@ core.auto_loading 'glib', {
     list
 
   char_p_arr: (t = {}) ->
-    arr = ffi_new 'gchar *[?]', #t + 1
+    free_char_p_arr = (a) ->
+      i = 0
+      while a[i] != nil
+        C.g_free(a[i])
+        i += 1
+
+    arr = ffi_gc ffi_new('gchar *[?]', #t + 1), free_char_p_arr
     for i = 1, #t
-      arr[i - 1] = strdup tostring(t[i])
+      s = tostring(t[i])
+      arr[i - 1] = C.g_strndup(s, #s)
 
     arr[#t] = nil
     arr
