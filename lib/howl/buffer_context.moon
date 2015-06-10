@@ -15,6 +15,29 @@ class Context extends PropertyObject
     @_word = Chunk @buffer, start_pos, end_pos - 1
     @_word
 
+  @property token: get: =>
+    suffix = @suffix
+    prefix = @prefix
+    first = suffix[1]
+    start_pos, end_pos = @pos, @pos - 1
+
+    pfx_p, sfx_p = if first\match '%p' -- punctuation
+      '%p+$', '^%p+'
+    elseif first\match '%w' -- word
+      '%w+$', '^%w+'
+    elseif first\match '%S' -- non-blank
+      '%S+$', '^%S+'
+
+    if pfx_p
+      i = prefix\ufind pfx_p
+      start_pos = @pos - (#prefix - i + 1) if i
+
+    if sfx_p
+      _, i = suffix\ufind sfx_p
+      end_pos = @pos + i - 1 if i
+
+    Chunk(@buffer, start_pos, end_pos)
+
   @property line: get: =>
     @_line or= @buffer.lines\at_pos @pos
     @_line
