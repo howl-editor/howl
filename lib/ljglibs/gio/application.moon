@@ -30,6 +30,8 @@ Application = core.define 'GApplication < GObject', {
   properties: {
     flags: => C.g_application_get_flags @
     application_id: 'gchar*'
+    is_registered: 'gboolean'
+    is_remote: 'gboolean'
   }
 
   register: => catch_error(C.g_application_register, @, nil) != 0

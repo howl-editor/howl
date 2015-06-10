@@ -179,20 +179,23 @@ class Application extends PropertyObject
 
   run: =>
     jit.off true, true
-    @g_app = Gtk.Application 'io.howl.Editor', Gtk.Application.HANDLES_OPEN
-    @g_app\on_activate -> @_load!
-    @g_app\on_open (_, files) -> @_load [File(path) for path in *files]
+    args = @args
+    app_base = 'io.howl.Editor'
+    @g_app = Gtk.Application app_base, Gtk.Application.HANDLES_OPEN
+    @g_app\register!
 
     -- by default we'll not open files in the same instance,
     -- but this can be toggled via the --reuse command line parameter
-    args = @args
-    if not @args.reuse
+    if @g_app.is_remote and not @args.reuse
+      @g_app = Gtk.Application "#{app_base}-#{os.time!}", Gtk.Application.HANDLES_OPEN
       @g_app\register!
-      @_load [File(path) for path in *args[2,]]
-      args = { args[1] }
-      signal.connect 'window-focused', self\synchronize
-      signal.connect 'editor-destroyed', (args) ->
-        @_editors =  [e for e in *@_editors when e != args.editor]
+
+    @g_app\on_activate -> @_load!
+    @g_app\on_open (_, files) -> @_load [File(path) for path in *files]
+
+    signal.connect 'window-focused', self\synchronize
+    signal.connect 'editor-destroyed', (args) ->
+      @_editors =  [e for e in *@_editors when e != args.editor]
 
     @g_app\run args
 
