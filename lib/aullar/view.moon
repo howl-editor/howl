@@ -628,7 +628,9 @@ View = {
 
   _on_button_press: (event) =>
     return if event.x <= @gutter_width
-    return if event.button != 1
+    return true if notify @, 'on_button_press', event
+
+    return if event.button != 1 or event.type != Gdk.BUTTON_PRESS
 
     extend = bit.band(event.state, Gdk.SHIFT_MASK) != 0
 

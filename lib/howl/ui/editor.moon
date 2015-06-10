@@ -1,6 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 gobject_signal = require 'ljglibs.gobject.signal'
@@ -61,16 +62,12 @@ class Editor extends PropertyObject
     @view = aullar.View!
 
     listener =
-      on_key_press: self\_on_keypress
-      -- on_selection_changed: self\_on_selection_changed
-      -- on_changed: self\_on_changed
+      on_key_press: self\_on_key_press
+      on_button_press: self\_on_button_press
       on_focus_in: self\_on_focus
       on_focus_out: self\_on_focus_lost
-      -- on_character_added: self\_on_char_added
       on_insert_at_cursor: self\_on_insert_at_cursor
       on_delete_back: self\_on_delete_back
-      -- on_readonly_mod_attempt: -> log.error "Attempt to modify a read-only buffer"
-
       on_preedit_start: -> log.info "In pre-edit mode.."
       on_preedit_change: (_, args) ->
         log.info "Pre-edit: #{args.str} (Enter to submit, escape to cancel)"
@@ -593,7 +590,7 @@ class Editor extends PropertyObject
     bar\remove id
     @indicator[id] = nil
 
-  _on_keypress: (view, event) =>
+  _on_key_press: (view, event) =>
     @remove_popup! if event.key_name == 'escape'
 
     if @popup
@@ -616,6 +613,15 @@ class Editor extends PropertyObject
         handled = true
 
     return true if handled
+
+  _on_button_press: (view, event) =>
+    if event.type == Gdk.GDK_2BUTTON_PRESS
+      group = @current_context.word
+      group = @current_context.token if group.empty
+
+      unless group.empty
+        @selection\set group.start_pos, group.end_pos + 1
+        true
 
   _on_selection_changed: =>
     @_update_position!
