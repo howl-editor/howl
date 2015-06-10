@@ -48,7 +48,7 @@ describe 'StyledText', ->
     context 'when items contain chunks', ->
 
       it 'pads chunks correctly', ->
-        buf = Buffer howl.mode.by_name 'moonscript'
+        buf = Buffer!
         buf.text = ' twë '
         chunk = buf\chunk 2, 4
         tbl = StyledText.for_table {'onë', chunk, 'three'}
