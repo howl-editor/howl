@@ -7,6 +7,7 @@ os = os
 append = table.insert
 
 RESCAN_STALE_AFTER = 60
+MAX_TOKEN_LENGTH = 60
 
 signal.connect 'buffer-modified', (args) ->
     data = args.buffer.data.inbuffer_completer
@@ -35,7 +36,7 @@ load = (buffer) ->
     data = b.data.inbuffer_completer or {}
     b_tokens = data.tokens
     if not b_tokens or should_update data
-      b_tokens = { token, true for token in b.text\ugmatch b.config.word_pattern }
+      b_tokens = { token, true for token in b.text\ugmatch b.config.word_pattern when token.ulen <= MAX_TOKEN_LENGTH }
       data.tokens = b_tokens
       data.updated_at = os.time!
       b.data.inbuffer_completer = data
@@ -67,7 +68,7 @@ near_tokens = (context) ->
     start_pos, end_pos = chunk_text\ufind pattern, start_pos
     break unless start_pos
     token = chunk_text\usub start_pos, end_pos
-    if token != part and token != cur_word
+    if token != part and token != cur_word and token.ulen < MAX_TOKEN_LENGTH
       rank = math.abs line_pos - start_pos
       info = tokens[token]
       rank = math.min info.rank, rank if info
