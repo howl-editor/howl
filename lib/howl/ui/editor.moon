@@ -623,6 +623,10 @@ class Editor extends PropertyObject
         @selection\set group.start_pos, group.end_pos + 1
         true
 
+    elseif event.type == Gdk.GDK_3BUTTON_PRESS
+      line = @current_line
+      @selection\set line.start_pos, line.end_pos
+
   _on_selection_changed: =>
     @_update_position!
     @_brace_highlight!
