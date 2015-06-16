@@ -71,13 +71,6 @@ get_dir_and_leftover = (path) ->
 
   return File(glib.get_current_dir!).root_dir, path
 
-sort_paths = (paths) ->
-  table.sort paths, (a, b) ->
-    a_count = a\count separator
-    b_count = b\count separator
-    return a_count < b_count if a_count != b_count
-    a < b
-
 file_matcher = (files, directory, allow_new=false) ->
   children = {}
   hidden_by_config = {}
@@ -139,7 +132,7 @@ file_matcher = (files, directory, allow_new=false) ->
 
 subtree_matcher = (root, files=nil) ->
   unless files
-    files = root\find!
+    files = root\find sort: true
 
   paths = {}
 
@@ -148,7 +141,6 @@ subtree_matcher = (root, files=nil) ->
     if is_directory continue
     append paths, display_name(f, is_directory, root)
 
-  sort_paths paths
   return Matcher paths, reverse: true
 
 return { :file_matcher, :get_cwd, :get_dir_and_leftover, :subtree_matcher }
