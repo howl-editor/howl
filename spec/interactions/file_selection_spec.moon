@@ -11,14 +11,22 @@ describe 'file_selection', ->
   local tmpdir, command_line
 
   before_each ->
+    for buf in *app.buffers
+      app\close_buffer buf
+
     app.window = Window!
     app.window\realize!
+    app.editor = app\new_editor!
     command_line = app.window.command_line
-
     tmpdir = File.tmpdir!
 
   after_each ->
     tmpdir\rm_r!
+    for buf in *app.buffers
+      app\close_buffer buf
+    app.editor = nil
+    app.window\destroy!
+    app.window = nil
 
   it "registers interactions", ->
     assert.not_nil interact.select_file
@@ -35,14 +43,8 @@ describe 'file_selection', ->
     context 'when a buffer associated with a file is open', ->
       local buf
 
-      before_each ->
-        buf, app.editor = app\open_file tmpdir / 'f'
-
-      after_each ->
-        app\close_buffer buf
-        app.editor = nil
-
       it 'opens the directory of the current buffer, if any', ->
+        buf, app.editor = app\open_file tmpdir / 'f'
         local prompt
         within_activity interact.select_file, ->
           prompt = command_line.prompt
