@@ -4,14 +4,13 @@ GTK = gtk+-3.0
 GTK_CFLAGS = $(shell pkg-config --cflags $(GTK))
 GTK_LIBS = $(shell pkg-config --libs $(GTK) gmodule-2.0 gio-unix-2.0)
 
-LUAJIT_VER = LuaJIT-2.0.3
-LUAJIT_CHECKSUM = f14e9104be513913810cd59c8c658dc0
+LUAJIT_VER = LuaJIT-2.0.4
+LUAJIT_CHECKSUM = dd9c38307f2223a504cbfb96e477eca0
 LUAJIT = deps/${LUAJIT_VER}
 LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
 LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
-LUAJIT_URL = http://nordman.org/mirror/luajit/$(LUAJIT_VER).tar.gz
-
+LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
 SCINTILLA_VER = scintilla342
 SCINTILLA_CHECKSUM = 6a6fb89faf787b70f20a4df1cc7f3e6e
 SCINTILLA_URL = http://prdownloads.sourceforge.net/scintilla/$(SCINTILLA_VER).tgz?download
