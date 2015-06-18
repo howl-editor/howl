@@ -31,8 +31,6 @@ class CommandLine extends PropertyObject
 
   @property stack_depth: get: => #@running
 
-  @property command_history: get: => moon.copy @_command_history
-
   _init_activity_from_factory: (activity_frame) =>
       activity = activity_frame.activity_spec.factory!
       if not activity
@@ -221,20 +219,26 @@ class CommandLine extends PropertyObject
 
   record_history: =>
     return if @current.evade_history or @history_recorded
+    @history_recorded = true
     command_line = @_capture_command_line!
 
     for frame in *@running
       if frame.saved_command_line
         command_line = frame.saved_command_line .. command_line
 
-    unless @_command_history[1] == command_line or command_line\find '\n' or command_line\find '\r'
-      table.insert @_command_history, 1, command_line
-    @history_recorded = true
+    current_history = @get_history @running[1].name
+    last_cmd = current_history[1]
 
-  _capture_command_line: (end_pos)=>
+    unless last_cmd == command_line or command_line\find '\n' or command_line\find '\r'
+      table.insert @_command_history, 1, {name: @running[1].name, cmd: command_line}
+
+  _capture_command_line: (end_pos) =>
       buf = @command_widget.buffer
       chunk = buf\chunk 1, (end_pos or #buf)
       return StyledText chunk.text, chunk.styles
+
+  get_history: (activity_name) =>
+    return [item.cmd for item in *@_command_history when activity_name == item.name]
 
   to_gobject: => @bin
 

@@ -216,7 +216,7 @@ run = (cmd_string=nil, ...) ->
   if cmd
     launch_cmd cmd, args
 
-howl.interact.register
+interact.register
   name: 'select_command'
   description: 'Selection list for all commands'
   evade_history: true
@@ -236,7 +236,7 @@ howl.interact.register
       return result.selection[1]
 
 get_command_history = ->
-  howl.app.window.command_line.command_history
+  howl.app.window.command_line\get_history 'command-input-reader'
 
 interact.register
   name: 'select_historical_command'
