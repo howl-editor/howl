@@ -345,6 +345,12 @@ View = {
     min_y, max_y = nil, nil
     y = @margin
     last_valid = 0
+    from_offset = min @buffer.size + 1, from_offset
+
+    if opts.invalidate -- invalidate any affected lines before first visible
+      from_line = @buffer\get_line_at_offset(from_offset).nr
+      for line_nr = from_line, @_first_visible_line - 1
+        d_lines[line_nr] = nil
 
     for line_nr = @_first_visible_line, @last_visible_line + 1
       line = @_buffer\get_line line_nr
@@ -363,13 +369,18 @@ View = {
 
       y += d_line.height
 
-    if opts.invalidate and not to_offset -- xxx 'not to_offset?'
-      max_y = @height
-      for line_nr = last_valid + 1, d_lines.max
-        d_lines[line_nr] = nil
+    if opts.invalidate -- invalidate any affected lines after visible block
+      to_line = d_lines.max
+      if to_offset
+        to_offset = min to_offset, @buffer.size + 1
+        to_line = @buffer\get_line_at_offset(to_offset).nr
+      else
+        max_y = @height
+        @_last_visible_line = nil
+        @display_lines.max = last_valid
 
-      @_last_visible_line = nil
-      @display_lines.max = last_valid
+      for line_nr = last_valid + 1, to_line
+        d_lines[line_nr] = nil
 
     if min_y
       start_x = @gutter_width + 1
@@ -441,8 +452,8 @@ View = {
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width
 
-    to_offset = max to_offset, @buffer.size
-    from_line = min @first_visible_line, @buffer\get_line_at_offset(from_offset).nr
+    to_offset = min to_offset, @buffer.size + 1
+    from_line = @buffer\get_line_at_offset(from_offset).nr
     to_line = max @display_lines.max, @buffer\get_line_at_offset(to_offset).nr
 
     for line_nr = from_line, to_line
