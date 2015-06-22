@@ -13,23 +13,27 @@ describe 'log', ->
 
   for m in *{'info', 'warning', 'error'}
     describe m .. '(text)', ->
-      it 'propages the message to howl.app.window.status\\' .. m .. '() if available', ->
-        method = spy.new -> true
-        app.window = command_line: {}, status: [m]: method
-        log[m] 'message'
-        assert.spy(method).was.called_with app.window.status, 'message'
+      context 'when howl.app.window is available and showing', ->
+        local method
 
-      it 'only propagates the first line of the message', ->
-        method = spy.new -> true
-        app.window = command_line: {}, status: [m]: method
-        log[m] 'message\nline2\nline3'
-        assert.spy(method).was.called_with app.window.status, 'message'
+        before_each ->
+          method = spy.new -> true
+          app.window = visible: true, command_line: {}, status: [m]: method
 
-      it 'removes any location info before propagating', ->
-        method = spy.new -> true
-        app.window = command_line: {}, status: [m]: method
-        log[m] '[string "../foo/bar.lua"]:32: juicy bit'
-        assert.spy(method).was.called_with app.window.status, 'juicy bit'
+        after_each ->
+          app.window = nil
+
+        it 'sends the message to howl.app.window.status\\' .. m .. '() if available', ->
+          log[m] 'message'
+          assert.spy(method).was.called_with app.window.status, 'message'
+
+        it 'only propagates the first line of the message', ->
+          log[m] 'message\nline2\nline3'
+          assert.spy(method).was.called_with app.window.status, 'message'
+
+        it 'removes any location info before propagating', ->
+          log[m] '[string "../foo/bar.lua"]:32: juicy bit'
+          assert.spy(method).was.called_with app.window.status, 'juicy bit'
 
   it 'warn() is the same as warning()', ->
     assert.same log.warn, log.warning
