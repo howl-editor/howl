@@ -113,6 +113,8 @@ def_for = (name) ->
     sub_base, ext = name\match '^([^:]+):(%S+)$'
     if sub_base
       base, def = styles[sub_base] or base, styles[ext]
+      while type(def) == 'string'
+        def = styles[def]
 
   return base unless def
 
