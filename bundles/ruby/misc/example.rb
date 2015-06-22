@@ -97,6 +97,8 @@ def no!; end
 module AbstractController; class Base; end; end
 
 class Foo < AbstractController::Base
+  @@class_var = 42
+
   def initialize(bar, foo)
     @bar = bar
     @fooish = foo + 23
