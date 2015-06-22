@@ -14,7 +14,9 @@ class BufferPopup extends Popup
     @buffer = buffer
     @default_style = style.popup and style.popup.background and 'popup' or 'default'
     @view = View buffer._buffer
-    @view.config.view_show_line_numbers = false
+    with @view.config
+      .view_show_line_numbers = false
+      .view_show_cursor = false
     @buffer\lex!
 
     @bin = Gtk.EventBox {
