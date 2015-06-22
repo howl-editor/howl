@@ -95,7 +95,7 @@ class Cursor extends PropertyObject
   word_right: (extend = false) =>
     if @at_end_of_line
       unless @at_end_of_file
-        @move_to line: @line + 1
+        @move_to line: @line + 1, :extend
         @home_indent extend
     else
       text = @_line.text
@@ -119,7 +119,7 @@ class Cursor extends PropertyObject
     ctx = @container.buffer\context_at(@pos)
     text = ctx.suffix
     if text.is_blank and @line != @view.buffer.nr_lines
-      @move_to line: @line + 1
+      @move_to line: @line + 1, :extend
       @word_right_end extend
     else
       cur_word = ctx.word
