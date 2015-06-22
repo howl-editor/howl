@@ -70,23 +70,11 @@ howl.aux.lpeg_lexer ->
   javascript = sequence {
     opening_tag * back_was 'tagname', 'script'
     sub_lex('javascript', (eol * blank^1)^-1 * '</script'),
-
-    sequence({
-      c('operator', '</'),
-      c('special', 'script'),
-      c('operator', '>'),
-    })^-1
   }
 
   inline_css = sequence {
     opening_tag * back_was 'tagname', 'style'
     sub_lex('css', (eol * blank^1)^-1 * '</style'),
-
-    sequence({
-      c('operator', '</'),
-      c('special', 'style'),
-      c('operator', '>'),
-    })^-1
   }
 
   error = c('error', S'&<>') * blank^1
