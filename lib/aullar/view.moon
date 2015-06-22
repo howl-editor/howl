@@ -419,11 +419,11 @@ View = {
     return nil unless @showing
     line = @buffer\get_line_at_offset pos
     return nil unless line
-    return nil if line.nr < @_first_visible_line or line.nr > @last_visible_line
+    return nil if line.nr < @_first_visible_line
     y = @margin
     x = @edit_area_x
 
-    for line_nr = @_first_visible_line, @last_visible_line
+    for line_nr = @_first_visible_line, @buffer.nr_lines
       d_line = @display_lines[line_nr]
 
       if d_line.nr == line.nr or (d_line.nr > line.nr and not line.has_eol)
