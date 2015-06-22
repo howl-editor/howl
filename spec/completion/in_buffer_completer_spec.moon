@@ -88,6 +88,8 @@ oo
     context '(multiple buffers)', ->
       local buffer2, buffer3
       before_each ->
+        close_all_buffers!
+
         buffer2 = Buffer buffer.mode
         buffer2.text = 'foo\n'
         app\add_buffer buffer2, false

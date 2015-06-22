@@ -120,3 +120,8 @@ export get_ui_list_widget_column = (column=1, widget_name='completion_list') ->
   items = howl.app.window.command_line\get_widget(widget_name).items
   items = [row[column] for row in *items]
   return [item.text or item for item in *items]
+
+export close_all_buffers = ->
+  for b in *howl.app.buffers
+    howl.app\close_buffer b, true
+
