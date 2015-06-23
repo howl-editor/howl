@@ -449,6 +449,17 @@ View = {
     width, height = layout\get_pixel_size!
     :width, height: height + (@config.view_line_padding * 2)
 
+  block_dimensions: (start_line, end_line) =>
+    height, width = 0, 0
+
+    for nr = start_line, end_line
+      d_line = @display_lines[nr]
+      break unless d_line
+      width = max width, d_line.width
+      height += d_line.height
+
+    width, height
+
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width
 

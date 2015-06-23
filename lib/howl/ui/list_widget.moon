@@ -4,6 +4,7 @@
 import PropertyObject from howl.aux.moon
 import highlight, style, TextWidget, StyledText from howl.ui
 import Matcher from howl.util
+{:max, :min, :floor} = math
 
 append = table.insert
 
@@ -27,8 +28,8 @@ class ListWidget extends PropertyObject
     with @opts
       .filler_text or= '~'
 
-    @_max_height = 10 * @text_widget.row_height
-    @_min_height = 1 * @text_widget.row_height
+    @_max_visible_rows = 10
+    @_min_visible_rows = 1
 
     @_columns = { {} }
     @_items = {}
@@ -66,7 +67,7 @@ class ListWidget extends PropertyObject
     get: => return #@_columns > 1
 
   @property has_status:
-    get: => #@_items == 0 or #@_items > @text_widget.height_rows - (@has_header and 1 or 0)
+    get: => #@_items == 0 or #@_items > @text_widget.visible_rows - (@has_header and 1 or 0)
 
   @property has_items:
     get: => #@_items > 0
@@ -76,13 +77,13 @@ class ListWidget extends PropertyObject
 
   _write_page: =>
     @text_widget.buffer.text = ''
-    @page_size = @text_widget.height_rows - (@has_status and 1 or 0) - (@has_header and 1 or 0)
+    @page_size = @text_widget.visible_rows - (@has_status and 1 or 0) - (@has_header and 1 or 0)
     if @has_items and @page_size < 1
       error 'insufficient height - cant display any items'
 
     items = {}
     last_idx = @page_start_idx + @page_size - 1
-    for idx = @page_start_idx, math.min(last_idx, #@_items)
+    for idx = @page_start_idx, min(last_idx, #@_items)
       append items, @_items[idx]
 
     @text_widget.buffer\append StyledText.for_table items, @columns
@@ -97,6 +98,7 @@ class ListWidget extends PropertyObject
 
     @_write_status!
     @text_widget.view.first_visible_line = 1
+    @text_widget\adjust_height!
 
   _highlight_matches: (text, start_pos) =>
     if not @highlight_matches_for or @highlight_matches_for.is_empty
@@ -145,7 +147,7 @@ class ListWidget extends PropertyObject
     if @page_start_idx <= idx and @page_start_idx + @page_size > idx
       return
 
-    edge_gap = math.min 1, @page_size - 1
+    edge_gap = min 1, @page_size - 1
     if idx < @page_start_idx
       @_jump_to_page_at idx - @page_size + 1 + edge_gap
     elseif @page_start_idx + @page_size - 1 < idx
@@ -181,7 +183,7 @@ class ListWidget extends PropertyObject
     if @selected_idx == 1
       idx = #@items
     else
-      idx = math.max 1, @selected_idx - @page_size
+      idx = max 1, @selected_idx - @page_size
     @_select idx
 
   next_page: =>
@@ -189,7 +191,7 @@ class ListWidget extends PropertyObject
     if @selected_idx == #@items
       idx = 1
     else
-      idx = math.min #@items, @selected_idx + @page_size
+      idx = min #@items, @selected_idx + @page_size
     @_select idx
 
   select_prev: =>
@@ -209,19 +211,29 @@ class ListWidget extends PropertyObject
           return
       error "cannot select - #{val} not found"
 
-  @property max_height:
-    get: => @_max_height
+  @property max_visible_rows:
+    get: => @_max_visible_rows
     set: (val) =>
-      @_max_height = val
-      if @min_height > @max_height
-        @_min_height = @max_height
+      @_max_visible_rows = val
+
+      if @_min_visible_rows > @_max_visible_rows
+        @_min_visible_rows = @_max_visible_rows
+
       @_adjust_height!
 
-  @property min_height:
-    get: => @_min_height
+  @property min_visible_rows:
+    get: => @_min_visible_rows
     set: (val) =>
-      @_min_height = val
+      @_min_visible_rows = val
       @_adjust_height!
+
+  @property visible_rows:
+    get: => @text_widget.visible_rows
+
+  @property max_height_request:
+    set: (height) =>
+      default_line_height = @text_widget.view\text_dimensions('M').height
+      @max_visible_rows = floor(height / default_line_height)
 
   @property height: get: => @text_widget.height
   @property padded_height: get: => @text_widget.padded_height
@@ -229,17 +241,13 @@ class ListWidget extends PropertyObject
   @property padded_width: get: => @text_widget.padded_width
 
   _adjust_height: =>
-    row_height = @text_widget.row_height
-    max_height_rows = math.floor @max_height / row_height
-    min_height_rows = math.floor @min_height / row_height
+    new_visible_rows = #@_items + (@has_header and 1 or 0)
+    new_visible_rows = min new_visible_rows, @max_visible_rows
+    new_visible_rows = max new_visible_rows, @min_visible_rows
 
-    new_height_rows = #@_items + (@has_header and 1 or 0)
-    new_height_rows = math.min new_height_rows, max_height_rows
-    new_height_rows = math.max new_height_rows, min_height_rows
+    return if @opts.never_shrink and new_visible_rows < @text_widget.visible_rows
 
-    return if @opts.never_shrink and new_height_rows < @text_widget.height_rows
-
-    @text_widget.height_rows = new_height_rows
+    @text_widget.visible_rows = new_visible_rows
 
   _adjust_width: =>
     return unless @opts.auto_fit_width
@@ -268,7 +276,7 @@ class ListWidget extends PropertyObject
 
     idx = @opts.reverse and #@_items or 1
     if preserve_position
-      idx = math.min(current_idx, #@_items)
+      idx = min(current_idx, #@_items)
 
     if @text_widget.showing
       @_adjust_height!

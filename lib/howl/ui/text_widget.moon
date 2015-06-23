@@ -7,6 +7,7 @@ import config from howl
 import View from aullar
 import PropertyObject from howl.aux.moon
 import theme, Cursor, Selection, ActionBuffer from howl.ui
+{:max} = math
 
 class TextWidget extends PropertyObject
   new: (@opts={}) =>
@@ -65,7 +66,7 @@ class TextWidget extends PropertyObject
 
     theme.register_background_widget @view_gobject, opts.default_style
 
-    @height_rows = 1
+    @visible_rows = 1
 
     @view.listener =
       on_key_press: (_, ...) ->
@@ -87,17 +88,16 @@ class TextWidget extends PropertyObject
 
   @property height:
     get: => @_height
-    set: (val) =>
-      -- round to multiple of row-height
-      @height_rows = math.floor val / @row_height
+    set: (val) => error "Don't set height, set `visible_rows`"
 
   @property padded_height: get: => @height + @_top_gap + @_bottom_gap
 
-  @property height_rows:
-    get: => @_height_rows
-    set: (rows) =>
-      @_height_rows = rows
-      @_set_height rows * @row_height
+  @property visible_rows:
+    get: => @_visible_rows
+    set: (nr) =>
+      return if nr == @_visible_rows
+      @_visible_rows = nr
+      @adjust_height!
 
   @property width:
     get: => @_width or @view_gobject.allocated_width
@@ -105,32 +105,21 @@ class TextWidget extends PropertyObject
 
   @property padded_width: get: => @width + @_left_gap + @_right_gap
 
-  @property row_height:
-    get: => @view\text_dimensions('M').height
-
-  _set_height: (height) =>
-    return if @_height == height
-    @_height = height
-    @view_gobject.height_request = height
-
-  _set_width: (width) =>
-    @_width = width
-    @view_gobject.width_request = height
-
-  adjust_width_to_fit: =>
-    char_width = @view\text_dimensions('M').width
-    max_line = 0
-    max_line = math.max(#line, max_line) for line in *@buffer.lines
-    @width = (max_line * char_width) + (char_width / 2)
-
-  to_gobject: => @box
-
   @property text:
     get: => @buffer.text
     set: (text) => @buffer.text = text
 
-  @property is_focus:
-    get: => @view.has_focus
+  adjust_width_to_fit: =>
+    width = @view\block_dimensions 1, @visible_rows
+    default_char_width = @view\text_dimensions('M').width
+    @_set_width max(width, default_char_width * 10) + (default_char_width / 2)
+
+  adjust_height: =>
+    default_row_height = @view\text_dimensions('M').height
+    _, height = @view\block_dimensions 1, @visible_rows
+    @_set_height max(height, default_row_height)
+
+  to_gobject: => @box
 
   focus: => @view\grab_focus!
 
@@ -151,7 +140,15 @@ class TextWidget extends PropertyObject
 
   delete: (...) => @buffer\delete ...
 
+  _set_height: (height) =>
+    return if @_height == height
+    @_height = height
+    @view_gobject.height_request = height
+
+  _set_width: (width) =>
+    return if @_width == width
+    @_width = width
+    @view_gobject.width_request = height
+
   _on_map: (...) =>
-    @height_rows = @height_rows if @height_rows
-    if @width_cols > 0
-      @opts.on_map and @opts.on_map!
+    @visible_rows = @visible_rows if @visible_rows

@@ -71,7 +71,7 @@ class ExternalCommandEntry
 
   _initialize_list_widget: =>
     @list_widget = ListWidget nil, never_shrink: true
-    @list_widget.max_height = math.floor app.window.allocated_height * 0.5
+    @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
     @list_widget.columns =  { {style: 'filename'} }
     @command_line\add_widget 'completion_list', @list_widget
 
