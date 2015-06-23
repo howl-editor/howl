@@ -55,7 +55,7 @@ class VariableAssignment
     @name_matcher = Matcher vars
 
     @list_widget = ListWidget @name_matcher, never_shrink: true
-    @list_widget.max_height = app.window.allocated_height * 0.5
+    @list_widget.max_height_request = app.window.allocated_height * 0.5
     @command_line\add_widget 'completion_list', @list_widget
 
     @caption_widget = NotificationWidget!
