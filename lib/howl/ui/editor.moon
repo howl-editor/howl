@@ -235,7 +235,7 @@ class Editor extends PropertyObject
       start, stop = @selection\range!
       @buffer\chunk start, stop - 1
 
-  refresh_display: => @view\refresh_display 1, nil, invalidate: true
+  refresh_display: => @view\refresh_display from_line: 1, invalidate: true
   grab_focus: => @view\grab_focus!
   newline: => @view\insert @buffer.eol
 
