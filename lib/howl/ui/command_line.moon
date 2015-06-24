@@ -261,7 +261,7 @@ class CommandLine extends PropertyObject
       on_focus_lost: ->
         @command_widget\focus! if @showing
 
-    @command_widget.height_rows = 1
+    @command_widget.visible_rows = 1
 
     @box\pack_end @command_widget\to_gobject!, false, 0, 0
 

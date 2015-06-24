@@ -60,7 +60,6 @@ class VariableAssignment
 
     @caption_widget = NotificationWidget!
     @command_line\add_widget 'caption', @caption_widget
-    @caption_widget.height_rows = 5
     @caption_widget\hide!
     @on_update ''
 
