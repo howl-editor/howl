@@ -339,25 +339,30 @@ View = {
 
   to_gobject: => @bin
 
-  refresh_display: (from_offset = 1, to_offset, opts = {}) =>
+  refresh_display: (opts = { from_line: 1 }) =>
     return unless @width
     d_lines = @display_lines
     min_y, max_y = nil, nil
     y = @margin
     last_valid = 0
-    from_offset = min @buffer.size + 1, from_offset
+    from_line = opts.from_line
+    to_line = opts.to_line
+    to_offset = opts.to_offset
+
+    unless from_line
+      from_offset = min @buffer.size + 1, opts.from_offset
+      from_line = @buffer\get_line_at_offset(from_offset).nr
 
     if opts.invalidate -- invalidate any affected lines before first visible
-      from_line = @buffer\get_line_at_offset(from_offset).nr
       for line_nr = from_line, @_first_visible_line - 1
         d_lines[line_nr] = nil
 
     for line_nr = @_first_visible_line, @last_visible_line + 1
       line = @_buffer\get_line line_nr
       break unless line
-      after = to_offset and line.start_offset > to_offset
-      break if after
-      before = line.end_offset < from_offset and line.has_eol
+      break if to_offset and line.start_offset > to_offset -- after
+      break if to_line and line.nr > to_line -- after
+      before = line.nr < from_line and line.has_eol
       d_line = d_lines[line_nr]
 
       if not before
@@ -370,17 +375,18 @@ View = {
       y += d_line.height
 
     if opts.invalidate -- invalidate any affected lines after visible block
-      to_line = d_lines.max
-      if to_offset
-        to_offset = min to_offset, @buffer.size + 1
-        to_line = @buffer\get_line_at_offset(to_offset).nr
-      else
+      if not to_line and not to_offset
         max_y = @height
         @_last_visible_line = nil
         @display_lines.max = last_valid
+      else
+        to_line or= d_lines.max
+        if to_offset
+          to_offset = min to_offset, @buffer.size + 1
+          to_line = @buffer\get_line_at_offset(to_offset).nr
 
-      for line_nr = last_valid + 1, to_line
-        d_lines[line_nr] = nil
+        for line_nr = last_valid + 1, to_line
+          d_lines[line_nr] = nil
 
     if min_y
       start_x = @gutter_width + 1
@@ -562,21 +568,21 @@ View = {
       -- have other significant percussions
       prev_height = @display_lines[start_line.nr].height
 
-      @refresh_display start_line.start_offset, start_line.end_offset, invalidate: true
+      @refresh_display from_line: start_line.nr, to_line: start_line.nr, invalidate: true
 
       d_line = @display_lines[start_line.nr]
       if d_line.height == prev_height -- height remains the same
         block = changed_block! -- but might still need to adjust for block changes
         if block
-          @refresh_display block.start_line.start_offset, block.end_line.end_offset
+          @refresh_display from_line: block.start_line.nr, to_line: block.end_line.nr
 
         @_sync_scrollbars horizontal: true
         return
 
-    @refresh_display start_line.start_offset, nil, invalidate: true, gutter: true
+    @refresh_display from_line: start_line.nr, invalidate: true, gutter: true
     block = changed_block! -- but might still need to adjust for block changes
     if block
-      @refresh_display block.start_line.start_offset, start_line.start_offset, invalidate: true
+      @refresh_display from_line: block.start_line.nr, to_line: start_line.nr
 
     @_sync_scrollbars!
 
@@ -616,15 +622,15 @@ View = {
       @_on_buffer_styled buffer, args.styled
     else
       if lines_changed
-        @refresh_display args.offset, nil, invalidate: true, gutter: true
+        @refresh_display from_offset: args.offset, invalidate: true, gutter: true
         @_sync_scrollbars!
       else
-        @refresh_display args.offset, args.offset + args.size, invalidate: true
+        @refresh_display from_offset: args.offset, to_offset: args.offset + args.size, invalidate: true
         @_sync_scrollbars horizontal: true
 
   _on_buffer_marker_changed: (buffer, marker) =>
     if marker.flair
-      @refresh_display marker.start_offset, marker.end_offset, invalidate: true
+      @refresh_display from_offset: marker.start_offset, to_offset: marker.end_offset, invalidate: true
 
   _on_buffer_undo: (buffer, revision) =>
     pos = revision.meta.cursor_before or revision.offset
