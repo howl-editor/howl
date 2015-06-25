@@ -120,7 +120,7 @@ define_class {
           sub_end_offset = sub_start_offset + style[#style] - 1
 
           @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
-          @apply sub_start_offset, style, base: sub_base, no_notify
+          @apply sub_start_offset, style, base: sub_base, no_notify: true
           styled_up_to = sub_end_offset
 
     styled_from = offset + styling[1] - 1
