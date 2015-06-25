@@ -374,19 +374,22 @@ View = {
 
       y += d_line.height
 
-    if opts.invalidate -- invalidate any affected lines after visible block
+    if opts.invalidate -- invalidate any lines after visibly affected block
+      local invalidate_to_line
+
       if not to_line and not to_offset
+        invalidate_to_line = d_lines.max
         max_y = @height
         @_last_visible_line = nil
         @display_lines.max = last_valid
       else
-        to_line or= d_lines.max
+        invalidate_to_line = to_line
         if to_offset
           to_offset = min to_offset, @buffer.size + 1
-          to_line = @buffer\get_line_at_offset(to_offset).nr
+          invalidate_to_line = @buffer\get_line_at_offset(to_offset).nr
 
-        for line_nr = last_valid + 1, to_line
-          d_lines[line_nr] = nil
+      for line_nr = last_valid + 1, invalidate_to_line
+        d_lines[line_nr] = nil
 
     if min_y
       start_x = @gutter_width + 1
