@@ -48,7 +48,10 @@ class FileSelector
     if path.is_empty
       path = tostring(parent) .. '/'
     else
+      trailing = path\ends_with('/') and '/' or ''
       path = tostring parent / path
+      if not path\ends_with '/'
+        path ..= trailing
 
     directory, unmatched = get_dir_and_leftover path
     @_chdir directory, unmatched

@@ -6,6 +6,7 @@ describe 'paths', ->
 
   before_each ->
     tmpdir = File.tmpdir!
+    File.mkdir tmpdir / 'subdir'
 
   after_each ->
     tmpdir\rm_r!
@@ -19,6 +20,12 @@ describe 'paths', ->
 
     it 'returns the matched path and unmatched parts of a path', ->
       assert.same {tmpdir, 'unmatched'}, {paths.get_dir_and_leftover tostring(tmpdir / 'unmatched')}
+
+    it 'when given a directory path ending in "/", matches the given directory', ->
+      assert.same {tmpdir / 'subdir', ''}, {paths.get_dir_and_leftover tostring(tmpdir)..'/subdir/'}
+
+    it 'when given a directory path not ending in "/", matches the parent directory', ->
+      assert.same {tmpdir, 'subdir'}, {paths.get_dir_and_leftover tostring(tmpdir)..'/subdir'}
 
     it 'unmatched part can contain slashes', ->
       assert.same {tmpdir, 'unmatched/no/such/file'}, {paths.get_dir_and_leftover tostring(tmpdir / 'unmatched/no/such/file')}

@@ -109,7 +109,7 @@ describe 'file_selection', ->
           assert.same 'matchthis', text
 
       context 'when spillover is an absolute path', ->
-        it 'opens the specified path', ->
+        it 'opens the closest valid directory', ->
           local prompt, text
           command_line\write_spillover tostring(tmpdir / 'matchthis')
           within_activity interact.select_file, ->
@@ -117,6 +117,28 @@ describe 'file_selection', ->
             text = command_line.text
           assert.same tostring(tmpdir)..'/', prompt
           assert.same 'matchthis', text
+
+      context 'when spillover is a directory path that exists', ->
+        before_each ->
+          File.mkdir tmpdir / 'subdir'
+
+        it 'opens the directory when specified with a trailing "/"', ->
+          local prompt, text
+          command_line\write_spillover tostring(tmpdir / 'subdir') .. '/'
+          within_activity interact.select_file, ->
+            prompt = command_line.prompt
+            text = command_line.text
+          assert.same tostring(tmpdir / 'subdir')..'/', prompt
+          assert.same '', text
+
+        it 'opens the parent when specified without any trailing "/"', ->
+          local prompt, text
+          command_line\write_spillover tostring(tmpdir / 'subdir')
+          within_activity interact.select_file, ->
+            prompt = command_line.prompt
+            text = command_line.text
+          assert.same tostring(tmpdir)..'/', prompt
+          assert.same 'subdir', text
 
     context 'when config.hidden_file_extensions is set', ->
       local files
