@@ -33,14 +33,7 @@ howl.aux.lpeg_lexer ->
     span '/*', '*/'
   }
 
-  char_constant = P"'" * any({
-    "\\" * any {
-      R('07') * R('07') * R('07'),
-      'x' * xdigit * xdigit,
-      S'abfnrtv\\\'"?'
-    },
-    1
-  }) * "'"
+  char_constant = span("'", "'", '\\')
 
   number = c 'number', any {
     char_constant,
@@ -62,7 +55,6 @@ howl.aux.lpeg_lexer ->
 
   include_stmt = sequence {
     c('preproc', '#include'),
-    ws^1,
     c('operator', '<'),
     c('string', complement('>')^1),
     c('operator', '>'),

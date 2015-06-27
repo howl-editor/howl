@@ -9,7 +9,7 @@ parser = bundle_load 'clojure_parser'
 register_mode = ->
   mode_reg =
     name: 'clojure'
-    extensions: {'clj', 'cljs', 'edn'}
+    extensions: {'clj', 'cljs', 'edn', 'hy'}
     create: -> bundle_load('clojure_mode')!
     parent: 'lisp'
 
