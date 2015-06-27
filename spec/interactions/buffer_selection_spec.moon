@@ -4,16 +4,18 @@
 import app, bindings, interact from howl
 import Window from howl.ui
 
-require 'howl.interactions.buffer_selection'
 require 'howl.interactions.selection_list'
+require 'howl.interactions.location_selection'
+require 'howl.interactions.buffer_selection'
 
 describe 'buffer_selection', ->
-  local command_line
+  local command_line, editor
   buffers = {}
 
   before_each ->
     app.window = Window!
     app.window\realize!
+    editor = {}
     command_line = app.window.command_line
 
     for b in *app.buffers
@@ -32,16 +34,34 @@ describe 'buffer_selection', ->
   describe 'interact.select_buffer', ->
     it 'displays a list of active buffers', ->
       local buflist
-      within_activity interact.select_buffer, ->
+      within_activity (-> interact.select_buffer :editor), ->
         buflist = get_ui_list_widget_column!
       assert.same {'a1-buffer', 'a2-buffer', 'b-buffer', 'c-buffer'}, normalize_titles buflist
 
     it 'filters the buffer list based on entered text', ->
       local buflist
-      within_activity interact.select_buffer, ->
+      within_activity (-> interact.select_buffer :editor), ->
         command_line\write 'a-b'
         buflist = get_ui_list_widget_column!
       assert.same {'a1-buffer', 'a2-buffer'}, normalize_titles buflist
+
+    it 'previews currently selected buffer in the editor', ->
+      previews = {}
+      down_event = {
+        key_code: 65364
+        key_name: 'down'
+        alt: false
+        control: false
+        meta: false
+        shift: false
+        super: false
+      }
+
+      within_activity (-> interact.select_buffer :editor), ->
+        table.insert previews, editor.buffer.title
+        command_line\handle_keypress down_event
+        table.insert previews, editor.buffer.title
+      assert.same {'a1-buffer', 'a2-buffer'}, normalize_titles previews
 
     context 'sending binding_for("close")', ->
       keymap = ctrl_w: 'close'
@@ -61,7 +81,7 @@ describe 'buffer_selection', ->
 
       it 'closes selected buffer', ->
         local buflist
-        within_activity interact.select_buffer, ->
+        within_activity (-> interact.select_buffer :editor), ->
           command_line\handle_keypress close_event
           command_line\handle_keypress close_event
           buflist = get_ui_list_widget_column!
@@ -69,7 +89,7 @@ describe 'buffer_selection', ->
 
       it 'preserves filter', ->
         local buflist
-        within_activity interact.select_buffer, ->
+        within_activity (-> interact.select_buffer :editor), ->
           command_line\write 'a-b'
           command_line\handle_keypress close_event
           buflist = get_ui_list_widget_column!

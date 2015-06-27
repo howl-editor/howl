@@ -6,10 +6,11 @@ import Editor, Window from howl.ui
 
 append = table.insert
 
-grep_search = require 'howl.interactions.grep_search'
-grep_search = require 'howl.interactions.selection_list'
+require 'howl.interactions.selection_list'
+require 'howl.interactions.location_selection'
+require 'howl.interactions.line_selection'
 
-describe 'grep_search', ->
+describe 'select_line', ->
   local command_line, buffer, editor
 
   before_each ->
@@ -22,18 +23,18 @@ describe 'grep_search', ->
     editor = Editor buffer
 
   it "registers interactions", ->
-    assert.not_nil interact.select_match
+    assert.not_nil interact.select_line
 
-  describe 'interact.select_match', ->
-    it 'shows all lines in the completion list by default', ->
+  describe 'interact.select_line', ->
+    it 'shows opt.lines in the completion list by default', ->
       local lines
-      within_activity (-> interact.select_match(:editor)), ->
+      within_activity (-> interact.select_line(:editor, lines: buffer.lines)), ->
         lines = get_ui_list_widget_column 2
       assert.same {'one', 'two', 'three'}, lines
 
-    it 'shows lines that match text entered', ->
+    it 'filters lines to match text entered', ->
       lines = {}
-      within_activity (-> interact.select_match(:editor)), ->
+      within_activity (-> interact.select_line(:editor, lines: buffer.lines)), ->
         append lines, get_ui_list_widget_column 2
         command_line\write 'o'
         append lines, get_ui_list_widget_column 2
@@ -47,10 +48,3 @@ describe 'grep_search', ->
       assert.same {'one', 'two'}, lines[2]
       assert.same {'one'}, lines[3]
       assert.same {'one', 'two', 'three'}, lines[4]
-
-    context 'when opts.lines is provided',
-      it 'shows opts.lines in the completion list', ->
-        local lines
-        within_activity (-> interact.select_match(:editor, lines:{buffer.lines[1]})), ->
-          lines = get_ui_list_widget_column 2
-        assert.same {'one'}, lines
