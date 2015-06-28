@@ -245,7 +245,7 @@ class Replacement
 
   _preview_highlights: =>
     if @matches[@selected_idx]
-      app.editor\ensure_visible @matches[@selected_idx].start_pos
+      app.editor\ensure_visible @adjusted_positions[@selected_idx] or @matches[@selected_idx].start_pos
     else
       app.editor.line_at_top = @line_at_top
 
