@@ -55,6 +55,7 @@ howl.aux.lpeg_lexer ->
 
   include_stmt = sequence {
     c('preproc', '#include'),
+    ws^0,
     c('operator', '<'),
     c('string', complement('>')^1),
     c('operator', '>'),

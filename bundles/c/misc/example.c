@@ -7,6 +7,7 @@
 // c++ / C99 style comment
 
 #include <stdio.h>
+#include<string.h>
 #include "lua.h"
 
 #define my_define
