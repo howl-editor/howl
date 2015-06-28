@@ -294,7 +294,7 @@ common_auto_pairs = {
 
   python:
     extensions: { 'sc', 'py', 'pyw', 'pyx' }
-    patterns: { 'wscript$', 'SConstruct', 'SConscript', 'BUILD' }
+    patterns: { 'wscript$', 'SConstruct$', 'SConscript$' }
     shebangs: '[/ ]python.*$'
     comment_syntax: '#'
     indentation: {
