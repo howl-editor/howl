@@ -65,6 +65,8 @@ for (int i=0; i< limit; i++){
   printf("%d\n", i);
 }
 
+long abc = 'abcd';
+
 int printf (const char*, ...) {
 
 }
