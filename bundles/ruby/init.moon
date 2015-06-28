@@ -9,8 +9,7 @@ mode_reg =
     'rb',
     'rbw',
     'gemspec',
-    'builder',
-    'cr'
+    'builder'
   }
   patterns: { 'Rakefile$', 'Gemfile$', 'Guardfile$', 'Capfile$'  }
   shebangs: '[/ ]ruby.*$'
