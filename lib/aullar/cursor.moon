@@ -205,7 +205,7 @@ Cursor = {
     @_force_show = true
     @_showing = true
 
-    if not opts.line or not @_sticky_x
+    if not @_sticky_x or (not opts.line or opts.column)
       @remember_column!
 
     -- finally, do we need to scroll horizontally to show the new position?
