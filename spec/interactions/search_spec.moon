@@ -6,8 +6,8 @@ import Editor, Window from howl.ui
 
 append = table.insert
 
-grep_search = require 'howl.interactions.search'
-grep_search = require 'howl.interactions.selection_list'
+require 'howl.interactions.search'
+require 'howl.interactions.selection_list'
 
 describe 'search', ->
   local command_line, buffer, editor, searcher
