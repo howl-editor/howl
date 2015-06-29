@@ -136,10 +136,10 @@ subtree_matcher = (root, files=nil) ->
 
   paths = {}
 
-  for f in *files
-    is_directory = f.is_directory
+  for file in *files
+    is_directory = file.is_directory
     if is_directory continue
-    append paths, display_name(f, is_directory, root)
+    append paths, {display_name(file, is_directory, root), :file}
 
   return Matcher paths, reverse: true
 

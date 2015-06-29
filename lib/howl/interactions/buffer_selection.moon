@@ -13,7 +13,7 @@ buffer_status = (buffer) ->
   stat
 
 get_buffers = (txt) ->
-  m = Matcher [ { b.title, buffer_status(b), buffer_dir(b), buf: b } for b in *app.buffers]
+  m = Matcher [{buffer.title, buffer_status(buffer), buffer_dir(buffer), :buffer} for buffer in *app.buffers]
   return m(txt)
 
 interact.register
@@ -33,9 +33,9 @@ interact.register
         binding_for:
           ['close']: (current) ->
             if current.selection
-              app\close_buffer current.selection.buf
+              app\close_buffer current.selection.buffer
       }
 
-    result = interact.select opts
+    result = interact.select_location opts
     if result
-      return result.selection.buf
+      return result.selection.buffer

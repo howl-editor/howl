@@ -201,12 +201,12 @@ command.register
   description: 'Matches certain buffer lines in realtime'
   input: ->
     buffer = app.editor.buffer
-    return interact.select_match
+    return interact.select_line
       title: "Buffer grep in #{buffer.title}"
       editor: app.editor
-  handler: (position) ->
-    app.editor.cursor\move_to position.row, position.col
-
+      lines: buffer.lines
+  handler: (selection) ->
+    app.editor.cursor\move_to selection.line.nr, selection.column
 
 command.register
   name: 'buffer-structure'
@@ -214,13 +214,22 @@ command.register
   input: ->
     buffer = app.editor.buffer
     lines = buffer.mode\structure app.editor
-    return interact.select_match
+    cursor_lnr = app.editor.cursor.line
+
+    local selected_line
+    for line in *lines
+      if line.nr <= cursor_lnr
+        selected_line = line
+      if line.nr >= cursor_lnr
+        break
+
+    return interact.select_line
       title: "Structure for #{buffer.title}"
-      editor: app.editor
       :lines
-      selected_line: app.editor.cursor.line
-  handler: (position) ->
-    app.editor.cursor\move_to position.row, position.col
+      :selected_line
+
+  handler: (selection) ->
+    app.editor.cursor\move_to selection.line.nr, selection.column
 
 -----------------------------------------------------------------------
 -- Howl eval commands

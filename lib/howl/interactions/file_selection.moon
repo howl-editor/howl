@@ -129,11 +129,11 @@ interact.register
 
     matcher = project_matcher(project)
 
-    selected_path = interact.select
+    result = interact.select_location
       title: opts.title or project.root.path .. separator
       prompt: opts.prompt or ''
       :matcher
       columns: { {style: 'filename'} }
 
-    if selected_path
-      return project.root\join selected_path.selection
+    if result
+      return result.selection.file
