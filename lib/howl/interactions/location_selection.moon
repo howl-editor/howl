@@ -9,13 +9,13 @@ get_buffer_for_file = (file, local_buffers) ->
   for buffer in *app.buffers
     return buffer if buffer.file == file
 
-  for buffer in *local_buffers
-    return buffer if buffer.file == file
+  buffer = local_buffers[file.path]
+  return buffer if buffer
 
   buffer = Buffer mode.for_file file
   buffer.file = file
   buffer.title = 'Preview: '..buffer.title
-  table.insert local_buffers, buffer
+  local_buffers[file.path] = buffer
   return buffer
 
 interact.register
