@@ -57,6 +57,7 @@ interact.register
   name: 'select_line'
   description: 'Selection for buffer lines'
   handler: (opts) ->
+    opts = moon.copy opts
     lines = opts.lines
     opts.lines = nil
 
@@ -67,7 +68,6 @@ interact.register
       error '"matcher", "items" or "on_selection_change" not allowed', 2
 
     editor = opts.editor or howl.app.editor
-    opts = moon.copy opts
     line_items = [{tostring(line.nr), line.chunk, buffer: line.buffer, line_nr: line.nr, :line} for line in *lines]
 
     selected_line = opts.selected_line
