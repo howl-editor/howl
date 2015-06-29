@@ -26,6 +26,7 @@ interact.register
     editor = opts.editor or app.editor
     buffer = editor.buffer
     orig_buffer = buffer
+    orig_line_at_top = editor.line_at_top
     local_buffers = {}
 
     on_selection_change = opts.on_selection_change
@@ -40,7 +41,9 @@ interact.register
         on_selection_change selection, text, items
 
     result = interact.select opts
-    return result if result
+    if editor.buffer != orig_buffer
+      editor.buffer = orig_buffer
+    unless result
+      editor.line_at_top = orig_line_at_top
 
-    editor.buffer = orig_buffer
-    return
+    return result
