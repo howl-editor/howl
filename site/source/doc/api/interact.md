@@ -317,6 +317,37 @@ Default is the project path.
 
 Returns the [File] selected by the user, or `nil` if the user presses `escape`.
 
+### select_line(opts)
+
+Lets the user select a line from a list of source lines. `opts` is a table
+similar to the table accepted by [select](#select), with the following
+differences:
+
+- `items`, `matcher` and `on_selection_change` cannot be specified.
+- `lines` must be provided and should be a list of [Line] objects.
+
+If the user presses `enter`, returns a table containing:
+
+- `line`: the [Line] object selected by the user.
+- `text`: the command line text at the time `enter` was pressed.
+- `column`: the first position within line that matches the user entered text.
+
+If the user presses `escape`, `nil` is returned.
+
+### select_location(opts)
+
+Very similar to [select](#select), lets the user select an item from a list of
+options. In addition, it displays a preview of the currently selected option in
+the editor. Each item in `items` (or returned by `matcher`) must also have the
+following fields:
+
+- `file` or `buffer`: One of `file` or `buffer` must be provided. This specifies
+which file or buffer is previewed in the editor when this item is selected:
+  - `file`: A [File] object.
+  - `buffer`: A [Buffer] object.
+- `line_nr`: The line number in `file` or `buffer` that is centered during the
+preview.
+
 ### yes_or_no (opts)
 
 Lets the user select either 'Yes' or 'No' as an answer to a question. Returns
@@ -326,6 +357,8 @@ the user presses `escape`. `opts` is table containing:
 - `prompt`: _[optional]_ The prompt displayed in the command line. Default is no prompt.
 - `title`: _[optional]_ The title displayed in the command line title bar. Default is no title.
 
+[Buffer]: buffer.html
 [command line]: ui/command_line.html
 [File]: io/file.html
+[Line]: ../spec/buffer_lines_spec.html#line-objects
 [ListWidget]: ui/list_widget.html
