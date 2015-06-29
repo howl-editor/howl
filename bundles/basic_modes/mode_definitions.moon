@@ -61,7 +61,7 @@ common_auto_pairs = {
 
   cmake:
     extensions: { 'cmake', 'ctest' }
-    patterns: { '.cmake.in$', '.ctest.in$' }
+    patterns: { '.cmake.in$', '.ctest.in$', 'CMakeLists.txt$' }
     comment_syntax: '#'
     auto_pairs: {
       '(': ')'
@@ -229,9 +229,9 @@ common_auto_pairs = {
     }
 
   makefile:
-    extensions: { 'iface', 'mak' }
+    extensions: { 'iface', 'mak', 'mk', 'gmk' }
     aliases: 'make'
-    patterns: { 'GNUmakefile$', 'Makefile$' }
+    patterns: { 'GNUmakefile$', 'Makefile$', 'makefile$' }
     comment_syntax: '#'
     auto_pairs: common_auto_pairs
 
@@ -293,7 +293,8 @@ common_auto_pairs = {
     }
 
   python:
-    extensions: { 'sc', 'py', 'pyw' }
+    extensions: { 'sc', 'py', 'pyw', 'pyx' }
+    patterns: { 'wscript$', 'SConstruct$', 'SConscript$' }
     shebangs: '[/ ]python.*$'
     comment_syntax: '#'
     indentation: {

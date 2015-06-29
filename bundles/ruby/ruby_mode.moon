@@ -69,8 +69,8 @@ continuation_indent = (line, indent_level) ->
     multiline: {
       { r'\\s+do(?:\\s*\\|[^|]+\\|)?\\s*$', '^%s*end', 'end' },
       { r'^\\s*def\\s+\\w[\\w.\\d]+(?:\\s*\\([^)]*\\))?\\s*$', '^%s*end', 'end' },
-      { r'^\\s*(class|module)\\s+\\p{Lu}[\\w\\d]*\\s*$', '^%s*end', 'end' },
-      { r'^\\s*(if|unless)\\s+', '^%s*end', 'end' },
+      { r'^\\s*(class|module)\\s+\\p{Lu}[\\w\\d]*(\\s*<\\s*\\p{Lu}[\\w\\d]*)?\\s*$', '^%s*end', 'end' },
+      { r'^\\s*(if|unless|case)\\s+', '^%s*end', 'end' },
       { '{%s*$', '^%s*}', '}'},
       { '%[%s*$', '^%s*%]', ']'},
       { '%(%s*$', '^%s*%)', ')'},
