@@ -86,10 +86,14 @@ interact.register
 
     if result
       line = result.selection.line
+      column = 1
+      if result.text and not result.text.is_empty
+        positions = matcher.explain result.text, line.text
+        column = positions[1]
       return {
         :line
         text: result.text
-        positions: matcher.explain result.text, line.text
+        :column
       }
     else
       highlight.remove_all 'search', editor.buffer

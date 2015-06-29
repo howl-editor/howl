@@ -206,9 +206,7 @@ command.register
       editor: app.editor
       lines: buffer.lines
   handler: (selection) ->
-    column = selection.positions[1]
-    line_nr = selection.line.nr
-    app.editor.cursor\move_to line_nr, column
+    app.editor.cursor\move_to selection.line.nr, selection.column
 
 command.register
   name: 'buffer-structure'
@@ -231,9 +229,7 @@ command.register
       :selected_line
 
   handler: (selection) ->
-    column = selection.positions[1]
-    line_nr = selection.line.nr
-    app.editor.cursor\move_to line_nr, column
+    app.editor.cursor\move_to selection.line.nr, selection.column
 
 -----------------------------------------------------------------------
 -- Howl eval commands
