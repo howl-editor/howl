@@ -194,9 +194,6 @@ export cancel_capture = ->
   capture_handler = nil
   is_capturing = false
 
-export is_capturing = ->
-  capture_handler != nil
-
 export keystrokes_for = (handler, source = nil) ->
   keystrokes = {}
   for i = #keymaps, 1, -1
