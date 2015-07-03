@@ -13,7 +13,17 @@ howl.aux.lpeg_lexer ->
   operator = capture 'operator', S',=>-'
   name = alpha * (alnum + S'_-')^0
 
-  dq_string = capture 'string', span('"', '"', '\\')
+  ruby_interpolation = capture('operator', '#{') * sub_lex('ruby', '}') * capture('operator', '}')
+
+  dq_string = sequence({
+    capture('string', '"'),
+    any({
+      ruby_interpolation,
+      capture('string',  any(P'\\"', complement('"')))
+    })^0,
+    capture('string', '"')
+  })
+
   sq_string = capture 'string', span("'", "'")
   string = any dq_string, sq_string
 
@@ -21,7 +31,7 @@ howl.aux.lpeg_lexer ->
   ruby_key = capture 'key', any(P':' * name, name * ':')
 
   attributes_halt = #S'%%.#'
-  hash_attributes = any ruby_key, blank, operator, string, instance_var, complement(P'}' + attributes_halt)
+  hash_attributes = any ruby_key, blank, operator, string, instance_var, complement(S',}')^1, complement(P'}' + attributes_halt)
   hash_attribute_list = capture('operator', '{') * hash_attributes^0 * (capture('operator', '}') + attributes_halt)
 
   html_key = capture('key', (name + ':')^1) * capture('operator', '=')
@@ -33,7 +43,6 @@ howl.aux.lpeg_lexer ->
 
   ruby_start = capture 'operator', S'&!'^0 * S'-='
   ruby_finish = eol - B','
-  ruby_interpolation = capture('operator', '#{') * sub_lex('ruby', '}') * capture('operator', '}')
   ruby = ruby_start * blank * sub_lex('ruby', ruby_finish)
   escape = capture('operator', '\\') * (capture('default', 1) - eol)
   comment = capture 'comment', any('/', '-#') * scan_through_indented!

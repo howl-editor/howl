@@ -20,6 +20,9 @@
     #content
       %a.btn.btn-lg.btn-success(href="download.html") Download me!
       %p This is #{h @quality} cake!
+      %img{src: content_url(foo.path), alt: "", style: 'width:190px;height:90px'}
+      %img(src="#{content_url(foo.path)}" alt="" style='width:190px;height:90px')
+      %foo(style="width:190px;height:90px")
 
       - @entries.each do |entry|
         .entry
