@@ -3,5 +3,5 @@ src/*.o
 src/howl
 *.bc
 *.bak
-site/build/*
-site/source/doc/spec/*
+site/build/
+site/source/doc/spec/
