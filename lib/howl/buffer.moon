@@ -340,7 +340,6 @@ class Buffer extends PropertyObject
   remove_sci_ref: (sci) =>
     @_scis = [s for s in *@_scis when s != sci and s != nil]
     @_sci = @_scis[1] if sci == @_sci
-    @_last_shown = os.time! if #@_scis == 0
 
   @property scis: get: =>
     [sci for _, sci in pairs @_scis when sci != nil]

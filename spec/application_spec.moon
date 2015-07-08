@@ -67,12 +67,11 @@ describe 'Application', ->
     hidden_buffer.title = 'hidden'
 
     last_shown_buffer = application\new_buffer!
-    last_shown_buffer\add_sci_ref sci
-    last_shown_buffer\remove_sci_ref sci
+    editor = Editor last_shown_buffer
     last_shown_buffer.title = 'last_shown'
 
     visible_buffer = application\new_buffer!
-    visible_buffer\add_sci_ref sci
+    editor.buffer = visible_buffer
     visible_buffer.title = 'visible'
 
     buffers = [b.title for b in *application.buffers]

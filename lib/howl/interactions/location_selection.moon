@@ -5,17 +5,26 @@ import app, interact, mode, Buffer from howl
 import highlight from howl.ui
 import Matcher from howl.util
 
-get_buffer_for_file = (file, local_buffers) ->
+get_preview_buffer = (file, preview_buffers) ->
   for buffer in *app.buffers
     return buffer if buffer.file == file
 
-  buffer = local_buffers[file.path]
+  buffer = preview_buffers[file.path]
   return buffer if buffer
 
   buffer = Buffer mode.for_file file
-  buffer.file = file
-  buffer.title = 'Preview: '..buffer.title
-  local_buffers[file.path] = buffer
+  contents = file\read 8192
+  size = ' (~'..tostring(math.ceil(file.size / 1024))..'KB)'
+
+  if contents.is_valid_utf8
+    buffer.title = 'Preview: '..file.basename..size
+    buffer.text = contents
+  else
+    buffer.title = 'No Preview: '..file.basename..size
+    buffer.text = 'Cannot preview - not a UTF-8 text file.'
+
+  buffer.read_only = true
+  preview_buffers[file.path] = buffer
   return buffer
 
 interact.register
@@ -27,18 +36,19 @@ interact.register
     buffer = editor.buffer
     orig_buffer = buffer
     orig_line_at_top = editor.line_at_top
-    local_buffers = {}
+    preview_buffers = {}
 
-    on_selection_change = opts.on_selection_change
-    opts.on_selection_change = (selection, text, items) ->
-      if selection
-        buffer = selection.buffer or get_buffer_for_file selection.file, local_buffers
-        editor.buffer = buffer
-        if selection.line_nr
-          editor.line_at_center = selection.line_nr
+    if howl.config.preview_files
+      on_selection_change = opts.on_selection_change
+      opts.on_selection_change = (selection, text, items) ->
+        if selection
+          buffer = selection.buffer or get_preview_buffer selection.file, preview_buffers
+          editor\preview buffer
+          if selection.line_nr
+            editor.line_at_center = selection.line_nr
 
-      if on_selection_change
-        on_selection_change selection, text, items
+        if on_selection_change
+          on_selection_change selection, text, items
 
     result = interact.select opts
     if editor.buffer != orig_buffer

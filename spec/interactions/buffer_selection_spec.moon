@@ -15,7 +15,9 @@ describe 'buffer_selection', ->
   before_each ->
     app.window = Window!
     app.window\realize!
-    editor = {}
+    editor = {
+      preview: (@buffer) => nil
+    }
     command_line = app.window.command_line
 
     for b in *app.buffers
