@@ -13,15 +13,22 @@ get_preview_buffer = (file, preview_buffers) ->
   return buffer if buffer
 
   buffer = Buffer mode.for_file file
-  contents = file\read 8192
-  size = ' (~'..tostring(math.ceil(file.size / 1024))..'KB)'
+  title = file.basename
+  local contents
+  ok, result = pcall -> contents = file\read 8192
 
-  if contents.is_valid_utf8
-    buffer.title = 'Preview: '..file.basename..size
-    buffer.text = contents
+  if ok
+    size = file.size
+    title ..= ' (~'..tostring(math.floor(size / 1024))..'KB)'
+    if size == 0 or contents.is_valid_utf8
+      buffer.title = "Preview: #{title}"
+      buffer.text = contents or ''
+    else
+      buffer.title = "No Preview: #{title}"
+      buffer.text = 'Preview not available.'
   else
-    buffer.title = 'No Preview: '..file.basename..size
-    buffer.text = 'Cannot preview - not a UTF-8 text file.'
+    buffer.title = "No Preview: #{title}"
+    buffer.text = result
 
   buffer.read_only = true
   preview_buffers[file.path] = buffer
