@@ -28,7 +28,7 @@ config.define
 
 config.define
   name: 'preview_files'
-  description: 'Whether to automatically preview files when switching between them'
+  description: 'Whether to automatically preview the selected file or buffer'
   default: true
   type_of: 'boolean'
   scope: 'global'
