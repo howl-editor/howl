@@ -462,7 +462,7 @@ class Editor extends PropertyObject
       @_buf.properties.position = @cursor.pos
       @_buf.properties.line_at_top = @line_at_top
       @_buf\remove_sci_ref @sci
-      unless opts.preview or @_is_previewing
+      unless @_is_previewing
         @_buf.last_shown = os.time!
 
     @_is_previewing = opts.preview

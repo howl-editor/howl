@@ -291,14 +291,21 @@ describe 'Editor', ->
       assert.same now, buffer.last_shown
 
   context 'previewing', ->
-    it 'does not update last_shown for previewed or switched out buffer', ->
-      buffer.last_shown = 1
+    it 'does not update last_shown for previewed buffer', ->
       new_buffer = Buffer {}
       new_buffer.last_shown = 2
       editor\preview new_buffer
-      assert.same 1, buffer.last_shown
       editor.buffer = Buffer {}
       assert.same 2, new_buffer.last_shown
+
+    it 'updates .last_shown for original buffer switched out', ->
+      time = os.time
+      now = time!
+      os.time = -> now
+      pcall ->
+        editor\preview Buffer {}
+      os.time = time
+      assert.same now, buffer.last_shown
 
   context 'indentation, tabs, spaces and backspace', ->
 
