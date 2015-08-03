@@ -218,6 +218,7 @@ properties =
   ureverse: => g_string C.g_utf8_strreverse(const_char_p(@), #@)
   is_empty: => #@ == 0
   is_blank: => @find('%S') == nil
+  is_valid_utf8: => C.g_utf8_validate(ffi.cast('const char *', @), #@, nil) != 0
   stripped: => @match '%s*(.-)%s*$'
 
 getmetatable('').__index = (k) =>

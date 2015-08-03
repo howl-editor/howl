@@ -159,15 +159,6 @@ describe 'Buffer', ->
     b\add_sci_ref sci
     assert.true b.showing
 
-  it '.last_shown returns a timestamp indicating when it was last shown', ->
-    b = buffer ''
-    assert.is_nil b.last_shown
-    ts = os.time!
-    b\add_sci_ref sci
-    assert.is_true b.last_shown >= ts
-    b\remove_sci_ref sci
-    assert.is_true b.last_shown <= os.time!
-
   describe '.multibyte', ->
     it 'returns true if the buffer contains multibyte characters', ->
       assert.is_false buffer('vanilla').multibyte

@@ -281,6 +281,32 @@ describe 'Editor', ->
       editor.buffer = buffer2
       assert.equal 15, cursor.pos
 
+    it 'updates .last_shown for buffer switched out', ->
+      time = os.time
+      now = time!
+      os.time = -> now
+      pcall ->
+        editor.buffer = Buffer {}
+      os.time = time
+      assert.same now, buffer.last_shown
+
+  context 'previewing', ->
+    it 'does not update last_shown for previewed buffer', ->
+      new_buffer = Buffer {}
+      new_buffer.last_shown = 2
+      editor\preview new_buffer
+      editor.buffer = Buffer {}
+      assert.same 2, new_buffer.last_shown
+
+    it 'updates .last_shown for original buffer switched out', ->
+      time = os.time
+      now = time!
+      os.time = -> now
+      pcall ->
+        editor\preview Buffer {}
+      os.time = time
+      assert.same now, buffer.last_shown
+
   context 'indentation, tabs, spaces and backspace', ->
 
     it 'defines a "tab_width" config variable, defaulting to 8', ->

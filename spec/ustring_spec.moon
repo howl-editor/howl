@@ -40,6 +40,12 @@ describe 'ustrings', ->
     assert.equal 0, 'a'\ucompare('a')
     assert.is_true 'ö'\ucompare('ä') > 0
 
+  it 'is_valid_utf8(s) return true for valid utf8 strings only', ->
+    assert.is_true ('abc\194\128').is_valid_utf8
+    assert.is_true ('\127').is_valid_utf8
+    assert.is_false ('\128').is_valid_utf8
+    assert.is_false ('abc\194').is_valid_utf8
+
   describe 'usub(i, [j])', ->
     s = 'aåäöx'
 

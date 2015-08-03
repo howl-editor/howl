@@ -25,3 +25,10 @@ config.define
   description: 'Whether to automatically format code when possible'
   default: true
   type_of: 'boolean'
+
+config.define
+  name: 'preview_files'
+  description: 'Whether to automatically preview the selected file or buffer'
+  default: true
+  type_of: 'boolean'
+  scope: 'global'

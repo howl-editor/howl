@@ -120,12 +120,14 @@ class Editor extends PropertyObject
       on_destroy: gobject_signal.unref_handle @bin\on_destroy ->
         theme.unregister_background_widget @sci\to_gobject!
         @buffer\remove_sci_ref @sci
+        @buffer.last_shown = os.time! unless @_is_previewing
         signal.emit 'editor-destroyed', editor: self
     }
 
     theme.register_background_widget @sci\to_gobject!
 
     @buffer = buffer
+    @_is_previewing = false
 
     append _editors, self
 
@@ -135,39 +137,7 @@ class Editor extends PropertyObject
     get: => @_buf
     set: (buffer) =>
       signal.emit 'before-buffer-switch', editor: self, current_buffer: @_buf, new_buffer: buffer
-      @selection\remove!
-
-      if @_buf
-        @_buf.properties.position = @cursor.pos
-        @_buf.properties.line_at_top = @line_at_top
-        @_buf\remove_sci_ref @sci
-
-      prev_buffer = @_buf
-      @_buf = buffer
-      @indicator.title.label = buffer.title
-
-      if buffer.activity and buffer.activity.is_running!
-        with @indicator.activity
-          \start!
-          \show!
-      elseif rawget(@indicator, 'activity')
-        with @indicator.activity
-          \stop!
-          \hide!
-
-      @sci\set_doc_pointer(buffer.doc)
-
-      @_set_config_settings!
-      style.set_for_buffer @sci, buffer
-      highlight.set_for_buffer @sci, buffer
-      buffer\add_sci_ref @sci
-
-      if buffer.properties.line_at_top
-        @line_at_top = buffer.properties.line_at_top
-
-      pos = buffer.properties.position or 1
-      pos = math.max 1, math.min pos, #buffer
-      @cursor.pos = pos
+      @_show_buffer buffer
       signal.emit 'after-buffer-switch', editor: self, current_buffer: buffer, old_buffer: prev_buffer
 
   @property current_line: get: => @buffer.lines[@cursor.line]
@@ -313,6 +283,9 @@ class Editor extends PropertyObject
     @cursor.column = column + delta
     @line_at_top = top_line
     error ret unless status
+
+  preview: (buffer) =>
+    @_show_buffer buffer, preview: true
 
   indent: => if @buffer.mode.indent then @buffer.mode\indent self
 
@@ -482,6 +455,44 @@ class Editor extends PropertyObject
 
 
   -- private
+  _show_buffer: (buffer, opts={}) =>
+    @selection\remove!
+
+    if @_buf
+      @_buf.properties.position = @cursor.pos
+      @_buf.properties.line_at_top = @line_at_top
+      @_buf\remove_sci_ref @sci
+      unless @_is_previewing
+        @_buf.last_shown = os.time!
+
+    @_is_previewing = opts.preview
+    prev_buffer = @_buf
+    @_buf = buffer
+    @indicator.title.label = buffer.title
+
+    if buffer.activity and buffer.activity.is_running!
+      with @indicator.activity
+        \start!
+        \show!
+    elseif rawget(@indicator, 'activity')
+      with @indicator.activity
+        \stop!
+        \hide!
+
+    @sci\set_doc_pointer(buffer.doc)
+
+    @_set_config_settings!
+    style.set_for_buffer @sci, buffer
+    highlight.set_for_buffer @sci, buffer
+    buffer\add_sci_ref @sci
+
+    if buffer.properties.line_at_top
+      @line_at_top = buffer.properties.line_at_top
+
+    pos = buffer.properties.position or 1
+    pos = math.max 1, math.min pos, #buffer
+    @cursor.pos = pos
+
   _set_config_settings: =>
     buf = @buffer
     config = buf.config
