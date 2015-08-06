@@ -70,6 +70,7 @@ describe 'Application', ->
     last_shown_buffer\add_view_ref view
     last_shown_buffer\remove_view_ref view
     last_shown_buffer.title = 'last_shown'
+    editor = Editor last_shown_buffer
 
     visible_buffer = application\new_buffer!
     editor.buffer = visible_buffer
