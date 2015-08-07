@@ -55,6 +55,11 @@ off Howl's support for ANSI color escape codes. For less fanciful commands Howl
 will display any standard output plainly, while error output will be shown in a
 different style to allow you to quickly differentiate between the two.
 
+## build-exec
+
+Howl features another execution command, `build-exec`. This is the same as
+`project-exec`, but it executes the command defined in `config.build_command`.
+
 ## Dealing with rogue commands
 
 While a well behaved command will exit on its own, occasionally there are those

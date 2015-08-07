@@ -75,6 +75,7 @@
   ctrl_p:           'project-open'
   ctrl_shift_r:     'exec'
   ctrl_alt_r:       'project-exec'
+  ctrl_shift_b:     'build-exec'
 
   ctrl_w:           'view-close'
   'ctrl_-':         'zoom-out'

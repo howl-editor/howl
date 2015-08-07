@@ -318,20 +318,33 @@ launch_cmd = (working_directory, cmd) ->
   editor.cursor\eof!
   buffer\pump!
 
+get_project_root = ->
+  buffer = app.editor and app.editor.buffer
+  file = buffer.file or buffer.directory
+  error "No file associated with the current view" unless file
+  project = Project.get_for_file file
+  error "No project associated with #{file}" unless project
+  return project.root
+
 command.register
   name: 'project-exec',
   description: 'Runs an external command from within the project directory'
-  input: ->
-    buffer = app.editor and app.editor.buffer
-    file = buffer.file or buffer.directory
-    error "No file associated with the current view" unless file
-    project = Project.get_for_file file
-    error "No project associated with #{file}" unless project
-    return interact.get_external_command path: project.root
+  input: -> interact.get_external_command path: get_project_root!.root
   handler: launch_cmd
+
+command.register
+  name: 'build-exec'
+  description: 'Runs the command in config.build_command from within the project directory'
+  handler: -> launch_cmd get_project_root!.root, config.build_command
 
 command.register
   name: 'exec',
   description: 'Runs an external command'
   input: (path=nil) -> interact.get_external_command :path
   handler: launch_cmd
+
+config.define
+  name: 'build_command'
+  description: 'The command to execute when build-exec is run'
+  default: 'make'
+  type_of: 'string'
