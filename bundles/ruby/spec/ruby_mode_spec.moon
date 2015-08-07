@@ -28,7 +28,9 @@ describe 'Ruby mode', ->
 
     indents = {
       'pending function definitions': {
-        'def foo'
+        'def foo',
+        'def abc?',
+        'def def!',
       }
       'pending class declarations': {
         'class Frob',
