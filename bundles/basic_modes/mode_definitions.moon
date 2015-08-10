@@ -292,22 +292,6 @@ common_auto_pairs = {
       '"': '"'
     }
 
-  python:
-    extensions: { 'sc', 'py', 'pyw', 'pyx' }
-    patterns: { 'wscript$', 'SConstruct$', 'SConscript$' }
-    shebangs: '[/ ]python.*$'
-    comment_syntax: '#'
-    indentation: {
-      more_after: {
-        { ':%s*$' }
-      }
-      less_for: { 'else%s*:%s*$' }
-    }
-    auto_pairs: common_auto_pairs
-    structure: (editor) =>
-      [l for l in *editor.buffer.lines when do
-        l\match('^%s*class%s') or l\match('^%s*def%s')]
-
   rstats:
     extensions: { 'r', 'rout', 'rhistory', 'rt' }
     patterns: { 'Rout%.save$', 'Rout%.fail$' }
