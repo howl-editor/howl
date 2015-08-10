@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added previews for the `switch-buffer` and `project-open` commands.
+
 - HTML mode: Sub lex inline styling
 
 - Upgrade to Moonscript 0.3.1
