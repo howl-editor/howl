@@ -299,9 +299,9 @@ common_auto_pairs = {
     comment_syntax: '#'
     indentation: {
       more_after: {
-        { ':%s*$', 'else:%s*$' }
+        { ':%s*$' }
       }
-      less_for: { 'else:%s*$'}
+      less_for: { 'else%s*:%s*$' }
     }
     auto_pairs: common_auto_pairs
     structure: (editor) =>
