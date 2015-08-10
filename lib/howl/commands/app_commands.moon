@@ -333,9 +333,9 @@ command.register
   handler: launch_cmd
 
 command.register
-  name: 'build-exec'
-  description: 'Runs the command in config.build_command from within the project directory'
-  handler: -> launch_cmd get_project_root!.root, config.build_command
+  name: 'project-build'
+  description: 'Runs the command in config.project_build_command from within the project directory'
+  handler: -> launch_cmd get_project_root!.root, config.project_build_command
 
 command.register
   name: 'exec',
@@ -344,7 +344,7 @@ command.register
   handler: launch_cmd
 
 config.define
-  name: 'build_command'
-  description: 'The command to execute when build-exec is run'
+  name: 'project_build_command'
+  description: 'The command to execute when project-build is run'
   default: 'make'
   type_of: 'string'
