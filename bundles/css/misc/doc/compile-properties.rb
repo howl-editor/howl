@@ -2,7 +2,8 @@
 #
 # Compiles the standalone CSS property JSON information into one .moon file.
 # Fast and hacky way of getting it done.
-# (C) 2013 Nils Nordman <nino at nordman.org>, MIT license.
+# Copyright 2013-2015 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 require 'json'
 require 'pp'

@@ -10,7 +10,7 @@ unload = -> howl.mode.unregister 'moonscript'
 
 return {
   info:
-    author: 'Copyright 2012-2013 Nils Nordman <nino at nordman.org>',
+    author: 'Copyright 2012-2015 The Howl Developers',
     description: 'Moonscript mode',
     license: 'MIT',
   :unload

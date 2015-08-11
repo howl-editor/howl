@@ -1,5 +1,5 @@
--- Copyright 2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE)
+-- Copyright 2014-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
 C, ffi_copy, ffi_fill, ffi_gc, ffi_cast = ffi.C, ffi.copy, ffi.fill, ffi.gc, ffi.cast

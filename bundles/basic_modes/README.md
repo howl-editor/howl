@@ -9,7 +9,7 @@ using [Scintillua lexers](http://foicica.com/scintillua/).
 
 The bundle itself is under the following copyright:
 
-Copyright 2013 Nils Nordman <nino at nordman.org>
+Copyright 2013-2015 The Howl Developers
 
 Each lexer can hold different copyrights, who can be found by looking at
 each lexer in the lexers/ subdirectory. For convenience, the below lists

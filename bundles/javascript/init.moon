@@ -10,7 +10,7 @@ unload = -> howl.mode.unregister 'javascript'
 
 return {
   info:
-    author: 'Copyright 2014 Nils Nordman <nino at nordman.org>',
+    author: 'Copyright 2014-2015 The Howl Developers',
     description: 'JavaScript support',
     license: 'MIT',
   :unload

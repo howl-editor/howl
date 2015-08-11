@@ -9,7 +9,7 @@ unload = -> howl.mode.unregister 'erb'
 
 return {
   info:
-    author: 'Copyright 2014 Nils Nordman <nino at nordman.org>',
+    author: 'Copyright 2014-2015 The Howl Developers',
     description: 'erb support',
     license: 'MIT',
   :unload

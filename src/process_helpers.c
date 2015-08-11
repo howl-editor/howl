@@ -1,5 +1,5 @@
-/* Copyright 2014 Nils Nordman <nino at nordman.org> */
-/* License: MIT (see LICENSE) */
+/* Copyright 2012-2015 The Howl Developers */
+/* License: MIT (see LICENSE.md at the top-level directory of the distribution) */
 
 #include <sys/types.h>
 #include <sys/wait.h>

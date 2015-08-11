@@ -1,4 +1,4 @@
--- Copyright 2014 Nils Nordman <nino at nordman.org>
+-- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md)
 
 howl.aux.lpeg_lexer ->

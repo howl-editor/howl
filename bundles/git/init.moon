@@ -12,7 +12,7 @@ VC.register 'git', :find
 config.define name: 'git_path', description: 'Path to git executable'
 
 info = {
-  author: 'Copyright 2012 Nils Nordman <nino at nordman.org>',
+  author: 'The Howl Developers',
   description: 'Git bundle',
   license: 'MIT',
 }

@@ -1,4 +1,4 @@
--- Copyright 2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2013-2015 The Howl Developers
 -- License: MIT (see LICENSE.md)
 
 mode_reg =
@@ -14,7 +14,7 @@ unload = -> howl.mode.unregister 'css'
 
 return {
   info:
-    author: 'Copyright 2013 Nils Nordman <nino at nordman.org>',
+    author: 'Copyright 2013-2015 The Howl Developers',
     description: 'CSS mode',
     license: 'MIT',
   :unload

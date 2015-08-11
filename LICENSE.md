@@ -2,7 +2,8 @@
 
 Howl is is released under the [MIT License](http://opensource.org/licenses/MIT):
 
-    Copyright (c) 2012 - 2014 Nils Nordman
+    Copyright 2012 - 2015 Nils Nordman <nino at nordman.org>
+    Copyright 2014 - 2015 Google, Inc.
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +23,8 @@ Howl is is released under the [MIT License](http://opensource.org/licenses/MIT):
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
 
+Individual contributions be tracked via the
+[Github contributors page](https://github.com/nilnor/howl/graphs/contributors).
 
 ## Embedded software
 

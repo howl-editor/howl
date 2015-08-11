@@ -10,7 +10,7 @@ unload = -> howl.mode.unregister 'gherkin'
 
 return {
   info:
-    author: 'Copyright 2013 Nils Nordman <nino at nordman.org>',
+    author: 'Copyright 2013-2015 The Howl Developers',
     description: 'Cucumber support',
     license: 'MIT',
   :unload

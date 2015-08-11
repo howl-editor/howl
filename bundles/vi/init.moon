@@ -75,7 +75,7 @@ command.register cmd for cmd in *vi_commands
 
 -- state.activate!
 info = {
-  author: 'Nils Nordman <nino at nordman.org>',
+  author: 'The Howl Developers',
   description: 'VI bundle',
   license: 'MIT',
 }

@@ -11,7 +11,7 @@ unload = -> howl.mode.unregister 'c'
 
 return {
   info:
-    author: 'Copyright 2014 Nils Nordman <nino at nordman.org>',
+    author: 'Copyright 2014-2015 The Howl Developers',
     description: 'C language support',
     license: 'MIT',
   :unload

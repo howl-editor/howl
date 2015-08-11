@@ -19,7 +19,7 @@ Copyright (c) 2011 Ethan Schoonover
 
 The bundle itself is under the following copyright:
 
-Copyright (c) 2013 Nils Nordman <nino at nordman.org>
+Copyright (c) 2013-2015 The Howl Developers
 
 Both the bundle and the tomorrow themes are licensed under:
 

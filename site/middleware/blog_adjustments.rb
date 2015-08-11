@@ -1,4 +1,5 @@
-# (C) 2014 Nils Nordman <nino at nordman.org>, MIT license.
+# Copyright 2014-2015 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 # Work-around for bug in middleman for relative links for blogs
 # Auto-linking of Github issues

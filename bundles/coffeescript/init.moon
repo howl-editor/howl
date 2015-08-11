@@ -20,7 +20,7 @@ unload = ->
 
 return {
   info:
-    author: 'Copyright 2014 Nils Nordman <nino at nordman.org>',
+    author: 'Copyright 2014-2015 The Howl Developers',
     description: 'Coffeescript mode',
     license: 'MIT',
   :unload

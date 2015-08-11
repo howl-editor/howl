@@ -1,7 +1,7 @@
 #! /bin/sh
 #
-# Copyright 2012-2013 Nils Nordman <nino at nordman.org>
-# License: MIT (see LICENSE)
+# Copyright 2012-2015 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 source_dir=$1
 target_dir=$2

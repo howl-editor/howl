@@ -1,5 +1,5 @@
--- Copyright 2013-2014 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2013-2014-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 core = require 'ljglibs.core'
 
 require 'ljglibs.cdefs.glib'

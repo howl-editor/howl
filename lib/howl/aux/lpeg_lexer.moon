@@ -1,5 +1,5 @@
--- Copyright 2012-2013 Nils Nordman <nino at nordman.org>
--- License: MIT (see LICENSE.md)
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import mode from howl
 import P, B, S, Cp, Cc, Ct, Cmt, Cg, Cb from lpeg

@@ -9,7 +9,7 @@ unload = -> howl.mode.unregister 'markdown'
 
 return {
   info:
-    author: 'Copyright 2013 Nils Nordman <nino at nordman.org>',
+    author: 'Copyright 2013-2015 The Howl Developers',
     description: 'Markdown support',
     license: 'MIT',
   :unload

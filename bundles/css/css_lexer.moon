@@ -1,4 +1,4 @@
--- Copyright 2013 Nils Nordman <nino at nordman.org>
+-- Copyright 2013-2015 The Howl Developers
 -- License: MIT (see LICENSE.md)
 
 import style from howl.ui
