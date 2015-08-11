@@ -550,48 +550,64 @@ View = {
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
     @horizontal_scrollbar_alignment.left_padding = @gutter_width
 
-  _on_buffer_styled: (buffer, args) =>
+  _on_buffer_styled: (buffer, args, start_dline) =>
     return unless @showing
     last_line = buffer\get_line @last_visible_line
     return if args.start_line > @display_lines.max + 1 and last_line.has_eol
-    start_line = @buffer\get_line args.start_line
-
-    prev_block = @display_lines[start_line.nr].block
+    start_line = args.start_line
+    start_dline or= @display_lines[start_line]
+    prev_block = start_dline.block
     prev_block_width = prev_block and prev_block.width
 
-    changed_block = ->
-      new_block = @display_lines[start_line.nr].block
-      return new_block if new_block and not prev_block
-      return prev_block if prev_block and not new_block
-      if prev_block and prev_block_width != new_block.width
-        prev_block
+    update_block = (rescan_width) ->
+      new_block = @display_lines[start_line].block
+      return unless (new_block or prev_block)
+      if new_block and prev_block
+        if new_block.width == prev_block_width
+          return unless rescan_width
+
+          width = 0
+          start_scan_line = max(new_block.start_line, @first_visible_line)
+          end_scan_line = min(new_block.end_line, @last_visible_line)
+          for nr = start_scan_line, end_scan_line
+            width = max width, @display_lines[nr].width
+
+          return if width == prev_block_width
+          new_block.width = width
+
+      start_refresh = @last_visible_line
+      end_refresh = @first_visible_line
+
+      if prev_block
+        start_refresh, end_refresh = prev_block.start_line, prev_block.end_line
+
+      if new_block
+        start_refresh = min start_refresh, new_block.start_line
+        end_refresh = max end_refresh, new_block.end_line
+
+      @refresh_display from_line: start_refresh, to_line: end_refresh
 
     if not args.invalidated and args.start_line == args.end_line
       -- refresh only the single line, but verify that the modification does not
       -- have other significant percussions
-      prev_height = @display_lines[start_line.nr].height
+      @refresh_display from_line: start_line, to_line: start_line, invalidate: true
 
-      @refresh_display from_line: start_line.nr, to_line: start_line.nr, invalidate: true
-
-      d_line = @display_lines[start_line.nr]
-      if d_line.height == prev_height -- height remains the same
-        block = changed_block! -- but might still need to adjust for block changes
-        if block
-          @refresh_display from_line: block.start_line.nr, to_line: block.end_line.nr
-
+      d_line = @display_lines[start_line]
+      if d_line.height == start_dline.height -- height remains the same
+        -- but we might still need to adjust for block changes
+        update_block(start_dline.width == prev_block_width)
         @_sync_scrollbars horizontal: true
         return
 
-    @refresh_display from_line: start_line.nr, invalidate: true, gutter: true
-    block = changed_block! -- but might still need to adjust for block changes
-    if block
-      @refresh_display from_line: block.start_line.nr, to_line: start_line.nr
-
+    @refresh_display from_line: start_line, invalidate: true, gutter: true
+    -- we might still need to adjust more for block changes
+    update_block(start_dline.width == prev_block_width)
     @_sync_scrollbars!
 
   _on_buffer_modified: (buffer, args, type) =>
     cur_pos = @cursor.pos
     sel_anchor, sel_end = @selection.anchor, @selection.end_pos
+    start_dline = args.styled and @display_lines[args.styled.start_line]
 
     -- adjust cursor if neccessary
     if type == 'insert' and args.offset <= @cursor.pos
@@ -601,16 +617,16 @@ View = {
 
     @selection\clear!
 
-    unless @showing
-      @_reset_display!
-      return
-
     if @has_focus and args.revision
       with args.revision.meta
         .cursor_before or= cur_pos
         .cursor_after = @cursor.pos
         .selection_anchor = sel_anchor
         .selection_end_pos = sel_end
+
+    unless @showing
+      @_reset_display!
+      return
 
     lines_changed = contains_newlines(args.text)
     if lines_changed
@@ -622,7 +638,7 @@ View = {
       @_invalidate_display args.invalidate_offset, args.offset
 
     if args.styled
-      @_on_buffer_styled buffer, args.styled
+      @_on_buffer_styled buffer, args.styled, start_dline
     else
       if lines_changed
         @refresh_display from_offset: args.offset, invalidate: true, gutter: true
