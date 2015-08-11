@@ -56,48 +56,75 @@ parse_background_ranges = (styling) ->
   ranges[#ranges + 1] = range if range
   ranges
 
-scan_block = (display_lines, d_line) ->
-  block = width: d_line.width
-  start_line = d_line
-  cur_line = display_lines[d_line.nr - 1]
+BlockMt = {
+  __tostring: =>
+    "Block##{@id}<start_line: #{@start_line}, end_line: #{@end_line}, width: #{@width}"
+}
 
+block_id = 0
+get_block = (display_lines, d_line) ->
+  local block
+  start_line = d_line
+
+  -- scan back
+  cur_line = display_lines[d_line.nr - 1]
   while cur_line and cur_line._full_background
+    if cur_line._block
+      block = cur_line._block
+      break
+
     start_line = cur_line
-    block.width = max block.width, cur_line.width
     cur_line = display_lines[cur_line.nr - 1]
 
-  block.start_line = start_line
+  if block
+    -- we found an earlier block, now extend it as neccessary down
+    -- until the current line and then we're done
+    cur_line = display_lines[min(block.end_line + 1, d_line.nr)]
+    while cur_line.nr <= d_line.nr
+      cur_line._block = block
+      block.width = max block.width, cur_line.width
+      cur_line = display_lines[cur_line.nr + 1]
 
+    block.end_line = max(block.end_line, d_line.nr)
+    return block
+
+  -- no block found looking back, scan forward
   end_line = d_line
   cur_line = display_lines[d_line.nr + 1]
 
   while cur_line and cur_line._full_background
+    if cur_line._block
+      block = cur_line._block
+
+      -- we found a subsequent block, now extend it as neccessary up
+      -- until the start line and then we're done
+      cur_line = display_lines[cur_line.nr - 1]
+      while cur_line.nr >= start_line.nr
+        cur_line._block = block
+        block.width = max block.width, cur_line.width
+        cur_line = display_lines[cur_line.nr - 1]
+
+      return block
+
     end_line = cur_line
-    block.width = max block.width, cur_line.width
     cur_line = display_lines[cur_line.nr + 1]
 
-  block.end_line = end_line
-  block.width += 5
+  -- no existing block found, create a new one if unless this is a single
+  -- line and assign it to the affected lines
+  if start_line.nr != end_line.nr
+    block_id += 1
+    block = setmetatable {
+      id: block_id,
+      start_line: start_line.nr,
+      end_line: end_line.nr,
+      width: 0
+    }, BlockMt
+    cur_line = start_line
+    while cur_line and cur_line.nr <= end_line.nr
+      cur_line._block = block
+      block.width = max block.width, cur_line.width
+      cur_line = display_lines[cur_line.nr + 1]
 
-  block
-
-get_block = (display_lines, d_line) ->
-  prev_d_line = display_lines[d_line.nr - 1]
-  block = if prev_d_line
-    if prev_d_line._block
-      prev_d_line._block
-    elseif prev_d_line._full_background
-      return scan_block display_lines, d_line
-
-  unless block
-    next_d_line = display_lines[d_line.nr + 1]
-    if next_d_line
-      block = if next_d_line._block
-        next_d_line._block
-      elseif next_d_line._full_background
-        scan_block display_lines, d_line
-
-  block.width = max(block.width, d_line.width) if block
   block
 
 get_flairs = (buffer, line, display_line) ->
