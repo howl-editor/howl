@@ -7,11 +7,11 @@
   comment_syntax: '#'
 
   default_config:
-    word_pattern: r'\\b[\\w_][\\w\\d_]+\\b'
+    word_pattern: r'\\b[\\pL_][\\pL\\pN_]+\\b'
 
   indentation: {
     more_after: {
-      r':\\s*$',
+      ':%s*$',
       '[[{(]%s*$'
     }
 
