@@ -5,7 +5,8 @@ howl.aux.lpeg_lexer ->
   c = capture
 
   keyword = c 'keyword', -B'.' * word {
-    "and", "as", "assert", "break", "class", "continue", "def", "del", "elif",
+    "and", "assert", "async", "as", "await",
+    "break", "class", "continue", "def", "del", "elif",
     "else", "except", "exec", "finally", "for", "from", "global", "if", "import",
     "in", "is", "lambda", "not", "or", "pass", "print", "raise", "return", "try",
     "while", "with", "yield"
@@ -42,9 +43,11 @@ howl.aux.lpeg_lexer ->
   }
 
   comment = c 'comment', P'#' * scan_until(eol)
-  operator = c 'operator', S'+-*/%~&^=<>;:,.(){}[]|'
+  operator = c 'operator', S'+-*/%~&^=<>;:,.(){}[]|`'
 
-  name = (alpha + '_')^1 * (alpha + digit + S'_')^0
+  name = (alpha + '_')^1 * (alpha + digit + P'_')^0
+
+  dunder_identifier = c 'special', (P'__' * (alpha^1 * (alpha + digit)^0) * P'__')
 
   identifier = c 'identifier', name
   fdecl = c('keyword', 'def') * c('whitespace', space^1) * c('fdecl', name)
@@ -60,9 +63,9 @@ howl.aux.lpeg_lexer ->
 
   basic_number = c 'number', any { hexadecimal, octal, binary, float, integer }
 
-  long_integer = c('number', digit_run) * c('operator', S'lL')
-  exponent_float = c('number', any { float, integer }) * c('operator', S'eE') * c('number', S'+-'^-1 * integer)
-  complex = c('number', any { exponent_float, float, integer }) * c('operator', S'jJ')
+  long_integer = c('number', digit_run) * c('special', S'lL')
+  exponent_float = c('number', any { float, integer }) * c('special', S'eE') * c('number', S'+-'^-1 * integer)
+  complex = c('number', any { exponent_float, float, integer }) * c('special', S'jJ')
 
   number = any { complex, exponent_float, long_integer, basic_number }
 
@@ -73,8 +76,8 @@ howl.aux.lpeg_lexer ->
     span("'", "'", '\\'),
   }
 
-  raw_string = c('operator', S'rR') * basic_string
-  encoded_string = c('operator', S'bBuU') * any { raw_string, basic_string }
+  raw_string = c('special', S'rR') * basic_string
+  encoded_string = c('special', S'bBuU') * any { raw_string, basic_string }
 
   string = any { basic_string, raw_string, encoded_string }
 
@@ -93,6 +96,7 @@ howl.aux.lpeg_lexer ->
       keyword,
       functions,
       constant,
+      dunder_identifier,
       identifier,
       decorator
     }
