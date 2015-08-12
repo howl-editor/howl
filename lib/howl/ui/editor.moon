@@ -257,10 +257,13 @@ class Editor extends PropertyObject
       real_column = line\real_column anchor_col + @buffer.config.indent
       @selection.anchor = line.start_pos + real_column - 1
 
+    unless cursor_col == 1 and cursor_line > anchor_line
+      cursor_col += @buffer.config.indent
+
     @cursor\move_to {
       line: cursor_line,
-      column: cursor_col + @buffer.config.indent,
-      extend: anchor_line
+      column: cursor_col,
+      extend: anchor_line != nil
     }
 
   shift_left: =>
@@ -668,7 +671,8 @@ class Editor extends PropertyObject
     return if not matching or cur_char == matching
 
     match_pos = if forward
-      search_to = buffer\get_line(@view.last_visible_line).end_offset
+      last_visible_line = buffer\get_line(@view.last_visible_line)
+      search_to = last_visible_line and last_visible_line.end_offset or buffer.size
       buffer\pair_match_forward(start_pos, matching, search_to)
     else
       search_to = buffer\get_line(@view.first_visible_line).start_offset
