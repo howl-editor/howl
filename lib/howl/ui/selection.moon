@@ -30,7 +30,7 @@ class Selection extends PropertyObject
 
     set: (pos) =>
       if @empty
-        @set pos, @_view.cursor.pos - 1
+        @set pos, max(@_view.cursor.pos - 1, 1)
       else
         @_sel.anchor = @_buffer\byte_offset pos
 
