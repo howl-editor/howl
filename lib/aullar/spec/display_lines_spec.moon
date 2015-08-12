@@ -92,7 +92,6 @@ describe 'DisplayLines', ->
 
       it 'finds and merges previous blocks, including intermediate lines', ->
         block = display_lines[2].block
-        print block
         display_lines[3] = nil
         display_lines[4] = nil
         assert.equals block, display_lines[4].block
@@ -100,7 +99,6 @@ describe 'DisplayLines', ->
 
       it 'finds and merges subsequent blocks, including intermediate lines', ->
         block = display_lines[4].block
-        print block
         display_lines[2] = nil
         display_lines[3] = nil
         assert.equals block, display_lines[2].block
