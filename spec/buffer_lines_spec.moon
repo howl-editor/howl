@@ -349,10 +349,10 @@ describe 'BufferLines', ->
       range = lines\for_text_range 6, 1
       assert.same { lines[1], lines[2] }, range
 
-    it 'does not include lines only touched at the start or end positions', ->
+    it 'does not include lines only touched at the start positions', ->
       lines = buffer('one\ntwo\nthree').lines
       range = lines\for_text_range lines[1].end_pos, lines[3].start_pos
-      assert.same { lines[2] }, range
+      assert.same { lines[1], lines[2] }, range
 
   describe 'append(text)', ->
     it 'append(text) appends <text> with the necessary newlines', ->

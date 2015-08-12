@@ -170,7 +170,6 @@ BufferLines = (buffer) ->
         return { start_line } if s == e
         end_line = @at_pos e
 
-        start_line = start_line.next if start_line.end_pos == s
         end_line = end_line.previous if end_line.start_pos == e
         @range start_line.nr, end_line.nr
 
