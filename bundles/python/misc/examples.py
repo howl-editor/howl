@@ -68,7 +68,7 @@ single 'quotes' ok - no escaping needed
 double "quotes" ok too!
 """
 
-adjascent_strings_auto_concat = "hello " "world"
+adjacent_strings_auto_concat = "hello " "world"
 same_as_above = "hello""world"
 
 if False:
