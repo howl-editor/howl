@@ -329,13 +329,13 @@ get_project_root = ->
 command.register
   name: 'project-exec',
   description: 'Runs an external command from within the project directory'
-  input: -> interact.get_external_command path: get_project_root!.root
+  input: -> interact.get_external_command path: get_project_root!
   handler: launch_cmd
 
 command.register
   name: 'project-build'
   description: 'Runs the command in config.project_build_command from within the project directory'
-  handler: -> launch_cmd get_project_root!.root, config.project_build_command
+  handler: -> launch_cmd get_project_root!, config.project_build_command
 
 command.register
   name: 'exec',
