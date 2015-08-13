@@ -66,15 +66,25 @@ describe 'BufferLines', ->
           assert.equal '        first\n', buf.text
 
       context 'when `use_tabs` is true', ->
-        it 'squeezes in as many tabs as possible', ->
-          buf = buffer 'first\nsecond'
+        local buf, lines
+
+        before_each ->
+          buf = buffer ''
           lines = buf.lines
           buf.config.use_tabs = true
-          buf.config.tab_width = 2
+          buf.config.tab_width = 4
+
+        it 'squeezes in as many tabs as possible', ->
+          buf.text = 'first\nsecond'
           lines[1].indentation = 5
-          assert.equal '\t\t first', lines[1].text
-          lines[2].indentation = 4
+          assert.equal '\t first', lines[1].text
+          lines[2].indentation = 8
           assert.equal '\t\tsecond', lines[2].text
+
+        it 'handles lines with existing tabs', ->
+          buf.text = '\tx'
+          lines[1].indentation = 8
+          assert.equal '\t\tx', lines[1].text
 
       it 'works for empty lines', ->
         buf = buffer 'first\n'

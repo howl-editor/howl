@@ -7,6 +7,12 @@ import string, type from _G
 append = table.insert
 {:min, :max} = math
 
+get_indentation = (text, config) ->
+  leading = text\match '^%s*'
+  spaces = leading\count ' '
+  tabs = leading\count '\t'
+  spaces + tabs * config.tab_width, #leading
+
 line_mt =
   __index: (k) =>
     getter = @_getters[k]
@@ -84,10 +90,7 @@ Line = (nr, buffer) ->
       size: => get_line!.size
 
       indentation: =>
-        leading = text!\match '^%s*'
-        spaces = leading\count ' '
-        tabs = leading\count '\t'
-        spaces + tabs * @buffer.config.tab_width
+        (get_indentation text!, @buffer.config)
 
       chunk: =>
         start_pos = @start_pos
@@ -126,11 +129,11 @@ Line = (nr, buffer) ->
         a_buf\replace line.start_offset, line.size, value
 
       indentation: (indent) =>
-        cur_indent = @indentation
+        config = @buffer.config
+        cur_indent, real_indent = get_indentation text!, config
         return if indent == cur_indent
 
         content = text!\match '^%s*(.*)$'
-        config = @buffer.config
 
         indent_s = if config.use_tabs
           nr_tabs = math.floor(indent / config.tab_width)
@@ -138,7 +141,7 @@ Line = (nr, buffer) ->
         else
           string.rep ' ', indent
 
-        @replace 1, cur_indent, indent_s
+        @replace 1, real_indent, indent_s
 
   }, line_mt
 
