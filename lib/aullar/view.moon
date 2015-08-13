@@ -297,7 +297,8 @@ View = {
     if opts.vertical
       page_size = @lines_showing - 1
       adjustment = @vertical_scrollbar.adjustment
-      adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
+      if adjustment
+        adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
 
     if opts.horizontal
       max_width = 0
@@ -308,8 +309,9 @@ View = {
         @horizontal_scrollbar\hide!
       else
         adjustment = @horizontal_scrollbar.adjustment
-        adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, @edit_area_width, @edit_area_width
-        @horizontal_scrollbar\show!
+        if adjustment
+          adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, @edit_area_width, @edit_area_width
+          @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
 
