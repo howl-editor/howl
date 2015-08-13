@@ -10,7 +10,17 @@ pango_cairo = Pango.cairo
 
 define_class {
   new: (@view) =>
-    @width = 50
+    @number_chars = 0
+    @width = 0
+
+  sync_width: (buffer) =>
+    lines_text = tostring(buffer.nr_lines)
+    num_chars = #lines_text
+    return true if @number_chars == num_chars
+    {:width} = @view\text_dimensions(lines_text)
+    @width = width + 10
+    @number_chars = num_chars
+    false
 
   start_draw: (@cairo_context, pango_context, @clip, styling) =>
     @layout = nil

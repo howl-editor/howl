@@ -271,9 +271,10 @@ View = {
 
         @_first_visible_line = 1
         @_base_x = 0
+        @gutter\sync_width buffer
         @_reset_display!
         @area\queue_draw!
-        @buffer\ensure_styled_to line: @last_visible_line + 1
+        buffer\ensure_styled_to line: @last_visible_line + 1
     }
   }
 
@@ -646,6 +647,9 @@ View = {
       else
         @refresh_display from_offset: args.offset, to_offset: args.offset + args.size, invalidate: true
         @_sync_scrollbars horizontal: true
+
+    if lines_changed and not @gutter\sync_width buffer
+      @area\queue_draw!
 
   _on_buffer_marker_changed: (buffer, marker) =>
     if marker.flair
