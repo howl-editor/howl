@@ -323,6 +323,7 @@ View = {
       @_buffer\replace start_pos, @selection.size, text
 
     notify @, 'on_insert_at_cursor', :text
+    nil
 
   delete_back: =>
     if @selection.is_empty
