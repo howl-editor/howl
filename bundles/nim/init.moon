@@ -1,3 +1,6 @@
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 mode_reg =
   name: 'nim'
   extensions: 'nim'
@@ -9,13 +12,13 @@ howl.command.register
   name: 'nim-run'
   description: 'Compile and run the current Nim file'
   handler: ->
-    exe = howl.config.nim_executable
-    unless exe
-      error 'Cannot locate nim executable, please define config.nim_executable.'
-    unless howl.io.File(exe).exists
-      error "Nonexistent path '#{exe}' - invalid config.nim_executable."
     unless howl.app.editor.buffer.file
       error "No file associated with current buffer."
+
+    exe = howl.app.editor.buffer.config.nim_executable or 'nim'
+    unless howl.io.File(exe).exists
+      error "Cannot find nim_executable '#{exe}' - please define a valid config.nim_executable."
+
     howl.command.run "exec #{exe} c -r " .. howl.app.editor.buffer.file.basename
 
 unload = -> howl.mode.unregister 'nim'
@@ -26,7 +29,7 @@ howl.config.define
 
 return {
   info:
-    author: 'Copyright 2012-2015 The Howl Developers',
+    author: 'Copyright 2015 The Howl Developers',
     description: 'Nim bundle',
     license: 'MIT',
   :unload
