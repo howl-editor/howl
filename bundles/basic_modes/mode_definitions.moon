@@ -237,10 +237,17 @@ common_auto_pairs = {
 
     keymap: {
       tab: (editor) ->
-        if editor.current_context.prefix.is_blank
-          editor\insert '\t'
+        if editor.selection.empty and editor.current_context.prefix.is_blank
+          editor\insert "\t"
+          true
         else
           false
+    }
+
+    default_config: {
+      indent: 4
+      tab_width: 4
+      use_tabs: true
     }
 
   objective_c:
