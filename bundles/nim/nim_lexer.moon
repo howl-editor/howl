@@ -1,14 +1,16 @@
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 howl.aux.lpeg_lexer ->
   c = capture
 
   nim_identifier = (identifier) ->
     word_char = alpha + '_' + digit
-    grammar = (-B(1) + B(-word_char)) * P(identifier\usub(1, 1))
+    pattern = (-B(1) + B(-word_char)) * P(identifier\usub(1, 1))
     for char in *identifier\usub(2)
-      grammar *= P'_'^-1
-      grammar *= (P(char.ulower) + P(char.uupper))
-    return grammar * #-word_char
+      pattern *= P'_'^-1
+      pattern *= (P(char.ulower) + P(char.uupper))
+    return pattern * #-word_char
 
   keywords = {
     'addr', 'and', 'as', 'asm', 'atomic', 'bind', 'block', 'break', 'case',
@@ -31,9 +33,17 @@ howl.aux.lpeg_lexer ->
 
   identifier = c 'identifier', ident
 
-  proc_fdecl = c('keyword', 'proc') * c('whitespace', space^1) * c('fdecl', any {ident,  backquoted_name}) * P'*'^-1
-  iterator_fdecl = c('keyword', 'iterator') * c('whitespace', space^1) * c('fdecl', ident) * P'*'^-1
-  method_fdecl = c('keyword', 'method') * c('whitespace', space^1) * c('fdecl', ident) * P'*'^-1
+  function_name = c('whitespace', space^1) * c('fdecl', any {ident,  backquoted_name})
+  function_export_marker = c('whitespace', space^0) * c('special', P'*'^-1)
+  proc_fdecl = c('keyword', nim_identifier('proc')) * function_name * function_export_marker
+  iterator_fdecl = c('keyword', nim_identifier('iterator')) * function_name * function_export_marker
+  method_fdecl = c('keyword', nim_identifier('method')) * function_name * function_export_marker
+  template_fdecl = c('keyword', nim_identifier('template')) * function_name * function_export_marker
+  macro_fdecl = c('keyword', nim_identifier('macro')) * function_name * function_export_marker
+
+  type_name = c 'class', upper^1 * (alpha + digit + '_')^0
+  backquoted_type_name = c 'class', P'`' * type_name * P'`'
+  -- backquoted_type_name = c 'class', P'`' * type_name * P'`'
 
   pragma = c 'preproc', span('{.', '}')
 
@@ -66,7 +76,6 @@ howl.aux.lpeg_lexer ->
   number += c('number', number_with_point) * (exponent_suffix^-1) * (float_size_suffix^-1)
   number += (integer * integer_size_suffix^-1)
   number *= #-(alpha + digit + S'_') -- no alphanum should be attached to the number
-  -- number = integer
   string = span('"', '"', '\\')
   tq_string = span('"""', '"""', '\\')
 
@@ -80,12 +89,16 @@ howl.aux.lpeg_lexer ->
       char,
       pragma,
       comment,
-      operator,
       iterator_fdecl,
       proc_fdecl,
       method_fdecl,
+      template_fdecl,
+      macro_fdecl,
       keyword,
-      identifier
+      type_name,
+      backquoted_type_name,
+      identifier,
+      operator,
     }
 
     string: any {

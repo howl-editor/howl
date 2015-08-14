@@ -1,3 +1,6 @@
+-- Copyright 2012-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 append = table.insert
 
 class NimMode
@@ -9,7 +12,7 @@ class NimMode
   indentation: {
     more_after: {
       '[([{:=]%s*$'
-      r'^\\s*\\b(const|enum|let|type|proc|func|iterator|macro|template|method|object|tuple|var)\\s*$',
+      r'^\\s*(const|enum|let|type|proc|func|iterator|macro|template|method|object|tuple|var)\\s*$',
     }
 
     same_after: {
