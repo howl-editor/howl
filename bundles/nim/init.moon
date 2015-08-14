@@ -12,16 +12,27 @@ howl.command.register
   name: 'nim-run'
   description: 'Compile and run the current Nim file'
   handler: ->
-    unless howl.app.editor.buffer.file
+    buffer = howl.app.editor.buffer
+    unless buffer.file
       error "No file associated with current buffer."
 
-    exe = howl.app.editor.buffer.config.nim_executable or 'nim'
-    unless howl.io.File(exe).exists
-      error "Cannot find nim_executable '#{exe}' - please define a valid config.nim_executable."
+    local nim_exe
 
-    howl.command.run "exec #{exe} c -r " .. howl.app.editor.buffer.file.basename
+    if buffer.config.nim_executable
+      path = buffer.config.nim_executable
+      nim_exe = howl.io.File(path)
+      unless nim_exe.exists
+        error "Invalid nim_executable - '#{path}' does not exist."
+    else
+      nim_exe  = howl.io.File.find_executable 'nim'
+      unless nim_exe
+        error "Cannot find nim executable - please define config.nim_executable."
 
-unload = -> howl.mode.unregister 'nim'
+    howl.command.run "exec #{nim_exe.path} c -r " .. buffer.file.basename
+
+unload = ->
+  howl.mode.unregister 'nim'
+  howl.command.unregister 'nim-run'
 
 howl.config.define
   name: 'nim_executable',
