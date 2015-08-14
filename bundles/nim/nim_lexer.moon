@@ -26,6 +26,60 @@ howl.aux.lpeg_lexer ->
 
   keyword = c 'keyword', -B'.' * any [nim_identifier(keyword) for keyword in *keywords]
 
+  builtin_types = {
+  "int",
+  "int8",
+  "int16",
+  "int32",
+  "int64",
+  "uint",
+  "uint8",
+  "uint16",
+  "uint32",
+  "uint64",
+  "float",
+  "float32",
+  "float64",
+  "bool",
+  "char",
+  "string",
+  "cstring",
+  "pointer",
+  "expr",
+  "stmt",
+  "typedesc",
+  "void",
+  "auto",
+  "any",
+  "untyped",
+  "typed",
+  "range",
+  "array",
+  "openArray",
+  "varargs",
+  "seq",
+  "set",
+  "byte",
+  "clong",
+  "culong",
+  "cchar",
+  "cschar",
+  "cshort",
+  "cint",
+  "csize",
+  "clonglong",
+  "cfloat",
+  "cdouble",
+  "clongdouble",
+  "cuchar",
+  "cushort",
+  "cuint",
+  "culonglong",
+  "cstringArray",
+  }
+
+  builtin = c 'class', -B'.' * any [nim_identifier(type_name) for type_name in *builtin_types]
+
   comment = c 'comment', P'#' * scan_until(eol)
   operator = c 'operator', S'=+-*/<>@$~&%|!?^.:\\[]{}(),'
   ident = (alpha + '_')^1 * (alpha + digit + S'_')^0
@@ -95,6 +149,7 @@ howl.aux.lpeg_lexer ->
       template_fdecl,
       macro_fdecl,
       keyword,
+      builtin,
       type_name,
       backquoted_type_name,
       identifier,
