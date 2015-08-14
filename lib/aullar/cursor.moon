@@ -6,6 +6,7 @@ callbacks = require 'ljglibs.callbacks'
 cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
 C = ffi.C
+{:SCALE} = require 'ljglibs.pango'
 
 flair.define_default 'cursor', {
   type: flair.RECTANGLE,
@@ -210,8 +211,8 @@ Cursor = {
 
     -- finally, do we need to scroll horizontally to show the new position?
     rect = @display_line.layout\index_to_pos @column - 1
-    col_pos = rect.x / 1024
-    char_width = rect.width / 1024
+    col_pos = rect.x / SCALE
+    char_width = rect.width / SCALE
     x_pos = col_pos - @view.base_x + @view.edit_area_x + @width
 
     if @view.width and x_pos + char_width > @view.width -- scroll to the right
