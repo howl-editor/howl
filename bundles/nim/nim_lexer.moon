@@ -102,6 +102,6 @@ howl.aux.lpeg_lexer ->
     }
 
     string: any {
-      capture 'string', any { string, tq_string }
+      capture 'string', any { tq_string, string }
     }
   }
