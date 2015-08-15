@@ -43,14 +43,6 @@ class File extends PropertyObject
     res = path\gsub "~#{File.separator}", home_dir .. File.separator
     res
 
-  find_executable: (name) ->
-    path = os.getenv('PATH')
-
-    for dir in path\gmatch "[^:]+"
-      exe = File(dir) / name
-      if exe.exists and not exe.is_directory
-        return exe
-
   separator: jit.os == 'Windows' and '\\' or '/'
 
   new: (target, cwd) =>

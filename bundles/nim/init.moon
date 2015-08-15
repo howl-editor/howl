@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 mode_reg =
@@ -16,19 +16,18 @@ howl.command.register
     unless buffer.file
       error "No file associated with current buffer."
 
-    local nim_exe
+    local nim_executable
 
     if buffer.config.nim_executable
-      path = buffer.config.nim_executable
-      nim_exe = howl.io.File(path)
-      unless nim_exe.exists
-        error "Invalid nim_executable - '#{path}' does not exist."
+      nim_executable = buffer.config.nim_executable
+      unless howl.io.File(nim_executable).exists
+        error "Invalid nim_executable - '#{nim_executable}' does not exist."
     else
-      nim_exe  = howl.io.File.find_executable 'nim'
-      unless nim_exe
+      nim_executable  = howl.sys.find_executable 'nim'
+      unless nim_executable
         error "Cannot find nim executable - please define config.nim_executable."
 
-    howl.command.run "exec #{nim_exe.path} c -r " .. buffer.file.basename
+    howl.command.run "exec #{nim_executable} c -r " .. buffer.file.basename
 
 unload = ->
   howl.mode.unregister 'nim'
