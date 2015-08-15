@@ -184,6 +184,13 @@ return {
       color: yellow
       font: bold: true
 
+    type_def:
+      color: yellow
+      font:
+        bold: true
+        size: 'larger'
+        family: 'Purisa,Latin Modern Sans'
+
     definition: color: yellow
 
     function:

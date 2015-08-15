@@ -38,8 +38,8 @@ pango_attr_p = ffi.typeof('PangoAttribute *')
 attr_ptr = (a) -> cast pango_attr_p, a
 
 get_font_size = (v) ->
-  return v unless type(v) == 'string'
-  delta = font_size_deltas[v]
+  return v if type(v) == 'number'
+  delta = font_size_deltas[tostring(v)]
   error "Invalid font size specification '#{v}'", 2 unless delta
   config.view_font_size + delta
 
