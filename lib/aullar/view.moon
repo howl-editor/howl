@@ -271,7 +271,6 @@ View = {
 
         @_first_visible_line = 1
         @_base_x = 0
-        @gutter\sync_width buffer
         @_reset_display!
         @area\queue_draw!
         buffer\ensure_styled_to line: @last_visible_line + 1
@@ -553,6 +552,7 @@ View = {
     @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
     @horizontal_scrollbar_alignment.left_padding = @gutter_width
+    @gutter\sync_width @buffer, force: true
 
   _on_buffer_styled: (buffer, args, start_dline) =>
     return unless @showing
