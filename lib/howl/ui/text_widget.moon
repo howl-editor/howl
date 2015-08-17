@@ -23,7 +23,6 @@ class TextWidget extends PropertyObject
 
     @cursor = Cursor self, Selection @view
     @view_gobject = @view\to_gobject!
-    @view_gobject\on_map self\_on_map
 
     padding_box = Gtk.Alignment {
       top_padding: @opts.top_padding or 3,
@@ -128,6 +127,7 @@ class TextWidget extends PropertyObject
   show: =>
     @text = @opts.text if @opts.text
     @showing = true
+    @adjust_height!
     @to_gobject!\show_all!
 
   hide: =>
@@ -149,6 +149,3 @@ class TextWidget extends PropertyObject
     return if @_width == width
     @_width = width
     @view_gobject.width_request = height
-
-  _on_map: (...) =>
-    @visible_rows = @visible_rows if @visible_rows
