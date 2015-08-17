@@ -212,7 +212,7 @@ return {
       color: class_name
       font:
         bold: true
-        size: 'larger'
+        size: 'large'
         family: 'Purisa,Latin Modern Sans'
 
     definition: color: yellow
