@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.Chunk</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_chunk'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-pills'>
+          <li>
+            <a href='/'>
+              <span class='glyphicon glyphicon-home'></span>
+              Home
+            </a>
+          </li>
+          <li>
+            <a href='/doc/'>
+              <span class='glyphicon glyphicon-book'></span>
+              Documentation
+            </a>
+          </li>
+          <li>
+            <a href='/blog/'>
+              <span class='glyphicon glyphicon-bullhorn'></span>
+              Blog
+            </a>
+          </li>
+          <li>
+            <a href='/contact.html'>
+              <span class='glyphicon glyphicon-inbox'></span>
+              Contact
+            </a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../'>Howl 0.3 Documentation</a></li><li>Api</li><li>howl.Chunk</li></ol>
+      <h1 id="howl.chunk">howl.Chunk</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.Chunk</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header overview">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#properties" class="toc-group-header properties">Properties</a>
+<li class=""><a href="#buffer">buffer</a></li>
+<li class=""><a href="#empty">empty</a></li>
+<li class=""><a href="#end_pos">end_pos</a></li>
+<li class=""><a href="#start_pos">start_pos</a></li>
+<li class=""><a href="#styling">styling</a></li>
+<li class=""><a href="#text">text</a></li>
+</div>
+<div class="toc-group">
+<a href="#methods" class="toc-group-header methods">Methods</a>
+<li class=""><a href="#delete">delete </a></li>
+</div>
+<div class="toc-group">
+<a href="#meta-methods" class="toc-group-header meta_methods">Meta methods</a>
+<li class=""><a href="##-chunk"># chunk</a></li>
+<li class=""><a href="#tostring">tostring </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>A Chunk represent a sub part of a <a href="buffer.html">Buffer</a>, and provides a set of operations for&#x000A;easily manipulating only that buffer section.</p>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../spec/chunk_spec.html">spec</a> for Chunk</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="properties">Properties</h2>&#x000A;&#x000A;<h3 id="buffer">buffer</h3>&#x000A;&#x000A;<p>The corresponding <a href="buffer.html">Buffer</a> for the chunk</p>&#x000A;&#x000A;<h3 id="empty">empty</h3>&#x000A;&#x000A;<p>True if the chunk is empty (i.e. includes zero characters), and false otherwise.</p>&#x000A;&#x000A;<h3 id="end_pos">end_pos</h3>&#x000A;&#x000A;<p>The end position of the chunk. The end position is inclusive, meaning that the&#x000A;character at <code>end_pos</code> is included in the chunk.</p>&#x000A;&#x000A;<h3 id="start_pos">start_pos</h3>&#x000A;&#x000A;<p>The starting position of the chunk.</p>&#x000A;&#x000A;<h3 id="styling">styling</h3>&#x000A;&#x000A;<p>A table containing styling information for the chunk. The table contains three&#x000A;different value for each separate styling element in the chunk; the starting&#x000A;offset (number), the style applied (string) and the inclusive ending offset&#x000A;(number). Unlike other position values used within Chunk, these offset are byte&#x000A;based.</p>&#x000A;&#x000A;<h3 id="text">text</h3>&#x000A;&#x000A;<p>The text for the chunk. As noted in <a href="#end_pos">end_pos</a>, the chunk&rsquo;s range is&#x000A;inclusive, meaning that the end position is included. For example:</p>&#x000A;<pre class="highlight lua"><span class="n">buffer</span> <span class="o">=</span> <span class="n">howl</span><span class="p">.</span><span class="n">Buffer</span><span class="p">()</span>&#x000A;<span class="n">buffer</span><span class="p">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">'Liñe 1'</span>&#x000A;<span class="n">buffer</span><span class="p">:</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">).</span><span class="n">text</span> <span class="c1">-- =&gt; 'iñe'</span>&#x000A;</pre>&#x000A;<p>Assigning to <code>.text</code> replaces the chunk context with the new string. For&#x000A;example:</p>&#x000A;<pre class="highlight lua"><span class="n">buffer</span> <span class="o">=</span> <span class="n">howl</span><span class="p">.</span><span class="n">Buffer</span><span class="p">()</span>&#x000A;<span class="n">buffer</span><span class="p">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">'Liñe 1'</span>&#x000A;<span class="n">buffer</span><span class="p">:</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">).</span><span class="n">text</span> <span class="o">=</span> <span class="s1">'ua'</span>&#x000A;<span class="n">buffer</span><span class="p">.</span><span class="n">text</span> <span class="c1">-- =&gt; 'Lua 1'</span>&#x000A;</pre>&#x000A;<h2 id="methods">Methods</h2>&#x000A;&#x000A;<h3 id="delete">delete <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Deletes the chunk from the associated <a href="buffer.html">Buffer</a>.</p>&#x000A;&#x000A;<h2 id="meta-methods">Meta methods</h2>&#x000A;&#x000A;<h3 id="#-chunk"># chunk</h3>&#x000A;&#x000A;<p>Returns the length of the Chunk.</p>&#x000A;&#x000A;<h3 id="tostring">tostring <span class="arg-list">(chunk)</span></h3>&#x000A;&#x000A;<p>Returns the <a href=".text">text</a> of the Chunk.</p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2015
+            <a class='alert-link' href='https://github.com/nilnor/howl/contributors'>
+              The Howl Developers.
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.dispatch</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_dispatch'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-pills'>
+          <li>
+            <a href='/'>
+              <span class='glyphicon glyphicon-home'></span>
+              Home
+            </a>
+          </li>
+          <li>
+            <a href='/doc/'>
+              <span class='glyphicon glyphicon-book'></span>
+              Documentation
+            </a>
+          </li>
+          <li>
+            <a href='/blog/'>
+              <span class='glyphicon glyphicon-bullhorn'></span>
+              Blog
+            </a>
+          </li>
+          <li>
+            <a href='/contact.html'>
+              <span class='glyphicon glyphicon-inbox'></span>
+              Contact
+            </a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../'>Howl 0.3 Documentation</a></li><li>Api</li><li>howl.dispatch</li></ol>
+      <h1 id="howl.dispatch">howl.dispatch</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.dispatch</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header overview">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#functions" class="toc-group-header functions">Functions</a>
+<li class=""><a href="#launch">launch </a></li>
+<li class=""><a href="#park">park </a></li>
+<li class=""><a href="#resume">resume </a></li>
+<li class=""><a href="#resume_with_error">resume_with_error </a></li>
+<li class=""><a href="#wait">wait </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>howl.dispatch provides a set of functions for handling and coordinating Lua&#x000A;coroutines. Coroutines are used in Howl to provide a synchronous API over&#x000A;asynchronous operations, such as interacting with external processes, waiting&#x000A;for user input, etc. The primary benefit of the dispatch module is that it&#x000A;provides an easy to use yielding mechanism, for suspending the currently running&#x000A;coroutine until a particular event has been triggered.</p>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../spec/dispatch_spec.html">spec</a> for howl.dispatch</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="functions">Functions</h2>&#x000A;&#x000A;<h3 id="launch">launch <span class="arg-list">(f, &hellip;)</span></h3>&#x000A;&#x000A;<p>Invokes <code>f</code> in a coroutine, with any additional arguments passed to <code>launch</code>. If&#x000A;the coroutine starts correctly, <code>true</code> is returned along with the coroutine&rsquo;s&#x000A;status (e.g. &lsquo;running&rsquo;, &lsquo;dead&rsquo;). If an error is encountered upon launching the&#x000A;coroutine, <code>false</code> is returned along with the error message.</p>&#x000A;&#x000A;<h3 id="park">park <span class="arg-list">(description)</span></h3>&#x000A;&#x000A;<p>Creates and returns a &ldquo;parking handle&rdquo;, which can be used with <a href="#wait">wait</a>,&#x000A;<a href="#resume">resume</a> and <a href="#resume_with_error">resume_with_error</a>. <code>description</code> should be a short descriptive&#x000A;text indicating the nature of the operation to be parked.</p>&#x000A;&#x000A;<h3 id="resume">resume <span class="arg-list">(handle, &hellip;)</span></h3>&#x000A;&#x000A;<p>Resumes the coroutine associated with <code>handle</code>, which should be a parking handle&#x000A;obtained from <a href="#park">park</a>. Any additional arguments passed will be used as the return&#x000A;values from corresponding <a href="#wait">wait</a>.</p>&#x000A;&#x000A;<h3 id="resume_with_error">resume_with_error <span class="arg-list">(handle, err, level = 1)</span></h3>&#x000A;&#x000A;<p>Resumes the coroutine associated with <code>handle</code>, which should be a parking handle&#x000A;obtained from <a href="#park">park</a>. Resuming with an error means that the corresponding <a href="#wait">wait</a>&#x000A;will not return normally, but instead raise the error specified in <code>err</code>. The&#x000A;optional <code>level</code> parameter allows specifying where in the stack of the waiting&#x000A;coroutine the error occurred, similar to the level parameter to&#x000A;<a href="http://www.lua.org/manual/5.2/manual.html#pdf-error">error</a>.</p>&#x000A;&#x000A;<h3 id="wait">wait <span class="arg-list">(handle)</span></h3>&#x000A;&#x000A;<p>Suspends the coroutine from which <code>wait</code> is invoked until <code>handle</code>, a parking&#x000A;handle obtained from <a href="#park">park</a>, is resumed from either <a href="#resume">resume</a> or&#x000A;<a href="#resume_with_error">resume_with_error</a>.</p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2015
+            <a class='alert-link' href='https://github.com/nilnor/howl/contributors'>
+              The Howl Developers.
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

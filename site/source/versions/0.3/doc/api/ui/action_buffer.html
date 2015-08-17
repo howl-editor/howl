@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.ui.ActionBuffer</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_ui doc_api_ui_action_buffer'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-pills'>
+          <li>
+            <a href='/'>
+              <span class='glyphicon glyphicon-home'></span>
+              Home
+            </a>
+          </li>
+          <li>
+            <a href='/doc/'>
+              <span class='glyphicon glyphicon-book'></span>
+              Documentation
+            </a>
+          </li>
+          <li>
+            <a href='/blog/'>
+              <span class='glyphicon glyphicon-bullhorn'></span>
+              Blog
+            </a>
+          </li>
+          <li>
+            <a href='/contact.html'>
+              <span class='glyphicon glyphicon-inbox'></span>
+              Contact
+            </a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../../'>Howl 0.3 Documentation</a></li><li>Api</li><li>Ui</li><li>howl.ui.ActionBuffer</li></ol>
+      <h1 id="howl.ui.actionbuffer">howl.ui.ActionBuffer</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.ui.ActionBuffer</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header overview">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#functions" class="toc-group-header functions">Functions</a>
+<li class=""><a href="#actionbuffer">ActionBuffer</a></li>
+</div>
+<div class="toc-group">
+<a href="#methods" class="toc-group-header methods">Methods</a>
+<li class=""><a href="#append">append </a></li>
+<li class=""><a href="#insert">insert </a></li>
+<li class=""><a href="#style">style </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>An ActionBuffer is a specialized kind of <a href="../buffer.html">Buffer</a>, that is primarily useful for&#x000A;creating text-based interfaces. In contrast to ordinary buffers, where styling&#x000A;is done according to a mode&rsquo;s lexer, styling is manually handled for&#x000A;ActionBuffers. Since it&rsquo;s an extension of <a href="../buffer.html">Buffer</a>, it supports all operations&#x000A;available for <a href="../buffer.html">Buffer</a>, but it extends a few of them to add support for&#x000A;additional functionality.</p>&#x000A;&#x000A;<hr>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../buffer.html">Buffer</a> class which ActionBuffer is based upon</li>&#x000A;<li>The <a href="../../spec/ui/action_buffer.html">spec</a> for ActionBuffer</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="functions">Functions</h2>&#x000A;&#x000A;<h3 id="actionbuffer">ActionBuffer<span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Creates a new ActionBuffer.</p>&#x000A;&#x000A;<h2 id="methods">Methods</h2>&#x000A;&#x000A;<h3 id="append">append <span class="arg-list">(object, style_name)</span></h3>&#x000A;&#x000A;<p>Appends <code>object</code> at the end of the buffer. <code>style_name</code>, when given, allows&#x000A;specifying the style of the inserted contents (e.g. <code>keyword</code>, <code>number</code>).</p>&#x000A;&#x000A;<p><code>object</code> can be either a regular string, or a &ldquo;styled object&rdquo; such as a&#x000A;<a href="styled_text.html">StyledText</a> instance or a <a href="../chunk.html">Chunk</a>, in which case the appended content is styled&#x000A;according to the styles specified for the object and any given <code>style_name</code>&#x000A;parameter is ignored.</p>&#x000A;&#x000A;<h3 id="insert">insert <span class="arg-list">(object, position, style_name)</span></h3>&#x000A;&#x000A;<p>Inserts <code>object</code> at <code>position</code> given. <code>style_name</code>, when given, allows&#x000A;specifying the style of the inserted contents (e.g. <code>keyword</code>, <code>number</code>).</p>&#x000A;&#x000A;<p><code>object</code> can be either a regular string, or a &ldquo;styled object&rdquo; such as a&#x000A;<a href="styled_text.html">StyledText</a> instance or a <a href="../chunk.html">Chunk</a>, in which case the inserted content is styled&#x000A;according to the styles specified for the object and any given <code>style_name</code>&#x000A;parameter is ignored.</p>&#x000A;&#x000A;<h3 id="style">style <span class="arg-list">(start_pos, end_pos, style_name)</span></h3>&#x000A;&#x000A;<p>Styles a part of the buffer, indicated by the inclusive range&#x000A;(<code>start_pos</code>..<code>end_pos</code>), with the style specified in <code>style_name</code>.</p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2015
+            <a class='alert-link' href='https://github.com/nilnor/howl/contributors'>
+              The Howl Developers.
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.ui.Editor</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_ui doc_api_ui_editor'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-pills'>
+          <li>
+            <a href='/'>
+              <span class='glyphicon glyphicon-home'></span>
+              Home
+            </a>
+          </li>
+          <li>
+            <a href='/doc/'>
+              <span class='glyphicon glyphicon-book'></span>
+              Documentation
+            </a>
+          </li>
+          <li>
+            <a href='/blog/'>
+              <span class='glyphicon glyphicon-bullhorn'></span>
+              Blog
+            </a>
+          </li>
+          <li>
+            <a href='/contact.html'>
+              <span class='glyphicon glyphicon-inbox'></span>
+              Contact
+            </a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../../'>Howl 0.3 Documentation</a></li><li>Api</li><li>Ui</li><li>howl.ui.Editor</li></ol>
+      <h1 id="howl.ui.editor">howl.ui.Editor</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.ui.Editor</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#properties" class="toc-group-header properties">Properties</a>
+<li class=""><a href="#active_chunk">active_chunk</a></li>
+<li class=""><a href="#active_lines">active_lines</a></li>
+<li class=""><a href="#buffer">buffer</a></li>
+<li class=""><a href="#cursor">cursor</a></li>
+<li class=""><a href="#cursor_line_highlighted">cursor_line_highlighted</a></li>
+<li class=""><a href="#current_context">current_context</a></li>
+<li class=""><a href="#current_line">current_line</a></li>
+<li class=""><a href="#horizontal_scrollbar">horizontal_scrollbar</a></li>
+<li class=""><a href="#indentation_guides">indentation_guides</a></li>
+<li class=""><a href="#indicator">indicator</a></li>
+<li class=""><a href="#line_at_bottom">line_at_bottom</a></li>
+<li class=""><a href="#line_at_center">line_at_center</a></li>
+<li class=""><a href="#line_at_top">line_at_top</a></li>
+<li class=""><a href="#line_numbers">line_numbers</a></li>
+<li class=""><a href="#line_wrapping">line_wrapping</a></li>
+<li class=""><a href="#lines_on_screen">lines_on_screen</a></li>
+<li class=""><a href="#overtype">overtype</a></li>
+<li class=""><a href="#searcher">searcher</a></li>
+<li class=""><a href="#selection">selection</a></li>
+<li class=""><a href="#vertical_scrollbar">vertical_scrollbar</a></li>
+</div>
+<div class="toc-group">
+<a href="#functions" class="toc-group-header functions">Functions</a>
+<li class=""><a href="#editor">Editor </a></li>
+<li class=""><a href="#register_indicator">register_indicator </a></li>
+<li class=""><a href="#unregister_indicator">unregister_indicator </a></li>
+</div>
+<div class="toc-group">
+<a href="#methods" class="toc-group-header methods">Methods</a>
+<li class=""><a href="#backward_to_match">backward_to_match </a></li>
+<li class=""><a href="#comment">comment </a></li>
+<li class=""><a href="#complete">complete </a></li>
+<li class=""><a href="#copy_line">copy_line </a></li>
+<li class=""><a href="#delete_back">delete_back </a></li>
+<li class=""><a href="#delete_forward">delete_forward </a></li>
+<li class=""><a href="#delete_line">delete_line </a></li>
+<li class=""><a href="#delete_to_end_of_line">delete_to_end_of_line </a></li>
+<li class=""><a href="#duplicate_current">duplicate_current </a></li>
+<li class=""><a href="#forward_to_match">forward_to_match </a></li>
+<li class=""><a href="#grab_focus">grab_focus </a></li>
+<li class=""><a href="#indent">indent </a></li>
+<li class=""><a href="#indent_all">indent_all </a></li>
+<li class=""><a href="#insert">insert </a></li>
+<li class=""><a href="#join_lines">join_lines </a></li>
+<li class=""><a href="#new_line">new_line </a></li>
+<li class=""><a href="#paste">paste </a></li>
+<li class=""><a href="#redo">redo </a></li>
+<li class=""><a href="#remove_popup">remove_popup </a></li>
+<li class=""><a href="#scroll_down">scroll_down </a></li>
+<li class=""><a href="#scroll_up">scroll_up </a></li>
+<li class=""><a href="#shift_left">shift_left </a></li>
+<li class=""><a href="#shift_right">shift_right </a></li>
+<li class=""><a href="#show_popup">show_popup </a></li>
+<li class=""><a href="#smart_tab">smart_tab </a></li>
+<li class=""><a href="#smart_back_tab">smart_back_tab </a></li>
+<li class=""><a href="#to_gobject">to_gobject </a></li>
+<li class=""><a href="#toggle_comment">toggle_comment </a></li>
+<li class=""><a href="#transform_active_lines">transform_active_lines </a></li>
+<li class=""><a href="#uncomment">uncomment </a></li>
+<li class=""><a href="#undo">undo </a></li>
+<li class=""><a href="#with_position_restored">with_position_restored </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<p>Editors are the primary way of manipulating <a href="../buffer.html">Buffer</a>s. They&rsquo;re graphical editing&#x000A;components which display the contents of a buffer visually and lets the user&#x000A;manipulate them. An editor always contains a buffer, and is typically always&#x000A;shown to the user.</p>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../../spec/ui/editor_spec.html">spec</a> for Editor</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="properties">Properties</h2>&#x000A;&#x000A;<h3 id="active_chunk">active_chunk</h3>&#x000A;&#x000A;<p>Contains a <a href="../chunk.html">Chunk</a> representing the currently active text block. If no selection&#x000A;is present, the chunk contains the entire buffer. With a selection present, the&#x000A;chunk spans the current <a href="selection.html">selection</a>.</p>&#x000A;&#x000A;<h3 id="active_lines">active_lines</h3>&#x000A;&#x000A;<p>Contains a list of the currently active lines. If no selection is present, this&#x000A;will contain one element, the <a href="#.current_line">current line</a>. With a selection&#x000A;present, this holds all <a href="../line.html">Line</a>s included in the current <a href="selection.html">selection</a>.</p>&#x000A;&#x000A;<h3 id="buffer">buffer</h3>&#x000A;&#x000A;<p>Contains the current <a href="../buffer.html">Buffer</a>.</p>&#x000A;&#x000A;<p>Assigning another buffer to this property would cause that buffer to be&#x000A;displayed in the editor, and would cause the <code>before-buffer-switch</code> and&#x000A;<code>after-buffer-switch</code> signals to be emitted.</p>&#x000A;&#x000A;<h3 id="cursor">cursor</h3>&#x000A;&#x000A;<p>A <a href="cursor.html">Cursor</a> instance for the particular editor. Can be used to access and&#x000A;manipulate the cursor.</p>&#x000A;&#x000A;<h3 id="cursor_line_highlighted">cursor_line_highlighted</h3>&#x000A;&#x000A;<p>A boolean controlling whether the line containing the cursor is highlighted.</p>&#x000A;&#x000A;<p>Note that this is typically controlled via the <code>cursor_line_highlighted</code>&#x000A;configuration variable instead of being set explicitly for an editor instance.</p>&#x000A;&#x000A;<h3 id="current_context">current_context</h3>&#x000A;&#x000A;<p>Contains the currently active <a href="../context.html">context</a>, i.e. the context for the&#x000A;current cursor position. Read-only.</p>&#x000A;&#x000A;<h3 id="current_line">current_line</h3>&#x000A;&#x000A;<p>Contains the currently active <a href="../line.html">line</a>, i.e. the line that the cursor is&#x000A;currently positioned on. Read-only.</p>&#x000A;&#x000A;<h3 id="horizontal_scrollbar">horizontal_scrollbar</h3>&#x000A;&#x000A;<p>A boolean controlling whether the editor shows a horizontal scrollbar or not.</p>&#x000A;&#x000A;<p>Note that this is typically controlled via the <code>horizontal_scrollbar</code>&#x000A;configuration variable instead of being set explicitly for an editor instance.</p>&#x000A;&#x000A;<h3 id="indentation_guides">indentation_guides</h3>&#x000A;&#x000A;<p>Controls how indentation guides are shown for the particular editor. Valid&#x000A;values are (strings):</p>&#x000A;&#x000A;<ul>&#x000A;<li><code>none</code>: No indentation guides are shown</li>&#x000A;<li><code>real</code>: Indentation guides are shown inside real indentation white space</li>&#x000A;<li><code>on</code>: Indentation guides are shown</li>&#x000A;</ul>&#x000A;&#x000A;<p>Note that this is typically controlled via the <code>indentation_guides</code>&#x000A;configuration variable instead of being set explicitly for an editor instance.</p>&#x000A;&#x000A;<h3 id="indicator">indicator</h3>&#x000A;&#x000A;<p>A table of &ldquo;indicators&rdquo; for the current editor. An error is raised if you try to&#x000A;access an unknown indicator (see <a href="#register_indicator">register_indicator</a> for&#x000A;more information).</p>&#x000A;&#x000A;<p>Example of modifying an existing indicator from a key handler:</p>&#x000A;<pre class="highlight moonscript"><span class="n">howl</span><span class="p">.</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="p">{</span><span class="w">&#x000A;  </span><span class="ss">editor:</span><span class="w"> </span><span class="p">{</span><span class="w">&#x000A;    </span><span class="ss">shift_i:</span><span class="w"> </span><span class="p">(</span><span class="n">editor</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">&#x000A;      </span><span class="n">editor</span><span class="p">.</span><span class="n">indicator</span><span class="p">.</span><span class="n">vi</span><span class="p">.</span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'My interesting VI info text'</span><span class="w">&#x000A;  </span><span class="p">}</span><span class="w">&#x000A;</span><span class="p">}</span><span class="w">&#x000A;&#x000A;</span></pre>&#x000A;<h3 id="line_at_bottom">line_at_bottom</h3>&#x000A;&#x000A;<p>Holds the line number of the line visible at the bottom of the editor window.&#x000A;Assigning this scrolls the editor window so the specified line is visible as&#x000A;close to the bottom as possible.</p>&#x000A;&#x000A;<h3 id="line_at_center">line_at_center</h3>&#x000A;&#x000A;<p>Holds the line number of the line at the center of the editor window.&#x000A;Assigning this scrolls the editor window so the specified line is as close&#x000A;to the center as possible.</p>&#x000A;&#x000A;<h3 id="line_at_top">line_at_top</h3>&#x000A;&#x000A;<p>Holds the line number of the line visible at the top of the editor window.&#x000A;Assigning this scrolls the editor window so the specified line is visible as&#x000A;close to the top as possible.</p>&#x000A;&#x000A;<h3 id="line_numbers">line_numbers</h3>&#x000A;&#x000A;<p>A boolean controlling whether the editor shows line number to the left of the&#x000A;text or not.</p>&#x000A;&#x000A;<p>Note that this is typically controlled via the <code>line_numbers</code> configuration&#x000A;variable instead of being set explicitly for an editor instance.</p>&#x000A;&#x000A;<h3 id="line_wrapping">line_wrapping</h3>&#x000A;&#x000A;<p>Controls how line wrapping is performed. Valid values are (strings):</p>&#x000A;&#x000A;<ul>&#x000A;<li><code>none</code>: Lines are not wrapped</li>&#x000A;<li><code>word</code>: Lines are wrapped on word boundaries</li>&#x000A;<li><code>character</code>: Lines are wrapped on character boundaries</li>&#x000A;</ul>&#x000A;&#x000A;<p>Note that this is typically controlled via the <code>line_wrapping</code> configuration&#x000A;variable instead of being set explicitly for an editor instance.</p>&#x000A;&#x000A;<h3 id="lines_on_screen">lines_on_screen</h3>&#x000A;&#x000A;<p>Holds the number of lines currently visible on the screen. Read-only.</p>&#x000A;&#x000A;<h3 id="overtype">overtype</h3>&#x000A;&#x000A;<p>A boolean indicating whether typing inserts new characters in the <a href="#.buffer">.buffer</a> or&#x000A;overwrites them.</p>&#x000A;&#x000A;<h3 id="searcher">searcher</h3>&#x000A;&#x000A;<p>A <a href="searcher.html">Searcher</a> instance for the particular editor. Can be used to initialize and&#x000A;manipulate searches for the containing editor.</p>&#x000A;&#x000A;<h3 id="selection">selection</h3>&#x000A;&#x000A;<p>A <a href="selection.html">Selection</a> instance for the particular editor. Can be used to access and&#x000A;manipulate the selection.</p>&#x000A;&#x000A;<h3 id="vertical_scrollbar">vertical_scrollbar</h3>&#x000A;&#x000A;<p>A boolean controlling whether the editor shows a vertical scrollbar or not.</p>&#x000A;&#x000A;<p>Note that this is typically controlled via the <code>vertical_scrollbar</code>&#x000A;configuration variable instead of being set explicitly for an editor instance.</p>&#x000A;&#x000A;<h2 id="functions">Functions</h2>&#x000A;&#x000A;<h3 id="editor">Editor <span class="arg-list">(buffer)</span></h3>&#x000A;&#x000A;<p>Constructs a new Editor instance, displaying the specified <code>buffer</code>. You would&#x000A;typically not use this directly, but instead create a new editor via&#x000A;<a href="../application.html#new_editor">Application.new_editor</a>.</p>&#x000A;&#x000A;<h3 id="register_indicator">register_indicator <span class="arg-list">(id, placement = &lsquo;bottom_right&rsquo;, factory = nil)</span></h3>&#x000A;&#x000A;<p>Registers an indicator with the specified <code>id</code>. Placement indicates where the&#x000A;indicator should be place. Possible values (strings) are:</p>&#x000A;&#x000A;<ul>&#x000A;<li><code>top_left</code>: Adds the the indicator to the top indicator bar, to the left.</li>&#x000A;<li><code>top_right</code>: Adds the the indicator to the top indicator bar, to the right.</li>&#x000A;<li><code>bottom_left</code>: Adds the the indicator to the bottom indicator bar, to the left.</li>&#x000A;<li><code>bottom_right</code>: Adds the the indicator to the bottom indicator bar, to the right.</li>&#x000A;</ul>&#x000A;&#x000A;<p>An indicator is a simple label by default, but it&rsquo;s possible to add an arbitrary&#x000A;widget as an indicator via the <code>factory</code> parameter. If specified, <code>factory</code> must&#x000A;be a callable object that when called returns a Gtk widget.</p>&#x000A;&#x000A;<h3 id="unregister_indicator">unregister_indicator <span class="arg-list">(id)</span></h3>&#x000A;&#x000A;<p>Unregisters the indicator with the specified <code>id</code>.</p>&#x000A;&#x000A;<h2 id="methods">Methods</h2>&#x000A;&#x000A;<h3 id="backward_to_match">backward_to_match <span class="arg-list">(str)</span></h3>&#x000A;&#x000A;<p>Moves the cursor backwards to the next reverse match of <code>str</code>, within the&#x000A;current line. Does nothing if <code>str</code> could not be found.</p>&#x000A;&#x000A;<h3 id="comment">comment <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Comments the current line or selection, if possible, by forwarding the request&#x000A;to the current <a href="../mode.html">mode</a>.</p>&#x000A;&#x000A;<h3 id="complete">complete <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Starts a completion at the current cursor position.</p>&#x000A;&#x000A;<h3 id="copy_line">copy_line <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Copies the current line to the clipboard.</p>&#x000A;&#x000A;<h3 id="delete_back">delete_back <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Deletes the preceeding character, if one is present. With a selection present,&#x000A;deletes the selection.</p>&#x000A;&#x000A;<h3 id="delete_forward">delete_forward <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Deletes the the current character, if one is present. With a selection present,&#x000A;deletes the selection.</p>&#x000A;&#x000A;<h3 id="delete_line">delete_line <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Deletes the current line.</p>&#x000A;&#x000A;<h3 id="delete_to_end_of_line">delete_to_end_of_line <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Deletes from the current cursor column to the end of the current line.</p>&#x000A;&#x000A;<h3 id="duplicate_current">duplicate_current <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Duplicates the current line if no selection is present. With a selection&#x000A;present, duplicates the text included in the selection.</p>&#x000A;&#x000A;<h3 id="forward_to_match">forward_to_match <span class="arg-list">(str)</span></h3>&#x000A;&#x000A;<p>Moves the cursor forward to the next match of <code>str</code>, within the current line.&#x000A;Does nothing if <code>str</code> could not be found in the remainder of the line.</p>&#x000A;&#x000A;<h3 id="grab_focus">grab_focus <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Grabs focus for the specified editor, i.e. causes the editor to be focused.</p>&#x000A;&#x000A;<h3 id="indent">indent <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Indents the current line or selection, if possible, by forwarding the request to&#x000A;the current&#x000A;<a href="../mode.html">mode</a>.</p>&#x000A;&#x000A;<h3 id="indent_all">indent_all <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Indents all lines in the current buffer if possible, by selecting all lines and&#x000A;forwarding the request to the current&#x000A;<a href="../mode.html">mode</a>.</p>&#x000A;&#x000A;<h3 id="insert">insert <span class="arg-list">(text)</span></h3>&#x000A;&#x000A;<p>Inserts <code>text</code> at the current cursor position.</p>&#x000A;&#x000A;<h3 id="join_lines">join_lines <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Joins the current line with the following line. Any space between the two lines&#x000A;is collapsed to one space. The cursor is positioned at the end of the current&#x000A;line, as it was before the join.</p>&#x000A;&#x000A;<h3 id="new_line">new_line <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Inserts a new line at the current cursor position.</p>&#x000A;&#x000A;<h3 id="paste">paste <span class="arg-list">(opts = {})</span></h3>&#x000A;&#x000A;<p>Pastes the current contents of the clipboard, or a specific clipboard item, at&#x000A;the current cursor position. <code>opts</code> is an optional table of options. It&#x000A;currently can contain the following options:</p>&#x000A;&#x000A;<ul>&#x000A;<li><p><code>where</code>: Specifies where the clip is pasted. By default, the clip is inserted&#x000A;at the current cursor position, or in the case of a multi-line clipboard item&#x000A;above the current line. If <code>where</code> is specified as &ldquo;after&rdquo;, the behaviour&#x000A;changes so that the clip is pasted one position to the right of the current&#x000A;cursor position, or in the case of a multi-line clipboard item below the current&#x000A;line.</p></li>&#x000A;<li><p><code>clip</code>: A specific clipboard item to paste.</p></li>&#x000A;</ul>&#x000A;&#x000A;<h3 id="redo">redo <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Redo:s the last undone edit operation, if any.</p>&#x000A;&#x000A;<h3 id="remove_popup">remove_popup <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Removes any <a href="popup.html">popup</a> currently showing for the editor.</p>&#x000A;&#x000A;<h3 id="scroll_down">scroll_down <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Scrolls the editor window down one line, if possible. I.e. causes the line below&#x000A;the currently last showing line to be visible.</p>&#x000A;&#x000A;<h3 id="scroll_up">scroll_up <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Scrolls the editor window up one line, if possible. I.e. causes the line before&#x000A;the currently first showing line to be visible.</p>&#x000A;&#x000A;<h3 id="shift_left">shift_left <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>If a selection is present, shift the entire selection one indent level to the&#x000A;left. With no selection present, the current line is shifted one indentation&#x000A;level to the left.</p>&#x000A;&#x000A;<h3 id="shift_right">shift_right <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>If a selection is present, shift the entire selection one indent level to the&#x000A;right. With no selection present, the current line is shifted one indentation&#x000A;level to the right.</p>&#x000A;&#x000A;<h3 id="show_popup">show_popup <span class="arg-list">(popup, options = {})</span></h3>&#x000A;&#x000A;<p>Display the <a href="popup.html">popup</a> for the specific editor. The popup is displayed at&#x000A;the current cursor position, unless otherwise specified in <code>options</code>. The can&#x000A;only be one popup for a given editor at one time, invoking <code>show_popup</code> when an&#x000A;existing popup is active will cause that popup to close.</p>&#x000A;&#x000A;<p><code>options</code> can contain the&#x000A;following keys:</p>&#x000A;&#x000A;<ul>&#x000A;<li><code>position</code>: The character position at which to show the popup.</li>&#x000A;<li><code>persistent</code>: A boolean indicating whether the popup should remain shown as the user types. The default behaviour is to automatically remove the popup in response to a key press.</li>&#x000A;</ul>&#x000A;&#x000A;<h3 id="smart_tab">smart_tab <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Inserts a tab if no selection is present, and indents the current selection on&#x000A;indentation level to the right if a selection is present.</p>&#x000A;&#x000A;<p>The behaviour in the first case is dependent on several configuration&#x000A;variables.</p>&#x000A;&#x000A;<ul>&#x000A;<li>Whether an actual tab is inserted or not is dependent on the <code>use_tabs</code> variable.</li>&#x000A;<li>Invoking <code>smart_tab</code> when in leading white-space causes the current line to be indented if the <code>tab_indents</code> variable is set to true.</li>&#x000A;</ul>&#x000A;&#x000A;<h3 id="smart_back_tab">smart_back_tab <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Dedents the current selection on indentation level to the left if a selection is&#x000A;present.</p>&#x000A;&#x000A;<p>If a selection is not present, then:</p>&#x000A;&#x000A;<ul>&#x000A;<li>It dedents the current line if the cursor is in leading white-space or at the start of line content.</li>&#x000A;<li>Moves the cursor one indentation level to the left if the cursor is in the middle of text.</li>&#x000A;</ul>&#x000A;&#x000A;<h3 id="to_gobject">to_gobject <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Returns the Gtk view for the Editor.</p>&#x000A;&#x000A;<h3 id="toggle_comment">toggle_comment <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Comments or uncomments the current line or selection, if possible, by forwarding&#x000A;the request to the current <a href="../mode.html">mode</a>.</p>&#x000A;&#x000A;<h3 id="transform_active_lines">transform_active_lines <span class="arg-list">(f)</span></h3>&#x000A;&#x000A;<p>A helper for transforming <a href="#.active_lines">.active_lines</a> within the scope of&#x000A;<a href="../buffer.html#as_one_undo">Buffer.as_one_undo</a> for the current buffer. Invokes&#x000A;<code>f</code> with <a href="#.active_lines">.active_lines</a>, with any modifications being recorded as one undo&#x000A;operation.</p>&#x000A;&#x000A;<h3 id="uncomment">uncomment <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Uncomments the current line or selection, if possible, by forwarding the request&#x000A;to the current&#x000A;<a href="../mode.html">mode</a>.</p>&#x000A;&#x000A;<h3 id="undo">undo <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Undo:s the last edit operation, if any.</p>&#x000A;&#x000A;<h3 id="with_position_restored">with_position_restored <span class="arg-list">(f)</span></h3>&#x000A;&#x000A;<p>Invokes <code>f</code>, and restores the position to the original line and column after <code>f</code>&#x000A;has returned. Should the indentation level for the current line have changed,&#x000A;attempts to automatically adjust the column for the new indentation.</p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2015
+            <a class='alert-link' href='https://github.com/nilnor/howl/contributors'>
+              The Howl Developers.
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>
