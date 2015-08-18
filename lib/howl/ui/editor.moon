@@ -254,7 +254,10 @@ class Editor extends PropertyObject
 
     if anchor_line
       line = @buffer.lines[anchor_line]
-      real_column = line\real_column anchor_col + @buffer.config.indent
+      unless anchor_col == 1 and anchor_line > cursor_line
+        anchor_col += @buffer.config.indent
+
+      real_column = line\real_column anchor_col
       @selection.anchor = line.start_pos + real_column - 1
 
     unless cursor_col == 1 and cursor_line > anchor_line
