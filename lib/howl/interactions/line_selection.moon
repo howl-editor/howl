@@ -81,6 +81,7 @@ interact.register
     matcher = Matcher line_items, preserve_order: true
     opts.matcher = matcher
     opts.on_selection_change = line_match_highlighter(editor)
+    opts.force_preview = true
 
     result = interact.select_location opts
 

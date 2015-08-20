@@ -45,7 +45,7 @@ interact.register
     orig_line_at_top = editor.line_at_top
     preview_buffers = {}
 
-    if howl.config.preview_files
+    if howl.config.preview_files or opts.force_preview
       on_selection_change = opts.on_selection_change
       opts.on_selection_change = (selection, text, items) ->
         if selection
