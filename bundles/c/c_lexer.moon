@@ -26,7 +26,7 @@ howl.aux.lpeg_lexer ->
     'typedef', 'union', 'unsigned', 'void', 'volatile', 'while'
   }
 
-  operator = c 'operator', S('+-*/%=<>~&^|!(){}[];.')^1
+  operator = c 'operator', S('+-*/%=<>~&^|!(){}[];.')
 
   comment = c 'comment', any {
     P'//' * scan_until eol,

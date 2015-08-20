@@ -5,6 +5,10 @@
 */
 
 // c++ / C99 style comment
+STILL_COMMENT(1)//should be comment
+just_comment++;//should be comment
+STILL_COMMENT(TRUE)/*should be comment*/
+just_comment++;/*should be comment*/
 
 #include <stdio.h>
 #include<string.h>
