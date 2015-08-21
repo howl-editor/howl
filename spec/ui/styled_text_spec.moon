@@ -60,8 +60,8 @@ describe 'StyledText', ->
         chunk = buf\chunk 1, 5
 
         tbl = StyledText.for_table {chunk, chunk}
-        assert.equal 'hëllo \nhëllo \n', tostring tbl
-        assert.same tbl.styles, {1, 'string', 7, 9, 'string', 15}
+        assert.equal 'hëllo\nhëllo\n', tostring tbl
+        assert.same {1, 'string', 7, 8, 'string', 14}, tbl.styles
 
 
     context 'when column style is provided', ->
