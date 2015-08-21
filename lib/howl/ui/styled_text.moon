@@ -55,7 +55,7 @@ compute_column_widths = (columns, items) ->
   if columns
     for i = 1, #columns
       header = columns[i].header or ''
-      widths[i] = math.max widths[i] or 1, header and #tostring(header) or 0
+      widths[i] = math.max widths[i] or 1, header and tostring(header).ulen or 0
       widths.num = math.max widths.num, i
 
   for item in *items
@@ -63,7 +63,7 @@ compute_column_widths = (columns, items) ->
       item = { item }
     for i = 1, math.max columns and #columns or 0, #item
       cell = tostring item[i]
-      widths[i] = math.max widths[i] or 1, #cell
+      widths[i] = math.max widths[i] or 1, cell.ulen
       widths.num = math.max widths.num, i
 
   return widths
