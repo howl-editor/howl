@@ -36,8 +36,8 @@ class ActionBuffer extends Buffer
 
   style: (start_pos, end_pos, style_name) =>
     return if end_pos < start_pos
-    start_pos, end_pos = @byte_offset(start_pos), @byte_offset(end_pos)
-    @_buffer.styling\set start_pos, end_pos, style_name
+    start_pos, end_pos = @byte_offset(start_pos), @byte_offset(end_pos + 1)
+    @_buffer.styling\set start_pos, end_pos - 1, style_name
 
   _insert_styled_object: (object, pos) =>
     pos_after = super\insert object.text, pos
