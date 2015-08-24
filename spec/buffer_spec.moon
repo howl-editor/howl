@@ -367,10 +367,11 @@ describe 'Buffer', ->
       }
         assert.equal p[1], b\byte_offset p[2]
 
-    it 'raises an error for an out-of-bounds <char_offset>', ->
-      assert.has_error -> buffer'äåö'\byte_offset 5
-      assert.has_error -> buffer'äåö'\byte_offset 0
-      assert.has_error -> buffer'a'\byte_offset -1
+    it 'adjusts out-of-bounds offsets', ->
+      assert.equal 7,  buffer'äåö'\byte_offset 5
+      assert.equal 7,  buffer'äåö'\byte_offset 10
+      assert.equal 1,  buffer'äåö'\byte_offset 0
+      assert.equal 1,  buffer'äåö'\byte_offset -1
 
   describe 'char_offset(byte_offset)', ->
     it 'returns the character offset for the given <byte_offset>', ->
@@ -383,10 +384,10 @@ describe 'Buffer', ->
       }
         assert.equal p[2], b\char_offset p[1]
 
-    it 'raises error for out-of-bounds offsets', ->
-      assert.has_error -> buffer'ab'\char_offset 4
-      assert.has_error -> buffer'äåö'\char_offset 0
-      assert.has_error -> buffer'a'\char_offset -1
+    it 'adjusts out-of-bounds offsets', ->
+      assert.equal 3, buffer'ab'\char_offset 4
+      assert.equal 1, buffer'äåö'\char_offset 0
+      assert.equal 1, buffer'a'\char_offset -1
 
   describe 'sub(start_pos, end_pos)', ->
     it 'returns the text between start_pos and end_pos, both inclusive', ->

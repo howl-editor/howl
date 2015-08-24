@@ -52,6 +52,18 @@ describe 'ListWidget', ->
       hstyle = style.at_pos(buf, 3)
       assert.equal 'list_highlight', hstyle
 
+    it 'handles higlighting of multibyte chars', ->
+      list.matcher = Matcher {'åne', 'twö'}
+      list\update 'ån'
+      assert.equal 'åne\n', buf.text
+
+      hstyle = style.at_pos(buf, 1)
+      assert.equal 'list_highlight', hstyle
+      hstyle = style.at_pos(buf, 2)
+      assert.equal 'list_highlight', hstyle
+      hstyle = style.at_pos(buf, 3)
+      assert.not_equal 'list_highlight', hstyle
+
   context 'when `never_shrink:` is not provided', ->
     it 'shrinks the height while matching', ->
       list.matcher = Matcher {'one', 'twö', 'three'}

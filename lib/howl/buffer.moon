@@ -203,15 +203,9 @@ class Buffer extends PropertyObject
   redo: => @_buffer\redo!
 
   char_offset: (byte_offset) =>
-    if byte_offset < 1 or byte_offset > @size + 1
-      error "Byte offset '#{byte_offset}' out of bounds (size = #{@size})", 2
-
     @_buffer\char_offset byte_offset
 
   byte_offset: (char_offset) =>
-    if char_offset < 1 or char_offset > @length + 1
-      error "Character offset '#{char_offset}' out of bounds (length = #{@length})", 2
-
     @_buffer\byte_offset char_offset
 
   sub: (start_pos, end_pos = -1) =>
