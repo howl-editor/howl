@@ -28,6 +28,8 @@ class BufferMarkers extends PropertyObject
     for f in *{ 'start_offset', 'end_offset' }
       v = opts[f]
       error "Missing field '#{f}'", 2 unless v
+      if v < 1 or v > @a_buffer.length + 1
+        error "Invalid offset '#{v}' (length: #{@a_buffer.length})"
       opts[f] = @a_buffer\byte_offset v
 
     @markers\add opts

@@ -240,6 +240,8 @@ describe 'Buffer', ->
       assert.is_not_nil line
       assert.equals 2, line.nr
       assert.equals '', line.text
+      assert.equals 5, line.start_offset
+      assert.equals 5, line.end_offset
 
   describe 'get_line_at_offset(offset)', ->
     it 'returns line information for the line at the specified offset', ->

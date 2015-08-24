@@ -323,15 +323,11 @@ Buffer = {
     return ffi_string @text_buffer.array, @text_buffer.size
 
   char_offset: (byte_offset) =>
-    if byte_offset < 1 or byte_offset > @text_buffer.size + 1
-      error "Invalid offset '#{byte_offset}'", 2
-
+    byte_offset = min(@text_buffer.size + 1, max(1, byte_offset))
     @offsets\char_offset(@text_buffer, byte_offset - 1) + 1
 
   byte_offset: (char_offset) =>
-    if char_offset < 1 or char_offset > @text_buffer.size + 1
-      error "Invalid offset '#{char_offset}'", 2
-
+    char_offset = min(tonumber(@_length) + 1, max(1, char_offset))
     @offsets\byte_offset(@text_buffer, char_offset - 1) + 1
 
   undo: =>
