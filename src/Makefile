@@ -31,6 +31,12 @@ endif
 OBJECTS = main.o process_helpers.o
 DEP_OBJECTS = $(LPEG_OBJECT)
 
+ifeq ($(UNAME_S),Darwin)
+	export MD5=md5
+else
+	export MD5=md5sum
+endif
+
 all: howl bytecode
 
 howl: ${OBJECTS} main.h $(ARCHIVES) $(DEP_OBJECTS) Makefile
