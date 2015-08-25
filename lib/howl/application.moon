@@ -363,12 +363,15 @@ class Application extends PropertyObject
     require 'howl.editing'
 
   _load_application_icon: =>
-    for dir in *{ @root_dir.parent, @root_dir }
+    dir = @root_dir
+    while dir
       icon = dir\join('share/icons/hicolor/scalable/apps/howl.svg')
       if icon.exists
         status, err = pcall Gtk.Window.set_default_icon_from_file, icon.path
         log.error "Failed to load application icon: #{err}" unless status
         return
+
+      dir = dir.parent
 
     log.warn "Failed to find application icon"
 
