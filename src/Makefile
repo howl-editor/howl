@@ -1,5 +1,7 @@
 PREFIX ?= /usr/local
 
+UNAME_S := $(shell uname -s)
+
 GTK = gtk+-3.0
 GTK_CFLAGS = $(shell pkg-config --cflags $(GTK))
 GTK_LIBS = $(shell pkg-config --libs $(GTK) gmodule-2.0 gio-unix-2.0)
@@ -32,7 +34,11 @@ SCI_GEN_TARGET = ../lib/howl/scintilla.lua
 CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(SCINTILLA_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
 ARCHIVES = $(LUAJIT_ARCHIVE) $(SCINTILLA_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
-LD_FLAGS = -Wl,-E
+ifeq ($(UNAME_S),Darwin)
+	LD_FLAGS = -Wl,-export_dynamic -pagezero_size 10000 -image_base 100000000
+else
+	LD_FLAGS = -Wl,-E
+endif
 OBJECTS = main.o process_helpers.o
 DEP_OBJECTS = $(LPEG_OBJECT)
 

@@ -226,7 +226,7 @@ with config
   .define
     name: 'font'
     description: 'The main font used within the application'
-    default: 'Liberation Mono'
+    default: if ffi.os == 'OSX' then 'Monaco' else 'Liberation Mono'
     type_of: 'string'
     scope: 'global'
 
