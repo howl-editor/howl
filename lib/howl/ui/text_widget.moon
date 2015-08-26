@@ -21,7 +21,8 @@ class TextWidget extends PropertyObject
       \set_hscroll_bar false
       \set_undo_collection false
 
-    @cursor = Cursor self, Selection @sci
+    @selection = Selection @sci
+    @cursor = Cursor self, @selection
 
     @buffer = ActionBuffer @sci
     @buffer.text = ''

@@ -448,7 +448,9 @@ class CommandLine extends PropertyObject
 
       ["editor-delete-back"]: =>
         -- don't backspace into prompt
-        return true if @command_widget.cursor.pos == @_prompt_end
+        return true if @command_widget.cursor.pos <= @_prompt_end
+        range_start = @command_widget.selection\range!
+        return if range_start and range_start < @_prompt_end
         @command_widget\delete_back!
         @on_update!
 
