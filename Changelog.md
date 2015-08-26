@@ -2,9 +2,24 @@
 
 ## Unreleased (in master)
 
+- Added a new command, `project-build` that executes a pre-configured command
+from the projects root directory (using the command configured in the new
+`project_build_command` variable).
+
+- New Nim bundle (lexing, structure, etc)
+
+- New Python bundle (lexing, structure, etc). Replaces the old basic Python
+mode.
+
+- Lexer fixes: Ruby, C/C++, HTML, HAML
+
+- Lisp and sub modes: Better indentation support
+
 - Added previews for the `switch-buffer` and `project-open` commands.
 
 - HTML mode: Sub lex inline styling
+
+- Upgrade to LuaJIT 2.0.4
 
 - Upgrade to Moonscript 0.3.1
 
@@ -78,13 +93,17 @@ matches.
 
 ### Bugs fixed
 
-- `buffer-reload` command: Prompt if a buffer is modified, and force a reload if
-requested (issue #31).
+- A slew of issues as seen on [Github](https://github.com/nilnor/howl/issues?utf8=%E2%9C%93&q=created%3A%3E2015-05-09+created%3A%3C2015-08-25+state%3Aclosed++type%3Aissue)
 
 - Fix highlighting of "bad braces", i.e. braches for which no match could be
 found.
 
 ### API changes
+
+- The old readline API was significantly revamped for this release, with changes
+to numerous list here. The documentation for the new
+[readline](http://howl.io/doc/api/interact.html) module is a good starting point
+for seeing how the new API looks.
 
 - `Buffer.file`: Assigning a new file causes the buffer contents to always be
 reloaded, regardless of the modification status. If the file does not exist, the
@@ -104,7 +123,6 @@ offsets while `rfind` uses byte offsets.
 ### Deprecations removed
 
 Command names deprecated in the 0.2 release have now been removed.
-
 
 ## 0.2.1 (2014-05-09)
 
