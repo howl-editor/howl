@@ -20,7 +20,7 @@ describe 'styles', ->
       styles.define 'foo', strike_through: true
       styles.define 'bar', 'foo'
       def = styles.def_for 'bar'
-      assert.same { name: 'bar', strike_through: true }, def
+      assert.same { name: 'foo', strike_through: true }, def
 
   describe 'define_default(name, definition)', ->
     it 'defines the style only if it is not already defined', ->
