@@ -101,7 +101,7 @@ found.
 ### API changes
 
 - The old readline API was significantly revamped for this release, with changes
-to numerous list here. The documentation for the new
+too numerous to list here. The documentation for the new
 [readline](http://howl.io/doc/api/interact.html) module is a good starting point
 for seeing how the new API looks.
 
