@@ -27,6 +27,8 @@ flair.define_default 'edge_line', {
   line_width: 1
 }
 
+styles.define_default 'blob', 'embedded:preproc'
+
 parse_background_ranges = (styling) ->
   ranges = {}
   range = nil
@@ -197,8 +199,15 @@ DisplayLine = define_class {
     @size = line.size
     @indent = get_indent view, line
     @styling = buffer.styling\get(line.start_offset, line.end_offset)
-    @layout.attributes = styles.get_attributes @styling, line.size
+    -- complexiy sanity check before asking Pango to determine extents,
+    -- as it will happily block seemingly for ever if someone manages
+    -- to cram an entire app into one line (e.g. minimized JS)
+    if #@styling > 3000
+      @styling = { 1, 'blob', line.size + 1 }
 
+    attributes = styles.get_attributes @styling, line.size
+
+    @layout.attributes = attributes
     width, height = @layout\get_pixel_size!
     @y_offset = floor @view.config.view_line_padding
     @text_height = height
