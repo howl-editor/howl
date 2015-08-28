@@ -13,7 +13,7 @@ work on at least the \*BSD:s as well.
 
 It is released as free software under the
 [MIT](http://opensource.org/licenses/MIT) license, with the source being
-available on [Github](https://github.com/nilnor/howl).
+available on [Github](https://github.com/howl-editor/howl).
 
 ## Overview
 

@@ -1,6 +1,6 @@
 # The Howl editor
 
-[![Build Status](https://travis-ci.org/nilnor/howl.png?branch=master)](https://travis-ci.org/nilnor/howl)
+[![Build Status](https://travis-ci.org/howl-editor/howl.png?branch=master)](https://travis-ci.org/howl-editor/howl)
 
 ## What is it?
 
