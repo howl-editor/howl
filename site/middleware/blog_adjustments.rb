@@ -25,7 +25,7 @@ class BlogAdjustments
   end
 
   def auto_link_issues(content)
-    content.gsub %r|issue #(\d+)|, '<a href="https://github.com/nilnor/howl/issues/\1">\0</a>'
+    content.gsub %r|issue #(\d+)|, '<a href="https://github.com/howl-editor/howl/issues/\1">\0</a>'
   end
 
   def content(response)

@@ -24,7 +24,7 @@ Howl is is released under the [MIT License](http://opensource.org/licenses/MIT):
     THE SOFTWARE.
 
 Individual contributions be tracked via the
-[Github contributors page](https://github.com/nilnor/howl/graphs/contributors).
+[Github contributors page](https://github.com/howl-editor/howl/graphs/contributors).
 
 ## Embedded software
 

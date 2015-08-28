@@ -47,7 +47,7 @@ dependencies).
 ### Building
 
 Download and unpack a Howl release, or get the source from
-[Github](https://github.com/nilnor/howl), either by cloning the repository or by
+[Github](https://github.com/howl-editor/howl), either by cloning the repository or by
 download a Zip-file of the desired branch/tag.. Compile Howl by issuing `make`
 from the `src` directory. When building directly from a source checkout, in-app
 dependencies will automatically be downloaded for you using `wget`. Once it's
@@ -58,7 +58,7 @@ desktop, you'll want to run the `make install` command.
 *Example session:*
 
 ```
-[nilnor@cohen:~/tmp]% git clone https://github.com/nilnor/howl.git
+[nilnor@cohen:~/tmp]% git clone https://github.com/howl-editor/howl.git
 Cloning into 'howl'...
 remote: Counting objects: 7924, done.
 [..]

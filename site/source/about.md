@@ -27,9 +27,9 @@ although the level of support for individual languages varies of course.
 
 While Howl uses Gtk, it's interface is primarily text oriented. Thus, it does
 not offer any traditional dialogue boxes, tool bars, or even a menu bar. This is
-not intended as dogma however, but merely reflects the authors personal
-preferences. Future versions of Howl might offer optional graphical elements
-such as the above should someone be willing to do the necessary work.
+not intended as dogma however. Future versions of Howl might offer optional
+graphical elements such as the above should someone be willing to do the
+necessary work.
 
 Generally speaking, Howl draws a lot of inspiration from Emacs and Vim, and
 should feel familiar to anyone who has used any of these editors.
@@ -70,13 +70,14 @@ closer to Vim than to Emacs with respect to startup time and overall feel.
 
 ### In early stages
 
-Howl is still in early stages of development, and as such there's lot of
-functionality that is still missing. It might not do what you want, you might
-not get it to do what you want, or the manual could have been better at helping
-you get it done. If so, feel free to open a pull request, feature request, or
-issue at [Github](https://github.com/nilnor/howl), or better yet have a look at
-the code or the manual and see if it's something you can fix yourself (and send
-me a pull request or patch).
+While Howl is stable and in every day use, it's still in relatively early stages
+of development, and as such there's lot of functionality that is still missing.
+It might not do what you want, you might not get it to do what you want, or the
+manual could have been better at helping you get it done. If so, feel free to
+open a pull request, feature request, or issue at
+[Github](https://github.com/howl-editor/howl), or better yet have a look at the
+code or the manual and see if it's something you can fix yourself (and send a
+pull request or patch).
 
 ## What's inside?
 
