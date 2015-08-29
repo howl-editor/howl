@@ -719,6 +719,7 @@ class Editor extends PropertyObject
       skip_styles = config.completion_skip_auto_within
       if skip_styles
         cur_style = @current_context.style
+        return if not cur_style
         for skip_style in *skip_styles
           return if cur_style\match skip_style
 
