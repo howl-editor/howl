@@ -46,7 +46,7 @@ define_options = ->
 
     view_show_h_scrollbar: {
       type: 'boolean',
-      default: false
+      default: true
     },
 
     view_show_v_scrollbar: {

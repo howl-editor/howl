@@ -576,7 +576,12 @@ class Editor extends PropertyObject
       @cursor_line_highlighted = .cursor_line_highlighted
       @line_numbers = .line_numbers
       @line_padding = .line_padding
+      @edge_column = .edge_column
       view_conf.cursor_blink_interval = .cursor_blink_interval
+      view_conf.view_indent = .indent
+      view_conf.view_tab_size = .tab_width
+      view_conf.view_font_name = .font_name
+      view_conf.view_font_size = .font_size
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
@@ -816,7 +821,7 @@ with config
   .define
     name: 'horizontal_scrollbar'
     description: 'Whether horizontal scrollbars are shown'
-    default: false
+    default: true
     type_of: 'boolean'
 
   .define
