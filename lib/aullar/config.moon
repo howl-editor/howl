@@ -19,14 +19,14 @@ define_options = ->
       default: 'Monospace'
     },
 
-    view_indent: {
-      type: 'number',
-      default: 2
-    },
-
     view_font_size: {
       type: 'number',
       default: gtk_font.size / Pango.SCALE
+    },
+
+    view_indent: {
+      type: 'number',
+      default: 2
     },
 
     view_show_line_numbers: {
