@@ -47,8 +47,7 @@ Here is a screenshot showing `buffer-replace` in action:
 ![Interactive buffer-replace](/images/doc/buffer-replace.png)
 
 Both `project-open` and `buffer-switch` commands now show a preview of the
-selected buffer or file. Here is a screenshot of the new `buffer-replace` in
-action.
+selected buffer or file.
 
 A new `project-build` command executes a pre-configured build command from the
 current project's root directory.
