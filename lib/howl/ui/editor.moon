@@ -522,7 +522,6 @@ class Editor extends PropertyObject
     else
       @line_at_bottom = math.min #@buffer.lines, line + 2
 
-
   -- private
   _show_buffer: (buffer, opts={}) =>
     @selection\remove!
@@ -615,15 +614,12 @@ class Editor extends PropertyObject
     else
       @searcher\cancel!
 
+    if not bindings.is_capturing and auto_pair.handle event, @
+      @remove_popup!
+      return true
+
     maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
-    handled = bindings.process event, 'editor', maps, self
-
-    unless handled
-      if auto_pair.handle event, @
-        @remove_popup!
-        handled = true
-
-    return true if handled
+    return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
     if event.type == Gdk.GDK_2BUTTON_PRESS
