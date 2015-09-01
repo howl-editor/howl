@@ -11,21 +11,21 @@ or Window, should any brave soul like to try).
 
 You can install Howl by building it from source, either from a release or by
 cloning the repository from Github. If you're on ArchLinux you can install the
-Arch package available from the AUR.
+Arch package available from the AUR (after verifying the version).
 
 ## Latest release
 
-The latest release of Howl is 0.2.1. It was released at 2014-05-09, and is
+The latest release of Howl is 0.3. It was released at 2015-09-02, and is
 available for download from:
 
-[http://download.howl.io/release/howl-0.2.1.tgz](http://download.howl.io/release/howl-0.2.1.tgz)
+[https://github.com/howl-editor/howl/releases/download/0.3/howl-0.3.tgz](https://github.com/howl-editor/howl/releases/download/0.3/howl-0.3.tgz)
 
-_MD5_: 8caf43a8631041677a4bc4df9c6c0f18
+_MD5_: 30014d5a9d6adda87c8f0048afc25893
 
-_SHA1_: 79a582e4b31012073e2dc15678814d5c46596fa9
+_SHA1_: 102f47badbcfd43c0c1f1d3921d70ba11767b0e4
 
 __Release notes:__
-[Howl 0.2.1 Released](/blog/2014/05/09/howl-0-dot-2-dot-1-released.html)
+[Howl 0.3 Released](/blog/2015/09/02/howl-0-dot-3-released.html)
 
 ## Building Howl from source
 
@@ -111,6 +111,14 @@ $ sudo packer -S howl-editor
 ```
 
 ## Older releases
+
+### Howl 0.2.1, released 2014-04-29.
+
+[Download](http://download.howl.io/release/howl-0.2.1.tgz)
+
+_MD5_: 8caf43a8631041677a4bc4df9c6c0f18
+
+_SHA1_: 79a582e4b31012073e2dc15678814d5c46596fa9
 
 ### Howl 0.2, released 2014-04-29.
 
