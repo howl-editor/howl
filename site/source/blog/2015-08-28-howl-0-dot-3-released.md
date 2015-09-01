@@ -11,6 +11,14 @@ a few big strides towards 1.0. You can download the latest version
 [here](/getit.html). Highlights of this release are below and the full changelog
 since 0.2.1 is included at the bottom of this blog post.
 
+It's been a while since the 0.2.1 release, but that does not mean that
+development has been idling. Apart from the many things already packed in the
+0.3 release, a lot of work has been put into a new, custom written editing
+engine code-named 'aullar'. The 0.3 release marks the last Howl release to use
+the [Scintilla](http://scintilla.org) editing engine - starting with 0.4 and
+going forward the new editing engine will be used. We'll write more about the
+new editing engine in upcoming [blog](/blog) entries, so stay tuned!
+
 READMORE
 
 ### External commands
@@ -26,7 +34,7 @@ demo of this feature.
 Here is screenshot showing the external command prompt in
 action:
 
-![External command prompt](/images/doc/exec-prompt.png)
+![External command prompt](/images/blog/0-3-released/exec-prompt.png)
 
 ### Revamped command line API
 
@@ -44,7 +52,7 @@ expression. See the
 
 Here is a screenshot showing `buffer-replace` in action:
 
-![Interactive buffer-replace](/images/doc/buffer-replace.png)
+![Interactive buffer-replace](/images/blog/0-3-released/buffer-replace.png)
 
 Both `project-open` and `buffer-switch` commands now show a preview of the
 selected buffer or file.
