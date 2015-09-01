@@ -25,7 +25,7 @@ _MD5_: 30014d5a9d6adda87c8f0048afc25893
 _SHA1_: 102f47badbcfd43c0c1f1d3921d70ba11767b0e4
 
 __Release notes:__
-[Howl 0.3 Released](/blog/2015/09/02/howl-0-dot-3-released.html)
+[Howl 0.3 Released](/blog/2015/09/01/howl-0-dot-3-released.html)
 
 ## Building Howl from source
 
