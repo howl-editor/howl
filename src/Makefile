@@ -43,7 +43,7 @@ OBJECTS = main.o process_helpers.o
 DEP_OBJECTS = $(LPEG_OBJECT)
 
 ifeq ($(UNAME_S),Darwin)
-	export MD5=md5
+	export MD5=md5 -r
 else
 	export MD5=md5sum
 endif
