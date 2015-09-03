@@ -869,6 +869,8 @@ with config
     .watch watched_property, apply_property
 
   for live_update in *{
+    { 'font', 'view_font_name' }
+    { 'font_size', 'view_font_size' }
     { 'tab_width', 'view_tab_size' }
     { 'line_numbers', 'view_show_line_numbers' }
     { 'indent', 'view_indent' }
