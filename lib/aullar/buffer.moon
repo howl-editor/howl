@@ -108,14 +108,14 @@ Buffer = {
     return if size == 0
 
     invalidate_offset = min(offset, @text_buffer.gap_start + 1)
-    if size > @text_buffer.gap_size
+    if size > @text_buffer.gap_size -- buffer will be re-allocated
       invalidate_offset = 1
 
     len = C.g_utf8_strlen text, size
-    @text_buffer\insert offset - 1, text
+    @text_buffer\insert offset - 1, text, size
     @_length += len
     @_invalidate_lines_from_offset invalidate_offset
-    @offsets\adjust_for_insert invalidate_offset - 1, size, len
+    @offsets\adjust_for_insert offset - 1, size, len
     @markers\expand offset, size
     @styling\insert offset, size, no_notify: true
 
@@ -132,6 +132,7 @@ Buffer = {
     @_length -= len
     @_invalidate_lines_from_offset invalidate_offset
     @offsets\adjust_for_delete invalidate_offset - 1, count, len
+    @offsets\adjust_for_delete offset - 1, count, len
     @markers\shrink offset, count
     @styling\delete offset, count, no_notify: true
 
