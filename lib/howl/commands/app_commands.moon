@@ -238,8 +238,8 @@ command.register
 do_howl_eval = (load_f, mode_name, transform_f) ->
   editor = app.editor
   text = editor.selection.empty and editor.current_line.text or editor.selection.text
-  text = text.stripped
   text = transform_f and transform_f(text) or text
+
   f = assert load_f text
   ret = { pcall f }
   if ret[1]
@@ -271,7 +271,15 @@ command.register
   description: 'Evals the current line or selection as Moonscript'
   handler: ->
     moonscript = require('moonscript')
-    do_howl_eval moonscript.loadstring, 'moonscript'
+    transform = (text) ->
+      initial_indent = text\match '^([ \t]*)%S'
+      if initial_indent -- remove the initial indent from all lines if any
+        lines = [l\gsub("^#{initial_indent}", '') for l in text\gmatch('[^\n]+')]
+        text = table.concat lines, '\n'
+
+      moonscript.loadstring text
+
+    do_howl_eval transform, 'moonscript'
 
 command.register
   name: 'howl-moon-print'
