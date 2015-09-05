@@ -19,7 +19,7 @@ class NotificationWidget
   notify: (level, text) =>
     @clear!
     @text_widget.buffer\append text, level
-    @text_widget.height_rows = #@text_widget.buffer.lines
+    @text_widget.visible_rows = #@text_widget.buffer.lines
 
   hide: => @text_widget\hide!
 

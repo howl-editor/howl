@@ -45,8 +45,19 @@ howl.aux.lpeg_lexer ->
   member = c 'member', P'@' * P'@'^-1 * ident^1
   global = c 'global', P'$' * (ident^1 + S"/_?$`'" + R'09')
   constant = c 'constant', upper^1 * (upper + digit + '_')^0 * -(#lower)
-  type = c 'type', upper^1 * (alpha + digit + '_')^0
+  type_p = upper^1 * (alpha + digit + '_')^0
+  type = c 'type', type_p
   fdecl = c('keyword', 'def') * c('whitespace', space^1) * c('fdecl', complement(any(space, '('))^1)
+
+  type_def = sequence {
+    c('keyword', any('class', 'module')),
+    c('whitespace', blank^1),
+    c('type_def', type_p),
+    sequence({
+      c('operator', '::'),
+      c('type_def', type_p)
+    })^0
+  }
 
   -- numbers
   hex_digit_run = xdigit^1 * (P'_' * xdigit^1)^0
@@ -94,6 +105,7 @@ howl.aux.lpeg_lexer ->
       V'heredoc',
       operator,
       fdecl,
+      type_def,
       member,
       keyword,
       special,

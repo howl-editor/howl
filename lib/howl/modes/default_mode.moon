@@ -144,8 +144,8 @@ class DefaultMode
     parts = [p for p in leading\gmatch '%w+'] if leading
     leading, parts
 
-  on_char_added: (args, editor) =>
-    if args.key_name == 'return'
+  on_insert_at_cursor: (args, editor) =>
+    if args.text == editor.buffer.eol
       buffer = editor.buffer
 
       if buffer.config.auto_format

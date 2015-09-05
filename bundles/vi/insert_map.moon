@@ -24,7 +24,7 @@ insert_map = {
 
     cursor_properties:
       style: 'line'
-      blink_interval: config.cursor_blink_interval
+      blink_interval: -> config.cursor_blink_interval
   }
 
   escape: (editor) ->

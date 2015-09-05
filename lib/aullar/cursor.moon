@@ -6,12 +6,13 @@ callbacks = require 'ljglibs.callbacks'
 cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
 C = ffi.C
+{:SCALE} = require 'ljglibs.pango'
 
 flair.define_default 'cursor', {
   type: flair.RECTANGLE,
   background: '#000000',
   width: 1.5,
-  height: 'text'
+  height: 'text',
 }
 
 flair.define_default 'block_cursor', {
@@ -21,7 +22,8 @@ flair.define_default 'block_cursor', {
   background_alpha: 0.5,
   min_width: 5,
   height: 'text'
-  text_color: '#dddddd'
+  text_color: '#dddddd',
+  min_width: 'letter'
 }
 
 flair.define_default 'inactive_cursor', {
@@ -30,6 +32,7 @@ flair.define_default 'inactive_cursor', {
   min_width: 5,
   line_width: 1,
   height: 'text',
+  min_width: 'letter'
 }
 
 {:max, :min, :abs} = math
@@ -177,10 +180,10 @@ Cursor = {
 
       if is_showing_line @view, dest_line.nr
         if abs(dest_line.nr - old_line.nr) == 1 -- moving to an adjacent line, do one refresh
-          @view\refresh_display min(dest_line.start_offset, old_line.start_offset), max(dest_line.end_offset, old_line.end_offset)
+          @view\refresh_display from_line: min(dest_line.nr, old_line.nr), to_line: max(dest_line.nr, old_line.nr)
         else -- separated lines, refresh each line separately
-          @view\refresh_display old_line.start_offset, old_line.end_offset
-          @view\refresh_display dest_line.start_offset, dest_line.end_offset
+          @view\refresh_display from_line: old_line.nr, to_line: old_line.nr
+          @view\refresh_display from_line: dest_line.nr, to_line: dest_line.nr
       else -- scroll
         if dest_line.nr < @view.first_visible_line
           @view.first_visible_line = dest_line.nr
@@ -194,7 +197,7 @@ Cursor = {
         pos = dest_line.start_offset + index
 
     else -- staying on same line, refresh it
-      @view\refresh_display old_line.start_offset, old_line.end_offset
+      @view\refresh_display from_line: old_line.nr, to_line: old_line.nr
 
     if extend_selection
       @selection\extend @_pos, pos
@@ -203,13 +206,13 @@ Cursor = {
     @_force_show = true
     @_showing = true
 
-    if not opts.line or not @_sticky_x
+    if not @_sticky_x or (not opts.line or opts.column)
       @remember_column!
 
     -- finally, do we need to scroll horizontally to show the new position?
     rect = @display_line.layout\index_to_pos @column - 1
-    col_pos = rect.x / 1024
-    char_width = rect.width / 1024
+    col_pos = rect.x / SCALE
+    char_width = rect.width / SCALE
     x_pos = col_pos - @view.base_x + @view.edit_area_x + @width
 
     if @view.width and x_pos + char_width > @view.width -- scroll to the right
@@ -323,7 +326,7 @@ Cursor = {
 
   _refresh_current_line: =>
     cur_line = @buffer_line
-    @view\refresh_display cur_line.start_offset, cur_line.end_offset
+    @view\refresh_display from_line: cur_line.nr, to_line: cur_line.nr
  }
 
 define_class Cursor

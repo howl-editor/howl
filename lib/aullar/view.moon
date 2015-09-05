@@ -273,7 +273,7 @@ View = {
         @_base_x = 0
         @_reset_display!
         @area\queue_draw!
-        @buffer\ensure_styled_to line: @last_visible_line + 1
+        buffer\ensure_styled_to line: @last_visible_line + 1
     }
   }
 
@@ -296,7 +296,8 @@ View = {
     if opts.vertical
       page_size = @lines_showing - 1
       adjustment = @vertical_scrollbar.adjustment
-      adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
+      if adjustment
+        adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
 
     if opts.horizontal
       max_width = 0
@@ -307,42 +308,64 @@ View = {
         @horizontal_scrollbar\hide!
       else
         adjustment = @horizontal_scrollbar.adjustment
-        adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, @edit_area_width, @edit_area_width
-        @horizontal_scrollbar\show!
+        if adjustment
+          adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, @edit_area_width, @edit_area_width
+          @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
 
   insert: (text) =>
-    @_buffer\insert @cursor.pos, text
+    if @selection.is_empty
+      @_buffer\insert @cursor.pos, text
+    else
+      start_pos = @selection\range!
+      @_buffer\replace start_pos, @selection.size, text
+
     notify @, 'on_insert_at_cursor', :text
+    nil
 
   delete_back: =>
-    cur_pos = @cursor.pos
-    @cursor\backward!
-    prev_pos = @cursor.pos
-    size = cur_pos - prev_pos
-    @cursor.pos = cur_pos
+    if @selection.is_empty
+      cur_pos = @cursor.pos
+      @cursor\backward!
+      prev_pos = @cursor.pos
+      size = cur_pos - prev_pos
+      @cursor.pos = cur_pos
 
-    if size > 0
-      text = @_buffer\sub prev_pos, cur_pos
-      @_buffer\delete(prev_pos, size)
-      notify @, 'on_delete_back', :text, pos: prev_pos
+      if size > 0
+        text = @_buffer\sub prev_pos, cur_pos
+        @_buffer\delete(prev_pos, size)
+        notify @, 'on_delete_back', :text, pos: prev_pos
+    else
+      start_pos = @selection\range!
+      @_buffer\delete start_pos, @selection.size
 
   to_gobject: => @bin
 
-  refresh_display: (from_offset = 1, to_offset, opts = {}) =>
+  refresh_display: (opts = { from_line: 1 }) =>
     return unless @width
     d_lines = @display_lines
     min_y, max_y = nil, nil
     y = @margin
     last_valid = 0
+    from_line = opts.from_line
+    to_line = opts.to_line
+    to_offset = opts.to_offset
+
+    unless from_line
+      from_offset = min @buffer.size + 1, opts.from_offset
+      from_line = @buffer\get_line_at_offset(from_offset).nr
+
+    if opts.invalidate -- invalidate any affected lines before first visible
+      for line_nr = from_line, @_first_visible_line - 1
+        d_lines[line_nr] = nil
 
     for line_nr = @_first_visible_line, @last_visible_line + 1
       line = @_buffer\get_line line_nr
       break unless line
-      after = to_offset and line.start_offset > to_offset
-      break if after
-      before = line.end_offset < from_offset and line.has_eol
+      break if to_offset and line.start_offset > to_offset -- after
+      break if to_line and line.nr > to_line -- after
+      before = line.nr < from_line and line.has_eol
       d_line = d_lines[line_nr]
 
       if not before
@@ -354,13 +377,22 @@ View = {
 
       y += d_line.height
 
-    if opts.invalidate and not to_offset -- xxx 'not to_offset?'
-      max_y = @height
-      for line_nr = last_valid + 1, d_lines.max
-        d_lines[line_nr] = nil
+    if opts.invalidate -- invalidate any lines after visibly affected block
+      local invalidate_to_line
 
-      @_last_visible_line = nil
-      @display_lines.max = last_valid
+      if not to_line and not to_offset
+        invalidate_to_line = d_lines.max
+        max_y = @height
+        @_last_visible_line = nil
+        @display_lines.max = last_valid
+      else
+        invalidate_to_line = to_line
+        if to_offset
+          to_offset = min to_offset, @buffer.size + 1
+          invalidate_to_line = @buffer\get_line_at_offset(to_offset).nr
+
+      for line_nr = last_valid + 1, invalidate_to_line
+        d_lines[line_nr] = nil
 
     if min_y
       start_x = @gutter_width + 1
@@ -399,11 +431,11 @@ View = {
     return nil unless @showing
     line = @buffer\get_line_at_offset pos
     return nil unless line
-    return nil if line.nr < @_first_visible_line or line.nr > @last_visible_line
+    return nil if line.nr < @_first_visible_line
     y = @margin
     x = @edit_area_x
 
-    for line_nr = @_first_visible_line, @last_visible_line
+    for line_nr = @_first_visible_line, @buffer.nr_lines
       d_line = @display_lines[line_nr]
 
       if d_line.nr == line.nr or (d_line.nr > line.nr and not line.has_eol)
@@ -415,7 +447,7 @@ View = {
           x: x + (rect.x / Pango.SCALE)
           x2: x + ((rect.x + rect.width) / Pango.SCALE)
           y: y + (rect.y / Pango.SCALE)
-          y2: y + ((rect.y + rect.height) / Pango.SCALE)
+          y2: y + (rect.y / Pango.SCALE) + d_line.height
         }
 
       y += d_line.height
@@ -427,13 +459,24 @@ View = {
     layout = Pango.Layout p_ctx
     layout.text = text
     width, height = layout\get_pixel_size!
-    :width, :height
+    :width, height: height + (@config.view_line_padding * 2)
+
+  block_dimensions: (start_line, end_line) =>
+    height, width = 0, 0
+
+    for nr = start_line, end_line
+      d_line = @display_lines[nr]
+      break unless d_line
+      width = max width, d_line.width
+      height += d_line.height
+
+    width, height
 
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width
 
-    to_offset = max to_offset, @buffer.size
-    from_line = min @first_visible_line, @buffer\get_line_at_offset(from_offset).nr
+    to_offset = min to_offset, @buffer.size + 1
+    from_line = @buffer\get_line_at_offset(from_offset).nr
     to_line = max @display_lines.max, @buffer\get_line_at_offset(to_offset).nr
 
     for line_nr = from_line, to_line
@@ -444,7 +487,7 @@ View = {
     cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
     conf = @config
-    line_draw_opts = config: conf, width_of_space: @width_of_space
+    line_draw_opts = config: conf
     draw_gutter = conf.view_show_line_numbers and clip.x1 < @gutter_width
 
     if draw_gutter
@@ -509,63 +552,85 @@ View = {
     @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
     @horizontal_scrollbar_alignment.left_padding = @gutter_width
+    @gutter\sync_width @buffer, force: true
 
-  _on_buffer_styled: (buffer, args) =>
+  _on_buffer_styled: (buffer, args, start_dline) =>
     return unless @showing
     last_line = buffer\get_line @last_visible_line
     return if args.start_line > @display_lines.max + 1 and last_line.has_eol
-    start_line = @buffer\get_line args.start_line
-
-    prev_block = @display_lines[start_line.nr].block
+    start_line = args.start_line
+    start_dline or= @display_lines[start_line]
+    prev_block = start_dline.block
     prev_block_width = prev_block and prev_block.width
 
-    changed_block = ->
-      new_block = @display_lines[start_line.nr].block
-      return new_block if new_block and not prev_block
-      return prev_block if prev_block and not new_block
-      if prev_block and prev_block_width != new_block.width
-        prev_block
+    update_block = (rescan_width) ->
+      new_block = @display_lines[start_line].block
+      return unless (new_block or prev_block)
+      if new_block and prev_block
+        if new_block.width == prev_block_width
+          return unless rescan_width
+
+          width = 0
+          start_scan_line = max(new_block.start_line, @first_visible_line)
+          end_scan_line = min(new_block.end_line, @last_visible_line)
+          for nr = start_scan_line, end_scan_line
+            width = max width, @display_lines[nr].width
+
+          return if width == prev_block_width
+          new_block.width = width
+
+      start_refresh = @last_visible_line
+      end_refresh = @first_visible_line
+
+      if prev_block
+        start_refresh, end_refresh = prev_block.start_line, prev_block.end_line
+
+      if new_block
+        start_refresh = min start_refresh, new_block.start_line
+        end_refresh = max end_refresh, new_block.end_line
+
+      @refresh_display from_line: start_refresh, to_line: end_refresh
 
     if not args.invalidated and args.start_line == args.end_line
       -- refresh only the single line, but verify that the modification does not
       -- have other significant percussions
-      prev_height = @display_lines[start_line.nr].height
+      @refresh_display from_line: start_line, to_line: start_line, invalidate: true
 
-      @refresh_display start_line.start_offset, start_line.end_offset, invalidate: true
-
-      d_line = @display_lines[start_line.nr]
-      if d_line.height == prev_height -- height remains the same
-        block = changed_block! -- but might still need to adjust for block changes
-        if block
-          @refresh_display block.start_line.start_offset, block.end_line.end_offset
-
+      d_line = @display_lines[start_line]
+      if d_line.height == start_dline.height -- height remains the same
+        -- but we might still need to adjust for block changes
+        update_block(start_dline.width == prev_block_width)
         @_sync_scrollbars horizontal: true
         return
 
-    @refresh_display start_line.start_offset, nil, invalidate: true, gutter: true
-    block = changed_block! -- but might still need to adjust for block changes
-    if block
-      @refresh_display block.start_line.start_offset, start_line.start_offset, invalidate: true
-
+    @refresh_display from_line: start_line, invalidate: true, gutter: true
+    -- we might still need to adjust more for block changes
+    update_block(start_dline.width == prev_block_width)
     @_sync_scrollbars!
 
   _on_buffer_modified: (buffer, args, type) =>
-    -- adjust cursor if neccessary
     cur_pos = @cursor.pos
+    sel_anchor, sel_end = @selection.anchor, @selection.end_pos
+    start_dline = args.styled and @display_lines[args.styled.start_line]
 
+    -- adjust cursor if neccessary
     if type == 'insert' and args.offset <= @cursor.pos
       @cursor.pos += #args.text
     elseif type == 'delete' and args.offset < @cursor.pos
       @cursor.pos -= min(@cursor.pos - args.offset, #args.text)
 
-    unless @showing
-      @_reset_display!
-      return
+    @selection\clear!
 
     if @has_focus and args.revision
       with args.revision.meta
         .cursor_before or= cur_pos
         .cursor_after = @cursor.pos
+        .selection_anchor = sel_anchor
+        .selection_end_pos = sel_end
+
+    unless @showing
+      @_reset_display!
+      return
 
     lines_changed = contains_newlines(args.text)
     if lines_changed
@@ -577,22 +642,28 @@ View = {
       @_invalidate_display args.invalidate_offset, args.offset
 
     if args.styled
-      @_on_buffer_styled buffer, args.styled
+      @_on_buffer_styled buffer, args.styled, start_dline
     else
       if lines_changed
-        @refresh_display args.offset, nil, invalidate: true, gutter: true
+        @refresh_display from_offset: args.offset, invalidate: true, gutter: true
         @_sync_scrollbars!
       else
-        @refresh_display args.offset, args.offset + args.size, invalidate: true
+        @refresh_display from_offset: args.offset, to_offset: args.offset + args.size, invalidate: true
         @_sync_scrollbars horizontal: true
+
+    if lines_changed and not @gutter\sync_width buffer
+      @area\queue_draw!
 
   _on_buffer_marker_changed: (buffer, marker) =>
     if marker.flair
-      @refresh_display marker.start_offset, marker.end_offset, invalidate: true
+      @refresh_display from_offset: marker.start_offset, to_offset: marker.end_offset, invalidate: true
 
   _on_buffer_undo: (buffer, revision) =>
     pos = revision.meta.cursor_before or revision.offset
     @cursor.pos = pos
+    {:selection_anchor, :selection_end_pos} = revision.meta
+    if selection_anchor
+      @selection\set selection_anchor, selection_end_pos
 
   _on_buffer_redo: (buffer, revision) =>
     pos = revision.meta.cursor_after or revision.offset
@@ -611,7 +682,9 @@ View = {
 
   _on_button_press: (event) =>
     return if event.x <= @gutter_width
-    return if event.button != 1
+    return true if notify @, 'on_button_press', event
+
+    return if event.button != 1 or event.type != Gdk.BUTTON_PRESS
 
     extend = bit.band(event.state, Gdk.SHIFT_MASK) != 0
 

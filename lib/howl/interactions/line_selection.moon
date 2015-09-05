@@ -90,7 +90,7 @@ interact.register
       column = 1
       if result.text and not result.text.is_empty
         positions = matcher.explain result.text, line.text
-        column = positions[1]
+        column = positions and positions[1] or 1
       return {
         :line
         text: result.text

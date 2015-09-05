@@ -1,25 +1,12 @@
-import Buffer, Scintilla, config, signal from howl
+import Buffer, config, signal from howl
 import File from howl.io
 import with_tmpfile from File
 append = table.insert
 
 describe 'Buffer', ->
-  local sci
-
-  before_each ->
-    sci = Scintilla!
-
   buffer = (text) ->
     with Buffer {}
       .text = text
-
-  describe 'creation', ->
-    context 'when sci parameter is specified', ->
-      it 'attaches .sci and .doc to the Scintilla instance', ->
-        sci.get_doc_pointer = -> 'docky'
-        b = Buffer {}, sci
-        assert.equal b.doc, 'docky'
-        assert.equal b.sci, sci
 
   it '.text allows setting and retrieving the buffer text', ->
     b = Buffer {}
@@ -47,31 +34,16 @@ describe 'Buffer', ->
     assert.equal b.text, 'hello' -- toggling should not have changed text
 
   it '.read_only can be set to mark the buffer as read-only', ->
-    b = Buffer!
+    b = buffer 'kept'
     b.read_only = true
     assert.equal true, b.read_only
-    b\append 'illegal'
-    assert.equal '', b.text
+    assert.raises 'read%-only', -> b\append 'illegal'
+    assert.raises 'read%-only', -> b\insert 1, 'illegal'
+    assert.raises 'read%-only', -> b.text = 'illegal'
+    assert.equal 'kept', b.text
     b.read_only = false
-    b\append 'yes'
-    assert.equal 'yes', b.text
-
-  describe '.mode = <mode>', ->
-    context 'when <mode> has a lexer', ->
-      it 'updates all embedding scis to use container lexing', ->
-        b = Buffer!
-        b\add_sci_ref sci
-        assert.equal Scintilla.SCLEX_NULL, sci\get_lexer!
-        b.mode = lexer: -> {}
-        assert.equal Scintilla.SCLEX_CONTAINER, sci\get_lexer!
-
-    context 'when <mode> does not have a lexer', ->
-      it 'updates all embedding scis to use null lexing', ->
-        b = Buffer lexer: -> {}
-        b\add_sci_ref sci
-        assert.equal Scintilla.SCLEX_CONTAINER, sci\get_lexer!
-        b.mode = {}
-        assert.equal Scintilla.SCLEX_NULL, sci\get_lexer!
+    b\append ' yes'
+    assert.equal 'kept yes', b.text
 
   describe '.file = <file>', ->
     b = buffer ''
@@ -119,31 +91,10 @@ describe 'Buffer', ->
         b.file = file
         assert.is_false b.can_undo
 
-  it '.eol returns the current line ending', ->
-    b = buffer ''
-
-    b.sci\set_eolmode Scintilla.SC_EOL_CRLF
-    assert.equal b.eol, '\r\n'
-
-    b.sci\set_eolmode Scintilla.SC_EOL_LF
-    assert.equal b.eol, '\n'
-
-    b.sci\set_eolmode Scintilla.SC_EOL_CR
-    assert.equal b.eol, '\r'
+  it '.eol is "\\n" by default', ->
+    assert.equals '\n', buffer('').eol
 
   describe '.eol = <string>', ->
-    it 'set the the current line ending', ->
-      b = buffer ''
-
-      b.eol = '\n'
-      assert.equal b.sci\get_eolmode!, Scintilla.SC_EOL_LF
-
-      b.eol = '\r\n'
-      assert.equal b.sci\get_eolmode!, Scintilla.SC_EOL_CRLF
-
-      b.eol = '\r'
-      assert.equal b.sci\get_eolmode!, Scintilla.SC_EOL_CR
-
     it 'raises an error if the eol is unknown', ->
       assert.raises 'Unknown', -> buffer('').eol = 'foo'
 
@@ -153,10 +104,10 @@ describe 'Buffer', ->
   it '.data is a table', ->
     assert.equal 'table', type buffer('').data
 
-  it '.showing is true if the buffer is currently referenced in any sci', ->
+  it '.showing is true if the buffer is currently referenced in any view', ->
     b = buffer ''
     assert.false b.showing
-    b\add_sci_ref sci
+    b\add_view_ref {}
     assert.true b.showing
 
   describe '.multibyte', ->
@@ -169,10 +120,9 @@ describe 'Buffer', ->
       b\append 'Bačon'
       assert.is_true b.multibyte
 
-    it 'is unset whenever a previously multibyte buffer has its length calculated', ->
-      b = buffer('HƏllo')
-      b\delete 2, 2
-      b.length
+    it 'is updated whenever text is deleted', ->
+      b = buffer 'Bačon'
+      b\delete 3, 5
       assert.is_false b.multibyte
 
   describe '.modified_on_disk', ->
@@ -236,7 +186,7 @@ describe 'Buffer', ->
     it 'appends the specified text', ->
       b = buffer 'hello'
       b\append ' world'
-      assert.equal b.text, 'hello world'
+      assert.equal 'hello world', b.text
 
     it 'returns the position right after the inserted text', ->
       b = buffer ''
@@ -258,45 +208,11 @@ describe 'Buffer', ->
       b = buffer 'hello\nworld\n'
       assert.equal 1, b\replace('world', 'editor')
 
-  describe 'destroy()', ->
-    context 'when no sci is passed and a doc is created in the constructor', ->
-      it 'releases the scintilla document', ->
-        b = buffer 'reap_me'
-        rawset b, 'sci', Spy as_null_object: true
-        b\destroy!
-        assert.is_true b.sci.release_document.called
-
-    context 'when a sci is passed and a doc is provided in the constructor', ->
-      it 'an error is raised since the buffer is considered as currently showing', ->
-        sci.get_doc_pointer = -> 'doc'
-        sci.release_document = spy.new -> nil
-        b = Buffer {}, sci
-        assert.raises 'showing', -> b\destroy!
-        assert.spy(sci.release_document).was_not.called!
-
-    it 'raises an error if the buffer is currently showing', ->
-      b = buffer 'not yet'
-      b\add_sci_ref sci
-      assert.raises 'showing', -> b\destroy!
-
-    it 'a destroyed buffer raises an error upon subsequent operations', ->
-      b = buffer 'reap_me'
-      b\destroy!
-      assert.raises 'destroyed', -> b.size
-      assert.raises 'destroyed', -> b.lines
-      assert.raises 'destroyed', -> b\append 'foo'
-
-  it '.destroyed is true if the buffer is destroyed and false otherwise', ->
-    b = buffer 'shoot_me'
-    assert.is_false b.destroyed
-    b\destroy!
-    assert.is_true b.destroyed
-
   it 'undo undoes the last operation', ->
     b = buffer 'hello'
     b\delete 1, 1
     b\undo!
-    assert.equal b.text, 'hello'
+    assert.equal 'hello', b.text
 
   it '.can_undo returns true if undo is possible, and false otherwise', ->
     b = Buffer {}
@@ -331,7 +247,7 @@ describe 'Buffer', ->
         b\delete 1, 1
         b\append 'foo'
       b\undo!
-      assert.equal b.text, 'hello'
+      assert.equal 'hello', b.text
 
     context 'when f raises an error', ->
       it 'propagates the error', ->
@@ -451,10 +367,11 @@ describe 'Buffer', ->
       }
         assert.equal p[1], b\byte_offset p[2]
 
-    it 'raises an error for an out-of-bounds <char_offset>', ->
-      assert.has_error -> buffer'äåö'\byte_offset 5
-      assert.has_error -> buffer'äåö'\byte_offset 0
-      assert.has_error -> buffer'a'\byte_offset -1
+    it 'adjusts out-of-bounds offsets', ->
+      assert.equal 7,  buffer'äåö'\byte_offset 5
+      assert.equal 7,  buffer'äåö'\byte_offset 10
+      assert.equal 1,  buffer'äåö'\byte_offset 0
+      assert.equal 1,  buffer'äåö'\byte_offset -1
 
   describe 'char_offset(byte_offset)', ->
     it 'returns the character offset for the given <byte_offset>', ->
@@ -467,10 +384,10 @@ describe 'Buffer', ->
       }
         assert.equal p[2], b\char_offset p[1]
 
-    it 'raises error for out-of-bounds offsets', ->
-      assert.has_error -> buffer'ab'\char_offset 4
-      assert.has_error -> buffer'äåö'\char_offset 0
-      assert.has_error -> buffer'a'\char_offset -1
+    it 'adjusts out-of-bounds offsets', ->
+      assert.equal 3, buffer'ab'\char_offset 4
+      assert.equal 1, buffer'äåö'\char_offset 0
+      assert.equal 1, buffer'a'\char_offset -1
 
   describe 'sub(start_pos, end_pos)', ->
     it 'returns the text between start_pos and end_pos, both inclusive', ->
@@ -589,45 +506,20 @@ describe 'Buffer', ->
     b.title = 'foo'
     assert.equal tostring(b), 'foo'
 
-  describe '.add_sci_ref(sci)', ->
-    it 'adds the specified sci to .scis', ->
+  describe '.add_view_ref(view)', ->
+    it 'adds the specified view to .views', ->
       b = buffer ''
-      b\add_sci_ref sci
-      assert.same b.scis, { sci }
+      view = {}
+      b\add_view_ref view
+      assert.same b.views, { view }
 
-    it 'sets .sci to the specified sci', ->
+  describe '.remove_view_ref(view)', ->
+    it 'removes the specified view from .views', ->
       b = buffer ''
-      b\add_sci_ref sci
-      assert.equal b.sci, sci
-
-    it 'sets the sci lexer to container if the mode has a lexer', ->
-      b = buffer ''
-      b.mode.lexer = -> {}
-      sci\set_lexer Scintilla.SCLEX_NULL
-      b\add_sci_ref sci
-      assert.equal Scintilla.SCLEX_CONTAINER, sci\get_lexer!
-
-    it 'sets the sci lexer to null if mode has no lexer', ->
-      b = buffer ''
-      sci\set_lexer Scintilla.SCLEX_CONTAINER
-      b\add_sci_ref sci
-      assert.equal Scintilla.SCLEX_NULL, sci\get_lexer!
-
-  describe '.remove_sci_ref(sci)', ->
-    it 'removes the specified sci from .scis', ->
-      b = buffer ''
-      b\add_sci_ref sci
-      b\remove_sci_ref sci
-      assert.same b.scis, {}
-
-    it 'sets .sci to some other sci if they were previously the same', ->
-      sci2 = Scintilla!
-      b = buffer ''
-      b\add_sci_ref sci
-      b\add_sci_ref sci2
-      assert.equal b.sci, sci2
-      b\remove_sci_ref sci2
-      assert.equal b.sci, sci
+      view = {}
+      b\add_view_ref view
+      b\remove_view_ref view
+      assert.same b.views, {}
 
   describe 'ensuring that buffer titles are globally unique', ->
     context 'when setting a file for a buffer', ->
@@ -670,26 +562,6 @@ describe 'Buffer', ->
         b1.title = 'Title'
         b2.title = 'Title'
         assert.equal b2.title, 'Title<2>'
-
-  describe 'resource management', ->
-    it 'scintilla documents are released whenever the buffer is garbage collected', ->
-      release = Spy!
-      orig_release = Scintilla.release_document
-      Scintilla.release_document = release
-      b = Buffer {}
-      doc = b.doc
-      b = nil
-      collectgarbage!
-      Scintilla.release_document = orig_release
-      assert.equal release.called_with[2], doc
-
-    it 'buffers are collected as they should', ->
-      b = Buffer {}
-      bufs = setmetatable {}, __mode: 'v'
-      append bufs, b
-      b = nil
-      collectgarbage!
-      assert.is_nil bufs[1]
 
   describe 'signals', ->
     it 'buffer-saved is fired whenever a buffer is saved', ->

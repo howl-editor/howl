@@ -12,6 +12,7 @@ describe 'Editor', ->
   window = Gtk.OffscreenWindow!
   window\add editor\to_gobject!
   window\show_all!
+  pump_mainloop!
 
   before_each ->
     buffer = Buffer {}
@@ -119,7 +120,7 @@ describe 'Editor', ->
       it 'propagates the error', ->
         assert.raises 'ARGH!', -> editor\with_position_restored -> error 'ARGH!'
 
-      it 'the position is still restored', ->
+      it 'still restores the position', ->
         cursor.pos = 4
 
         pcall editor.with_position_restored, editor, ->
@@ -157,7 +158,7 @@ describe 'Editor', ->
       it 'pastes the clip to the right of the current position', ->
         buffer.text = 'hƏllo\n'
         clipboard.push 'yo'
-        cursor\move_to 1, 6
+        cursor\move_to line: 1, column: 6
         editor\paste where: 'after'
         assert.equal 'hƏllo yo\n', buffer.text
         cursor\eof!
@@ -220,7 +221,7 @@ describe 'Editor', ->
     editor\paste!
     assert.equal 'hƏllo\nhƏllo\n', buffer.text
 
-  describe 'delete_to_end_of_line(no_copy)', ->
+  describe 'delete_to_end_of_line(opts)', ->
     it 'cuts text from cursor up to end of line', ->
       buffer.text = 'hƏllo world!\nnext'
       cursor.pos = 6
@@ -232,16 +233,16 @@ describe 'Editor', ->
     it 'deletes without copying if no_copy is specified', ->
       buffer.text = 'hƏllo world!'
       cursor.pos = 3
-      editor\delete_to_end_of_line true
+      editor\delete_to_end_of_line no_copy: true
       assert.equal buffer.text, 'hƏ'
       editor\paste!
       assert.not_equal 'hƏllo world!', buffer.text
 
   it 'join_lines joins the current line with the one after', ->
-    buffer.text = 'hƏllo\n    world!'
+    buffer.text = 'hƏllo\n    world!\n'
     cursor.pos = 1
     editor\join_lines!
-    assert.equal 'hƏllo world!', buffer.text
+    assert.equal 'hƏllo world!\n', buffer.text
     assert.equal 6, cursor.pos
 
   it 'forward_to_match(string) moves the cursor to next occurence of <string>, if found in the line', ->
@@ -309,7 +310,7 @@ describe 'Editor', ->
 
   context 'indentation, tabs, spaces and backspace', ->
 
-    it 'defines a "tab_width" config variable, defaulting to 8', ->
+    it 'defines a "tab_width" config variable, defaulting to 4', ->
       assert.equal config.tab_width, 4
 
     it 'defines a "use_tabs" config variable, defaulting to false', ->
@@ -347,14 +348,110 @@ describe 'Editor', ->
         editor\smart_tab!
         assert.equal '\thƏllo', buffer.text
 
-      it 'indents the current line if in whitespace and tab_indents is true', ->
-        config.use_tabs = false
-        config.tab_indents = true
-        indent = string.rep ' ', config.indent
-        buffer.text = indent .. 'hƏllo'
-        cursor.pos = 2
-        editor\smart_tab!
-        assert.equal buffer.text, string.rep(indent, 2) .. 'hƏllo'
+      context 'when in whitespace and tab_indents is true', ->
+        before_each ->
+          config.tab_indents = true
+          config.use_tabs = false
+          config.indent = 2
+
+        it 'indents the current line if in whitespace and tab_indents is true', ->
+          indent = string.rep ' ', config.indent
+          buffer.text = indent .. 'hƏllo'
+          cursor.pos = 2
+          editor\smart_tab!
+          assert.equal buffer.text, string.rep(indent, 2) .. 'hƏllo'
+
+        it 'moves the cursor to the beginning of the text', ->
+          buffer.text = '  hƏllo'
+          cursor.pos = 1
+          editor\smart_tab!
+          assert.equal 5, cursor.pos
+
+        it 'corrects any half-off indentation', ->
+          buffer.text = '   hƏllo'
+          cursor.pos = 1
+          editor\smart_tab!
+          assert.equal 5, cursor.pos
+          assert.equal '    hƏllo', buffer.text
+
+      context 'when a selection is active', ->
+        it 'right-shifts the lines included in a selection if any', ->
+          config.indent = 2
+          buffer.text = 'hƏllo\nselected\nworld!'
+          selection\set 2, 10
+          editor\smart_tab!
+          assert.equal '  hƏllo\n  selected\nworld!', buffer.text
+
+      context 'when in whitespace and tab_indents is false', ->
+
+        it 'just inserts the corresponding tab or spaces', ->
+          config.tab_indents = false
+          config.indent = 2
+          buffer.text = '  hƏllo'
+          cursor.pos = 1
+
+          config.use_tabs = false
+          editor\smart_tab!
+          assert.equal '    hƏllo', buffer.text
+          assert.equal 3, cursor.pos
+
+          config.use_tabs = true
+          editor\smart_tab!
+          assert.equal '  \t  hƏllo', buffer.text
+          assert.equal 4, cursor.pos
+
+    describe 'smart_back_tab()', ->
+      context 'when tab_indents is false', ->
+        it 'moves the cursor back to the previous tab position', ->
+          config.tab_indents = false
+          config.tab_width = 4
+          buffer.text = '  hƏ567890'
+          cursor.pos = 10
+
+          editor\smart_back_tab!
+          assert.equal 9, cursor.pos
+
+          editor\smart_back_tab!
+          assert.equal 5, cursor.pos
+
+          editor\smart_back_tab!
+          assert.equal 1, cursor.pos
+
+          editor\smart_back_tab!
+          assert.equal 1, cursor.pos
+
+          cursor.pos = 2
+          editor\smart_back_tab!
+          assert.equal 1, cursor.pos
+
+      context 'when tab_indents is true', ->
+        it 'unindents when in whitespace', ->
+          config.tab_indents = true
+          config.tab_width = 4
+          buffer.text = '    567890'
+          cursor.pos = 10
+
+          editor\smart_back_tab!
+          assert.equal 9, cursor.pos
+
+          editor\smart_back_tab!
+          assert.equal 5, cursor.pos
+
+          editor\smart_back_tab!
+          assert.equal 3, cursor.pos
+          assert.equal '  567890', buffer.text
+
+          editor\smart_back_tab!
+          assert.equal 1, cursor.pos
+          assert.equal '567890', buffer.text
+
+      context 'when a selection is active', ->
+        it 'left-shifts the lines included in a selection if any', ->
+          config.indent = 2
+          buffer.text = '  hƏllo\n  selected\nworld!'
+          selection\set 4, 12
+          editor\smart_back_tab!
+          assert.equal 'hƏllo\nselected\nworld!', buffer.text
 
     describe '.delete_back()', ->
       it 'deletes back by one character', ->
@@ -370,6 +467,7 @@ describe 'Editor', ->
         config.backspace_unindents = true
         editor\delete_back!
         assert.equal buffer.text, 'hƏllo'
+        assert.equal 1, cursor.pos
 
       it 'deletes back if in whitespace and backspace_unindents is false', ->
         config.indent = 2
@@ -378,6 +476,14 @@ describe 'Editor', ->
         config.backspace_unindents = false
         editor\delete_back!
         assert.equal buffer.text, ' hƏllo'
+
+      context 'with a selection', ->
+        it 'deletes the selection', ->
+          buffer.text = ' 2\n 5'
+          selection\set 1, 5
+          cursor.pos = 5
+          editor\delete_back!
+          assert.equal buffer.text, '5'
 
     describe '.delete_forward()', ->
       it 'deletes the character at cursor', ->
@@ -397,7 +503,7 @@ describe 'Editor', ->
       context 'when at the end of a line', ->
         it 'deletes the line break', ->
           buffer.text = 'hƏllo\nworld'
-          cursor\move_to 1, 6
+          cursor\move_to line: 1, column: 6
           editor\delete_forward!
           assert.equal 'hƏlloworld', buffer.text
 
@@ -409,62 +515,54 @@ describe 'Editor', ->
           assert.equal 'hƏllo', buffer.text
 
     describe '.shift_right()', ->
-      it 'right-shifts the lines included in a selection if any', ->
+      before_each ->
+        config.use_tabs = false
         config.indent = 2
-        buffer.text = 'hƏllo\nselected\nworld!'
-        selection\set 2, 10
-        editor\shift_right!
-        assert.equal buffer.text, '  hƏllo\n  selected\nworld!'
+
+      context 'with a selection', ->
+        it 'right-shifts the lines included in the selection', ->
+          buffer.text = 'hƏllo\nselected\nworld!'
+          selection\set 2, 10
+          editor\shift_right!
+          assert.equal '  hƏllo\n  selected\nworld!', buffer.text
+
+        it 'adjusts and keeps the selection', ->
+          buffer.text = '  xx\nyy zz'
+          selection\set 3, 8 -- 'xx\nyy'
+          editor\shift_right!
+          assert.equal 'xx\n  yy', selection.text
+          assert.same { 5, 12 }, { selection\range! }
 
       it 'right-shifts the current line when nothing is selected, remembering column', ->
-        config.indent = 2
         buffer.text = 'hƏllo\nworld!'
         cursor.pos = 3
         editor\shift_right!
-        assert.equal buffer.text, '  hƏllo\nworld!'
-        assert.equal cursor.pos, 5
+        assert.equal '  hƏllo\nworld!', buffer.text
+        assert.equal 5, cursor.pos
 
     describe '.shift_left()', ->
-      it 'left-shifts the lines included in a selection if any', ->
-        config.indent = 2
-        buffer.text = '  hƏllo\n  selected\nworld!'
-        selection\set 4, 12
-        editor\shift_left!
-        assert.equal buffer.text, 'hƏllo\nselected\nworld!'
+      context 'with a selection', ->
+        it 'left-shifts the lines included in the selection', ->
+          config.indent = 2
+          buffer.text = '  hƏllo\n  selected\nworld!'
+          selection\set 4, 12
+          editor\shift_left!
+          assert.equal 'hƏllo\nselected\nworld!', buffer.text
+
+        it 'adjusts and keeps the selection', ->
+          buffer.text = '    xx\n  yy zz'
+          selection\set 3, 12 -- '  xx\nyy'
+          editor\shift_left!
+          assert.equal '  xx\nyy', selection.text
+          assert.same { 1, 8 }, { selection\range! }
 
       it 'left-shifts the current line when nothing is selected, remembering column', ->
         config.indent = 2
         buffer.text = '    hƏllo\nworld!'
         cursor.pos = 4
         editor\shift_left!
-        assert.equal buffer.text, '  hƏllo\nworld!'
-        assert.equal cursor.pos, 2
-
-  context 'events', ->
-    describe 'on char added', ->
-      it 'emits a character-added event with the passed arguments merged with the editor reference', ->
-        handler = spy.new -> true
-        signal.connect 'character-added', handler
-        args = key_name: 'a'
-        editor\_on_char_added args
-        signal.disconnect 'character-added', handler
-        args.editor = editor
-        assert.spy(handler).was_called_with args
-
-      it 'invokes mode.on_char_added if present, passing (arguments, editor)', ->
-        buffer.mode = on_char_added: spy.new -> nil
-        args = key_name: 'a', :editor
-        editor\_on_char_added args
-        assert.spy(buffer.mode.on_char_added).was_called_with buffer.mode, args, editor
-
-  context 'resource management', ->
-    it 'editors are collected as they should', ->
-      e = Editor Buffer {}
-      editors = setmetatable {}, __mode: 'v'
-      append editors, e
-      e = nil
-      collectgarbage!
-      assert.is_nil editors[1]
+        assert.equal '  hƏllo\nworld!', buffer.text
+        assert.equal 2, cursor.pos
 
   describe 'cycle_case()', ->
     context 'with a selection active', ->
@@ -498,18 +596,51 @@ describe 'Editor', ->
     context 'with no selection active', ->
       it 'changes all lowercase word to all uppercase', ->
         buffer.text = 'hello wörld'
-        editor.cursor.pos = 7
+        cursor.pos = 7
         editor\cycle_case!
         assert.equals 'hello WÖRLD', buffer.text
 
       it 'changes all uppercase word to titlecase', ->
         buffer.text = 'hello WÖRLD'
-        editor.cursor.pos = 7
+        cursor.pos = 7
         editor\cycle_case!
         assert.equals 'hello Wörld', buffer.text
 
       it 'changes mixed case word to all lowercase', ->
         buffer.text = 'hello WörLd'
-        editor.cursor.pos = 7
+        cursor.pos = 7
         editor\cycle_case!
         assert.equals 'hello wörld', buffer.text
+
+  describe 'duplicate_current', ->
+    context 'with an active selection', ->
+      it 'duplicates the selection', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 2
+        selection\set 2, 5 -- 'ell'
+        editor\duplicate_current!
+        assert.equals 'hellello\nwörld', buffer.text
+
+      it 'keeps the cursor and current selection', ->
+        buffer.text = '123456'
+        selection\set 5, 2
+        editor\duplicate_current!
+        assert.equals 2, cursor.pos
+        assert.equals 2, selection.cursor
+        assert.equals 5, selection.anchor
+
+    context 'with no active selection', ->
+      it 'duplicates the current line', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 3
+        editor\duplicate_current!
+        assert.equals 'hello\nhello\nwörld', buffer.text
+
+  context 'resource management', ->
+    pending 'editors are collected as they should', ->
+      e = Editor Buffer {}
+      editors = setmetatable {}, __mode: 'v'
+      append editors, e
+      e = nil
+      collectgarbage!
+      assert.is_nil editors[1]

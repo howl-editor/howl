@@ -28,6 +28,11 @@ describe 'BufferLines', ->
       assert.equal lines[2].text, '  wØrld'
       assert.equal lines[3].text, 'again!'
 
+    it '.size is the size of the line, sans linebreak', ->
+      lines = buffer('åäö\n123\n').lines
+      assert.equal 6, lines[1].size
+      assert.equal 3, lines[2].size
+
     it 'tostring(line) gives the same as .text', ->
       assert.equal tostring(lines[1]), lines[1].text
 
@@ -39,13 +44,54 @@ describe 'BufferLines', ->
       it 'raises an error if <content> is nil', ->
         assert.raises 'nil', -> lines[1].text = nil
 
-    it '.indentation returns the indentation for the line', ->
-      assert.equal lines[1].indentation, 0
-      assert.equal lines[2].indentation, 2
+    describe '.indentation', ->
+      it '.indentation returns the indentation for the line', ->
+        assert.equal lines[1].indentation, 0
+        assert.equal lines[2].indentation, 2
 
-    it '.indentation = <nr> set the indentation for the line to <nr>', ->
-      lines[3].indentation = 4
-      assert.equal 'hƏllØ\n  wØrld\n    again!', buf.text
+      it 'respects the configured tab_width for tabs', ->
+        buf = buffer '\tfirst\n  \tsecond'
+        lines = buf.lines
+        buf.config.tab_width = 3
+        assert.equal 3, lines[1].indentation
+        assert.equal 5, lines[2].indentation
+
+    describe '.indentation = <nr>', ->
+      context 'when `use_tabs` is false', ->
+        it 'set the indentation for the line to <nr> spaces', ->
+          buf = buffer 'first\n'
+          lines = buf.lines
+          buf.config.use_tabs = false
+          lines[1].indentation = 8
+          assert.equal '        first\n', buf.text
+
+      context 'when `use_tabs` is true', ->
+        local buf, lines
+
+        before_each ->
+          buf = buffer ''
+          lines = buf.lines
+          buf.config.use_tabs = true
+          buf.config.tab_width = 4
+
+        it 'squeezes in as many tabs as possible', ->
+          buf.text = 'first\nsecond'
+          lines[1].indentation = 5
+          assert.equal '\t first', lines[1].text
+          lines[2].indentation = 8
+          assert.equal '\t\tsecond', lines[2].text
+
+        it 'handles lines with existing tabs', ->
+          buf.text = '\tx'
+          lines[1].indentation = 8
+          assert.equal '\t\tx', lines[1].text
+
+      it 'works for empty lines', ->
+        buf = buffer 'first\n'
+        lines = buf.lines
+        buf.config.use_tabs = false
+        lines[2].indentation = 2
+        assert.equal 'first\n  ', buf.text
 
     it '.start_pos returns the start position for line', ->
       assert.equal lines[2].start_pos, 7
@@ -79,15 +125,26 @@ describe 'BufferLines', ->
       lines\insert 3, ''
       assert.equal lines[2], lines[4].previous_non_blank
 
+    it '.previous_blank returns the first preceding blank line, or nil if none', ->
+      buf.text = 'one\n\nthree\nfour'
+      assert.is_nil lines[1].previous_blank
+      assert.equal lines[2], lines[3].previous_blank
+      assert.equal lines[2], lines[4].previous_blank
+
+    it '.next returns the line below this one, or nil if none', ->
+      assert.equal lines[1].next, lines[2]
+      assert.is_nil lines[3].next
+
     it '.next_non_blank returns the first succeding non-blank line, or nil if none', ->
       assert.is_nil lines[3].next_non_blank
       assert.equal lines[3], lines[2].next_non_blank
       lines\insert 3, ''
       assert.equal lines[4], lines[2].next_non_blank
 
-    it '.next returns the line below this one, or nil if none', ->
-      assert.equal lines[1].next, lines[2]
-      assert.is_nil lines[3].next
+    it '.next_blank returns the first succeding blank line, or nil if none', ->
+      buf.text = 'one\n\nthree\nfour'
+      assert.is_nil lines[3].next_blank
+      assert.equal lines[2], lines[1].next_blank
 
     describe '.chunk', ->
       it 'a Chunk object for the line, disregarding the newline', ->
@@ -113,7 +170,7 @@ describe 'BufferLines', ->
         chunk = lines[2].chunk
         assert.equal '', chunk.text
         assert.equal 2, chunk.start_pos
-        assert.equal 1, chunk.end_pos
+        assert.equal 2, chunk.end_pos
 
     it '.indent() indents the line by <config.indent>', ->
       config.indent = 2
@@ -124,18 +181,95 @@ describe 'BufferLines', ->
       buf.lines[3]\indent!
       assert.equal '  hƏllØ\n  wØrld\n again!', buf.text
 
-    it '.unindent() unindents the line by <config.indent>', ->
-      buf.text = '  first\n  second'
-      config.indent = 2
-      buf.lines[1]\unindent!
-      assert.equal buf.text, 'first\n  second'
+    it 'describe .unindent()', ->
+      it 'unindents the line by <config.indent>', ->
+        buf.text = '  first\n  second'
+        config.indent = 2
+        buf.lines[1]\unindent!
+        assert.equal buf.text, 'first\n  second'
 
-      buf.config.indent = 1
-      buf.lines[2]\unindent!
-      assert.equal buf.text, 'first\n second'
+        buf.config.indent = 1
+        buf.lines[2]\unindent!
+        assert.equal buf.text, 'first\n second'
+
+      it 'unindents back to a valid indentation line for uneven indents', ->
+        buf.text = '   first\n  second'
+        buf.config.indent = 2
+        buf.lines[1]\unindent!
+        assert.equal '  first\n  second', buf.text
+
+      it 'unindents back to zero for a 1-space indent', ->
+        buf.text = ' first\n  second'
+        buf.config.indent = 2
+        buf.lines[1]\unindent!
+        assert.equal 'first\n  second', buf.text
+
+    describe 'replace(i, j, replacement)', ->
+      it 'replaces the range [i,j] with <replacement>', ->
+        buf.text = '123\n567'
+        buf.lines[2]\replace 1, 2, 'x'
+        buf.lines[1]\replace 1, 1, 'x'
+        assert.equal 'x23\nx7', buf.text
+
+      it 'works with character offsets', ->
+        buf.text = 'åäö'
+        buf.lines[1]\replace 2, 2, 'x'
+        assert.equal 'åxö', buf.text
+
+    describe 'real_column(column)', ->
+      before_each ->
+        buf.config.tab_width = 4
+
+      it 'returns the real column index of <column>, accounting for tabs', ->
+        buf.text = '\tsome text'
+        assert.equal 2, buf.lines[1]\real_column 5
+
+      it 'works with character offsets', ->
+        buf.text = 'åäö'
+        assert.equal 2, buf.lines[1]\real_column 2
+
+      it 'handles boundary cases correctly', ->
+        buf.text = '\t56'
+        line = buf.lines[1]
+        assert.equal 1, line\real_column 1
+        assert.equal 4, line\real_column 7
+
+      it 'raises an error for out of bounds <column>s', ->
+        buf.text = '\t56'
+        line = buf.lines[1]
+        assert.raises 'column', -> line\real_column 0
+
+      it 'returns the last real column if the virtual column overshoots', ->
+        buf.text = '\t56'
+        line = buf.lines[1]
+        assert.equal 4, line\real_column 8
+        assert.equal 4, line\real_column 9
+
+    describe 'virtual_column(column)', ->
+      it 'returns the virtual column, accounting for tabs', ->
+        buf.config.tab_width = 4
+        buf.text = '\tsome text after'
+        assert.equal 5, buf.lines[1]\virtual_column 2
+
+      it 'works with character offsets', ->
+        buf.text = 'åäö'
+        assert.equal 2, buf.lines[1]\virtual_column 2
+
+      it 'handles boundary cases correctly', ->
+        buf.text = '123'
+        line = buf.lines[1]
+        assert.equal 1, line\virtual_column 1
+        assert.equal 4, line\virtual_column 4
+
+      it 'raises an error for out of bounds <column>s', ->
+        buf.text = '123'
+        line = buf.lines[1]
+        assert.raises 'column', -> line\virtual_column 0
+        assert.raises 'column', -> line\virtual_column 5
 
     it '#line returns the length of the line', ->
-      assert.equal #lines[1], 5
+      buf.text = 'åäö'
+      assert.equal #lines[1], 3
 
     it 'lines are equal if they have the same text', ->
       lines[2] = 'hƏllØ'
@@ -182,10 +316,21 @@ describe 'BufferLines', ->
       b = buffer 'hello!'
       assert.raises 'Invalid index', -> b.lines['foo'] = 'bar'
 
-  it 'delete(start, end) deletes the the lines [start, end]', ->
+  describe 'delete(start, end)', ->
+    it 'deletes the the lines [start, end]', ->
       b = buffer 'hellØ\nwØrld\nagain!'
       b.lines\delete 1, 2
-      assert.equal b.text, 'again!'
+      assert.equal 'again!', b.text
+
+    it 'for end < start it does nothing', ->
+      b = buffer 'hellØ'
+      b.lines\delete 1, 0
+      assert.equal 'hellØ', b.text
+
+    it 'deletes up to the last line if end > nr lines', ->
+      b = buffer 'hellØ\nwØrld\nagain!'
+      b.lines\delete 2, 6
+      assert.equal 'hellØ\n', b.text
 
   it 'at_pos(pos) returns the line at <pos>', ->
     lines = buffer('Øne\ntwØ\nthree').lines
@@ -214,10 +359,10 @@ describe 'BufferLines', ->
       range = lines\for_text_range 6, 1
       assert.same { lines[1], lines[2] }, range
 
-    it 'does not include lines only touched at the start or end positions', ->
+    it 'does not include lines only touched at the start positions', ->
       lines = buffer('one\ntwo\nthree').lines
       range = lines\for_text_range lines[1].end_pos, lines[3].start_pos
-      assert.same { lines[2] }, range
+      assert.same { lines[1], lines[2] }, range
 
   describe 'append(text)', ->
     it 'append(text) appends <text> with the necessary newlines', ->

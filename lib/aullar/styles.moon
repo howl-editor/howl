@@ -38,8 +38,8 @@ pango_attr_p = ffi.typeof('PangoAttribute *')
 attr_ptr = (a) -> cast pango_attr_p, a
 
 get_font_size = (v) ->
-  return v unless type(v) == 'string'
-  delta = font_size_deltas[v]
+  return v if type(v) == 'number'
+  delta = font_size_deltas[tostring(v)]
   error "Invalid font size specification '#{v}'", 2 unless delta
   config.view_font_size + delta
 
@@ -98,21 +98,25 @@ define = (name, definition) ->
     for k in pairs attributes
       attributes[k] = nil if k\match "^#{name}:"
 
-define_default = (name, attributes) ->
-  define name, attributes unless styles[name]
+define_default = (name, def) ->
+  define name, def unless styles[name]
 
 def_for = (name) ->
   base = styles.default
   def = styles[name]
 
   while type(def) == 'string'
+    name = def
     def = styles[def]
 
   if not def
     -- look for sub styling (base:style)
     sub_base, ext = name\match '^([^:]+):(%S+)$'
+
     if sub_base
       base, def = styles[sub_base] or base, styles[ext]
+      while type(def) == 'string'
+        def = styles[def]
 
   return base unless def
 

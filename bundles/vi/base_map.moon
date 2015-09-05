@@ -1,3 +1,6 @@
+-- Copyright 2012-2015 Nils Nordman <nino at nordman.org>
+-- License: MIT (see LICENSE.md)
+
 state = bundle_load 'state'
 import apply from state
 import bindings, config from howl
@@ -27,7 +30,12 @@ end_of_word = (cursor) ->
   with cursor
     current_pos = .pos
     \word_right_end!
-    \word_right_end! if .pos == current_pos + 1
+    \word_right_end! if .pos == current_pos + 1 and not .at_end_of_line
+    \left!
+
+end_of_prev_word = (cursor) ->
+  with cursor
+    \word_left_end!
     \left!
 
 cursor_properties = {
@@ -59,7 +67,11 @@ map = {
       else
        apply editor, (editor) -> editor.cursor\right!
 
-    e: (editor) -> apply editor, (editor) -> end_of_word editor.cursor
+    e: (editor) ->
+      if state.go
+        apply editor, (editor) -> end_of_prev_word editor.cursor
+      else
+        apply editor, (editor) -> end_of_word editor.cursor
 
     w: (editor) -> apply editor, (editor, _state) ->
       if _state.change or _state.yank then end_of_word editor.cursor
@@ -100,7 +112,13 @@ map = {
 
     '^': (editor) -> apply editor, (editor) ->
       editor.cursor\home_indent!
-  }
+
+    '{': (editor) -> apply editor, (editor) ->
+      editor.cursor\para_up!
+
+    '}': (editor) -> apply editor, (editor) ->
+      editor.cursor\para_down!
+   }
 
   on_unhandled: (event, source, translations) ->
     char = event.character

@@ -204,21 +204,6 @@ class CommandLine extends PropertyObject
   _cursor_to_end: =>
     @command_widget.cursor\eof!
 
-  _adjust_height_rows: =>
-    width_cols = @command_widget.width_cols
-    return unless width_cols > 0
-
-    max_height = math.floor howl.app.window.allocated_height * 0.5
-
-    num_lines = #@command_widget.buffer.lines
-    height_rows = math.ceil @command_widget.buffer.lines[num_lines].text.ulen / @command_widget.width_cols
-    height_rows = math.max 1, height_rows
-    @command_widget.height_rows = height_rows
-
-    while @command_widget.height > max_height and height_rows > 1
-      height_rows -= 1
-      @command_widget.height_rows = height_rows
-
   record_history: =>
     return if @current.evade_history or @history_recorded
     @history_recorded = true
@@ -255,7 +240,7 @@ class CommandLine extends PropertyObject
         @box
       }
     }
-    border_box.style_context\add_class 'editor'
+    border_box.style_context\add_class 'content_box'
     @bin\add border_box
 
     @command_widget = TextWidget
@@ -275,10 +260,8 @@ class CommandLine extends PropertyObject
         @on_update!
       on_focus_lost: ->
         @command_widget\focus! if @showing
-      on_map: ->
-        @_adjust_height_rows!
 
-    @command_widget.height_rows = 1
+    @command_widget.visible_rows = 1
 
     @box\pack_end @command_widget\to_gobject!, false, 0, 0
 
@@ -400,8 +383,6 @@ class CommandLine extends PropertyObject
       if not ok
         error err
 
-    @_adjust_height_rows!
-
   enforce_left_pos: =>
     -- don't allow cursor to go left into prompt
     return if not @current
@@ -448,7 +429,9 @@ class CommandLine extends PropertyObject
 
       ["editor-delete-back"]: =>
         -- don't backspace into prompt
-        return true if @command_widget.cursor.pos == @_prompt_end
+        return true if @command_widget.cursor.pos <= @_prompt_end
+        range_start = @command_widget.selection\range!
+        return if range_start and range_start < @_prompt_end
         @command_widget\delete_back!
         @on_update!
 

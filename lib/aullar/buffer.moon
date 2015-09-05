@@ -89,6 +89,7 @@ Buffer = {
         @_lines = {}
         @offsets = Offsets!
         @_length = @offsets\char_offset(@text_buffer, @text_buffer.size)
+        @multibyte = @text_buffer.size != @_length
 
         @as_one_undo ->
           if old_text
@@ -108,16 +109,17 @@ Buffer = {
     return if size == 0
 
     invalidate_offset = min(offset, @text_buffer.gap_start + 1)
-    if size > @text_buffer.gap_size
+    if size > @text_buffer.gap_size -- buffer will be re-allocated
       invalidate_offset = 1
 
     len = C.g_utf8_strlen text, size
-    @text_buffer\insert offset - 1, text
+    @text_buffer\insert offset - 1, text, size
     @_length += len
     @_invalidate_lines_from_offset invalidate_offset
-    @offsets\adjust_for_insert invalidate_offset - 1, size, len
+    @offsets\adjust_for_insert offset - 1, size, len
     @markers\expand offset, size
     @styling\insert offset, size, no_notify: true
+    @multibyte = @text_buffer.size != @_length
 
     @_on_modification 'inserted', offset, text, size, invalidate_offset
 
@@ -132,8 +134,10 @@ Buffer = {
     @_length -= len
     @_invalidate_lines_from_offset invalidate_offset
     @offsets\adjust_for_delete invalidate_offset - 1, count, len
+    @offsets\adjust_for_delete offset - 1, count, len
     @markers\shrink offset, count
     @styling\delete offset, count, no_notify: true
+    @multibyte = @text_buffer.size != @_length
 
     @_on_modification 'deleted', offset, text, count, invalidate_offset
 
@@ -323,15 +327,13 @@ Buffer = {
     return ffi_string @text_buffer.array, @text_buffer.size
 
   char_offset: (byte_offset) =>
-    if byte_offset < 1 or byte_offset > @text_buffer.size + 1
-      error "Invalid offset '#{byte_offset}'", 2
-
+    byte_offset = min(@text_buffer.size + 1, max(1, byte_offset))
+    return byte_offset unless @multibyte
     @offsets\char_offset(@text_buffer, byte_offset - 1) + 1
 
   byte_offset: (char_offset) =>
-    if char_offset < 1 or char_offset > @text_buffer.size + 1
-      error "Invalid offset '#{char_offset}'", 2
-
+    char_offset = min(tonumber(@_length) + 1, max(1, char_offset))
+    return char_offset unless @multibyte
     @offsets\byte_offset(@text_buffer, char_offset - 1) + 1
 
   undo: =>

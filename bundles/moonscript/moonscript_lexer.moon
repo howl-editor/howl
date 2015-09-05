@@ -26,7 +26,12 @@ howl.aux.lpeg_lexer ->
   identifier = capture 'identifier', ident
   member = capture 'member', (P'@' + 'self.') * ident^0
   special = capture 'special', word { 'true', 'false', 'nil' }
-  clazz = capture 'class', upper^1 * (alpha + digit + '_')^0
+  type_name = capture 'type', upper^1 * (alpha + digit + '_')^0
+  type_def = sequence {
+    capture('keyword', 'class'),
+    capture 'whitespace', blank^1,
+    capture 'type_def', upper^1 * (alpha + digit + '_')^0
+  }
 
   lua_keywords = capture 'error', word { 'function', 'goto', 'end' }
 
@@ -71,8 +76,8 @@ howl.aux.lpeg_lexer ->
   P {
     'all'
     all: any {
-      number, key, V'string', comment, operator, special, keyword, member,
-      clazz, lua_keywords, V'fdecl', cdef, identifier
+      number, key, V'string', comment, operator, special, type_def, keyword, member,
+      type_name, lua_keywords, V'fdecl', cdef, identifier
     }
     string: any {
       capture 'string', any { sq_string, long_string }

@@ -1,17 +1,10 @@
 import ActionBuffer, style, StyledText from howl.ui
-import Scintilla from howl
 append = table.insert
 
 describe 'ActionBuffer', ->
-  sci = Scintilla!
-  buf = ActionBuffer sci
-  sci.listener = buf.sci_listener
+  buf = ActionBuffer!
 
   before_each -> buf.text = ''
-
-  it 'initialization takes an optional sci parameter', ->
-    assert.not_error -> ActionBuffer!
-    assert.equal ActionBuffer(sci).sci, sci
 
   it 'behaves like a Buffer', ->
     buf.text = 'hello'
@@ -24,37 +17,42 @@ describe 'ActionBuffer', ->
     context 'with no specified style', ->
 
       it 'inserts the object with no specific style and returns the next position', ->
-        assert.equals 6, buf\insert 'hello', 1
-        assert.equal style.at_pos(buf, 1), 'unstyled'
+        assert.equal 6, buf\insert 'hello', 1
+        assert.equal 'hello', buf.text
+        assert.is_nil style.at_pos(buf, 1)
+
+      it 'returns <pos> and leaves the buffer untouched for an empty string', ->
+        assert.equal 1, buf\insert('', 1)
+        assert.equal '', buf.text
 
     context 'with style specified', ->
 
       it 'styles the object with the specified style', ->
         buf.text = '˫˫'
-        buf\insert 'hƏllo', 2, 'keyword'
-        assert.equal 'unstyled', (style.at_pos(buf, 1))
+        assert.equal 7, buf\insert('hƏllo', 2, 'keyword')
+        assert.is_nil (style.at_pos(buf, 1))
         assert.equal 'keyword', (style.at_pos(buf, 2))
         assert.equal 'keyword', (style.at_pos(buf, 6))
-        assert.equal 'unstyled', (style.at_pos(buf, 7))
+        assert.is_nil (style.at_pos(buf, 7))
 
-      it 'styles the text with the default style if the style is unknown', ->
-        buf\insert 'hello', 1, 'what?'
-        assert.equal style.at_pos(buf, 1), 'default'
+      it 'returns <pos> and leaves the buffer untouched for an empty string', ->
+        assert.equal 1, buf\insert('', 1, 'keyword')
+        assert.equal '', buf.text
 
     context 'when object is a styled object (.styles is present)', ->
       it 'inserts the corresponding .text and returns the next position', ->
-        buf\insert 'foo', 1
+        assert.equal 4, buf\insert('foo', 1)
         chunk = buf\chunk(1, 3)
         assert.equal 7, buf\insert chunk, 4
         assert.equal 'foofoo', buf.text
 
       it 'styles the inserted .text using .styles for the styling', ->
-        buf\insert {text: 'styled', styles: { 2, 'keyword', 3, 3, 'number', 6}}, 1
-        assert.equal 'default', (style.at_pos(buf, 1))
+        buf\insert {text: 'styled', styles: { 2, 'keyword', 3, 3, 'number', 6 }}, 1
+        assert.is_nil (style.at_pos(buf, 1))
         assert.equal 'keyword', (style.at_pos(buf, 2))
         assert.equal 'number', (style.at_pos(buf, 3))
         assert.equal 'number', (style.at_pos(buf, 5))
-        assert.equal 'default', (style.at_pos(buf, 6))
+        assert.is_nil (style.at_pos(buf, 6))
         assert.equal 'styled', buf.text
 
       it 'still returns the next position', ->
@@ -71,20 +69,16 @@ describe 'ActionBuffer', ->
       it 'appends the text with no specific style and returns the next position', ->
         buf.text = 'hello'
         assert.equal #'hello world' + 1, buf\append ' world'
-        assert.equal style.at_pos(buf, 7), 'unstyled'
+        assert.is_nil (style.at_pos(buf, 7))
 
     context 'with style specified', ->
 
       it 'styles the text with the specified style', ->
         buf.text = '˫'
         buf\append 'hƏllo', 'keyword'
-        assert.equal style.at_pos(buf, 1), 'unstyled'
-        assert.equal style.at_pos(buf, 2), 'keyword'
-        assert.equal style.at_pos(buf, 6), 'keyword'
-
-      it 'styles the text with the default style if the style is unknown', ->
-        buf\append 'again', 'what?'
-        assert.equal 'default', (style.at_pos(buf, buf.length - 1))
+        assert.is_nil (style.at_pos(buf, 1))
+        assert.equal 'keyword', (style.at_pos(buf, 2))
+        assert.equal 'keyword', (style.at_pos(buf, 6))
 
     context 'when object is a styled object', ->
       it 'appends the corresponding text and returns the next position', ->
@@ -100,7 +94,7 @@ describe 'ActionBuffer', ->
         assert.equal 'foobar', buf.text
         assert.equal 'number', (style.at_pos(buf, 4))
         assert.equal 'keyword', (style.at_pos(buf, 5))
-        assert.equal 'default', (style.at_pos(buf, 6))
+        assert.is_nil (style.at_pos(buf, 6))
 
       it 'still returns the next position', ->
         assert.equal 3, buf\append StyledText('åö', {})
@@ -113,7 +107,7 @@ describe 'ActionBuffer', ->
     it 'applies <style> for the inclusive text range given', ->
       buf.text = 'hƏlɩo'
       buf\style 2, 4, 'keyword'
-      assert.equal style.at_pos(buf, 1), 'unstyled'
-      assert.equal style.at_pos(buf, 2), 'keyword'
-      assert.equal style.at_pos(buf, 4), 'keyword'
-      assert.equal style.at_pos(buf, 5), 'unstyled'
+      assert.is_nil (style.at_pos(buf, 1))
+      assert.equal 'keyword', (style.at_pos(buf, 2))
+      assert.equal 'keyword', (style.at_pos(buf, 4))
+      assert.is_nil (style.at_pos(buf, 5))

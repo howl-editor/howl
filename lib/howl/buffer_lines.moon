@@ -1,8 +1,17 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+ffi = require 'ffi'
+ffi_string = ffi.string
 import string, type from _G
 append = table.insert
+{:min, :max} = math
+
+get_indentation = (text, config) ->
+  leading = text\match '^%s*'
+  spaces = leading\count ' '
+  tabs = leading\count '\t'
+  spaces + tabs * config.tab_width, #leading
 
 line_mt =
   __index: (k) =>
@@ -26,38 +35,78 @@ line_mt =
   __len: => @text.ulen
   __eq: (op1, op2) -> tostring(op1) == tostring(op2)
 
-Line = (nr, buffer, sci) ->
-  text = ->
-    contents = sci\get_line nr - 1
-    (contents\gsub '[\n\r]*$', '')
+Line = (nr, buffer) ->
+  a_buf = buffer._buffer
+
+  get_line = -> a_buf\get_line nr
+  text = -> get_line!.text
 
   setmetatable {
     :nr
     :buffer
     indent: => @indentation += buffer.config.indent
+
     unindent: =>
-      new_indent = @indentation - buffer.config.indent
-      if new_indent >= 0
-        @indentation = new_indent
+      buffer_indent = buffer.config.indent
+      new_indent = max 0, @indentation - buffer_indent
+      if new_indent != @indentation
+        incorrect = new_indent % buffer_indent
+        @indentation = new_indent + incorrect
+
+    replace: (i, j, replacement) =>
+      b_i, b_j = @byte_offset i, j + 1
+      a_buf\replace @byte_start_pos + b_i - 1, (b_j - b_i), replacement
+
+    real_column: (col) =>
+      return 1 if col == 1
+      line_text = text!
+      error "Illegal column #{col}", 2 if col < 1
+      tab_width = buffer.config.tab_width
+      c_col = 1
+      v_col = 1
+      for i = 1, line_text.ulen
+        v_col += (line_text[i] == '\t') and tab_width or 1
+        c_col += 1
+        break if v_col >= col
+
+      c_col
+
+    virtual_column: (col) =>
+      return 1 if col == 1
+      line_text = text!
+      error "Illegal column #{col}" if col < 1 or col > line_text.ulen + 1
+      nr_tabs = line_text\sub(1, col)\count('\t')
+      return col if nr_tabs == 0
+      col - nr_tabs + (nr_tabs * buffer.config.tab_width)
 
     _getters:
       text: => text!
-      byte_start_pos: => sci\position_from_line(nr - 1) + 1
-      byte_end_pos: => math.max(sci\position_from_line(nr), 1)
+      byte_start_pos: => get_line!.start_offset
+      byte_end_pos: => get_line!.end_offset
       start_pos: => buffer\char_offset @byte_start_pos
       end_pos: => buffer\char_offset @byte_end_pos
-      indentation: =>  sci\get_line_indentation nr - 1
       previous: => if nr > 1 then Line nr - 1, buffer, sci
-      next: => if nr < sci\get_line_count! then Line nr + 1, buffer, sci
+      next: => if nr < a_buf.nr_lines then Line nr + 1, buffer, sci
+      size: => get_line!.size
+
+      indentation: =>
+        (get_indentation text!, @buffer.config)
+
       chunk: =>
         start_pos = @start_pos
         end_pos = @end_pos
-        end_pos -= #buffer.eol unless nr == sci\get_line_count!
+        end_pos -= #buffer.eol unless nr == a_buf.nr_lines
         buffer\chunk start_pos, end_pos
 
       previous_non_blank: =>
         prev_line = @previous
         while prev_line and prev_line.is_blank
+          prev_line = prev_line.previous
+        prev_line
+
+      previous_blank: =>
+        prev_line = @previous
+        while prev_line and not prev_line.is_blank
           prev_line = prev_line.previous
         prev_line
 
@@ -67,27 +116,47 @@ Line = (nr, buffer, sci) ->
           next_line = next_line.next
         next_line
 
+      next_blank: =>
+        next_line = @next
+        while next_line and not next_line.is_blank
+          next_line = next_line.next
+        next_line
+
     _setters:
       text: (value) =>
         error 'line text can not be set to nil', 2 if value == nil
-        line = nr - 1
-        start = sci\position_from_line line
-        end_pos = sci\get_line_end_position line
-        sci\delete_range start, end_pos - start
-        sci\insert_text start, value
-      indentation: (indent) =>  sci\set_line_indentation nr - 1, indent
+        line = get_line!
+        a_buf\replace line.start_offset, line.size, value
+
+      indentation: (indent) =>
+        config = @buffer.config
+        cur_indent, real_indent = get_indentation text!, config
+        return if indent == cur_indent
+
+        content = text!\match '^%s*(.*)$'
+
+        indent_s = if config.use_tabs
+          nr_tabs = math.floor(indent / config.tab_width)
+          string.rep('\t', nr_tabs) .. string.rep(' ', indent % config.tab_width)
+        else
+          string.rep ' ', indent
+
+        @replace 1, real_indent, indent_s
 
   }, line_mt
 
-BufferLines = (buffer, sci) ->
+BufferLines = (buffer) ->
+  a_buf = buffer._buffer
+
   setmetatable {
       :buffer
-      :sci
 
       delete: (start_line, end_line) =>
-        start_pos = sci\position_from_line(start_line - 1)
-        end_pos = sci\position_from_line(end_line)
-        @sci\delete_range start_pos, end_pos - start_pos
+        end_line = min end_line, a_buf.nr_lines
+        return if end_line < start_line
+        start_pos = a_buf\get_line(start_line).start_offset
+        end_pos = a_buf\get_line(end_line).end_offset
+        a_buf\delete start_pos, (end_pos - start_pos) + 1
 
       range: (start_line, end_line) =>
         s = math.min start_line, end_line
@@ -104,14 +173,13 @@ BufferLines = (buffer, sci) ->
         return { start_line } if s == e
         end_line = @at_pos e
 
-        start_line = start_line.next if start_line.end_pos == s
         end_line = end_line.previous if end_line.start_pos == e
         @range start_line.nr, end_line.nr
 
       at_pos: (pos) =>
         b_pos = buffer\byte_offset pos
-        nr = @sci\line_from_position(b_pos - 1) + 1
-        self[nr]
+        line = a_buf\get_line_at_offset b_pos
+        self[line.nr]
 
       insert: (line_nr, text) =>
         cur_line = self[line_nr]
@@ -133,7 +201,7 @@ BufferLines = (buffer, sci) ->
         @buffer\append line_text
         self[#self - 1]
     },
-      __len: => @sci\get_line_count!
+      __len: => a_buf.nr_lines
 
       __index: (key) =>
         if type(key) == 'number'
@@ -147,9 +215,8 @@ BufferLines = (buffer, sci) ->
         if value
           self[key].text = value
         else
-          start_pos = @sci\position_from_line(key - 1)
-          end_pos = @sci\position_from_line(key)
-          @sci\delete_range start_pos, (end_pos - start_pos)
+          line = a_buf\get_line key
+          a_buf\delete line.start_offset, line.full_size
 
       __ipairs: =>
         iterator = (lines, index) ->

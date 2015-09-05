@@ -5,16 +5,17 @@ import config from howl
 import highlight from howl.ui
 
 highlight.define_default 'search', {
-  style: highlight.ROUNDBOX,
-  color: '#ffffff'
-  outline_alpha: 100
+  type: highlight.RECTANGLE,
+  foreground: '#ffffff'
+  foreground_alpha: 100
 }
 
 highlight.define_default 'search_secondary', {
-  style: highlight.ROUNDBOX,
-  color: '#ffffff'
-  alpha: 0
-  outline_alpha: 150
+  type: highlight.RECTANGLE,
+  foreground: '#ffffff'
+  foreground_alpha: 150
+  background: '#ffffff'
+  background_alpha: 0
 }
 
 with config

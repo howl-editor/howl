@@ -5,11 +5,13 @@ ffi = require 'ffi'
 Gtk = require 'ljglibs.gtk'
 Gdk = require 'ljglibs.gdk'
 require 'ljglibs.gtk.widget'
+flair = require 'aullar.flair'
 
 import File from howl.io
-import config, signal from howl
+import config, signal, app from howl
 import style, colors, highlight from howl.ui
 import PropertyTable, Sandbox from howl.aux
+aullar_config = require 'aullar.config'
 
 css_provider = Gtk.CssProvider!
 screen = Gdk.Screen\get_default!
@@ -26,11 +28,20 @@ GtkWindow.main {
   background-color: ${editor_border_color};
 }
 
-.sci_box {
+.content_box {
+  border-width: 1px 3px 3px 1px;
+  background-color: ${editor_border_color};
+}
+
+.divider {
   background-color: ${editor_divider_color};
 }
 
-.sci_container {
+.aullar_box {
+  background-color: ${editor_background_color};
+}
+
+.aullar_container {
   background-color: ${editor_background_color};
 }
 
@@ -66,35 +77,10 @@ theme_files = {}
 current_theme = nil
 current_theme_file = nil
 theme_active = false
-scis = setmetatable {}, __mode: 'k'
 background_color_widgets = setmetatable {}, __mode: 'k'
 
 interpolate = (content, values) ->
   content\gsub '%${([%a_]+)}', values
-
-apply_sci_visuals = (theme, sci) ->
-  v = theme.editor
-  -- caret
-  c_color = '#000000'
-  c_width = 1
-
-  if v.caret
-    c_color = v.caret.color if v.caret.color
-    c_width = v.caret.width if v.caret.width
-
-  current_line = v.current_line
-  selection = v.selection
-
-  with sci
-    \set_caret_fore c_color
-    \set_caret_width c_width
-
-    if current_line and current_line.background
-      \set_caret_line_back current_line.background
-
-    if selection
-      \set_sel_back true, selection.background if selection.background
-      \set_sel_fore true, selection.color if selection.color
 
 parse_background = (value, theme_dir) ->
   if value\match '^%s*#%x+%s*$'
@@ -151,7 +137,7 @@ theme_css = (theme, file) ->
   tv_title = hdr.title
   indicators = editor.indicators
   values =
-    editor_background_color: theme.styles.default.background
+    editor_background_color: editor.background
     window_background: parse_background(window.background, dir)
     status_font: parse_font status.font
     status_color: status.color
@@ -171,7 +157,7 @@ theme_css = (theme, file) ->
 load_theme = (file) ->
   chunk = loadfile(file.path)
   box = Sandbox colors
-  box\put :highlight
+  box\put :highlight, :flair
   box chunk
 
 override_widget_background = (widget, background_style) ->
@@ -193,8 +179,14 @@ apply_theme = ->
   error 'Error applying theme "' .. current_theme.name .. '"' if not status
   style.set_for_theme current_theme
   highlight.set_for_theme current_theme
-  apply_sci_visuals current_theme, sci for sci in pairs scis
+  flair.define name, def for name, def in pairs(current_theme.flairs or {})
+
+  if current_theme.editor.gutter
+    aullar_config.gutter_styling = current_theme.editor.gutter
+
   override_widget_background widget, style for widget, style in pairs background_color_widgets
+  for editor in *app.editors
+    editor\refresh_display!
 
 set_theme = (name) ->
   if name == nil
@@ -240,8 +232,13 @@ with config
 config.watch 'theme', (_, name) ->
   set_theme name
 
-config.watch 'font', (name, value) -> apply_theme! if current_theme
-config.watch 'font_size', (name, value) -> apply_theme! if current_theme
+config.watch 'font', (name, value) ->
+  aullar_config.view_font_name = value
+  apply_theme! if current_theme
+
+config.watch 'font_size', (name, value) ->
+  aullar_config.view_font_size = value
+  apply_theme! if current_theme
 
 signal.register 'theme-changed',
   description: 'Signaled after a theme has been applied'
@@ -270,10 +267,6 @@ return PropertyTable {
     error 'No theme set to apply', 2 unless current_theme
     apply_theme!
     theme_active = true
-
-  register_sci: (sci) ->
-    scis[sci] = true
-    apply_sci_visuals current_theme, sci if theme_active
 
   register_background_widget: (widget, style = 'default') ->
     background_color_widgets[widget] = style

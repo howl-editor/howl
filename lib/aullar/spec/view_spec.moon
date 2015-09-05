@@ -8,12 +8,14 @@ Buffer = require 'aullar.buffer'
 Gtk = require 'ljglibs.gtk'
 
 describe 'View', ->
-  local view, buffer, cursor
+  local view, buffer, cursor, selection
 
   before_each ->
     buffer = Buffer ''
     view = View buffer
+    view.config.view_line_padding = 0
     cursor = view.cursor
+    selection = view.selection
     window = Gtk.OffscreenWindow default_width: 800, default_height: 640
     window\add view\to_gobject!
     window\show_all!
@@ -23,7 +25,7 @@ describe 'View', ->
     local nr_lines_in_screen
 
     before_each ->
-      line_height = view\text_dimensions('M').height
+      line_height = view.display_lines[1].height
       nr_lines_in_screen = math.floor view.height / line_height
       buffer.text = string.rep '123456789\n', nr_lines_in_screen * 3
       view.first_visible_line = 1
@@ -45,7 +47,7 @@ describe 'View', ->
 
     describe '.last_visible_line', ->
       it 'is the last visible line', ->
-        assert.equals math.floor(nr_lines_in_screen), view.last_visible_line
+        assert.equals nr_lines_in_screen, view.last_visible_line
 
   context '(coordinate translation)', ->
     before_each -> view.margin = 0
@@ -54,8 +56,9 @@ describe 'View', ->
       it 'returns the matching buffer position', ->
         dim = view\text_dimensions 'M'
         buffer.text = '1234\n6789'
+        line_height = view.display_lines[1].height
         assert.equals 2, view\position_from_coordinates(view.edit_area_x + dim.width + 1, 0)
-        assert.equals 8, view\position_from_coordinates(view.edit_area_x + (dim.width * 2) + 1, dim.height + 1)
+        assert.equals 8, view\position_from_coordinates(view.edit_area_x + (dim.width * 2) + 1, line_height + 1)
 
       it 'favours the preceeding character slightly when in doubt', ->
         dim = view\text_dimensions 'M'
@@ -82,7 +85,7 @@ describe 'View', ->
           x: view.edit_area_x + (dim.width * 2)
           x2: view.edit_area_x + (dim.width * 3)
           y: dim.height
-          y2: dim.height * 2
+          y2: dim.height + dim.height
         }, view\coordinates_from_position(8)
 
   describe '(when text is inserted)', ->
@@ -131,6 +134,16 @@ describe 'View', ->
       buffer\delete 4, 1
       cursor.pos = 1
       buffer\undo!
+      assert.equals 2, cursor.pos
+
+    it 'restores the selection', ->
+      buffer.text = '12345'
+      cursor.pos = 2
+      selection\set 5, 2
+      view\delete_back!
+      buffer\undo!
+      assert.equals 5, selection.anchor
+      assert.equals 2, selection.end_pos
       assert.equals 2, cursor.pos
 
   describe 'when a buffer operation is redone', ->

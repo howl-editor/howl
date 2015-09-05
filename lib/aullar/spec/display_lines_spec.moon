@@ -66,8 +66,8 @@ describe 'DisplayLines', ->
 
       assert.equals display_lines[2].block, display_lines[3].block
       block = display_lines[2].block
-      assert.equals 2, block.start_line.nr
-      assert.equals 3, block.end_line.nr
+      assert.equals 2, block.start_line
+      assert.equals 3, block.end_line
 
     it 'a single line with a whole-line background does not belong to a block', ->
       --                     8       15
@@ -75,9 +75,31 @@ describe 'DisplayLines', ->
       buffer.styling\set 8, 14, 'b2' -- styled over eols
       assert.is_nil display_lines[2].block
 
-    it 'the width of a block is the width of the longest line + 5', ->
+    it 'the width of a block is the width of the longest line', ->
       buffer.text = 'block 1\nblock 2 longer'
       buffer.styling\set 1, #buffer.text, 'b1'
       block = display_lines[1].block
       assert.not_equals display_lines[1].width, block.width
-      assert.equals display_lines[2].width + 5, block.width
+      assert.equals display_lines[2].width, block.width
+
+    context 'block merging', ->
+      before_each ->
+        --                     8        16       24      31
+        buffer.text = 'before\nblock 2\nblock 3\nblock4\nafter'
+        buffer.styling\set 8, 30, 'b1'
+        for nr = 1, 5
+          display_lines[nr].block -- force block evaluation
+
+      it 'finds and merges previous blocks, including intermediate lines', ->
+        block = display_lines[2].block
+        display_lines[3] = nil
+        display_lines[4] = nil
+        assert.equals block, display_lines[4].block
+        assert.equals block, display_lines[3].block
+
+      it 'finds and merges subsequent blocks, including intermediate lines', ->
+        block = display_lines[4].block
+        display_lines[2] = nil
+        display_lines[3] = nil
+        assert.equals block, display_lines[2].block
+        assert.equals block, display_lines[3].block

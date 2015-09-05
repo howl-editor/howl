@@ -38,7 +38,7 @@ Error: 'busted' not found
 To run $0 you need to have the busted testing framework installed via luarocks.
 With luarocks installed, execute:
 
-$ luarocks install busted
+$ luarocks install busted 1.11.1-2
 
 luarocks might be available from your package manager, or you can install
 it using the instructions from http://luarocks.org

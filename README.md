@@ -1,6 +1,6 @@
 # The Howl editor
 
-[![Build Status](https://travis-ci.org/nilnor/howl.png?branch=master)](https://travis-ci.org/nilnor/howl)
+[![Build Status](https://travis-ci.org/howl-editor/howl.png?branch=master)](https://travis-ci.org/howl-editor/howl)
 
 ## What is it?
 
@@ -12,7 +12,7 @@ interface, and can be extended in either [Lua](http://www.lua.org) or
 should work on at least the \*BSD:s as well.
 
 It is released as free software under the [MIT](http://opensource.org/licenses/MIT)
-license, with the source being available on [Github](https://github.com/nilnor/howl).
+license, with the source being available on [Github](https://github.com/howl-editor/howl).
 
 Visit [howl.io](http://howl.io) for installation instructions and documentation,
 and follow on [Twitter](https://twitter.com/howleditor) for updates.
@@ -28,8 +28,8 @@ how to install Howl from source.
 - `wget`: For auto-downloading build dependencies.
 - `GTK+`: Version >= 3, with development files (e.g. `libgtk-3-dev` on Debian
 based system).
-- `C/C++ compiler`: Howl has a very small C core itself, but it embedds
-dependencies built both in C and C++.
+- `C compiler`: Howl has a very small C core itself, but it embedds
+dependencies written in C.
 
 ### Build && install
 
@@ -51,7 +51,7 @@ request via GitHub, or as a pull request from some other Git server. Should that
 not be an option I'll gladly accept patches through other means as well.
 
 If you have any bug reports or feature requests, please submit these to the
-[Github issue tracker](https://github.com/nilnor/howl/issues). As with
+[Github issue tracker](https://github.com/howl-editor/howl/issues). As with
 patches, I'll be happy to recieve these through other means as well.
 
 You can also contact me directly at \<nino at nordman.org\> as well.
