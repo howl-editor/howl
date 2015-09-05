@@ -28,8 +28,8 @@ how to install Howl from source.
 - `wget`: For auto-downloading build dependencies.
 - `GTK+`: Version >= 3, with development files (e.g. `libgtk-3-dev` on Debian
 based system).
-- `C/C++ compiler`: Howl has a very small C core itself, but it embedds
-dependencies built both in C and C++.
+- `C compiler`: Howl has a very small C core itself, but it embedds
+dependencies written in C.
 
 ### Build && install
 
