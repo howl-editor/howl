@@ -125,7 +125,7 @@ class Buffer extends PropertyObject
     set: (timestamp) => @_last_shown = timestamp
 
   @property multibyte: get: =>
-    @_buffer.size != @_buffer.length
+    @_buffer.multibyte
 
   @property modified_on_disk: get: =>
     return false if not @file or not @file.exists

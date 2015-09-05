@@ -29,6 +29,22 @@ describe 'Buffer', ->
       b\undo!
       assert.equals 'hello', b.text
 
+  describe '.multibyte', ->
+    it 'returns true if the buffer contains multibyte characters', ->
+      assert.is_false Buffer('vanilla').multibyte
+      assert.is_true Buffer('HƏllo').multibyte
+
+    it 'is updated whenever text is inserted', ->
+      b = Buffer 'vanilla'
+      b\insert 1, 'Bačon'
+      assert.is_true b.multibyte
+
+    it 'is updated whenever text is deleted', ->
+      b = Buffer 'Bačon'
+      start_p, end_p = b\byte_offset(3), b\byte_offset(4)
+      b\delete start_p, end_p - start_p
+      assert.is_false b.multibyte
+
   describe 'lines([start_line, end_line])', ->
     all_lines = (b) -> [ffi.string(l.ptr, l.size) for l in b\lines 1]
 

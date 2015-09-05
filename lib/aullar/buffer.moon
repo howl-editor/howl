@@ -89,6 +89,7 @@ Buffer = {
         @_lines = {}
         @offsets = Offsets!
         @_length = @offsets\char_offset(@text_buffer, @text_buffer.size)
+        @multibyte = @text_buffer.size != @_length
 
         @as_one_undo ->
           if old_text
@@ -118,6 +119,7 @@ Buffer = {
     @offsets\adjust_for_insert offset - 1, size, len
     @markers\expand offset, size
     @styling\insert offset, size, no_notify: true
+    @multibyte = @text_buffer.size != @_length
 
     @_on_modification 'inserted', offset, text, size, invalidate_offset
 
@@ -135,6 +137,7 @@ Buffer = {
     @offsets\adjust_for_delete offset - 1, count, len
     @markers\shrink offset, count
     @styling\delete offset, count, no_notify: true
+    @multibyte = @text_buffer.size != @_length
 
     @_on_modification 'deleted', offset, text, count, invalidate_offset
 
@@ -325,10 +328,12 @@ Buffer = {
 
   char_offset: (byte_offset) =>
     byte_offset = min(@text_buffer.size + 1, max(1, byte_offset))
+    return byte_offset unless @multibyte
     @offsets\char_offset(@text_buffer, byte_offset - 1) + 1
 
   byte_offset: (char_offset) =>
     char_offset = min(tonumber(@_length) + 1, max(1, char_offset))
+    return char_offset unless @multibyte
     @offsets\byte_offset(@text_buffer, char_offset - 1) + 1
 
   undo: =>
