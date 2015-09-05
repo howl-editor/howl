@@ -20,7 +20,7 @@ describe 'styles', ->
       styles.define 'foo', strike_through: true
       styles.define 'bar', 'foo'
       def = styles.def_for 'bar'
-      assert.same { name: 'bar', strike_through: true }, def
+      assert.same { name: 'foo', strike_through: true }, def
 
   describe 'define_default(name, definition)', ->
     it 'defines the style only if it is not already defined', ->
@@ -50,7 +50,7 @@ describe 'styles', ->
       assert.is_true def.font.bold
 
   context 'sub styling', ->
-    it 'supports styles being composed of a base and an override', ->
+    before_each ->
       styles.define 'base', {
         background: '#112233'
         color: '#445566'
@@ -59,6 +59,7 @@ describe 'styles', ->
         }
       }
 
+    it 'supports styles being composed of a base and an override', ->
       styles.define 'override', {
         color: '#999999'
         font: {
@@ -72,3 +73,12 @@ describe 'styles', ->
       assert.equal '#999999', def.color
       assert.is_true def.font.italic
       assert.is_true def.font.bold
+
+    it 'allows aliases for the override', ->
+      styles.define 'real_style', color: '#999999'
+      styles.define 'test_alias', 'real_style'
+
+      def = styles.def_for 'base:test_alias'
+      assert.is_not_nil def
+      assert.equal '#112233', def.background
+      assert.equal '#999999', def.color

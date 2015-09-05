@@ -6,6 +6,7 @@ jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
+callbacks = require 'ljglibs.callbacks'
 
 C = ffi.C
 
@@ -24,6 +25,17 @@ core.define 'GtkClipboard < GObject', {
   store: => C.gtk_clipboard_store @
   set_text: (text) => C.gtk_clipboard_set_text @, text, #text
   wait_for_text: => glib.g_string C.gtk_clipboard_wait_for_text @
+  request_text: (callback) =>
+    self = @
+    local cb_handle
+
+    handler = (clipboard, text) ->
+      callbacks.unregister cb_handle
+      text = text != nil and ffi.string(text) or nil
+      callback self, text
+
+    cb_handle = callbacks.register handler, 'clipboard-request-text'
+    C.gtk_clipboard_request_text @, ffi.cast('GtkClipboardTextReceivedFunc', callbacks.void3), callbacks.cast_arg(cb_handle.id)
 
   set_can_store: (targets) =>
     nr_targets = targets and #targets or 0

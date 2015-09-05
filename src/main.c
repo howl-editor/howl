@@ -4,8 +4,6 @@
 #include "main.h"
 #include <gio/gio.h>
 #include <string.h>
-#include <Scintilla.h>
-#include <ScintillaWidget.h>
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -98,6 +96,5 @@ int main(int argc, char *argv[])
   lua_run(argc, argv, app_root, L);
   lua_close(L);
   g_free(app_root);
-  scintilla_release_resources();
   return 0;
 }

@@ -1,14 +1,13 @@
 -- Copyright 2012-2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import Buffer, Scintilla, styler from howl
+import Buffer from howl
 import style from howl.ui
 append = table.insert
 
 class ActionBuffer extends Buffer
-  new: (sci = nil) =>
-    super {}, sci
-    @sci\set_lexer Scintilla.SCLEX_NULL
+  new:  =>
+    super {}
 
   insert: (object, pos, style_name) =>
     local pos_after
@@ -36,15 +35,14 @@ class ActionBuffer extends Buffer
     pos_after
 
   style: (start_pos, end_pos, style_name) =>
-    style_num = style.number_for style_name, self
+    return if end_pos < start_pos
     start_pos, end_pos = @byte_offset(start_pos), @byte_offset(end_pos + 1)
-    @sci\start_styling start_pos - 1, 0xff
-    @sci\set_styling end_pos - start_pos, style_num
+    @_buffer.styling\set start_pos, end_pos - 1, style_name
 
   _insert_styled_object: (object, pos) =>
-    super\insert object.text, pos
+    pos_after = super\insert object.text, pos
     b_start = @byte_offset pos
-    styler.apply self, b_start, b_start + #object.text, object.styles
-    pos + object.text.ulen
+    @_buffer.styling\apply b_start, object.styles
+    pos_after
 
 return ActionBuffer

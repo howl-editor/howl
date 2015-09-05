@@ -48,6 +48,18 @@ describe 'BufferContext', ->
     assert.equal 'HƏllo', context_at(2).word_suffix
     assert.equal 'llo', context_at(4).word_suffix
 
+  describe '.token', ->
+    it 'is the grouping of similar characters', ->
+      b.text = '@!?45xx __'
+      assert.equal '@!?', context_at(1).token.text
+      assert.equal '@!?', context_at(3).token.text
+      assert.equal '45xx', context_at(4).token.text
+
+    it 'is empty when looking at a blank', ->
+      b.text = ' 2 '
+      assert.is_true context_at(1).token.empty
+      assert.is_true context_at(3).token.empty
+
   it ".prefix holds the line's text up until pos", ->
     assert.equal '', context_at(1).prefix
     assert.equal '"HƏllo", said Mr.Bačon', context_at(#b + 1).prefix
@@ -69,14 +81,14 @@ describe 'BufferContext', ->
   it '.line holds the current line object', ->
     assert.equal b.lines[1], context_at(1).line
 
-  it '.style holds the style at point', ->
+  it '.style holds the style at point, if any', ->
     buf = ActionBuffer!
     buf\append '[', 'operator'
     buf\append '"foo"', 'string'
     buf\append ' normal'
     assert.equal 'operator', BufferContext(buf, 1).style
     assert.equal 'string', BufferContext(buf, 2).style
-    assert.equal 'unstyled', BufferContext(buf, 7).style
+    assert.is_nil BufferContext(buf, 7).style
 
   it 'contexts are equal for the same buffer and pos', ->
     assert.equal context_at(2), context_at(2)

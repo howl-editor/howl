@@ -54,13 +54,21 @@ map = {
   __on_selection_changed: (editor, selection) ->
     if selection.empty and editor.cursor.pos != selection_start
       cancel editor
+
+  __after_apply: (editor) ->
+    -- adjust the selection if needed to cover the selection start pos
+    sel = editor.selection
+    correct_anchor = sel.cursor < selection_start and selection_start + 1 or selection_start
+    sel.anchor = correct_anchor if sel.anchor != correct_anchor
 }
 
 setmetatable map, {
   __index: base_map
   __call: (_, editor) ->
+    selection_start = editor.cursor.pos
+    editor.selection.persistent = true
     with editor.selection
+      \set selection_start, selection_start
       .persistent = true
-      selection_start = .anchor
 }
 return map

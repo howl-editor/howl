@@ -10,7 +10,7 @@ Layout = Pango.Layout
 pango_cairo = Pango.cairo
 flair = require 'aullar.flair'
 
-{:max, :min} = math
+{:max, :min, :floor} = math
 {:copy} = moon
 
 flair.define_default 'indentation_guide', {
@@ -26,6 +26,8 @@ flair.define_default 'edge_line', {
   foreground_alpha: 0.2,
   line_width: 1
 }
+
+styles.define_default 'blob', 'embedded:preproc'
 
 parse_background_ranges = (styling) ->
   ranges = {}
@@ -56,48 +58,75 @@ parse_background_ranges = (styling) ->
   ranges[#ranges + 1] = range if range
   ranges
 
-scan_block = (display_lines, d_line) ->
-  block = width: d_line.width
-  start_line = d_line
-  cur_line = display_lines[d_line.nr - 1]
+BlockMt = {
+  __tostring: =>
+    "Block##{@id}<start_line: #{@start_line}, end_line: #{@end_line}, width: #{@width}"
+}
 
+block_id = 0
+get_block = (display_lines, d_line) ->
+  local block
+  start_line = d_line
+
+  -- scan back
+  cur_line = display_lines[d_line.nr - 1]
   while cur_line and cur_line._full_background
+    if cur_line._block
+      block = cur_line._block
+      break
+
     start_line = cur_line
-    block.width = max block.width, cur_line.width
     cur_line = display_lines[cur_line.nr - 1]
 
-  block.start_line = start_line
+  if block
+    -- we found an earlier block, now extend it as neccessary down
+    -- until the current line and then we're done
+    cur_line = display_lines[min(block.end_line + 1, d_line.nr)]
+    while cur_line.nr <= d_line.nr
+      cur_line._block = block
+      block.width = max block.width, cur_line.width
+      cur_line = display_lines[cur_line.nr + 1]
 
+    block.end_line = max(block.end_line, d_line.nr)
+    return block
+
+  -- no block found looking back, scan forward
   end_line = d_line
   cur_line = display_lines[d_line.nr + 1]
 
   while cur_line and cur_line._full_background
+    if cur_line._block
+      block = cur_line._block
+
+      -- we found a subsequent block, now extend it as neccessary up
+      -- until the start line and then we're done
+      cur_line = display_lines[cur_line.nr - 1]
+      while cur_line.nr >= start_line.nr
+        cur_line._block = block
+        block.width = max block.width, cur_line.width
+        cur_line = display_lines[cur_line.nr - 1]
+
+      return block
+
     end_line = cur_line
-    block.width = max block.width, cur_line.width
     cur_line = display_lines[cur_line.nr + 1]
 
-  block.end_line = end_line
-  block.width += 5
+  -- no existing block found, create a new one if unless this is a single
+  -- line and assign it to the affected lines
+  if start_line.nr != end_line.nr
+    block_id += 1
+    block = setmetatable {
+      id: block_id,
+      start_line: start_line.nr,
+      end_line: end_line.nr,
+      width: 0
+    }, BlockMt
+    cur_line = start_line
+    while cur_line and cur_line.nr <= end_line.nr
+      cur_line._block = block
+      block.width = max block.width, cur_line.width
+      cur_line = display_lines[cur_line.nr + 1]
 
-  block
-
-get_block = (display_lines, d_line) ->
-  prev_d_line = display_lines[d_line.nr - 1]
-  block = if prev_d_line
-    if prev_d_line._block
-      prev_d_line._block
-    elseif prev_d_line._full_background
-      return scan_block display_lines, d_line
-
-  unless block
-    next_d_line = display_lines[d_line.nr + 1]
-    if next_d_line
-      block = if next_d_line._block
-        next_d_line._block
-      elseif next_d_line._full_background
-        scan_block display_lines, d_line
-
-  block.width = max(block.width, d_line.width) if block
   block
 
 get_flairs = (buffer, line, display_line) ->
@@ -170,12 +199,22 @@ DisplayLine = define_class {
     @size = line.size
     @indent = get_indent view, line
     @styling = buffer.styling\get(line.start_offset, line.end_offset)
-    @layout.attributes = styles.get_attributes @styling, line.size
+    -- complexiy sanity check before asking Pango to determine extents,
+    -- as it will happily block seemingly for ever if someone manages
+    -- to cram an entire app into one line (e.g. minimized JS)
+    if #@styling > 3000
+      @styling = { 1, 'blob', line.size + 1 }
 
+    attributes = styles.get_attributes @styling, line.size
+
+    @layout.attributes = attributes
     width, height = @layout\get_pixel_size!
-    @height = height
+    @y_offset = floor @view.config.view_line_padding
+    @text_height = height
+    @height = height + @y_offset * 2
     @width = width + view.cursor.width
     @flairs = get_flairs buffer, line, @
+    @width_of_space = @view.width_of_space
 
     @background_ranges = parse_background_ranges @styling
 
@@ -216,18 +255,18 @@ DisplayLine = define_class {
       cr\rectangle x, y, clip.x2 - x, clip.y2
       cr\clip!
 
-    cr\move_to x - base_x, y
+    cr\move_to x - base_x, y + @y_offset
     pango_cairo.show_layout cr, @layout
 
     for f in *@flairs
       flair.draw f.flair, @, f.start_offset, f.end_offset, x, y, cr
 
     if opts.config.view_show_indentation_guides
-      draw_indentation_guides x, y, base_x, @, cr, opts.config, opts.width_of_space
+      draw_indentation_guides x, y, base_x, @, cr, opts.config, @width_of_space
 
     edge_column = opts.config.view_edge_column
     if edge_column and edge_column > 0
-      draw_edge_line edge_column, x, y, base_x, @, cr, opts.width_of_space
+      draw_edge_line edge_column, x, y, base_x, @, cr, @width_of_space
 
     cr\restore! if base_x > 0
 }

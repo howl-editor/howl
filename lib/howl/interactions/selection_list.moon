@@ -24,7 +24,7 @@ class SelectionList
 
     @list_widget.columns = @opts.columns
 
-    @list_widget.max_height = math.floor app.window.allocated_height * 0.5
+    @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
 
     @showing_list = false
     if not @opts.hide_until_tab

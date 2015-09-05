@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 local app_root, argv = ...
+io.stdout:setvbuf('line')
 
 local help = [=[
 Usage: howl [options] [<file> [, <file>, ..]]

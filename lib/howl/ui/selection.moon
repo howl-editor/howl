@@ -3,54 +3,66 @@
 
 ffi = require 'ffi'
 
-import Scintilla, signal, clipboard from howl
+import signal, clipboard from howl
 import const_char_p from howl.cdefs
 import PropertyObject from howl.aux.moon
 import C from ffi
+{:max, :min} = math
 
 class Selection extends PropertyObject
-  new: (@sci) =>
+  new: (@_view) =>
+    @_sel = _view.selection
     @includes_cursor = false
     super!
 
+  @property _buffer: get: => @_view.buffer
+
   @property empty:
-    get: => @sci\get_selection_empty!
+    get: =>
+      return @_sel.is_empty unless @includes_cursor
+      return true if (@_sel.anchor == nil) and (@_sel.cursor == nil)
+      (@_sel.anchor == @_sel.end_pos) and @_sel.end_pos > @_buffer.size
 
   @property anchor:
-    get: => 1 + @sci\char_offset @sci\get_anchor!
-    set: (pos) => @sci\set_anchor @sci\byte_offset(pos - 1)
+    get: =>
+      anchor = @_sel.anchor
+      anchor and @_buffer\char_offset(anchor)
+
+    set: (pos) =>
+      if @empty
+        @set pos, max(@_view.cursor.pos - 1, 1)
+      else
+        @_sel.anchor = @_buffer\byte_offset pos
 
   @property cursor:
-    get: => 1 + @sci\char_offset @sci\get_current_pos!
+    get: =>
+      end_pos = @_sel.end_pos
+      end_pos and @_buffer\char_offset end_pos
+
     set: (pos) => @set @anchor, pos
 
   @property text:
     get: =>
-      if @empty then nil
-      else
-        start_pos, end_pos = @_brange!
-        @sci\get_text_range start_pos - 1, end_pos - 1
+      return nil if @empty
+
+      start_pos, end_pos = @_brange!
+      @_buffer\sub start_pos, end_pos - 1
 
     set: (text) =>
       error 'Cannot replace empty selection', 2 if @empty
       start_pos, end_pos = @_brange!
       @remove!
-
-      with @sci
-        \set_target_start start_pos - 1
-        \set_target_end end_pos - 1
-        \replace_target -1, text
+      @_buffer\replace start_pos, (end_pos - start_pos), text
 
   @property persistent:
-    get: => @persistent_anchor != nil
-    set: (state) =>
-      @persistent_anchor = state and @anchor or nil
+    get: => @_sel.persistent
+    set: (state) => @_sel.persistent = state
 
   set: (anchor, cursor) =>
-    with @sci
-      anchor = \byte_offset anchor - 1
-      cursor = \byte_offset cursor - 1
-      \set_sel anchor, cursor
+    anchor = @_buffer\byte_offset anchor
+    end_pos = @_buffer\byte_offset cursor
+    @_view.cursor.pos = end_pos
+    @_sel\set anchor, end_pos
 
   select: (start_pos, end_pos) =>
     if end_pos > start_pos
@@ -61,56 +73,54 @@ class Selection extends PropertyObject
     @set start_pos, end_pos
 
   select_all: =>
-    @sci\set_sel 0, @sci\get_length! + 1
+    @_view.cursor.pos = @_buffer.size + 1
+    @_sel\set 1, @_buffer.size + 1
 
   range: =>
+    return nil if @empty
     start_pos, end_pos = @_brange!
-    return nil unless start_pos
-    1 + @sci\char_offset(start_pos - 1), 1 + @sci\char_offset(end_pos - 1)
+    @_buffer\char_offset(start_pos), @_buffer\char_offset(end_pos)
 
   remove: =>
     unless @empty
-      @sci\set_empty_selection @sci\get_current_pos!
+      @_sel\clear!
       @persistent = false
 
   copy: (clip_options = {}, clipboard_options) =>
-    start_pos, end_pos = @_brange!
-    return unless start_pos
-    @_copy_to_clipboard start_pos, end_pos, clip_options, clipboard_options
+    return if @empty
+    @_copy_to_clipboard clip_options, clipboard_options
     @remove!
     signal.emit 'selection-copied'
 
   cut: (clip_options = {}, clipboard_options) =>
+    return if @empty
     start_pos, end_pos = @_brange!
-    return unless start_pos
-    @_copy_to_clipboard start_pos, end_pos, clip_options, clipboard_options
-    @sci\delete_range start_pos - 1, end_pos - start_pos
+    @_copy_to_clipboard clip_options, clipboard_options
+    @_buffer\delete start_pos, end_pos - start_pos
+    @remove!
     @persistent = false
     signal.emit 'selection-cut'
 
-  _copy_to_clipboard: (start_pos, end_pos, clip_options = {}, clipboard_options) =>
+  _copy_to_clipboard: (clip_options = {}, clipboard_options) =>
     clip = moon.copy clip_options
     clip.text = @text
     if clip.text
-      @sci\copy_range start_pos - 1, end_pos - 1
       clipboard.push clip, clipboard_options
 
   _brange: =>
-    cursor = @sci\get_current_pos! + 1
-    anchor = @sci\get_anchor! + 1
+    cursor = @_sel.end_pos
+    anchor = @_sel.anchor
     return cursor, anchor if cursor < anchor
-    text = @sci\get_text!
-    if cursor > anchor or @includes_cursor and cursor <= #text
+    if (cursor > anchor or @includes_cursor) and cursor <= @_buffer.size
       if @includes_cursor -- bump end offset to start of next character
-        offset_ptr = const_char_p(text) + cursor - 1
+        ptr = @_buffer\get_ptr(cursor, 1)
 
-        if offset_ptr[0] != 10 and offset_ptr[0] != 13 -- are we looking at a newline?
-          ptr = C.g_utf8_find_next_char offset_ptr, nil
-          return anchor, cursor + (ptr - offset_ptr)
+        if ptr[0] != 10 and ptr[0] != 13 -- forward unless we are at a newline
+          next_ptr = C.g_utf8_find_next_char ptr, nil
+          if next_ptr != nil
+            cursor += (next_ptr - ptr)
 
-      return anchor, cursor
-
-    nil
+    return min(anchor, cursor), max(anchor, cursor)
 
 with signal
   .register 'selection-changed',

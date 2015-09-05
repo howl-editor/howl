@@ -6,7 +6,7 @@ _ENV = {}
 setfenv 1, _ENV
 
 export mode, map
-export active = false
+export active, executing = false, false
 export delete, change, yank, go
 export count, insert_edit
 
@@ -20,6 +20,7 @@ export reset = ->
   yank = false
   count = nil
   go = nil
+  executing = false
   bindings.cancel_capture!
 
 export add_number = (number) ->
@@ -34,7 +35,9 @@ export change_mode = (editor, to, ...) ->
     meta = map.__meta
     meta.on_enter(editor) if meta.on_enter
     editor.indicator.vi.label = '-- ' .. meta.name .. ' --'
-    editor.cursor[k] = v for k,v in pairs meta.cursor_properties
+    for k,v in pairs meta.cursor_properties
+      v = v! if callable v
+      editor.cursor[k] = v
 
   mode = to
   bindings.pop! if active
@@ -42,6 +45,7 @@ export change_mode = (editor, to, ...) ->
   map(editor, ...) if callable map
 
 export apply = (editor, f) ->
+  executing = true
   state = :delete, :change, :yank, :count
   state.has_modifier = delete or change or yank
 
@@ -68,6 +72,9 @@ export apply = (editor, f) ->
   if state.delete or state.change
     last_op = op
     insert_edit = nil
+
+  if map.__after_apply
+    map.__after_apply editor
 
 export record = (editor, op) ->
   op editor

@@ -161,8 +161,15 @@ need_text_object = (flair) ->
     rect = layout\index_to_pos end_offset - 1
     width = get_defined_width(start_x, flair, cr, clip)
     width or= x + (rect.x / SCALE) - start_x - base_x
+
     if flair.min_width
-      width = max(flair.min_width - base_x, width) if flair.min_width
+      flair_min_width = flair.min_width
+
+      if flair_min_width == 'letter'
+        flair_min_width = display_line.width_of_space
+
+      width = max(flair_min_width - base_x, width)
+
     return if width <= 0
 
     text_object = flair.text_object
@@ -170,11 +177,11 @@ need_text_object = (flair) ->
     if not text_object and need_text_object(flair)
       text_object = get_text_object display_line, start_offset, end_offset, flair
 
-    height = display_line.height
+    {:height, :y_offset} = display_line
     adjusted_for_text_height = false
 
     if flair.height == 'text' and height > text_object.height
-      y += floor( (height - text_object.height) / 2 + 1)
+      y += y_offset + (display_line.layout.baseline - text_object.layout.baseline) / SCALE
       height = text_object.height
       adjusted_for_text_height = true
 
@@ -184,7 +191,7 @@ need_text_object = (flair) ->
 
     if flair.text_color
       if not adjusted_for_text_height and height > text_object.height
-        y += floor( (height - text_object.height) / 2 + 1)
+        y += y_offset + (display_line.layout.baseline - text_object.layout.baseline) / SCALE
 
       cr\save!
       if base_x > 0
