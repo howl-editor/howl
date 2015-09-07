@@ -29,6 +29,47 @@ describe 'Cursor', ->
       cursor.style = 'line'
       assert.raises 'foo', -> cursor.style = 'foo'
 
+  describe 'move_to(opts)', ->
+    describe 'when opts.pos is specified', ->
+      it 'moves the cursor to the specified positio', ->
+        buffer.text = '1\n3\n5'
+        cursor\move_to pos: 3
+        assert.equals 3, cursor.pos
+        cursor\move_to pos: 5
+        assert.equals 5, cursor.pos
+
+      it 'does not allow to move into the middle of a EOL', ->
+        buffer.text = '12\r\n'
+        cursor.pos = 1
+        cursor\move_to pos: 3
+        assert.equals 3, cursor.pos
+
+        cursor\move_to pos: 4
+        assert.equals 3, cursor.pos
+
+      it 'does not allow to move into the middle of multibyte characters', ->
+        buffer.text = '1å\n' -- å being two bytes long
+        cursor\move_to pos: 3
+        assert.equals 4, cursor.pos
+
+    describe 'when opts.line is specified', ->
+      it 'moves the cursor to the first column of that line', ->
+        buffer.text = '1\n3\n5'
+        cursor\move_to line: 2
+        assert.equals 3, cursor.pos
+        cursor\move_to line: 3
+        assert.equals 5, cursor.pos
+
+      it 'moves to column specified by opts.column if given', ->
+        buffer.text = '1\n3r4\n6'
+        cursor\move_to line: 2, column: 2
+        assert.equals 4, cursor.pos
+
+      it 'does not allow to move into the middle of multibyte characters', ->
+        buffer.text = '1å\n' -- å being two bytes long
+        cursor\move_to line: 1, column: 3
+        assert.equals 4, cursor.pos
+
   describe 'forward()', ->
     it 'moves the cursor one character forward', ->
       buffer.text = 'åäö'
@@ -51,6 +92,14 @@ describe 'Cursor', ->
       cursor\forward!
       assert.equals 2, cursor.pos
 
+      -- CRLF
+      buffer.text = '1\r\n4'
+      cursor.pos = 2
+      cursor\forward!
+      assert.equals 2, cursor.line
+      assert.equals 1, cursor.column
+      assert.equals 4, cursor.pos
+
     it 'moves to the next line if needed', ->
       buffer.text = 'å\nnext'
       cursor.pos = 1
@@ -65,6 +114,22 @@ describe 'Cursor', ->
       cursor\backward!
       assert.equals 3, cursor.pos
 
+    it 'moves back to the previous line as needed', ->
+      buffer.text = 'x\n'
+      cursor.pos = 3
+      cursor\backward!
+      assert.equals 2, cursor.pos
+      cursor\backward!
+      assert.equals 1, cursor.pos
+
+      -- CRLF
+      buffer.text = '1\r\n4'
+      cursor.pos = 4
+      cursor\backward!
+      assert.equals 1, cursor.line
+      assert.equals 2, cursor.column
+      assert.equals 2, cursor.pos
+
   describe 'up()', ->
     it 'moves the cursor one line up', ->
       buffer.text = 'line 1\nline 2'
@@ -77,6 +142,12 @@ describe 'Cursor', ->
       cursor.pos = 1
       cursor\up!
       assert.equals 1, cursor.pos
+
+    it 'does not move into the middle of a EOL', ->
+      buffer.text = '12\r\n123'
+      cursor.pos = 8
+      cursor\up!
+      assert.equals 3, cursor.pos
 
     it 'respects the remembered column', ->
       buffer.text = '12345\n12\n1234'
@@ -117,6 +188,12 @@ describe 'Cursor', ->
       cursor\down!
       assert.equal 3, cursor.line
       assert.equal 4, cursor.column
+
+    it 'does not move into the middle of a EOL', ->
+      buffer.text = '123\r\n67\r\n'
+      cursor.pos = 4
+      cursor\down!
+      assert.equals 8, cursor.pos
 
   describe 'when the selection is marked as persistent', ->
     it 'is updated as part of cursor movement', ->

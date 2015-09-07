@@ -411,17 +411,18 @@ View = {
       return nil unless d_line
       end_y = cur_y + d_line.height
       if (y >= cur_y and y <= end_y)
+        line = @_buffer\get_line(line_nr)
         pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
         inside, index = d_line.layout\xy_to_index pango_x, 1
         if not inside
-          index += 1 if index > 0 -- move to the ending new line
+          return line.start_offset + line.size
         else
           -- are we aiming for the next grapheme?
           rect = d_line.layout\index_to_pos index
           if pango_x - rect.x > rect.width * 0.7
             index = d_line.layout\move_cursor_visually true, index, 0, 1
 
-        return @_buffer\get_line(line_nr).start_offset + index
+          return line.start_offset + index
 
       cur_y = end_y
 

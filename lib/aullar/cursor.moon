@@ -7,6 +7,7 @@ cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
 C = ffi.C
 {:SCALE} = require 'ljglibs.pango'
+{:band} = require 'bit'
 
 flair.define_default 'cursor', {
   type: flair.RECTANGLE,
@@ -173,6 +174,8 @@ Cursor = {
       @_line = @view.buffer.nr_lines
       old_line = @view.buffer\get_line(@_line)
 
+    dest_line = old_line
+
     -- are we moving to another line?
     if not pos_is_in_line(pos, old_line) or not is_showing_line @view, old_line.nr
       dest_line = @view.buffer\get_line_at_offset pos
@@ -198,6 +201,15 @@ Cursor = {
 
     else -- staying on same line, refresh it
       @view\refresh_display from_line: old_line.nr, to_line: old_line.nr
+
+    -- it's not allowed to position the cursor in the middle of a EOL
+    idx = pos - dest_line.start_offset
+    if idx > dest_line.size
+      pos = dest_line.start_offset + dest_line.size
+    else -- nor to position the cursor inside a multibyte character
+      while dest_line.ptr[idx] and band(dest_line.ptr[idx], 0xc0) == 0x80
+        idx += 1
+        pos += 1
 
     if extend_selection
       @selection\extend @_pos, pos
@@ -236,8 +248,8 @@ Cursor = {
     z_col = (@_pos - line_start)
     new_index, new_trailing = @display_line.layout\move_cursor_visually true, z_col, 0, 1
     new_index = @display_line.size if new_trailing > 0
-    if new_index > @display_line.size
-      @move_to pos: @pos + 1, extend: opts.extend
+    if new_index > @display_line.size -- move to next line
+      @move_to pos: @buffer_line.end_offset + 1, extend: opts.extend
     else
       @move_to pos: line_start + new_index, extend: opts.extend
 
