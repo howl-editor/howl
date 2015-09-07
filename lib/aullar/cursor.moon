@@ -207,7 +207,8 @@ Cursor = {
     if idx > dest_line.size
       pos = dest_line.start_offset + dest_line.size
     else -- nor to position the cursor inside a multibyte character
-      while dest_line.ptr[idx] and band(dest_line.ptr[idx], 0xc0) == 0x80
+      ptr = dest_line.ptr
+      while idx < dest_line.size and ptr[idx] and band(ptr[idx], 0xc0) == 0x80
         idx += 1
         pos += 1
 

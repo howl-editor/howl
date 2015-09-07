@@ -133,7 +133,6 @@ Buffer = {
     @text_buffer\delete offset - 1, count
     @_length -= len
     @_invalidate_lines_from_offset invalidate_offset
-    @offsets\adjust_for_delete invalidate_offset - 1, count, len
     @offsets\adjust_for_delete offset - 1, count, len
     @markers\shrink offset, count
     @styling\delete offset, count, no_notify: true
