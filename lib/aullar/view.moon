@@ -691,7 +691,12 @@ View = {
     pos = @position_from_coordinates(event.x, event.y)
     if pos
       @area\grab_focus! unless @area.has_focus
-      @cursor\move_to :pos, :extend
+
+      if pos != @cursor.pos
+        @cursor\move_to :pos, :extend
+      else
+        @selection\clear!
+
       @_selection_active = true
 
   _on_button_release: (event) =>
