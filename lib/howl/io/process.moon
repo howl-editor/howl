@@ -18,12 +18,10 @@ signals = {}
 for s in *{
   'HUP', 'INT', 'QUIT', 'ILL', 'TRAP', 'ABRT', 'BUS', 'FPE',
   'KILL', 'USR1', 'SEGV', 'USR2', 'PIPE', 'ALRM', 'TERM',
-  'STKFLT', 'CHLD', 'CONT', 'STOP', 'TSTP', 'TTIN', 'TTOU',
-  'URG', 'XCPU', 'XFSZ', 'VTALRM', 'PROF', 'WINCH', 'POLL',
-  'PWR', 'SYS'
+  'CHLD', 'CONT', 'STOP', 'TSTP', 'TTIN', 'TTOU', 'URG',
+  'XCPU', 'XFSZ', 'VTALRM', 'PROF', 'WINCH', 'SYS'
 }
-  sig = tonumber C["sig_#{s}"]
-  signals[s] = sig if sig != 0
+  signals[s] = tonumber C["sig_#{s}"]
 
 signal_name = (signal) ->
   for name, sig in pairs signals
