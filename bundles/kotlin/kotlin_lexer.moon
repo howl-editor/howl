@@ -15,6 +15,9 @@ howl.aux.lpeg_lexer ->
     'volatile', 'when', 'where', 'while'
   }
 
+  fundef = c('keyword', 'fun') * c('whitespace', space^1) * c('fdecl', ident)
+  classdef = c('keyword', 'class') * c('whitespace', space^1) * c('type_def', ident)
+
   type = c 'type', word {
     'Any', 'Boolean', 'Byte', 'Char', 'Double', 'Float', 'Int', 'Long', 'Nothing',
     'Short', 'String', 'Unit'
@@ -43,6 +46,8 @@ howl.aux.lpeg_lexer ->
 
     all: any {
       comment
+      fundef
+      classdef
       V'string'
       keyword
       type
