@@ -22,11 +22,6 @@ howl.aux.lpeg_lexer ->
 
   special = c 'special', word { 'true', 'false', 'null' }
 
-  string = c 'string', any {
-    span '"""', '"""', '\\'
-    span '"', '"', '\\'
-  }
-
   char = span "'", "'", '\\'
   number = c 'number', any {
     float
@@ -43,13 +38,38 @@ howl.aux.lpeg_lexer ->
 
   operator = c 'operator', S'#+-*/%^&|!:=<>()[]{},;$'
 
-  any {
-    comment
-    string
-    keyword
-    type
-    special
-    identifier
-    operator
-    number
+  P {
+    'all'
+
+    all: any {
+      comment
+      V'string'
+      keyword
+      type
+      special
+      identifier
+      operator
+      number
+    }
+
+    string: c 'string', any {
+      c('string', '"') * V'q_string_chunk'
+      c('string', '"""') * V'tq_string_chunk'
+    }
+
+    q_interpolation: #P'$' * (-P'}' * (V'all' + 1))^1 * c('operator', '}') * V'q_string_chunk'
+    tq_interpolation: #P'$' * (-P'}' * (V'all' + 1))^1 * c('operator', '}') * V'tq_string_chunk'
+    q_string_chunk: c('string', scan_to(P'"' + #P'${', P'\\'))-- * V('q_interpolation')^0
+    tq_string_chunk: c('string', scan_to(P'"""' + #P'${', P'\\')) * V('tq_interpolation')^0
   }
+
+  --any {
+  --  comment
+  --  string
+  --  keyword
+  --  type
+  --  special
+  --  identifier
+  --  operator
+  --  number
+  --}
