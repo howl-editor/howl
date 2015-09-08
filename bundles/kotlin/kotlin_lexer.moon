@@ -57,15 +57,17 @@ howl.aux.lpeg_lexer ->
       number
     }
 
-    string: c 'string', any {
+    string: any {
       c('string', '"') * V'q_string_chunk'
       c('string', '"""') * V'tq_string_chunk'
     }
 
-    q_interpolation: #P'$' * (-P'}' * (V'all' + 1))^1 * c('operator', '}') * V'q_string_chunk'
-    tq_interpolation: #P'$' * (-P'}' * (V'all' + 1))^1 * c('operator', '}') * V'tq_string_chunk'
-    q_string_chunk: c('string', scan_to(P'"' + #P'${', P'\\'))-- * V('q_interpolation')^0
-    tq_string_chunk: c('string', scan_to(P'"""' + #P'${', P'\\')) * V('tq_interpolation')^0
+    q_interpolation: (c 'operator', P'$') * (identifier + ((-P'}' * (V'all' + 1))^1 * c('operator', '}'))) * V'q_string_chunk'
+    tq_interpolation: (c 'operator', P'$') * (identifier + ((-P'}' * (V'all' + 1))^1 * c('operator', '}'))) * V'tq_string_chunk'
+    --tq_interpolation: #P'$' * (-P'}' * (V'all' + 1))^1 * c('operator', '}') * V'tq_string_chunk'
+    q_string_chunk: c('string', scan_to(P'"' + #(P'$' * (ident + "{")), P'\\')) * V('q_interpolation')^0
+    tq_string_chunk: c('string', scan_to(P'"' + #(P'$' * (ident + "{")), P'\\')) * V('tq_interpolation')^0
+    --tq_string_chunk: c('string', scan_to(P'"""' + #(P'${'), P'\\')) * V('tq_interpolation')^0
   }
 
   --any {

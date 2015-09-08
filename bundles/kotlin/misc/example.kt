@@ -6,13 +6,16 @@ package hello
 data class X(val a: Int, var b: Any)
 
 private public fun main(args: Array<String>) {
-    println("Hello, World!")
+    var name = "World"
+    println("Hello, ${name+"!"}")
     var string = """
     I
     am
     multiple
     lines
     long
+    $[] Not colored
+    $a Colored
     """
     println(string)
 
