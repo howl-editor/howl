@@ -3,6 +3,9 @@
 # Copyright 2012-2015 The Howl Developers
 # License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+os=`uname -s`
+[ "$os" == Darwin ] && md5=md5 -r || md5=md5sum
+
 file=$1; shift
 checksum=$1; shift
 tmp=$(tempfile 2> /dev/null)
@@ -19,7 +22,7 @@ fi
 echo "Downloading $file.."
 wget -O $tmp $file || exit 1
 
-file_checksum=$($MD5 $tmp | awk '{print $1}')
+file_checksum=$($md5 $tmp | awk '{print $1}')
 
 if [ "$checksum" != "$file_checksum" ]; then
   echo "ERROR: Checksum mismatch for $file (expected $checksum, got $file_checksum)"
