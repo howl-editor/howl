@@ -5,7 +5,21 @@ package hello
 
 data class X(val a: Int, var b: Any)
 
-private public fun main(args: Array<String>) {
+abstract class Y constructor(name: String) {
+    protected var name: String = name
+    init { println("Starting up Y...") }
+    open fun f(): String { return name }
+    abstract fun g()
+}
+
+class Z constructor(value: String) : Y(value) {
+    constructor(): this("Bob") {}
+    constructor(value: Int): this(value.toString()) {}
+    final override fun f(): String { return name }
+    override fun g() {}
+}
+
+public fun main(args: Array<String>) {
     var name = "World"
     println("Hello, ${name+"!"}")
     var string = """
@@ -15,7 +29,7 @@ private public fun main(args: Array<String>) {
     lines
     long
     $[] Not colored
-    $a Colored
+    $name Colored
     """
     println(string)
 
@@ -24,4 +38,10 @@ private public fun main(args: Array<String>) {
         is X -> println(x)
         else -> println('?')
     }
+
+    var z = Z()
+    if (z is Z) { println(z as Z) }
+    else if (z !is Z) { println("???") }
+
+    assert(true); assert(!false)
 }
