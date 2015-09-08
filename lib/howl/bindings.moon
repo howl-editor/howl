@@ -138,12 +138,14 @@ export translate_key = (event) ->
 
   translations = {}
   append translations, ctrl .. meta .. alt .. event.character if event.character
+  modifiers = ctrl .. meta .. shift .. alt
 
   if event.key_name and event.key_name != event.character
-    append translations, ctrl .. meta .. shift .. alt .. event.key_name
+    append translations, modifiers .. event.key_name
 
-  append translations, ctrl .. meta .. shift .. alt .. alternate if alternate
-  append translations, ctrl .. meta .. shift .. alt .. event.key_code
+  append translations, modifiers .. alternate if alternate
+  append translations, modifiers .. event.key_code
+
   translations
 
 export dispatch = (event, source, keymaps, ...) ->

@@ -55,11 +55,11 @@ describe 'bindings', ->
         assert.same tr, { '123' }
 
     context 'with modifiers', ->
-      it 'prepends a modifier string representation to all translations for ctrl and alt', ->
+      it 'prepends a modifier string representation to all translations for ctrl, meta and alt', ->
         tr = bindings.translate_key
           character: 'A', key_name: 'a', key_code: 123,
-          control: true, alt: true
-        mods = 'ctrl_alt_'
+          control: true, alt: true, meta: true
+        mods = 'ctrl_meta_alt_'
         assert.same tr, { mods .. 'A', mods .. 'a', mods .. '123' }
 
       it 'emits the shift modifier if the character is known', ->
