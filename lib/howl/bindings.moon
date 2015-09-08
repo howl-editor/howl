@@ -132,17 +132,18 @@ export translate_key = (event) ->
   ctrl = (event.control and 'ctrl_') or ''
   shift = (event.shift and 'shift_') or ''
   alt = (event.alt and 'alt_') or ''
+  meta = (event.meta and 'meta_') or ''
   event = substitute_keyname event
   alternate = alternate_names[event.key_name]
 
   translations = {}
-  append translations, ctrl .. alt .. event.character if event.character
+  append translations, ctrl .. meta .. alt .. event.character if event.character
 
   if event.key_name and event.key_name != event.character
-    append translations, ctrl .. shift .. alt .. event.key_name
+    append translations, ctrl .. meta .. shift .. alt .. event.key_name
 
-  append translations, ctrl .. shift .. alt .. alternate if alternate
-  append translations, ctrl .. shift .. alt .. event.key_code
+  append translations, ctrl .. meta .. shift .. alt .. alternate if alternate
+  append translations, ctrl .. meta .. shift .. alt .. event.key_code
   translations
 
 export dispatch = (event, source, keymaps, ...) ->

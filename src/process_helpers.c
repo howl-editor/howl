@@ -5,6 +5,15 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+#ifndef __linux
+#define SIGSTKFLT 0
+#define SIGPWR 0
+#endif
+
+#ifdef __APPLE__
+#define SIGPOLL 0
+#endif
+
 int process_exited_normally(int status) { return WIFEXITED(status);  }
 int process_exit_status(int status) { return WEXITSTATUS(status);  }
 int process_was_signalled(int status) { return WIFSIGNALED(status);  }

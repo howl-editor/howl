@@ -22,7 +22,8 @@ for s in *{
   'URG', 'XCPU', 'XFSZ', 'VTALRM', 'PROF', 'WINCH', 'POLL',
   'PWR', 'SYS'
 }
-  signals[s] = tonumber C["sig_#{s}"]
+  sig = tonumber C["sig_#{s}"]
+  signals[s] = sig if sig != 0
 
 signal_name = (signal) ->
   for name, sig in pairs signals
