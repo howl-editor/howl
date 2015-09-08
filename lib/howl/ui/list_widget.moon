@@ -143,6 +143,12 @@ class ListWidget extends PropertyObject
     @_scroll_to idx
     @_highlight idx
 
+    changed = @selection != @previous_selection
+    @previous_selection = @selection
+
+    if changed and @opts.on_selection_change
+      @opts.on_selection_change @selection
+
   _scroll_to: (idx) =>
     if @page_start_idx <= idx and @page_start_idx + @page_size > idx
       return
@@ -288,18 +294,14 @@ class ListWidget extends PropertyObject
     binding_for:
       ['cursor-up']: =>
         @select_prev!
-        @opts.on_selection_change and @opts.on_selection_change @selection
 
       ['cursor-down']: =>
         @select_next!
-        @opts.on_selection_change and @opts.on_selection_change @selection
 
       ['cursor-page-up']: =>
         @prev_page!
-        @opts.on_selection_change and @opts.on_selection_change @selection
 
       ['cursor-page-down']: =>
         @next_page!
-        @opts.on_selection_change and @opts.on_selection_change @selection
 
 return ListWidget

@@ -3,8 +3,9 @@
 
 glib = require 'ljglibs.glib'
 
-import app, clipboard, interact, log, Project from howl
+import app, clipboard, config, interact, log, Project from howl
 import File from howl.io
+import preview from howl.interactions.util
 import markup, style, ListWidget from howl.ui
 import file_matcher, subtree_matcher, get_dir_and_leftover from howl.util.paths
 
@@ -34,7 +35,9 @@ class FileSelector
     @command_line.prompt = @opts.prompt or ''
     @command_line.title = @opts.title or 'File'
 
-    @list_widget = ListWidget nil, never_shrink: true
+    @list_widget = ListWidget nil,
+      never_shrink: true,
+      on_selection_change: @\_preview
     @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
     @list_widget.columns =  { {style: 'filename'} }
 
@@ -67,6 +70,13 @@ class FileSelector
     basename ..= separator unless basename\ends_with separator
     @command_line.prompt = markup.howl "<directory>#{basename}</>"
     @command_line.text = text or ''
+
+  _preview: (selection) =>
+    return unless config.preview_files
+
+    file = @directory / selection.name
+    if file.exists
+      app.editor\preview preview.get_preview_buffer file
 
   on_update: (text) =>
     path = @directory.path .. '/' .. text
@@ -101,6 +111,7 @@ class FileSelector
       @_chdir @directory.parent if @directory.parent
 
     escape: =>
+      app.editor\cancel_preview!
       self.finish!
 
 interact.register

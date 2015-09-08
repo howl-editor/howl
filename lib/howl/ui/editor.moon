@@ -313,7 +313,14 @@ class Editor extends PropertyObject
     error ret unless status
 
   preview: (buffer) =>
+    unless @_is_previewing
+      @_pre_preview_buffer = @buffer
     @_show_buffer buffer, preview: true
+
+  cancel_preview: =>
+    if @_is_previewing
+      @_show_buffer @_pre_preview_buffer
+      @_pre_preview_buffer = nil
 
   indent: => if @buffer.mode.indent then @buffer.mode\indent self
 
