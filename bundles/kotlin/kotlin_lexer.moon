@@ -23,8 +23,8 @@ howl.aux.lpeg_lexer ->
   special = c 'special', word { 'true', 'false', 'null' }
 
   string = c 'string', any {
-    span '"', '"', '\\'
     span '"""', '"""', '\\'
+    span '"', '"', '\\'
   }
 
   char = span "'", "'", '\\'
