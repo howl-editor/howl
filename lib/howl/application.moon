@@ -21,7 +21,7 @@ sort_buffers = (buffers) ->
     a.title < b.title
 
 class Application extends PropertyObject
-  title: 'Howl (AULLAR !!!)'
+  title: 'Howl'
 
   new: (@root_dir, @args) =>
     @windows = {}

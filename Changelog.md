@@ -4,6 +4,18 @@
 
 - Added previews for the `open` command.
 
+- Replaced the old editing engine Scintilla with a new custom written engine,
+code-named `aullar`.
+
+- The `howl-moon-eval` command was improved by automatically adjusting the
+indentation levels to work as a stand-alone code chunk.
+
+### Bugs fixed
+
+- Issues as seen on [Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=created%3A%3E2015-09-02+state%3Aclosed++type%3Aissue)
+
+## 0.3 (2015-09-01)
+
 - Added a new command, `project-build` that executes a pre-configured command
 from the projects root directory (using the command configured in the new
 `project_build_command` variable).
