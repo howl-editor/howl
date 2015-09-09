@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added previews for the `open` command.
+
 - Replaced the old editing engine Scintilla with a new custom written engine,
 code-named `aullar`.
 
