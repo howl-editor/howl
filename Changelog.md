@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added previews for the `open` command.
+
 - Added a new command, `project-build` that executes a pre-configured command
 from the projects root directory (using the command configured in the new
 `project_build_command` variable).
