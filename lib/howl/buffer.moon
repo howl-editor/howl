@@ -267,7 +267,6 @@ class Buffer extends PropertyObject
     if @_mode.lexer
       b_end_pos = @byte_offset end_pos
       @_buffer\ensure_styled_to pos: b_end_pos
-      print "Buffer.lex"
 
   add_view_ref: (view) =>
     append @_views, view
