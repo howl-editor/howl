@@ -47,7 +47,6 @@ class SelectionList
 
   on_update: (text) =>
     @list_widget\update text
-    @_selection_changed!
 
   _selection_changed: =>
     if @opts.on_selection_change
