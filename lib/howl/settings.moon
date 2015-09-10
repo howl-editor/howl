@@ -8,7 +8,7 @@ default_dir = ->
   return File(howl_dir) if howl_dir
   home = os.getenv('HOME')
   xdg_config_home = os.getenv('XDG_CONFIG_HOME')
-  -- if none of this are set, we wwon't be able to find config
+  -- if none of this are set, we won't be able to find config
   return nil unless home or xdg_config_home
   xdg_conf_dir = nil
   if xdg_config_home
