@@ -10,17 +10,20 @@ default_dir = ->
   xdg_config_home = os.getenv('XDG_CONFIG_HOME')
   -- if none of this are set, we wwon't be able to find config
   return nil unless home or xdg_config_home
-  -- trying ~/.howl first
-  dotdir = nil
-  if home
-    dotdir = File(home)\join('.howl')
-    return dotdir if dotdir.is_directory
-  -- trying xdg-complaint ~/.config/howl
   xdg_conf_dir = nil
   if xdg_config_home
     xdg_conf_dir = File(xdg_config_home)\join('howl')
   elseif home
     xdg_conf_dir = File(home)\join('.config')\join('howl')
+  -- trying ~/.howl first
+  dotdir = nil
+  if home
+    dotdir = File(home)\join('.howl')
+    if dotdir.is_directory
+      if xdg_conf_dir and xdg_conf_dir.is_directory
+        howl.log.warn("Ignoring #{xdg_conf_dir.path} in favor of #{dotdir.path}")
+      return dotdir
+  -- trying xdg-complaint ~/.config/howl
   if xdg_conf_dir and xdg_conf_dir.is_directory
     return xdg_conf_dir
   -- if none of these exists falling back to ~/.howl

@@ -38,7 +38,7 @@ describe 'Settings', ->
           os.getenv = getenv
           assert.is_true dir\join('.howl').exists
 
-      it 'loads settings from "$HOME/.config/howl" if one exists', ->
+      it 'uses "$HOME/.config/howl" if one exists', ->
         with_tmpdir (dir) ->
           xdg_config_dir = dir\join(".config")
           howl_dir = xdg_config_dir\join("howl")
@@ -49,7 +49,7 @@ describe 'Settings', ->
           os.getenv = getenv
           assert.is_true howl_dir\join('system').exists
 
-      it 'loads settiings from "$XDG_CONFIG_HOME/howl"', ->
+      it 'uses "$XDG_CONFIG_HOME" when specified', ->
         with_tmpdir (dir) ->
           xdg_config_dir = dir\join("xdgconfdirname")
           howl_dir = xdg_config_dir\join("howl")
@@ -61,6 +61,22 @@ describe 'Settings', ->
           pcall Settings
           os.getenv = getenv
           assert.is_true howl_dir\join('system').exists
+
+      it 'uses ~/.howl instead of ~/.config/howl if both exists', ->
+        with_tmpdir (dir) ->
+          xdg_config_dir = dir\join(".config")
+          conf_dir = xdg_config_dir\join("howl")
+          conf_dir\mkdir_p!
+          dot_dir = dir\join(".howl")
+          dot_dir\mkdir!
+          getenv = os.getenv
+          os.getenv = (name) -> tostring dir.path if name == 'HOME'
+          pcall Settings
+          os.getenv = getenv
+          assert.is_false conf_dir\join('system').exists
+          assert.is_true dot_dir\join('system').exists
+
+
 
   it '.dir is set to the settings directory if available', ->
     assert.equal tmpdir, Settings(tmpdir).dir
