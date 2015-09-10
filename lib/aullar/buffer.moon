@@ -449,9 +449,10 @@ Buffer = {
     last_line_shown
 
   _on_modification: (type, offset, text, size, invalidate_offset) =>
-    revision = @revisions\push(type, offset, text)
+    part_of_revision = @revisions.processing
+    revision = part_of_revision and nil or @revisions\push(type, offset, text)
 
-    args = :offset, :text, :size, :invalidate_offset, :revision
+    args = :offset, :text, :size, :invalidate_offset, :revision, :part_of_revision
     lines_modified = text\find('[\n\r]') != nil
     @_nr_lines = nil if lines_modified
 

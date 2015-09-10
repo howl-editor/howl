@@ -4,7 +4,6 @@
 {:define_class} = require 'aullar.util'
 
 coalesce = (entry, prev) ->
-  -- return false if not prev or entry.text\match '^%s*$'
   return false if not prev
   if entry.type == 'inserted' and prev.type == 'inserted'
     if entry.offset == prev.offset + #prev.text
@@ -25,6 +24,7 @@ coalesce = (entry, prev) ->
 define_class {
   new: =>
     @clear!
+    @processing = false
 
   properties: {
     last: => @entries[@current]

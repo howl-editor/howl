@@ -73,13 +73,6 @@ describe 'Revisions', ->
           meta: {}
         }, revisions.last
 
-      -- it 'never merges blank insert revisions', ->
-      --   revisions\push 'inserted', 1, 'x'
-      --   revisions\push 'inserted', 2, ' '
-      --   assert.equal 2, #revisions
-      --   revisions\push 'inserted', 3, '\n'
-      --   assert.equal 3, #revisions
-
     it 'raises an error if the type is unknown', ->
       assert.raises 'foo', -> revisions\push 'foo', 3, 'bar'
 

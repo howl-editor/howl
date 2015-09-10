@@ -7,6 +7,7 @@ require 'ljglibs.cdefs.glib'
 ffi = require 'ffi'
 bit = require 'bit'
 C = ffi.C
+append = table.insert
 
 describe 'Buffer', ->
 
@@ -479,6 +480,24 @@ describe 'Buffer', ->
       b\undo!
       assert.equal 'hello', b.text
 
+    it 'sets .part_of_revision for modification notifications', ->
+      b = Buffer 'hello'
+      flags = {}
+      b\insert 1, 'x'
+      b\delete 1, 1
+
+      b\add_listener {
+        on_inserted: (_, buffer, args) ->
+          append(flags, args.part_of_revision or 'fail')
+        on_deleted: (_, buffer, args) ->
+          append(flags, args.part_of_revision or 'fail')
+      }
+
+      b\undo!
+      b\undo!
+      assert.equal 'hello', b.text
+      assert.same {true, true}, flags
+
   describe '.can_undo', ->
     it 'returns true if there are any revisions to undo in the buffer', ->
       b = Buffer 'hello'
@@ -509,6 +528,26 @@ describe 'Buffer', ->
       b\undo!
       b\redo!
       assert.equal 'ello', b.text
+
+    it 'sets .part_of_revision for modification notifications', ->
+      b = Buffer ''
+      b\insert 1, 'x'
+      b\insert 1, 'y'
+      b\undo!
+      b\undo!
+
+      flags = {}
+      b\add_listener {
+        on_inserted: (_, buffer, args) ->
+          append(flags, args.part_of_revision or 'fail')
+        on_deleted: (_, buffer, args) ->
+          append(flags, args.part_of_revision or 'fail')
+      }
+
+      b\redo!
+      b\redo!
+
+      assert.same {true, true}, flags
 
   describe 'refresh_styling_at(line_nr, to_line [, opts])', ->
     local b, styling, mode
@@ -671,6 +710,7 @@ describe 'Buffer', ->
           size: 2,
           invalidate_offset: 3,
           revision: b.revisions[1]
+          part_of_revision: false
         }
         assert.spy(l1.on_inserted).was_called_with l1, b, args
         assert.spy(l2.on_inserted).was_called_with l2, b, args
@@ -686,7 +726,8 @@ describe 'Buffer', ->
           text: 'll',
           size: 2,
           invalidate_offset: 3,
-          revision: b.revisions[1]
+          revision: b.revisions[1],
+          part_of_revision: false
         }
 
     it 'fires on_styled notifications for styling changes outside of lexing', ->
