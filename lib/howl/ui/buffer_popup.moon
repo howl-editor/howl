@@ -17,7 +17,6 @@ class BufferPopup extends Popup
     with @view.config
       .view_show_line_numbers = false
       .view_show_cursor = false
-    @buffer\lex!
 
     @bin = Gtk.EventBox {
       Gtk.Alignment {

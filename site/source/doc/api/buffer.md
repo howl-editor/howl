@@ -200,7 +200,7 @@ after newly inserted text. examples.
 ### lex(end_pos)
 
 Lexes the buffer content using the [mode](#mode)s lexer, if available. The
-content is lexed up until `end_pos`.
+content is lexed up until `end_pos`, or until the end of the buffer if omitted.
 
 ### redo()
 
