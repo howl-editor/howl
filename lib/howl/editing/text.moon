@@ -1,7 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import signal, timer, config, command from howl
+import signal, timer, config, command, app from howl
 import style from howl.ui
 tinsert = table.insert
 
@@ -136,20 +136,20 @@ command.register
       log.info 'Could not find paragraph to reflow'
 
 reflow_check = (args) ->
-  editor = args.editor
-  return if args.as_undo or args.as_redo or not editor
+  editor = howl.app.editor
+  return unless editor
+  return if args.part_of_revision or not editor.buffer == args.buffer
 
   config = args.buffer.config
   return if is_reflowing or not config.auto_reflow_text
-
-  at_pos = args.buffer\char_offset args.at_pos
-  cur_style = style.at_pos args.buffer, math.max(at_pos - 1, 1)
-  return if cur_style\contains 'embedded'
-
   reflow_at = config.hard_wrap_column
   if not reflow_at
     log.error "`auto_reflow_text` enabled but `hard_wrap_column` is not set"
     return
+
+  at_pos = args.buffer\char_offset args.at_pos
+  cur_style = style.at_pos args.buffer, math.max(at_pos - 1, 1)
+  return if cur_style and cur_style\contains 'embedded'
 
   -- check whether the modification affects the current line
   cur_line = editor.current_line

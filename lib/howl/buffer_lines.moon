@@ -206,7 +206,7 @@ BufferLines = (buffer) ->
       __index: (key) =>
         if type(key) == 'number'
           return nil if key < 1 or key > #self
-          Line key, @buffer, @sci
+          Line key, @buffer
 
       __newindex: (key, value) =>
         if type(key) != 'number' or (key < 1) or (key > #self)
@@ -229,4 +229,4 @@ BufferLines = (buffer) ->
 
       __pairs: => ipairs self
 
-return setmetatable {}, __call: (_, buffer, sci) -> BufferLines buffer, sci
+return setmetatable {}, __call: (_, buffer) -> BufferLines buffer
