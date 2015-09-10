@@ -40,8 +40,8 @@ describe 'Settings', ->
 
       it 'uses "$HOME/.config/howl" if one exists', ->
         with_tmpdir (dir) ->
-          xdg_config_dir = dir\join(".config")
-          howl_dir = xdg_config_dir\join("howl")
+          xdg_config_dir = dir\join('.config')
+          howl_dir = xdg_config_dir\join('howl')
           howl_dir\mkdir_p!
           getenv = os.getenv
           os.getenv = (name) -> tostring dir.path if name == 'HOME'
@@ -51,23 +51,23 @@ describe 'Settings', ->
 
       it 'uses "$XDG_CONFIG_HOME" when specified', ->
         with_tmpdir (dir) ->
-          xdg_config_dir = dir\join("xdgconfdirname")
-          howl_dir = xdg_config_dir\join("howl")
+          xdg_config_dir = dir\join('xdgconfdirname')
+          howl_dir = xdg_config_dir\join('howl')
           howl_dir\mkdir_p!
           getenv = os.getenv
           os.getenv = (name) ->
             return tostring dir.path if name == 'HOME'
-            return tostring xdg_config_dir.path if name == "XDG_CONFIG_HOME"
+            return tostring xdg_config_dir.path if name == 'XDG_CONFIG_HOME'
           pcall Settings
           os.getenv = getenv
           assert.is_true howl_dir\join('system').exists
 
       it 'uses ~/.howl instead of ~/.config/howl if both exists', ->
         with_tmpdir (dir) ->
-          xdg_config_dir = dir\join(".config")
-          conf_dir = xdg_config_dir\join("howl")
+          xdg_config_dir = dir\join('.config')
+          conf_dir = xdg_config_dir\join('howl')
           conf_dir\mkdir_p!
-          dot_dir = dir\join(".howl")
+          dot_dir = dir\join('.howl')
           dot_dir\mkdir!
           getenv = os.getenv
           os.getenv = (name) -> tostring dir.path if name == 'HOME'
