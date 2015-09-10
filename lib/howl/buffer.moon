@@ -7,6 +7,7 @@ import style from howl.ui
 import PropertyObject from howl.aux.moon
 import destructor from howl.aux
 aullar = require 'aullar'
+{:copy} = moon
 
 ffi = require 'ffi'
 
@@ -289,7 +290,11 @@ class Buffer extends PropertyObject
   _on_text_inserted: (_, _, args) =>
     @_len = nil
     @modified = true
-    args.buffer = self
+    args = {
+      buffer: self,
+      at_pos: @char_offset(args.offset)
+      part_of_revision: args.part_of_revision
+    }
 
     signal.emit 'text-inserted', args
     signal.emit 'buffer-modified', buffer: self
@@ -297,8 +302,12 @@ class Buffer extends PropertyObject
   _on_text_deleted: (_, _, args) =>
     @_len = nil
     @modified = true
+    args = {
+      buffer: self,
+      at_pos: @char_offset(args.offset)
+      part_of_revision: args.part_of_revision
+    }
 
-    args.buffer = self
     signal.emit 'text-deleted', args
     signal.emit 'buffer-modified', buffer: self
 
@@ -337,13 +346,9 @@ modifications  may be done within the signal handler.
   ]]
     parameters:
       buffer: 'The buffer for which the text was inserted'
-      editor: '(Optional) The editor containing the buffer'
-      at_pos: 'The byte start position of the inserted text'
-      length: 'The number of characters in the inserted text'
+      at_pos: 'The start position of the inserted text'
       text: 'The text that was inserted'
-      lines_added: 'The number of lines that were added'
-      as_undo: 'The text was inserted as part of an undo operation'
-      as_redo: 'The text was inserted as part of a redo operation'
+      part_of_revision: 'The text was inserted as part of an undo or redo operation'
 
   .register 'text-deleted',
     description: [[
@@ -352,13 +357,10 @@ modifications may be done within the signal handler.
   ]]
     parameters:
       buffer: 'The buffer for which the text was deleted'
-      editor: '(Optional) The editor containing the buffer'
-      at_pos: 'The byte start position of the deleted text'
-      length: 'The number of characters that was deleted'
+      at_pos: 'The start position of the deleted text'
       text: 'The text that was deleted'
-      lines_deleted: 'The number of lines that were deleted'
       as_undo: 'The text was deleted as part of an undo operation'
-      as_redo: 'The text was deleted as part of a redo operation'
+      part_of_revision: 'The text was deleted as part of an undo or redo operation'
 
   .register 'buffer-modified',
     description: 'Signaled right after a buffer was modified',
