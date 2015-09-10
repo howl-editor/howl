@@ -38,6 +38,30 @@ describe 'Settings', ->
           os.getenv = getenv
           assert.is_true dir\join('.howl').exists
 
+      it 'loads settings from "$HOME/.config/howl" if one exists', ->
+        with_tmpdir (dir) ->
+          xdg_config_dir = dir\join(".config")
+          howl_dir = xdg_config_dir\join("howl")
+          howl_dir\mkdir_p!
+          getenv = os.getenv
+          os.getenv = (name) -> tostring dir.path if name == 'HOME'
+          pcall Settings
+          os.getenv = getenv
+          assert.is_true howl_dir\join('system').exists
+
+      it 'loads settiings from "$XDG_CONFIG_HOME/howl"', ->
+        with_tmpdir (dir) ->
+          xdg_config_dir = dir\join("xdgconfdirname")
+          howl_dir = xdg_config_dir\join("howl")
+          howl_dir\mkdir_p!
+          getenv = os.getenv
+          os.getenv = (name) ->
+            return tostring dir.path if name == 'HOME'
+            return tostring xdg_config_dir.path if name == "XDG_CONFIG_HOME"
+          pcall Settings
+          os.getenv = getenv
+          assert.is_true howl_dir\join('system').exists
+
   it '.dir is set to the settings directory if available', ->
     assert.equal tmpdir, Settings(tmpdir).dir
     assert.is_nil Settings(tmpdir\join('sub', 'bar')).dir
