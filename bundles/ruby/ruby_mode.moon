@@ -1,8 +1,6 @@
 -- Copyright 2013-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import formatting from howl
-
 continuation_pattern = r'(?:[,+=]|\\|\\||&&)\\s*$'
 hash_entry_pattern = r'^\\s*(?:\\S+:|[\'"][^\'"]+[\'"]\\s*=>)'
 

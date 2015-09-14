@@ -4,7 +4,7 @@
 ffi = require 'ffi'
 bit = require 'bit'
 import const_char_p, char_arr from howl.cdefs
-import StyledText, ui, style, colors from howl.ui
+import StyledText, style, colors from howl.ui
 
 band = bit.band
 append = table.insert
