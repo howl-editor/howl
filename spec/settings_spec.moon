@@ -72,6 +72,11 @@ describe 'Settings', ->
         assert.is_true status
         assert.equal dot_dir, settings.dir
 
+      it 'raises an error if no config directory can be found', ->
+        assert.raises "directory", ->
+          env.HOME = nil
+          Settings!
+
   it '.dir is set to the settings directory if available', ->
     assert.equal tmpdir, Settings(tmpdir).dir
     assert.is_nil Settings(tmpdir\join('sub', 'bar')).dir

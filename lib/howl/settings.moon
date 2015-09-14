@@ -2,31 +2,41 @@ serpent = require 'serpent'
 
 import File from howl.io
 import SandboxedLoader from howl.aux
+{:env} = howl.sys
 
 default_dir = ->
-  howl_dir = os.getenv 'HOWL_DIR'
+  howl_dir = env.HOWL_DIR
   return File(howl_dir) if howl_dir
-  home = os.getenv('HOME')
-  xdg_config_home = os.getenv('XDG_CONFIG_HOME')
-  -- if none of this are set, we won't be able to find config
-  return nil unless home or xdg_config_home
-  xdg_conf_dir = nil
+  home = env.HOME
+  xdg_config_home = env.XDG_CONFIG_HOME
+
+  -- if none of these are set, we won't be able to find config
+  unless home or xdg_config_home
+    error "Could not find conf directory to use ($HOME not set?)"
+
+  home = File home
+  dotdir = home\join('.howl')
+  local xdg_conf_dir
+
   if xdg_config_home
     xdg_conf_dir = File(xdg_config_home)\join('howl')
-  elseif home
-    xdg_conf_dir = File(home)\join('.config')\join('howl')
+
+  unless xdg_conf_dir and xdg_conf_dir.is_directory
+    -- check for howl dir in default XDG_CONFIG_HOME location
+    xdg_conf_dir = home\join('.config', 'howl')
+
   -- trying ~/.howl first
-  dotdir = nil
-  if home
-    dotdir = File(home)\join('.howl')
-    if dotdir.is_directory
-      if xdg_conf_dir and xdg_conf_dir.is_directory
-        howl.log.warn("Ignoring #{xdg_conf_dir.path} in favor of #{dotdir.path}")
-      return dotdir
-  -- trying xdg-complaint ~/.config/howl
+  if dotdir.is_directory
+    if xdg_conf_dir and xdg_conf_dir.exists
+      log.warn("Ignoring #{xdg_conf_dir} in favour of #{dotdir}")
+
+    return dotdir
+
+  -- else the xdg config dir, if it exists
   if xdg_conf_dir and xdg_conf_dir.is_directory
     return xdg_conf_dir
-  -- if none of these exists falling back to ~/.howl
+
+  -- no existing dir found, create a new one at ~/.howl
   dotdir
 
 class Settings
