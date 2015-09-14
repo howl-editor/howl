@@ -7,7 +7,27 @@ default_dir = ->
   howl_dir = os.getenv 'HOWL_DIR'
   return File(howl_dir) if howl_dir
   home = os.getenv('HOME')
-  home and File(home)\join('.howl') or nil
+  xdg_config_home = os.getenv('XDG_CONFIG_HOME')
+  -- if none of this are set, we won't be able to find config
+  return nil unless home or xdg_config_home
+  xdg_conf_dir = nil
+  if xdg_config_home
+    xdg_conf_dir = File(xdg_config_home)\join('howl')
+  elseif home
+    xdg_conf_dir = File(home)\join('.config')\join('howl')
+  -- trying ~/.howl first
+  dotdir = nil
+  if home
+    dotdir = File(home)\join('.howl')
+    if dotdir.is_directory
+      if xdg_conf_dir and xdg_conf_dir.is_directory
+        howl.log.warn("Ignoring #{xdg_conf_dir.path} in favor of #{dotdir.path}")
+      return dotdir
+  -- trying xdg-complaint ~/.config/howl
+  if xdg_conf_dir and xdg_conf_dir.is_directory
+    return xdg_conf_dir
+  -- if none of these exists falling back to ~/.howl
+  dotdir
 
 class Settings
 
