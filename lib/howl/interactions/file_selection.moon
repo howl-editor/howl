@@ -77,6 +77,8 @@ class FileSelector
     file = @directory / selection.name
     if file.exists
       app.editor\preview preview.get_preview_buffer file
+    else
+      app.editor\cancel_preview!
 
   on_update: (text) =>
     path = @directory.path .. '/' .. text
@@ -89,6 +91,7 @@ class FileSelector
 
   keymap:
     enter: =>
+      app.editor\cancel_preview!
       name = @list_widget.selection and @list_widget.selection.name
       if not @allow_new and not name
         log.error 'Invalid path'
