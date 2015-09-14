@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Added support for loading user configuration from a XDG Base Directory
+compliant directory. It's not the default, but will be used if `~/.howl` is not
+present and the XDG directory is.
+
 - Added previews for the `open` command.
 
 - Replaced the old editing engine Scintilla with a new custom written engine,
