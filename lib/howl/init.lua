@@ -1,6 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+local ffi = require('ffi')
 local app_root, argv = ...
 io.stdout:setvbuf('line')
 
@@ -13,6 +14,8 @@ Where options can be any of:
   --run         Loads and runs the specified file from within Howl
   -h, --help    This help
 ]=]
+
+local path_separator = jit.os == 'Windows' and '\\' or '/'
 
 local function parse_args(argv)
   local options = {
@@ -60,9 +63,15 @@ local function auto_module(name)
       local status, mod = pcall(require, req_name)
       if not status then
         if mod:match('module.*not found') then
-          mod = auto_module(req_name)
+          relative_path = req_name:gsub('%.', path_separator)
+          path = table.concat({ app_root, 'lib', relative_path }, path_separator)
+          if ffi.C.g_file_test(path, ffi.C.G_FILE_TEST_IS_DIR) ~= 0 then
+            mod = auto_module(req_name)
+          else
+            error(mod, 2)
+          end
         else
-          error(mod)
+          error(mod, 2)
         end
       end
 
@@ -107,6 +116,7 @@ local function main(args)
   set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
   require 'howl.moonscript_support'
   table.insert(package.loaders, 2, bytecode_loader())
+  require 'ljglibs.cdefs.glib'
 
   howl = auto_module('howl')
   require('howl.globals')

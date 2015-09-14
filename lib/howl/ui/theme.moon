@@ -8,7 +8,7 @@ require 'ljglibs.gtk.widget'
 flair = require 'aullar.flair'
 
 import File from howl.io
-import config, signal, app from howl
+import config, signal from howl
 import style, colors, highlight from howl.ui
 import PropertyTable, Sandbox from howl.aux
 aullar_config = require 'aullar.config'
@@ -185,8 +185,6 @@ apply_theme = ->
     aullar_config.gutter_styling = current_theme.editor.gutter
 
   override_widget_background widget, style for widget, style in pairs background_color_widgets
-  for editor in *app.editors
-    editor\refresh_display!
 
 set_theme = (name) ->
   if name == nil
