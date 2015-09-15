@@ -71,12 +71,15 @@ signals = {
     true
 }
 
+text_cursor = Gdk.Cursor.new(Gdk.XTERM)
+
 View = {
   new: (buffer = Buffer('')) =>
     @margin = 3
     @_base_x = 0
     @_first_visible_line = 1
     @_last_visible_line = nil
+    @_cur_mouse_cursor = text_cursor
     @config = config.local_proxy!
 
     @area = Gtk.DrawingArea!
@@ -705,7 +708,17 @@ View = {
     @_selection_active = false
 
   _on_motion_event: (event) =>
-    return unless @_selection_active
+    unless @_selection_active
+      if @_cur_mouse_cursor != text_cursor
+        if event.x > @gutter_width
+          @area.window.cursor = text_cursor
+          @_cur_mouse_cursor = text_cursor
+      elseif event.x <= @gutter_width
+        @area.window.cursor = nil
+        @_cur_mouse_cursor = nil
+
+      return
+
     pos = @position_from_coordinates(event.x, event.y)
     if pos
       @cursor\move_to :pos, extend: true
@@ -725,7 +738,11 @@ View = {
       @base_x -= 20
 
   _on_size_allocate: (allocation) =>
-    @im_context.client_window = @area.window
+    gdk_window = @area.window
+    @im_context.client_window = gdk_window
+    if gdk_window != nil
+      gdk_window.cursor = @_cur_mouse_cursor
+
     @width = allocation.width
     @height = allocation.height
     @_reset_display!

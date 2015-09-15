@@ -4,6 +4,7 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gdk'
 core = require 'ljglibs.core'
+require 'ljglibs.gdk.cursor'
 
 bit_flags = core.bit_flags
 
@@ -29,6 +30,10 @@ core.define 'GdkWindow', {
     events: {
       get: => C.gdk_window_get_events @
       set: (events) => C.gdk_window_set_events @, events
+    }
+    cursor: {
+      get: => C.gdk_window_get_cursor @
+      set: (cursor) => C.gdk_window_set_cursor @,cursor
     }
   }
 
