@@ -21,10 +21,6 @@ config = require 'aullar.config'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs, :floor} = math
 
-insertable_character = (event) ->
-  return false if event.ctrl or event.alt or event.meta or event.super or not event.character
-  true
-
 contains_newlines = (s) ->
   s\find('[\n\r]') != nil
 
