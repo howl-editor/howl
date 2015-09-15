@@ -64,8 +64,8 @@ interact.register
     unless lines
       error '"lines" field required', 2
 
-    if opts.matcher or opts.items or opts.on_selection_change
-      error '"matcher", "items" or "on_selection_change" not allowed', 2
+    if opts.matcher or opts.items or opts.on_change
+      error '"matcher", "items" or "on_change" not allowed', 2
 
     editor = opts.editor or howl.app.editor
     line_items = [{tostring(line.nr), line.chunk, buffer: line.buffer, line_nr: line.nr, :line} for line in *lines]
@@ -80,7 +80,7 @@ interact.register
 
     matcher = Matcher line_items, preserve_order: true
     opts.matcher = matcher
-    opts.on_selection_change = line_match_highlighter(editor)
+    opts.on_change = line_match_highlighter(editor)
     opts.force_preview = true
 
     result = interact.select_location opts

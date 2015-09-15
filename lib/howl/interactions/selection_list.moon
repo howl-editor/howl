@@ -18,7 +18,7 @@ class SelectionList
 
     matcher = @opts.matcher or Matcher @opts.items
     @list_widget = ListWidget matcher,
-      on_selection_change: @\_selection_changed
+      on_selection_change: @\_handle_change
       reverse: @opts.reverse
       never_shrink: true
 
@@ -46,11 +46,14 @@ class SelectionList
     @showing_list = true
 
   on_update: (text) =>
+    @_change_triggered = false
     @list_widget\update text
+    @_handle_change! unless @_change_triggered
 
-  _selection_changed: =>
-    if @opts.on_selection_change
-      @opts.on_selection_change @list_widget.selection, @command_line.text, @list_widget.items
+  _handle_change: =>
+    @_change_triggered = true
+    if @opts.on_change
+      @opts.on_change @list_widget.selection, @command_line.text, @list_widget.items
 
   submit: =>
     if @list_widget.selection
