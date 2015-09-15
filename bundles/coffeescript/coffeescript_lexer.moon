@@ -39,7 +39,7 @@ howl.aux.lpeg_lexer ->
     word('Nan', 'Infinity')
   }
 
-  operator = c 'operator', S'+-*!\\/%^#=<>;:,.(){}[]'
+  operator = c 'operator', S'+-*!\\/%^#=<>;:,.?(){}[]'
 
   ident = (alpha + '_')^1 * (alpha + digit + '_')^0
 
