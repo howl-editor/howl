@@ -8,6 +8,8 @@ import ListWidget, markup from howl.ui
 import file_matcher, get_cwd, get_dir_and_leftover from howl.util.paths
 append = table.insert
 
+_command_history = {}
+
 available_commands = ->
   commands = {}
   for path in sys.env.PATH\gmatch '[^:]+'
@@ -137,9 +139,27 @@ class ExternalCommandEntry
       @list_widget\hide!
 
   _submit: =>
+    unless @command_line.text == _command_history[1]
+      append _command_history, 1, @command_line.text
     -- remove prompt so correct history is catpured
     @command_line.prompt = ''
     self.finish @directory.path, @command_line.text
+
+  _select_from_history: =>
+    text = @command_line.text
+    @command_line.text = ''
+
+    result = interact.select
+      items: _command_history
+      title: 'Previous commands'
+      reverse: true
+      :text
+      allow_new_value: true
+
+    if result
+      @command_line.text = result.selection or result.text
+    else
+      @command_line.text = text
 
   keymap:
     enter: =>
@@ -184,6 +204,10 @@ class ExternalCommandEntry
         @_updir!
       else
         return false
+
+    up: =>
+      return false if @list_widget and @list_widget.showing
+      @_select_from_history!
 
 interact.register
   name: 'get_external_command',
