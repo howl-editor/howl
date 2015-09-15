@@ -37,7 +37,7 @@ class SelectionList
       if @opts.selection
         @list_widget\update ''
         @list_widget.selection = @opts.selection
-        timer.asap -> @_selection_changed!
+        timer.asap -> @_handle_change!
       else
         @on_update ''
 
