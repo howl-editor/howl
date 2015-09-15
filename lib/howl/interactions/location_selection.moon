@@ -15,16 +15,16 @@ interact.register
     buffer = editor.buffer
 
     if howl.config.preview_files or opts.force_preview
-      on_selection_change = opts.on_selection_change
-      opts.on_selection_change = (selection, text, items) ->
+      on_change = opts.on_change
+      opts.on_change = (selection, text, items) ->
         if selection
           buffer = selection.buffer or preview.get_preview_buffer selection.file
           editor\preview buffer
           if selection.line_nr
             editor.line_at_center = selection.line_nr
 
-        if on_selection_change
-          on_selection_change selection, text, items
+        if on_change
+          on_change selection, text, items
 
     result = interact.select opts
     editor\cancel_preview!

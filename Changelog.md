@@ -18,6 +18,12 @@ indentation levels to work as a stand-alone code chunk.
 
 - Issues as seen on [Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=created%3A%3E2015-09-02+state%3Aclosed++type%3Aissue)
 
+### API changes
+
+- The `on_selection_change` callback for interactions has been renamed to
+`on_change` and triggers even when selection stays the same but the text
+changes.
+
 ## 0.3 (2015-09-01)
 
 - Added a new command, `project-build` that executes a pre-configured command

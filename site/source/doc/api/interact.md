@@ -203,10 +203,10 @@ filtered list of items matching the given text.
 column. Identical to the `columns` argument in the
 [StyledText.for_table](ui/styled_text.html#styledtext.for_table) function.
 - `keymap`: _[optional]_ An additional keymap to used for this interaction.
-- `on_selection_change`: _[optional]_ A function callback that is called
-whenever the user changes the currently selected item (usually by using the
-arrow keys). The callback function is called with the three arguments
-`(selection, text, items)`, where:
+- `on_change`: _[optional]_ A function callback that is called whenever the user
+changes the currently selected item or updates the text in the command line. The
+callback function is called with the three arguments `(selection, text, items)`,
+where:
   - `selection` is the newly selected item
   - `text` is the current text in the command line
   - `items` is the current (possibly filtered) list of items
@@ -323,7 +323,7 @@ Lets the user select a line from a list of source lines. `opts` is a table
 similar to the table accepted by [select](#select), with the following
 differences:
 
-- `items`, `matcher` and `on_selection_change` cannot be specified.
+- `items`, `matcher` and `on_change` cannot be specified.
 - `lines` must be provided and should be a list of [Line] objects.
 
 If the user presses `enter`, returns a table containing:
