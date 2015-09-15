@@ -24,8 +24,10 @@ find_executable = (name) ->
     if exe.exists and not exe.is_directory
       return exe.path
 
-
 {
   :env,
   :find_executable
+  info: {
+    os: jit.os\lower!
+  }
 }
