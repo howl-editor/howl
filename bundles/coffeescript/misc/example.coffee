@@ -5,6 +5,7 @@
 square = (x) -> x * x
 fill = (container, liquid = "coffee") ->
   "Filling the #{container} with #{1 / 2}..."
+  yield from [1, 2, 3]
 
 awardMedals = (first, second, others...) ->
   gold = first
