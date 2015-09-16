@@ -88,7 +88,7 @@ class SelectionList
             text: @command_line.text
           }
           @list_widget\update @command_line.text, true
-          @_selection_changed!
+          @_handle_change!
         return false
 
 interact.register
