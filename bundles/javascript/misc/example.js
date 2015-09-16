@@ -60,6 +60,8 @@ MyType.field = function(a, b) { return a + b; }
 function add2(x, y) {
     return x + y;
 }
+var f = function* (a, b) { yield* 123; }
+function* g(c) { yield c; }
 var
   foo = 1,
   my_func = function() {}
