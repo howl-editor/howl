@@ -341,7 +341,7 @@ class Editor extends PropertyObject
       cur_line.text = cur_line.text\usub 1, @cursor.column_index - 1
     else
       end_pos = cur_line.end_pos
-      end_pos -= 1 if cur_line.next
+      end_pos -= 1 if cur_line.has_eol
       @selection\select @cursor.pos, end_pos
       @selection\cut!
 

@@ -99,9 +99,16 @@ describe 'BufferLines', ->
       assert.equal lines[1].start_pos, 1
 
     it '.end_pos returns the end position for line, right before the newline', ->
-      assert.equal lines[1].end_pos, 6
+      assert.equal 6, lines[1].end_pos
       buf.text = ''
-      assert.equal lines[1].end_pos, 1
+      assert.equal 1, lines[1].end_pos
+      buf.text = '1'
+      assert.equal 2, lines[1].end_pos
+
+    it '.has_eol is true if the line has an EOL', ->
+      buf.text = 'one\ntwo'
+      assert.is_true lines[1].has_eol
+      assert.is_false lines[2].has_eol
 
     it '.byte_start_pos returns the byte start position for line', ->
       buf.text = 'åäö\nwØrld'
@@ -111,9 +118,11 @@ describe 'BufferLines', ->
 
     it '.byte_end_pos returns the byte end position for line', ->
       buf.text = 'åäö\nwØrld'
-      assert.equal lines[1].byte_end_pos, 7
+      assert.equal 7, lines[1].byte_end_pos
       buf.text = ''
-      assert.equal lines[1].byte_end_pos, 1
+      assert.equal 1, lines[1].byte_end_pos
+      buf.text = '1'
+      assert.equal 2, lines[1].byte_end_pos
 
     it '.previous returns the line above this one, or nil if none', ->
       assert.equal lines[2].previous, lines[1]
@@ -170,7 +179,7 @@ describe 'BufferLines', ->
         chunk = lines[2].chunk
         assert.equal '', chunk.text
         assert.equal 2, chunk.start_pos
-        assert.equal 2, chunk.end_pos
+        assert.equal 1, chunk.end_pos
 
     it '.indent() indents the line by <config.indent>', ->
       config.indent = 2

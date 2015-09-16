@@ -230,6 +230,16 @@ describe 'Editor', ->
       editor\paste!
       assert.equal buffer.text, 'hƏllo world!\nnext'
 
+    it 'handles lines without EOLs', ->
+      buffer.text = 'abc'
+      cursor.pos = 3
+      editor\delete_to_end_of_line!
+      assert.equal 'ab', buffer.text
+
+      cursor.pos = 3
+      editor\delete_to_end_of_line!
+      assert.equal 'ab', buffer.text
+
     it 'deletes without copying if no_copy is specified', ->
       buffer.text = 'hƏllo world!'
       cursor.pos = 3

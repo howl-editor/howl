@@ -82,12 +82,17 @@ Line = (nr, buffer) ->
     _getters:
       text: => text!
       byte_start_pos: => get_line!.start_offset
-      byte_end_pos: => get_line!.end_offset
+      byte_end_pos: =>
+        l = get_line!
+        pos = l.end_offset
+        pos += 1 unless l.has_eol or l.size == 0
+        pos
       start_pos: => buffer\char_offset @byte_start_pos
       end_pos: => buffer\char_offset @byte_end_pos
       previous: => if nr > 1 then Line nr - 1, buffer, sci
       next: => if nr < a_buf.nr_lines then Line nr + 1, buffer, sci
       size: => get_line!.size
+      has_eol: => get_line!.has_eol
 
       indentation: =>
         (get_indentation text!, @buffer.config)
@@ -95,7 +100,7 @@ Line = (nr, buffer) ->
       chunk: =>
         start_pos = @start_pos
         end_pos = @end_pos
-        end_pos -= #buffer.eol unless nr == a_buf.nr_lines
+        end_pos -= 1
         buffer\chunk start_pos, end_pos
 
       previous_non_blank: =>
