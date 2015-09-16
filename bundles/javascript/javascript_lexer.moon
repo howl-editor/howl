@@ -12,7 +12,7 @@ howl.aux.lpeg_lexer ->
     'break', 'case', 'catch', 'continue', 'const', 'debugger', 'default', 'delete',
     'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof',
     'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
-    'void', 'while', 'with'
+    'void', 'while', 'with', 'yield'
   }
 
   operator = c 'operator', S'+-*/%=<>&^|!(){}[];'
@@ -50,7 +50,7 @@ howl.aux.lpeg_lexer ->
   }
 
   fdecl = any {
-    c('keyword', 'function') * ws^1 * c('fdecl', ident),
+    c('keyword', 'function') * (ws^0 * c 'operator', '*')^0 * ws^1 * c('fdecl', ident),
     sequence {
       -B(alpha),
       c('fdecl', ident),
@@ -59,7 +59,7 @@ howl.aux.lpeg_lexer ->
       ws^0,
       any {
         c('keyword', 'new') * ws^1 * c('type', 'Function'),
-        c('keyword', 'function') * #(blank^0 * '(')
+        c('keyword', 'function') * #(blank^0 * (c('operator', '*') * blank^0)^0 * '(')
       }
     }
   }
