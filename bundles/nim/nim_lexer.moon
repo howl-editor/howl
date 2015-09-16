@@ -95,6 +95,8 @@ howl.aux.lpeg_lexer ->
   template_fdecl = c('keyword', nim_identifier('template')) * function_name * function_export_marker
   macro_fdecl = c('keyword', nim_identifier('macro')) * function_name * function_export_marker
 
+  boolean = c 'special', nim_identifier('true') + nim_identifier('false')
+
   type_name = c 'class', upper^1 * (alpha + digit + '_')^0
   backquoted_type_name = c 'class', P'`' * type_name * P'`'
   -- backquoted_type_name = c 'class', P'`' * type_name * P'`'
@@ -150,6 +152,7 @@ howl.aux.lpeg_lexer ->
       macro_fdecl,
       keyword,
       builtin,
+      boolean,
       type_name,
       backquoted_type_name,
       identifier,
