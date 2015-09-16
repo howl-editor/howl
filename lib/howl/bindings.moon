@@ -4,7 +4,7 @@
 _G = _G
 import table, coroutine, pairs from _G
 import tostring, pcall, callable, type, print, setmetatable, typeof from _G
-import signal, command from howl
+import signal, command, sys from howl
 append = table.insert
 
 signal.register 'key-press',
@@ -137,14 +137,19 @@ export translate_key = (event) ->
   alternate = alternate_names[event.key_name]
 
   translations = {}
-  append translations, ctrl .. alt .. meta .. event.character if event.character
-  modifiers = ctrl .. shift .. alt .. meta
+  append translations, ctrl .. meta .. alt .. event.character if event.character
+  modifiers = ctrl .. meta .. shift .. alt
 
   if event.key_name and event.key_name != event.character
     append translations, modifiers .. event.key_name
 
   append translations, modifiers .. alternate if alternate
   append translations, modifiers .. event.key_code
+
+  action_orig =  sys.info.os != 'osx' and 'ctrl' or 'meta'
+  for tr in *translations
+    if tr\contains "#{action_orig}_"
+      append translations, (tr\gsub("#{action_orig}_", 'action_'))
 
   translations
 

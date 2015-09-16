@@ -1,4 +1,4 @@
-import bindings, signal, command from howl
+import bindings, signal, command, sys from howl
 append = table.insert
 
 describe 'bindings', ->
@@ -59,14 +59,14 @@ describe 'bindings', ->
         tr = bindings.translate_key
           character: 'A', key_name: 'a', key_code: 123,
           control: true, alt: true, meta: true
-        mods = 'ctrl_alt_meta_'
-        assert.same tr, { mods .. 'A', mods .. 'a', mods .. '123' }
+        mods = 'ctrl_meta_alt_'
+        assert.has_values tr, { mods .. 'A', mods .. 'a', mods .. '123' }
 
       it 'emits the shift modifier if the character is known', ->
         tr = bindings.translate_key
           character: 'A', key_name: 'a', key_code: 123,
           control: true, shift: true
-        assert.same tr, { 'ctrl_A', 'ctrl_shift_a', 'ctrl_shift_123' }
+        assert.has_values tr, { 'ctrl_A', 'ctrl_shift_a', 'ctrl_shift_123' }
 
     it 'adds special case translations for certain common keys', ->
       for_keynames = {
@@ -104,6 +104,30 @@ describe 'bindings', ->
         translations = bindings.translate_key key_code: 123, key_name: name
         assert.includes translations, substitution
         assert.not_includes translations, name
+
+    describe 'synthetic modifiers', ->
+      real_os = sys.info.os
+      after_each -> sys.info.os = real_os
+
+      context 'when os is not "osx"', ->
+        before_each ->
+          sys.info.os = 'linux'
+
+        it 'maps ctrl to the synthetic "action" modifier', ->
+          tr = bindings.translate_key
+            character: 'A', key_name: 'a', key_code: 123,
+            control: true, shift: true
+          assert.has_values tr, { 'action_A', 'action_shift_a', 'action_shift_123' }
+
+      context 'when os is "osx"', ->
+        before_each ->
+          sys.info.os = 'osx'
+
+        it 'maps meta to the synthetic "action" modifier', ->
+          tr = bindings.translate_key
+            character: 'A', key_name: 'a', key_code: 123,
+            meta: true, shift: true
+          assert.has_values tr, { 'action_A', 'action_shift_a', 'action_shift_123' }
 
   describe 'process(event, source, extra_keymaps, ..)', ->
 
