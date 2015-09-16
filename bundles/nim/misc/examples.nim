@@ -72,3 +72,5 @@ template someTmpl(x, y: expr): expr {.immediate.} =
   not (x == y)
 
 macro ignore(s: string): stmt = discard
+
+var a = true

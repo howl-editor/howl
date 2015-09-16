@@ -66,6 +66,8 @@ describe 'Ruby mode', ->
         'foo do',
         'foo.each_pair do |my_var, other_var|',
         'begin',
+        'f()do',
+        'f()do |x|',
       }
     }
 
