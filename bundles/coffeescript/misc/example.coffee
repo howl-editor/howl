@@ -31,7 +31,7 @@ kids =
     age:  9
 
 # some keywords displayed
-if happy and knowsIt
+if happy and knowsIt? # existential operator
   clapsHands()
   chaChaCha()
 else
