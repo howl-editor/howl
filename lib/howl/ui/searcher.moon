@@ -91,7 +91,7 @@ class Searcher
       if @last_type == 'word'
         log.info "Next match for word '#{@last_search}'"
       else
-        log.info "Next match for'#{@last_search}'"
+        log.info "Next match for '#{@last_search}'"
       @forward_to @last_search, @last_type, false
 
   previous: =>
