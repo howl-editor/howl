@@ -9,7 +9,7 @@ title: Working with files
 Howl provides a text-oriented interface, and so you want see any traditional
 graphical open file dialogs. Instead you'll open files from the command line,
 using commands. First off, the `open` command lets you navigate the file system
-and select a file to open. It's bound to `ctrl_o` in the default keymap, and is
+and select a file to open. It's bound to `action_o` in the default keymap, and is
 also aliased as `e` for those more comfortable with VI. Triggering that command
 opens up the command line prompt and displays the contents of the current
 directory, as determined by the current buffer:
@@ -18,7 +18,7 @@ directory, as determined by the current buffer:
 
 Once you're in the prompt, you  can then select the file of your choice. You can
 choose the file from the list by manually navigating using the arrow keys,
-`ctrl_p`, `ctrl_n`, etc., if you want. However, it's usually much faster to
+`action_p`, `action_n`, etc., if you want. However, it's usually much faster to
 narrow down the list by typing something that matches the file you want. Just as
 with completions (as described in the [previous](completions.html) section),
 your input string will be matched against the available files using boundary
@@ -44,7 +44,7 @@ this.
 Howl provides simple and light-weight support for projects. In Howl, a project
 is currently defined as root directory containing the project files below, with
 an optional version control system attached to it. The `project-open` command
-(bound to `ctrl_p` by default) provides a way of selecting a file to open from
+(bound to `action_p` by default) provides a way of selecting a file to open from
 all the files contained in your project. Thanks to the matching capabilities,
 this often provides a much faster way of opening files than navigating the
 project directory structure do. Below you'll see an example for the Howl project
@@ -57,10 +57,10 @@ itself:
 Invoke the `save` command to save the current buffer to a file. If the buffer
 has an associated file, it will get saved to that file, and otherwise you'll be
 prompted for the file name to save the buffer to. The `save` command is bound to
-`ctrl_s` in the default keymap, and is also aliased as `w`.
+`action_s` in the default keymap, and is also aliased as `w`.
 
 To save a buffer with an associated file to another file, invoke the `save-as`
-command (bound to `ctrl_shift_s` in the default keymap). There's also a related
+command (bound to `action_shift_s` in the default keymap). There's also a related
 command, `save-and-quit`, that allows you to save any modified buffers and exit
 Howl in one go.
 
@@ -69,7 +69,7 @@ Howl in one go.
 While Howl provides the ability to view more than one buffer at a time by
 supporting multiple open views, you'll likely have more buffers open than you
 can fit on your screen. In order to switch to another buffer, you can use the
-`switch-buffer` command (bound to `ctrl_b` by default):
+`switch-buffer` command (bound to `action_b` by default):
 
 ![switch-buffer](/images/doc/switch-buffer.png)
 

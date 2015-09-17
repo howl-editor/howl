@@ -42,7 +42,7 @@ Below is a list of some useful commands that work with views:
 - `view-right`: Moves focus to the view right of the current one.
 - `view-up`: Moves focus to the view above the current one.
 - `view-down`: Moves focus to the view below the current one.
-- `view-next`: Moves focus to the next view in the grid. Bound to `ctrl_tab`
+- `view-next`: Moves focus to the next view in the grid. Bound to `action_tab`
 in the default keymap.
 
 Each of the four directional commands above (view-left, view-right, view-up and
@@ -65,7 +65,7 @@ however, it would be created first. The last set of commands are bound to
 
 ### Manipulating views
 
-- `view-close`: Closes/removes the current view. Bound to `ctrl_w` in the
+- `view-close`: Closes/removes the current view. Bound to `action_w` in the
 default keymap.
 
 ---

@@ -75,6 +75,8 @@ Key bindings are used for triggering certain actions whenever a certain key
 combination is entered. Actions are typically commands, but can also be custom
 functions.
 
+In Howl keybindings, `action` is mapped to `meta` on OSX and `ctrl` on other systems.
+
 ### Signals
 
 Signals are fired as a result of different actions within Howl, and provides a
@@ -118,7 +120,7 @@ commands that you invoke often. Unsurprisingly, any command can be bound to a
 key combination as well. Howl comes with a default keymap for the most basic
 bindings (not complete by any measure, so please suggest missing additions). So
 in the previous example, you could have more quickly opened a file using the
-`ctrl+o` key binding. Assigning your own combinations is easy, and will be
+`action+o` key binding. Assigning your own combinations is easy, and will be
 discussed later on in the manual. *Note*: If you bring up the completion list at
 the command prompt, you'll see that it includes the key bindings for the listed
 commands when available.
