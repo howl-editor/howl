@@ -303,12 +303,21 @@ View = {
       for i = @first_visible_line, @last_visible_line
         max_width = max max_width, @display_lines[i].width
 
-      if max_width <= @edit_area_width
+      if max_width <= @edit_area_width and @base_x == 0
         @horizontal_scrollbar\hide!
       else
         adjustment = @horizontal_scrollbar.adjustment
         if adjustment
-          adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, @edit_area_width, @edit_area_width
+          width = @edit_area_width
+          upper = max_width - (@margin / 2)
+
+          if @base_x > 0
+            -- we're already horizontally scrolled, so maintain our x,
+            -- but ensure we expand the scrollbar if necessary
+            adjustment.upper = upper if upper > adjustment.upper
+          else
+            adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, width, width
+
           @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
@@ -613,7 +622,7 @@ View = {
     sel_anchor, sel_end = @selection.anchor, @selection.end_pos
     start_dline = args.styled and @display_lines[args.styled.start_line]
 
-    -- adjust cursor if neccessary
+    -- adjust cursor if necessary
     if type == 'insert' and args.offset <= @cursor.pos
       @cursor.pos += #args.text
     elseif type == 'delete' and args.offset < @cursor.pos
