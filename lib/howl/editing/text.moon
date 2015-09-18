@@ -33,6 +33,10 @@ paragraph_at = (line) ->
   lines
 
 can_reflow = (line, limit) ->
+  mode = line.buffer.mode
+  if mode and mode.line_is_reflowable
+    return false unless mode\line_is_reflowable(line.buffer, line)
+
   len = line.ulen
   first_blank = line\find('[\t ]')
   if len > limit
@@ -153,6 +157,7 @@ reflow_check = (args) ->
 
   -- check whether the modification affects the current line
   cur_line = editor.current_line
+  return unless cur_line
   cur_start_pos = cur_line.byte_start_pos
   cur_end_pos = cur_line.byte_end_pos
   start_pos = args.at_pos

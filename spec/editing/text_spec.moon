@@ -80,6 +80,16 @@ describe 'text', ->
       buffer.text = '\nitty\n'
       assert.is_false text.can_reflow lines[2], 10
 
+    context "when the buffer's mode provides line_is_reflowable method", ->
+      it 'respects a negative answer from that', ->
+        buffer.text = 'hum ho hi hi'
+        line = lines[1]
+        assert.is_true text.can_reflow line, 10
+        buffer.mode.line_is_reflowable = -> true
+        assert.is_true text.can_reflow line, 10
+        buffer.mode.line_is_reflowable = -> false
+        assert.is_false text.can_reflow line, 10
+
   describe 'reflow_paragraph_at(line, limit)', ->
     it 'splits lines to enforce at most <limit> columns', ->
       buffer.text = 'one two three four\n'
