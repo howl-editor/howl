@@ -93,41 +93,41 @@ describe 'text', ->
   describe 'reflow_paragraph_at(line, limit)', ->
     it 'splits lines to enforce at most <limit> columns', ->
       buffer.text = 'one two three four\n'
-      text.reflow_paragraph_at lines[1], 10
+      assert.is_true text.reflow_paragraph_at lines[1], 10
       assert.equals 'one two\nthree four\n', buffer.text
 
     it 'splits lines as close to <limit> as possible, given non-breaking words', ->
       buffer.text = 'onetwo three four\n'
-      text.reflow_paragraph_at lines[1], 5
+      assert.is_true text.reflow_paragraph_at lines[1], 5
       assert.equals 'onetwo\nthree\nfour\n', buffer.text
 
     it 'combines lines as necessary to match <limit>', ->
       buffer.text = 'one\ntwo\nthree\nfour\n'
-      text.reflow_paragraph_at lines[1], 10
+      assert.is_true text.reflow_paragraph_at lines[1], 10
       assert.equals 'one two\nthree four\n', buffer.text
 
     it 'returns an unbreakable line as is if it can not reflow', ->
       buffer.text = 'onetwo\n'
-      text.reflow_paragraph_at lines[1], 4
+      assert.is_false text.reflow_paragraph_at lines[1], 4
       assert.equals 'onetwo\n', buffer.text
 
     it 'does not require there to be any newline at the end of the paragraph', ->
       buffer.text = 'one two'
-      text.reflow_paragraph_at lines[1], 5
+      assert.is_true text.reflow_paragraph_at lines[1], 5
       assert.equals 'one\ntwo', buffer.text
 
     it 'includes all the paragraph text in the reflowed text (boundary condition)', ->
       buffer.text = 'one t'
-      text.reflow_paragraph_at lines[1], 4
+      assert.is_true text.reflow_paragraph_at lines[1], 4
       assert.equals 'one\nt', buffer.text
 
     it 'converts an overflowing space to an eol', ->
       buffer.text = 'one \n'
-      text.reflow_paragraph_at lines[1], 3
+      assert.is_true text.reflow_paragraph_at lines[1], 3
       assert.equals 'one\n\n', buffer.text
 
     it 'does not modify the buffer unless there is a change', ->
       buffer.text = 'one two\n'
       buffer.modified = false
-      text.reflow_paragraph_at lines[1], 10
+      assert.is_false text.reflow_paragraph_at lines[1], 10
       assert.is_false buffer.modified

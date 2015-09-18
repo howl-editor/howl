@@ -58,15 +58,16 @@ can_reflow = (line, limit) ->
 
 reflow_paragraph_at = (line, limit) ->
   -- find the first line that need to be reflowed
+  return false unless can_reflow line, limit
   lines = paragraph_at line
-  return unless #lines > 0
+  return false unless #lines > 0
   start_line = nil
   for line in *lines
     if can_reflow line, limit
       start_line = line
       break
 
-  return unless start_line -- no, we're good already
+  return false unless start_line -- no, we're good already
 
   buffer = start_line.buffer
   chunk = buffer\chunk start_line.start_pos, lines[#lines].end_pos
@@ -99,6 +100,9 @@ reflow_paragraph_at = (line, limit) ->
 
   if reflowed != orig_text
     chunk.text = reflowed
+    return true
+
+  false
 
 -------------------------------------------------------------------------------
 -- reflow commands and auto handling
@@ -121,9 +125,10 @@ is_reflowing = false
 do_reflow = (editor, line, reflow_at) ->
   is_reflowing = true
   cur_pos = editor.cursor.pos
-  reflow_paragraph_at line, reflow_at
+  reflowed = reflow_paragraph_at line, reflow_at
   editor.cursor.pos = cur_pos
   is_reflowing = false
+  reflowed
 
 command.register
   name: 'editor-reflow-paragraph',
@@ -134,8 +139,10 @@ command.register
     paragraph = paragraph_at cur_line
     if #paragraph > 0
       hard_wrap_column = editor.buffer.config.hard_wrap_column
-      do_reflow editor, cur_line, hard_wrap_column
-      log.info "Reflowed paragraph to max #{hard_wrap_column} columns"
+      if do_reflow editor, cur_line, hard_wrap_column
+        log.info "Reflowed paragraph to max #{hard_wrap_column} columns"
+      else
+        log.info "Paragraph unchanged"
     else
       log.info 'Could not find paragraph to reflow'
 
