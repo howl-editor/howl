@@ -496,7 +496,7 @@ View = {
     cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
     conf = @config
-    line_draw_opts = config: conf
+    line_draw_opts = config: conf, buffer: @_buffer
     draw_gutter = conf.view_show_line_numbers and clip.x1 < @gutter_width
 
     if draw_gutter
@@ -525,6 +525,7 @@ View = {
 
     for line_info in *lines
       {:display_line, :line} = line_info
+      line_draw_opts.line = line
 
       if line.nr == current_line and conf.view_highlight_current_line
         @current_line_marker\draw_before edit_area_x, y, display_line, cr, clip

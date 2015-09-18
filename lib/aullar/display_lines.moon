@@ -213,7 +213,6 @@ DisplayLine = define_class {
     @text_height = height
     @height = height + @y_offset * 2
     @width = width + view.cursor.width
-    @flairs = get_flairs buffer, line, @
     @width_of_space = @view.width_of_space
 
     @background_ranges = parse_background_ranges @styling
@@ -239,6 +238,7 @@ DisplayLine = define_class {
   draw: (x, y, cr, clip, opts = {}) =>
     base_x = @view.base_x
     block = @block
+    @_flairs or= get_flairs opts.buffer, opts.line, @
 
     for bg_range in *@background_ranges
       width = block and block.width and block.width - base_x or nil
@@ -258,7 +258,7 @@ DisplayLine = define_class {
     cr\move_to x - base_x, y + @y_offset
     pango_cairo.show_layout cr, @layout
 
-    for f in *@flairs
+    for f in *@_flairs
       flair.draw f.flair, @, f.start_offset, f.end_offset, x, y, cr
 
     if opts.config.view_show_indentation_guides
