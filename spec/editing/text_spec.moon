@@ -131,3 +131,9 @@ describe 'text', ->
       buffer.modified = false
       assert.is_false text.reflow_paragraph_at lines[1], 10
       assert.is_false buffer.modified
+
+    it 'does not reflow lines if the mode says no', ->
+      buffer.text = 'one\ntwo\nthree'
+      buffer.mode.line_is_reflowable = (line) => not line\find 'three'
+      assert.is_true text.reflow_paragraph_at lines[1], 20
+      assert.equals 'one two\nthree', buffer.text

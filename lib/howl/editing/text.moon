@@ -12,6 +12,13 @@ paragraph_break_line = (line) ->
   start_style = style.at_pos line.buffer, line.start_pos
   start_style and start_style\contains 'embedded'
 
+mode_allows_breaking = (line) ->
+  mode = line.buffer.mode
+  if mode and mode.line_is_reflowable
+    return mode\line_is_reflowable(line)
+
+  true
+
 paragraph_at = (line) ->
   lines = {}
   start = line
@@ -33,9 +40,7 @@ paragraph_at = (line) ->
   lines
 
 can_reflow = (line, limit) ->
-  mode = line.buffer.mode
-  if mode and mode.line_is_reflowable
-    return false unless mode\line_is_reflowable(line.buffer, line)
+  return false unless mode_allows_breaking line
 
   len = line.ulen
   first_blank = line\find('[\t ]')
@@ -69,8 +74,13 @@ reflow_paragraph_at = (line, limit) ->
 
   return false unless start_line -- no, we're good already
 
+  -- now find the end line
+  end_line = lines[#lines]
+  while end_line != start_line and not mode_allows_breaking(end_line)
+    end_line = end_line.previous
+
   buffer = start_line.buffer
-  chunk = buffer\chunk start_line.start_pos, lines[#lines].end_pos
+  chunk = buffer\chunk start_line.start_pos, end_line.end_pos
   orig_text = chunk.text
   text = orig_text
   has_eol = orig_text\ends_with buffer.eol
