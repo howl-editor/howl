@@ -217,9 +217,16 @@ DisplayLine = define_class {
 
     @background_ranges = parse_background_ranges @styling
 
-    if #@background_ranges == 1
+    if #@background_ranges > 0
       range = @background_ranges[1]
-      @_full_background = range.start_offset == 1 and range.end_offset > line.full_size
+      full = range.start_offset == 1
+      for i = 2, #@background_ranges
+        r = @background_ranges[i]
+        full and= r.start_offset == range.end_offset
+        break unless full
+        range = r
+
+      @_full_background = full and range.end_offset > line.full_size
 
   properties: {
     block: =>
@@ -240,8 +247,11 @@ DisplayLine = define_class {
     block = @block
     @_flairs or= get_flairs opts.buffer, opts.line, @
 
-    for bg_range in *@background_ranges
-      width = block and block.width and block.width - base_x or nil
+    for i, bg_range in ipairs @background_ranges
+      width = nil
+      if i == 1 and block and block.width
+        width = block.width - base_x
+
       bg_flair = flair.build {
         type: flair.RECTANGLE,
         background: bg_range.style.background
