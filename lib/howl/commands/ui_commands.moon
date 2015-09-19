@@ -1,8 +1,9 @@
 -- Copyright 2012-2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, config from howl
-import style from howl.ui
+import app, command, config, mode from howl
+import style, ActionBuffer, BufferPopup, StyledText from howl.ui
+serpent = require 'serpent'
 
 command.register
   name: 'window-toggle-fullscreen',
@@ -18,8 +19,25 @@ command.register
   name: 'describe-style',
   description: 'Describes the current style at cursor'
   handler: ->
-    name, def = style.at_pos app.editor.buffer, app.editor.cursor.pos
-    log.info "#{name}"
+    name = style.at_pos app.editor.buffer, app.editor.cursor.pos
+    unless name
+      log.info "Unstyled"
+      return
+
+    def = style[name]
+    editor = app.editor
+    buf = ActionBuffer!
+    buf\append name, 'h1'
+    buf\append "\n\n"
+    def_s = serpent.block def, comment: false
+    lua_mode = mode.by_name 'lua'
+
+    if lua_mode
+      styles = lua_mode.lexer(def_s)
+      def_s = StyledText def_s, styles
+
+    buf\append def_s
+    editor\show_popup BufferPopup buf
 
 command.register
   name: 'zoom-in',
