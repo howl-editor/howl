@@ -114,6 +114,32 @@ sub_lex_capture = (subject, cur_pos, mode_name, sub_text) ->
 
   unpack ret
 
+lexer_sub_lex_capture = (subject, cur_pos, mode_style, lexer, sub_text) ->
+  sub_start_pos = cur_pos - #sub_text
+  sub_text, sub_start_pos, ret = sub_lex_capture_start sub_text, sub_start_pos, cur_pos
+  append ret, sub_start_pos
+  append ret, lexer(sub_text, nil, sub_lexing: true)
+  append ret, "inline|#{mode_style}"
+  unpack ret
+
+function_sub_lex_capture = (subject, cur_pos, mode_style, f, sub_text) ->
+  sub_start_pos = cur_pos - #sub_text
+  sub_text, sub_start_pos, ret = sub_lex_capture_start sub_text, sub_start_pos, cur_pos
+  append ret, sub_start_pos
+  styling = (f(sub_text))
+
+  -- if <f> did not lex the complete text, ensure we're fully
+  -- sub styled by inserted a zero width styling instruction
+  -- at the end
+  if styling[#styling] != #sub_text + 1
+    append styling, #sub_text + 1
+    append styling, 'whitespace'
+    append styling, #sub_text + 1
+
+  append ret, styling
+  append ret, "inline|#{mode_style}"
+  unpack ret
+
 pattern_sub_lex_capture = (subject, cur_pos, mode_name, mode_style, sub_text) ->
   real_sub_start_pos = cur_pos - #sub_text
   start_pos = real_sub_start_pos - #mode_name
@@ -137,7 +163,9 @@ pattern_sub_lex_capture = (subject, cur_pos, mode_name, mode_style, sub_text) ->
 
 -- START lexer environment --
 
-lexer = {}
+lexer = {
+  :tostring
+}
 
 -- import lpeg operations and locale patterns
 lexer[k] = v for k,v in pairs lpeg when k\match '^%u'
@@ -176,6 +204,10 @@ sequence = (...) ->
 word = (...) ->
   word_char = alpha + '_' + digit
   (-B(1) + B(-word_char)) * any(...) * -word_char
+
+separate = (p) ->
+  word_char = alpha + '_' + digit
+  (-B(1) + B(-word_char)) * p * (-word_char + -#P(1))
 
 scan_until = (stop_p, escape_p) ->
   stop_p = P(stop_p)
@@ -247,6 +279,14 @@ sub_lex_by_pattern = (mode_p, mode_style, stop_p) ->
 
 sub_lex_by_pattern_match_time = (mode_p, mode_style, match_time_p) ->
   Cmt(C(mode_p) * Cc(mode_style) * C(match_time_p), pattern_sub_lex_capture)
+
+sub_lex_by_lexer = (base_style, stop_p, lexer) ->
+  Cmt(Cc(base_style) * Cc(lexer) * C(scan_until(stop_p)), lexer_sub_lex_capture)
+
+sub_lex_by_inline = (base_style, stop_p, pattern) ->
+  p = Ct lenient_pattern(pattern)^0
+  f = (text) -> p\match text
+  Cmt(Cc(base_style) * Cc(f) * C(scan_until(stop_p)), function_sub_lex_capture)
 
 compose = (mode_name, definition_p) ->
   m = mode.by_name mode_name
