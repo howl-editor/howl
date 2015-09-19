@@ -82,3 +82,19 @@ describe 'styles', ->
       assert.is_not_nil def
       assert.equal '#112233', def.background
       assert.equal '#999999', def.color
+
+    it 'allows aliases for the base', ->
+      styles.define 'base_alias', 'base'
+
+      styles.define 'override', {
+        color: '#999999'
+        font: {
+          italic: true
+        }
+      }
+
+      def = styles.def_for 'base_alias:override'
+      assert.is_not_nil def
+      assert.equal '#112233', def.background
+      assert.equal '#999999', def.color
+      assert.equal true, def.font.bold
