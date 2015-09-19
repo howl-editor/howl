@@ -23,6 +23,10 @@ define 'magenta', color: colors.magenta
 define 'cyan', color: colors.cyan
 define 'white', color: colors.white
 
+-- define some default formatting styles
+define 'bold', font: bold: true
+define 'emphasis', font: italic: true
+
 -- alias some default styles
 define 'symbol', 'key'
 define 'global', 'member'
