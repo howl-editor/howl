@@ -44,7 +44,7 @@ continuation_indent = (line, indent_level) ->
     more_after: {
       {r'^\\s*(def|class|if|elsif|else|unless|module|begin|rescue|ensure|when|case|while)\\b', '%send%s*$'},
       {r'=\\s+(?:if|begin)\\b', '%send%s*$'},
-      r'\\s(do|{)\\s*(?:\\|[^|]*\\|)?\\s*$',
+      r'(\\bdo|{)\\s*(?:\\|[^|]*\\|)?\\s*$',
       '[[{(]%s*$'
     }
 
@@ -65,7 +65,7 @@ continuation_indent = (line, indent_level) ->
 
   code_blocks:
     multiline: {
-      { r'\\s+do(?:\\s*\\|[^|]+\\|)?\\s*$', '^%s*end', 'end' },
+      { r'\\bdo(?:\\s*\\|[^|]+\\|)?\\s*$', '^%s*end', 'end' },
       { r'^\\s*def\\s+\\w[\\w.\\d?!]+(?:\\s*\\([^)]*\\))?\\s*$', '^%s*end', 'end' },
       { r'^\\s*(class|module)\\s+\\p{Lu}[\\w\\d]*(\\s*<\\s*\\p{Lu}[\\w\\d]*)?\\s*$', '^%s*end', 'end' },
       { r'^\\s*(if|unless|case)\\s+', '^%s*end', 'end' },

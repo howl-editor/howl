@@ -12,7 +12,9 @@ class NimMode
   indentation: {
     more_after: {
       '[([{:=]%s*$'
-      r'^\\s*(const|enum|let|type|proc|func|iterator|macro|template|method|object|tuple|var)\\s*$',
+      r'^\\s*(const|enum|let|type|proc|func|iterator|macro|template|method|var)\\s*$',
+      r'\\btuple\\s*$'
+      r'\\bobject\\s*(of\\s+\\p{Lu}[\\w\\d]*\\s*)?$'
     }
 
     same_after: {

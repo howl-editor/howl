@@ -11,11 +11,11 @@ howl.aux.lpeg_lexer ->
     'new', 'delete', 'typeof', 'instanceof', 'in',
     'return', 'throw', 'break', 'continue', 'debugger'
     'if', 'else', 'switch', 'for', 'while', 'do', 'try', 'catch', 'finally'
-    'class', 'extends', 'super'
+    'class', 'extends', 'super', 'yield'
 
     -- Coffee specific
     'undefined', 'then', 'unless', 'until', 'loop', 'off', 'by', 'when'
-    'and', 'or', 'isnt', 'is', 'not', 'yes', 'no', 'on', 'of'
+    'and', 'or', 'isnt', 'is', 'not', 'yes', 'no', 'on', 'of', 'from'
   }
 
   reserved = c 'error', -B'.' * word {
@@ -45,7 +45,9 @@ howl.aux.lpeg_lexer ->
 
   identifier = c 'identifier', ident
   member = c 'member', (P'@' + 'this.') * ident^0
-  clazz = c 'class', upper^1 * (alpha + digit + '_')^0
+  classid = upper^1 * (alpha + digit + '_')^0
+  clazz = c 'class', classid
+  classdef = c('keyword', 'class') * blank^1 * c 'type_def', classid
   constant = c 'constant', B'.' * upper^1 * (upper + '_')^0 * #-alpha
 
   sq_string = span("'", "'", '\\')
@@ -68,7 +70,7 @@ howl.aux.lpeg_lexer ->
   P {
     'all'
     all: any {
-      number, key, V'string', comment, V'regex', operator, special, keyword, member,
+      number, key, V'string', comment, V'regex', operator, special, classdef, keyword, member,
       constant, clazz, reserved, V'fdecl', identifier, javascript
     }
     string: any {
