@@ -30,8 +30,7 @@ howl.aux.lpeg_lexer ->
   header_key = alpha * any(alpha, '-')^1 * ':'
 
   preamble = sequence {
-    -B(1),
-    #header_key,
+    #(header_key * scan_to(eol))^2,
     sub_lex_by_inline('embedded', end_of_preamble, any {
       c('keyword', P'Subject:') * space^1 * c('h1', scan_until(eol)),
       c('keyword', header_key) * scan_until(eol)
