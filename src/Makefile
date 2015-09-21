@@ -1,4 +1,5 @@
 PREFIX ?= /usr/local
+UNAME_S := $(shell uname -s)
 
 GTK = gtk+-3.0
 GTK_CFLAGS = $(shell pkg-config --cflags $(GTK))
