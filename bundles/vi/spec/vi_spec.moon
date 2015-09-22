@@ -31,7 +31,7 @@ describe 'VI', ->
     buffer.text = text
     lines = buffer.lines
     editor.buffer = buffer
-    cursor.line = 2
+    cursor\move_to line: 2, column: 1
     app.editor = editor
     state.activate editor
 
