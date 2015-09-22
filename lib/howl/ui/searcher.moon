@@ -66,6 +66,7 @@ class Searcher
     start_pos, end_pos = @_find_match search, init, direction, ensure_word
 
     if start_pos
+      @editor.cursor.pos = end_pos
       @editor.cursor.pos = start_pos
       @_highlight_matches search, start_pos, ensure_word
     else
