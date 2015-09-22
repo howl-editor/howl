@@ -10,20 +10,41 @@ howl.aux.lpeg_lexer ->
 
   keyword = c 'keyword', word {
     -- C++ keywords: todo, break out into separate mode later
-    'alignas', 'alignof', 'and_eq', 'and', 'asm', 'bitand', 'bitor', 'bool',
-    'catch', 'char16_t', 'char32_t', 'char', 'class', 'compl', 'constexpr',
+    'alignas', 'alignof', 'and_eq', 'and', 'asm', 'bitand', 'bitor',
+    'catch', 'class', 'compl', 'constexpr',
     'const_cast', 'decltype', 'delete', 'dynamic_cast', 'explicit', 'export',
-    'false', 'friend', 'mutable', 'namespace', 'new', 'noexcept', 'not_eq',
+    'friend', 'mutable', 'namespace', 'new', 'noexcept', 'not_eq',
     'not', 'nullptr', 'operator', 'or_eq', 'or', 'private', 'protected',
     'public', 'reinterpret_cast', 'static_assert', 'static_cast', 'template',
-    'this', 'thread_local', 'throw', 'true', 'try', 'typeid', 'typename',
-    'union', 'using', 'virtual', 'wchar_t', 'while', 'xor_eq', 'xor'
+    'this', 'thread_local', 'throw', 'try', 'typeid', 'typename',
+    'union', 'using', 'virtual', 'while', 'xor_eq', 'xor'
 
-    'auto', '_Bool', 'break', 'case', 'char', '_Complex', 'const', 'continue',
-    'default', 'double', 'do', 'else', 'enum', 'extern', 'float', 'for', 'goto',
-    'if', '_Imaginary', 'inline', 'int', 'long', 'register', 'restrict',
-    'return', 'short', 'signed', 'sizeof', 'static', 'struct', 'switch',
-    'typedef', 'union', 'unsigned', 'void', 'volatile', 'while'
+    'auto', 'break', 'case', '_Complex', 'const', 'continue', 'default', 'do',
+    'else', 'enum', 'extern', 'for', 'goto', 'if', '_Imaginary', 'inline',
+    'register', 'restrict', 'return', 'signed', 'sizeof', 'static', 'struct',
+    'switch', 'typedef', 'union', 'volatile', 'while'
+  }
+
+  type = c 'type', word {
+    'bool', 'char16_t', 'char32_t', 'char', '_Bool', 'double', 'float', 'int',
+    'long', 'short', 'unsigned', 'void', 'wchar_t'
+  }
+
+  classdef = any {
+    sequence {
+      c('keyword', word { 'enum', 'union' })
+      ws^1
+      c('type_def', ident)
+      ws^0
+      c('operator', '{')
+    }
+    sequence {
+      c('keyword', word { 'class', 'struct' })
+      ws^1
+      c('type_def', ident)
+      ws^0
+      c('operator', S':{')
+    }
   }
 
   operator = c 'operator', S('+-*/%=<>~&^|!(){}[];.')
@@ -46,7 +67,8 @@ howl.aux.lpeg_lexer ->
 
   special = c 'special', word {
     'NULL', 'TRUE', 'FALSE', '__FILE__',
-    '__LINE__', '__DATE__', '__TIME__', '__TIMESTAMP__'
+    '__LINE__', '__DATE__', '__TIME__', '__TIMESTAMP__',
+    'true', 'false'
   }
 
   string = c 'string', span('"', '"', '\\')
@@ -68,6 +90,8 @@ howl.aux.lpeg_lexer ->
     preproc,
     comment,
     string,
+    classdef,
+    type,
     keyword,
     special,
     operator,
