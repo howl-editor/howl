@@ -82,7 +82,7 @@ get_block = (display_lines, d_line) ->
     -- we found an earlier block, now extend it as neccessary down
     -- until the current line and then we're done
     cur_line = display_lines[min(block.end_line + 1, d_line.nr)]
-    while cur_line.nr <= d_line.nr
+    while cur_line and cur_line.nr <= d_line.nr
       cur_line._block = block
       block.width = max block.width, cur_line.width
       cur_line = display_lines[cur_line.nr + 1]
@@ -101,7 +101,7 @@ get_block = (display_lines, d_line) ->
       -- we found a subsequent block, now extend it as neccessary up
       -- until the start line and then we're done
       cur_line = display_lines[cur_line.nr - 1]
-      while cur_line.nr >= start_line.nr
+      while cur_line and cur_line.nr >= start_line.nr
         cur_line._block = block
         block.width = max block.width, cur_line.width
         cur_line = display_lines[cur_line.nr - 1]
