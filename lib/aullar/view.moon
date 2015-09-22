@@ -140,8 +140,10 @@ View = {
 
     @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
+      @_scrolling_vertically = true
       line = math.floor adjustment.value + 0.5
       @scroll_to line
+      @_scrolling_vertically = false
 
     @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
       {
@@ -311,12 +313,12 @@ View = {
           width = @edit_area_width
           upper = max_width - (@margin / 2)
 
-          if @base_x > 0
-            -- we're already horizontally scrolled, so maintain our x,
+          if @_scrolling_vertically
+            -- we're scrolling vertically so maintain our x,
             -- but ensure we expand the scrollbar if necessary
             adjustment.upper = upper if upper > adjustment.upper
           else
-            adjustment\configure @base_x, 1, max_width - (@margin / 2), 10, width, width
+            adjustment\configure @base_x, 1, upper, 10, width, width
 
           @horizontal_scrollbar\show!
 
