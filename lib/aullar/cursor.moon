@@ -226,7 +226,9 @@ Cursor = {
     rect = @display_line.layout\index_to_pos @column - 1
     col_pos = rect.x / SCALE
     char_width = rect.width / SCALE
-    x_pos = col_pos - @view.base_x + @view.edit_area_x + @width
+    if char_width == 0
+      char_width = @view.width_of_space
+    x_pos = (col_pos - @view.base_x) + @view.edit_area_x + @width
 
     if @view.width and x_pos + char_width > @view.width -- scroll to the right
       @view.base_x = col_pos - @view.edit_area_width + char_width + @width

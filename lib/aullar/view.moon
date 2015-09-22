@@ -243,13 +243,7 @@ View = {
     base_x: {
       get: => @_base_x
       set: (x) =>
-        if x < 0
-          x = 0
-        else
-          adjustment = @horizontal_scrollbar.adjustment
-          x = min x, adjustment.upper - adjustment.page_size
-
-        x = floor x
+        x = floor max(0, x)
         return if x == @_base_x
         @_base_x = x
         @area\queue_draw!
@@ -257,7 +251,9 @@ View = {
     }
 
     edit_area_x: => @gutter_width + @margin
-    edit_area_width: => @width - @edit_area_x
+    edit_area_width: =>
+      return 0 unless @width
+      @width - @edit_area_x
 
     buffer: {
       get: => @_buffer
@@ -304,6 +300,8 @@ View = {
       max_width = 0
       for i = @first_visible_line, @last_visible_line
         max_width = max max_width, @display_lines[i].width
+
+      max_width += @width_of_space
 
       if max_width <= @edit_area_width and @base_x == 0
         @horizontal_scrollbar\hide!
@@ -405,7 +403,7 @@ View = {
         d_lines[line_nr] = nil
 
     if min_y
-      start_x = @gutter_width + 1
+      start_x = @edit_area_x
       start_x = 0 if opts.gutter or start_x == 1
       width = @width - start_x
       height = (max_y - min_y)
@@ -623,7 +621,33 @@ View = {
   _on_buffer_modified: (buffer, args, type) =>
     cur_pos = @cursor.pos
     sel_anchor, sel_end = @selection.anchor, @selection.end_pos
-    start_dline = args.styled and @display_lines[args.styled.start_line]
+
+    if not @showing
+      @_reset_display!
+    else
+      start_dline = args.styled and @display_lines[args.styled.start_line]
+      lines_changed = contains_newlines(args.text)
+
+      if lines_changed
+        @_last_visible_line = nil
+
+      if args.offset > args.invalidate_offset
+        -- we have lines before the offset of the modification that are
+        -- invalid - they need to be invalidated but not visually refreshed
+        @_invalidate_display args.invalidate_offset, args.offset
+
+      if args.styled
+        @_on_buffer_styled buffer, args.styled, start_dline
+      else
+        if lines_changed
+          @refresh_display from_offset: args.offset, invalidate: true, gutter: true
+          @_sync_scrollbars!
+        else
+          @refresh_display from_offset: args.offset, to_offset: args.offset + args.size, invalidate: true
+          @_sync_scrollbars horizontal: true
+
+      if lines_changed and not @gutter\sync_width buffer
+        @area\queue_draw!
 
     -- adjust cursor if necessary
     if type == 'insert' and args.offset <= @cursor.pos
@@ -639,32 +663,6 @@ View = {
         .cursor_after = @cursor.pos
         .selection_anchor = sel_anchor
         .selection_end_pos = sel_end
-
-    unless @showing
-      @_reset_display!
-      return
-
-    lines_changed = contains_newlines(args.text)
-    if lines_changed
-      @_last_visible_line = nil
-
-    if args.offset > args.invalidate_offset
-      -- we have lines before the offset of the modification that are
-      -- invalid - they need to be invalidated but not visually refreshed
-      @_invalidate_display args.invalidate_offset, args.offset
-
-    if args.styled
-      @_on_buffer_styled buffer, args.styled, start_dline
-    else
-      if lines_changed
-        @refresh_display from_offset: args.offset, invalidate: true, gutter: true
-        @_sync_scrollbars!
-      else
-        @refresh_display from_offset: args.offset, to_offset: args.offset + args.size, invalidate: true
-        @_sync_scrollbars horizontal: true
-
-    if lines_changed and not @gutter\sync_width buffer
-      @area\queue_draw!
 
   _on_buffer_marker_changed: (buffer, marker) =>
     if marker.flair
@@ -741,7 +739,12 @@ View = {
     elseif event.direction == Gdk.SCROLL_DOWN
       @scroll_to @first_visible_line + 1
     elseif event.direction == Gdk.SCROLL_RIGHT
-      @base_x += 20
+      new_base_x = @base_x + 20
+      adjustment = @horizontal_scrollbar.adjustment
+      if adjustment
+        new_base_x = min new_base_x, adjustment.upper - adjustment.page_size
+      @base_x = new_base_x
+
     elseif event.direction == Gdk.SCROLL_LEFT
       @base_x -= 20
 
