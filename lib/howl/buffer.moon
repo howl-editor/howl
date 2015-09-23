@@ -46,7 +46,7 @@ class Buffer extends PropertyObject
     @_len = nil
     @_eol = '\n'
     @_views = {}
-    @modified = false
+    @_modified = false
 
     @_buffer\add_listener
       on_inserted: self\_on_text_inserted
@@ -64,7 +64,7 @@ class Buffer extends PropertyObject
         @text = ''
         @sync_etag = nil
 
-      @modified = false
+      @_modified = false
       @can_undo = false
 
   @property mode:
@@ -95,13 +95,16 @@ class Buffer extends PropertyObject
       @_ensure_writable!
       @_buffer.text = text
 
-  -- @property modified:
-  --   get: => @sci\get_modify!
-  --   set: (status) =>
-  --     if not status then @sci\set_save_point!
-  --     else -- there's no specific message for marking as modified
-  --       @append ' '
-  --       @sci\delete_range @size - 1, 1
+  @property modified:
+    get: => @_modified
+    set: (status) =>
+      if status
+        notify = not @_modified
+        @_modified = true
+        if not @_modified
+          signal.emit 'buffer-modified', buffer: self
+      else
+        @_modified = false
 
   @property can_undo:
     get: => @_buffer.can_undo
@@ -190,7 +193,7 @@ class Buffer extends PropertyObject
         @append @eol
 
       @file.contents = @text
-      @modified = false
+      @_modified = false
       @sync_etag = @file.etag
       signal.emit 'buffer-saved', buffer: self
 
@@ -259,7 +262,7 @@ class Buffer extends PropertyObject
 
   reload: (force = false) =>
     error "Cannot reload buffer '#{self}': no associated file", 2 unless @file
-    return false if @modified and not force
+    return false if @_modified and not force
     @file = @file
     signal.emit 'buffer-reloaded', buffer: self
     true
@@ -289,7 +292,7 @@ class Buffer extends PropertyObject
 
   _on_text_inserted: (_, _, args) =>
     @_len = nil
-    @modified = true
+    @_modified = true
     args = {
       buffer: self,
       at_pos: @char_offset(args.offset)
@@ -301,7 +304,7 @@ class Buffer extends PropertyObject
 
   _on_text_deleted: (_, _, args) =>
     @_len = nil
-    @modified = true
+    @_modified = true
     args = {
       buffer: self,
       at_pos: @char_offset(args.offset)
