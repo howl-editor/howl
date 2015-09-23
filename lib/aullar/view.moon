@@ -621,6 +621,7 @@ View = {
   _on_buffer_modified: (buffer, args, type) =>
     cur_pos = @cursor.pos
     sel_anchor, sel_end = @selection.anchor, @selection.end_pos
+    lines_showing = type == 'delete' and @lines_showing
 
     if not @showing
       @_reset_display!
@@ -663,6 +664,11 @@ View = {
         .cursor_after = @cursor.pos
         .selection_anchor = sel_anchor
         .selection_end_pos = sel_end
+
+    -- check whether we should scroll up to fit the contents into the view
+    if lines_showing
+      if @_first_visible_line > 1 and @lines_showing < lines_showing
+        @last_visible_line = @buffer.nr_lines
 
   _on_buffer_marker_changed: (buffer, marker) =>
     if marker.flair
