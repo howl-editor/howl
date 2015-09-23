@@ -101,22 +101,26 @@ define = (name, definition) ->
 define_default = (name, def) ->
   define name, def unless styles[name]
 
-def_for = (name) ->
-  base = styles.default
+resolve_def = (name) ->
   def = styles[name]
 
   while type(def) == 'string'
     name = def
     def = styles[def]
 
+  def, name
+
+def_for = (name) ->
+  base = styles.default
+  def, name = resolve_def name
+
   if not def
     -- look for sub styling (base:style)
     sub_base, ext = name\match '^([^:]+):(%S+)$'
 
     if sub_base
-      base, def = styles[sub_base] or base, styles[ext]
-      while type(def) == 'string'
-        def = styles[def]
+      base = resolve_def(sub_base) or base
+      def = resolve_def ext
 
   return base unless def
 

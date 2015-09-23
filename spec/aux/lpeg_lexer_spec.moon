@@ -126,6 +126,18 @@ describe 'lpeg_lexer', ->
     it 'accepts var arg parameters', ->
       assert.is_not_nil l.word('one', 'two')\match 'two'
 
+  describe 'separate(p)', ->
+    it 'returns a pattern that only matches if not part of a word', ->
+      p = l.separate(P'foo')
+      assert.is_not_nil p\match 'foo'
+      assert.is_not_nil (l.blank * p)\match ' foo'
+      assert.is_not_nil (p)\match 'foo '
+      assert.is_not_nil (p)\match 'foo*'
+      assert.is_nil (l.alpha * p)\match 'xfoo '
+      assert.is_nil (P(1) * p)\match '_foo '
+      assert.is_nil p\match 'foox '
+      assert.is_nil p\match 'foo_ '
+
   describe 'span(start_p, stop_p [, escape_p])', ->
     p = l.span('{', '}') * Cp!
 
@@ -355,6 +367,45 @@ describe 'lpeg_lexer', ->
         1, 'default:whitespace', 3,
         3, 'embedded', 6
       }, res
+
+  describe 'sub_lex_by_lexer(name, base_style, lexer)', ->
+    it 'sub lexes using the provided lexer', ->
+      sub_lexer = l -> capture('number', digit^1)
+      lexer = l -> sequence {
+        capture('keyword', 'x'),
+        sub_lex_by_lexer('string', l.eol, sub_lexer)
+      }
+      assert.same {
+        1, 'keyword', 2
+        2, { 1, 'number', 2 }, 'inline|string'
+
+      }, lexer('x2')
+
+  describe 'sub_lex_by_inline(name, base_style, pattern)', ->
+    it 'sub lexes using the provided pattern', ->
+      lexer = l ->
+        sub_lexer = capture('number', digit^1)
+        sequence {
+          capture('keyword', 'x'),
+          sub_lex_by_inline('string', l.eol, sub_lexer)
+        }
+      assert.same {
+        1, 'keyword', 2
+        2, { 1, 'number', 2 }, 'inline|string'
+
+      }, lexer('x2')
+
+    it 'adds a zero width styling instruction at the end if needed', ->
+      lexer = l ->
+        sub_lexer = capture('number', digit^1)
+        alpha * sub_lex_by_inline('string', l.eol, sub_lexer)
+
+      assert.same {
+        2, {
+          1, 'number', 2,
+          3, 'whitespace', 3
+        }, 'inline|string'
+      }, lexer('x2x')
 
   describe 'compose(base_mode, pattern)', ->
     it 'returns a conjunction pattern with <pattern> and the mode pattern', ->

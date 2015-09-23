@@ -12,6 +12,13 @@ paragraph_break_line = (line) ->
   start_style = style.at_pos line.buffer, line.start_pos
   start_style and start_style\contains 'embedded'
 
+mode_allows_breaking = (line) ->
+  mode = line.buffer.mode
+  if mode and mode.line_is_reflowable
+    return mode\line_is_reflowable(line)
+
+  true
+
 paragraph_at = (line) ->
   lines = {}
   start = line
@@ -33,6 +40,8 @@ paragraph_at = (line) ->
   lines
 
 can_reflow = (line, limit) ->
+  return false unless mode_allows_breaking line
+
   len = line.ulen
   first_blank = line\find('[\t ]')
   if len > limit
@@ -54,18 +63,24 @@ can_reflow = (line, limit) ->
 
 reflow_paragraph_at = (line, limit) ->
   -- find the first line that need to be reflowed
+  return false unless can_reflow line, limit
   lines = paragraph_at line
-  return unless #lines > 0
+  return false unless #lines > 0
   start_line = nil
   for line in *lines
     if can_reflow line, limit
       start_line = line
       break
 
-  return unless start_line -- no, we're good already
+  return false unless start_line -- no, we're good already
+
+  -- now find the end line
+  end_line = lines[#lines]
+  while end_line != start_line and not mode_allows_breaking(end_line)
+    end_line = end_line.previous
 
   buffer = start_line.buffer
-  chunk = buffer\chunk start_line.start_pos, lines[#lines].end_pos
+  chunk = buffer\chunk start_line.start_pos, end_line.end_pos
   orig_text = chunk.text
   text = orig_text
   has_eol = orig_text\ends_with buffer.eol
@@ -95,6 +110,9 @@ reflow_paragraph_at = (line, limit) ->
 
   if reflowed != orig_text
     chunk.text = reflowed
+    return true
+
+  false
 
 -------------------------------------------------------------------------------
 -- reflow commands and auto handling
@@ -117,9 +135,10 @@ is_reflowing = false
 do_reflow = (editor, line, reflow_at) ->
   is_reflowing = true
   cur_pos = editor.cursor.pos
-  reflow_paragraph_at line, reflow_at
+  reflowed = reflow_paragraph_at line, reflow_at
   editor.cursor.pos = cur_pos
   is_reflowing = false
+  reflowed
 
 command.register
   name: 'editor-reflow-paragraph',
@@ -130,8 +149,10 @@ command.register
     paragraph = paragraph_at cur_line
     if #paragraph > 0
       hard_wrap_column = editor.buffer.config.hard_wrap_column
-      do_reflow editor, cur_line, hard_wrap_column
-      log.info "Reflowed paragraph to max #{hard_wrap_column} columns"
+      if do_reflow editor, cur_line, hard_wrap_column
+        log.info "Reflowed paragraph to max #{hard_wrap_column} columns"
+      else
+        log.info "Paragraph unchanged"
     else
       log.info 'Could not find paragraph to reflow'
 
@@ -153,6 +174,7 @@ reflow_check = (args) ->
 
   -- check whether the modification affects the current line
   cur_line = editor.current_line
+  return unless cur_line
   cur_start_pos = cur_line.byte_start_pos
   cur_end_pos = cur_line.byte_end_pos
   start_pos = args.at_pos
