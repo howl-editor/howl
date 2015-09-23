@@ -563,7 +563,7 @@ class Editor extends PropertyObject
       @line_at_top = buffer.properties.line_at_top
 
     pos = buffer.properties.position or 1
-    pos = max 1, min pos, #buffer
+    pos = max 1, min pos, #buffer + 1
     if @cursor.pos != pos
       @cursor.pos = pos
     else
