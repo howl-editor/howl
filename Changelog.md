@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added new bundle, 'mail-mode'.
+
 - Added support for loading user configuration from a XDG Base Directory
 compliant directory. It's not the default, but will be used if `~/.howl` is not
 present and the XDG directory is.
