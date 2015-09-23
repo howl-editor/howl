@@ -31,6 +31,13 @@ is_header = (line) ->
     return true if prev and (is_header(prev) or prev\match('^```'))
     line\umatch r'^(?:[\\s-*[]|```)'
 
+  line_is_reflowable: (line) =>
+    no_break = { '^```', '^%s*#' }
+    for p in *no_break
+      return false if line\find p
+
+    true
+
   structure: (editor) =>
     [l for l in *editor.buffer.lines when is_header(l)]
 }
