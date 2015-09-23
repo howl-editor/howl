@@ -760,9 +760,16 @@ View = {
     if gdk_window != nil
       gdk_window.cursor = @_cur_mouse_cursor
 
+    is_growing = @height and allocation.height > @height
     @width = allocation.width
     @height = allocation.height
     @_reset_display!
+
+    if is_growing and @last_visible_line == @buffer.nr_lines
+      -- since we're growing this could be wrong, and we might need
+      -- to re-calculate what the last visible line actually is
+      @last_visible_line = @last_visible_line
+
     @_sync_scrollbars!
     @buffer\ensure_styled_to line: @last_visible_line + 1
 
