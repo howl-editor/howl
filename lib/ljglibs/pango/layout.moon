@@ -48,7 +48,7 @@ core.define 'PangoLayout', {
 
   properties: {
     text: {
-      get: => ffi_string @get_text
+      get: => ffi_string @get_text!
       set: (text) => @set_text text
     }
 
