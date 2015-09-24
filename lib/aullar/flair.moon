@@ -178,6 +178,7 @@ need_text_object = (flair) ->
     clip = cr.clip_extents
     base_x = view.base_x
     rect = layout\index_to_pos start_offset - 1
+    y += rect.y / SCALE
     text_start_x = x + max((rect.x / SCALE) - 1, 0) - base_x
     start_x = max(text_start_x, view.edit_area_x)
     rect = layout\index_to_pos end_offset - 1

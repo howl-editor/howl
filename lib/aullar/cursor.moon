@@ -247,10 +247,16 @@ Cursor = {
 
   forward: (opts = {}) =>
     return if @_pos > @view.buffer.size
+    layout = @display_line.layout
     line_start = @buffer_line.start_offset
     z_col = (@_pos - line_start)
-    new_index, new_trailing = @display_line.layout\move_cursor_visually true, z_col, 0, 1
-    new_index = @display_line.size if new_trailing > 0
+    new_index, new_trailing = layout\move_cursor_visually true, z_col, 0, 1
+    if new_trailing > 0
+      if not layout.is_wrapped
+        new_index = @display_line.size
+      else
+        new_index += new_trailing
+
     if new_index > @display_line.size -- move to next line
       @move_to pos: @buffer_line.end_offset + 1, extend: opts.extend
     else
@@ -305,7 +311,9 @@ Cursor = {
     start_offset = @column
     end_offset, new_trailing = display_line.layout\move_cursor_visually true, start_offset - 1, 0, 1
 
-    if new_trailing > 0 or end_offset > display_line.size + 1
+    at_eol = not display_line.is_wrapped and new_trailing > 0
+    at_eol or= end_offset > display_line.size + 1
+    if at_eol
       end_offset = display_line.size + 1
     else
       end_offset += 1
