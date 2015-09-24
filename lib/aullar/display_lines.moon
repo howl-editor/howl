@@ -248,6 +248,9 @@ DisplayLine = define_class {
 
      next: =>
       @display_lines[@nr + 1]
+
+    is_wrapped: =>
+      @layout.is_wrapped
    }
 
   draw: (x, y, cr, clip, opts = {}) =>

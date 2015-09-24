@@ -32,7 +32,7 @@ define_class {
     @_foreground = RGBA(styling.foreground or '#000000')
     @_foreground_alpha = styling.foreground_alpha or 1
 
-  draw_for_line: (line_nr, x, y, display_line, styling) =>
+  draw_for_line: (line_nr, x, y, display_line) =>
     return unless @layout
 
     cr = @cairo_context
@@ -41,7 +41,14 @@ define_class {
     cr\set_source_rgba color.red, color.green, color.blue, @_foreground_alpha
     @layout.text = tostring line_nr
     _, text_height = @layout\get_pixel_size!
-    cr\move_to x, y + (display_line.height - text_height) / 2
+    line_height = display_line.height
+
+    if display_line.is_wrapped
+      layout_line = display_line.layout\get_line 0
+      _, log_rect = layout_line\get_pixel_extents!
+      line_height = log_rect.height
+
+    cr\move_to x, y + (line_height - text_height) / 2
     pango_cairo.show_layout cr, @layout
     cr\restore!
 
