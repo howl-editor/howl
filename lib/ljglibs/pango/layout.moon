@@ -94,6 +94,13 @@ core.define 'PangoLayout', {
 
     iter: =>
       ffi_gc C.pango_layout_get_iter(@), C.pango_layout_iter_free
+
+    is_wrapped: => C.pango_layout_is_wrapped(@) != 0
+
+    wrap: {
+      get: => C.pango_layout_get_wrap(@)
+      set: (w) => C.pango_layout_set_wrap(@, w)
+    }
   }
 
   new: (ctx) -> gc_ptr C.pango_layout_new ctx

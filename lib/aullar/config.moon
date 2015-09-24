@@ -74,6 +74,11 @@ define_options = ->
       default: 1
     }
 
+    view_line_wrap: {
+      type: 'string',
+      default: 'none'
+    }
+
     cursor_blink_interval: {
       type: 'number',
       default: 500

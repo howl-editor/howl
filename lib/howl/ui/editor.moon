@@ -169,21 +169,12 @@ class Editor extends PropertyObject
     set: (v) => @view.config.view_line_padding = v
 
   @property line_wrapping:
-    get: =>
-      -- sci_val = @sci\get_wrap_mode!
-      -- switch sci_val
-      --   when Scintilla.SC_WRAP_NONE then 'none'
-      --   when Scintilla.SC_WRAP_WORD then 'word'
-      --   when Scintilla.SC_WRAP_CHAR then 'character'
-      --   else '(unknown)'
-
+    get: => @view.config.view_line_wrap
     set: (value) =>
-      -- sci_value = switch value
-      --   when 'none' then Scintilla.SC_WRAP_NONE
-      --   when 'word' then Scintilla.SC_WRAP_WORD
-      --   when 'character' then Scintilla.SC_WRAP_CHAR
-      -- error "Unknown value for line_wrapping: #{value}", 2 unless sci_value
-      -- @sci\set_wrap_mode sci_value
+      unless value\umatch(r'^(?:none|word|character)$')
+        error "Unknown value for line_wrapping: #{value}", 2
+
+      @view.config.view_line_wrap = value
 
   @property cursor_line_highlighted:
     get: => @view.config.view_highlight_current_line

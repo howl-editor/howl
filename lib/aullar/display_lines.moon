@@ -191,10 +191,18 @@ draw_edge_line = (at_col, x, y, base_x, line, cr, width_of_space) ->
     cr\restore!
 
 DisplayLine = define_class {
-  new: (@display_lines, @view, buffer, @pango_context, line) =>
+  new: (@display_lines, @view, buffer, @pango_context, line, width) =>
     @layout = Layout pango_context
     @layout\set_text line.ptr, line.size
     @layout.tabs = display_lines.tab_array
+    wrap = view.config.view_line_wrap
+
+    if wrap != 'none'
+      width = view.edit_area_width
+      @layout.width = width * Pango.SCALE
+      wrap_mode = wrap == 'word' and Pango.WRAP_WORD or Pango.WRAP_CHAR
+      @layout.wrap = wrap_mode
+
     @nr = line.nr
     @size = line.size
     @indent = get_indent view, line
