@@ -8,9 +8,9 @@ flair = require 'aullar.flair'
 
 flair.define 'current-line', {
   type: flair.RECTANGLE,
-  background: '#8294ab'
-  background_alpha: 0.2
-  width: 'full'
+  background: '#8294ab',
+  background_alpha: 0.2,
+  width: 'full',
 }
 
 flair.define 'current-line-overlay', {
@@ -22,11 +22,14 @@ CurrentLineMarker = {
   new: (@view) =>
 
   draw_before: (x, y, display_line, cr, clip) =>
+    current_flair = flair.get 'current-line'
+    current_flair.height = display_line.height
     flair.draw 'current-line', display_line, 1, 1, x, y, cr
 
   draw_after: (x, y, display_line, cr, clip) =>
     block = display_line.block
     overlay_flair = flair.get 'current-line-overlay'
+    overlay_flair.height = display_line.height
 
     if block
       overlay_flair.width = block.width

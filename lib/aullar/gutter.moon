@@ -44,7 +44,7 @@ define_class {
     line_height = display_line.height
 
     if display_line.is_wrapped
-      layout_line = display_line.layout\get_line 0
+      layout_line = display_line.layout\get_line_readonly 0
       _, log_rect = layout_line\get_pixel_extents!
       line_height = log_rect.height
 

@@ -325,6 +325,9 @@ ffi.cdef [[
   PangoWrapMode pango_layout_get_wrap (PangoLayout *layout);
   void pango_layout_set_wrap (PangoLayout *layout, PangoWrapMode wrap);
   void pango_layout_index_to_pos (PangoLayout *layout, int index, PangoRectangle *pos);
+  int pango_layout_get_line_count (PangoLayout *layout);
+  void pango_layout_set_indent (PangoLayout *layout, int indent);
+  int pango_layout_get_indent (PangoLayout *layout);
 
   gboolean pango_layout_xy_to_index (PangoLayout *layout,
                                      int x,

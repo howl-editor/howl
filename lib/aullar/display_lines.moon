@@ -7,6 +7,7 @@ styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
 Pango = require 'ljglibs.pango'
 Layout = Pango.Layout
+SCALE = Pango.SCALE
 pango_cairo = Pango.cairo
 flair = require 'aullar.flair'
 
@@ -195,17 +196,22 @@ DisplayLine = define_class {
     @layout = Layout pango_context
     @layout\set_text line.ptr, line.size
     @layout.tabs = display_lines.tab_array
-    wrap = view.config.view_line_wrap
-
-    if wrap != 'none'
-      width = view.edit_area_width
-      @layout.width = width * Pango.SCALE
-      wrap_mode = wrap == 'word' and Pango.WRAP_WORD or Pango.WRAP_CHAR
-      @layout.wrap = wrap_mode
-
+    @layout.indent = -(20 * SCALE)
     @nr = line.nr
     @size = line.size
     @indent = get_indent view, line
+
+    config = view.config
+    wrap = config.view_line_wrap
+
+    WRAP_LIMIT = 2000 -- xxx replace
+    if wrap != 'none' and @size <= WRAP_LIMIT
+      width = view.edit_area_width
+      @layout.width = width * SCALE
+      wrap_mode = wrap == 'word' and Pango.WRAP_WORD or Pango.WRAP_CHAR
+      @layout.wrap = wrap_mode
+      @layout.spacing = (config.view_line_padding * 2) * SCALE
+
     @styling = buffer.styling\get(line.start_offset, line.end_offset)
     -- complexiy sanity check before asking Pango to determine extents,
     -- as it will happily block seemingly for ever if someone manages
@@ -217,11 +223,13 @@ DisplayLine = define_class {
 
     @layout.attributes = attributes
     width, height = @layout\get_pixel_size!
-    @y_offset = floor @view.config.view_line_padding
+    @y_offset = floor config.view_line_padding
     @text_height = height
     @height = height + @y_offset * 2
     @width = width + view.cursor.width
     @width_of_space = @view.width_of_space
+    @is_wrapped = @layout.is_wrapped
+    @line_count = @layout.line_count
 
     @background_ranges = parse_background_ranges @styling
 
@@ -246,11 +254,26 @@ DisplayLine = define_class {
     prev: =>
       @nr > 1 and @display_lines[@nr - 1] or nil
 
-     next: =>
+    next: =>
       @display_lines[@nr + 1]
 
-    is_wrapped: =>
-      @layout.is_wrapped
+    lines: =>
+      unless @_lines
+        @_lines = {}
+        for nr = 1, @layout.line_count
+          layout_line = @layout\get_line_readonly nr - 1
+          _, extents = layout_line\get_pixel_extents!
+          line_start = layout_line.start_index + 1
+          line_end = layout_line.length + line_start
+          line_end -= 1 unless nr == @layout.line_count
+          @_lines[#@_lines + 1] = {
+            :line_start,
+            :line_end,
+            :extents
+            height: extents.height + @y_offset * 2
+          }
+
+      @_lines
    }
 
   draw: (x, y, cr, clip, opts = {}) =>

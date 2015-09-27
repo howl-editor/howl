@@ -67,6 +67,11 @@ core.define 'PangoLayout', {
       set: (spacing) => C.pango_layout_set_spacing @, spacing
     }
 
+    indent: {
+      get: => tonumber C.pango_layout_get_indent @
+      set: (indent) => C.pango_layout_set_indent @, indent
+    }
+
     alignment: {
       get: => tonumber C.pango_layout_get_alignment @
       set: (alignment) => C.pango_layout_set_alignment @, alignment
@@ -101,6 +106,8 @@ core.define 'PangoLayout', {
       get: => C.pango_layout_get_wrap(@)
       set: (w) => C.pango_layout_set_wrap(@, w)
     }
+
+    line_count: => tonumber C.pango_layout_get_line_count(@)
   }
 
   new: (ctx) -> gc_ptr C.pango_layout_new ctx
