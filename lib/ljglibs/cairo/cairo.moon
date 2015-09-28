@@ -205,5 +205,7 @@ core.define 'cairo_t', {
 
   -- Path operations
   rectangle: (x, y, width, height) => C.cairo_rectangle @, x, y, width, height
+  arc: (xc, yc, radius, angle1, angle2) => C.cairo_arc @, xc, yc, radius, angle1, angle2
+  close_path: => C.cairo_close_path @
 
 }, (t, ...) -> t.create ...

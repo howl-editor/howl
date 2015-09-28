@@ -48,6 +48,27 @@ draw_ops = {
       cr\rectangle x, y + (line_width / 2), width, height - line_width
       cr\stroke!
 
+  rounded_rectangle: (flair, x, y, width, height, cr) ->
+    radius = flair['corner_radius'] or 3
+
+    if width < radius * 3 or height < radius * 3
+      radius = math.min(width, height) / 3
+
+    quadrant = math.pi / 2
+    right, bottom, left, top = 0, quadrant, quadrant * 2, quadrant * 3
+    cr\move_to x, y + radius
+    cr\arc x + radius, y + radius, radius, left, top
+    cr\arc x + width - radius, y + radius, radius, top, right
+    cr\arc x + width - radius, y + height - radius, radius, right, bottom
+    cr\arc x + radius, y + height - radius, radius, bottom, left
+    cr\close_path!
+
+    set_source_from_color cr, 'background', flair
+    cr\fill_preserve!
+    set_source_from_color cr, 'foreground', flair
+    set_line_type_from_flair cr, flair
+    cr\stroke!
+
   sandwich: (flair, x, y, width, height, cr) ->
     set_source_from_color cr, 'foreground', flair
     set_line_type_from_flair cr, flair
@@ -114,6 +135,7 @@ need_text_object = (flair) ->
 
 {
   RECTANGLE: 'rectangle'
+  ROUNDED_RECTANGLE: 'rounded_rectangle'
   SANDWICH: 'sandwich'
   UNDERLINE: 'underline'
   PIPE: 'pipe'

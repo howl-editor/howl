@@ -7,11 +7,13 @@ flair = require 'aullar.flair'
 export SANDWICH = flair.SANDWICH
 export UNDERLINE = flair.UNDERLINE
 export RECTANGLE = flair.RECTANGLE
+export ROUNDED_RECTANGLE = flair.ROUNDED_RECTANGLE
 
 setmetatable {
   SANDWICH: flair.SANDWICH
   UNDERLINE: flair.UNDERLINE
   RECTANGLE: flair.RECTANGLE
+  ROUNDED_RECTANGLE: flair.ROUNDED_RECTANGLE
 
   define: (name, definition) ->
     flair.define name, definition

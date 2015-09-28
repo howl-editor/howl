@@ -99,7 +99,7 @@ return {
       line_width: 1
 
     search:
-      type: highlight.RECTANGLE
+      type: highlight.ROUNDED_RECTANGLE
       foreground: black
       foreground_alpha: 1
       background: green
@@ -107,12 +107,12 @@ return {
       height: 'text'
 
     search_secondary:
-      type: flair.RECTANGLE
+      type: flair.ROUNDED_RECTANGLE
       background: lightblue
       text_color: black
 
     replace_strikeout:
-      type: flair.RECTANGLE
+      type: flair.ROUNDED_RECTANGLE
       foreground: black
       background: red
       text_color: black
@@ -136,7 +136,7 @@ return {
       height: 'text'
 
     block_cursor:
-      type: flair.RECTANGLE,
+      type: flair.ROUNDED_RECTANGLE,
       background: foreground
       text_color: background
       height: 'text',

@@ -108,7 +108,7 @@ return {
       line_width: 1
 
     search:
-      type: highlight.RECTANGLE
+      type: highlight.ROUNDED_RECTANGLE
       foreground: darkgreen
       foreground_alpha: 1
       background: blue
@@ -118,14 +118,14 @@ return {
     search_secondary:
       foreground: lightblue
       line_width: 1
-      type: highlight.RECTANGLE
+      type: highlight.ROUNDED_RECTANGLE
       background: black
       background_alpha: 0.6
       text_color: white
       height: 'text'
 
     replace_strikeout:
-      type: highlight.RECTANGLE
+      type: highlight.ROUNDED_RECTANGLE
       foreground: black
       background: red
       text_color: lightgray
@@ -133,7 +133,7 @@ return {
       height: 'text'
 
     brace_highlight:
-      type: highlight.RECTANGLE
+      type: highlight.ROUNDED_RECTANGLE
       text_color: white
       background: blue
       background_alpha: 0.6

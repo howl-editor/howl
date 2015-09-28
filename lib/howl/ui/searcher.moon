@@ -5,13 +5,13 @@ import config from howl
 import highlight from howl.ui
 
 highlight.define_default 'search', {
-  type: highlight.RECTANGLE,
+  type: highlight.ROUNDED_RECTANGLE,
   foreground: '#ffffff'
   foreground_alpha: 100
 }
 
 highlight.define_default 'search_secondary', {
-  type: highlight.RECTANGLE,
+  type: highlight.ROUNDED_RECTANGLE,
   foreground: '#ffffff'
   foreground_alpha: 150
   background: '#ffffff'
