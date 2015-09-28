@@ -107,11 +107,11 @@ class ListWidget extends PropertyObject
     highlighter = self.highlighter or (text) ->
       Matcher.explain @highlight_matches_for, text
 
-    positions = highlighter text
-    if positions
-      for hl_pos in *positions
-        p = start_pos + hl_pos - 1
-        @text_widget.buffer\style p, p, 'list_highlight'
+    segments = highlighter text
+    if segments
+      for segment in *segments
+        p = start_pos + segment[1] - 1
+        @text_widget.buffer\style p, p + segment[2] - 1, 'list_highlight'
 
   _write_status: =>
     return unless @has_status

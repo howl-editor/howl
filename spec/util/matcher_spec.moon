@@ -86,9 +86,9 @@ describe 'Matcher', ->
     it 'sets .how to the type of match', ->
       assert.equal 'exact', Matcher.explain('fu', 'snafu').how
 
-    it 'returns a list of character offsets indicating where <search> matched', ->
-      assert.same { how: 'exact', 4, 5, 6 }, Matcher.explain 'ƒlu', 'sñaƒlux'
-      assert.same { how: 'boundary', 1, 4, 9, 10 }, Matcher.explain 'itʂo', 'iʂ that ʂo'
+    it 'returns a list of {start_position, length} segments indicating where <search> matched', ->
+      assert.same { how: 'exact', {4, 3} }, Matcher.explain 'ƒlu', 'sñaƒlux'
+      assert.same { how: 'boundary', {1, 1}, {4, 1}, {9, 2} }, Matcher.explain 'itʂo', 'iʂ that ʂo'
 
     it 'lower-cases the search and text just as for matching', ->
       assert.not_nil Matcher.explain 'FU', 'ʂnafu'
@@ -98,7 +98,7 @@ describe 'Matcher', ->
       assert.not_nil Matcher.explain 'FU', 'snafu'
 
   it 'boundary matches are as tight as possible', ->
-    assert.same { how: 'boundary', 1, 6, 7 }, Matcher.explain 'hth', 'hail the howl'
+    assert.same { how: 'boundary', {1, 1}, {6, 2} }, Matcher.explain 'hth', 'hail the howl'
 
   describe 'with reverse matching (reverse = true specified as an option)', ->
     describe 'handles boundary matches', ->
@@ -146,8 +146,8 @@ describe 'Matcher', ->
       }, m('ssh')
 
     it 'explain(search, text) works correctly', ->
-      assert.same { how: 'exact', 7, 8, 9 }, Matcher.explain 'aƒl', 'ƒluxsñaƒlux', reverse: true
-      assert.same { how: 'boundary', 1, 5 }, Matcher.explain 'as', 'app_spec.fu', reverse: true
+      assert.same { how: 'exact', {7, 3} }, Matcher.explain 'aƒl', 'ƒluxsñaƒlux', reverse: true
+      assert.same { how: 'boundary', {1, 1}, {5, 1} }, Matcher.explain 'as', 'app_spec.fu', reverse: true
 
   describe 'with preserve_order = true specified as an option', ->
     it 'preserves order of matches, irrespective of match score', ->

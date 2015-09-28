@@ -16,15 +16,14 @@ line_match_highlighter = (editor) ->
 
     buffer = editor.buffer
     line = buffer.lines[selection.line_nr]
-    local positions
+    local segments
     if text and not text.is_empty
-      positions = Matcher.explain text, line.text
+      segments = Matcher.explain text, line.text
 
-    if positions
+    if segments
       start_pos = line.start_pos
-      column = positions[1]
-      for hl_pos in *positions
-        highlight.apply 'search', buffer, start_pos + hl_pos - 1, 1
+      for segment in *segments
+        highlight.apply 'search', buffer, start_pos + segment[1] - 1, segment[2]
     else
       highlight.apply 'search', buffer, line.start_pos, line.end_pos - line.start_pos
 
@@ -48,10 +47,10 @@ line_match_highlighter = (editor) ->
             continue
           line = buffer.lines[nr]
           start_pos = line.start_pos
-          positions = Matcher.explain text, line.text
-          if positions
-            for hl_pos in *positions
-              highlight.apply 'search_secondary', buffer, start_pos + hl_pos - 1, 1
+          segments = Matcher.explain text, line.text
+          if segments
+            for segment in *segments
+              highlight.apply 'search_secondary', buffer, start_pos + segment[1] - 1, segment[2]
 
 interact.register
   name: 'select_line'
@@ -89,8 +88,8 @@ interact.register
       line = result.selection.line
       column = 1
       if result.text and not result.text.is_empty
-        positions = matcher.explain result.text, line.text
-        column = positions and positions[1] or 1
+        segments = matcher.explain result.text, line.text
+        column = segments and segments[1][1] or 1
       return {
         :line
         text: result.text

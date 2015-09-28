@@ -99,17 +99,30 @@ class Matcher
   explain: (search, text, options = {}) ->
     how, match = create_matcher(search, reverse)(text.ulower, text)
     return nil unless match
+
+    segments = {}
     if how == 'exact'
       { start_pos, end_pos } = match
-      i = 2
-      for pos = start_pos + 1, end_pos
-        match[i] = pos
-        i += 1
+      append segments, {start_pos, end_pos - start_pos + 1}
     else -- boundary
       match[i] -= 1 for i = 1, #match
+      local segment_start, segment_end
+      for pos in *match
+        unless segment_start
+          segment_start = pos
+          segment_end = pos
+          continue
+        if pos == segment_end + 1
+          segment_end = pos
+        else
+          table.insert segments, {segment_start, segment_end - segment_start + 1}
+          segment_start = pos
+          segment_end = pos
+      if segment_start
+        table.insert segments, {segment_start, segment_end - segment_start + 1}
 
-    match.how = how
-    return match
+    segments.how = how
+    return segments
 
   _load_candidates: =>
     max = math.max
