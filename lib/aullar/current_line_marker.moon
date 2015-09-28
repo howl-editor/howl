@@ -21,19 +21,20 @@ flair.define 'current-line-overlay', {
 CurrentLineMarker = {
   new: (@view) =>
 
-  draw_before: (x, y, display_line, cr, clip) =>
-    current_flair = flair.get 'current-line'
-    current_flair.height = display_line.height
-    flair.draw 'current-line', display_line, 1, 1, x, y, cr
+  draw_before: (x, y, display_line, cr, clip, col) =>
+    @_offset = 1
+    if display_line.is_wrapped
+      @_offset = display_line.lines\at(col).line_start
 
-  draw_after: (x, y, display_line, cr, clip) =>
+    flair.draw 'current-line', display_line, @_offset, @_offset, x, y, cr
+
+  draw_after: (x, y, display_line, cr, clip, col) =>
     block = display_line.block
     overlay_flair = flair.get 'current-line-overlay'
-    overlay_flair.height = display_line.height
 
     if block
       overlay_flair.width = block.width
-      flair.draw overlay_flair, display_line, 1, 1, x, y, cr
+      flair.draw overlay_flair, display_line, @_offset, @_offset, x, y, cr
     else
       overlay_flair.width = nil
       bg_ranges = display_line.background_ranges

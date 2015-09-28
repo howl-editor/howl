@@ -493,7 +493,6 @@ View = {
 
   _draw: (cr) =>
     p_ctx = @area.pango_context
-    cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
     conf = @config
     line_draw_opts = config: conf, buffer: @_buffer
@@ -522,13 +521,14 @@ View = {
 
     current_line = @cursor.line
     y = start_y
+    cursor_col = @cursor.column
 
     for line_info in *lines
       {:display_line, :line} = line_info
       line_draw_opts.line = line
 
       if line.nr == current_line and conf.view_highlight_current_line
-        @current_line_marker\draw_before edit_area_x, y, display_line, cr, clip
+        @current_line_marker\draw_before edit_area_x, y, display_line, cr, clip, cursor_col
 
       if @selection\affects_line line
         @selection\draw edit_area_x, y, cr, display_line, line
@@ -543,7 +543,7 @@ View = {
 
       if line.nr == current_line
         if conf.view_highlight_current_line
-          @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip
+          @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip, cursor_col
 
         if conf.view_show_cursor
           @cursor\draw edit_area_x, y, cr, display_line

@@ -191,6 +191,15 @@ draw_edge_line = (at_col, x, y, base_x, line, cr, width_of_space) ->
     f\draw x, y, f.line_width or 0.5, line.height, cr
     cr\restore!
 
+LinesMt = {
+  at: (col) =>
+    for line in *@
+      if col >= line.line_start and col <= line.line_end
+        return line
+
+    nil
+}
+
 DisplayLine = define_class {
   new: (@display_lines, @view, buffer, @pango_context, line, width) =>
     @layout = Layout pango_context
@@ -259,7 +268,7 @@ DisplayLine = define_class {
 
     lines: =>
       unless @_lines
-        @_lines = {}
+        @_lines = setmetatable {}, __index: LinesMt
         for nr = 1, @layout.line_count
           layout_line = @layout\get_line_readonly nr - 1
           _, extents = layout_line\get_pixel_extents!
