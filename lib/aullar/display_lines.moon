@@ -276,6 +276,7 @@ DisplayLine = define_class {
           line_end = layout_line.length + line_start
           line_end -= 1 unless nr == @layout.line_count
           @_lines[#@_lines + 1] = {
+            :nr,
             :line_start,
             :line_end,
             :extents

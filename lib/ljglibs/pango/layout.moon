@@ -18,6 +18,16 @@ core.define 'PangoLayoutLine', {
     ink_rect = PangoRectangle!
     C.pango_layout_line_get_pixel_extents @, ink_rect, logical_rect
     ink_rect, logical_rect
+
+  index_to_x: (index, trailing) =>
+    arr = ffi_new 'int[1]'
+    C.pango_layout_line_index_to_x @, index, trailing, arr
+    tonumber arr[0]
+
+  x_to_index: (x_pos) =>
+    arr = ffi_new 'int[2]'
+    outside = C.pango_layout_line_x_to_index @, x_pos, arr, arr + 1
+    outside == 1, tonumber(arr[0]), tonumber(arr[1])
 }
 
 core.define 'PangoLayoutIter', {

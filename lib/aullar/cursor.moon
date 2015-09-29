@@ -270,11 +270,33 @@ Cursor = {
     @move_to pos: line_start + new_index, extend: opts.extend
 
   up: (opts = {}) =>
+    d_line = @display_line
+    if d_line.is_wrapped
+      wrapped_line = d_line.lines\at(@column)
+      if wrapped_line.nr != 1
+        l_line = d_line.layout\get_line_readonly wrapped_line.nr - 1
+        x = l_line\index_to_x @column - 1, 0
+        prev_l_line = d_line.layout\get_line_readonly wrapped_line.nr - 2
+        inside, offset = prev_l_line\x_to_index x
+        @move_to pos: @buffer_line.start_offset + offset, extend: opts.extend
+        return
+
     prev = @line - 1
     if prev >= 1
       @move_to line: prev, extend: opts.extend
 
   down: (opts = {}) =>
+    d_line = @display_line
+    if d_line.is_wrapped
+      wrapped_line = d_line.lines\at(@column)
+      if wrapped_line.nr != d_line.line_count
+        l_line = d_line.layout\get_line_readonly wrapped_line.nr - 1
+        x = l_line\index_to_x @column - 1, 0
+        next_l_line = d_line.layout\get_line_readonly wrapped_line.nr
+        inside, offset = next_l_line\x_to_index x
+        @move_to pos: @buffer_line.start_offset + offset, extend: opts.extend
+        return
+
     next = @line + 1
     if next <= @view.buffer.nr_lines
       @move_to line: next, extend: opts.extend
