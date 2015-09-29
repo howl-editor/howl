@@ -29,7 +29,7 @@ set_line_type_from_flair = (cr, flair) ->
   cr.line_width = flair._line_width
   switch flair.line_type
     when 'dotted'
-      cr.dash = {1, 1.5}
+      cr.dash = {0.5, 1}
     when 'dashed'
       cr.dash = {6, 3}
 
