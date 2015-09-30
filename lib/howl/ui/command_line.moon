@@ -174,6 +174,11 @@ class CommandLine extends PropertyObject
       @command_widget\insert @current.saved_command_line, 1
       @current.saved_command_line = nil
 
+    if @current.saved_widgets
+      for widget in *@_all_widgets
+        if @current.saved_widgets[widget]
+          widget\show!
+
     @running[#@running] = nil
 
     if @stack_depth > 0
@@ -281,6 +286,14 @@ class CommandLine extends PropertyObject
   @property _widgets:
     get: => @current and @current.command_line_widgets
 
+  @property _all_widgets:
+    get: =>
+      widgets = {}
+      for frame in *@running
+        for _, widget in pairs frame.command_line_widgets
+          table.insert widgets, widget
+      return widgets
+
   @property _left_stop:
     get: => @current and @current.command_line_left_stop
 
@@ -350,6 +363,12 @@ class CommandLine extends PropertyObject
     @current.saved_command_line = @_capture_command_line @_left_stop - 1
     @command_widget\delete 1, @_left_stop - 1
     @current.command_line_left_stop = 1
+
+    @current.saved_widgets = {}
+    for widget in *@_all_widgets
+      if widget.showing
+        widget\hide!
+        @current.saved_widgets[widget] = true
 
   write: (text) =>
     @command_widget\append text
