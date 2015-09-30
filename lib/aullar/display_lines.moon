@@ -6,8 +6,7 @@ flair = require 'aullar.flair'
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
 Pango = require 'ljglibs.pango'
-Layout = Pango.Layout
-SCALE = Pango.SCALE
+{:Layout, :AttrList, :SCALE} = Pango
 pango_cairo = Pango.cairo
 flair = require 'aullar.flair'
 
@@ -29,6 +28,7 @@ flair.define_default 'edge_line', {
 }
 
 styles.define_default 'blob', 'embedded:preproc'
+styles.define_default 'wrap_indicator', 'comment'
 
 parse_background_ranges = (styling) ->
   ranges = {}
@@ -205,7 +205,6 @@ DisplayLine = define_class {
     @layout = Layout pango_context
     @layout\set_text line.ptr, line.size
     @layout.tabs = display_lines.tab_array
-    @layout.indent = -(20 * SCALE)
     @nr = line.nr
     @size = line.size
     @indent = get_indent view, line
@@ -215,7 +214,8 @@ DisplayLine = define_class {
 
     WRAP_LIMIT = 2000 -- xxx replace
     if wrap != 'none' and @size <= WRAP_LIMIT
-      width = view.edit_area_width
+      wrap_indicator = @display_lines.wrap_indicator
+      width = view.edit_area_width - (wrap_indicator.layout\get_pixel_size!)
       @layout.width = width * SCALE
       wrap_mode = wrap == 'word' and Pango.WRAP_WORD or Pango.WRAP_CHAR
       @layout.wrap = wrap_mode
@@ -322,13 +322,36 @@ DisplayLine = define_class {
     if edge_column and edge_column > 0
       draw_edge_line edge_column, x, y, base_x, @, cr, @width_of_space
 
+    -- line wrap indicators
+    if @is_wrapped
+      wrap_indicator = @display_lines.wrap_indicator
+      cr\save!
+      wrap_y_offset = @y_offset
+      for line in *@lines
+        break if line.nr == @line_count
+        wrap_y = y + wrap_y_offset
+        cr\move_to x - base_x + line.extents.width + @width_of_space, wrap_y
+        pango_cairo.show_layout cr, wrap_indicator.layout
+        wrap_y_offset += line.extents.height + (@y_offset * 2)
+
+      cr\restore!
+
     cr\restore! if base_x > 0
 }
+
+get_wrap_indicator = (pango_context, view) ->
+  layout = Layout pango_context
+  layout\set_text '⏎'
+  list = AttrList()
+  styles.apply list, 'wrap_indicator'
+  layout.attributes = list
+  :layout
 
 (view, tab_array, buffer, pango_context) ->
   setmetatable {
     max: 0
-    tab_array: tab_array
+    tab_array: tab_array,
+    wrap_indicator: get_wrap_indicator pango_context, view
   }, {
     __index: (nr) =>
       line = buffer\get_line nr
