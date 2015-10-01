@@ -21,9 +21,6 @@ config = require 'aullar.config'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs, :floor} = math
 
-contains_newlines = (s) ->
-  s\find('[\n\r]') != nil
-
 notify = (view, event, ...) ->
   listener = view.listener
   if listener and listener[event]
@@ -622,12 +619,12 @@ View = {
     cur_pos = @cursor.pos
     sel_anchor, sel_end = @selection.anchor, @selection.end_pos
     lines_showing = type == 'delete' and @lines_showing
+    lines_changed = args.lines_changed
 
     if not @showing
       @_reset_display!
     else
       start_dline = args.styled and @display_lines[args.styled.start_line]
-      lines_changed = contains_newlines(args.text)
 
       if lines_changed
         @_last_visible_line = nil

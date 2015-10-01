@@ -452,9 +452,17 @@ Buffer = {
     part_of_revision = @revisions.processing
     revision = part_of_revision and nil or @revisions\push(type, offset, text)
 
-    args = :offset, :text, :size, :invalidate_offset, :revision, :part_of_revision
-    lines_modified = text\find('[\n\r]') != nil
-    @_nr_lines = nil if lines_modified
+    lines_changed = text\find('[\n\r]') != nil
+    args = {
+      :offset,
+      :text,
+      :size,
+      :invalidate_offset,
+      :revision,
+      :part_of_revision,
+      :lines_changed
+    }
+    @_nr_lines = nil if lines_changed
 
     if @lexer
       at_line = @get_line_at_offset(offset)
@@ -462,7 +470,7 @@ Buffer = {
         last_line_shown = max at_line.nr, @_get_last_line_shown!
         style_to = min(last_line_shown + 20, @nr_lines)
         args.styled = @refresh_styling_at at_line.nr, style_to, {
-          force_full: lines_modified
+          force_full: lines_changed
           no_notify: true
         }
 
