@@ -129,6 +129,10 @@ Cursor = {
 
     in_view: =>
       @line >= @view.first_visible_line and @line <= @view.last_visible_line
+
+    current_x: =>
+      cur_rect = @display_line.layout\index_to_pos @column - 1
+      cur_rect.x
   }
 
   ensure_in_view: =>
@@ -141,8 +145,7 @@ Cursor = {
     @move_to line: new_line
 
   remember_column: =>
-    cur_rect = @display_line.layout\index_to_pos @column - 1
-    @_sticky_x = cur_rect.x
+    @_sticky_x = @current_x
 
   in_line: (line) =>
     pos_is_in_line @_pos, line
@@ -274,26 +277,31 @@ Cursor = {
     if d_line.is_wrapped
       wrapped_line = d_line.lines\at(@column)
       if wrapped_line.nr != 1
-        l_line = d_line.layout\get_line_readonly wrapped_line.nr - 1
-        x = l_line\index_to_x @column - 1, 0
+        -- move up into the previous visual (wrapped) line
         prev_l_line = d_line.layout\get_line_readonly wrapped_line.nr - 2
-        inside, offset = prev_l_line\x_to_index x
+        inside, offset = prev_l_line\x_to_index @current_x
         @move_to pos: @buffer_line.start_offset + offset, extend: opts.extend
         return
 
-    prev = @line - 1
-    if prev >= 1
-      @move_to line: prev, extend: opts.extend
+    prev = d_line.prev
+    if prev
+      if prev.is_wrapped
+        -- move up into the previous visual (wrapped) line
+        prev_l_line = prev.layout\get_line_readonly prev.line_count - 1
+        inside, offset = prev_l_line\x_to_index @_sticky_x or @current_x
+        buf_line = @view.buffer\get_line prev.nr
+        @move_to pos: buf_line.start_offset + offset, extend: opts.extend
+      else
+        @move_to line: prev.nr, extend: opts.extend
 
   down: (opts = {}) =>
     d_line = @display_line
     if d_line.is_wrapped
       wrapped_line = d_line.lines\at(@column)
       if wrapped_line.nr != d_line.line_count
-        l_line = d_line.layout\get_line_readonly wrapped_line.nr - 1
-        x = l_line\index_to_x @column - 1, 0
+        -- move down into the next visual (wrapped) line
         next_l_line = d_line.layout\get_line_readonly wrapped_line.nr
-        inside, offset = next_l_line\x_to_index x
+        inside, offset = next_l_line\x_to_index @current_x
         @move_to pos: @buffer_line.start_offset + offset, extend: opts.extend
         return
 
