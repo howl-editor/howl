@@ -318,7 +318,7 @@ class Editor extends PropertyObject
     @_show_buffer buffer, preview: true
 
   cancel_preview: =>
-    if @_is_previewing
+    if @_is_previewing and @_pre_preview_buffer
       @_show_buffer @_pre_preview_buffer
       @_pre_preview_buffer = nil
 

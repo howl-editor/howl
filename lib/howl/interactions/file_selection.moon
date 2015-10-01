@@ -81,6 +81,8 @@ class FileSelector
       app.editor\cancel_preview!
 
   on_update: (text) =>
+    return if @submitting
+
     path = @directory.path .. '/' .. text
     directory, text = get_dir_and_leftover path
 
@@ -88,6 +90,14 @@ class FileSelector
       @_chdir directory, text
     else
       @list_widget\update text
+
+  _submit: (path) =>
+    @submitting = true
+    if path == @directory
+      @command_line.text = ''
+    else
+      @command_line.text = path.basename
+    self.finish path
 
   keymap:
     enter: =>
@@ -98,7 +108,7 @@ class FileSelector
         return
 
       if name == ".#{separator}"
-        self.finish @directory
+        @_submit @directory
         return
 
       path = @directory\join name
@@ -106,8 +116,7 @@ class FileSelector
       if path.exists and path.is_directory
         @_chdir path
       else
-        @command_line.text = name
-        self.finish path
+        @_submit path
 
     backspace: =>
       return false unless @command_line.text.is_empty
