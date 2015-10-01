@@ -268,7 +268,7 @@ DisplayLine = define_class {
 
     lines: =>
       unless @_lines
-        @_lines = setmetatable {}, __index: LinesMt
+        @_lines = {}
         for nr = 1, @layout.line_count
           layout_line = @layout\get_line_readonly nr - 1
           _, extents = layout_line\get_pixel_extents!
@@ -282,6 +282,7 @@ DisplayLine = define_class {
             :extents
             height: extents.height + @y_offset * 2
           }
+        setmetatable @_lines, __index: LinesMt
 
       @_lines
    }
