@@ -443,7 +443,9 @@ class Editor extends PropertyObject
   duplicate_current: =>
     if @selection.empty
       line = @current_line
-      @buffer.lines\insert line.nr + 1, line.text
+      target_line = line.nr + 1
+      @buffer.lines\insert target_line, line.text
+      @line_at_bottom = target_line if @line_at_bottom < target_line
     else
       {:anchor, :cursor} = @selection
       @buffer\insert @selection.text, max(anchor, cursor)
