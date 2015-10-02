@@ -561,12 +561,12 @@ View = {
     @horizontal_scrollbar_alignment.left_padding = @gutter_width
     @gutter\sync_width @buffer, force: true
 
-  _on_buffer_styled: (buffer, args, start_dline) =>
+  _on_buffer_styled: (buffer, args) =>
     return unless @showing
     last_line = buffer\get_line @last_visible_line
     return if args.start_line > @display_lines.max + 1 and last_line.has_eol
     start_line = args.start_line
-    start_dline or= @display_lines[start_line]
+    start_dline = @display_lines[start_line]
     prev_block = start_dline.block
     prev_block_width = prev_block and prev_block.width
 
@@ -624,25 +624,35 @@ View = {
     if not @showing
       @_reset_display!
     else
-      start_dline = args.styled and @display_lines[args.styled.start_line]
-
       if lines_changed
         @_last_visible_line = nil
+
+      if args.styled
+        @_on_buffer_styled buffer, args.styled
+      else
+        refresh_all_below = lines_changed
+
+        unless refresh_all_below
+          -- refresh only the single line
+          buf_line = @buffer\get_line_at_offset args.offset
+          start_dline = @display_lines[buf_line.nr]
+          @refresh_display from_offset: args.offset, to_offset: args.offset + args.size, invalidate: true
+          -- but if the line now has a different height due to line wrapping,
+          -- we still want a major refresh
+          new_dline = @display_lines[buf_line.nr]
+          if new_dline.height != start_dline.height
+            refresh_all_below = true
+          else
+            @_sync_scrollbars horizontal: true
+
+        if refresh_all_below
+          @refresh_display from_offset: args.offset, invalidate: true, gutter: true
+          @_sync_scrollbars!
 
       if args.offset > args.invalidate_offset
         -- we have lines before the offset of the modification that are
         -- invalid - they need to be invalidated but not visually refreshed
-        @_invalidate_display args.invalidate_offset, args.offset
-
-      if args.styled
-        @_on_buffer_styled buffer, args.styled, start_dline
-      else
-        if lines_changed
-          @refresh_display from_offset: args.offset, invalidate: true, gutter: true
-          @_sync_scrollbars!
-        else
-          @refresh_display from_offset: args.offset, to_offset: args.offset + args.size, invalidate: true
-          @_sync_scrollbars horizontal: true
+        @_invalidate_display args.invalidate_offset, args.offset - 1
 
       if lines_changed and not @gutter\sync_width buffer
         @area\queue_draw!
