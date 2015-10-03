@@ -331,10 +331,22 @@ Cursor = {
     @move_to line: first_visible + cursor_line_offset, extend: opts.extend
 
   start_of_line: (opts = {}) =>
-    @move_to pos: @buffer_line.start_offset, extend: opts.extend
+    d_line = @display_line
+    if d_line.is_wrapped
+      wrapped_line = d_line.lines\at(@column)
+      -- move to the start of this visual (wrapped) line
+      @move_to pos: @buffer_line.start_offset + wrapped_line.line_start - 1, extend: opts.extend
+    else
+      @move_to pos: @buffer_line.start_offset, extend: opts.extend
 
   end_of_line: (opts = {}) =>
-    @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
+    d_line = @display_line
+    if d_line.is_wrapped
+      wrapped_line = d_line.lines\at(@column)
+      -- move to the end of this visual (wrapped) line
+      @move_to pos: @buffer_line.start_offset + wrapped_line.line_end - 1, extend: opts.extend
+    else
+      @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
 
   draw: (x, base_y, cr, display_line) =>
     return unless @_showing and (@active or @show_when_inactive)
