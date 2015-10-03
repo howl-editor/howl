@@ -23,10 +23,16 @@ CurrentLineMarker = {
 
   draw_before: (x, y, display_line, cr, clip, col) =>
     @_offset = 1
-    if display_line.is_wrapped
-      @_offset = display_line.lines\at(col).line_start
+    @_height = display_line.height
+    current_flair = flair.get 'current-line'
 
-    flair.draw 'current-line', display_line, @_offset, @_offset, x, y, cr
+    if display_line.is_wrapped
+      if @view.config.view_line_wrap_navigation == 'visual'
+        @_offset = display_line.lines\at(col).line_start
+        @_height = nil -- defaults to visual line
+
+    current_flair.height = @_height
+    flair.draw current_flair, display_line, @_offset, @_offset, x, y, cr
 
   draw_after: (x, y, display_line, cr, clip, col) =>
     block = display_line.block
@@ -34,9 +40,11 @@ CurrentLineMarker = {
 
     if block
       overlay_flair.width = block.width
+      overlay_flair.height = @_height
       flair.draw overlay_flair, display_line, @_offset, @_offset, x, y, cr
     else
       overlay_flair.width = nil
+      overlay_flair.height = nil
       bg_ranges = display_line.background_ranges
       return unless #bg_ranges > 0
 

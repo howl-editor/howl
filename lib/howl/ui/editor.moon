@@ -176,6 +176,14 @@ class Editor extends PropertyObject
 
       @view.config.view_line_wrap = value
 
+  @property line_wrapping_navigation:
+    get: => @view.config.view_line_wrap_navigation
+    set: (value) =>
+      unless value\umatch(r'^(?:real|visual)$')
+        error "Unknown value for line_wrapping_navigation: #{value}", 2
+
+      @view.config.view_line_wrap_navigation = value
+
   @property cursor_line_highlighted:
     get: => @view.config.view_highlight_current_line
     set: (flag) =>
@@ -568,6 +576,7 @@ class Editor extends PropertyObject
     with config
       @indentation_guides = .indentation_guides
       @line_wrapping = .line_wrapping
+      @line_wrapping_navigation = .line_wrapping_navigation
       @horizontal_scrollbar = .horizontal_scrollbar
       @vertical_scrollbar = .vertical_scrollbar
       @cursor_line_highlighted = .cursor_line_highlighted
@@ -813,6 +822,15 @@ with config
     }
 
   .define
+    name: 'line_wrapping_navigation'
+    description: 'Controls how wrapped lines are navigated'
+    default: 'visual'
+    options: {
+      { 'real', 'Lines are navigated by real lines' }
+      { 'visual', 'Lines are navigated by visual (wrapped) lines' }
+    }
+
+  .define
     name: 'horizontal_scrollbar'
     description: 'Whether horizontal scrollbars are shown'
     default: true
@@ -858,6 +876,7 @@ with config
     'indentation_guides',
     'edge_column',
     'line_wrapping',
+    'line_wrapping_navigation',
     'horizontal_scrollbar',
     'vertical_scrollbar',
     'cursor_line_highlighted',

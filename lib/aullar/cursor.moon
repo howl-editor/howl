@@ -133,6 +133,8 @@ Cursor = {
     current_x: =>
       cur_rect = @display_line.layout\index_to_pos @column - 1
       cur_rect.x
+
+    _navigate_visual: => @view.config.view_line_wrap_navigation == 'visual'
   }
 
   ensure_in_view: =>
@@ -274,7 +276,7 @@ Cursor = {
 
   up: (opts = {}) =>
     d_line = @display_line
-    if d_line.is_wrapped
+    if d_line.is_wrapped and @_navigate_visual
       wrapped_line = d_line.lines\at(@column)
       if wrapped_line.nr != 1
         -- move up into the previous visual (wrapped) line
@@ -285,7 +287,7 @@ Cursor = {
 
     prev = d_line.prev
     if prev
-      if prev.is_wrapped
+      if prev.is_wrapped and @_navigate_visual
         -- move up into the previous visual (wrapped) line
         prev_l_line = prev.layout\get_line_readonly prev.line_count - 1
         inside, offset = prev_l_line\x_to_index @_sticky_x or @current_x
@@ -296,7 +298,7 @@ Cursor = {
 
   down: (opts = {}) =>
     d_line = @display_line
-    if d_line.is_wrapped
+    if d_line.is_wrapped and @_navigate_visual
       wrapped_line = d_line.lines\at(@column)
       if wrapped_line.nr != d_line.line_count
         -- move down into the next visual (wrapped) line
@@ -332,7 +334,7 @@ Cursor = {
 
   start_of_line: (opts = {}) =>
     d_line = @display_line
-    if d_line.is_wrapped
+    if d_line.is_wrapped and @_navigate_visual
       wrapped_line = d_line.lines\at(@column)
       -- move to the start of this visual (wrapped) line
       @move_to pos: @buffer_line.start_offset + wrapped_line.line_start - 1, extend: opts.extend
@@ -341,7 +343,7 @@ Cursor = {
 
   end_of_line: (opts = {}) =>
     d_line = @display_line
-    if d_line.is_wrapped
+    if d_line.is_wrapped and @_navigate_visual
       wrapped_line = d_line.lines\at(@column)
       -- move to the end of this visual (wrapped) line
       @move_to pos: @buffer_line.start_offset + wrapped_line.line_end - 1, extend: opts.extend
