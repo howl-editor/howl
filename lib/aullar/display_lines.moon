@@ -331,7 +331,9 @@ DisplayLine = define_class {
       for line in *@lines
         break if line.nr == @line_count
         wrap_y = y + wrap_y_offset
-        cr\move_to x - base_x + line.extents.width + @width_of_space, wrap_y
+
+        line_y_offset = (line.extents.height - wrap_indicator.height) / 2
+        cr\move_to x - base_x + line.extents.width + @width_of_space, wrap_y + line_y_offset
         pango_cairo.show_layout cr, wrap_indicator.layout
         wrap_y_offset += line.extents.height + (@y_offset * 2)
 
@@ -347,7 +349,9 @@ get_wrap_indicator = (pango_context, view) ->
   list = AttrList()
   styles.apply list, 'wrap_indicator'
   layout.attributes = list
-  :layout
+  width, height = layout\get_pixel_size!
+
+  :layout, :width, :height
 
 (view, tab_array, buffer, pango_context) ->
   setmetatable {
