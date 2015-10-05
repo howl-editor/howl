@@ -588,6 +588,7 @@ class Editor extends PropertyObject
       view_conf.view_tab_size = .tab_width
       view_conf.view_font_name = .font_name
       view_conf.view_font_size = .font_size
+      view_conf.view_line_wrap_symbol = .line_wrapping_symbol
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
@@ -831,6 +832,12 @@ with config
     }
 
   .define
+    name: 'line_wrapping_symbol'
+    description: 'The symbol used for indicating a line wrap'
+    type_of: 'string'
+    default: '⏎'
+
+  .define
     name: 'horizontal_scrollbar'
     description: 'Whether horizontal scrollbars are shown'
     default: true
@@ -892,6 +899,7 @@ with config
     { 'line_numbers', 'view_show_line_numbers' }
     { 'indent', 'view_indent' }
     { 'cursor_blink_interval', 'cursor_blink_interval' }
+    { 'line_wrapping_symbol', 'view_line_wrap_symbol' }
 
   }
     .watch live_update[1], (_, value) -> apply_variable live_update[2], value

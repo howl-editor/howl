@@ -79,6 +79,11 @@ define_options = ->
       default: 'none'
     },
 
+    view_line_wrap_symbol: {
+      type: 'string',
+      default: '⏎'
+    }
+
     view_line_wrap_navigation: {
       type: 'string',
       default: 'visual'

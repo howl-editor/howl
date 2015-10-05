@@ -342,7 +342,8 @@ DisplayLine = define_class {
 
 get_wrap_indicator = (pango_context, view) ->
   layout = Layout pango_context
-  layout\set_text '⏎'
+  layout\set_text view.config.view_line_wrap_symbol
+
   list = AttrList()
   styles.apply list, 'wrap_indicator'
   layout.attributes = list
