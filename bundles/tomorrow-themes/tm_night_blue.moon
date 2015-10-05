@@ -11,7 +11,7 @@ aqua = '#99ffff'
 blue = '#bbdaff'
 purple = '#ebbbff'
 
-embedded_bg = '#25384f'
+embedded_bg = '#25389f'
 
 return {
   window:
