@@ -220,18 +220,18 @@ View = {
         return unless @showing
 
         last_line_height = @display_lines[line].height
-        available = @height - @margin
+        available = @height - @margin - last_line_height
         first_visible = line
 
         while first_visible > 1
-          d_line = @display_lines[first_visible]
-          break if (available - d_line.height) < last_line_height
-          available -= d_line.height
+          prev_d_line = @display_lines[first_visible - 1]
+          break if (available - prev_d_line.height) < 0
+          available -= prev_d_line.height
           first_visible -= 1
 
-        @first_visible_line = first_visible
-        -- we don't actually set @_last_visible_line here as it might
-        -- end up different than requested
+        @scroll_to first_visible
+        -- we don't actually set @_last_visible_line here as it
+        -- will be set by the actuall scrolling
     }
 
     lines_showing: =>
@@ -275,7 +275,7 @@ View = {
 
   scroll_to: (line) =>
     return if line < 1 or not @showing
-    line = max(1, min(line, (@buffer.nr_lines - @lines_showing) + 1))
+    line = max(1, line)
     return if @first_visible_line == line
 
     @_first_visible_line = line
@@ -283,6 +283,11 @@ View = {
     @_sync_scrollbars!
     @buffer\ensure_styled_to line: @last_visible_line + 1
     @area\queue_draw!
+
+    if line != 1 and @last_visible_line == @buffer.nr_lines
+      -- make sure we don't accidentally scroll to much here,
+      -- leaving visual area unclaimed
+      @last_visible_line = @last_visible_line
 
   _sync_scrollbars: (opts = { horizontal: true, vertical: true })=>
     @_updating_scrolling = true
