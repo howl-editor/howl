@@ -131,8 +131,15 @@ Cursor = {
       @line >= @view.first_visible_line and @line <= @view.last_visible_line
 
     current_x: =>
-      cur_rect = @display_line.layout\index_to_pos @column - 1
-      cur_rect.x
+      d_line = @display_line
+      base = 0
+      cur_rect = d_line.layout\index_to_pos @column - 1
+      if d_line.is_wrapped
+        -- calculate the real x of the current visual line
+        v_line = d_line.lines\at @column
+        base = (v_line.nr - 1) * d_line.width * SCALE
+
+      cur_rect.x + base
 
     _navigate_visual: => @view.config.view_line_wrap_navigation == 'visual'
   }
@@ -198,9 +205,18 @@ Cursor = {
         else
           @view.last_visible_line = dest_line.nr
 
-      -- adjust for the remembered column if appropriate
+      -- adjust for the remembered horizontal offset if appropriate
       if @_sticky_x and (opts.line and not opts.column)
-        inside, index = @display_line.layout\xy_to_index @_sticky_x, 1
+        x, y = @_sticky_x, 1
+
+        if @display_line.is_wrapped and @_sticky_x > @display_line.width
+          for l in *@display_line.lines
+            y += l.extents.height * SCALE
+            l_width = l.extents.width * SCALE
+            break if x <= l_width
+            x -= l_width
+
+        inside, index = @display_line.layout\xy_to_index x, y
         index = @display_line.size if not inside and index > 0 -- move to the ending new line
         pos = dest_line.start_offset + index
 
