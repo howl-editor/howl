@@ -198,8 +198,6 @@ need_text_object = (flair) ->
       unless width
         end_rect = layout\index_to_pos f_end_offset - 1
         end_x = end_rect.x / SCALE
-        -- if flair is overshooting we need to add the space ourselves
-        end_x += width_of_space if end_offset > f_end_offset
         width = x + end_x - start_x - base_x
 
       if flair.min_width
@@ -213,7 +211,8 @@ need_text_object = (flair) ->
       text_object = flair.text_object
 
       if not text_object and need_text_object(flair)
-        text_object = get_text_object display_line, f_start_offset, f_end_offset, flair
+        ft_end_offset = min line.line_end + 1, end_offset
+        text_object = get_text_object display_line, f_start_offset, ft_end_offset, flair
 
       -- height calculations
       height = type(flair.height) == 'number' and flair.height or line.height

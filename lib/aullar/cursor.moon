@@ -372,10 +372,13 @@ Cursor = {
     end_offset, new_trailing = display_line.layout\move_cursor_visually true, start_offset - 1, 0, 1
     end_offset += 1
 
-    at_eol = not display_line.is_wrapped and new_trailing > 0
-    at_eol or= start_offset + 1 > display_line.size
-    if at_eol
-      end_offset = display_line.size + 1
+    if new_trailing > 0
+      if display_line.is_wrapped
+        l = display_line.lines\at @column
+        l = display_line.lines[l.nr + 1]
+        end_offset = l and l.line_start or display_line.size + 1
+      else
+        end_offset = display_line.size + 1
 
     flair.draw @_flair, display_line, start_offset, end_offset, x, base_y, cr
 
