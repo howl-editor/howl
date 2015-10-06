@@ -208,6 +208,7 @@ DisplayLine = define_class {
     @nr = line.nr
     @size = line.size
     @indent = get_indent view, line
+    @width_of_space = @view.width_of_space
 
     config = view.config
     wrap = config.view_line_wrap
@@ -215,7 +216,7 @@ DisplayLine = define_class {
     WRAP_LIMIT = 2000 -- xxx replace
     if wrap != 'none' and @size <= WRAP_LIMIT
       wrap_indicator = @display_lines.wrap_indicator
-      width = view.edit_area_width - (wrap_indicator.layout\get_pixel_size!)
+      width = view.edit_area_width - wrap_indicator.width - @width_of_space
       @layout.width = width * SCALE
       wrap_mode = wrap == 'word' and Pango.WRAP_WORD or Pango.WRAP_CHAR
       @layout.wrap = wrap_mode
@@ -236,7 +237,6 @@ DisplayLine = define_class {
     @text_height = height
     @height = height + @y_offset * 2
     @width = width + view.cursor.width
-    @width_of_space = @view.width_of_space
     @is_wrapped = @layout.is_wrapped
     @line_count = @layout.line_count
 
@@ -328,12 +328,13 @@ DisplayLine = define_class {
       wrap_indicator = @display_lines.wrap_indicator
       cr\save!
       wrap_y_offset = @y_offset
+      max_x = (@layout.width / SCALE) + base_x
       for line in *@lines
         break if line.nr == @line_count
         wrap_y = y + wrap_y_offset
-
+        indicator_x = min max_x, line.extents.width + @width_of_space / 2
         line_y_offset = (line.extents.height - wrap_indicator.height) / 2
-        cr\move_to x - base_x + line.extents.width + @width_of_space, wrap_y + line_y_offset
+        cr\move_to x - base_x + indicator_x, wrap_y + line_y_offset
         pango_cairo.show_layout cr, wrap_indicator.layout
         wrap_y_offset += line.extents.height + (@y_offset * 2)
 
