@@ -134,10 +134,11 @@ Cursor = {
       d_line = @display_line
       base = 0
       cur_rect = d_line.layout\index_to_pos @column - 1
-      if d_line.is_wrapped
+      if d_line.is_wrapped and not @_navigate_visual
         -- calculate the real x of the current visual line
         v_line = d_line.lines\at @column
-        base = (v_line.nr - 1) * d_line.width * SCALE
+        for nr = 1, v_line.nr - 1
+          base += (d_line.lines[nr].extents.width + 1) * SCALE
 
       cur_rect.x + base
 
@@ -208,16 +209,20 @@ Cursor = {
       -- adjust for the remembered horizontal offset if appropriate
       if @_sticky_x and (opts.line and not opts.column)
         x, y = @_sticky_x, 1
+        local v_line
 
-        if @display_line.is_wrapped and @_sticky_x > @display_line.width
+        if @display_line.is_wrapped and @_sticky_x > @display_line.width and not @_navigate_visual
           for l in *@display_line.lines
+            v_line = l
             y += l.extents.height * SCALE
             l_width = l.extents.width * SCALE
             break if x <= l_width
-            x -= l_width
+            x -= l_width + SCALE
 
         inside, index = @display_line.layout\xy_to_index x, y
-        index = @display_line.size if not inside and index > 0 -- move to the ending new line
+        if not inside and index > 0 -- move to the ending new line
+          index = v_line and v_line.line_end - 1 or @display_line.size
+
         pos = dest_line.start_offset + index
 
     else -- staying on same line, refresh it
