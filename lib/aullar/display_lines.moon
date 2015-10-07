@@ -173,6 +173,9 @@ draw_indentation_guides = (x, y, base_x, line, cr, config, width_of_space) ->
 
   guide_x = x
   indentation_flair = flair.get 'indentation_guide'
+  height = line.height
+  if line.is_wrapped
+    height = line.lines[1].extents.height
 
   for i = 1, (indent / view_indent) - 1
     guide_x += width_of_space * view_indent
@@ -180,7 +183,7 @@ draw_indentation_guides = (x, y, base_x, line, cr, config, width_of_space) ->
     continue if adjusted_x < 0
     f = flair.get("indentation_guide_#{i}") or indentation_flair
     cr\save!
-    f\draw adjusted_x, y, f.line_width or 0.5, line.height, cr
+    f\draw adjusted_x, y, f.line_width or 0.5, height, cr
     cr\restore!
 
 draw_edge_line = (at_col, x, y, base_x, line, cr, width_of_space) ->
