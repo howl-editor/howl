@@ -379,12 +379,16 @@ View = {
       d_line = d_lines[line_nr]
 
       if not before
-        d_lines[line.nr] = nil if opts.invalidate
+        if opts.invalidate
+          d_lines[line.nr] = nil
+          -- recreate the display line since subsequent modifications has to
+          -- know what the display properties was for the modified lines
+          d_lines[line.nr]
+
         min_y or= y
         max_y = y + d_line.height
-      else
-        last_valid = max last_valid, line.nr
 
+      last_valid = max last_valid, line.nr
       y += d_line.height
 
     if opts.invalidate -- invalidate any lines after visibly affected block
@@ -488,7 +492,7 @@ View = {
 
     to_offset = min to_offset, @buffer.size + 1
     from_line = @buffer\get_line_at_offset(from_offset).nr
-    to_line = max @display_lines.max, @buffer\get_line_at_offset(to_offset).nr
+    to_line = max @display_lines.max, @buffer\get_line_at_offset(to_offset).nr - 1
 
     for line_nr = from_line, to_line
       @display_lines[line_nr] = nil
