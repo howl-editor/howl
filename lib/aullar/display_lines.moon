@@ -201,6 +201,15 @@ LinesMt = {
         return line
 
     nil
+
+  at_pixel_y: (y) =>
+    cur_y = 0
+    for line in *@
+      cur_y += line.height
+      if cur_y > y
+        return line
+
+    nil
 }
 
 DisplayLine = define_class {

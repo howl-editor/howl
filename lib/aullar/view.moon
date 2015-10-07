@@ -427,9 +427,14 @@ View = {
       if (y >= cur_y and y <= end_y)
         line = @_buffer\get_line(line_nr)
         pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
-        inside, index = d_line.layout\xy_to_index pango_x, 1
+        line_y = (y - cur_y) * Pango.SCALE
+        inside, index = d_line.layout\xy_to_index pango_x, line_y
         if not inside
-          return line.start_offset + line.size
+          if d_line.is_wrapped
+            v_line = d_line.lines\at_pixel_y(y - cur_y)
+            return line.start_offset + v_line.line_end - 1
+          else
+            return line.start_offset + line.size
         else
           -- are we aiming for the next grapheme?
           rect = d_line.layout\index_to_pos index
