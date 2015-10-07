@@ -171,7 +171,7 @@ class Editor extends PropertyObject
   @property line_wrapping:
     get: => @view.config.view_line_wrap
     set: (value) =>
-      unless value\umatch(r'^(?:none|word|character)$')
+      unless value\umatch r'^(?:none|word|character)$'
         error "Unknown value for line_wrapping: #{value}", 2
 
       @view.config.view_line_wrap = value
@@ -179,7 +179,7 @@ class Editor extends PropertyObject
   @property line_wrapping_navigation:
     get: => @view.config.view_line_wrap_navigation
     set: (value) =>
-      unless value\umatch(r'^(?:real|visual)$')
+      unless value\umatch r'^(?:real|visual)$'
         error "Unknown value for line_wrapping_navigation: #{value}", 2
 
       @view.config.view_line_wrap_navigation = value
