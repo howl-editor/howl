@@ -61,8 +61,6 @@ return {
     current_line:
       background: current
 
-    selection: background: selection
-
     gutter:
       foreground: comment
       :background
@@ -141,6 +139,10 @@ return {
       text_color: background
       height: 'text',
       min_width: 'letter'
+
+    selection:
+      type: highlight.ROUNDED_RECTANGLE
+      background: selection
 
   styles:
 

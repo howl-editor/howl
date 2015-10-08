@@ -69,8 +69,6 @@ return {
     current_line:
       background: current
 
-    selection: background: selection
-
     gutter:
       foreground: base1
       background: base2
@@ -158,6 +156,10 @@ return {
       text_color: background
       height: 'text',
       min_width: 'letter'
+
+    selection:
+      type: highlight.ROUNDED_RECTANGLE
+      background: selection
 
   styles:
 
