@@ -20,7 +20,7 @@ class MailMode
   }
 
   line_is_reflowable: (line) =>
-    no_break = { '^%s*>', '^%s%s>', '^[%w-]+:%s', '^-' }
+    no_break = { '^%s*>', '^%s%s>', '^[%w-]+:%s', '^-', ':%s*$' }
     for p in *no_break
       return false if line\find p
 
