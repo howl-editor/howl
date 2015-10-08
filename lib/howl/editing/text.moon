@@ -157,6 +157,7 @@ command.register
       log.info 'Could not find paragraph to reflow'
 
 reflow_check = (args) ->
+  return if args.buffer.read_only
   editor = howl.app.editor
   return unless editor
   return if args.part_of_revision or not editor.buffer == args.buffer
