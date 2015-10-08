@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Upgrade LuaJIT to LuaJIT-2.1.0-beta1
+
 - Added new bundle, 'mail-mode'.
 
 - Added support for loading user configuration from a XDG Base Directory

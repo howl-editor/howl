@@ -5,8 +5,8 @@ GTK = gtk+-3.0
 GTK_CFLAGS = $(shell pkg-config --cflags $(GTK))
 GTK_LIBS = $(shell pkg-config --libs $(GTK) gmodule-2.0 gio-unix-2.0)
 
-LUAJIT_VER = LuaJIT-2.0.4
-LUAJIT_CHECKSUM = dd9c38307f2223a504cbfb96e477eca0
+LUAJIT_VER = LuaJIT-2.1.0-beta1
+LUAJIT_CHECKSUM = 5a5bf71666e77cf6e7a1ae851127b834
 LUAJIT = deps/${LUAJIT_VER}
 LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
 LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
