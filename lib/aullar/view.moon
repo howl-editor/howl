@@ -21,9 +21,6 @@ config = require 'aullar.config'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs, :floor} = math
 
-contains_newlines = (s) ->
-  s\find('[\n\r]') != nil
-
 notify = (view, event, ...) ->
   listener = view.listener
   if listener and listener[event]
@@ -223,18 +220,18 @@ View = {
         return unless @showing
 
         last_line_height = @display_lines[line].height
-        available = @height - @margin
+        available = @height - @margin - last_line_height
         first_visible = line
 
         while first_visible > 1
-          d_line = @display_lines[first_visible]
-          break if (available - d_line.height) < last_line_height
-          available -= d_line.height
+          prev_d_line = @display_lines[first_visible - 1]
+          break if (available - prev_d_line.height) < 0
+          available -= prev_d_line.height
           first_visible -= 1
 
-        @first_visible_line = first_visible
-        -- we don't actually set @_last_visible_line here as it might
-        -- end up different than requested
+        @scroll_to first_visible
+        -- we don't actually set @_last_visible_line here as it
+        -- will be set by the actuall scrolling
     }
 
     lines_showing: =>
@@ -278,7 +275,7 @@ View = {
 
   scroll_to: (line) =>
     return if line < 1 or not @showing
-    line = max(1, min(line, (@buffer.nr_lines - @lines_showing) + 1))
+    line = max(1, line)
     return if @first_visible_line == line
 
     @_first_visible_line = line
@@ -286,6 +283,11 @@ View = {
     @_sync_scrollbars!
     @buffer\ensure_styled_to line: @last_visible_line + 1
     @area\queue_draw!
+
+    if line != 1 and @last_visible_line == @buffer.nr_lines
+      -- make sure we don't accidentally scroll to much here,
+      -- leaving visual area unclaimed
+      @last_visible_line = @last_visible_line
 
   _sync_scrollbars: (opts = { horizontal: true, vertical: true })=>
     @_updating_scrolling = true
@@ -377,12 +379,16 @@ View = {
       d_line = d_lines[line_nr]
 
       if not before
-        d_lines[line.nr] = nil if opts.invalidate
+        if opts.invalidate
+          d_lines[line.nr] = nil
+          -- recreate the display line since subsequent modifications has to
+          -- know what the display properties was for the modified lines
+          d_lines[line.nr]
+
         min_y or= y
         max_y = y + d_line.height
-      else
-        last_valid = max last_valid, line.nr
 
+      last_valid = max last_valid, line.nr
       y += d_line.height
 
     if opts.invalidate -- invalidate any lines after visibly affected block
@@ -421,9 +427,14 @@ View = {
       if (y >= cur_y and y <= end_y)
         line = @_buffer\get_line(line_nr)
         pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
-        inside, index = d_line.layout\xy_to_index pango_x, 1
+        line_y = (y - cur_y) * Pango.SCALE
+        inside, index = d_line.layout\xy_to_index pango_x, line_y
         if not inside
-          return line.start_offset + line.size
+          if d_line.is_wrapped
+            v_line = d_line.lines\at_pixel_y(y - cur_y)
+            return line.start_offset + v_line.line_end - 1
+          else
+            return line.start_offset + line.size
         else
           -- are we aiming for the next grapheme?
           rect = d_line.layout\index_to_pos index
@@ -486,14 +497,13 @@ View = {
 
     to_offset = min to_offset, @buffer.size + 1
     from_line = @buffer\get_line_at_offset(from_offset).nr
-    to_line = max @display_lines.max, @buffer\get_line_at_offset(to_offset).nr
+    to_line = max @display_lines.max, @buffer\get_line_at_offset(to_offset).nr - 1
 
     for line_nr = from_line, to_line
       @display_lines[line_nr] = nil
 
   _draw: (cr) =>
     p_ctx = @area.pango_context
-    cursor_pos = @cursor.pos - 1
     clip = cr.clip_extents
     conf = @config
     line_draw_opts = config: conf, buffer: @_buffer
@@ -522,13 +532,14 @@ View = {
 
     current_line = @cursor.line
     y = start_y
+    cursor_col = @cursor.column
 
     for line_info in *lines
       {:display_line, :line} = line_info
       line_draw_opts.line = line
 
       if line.nr == current_line and conf.view_highlight_current_line
-        @current_line_marker\draw_before edit_area_x, y, display_line, cr, clip
+        @current_line_marker\draw_before edit_area_x, y, display_line, cr, clip, cursor_col
 
       if @selection\affects_line line
         @selection\draw edit_area_x, y, cr, display_line, line
@@ -543,7 +554,7 @@ View = {
 
       if line.nr == current_line
         if conf.view_highlight_current_line
-          @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip
+          @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip, cursor_col
 
         if conf.view_show_cursor
           @cursor\draw edit_area_x, y, cr, display_line
@@ -564,12 +575,12 @@ View = {
     @horizontal_scrollbar_alignment.left_padding = @gutter_width
     @gutter\sync_width @buffer, force: true
 
-  _on_buffer_styled: (buffer, args, start_dline) =>
+  _on_buffer_styled: (buffer, args) =>
     return unless @showing
     last_line = buffer\get_line @last_visible_line
     return if args.start_line > @display_lines.max + 1 and last_line.has_eol
     start_line = args.start_line
-    start_dline or= @display_lines[start_line]
+    start_dline = @display_lines[start_line]
     prev_block = start_dline.block
     prev_block_width = prev_block and prev_block.width
 
@@ -622,30 +633,40 @@ View = {
     cur_pos = @cursor.pos
     sel_anchor, sel_end = @selection.anchor, @selection.end_pos
     lines_showing = type == 'delete' and @lines_showing
+    lines_changed = args.lines_changed
 
     if not @showing
       @_reset_display!
     else
-      start_dline = args.styled and @display_lines[args.styled.start_line]
-      lines_changed = contains_newlines(args.text)
-
       if lines_changed
         @_last_visible_line = nil
+
+      if args.styled
+        @_on_buffer_styled buffer, args.styled
+      else
+        refresh_all_below = lines_changed
+
+        unless refresh_all_below
+          -- refresh only the single line
+          buf_line = @buffer\get_line_at_offset args.offset
+          start_dline = @display_lines[buf_line.nr]
+          @refresh_display from_offset: args.offset, to_offset: args.offset + args.size, invalidate: true
+          -- but if the line now has a different height due to line wrapping,
+          -- we still want a major refresh
+          new_dline = @display_lines[buf_line.nr]
+          if new_dline.height != start_dline.height
+            refresh_all_below = true
+          else
+            @_sync_scrollbars horizontal: true
+
+        if refresh_all_below
+          @refresh_display from_offset: args.offset, invalidate: true, gutter: true
+          @_sync_scrollbars!
 
       if args.offset > args.invalidate_offset
         -- we have lines before the offset of the modification that are
         -- invalid - they need to be invalidated but not visually refreshed
-        @_invalidate_display args.invalidate_offset, args.offset
-
-      if args.styled
-        @_on_buffer_styled buffer, args.styled, start_dline
-      else
-        if lines_changed
-          @refresh_display from_offset: args.offset, invalidate: true, gutter: true
-          @_sync_scrollbars!
-        else
-          @refresh_display from_offset: args.offset, to_offset: args.offset + args.size, invalidate: true
-          @_sync_scrollbars horizontal: true
+        @_invalidate_display args.invalidate_offset, args.offset - 1
 
       if lines_changed and not @gutter\sync_width buffer
         @area\queue_draw!

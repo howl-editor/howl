@@ -6,7 +6,7 @@ flair = require 'aullar.flair'
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
 Pango = require 'ljglibs.pango'
-Layout = Pango.Layout
+{:Layout, :AttrList, :SCALE} = Pango
 pango_cairo = Pango.cairo
 flair = require 'aullar.flair'
 
@@ -28,6 +28,7 @@ flair.define_default 'edge_line', {
 }
 
 styles.define_default 'blob', 'embedded:preproc'
+styles.define_default 'wrap_indicator', 'comment'
 
 parse_background_ranges = (styling) ->
   ranges = {}
@@ -172,6 +173,9 @@ draw_indentation_guides = (x, y, base_x, line, cr, config, width_of_space) ->
 
   guide_x = x
   indentation_flair = flair.get 'indentation_guide'
+  height = line.height
+  if line.is_wrapped
+    height = line.lines[1].extents.height
 
   for i = 1, (indent / view_indent) - 1
     guide_x += width_of_space * view_indent
@@ -179,7 +183,7 @@ draw_indentation_guides = (x, y, base_x, line, cr, config, width_of_space) ->
     continue if adjusted_x < 0
     f = flair.get("indentation_guide_#{i}") or indentation_flair
     cr\save!
-    f\draw adjusted_x, y, f.line_width or 0.5, line.height, cr
+    f\draw adjusted_x, y, f.line_width or 0.5, height, cr
     cr\restore!
 
 draw_edge_line = (at_col, x, y, base_x, line, cr, width_of_space) ->
@@ -190,14 +194,46 @@ draw_edge_line = (at_col, x, y, base_x, line, cr, width_of_space) ->
     f\draw x, y, f.line_width or 0.5, line.height, cr
     cr\restore!
 
+LinesMt = {
+  at: (col) =>
+    for line in *@
+      if col >= line.line_start and col <= line.line_end
+        return line
+
+    nil
+
+  at_pixel_y: (y) =>
+    cur_y = 0
+    for line in *@
+      cur_y += line.height
+      if cur_y > y
+        return line
+
+    nil
+}
+
 DisplayLine = define_class {
-  new: (@display_lines, @view, buffer, @pango_context, line) =>
+  new: (@display_lines, @view, buffer, @pango_context, line, width) =>
     @layout = Layout pango_context
     @layout\set_text line.ptr, line.size
     @layout.tabs = display_lines.tab_array
     @nr = line.nr
     @size = line.size
     @indent = get_indent view, line
+    @width_of_space = @view.width_of_space
+
+    config = view.config
+    wrap = config.view_line_wrap
+
+    WRAP_LIMIT = 2000 -- xxx replace
+    if wrap != 'none' and @size <= WRAP_LIMIT
+      wrap_indicator = @display_lines.wrap_indicator
+      width = view.edit_area_width - wrap_indicator.width - @width_of_space
+      @layout.width = width * SCALE
+      wrap_mode = wrap == 'word' and Pango.WRAP_WORD or Pango.WRAP_CHAR
+      @layout.wrap = wrap_mode
+      @layout.spacing = (config.view_line_padding * 2) * SCALE
+
     @styling = buffer.styling\get(line.start_offset, line.end_offset)
     -- complexiy sanity check before asking Pango to determine extents,
     -- as it will happily block seemingly for ever if someone manages
@@ -209,11 +245,12 @@ DisplayLine = define_class {
 
     @layout.attributes = attributes
     width, height = @layout\get_pixel_size!
-    @y_offset = floor @view.config.view_line_padding
+    @y_offset = floor config.view_line_padding
     @text_height = height
     @height = height + @y_offset * 2
     @width = width + view.cursor.width
-    @width_of_space = @view.width_of_space
+    @is_wrapped = @layout.is_wrapped
+    @line_count = @layout.line_count
 
     @background_ranges = parse_background_ranges @styling
 
@@ -238,8 +275,28 @@ DisplayLine = define_class {
     prev: =>
       @nr > 1 and @display_lines[@nr - 1] or nil
 
-     next: =>
+    next: =>
       @display_lines[@nr + 1]
+
+    lines: =>
+      unless @_lines
+        @_lines = {}
+        for nr = 1, @layout.line_count
+          layout_line = @layout\get_line_readonly nr - 1
+          _, extents = layout_line\get_pixel_extents!
+          line_start = layout_line.start_index + 1
+          line_end = layout_line.length + line_start
+          line_end -= 1 unless nr == @layout.line_count
+          @_lines[#@_lines + 1] = {
+            :nr,
+            :line_start,
+            :line_end,
+            :extents
+            height: extents.height + @y_offset * 2
+          }
+        setmetatable @_lines, __index: LinesMt
+
+      @_lines
    }
 
   draw: (x, y, cr, clip, opts = {}) =>
@@ -278,13 +335,42 @@ DisplayLine = define_class {
     if edge_column and edge_column > 0
       draw_edge_line edge_column, x, y, base_x, @, cr, @width_of_space
 
+    -- line wrap indicators
+    if @is_wrapped
+      wrap_indicator = @display_lines.wrap_indicator
+      cr\save!
+      wrap_y_offset = @y_offset
+      max_x = (@layout.width / SCALE) + base_x
+      for line in *@lines
+        break if line.nr == @line_count
+        wrap_y = y + wrap_y_offset
+        indicator_x = min max_x, line.extents.width + @width_of_space / 2
+        line_y_offset = (line.extents.height - wrap_indicator.height) / 2
+        cr\move_to x - base_x + indicator_x, wrap_y + line_y_offset
+        pango_cairo.show_layout cr, wrap_indicator.layout
+        wrap_y_offset += line.extents.height + (@y_offset * 2)
+
+      cr\restore!
+
     cr\restore! if base_x > 0
 }
+
+get_wrap_indicator = (pango_context, view) ->
+  layout = Layout pango_context
+  layout\set_text view.config.view_line_wrap_symbol
+
+  list = AttrList()
+  styles.apply list, 'wrap_indicator'
+  layout.attributes = list
+  width, height = layout\get_pixel_size!
+
+  :layout, :width, :height
 
 (view, tab_array, buffer, pango_context) ->
   setmetatable {
     max: 0
-    tab_array: tab_array
+    tab_array: tab_array,
+    wrap_indicator: get_wrap_indicator pango_context, view
   }, {
     __index: (nr) =>
       line = buffer\get_line nr

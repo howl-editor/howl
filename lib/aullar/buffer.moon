@@ -3,7 +3,7 @@
 
 ffi = require 'ffi'
 C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
-{:max, :min, :abs} = math
+{:max, :min, :abs, :ceil} = math
 {:define_class} = require 'aullar.util'
 Styling = require 'aullar.styling'
 Offsets = require 'aullar.offsets'
@@ -163,18 +163,21 @@ Buffer = {
     @_lines[line]
 
   get_line_at_offset: (offset) =>
+    return nil if offset < 1 or offset > @size + 1
     @_scan_lines_to :offset
-    start_at, end_at, step = 1, @_last_scanned_line, 1
-    last_line = @_lines[@_last_scanned_line]
-    if last_line and abs(last_line.start_offset - offset) < offset
-      start_at, end_at, step = last_line.nr, 1, -1
 
-    for i = start_at, end_at, step
-      line = @_lines[i]
-
+    min_line = 0
+    max_line = @_last_scanned_line
+    nr = ceil(max_line / 2)
+    while nr > min_line and nr <= max_line + 1
+      line = @_lines[nr]
       if offset >= line.start_offset
-        if offset <= line.end_offset or (not line.has_eol and offset == line.end_offset + 1)
-          return line
+        return line if offset <= line.end_offset or not line.has_eol
+        min_line = nr
+        nr += ceil((max_line - nr) / 2)
+      else
+        max_line = nr
+        nr -= ceil((nr - min_line) / 2)
 
     nil
 
@@ -454,9 +457,17 @@ Buffer = {
     part_of_revision = @revisions.processing
     revision = part_of_revision and nil or @revisions\push(type, offset, text)
 
-    args = :offset, :text, :size, :invalidate_offset, :revision, :part_of_revision
-    lines_modified = text\find('[\n\r]') != nil
-    @_nr_lines = nil if lines_modified
+    lines_changed = text\find('[\n\r]') != nil
+    args = {
+      :offset,
+      :text,
+      :size,
+      :invalidate_offset,
+      :revision,
+      :part_of_revision,
+      :lines_changed
+    }
+    @_nr_lines = nil if lines_changed
 
     if @lexer
       at_line = @get_line_at_offset(offset)
@@ -464,7 +475,7 @@ Buffer = {
         last_line_shown = max at_line.nr, @_get_last_line_shown!
         style_to = min(last_line_shown + 20, @nr_lines)
         args.styled = @refresh_styling_at at_line.nr, style_to, {
-          force_full: lines_modified
+          force_full: lines_changed
           no_notify: true
         }
 

@@ -196,6 +196,7 @@ return {
       font: bold: true
 
     char: color: green
+    wrap_indicator: 'blue'
 
     fdecl:
       color: key

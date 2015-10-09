@@ -284,6 +284,12 @@ ffi.cdef [[
 
   /* PangoLayout */
 
+  typedef enum {
+    PANGO_WRAP_WORD,
+    PANGO_WRAP_CHAR,
+    PANGO_WRAP_WORD_CHAR
+  } PangoWrapMode;
+
   typedef struct {} PangoLayout;
 
   typedef struct {
@@ -315,8 +321,13 @@ ffi.cdef [[
   void pango_layout_set_font_description (PangoLayout *layout, const PangoFontDescription *desc);
   const PangoFontDescription * pango_layout_get_font_description (PangoLayout *layout);
   int pango_layout_get_baseline (PangoLayout *layout);
-
+  gboolean pango_layout_is_wrapped (PangoLayout *layout);
+  PangoWrapMode pango_layout_get_wrap (PangoLayout *layout);
+  void pango_layout_set_wrap (PangoLayout *layout, PangoWrapMode wrap);
   void pango_layout_index_to_pos (PangoLayout *layout, int index, PangoRectangle *pos);
+  int pango_layout_get_line_count (PangoLayout *layout);
+  void pango_layout_set_indent (PangoLayout *layout, int indent);
+  int pango_layout_get_indent (PangoLayout *layout);
 
   gboolean pango_layout_xy_to_index (PangoLayout *layout,
                                      int x,

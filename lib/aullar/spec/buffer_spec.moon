@@ -710,7 +710,8 @@ describe 'Buffer', ->
           size: 2,
           invalidate_offset: 3,
           revision: b.revisions[1]
-          part_of_revision: false
+          part_of_revision: false,
+          lines_changed: false
         }
         assert.spy(l1.on_inserted).was_called_with l1, b, args
         assert.spy(l2.on_inserted).was_called_with l2, b, args
@@ -727,7 +728,8 @@ describe 'Buffer', ->
           size: 2,
           invalidate_offset: 3,
           revision: b.revisions[1],
-          part_of_revision: false
+          part_of_revision: false,
+          lines_changed: false
         }
 
     it 'fires on_styled notifications for styling changes outside of lexing', ->

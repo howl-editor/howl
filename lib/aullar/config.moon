@@ -72,7 +72,22 @@ define_options = ->
     view_line_padding: {
       type: 'number',
       default: 1
+    },
+
+    view_line_wrap: {
+      type: 'string',
+      default: 'none'
+    },
+
+    view_line_wrap_symbol: {
+      type: 'string',
+      default: '⏎'
     }
+
+    view_line_wrap_navigation: {
+      type: 'string',
+      default: 'visual'
+    },
 
     cursor_blink_interval: {
       type: 'number',

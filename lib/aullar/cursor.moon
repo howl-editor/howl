@@ -129,6 +129,20 @@ Cursor = {
 
     in_view: =>
       @line >= @view.first_visible_line and @line <= @view.last_visible_line
+
+    current_x: =>
+      d_line = @display_line
+      base = 0
+      cur_rect = d_line.layout\index_to_pos @column - 1
+      if d_line.is_wrapped and not @_navigate_visual
+        -- calculate the real x of the current visual line
+        v_line = d_line.lines\at @column
+        for nr = 1, v_line.nr - 1
+          base += (d_line.lines[nr].extents.width + 1) * SCALE
+
+      cur_rect.x + base
+
+    _navigate_visual: => @view.config.view_line_wrap_navigation == 'visual'
   }
 
   ensure_in_view: =>
@@ -141,8 +155,7 @@ Cursor = {
     @move_to line: new_line
 
   remember_column: =>
-    cur_rect = @display_line.layout\index_to_pos @column - 1
-    @_sticky_x = cur_rect.x
+    @_sticky_x = @current_x
 
   in_line: (line) =>
     pos_is_in_line @_pos, line
@@ -193,10 +206,23 @@ Cursor = {
         else
           @view.last_visible_line = dest_line.nr
 
-      -- adjust for the remembered column if appropriate
+      -- adjust for the remembered horizontal offset if appropriate
       if @_sticky_x and (opts.line and not opts.column)
-        inside, index = @display_line.layout\xy_to_index @_sticky_x, 1
-        index = @display_line.size if not inside and index > 0 -- move to the ending new line
+        x, y = @_sticky_x, 1
+        local v_line
+
+        if @display_line.is_wrapped and @_sticky_x > @display_line.width and not @_navigate_visual
+          for l in *@display_line.lines
+            v_line = l
+            y += l.extents.height * SCALE
+            l_width = l.extents.width * SCALE
+            break if x <= l_width
+            x -= l_width + SCALE
+
+        inside, index = @display_line.layout\xy_to_index x, y
+        if not inside and index > 0 -- move to the ending new line
+          index = v_line and v_line.line_end - 1 or @display_line.size
+
         pos = dest_line.start_offset + index
 
     else -- staying on same line, refresh it
@@ -247,10 +273,16 @@ Cursor = {
 
   forward: (opts = {}) =>
     return if @_pos > @view.buffer.size
+    layout = @display_line.layout
     line_start = @buffer_line.start_offset
     z_col = (@_pos - line_start)
-    new_index, new_trailing = @display_line.layout\move_cursor_visually true, z_col, 0, 1
-    new_index = @display_line.size if new_trailing > 0
+    new_index, new_trailing = layout\move_cursor_visually true, z_col, 0, 1
+    if new_trailing > 0
+      if not layout.is_wrapped
+        new_index = @display_line.size
+      else
+        new_index += new_trailing
+
     if new_index > @display_line.size -- move to next line
       @move_to pos: @buffer_line.end_offset + 1, extend: opts.extend
     else
@@ -264,11 +296,38 @@ Cursor = {
     @move_to pos: line_start + new_index, extend: opts.extend
 
   up: (opts = {}) =>
-    prev = @line - 1
-    if prev >= 1
-      @move_to line: prev, extend: opts.extend
+    d_line = @display_line
+    if d_line.is_wrapped and @_navigate_visual
+      wrapped_line = d_line.lines\at(@column)
+      if wrapped_line.nr != 1
+        -- move up into the previous visual (wrapped) line
+        prev_l_line = d_line.layout\get_line_readonly wrapped_line.nr - 2
+        inside, offset = prev_l_line\x_to_index @current_x
+        @move_to pos: @buffer_line.start_offset + offset, extend: opts.extend
+        return
+
+    prev = d_line.prev
+    if prev
+      if prev.is_wrapped and @_navigate_visual
+        -- move up into the previous visual (wrapped) line
+        prev_l_line = prev.layout\get_line_readonly prev.line_count - 1
+        inside, offset = prev_l_line\x_to_index @_sticky_x or @current_x
+        buf_line = @view.buffer\get_line prev.nr
+        @move_to pos: buf_line.start_offset + offset, extend: opts.extend
+      else
+        @move_to line: prev.nr, extend: opts.extend
 
   down: (opts = {}) =>
+    d_line = @display_line
+    if d_line.is_wrapped and @_navigate_visual
+      wrapped_line = d_line.lines\at(@column)
+      if wrapped_line.nr != d_line.line_count
+        -- move down into the next visual (wrapped) line
+        next_l_line = d_line.layout\get_line_readonly wrapped_line.nr
+        inside, offset = next_l_line\x_to_index @current_x
+        @move_to pos: @buffer_line.start_offset + offset, extend: opts.extend
+        return
+
     next = @line + 1
     if next <= @view.buffer.nr_lines
       @move_to line: next, extend: opts.extend
@@ -295,20 +354,36 @@ Cursor = {
     @move_to line: first_visible + cursor_line_offset, extend: opts.extend
 
   start_of_line: (opts = {}) =>
-    @move_to pos: @buffer_line.start_offset, extend: opts.extend
+    d_line = @display_line
+    if d_line.is_wrapped and @_navigate_visual
+      wrapped_line = d_line.lines\at(@column)
+      -- move to the start of this visual (wrapped) line
+      @move_to pos: @buffer_line.start_offset + wrapped_line.line_start - 1, extend: opts.extend
+    else
+      @move_to pos: @buffer_line.start_offset, extend: opts.extend
 
   end_of_line: (opts = {}) =>
-    @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
+    d_line = @display_line
+    if d_line.is_wrapped and @_navigate_visual
+      wrapped_line = d_line.lines\at(@column)
+      -- move to the end of this visual (wrapped) line
+      @move_to pos: @buffer_line.start_offset + wrapped_line.line_end - 1, extend: opts.extend
+    else
+      @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
 
   draw: (x, base_y, cr, display_line) =>
     return unless @_showing and (@active or @show_when_inactive)
     start_offset = @column
     end_offset, new_trailing = display_line.layout\move_cursor_visually true, start_offset - 1, 0, 1
+    end_offset += 1
 
-    if new_trailing > 0 or end_offset > display_line.size + 1
-      end_offset = display_line.size + 1
-    else
-      end_offset += 1
+    if new_trailing > 0
+      if display_line.is_wrapped
+        l = display_line.lines\at @column
+        l = display_line.lines[l.nr + 1]
+        end_offset = l and l.line_start or display_line.size + 1
+      else
+        end_offset = display_line.size + 1
 
     flair.draw @_flair, display_line, start_offset, end_offset, x, base_y, cr
 

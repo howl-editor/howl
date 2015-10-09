@@ -169,21 +169,20 @@ class Editor extends PropertyObject
     set: (v) => @view.config.view_line_padding = v
 
   @property line_wrapping:
-    get: =>
-      -- sci_val = @sci\get_wrap_mode!
-      -- switch sci_val
-      --   when Scintilla.SC_WRAP_NONE then 'none'
-      --   when Scintilla.SC_WRAP_WORD then 'word'
-      --   when Scintilla.SC_WRAP_CHAR then 'character'
-      --   else '(unknown)'
-
+    get: => @view.config.view_line_wrap
     set: (value) =>
-      -- sci_value = switch value
-      --   when 'none' then Scintilla.SC_WRAP_NONE
-      --   when 'word' then Scintilla.SC_WRAP_WORD
-      --   when 'character' then Scintilla.SC_WRAP_CHAR
-      -- error "Unknown value for line_wrapping: #{value}", 2 unless sci_value
-      -- @sci\set_wrap_mode sci_value
+      unless value\umatch r'^(?:none|word|character)$'
+        error "Unknown value for line_wrapping: #{value}", 2
+
+      @view.config.view_line_wrap = value
+
+  @property line_wrapping_navigation:
+    get: => @view.config.view_line_wrap_navigation
+    set: (value) =>
+      unless value\umatch r'^(?:real|visual)$'
+        error "Unknown value for line_wrapping_navigation: #{value}", 2
+
+      @view.config.view_line_wrap_navigation = value
 
   @property cursor_line_highlighted:
     get: => @view.config.view_highlight_current_line
@@ -579,6 +578,7 @@ class Editor extends PropertyObject
     with config
       @indentation_guides = .indentation_guides
       @line_wrapping = .line_wrapping
+      @line_wrapping_navigation = .line_wrapping_navigation
       @horizontal_scrollbar = .horizontal_scrollbar
       @vertical_scrollbar = .vertical_scrollbar
       @cursor_line_highlighted = .cursor_line_highlighted
@@ -590,6 +590,7 @@ class Editor extends PropertyObject
       view_conf.view_tab_size = .tab_width
       view_conf.view_font_name = .font_name
       view_conf.view_font_size = .font_size
+      view_conf.view_line_wrap_symbol = .line_wrapping_symbol
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
@@ -824,6 +825,21 @@ with config
     }
 
   .define
+    name: 'line_wrapping_navigation'
+    description: 'Controls how wrapped lines are navigated'
+    default: 'visual'
+    options: {
+      { 'real', 'Lines are navigated by real lines' }
+      { 'visual', 'Lines are navigated by visual (wrapped) lines' }
+    }
+
+  .define
+    name: 'line_wrapping_symbol'
+    description: 'The symbol used for indicating a line wrap'
+    type_of: 'string'
+    default: '⏎'
+
+  .define
     name: 'horizontal_scrollbar'
     description: 'Whether horizontal scrollbars are shown'
     default: true
@@ -869,6 +885,7 @@ with config
     'indentation_guides',
     'edge_column',
     'line_wrapping',
+    'line_wrapping_navigation',
     'horizontal_scrollbar',
     'vertical_scrollbar',
     'cursor_line_highlighted',
@@ -884,6 +901,7 @@ with config
     { 'line_numbers', 'view_show_line_numbers' }
     { 'indent', 'view_indent' }
     { 'cursor_blink_interval', 'cursor_blink_interval' }
+    { 'line_wrapping_symbol', 'view_line_wrap_symbol' }
 
   }
     .watch live_update[1], (_, value) -> apply_variable live_update[2], value

@@ -18,6 +18,16 @@ core.define 'PangoLayoutLine', {
     ink_rect = PangoRectangle!
     C.pango_layout_line_get_pixel_extents @, ink_rect, logical_rect
     ink_rect, logical_rect
+
+  index_to_x: (index, trailing) =>
+    arr = ffi_new 'int[1]'
+    C.pango_layout_line_index_to_x @, index, trailing, arr
+    tonumber arr[0]
+
+  x_to_index: (x_pos) =>
+    arr = ffi_new 'int[2]'
+    outside = C.pango_layout_line_x_to_index @, x_pos, arr, arr + 1
+    outside == 1, tonumber(arr[0]), tonumber(arr[1])
 }
 
 core.define 'PangoLayoutIter', {
@@ -48,7 +58,7 @@ core.define 'PangoLayout', {
 
   properties: {
     text: {
-      get: => ffi_string @get_text
+      get: => ffi_string @get_text!
       set: (text) => @set_text text
     }
 
@@ -65,6 +75,11 @@ core.define 'PangoLayout', {
     spacing: {
       get: => tonumber C.pango_layout_get_spacing @
       set: (spacing) => C.pango_layout_set_spacing @, spacing
+    }
+
+    indent: {
+      get: => tonumber C.pango_layout_get_indent @
+      set: (indent) => C.pango_layout_set_indent @, indent
     }
 
     alignment: {
@@ -94,6 +109,15 @@ core.define 'PangoLayout', {
 
     iter: =>
       ffi_gc C.pango_layout_get_iter(@), C.pango_layout_iter_free
+
+    is_wrapped: => C.pango_layout_is_wrapped(@) != 0
+
+    wrap: {
+      get: => C.pango_layout_get_wrap(@)
+      set: (w) => C.pango_layout_set_wrap(@, w)
+    }
+
+    line_count: => tonumber C.pango_layout_get_line_count(@)
   }
 
   new: (ctx) -> gc_ptr C.pango_layout_new ctx

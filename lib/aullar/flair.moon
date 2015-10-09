@@ -29,7 +29,7 @@ set_line_type_from_flair = (cr, flair) ->
   cr.line_width = flair._line_width
   switch flair.line_type
     when 'dotted'
-      cr.dash = {1, 1.5}
+      cr.dash = {0.5, 1}
     when 'dashed'
       cr.dash = {6, 3}
 
@@ -158,7 +158,7 @@ need_text_object = (flair) ->
   compile: (flair, start_offset, end_offset, display_line) ->
     flair = flairs[flair] if type(flair) == 'string'
     return nil unless flair
-    if need_text_object flair
+    if need_text_object(flair) and not display_line.is_wrapped
       flair = moon.copy flair
       flair.text_object = get_text_object display_line, start_offset, end_offset, flair
 
@@ -174,54 +174,70 @@ need_text_object = (flair) ->
     flair = flairs[flair] if type(flair) == 'string'
     return unless flair
 
-    {:layout, :view} = display_line
+    {:layout, :view, :y_offset, :is_wrapped, :lines} = display_line
     clip = cr.clip_extents
     base_x = view.base_x
-    rect = layout\index_to_pos start_offset - 1
-    text_start_x = x + max((rect.x / SCALE) - 1, 0) - base_x
-    start_x = max(text_start_x, view.edit_area_x)
-    rect = layout\index_to_pos end_offset - 1
-    width = get_defined_width(start_x, flair, cr, clip)
-    width or= x + (rect.x / SCALE) - start_x - base_x
+    line_count = display_line.line_count
+    width_of_space = display_line.width_of_space
 
-    if flair.min_width
-      flair_min_width = flair.min_width
+    for nr = 1, #lines
+      line = lines[nr]
 
-      if flair_min_width == 'letter'
-        flair_min_width = display_line.width_of_space
+      off_line = start_offset > line.line_end or end_offset < line.line_start
+      if off_line or end_offset == line.line_start and (start_offset != end_offset)
+        continue -- flair not within this layout line
 
-      width = max(flair_min_width - base_x, width)
+      f_start_offset = max start_offset, line.line_start
+      f_end_offset = min line.line_end, end_offset
+      start_rect = layout\index_to_pos f_start_offset - 1
+      flair_y = y + start_rect.y / SCALE
+      text_start_x = x + max((start_rect.x / SCALE) - 1, 0) - base_x
+      start_x = max(text_start_x, view.edit_area_x)
 
-    return if width <= 0
+      width = get_defined_width(start_x, flair, cr, clip)
+      unless width
+        end_rect = layout\index_to_pos f_end_offset - 1
+        end_x = end_rect.x / SCALE
+        width = x + end_x - start_x - base_x
 
-    text_object = flair.text_object
+      if flair.min_width
+        flair_min_width = flair.min_width
+        flair_min_width = width_of_space if flair_min_width == 'letter'
+        width = max(flair_min_width - base_x, width)
 
-    if not text_object and need_text_object(flair)
-      text_object = get_text_object display_line, start_offset, end_offset, flair
+      -- why draw a zero-width flair?
+      return if width <= 0
 
-    {:height, :y_offset} = display_line
-    adjusted_for_text_height = false
+      text_object = flair.text_object
 
-    if flair.height == 'text' and height > text_object.height
-      y += y_offset + (display_line.layout.baseline - text_object.layout.baseline) / SCALE
-      height = text_object.height
-      adjusted_for_text_height = true
+      if not text_object and need_text_object(flair)
+        ft_end_offset = min line.line_end + 1, end_offset
+        text_object = get_text_object display_line, f_start_offset, ft_end_offset, flair
 
-    cr\save!
-    flair.draw flair, start_x, y, width, height, cr
-    cr\restore!
+      -- height calculations
+      height = type(flair.height) == 'number' and flair.height or line.height
+      adjusted_for_text_height = false
 
-    if flair.text_color
-      if not adjusted_for_text_height and height > text_object.height
-        y += y_offset + (display_line.layout.baseline - text_object.layout.baseline) / SCALE
+      if flair.height == 'text' and height > text_object.height
+        flair_y += floor (line.height - text_object.height) / 2
+        height = text_object.height
+        adjusted_for_text_height = true
 
       cr\save!
-      if base_x > 0
-        cr\rectangle x, y, clip.x2 - x, clip.y2
-        cr\clip!
-
-      cr\move_to text_start_x, y
-      cairo.show_layout cr, text_object.layout
+      flair.draw flair, start_x, flair_y, width, height, cr
       cr\restore!
+
+      if flair.text_color
+        if not adjusted_for_text_height and height > text_object.height
+          flair_y += floor (line.height - text_object.height) / 2
+
+        cr\save!
+        if base_x > 0
+          cr\rectangle x, flair_y, clip.x2 - x, clip.y2
+          cr\clip!
+
+        cr\move_to text_start_x, flair_y
+        cairo.show_layout cr, text_object.layout
+        cr\restore!
 
 }

@@ -103,6 +103,11 @@ core.auto_loading 'pango', {
     'ATTR_ABSOLUTE_SIZE'
     'ATTR_GRAVITY'
     'ATTR_GRAVITY_HINT'
+
+    -- PangoWrapMode
+    'WRAP_WORD',
+    'WRAP_CHAR',
+    'WRAP_WORD_CHAR'
   },
 
   SCALE: 1024
