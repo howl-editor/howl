@@ -3,12 +3,12 @@
 
 import style from howl.ui
 
-style.define 'css_selector', 'keyword'
-style.define 'css_property', 'key'
-style.define 'css_unit', 'type'
-style.define 'css_color', 'string'
-style.define 'css_at', 'preproc'
-style.define 'css_pseudo', 'class'
+style.define_default 'css_selector', 'keyword'
+style.define_default 'css_property', 'key'
+style.define_default 'css_unit', 'type'
+style.define_default 'css_color', 'string'
+style.define_default 'css_at', 'preproc'
+style.define_default 'css_pseudo', 'class'
 
 howl.aux.lpeg_lexer ->
 
