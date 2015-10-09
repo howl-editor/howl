@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Added two new configuration variables for line wrapping:
+  * line_wrapping_navigation
+  * line_wrapping_symbol
+
 - Upgrade LuaJIT to LuaJIT-2.1.0-beta1
 
 - Added new bundle, 'mail-mode'.
