@@ -16,12 +16,7 @@ options = {
 
 cb_cast = (cb_type, handler) -> ffi_cast('GCallback', ffi_cast(cb_type, handler))
 
-unregister = (handle) ->
-  error "callbacks.unregister(): Missing argument #1 (handle)", 2 unless handle
-  unrefed_handlers[handle.handler] = nil if type(handle.handler) == 'number'
-  handles[handle.id] = nil
-
-dispatch = (data, ...) ->
+do_dispatch = (data, ...) ->
   ref_id = tonumber ffi_cast('gint', data)
   handle = handles[ref_id]
   if handle
@@ -38,11 +33,24 @@ dispatch = (data, ...) ->
 
       status, ret = pcall handler, unpack(args, 1, args.n + handle.args.n)
       return ret == true if status
-      options.on_error "*error in '#{handle.description}' callback handler: #{ret}"
+      options.on_error "callbacks: error in '#{handle.description}' handler: '#{ret}'"
     else
       unregister handle
 
   false
+
+unregister = (handle) ->
+  error "callbacks.unregister(): Missing argument #1 (handle)", 2 unless handle
+  unrefed_handlers[handle.handler] = nil if type(handle.handler) == 'number'
+  handles[handle.id] = nil
+
+dispatch = (data, ...) ->
+  status, ret = pcall do_dispatch, data, ...
+  unless status
+    options.on_error "callbacks: error in dispatch: '#{ret}'"
+    return false
+
+  ret
 
 {
 
