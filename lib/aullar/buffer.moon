@@ -107,6 +107,7 @@ Buffer = {
 
   insert: (offset, text, size = #text) =>
     return if size == 0
+    error "insert: Illegal offset '#{offset}'", 2 if offset < 1 or offset > @size + 1
 
     invalidate_offset = min(offset, @text_buffer.gap_start + 1)
     if size > @text_buffer.gap_size -- buffer will be re-allocated
@@ -124,7 +125,8 @@ Buffer = {
     @_on_modification 'inserted', offset, text, size, invalidate_offset
 
   delete: (offset, count) =>
-    return if count == 0
+    return if count == 0 or offset > @size
+    error "delete: Illegal offset '#{offset}'", 2 if offset < 1
 
     invalidate_offset = min(offset, @text_buffer.gap_start + 1)
 
