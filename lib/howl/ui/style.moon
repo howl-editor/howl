@@ -39,4 +39,4 @@ return setmetatable {
   :define_default
   :at_pos
 }, __index: (t, k) ->
-  aullar_styles.def_for k
+  aullar_styles.is_defined(k) and aullar_styles.def_for(k) or nil

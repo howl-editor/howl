@@ -98,6 +98,9 @@ define = (name, definition) ->
     for k in pairs attributes
       attributes[k] = nil if k\match "^#{name}:"
 
+is_defined = (name) ->
+  styles[name] != nil
+
 define_default = (name, def) ->
   define name, def unless styles[name]
 
@@ -190,4 +193,12 @@ get_attributes = (styling, end_offset, opts = {}) ->
 
   list
 
-:define, :define_default, :apply, :create_attributes, :get_attributes, :def_for
+{
+  :define,
+  :is_defined,
+  :define_default,
+  :apply,
+  :create_attributes,
+  :get_attributes,
+  :def_for
+}
