@@ -23,6 +23,8 @@ for s in *{
 }
   signals[s] = tonumber C["sig_#{s}"]
 
+jit.off true, true
+
 signal_name = (signal) ->
   for name, sig in pairs signals
     return name if sig == signal
@@ -107,8 +109,6 @@ class Process
     table.concat(stdout), table.concat(stderr), p
 
   new: (opts) =>
-    jit.off true, true
-
     @argv, @command_line = get_command opts.cmd, opts.shell
     error 'opts.cmd missing or invalid', 2 unless @argv
     @_process = launch @argv, opts
