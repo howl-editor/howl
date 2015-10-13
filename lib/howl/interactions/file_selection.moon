@@ -6,7 +6,7 @@ glib = require 'ljglibs.glib'
 import app, clipboard, config, interact, log, Project from howl
 import File from howl.io
 import preview from howl.interactions.util
-import markup, style, ListWidget from howl.ui
+import icon, markup, style, ListWidget from howl.ui
 import file_matcher, subtree_matcher, get_dir_and_leftover from howl.util.paths
 
 append = table.insert
@@ -14,6 +14,9 @@ separator = File.separator
 
 style.define_default 'directory', 'key'
 style.define_default 'filename', 'string'
+icon.define 'directory', 'font-awesome-folder'
+icon.define 'file', 'font-awesome-file'
+icon.define 'file-new', 'font-awesome-plus-circle'
 
 subdirs = (directory) ->
   files = [c for c in *directory.children when c.is_directory]
@@ -39,7 +42,7 @@ class FileSelector
       never_shrink: true,
       on_selection_change: @\_preview
     @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
-    @list_widget.columns =  { {style: 'filename'} }
+    @list_widget.columns =  { {}, {style: 'filename'} }
 
     @command_line\add_widget 'completion_list', @list_widget
 
