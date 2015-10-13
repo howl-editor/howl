@@ -1,7 +1,7 @@
 glib = require 'ljglibs.glib'
 import config from howl
 import File from howl.io
-import markup from howl.ui
+import icon, markup from howl.ui
 import Matcher from howl.util
 
 append = table.insert
@@ -81,6 +81,7 @@ file_matcher = (files, directory, allow_new=false) ->
 
     if should_hide c
       hidden_by_config[c.basename] = {
+        is_directory and icon.get('directory', 'directory') or icon.get('file', 'filename')
         markup.howl("<comment>#{name}</>"),
         markup.howl("<comment>[hidden]</>"),
         :name
@@ -88,9 +89,10 @@ file_matcher = (files, directory, allow_new=false) ->
       }
     else
       append children, {
+        is_directory and icon.get('directory', 'directory') or icon.get('file', 'filename')
         is_directory and markup.howl("<directory>#{name}</>") or name
         :name
-        :is_directory,
+        :is_directory
         is_hidden: c.is_hidden
       }
 
@@ -122,6 +124,7 @@ file_matcher = (files, directory, allow_new=false) ->
         return matches
 
     append matches, {
+      icon.get('file-new', 'filename')
       text,
       markup.howl '<keyword>[New]</>'
       name: text

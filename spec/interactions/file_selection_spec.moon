@@ -4,7 +4,7 @@
 import app, config, interact from howl
 import File from howl.io
 import Window from howl.ui
-
+require 'howl.ui.icons.font_awesome'
 file_selection = require 'howl.interactions.file_selection'
 
 describe 'file_selection', ->
@@ -89,10 +89,10 @@ describe 'file_selection', ->
       local items, items2
       within_activity interact.select_file, ->
         command_line\write tostring(tmpdir) .. '/'
-        items = get_ui_list_widget_column(1)
+        items = get_ui_list_widget_column(2)
 
         command_line\write 'ab'
-        items2 = get_ui_list_widget_column(1)
+        items2 = get_ui_list_widget_column(2)
 
       assert.same files, items
       assert.same {'ab1', 'ab2'}, items2
@@ -155,7 +155,7 @@ describe 'file_selection', ->
         local items
         within_activity interact.select_file, ->
           command_line\write tostring(tmpdir) .. '/'
-          items = get_ui_list_widget_column!
+          items = get_ui_list_widget_column(2)
         assert.same { 'x.b', 'x.c' }, items
 
       it 'shows a hidden file after its exact name is entered', ->
@@ -165,7 +165,7 @@ describe 'file_selection', ->
           command_line\write 'x.a'
           command_line\clear!
           command_line\write ''
-          items = get_ui_list_widget_column!
+          items = get_ui_list_widget_column(2)
         assert.same { 'x.b', 'x.c', 'x.a' }, items
 
   describe 'interact.select_directory', ->
@@ -183,6 +183,6 @@ describe 'file_selection', ->
       local items
       within_activity interact.select_directory, ->
         command_line\write tostring(tmpdir) .. '/'
-        items = get_ui_list_widget_column(1)
+        items = get_ui_list_widget_column(2)
 
       assert.same { './', 'dir1/', 'dir2/' }, items
