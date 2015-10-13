@@ -208,6 +208,17 @@ describe 'Buffer', ->
       b = buffer 'hello\nworld\n'
       assert.equal 1, b\replace('world', 'editor')
 
+  describe 'change(start_pos, end_pos)', ->
+    it 'applies all operations as one undo for the specified region', ->
+      b = buffer 'ño señor'
+      b\change 4, 6, -> -- 'señ'
+        b\delete 4, 6
+        b\insert 'minmin', 4
+
+      assert.equal 'ño minminor', b.text
+      b\undo!
+      assert.equal 'ño señor', b.text
+
   it 'undo undoes the last operation', ->
     b = buffer 'hello'
     b\delete 1, 1
@@ -583,6 +594,13 @@ describe 'Buffer', ->
       with_signal_handler 'text-inserted', nil, (handler) ->
         b = buffer 'foo'
         b\delete 1, 2
+        assert.spy(handler).was_called!
+
+    it 'text-changed is fired whenever text is change:d from buffer', ->
+      with_signal_handler 'text-changed', nil, (handler) ->
+        b = buffer 'foo'
+        b\change 1, 2, ->
+          b\delete 1, 1
         assert.spy(handler).was_called!
 
     it 'buffer-modified is fired whenever a buffer is modified', ->

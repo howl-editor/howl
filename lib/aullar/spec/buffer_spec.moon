@@ -498,6 +498,147 @@ describe 'Buffer', ->
       assert.equal 'hello', b.text
       assert.same {true, true}, flags
 
+  describe 'change(offset, count, f)', ->
+    local b, notified
+
+    before_each ->
+      b = Buffer ''
+      notified = nil
+      l = on_changed: (_, args) =>
+        notified = args
+
+      b\add_listener l
+
+    it 'invokes <f>, grouping all modification as one revision', ->
+      b.text = '123456789'
+      b\change 3, 3, (b) -> -- change '345'
+        b\delete 4, 2 -- remove 45
+        b\insert 3, 'XY'
+
+      assert.equal '12XY36789', b.text
+      assert.equal 3, notified.offset
+      assert.equal 3, notified.size
+      assert.equal 'XY3', notified.text
+      assert.equal '345', notified.prev_text
+
+      b\undo!
+      assert.equal '123456789', b.text
+
+    it 'supports growing changes', ->
+      b.text = '123456789'
+      b\change 3, 3, (b) -> -- change '345'
+        b\delete 4, 1 -- remove 4
+        b\insert 4, 'four'
+        b\delete 7, 1 -- remove 'r'
+
+      assert.equal '123fou56789', b.text
+      assert.equal 3, notified.offset
+      assert.equal 5, notified.size
+      assert.equal '3fou5', notified.text
+      assert.equal '345', notified.prev_text
+
+      b\undo!
+      assert.equal '123456789', b.text
+
+    it 'supports shrinking changes', ->
+      b.text = '123456789'
+      b\change 1, 4, (b) -> -- change '1234'
+        b\delete 1, 3 -- remove 123
+        b\insert 1, 'X'
+
+      assert.equal 'X456789', b.text
+      assert.equal 1, notified.offset
+      assert.equal 4, notified.size
+      assert.equal 'X4', notified.text
+      assert.equal '1234', notified.prev_text
+
+      b\undo!
+      assert.equal '123456789', b.text
+
+    it 'supports changing from nothing to something', ->
+      b.text = '123456789'
+      b\change 3, 0, (b) -> -- change right before '3'
+        b\insert 3, 'XYZ'
+        b\delete 5, 1
+
+      assert.equal '12XY3456789', b.text
+      assert.equal 3, notified.offset
+      assert.equal 2, notified.size
+      assert.equal 'XY', notified.text
+      assert.equal '', notified.prev_text
+
+      b\undo!
+      assert.equal '123456789', b.text
+
+    it 'supports changing from nothing to nothing', ->
+      b.text = '123456789'
+      b\change 3, 0, (b) -> -- change right before '3'
+        b\insert 3, 'X'
+        b\delete 3, 1
+
+      assert.equal '123456789', b.text
+      assert.is_nil notified
+
+    it 'supports changing from something to nothing', ->
+      b.text = '123456789'
+      b\change 3, 3, (b) -> -- change '345'
+        b\delete 3, 3
+
+      assert.equal '126789', b.text
+      assert.equal 3, notified.offset
+      assert.equal 3, notified.size
+      assert.equal '', notified.text
+      assert.equal '345', notified.prev_text
+
+      b\undo!
+      assert.equal '123456789', b.text
+
+    it 'bubbles up any errors in <f>', ->
+      b.text = 'hello'
+      assert.raises 'BOOM', ->
+        b\change 1, 3, -> error 'BOOM'
+
+    it 'is reentrant', ->
+      b.text = '123456789'
+      b\change 3, 3, (b) -> -- change '345'
+        b\delete 4, 2 -- remove 45
+        b\change 3, 1, ->
+          b\delete 3, 1 -- remove 3
+          b\insert 3, 'XY'
+
+      assert.equal '12XY6789', b.text
+      b\undo!
+      assert.equal '123456789', b.text
+
+    it 'is a no-op when no changes were made', ->
+      b.text = 'hello'
+      b\change 1, 3, -> nil
+      assert.is_nil notified
+
+    it 'raises an error for recursive out of range changes', ->
+      b.text = '123456789'
+      assert.raises "range", ->
+        b\change 3, 3, (b) ->
+          b\change(2, 1, ->)
+
+      assert.raises "range", ->
+        b\change 3, 3, (b) ->
+          b\change(4, 3, ->)
+
+      assert.raises "range", ->
+        b\change 3, 3, (b) ->
+          b\change(4, 3, ->)
+
+    it 'raises an error for out-of-scope modifications', ->
+      b.text = '123456789'
+      assert.raises "range", ->
+        b\change 3, 3, (b) ->
+          b\insert 2, 'x'
+
+      assert.raises "range", ->
+        b\change 3, 3, (b) ->
+          b\insert 6, 'x'
+
   describe '.can_undo', ->
     it 'returns true if there are any revisions to undo in the buffer', ->
       b = Buffer 'hello'
@@ -730,6 +871,30 @@ describe 'Buffer', ->
           revision: b.revisions[1],
           part_of_revision: false,
           lines_changed: false
+        }
+
+    describe 'on_changed', ->
+      it 'is fired upon changes to listeners', ->
+        l1 = on_changed: spy.new -> nil
+        b = Buffer 'hello'
+        b\add_listener l1
+        b\change 2, 2, ->
+          b\delete 2, 1
+          b\insert 2, 'X'
+
+        assert.spy(l1.on_changed).was_called_with l1, b, {
+          offset: 2,
+          text: 'Xl',
+          prev_text: 'el',
+          size: 2,
+          invalidate_offset: 2,
+          revision: b.revisions[1],
+          part_of_revision: false,
+          lines_changed: false,
+          changes: {
+            {type: 'deleted', offset: 2, size: 1},
+            {type: 'inserted', offset: 2, size: 1},
+          }
         }
 
     it 'fires on_styled notifications for styling changes outside of lexing', ->

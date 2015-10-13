@@ -127,6 +127,45 @@ describe 'View', ->
       buffer\delete 2, 3
       assert.equals 5, cursor.pos
 
+  describe '(when text is changed)', ->
+    it 'moves the cursor up for contracting changes before the cursor', ->
+      buffer.text = '12345'
+      cursor.pos = 4
+      buffer\change 1, 3, (b) ->
+        b\delete 1, 3
+        b\insert 1, 'X'
+
+      assert.equals 2, cursor.pos
+
+    it 'moves the cursor up for expanding changes before the cursor', ->
+      buffer.text = '12345'
+      cursor.pos = 4
+      buffer\change 1, 3, (b) ->
+        b\delete 3, 1
+        b\insert 1, 'XX'
+
+      assert.equals 5, cursor.pos
+
+    it 'handles changes over the cursor position', ->
+      buffer.text = '12345'
+      cursor.pos = 3
+      buffer\change 1, 5, (b) ->
+        b\delete 2, 3 -- down to 2
+        b\insert 1, 'XXXX' -- up to 6
+        b\delete 1, 1 -- down to 5
+
+      assert.equals 5, cursor.pos
+
+    it 'leaves the cursor alone for changes after the cursor position', ->
+      buffer.text = '12345'
+      cursor.pos = 2
+      buffer\change 1, 5, (b) ->
+        b\delete 2, 1
+        b\insert 3, 'XXX'
+        b\delete 3, 1
+
+      assert.equals 2, cursor.pos
+
   describe 'when a buffer operation is undone', ->
     it 'moves the cursor to the position before action', ->
       buffer.text = '12345'

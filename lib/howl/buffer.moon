@@ -51,6 +51,7 @@ class Buffer extends PropertyObject
     @_buffer\add_listener
       on_inserted: self\_on_text_inserted
       on_deleted: self\_on_text_deleted
+      on_changed: self\_on_text_changed
 
   @property file:
     get: => @_file
@@ -182,6 +183,11 @@ class Buffer extends PropertyObject
 
     #matches / 2
 
+  change: (start_pos, end_pos, changer) =>
+    b_start, b_end = @byte_offset(start_pos), @byte_offset(end_pos + 1)
+    @_buffer\change b_start, b_end - b_start, ->
+      changer @
+
   save: =>
     if @file
       if @config.strip_trailing_whitespace
@@ -291,27 +297,26 @@ class Buffer extends PropertyObject
     @title = file_title file
 
   _on_text_inserted: (_, _, args) =>
-    @_len = nil
-    @_modified = true
-    args = {
-      buffer: self,
-      at_pos: @char_offset(args.offset)
-      part_of_revision: args.part_of_revision
-    }
-
-    signal.emit 'text-inserted', args
-    signal.emit 'buffer-modified', buffer: self
+    @_on_buffer_modification 'text-inserted', args
 
   _on_text_deleted: (_, _, args) =>
+    @_on_buffer_modification 'text-deleted', args
+
+  _on_text_changed: (_, _, args) =>
+    @_on_buffer_modification 'text-changed', args
+
+  _on_buffer_modification: (what, args) =>
     @_len = nil
     @_modified = true
     args = {
       buffer: self,
-      at_pos: @char_offset(args.offset)
-      part_of_revision: args.part_of_revision
+      at_pos: @char_offset(args.offset),
+      part_of_revision: args.part_of_revision,
+      text: args.text
+      prev_text: args.prev_text
     }
 
-    signal.emit 'text-deleted', args
+    signal.emit what, args
     signal.emit 'buffer-modified', buffer: self
 
   @meta {
@@ -344,7 +349,7 @@ with signal
 
   .register 'text-inserted',
     description: [[
-Signaled right after text has been inserted into an editor. No additional
+Signaled right after text has been inserted into a buffer. No additional
 modifications  may be done within the signal handler.
   ]]
     parameters:
@@ -355,15 +360,26 @@ modifications  may be done within the signal handler.
 
   .register 'text-deleted',
     description: [[
-Signaled right after text was deleted from the editor. No additional
+Signaled right after text was deleted from a buffer. No additional
 modifications may be done within the signal handler.
   ]]
     parameters:
       buffer: 'The buffer for which the text was deleted'
       at_pos: 'The start position of the deleted text'
       text: 'The text that was deleted'
-      as_undo: 'The text was deleted as part of an undo operation'
       part_of_revision: 'The text was deleted as part of an undo or redo operation'
+
+  .register 'text-changed',
+    description: [[
+Signaled right after text was changed in a buffer. No additional
+modifications may be done within the signal handler.
+  ]]
+    parameters:
+      buffer: 'The buffer for which the text was deleted'
+      at_pos: 'The start position of the deleted text'
+      text: 'The new text that was inserted'
+      prev_text: 'The text that was removed'
+      part_of_revision: 'The text was changed as part of an undo or redo operation'
 
   .register 'buffer-modified',
     description: 'Signaled right after a buffer was modified',

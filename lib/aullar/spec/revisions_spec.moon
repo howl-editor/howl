@@ -1,3 +1,6 @@
+-- Copyright 2014-2015 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 Revisions = require 'aullar.revisions'
 Buffer = require 'aullar.buffer'
 
@@ -18,13 +21,22 @@ describe 'Revisions', ->
         meta: {}
       }, revisions[1]
 
-      revisions\push 'deleted', 3, 'f', foo: 1
+      revisions\push 'deleted', 3, 'f', nil, foo: 1
       assert.same {
         type: 'deleted',
         offset: 3,
         text: 'f',
         meta: { foo: 1 }
       }, revisions[2]
+
+      revisions\push 'changed', 3, 'f', 'x'
+      assert.same {
+        type: 'changed',
+        offset: 3,
+        text: 'f',
+        prev_text: 'x',
+        meta: {}
+      }, revisions[3]
 
     it 'returns the added revision', ->
       rev = revisions\push 'inserted', 3, 'foo'
@@ -81,9 +93,15 @@ describe 'Revisions', ->
       -- starting with '123456789'
       revisions\push 'deleted', 9, '9' -- and we've deleted '9' at 9
       revisions\push 'inserted', 4, 'xxx' -- and inserted 'xxx' at 3
-      buffer.text = '123xxx45678' -- this is what it looks like
+      revisions\push 'changed', 1, 'abc', '123' -- and replaced '123' with 'abc'
+      buffer.text = 'abcxxx45678' -- this is what it looks like
+
+      revisions\pop buffer -- pop the change
+      assert.equal '123xxx45678', buffer.text
+
       revisions\pop buffer -- pop the insert
       assert.equal '12345678', buffer.text
+
       revisions\pop buffer -- pop the delete
       assert.equal '123456789', buffer.text
 
@@ -107,13 +125,21 @@ describe 'Revisions', ->
       assert.equal '12345', buffer.text
 
     describe 'with previously popped revisions available', ->
-      it 'applies the last popped revision', ->
+      it 'handles inserts', ->
         buffer.text = '12x3'
         revisions\push 'inserted', 3, 'x'
         revisions\pop buffer
         assert.equal '123', buffer.text
         revisions\forward buffer
         assert.equal '12x3', buffer.text
+
+      it 'handles changes', ->
+        buffer.text = '12xy'
+        revisions\push 'changed', 3, 'xy', '3'
+        revisions\pop buffer
+        assert.equal '123', buffer.text
+        revisions\forward buffer
+        assert.equal '12xy', buffer.text
 
   describe 'clear()', ->
     it 'removes all previous revisions', ->

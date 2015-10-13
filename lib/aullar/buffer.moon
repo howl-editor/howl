@@ -42,6 +42,32 @@ LineMt = {
       ffi_string line.ptr, line.size
 }
 
+change_sink = (start_offset, count) ->
+  {
+    roof: start_offset + count - 1
+    changes: {}
+    invalidate_offset: nil
+    :start_offset
+
+    add: (type, offset, size, invalidate_offset) =>
+      if offset < start_offset or (offset != start_offset and offset > @roof)
+        error "Out-of-range modification '#{type}' at #{offset} within change (#{start_offset} -> #{@roof})"
+
+      @invalidate_offset or= invalidate_offset
+      @invalidate_offset = min @invalidate_offset, invalidate_offset
+      @changes[#@changes + 1] = :type, :offset, :size
+
+      if type == 'deleted'
+        @roof -= size
+      else
+        @roof += size
+
+    can_reenter: (offset, _count) =>
+      return false if offset < start_offset
+      return false if offset + _count > max(start_offset + count, @roof)
+      true
+   }
+
 Buffer = {
   new: (text = '') =>
     @listeners = {}
@@ -93,9 +119,9 @@ Buffer = {
 
         @as_one_undo ->
           if old_text
-            @_on_modification 'deleted', 1, old_text, #old_text, 1
+            @_on_modification 'deleted', 1, old_text, nil, #old_text, 1
 
-          @_on_modification 'inserted', 1, text, size, 1
+          @_on_modification 'inserted', 1, text, nil, size, 1
     }
   }
 
@@ -122,7 +148,7 @@ Buffer = {
     @styling\insert offset, size, no_notify: true
     @multibyte = @text_buffer.size != @_length
 
-    @_on_modification 'inserted', offset, text, size, invalidate_offset
+    @_on_modification 'inserted', offset, text, nil, size, invalidate_offset
 
   delete: (offset, count) =>
     return if count == 0 or offset > @size
@@ -140,12 +166,32 @@ Buffer = {
     @styling\delete offset, count, no_notify: true
     @multibyte = @text_buffer.size != @_length
 
-    @_on_modification 'deleted', offset, text, count, invalidate_offset
+    @_on_modification 'deleted', offset, text, nil, count, invalidate_offset
 
   replace: (offset, count, replacement, replacement_size = #replacement) =>
-    @as_one_undo ->
+    @change offset, count, ->
       @delete offset, count
       @insert offset, replacement, replacement_size
+
+  change: (offset, count, changer) =>
+    if @_change_sink
+      if @_change_sink\can_reenter offset, count
+        changer @
+      else
+        error "Out of range recursive change (#{offset}, #{count}) <> (#{@_change_sink.start_offset}, #{@_change_sink.roof})"
+      return
+
+    prev_text = @sub offset, offset + count - 1
+    @_change_sink = change_sink offset, count
+    status, ret = pcall changer, @
+    {:roof, :invalidate_offset, :changes} = @_change_sink
+    new_text = @sub offset, roof
+    size = max count, roof - offset, #new_text
+    @_change_sink = nil
+    if #changes > 0 and size > 0
+      @_on_modification 'changed', offset, new_text, prev_text, size, invalidate_offset, changes
+
+    error ret unless status
 
   lines: (start_line = 1, end_line) =>
     i = start_line - 1
@@ -453,19 +499,25 @@ Buffer = {
 
     last_line_shown
 
-  _on_modification: (type, offset, text, size, invalidate_offset) =>
+  _on_modification: (type, offset, text, prev_text, size, invalidate_offset, changes) =>
+    if @_change_sink
+      @_change_sink\add type, offset, size, invalidate_offset
+      return
+
     part_of_revision = @revisions.processing
-    revision = part_of_revision and nil or @revisions\push(type, offset, text)
+    revision = part_of_revision and nil or @revisions\push(type, offset, text, prev_text)
 
     lines_changed = text\find('[\n\r]') != nil
     args = {
       :offset,
       :text,
+      :prev_text,
       :size,
       :invalidate_offset,
       :revision,
       :part_of_revision,
-      :lines_changed
+      :lines_changed,
+      :changes
     }
     @_nr_lines = nil if lines_changed
 

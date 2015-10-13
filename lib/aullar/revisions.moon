@@ -21,6 +21,8 @@ coalesce = (entry, prev) ->
 
   false
 
+VALID_TYPES = {t,true for t in *{'inserted', 'deleted', 'changed'}}
+
 define_class {
   new: =>
     @clear!
@@ -30,13 +32,13 @@ define_class {
     last: => @entries[@current]
   }
 
-  push: (type, offset, text, meta = {}) =>
-    if type != 'inserted' and type != 'deleted'
+  push: (type, offset, text, prev_text = nil, meta = {}) =>
+    unless VALID_TYPES[type]
       error "Unknown revision type '#{type}'", 2
 
     return if @processing
     group = @grouping > 0 and @group_id or nil
-    entry =  :type, :offset, :text, :meta, :group
+    entry =  :type, :offset, :text, :prev_text, :meta, :group
     last = @last
     if last and entry.group == last.group
       return last if coalesce(entry, last)
@@ -59,6 +61,9 @@ define_class {
       buffer\delete entry.offset, #entry.text
     elseif entry.type == 'deleted'
       buffer\insert entry.offset, entry.text
+    elseif entry.type == 'changed'
+      buffer\delete entry.offset, #entry.text
+      buffer\insert entry.offset, entry.prev_text
 
     @current -= 1
     @processing = false
@@ -77,6 +82,9 @@ define_class {
       buffer\insert entry.offset, entry.text
     elseif entry.type == 'deleted'
       buffer\delete entry.offset, #entry.text
+    elseif entry.type == 'changed'
+      buffer\delete entry.offset, #entry.prev_text
+      buffer\insert entry.offset, entry.text
 
     @current += 1
     @processing = false
