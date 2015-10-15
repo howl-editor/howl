@@ -174,12 +174,18 @@ class Buffer extends PropertyObject
       pos = end_pos + 1
 
     return if #matches == 0
-    b_offsets = text\byte_offset matches
 
-    for i = #b_offsets, 1, -2
-      start_pos = b_offsets[i - 1]
-      end_pos = b_offsets[i]
-      @_buffer\replace start_pos, (end_pos - start_pos) + 1, replacement
+    if @multibyte
+      matches = [@_buffer\byte_offset(p) for p in *matches]
+
+    offset = matches[1]
+    count = matches[#matches] - offset + 1
+
+    @_buffer\change offset, count, ->
+      for i = #matches, 1, -2
+        start_pos = matches[i - 1]
+        end_pos = matches[i]
+        @_buffer\replace start_pos, (end_pos - start_pos) + 1, replacement
 
     #matches / 2
 

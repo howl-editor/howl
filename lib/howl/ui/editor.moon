@@ -300,7 +300,10 @@ class Editor extends PropertyObject
 
   transform_active_lines: (f) =>
     lines = @active_lines
-    @buffer\as_one_undo -> f lines
+    return if #@active_lines == 0
+    start_pos = @active_lines[1].start_pos
+    end_pos = @active_lines[#@active_lines].end_pos
+    @buffer\change start_pos, end_pos, -> f lines
 
   with_position_restored: (f) =>
     line, column, indentation, top_line = @cursor.line, @cursor.column, @current_line.indentation, @line_at_top
@@ -330,7 +333,8 @@ class Editor extends PropertyObject
 
   comment: => if @buffer.mode.comment then @buffer.mode\comment self
   uncomment: => if @buffer.mode.uncomment then @buffer.mode\uncomment self
-  toggle_comment: => if @buffer.mode.toggle_comment then @buffer.mode\toggle_comment self
+  toggle_comment: =>
+    if @buffer.mode.toggle_comment then @buffer.mode\toggle_comment self
 
   delete_line: => @buffer.lines[@cursor.line] = nil
 
@@ -909,7 +913,6 @@ with config
 -- Commands
 for cmd_spec in *{
   { 'newline', 'Adds a new line at the current position', 'newline' }
-  { 'newline-and-format', 'Adds a new line, and formats as needed', 'newline_and_format' }
   { 'comment', 'Comments the selection or current line', 'comment' }
   { 'uncomment', 'Uncomments the selection or current line', 'uncomment' }
   { 'toggle-comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
