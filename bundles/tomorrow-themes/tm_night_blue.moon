@@ -92,9 +92,9 @@ return {
 
     edge_line:
       type: flair.PIPE,
-      foreground: green,
+      foreground: blue,
       foreground_alpha: 0.3,
-      line_width: 1
+      line_width: 0.5
 
     search:
       type: highlight.ROUNDED_RECTANGLE

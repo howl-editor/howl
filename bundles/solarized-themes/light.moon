@@ -102,8 +102,8 @@ return {
       type: flair.PIPE,
       foreground: green,
       foreground_alpha: 0.3,
-      line_type: 'dotted'
-      line_width: 1
+      line_type: 'solid'
+      line_width: 0.5
 
     search:
       type: highlight.ROUNDED_RECTANGLE
