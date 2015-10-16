@@ -14,9 +14,9 @@ separator = File.separator
 
 style.define_default 'directory', 'key'
 style.define_default 'filename', 'string'
-icon.define 'directory', 'font-awesome-folder'
-icon.define 'file', 'font-awesome-file'
-icon.define 'file-new', 'font-awesome-plus-circle'
+icon.define_default 'directory', 'font-awesome-folder'
+icon.define_default 'file', 'font-awesome-file'
+icon.define_default 'file-new', 'font-awesome-plus-circle'
 
 subdirs = (directory) ->
   files = [c for c in *directory.children when c.is_directory]
