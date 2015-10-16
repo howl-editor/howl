@@ -17,6 +17,9 @@ define = (name, definition={}) ->
       font: definition.font
     icons[name] = {:name, text: definition.text, font: definition.font}
 
+define_default = (name, definition) ->
+  define(name, definition) unless icons[name]
+
 get = (name, style='icon') ->
   icon = name
   while type(icon) == 'string'
@@ -30,5 +33,6 @@ get = (name, style='icon') ->
 
 {
   :define
+  :define_default
   :get
 }

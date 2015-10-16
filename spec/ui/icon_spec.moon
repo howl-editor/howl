@@ -15,3 +15,25 @@ describe 'icon', ->
     it 'allow aliasing other icons', ->
       icon.define 'alias', 'hello-icon'
       assert.equals icon.get('alias'), icon.get('hello-icon')
+
+  describe '.define_default(name, definition)', ->
+    it 'only defines name if not already defined', ->
+      icon.define 'a-icon',
+        text: 'a'
+        font: family: 'Icon Font'
+
+      icon.define_default 'a-icon'
+        text: 'a-default'
+        font: family: 'Icon Font'
+
+      icon.define_default 'b-icon'
+        text: 'b-default-1'
+        font: family: 'Icon Font'
+
+      icon.define_default 'b-icon'
+        text: 'b-default-2'
+        font: family: 'Icon Font'
+
+      assert.equals 'a', icon.get('a-icon').text
+      assert.equals 'b-default-1', icon.get('b-icon').text
+
