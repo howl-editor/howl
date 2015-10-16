@@ -17,6 +17,11 @@ highlight.define_default 'list_selection', {
   outline_alpha: 100
 }
 
+highlight.define_default 'list_selection', {
+  type: highlight.UNDERLINE
+  text_color: '#000000'
+}
+
 reversed = (list) -> [item for item in *list[#list, 1, -1]]
 
 class ListWidget extends PropertyObject
@@ -109,9 +114,11 @@ class ListWidget extends PropertyObject
 
     segments = highlighter text
     if segments
+      ranges = {}
       for segment in *segments
-        p = start_pos + segment[1] - 1
-        @text_widget.buffer\style p, p + segment[2] - 1, 'list_highlight'
+        ranges[#ranges + 1] = { start_pos + segment[1] - 1, segment[2] }
+
+      highlight.apply 'list_highlight', @text_widget.buffer, ranges
 
   _write_status: =>
     return unless @has_status

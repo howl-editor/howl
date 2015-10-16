@@ -144,6 +144,11 @@ return {
       background: blue
       background_alpha: 0.2
 
+    list_highlight:
+      type: highlight.UNDERLINE
+      text_color: black
+      line_width: 2
+
     cursor:
       type: highlight.RECTANGLE
       background: base01
@@ -269,11 +274,6 @@ return {
     warning:
       font: italic: true
       color: orange
-
-    list_highlight:
-      color: foreground
-      underline: true
-      font: bold: true
 
     h1:
       color: white
