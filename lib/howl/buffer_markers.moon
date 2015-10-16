@@ -10,6 +10,19 @@ translate = (m, buf) ->
   m.end_offset = buf\char_offset m.end_offset
   m
 
+adjust_marker_offsets = (marker, b) ->
+  error "Missing field 'name'", 3 unless marker.name
+
+  marker = copy marker
+  for f in *{ 'start_offset', 'end_offset' }
+    v = marker[f]
+    error "Missing field '#{f}'", 3 unless v
+    if v < 1 or v > b.length + 1
+      error "Invalid offset '#{v}' (length: #{b.length})"
+    marker[f] = b\byte_offset v
+
+  marker
+
 class BufferMarkers extends PropertyObject
   new: (@a_buffer) =>
     super!
@@ -21,18 +34,10 @@ class BufferMarkers extends PropertyObject
       [translate(m, @a_buffer) for m in *ms]
   }
 
-  add: (opts) =>
-    error "Missing field 'name'", 2 unless opts.name
-    opts = copy opts
-
-    for f in *{ 'start_offset', 'end_offset' }
-      v = opts[f]
-      error "Missing field '#{f}'", 2 unless v
-      if v < 1 or v > @a_buffer.length + 1
-        error "Invalid offset '#{v}' (length: #{@a_buffer.length})"
-      opts[f] = @a_buffer\byte_offset v
-
-    @markers\add opts
+  add: (markers) =>
+    return if #markers == 0
+    markers = [adjust_marker_offsets(m, @a_buffer) for m in *markers]
+    @markers\add markers
 
   at: (offset, selector) =>
     @for_range offset, offset + 1

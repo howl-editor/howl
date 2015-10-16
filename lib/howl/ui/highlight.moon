@@ -22,12 +22,18 @@ setmetatable {
     flair.define_default name, definition
 
   apply: (name, buffer, pos, length) ->
-    buffer.markers\add {
-      name: 'highlight',
-      flair: name,
-      start_offset: pos,
-      end_offset: pos + length
-    }
+    ranges = pos
+    ranges = { {pos, length} } unless type(ranges) == 'table'
+    markers = {}
+    for range in *ranges
+      markers[#markers + 1] = {
+        name: 'highlight',
+        flair: name,
+        start_offset: range[1],
+        end_offset: range[1] + range[2]
+      }
+
+    buffer.markers\add markers
 
   remove_all: (name, buffer) ->
     buffer.markers\remove name: 'highlight', flair: name

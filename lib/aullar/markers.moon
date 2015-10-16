@@ -14,19 +14,21 @@ define_class {
   new: (@listener) =>
     @markers = {}
 
-  add: (data) =>
-    for f in *{ 'name', 'start_offset', 'end_offset' }
-      error "Missing field '#{f}'", 2 unless data[f]
+  add: (markers) =>
+    for marker in *markers
+      for f in *{ 'name', 'start_offset', 'end_offset' }
+        error "Missing field '#{f}'", 2 unless marker[f]
 
-    idx = #@markers + 1
-    for i = 1, #@markers
-      m = @markers[i]
-      if m.start_offset > data.start_offset
-        idx = i
-        break
+      idx = #@markers + 1
+      for i = 1, #@markers
+        m = @markers[i]
+        if m.start_offset > marker.start_offset
+          idx = i
+          break
 
-    insert @markers, idx, data
-    @_notify 'added', {data}
+      insert @markers, idx, marker
+
+    @_notify 'added', markers
 
   remove: (selector = {}) =>
     indices = {}
@@ -37,6 +39,8 @@ define_class {
       if selector_matches(selector, marker)
         insert(indices, i)
         insert markers, marker
+
+    return if #markers == 0
 
     for i = #indices, 1, -1
       remove @markers, indices[i]
@@ -50,6 +54,7 @@ define_class {
     for i = #indices, 1, -1
       insert markers, (remove @markers, indices[i])
 
+    return if #markers == 0
     @_notify 'removed', markers
 
   at: (offset, selector) =>
