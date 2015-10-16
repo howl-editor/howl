@@ -154,8 +154,9 @@ View = {
     }
 
     @_buffer_listener = {
-      on_inserted: (_, b, args) -> @\_on_buffer_modified b, args, 'insert'
-      on_deleted: (_, b, args) -> @\_on_buffer_modified b, args, 'delete'
+      on_inserted: (_, b, args) -> @\_on_buffer_modified b, args, 'inserted'
+      on_deleted: (_, b, args) -> @\_on_buffer_modified b, args, 'deleted'
+      on_changed: (_, b, args) -> @\_on_buffer_modified b, args, 'changed'
       on_styled: (_, b, args) -> @\_on_buffer_styled b, args
       on_undo: (_, b, args) -> @\_on_buffer_undo b, args
       on_redo: (_, b, args) -> @\_on_buffer_redo b, args
@@ -632,7 +633,7 @@ View = {
   _on_buffer_modified: (buffer, args, type) =>
     cur_pos = @cursor.pos
     sel_anchor, sel_end = @selection.anchor, @selection.end_pos
-    lines_showing = type == 'delete' and @lines_showing
+    lines_showing = type != 'inserted' and @lines_showing
     lines_changed = args.lines_changed
 
     if not @showing
@@ -672,10 +673,16 @@ View = {
         @area\queue_draw!
 
     -- adjust cursor if necessary
-    if type == 'insert' and args.offset <= @cursor.pos
-      @cursor.pos += #args.text
-    elseif type == 'delete' and args.offset < @cursor.pos
-      @cursor.pos -= min(@cursor.pos - args.offset, #args.text)
+    changes = { { :type, offset: args.offset, size: args.size } }
+    changes = args.changes if type == 'changed'
+    c_pos = cur_pos
+    for change in *changes
+      if change.type == 'inserted' and change.offset <= c_pos
+        c_pos += change.size
+      elseif change.type == 'deleted' and change.offset < c_pos
+        c_pos -= min(c_pos - change.offset, change.size)
+
+    @cursor.pos = c_pos if c_pos != cur_pos
 
     @selection\clear!
 

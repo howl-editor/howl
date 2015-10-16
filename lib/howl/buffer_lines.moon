@@ -55,7 +55,10 @@ Line = (nr, buffer) ->
 
     replace: (i, j, replacement) =>
       b_i, b_j = @byte_offset i, j + 1
-      a_buf\replace @byte_start_pos + b_i - 1, (b_j - b_i), replacement
+      offset = @byte_start_pos + b_i - 1
+      count = b_j - b_i
+      a_buf\change offset, count, ->
+        a_buf\replace offset, count, replacement
 
     real_column: (col) =>
       return 1 if col == 1

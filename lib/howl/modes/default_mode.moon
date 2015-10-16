@@ -18,14 +18,14 @@ class DefaultMode
     indent_level = editor.buffer.config.indent
     dont_indent_styles = comment: true, string: true
     buffer = editor.buffer
-    current_line = editor.cursor.line
+    current_line = editor.current_line
 
     editor\transform_active_lines (lines) ->
       comment_prefix = @_comment_pair!
       local prev_line
 
       for line in *lines
-        continue if line.is_blank and line.nr != current_line
+        continue if line.is_blank and line.nr != current_line.nr
         local indent
 
         prev_line or= line.previous_non_blank
@@ -39,8 +39,9 @@ class DefaultMode
         line.indentation = indent if indent != line.indentation
         prev_line = line
 
-      with editor
-        .cursor.column = .current_line.indentation + 1 if .cursor.column < .current_line.indentation
+    with editor.cursor
+      if .line != current_line.nr or .column < current_line.indentation
+        \move_to line: current_line.nr, column: current_line.indentation
 
   comment: (editor) =>
     prefix, suffix = @_comment_pair!
@@ -63,7 +64,7 @@ class DefaultMode
           new_text = text\usub(1, min_indent) .. prefix .. text\usub(min_indent + 1) .. suffix
           line.text = new_text
 
-      cursor.column = current_column + #prefix unless current_column == 1
+    cursor.column = current_column + #prefix unless current_column == 1
 
   uncomment: (editor) =>
     prefix, suffix = @_comment_pair!
@@ -86,8 +87,8 @@ class DefaultMode
           line.text = head .. middle .. trail
           cursor_delta = middle_start - pfx_start if line == cur_line
 
-      if cursor_delta
-        cursor.column = math.max 1, current_column - cursor_delta
+    if cursor_delta
+      cursor.column = math.max 1, current_column - cursor_delta
 
   toggle_comment: (editor) =>
     prefix, suffix = @_comment_pair!
