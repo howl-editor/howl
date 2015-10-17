@@ -8,7 +8,7 @@ Cairo = require 'ljglibs.cairo.cairo'
 {:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
-{:min, :max, :floor} = math
+{:min, :max, :floor, :pi} = math
 copy = moon.copy
 
 flairs = {}
@@ -52,9 +52,9 @@ draw_ops = {
     radius = flair['corner_radius'] or 3
 
     if width < radius * 3 or height < radius * 3
-      radius = math.min(width, height) / 3
+      radius = min(width, height) / 3
 
-    quadrant = math.pi / 2
+    quadrant = pi / 2
     right, bottom, left, top = 0, quadrant, quadrant * 2, quadrant * 3
     cr\move_to x, y + radius
     cr\arc x + radius, y + radius, radius, left, top
