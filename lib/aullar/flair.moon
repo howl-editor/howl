@@ -191,7 +191,7 @@ need_text_object = (flair) ->
       f_end_offset = min line.line_end, end_offset
       start_rect = layout\index_to_pos f_start_offset - 1
       flair_y = y + start_rect.y / SCALE
-      text_start_x = x + max((start_rect.x / SCALE) - 1, 0) - base_x
+      text_start_x = x + max((start_rect.x / SCALE), 0) - base_x
       start_x = max(text_start_x, view.edit_area_x)
 
       width = get_defined_width(start_x, flair, cr, clip)
