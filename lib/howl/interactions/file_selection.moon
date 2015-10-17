@@ -42,7 +42,10 @@ class FileSelector
       never_shrink: true,
       on_selection_change: @\_preview
     @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
-    @list_widget.columns =  { {}, {style: 'filename'} }
+    if config.file_icons
+      @list_widget.columns =  { {}, {style: 'filename'} }
+    else
+      @list_widget.columns =  { {style: 'filename'} }
 
     @command_line\add_widget 'completion_list', @list_widget
 

@@ -14,6 +14,13 @@ howl.config.define
   type_of: 'string_list'
   default: {'a', 'bc', 'git', 'hg', 'o', 'pyc', 'so'}
 
+howl.config.define
+  name: 'file_icons'
+  description: 'Whether file and directory icons are displayed'
+  scope: 'global'
+  type_of: 'boolean'
+  default: true
+
 get_cwd = ->
   buffer = howl.app.editor and howl.app.editor.buffer
   directory = buffer and (buffer.file and buffer.file.parent or buffer.directory)
@@ -81,7 +88,6 @@ file_matcher = (files, directory, allow_new=false) ->
 
     if should_hide c
       hidden_by_config[c.basename] = {
-        is_directory and icon.get('directory', 'directory') or icon.get('file', 'filename')
         markup.howl("<comment>#{name}</>"),
         markup.howl("<comment>[hidden]</>"),
         :name
@@ -89,7 +95,6 @@ file_matcher = (files, directory, allow_new=false) ->
       }
     else
       append children, {
-        is_directory and icon.get('directory', 'directory') or icon.get('file', 'filename')
         is_directory and markup.howl("<directory>#{name}</>") or name
         :name
         :is_directory
@@ -116,6 +121,11 @@ file_matcher = (files, directory, allow_new=false) ->
       matcher = Matcher children
 
     matches = moon.copy matcher(text)
+    if config.file_icons
+      for item in *matches
+        unless item.has_icon
+          append item, 1, item.is_directory and icon.get('directory', 'directory') or icon.get('file', 'filename')
+          item.has_icon = true
     if not text or text.is_blank or not allow_new
       return matches
 
@@ -124,12 +134,13 @@ file_matcher = (files, directory, allow_new=false) ->
         return matches
 
     append matches, {
-      icon.get('file-new', 'filename')
       text,
       markup.howl '<keyword>[New]</>'
       name: text
       is_new: true
     }
+    if config.file_icons
+      append matches[#matches], 1, icon.get('file-new', 'filename')
 
     return matches
 
