@@ -133,6 +133,7 @@ config.define
 is_reflowing = false
 
 do_reflow = (editor, line, reflow_at) ->
+  return if editor.buffer.read_only
   is_reflowing = true
   cur_pos = editor.cursor.pos
   reflowed = reflow_paragraph_at line, reflow_at
