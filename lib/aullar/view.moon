@@ -21,6 +21,8 @@ config = require 'aullar.config'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs, :floor} = math
 
+jit.off true, true
+
 notify = (view, event, ...) ->
   listener = view.listener
   if listener and listener[event]
