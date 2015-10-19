@@ -8,12 +8,14 @@ get_preview_buffer = (file) ->
     buffer = Buffer {}
     buffer.title = 'Directory: '..file.basename
     buffer.text = file.path
+    buffer.read_only = true
     return buffer
 
   unless file.is_regular
     buffer = Buffer {}
     buffer.title = 'No preview: '..file.basename
     buffer.text = "Preview not available for #{file.type} file."
+    buffer.read_only = true
     return buffer
 
   buffer = Buffer mode.for_file file
