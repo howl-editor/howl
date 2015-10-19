@@ -22,8 +22,8 @@ line_match_highlighter = (editor) ->
 
     if segments
       start_pos = line.start_pos
-      for segment in *segments
-        highlight.apply 'search', buffer, start_pos + segment[1] - 1, segment[2]
+      ranges = [{start_pos + s[1] - 1, s[2]} for s in *segments]
+      highlight.apply 'search', buffer, ranges
     else
       highlight.apply 'search', buffer, line.start_pos, line.end_pos - line.start_pos
 
@@ -38,6 +38,8 @@ line_match_highlighter = (editor) ->
           break
 
       if idx
+        ranges = {}
+
         for i = idx, #items
           continue unless items[i].buffer == buffer
           nr = items[i].line_nr
@@ -50,7 +52,9 @@ line_match_highlighter = (editor) ->
           segments = Matcher.explain text, line.text
           if segments
             for segment in *segments
-              highlight.apply 'search_secondary', buffer, start_pos + segment[1] - 1, segment[2]
+              ranges[#ranges + 1] = { start_pos + segment[1] - 1, segment[2] }
+
+        highlight.apply 'search_secondary', buffer, ranges
 
 interact.register
   name: 'select_line'

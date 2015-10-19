@@ -209,7 +209,7 @@ describe 'Buffer', ->
       markers = buffer.markers
 
     it 'updates markers with inserts', ->
-      markers\add name: 'test', start_offset: 2, end_offset: 4
+      markers\add { {name: 'test', start_offset: 2, end_offset: 4} }
       buffer\insert 1, '!'
       assert.same {}, markers\at 2
       assert.same { name: 'test', start_offset: 3, end_offset: 5 }, markers\at(3)[1]
@@ -218,7 +218,7 @@ describe 'Buffer', ->
       assert.same { name: 'test', start_offset: 3, end_offset: 6 }, markers\at(3)[1]
 
     it 'updates markers with deletes', ->
-      markers\add name: 'test', start_offset: 2, end_offset: 5
+      markers\add { {name: 'test', start_offset: 2, end_offset: 5} }
       buffer\delete 1, 1
       assert.same {}, markers\at 5
       assert.same { name: 'test', start_offset: 1, end_offset: 4 }, markers\at(1)[1]

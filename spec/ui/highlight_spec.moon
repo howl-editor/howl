@@ -17,7 +17,7 @@ describe 'highlight', ->
       highlight.define_default 'new_one', type: highlight.UNDERLINE, color: '#101010'
       assert.equal highlight.new_one.color, '#334455'
 
-  describe '.apply(name, buffer, pos, length)', ->
+  describe '.apply(name, buffer, <table-or-range>)', ->
     it 'sets a highlight marker for the buffer', ->
       buffer = Buffer {}
       buffer.text = 'hƏllo'
@@ -25,6 +25,16 @@ describe 'highlight', ->
       highlight.apply 'custom', buffer, 2, 2
       assert.same {
         { name: 'highlight', flair: 'custom', start_offset: 2, end_offset: 4 }
+      }, buffer.markers.all
+
+    it 'accepts a table ranges', ->
+      buffer = Buffer {}
+      buffer.text = '123456'
+      highlight.define 'custom', type: highlight.UNDERLINE, color: '#334455'
+      highlight.apply 'custom', buffer, { {2, 2}, {5, 1} }
+      assert.same {
+        { name: 'highlight', flair: 'custom', start_offset: 2, end_offset: 4 },
+        { name: 'highlight', flair: 'custom', start_offset: 5, end_offset: 6 }
       }, buffer.markers.all
 
   it '.at_pos(buffer, pos) returns a list of the active highlights at pos', ->

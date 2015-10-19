@@ -543,8 +543,7 @@ Buffer = {
     @notify('styled', styled)
 
   _on_markers_changed: (_, markers) =>
-    for marker in *markers
-      @notify('marker_changed', marker)
+    @notify('markers_changed', markers)
 
 }
 

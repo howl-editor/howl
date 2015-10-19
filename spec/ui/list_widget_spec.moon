@@ -41,28 +41,23 @@ describe 'ListWidget', ->
       list\update 'o'
       assert.equal 'one\n', buf.text
 
-    it 'styles matching parts of text with list_highlight', ->
+    it 'highlights matching parts of text with list_highlight', ->
       list.matcher = Matcher {'one', 'twö', 'three'}
       list\update 'ne'
       assert.equal 'one\n', buf.text
-      hstyle = style.at_pos(buf, 1)
-      assert.not_equal 'list_highlight', hstyle
-      hstyle = style.at_pos(buf, 2)
-      assert.equal 'list_highlight', hstyle
-      hstyle = style.at_pos(buf, 3)
-      assert.equal 'list_highlight', hstyle
+
+      assert.not_includes highlight.at_pos(buf, 1), 'list_highlight'
+      assert.includes highlight.at_pos(buf, 2), 'list_highlight'
+      assert.includes highlight.at_pos(buf, 3), 'list_highlight'
 
     it 'handles higlighting of multibyte chars', ->
       list.matcher = Matcher {'åne', 'twö'}
       list\update 'ån'
       assert.equal 'åne\n', buf.text
 
-      hstyle = style.at_pos(buf, 1)
-      assert.equal 'list_highlight', hstyle
-      hstyle = style.at_pos(buf, 2)
-      assert.equal 'list_highlight', hstyle
-      hstyle = style.at_pos(buf, 3)
-      assert.not_equal 'list_highlight', hstyle
+      assert.includes highlight.at_pos(buf, 1), 'list_highlight'
+      assert.includes highlight.at_pos(buf, 2), 'list_highlight'
+      assert.not_includes highlight.at_pos(buf, 3), 'list_highlight'
 
   context 'when `never_shrink:` is not provided', ->
     it 'shrinks the height while matching', ->

@@ -160,14 +160,16 @@ class Searcher
     -- scan the displayed lines and a few more for good measure
     start_boundary = buffer.lines[math.max(1, @editor.line_at_top - 5)].start_pos
     end_boundary = buffer.lines[math.min(#buffer.lines, @editor.line_at_bottom + 5)].end_pos
+    ranges = {}
 
     -- match at match_pos gets a different highlight than other matches
     for start_pos, end_pos in @_find_matches search, start_boundary, end_boundary
       if not ensure_word or @_is_word(start_pos, search)
         if start_pos != match_pos
-          highlight.apply 'search_secondary', buffer, start_pos, end_pos - start_pos + 1
+          ranges[#ranges + 1] = { start_pos, end_pos - start_pos + 1 }
 
     highlight.apply 'search', buffer, match_pos, search.ulen
+    highlight.apply 'search_secondary', buffer, ranges
 
   _find_matches: (search, start_boundary, end_boundary) =>
     match_start_pos = nil

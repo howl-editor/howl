@@ -8,7 +8,7 @@ Cairo = require 'ljglibs.cairo.cairo'
 {:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
-{:min, :max, :floor} = math
+{:min, :max, :floor, :pi} = math
 copy = moon.copy
 
 flairs = {}
@@ -52,9 +52,9 @@ draw_ops = {
     radius = flair['corner_radius'] or 3
 
     if width < radius * 3 or height < radius * 3
-      radius = math.min(width, height) / 3
+      radius = min(width, height) / 3
 
-    quadrant = math.pi / 2
+    quadrant = pi / 2
     right, bottom, left, top = 0, quadrant, quadrant * 2, quadrant * 3
     cr\move_to x, y + radius
     cr\arc x + radius, y + radius, radius, left, top
@@ -191,7 +191,7 @@ need_text_object = (flair) ->
       f_end_offset = min line.line_end, end_offset
       start_rect = layout\index_to_pos f_start_offset - 1
       flair_y = y + start_rect.y / SCALE
-      text_start_x = x + max((start_rect.x / SCALE) - 1, 0) - base_x
+      text_start_x = x + max((start_rect.x / SCALE), 0) - base_x
       start_x = max(text_start_x, view.edit_area_x)
 
       width = get_defined_width(start_x, flair, cr, clip)

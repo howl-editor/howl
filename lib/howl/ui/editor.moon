@@ -697,12 +697,12 @@ class Editor extends PropertyObject
       buffer\pair_match_backward(start_pos, matching, search_to)
 
     if match_pos and abs(match_pos - start_pos) > 1
-      buffer.markers\add {
+      buffer.markers\add {{
         name: 'brace_highlight',
         flair: 'brace_highlight',
         start_offset: match_pos,
         end_offset: match_pos + 1
-      }
+      }}
       @_brace_highlighted = true
 
   _update_position: =>

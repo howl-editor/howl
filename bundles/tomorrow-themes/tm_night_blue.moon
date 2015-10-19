@@ -108,6 +108,7 @@ return {
       type: flair.ROUNDED_RECTANGLE
       background: lightblue
       text_color: black
+      height: 'text'
 
     replace_strikeout:
       type: flair.ROUNDED_RECTANGLE
@@ -126,6 +127,12 @@ return {
       type: flair.RECTANGLE
       background: white
       background_alpha: 0.4
+
+    list_highlight:
+      type: highlight.UNDERLINE
+      foreground: white
+      text_color: white
+      line_width: 2
 
     cursor:
       type: flair.RECTANGLE
@@ -233,10 +240,6 @@ return {
     warning:
       font: italic: true
       color: orange
-
-    list_highlight:
-      color: white
-      underline: true
 
     h1:
       color: white

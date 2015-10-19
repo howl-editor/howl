@@ -160,7 +160,7 @@ View = {
       on_styled: (_, b, args) -> @\_on_buffer_styled b, args
       on_undo: (_, b, args) -> @\_on_buffer_undo b, args
       on_redo: (_, b, args) -> @\_on_buffer_redo b, args
-      on_marker_changed: (_, b, args) -> @\_on_buffer_marker_changed b, args
+      on_markers_changed: (_, b, args) -> @\_on_buffer_markers_changed b, args
       last_line_shown: (_, b) -> @last_visible_line
     }
 
@@ -698,9 +698,10 @@ View = {
       if @_first_visible_line > 1 and @lines_showing < lines_showing
         @last_visible_line = @buffer.nr_lines
 
-  _on_buffer_marker_changed: (buffer, marker) =>
-    if marker.flair
-      @refresh_display from_offset: marker.start_offset, to_offset: marker.end_offset, invalidate: true
+  _on_buffer_markers_changed: (buffer, markers) =>
+    from_offset = markers[1].start_offset
+    to_offset = markers[#markers].end_offset
+    @refresh_display :from_offset, :to_offset, invalidate: true
 
   _on_buffer_undo: (buffer, revision) =>
     pos = revision.meta.cursor_before or revision.offset
