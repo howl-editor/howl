@@ -165,6 +165,8 @@ return {
     selection:
       type: highlight.ROUNDED_RECTANGLE
       background: selection
+      background_alpha: 0.6
+      min_width: 'letter'
 
   styles:
 
