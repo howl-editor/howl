@@ -4,7 +4,7 @@
 _G = _G
 import table, coroutine, pairs from _G
 import tostring, pcall, callable, type, print, setmetatable, typeof from _G
-import signal, command from howl
+import signal, command, sys from howl
 append = table.insert
 
 signal.register 'key-press',
@@ -70,16 +70,22 @@ substitute_keyname = (event) ->
 
 find_handlers = (event, source, translations, keymaps, ...) ->
   handlers = {}
+  empty = {}
+  os = sys.info.os
+
   for map in *keymaps
     continue unless map
-    source_map = map[source] or {}
+
+    source_map = map[source] or empty
     handler = nil
 
-    source_map_binding_for = source_map.binding_for
     map_binding_for = map.binding_for
+    source_map_binding_for = source_map.binding_for
+    os_map = map.for_os and map.for_os[os] or empty
+    os_source_map = os_map[source] or empty
 
     for t in *translations
-      handler = source_map[t] or map[t]
+      handler = os_source_map[t] or source_map[t] or os_map[t] or map[t]
       break if handler
 
       if source_map_binding_for or map_binding_for
