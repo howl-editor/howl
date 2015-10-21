@@ -59,7 +59,7 @@ provided.
 ## Buffer search
 
 The `buffer-search-forward` and `buffer-search-backward` commands (bound to
-`ctrl_f` and `ctrl_r` respectively) provide an easy way to find exact matches
+`action_f` and `action_r` respectively) provide an easy way to find exact matches
 near the cursor. The visible matches are highlighted in real-time, as you type
 your search text.
 
@@ -73,7 +73,7 @@ focused match.
 
 Looking only for whole word matches can be useful when there happen to be many
 sub-string matches that you want to ignore. The `buffer-search-word-forward` and
-`buffer-search-word-backward` commands (bound to `ctrl_period` and `ctrl_comma`)
+`buffer-search-word-backward` commands (bound to `action_period` and `action_comma`)
 work similar to the buffer search commands above, but they only match whole
 words and they also automatically search for the current word at the cursor.
 
@@ -137,14 +137,14 @@ the replacement to the selected text only.
 
 ## Comments
 
-The `editor-toggle-comment` is bound to `ctrl_slash` by default, and let's you
+The `editor-toggle-comment` is bound to `action_slash` by default, and let's you
 quickly comment and uncomment code.
 
 ## Clipboard history
 
 Howl manages its own clipboard, and lets you paste cut or copied text other than
 the latest text in the clipboard. The `editor-paste..` command (bound to
-`ctrl_shift_v` by default) opens a list of previous clips and pastes any
+`action_shift_v` by default) opens a list of previous clips and pastes any
 available clip that you choose:
 
 ![Clipboard paste](/images/doc/clipboard-paste.png)
@@ -183,7 +183,7 @@ current file.
 _Support for this is dependent on the language mode, and is currently only
 available for Lua and Moonscript._
 
-The `show-doc-at-cursor` command, bound to `ctrl_q` by default, pops up
+The `show-doc-at-cursor` command, bound to `action_q` by default, pops up
 documentation for the symbol at the cursor if available:
 
 ![Show doc](/images/doc/show-doc.png)

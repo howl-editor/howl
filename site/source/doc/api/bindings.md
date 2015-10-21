@@ -22,7 +22,7 @@ chooses.
 Keymaps are as said simple Lua tables, that maps "key translations" to actions.
 Each key press is represented as a "key event", which is also a simple Lua table.
 Below you can see an example of a key event resulting from pressing
-`Control + Shift + a`:
+`Action + Shift + a`:
 
 ```lua
 -- Key event
@@ -44,9 +44,9 @@ for the above example would result in the following list of translations:
 
 ```lua
 {
-  "ctrl_A",
-  "ctrl_shift_a",
-  "ctrl_shift_65"
+  "action_A",
+  "action_shift_a",
+  "action_shift_65"
 }
 ```
 
@@ -60,18 +60,18 @@ first before any top-level bindings. Consider the following keymap:
 
 ```lua
 {
-  ctrl_b = function() print("A general binding") end,
-  ctrl_c = 'my_general_command',
+  action_b = function() print("A general binding") end,
+  action_c = 'my_general_command',
 
   editor = {
-    ctrl_shift_a = function(editor) print("An editor binding") end
+    action_shift_a = function(editor) print("An editor binding") end
   }
 }
 ```
 
 Should the key event example above be dispatched against this keymap with the
-source being "editor", it would trigger the "ctrl_shift_a" binding. The top-level
-bindings (e.g. "ctrl_b") would trigger regardless of source. Also note that
+source being "editor", it would trigger the "action_shift_a" binding. The top-level
+bindings (e.g. "action_b") would trigger regardless of source. Also note that
 the editor specific binding can make use of a source specific extra argument,
 an editor instance in this case.
 
@@ -99,7 +99,7 @@ keymap, which will be [pushed](#push) using the `pop` option.
 When writing keymaps for non-editor sources, a special key called `binding_for`
 can be used in the keymap to bind an action to a key press indirectly by using a
 command name as the key. For example, if you wanted to support *pasting* in your
-readline input, instead of binding the action directly to the `ctrl_v` key
+readline input, instead of binding the action directly to the `action_v` key
 press, you might want to bind whichever key is bound to the `editor-paste`
 command. This can be specified by the following keymap:
 
@@ -181,11 +181,11 @@ For example:
 ```lua
 -- look up the binding for the `project-open` command:
 howl.bindings.keystrokes_for('project-open')
--- => { 'ctrl_p' }
+-- => { 'action_p' }
 
 -- look up the binding for the `buffer-search-forward` command:
 howl.bindings.keystrokes_for('buffer-search-forward', 'editor')
--- => { 'ctrl_f' }
+-- => { 'action_f' }
 
 -- but since that's a command only bound for editor sources,
 -- it's not bound globally
@@ -249,8 +249,8 @@ local key_event = {
 bindings.translate_key(key_event)
 -- returns
 {
-  "ctrl_A",
-  "ctrl_shift_a",
-  "ctrl_shift_65"
+  "action_A",
+  "action_shift_a",
+  "action_shift_65"
 }
 ```

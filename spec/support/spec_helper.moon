@@ -20,11 +20,36 @@ includes = (state, args) ->
   for v in *t
     if v == b
       return true, args
+
   return false, args
 
 say\set("assertion.includes.positive", "Expected '%s' to include '%s'")
 say\set("assertion.includes.negative", "Expected '%s' to not include '%s'")
 assert\register("assertion", "includes", includes, "assertion.includes.positive", "assertion.includes.negative")
+
+-- includes assertion
+has_values = (state, args) ->
+  t, b = table.unpack args
+
+  error "assert.has_values: Not a table: '#{t}'" if type(t) != 'table'
+  error "assert.has_values: Not a table: '#{b}'" if type(b) != 'table'
+  for k, v in pairs b
+    unless type(k) == 'number' or t[k] == v
+      return false, args
+
+  contains = (t, e) ->
+    for i = 1, #t
+      return true if t[i] == e
+
+  for i = 1, #b
+    unless contains(t, b[i])
+      return false, args
+
+  return true, args
+
+say\set("assertion.has_values.positive", "Expected '%s' to include values '%s'")
+say\set("assertion.has_values.negative", "Expected '%s' to not include values '%s'")
+assert\register("assertion", "has_values", has_values, "assertion.has_values.positive", "assertion.has_values.negative")
 
 -- match assertion
 match = (state, args) ->

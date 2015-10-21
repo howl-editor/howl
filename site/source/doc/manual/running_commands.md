@@ -9,7 +9,7 @@ title: Running external commands
 While most of the time spent developing is likely to be editing, there's often a
 need for running external commands, such as compilers, test, etc., as part of
 the work flow. Howl provides two different commands for this purpose, `exec` and
-`project-exec`, bound to `ctrl_shift_r` and `ctrl_alt_r` respectively. They both
+`project-exec`, bound to `action_shift_r` and `action_alt_r` respectively. They both
 work the same way, allowing you execute a command of your choice from within a
 directory, displaying any output in a buffer. The difference is that
 `project-exec` starts out from from the root of your current project directory,
@@ -57,7 +57,7 @@ different style to allow you to quickly differentiate between the two.
 
 ## project-build
 
-Howl features another execution command, `project-build`, bound to `ctrl_shift_b`. This is the same as
+Howl features another execution command, `project-build`, bound to `action_shift_b`. This is the same as
 `project-exec`, but it executes the command defined in `config.project_build_command`.
 
 ## Dealing with rogue commands

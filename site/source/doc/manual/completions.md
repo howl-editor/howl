@@ -39,7 +39,7 @@ completion list is the same:
   matched which will give you an idea of how to utilize this for less typing.
 
 - You can navigate the current list of completions manually and choose one.
-  Pressing `down` or `ctrl_n` will move down the list, while `up` and `ctrl_p`
+  Pressing `down` or `action_n` will move down the list, while `up` and `action_p`
   will move up the list. `page_up` will move one page up, and `page_down` will
   move one page down.
 
@@ -74,7 +74,7 @@ control completions:
 Controls the mode of how completions are started. This is of interest
 particularly if you want turn off automatically shown completion lists. If you
 turn it off, you will have to explicitly request completions using the
-`editor-complete` command for editors (bound to `ctrl_space` by default) or by
+`editor-complete` command for editors (bound to `action_space` by default) or by
 pressing `tab` in the command line.
 
 - **completion_max_shown**:

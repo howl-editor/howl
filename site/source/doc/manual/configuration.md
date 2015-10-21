@@ -164,19 +164,19 @@ customizations from within your init file (init.lua).
 howl.bindings.push {
   -- editor specific bindings
   editor = {
-    -- bind ctrl_k to a named command
-    ctrl_k = 'editor-cut-to-end-of-line',
+    -- bind action_k to a named command
+    action_k = 'editor-cut-to-end-of-line',
 
-    -- bind ctrl_shift_x to a closure
-    ctrl_shift_x = function(editor)
+    -- bind action_shift_x to a closure
+    action_shift_x = function(editor)
       -- replace the active chunk with a reversed bracked enclosed version
       editor.active_chunk.text = "<" .. editor.active_chunk.text.ureverse .. ">"
     end
   },
 
   -- Bind the Emacs find-file binding (C-x C-f) to the open command
-  ctrl_x = {
-    ctrl_f = 'open'
+  action_x = {
+    action_f = 'open'
   }
 }
 ```
