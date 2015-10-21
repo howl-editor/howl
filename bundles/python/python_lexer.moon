@@ -79,7 +79,27 @@ howl.aux.lpeg_lexer ->
   raw_string = c('special', S'rR') * basic_string
   encoded_string = c('special', S'bBuU') * any { raw_string, basic_string }
 
-  string = any { basic_string, raw_string, encoded_string }
+  f_prefix = c 'special', any {
+    S'rR' * S'fF'
+    S'fF' * S'rR'
+    S'fF'
+  }
+
+  format_conv = c('operator', P'!') * c('special', S'sra')
+  format_part = any {
+    c 'number', integer
+    c('operator', P'{') * ((V'all' + space + P 1) - P'}')^0 * c('operator', P'}')
+    c 'special', (P 1) - S'{}'
+  }
+  format_spec = c('operator', ':') * format_part^0
+
+  f_string = sequence {
+    f_prefix
+    c 'string', Cg any({ "'''", '"""', "'", '"' }), 'quote'
+    V'f_string_chunk'
+  }
+
+  string = any { basic_string, raw_string, encoded_string, f_string }
 
   decorator = c 'preproc', P'@' * name * ('.' * name)^0
 
@@ -99,5 +119,18 @@ howl.aux.lpeg_lexer ->
       dunder_identifier,
       identifier,
       decorator
+    }
+
+    f_string_interpolation: sequence {
+      ((V'all' + space + P 1) - (S'}:' + format_conv))^0
+      format_conv^-1
+      format_spec^-1
+      c 'operator', '}'
+      V'f_string_chunk'
+    }
+
+    f_string_chunk: sequence {
+      c 'string', scan_to match_back'quote' + #P'{', P'\\'
+      V'f_string_interpolation'^0
     }
   }
