@@ -1,10 +1,32 @@
 {
+  ------------------------------------------------------------------------------
+  -- Default bindings
+  ------------------------------------------------------------------------------
+
   editor: {
+    left:             'cursor-left'
+    right:            'cursor-right'
+    up:               'cursor-up'
+    down:             'cursor-down'
+    shift_left:       'cursor-left-extend'
+    shift_right:      'cursor-right-extend'
+    shift_up:         'cursor-up-extend'
+    shift_down:       'cursor-down-extend'
+
     tab:              'editor-smart-tab'
     shift_tab:        'editor-smart-back-tab'
     backspace:        'editor-delete-back'
     delete:           'editor-delete-forward'
     return:           'editor-newline'
+
+    page_up:          'cursor-page-up'
+    shift_page_up:    'cursor-page-up-extend'
+    page_down:        'cursor-page-down'
+    shift_page_down:  'cursor-page-down-extend'
+    end:              'cursor-line-end'
+    shift_end:        'cursor-line-end-extend'
+    home:             'cursor-home'
+    shift_home:       'cursor-home-extend'
 
     ctrl_b:           'switch-buffer'
     ctrl_c:           'editor-copy'
@@ -39,15 +61,6 @@
     alt_s:            'buffer-structure'
     alt_q:            'editor-reflow-paragraph'
 
-    left:             'cursor-left'
-    right:            'cursor-right'
-    up:               'cursor-up'
-    down:             'cursor-down'
-    shift_left:       'cursor-left-extend'
-    shift_right:      'cursor-right-extend'
-    shift_up:         'cursor-up-extend'
-    shift_down:       'cursor-down-extend'
-
     ctrl_left:        'cursor-word-left'
     ctrl_right:       'cursor-word-right'
     ctrl_up:          'editor-scroll-up'
@@ -61,14 +74,6 @@
     ctrl_shift_d:     'vc-diff-file'
     ctrl_alt_d:       'vc-diff'
 
-    page_up:          'cursor-page-up'
-    shift_page_up:    'cursor-page-up-extend'
-    page_down:        'cursor-page-down'
-    shift_page_down:  'cursor-page-down-extend'
-    end:              'cursor-line-end'
-    shift_end:        'cursor-line-end-extend'
-    home:             'cursor-home'
-    shift_home:       'cursor-home-extend'
   }
 
   ctrl_o:           'open'
@@ -88,4 +93,68 @@
   shift_alt_right: 'view-right-or-create'
   shift_alt_up:    'view-up-or-create'
   shift_alt_down:  'view-down-or-create'
+
+  ------------------------------------------------------------------------------
+  -- OS specific bindings
+  ------------------------------------------------------------------------------
+
+  for_os:
+
+    osx:
+      editor: {
+        meta_shift_a:     'editor-select-all'
+        meta_b:           'switch-buffer'
+        meta_c:           'editor-copy'
+        meta_d:           'editor-duplicate-current'
+        meta_f:           'buffer-search-forward'
+        meta_r:           'buffer-search-backward'
+        meta_comma:       'buffer-search-word-backward'
+        meta_period:      'buffer-search-word-forward'
+        meta_g:           'buffer-grep'
+        meta_i:           'editor-indent'
+        meta_k:           'editor-delete-to-end-of-line'
+        meta_shift_i:     'editor-indent-all'
+        meta_h:           'buffer-replace'
+        meta_n:           'new-buffer'
+        meta_s:           'save'
+        meta_shift_s:     'save-as'
+        meta_v:           'editor-paste'
+        meta_shift_v:     'editor-paste..'
+        meta_x:           'editor-cut'
+        meta_z:           'editor-undo'
+        meta_Z:           'editor-redo'
+        meta_space:       'editor-complete'
+        meta_slash:       'editor-toggle-comment'
+        meta_insert:      'editor-copy'
+
+        ctrl_tab:         'view-right-wraparound'
+        ctrl_shift_tab:   'view-left-wraparound'
+        ctrl_meta_d:      'show-doc-at-cursor'
+
+        ctrl_shift_s:     'buffer-structure'
+        ctrl_q:           'editor-reflow-paragraph'
+
+        meta_up:          'editor-scroll-up'
+        meta_down:        'editor-scroll-down'
+
+        -- needs option key
+        -- meta_shift_left:  'cursor-word-left-extend'
+        -- meta_shift_right: 'cursor-word-right-extend'
+
+        ctrl_shift_d:     'vc-diff-file'
+        ctrl_meta_d:      'vc-diff'
+      }
+
+      meta_o:           'open'
+      meta_p:           'project-open'
+      meta_q:           'quit'
+      meta_shift_r:     'project-exec'
+      meta_shift_b:     'project-build'
+
+      meta_w:           'view-close'
+      'meta_-':         'zoom-out'
+      'meta_+':         'zoom-in'
+
+      ctrl_meta_f:      'window-toggle-fullscreen'
+      ctrl_meta_x:      'run'
 }
