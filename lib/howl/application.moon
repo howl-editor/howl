@@ -359,6 +359,7 @@ class Application extends PropertyObject
     require 'howl.commands.ui_commands'
     require 'howl.commands.edit_commands'
     require 'howl.editing'
+    require 'howl.ui.icons.font_awesome'
 
   _load_application_icon: =>
     dir = @root_dir

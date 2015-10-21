@@ -76,6 +76,7 @@ install: all
 	@cp -p howl $(DESTDIR)$(PREFIX)/bin/
 	@cp -p ../bin/howl-spec $(DESTDIR)$(PREFIX)/bin/
 	@cp -rp ../bundles $(DESTDIR)$(PREFIX)/share/howl
+	@cp -rp ../fonts $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../lib $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../spec/support $(DESTDIR)$(PREFIX)/share/howl/spec
 	@cp -rp ../share/* $(DESTDIR)$(PREFIX)/share/

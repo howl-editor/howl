@@ -116,6 +116,8 @@ local function main(args)
   set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
   require 'howl.moonscript_support'
   table.insert(package.loaders, 2, bytecode_loader())
+  require 'howl.cdefs.fontconfig'
+  ffi.C.FcConfigAppFontAddDir(nil, table.concat({app_root, 'fonts'}, path_separator))
   require 'ljglibs.cdefs.glib'
 
   howl = auto_module('howl')
