@@ -219,12 +219,17 @@ export keystrokes_for = (handler, source = nil) ->
 
   keystrokes
 
-export action_for = (translation, source='editor') ->
+export action_for = (tr, source='editor') ->
+  os = sys.info.os
+  empty = {}
+
   for i = #keymaps, 1, -1
     km = keymaps[i]
     continue unless km
-    source_km = km[source] or {}
-    handler = source_km[translation] or km[translation]
+    source_km = km[source] or empty
+    os_map = km.for_os and km.for_os[os] or empty
+    os_source_map = os_map[source] or empty
+    handler = os_source_map[tr] or os_map[tr] or source_km[tr] or km[tr]
     return handler if handler
   nil
 

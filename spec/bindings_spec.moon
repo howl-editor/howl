@@ -369,5 +369,22 @@ describe 'bindings', ->
       bindings.push ctrl_x: 'my-new-command'
       assert.equals 'my-new-command', bindings.action_for 'ctrl_x'
 
+    it 'prefers source specific bindings over generic ones', ->
+      bindings.push {
+        ctrl_x: 'my-old-command'
+        my_source:
+          ctrl_x: 'my-source-command'
+      }
+      assert.equals 'my-source-command', bindings.action_for('ctrl_x', 'my_source')
+
+    it 'prefers OS specific bindings over generic ones', ->
+      bindings.push {
+        ctrl_x: 'my-old-command'
+        for_os:
+          [sys.info.os]:
+            ctrl_x: 'my-os-command'
+      }
+      assert.equals 'my-os-command', bindings.action_for 'ctrl_x'
+
     it 'returns nil if no command was found', ->
       assert.is_nil bindings.action_for 'ctrl_x'
