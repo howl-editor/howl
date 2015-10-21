@@ -70,6 +70,11 @@ double "quotes" ok too!
 
 adjacent_strings_auto_concat = "hello " "world"
 same_as_above = "hello""world"
+raw_string = r'abc\d'
+
+simple_f_string = f'abc{de}fgh{ij}klm'
+conv_f_string = f'ab{cd!s}ef'
+complicated_triple_f_string = f'''abc{a+'!':a=+#0{abc},.{prec}b}def'''
 
 if False:
   # Dictionaries
