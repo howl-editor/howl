@@ -83,11 +83,48 @@ howl.aux.lpeg_lexer ->
 
   decorator = c 'preproc', P'@' * name * ('.' * name)^0
 
+  f_prefix = c 'special', any {
+    S'rR' * S'fF'
+    S'fF' * S'rR'
+    S'fF'
+  }
+
+  format_conv = c('operator', P'!') * c('special', S'sra')
+  format_number = any {
+    c 'number', integer
+    c('operator', P'{') * (-P'}' * V'all') * c('operator', P'}')
+  }
+  format_spec = c('operator', ':') * sequence {
+    (c('string', P 1)^-1 * c 'operator', S'<>=^')^-1 -- fill and align
+    (P' ' + c 'operator', S'+-')^-1 -- sign
+    c('operator', P'#')^-1 -- #
+    c('number', P'0')^-1 -- 0
+    format_number^-1 -- width
+    c('operator', P',')^-1 -- ,
+    (c('operator', P'.') * format_number)^-1 -- .precision
+    c('special', S'bcdeEfFgGnosxX%')^-1 -- type
+  }
+
+  gen_string_interpolation = (type) ->
+    sequence {
+      (-(P'}' + format_conv + format_spec) * (V'all' + 1))^1
+      format_conv^-1
+      format_spec^-1
+      c 'operator', '}'
+      V"#{type}q_string_chunk"
+    }
+
+  gen_string_chunk = (quote, type) ->
+    sequence {
+      c 'string', scan_to(P(quote) + #P'{', P'\\')
+      V"#{type}q_interpolation"^0
+    }
+
   P {
     'all'
 
     all: any {
-      string,
+      V'string',
       comment,
       number,
       operator,
@@ -99,5 +136,25 @@ howl.aux.lpeg_lexer ->
       dunder_identifier,
       identifier,
       decorator
+    }
+
+    tsq_interpolation: gen_string_interpolation 'ts'
+    tdq_interpolation: gen_string_interpolation 'td'
+    sq_interpolation: gen_string_interpolation 's'
+    dq_interpolation: gen_string_interpolation 'd'
+    tsq_string_chunk: gen_string_chunk "'''", 'ts'
+    tdq_string_chunk: gen_string_chunk '"""', 'td'
+    sq_string_chunk: gen_string_chunk "'", 's'
+    dq_string_chunk: gen_string_chunk '"', 'd'
+    f_string: any {
+      capture('string', "'''") * V'tsq_string_chunk'
+      capture('string', '"""') * V'tdq_string_chunk'
+      capture('string', "'") * V'sq_string_chunk'
+      capture('string', '"') * V'dq_string_chunk'
+    }
+
+    string: any {
+      f_prefix * V'f_string'
+      string
     }
   }
