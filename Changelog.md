@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added custom font support and Font Awesome icons for file listings.
+
 - Added two new configuration variables for line wrapping:
   * line_wrapping_navigation
   * line_wrapping_symbol
