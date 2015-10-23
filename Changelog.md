@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added subtree view to file listings.
+
 - Added custom font support and Font Awesome icons for file listings.
 
 - Added two new configuration variables for line wrapping:

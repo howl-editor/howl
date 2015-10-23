@@ -40,7 +40,13 @@ should_hide = (file) ->
 display_name = (file, is_directory, base_directory) ->
   return ".#{separator}" if file == base_directory
   rel_path = file\relative_to_parent(base_directory)
-  return is_directory and rel_path .. separator or rel_path
+  if is_directory
+    return markup.howl "<directory>#{rel_path .. separator}</>"
+  else
+    return markup.howl "<filename>#{rel_path}</>"
+
+display_icon = (is_directory) ->
+  is_directory and icon.get('directory', 'directory') or icon.get('file', 'filename')
 
 get_dir_and_leftover = (path) ->
   if not path or path.is_blank or not File.is_absolute path
@@ -82,23 +88,25 @@ file_matcher = (files, directory, allow_new=false) ->
   children = {}
   hidden_by_config = {}
 
-  for c in *files
-    is_directory = c.is_directory
-    name = display_name(c, is_directory, directory)
+  for file in *files
+    is_directory = file.is_directory
+    name = display_name(file, is_directory, directory)
 
-    if should_hide c
-      hidden_by_config[c.basename] = {
+    if should_hide file
+      hidden_by_config[file.basename] = {
         markup.howl("<comment>#{name}</>"),
         markup.howl("<comment>[hidden]</>"),
-        :name
+        :file
+        name: tostring(name)
         :is_directory,
       }
     else
       append children, {
-        is_directory and markup.howl("<directory>#{name}</>") or name
-        :name
-        :is_directory
-        is_hidden: c.is_hidden
+        name
+        :file
+        :is_directory,
+        name: tostring(name)
+        is_hidden: file.is_hidden
       }
 
   table.sort children, (f1, f2) ->
@@ -124,7 +132,7 @@ file_matcher = (files, directory, allow_new=false) ->
     if config.file_icons
       for item in *matches
         unless item.has_icon
-          append item, 1, item.is_directory and icon.get('directory', 'directory') or icon.get('file', 'filename')
+          append item, 1, display_icon(item.is_directory)
           item.has_icon = true
     if not text or text.is_blank or not allow_new
       return matches
@@ -136,6 +144,7 @@ file_matcher = (files, directory, allow_new=false) ->
     append matches, {
       text,
       markup.howl '<keyword>[New]</>'
+      file: directory / text
       name: text
       is_new: true
     }
@@ -144,17 +153,31 @@ file_matcher = (files, directory, allow_new=false) ->
 
     return matches
 
-subtree_matcher = (root, files=nil) ->
-  unless files
-    files = root\find sort: true
-
+subtree_matcher = (files, directory, opts={}) ->
   paths = {}
 
   for file in *files
+    continue if should_hide file
     is_directory = file.is_directory
-    if is_directory continue
-    append paths, {display_name(file, is_directory, root), :file}
+    continue if opts.exclude_directories and is_directory
+    name = display_name(file, is_directory, directory)
+    if config.file_icons
+      append paths, {
+        display_icon(is_directory)
+        name
+        :file
+        name: tostring(name)
+      }
+    else
+      append paths, {
+        name
+        :file
+        name: tostring(name)
+      }
 
-  return Matcher paths, reverse: true
+  return Matcher paths
 
-return { :file_matcher, :get_cwd, :get_dir_and_leftover, :subtree_matcher }
+subtree_reader = (directory, opts={}) ->
+  directory\find sort: true, filter: (file) -> should_hide(file) or opts.filter and opts.filter(file)
+
+return { :file_matcher, :get_cwd, :get_dir_and_leftover, :subtree_matcher, :subtree_reader }
