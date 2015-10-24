@@ -274,4 +274,6 @@ ffi.cdef [[
   gboolean g_file_test (const gchar *filename,
                         GFileTest test);
 
+  gint64 g_get_monotonic_time (void);
+
 ]]

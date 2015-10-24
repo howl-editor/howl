@@ -62,8 +62,13 @@ class FileSelector
     @directory = directory
     local matcher
     if @show_subtree
-      matcher = subtree_matcher self.subtree_reader(directory), directory
-      @command_line.title = (@opts.title or 'File') .. ' (subtree)'
+      items, timed_out = self.subtree_reader(directory, timeout: 1)
+      matcher = subtree_matcher items, directory
+      if timed_out
+        @command_line.title = (@opts.title or 'File') .. ' (subtree, truncated)'
+        log.warn 'Too many files in subtree - truncated.'
+      else
+        @command_line.title = (@opts.title or 'File') .. ' (subtree)'
     else
       matcher = file_matcher self.directory_reader(directory), directory, @opts.allow_new
       @command_line.title = @opts.title or 'File'
@@ -150,10 +155,12 @@ interact.register
         append dirs, 1, directory
         return dirs
 
-      .subtree_reader = (directory) ->
-        dirs = subtree_reader directory, filter: (file) -> not file.is_directory
+      .subtree_reader = (directory, opts={}) ->
+        opts = moon.copy opts
+        opts.filter = (file) -> not file.is_directory
+        dirs, timed_out = subtree_reader directory, filter: (file) -> not file.is_directory
         append dirs, 1, directory
-        return dirs
+        return dirs, timed_out
 
       .title or= 'Directory'
 

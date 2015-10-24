@@ -178,6 +178,9 @@ subtree_matcher = (files, directory, opts={}) ->
   return Matcher paths
 
 subtree_reader = (directory, opts={}) ->
-  directory\find sort: true, filter: (file) -> should_hide(file) or opts.filter and opts.filter(file)
+  directory\find
+    sort: true
+    timeout: opts.timeout
+    filter: (file) -> should_hide(file) or opts.filter and opts.filter(file)
 
 return { :file_matcher, :get_cwd, :get_dir_and_leftover, :subtree_matcher, :subtree_reader }
