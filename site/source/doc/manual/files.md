@@ -52,6 +52,15 @@ itself:
 
 ![Project open](/images/doc/project-open.png)
 
+## Opening a file within a subtree
+
+When viewing the file listing for a directory within the `open` command, you can
+press `ctrl_s` to instantly switch to a 'subtree' view. This shows all files
+within the directory tree rooted at the current directory allowing you to
+quickly find a file within that subtree. This is somewhat similar to
+`project-open`, however it can be activated in any directory. To switch back to
+the regular, single level view, press `ctrl_s` again.
+
 ## Saving buffers
 
 Invoke the `save` command to save the current buffer to a file. If the buffer
