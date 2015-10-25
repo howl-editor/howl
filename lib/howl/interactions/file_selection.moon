@@ -62,7 +62,7 @@ class FileSelector
     @directory = directory
     local matcher
     if @show_subtree
-      items, timed_out = self.subtree_reader(directory, timeout: 1)
+      items, timed_out = self.subtree_reader(directory, timeout: 3)
       matcher = subtree_matcher items, directory
       if timed_out
         @command_line.title = (@opts.title or 'File') .. ' (subtree, truncated)'
