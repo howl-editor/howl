@@ -74,6 +74,9 @@ setup_signals = (name, def, gtype, instance_cast) ->
       ret_type = info.return_type == types.base_types.gboolean and 'bool' or 'void'
       cb_type = "#{ret_type}#{info.n_params + 2}"
       def[name] = (instance, handler, ...) ->
+        unless handler
+          error "`nil` handler passed as handler for '#{name}'"
+
         casting_handler = (...) ->
           args = pack ...
           args[1] = instance_cast args[1]
