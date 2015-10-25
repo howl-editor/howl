@@ -62,19 +62,40 @@ describe 'callbacks', ->
       assert.is_nil holder[1]
 
   describe 'unref_handle(handle)', ->
+    collect = ->
+      -- twice to allow for multiple levels of weak refs to be collected
+      collectgarbage!
+      collectgarbage!
+
     it 'un-anchors a handle, allowing the handler to be garbage collected', ->
       holder = setmetatable { handler: -> }, __mode: 'v'
       handle = callbacks.register holder.handler, 'test handler'
       callbacks.unref_handle handle
-      collectgarbage!
+      collect!
       assert.is_nil holder.handler
 
-    it 'still dispatches callbacks as long as the handler is alive', ->
+    it 'ties the life any additional arguments to the handler', ->
+      holder = { handler: -> }
+      args_holder = setmetatable { {} }, __mode: 'v'
+      handle = callbacks.register holder.handler, 'test handler', args_holder[1]
+      callbacks.unref_handle handle
+      collect!
+      assert.is_not_nil holder.handler
+      assert.is_not_nil args_holder[1]
+
+      setmetatable holder, __mode: 'v'
+
+      collect!
+
+      assert.is_nil holder.handler
+      assert.is_nil args_holder[1]
+
+    it 'still dispatches callbacks correctly as long as the handler is alive', ->
       handler = spy.new ->
-      handle = callbacks.register handler, 'test handler'
+      handle = callbacks.register handler, 'test handler', 'myarg'
       callbacks.unref_handle handle
       dispatch handle, 123
-      assert.spy(handler).was_called!
+      assert.spy(handler).was_called_with callbacks.cast_arg(123), 'myarg'
 
     it 'handles incoming callbacks if the handler is garbage collected', ->
       holder = setmetatable { handler: -> }, __mode: 'v'
