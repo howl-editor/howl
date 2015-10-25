@@ -178,7 +178,7 @@ class File extends PropertyObject
     if options.timeout
       deadline = glib.get_monotonic_time! + (1000 * 1000 * options.timeout)
 
-    while dir and not timed_out
+    while dir
       children = dir.children
       if options.sort then table.sort children, (a,b) -> a.basename < b.basename
 
