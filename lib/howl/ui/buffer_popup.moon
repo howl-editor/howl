@@ -6,6 +6,7 @@ aullar = require 'aullar'
 import View from aullar
 import destructor from howl.aux
 import Popup, style, highlight, theme from howl.ui
+{:ceil, :max} = math
 
 class BufferPopup extends Popup
 
@@ -19,13 +20,7 @@ class BufferPopup extends Popup
       .view_show_cursor = false
 
     @bin = Gtk.EventBox {
-      Gtk.Alignment {
-        top_padding: 3,
-        left_padding: 3,
-        right_padding: 3,
-        bottom_padding: 3,
-        @view\to_gobject!
-      }
+      @view\to_gobject!
     }
 
     super @bin, @_get_dimensions!
@@ -49,16 +44,15 @@ class BufferPopup extends Popup
   }
 
   _get_dimensions: =>
-    dimensions = @view\text_dimensions 'M'
-    margin = @view.margin * 2
-    height = (dimensions.height * #@buffer.lines) + 6 + margin
+    nr_lines = #@buffer.lines
+    if nr_lines > 1 and @buffer.lines[nr_lines].is_blank
+      nr_lines -= 1
 
-    if @buffer.lines[#@buffer.lines].is_blank
-      height -= dimensions.height
+    width, height = @view\block_dimensions 1, nr_lines
+    margin = max @view.margin, 3
+    width += margin * 2
+    height += margin * 2
 
-    max_line = 0
-    max_line = math.max(#line, max_line) for line in *@buffer.lines
-    width = (max_line * dimensions.width) + (dimensions.width / 2) + 6
-    return :width, :height
+    return width: ceil(width), height: ceil(height)
 
 return BufferPopup

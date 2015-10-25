@@ -306,7 +306,7 @@ View = {
       for i = @first_visible_line, @last_visible_line
         max_width = max max_width, @display_lines[i].width
 
-      max_width += @width_of_space
+      max_width += @width_of_space if @config.view_show_cursor
 
       if max_width <= @edit_area_width and @base_x == 0
         @horizontal_scrollbar\hide!
