@@ -404,8 +404,9 @@ Cursor = {
     return if @_blink_cb_handle
     jit.off true, true
 
-    @_blink_cb_handle = callbacks.register self._blink, "cursor-blink", @
+    @_blink_cb_handle = callbacks.register self\_blink, "cursor-blink"
     @blink_cb_id = C.g_timeout_add_full C.G_PRIORITY_LOW, @blink_interval, timer_callback, cast_arg(@_blink_cb_handle.id), nil
+    callbacks.unref_handle @_blink_cb_handle
 
   _disable_blink: =>
     if @_blink_cb_handle
