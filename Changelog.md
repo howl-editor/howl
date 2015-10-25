@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added recursive listing feature to file interactions. Pressing `ctrl_s` in the
+`open` command now toggles between recursive and regular list of files.
+
 - Added custom font support and Font Awesome icons for file listings.
 
 - Added two new configuration variables for line wrapping:

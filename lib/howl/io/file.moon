@@ -173,6 +173,11 @@ class File extends PropertyObject
     files = {}
     directories = {}
     dir = self
+
+    local deadline
+    if options.timeout
+      deadline = glib.get_monotonic_time! + (1000 * 1000 * options.timeout)
+
     while dir
       children = dir.children
       if options.sort then table.sort children, (a,b) -> a.basename < b.basename
@@ -187,7 +192,10 @@ class File extends PropertyObject
       dir = table.remove directories
       append(files, dir) if dir
 
-    files
+      if deadline and glib.get_monotonic_time! >= deadline
+        return files, true
+
+    files, false
 
   tostring: => tostring @path or @uri
 

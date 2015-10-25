@@ -108,4 +108,7 @@ core.auto_loading 'glib', {
 
     arr[#t] = nil
     arr
+
+  get_monotonic_time: -> tonumber C.g_get_monotonic_time!
+
 }
