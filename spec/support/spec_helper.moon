@@ -125,3 +125,10 @@ export close_all_buffers = ->
   for b in *howl.app.buffers
     howl.app\close_buffer b, true
 
+export collect_memory = ->
+  mem = collectgarbage('count')
+  while true
+    collectgarbage!
+    used = collectgarbage('count')
+    break if used >= mem
+    mem = used

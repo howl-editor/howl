@@ -907,3 +907,25 @@ describe 'Buffer', ->
         end_line: 2,
         invalidated: false
       }
+
+  context 'resource management', ->
+    it 'memory is released properly', ->
+      -- references should be gone
+      b = Buffer 'foobar'
+      l = on_styled: spy.new -> nil
+      b\add_listener l
+      buffers = setmetatable { b }, __mode: 'v'
+      b = nil
+      collect_memory!
+      assert.is_nil buffers[1]
+
+      -- and memory should be back to normal
+      before = collectgarbage('count')
+      for i = 1, 50
+        Buffer 'collect me!'
+
+      collect_memory!
+      after = collectgarbage('count')
+      diff = after - before
+      print "diff: #{diff}"
+      assert.is_true (after - before) < 2

@@ -195,3 +195,23 @@ describe 'View', ->
       assert.equals 2, cursor.pos
       buffer\redo!
       assert.equals 4, cursor.pos
+
+  context 'resource management', ->
+
+    it 'memory is released properly', ->
+      -- views themselves should be collected
+      v = View!
+      views = setmetatable { v }, __mode: 'v'
+      v = nil
+      collect_memory!
+      assert.is_nil views[1]
+
+      -- and memory should be back to "normalish" levels
+      before = collectgarbage('count')
+      for i = 1, 30
+        View!
+
+      collect_memory!
+      after = collectgarbage('count')
+      assert.is_true (after - before) < 100
+
