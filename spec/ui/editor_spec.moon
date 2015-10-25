@@ -647,7 +647,7 @@ describe 'Editor', ->
         assert.equals 'hello\nhello\nwörld', buffer.text
 
   context 'resource management', ->
-    pending 'editors are collected as they should', ->
+    it 'editors are collected as they should', ->
       e = Editor Buffer {}
       editors = setmetatable {}, __mode: 'v'
       append editors, e
