@@ -909,8 +909,8 @@ describe 'Buffer', ->
       }
 
   context 'resource management', ->
-    it 'memory is released properly', ->
-      -- references should be gone
+
+    it 'buffers are collected properly', ->
       b = Buffer 'foobar'
       l = on_styled: spy.new -> nil
       b\add_listener l

@@ -654,3 +654,19 @@ describe 'Editor', ->
       e = nil
       collectgarbage!
       assert.is_nil editors[1]
+
+    it 'releases resources after buffer switching', ->
+      b1 = Buffer {}
+      b2 = Buffer {}
+      e = Editor b1
+      buffers = setmetatable { b1, b2 }, __mode: 'v'
+      editors = setmetatable { e }, __mode: 'v'
+      e.buffer = b2
+      e.buffer = b1
+      e = nil
+      b1 = nil
+      b2 = nil
+      collectgarbage!
+      assert.is_nil editors[1]
+      assert.is_nil buffers[1]
+      assert.is_nil buffers[2]
