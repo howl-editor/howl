@@ -65,10 +65,10 @@ class FileSelector
       items, timed_out = self.subtree_reader(directory, timeout: 3)
       matcher = subtree_matcher items, directory
       if timed_out
-        @command_line.title = (@opts.title or 'File') .. ' (subtree, truncated)'
-        log.warn 'Too many files in subtree - truncated.'
+        @command_line.title = (@opts.title or 'File') .. ' (recursive, truncated)'
+        log.warn 'Too many files in recursive listing - truncated.'
       else
-        @command_line.title = (@opts.title or 'File') .. ' (subtree)'
+        @command_line.title = (@opts.title or 'File') .. ' (recursive)'
     else
       matcher = file_matcher self.directory_reader(directory), directory, @opts.allow_new
       @command_line.title = @opts.title or 'File'
