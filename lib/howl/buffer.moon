@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import BufferContext, BufferLines, BufferMarkers, Chunk, config, signal from howl
+import BufferContext, BufferLines, BufferMarkers, Chunk, Project, config, signal from howl
 import File from howl.io
 import style from howl.ui
 import PropertyObject from howl.aux.moon
@@ -14,22 +14,46 @@ ffi = require 'ffi'
 append = table.insert
 min = math.min
 
-buffer_titles = setmetatable {}, __mode: 'v'
-title_counters = {}
+file_references = {}
 
-file_title = (file) ->
-  title = file.basename
-  while buffer_titles[title]
-    file = file.parent
-    return title if not file
-    title = file.basename .. File.separator .. title
+title_generators = {
+  (file) -> file.basename
+  (file) ->
+    project = Project.for_file file
+    if project
+      return "#{file.basename} [#{project.root.basename}]"
+  (file) ->
+    project = Project.for_file file
+    name = "#{file.parent.basename}/#{file.basename}"
+    if project
+      return "#{name} [#{project.root.basename}]"
+    return name
+}
 
-  title
+adjust_file_titles = ->
+  pending = {}
+  titles = {}
+  for _, fileref in pairs file_references
+    append pending, fileref
 
-title_counter = (title) ->
-  title_counters[title] = 1 if not title_counters[title]
-  title_counters[title] += 1
-  title_counters[title]
+  for get_title in *title_generators
+    return if #pending == 0
+
+    duplicates = {}
+    for fileref in *pending
+      title = get_title fileref.file
+      fileref.title = title if title
+      if titles[title] or not title
+        duplicates[fileref.title] = true
+      titles[title] = true if title
+
+    still_pending = {}
+    for duplicate_title, _ in pairs duplicates
+      for fileref in *pending
+        if fileref.title == duplicate_title
+          append still_pending, fileref
+
+    pending = still_pending
 
 class Buffer extends PropertyObject
   new: (mode = {}) =>
@@ -82,12 +106,12 @@ class Buffer extends PropertyObject
       signal.emit 'buffer-mode-set', buffer: self, :mode, :old_mode
 
   @property title:
-    get: => @_title or 'Untitled'
+    get: =>
+      return @_title if @_title
+      return file_references[@_file.path].title if @_file
+      return 'Untitled'
     set: (title) =>
-      buffer_titles[@_title] = nil if @_title
-      title ..= '<' .. title_counter(title) .. '>' if buffer_titles[title]
       @_title = title
-      buffer_titles[title] = self
       signal.emit 'buffer-title-set', buffer: self
 
   @property text:
@@ -298,9 +322,18 @@ class Buffer extends PropertyObject
       error "Attempt to modify read-only buffer '#{@title}'", 2
 
   _associate_with_file: (file) =>
-    buffer_titles[@_title] = nil if @_title
+    old_file = @_file
     @_file = file
-    @title = file_title file
+
+    if old_file
+      file_references[old_file.path].refcount -= 1
+      file_references[old_file.path] = nil if file_references[old_file.path].refcount == 0
+    if file_references[file.path]
+      file_references[file.path].refcount += 1
+    else
+      file_references[file.path] = {title: file.basename, refcount: 1, :file}
+
+    adjust_file_titles!
 
   _on_text_inserted: (_, _, args) =>
     @_on_buffer_modification 'text-inserted', args

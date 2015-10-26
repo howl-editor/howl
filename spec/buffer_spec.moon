@@ -1,4 +1,4 @@
-import Buffer, config, signal from howl
+import Buffer, config, Project, signal from howl
 import File from howl.io
 import with_tmpfile from File
 append = table.insert
@@ -130,7 +130,7 @@ describe 'Buffer', ->
       assert.is_false Buffer!.modified_on_disk
 
     it "is true if the file's etag is changed after a load or save", ->
-      file = contents: 'foo', etag: '1', basename: 'changeable', exists: true
+      file = contents: 'foo', etag: '1', basename: 'changeable', exists: true, path: '/path/to/foo'
       b = Buffer!
       b.file = file
       file.etag = '2'
@@ -532,9 +532,9 @@ describe 'Buffer', ->
       b\remove_view_ref view
       assert.same b.views, {}
 
-  describe 'ensuring that buffer titles are globally unique', ->
+  describe 'ensuring that buffer titles are somewhat unique', ->
     context 'when setting a file for a buffer', ->
-      it 'prepends to the title as many parent directories as needed for uniqueness', ->
+      it 'prepends to the title at most one parent directory as needed for uniqueness', ->
         b1 = Buffer {}
         b2 = Buffer {}
         b3 = Buffer {}
@@ -551,12 +551,8 @@ describe 'Buffer', ->
           b2.file = f2
           assert.equal b2.title, 'sub2' .. File.separator .. 'file.foo'
 
-          sub_sub = sub1\join('sub2')
-          sub_sub\mkdir!
-          f3 = sub_sub\join('file.foo')
-          f3\touch!
-          b3.file = f3
-          assert.equal b3.title, 'sub1' .. File.separator .. b2.title
+      it 'uses the project name suffix as needed', ->
+
 
       it 'does not unneccesarily transform the title when setting the same file for a buffer', ->
         b = Buffer!
@@ -565,14 +561,6 @@ describe 'Buffer', ->
           title = b.title
           b.file = file
           assert.equal title, b.title
-
-    context 'when setting the title explicitly', ->
-      it 'appends a counter number in the format <number> to the title', ->
-        b1 = Buffer {}
-        b2 = Buffer {}
-        b1.title = 'Title'
-        b2.title = 'Title'
-        assert.equal b2.title, 'Title<2>'
 
   describe 'signals', ->
     it 'buffer-saved is fired whenever a buffer is saved', ->
