@@ -99,7 +99,7 @@ class Application extends PropertyObject
 
   add_buffer: (buffer, show = true) =>
     append @_buffers, buffer
-    if show
+    if show and @editor
       @editor.buffer = buffer
       @editor
 
@@ -249,8 +249,11 @@ class Application extends PropertyObject
       window = @new_window!
       @_set_initial_status window
 
-    if #files > 0
-      @open_file(File(path)) for path in *files
+    for path in *files
+      file = File path
+      buffer = @new_buffer mode.for_file file
+      buffer.file = file
+      signal.emit 'file-opened', :file, :buffer
 
     unless @_loaded
       @_restore_session window, #files == 0

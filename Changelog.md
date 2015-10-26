@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Changed how Howl loads files specified on the command line. Previously files
+were loaded in different views, and now they're all loaded with one file being
+shown (issue #123).
+
 - Added recursive listing feature to file interactions. Pressing `ctrl_s` in the
 `open` command now toggles between recursive and regular list of files.
 
