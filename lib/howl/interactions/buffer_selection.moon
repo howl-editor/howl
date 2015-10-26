@@ -5,7 +5,7 @@ import app, interact from howl
 import Matcher from howl.util
 
 buffer_dir = (buffer) ->
-  buffer.file and tostring(buffer.file.parent) or '(none)'
+  buffer.file and tostring(buffer.file.parent.short_path) or '(none)'
 
 buffer_status = (buffer) ->
   stat = if buffer.modified then '*' else ''
