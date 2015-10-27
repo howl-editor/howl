@@ -682,5 +682,7 @@ icon_text = {
 
 for name, text in pairs icon_text
   howl.ui.icon.define 'font-awesome-'..name,
-    font: family: 'Font Awesome'
+    font:
+      family: 'Font Awesome'
+      size: 'small'
     :text
