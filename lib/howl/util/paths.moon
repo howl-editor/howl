@@ -38,7 +38,8 @@ should_hide = (file) ->
   return false
 
 display_name = (file, is_directory, base_directory) ->
-  return ".#{separator}" if file == base_directory
+  if file == base_directory
+    return markup.howl "<directory>.#{separator}</>"
   rel_path = file\relative_to_parent(base_directory)
   if is_directory
     return markup.howl "<directory>#{rel_path .. separator}</>"
