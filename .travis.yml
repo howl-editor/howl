@@ -16,7 +16,8 @@ before_install:
 install:
   - (cd src && make -j 4)
 
-script: "LUA_PATH=\"`echo $HOME/.luarocks/share/lua/*`/?.lua\" ./bin/run-all-specs"
+script:
+  "LUA_PATH=\"`echo $HOME/.luarocks/share/lua/*`/?.lua:`echo $HOME/.luarocks/share/lua/*`/?/init.lua\" ./bin/run-all-specs"
 
 notifications:
   email:
