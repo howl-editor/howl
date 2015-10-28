@@ -14,8 +14,7 @@ before_install:
   - luarocks --local --from=http://rocks.moonscript.org install busted 1.11.1-2
 
 install:
-  - cd src
-  - make -j 4
+  - (cd src && make -j 4)
 
 script: "LUA_PATH=\"`echo $HOME/.luarocks/share/lua/*`/?.lua\" ./bin/run-all-specs"
 
