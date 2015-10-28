@@ -43,7 +43,7 @@ howl.aux.lpeg_lexer ->
   }
 
   comment = c 'comment', P'#' * scan_until(eol)
-  operator = c 'operator', S'+-*/%~&^=!<>;:,.(){}[]|`'
+  operator = c 'operator', S'+-*/%~&^=<>;:,.(){}[]|`'
 
   name = (alpha + '_')^1 * (alpha + digit + P'_')^0
 
