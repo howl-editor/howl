@@ -1,18 +1,23 @@
 language: c
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - luarocks
+      - libgtk-3-dev
 
 before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
-  - sudo apt-get update
-  - sudo apt-get install luarocks
-  - sudo apt-get install libgtk-3-dev
-  - sudo luarocks --from=http://rocks.moonscript.org install luassert 1.7.6
-  - sudo luarocks --from=http://rocks.moonscript.org install busted 1.11.1-2
+  - luarocks --local --from=http://rocks.moonscript.org install luassert 1.7.6
+  - luarocks --local --from=http://rocks.moonscript.org install busted 1.11.1-2
 
 install:
-  - (cd src && make -j 4)
+  - cd src
+  - make -j 4
 
-script: "./bin/run-all-specs"
+script: "LUA_PATH=\"`echo $HOME/.luarocks/share/lua/*`/?.lua\" ./bin/run-all-specs"
 
 notifications:
   email:
