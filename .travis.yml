@@ -17,7 +17,7 @@ install:
   - (cd src && make -j 4)
 
 script:
-  "LUA_PATH=\"`echo $HOME/.luarocks/share/lua/*`/?.lua;`echo $HOME/.luarocks/share/lua/*`/?/init.lua\" LUA_CPATH=\"`echo $HOME/.luarocks/lib/lua/*`/?.so\" ./bin/run-all-specs"
+  "ls -R $HOME/.luarocks; LUA_PATH=\"`echo $HOME/.luarocks/share/lua/*`/?.lua;`echo $HOME/.luarocks/share/lua/*`/?/init.lua\" LUA_CPATH=\"`echo $HOME/.luarocks/lib/lua/*`/?.so\" ./bin/run-all-specs"
 
 notifications:
   email:
