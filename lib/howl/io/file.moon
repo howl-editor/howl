@@ -179,7 +179,15 @@ class File extends PropertyObject
       deadline = glib.get_monotonic_time! + (1000 * 1000 * options.timeout)
 
     while dir
-      children = dir.children
+      if deadline and glib.get_monotonic_time! >= deadline
+        return files, true
+
+      ok, children = pcall -> dir.children
+      unless ok
+        dir = table.remove directories
+        append(files, dir) if dir
+        continue
+
       if options.sort then table.sort children, (a,b) -> a.basename < b.basename
 
       for entry in *children
@@ -192,8 +200,6 @@ class File extends PropertyObject
       dir = table.remove directories
       append(files, dir) if dir
 
-      if deadline and glib.get_monotonic_time! >= deadline
-        return files, true
 
     files, false
 
