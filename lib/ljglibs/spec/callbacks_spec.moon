@@ -64,8 +64,7 @@ describe 'callbacks', ->
   describe 'unref_handle(handle)', ->
     collect = ->
       -- twice to allow for multiple levels of weak refs to be collected
-      collectgarbage!
-      collectgarbage!
+      collect_memory!
 
     it 'un-anchors a handle, allowing the handler to be garbage collected', ->
       holder = setmetatable { handler: -> }, __mode: 'v'

@@ -649,8 +649,7 @@ describe 'Editor', ->
   context 'resource management', ->
     it 'editors are collected as they should', ->
       e = Editor Buffer {}
-      editors = setmetatable {}, __mode: 'v'
-      append editors, e
+      editors = setmetatable {e}, __mode: 'v'
       e = nil
       collectgarbage!
       assert.is_nil editors[1]

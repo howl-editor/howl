@@ -926,6 +926,4 @@ describe 'Buffer', ->
 
       collect_memory!
       after = collectgarbage('count')
-      diff = after - before
-      print "diff: #{diff}"
       assert.is_true (after - before) < 2

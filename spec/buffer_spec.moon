@@ -628,3 +628,11 @@ describe 'Buffer', ->
         b = buffer 'foo'
         b.title = 'Sir Buffer'
         assert.spy(handler).was_called!
+
+  context 'resource management', ->
+    it 'buffers are collected properly', ->
+      b = buffer 'foobar'
+      buffers = setmetatable { b }, __mode: 'v'
+      b = nil
+      collectgarbage!
+      assert.is_nil buffers[1]
