@@ -128,6 +128,11 @@ local function main(args)
   if args.compile then
     compile(args)
   else
+    -- set up the the GC to be more aggressive, we have a lot
+    -- of cdata that needs to be collected
+    collectgarbage('setstepmul', 400)
+    collectgarbage('setpause', 99)
+
     local callbacks = require 'ljglibs.callbacks'
     callbacks.configure({
       dispatch_in_coroutine = true,
