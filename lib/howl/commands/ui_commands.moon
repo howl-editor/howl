@@ -79,12 +79,12 @@ command.register
       log.warn "No other view found"
 
 for cmd in *{
-  { 'left', 'left_of', 'Goes to the left view, creating it if necessary' }
-  { 'right', 'right_of', 'Goes to the right view, creating it if necessary' }
-  { 'up', 'above', 'Goes to the view above, creating it if necessary' }
-  { 'down', 'below', 'Goes to the view below, creating it if necessary' }
+  { 'left', 'left_of' }
+  { 'right', 'right_of' }
+  { 'up', 'above' }
+  { 'down', 'below' }
 }
-  { direction, placement, description } = cmd
+  { direction, placement } = cmd
   human_placement = placement\gsub '_', ' '
 
   command.register
