@@ -45,7 +45,7 @@ class Buffer extends PropertyObject
     @read_only = false
     @_len = nil
     @_eol = '\n'
-    @_views = {}
+    @viewers = 0
     @_modified = false
 
     @_buffer\add_listener
@@ -123,10 +123,10 @@ class Buffer extends PropertyObject
 
       @_eol = eol
 
-  @property showing: get: => #@_views > 0
+  @property showing: get: => @viewers > 0
 
   @property last_shown:
-    get: => #@views > 0 and os.time! or @_last_shown
+    get: => @viewers > 0 and os.time! or @_last_shown
     set: (timestamp) => @_last_shown = timestamp
 
   @property multibyte: get: =>
@@ -284,14 +284,11 @@ class Buffer extends PropertyObject
       b_end_pos = @byte_offset end_pos
       @_buffer\ensure_styled_to pos: b_end_pos
 
-  add_view_ref: (view) =>
-    append @_views, view
+  add_view_ref: =>
+    @viewers += 1
 
   remove_view_ref: (view) =>
-    @_views = [v for v in *@_views when v != view and v != nil]
-
-  @property views: get: =>
-    [view for _, view in pairs @_views when view != nil]
+    @viewers -= 1
 
   _ensure_writable: =>
     if @read_only

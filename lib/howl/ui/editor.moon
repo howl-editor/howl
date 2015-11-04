@@ -122,7 +122,7 @@ class Editor extends PropertyObject
 
       on_destroy: gobject_signal.unref_handle @bin\on_destroy ->
         theme.unregister_background_widget @view\to_gobject!
-        @buffer\remove_view_ref @view
+        @buffer\remove_view_ref!
         @buffer.last_shown = os.time! unless @_is_previewing
         signal.emit 'editor-destroyed', editor: self
     }
@@ -562,7 +562,7 @@ class Editor extends PropertyObject
     @view.buffer = buffer._buffer
 
     @_set_config_settings!
-    buffer\add_view_ref @view
+    buffer\add_view_ref!
 
     if buffer.properties.line_at_top
       @line_at_top = buffer.properties.line_at_top
