@@ -359,7 +359,7 @@ three    four    ]] .. '\n', buf.text
 
     it 'memory usage is stable', ->
       items = {'one', 'two', 'three'}
-      assert_memory_stays_within '10Kb', ->
+      assert_memory_stays_within '30Kb', ->
         for i = 1, 20
           w = ListWidget (-> items)
           w\show!
