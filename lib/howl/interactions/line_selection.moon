@@ -5,7 +5,7 @@ import interact from howl
 import highlight from howl.ui
 import Matcher from howl.util
 
-line_match_highlighter = (editor) ->
+line_match_highlighter = (editor, explain) ->
   local buffer
   (selection, text, items) ->
     if buffer
@@ -18,7 +18,7 @@ line_match_highlighter = (editor) ->
     line = buffer.lines[selection.line_nr]
     local segments
     if text and not text.is_empty
-      segments = Matcher.explain text, line.text
+      segments = explain text, line.text
 
     if segments
       start_pos = line.start_pos
@@ -49,12 +49,23 @@ line_match_highlighter = (editor) ->
             continue
           line = buffer.lines[nr]
           start_pos = line.start_pos
-          segments = Matcher.explain text, line.text
+          segments = explain text, line.text
           if segments
             for segment in *segments
               ranges[#ranges + 1] = { start_pos + segment[1] - 1, segment[2] }
 
         highlight.apply 'search_secondary', buffer, ranges
+
+create_matcher = (find) ->
+  class CustomMatcher
+    new: (@line_items) =>
+
+    __call: (query) =>
+      unless query
+        return moon.copy @line_items
+      return [item for item in *@line_items when find query, item[2].text]
+
+    explain: (query, text) -> find query, text
 
 interact.register
   name: 'select_line'
@@ -81,9 +92,13 @@ interact.register
           break
       opts.selected_line = nil
 
-    matcher = Matcher line_items, preserve_order: true
+    local matcher
+    if opts.find
+      matcher = create_matcher(opts.find)(line_items)
+    else
+      matcher = Matcher line_items, preserve_order: true
     opts.matcher = matcher
-    opts.on_change = line_match_highlighter(editor)
+    opts.on_change = line_match_highlighter(editor, matcher.explain)
     opts.force_preview = true
 
     result = interact.select_location opts

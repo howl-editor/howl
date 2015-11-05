@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added `buffer-grep-exact` and `buffer-grep-regex` commands similar to
+`buffer-grep` but using exact and regular expression matches, respectively.
+
 - Changed how Howl loads files specified on the command line. Previously files
 were loaded in different views, and now they're all loaded with one file being
 shown (issue #123).

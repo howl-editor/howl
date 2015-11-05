@@ -198,7 +198,7 @@ command.register
 
 command.register
   name: 'buffer-grep'
-  description: 'Matches certain buffer lines in realtime'
+  description: 'Shows buffer lines containing boundary and exact matches in real time'
   input: ->
     buffer = app.editor.buffer
     return interact.select_line
@@ -207,6 +207,41 @@ command.register
       lines: buffer.lines
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column: selection.column
+
+command.register
+  name: 'buffer-grep-exact'
+  description: 'Shows buffer lines containing exact matches in real time'
+  input: ->
+    buffer = app.editor.buffer
+    return interact.select_line
+      title: "Buffer grep exact in #{buffer.title}"
+      editor: app.editor
+      lines: buffer.lines
+      find: (query, text) ->
+        start_pos, end_pos = text\ufind query, 1, true
+        if start_pos
+          return {{start_pos, end_pos - start_pos + 1}}
+  handler: (selection) ->
+    app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
+
+command.register
+  name: 'buffer-grep-regex'
+  description: 'Shows buffer lines containing regular expression matches in real time'
+  input: ->
+    buffer = app.editor.buffer
+    return interact.select_line
+      title: "Buffer grep exact in #{buffer.title}"
+      editor: app.editor
+      lines: buffer.lines
+      find: (query, text) ->
+        ok, rex = pcall -> r(query)
+        return unless ok
+
+        start_pos, end_pos = rex\find text
+        if start_pos
+          return {{start_pos, end_pos - start_pos + 1}}
+  handler: (selection) ->
+    app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
 
 command.register
   name: 'buffer-structure'
