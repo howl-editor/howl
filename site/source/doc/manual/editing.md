@@ -86,15 +86,17 @@ The `up` and `down` keys jump between the matches for these commands as well.
 
 ## Buffer grep
 
-Buffer grep works as an alternative to the regular `buffer-search-forward` command for
-searching for something in the current buffer. It let's you grep all lines in
-the current buffer for a search string and displays all matching lines in
-real-time as you type:
+Buffer grep commands are an alternative to the regular `buffer-search-` commands
+for searching the current buffer. These commands search the entire buffer as you
+type and display all matching lines in real-time:
 
 ![Buffer grep](/images/doc/buffer-grep.png)
 
-This is decidedly less effective than doing a plain search, which can be a
-factor for large buffers.
+There are three buffer grep commands available for three types of searches:
+
+1. `buffer-grep` (bound to `ctrl_g`) shows exact and boundary matches.
+2. `buffer-grep-exact` shows exact matches only.
+3. `buffer-grep-regex` shows regular expression matches.
 
 ## Replacement
 
