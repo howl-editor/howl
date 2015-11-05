@@ -132,3 +132,23 @@ export collect_memory = ->
     used = collectgarbage('count')
     break if used >= mem
     mem = used
+
+export assert_memory_stays_within = (units, f) ->
+  units = "#{units}%" if type(units) == 'number'
+  val, unit = units\match '(%d+)(%S+)'
+  if not (val and unit) and (unit == '%' or unit == 'Kb')
+    error "Unknown unit specifier '#{units}'"
+
+  val = tonumber val
+  collect_memory!
+  baseline = math.ceil(collectgarbage 'count')
+  f!
+  collect_memory!
+  used = math.ceil(collectgarbage 'count')
+  diff = used - baseline
+  percentual = (diff / baseline) * 100
+  if diff > 0
+    if (unit == '%' and percentual > val) or (unit == 'Kb' and diff > val)
+      err = string.format "Memory increased from %dKb -> %dKb (diff = %dKb, %.2f%%)",
+        baseline, used, diff, percentual
+      error err
