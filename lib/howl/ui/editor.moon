@@ -495,13 +495,21 @@ class Editor extends PropertyObject
 
   remove_popup: =>
     if @popup
-      @popup.window\close!
+      if @popup.options.keep_alive
+        @popup.window\close!
+      else
+        @popup.window\destroy!
+
       @popup = nil
 
   complete: =>
     @completion_popup\complete!
     if not @completion_popup.empty
-      @show_popup @completion_popup, position: @completion_popup.position, persistent: true
+      @show_popup @completion_popup, {
+        position: @completion_popup.position,
+        persistent: true,
+        keep_alive: true
+      }
 
   undo: => @buffer\undo!
   redo: => @buffer\redo!
