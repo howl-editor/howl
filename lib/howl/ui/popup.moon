@@ -26,6 +26,7 @@ class Popup extends PropertyObject
   show: (widget, options = position: 'center') =>
     error('Missing argument #1: widget', 2) if not widget
     @window.transient_for = widget.toplevel
+    @window.destroy_with_parent = true
     @window\realize!
     @widget = widget
     @showing = true
@@ -42,6 +43,9 @@ class Popup extends PropertyObject
     @window\hide!
     @showing = false
     @widget = nil
+
+  destroy: =>
+    @window\destroy!
 
   move_to: (x, y) =>
     error('Attempt to move a closed popup', 2) if not @showing

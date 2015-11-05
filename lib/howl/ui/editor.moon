@@ -112,20 +112,14 @@ class Editor extends PropertyObject
         }
       }
     }
+
     @bin.style_context\add_class 'content_box'
     aullar_box.style_context\add_class 'aullar_box'
     @bin.can_focus = true
 
-    @signal_handlers = {
-      on_focus_in_event: gobject_signal.unref_handle @bin\on_focus_in_event ->
-        @view\grab_focus!
-
-      on_destroy: gobject_signal.unref_handle @bin\on_destroy ->
-        theme.unregister_background_widget @view\to_gobject!
-        @buffer\remove_view_ref!
-        @buffer.last_shown = os.time! unless @_is_previewing
-        signal.emit 'editor-destroyed', editor: self
-    }
+    @_handlers = {}
+    append @_handlers, @bin\on_destroy self\_on_destroy
+    append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
 
     -- theme.register_background_widget @view\to_gobject!
 
@@ -613,6 +607,17 @@ class Editor extends PropertyObject
     bar = y == 'top' and @header or @footer
     bar\remove id
     @indicator[id] = nil
+
+  _on_destroy: =>
+    for h in *@_handlers
+      gobject_signal.disconnect h
+
+    -- theme.unregister_background_widget @view\to_gobject!
+    @buffer\remove_view_ref!
+    @completion_popup\destroy!
+    @view\destroy!
+    @buffer.last_shown = os.time! unless @_is_previewing
+    signal.emit 'editor-destroyed', editor: self
 
   _on_key_press: (view, event) =>
     @remove_popup! if event.key_name == 'escape'

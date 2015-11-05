@@ -208,7 +208,7 @@ describe 'View', ->
       assert.is_nil views[1]
 
     it 'does not leave lingering memory', ->
-      assert_memory_stays_within 1, ->
+      assert_memory_stays_within '20Kb', ->
         for i = 1, 30
           v = View!
           v\destroy!

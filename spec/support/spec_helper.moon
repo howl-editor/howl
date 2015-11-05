@@ -134,7 +134,6 @@ export collect_memory = ->
     mem = used
 
 export assert_memory_stays_within = (units, f) ->
-  units = "#{units}%" if type(units) == 'number'
   val, unit = units\match '(%d+)(%S+)'
   if not (val and unit) and (unit == '%' or unit == 'Kb')
     error "Unknown unit specifier '#{units}'"
@@ -152,3 +151,4 @@ export assert_memory_stays_within = (units, f) ->
       err = string.format "Memory increased from %dKb -> %dKb (diff = %dKb, %.2f%%)",
         baseline, used, diff, percentual
       error err
+

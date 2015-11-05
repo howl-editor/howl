@@ -111,3 +111,18 @@ describe 'ActionBuffer', ->
       assert.equal 'keyword', (style.at_pos(buf, 2))
       assert.equal 'keyword', (style.at_pos(buf, 4))
       assert.is_nil (style.at_pos(buf, 5))
+
+  context 'resource management', ->
+    it 'buffers are collected properly', ->
+      b = ActionBuffer!
+      buffers = setmetatable { b }, __mode: 'v'
+      b = nil
+      collectgarbage!
+      assert.is_nil buffers[1]
+
+    it 'memory usage is stable', ->
+      assert_memory_stays_within '15Kb', ->
+        for i = 1, 30
+          b = ActionBuffer!
+          b.text = 'collect me!'
+
