@@ -27,29 +27,6 @@ append = table.insert
 
 jit.off true, true
 
-registries = {n: 0}
-
-new_registry = ->
-  reg = id: registries.n + 1, signal_handlers: {}
-  registries[reg.id] = reg
-  registries.n += 1
-  reg
-
-on_destroy = (_, reg_id) ->
-  reg = registries[reg_id]
-  unless reg
-    error "Registry error: Missing entry for #{reg_id}"
-
-  for h in *reg.signal_handlers
-    signal.disconnect h
-
-  registries[reg_id] = nil
-
-connect = (obj, name, reg, f, unref = true) ->
-  handle = obj["on_#{name}"] obj, f, reg.id
-  append reg.signal_handlers, handle
-  unref and signal.unref_handle handle
-
 notify = (view, event, ...) ->
   listener = view.listener
   if listener and listener[event]
@@ -62,8 +39,7 @@ text_cursor = Gdk.Cursor.new(Gdk.XTERM)
 
 View = {
   new: (buffer = Buffer('')) =>
-    reg = new_registry @
-    @_hs = {}
+    @_handlers = {}
 
     @margin = 3
     @_base_x = 0
@@ -78,50 +54,48 @@ View = {
     @cursor.show_when_inactive = @config.view_show_inactive_cursor
     @cursor.blink_interval = @config.cursor_blink_interval
 
-    connect @area, 'destroy', reg, on_destroy, false
-
     @gutter = Gutter @
     @current_line_marker = CurrentLineMarker @
 
     @im_context = Gtk.ImContextSimple!
+    with @im_context
+      append @_handlers, \on_commit (ctx, s) ->
+        @insert s
 
-    append @_hs, connect @im_context, 'commit', reg, (ctx, s) ->
-      @insert s
+      append @_handlers, \on_preedit_start ->
+        @in_preedit = true
+        notify @, 'on_preedit_start'
 
-    append @_hs, connect @im_context, 'preedit_start', reg, ->
-      @in_preedit = true
-      notify @, 'on_preedit_start'
+      append @_handlers, \on_preedit_changed (ctx) ->
+        str, attr_list, cursor_pos = ctx\get_preedit_string!
+        notify @, 'on_preedit_change', :str, :attr_list, :cursor_pos
 
-    append @_hs, connect @im_context, 'preedit_changed', reg, (ctx) ->
-      str, attr_list, cursor_pos = ctx\get_preedit_string!
-      notify @, 'on_preedit_change', :str, :attr_list, :cursor_pos
+      append @_handlers, \on_preedit_end ->
+        @in_preedit = false
+        notify @, 'on_preedit_end'
 
-    append @_hs, connect @im_context, 'preedit_end', reg, ->
-      @in_preedit = false
-      notify @, 'on_preedit_end'
+    with @area
+      .can_focus = true
+      \add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK, Gdk.BUTTON_RELEASE_MASK, Gdk.POINTER_MOTION_MASK, Gdk.SCROLL_MASK)
+      font_desc = Pango.FontDescription {
+        family: @config.view_font_name,
+        size: @config.view_font_size * Pango.SCALE
+      }
+      \override_font font_desc
 
-
-    @area.can_focus = true
-    @area\add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK, Gdk.BUTTON_RELEASE_MASK, Gdk.POINTER_MOTION_MASK, Gdk.SCROLL_MASK)
-    font_desc = Pango.FontDescription {
-      family: @config.view_font_name,
-      size: @config.view_font_size * Pango.SCALE
-    }
-    @area\override_font font_desc
-
-    append @_hs, connect @area, 'key_press_event', reg, self\_on_key_press
-    append @_hs, connect @area, 'button_press_event', reg, self\_on_button_press
-    append @_hs, connect @area, 'button_release_event', reg, self\_on_button_release
-    append @_hs, connect @area, 'motion_notify_event', reg, self\_on_motion_event
-    append @_hs, connect @area, 'scroll_event', reg, self\_on_scroll
-    append @_hs, connect @area, 'draw', reg, self\_draw
-    append @_hs, connect @area, 'screen_changed', reg, self\_on_screen_changed
-    append @_hs, connect @area, 'size_allocate', reg, self\_on_size_allocate
-    append @_hs, connect @area, 'focus_in_event', reg, self\_on_focus_in
-    append @_hs, connect @area, 'focus_out_event', reg, self\_on_focus_out
+      append @_handlers, \on_key_press_event self\_on_key_press
+      append @_handlers, \on_button_press_event self\_on_button_press
+      append @_handlers, \on_button_release_event self\_on_button_release
+      append @_handlers, \on_motion_notify_event self\_on_motion_event
+      append @_handlers, \on_scroll_event self\_on_scroll
+      append @_handlers, \on_draw self\_draw
+      append @_handlers, \on_screen_changed self\_on_screen_changed
+      append @_handlers, \on_size_allocate self\_on_size_allocate
+      append @_handlers, \on_focus_in_event self\_on_focus_in
+      append @_handlers, \on_focus_out_event self\_on_focus_out
 
     @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_HORIZONTAL
-    append @_hs, connect @horizontal_scrollbar.adjustment, 'value_changed', reg, (adjustment) ->
+    append @_handlers, @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
       @base_x = floor adjustment.value
       @area\queue_draw!
@@ -135,7 +109,7 @@ View = {
     @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
     @vertical_scrollbar.no_show_all = not config.view_show_v_scrollbar
 
-    append @_hs, connect @vertical_scrollbar.adjustment, 'value_changed', reg, (adjustment) ->
+    append @_handlers, @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
       @_scrolling_vertically = true
       line = math.floor adjustment.value + 0.5
@@ -153,6 +127,8 @@ View = {
       @vertical_scrollbar
     }
 
+    append @_handlers, @bin\on_destroy self\_on_destroy
+
     @_buffer_listener = {
       on_inserted: (_, b, args) -> self\_on_buffer_modified b, args, 'inserted'
       on_deleted: (_, b, args) -> self\_on_buffer_modified b, args, 'deleted'
@@ -166,6 +142,9 @@ View = {
 
     @buffer = buffer
     @config\add_listener self\_on_config_changed
+
+  destroy: =>
+    @bin\destroy!
 
   properties: {
 
@@ -575,6 +554,17 @@ View = {
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
     @horizontal_scrollbar_alignment.left_padding = @gutter_width
     @gutter\sync_width @buffer, force: true
+
+  _on_destroy: =>
+    @listener = nil
+    @selection = nil
+    @cursor = nil
+    @config\detach!
+    @_buffer\remove_listener(@_buffer_listener) if @_buffer
+
+    -- disconnect signal handlers
+    for h in *@_handlers
+      signal.disconnect h
 
   _on_buffer_styled: (buffer, args) =>
     return unless @showing

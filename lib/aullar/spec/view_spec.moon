@@ -14,6 +14,7 @@ describe 'View', ->
     buffer = Buffer ''
     view = View buffer
     view.config.view_line_padding = 0
+    view.margin = 0
     cursor = view.cursor
     selection = view.selection
     window = Gtk.OffscreenWindow default_width: 800, default_height: 640
@@ -198,20 +199,16 @@ describe 'View', ->
 
   context 'resource management', ->
 
-    it 'memory is released properly', ->
-      -- views themselves should be collected
+    it 'references are collected properly', ->
       v = View!
       views = setmetatable { v }, __mode: 'v'
+      v\destroy!
       v = nil
       collect_memory!
       assert.is_nil views[1]
 
-      -- and memory should be back to "normalish" levels
-      before = collectgarbage('count')
-      for i = 1, 30
-        View!
-
-      collect_memory!
-      after = collectgarbage('count')
-      assert.is_true (after - before) < 100
-
+    it 'does not leave lingering memory', ->
+      assert_memory_stays_within 1, ->
+        for i = 1, 30
+          v = View!
+          v\destroy!
