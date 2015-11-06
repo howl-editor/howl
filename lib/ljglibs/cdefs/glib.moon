@@ -108,6 +108,8 @@ ffi.cdef [[
                            gpointer data,
                            GDestroyNotify notify);
 
+  gboolean g_source_remove (guint tag);
+
   guint g_child_watch_add (GPid pid, GChildWatchFunc function, gpointer data);
 
   enum GPriority {
