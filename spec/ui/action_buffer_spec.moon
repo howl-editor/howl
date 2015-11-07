@@ -121,8 +121,7 @@ describe 'ActionBuffer', ->
       assert.is_nil buffers[1]
 
     it 'memory usage is stable', ->
-      assert_memory_stays_within '15Kb', ->
-        for i = 1, 30
-          b = ActionBuffer!
-          b.text = 'collect me!'
+      assert_memory_stays_within '15Kb', 30, ->
+        b = ActionBuffer!
+        b.text = 'collect me!'
 

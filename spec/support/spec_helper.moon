@@ -133,22 +133,29 @@ export collect_memory = ->
     break if used >= mem
     mem = used
 
-export assert_memory_stays_within = (units, f) ->
+export assert_memory_stays_within = (units, iterations, f) ->
   val, unit = units\match '(%d+)(%S+)'
   if not (val and unit) and (unit == '%' or unit == 'Kb')
     error "Unknown unit specifier '#{units}'"
 
   val = tonumber val
-  collect_memory!
-  baseline = math.ceil(collectgarbage 'count')
   f!
   collect_memory!
-  used = math.ceil(collectgarbage 'count')
-  diff = used - baseline
+  baseline = math.ceil(collectgarbage 'count')
+  total_used = 0
+
+  for i = 1, iterations
+    f!
+    collect_memory!
+    used = math.ceil(collectgarbage 'count')
+    total_used += used
+
+  avg_used = total_used / iterations
+  diff = avg_used - baseline
   percentual = (diff / baseline) * 100
   if diff > 0
     if (unit == '%' and percentual > val) or (unit == 'Kb' and diff > val)
-      err = string.format "Memory increased from %dKb -> %dKb (diff = %dKb, %.2f%%)",
-        baseline, used, diff, percentual
+      err = string.format "Memory increased on average from %dKb -> %dKb (diff = %dKb, %.2f%%)",
+        baseline, avg_used, diff, percentual
       error err
 
