@@ -558,6 +558,7 @@ View = {
   _on_destroy: =>
     @listener = nil
     @selection = nil
+    @cursor\destroy!
     @cursor = nil
     @config\detach!
     @_buffer\remove_listener(@_buffer_listener) if @_buffer

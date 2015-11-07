@@ -145,6 +145,9 @@ Cursor = {
     _navigate_visual: => @view.config.view_line_wrap_navigation == 'visual'
   }
 
+  destroy: =>
+    @_disable_blink!
+
   ensure_in_view: =>
     return if @in_view
     new_line = if @line < @view.first_visible_line
@@ -388,7 +391,11 @@ Cursor = {
     flair.draw @_flair, display_line, start_offset, end_offset, x, base_y, cr
 
   _blink: =>
-    return false if not @active
+    if not @active
+      if @_blink_cb_handle
+        callbacks.unregister @_blink_cb_handle
+      return false
+
     if @_force_show
       @_force_show = false
       return true
@@ -410,10 +417,9 @@ Cursor = {
 
   _disable_blink: =>
     if @_blink_cb_handle
-      callbacks.unregister @_blink_cb_handle
+      if callbacks.unregister @_blink_cb_handle
+        C.g_source_remove @blink_cb_id
       @_blink_cb_handle = nil
-
-    -- todo unregister source? will be auto-cancelled by callbacks module though
 
   _refresh_current_line: =>
     cur_line = @buffer_line

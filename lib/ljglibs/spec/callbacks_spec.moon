@@ -61,6 +61,12 @@ describe 'callbacks', ->
       collectgarbage!
       assert.is_nil holder[1]
 
+    it 'returns true if there was a handler to unregister', ->
+      handle = callbacks.register handler, 'test handler'
+      assert.is_true callbacks.unregister handle
+      assert.is_false callbacks.unregister handle
+
+
   describe 'unref_handle(handle)', ->
     collect = ->
       -- twice to allow for multiple levels of weak refs to be collected
