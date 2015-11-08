@@ -9,6 +9,7 @@ _resume = (handle, ...) ->
   parking = parked[handle]
   error "Unknown handle #{handle}", 3 unless parking
   ret = if parking.co
+    parked[handle] = nil
     pack coroutine.resume parking.co, ...
   else
     parking.resumer = coroutine.running!
@@ -16,7 +17,6 @@ _resume = (handle, ...) ->
     coroutine.yield!
     { true }
 
-  parked[handle] = nil
   ret
 
 {
@@ -42,6 +42,7 @@ _resume = (handle, ...) ->
     local ret
 
     if parking.resumer
+      parked[handle] = nil
       coroutine.resume parking.resumer
       ret = parking.pending
     else
