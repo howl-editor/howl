@@ -38,6 +38,7 @@ class InputStream extends PropertyObject
     table.concat contents
 
   close: =>
+    return if @stream.is_closed
     handle = dispatch.park 'input-stream-close'
 
     @stream\close_async (status, ret, err_code) ->
