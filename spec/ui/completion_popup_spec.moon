@@ -17,7 +17,7 @@ describe 'CompletionPopup', ->
       assert.is_nil list[1]
 
     it 'memory usage is stable', ->
-      assert_memory_stays_within '30Kb', 20, ->
+      assert_memory_stays_within '50Kb', 20, ->
         p = CompletionPopup editor
         p\close!
         p\destroy!
