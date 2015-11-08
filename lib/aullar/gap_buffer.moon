@@ -20,7 +20,7 @@ define_class {
     @type_size = ffi.sizeof type
     @arr_ptr = ffi.typeof "const #{type} *"
     @new_arr = (size) ->
-      ffi_gc(ffi_cast("#{@type} *", C.calloc(size, @type_size)), C.free)
+      ffi_gc(ffi_cast("#{@type} *", C.g_malloc0(size * @type_size)), C.g_free)
 
     @set opts.initial, size
 
