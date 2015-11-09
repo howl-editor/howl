@@ -10,6 +10,8 @@ gobject = require 'ljglibs.gobject'
 ref_ptr = gobject.ref_ptr
 C = ffi.C
 
+jit.off true, true
+
 core.define 'GtkSettings < GObject', {
   properties: {
     gtk_cursor_blink: 'gboolean'

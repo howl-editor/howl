@@ -9,6 +9,8 @@ gobject = require 'ljglibs.gobject'
 ref_ptr = gobject.ref_ptr
 C = ffi.C
 
+jit.off true, true
+
 core.define 'GtkIMContextSimple < GtkIMContext', {
   new: ->
     ref_ptr C.gtk_im_context_simple_new!
