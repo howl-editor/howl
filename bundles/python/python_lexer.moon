@@ -94,20 +94,11 @@ howl.aux.lpeg_lexer ->
     c 'number', integer
     c('operator', P'{') * (-P'}' * V'all') * c('operator', P'}')
   }
-  format_spec = c('operator', ':') * sequence {
-    (c('string', P 1)^-1 * c 'operator', S'<>=^')^-1 -- fill and align
-    (P' ' + c 'operator', S'+-')^-1 -- sign
-    c('operator', P'#')^-1 -- #
-    c('number', P'0')^-1 -- 0
-    format_number^-1 -- width
-    c('operator', P',')^-1 -- ,
-    (c('operator', P'.') * format_number)^-1 -- .precision
-    c('special', S'bcdeEfFgGnosxX%')^-1 -- type
-  }
+  format_spec = c('operator', ':') * format_number^1
 
   gen_string_interpolation = (type) ->
     sequence {
-      (-(P'}' + format_conv + format_spec) * (V'all' + 1))^1
+      (V'all' - S'}:!')^1
       format_conv^-1
       format_spec^-1
       c 'operator', '}'
