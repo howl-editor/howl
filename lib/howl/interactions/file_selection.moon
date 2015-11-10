@@ -5,7 +5,7 @@ glib = require 'ljglibs.glib'
 
 import app, clipboard, config, interact, log, Project from howl
 import File from howl.io
-import preview from howl.interactions.util
+import Preview from howl.interactions.util
 import icon, markup, style, ListWidget from howl.ui
 import file_matcher, subtree_matcher, subtree_reader, get_dir_and_leftover from howl.util.paths
 
@@ -83,10 +83,11 @@ class FileSelector
 
   _preview: (selection) =>
     return unless config.preview_files
+    @preview or= Preview!
 
     file = selection.file
     if file.exists
-      app.editor\preview preview.get_preview_buffer file
+      app.editor\preview @preview\get_buffer file
     else
       app.editor\cancel_preview!
 
