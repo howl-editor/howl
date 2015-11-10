@@ -26,6 +26,10 @@ define_class {
     @style_buffer = GapBuffer 'uint16_t', size
     @last_pos_styled = 0
 
+  reset: (size) =>
+    @style_buffer\set nil, size
+    @last_pos_styled = 0
+
   sub: (styling, start_offset, end_offset) ->
     styles = {}
 
