@@ -205,6 +205,9 @@ command.register
       title: "Buffer grep in #{buffer.title}"
       editor: app.editor
       lines: buffer.lines
+      keymap:
+        ctrl_r: -> app.window.command_line\switch_to 'buffer-grep-regex'
+        ctrl_e: -> app.window.command_line\switch_to 'buffer-grep-exact'
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column: selection.column
 
@@ -221,6 +224,9 @@ command.register
         start_pos, end_pos = text\ufind query, 1, true
         if start_pos
           return {{start_pos, end_pos - start_pos + 1}}
+      keymap:
+        ctrl_g: -> app.window.command_line\switch_to 'buffer-grep'
+        ctrl_r: -> app.window.command_line\switch_to 'buffer-grep-regex'
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
 
@@ -240,6 +246,9 @@ command.register
         start_pos, end_pos = rex\find text
         if start_pos
           return {{start_pos, end_pos - start_pos + 1}}
+      keymap:
+        ctrl_g: -> app.window.command_line\switch_to 'buffer-grep'
+        ctrl_e: -> app.window.command_line\switch_to 'buffer-grep-exact'
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
 
