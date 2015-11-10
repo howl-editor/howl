@@ -98,6 +98,10 @@ There are three buffer grep commands available for three types of searches:
 2. `buffer-grep-exact` shows exact matches only.
 3. `buffer-grep-regex` shows regular expression matches.
 
+After invoking `buffer-grep` with `ctrl_g`, you can switch between the commands
+using `ctrl_e` for  `buffer-grep-exact`, `ctrl_r` for `buffer-grep-regex` and
+`ctrl_g` to switch back to `buffer-grep`.
+
 ## Replacement
 
 The `buffer-replace` and `buffer-replace-regex` commands provide a way to

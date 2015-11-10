@@ -99,6 +99,19 @@ describe 'CommandLine', ->
             command_line\run_after_finish nextf
         assert.spy(nextf).was_called 1
 
+    describe '\\switch_to(new_command)', ->
+      it 'cancels current command and runs new command, preserving text', ->
+        command_run = howl.command.run
+        howl.command.run = spy.new ->
+        command_line\run
+          name: 'run-activity'
+          handler: ->
+            command_line.text = 'hello arg'
+            command_line\switch_to 'new-command'
+
+        assert.spy(howl.command.run).was_called_with 'new-command hello arg'
+        howl.command.run = command_run
+
     describe '.text', ->
       it 'cannot be set when no running activity', ->
         f = -> command_line.text = 'hello'
