@@ -167,8 +167,14 @@ define_class {
 
   set: (data, size = #data) =>
     arr_size = size + @default_gap_size
-    @array = self.new_arr(arr_size + 1) -- + 1 = one final zero
-    @array[arr_size] = 0 -- which we set here
+    if @array and @size + @gap_size >= arr_size
+      arr_size = @size + @gap_size
+      ffi_fill @array, size * @type_size
+    else
+      -- allocate new array
+      @array = self.new_arr(arr_size + 1) -- + 1 = with one final zero
+      @array[arr_size] = 0 -- which we set here
+
     if data
       ffi_copy @array, data, size * @type_size
     @size = size
