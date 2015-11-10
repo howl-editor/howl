@@ -56,16 +56,13 @@ line_match_highlighter = (editor, explain) ->
 
         highlight.apply 'search_secondary', buffer, ranges
 
-create_matcher = (find) ->
-  class CustomMatcher
-    new: (@line_items) =>
-
+create_matcher = (line_items, find) ->
+  mt = {
     __call: (query) =>
-      unless query
-        return moon.copy @line_items
-      return [item for item in *@line_items when find query, item[2].text]
-
-    explain: (query, text) -> find query, text
+      return moon.copy(line_items) unless query
+      return [item for item in *line_items when find query, item[2].text]
+  }
+  return setmetatable {explain: (query, text) -> find query, text}, mt
 
 interact.register
   name: 'select_line'
@@ -94,7 +91,7 @@ interact.register
 
     local matcher
     if opts.find
-      matcher = create_matcher(opts.find)(line_items)
+      matcher = create_matcher(line_items, opts.find)
     else
       matcher = Matcher line_items, preserve_order: true
     opts.matcher = matcher
