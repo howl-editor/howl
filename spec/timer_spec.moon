@@ -21,3 +21,22 @@ describe 'timer', ->
     it 'invokes <f> once after approximately <seconds>', (done) ->
       timer.after 0, async ->
         done!
+
+  describe 'cancel(handle)', ->
+    it 'cancels an asap timer', (done) ->
+      invoked = false
+      handle = timer.asap async -> invoked = true
+      timer.cancel handle
+
+      timer.after 0.05, async ->
+        assert.is_false invoked
+        done!
+
+    it 'cancels an after timer', (done) ->
+      invoked = false
+      handle = timer.after 0.05, async -> invoked = true
+      timer.cancel handle
+
+      timer.after 0.1, async ->
+        assert.is_false invoked
+        done!

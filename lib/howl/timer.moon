@@ -11,30 +11,35 @@ timer_callback = ffi.cast 'GSourceFunc', callbacks.bool1
 
 jit.off true, true
 
+cancel = (handle) ->
+  if callbacks.unregister handle.cb
+    C.g_source_remove handle.tag
+
 asap = (f, ...) ->
-  local handle, tag
+  t_handle = {}
 
   handler = (...) ->
-    callbacks.unregister handle
-    C.g_source_remove tag
+    cancel t_handle
     f ...
 
-  handle = callbacks.register handler, 'timer-asap', ...
-  tag = C.g_idle_add_full C.G_PRIORITY_LOW, timer_callback, cast_arg(handle.id), nil
+  t_handle.cb = callbacks.register handler, 'timer-asap', ...
+  t_handle.tag = C.g_idle_add_full C.G_PRIORITY_LOW, timer_callback, cast_arg(t_handle.cb.id), nil
+  t_handle
 
 after = (seconds, f, ...) ->
-  local handle, tag
+  t_handle = {}
 
   handler = (...) ->
-    callbacks.unregister handle
-    C.g_source_remove tag
+    cancel t_handle
     f ...
 
-  handle = callbacks.register f, "timer-after-#{seconds}", ...
   interval = seconds * 1000
-  tag = C.g_timeout_add_full C.G_PRIORITY_LOW, interval, timer_callback, cast_arg(handle.id), nil
+  t_handle.cb = callbacks.register f, "timer-after-#{seconds}", ...
+  t_handle.tag = C.g_timeout_add_full C.G_PRIORITY_LOW, interval, timer_callback, cast_arg(t_handle.cb.id), nil
+  t_handle
 
 {
-  :asap
   :after
+  :asap
+  :cancel
 }
