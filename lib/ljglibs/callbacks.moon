@@ -3,7 +3,7 @@
 
 ffi = require 'ffi'
 ffi_cast = ffi.cast
-unpack, pack = table.unpack, table.pack
+{:unpack, :pack, :insert} = table
 
 ref_id_cnt = 0
 weak_handler_id_cnt = 0
@@ -37,12 +37,15 @@ do_dispatch = (data, ...) ->
 
     if handler
       args = pack ...
+
+      if options.dispatcher
+        insert args, 1, handler
+        insert args, 2, handle.description
+        args.n += 2
+        handler = options.dispatcher
+
       for i = 1, handler_args.n
         args[args.n + i] = handler_args[i]
-
-      if options.dispatch_in_coroutine
-        target = handler
-        handler = coroutine.wrap (...) -> target ...
 
       status, ret = pcall handler, unpack(args, 1, args.n + handler_args.n)
       return ret == true if status
@@ -88,7 +91,7 @@ dispatch = (data, ...) ->
   cast_arg: (arg) -> ffi.cast('gpointer', arg)
 
   configure: (opts) ->
-    options[k] = v for k,v in pairs opts
+    options = moon.copy opts
 
   -- different callbacks
   void1: cb_cast 'GVCallback1', (data) -> dispatch data

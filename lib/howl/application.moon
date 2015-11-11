@@ -8,8 +8,22 @@ import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer
 import File, Process from howl.io
 import PropertyObject from howl.aux.moon
 Gtk = require 'ljglibs.gtk'
+callbacks = require 'ljglibs.callbacks'
 
 append = table.insert
+coro_create, coro_status = coroutine.create, coroutine.status
+
+dispatcher = (f, description, ...)->
+  co = coro_create (...) -> f ...
+  status, ret = coroutine.resume co, ...
+
+  if status
+    if coro_status(co) == 'dead'
+      return ret
+  else
+    _G.log.error "Failed to dispatch '#{description}: #{ret}'"
+
+  false
 
 sort_buffers = (buffers) ->
   table.sort buffers, (a, b) ->
@@ -32,6 +46,12 @@ class Application extends PropertyObject
     bindings.push keymap
     @window = nil
     @editor = nil
+
+    callbacks.configure {
+      :dispatcher,
+      on_error: _G.log.error
+    }
+
     super!
 
   @property buffers: get: =>

@@ -116,20 +116,26 @@ describe 'callbacks', ->
       assert.equal handler, callbacks.unref_handle handle
 
   describe '(dispatching)', ->
-    it 'dispatches in the main coroutine if the dispatch_in_coroutine option is false', ->
-      handler = ->
+    after_each ->
+      callbacks.configure {}
+
+    it 'dispatches directly in the main coroutine if no dispatcher is set', ->
+      handler = spy.new ->
         _, is_main = coroutine.running!
         assert.is_true is_main
 
-      callbacks.configure dispatch_in_coroutine: false
       handle = callbacks.register handler, 'test handler'
       dispatch handle, 123
+      assert.spy(handler).was_called(1)
 
-    it 'dispatches in a new coroutine if the dispatch_in_coroutine option is true', ->
-      handler = ->
-        _, is_main = coroutine.running!
-        assert.is_false is_main
+    it 'uses the provided dispatcher if set', ->
+      handler = spy.new ->
+      dispatcher = spy.new (f) ->
+        assert.spy(handler).was_not_called!
+        f!
+        assert.spy(handler).was_called(1)
 
-      callbacks.configure dispatch_in_coroutine: true
+      callbacks.configure :dispatcher
       handle = callbacks.register handler, 'test handler'
       dispatch handle, 123
+      assert.spy(dispatcher).was_called(1)

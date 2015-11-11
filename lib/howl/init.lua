@@ -133,12 +133,6 @@ local function main(args)
     collectgarbage('setstepmul', 400)
     collectgarbage('setpause', 99)
 
-    local callbacks = require 'ljglibs.callbacks'
-    callbacks.configure({
-      dispatch_in_coroutine = true,
-      on_error = _G.log.error
-    })
-
     howl.app = howl.Application(howl.io.File(app_root), args)
     assert(jit.status(), "JIT is inadvertently switched off")
 
