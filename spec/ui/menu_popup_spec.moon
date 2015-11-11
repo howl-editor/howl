@@ -16,6 +16,6 @@ describe 'MenuPopup', ->
       assert.is_nil list[1]
 
     it 'memory usage is stable', ->
-      assert_memory_stays_within '50Kb', 20, ->
+      assert_memory_stays_within '70Kb', 30, ->
         p = MenuPopup items, (->)
         p\destroy!
