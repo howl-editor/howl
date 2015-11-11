@@ -19,7 +19,7 @@ get_preview_buffer = (file) ->
 
   buffer_mode = nil
   title = file.basename
-  ok, text = pcall -> file\read 8192
+  ok, text = pcall -> file\read(8192) or ''
 
   if ok
     size = file.size
