@@ -647,10 +647,34 @@ describe 'Editor', ->
         assert.equals 'hello\nhello\nwörld', buffer.text
 
   context 'resource management', ->
-    pending 'editors are collected as they should', ->
+    it 'editors are collected as they should', ->
       e = Editor Buffer {}
-      editors = setmetatable {}, __mode: 'v'
-      append editors, e
+      editors = setmetatable {e}, __mode: 'v'
+      e\to_gobject!\destroy!
       e = nil
+      collect_memory!
+      assert.is_true editors[1] == nil
+
+    it 'releases resources after buffer switching', ->
+      b1 = Buffer {}
+      b2 = Buffer {}
+      e = Editor b1
+      buffers = setmetatable { b1, b2 }, __mode: 'v'
+      editors = setmetatable { e }, __mode: 'v'
+      e.buffer = b2
+      e.buffer = b1
+      e\to_gobject!\destroy!
+      e = nil
+      b1 = nil
+      b2 = nil
       collectgarbage!
       assert.is_nil editors[1]
+      assert.is_nil buffers[1]
+      assert.is_nil buffers[2]
+
+    it 'memory usage is stable', ->
+      pinned = Editor Buffer!
+
+      assert_memory_stays_within '40Kb', 20, ->
+        e = Editor Buffer!
+        e\to_gobject!\destroy!

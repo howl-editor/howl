@@ -24,6 +24,7 @@ class OutputStream extends PropertyObject
     dispatch.wait handle
 
   close: =>
+    return if @stream.is_closed
     handle = dispatch.park 'output-stream-close'
 
     @stream\close_async (status, ret, err_code) ->

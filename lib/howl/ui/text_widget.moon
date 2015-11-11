@@ -22,8 +22,8 @@ class TextWidget extends PropertyObject
       .view_line_padding = config.line_padding
       .view_show_h_scrollbar = false
 
-    @cursor = Cursor self, Selection @view
     @selection = Selection @view
+    @cursor = Cursor self, @selection
     @view_gobject = @view\to_gobject!
 
     padding_box = Gtk.Alignment {

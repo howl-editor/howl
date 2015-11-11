@@ -471,7 +471,8 @@ class CommandLine extends PropertyObject
 
   remove_widget: (name) =>
     widget = @_widgets[name]
-    @box\remove widget\to_gobject! if widget
+    return unless widget
+    widget\to_gobject!\destroy!
     @_widgets[name] = nil
 
   get_widget: (name) => @_widgets[name]

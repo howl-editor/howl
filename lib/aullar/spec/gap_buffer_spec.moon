@@ -40,6 +40,38 @@ describe 'GapBuffer', ->
       b\set 'second'
       assert.equals 'second', get_text(b)
 
+    it 're-uses and resets the same memory if possible', ->
+      b = buffer '12345'
+      arr = b.array
+      gap_size = b.gap_size
+      b\set '123'
+      assert.equals arr, b.array
+      assert.equals gap_size + 2, b.gap_size
+      -- two previously occupied positions should be zeroed
+      assert.equals 0, arr[3]
+      assert.equals 0, arr[4]
+
+      -- setting with same size should re-use
+      b\set '12345'
+      assert.equals arr, b.array
+
+      -- setting with greater size should realloc
+      b\set '123456'
+      assert.not_equals arr, b.array
+
+    describe 'when <data> is not provided', ->
+      it 'provides zeroed memory', ->
+        b = buffer ''
+        b\set nil, 2
+        assert.equals 0, b.array[0]
+        assert.equals 0, b.array[1]
+
+      it 'resets previous data when the memory is re-used', ->
+        b = buffer '12345'
+        b\set nil, 2
+        assert.equals 0, b.array[0]
+        assert.equals 0, b.array[1]
+
   describe 'fill(start_offset, end_offset, value)', ->
     it 'fills the specified range with <value>', ->
       b = buffer '0123456789'

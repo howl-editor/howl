@@ -201,3 +201,12 @@ describe 'Window', ->
       win\remove_view middle
       assert.same { x: 1, y: 1, width: 1, height: 1, view: left }, win\get_view left
       assert.same { x: 2, y: 1, width: 1, height: 1, view: right }, win\get_view right
+
+  context 'resource management', ->
+    it 'added views are not anchored', ->
+      v = Gtk.Entry!
+      views = setmetatable {v}, __mode: 'v'
+      win\add_view v
+      v = nil
+      collectgarbage!
+      assert.is_nil views[1]

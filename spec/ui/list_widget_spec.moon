@@ -347,4 +347,20 @@ three    four    ]] .. '\n', buf.text
     it 'selects the last item by default', ->
       assert.equal 'one', rlist.selection
 
+  context 'resource management', ->
+
+    it 'widgets are collected as they should', ->
+      w = ListWidget (->)
+      list = setmetatable {w}, __mode: 'v'
+      w\to_gobject!\destroy!
+      w = nil
+      collectgarbage!
+      assert.is_nil list[1]
+
+    it 'memory usage is stable', ->
+      items = {'one', 'two', 'three'}
+      assert_memory_stays_within '30Kb', 20, ->
+        w = ListWidget (-> items)
+        w\show!
+        w\to_gobject!\destroy!
 

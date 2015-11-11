@@ -152,7 +152,6 @@ class Process
   _handle_finish: (status) =>
     callbacks.unregister @_exit_handle
     @@running[@pid] = nil
-
     @_exit_handle = nil
     @exited = true
     @successful = false

@@ -108,6 +108,8 @@ ffi.cdef [[
                            gpointer data,
                            GDestroyNotify notify);
 
+  gboolean g_source_remove (guint tag);
+
   guint g_child_watch_add (GPid pid, GChildWatchFunc function, gpointer data);
 
   enum GPriority {
@@ -211,8 +213,12 @@ ffi.cdef [[
   const gchar * g_get_home_dir (void);
   gchar * g_get_current_dir (void);
   gchar * g_strndup (const gchar *str, gsize n);
+  gpointer g_malloc0 (gsize n_bytes);
   void g_free(gpointer mem);
   void g_strfreev (gchar **str_array);
+  gpointer g_slice_alloc (gsize block_size);
+  gpointer g_slice_alloc0 (gsize block_size);
+  void g_slice_free1 (gsize block_size, gpointer mem_block);
 
   /* Process spawning */
   typedef enum {

@@ -107,7 +107,7 @@ describe 'Buffer', ->
   it '.showing is true if the buffer is currently referenced in any view', ->
     b = buffer ''
     assert.false b.showing
-    b\add_view_ref {}
+    b\add_view_ref!
     assert.true b.showing
 
   describe '.multibyte', ->
@@ -517,20 +517,18 @@ describe 'Buffer', ->
     b.title = 'foo'
     assert.equal tostring(b), 'foo'
 
-  describe '.add_view_ref(view)', ->
-    it 'adds the specified view to .views', ->
+  describe '.add_view_ref()', ->
+    it 'increments the number of viewers', ->
       b = buffer ''
-      view = {}
-      b\add_view_ref view
-      assert.same b.views, { view }
+      b\add_view_ref!
+      assert.equal 1, b.viewers
 
-  describe '.remove_view_ref(view)', ->
-    it 'removes the specified view from .views', ->
+  describe '.remove_view_ref()', ->
+    it 'decrements the number of viewers', ->
       b = buffer ''
-      view = {}
-      b\add_view_ref view
-      b\remove_view_ref view
-      assert.same b.views, {}
+      b\add_view_ref!
+      b\remove_view_ref!
+      assert.equal 0, b.viewers
 
   describe 'ensuring that buffer titles are globally unique', ->
     context 'when setting a file for a buffer', ->
@@ -628,3 +626,16 @@ describe 'Buffer', ->
         b = buffer 'foo'
         b.title = 'Sir Buffer'
         assert.spy(handler).was_called!
+
+  context 'resource management', ->
+    it 'buffers are collected properly', ->
+      b = buffer 'foobar'
+      buffers = setmetatable { b }, __mode: 'v'
+      b = nil
+      collectgarbage!
+      assert.is_nil buffers[1]
+
+    it 'memory usage is stable', ->
+      assert_memory_stays_within '5Kb', 30, ->
+        buffer 'collect me!'
+

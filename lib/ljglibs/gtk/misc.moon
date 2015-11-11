@@ -6,6 +6,8 @@ require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 require 'ljglibs.gtk.widget'
 
+jit.off true, true
+
 core.define 'GtkMisc < GtkWidget', {
   properties: {
     xalign: 'gfloat'

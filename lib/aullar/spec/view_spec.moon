@@ -14,6 +14,7 @@ describe 'View', ->
     buffer = Buffer ''
     view = View buffer
     view.config.view_line_padding = 0
+    view.margin = 0
     cursor = view.cursor
     selection = view.selection
     window = Gtk.OffscreenWindow default_width: 800, default_height: 640
@@ -195,3 +196,18 @@ describe 'View', ->
       assert.equals 2, cursor.pos
       buffer\redo!
       assert.equals 4, cursor.pos
+
+  context 'resource management', ->
+
+    it 'references are collected properly', ->
+      v = View!
+      views = setmetatable { v }, __mode: 'v'
+      v\destroy!
+      v = nil
+      collect_memory!
+      assert.is_nil views[1]
+
+    it 'does not leave lingering memory', ->
+      assert_memory_stays_within '20Kb', 30, ->
+        v = View!
+        v\destroy!

@@ -10,6 +10,8 @@ require 'ljglibs.gtk.widget'
 gc_ptr = gobject.gc_ptr
 C = ffi.C
 
+jit.off true, true
+
 core.define 'GtkDrawingArea < GtkWidget', {
   new: -> gc_ptr C.gtk_drawing_area_new!
 }, (spec) -> spec.new!

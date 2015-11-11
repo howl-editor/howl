@@ -9,6 +9,7 @@ ref_id_cnt = 0
 weak_handler_id_cnt = 0
 handles = {}
 unrefed_handlers = setmetatable {}, __mode: 'v'
+unrefed_args = setmetatable {}, __mode: 'k'
 options = {
   dispatch_in_coroutine: false
   on_error: error
@@ -16,33 +17,40 @@ options = {
 
 cb_cast = (cb_type, handler) -> ffi_cast('GCallback', ffi_cast(cb_type, handler))
 
+unregister = (handle) ->
+  error "callbacks.unregister(): Missing argument #1 (handle)", 2 unless handle
+  return false unless handles[handle.id]
+  unrefed_handlers[handle.handler] = nil if type(handle.handler) == 'number'
+  handles[handle.id] = nil
+  true
+
 do_dispatch = (data, ...) ->
   ref_id = tonumber ffi_cast('gint', data)
   handle = handles[ref_id]
   if handle
     handler = handle.handler
-    handler = unrefed_handlers[handler] if type(handler) == 'number'
+    handler_args = handle.args
+
+    if type(handler) == 'number'
+      handler = unrefed_handlers[handler]
+      handler_args = unrefed_args[handler]
+
     if handler
       args = pack ...
-      for i = 1, handle.args.n
-        args[args.n + i] = handle.args[i]
+      for i = 1, handler_args.n
+        args[args.n + i] = handler_args[i]
 
       if options.dispatch_in_coroutine
         target = handler
         handler = coroutine.wrap (...) -> target ...
 
-      status, ret = pcall handler, unpack(args, 1, args.n + handle.args.n)
+      status, ret = pcall handler, unpack(args, 1, args.n + handler_args.n)
       return ret == true if status
       options.on_error "callbacks: error in '#{handle.description}' handler: '#{ret}'"
     else
       unregister handle
 
   false
-
-unregister = (handle) ->
-  error "callbacks.unregister(): Missing argument #1 (handle)", 2 unless handle
-  unrefed_handlers[handle.handler] = nil if type(handle.handler) == 'number'
-  handles[handle.id] = nil
 
 dispatch = (data, ...) ->
   status, ret = pcall do_dispatch, data, ...
@@ -72,7 +80,9 @@ dispatch = (data, ...) ->
     if type(handler) != 'number'
       weak_handler_id_cnt += 1
       unrefed_handlers[weak_handler_id_cnt] = handler
+      unrefed_args[handler] = handle.args
       handle.handler = weak_handler_id_cnt
+      handle.args = nil
       handler
 
   cast_arg: (arg) -> ffi.cast('gpointer', arg)

@@ -8,6 +8,7 @@ ffi_cast = ffi.cast
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 Pango = require 'ljglibs.pango'
+signal = require 'ljglibs.gobject.signal'
 require 'ljglibs.cairo.cairo'
 DisplayLines = require 'aullar.display_lines'
 Cursor = require 'aullar.cursor'
@@ -21,6 +22,9 @@ config = require 'aullar.config'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs, :floor} = math
 
+s_unref = signal.unref_handle
+append = table.insert
+
 jit.off true, true
 
 notify = (view, event, ...) ->
@@ -31,45 +35,12 @@ notify = (view, event, ...) ->
 
   false
 
-signals = {
-  on_draw: (_, cr, view) -> view._draw view, cr
-
-  on_focus_in: (_, _, view) ->
-    view._on_focus_in view
-    notify view, 'on_focus_in'
-
-  on_focus_out: (_, _, view) ->
-    view._on_focus_out view
-    notify view, 'on_focus_out'
-
-  on_screen_changed: (_, _, view) -> view._on_screen_changed view
-  on_size_allocate: (_, allocation, view) ->
-    view._on_size_allocate view, ffi_cast('GdkRectangle *', allocation)
-  on_button_press: (_, event, view) ->
-    view._on_button_press view, ffi_cast('GdkEventButton *', event)
-  on_button_release: (_, event, view) ->
-    view._on_button_release view, ffi_cast('GdkEventButton *', event)
-  on_motion_event: (_, event, view) ->
-    view._on_motion_event view, ffi_cast('GdkEventMotion *', event)
-  on_scroll_event: (_, event, view) ->
-    view._on_scroll view, ffi_cast('GdkEventScroll *', event)
-
-  on_key_press: (_, e, view) ->
-    if view.in_preedit
-      ret = view.im_context\filter_keypress(e)
-      return true
-
-    event = parse_key_event e
-    unless notify view, 'on_key_press', event
-      view.im_context\filter_keypress e
-
-    true
-}
-
 text_cursor = Gdk.Cursor.new(Gdk.XTERM)
 
 View = {
   new: (buffer = Buffer('')) =>
+    @_handlers = {}
+
     @margin = 3
     @_base_x = 0
     @_first_visible_line = 1
@@ -88,42 +59,43 @@ View = {
 
     @im_context = Gtk.ImContextSimple!
     with @im_context
-      \on_commit (ctx, s)-> @insert s
+      append @_handlers, \on_commit (ctx, s) ->
+        @insert s
 
-      \on_preedit_start ->
+      append @_handlers, \on_preedit_start ->
         @in_preedit = true
         notify @, 'on_preedit_start'
 
-      \on_preedit_changed (ctx) ->
+      append @_handlers, \on_preedit_changed (ctx) ->
         str, attr_list, cursor_pos = ctx\get_preedit_string!
         notify @, 'on_preedit_change', :str, :attr_list, :cursor_pos
 
-      \on_preedit_end ->
+      append @_handlers, \on_preedit_end ->
         @in_preedit = false
         notify @, 'on_preedit_end'
 
     with @area
       .can_focus = true
       \add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK, Gdk.BUTTON_RELEASE_MASK, Gdk.POINTER_MOTION_MASK, Gdk.SCROLL_MASK)
-      \on_key_press_event signals.on_key_press, @
-      \on_button_press_event signals.on_button_press, @
-      \on_button_release_event signals.on_button_release, @
-      \on_motion_notify_event signals.on_motion_event, @
-      \on_scroll_event signals.on_scroll_event, @
-      \on_draw signals.on_draw, @
-      \on_screen_changed signals.on_screen_changed, @
-      \on_size_allocate signals.on_size_allocate, @
-      \on_focus_in_event signals.on_focus_in, @
-      \on_focus_out_event signals.on_focus_out, @
-
       font_desc = Pango.FontDescription {
         family: @config.view_font_name,
         size: @config.view_font_size * Pango.SCALE
       }
       \override_font font_desc
 
+      append @_handlers, \on_key_press_event self\_on_key_press
+      append @_handlers, \on_button_press_event self\_on_button_press
+      append @_handlers, \on_button_release_event self\_on_button_release
+      append @_handlers, \on_motion_notify_event self\_on_motion_event
+      append @_handlers, \on_scroll_event self\_on_scroll
+      append @_handlers, \on_draw self\_draw
+      append @_handlers, \on_screen_changed self\_on_screen_changed
+      append @_handlers, \on_size_allocate self\_on_size_allocate
+      append @_handlers, \on_focus_in_event self\_on_focus_in
+      append @_handlers, \on_focus_out_event self\_on_focus_out
+
     @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_HORIZONTAL
-    @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
+    append @_handlers, @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
       @base_x = floor adjustment.value
       @area\queue_draw!
@@ -137,7 +109,7 @@ View = {
     @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
     @vertical_scrollbar.no_show_all = not config.view_show_v_scrollbar
 
-    @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
+    append @_handlers, @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
       @_scrolling_vertically = true
       line = math.floor adjustment.value + 0.5
@@ -155,19 +127,24 @@ View = {
       @vertical_scrollbar
     }
 
+    append @_handlers, @bin\on_destroy self\_on_destroy
+
     @_buffer_listener = {
-      on_inserted: (_, b, args) -> @\_on_buffer_modified b, args, 'inserted'
-      on_deleted: (_, b, args) -> @\_on_buffer_modified b, args, 'deleted'
-      on_changed: (_, b, args) -> @\_on_buffer_modified b, args, 'changed'
-      on_styled: (_, b, args) -> @\_on_buffer_styled b, args
-      on_undo: (_, b, args) -> @\_on_buffer_undo b, args
-      on_redo: (_, b, args) -> @\_on_buffer_redo b, args
-      on_markers_changed: (_, b, args) -> @\_on_buffer_markers_changed b, args
+      on_inserted: (_, b, args) -> self\_on_buffer_modified b, args, 'inserted'
+      on_deleted: (_, b, args) -> self\_on_buffer_modified b, args, 'deleted'
+      on_changed: (_, b, args) -> self\_on_buffer_modified b, args, 'changed'
+      on_styled: (_, b, args) -> self\_on_buffer_styled b, args
+      on_undo: (_, b, args) -> self\_on_buffer_undo b, args
+      on_redo: (_, b, args) -> self\_on_buffer_redo b, args
+      on_markers_changed: (_, b, args) -> self\_on_buffer_markers_changed b, args
       last_line_shown: (_, b) -> @last_visible_line
     }
 
     @buffer = buffer
     @config\add_listener self\_on_config_changed
+
+  destroy: =>
+    @bin\destroy!
 
   properties: {
 
@@ -505,7 +482,7 @@ View = {
     for line_nr = from_line, to_line
       @display_lines[line_nr] = nil
 
-  _draw: (cr) =>
+  _draw: (_, cr) =>
     p_ctx = @area.pango_context
     clip = cr.clip_extents
     conf = @config
@@ -577,6 +554,18 @@ View = {
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
     @horizontal_scrollbar_alignment.left_padding = @gutter_width
     @gutter\sync_width @buffer, force: true
+
+  _on_destroy: =>
+    @listener = nil
+    @selection = nil
+    @cursor\destroy!
+    @cursor = nil
+    @config\detach!
+    @_buffer\remove_listener(@_buffer_listener) if @_buffer
+
+    -- disconnect signal handlers
+    for h in *@_handlers
+      signal.disconnect h
 
   _on_buffer_styled: (buffer, args) =>
     return unless @showing
@@ -719,15 +708,30 @@ View = {
   _on_focus_in: =>
     @im_context\focus_in!
     @cursor.active = true
+    notify @, 'on_focus_in'
 
   _on_focus_out: =>
     @im_context\focus_out!
     @cursor.active = false
+    notify @, 'on_focus_out'
 
   _on_screen_changed: =>
     @_reset_display!
 
-  _on_button_press: (event) =>
+  _on_key_press: (_, e) =>
+    if @in_preedit
+      ret = @im_context\filter_keypress(e)
+      return true
+
+    event = parse_key_event e
+    unless notify @, 'on_key_press', event
+      @im_context\filter_keypress e
+
+    true
+
+  _on_button_press: (_, event) =>
+    event = ffi_cast('GdkEventButton *', event)
+
     return if event.x <= @gutter_width
     return true if notify @, 'on_button_press', event
 
@@ -746,11 +750,13 @@ View = {
 
       @_selection_active = true
 
-  _on_button_release: (event) =>
+  _on_button_release: (_, event) =>
+    event = ffi_cast('GdkEventButton *', event)
     return if event.button != 1
     @_selection_active = false
 
-  _on_motion_event: (event) =>
+  _on_motion_event: (_, event) =>
+    event = ffi_cast('GdkEventMotion *', event)
     unless @_selection_active
       if @_cur_mouse_cursor != text_cursor
         if event.x > @gutter_width
@@ -770,7 +776,8 @@ View = {
     else
       @cursor\down extend: true
 
-  _on_scroll: (event) =>
+  _on_scroll: (_, event) =>
+    event = ffi_cast('GdkEventScroll *', event)
     if event.direction == Gdk.SCROLL_UP
       @scroll_to @first_visible_line - 1
     elseif event.direction == Gdk.SCROLL_DOWN
@@ -785,7 +792,8 @@ View = {
     elseif event.direction == Gdk.SCROLL_LEFT
       @base_x -= 20
 
-  _on_size_allocate: (allocation) =>
+  _on_size_allocate: (_, allocation) =>
+    allocation = ffi_cast('GdkRectangle *', allocation)
     gdk_window = @area.window
     @im_context.client_window = gdk_window
     if gdk_window != nil

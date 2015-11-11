@@ -107,9 +107,14 @@ Buffer = {
       set: (text) =>
         old_text = @text_buffer and @tostring!
         size = #text
-        @text_buffer = GapBuffer 'char', size, initial: text
         -- +1 on styling size to account for dangling virtual line
-        @styling = Styling size + 1, @_style_listener
+        if @text_buffer
+          @text_buffer\set text, size
+          @styling\reset size + 1
+        else
+          @text_buffer = GapBuffer 'char', size, initial: text
+          @styling = Styling size + 1, @_style_listener
+
         @markers\remove!
         @_last_scanned_line = 0
         @_lines = {}

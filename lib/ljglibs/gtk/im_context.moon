@@ -12,6 +12,8 @@ signal = gobject.signal
 C, ffi_string, ffi_new, ffi_gc = ffi.C, ffi.string, ffi.new, ffi.gc
 pack, unpack = table.pack, table.unpack
 
+jit.off true, true
+
 GtkIMContext = ffi.typeof 'GtkIMContext *'
 
 core.define 'GtkIMContext < GObject', {

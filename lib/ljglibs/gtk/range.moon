@@ -5,6 +5,8 @@ require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 require 'ljglibs.gtk.adjustment'
 
+jit.off true, true
+
 core.define 'GtkRange < GtkWidget', {
   properties: {
     adjustment: 'GtkAdjustment *'
