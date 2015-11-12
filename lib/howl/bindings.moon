@@ -4,7 +4,7 @@
 _G = _G
 import table, coroutine, pairs from _G
 import tostring, pcall, callable, type, print, setmetatable, typeof from _G
-import signal, command from howl
+import signal, command, sys from howl
 append = table.insert
 
 signal.register 'key-press',
@@ -70,16 +70,22 @@ substitute_keyname = (event) ->
 
 find_handlers = (event, source, translations, keymaps, ...) ->
   handlers = {}
+  empty = {}
+  os = sys.info.os
+
   for map in *keymaps
     continue unless map
-    source_map = map[source] or {}
+
+    source_map = map[source] or empty
     handler = nil
 
-    source_map_binding_for = source_map.binding_for
     map_binding_for = map.binding_for
+    source_map_binding_for = source_map.binding_for
+    os_map = map.for_os and map.for_os[os] or empty
+    os_source_map = os_map[source] or empty
 
     for t in *translations
-      handler = source_map[t] or map[t]
+      handler = os_source_map[t] or source_map[t] or os_map[t] or map[t]
       break if handler
 
       if source_map_binding_for or map_binding_for
@@ -138,12 +144,14 @@ export translate_key = (event) ->
 
   translations = {}
   append translations, ctrl .. meta .. alt .. event.character if event.character
+  modifiers = ctrl .. meta .. shift .. alt
 
   if event.key_name and event.key_name != event.character
-    append translations, ctrl .. meta .. shift .. alt .. event.key_name
+    append translations, modifiers .. event.key_name
 
-  append translations, ctrl .. meta .. shift .. alt .. alternate if alternate
-  append translations, ctrl .. meta .. shift .. alt .. event.key_code
+  append translations, modifiers .. alternate if alternate
+  append translations, modifiers .. event.key_code
+
   translations
 
 export dispatch = (event, source, keymaps, ...) ->
@@ -211,12 +219,17 @@ export keystrokes_for = (handler, source = nil) ->
 
   keystrokes
 
-export action_for = (translation, source='editor') ->
+export action_for = (tr, source='editor') ->
+  os = sys.info.os
+  empty = {}
+
   for i = #keymaps, 1, -1
     km = keymaps[i]
     continue unless km
-    source_km = km[source] or {}
-    handler = source_km[translation] or km[translation]
+    source_km = km[source] or empty
+    os_map = km.for_os and km.for_os[os] or empty
+    os_source_map = os_map[source] or empty
+    handler = os_source_map[tr] or os_map[tr] or source_km[tr] or km[tr]
     return handler if handler
   nil
 

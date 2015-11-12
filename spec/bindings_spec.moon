@@ -1,4 +1,4 @@
-import bindings, signal, command from howl
+import bindings, signal, command, sys from howl
 append = table.insert
 
 describe 'bindings', ->
@@ -55,11 +55,11 @@ describe 'bindings', ->
         assert.same tr, { '123' }
 
     context 'with modifiers', ->
-      it 'prepends a modifier string representation to all translations for ctrl and alt', ->
+      it 'prepends a modifier string representation to all translations for ctrl, meta and alt', ->
         tr = bindings.translate_key
           character: 'A', key_name: 'a', key_code: 123,
-          control: true, alt: true
-        mods = 'ctrl_alt_'
+          control: true, alt: true, meta: true
+        mods = 'ctrl_meta_alt_'
         assert.same tr, { mods .. 'A', mods .. 'a', mods .. '123' }
 
       it 'emits the shift modifier if the character is known', ->
@@ -140,9 +140,9 @@ describe 'bindings', ->
       it 'tries each translated key and .on_unhandled in order for a keymap, and optional source specific map', ->
         keymap = Spy!
         bindings.process { character: 'A', key_name: 'a', key_code: 65 }, 'my_source', { keymap }
-        assert.same { 'my_source', 'binding_for', 'A', 'a', '65', 'on_unhandled' }, keymap.reads
+        assert.same { 'my_source', 'binding_for', 'for_os', 'A', 'a', '65', 'on_unhandled' }, keymap.reads
 
-      it 'prefers source specific bindings', ->
+      it 'prefers source specific bindings over generic ones', ->
         specific_map = A: spy.new -> nil
         general_map = {
           A: spy.new -> nil
@@ -152,13 +152,36 @@ describe 'bindings', ->
         assert.spy(specific_map.A).was_called(1)
         assert.spy(general_map.A).was_not_called!
 
+      it 'prefers OS specific bindings over generic ones', ->
+        specific_map = A: spy.new -> nil
+        general_map = {
+          A: spy.new -> nil
+          for_os:
+            [sys.info.os]: specific_map
+        }
+        bindings.process { character: 'A', key_name: 'a', key_code: 65 }, 'my_source', { general_map }
+        assert.spy(specific_map.A).was_called(1)
+        assert.spy(general_map.A).was_not_called!
+
+      it 'supports source specific bindings in OS bindings', ->
+        specific_map = A: spy.new -> nil
+        general_map = {
+          for_os:
+            [sys.info.os]:
+              A: spy.new -> nil
+              my_source: specific_map
+        }
+        bindings.process { character: 'A', key_name: 'a', key_code: 65 }, 'my_source', { general_map }
+        assert.spy(specific_map.A).was_called(1)
+        assert.spy(general_map.for_os[sys.info.os].A).was_not_called!
+
       it 'searches all extra keymaps and the bindings in the stack', ->
         key_args = character: 'A', key_name: 'a', key_code: 65
         extra_map = Spy!
         stack_map = Spy!
         bindings.push stack_map
         bindings.process key_args, 'editor', { extra_map }
-        assert.equal 6, #stack_map.reads
+        assert.equal 7, #stack_map.reads
         assert.same stack_map.reads, extra_map.reads
 
       context 'when .on_unhandled is defined and keys are not found in a keymap', ->
@@ -345,6 +368,23 @@ describe 'bindings', ->
       bindings.push ctrl_x: 'my-old-command'
       bindings.push ctrl_x: 'my-new-command'
       assert.equals 'my-new-command', bindings.action_for 'ctrl_x'
+
+    it 'prefers source specific bindings over generic ones', ->
+      bindings.push {
+        ctrl_x: 'my-old-command'
+        my_source:
+          ctrl_x: 'my-source-command'
+      }
+      assert.equals 'my-source-command', bindings.action_for('ctrl_x', 'my_source')
+
+    it 'prefers OS specific bindings over generic ones', ->
+      bindings.push {
+        ctrl_x: 'my-old-command'
+        for_os:
+          [sys.info.os]:
+            ctrl_x: 'my-os-command'
+      }
+      assert.equals 'my-os-command', bindings.action_for 'ctrl_x'
 
     it 'returns nil if no command was found', ->
       assert.is_nil bindings.action_for 'ctrl_x'
