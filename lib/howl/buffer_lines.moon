@@ -38,7 +38,9 @@ line_mt =
 Line = (nr, buffer) ->
   a_buf = buffer._buffer
 
-  get_line = -> a_buf\get_line nr
+  get_line = ->
+    assert a_buf\get_line(nr), "Stale line reference for line #{nr}"
+
   text = -> get_line!.text
 
   setmetatable {

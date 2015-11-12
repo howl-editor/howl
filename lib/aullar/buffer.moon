@@ -513,6 +513,9 @@ Buffer = {
     revision = part_of_revision and nil or @revisions\push(type, offset, text, prev_text)
 
     lines_changed = text\find('[\n\r]') != nil
+    if not lines_changed and prev_text
+      lines_changed = prev_text\find('[\n\r]') != nil
+
     args = {
       :offset,
       :text,
