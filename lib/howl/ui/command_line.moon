@@ -161,7 +161,7 @@ class CommandLine extends PropertyObject
 
     @current.state = 'stopping'
 
-    if #results > 0
+    if #results > 0 and not @current.evade_history and not @history_recorded
       @record_history!
 
     @clear!
@@ -209,8 +209,10 @@ class CommandLine extends PropertyObject
   _cursor_to_end: =>
     @command_widget.cursor\eof!
 
+  disable_auto_record_history: =>
+    @current.evade_history = true
+
   record_history: =>
-    return if @current.evade_history or @history_recorded
     @history_recorded = true
     command_line = @_capture_command_line!
 

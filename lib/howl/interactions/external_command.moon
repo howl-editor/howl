@@ -51,6 +51,7 @@ class ExternalCommandEntry
     error "No such directory: #{directory}" unless directory.is_directory
 
     @command_line\clear_all!
+    @command_line\disable_auto_record_history!
     @_chdir directory
 
   on_update: (text) =>
@@ -143,6 +144,7 @@ class ExternalCommandEntry
       append _command_history, 1, @command_line.text
     -- remove prompt so correct history is catpured
     @command_line.prompt = ''
+    @command_line\record_history!
     self.finish @directory.path, @command_line.text
 
   _select_from_history: =>
