@@ -89,12 +89,16 @@ howl.aux.lpeg_lexer ->
     S'fF'
   }
 
-  format_conv = c('operator', P'!') * c('special', S'sra')
+  format_conv = c('operator', P'!') * (c('special', S'sra') + c('error', (P 1) - P'}'))^-1
   format_number = any {
     c 'number', integer
     c('operator', P'{') * (-P'}' * V'all') * c('operator', P'}')
   }
-  format_spec = c('operator', ':') * format_number^1
+  format_part = any {
+    format_number
+    c 'special', (P 1) - S'{}'
+  }
+  format_spec = c('operator', ':') * format_part^0
 
   gen_string_interpolation = (type) ->
     sequence {
