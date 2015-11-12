@@ -7,7 +7,7 @@ ffi = require 'ffi'
 jit = require 'jit'
 C = ffi.C
 
-timer_callback = ffi.cast 'GSourceFunc', callbacks.bool1
+timer_callback = callbacks.source_func
 
 jit.off true, true
 
