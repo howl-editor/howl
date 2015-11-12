@@ -56,7 +56,7 @@ class CommandLine extends PropertyObject
           @current.state = 'running'
           @show!
           bindings.cancel_capture!
-          if @spillover
+          if @spillover and not @spillover.is_empty
             -- allow editor to resize for correct focussing behavior
             howl.timer.asap ->
               @write @spillover if not @spillover.is_empty
@@ -132,6 +132,11 @@ class CommandLine extends PropertyObject
     if not (@stack_depth > 0)
       error 'Cannot run_after_finish - no running activity'
     table.insert @next_run_queue, f
+
+  switch_to: (new_command) =>
+    captured_text = @text
+    @abort_all!
+    howl.command.run new_command .. ' ' .. captured_text
 
   _process_run_after_finish: =>
     while true

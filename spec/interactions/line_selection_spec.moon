@@ -48,3 +48,13 @@ describe 'select_line', ->
       assert.same {'one', 'two'}, lines[2]
       assert.same {'one'}, lines[3]
       assert.same {'one', 'two', 'three'}, lines[4]
+
+    context 'when `find` function is provided', ->
+      it 'uses the find function to find matching lines', ->
+        find = (query, text) ->
+          return {{1,3}} if text == 'two'
+        local lines
+        within_activity (-> interact.select_line(:editor, lines: buffer.lines, :find)), ->
+          command_line\write 'abc'
+          lines = get_ui_list_widget_column 2
+        assert.same {'two'}, lines
