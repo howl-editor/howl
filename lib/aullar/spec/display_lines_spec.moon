@@ -103,3 +103,48 @@ describe 'DisplayLines', ->
         display_lines[3] = nil
         assert.equals block, display_lines[2].block
         assert.equals block, display_lines[3].block
+
+  describe 'window management (cached lines)', ->
+    before_each ->
+      lines = {}
+      for i = 1, 30
+        lines[#lines + 1] = "This is line #{i}"
+
+      buffer.text = table.concat lines, '\n'
+
+    it 'caches lines for the set window, plus 25% of the window size', ->
+      display_lines\set_window 10, 20
+      for i = 1, 30 -- ref them all
+        display_lines[i]
+
+      for i = 1, 7
+        assert.is_nil rawget display_lines, i
+
+      for i = 8, 22
+        assert.is_not_nil rawget display_lines, i
+
+      for i = 23, 30
+        assert.is_nil rawget display_lines, i
+
+    it 'removes existing entries when setting the window', ->
+      for i = 1, 30 -- ref them all
+        display_lines[i]
+
+      assert.is_not_nil rawget display_lines, 7
+      assert.is_not_nil rawget display_lines, 23
+
+      display_lines\set_window 10, 20
+
+      assert.is_nil rawget display_lines, 7
+      assert.is_nil rawget display_lines, 23
+
+    it 'updates .min and .max when setting the window', ->
+      display_lines[5]
+      display_lines[25]
+      assert.equals 5, display_lines.min
+      assert.equals 25, display_lines.max
+
+      display_lines\set_window 10, 20
+
+      assert.equals 22, display_lines.max
+      assert.equals 8, display_lines.min

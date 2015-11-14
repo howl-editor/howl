@@ -194,6 +194,9 @@ View = {
             @_last_visible_line = line.nr
             y += d_line.height
 
+          -- +1 for last visible, since next line might be partially shown
+          @display_lines\set_window @_first_visible_line, @_last_visible_line + 1
+
         @_last_visible_line
 
       set: (line) =>

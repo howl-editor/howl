@@ -235,7 +235,7 @@ DisplayLine = define_class {
       @layout.spacing = (config.view_line_padding * 2) * SCALE
 
     @styling = buffer.styling\get(line.start_offset, line.end_offset)
-    -- complexiy sanity check before asking Pango to determine extents,
+    -- complexity sanity check before asking Pango to determine extents,
     -- as it will happily block seemingly for ever if someone manages
     -- to cram an entire app into one line (e.g. minimized JS)
     if #@styling > 3000
@@ -368,15 +368,37 @@ get_wrap_indicator = (pango_context, view) ->
 
 (view, tab_array, buffer, pango_context) ->
   setmetatable {
+    min: math.huge
     max: 0
     tab_array: tab_array,
     wrap_indicator: get_wrap_indicator pango_context, view
+    window: {}
+    set_window: (first, last) =>
+      w_size = (last - first) + 1
+      edge = floor w_size / 4
+      first = max 1, first - edge
+      last = last + edge
+
+      for i = @min, first - 1
+        @[i] = nil
+
+      for i = last, @max
+        @[i] = nil
+
+      @window = :first, :last, size: (last - first) + 1
+      @min = max first, @min
+      @max = min last, @max
+
   }, {
     __index: (nr) =>
       line = buffer\get_line nr
       return nil unless line
       d_line = DisplayLine @, view, buffer, pango_context, line
+      @min = min @min, nr
       @max = max @max, nr
-      rawset @, nr, d_line
+      outside = @window.size and (nr < @window.first or nr > @window.last)
+      if not outside
+        rawset @, nr, d_line
+
       d_line
   }
