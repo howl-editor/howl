@@ -78,7 +78,7 @@ howl.aux.lpeg_lexer ->
   "cstringArray",
   }
 
-  builtin = c 'class', -B'.' * any [nim_identifier(type_name) for type_name in *builtin_types]
+  builtin = c 'type', -B'.' * any [nim_identifier(type_name) for type_name in *builtin_types]
 
   comment = c 'comment', P'#' * scan_until(eol)
   operator = c 'operator', S'=+-*/<>@$~&%|!?^.:\\[]{}(),'
