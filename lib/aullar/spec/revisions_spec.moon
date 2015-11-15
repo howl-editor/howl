@@ -3,6 +3,7 @@
 
 Revisions = require 'aullar.revisions'
 Buffer = require 'aullar.buffer'
+config = require 'aullar.config'
 
 describe 'Revisions', ->
   local revisions, buffer
@@ -10,6 +11,7 @@ describe 'Revisions', ->
   before_each ->
     revisions = Revisions!
     buffer = Buffer!
+    config.undo_limit = 30
 
   describe 'push(type, offset, text, meta)', ->
     it 'adds revisions with the correct parameters', ->
@@ -19,7 +21,7 @@ describe 'Revisions', ->
         offset: 3,
         text: 'foo',
         meta: {}
-      }, revisions[1]
+      }, revisions.entries[1]
 
       revisions\push 'deleted', 3, 'f', nil, foo: 1
       assert.same {
@@ -27,7 +29,7 @@ describe 'Revisions', ->
         offset: 3,
         text: 'f',
         meta: { foo: 1 }
-      }, revisions[2]
+      }, revisions.entries[2]
 
       revisions\push 'changed', 3, 'f', 'x'
       assert.same {
@@ -36,7 +38,7 @@ describe 'Revisions', ->
         text: 'f',
         prev_text: 'x',
         meta: {}
-      }, revisions[3]
+      }, revisions.entries[3]
 
     it 'returns the added revision', ->
       rev = revisions\push 'inserted', 3, 'foo'
@@ -46,6 +48,13 @@ describe 'Revisions', ->
         text: 'foo',
         meta: {}
       }, rev
+
+    it 'keeps at most config.undo_limit revisions', ->
+      config.undo_limit = 1
+      revisions\push 'inserted', 3, 'foo'
+      revisions\push 'inserted', 1, 'bar'
+      assert.equals 1, #revisions
+      assert.equals 'bar', revisions.entries[1].text
 
     describe 'adjacent edits', ->
       it 'merges subsequent inserts', ->
@@ -186,13 +195,20 @@ describe 'Revisions', ->
       }, revisions\forward(buffer)
 
       assert.equal '1y23x45678', buffer.text -- and both should be reapplied
-      assert.equal 3, #revisions -- with three revisions left again
+      assert.equal 3, #revisions.entries -- with three revisions left again
+
+    it 'accounts for empty groups', ->
+      revisions\start_group!
+      revisions\end_group!
+      assert.equal 0, #revisions.entries
+      assert.equal 0, #revisions
 
     it 'does not merge grouped revisions into non-group revisions', ->
       revisions\push 'inserted', 3, 'f'
       revisions\start_group!
       revisions\push 'inserted', 4, 'u'
-      assert.equal 2, #revisions
+      revisions\end_group!
+      assert.equal 2, #revisions.entries
 
     it 'treats nested groups as one big group', ->
       buffer.text = '  '
@@ -217,6 +233,48 @@ describe 'Revisions', ->
 
       revisions\pop buffer
       assert.equal ' x', buffer.text
+
+    it 'counts each group as one revision', ->
+      revisions\start_group!
+      revisions\push 'inserted', 3, 'x'
+      revisions\push 'inserted', 1, 'y'
+      revisions\end_group!
+
+      assert.equals 1, #revisions
+
+      revisions\start_group!
+      revisions\push 'inserted', 3, 'bar'
+      revisions\push 'inserted', 1, 'zed'
+      revisions\end_group!
+
+      assert.equals 2, #revisions
+
+    it 'treats undo groups as single revisions when applying the undo limit', ->
+      config.undo_limit = 1
+      revisions\start_group!
+      revisions\push 'inserted', 3, 'x'
+      revisions\push 'inserted', 1, 'y'
+      revisions\end_group!
+
+      assert.equals 2, #revisions.entries
+      assert.equals 1, #revisions
+
+      config.undo_limit = 2
+      revisions\start_group!
+      revisions\push 'inserted', 3, 'bar'
+      revisions\push 'inserted', 1, 'zed'
+      revisions\end_group!
+
+      assert.equals 4, #revisions.entries
+      assert.equals 2, #revisions
+
+      revisions\start_group!
+      revisions\push 'inserted', 3, 'last'
+      revisions\end_group!
+
+      assert.equals 3, #revisions.entries
+      assert.equals 2, #revisions
+      assert.equals 'last', revisions.entries[3].text
 
   describe 'over-arching concerns', ->
     it 'push resets the ability to forward again', ->

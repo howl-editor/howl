@@ -99,6 +99,11 @@ define_options = ->
       default:
         foreground: '#008000'
         background: '#ff69b4'
+    },
+
+    undo_limit: {
+      type: 'number',
+      default: 50
     }
 
   }

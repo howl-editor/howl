@@ -850,7 +850,7 @@ describe 'Buffer', ->
           text: 'xx',
           size: 2,
           invalidate_offset: 3,
-          revision: b.revisions[1]
+          revision: b.revisions.entries[1]
           part_of_revision: false,
           lines_changed: false
         }
@@ -868,7 +868,7 @@ describe 'Buffer', ->
           text: 'll',
           size: 2,
           invalidate_offset: 3,
-          revision: b.revisions[1],
+          revision: b.revisions.entries[1],
           part_of_revision: false,
           lines_changed: false
         }
@@ -888,7 +888,7 @@ describe 'Buffer', ->
           prev_text: 'el',
           size: 2,
           invalidate_offset: 2,
-          revision: b.revisions[1],
+          revision: b.revisions.entries[1],
           part_of_revision: false,
           lines_changed: false,
           changes: {

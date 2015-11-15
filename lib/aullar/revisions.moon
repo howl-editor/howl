@@ -2,6 +2,9 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:define_class} = require 'aullar.util'
+config = require 'aullar.config'
+{:remove} = table
+{:max} = math
 
 coalesce = (entry, prev) ->
   return false if not prev
@@ -50,6 +53,10 @@ define_class {
     for i = @current + 1, #@entries
       @entries[i] = nil
 
+    unless group
+      @count += 1
+      @_prune!
+
     entry
 
   pop: (buffer) =>
@@ -70,6 +77,8 @@ define_class {
 
     if entry.group and @last and @last.group == entry.group
       return @pop(buffer)
+    else
+      @count -= 1
 
     entry
 
@@ -92,15 +101,17 @@ define_class {
     next = @entries[@current + 1]
     if entry.group and next and next.group == entry.group
       return @forward(buffer)
+    else
+      @count += 1
 
     entry
 
   clear: =>
     @entries = {}
-    @popped_entries = nil
     @grouping = 0
     @group_id = 0
     @current = 0
+    @count = 0
 
   start_group: =>
     @group_id += 1 if @grouping == 0
@@ -108,10 +119,29 @@ define_class {
 
   end_group: =>
     @grouping -= 1
+    if @grouping == 0
+      if @current > 0 and @entries[@current].group == @group_id
+        @count += 1
+        @_prune!
+
+  _prune: =>
+    limit = config.undo_limit
+    while @count > max limit, 1
+      idx = 1 -- remove this many entries
+      rev = @entries[idx]
+      if rev.group -- but if grouped, remove the entire group
+        while true
+          next = @entries[idx + 1]
+          break if not next or next.group != rev.group
+          idx += 1
+          rev = next
+
+      for i = 1, idx
+        remove @entries, 1
+        @current -= 1
+
+      @count -= 1
 
 }, {
-  __index: (k) =>
-    return @entries[k] if type(k) == 'number'
-
-  __len: => @current
+  __len: => @count
 }
