@@ -97,8 +97,8 @@ howl.aux.lpeg_lexer ->
 
   boolean = c 'special', nim_identifier('true') + nim_identifier('false')
 
-  type_name = c 'class', upper^1 * (alpha + digit + '_')^0
-  backquoted_type_name = c 'class', P'`' * type_name * P'`'
+  type_name = c 'type', upper^1 * (alpha + digit + '_')^0
+  backquoted_type_name = c 'type', P'`' * type_name * P'`'
   -- backquoted_type_name = c 'class', P'`' * type_name * P'`'
 
   pragma = c 'preproc', span('{.', '}')
