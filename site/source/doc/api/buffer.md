@@ -42,6 +42,10 @@ print(buffer.can_undo)
 -- => false
 ```
 
+### collect_revisions
+
+Whether modifying operations should collect undo revisions. Defaults to true.
+
 ### config
 
 A configuration object that can be used to access and manipulate [config]

@@ -251,6 +251,20 @@ describe 'Buffer', ->
       b.can_undo = true
       assert.is_false b.can_undo
 
+  describe '.collect_revisions', ->
+    context 'when set to false', ->
+      it 'does not collect undo information', ->
+        b = Buffer {}
+        b.collect_revisions = false
+        b\append 'foo!'
+        assert.is_false b.can_undo
+
+      it 'clears existing undo information', ->
+        b = buffer 'zed'
+        assert.is_true b.can_undo
+        b.collect_revisions = false
+        assert.is_false b.can_undo
+
   describe 'as_one_undo(f)', ->
     it 'allows for grouping actions as one undo', ->
       b = buffer 'hello'

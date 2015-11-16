@@ -690,6 +690,13 @@ describe 'Buffer', ->
 
       assert.same {true, true}, flags
 
+  describe '.collect_revisions', ->
+    it 'causes revisions to be skipped when false', ->
+      b = Buffer ''
+      b.collect_revisions = false
+      b\insert 1, 'x'
+      assert.is_false b.can_undo
+
   describe 'refresh_styling_at(line_nr, to_line [, opts])', ->
     local b, styling, mode
 

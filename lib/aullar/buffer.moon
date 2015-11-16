@@ -77,13 +77,21 @@ Buffer = {
       on_markers_added: self\_on_markers_changed
       on_markers_removed: self\_on_markers_changed
     }
+    @_collect_revisions = false
     @text = text
-    @revisions\clear!
+    @_collect_revisions = true
 
   properties: {
     size: => tonumber @text_buffer.size
     length: => tonumber @_length
     can_undo: => #@revisions > 0
+    collect_revisions: {
+      get: => @_collect_revisions
+      set: (v) =>
+        if v != @_collect_revisions
+          @_collect_revisions = v
+          @revisions\clear! unless v
+    }
 
     nr_lines: =>
       unless @_nr_lines
@@ -400,6 +408,9 @@ Buffer = {
     @notify('redo', revision) if revision
 
   as_one_undo: (f) =>
+    unless @_collect_revisions
+      return f!
+
     @revisions\start_group!
     status, ret = pcall f
     @revisions\end_group!
@@ -510,7 +521,8 @@ Buffer = {
       return
 
     part_of_revision = @revisions.processing
-    revision = part_of_revision and nil or @revisions\push(type, offset, text, prev_text)
+    revision = if not part_of_revision and @_collect_revisions
+      @revisions\push(type, offset, text, prev_text)
 
     lines_changed = text\find('[\n\r]') != nil
     if not lines_changed and prev_text

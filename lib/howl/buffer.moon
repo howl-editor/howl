@@ -111,6 +111,10 @@ class Buffer extends PropertyObject
     get: => @_buffer.can_undo
     set: (value) => @_buffer\clear_revisions! if not value
 
+  @property collect_revisions:
+    get: => @_buffer.collect_revisions
+    set: (v) => @_buffer.collect_revisions = v
+
   @property size: get: => @_buffer.size
   @property length: get: => @_buffer.length
   @property lines: get: => BufferLines self, @_buffer
