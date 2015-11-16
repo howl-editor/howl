@@ -8,6 +8,7 @@ append = table.insert
 class ActionBuffer extends Buffer
   new:  =>
     super {}
+    @collect_revisions = false
 
   insert: (object, pos, style_name) =>
     local pos_after

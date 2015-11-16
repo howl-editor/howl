@@ -5,6 +5,7 @@ import app, Buffer, mode from howl
 
 new_buffer = (title, text, mode = {}) ->
   buffer = Buffer mode
+  buffer.collect_revisions = false
   buffer.title = title
   buffer.text = text
   buffer.read_only = true

@@ -44,6 +44,7 @@ class Replacement
 
     -- @buffer always holds original text
     @buffer = howl.Buffer!
+    @buffer.collect_revisions = false
     @buffer.text = @text
 
     @start_pos = opts.editor.active_chunk.start_pos or 1

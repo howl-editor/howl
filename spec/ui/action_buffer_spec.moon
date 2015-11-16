@@ -12,6 +12,9 @@ describe 'ActionBuffer', ->
     buf\append ' world'
     assert.equal buf.text, 'hello world'
 
+  it 'does not collection undo revisions by default', ->
+    assert.is_false ActionBuffer().collect_revisions
+
   describe '.insert(object, pos[ , style])', ->
 
     context 'with no specified style', ->
