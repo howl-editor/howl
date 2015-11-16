@@ -74,6 +74,8 @@
     ctrl_shift_d:     'vc-diff-file'
     ctrl_alt_d:       'vc-diff'
 
+    alt_g:            'goto-line'
+
   }
 
   ctrl_o:           'open'
@@ -143,6 +145,8 @@
 
         ctrl_shift_d:     'vc-diff-file'
         ctrl_meta_d:      'vc-diff'
+
+        ctrl_g:           'goto-line'
       }
 
       meta_o:           'open'
