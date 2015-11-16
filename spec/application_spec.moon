@@ -79,6 +79,24 @@ describe 'Application', ->
     buffers = [b.title for b in *application.buffers]
     assert.same { 'visible', 'last_shown', 'hidden' }, buffers
 
+  describe '.recently_closed', ->
+    editor = Editor Buffer {}
+
+    it 'contains recently closed files', ->
+      File.with_tmpfile (file) ->
+        file.contents = 'test'
+        buffer = application\open_file(file, editor)
+        application\close_buffer(buffer)
+        assert.same {file.path}, [f.file.path for f in *application.recently_closed]
+
+    it 'does not show open files', ->
+      File.with_tmpfile (file) ->
+        file.contents = 'test'
+        buffer = application\open_file(file, editor)
+        application\close_buffer(buffer)
+        application\open_file(file, editor)
+        assert.same {}, [f.file.path for f in *application.recently_closed]
+
   describe 'synchronize()', ->
     context "when a buffer's file has changed on disk", ->
       local b

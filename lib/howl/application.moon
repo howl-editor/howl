@@ -27,6 +27,7 @@ class Application extends PropertyObject
     @windows = {}
     @_editors = {}
     @_buffers = {}
+    @_recently_closed = {}
     bundle.dirs = { @root_dir / 'bundles' }
     @_load_base!
     bindings.push keymap
@@ -38,6 +39,8 @@ class Application extends PropertyObject
     buffers = { table.unpack @_buffers }
     sort_buffers buffers
     buffers
+
+  @property recently_closed: get: => moon.copy @_recently_closed
 
   @property editors: get: => @_editors
 
@@ -116,6 +119,13 @@ class Application extends PropertyObject
 
     @_buffers = [b for b in *@_buffers when b != buffer]
 
+    if buffer.file
+      @_recently_closed = [file_info for file_info in *@_recently_closed when file_info.file != buffer.file]
+      append @_recently_closed, {
+        file: buffer.file
+        last_shown: buffer.last_shown
+      }
+
     if buffer.showing
       for editor in *@editors
         if editor.buffer == buffer
@@ -140,6 +150,7 @@ class Application extends PropertyObject
       log.error "Failed to open #{file}: #{err}"
       nil
     else
+      @_recently_closed = [file_info for file_info in *@_recently_closed when file_info.file != buffer.file]
       signal.emit 'file-opened', :file, :buffer
       buffer, editor
 
@@ -212,13 +223,16 @@ class Application extends PropertyObject
 
   save_session: =>
     session = {
-      version: 1
+      version: 2
       buffers: {}
+      recently_closed: {}
       window: {
         maximized: @window.maximized
         fullscreen: @window.fullscreen
       }
     }
+
+    open_files = {}
 
     for b in *@buffers
       continue unless b.file
@@ -226,6 +240,14 @@ class Application extends PropertyObject
         file: b.file.path
         last_shown: b.last_shown
         properties: b.properties
+      }
+      open_files[b.file.path] = true
+
+    for f in *@_recently_closed
+      continue if open_files[f.file.path]
+      append session.recently_closed, {
+        file: f.file.path
+        last_shown: f.last_shown
       }
 
     @settings\save_system 'session', session
@@ -311,7 +333,7 @@ class Application extends PropertyObject
   _restore_session: (window, restore_buffers) =>
     session = @settings\load_system 'session'
 
-    if session and session.version == 1
+    if session and session.version >= 1
       if restore_buffers
         for entry in *session.buffers
           file = File(entry.file)
@@ -323,6 +345,9 @@ class Application extends PropertyObject
             buffer.properties = entry.properties
 
           log.error "Failed to load #{file}: #{err}" unless status
+
+      if session.version >= 2
+        @_recently_closed = [{file: File(file_info.file), last_shown: file_info.last_shown} for file_info in *session.recently_closed]
 
       if session.window
         with session.window
