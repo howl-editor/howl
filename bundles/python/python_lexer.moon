@@ -1,6 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+pairs = pairs
+
 howl.aux.lpeg_lexer ->
   c = capture
 
@@ -100,22 +102,28 @@ howl.aux.lpeg_lexer ->
   }
   format_spec = c('operator', ':') * format_part^0
 
-  gen_string_interpolation = (type) ->
-    sequence {
+  string_kinds =
+    sq_string: "'"
+    dq_string: '"'
+    tsq_string: "'''"
+    tdq_string: '"""'
+  interpolations = {}
+  f_strings = {}
+  for kind, quote in pairs string_kinds
+    interpolations["#{kind}_interpolation"] = sequence {
       (V'all' - S'}:!')^1
       format_conv^-1
       format_spec^-1
       c 'operator', '}'
-      V"#{type}q_string_chunk"
+      V"#{kind}_chunk"
     }
-
-  gen_string_chunk = (quote, type) ->
-    sequence {
+    interpolations["#{kind}_chunk"] = sequence {
       c 'string', scan_to(P(quote) + #P'{', P'\\')
-      V"#{type}q_interpolation"^0
+      V"#{kind}_interpolation"^0
     }
+    f_strings[#f_strings+1] = c('string', quote) * V"#{kind}_chunk"
 
-  P {
+  rules = {
     'all'
 
     all: any {
@@ -133,23 +141,13 @@ howl.aux.lpeg_lexer ->
       decorator
     }
 
-    tsq_interpolation: gen_string_interpolation 'ts'
-    tdq_interpolation: gen_string_interpolation 'td'
-    sq_interpolation: gen_string_interpolation 's'
-    dq_interpolation: gen_string_interpolation 'd'
-    tsq_string_chunk: gen_string_chunk "'''", 'ts'
-    tdq_string_chunk: gen_string_chunk '"""', 'td'
-    sq_string_chunk: gen_string_chunk "'", 's'
-    dq_string_chunk: gen_string_chunk '"', 'd'
-    f_string: any {
-      capture('string', "'''") * V'tsq_string_chunk'
-      capture('string', '"""') * V'tdq_string_chunk'
-      capture('string', "'") * V'sq_string_chunk'
-      capture('string', '"') * V'dq_string_chunk'
-    }
+    f_string: any f_strings
 
     string: any {
       f_prefix * V'f_string'
       string
     }
   }
+
+  rules[k] = v for k, v in pairs interpolations
+  P rules
