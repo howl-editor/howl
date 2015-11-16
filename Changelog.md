@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added new configuration variable, `undo_limit`, for controlling the maximum
+number of revisions for each buffer.
+
 - Added `buffer-grep-exact` and `buffer-grep-regex` commands similar to
 `buffer-grep` but using exact and regular expression matches, respectively.
 

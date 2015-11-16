@@ -5,4 +5,5 @@
   View: require 'aullar.view'
   Buffer: require 'aullar.buffer'
   Cursor: require 'aullar.cursor'
+  config: require 'aullar.config'
 }

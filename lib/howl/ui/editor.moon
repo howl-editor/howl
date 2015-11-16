@@ -29,6 +29,9 @@ apply_variable = (option, value) ->
   for e in *editors!
     e.view.config[option] = value
 
+apply_global_variable = (name, value) ->
+  aullar_config[name] = value
+
 apply_property = (name, value) ->
   e[name] = value for e in *editors!
 
@@ -898,6 +901,13 @@ with config
     default: 1
     type_of: 'number'
 
+  .define
+    name: 'undo_limit'
+    description: 'Per buffer limit of undo revisions to keep'
+    default: 50
+    type_of: 'number'
+    scope: 'global'
+
   for watched_property in *{
     'indentation_guides',
     'edge_column',
@@ -919,9 +929,14 @@ with config
     { 'indent', 'view_indent' }
     { 'cursor_blink_interval', 'cursor_blink_interval' }
     { 'line_wrapping_symbol', 'view_line_wrap_symbol' }
-
   }
     .watch live_update[1], (_, value) -> apply_variable live_update[2], value
+
+
+  for global_var in *{
+    'undo_limit'
+  }
+    .watch global_var, apply_global_variable
 
 -- Commands
 for cmd_spec in *{
