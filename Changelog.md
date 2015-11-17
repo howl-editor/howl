@@ -4,6 +4,9 @@
 
 - Added a new command, `cursor-goto-line` for going to a specified line.
 
+- Added two signals, `idle` and `every-second`, which can be used for performing
+operations upon idle or periodically.
+
 - Added a new property, Application.idle, for determining how long the
 application has been idle.
 

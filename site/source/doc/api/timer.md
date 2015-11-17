@@ -11,6 +11,8 @@ at a later time. All callbacks are always invoked on the main GUI thread.
 
 _See also_:
 
+- The signals `idle` and `every-second` can also be used for handling periodic
+tasks and for operations that should be run when the application is idle.
 - The [spec](../spec/timer_spec.html) for timer
 
 ## Functions
