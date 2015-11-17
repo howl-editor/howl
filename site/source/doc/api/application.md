@@ -27,6 +27,12 @@ A list of all existing [Editor]:s. Each editor can be placed in only one window
 at a time, but this list holds all editors present for the current Howl instance
 - regardless of whether they're placed in the currently focused window or not.
 
+### idle
+
+A number providing information on how long the application has been idle, in
+seconds (with fractions). As the idle is reset upon activity this is useful
+primarily in timers and idle callbacks.
+
 ### next_buffer
 
 This is the most recent buffer that is currently not showing in any editor. If
