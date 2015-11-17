@@ -57,6 +57,10 @@ current cursor position. Read-only.
 Contains the currently active [line][Line], i.e. the line that the cursor is
 currently positioned on. Read-only.
 
+### has_focus
+
+True if the editor is currently focused, and false otherwise.
+
 ### horizontal_scrollbar
 
 A boolean controlling whether the editor shows a horizontal scrollbar or not.

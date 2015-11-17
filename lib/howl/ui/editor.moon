@@ -128,6 +128,7 @@ class Editor extends PropertyObject
 
     @buffer = buffer
     @_is_previewing = false
+    @has_focus = false
 
     append _editors, self
 
@@ -733,10 +734,12 @@ class Editor extends PropertyObject
 
   _on_focus: (args) =>
     howl.app.editor = self
+    @has_focus = true
     signal.emit 'editor-focused', editor: self
     false
 
   _on_focus_lost: (args) =>
+    @has_focus = false
     @remove_popup!
     signal.emit 'editor-defocused', editor: self
     false
