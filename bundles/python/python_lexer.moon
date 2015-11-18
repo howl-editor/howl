@@ -98,7 +98,7 @@ howl.aux.lpeg_lexer ->
   format_number = any {
     c 'number', integer
     -- c('operator', P'{') * (scan_until P'}') * c('operator', P'}')
-    c('operator', P'{') * ((V'all' + space) - P'}')^0 * c('operator', P'}')
+    c('operator', P'{') * ((V'all' + space + P 1) - P'}')^0 * c('operator', P'}')
   }
   format_part = any {
     format_number
@@ -115,7 +115,7 @@ howl.aux.lpeg_lexer ->
   f_strings = {}
   for kind, quote in pairs string_kinds
     interpolations["#{kind}_interpolation"] = sequence {
-      ((V'all' - S'}:!') + space)^0
+      ((V'all' + space + P 1) - S'}:!')^0
       format_conv^-1
       format_spec^-1
       c 'operator', '}'
