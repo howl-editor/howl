@@ -11,8 +11,6 @@ at a later time. All callbacks are always invoked on the main GUI thread.
 
 _See also_:
 
-- The signals `idle` and `every-second` can also be used for handling periodic
-tasks and for operations that should be run when the application is idle.
 - The [spec](../spec/timer_spec.html) for timer
 
 ## Functions
@@ -54,3 +52,12 @@ Cancels the timer associated with `handle`. `handle` must be one the values
 returned from either [asap](#asap) or [after](#after).
 
 [cancel]: #cancel
+
+### on_idle (seconds, callback, ...)
+
+Invokes `callback` after the application has been idle for approximately
+`seconds` seconds, passing along any optional extra parameters passed to
+`on_idle`. The precision of idle timers are whole `seconds`.
+
+Returns an opaque handle for the timer, which can be passed to [cancel] in order
+to cancel the timer.

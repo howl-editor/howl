@@ -7,33 +7,53 @@ cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
 jit = require 'jit'
 C = ffi.C
-
 timer_callback = callbacks.source_func
+{:pack, :unpack, :remove} = table
 
 jit.off true, true
 
-idle_fired = false
+idle_handlers = {}
+idle_fired = 0
+
+dispatch = (handle) ->
+  co = coroutine.create (...) -> handle.handler, unpack(handle.args)
+  status, ret = coroutine.resume co, params
 
 check_for_idle = ->
-  app = howl.app
-  if app.idle > config.idle_timeout
-    if not idle_fired
-      idle_fired = true
-      signal.emit 'idle'
-  else
-    idle_fired = false
+  idle = howl.app.idle
+  unless idle >= 1
+    idle_fired = 0
+    return
+
+  fired = {}
+  for i = 1, #idle_handlers
+    h = idle_handlers[i]
+    if h.seconds <= idle and h.seconds > idle_fired
+      co = coroutine.create (...) -> h.handler ...
+      status, ret = coroutine.resume co, unpack(h.args)
+      unless status
+        _G.log.error "Error invoking on_idle handler: '#{ret}'"
+
+      fired[#fired + 1] = i
+
+  for i = #fired, 1, -1
+    table.remove idle_handlers, i
+
+  idle_fired = idle
 
 every_second = ->
   check_for_idle!
-  signal.emit 'every-second'
   true
 
 cancel = (handle) ->
-  if callbacks.unregister handle.cb
-    C.g_source_remove handle.tag
+  if handle.type == 'sys'
+    if callbacks.unregister handle.cb
+      C.g_source_remove handle.tag
+  elseif handle.type == 'idle'
+    idle_handlers = [h for h in *idle_handlers when h != handle]
 
 asap = (f, ...) ->
-  t_handle = {}
+  t_handle = type: 'sys'
 
   handler = (...) ->
     cancel t_handle
@@ -47,7 +67,7 @@ asap = (f, ...) ->
   t_handle
 
 after = (seconds, f, ...) ->
-  t_handle = {}
+  t_handle = type: 'sys'
 
   handler = (...) ->
     cancel t_handle
@@ -62,6 +82,16 @@ after = (seconds, f, ...) ->
     nil
   t_handle
 
+on_idle = (seconds, f, ...) ->
+  t_handle = {
+    type: 'idle',
+    :seconds,
+    handler: f,
+    args: pack ...
+  }
+  idle_handlers[#idle_handlers + 1] = t_handle
+  t_handle
+
 -- set up a shared timer to run every second
 second_handle = {}
 second_handle.cb = callbacks.register every_second, "timer-every-second"
@@ -71,21 +101,9 @@ second_handle.tag = C.g_timeout_add_full C.G_PRIORITY_LOW,
   cast_arg(second_handle.cb.id),
   nil
 
-signal.register 'idle',
-  description: 'Signaled once whenever Howl becomes idle'
-
-signal.register 'every-second',
-  description: 'Signaled once every second'
-
-config.define
-  name: 'idle_timeout'
-  description: 'Number of idle time in seconds before the "idle" signal is fired'
-  default: 60
-  type_of: 'number'
-  scope: 'global'
-
 {
   :after
   :asap
   :cancel
+  :on_idle
 }
