@@ -75,6 +75,11 @@ raw_string = r'abc\d'
 simple_f_string = f'abc{de}fgh{ij}klm'
 conv_f_string = f'ab{cd!s}ef'
 complicated_triple_f_string = f'''abc{a+'!':a=+#0{abc},.{prec}b}def'''
+brace_f_string = f'{value:abc{f() + g()}}abc'
+invalid_f_string = f'{val!#comment}'
+spaced_f_string = f'{a + b}abc'
+f_string_spec = f'{v!r}'
+another_braced_f_string = f'{v:a4c{abc}}abc'
 
 if False:
   # Dictionaries
