@@ -102,15 +102,19 @@ describe 'CommandLine', ->
     describe '\\switch_to(new_command)', ->
       it 'cancels current command and runs new command, preserving text', ->
         command_run = howl.command.run
-        howl.command.run = spy.new ->
+        timer_asap = howl.timer.asap
+        howl.timer.asap = (f) -> f!
+        new_run = spy.new ->
+        howl.command.run = new_run
         command_line\run
           name: 'run-activity'
           handler: ->
             command_line.text = 'hello arg'
             command_line\switch_to 'new-command'
-
-        assert.spy(howl.command.run).was_called_with 'new-command hello arg'
         howl.command.run = command_run
+        howl.timer.asap = timer_asap
+
+        assert.spy(new_run).was_called_with 'new-command hello arg'
 
     describe '.text', ->
       it 'cannot be set when no running activity', ->

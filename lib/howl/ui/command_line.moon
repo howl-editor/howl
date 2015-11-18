@@ -135,8 +135,9 @@ class CommandLine extends PropertyObject
 
   switch_to: (new_command) =>
     captured_text = @text
-    @abort_all!
-    howl.command.run new_command .. ' ' .. captured_text
+    howl.timer.asap ->
+      @abort_all!
+      howl.command.run new_command .. ' ' .. captured_text
 
   _process_run_after_finish: =>
     while true
