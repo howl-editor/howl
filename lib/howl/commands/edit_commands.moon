@@ -134,3 +134,12 @@ command.register
     buffer = app.editor.buffer
     buffer.mode = selected_mode
     log.info "Forced mode '#{selected_mode.name}' for buffer '#{buffer}'"
+
+command.register
+  name: 'goto-line'
+  description: 'Go to the specified line'
+  input: () ->
+    line_str = interact.read_text title: 'Go to line'
+    return tonumber line_str
+
+  handler: (line_no) -> app.editor.cursor\move_to line: line_no, column: 1
