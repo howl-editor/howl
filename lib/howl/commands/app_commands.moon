@@ -206,8 +206,8 @@ command.register
       editor: app.editor
       lines: buffer.lines
       keymap:
-        ctrl_r: -> app.window.command_line\switch_to 'buffer-grep-regex'
-        ctrl_e: -> app.window.command_line\switch_to 'buffer-grep-exact'
+        binding_for:
+          ['buffer-grep']: -> app.window.command_line\switch_to 'buffer-grep-regex'
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column: selection.column
 
@@ -225,8 +225,8 @@ command.register
         if start_pos
           return {{start_pos, end_pos - start_pos + 1}}
       keymap:
-        ctrl_g: -> app.window.command_line\switch_to 'buffer-grep'
-        ctrl_r: -> app.window.command_line\switch_to 'buffer-grep-regex'
+        binding_for:
+          ['buffer-grep']: -> app.window.command_line\switch_to 'buffer-grep'
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
 
@@ -236,7 +236,7 @@ command.register
   input: ->
     buffer = app.editor.buffer
     return interact.select_line
-      title: "Buffer grep exact in #{buffer.title}"
+      title: "Buffer grep regex in #{buffer.title}"
       editor: app.editor
       lines: buffer.lines
       find: (query, text) ->
@@ -247,8 +247,8 @@ command.register
         if start_pos
           return {{start_pos, end_pos - start_pos + 1}}
       keymap:
-        ctrl_g: -> app.window.command_line\switch_to 'buffer-grep'
-        ctrl_e: -> app.window.command_line\switch_to 'buffer-grep-exact'
+        binding_for:
+          ['buffer-grep']: -> app.window.command_line\switch_to 'buffer-grep-exact'
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
 

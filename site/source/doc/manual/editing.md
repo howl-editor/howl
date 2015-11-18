@@ -95,12 +95,11 @@ type and display all matching lines in real-time:
 There are three buffer grep commands available for three types of searches:
 
 1. `buffer-grep` (bound to `ctrl_g`) shows exact and boundary matches.
-2. `buffer-grep-exact` shows exact matches only.
-3. `buffer-grep-regex` shows regular expression matches.
+2. `buffer-grep-regex` shows regular expression matches.
+3. `buffer-grep-exact` shows exact matches only.
 
-After invoking `buffer-grep` with `ctrl_g`, you can switch between the commands
-using `ctrl_e` for  `buffer-grep-exact`, `ctrl_r` for `buffer-grep-regex` and
-`ctrl_g` to switch back to `buffer-grep`.
+After invoking `buffer-grep`, you can press `ctrl_g` repeatedly to cycle through
+all the grep commands.
 
 ## Replacement
 
