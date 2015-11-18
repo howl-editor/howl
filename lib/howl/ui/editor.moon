@@ -514,8 +514,14 @@ class Editor extends PropertyObject
         keep_alive: true
       }
 
-  undo: => @buffer\undo!
+  undo: =>
+    if @buffer.can_undo
+      @buffer\undo!
+    else
+      log.warn "Can't undo: already at oldest stored revision"
+
   redo: => @buffer\redo!
+
   scroll_up: =>
     @view.first_visible_line -= 1
     @view.cursor\ensure_in_view!
@@ -904,7 +910,7 @@ with config
   .define
     name: 'undo_limit'
     description: 'Per buffer limit of undo revisions to keep'
-    default: 50
+    default: 100
     type_of: 'number'
     scope: 'global'
 
