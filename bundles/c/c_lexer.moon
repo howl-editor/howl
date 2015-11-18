@@ -32,22 +32,23 @@ howl.aux.lpeg_lexer ->
 
   classdef = any {
     sequence {
-      c('keyword', word { 'enum', 'union' })
+      c 'keyword', word { 'enum', 'union' }
       ws^1
-      c('type_def', ident)
+      c 'type_def', ident
       ws^0
       c('operator', '{')
     }
     sequence {
-      c('keyword', word { 'class', 'struct' })
+      c 'keyword', word { 'class', 'struct' }
       ws^1
-      c('type_def', ident)
+      c 'type_def', ident
       ws^0
-      c('operator', S':{')
+      (((V'all' + P 1) - S':{}=;') + ws)^0
+      c 'operator', S':{'
     }
   }
 
-  operator = c 'operator', S('+-*/%=<>~&^|!(){}[];.')
+  operator = c 'operator', S'+-*/%=<>~&^|!(){}[];.,?:'
 
   comment = c 'comment', any {
     P'//' * scan_until eol,
@@ -85,17 +86,21 @@ howl.aux.lpeg_lexer ->
 
   constant = c 'constant', word any('_', upper)^1 * any('_', upper, digit)^0
 
-  any {
-    include_stmt,
-    preproc,
-    comment,
-    string,
-    classdef,
-    type,
-    keyword,
-    special,
-    operator,
-    number,
-    constant,
-    identifer,
+  P {
+    'all'
+
+    all: any {
+      include_stmt,
+      preproc,
+      comment,
+      string,
+      classdef,
+      type,
+      keyword,
+      special,
+      operator,
+      number,
+      constant,
+      identifer,
+    }
   }
