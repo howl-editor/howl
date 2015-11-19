@@ -112,5 +112,30 @@ when you open a non-existing file, you create a new buffer with an association
 to the specified file, which does not have to exist. As you save the buffer, the
 file will be created as necessary.
 
+## Closing buffers
+
+Closing buffers is normally done with the `buffer-close` command. However, it's
+quite easy to end up with a large number of open buffers unless you pay
+attention to closing old buffers as you're done with them. Since many users
+might find other tasks more agreeable than pruning the list of buffers, Howl
+will attempt to automatically close old buffers for you. This is done by closing
+those buffers you haven't bothered to look at for a while (assuming they're not
+modified).
+
+This behaviour is controlled by two configuration variables that you might want
+to tweak to better suit your editing preferences:
+
+- `cleanup_min_buffers_open`
+
+This specifies the minimum number of buffers that you want open at all times.
+Howl will never attempt to close buffers if you have less than this number of
+buffers open. The default is to keep at least 40 buffers open at any given time.
+
+- `cleanup_close_buffers_after`
+
+This specifies the amount of time, in minutes, that should have passed since you
+last viewed a buffer before it should be considered eligible for closing. The
+default is 240 minutes (4 hours).
+
 *Next*: [Editing](editing.html)
 
