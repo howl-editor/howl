@@ -49,7 +49,7 @@ timer.after 0.5, callback, 'Log me!'
 ### cancel (handle)
 
 Cancels the timer associated with `handle`. `handle` must be one the values
-returned from either [asap](#asap) or [after](#after).
+returned from [asap](#asap), [after](#after) or [on_idle](#on_idle).
 
 [cancel]: #cancel
 
