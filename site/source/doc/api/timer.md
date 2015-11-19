@@ -24,11 +24,17 @@ rationale for this is that there are cases where you want to schedule
 destructive buffer modifications, but are not allowed to do so at the current
 point in time (e.g. when in a signal handler for the `text-deleted` signal).
 
+Returns an opaque handle for the timer, which can be passed to [cancel] in order
+to cancel the timer.
+
 ### after (seconds, callback, ...)
 
 Invokes `callback` after approximately `seconds` seconds, passing along any
 optional extra parameters passed to `after`. `seconds` can contain fractions,
 allowing you schedule callbacks at sub-second rates.
+
+Returns an opaque handle for the timer, which can be passed to [cancel] in order
+to cancel the timer.
 
 As an example, the below snippet would cause the text "I was invoked with Log
 me!" to be logged after approximately 500 milliseconds:
@@ -39,3 +45,19 @@ callback = (text) ->
 
 timer.after 0.5, callback, 'Log me!'
 ```
+
+### cancel (handle)
+
+Cancels the timer associated with `handle`. `handle` must be one the values
+returned from [asap](#asap), [after](#after) or [on_idle](#on_idle).
+
+[cancel]: #cancel
+
+### on_idle (seconds, callback, ...)
+
+Invokes `callback` after the application has been idle for approximately
+`seconds` seconds, passing along any optional extra parameters passed to
+`on_idle`. The precision of idle timers are whole `seconds`.
+
+Returns an opaque handle for the timer, which can be passed to [cancel] in order
+to cancel the timer.

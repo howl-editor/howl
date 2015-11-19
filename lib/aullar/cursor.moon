@@ -39,7 +39,7 @@ flair.define_default 'inactive_cursor', {
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
 
-timer_callback = ffi.cast 'GSourceFunc', callbacks.bool1
+timer_callback = callbacks.source_func
 
 is_showing_line = (view, line) ->
   line >= view.first_visible_line and line <= view.last_visible_line

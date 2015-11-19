@@ -4,6 +4,11 @@
 
 - Added a new command, `cursor-goto-line` for going to a specified line.
 
+- Added Timer.on_idle, for performing operations upon idle.
+
+- Added a new property, Application.idle, for determining how long the
+application has been idle.
+
 - Added new configuration variable, `undo_limit`, for controlling the maximum
 number of revisions for each buffer.
 

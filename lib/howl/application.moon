@@ -8,8 +8,40 @@ import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer
 import File, Process from howl.io
 import PropertyObject from howl.aux.moon
 Gtk = require 'ljglibs.gtk'
+callbacks = require 'ljglibs.callbacks'
+{:get_monotonic_time} = require 'ljglibs.glib'
 
 append = table.insert
+coro_create, coro_status = coroutine.create, coroutine.status
+
+idle_dispatches = {
+  '^signal draw$',
+  '^cursor%-blink$',
+  'timer'
+}
+
+is_idle_dispatch = (desc) ->
+  for p in *idle_dispatches
+    return true if desc\find(p) != nil
+  false
+
+last_activity = get_monotonic_time!
+
+dispatcher = (f, description, ...)->
+
+  unless is_idle_dispatch(description)
+    last_activity = get_monotonic_time!
+
+  co = coro_create (...) -> f ...
+  status, ret = coroutine.resume co, ...
+
+  if status
+    if coro_status(co) == 'dead'
+      return ret
+  else
+    _G.log.error "Failed to dispatch '#{description}: #{ret}'"
+
+  false
 
 sort_buffers = (buffers) ->
   table.sort buffers, (a, b) ->
@@ -32,7 +64,16 @@ class Application extends PropertyObject
     bindings.push keymap
     @window = nil
     @editor = nil
+
+    callbacks.configure {
+      :dispatcher,
+      on_error: _G.log.error
+    }
+
     super!
+
+  @property idle: get: =>
+    tonumber(get_monotonic_time! - last_activity) / 1000 / 1000
 
   @property buffers: get: =>
     buffers = { table.unpack @_buffers }
