@@ -1,6 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+pairs = pairs
+
 howl.aux.lpeg_lexer ->
   c = capture
 
@@ -83,11 +85,53 @@ howl.aux.lpeg_lexer ->
 
   decorator = c 'preproc', P'@' * name * ('.' * name)^0
 
-  P {
+  f_prefix = c 'special', any {
+    S'rR' * S'fF'
+    S'fF' * S'rR'
+    S'fF'
+  }
+
+  format_conv = c('operator', P'!') * any({
+    c 'special', S'sra'
+    c 'error', scan_until S':}'
+  })^-1
+  format_number = any {
+    c 'number', integer
+    -- c('operator', P'{') * (scan_until P'}') * c('operator', P'}')
+    c('operator', P'{') * ((V'all' + space + P 1) - P'}')^0 * c('operator', P'}')
+  }
+  format_part = any {
+    format_number
+    c 'special', (P 1) - S'{}'
+  }
+  format_spec = c('operator', ':') * format_part^0
+
+  string_kinds =
+    sq_string: "'"
+    dq_string: '"'
+    tsq_string: "'''"
+    tdq_string: '"""'
+  interpolations = {}
+  f_strings = {}
+  for kind, quote in pairs string_kinds
+    interpolations["#{kind}_interpolation"] = sequence {
+      ((V'all' + space + P 1) - S'}:!')^0
+      format_conv^-1
+      format_spec^-1
+      c 'operator', '}'
+      V"#{kind}_chunk"
+    }
+    interpolations["#{kind}_chunk"] = sequence {
+      c 'string', scan_to P(quote) + #P'{', P'\\'
+      V"#{kind}_interpolation"^0
+    }
+    f_strings[#f_strings+1] = c('string', quote) * V"#{kind}_chunk"
+
+  rules = {
     'all'
 
     all: any {
-      string,
+      V'string',
       comment,
       number,
       operator,
@@ -100,4 +144,14 @@ howl.aux.lpeg_lexer ->
       identifier,
       decorator
     }
+
+    f_string: any f_strings
+
+    string: any {
+      f_prefix * V'f_string'
+      string
+    }
   }
+
+  rules[k] = v for k, v in pairs interpolations
+  P rules
