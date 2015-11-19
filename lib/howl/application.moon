@@ -4,12 +4,19 @@
 ffi = require 'ffi'
 
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard from howl
+import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
 import File, Process from howl.io
 import PropertyObject from howl.aux.moon
 Gtk = require 'ljglibs.gtk'
 
 append = table.insert
+
+config.define
+  name: 'recently_closed_limit'
+  description: 'The number of files to remember in the recently closed list'
+  default: 1000
+  type_of: 'number'
+  scope: 'global'
 
 sort_buffers = (buffers) ->
   table.sort buffers, (a, b) ->
@@ -125,6 +132,11 @@ class Application extends PropertyObject
         file: buffer.file
         last_shown: buffer.last_shown
       }
+      count = #@_recently_closed
+      limit = howl.config.recently_closed_limit
+      if count > limit
+        overage = count - limit
+        @_recently_closed = [@_recently_closed[idx] for idx = 1 + overage, limit + overage]
 
     if buffer.showing
       for editor in *@editors
@@ -232,8 +244,6 @@ class Application extends PropertyObject
       }
     }
 
-    open_files = {}
-
     for b in *@buffers
       continue unless b.file
       append session.buffers, {
@@ -241,10 +251,8 @@ class Application extends PropertyObject
         last_shown: b.last_shown
         properties: b.properties
       }
-      open_files[b.file.path] = true
 
     for f in *@_recently_closed
-      continue if open_files[f.file.path]
       append session.recently_closed, {
         file: f.file.path
         last_shown: f.last_shown
