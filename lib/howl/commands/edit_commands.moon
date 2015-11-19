@@ -136,7 +136,7 @@ command.register
     log.info "Forced mode '#{selected_mode.name}' for buffer '#{buffer}'"
 
 command.register
-  name: 'goto-line'
+  name: 'cursor-goto-line'
   description: 'Go to the specified line'
   input: () ->
     line_str = interact.read_text title: 'Go to line'

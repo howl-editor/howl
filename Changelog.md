@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added a new command, `cursor-goto-line` for going to a specified line.
+
 - Added new configuration variable, `undo_limit`, for controlling the maximum
 number of revisions for each buffer.
 

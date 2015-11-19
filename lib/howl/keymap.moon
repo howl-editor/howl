@@ -74,7 +74,7 @@
     ctrl_shift_d:     'vc-diff-file'
     ctrl_alt_d:       'vc-diff'
 
-    alt_g:            'goto-line'
+    alt_g:            'cursor-goto-line'
 
   }
 
@@ -146,7 +146,7 @@
         ctrl_shift_d:     'vc-diff-file'
         ctrl_meta_d:      'vc-diff'
 
-        ctrl_g:           'goto-line'
+        ctrl_g:           'cursor-goto-line'
       }
 
       meta_o:           'open'
