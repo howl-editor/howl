@@ -49,13 +49,13 @@ draw_ops = {
       cr\stroke!
 
   rounded_rectangle: (flair, x, y, width, height, cr) ->
-    radius = flair['corner_radius'] or 3
+    radius = flair.corner_radius or 3
 
     if width < radius * 3 or height < radius * 3
       radius = min(width, height) / 3
 
     quadrant = pi / 2
-    right, bottom, left, top = 0, quadrant, quadrant * 2, quadrant * 3
+    right, bottom, left, top = 0, quadrant - 0.5, quadrant * 2, (quadrant * 3) + 0.5
     cr\move_to x, y + radius
     cr\arc x + radius, y + radius, radius, left, top
     cr\arc x + width - radius, y + radius, radius, top, right
