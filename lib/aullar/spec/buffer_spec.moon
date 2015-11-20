@@ -499,13 +499,18 @@ describe 'Buffer', ->
       assert.same {true, true}, flags
 
   describe 'change(offset, count, f)', ->
-    local b, notified
+    local b, notified, notified_styled
 
     before_each ->
       b = Buffer ''
       notified = nil
-      l = on_changed: (_, args) =>
-        notified = args
+      l = {
+        on_changed: (_, args) =>
+          notified = args
+
+        on_styled: (_, args) =>
+          notified_styled = args
+      }
 
       b\add_listener l
 
@@ -592,6 +597,50 @@ describe 'Buffer', ->
 
       b\undo!
       assert.equal '123456789', b.text
+
+    describe 'styling notifications', ->
+      describe 'when coupled with modifications', ->
+        it 'collapses styling notifications in the change event', ->
+          b.text = '123456789'
+          b\change 3, 3, (b) -> -- change '345'
+            b.styling\set 3, 4, 'string'
+            b.styling\set 5, 6, 'keyword'
+            b\delete 3, 3
+
+          assert.is_nil notified_styled
+          assert.same {
+            start_line: 1,
+            end_line: 1,
+            invalidated: true
+          }, notified.styled
+
+        it 'expands the styled range to cover all modified lines as needed', ->
+          b.text = '12\n456\n890'
+          b\change 1, 10, (b) ->
+            b\delete 1, 1
+            b.styling\set 4, 5, 'string'
+            b\delete 9, 1
+
+          assert.is_nil notified_styled
+          assert.same {
+            start_line: 1,
+            end_line: 3,
+            invalidated: true
+          }, notified.styled
+
+      describe 'when only styling changes are present', ->
+        it 'fires a single on_styled notification', ->
+          b.text = '12\n456\n890'
+          b\change 1, 10, (b) ->
+            b.styling\set 4, 5, 'string'
+            b.styling\set 9, 10, 'keyword'
+
+          assert.is_nil notified
+          assert.same {
+            start_line: 2,
+            end_line: 3,
+            invalidated: false
+          }, notified_styled
 
     it 'bubbles up any errors in <f>', ->
       b.text = 'hello'

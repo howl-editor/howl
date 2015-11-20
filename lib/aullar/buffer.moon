@@ -62,6 +62,10 @@ change_sink = (start_offset, count) ->
       else
         @roof += size
 
+    add_styling_change: (start_offset, end_offset) =>
+      @styling_start = min(@styling_start or start_offset, start_offset)
+      @styling_end = max(@styling_end or 0, end_offset)
+
     can_reenter: (offset, _count) =>
       return false if offset < start_offset
       return false if offset + _count > max(start_offset + count, @roof)
@@ -197,12 +201,23 @@ Buffer = {
     prev_text = @sub offset, offset + count - 1
     @_change_sink = change_sink offset, count
     status, ret = pcall changer, @
-    {:roof, :invalidate_offset, :changes} = @_change_sink
+    {:roof, :invalidate_offset, :changes, :styling_start, :styling_end} = @_change_sink
     new_text = @sub offset, roof
     size = max count, roof - offset, #new_text
     @_change_sink = nil
+
     if #changes > 0 and size > 0
-      @_on_modification 'changed', offset, new_text, prev_text, size, invalidate_offset, changes
+      extra = :changes
+
+      if styling_start
+        styling_start = min styling_start, invalidate_offset
+        styling_end = max styling_end, roof
+        extra.styled = @_get_styled_notification styling_start, styling_end, true
+
+      @_on_modification 'changed', offset, new_text, prev_text, size, invalidate_offset, extra
+
+    elseif styling_start
+      @notify('styled', @_get_styled_notification(styling_start, styling_end))
 
     error ret unless status
 
@@ -515,7 +530,15 @@ Buffer = {
 
     last_line_shown
 
-  _on_modification: (type, offset, text, prev_text, size, invalidate_offset, changes) =>
+  _get_styled_notification: (start_offset, end_offset, invalidated = false) =>
+    start_line = @get_line_at_offset start_offset
+    end_line = start_line
+    if end_offset > start_line.end_offset and start_line.has_eol
+      end_line = @get_line_at_offset end_offset
+
+    start_line: start_line.nr, end_line: end_line.nr, :invalidated
+
+  _on_modification: (type, offset, text, prev_text, size, invalidate_offset, extra) =>
     if @_change_sink
       @_change_sink\add type, offset, size, invalidate_offset
       return
@@ -539,6 +562,10 @@ Buffer = {
       :lines_changed,
       :changes
     }
+    if extra
+      for k, v in pairs extra
+        args[k] = v
+
     @_nr_lines = nil if lines_changed
 
     if @lexer
@@ -554,13 +581,11 @@ Buffer = {
     @notify type, args
 
   _on_style_changed: (_, start_offset, end_offset) =>
-    start_line = @get_line_at_offset start_offset
-    end_line = start_line
-    if end_offset > start_line.end_offset and start_line.has_eol
-      end_line = @get_line_at_offset end_offset
+    if @_change_sink
+      @_change_sink\add_styling_change start_offset, end_offset
+      return
 
-    styled = start_line: start_line.nr, end_line: end_line.nr, invalidated: false
-    @notify('styled', styled)
+    @notify('styled', @_get_styled_notification(start_offset, end_offset))
 
   _on_markers_changed: (_, markers) =>
     @notify('markers_changed', markers)
