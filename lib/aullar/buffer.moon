@@ -43,14 +43,15 @@ LineMt = {
 }
 
 change_sink = (start_offset, count) ->
+  start_roof = start_offset + count - 1
   {
-    roof: start_offset + count - 1
+    roof: start_roof
     changes: {}
     invalidate_offset: nil
     :start_offset
 
     add: (type, offset, size, invalidate_offset) =>
-      if offset < start_offset or (offset != start_offset and offset > @roof)
+      if offset < start_offset or (offset != start_offset and offset > @roof + 1)
         error "Out-of-range modification '#{type}' at #{offset} within change (#{start_offset} -> #{@roof})"
 
       @invalidate_offset or= invalidate_offset
@@ -68,7 +69,8 @@ change_sink = (start_offset, count) ->
 
     can_reenter: (offset, _count) =>
       return false if offset < start_offset
-      return false if offset + _count > max(start_offset + count, @roof)
+      new_roof = offset + _count - 1
+      return false if new_roof > max(start_roof, @roof)
       true
    }
 

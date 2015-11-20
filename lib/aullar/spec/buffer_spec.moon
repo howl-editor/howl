@@ -545,6 +545,22 @@ describe 'Buffer', ->
       b\undo!
       assert.equal '123456789', b.text
 
+    it 'supports appending changes', ->
+      b.text = '1234'
+      b\change 1, b.size, (b) ->
+        b.text = ''
+        b\insert 1, 'xxxx'
+        b\insert 5, 'y'
+
+      assert.equal 'xxxxy', b.text
+      assert.equal 1, notified.offset
+      assert.equal 5, notified.size
+      assert.equal 'xxxxy', notified.text
+      assert.equal '1234', notified.prev_text
+
+      b\undo!
+      assert.equal '1234', b.text
+
     it 'supports shrinking changes', ->
       b.text = '123456789'
       b\change 1, 4, (b) -> -- change '1234'
@@ -647,17 +663,35 @@ describe 'Buffer', ->
       assert.raises 'BOOM', ->
         b\change 1, 3, -> error 'BOOM'
 
-    it 'is reentrant', ->
-      b.text = '123456789'
-      b\change 3, 3, (b) -> -- change '345'
-        b\delete 4, 2 -- remove 45
-        b\change 3, 1, ->
-          b\delete 3, 1 -- remove 3
-          b\insert 3, 'XY'
+    describe 'recursive changes', ->
+      it 'is reentrant', ->
+        b.text = '123456789'
+        b\change 3, 3, (b) -> -- change '345'
+          b\delete 4, 2 -- remove 45
+          b\change 3, 1, ->
+            b\delete 3, 1 -- remove 3
+            b\insert 3, 'XY'
 
-      assert.equal '12XY6789', b.text
-      b\undo!
-      assert.equal '123456789', b.text
+        assert.equal '12XY6789', b.text
+        b\undo!
+        assert.equal '123456789', b.text
+
+      it 'handles border cases', ->
+        b.text = '123'
+        b\change 1, 3, (b) -> -- change all
+          -- all these should work
+          b\change 3, 1, -> nil
+          b\change 2, 2, -> nil
+          b\change 1, 3, -> nil
+
+          -- insert one, to push the actual roof up
+          b\change 1, 1, ->
+            b\insert 1, 'X'
+
+          -- and these should work
+          b\change 4, 1, -> nil
+          b\change 3, 2, -> nil
+          b\change 1, 4, -> nil
 
     it 'is a no-op when no changes were made', ->
       b.text = 'hello'
@@ -686,7 +720,7 @@ describe 'Buffer', ->
 
       assert.raises "range", ->
         b\change 3, 3, (b) ->
-          b\insert 6, 'x'
+          b\insert 7, 'x'
 
   describe '.can_undo', ->
     it 'returns true if there are any revisions to undo in the buffer', ->
