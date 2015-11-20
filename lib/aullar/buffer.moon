@@ -590,7 +590,9 @@ Buffer = {
     @notify('styled', @_get_styled_notification(start_offset, end_offset))
 
   _on_markers_changed: (_, markers) =>
-    @notify('markers_changed', markers)
+    from_offset = markers[1].start_offset
+    to_offset = markers[#markers].end_offset
+    @notify('markers_changed', :from_offset, :to_offset)
 
 }
 
