@@ -529,6 +529,20 @@ describe 'Buffer', ->
       b\undo!
       assert.equal '123456789', b.text
 
+    it 'provides a consistent state during the changes', ->
+      jit.off!
+      b.text = '123456789'
+      assert.equal '123456789', b\get_line(1).text
+      assert.equal 1, b.nr_lines
+
+      b\change 3, 3, (b) -> -- change '345'
+        b\delete 4, 2 -- remove 45
+        assert.equal '1236789', b\get_line(1).text
+        b\insert 4, 'xy'
+        assert.equal '123xy6789', b\get_line_at_offset(1).text
+        b\insert 4, '\n\n'
+        assert.equal 3, b.nr_lines
+
     it 'supports growing changes', ->
       b.text = '123456789'
       b\change 3, 3, (b) -> -- change '345'

@@ -541,6 +541,12 @@ Buffer = {
     start_line: start_line.nr, end_line: end_line.nr, :invalidated
 
   _on_modification: (type, offset, text, prev_text, size, invalidate_offset, extra) =>
+    lines_changed = text\find('[\n\r]') != nil
+    if not lines_changed and prev_text
+      lines_changed = prev_text\find('[\n\r]') != nil
+
+    @_nr_lines = nil if lines_changed
+
     if @_change_sink
       @_change_sink\add type, offset, size, invalidate_offset
       return
@@ -548,10 +554,6 @@ Buffer = {
     part_of_revision = @revisions.processing
     revision = if not part_of_revision and @_collect_revisions
       @revisions\push(type, offset, text, prev_text)
-
-    lines_changed = text\find('[\n\r]') != nil
-    if not lines_changed and prev_text
-      lines_changed = prev_text\find('[\n\r]') != nil
 
     args = {
       :offset,
@@ -567,8 +569,6 @@ Buffer = {
     if extra
       for k, v in pairs extra
         args[k] = v
-
-    @_nr_lines = nil if lines_changed
 
     if @lexer
       at_line = @get_line_at_offset(offset)
