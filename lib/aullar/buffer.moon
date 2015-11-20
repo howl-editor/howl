@@ -67,6 +67,10 @@ change_sink = (start_offset, count) ->
       @styling_start = min(@styling_start or start_offset, start_offset)
       @styling_end = max(@styling_end or 0, end_offset)
 
+    add_markers_change: (start_offset, end_offset) =>
+      @markers_start = min(@markers_start or start_offset, start_offset)
+      @markers_end = max(@markers_end or 0, end_offset)
+
     can_reenter: (offset, _count) =>
       return false if offset < start_offset
       new_roof = offset + _count - 1
@@ -203,7 +207,11 @@ Buffer = {
     prev_text = @sub offset, offset + count - 1
     @_change_sink = change_sink offset, count
     status, ret = pcall changer, @
-    {:roof, :invalidate_offset, :changes, :styling_start, :styling_end} = @_change_sink
+    {
+      :roof, :invalidate_offset, :changes,
+      :styling_start, :styling_end,
+      :markers_start, :markers_end
+    } = @_change_sink
     new_text = @sub offset, roof
     size = max count, roof - offset, #new_text
     @_change_sink = nil
@@ -220,6 +228,9 @@ Buffer = {
 
     elseif styling_start
       @notify('styled', @_get_styled_notification(styling_start, styling_end))
+
+    if markers_start
+      @notify 'markers_changed', start_offset: markers_start, end_offset: markers_end
 
     error ret unless status
 
@@ -590,9 +601,14 @@ Buffer = {
     @notify('styled', @_get_styled_notification(start_offset, end_offset))
 
   _on_markers_changed: (_, markers) =>
-    from_offset = markers[1].start_offset
-    to_offset = markers[#markers].end_offset
-    @notify('markers_changed', :from_offset, :to_offset)
+    start_offset = markers[1].start_offset
+    end_offset = markers[#markers].end_offset
+
+    if @_change_sink
+      @_change_sink\add_markers_change start_offset, end_offset
+      return
+
+    @notify('markers_changed', :start_offset, :end_offset)
 
 }
 

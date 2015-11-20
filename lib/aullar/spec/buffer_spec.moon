@@ -499,7 +499,7 @@ describe 'Buffer', ->
       assert.same {true, true}, flags
 
   describe 'change(offset, count, f)', ->
-    local b, notified, notified_styled
+    local b, notified, notified_styled, notified_markers
 
     before_each ->
       b = Buffer ''
@@ -510,6 +510,9 @@ describe 'Buffer', ->
 
         on_styled: (_, args) =>
           notified_styled = args
+
+        on_markers_changed: (_, args) =>
+          notified_markers = args
       }
 
       b\add_listener l
@@ -627,6 +630,15 @@ describe 'Buffer', ->
 
       b\undo!
       assert.equal '123456789', b.text
+
+    it 'collapses marker notification into one notification', ->
+      b.text = '123456789'
+      markers = b.markers
+      b\change 1, 9, (b) ->
+        markers\add { {name: 'first', start_offset: 2, end_offset: 4} }
+        markers\add { {name: 'second', start_offset: 6, end_offset: 8} }
+
+      assert.same { start_offset: 2, end_offset: 8 }, notified_markers
 
     describe 'styling notifications', ->
       describe 'when coupled with modifications', ->

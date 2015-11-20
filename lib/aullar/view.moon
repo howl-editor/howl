@@ -694,8 +694,8 @@ View = {
 
   _on_buffer_markers_changed: (buffer, args) =>
     @refresh_display {
-      from_offset: args.from_offset,
-      to_offset: args.to_offset,
+      from_offset: args.start_offset,
+      to_offset: args.end_offset,
       invalidate: true
     }
 
