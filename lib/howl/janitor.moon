@@ -53,11 +53,14 @@ release_memory = ->
     ffi.C.malloc_trim(1024 * 128)
 
 run = ->
-  clean_up_buffers!
-  release_memory!
-
   if timer_handle
     timer_handle = timer.on_idle 30, run
+
+  window = howl.app.window
+  if window and #window.command_line.running == 0
+    clean_up_buffers!
+
+  release_memory!
 
 start = ->
   return if timer_handle
