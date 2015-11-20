@@ -133,9 +133,9 @@ buffers open. The default is to keep at least 40 buffers open at any given time.
 
 - `cleanup_close_buffers_after`
 
-This specifies the amount of time, in minutes, that should have passed since you
+This specifies the amount of time, in hours, that should have passed since you
 last viewed a buffer before it should be considered eligible for closing. The
-default is 240 minutes (4 hours).
+default is 24 hours.
 
 *Next*: [Editing](editing.html)
 

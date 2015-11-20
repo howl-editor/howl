@@ -13,8 +13,8 @@ config.define
 
 config.define
   name: 'cleanup_close_buffers_after'
-  description: 'The number of minutes since a buffer was last shown before it can be closed'
-  default: 60 * 4
+  description: 'The number of hours since a buffer was last shown before it can be closed'
+  default: 24
   type_of: 'number'
   scope: 'global'
 
@@ -33,7 +33,7 @@ clean_up_buffers = ->
 
   for b in *bufs
     continue if b.modified or not b.last_shown
-    unseen_for = os.difftime now, b.last_shown
+    unseen_for = os.difftime(now, b.last_shown) / 60 / 60 -- hours
     if unseen_for > config.cleanup_close_buffers_after
       closeable[#closeable + 1] = b
 

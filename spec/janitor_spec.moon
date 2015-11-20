@@ -20,11 +20,17 @@ describe 'janitor', ->
     close_buffers!
 
   describe 'clean_up_buffers', ->
+    local now, one_hour_ago
+
+    before_each ->
+      now = time!
+      one_hour_ago = now - (60 * 60)
+
     it 'never closes modified buffers', ->
       config.cleanup_min_buffers_open = 0
       config.cleanup_close_buffers_after = 0
       b = app\new_buffer!
-      b.last_shown = time! - 60
+      b.last_shown = one_hour_ago - 60
       b.modified = true
       janitor.clean_up_buffers!
       assert.equals 1, #app.buffers
@@ -34,50 +40,58 @@ describe 'janitor', ->
       config.cleanup_close_buffers_after = 0
       for i = 1, 2
         b = app\new_buffer!
-        b.last_shown = time! - 60
+        b.last_shown = one_hour_ago - 60
 
       janitor.clean_up_buffers!
       assert.equals 2, #app.buffers
 
-    context 'with more buffers than we want', ->
-      local now
-
-      before_each -> now = time!
-
-      it 'closes buffers who has not been shown recently enough', ->
-        for i = 1, 2
-          b = app\new_buffer!
-          b.title = 'keep'
-          b.last_shown = now
-
-        for i = 1, 2
-          b = app\new_buffer!
-          b.last_shown = now - 80
-
-        config.cleanup_min_buffers_open = 2
-        config.cleanup_close_buffers_after = 1
-        janitor.clean_up_buffers!
-
-        assert.equals 2, #app.buffers
-
-        for b in *app.buffers
-          assert.match b.title, 'keep'
-
-      it 'closes buffers in a least-recently-shown order', ->
+    it 'closes buffers who has not been shown recently enough', ->
+      for i = 1, 2
         b = app\new_buffer!
-        b.title = 'hour-old'
-        b.last_shown = now - 60 * 60
+        b.title = 'keep'
+        b.last_shown = one_hour_ago + (i * 60)
 
+      for i = 1, 2
         b = app\new_buffer!
-        b.title = '15-min-old'
-        b.last_shown = now - 60 * 15
+        b.last_shown = one_hour_ago - (60 * i)
 
+      config.cleanup_min_buffers_open = 2
+      config.cleanup_close_buffers_after = 1
+      janitor.clean_up_buffers!
+
+      assert.equals 2, #app.buffers
+
+      for b in *app.buffers
+        assert.match b.title, 'keep'
+
+    it 'neves closes buffers viewed more recently than the limit', ->
+      for i = 1, 4
         b = app\new_buffer!
-        b.title = '30-min-old'
-        b.last_shown = now - 60 * 30
+        b.title = 'keep'
+        b.last_shown = one_hour_ago + (i * 60)
 
-        config.cleanup_min_buffers_open = 1
-        config.cleanup_close_buffers_after = 10
-        janitor.clean_up_buffers!
+      config.cleanup_min_buffers_open = 2
+      config.cleanup_close_buffers_after = 1
+      janitor.clean_up_buffers!
 
-        assert.same {'15-min-old'}, [b.title for b in *app.buffers]
+      assert.equals 4, #app.buffers
+
+    it 'closes buffers in a least-recently-shown order', ->
+      b = app\new_buffer!
+      b.title = 'two-hour-old'
+      b.last_shown = one_hour_ago - 60 * 60
+
+      b = app\new_buffer!
+      b.title = '15-min-old'
+      b.last_shown = now - 60 * 15
+
+      b = app\new_buffer!
+      b.title = 'over-one-hour-old'
+      b.last_shown = one_hour_ago - 60
+
+      config.cleanup_min_buffers_open = 1
+      config.cleanup_close_buffers_after = 1
+      janitor.clean_up_buffers!
+
+      assert.same {'15-min-old'}, [b.title for b in *app.buffers]
+
