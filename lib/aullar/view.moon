@@ -733,18 +733,19 @@ View = {
     true
 
   _on_button_press: (_, event) =>
+    @area\grab_focus! unless @area.has_focus
+
     event = ffi_cast('GdkEventButton *', event)
 
-    return if event.x <= @gutter_width
+    return false if event.x <= @gutter_width
     return true if notify @, 'on_button_press', event
 
-    return if event.button != 1 or event.type != Gdk.BUTTON_PRESS
+    return false if event.button != 1 or event.type != Gdk.BUTTON_PRESS
 
     extend = bit.band(event.state, Gdk.SHIFT_MASK) != 0
 
     pos = @position_from_coordinates(event.x, event.y)
     if pos
-      @area\grab_focus! unless @area.has_focus
 
       if pos != @cursor.pos
         @cursor\move_to :pos, :extend
