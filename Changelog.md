@@ -12,6 +12,9 @@ application has been idle.
 - Added new configuration variable, `undo_limit`, for controlling the maximum
 number of revisions for each buffer.
 
+- Added the `open-recent` command, bound to `ctrl_shift_o`, to show a list of
+recently closed files and let the user select one to re-open.
+
 - Added `buffer-grep-exact` and `buffer-grep-regex` commands similar to
 `buffer-grep` but using exact and regular expression matches, respectively.
 

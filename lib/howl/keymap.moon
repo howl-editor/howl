@@ -81,6 +81,7 @@
   }
 
   ctrl_o:           'open'
+  ctrl_shift_o:     'open-recent'
   ctrl_p:           'project-open'
   ctrl_shift_r:     'exec'
   ctrl_alt_r:       'project-exec'

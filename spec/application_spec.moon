@@ -79,6 +79,35 @@ describe 'Application', ->
     buffers = [b.title for b in *application.buffers]
     assert.same { 'visible', 'last_shown', 'hidden' }, buffers
 
+  describe '.recently_closed', ->
+    editor = Editor Buffer {}
+
+    it 'contains recently closed files', ->
+      File.with_tmpfile (file) ->
+        file.contents = 'test'
+        buffer = application\open_file(file, editor)
+        application\close_buffer(buffer)
+        assert.same {file.path}, [f.file.path for f in *application.recently_closed]
+
+    it 'does not show open files', ->
+      File.with_tmpfile (file) ->
+        file.contents = 'test'
+        buffer = application\open_file(file, editor)
+        application\close_buffer(buffer)
+        application\open_file(file, editor)
+        assert.same {}, [f.file.path for f in *application.recently_closed]
+
+    it 'limits number of saved files to config.recently_closed_limit', ->
+      howl.config.recently_closed_limit = 1
+      File.with_tmpfile (file1) -> File.with_tmpfile (file2) ->
+        file1.contents = 'test'
+        file2.contents = 'test'
+        buffer1 = application\open_file(file1, editor)
+        buffer2 = application\open_file(file2, editor)
+        application\close_buffer buffer1
+        application\close_buffer buffer2
+        assert.same {file2.path}, [f.file.path for f in *application.recently_closed]
+
   describe 'synchronize()', ->
     context "when a buffer's file has changed on disk", ->
       local b

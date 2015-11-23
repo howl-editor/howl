@@ -4,7 +4,7 @@
 ffi = require 'ffi'
 
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard from howl
+import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
 import File, Process from howl.io
 import PropertyObject from howl.aux.moon
 Gtk = require 'ljglibs.gtk'
@@ -43,6 +43,13 @@ dispatcher = (f, description, ...)->
 
   false
 
+config.define
+  name: 'recently_closed_limit'
+  description: 'The number of files to remember in the recently closed list'
+  default: 1000
+  type_of: 'number'
+  scope: 'global'
+
 sort_buffers = (buffers) ->
   table.sort buffers, (a, b) ->
     return true if a.showing and not b.showing
@@ -59,6 +66,7 @@ class Application extends PropertyObject
     @windows = {}
     @_editors = {}
     @_buffers = {}
+    @_recently_closed = {}
     bundle.dirs = { @root_dir / 'bundles' }
     @_load_base!
     bindings.push keymap
@@ -79,6 +87,8 @@ class Application extends PropertyObject
     buffers = { table.unpack @_buffers }
     sort_buffers buffers
     buffers
+
+  @property recently_closed: get: => moon.copy @_recently_closed
 
   @property editors: get: => @_editors
 
@@ -157,6 +167,18 @@ class Application extends PropertyObject
 
     @_buffers = [b for b in *@_buffers when b != buffer]
 
+    if buffer.file
+      @_recently_closed = [file_info for file_info in *@_recently_closed when file_info.file != buffer.file]
+      append @_recently_closed, {
+        file: buffer.file
+        last_shown: buffer.last_shown
+      }
+      count = #@_recently_closed
+      limit = howl.config.recently_closed_limit
+      if count > limit
+        overage = count - limit
+        @_recently_closed = [@_recently_closed[idx] for idx = 1 + overage, limit + overage]
+
     if buffer.showing
       for editor in *@editors
         if editor.buffer == buffer
@@ -181,6 +203,7 @@ class Application extends PropertyObject
       log.error "Failed to open #{file}: #{err}"
       nil
     else
+      @_recently_closed = [file_info for file_info in *@_recently_closed when file_info.file != buffer.file]
       signal.emit 'file-opened', :file, :buffer
       buffer, editor
 
@@ -253,8 +276,9 @@ class Application extends PropertyObject
 
   save_session: =>
     session = {
-      version: 1
+      version: 2
       buffers: {}
+      recently_closed: {}
       window: {
         maximized: @window.maximized
         fullscreen: @window.fullscreen
@@ -267,6 +291,12 @@ class Application extends PropertyObject
         file: b.file.path
         last_shown: b.last_shown
         properties: b.properties
+      }
+
+    for f in *@_recently_closed
+      append session.recently_closed, {
+        file: f.file.path
+        last_shown: f.last_shown
       }
 
     @settings\save_system 'session', session
@@ -352,7 +382,7 @@ class Application extends PropertyObject
   _restore_session: (window, restore_buffers) =>
     session = @settings\load_system 'session'
 
-    if session and session.version == 1
+    if session and session.version >= 1
       if restore_buffers
         for entry in *session.buffers
           file = File(entry.file)
@@ -364,6 +394,9 @@ class Application extends PropertyObject
             buffer.properties = entry.properties
 
           log.error "Failed to load #{file}: #{err}" unless status
+
+      if session.version >= 2
+        @_recently_closed = [{file: File(file_info.file), last_shown: file_info.last_shown} for file_info in *session.recently_closed]
 
       if session.window
         with session.window
