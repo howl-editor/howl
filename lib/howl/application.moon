@@ -320,6 +320,8 @@ class Application extends PropertyObject
       window = @new_window!
       @_set_initial_status window
 
+      howl.janitor.start!
+
     for path in *files
       file = File path
       buffer = @new_buffer mode.for_file file
@@ -437,6 +439,7 @@ class Application extends PropertyObject
     require 'howl.commands.edit_commands'
     require 'howl.editing'
     require 'howl.ui.icons.font_awesome'
+    require 'howl.janitor'
 
   _load_application_icon: =>
     dir = @root_dir

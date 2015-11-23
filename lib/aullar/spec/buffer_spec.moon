@@ -926,11 +926,6 @@ describe 'Buffer', ->
       collect_memory!
       assert.is_nil buffers[1]
 
-      -- and memory should be back to normal
-      before = collectgarbage('count')
-      for i = 1, 50
+    it 'memory usage is stable', ->
+      assert_memory_stays_within '5Kb', 50, ->
         Buffer 'collect me!'
-
-      collect_memory!
-      after = collectgarbage('count')
-      assert.is_true (after - before) < 2
