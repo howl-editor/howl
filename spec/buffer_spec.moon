@@ -208,7 +208,7 @@ describe 'Buffer', ->
       b = buffer 'hello\nworld\n'
       assert.equal 1, b\replace('world', 'editor')
 
-  describe 'change(start_pos, end_pos)', ->
+  describe 'change(start_pos, end_pos, f)', ->
     it 'applies all operations as one undo for the specified region', ->
       b = buffer 'ño señor'
       b\change 4, 6, -> -- 'señ'
@@ -218,6 +218,13 @@ describe 'Buffer', ->
       assert.equal 'ño minminor', b.text
       b\undo!
       assert.equal 'ño señor', b.text
+
+    it 'returns the return value of <f> as its own return value', ->
+      b = buffer '12345'
+      ret = b\change 1, 3, ->
+        'zed'
+
+      assert.equals 'zed', ret
 
   it 'undo undoes the last operation', ->
     b = buffer 'hello'

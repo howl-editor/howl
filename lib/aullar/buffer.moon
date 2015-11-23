@@ -233,6 +233,7 @@ Buffer = {
       @notify 'markers_changed', start_offset: markers_start, end_offset: markers_end
 
     error ret unless status
+    ret
 
   lines: (start_line = 1, end_line) =>
     i = start_line - 1

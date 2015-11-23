@@ -532,6 +532,13 @@ describe 'Buffer', ->
       b\undo!
       assert.equal '123456789', b.text
 
+    it 'returns the return value of <f> as its own return value', ->
+      b.text = '12345'
+      ret = b\change 1, 3, ->
+        'zed'
+
+      assert.equals 'zed', ret
+
     it 'provides a consistent state during the changes', ->
       jit.off!
       b.text = '123456789'
