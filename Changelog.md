@@ -2,6 +2,11 @@
 
 ## Unreleased (in master)
 
+- Added a new module, 'janitor', which automatically closes old buffers and
+tries to release memory back to the OS. The buffer closing is controlled by two
+new configuration variables, `cleanup_min_buffers_open` and
+`cleanup_close_buffers_after`.
+
 - Added a new command, `cursor-goto-line` for going to a specified line.
 
 - Added Timer.on_idle, for performing operations upon idle.
