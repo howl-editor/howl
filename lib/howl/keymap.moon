@@ -154,6 +154,7 @@
       }
 
       meta_o:           'open'
+      meta_shift_o:     'open-recent'
       meta_p:           'project-open'
       meta_q:           'quit'
       meta_shift_r:     'project-exec'

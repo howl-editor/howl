@@ -41,19 +41,25 @@ command.register
 
 command.register
   name: 'open-recent',
-  description: 'Open a recently closed file'
+  description: 'Open a recently visited file'
   input: ->
     recent_files = {}
+    for buf in *app.buffers
+      table.insert recent_files, {
+        buf.title,
+        buf.file.parent.short_path,
+        file: buf.file
+      }
     for file_info in *app.recently_closed
       table.insert recent_files, {
         file_info.file.basename
-        file_info.file.parent.path
+        file_info.file.parent.short_path
         file: file_info.file
       }
     selected = interact.select_location
       items: recent_files
       columns: { {style: 'filename'}, {style: 'comment'} }
-      title: 'Recently closed files'
+      title: 'Recent files'
     return selected and selected.selection.file
 
   handler: app\open_file
