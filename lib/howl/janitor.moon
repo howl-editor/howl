@@ -23,6 +23,18 @@ if sys.info.os == 'linux'
 
 local timer_handle
 
+log_closed = (closed) ->
+  msg = "Closed buffers: '#{closed[1].title}'"
+  for i = 2, #closed
+    t = closed[i].title
+    if #t + #msg > 72
+      msg ..= " (+#{#closed - i + 1} more)"
+      break
+
+    msg ..= ", '#{t}'"
+
+  log.info msg
+
 clean_up_buffers = ->
   app = howl.app
   bufs = app.buffers
@@ -39,11 +51,14 @@ clean_up_buffers = ->
 
   to_remove = math.min(to_remove, #closeable)
   if to_remove > 0
+    closed = {}
     table.sort closeable, (a, b) -> a.last_shown < b.last_shown
     for i = 1, to_remove
-      app\close_buffer closeable[i]
+      buf = closeable[i]
+      app\close_buffer buf
+      closed[#closed + 1] = buf
 
-    log.info "Closed #{to_remove} old buffers"
+    log_closed closed
 
 release_memory = ->
   collectgarbage!
