@@ -367,6 +367,8 @@ View = {
           -- recreate the display line since subsequent modifications has to
           -- know what the display properties was for the modified lines
           d_lines[line.nr]
+        elseif opts.update
+          d_line\refresh!
 
         min_y or= y
         max_y = y + d_line.height
@@ -696,7 +698,7 @@ View = {
     @refresh_display {
       from_offset: args.start_offset,
       to_offset: args.end_offset,
-      invalidate: true
+      update: true
     }
 
   _on_buffer_undo: (buffer, revision) =>
