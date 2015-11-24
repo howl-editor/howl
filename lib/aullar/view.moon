@@ -413,6 +413,10 @@ View = {
         line_y = (y - cur_y) * Pango.SCALE
         inside, index = d_line.layout\xy_to_index pango_x, line_y
         if not inside
+          -- left of the area, point it to first char in line
+          return line.start_offset if x < @edit_area_x
+
+          -- right of the area, point to end
           if d_line.is_wrapped
             v_line = d_line.lines\at_pixel_y(y - cur_y)
             return line.start_offset + v_line.line_end - 1
