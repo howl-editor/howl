@@ -32,19 +32,19 @@ howl.aux.lpeg_lexer ->
 
   classdef = any {
     sequence {
-      c 'keyword', word { 'enum', 'union' }
+      c('keyword', word { 'enum', 'union' })
       ws^1
-      c 'type_def', ident
+      c('type_def', ident)
       ws^0
       c('operator', '{')
     }
     sequence {
-      c 'keyword', word { 'class', 'struct' }
+      c('keyword', word { 'class', 'struct' })
       ws^1
-      c 'type_def', ident
+      c('type_def', ident)
       ws^0
       (((V'all' + P 1) - S':{}=;') + ws)^0
-      c 'operator', S':{'
+      c('operator', S':{')
     }
   }
 
