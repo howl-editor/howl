@@ -45,6 +45,7 @@ command.register
   input: ->
     recent_files = {}
     for buf in *app.buffers
+      continue unless buf.file
       table.insert recent_files, {
         buf.title,
         buf.file.parent.short_path,
