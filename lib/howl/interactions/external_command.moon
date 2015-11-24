@@ -173,6 +173,7 @@ class ExternalCommandEntry
 
       if cd_cmd and (not @list_widget.selection or @list_widget.selection.name == './')
           dir = @command_line.text\umatch '^%s*cd%s+(.+)'
+          dir = File.expand_path dir
           path = @directory / dir
           if path.exists and path.is_directory
             @_chdir path
