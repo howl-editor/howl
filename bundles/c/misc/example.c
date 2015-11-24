@@ -97,3 +97,8 @@ static void printcapkind (int kind) {
     "runtime", "group"};
   printf("%s", modes[kind]);
 }
+
+// C++ template specializations!
+struct Abc<1, 2> {};
+
+int a = 1, 2 == 2 ? 1 : 0;
