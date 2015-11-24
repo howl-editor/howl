@@ -43,13 +43,6 @@ dispatcher = (f, description, ...)->
 
   false
 
-config.define
-  name: 'recently_closed_limit'
-  description: 'The number of files to remember in the recently closed list'
-  default: 1000
-  type_of: 'number'
-  scope: 'global'
-
 sort_buffers = (buffers) ->
   table.sort buffers, (a, b) ->
     return true if a.showing and not b.showing
@@ -168,16 +161,7 @@ class Application extends PropertyObject
     @_buffers = [b for b in *@_buffers when b != buffer]
 
     if buffer.file
-      @_recently_closed = [file_info for file_info in *@_recently_closed when file_info.file != buffer.file]
-      append @_recently_closed, {
-        file: buffer.file
-        last_shown: buffer.last_shown
-      }
-      count = #@_recently_closed
-      limit = howl.config.recently_closed_limit
-      if count > limit
-        overage = count - limit
-        @_recently_closed = [@_recently_closed[idx] for idx = 1 + overage, limit + overage]
+      @_add_recently_closed buffer
 
     if buffer.showing
       for editor in *@editors
@@ -276,7 +260,7 @@ class Application extends PropertyObject
 
   save_session: =>
     session = {
-      version: 2
+      version: 1
       buffers: {}
       recently_closed: {}
       window: {
@@ -384,7 +368,7 @@ class Application extends PropertyObject
   _restore_session: (window, restore_buffers) =>
     session = @settings\load_system 'session'
 
-    if session and session.version >= 1
+    if session and session.version == 1
       if restore_buffers
         for entry in *session.buffers
           file = File(entry.file)
@@ -397,8 +381,8 @@ class Application extends PropertyObject
 
           log.error "Failed to load #{file}: #{err}" unless status
 
-      if session.version >= 2
-        @_recently_closed = [{file: File(file_info.file), last_shown: file_info.last_shown} for file_info in *session.recently_closed]
+        if session.recently_closed
+          @_recently_closed = [{file: File(file_info.file), last_shown: file_info.last_shown} for file_info in *session.recently_closed]
 
       if session.window
         with session.window
@@ -453,6 +437,25 @@ class Application extends PropertyObject
       dir = dir.parent
 
     log.warn "Failed to find application icon"
+
+  _add_recently_closed: (buffer) =>
+    @_recently_closed = [file_info for file_info in *@_recently_closed when file_info.file != buffer.file]
+    append @_recently_closed, {
+      file: buffer.file
+      last_shown: buffer.last_shown
+    }
+    count = #@_recently_closed
+    limit = config.recently_closed_limit
+    if count > limit
+      overage = count - limit
+      @_recently_closed = [@_recently_closed[idx] for idx = 1 + overage, limit + overage]
+
+config.define
+  name: 'recently_closed_limit'
+  description: 'The number of files to remember in the recently closed list'
+  default: 1000
+  type_of: 'number'
+  scope: 'global'
 
 signal.register 'file-opened',
   description: 'Signaled right after a file was opened in a buffer',
