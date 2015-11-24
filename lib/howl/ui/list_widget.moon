@@ -289,7 +289,7 @@ class ListWidget extends PropertyObject
     @_items = items
 
     idx = @opts.reverse and #@_items or 1
-    if preserve_position
+    if preserve_position and current_idx
       idx = min(current_idx, #@_items)
 
     if @text_widget.showing
