@@ -15,10 +15,11 @@ class ActionBuffer extends Buffer
     if object.styles
       pos_after = @_insert_styled_object(object, pos)
     else
-      pos_after = super object, pos
+      @change pos, pos, ->
+        pos_after = super object, pos
 
-      if style_name
-        @style pos, pos_after - 1, style_name
+        if style_name
+          @style pos, pos_after - 1, style_name
 
     pos_after
 
@@ -28,10 +29,11 @@ class ActionBuffer extends Buffer
     if object.styles
       pos_after = @_insert_styled_object(object, @length + 1)
     else
-      pos_after = super object
+      @change start_pos, start_pos, ->
+        pos_after = super object
 
-      if style_name
-        @style start_pos + 1, @length, style_name
+        if style_name
+          @style start_pos + 1, @length, style_name
 
     pos_after
 
@@ -41,9 +43,10 @@ class ActionBuffer extends Buffer
     @_buffer.styling\set start_pos, end_pos - 1, style_name
 
   _insert_styled_object: (object, pos) =>
-    pos_after = super\insert object.text, pos
-    b_start = @byte_offset pos
-    @_buffer.styling\apply b_start, object.styles
-    pos_after
+    @change pos, pos, ->
+      pos_after = super\insert object.text, pos
+      b_start = @byte_offset pos
+      @_buffer.styling\apply b_start, object.styles
+      pos_after
 
 return ActionBuffer

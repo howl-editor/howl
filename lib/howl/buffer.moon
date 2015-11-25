@@ -43,7 +43,6 @@ class Buffer extends PropertyObject
     @properties = {}
     @data = {}
     @read_only = false
-    @_len = nil
     @_eol = '\n'
     @viewers = 0
     @_modified = false
@@ -313,7 +312,6 @@ class Buffer extends PropertyObject
     @_on_buffer_modification 'text-changed', args
 
   _on_buffer_modification: (what, args) =>
-    @_len = nil
     @_modified = true
     args = {
       buffer: self,

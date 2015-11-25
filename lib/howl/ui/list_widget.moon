@@ -81,27 +81,29 @@ class ListWidget extends PropertyObject
     get: => #@_columns
 
   _write_page: =>
-    @text_widget.buffer.text = ''
-    @page_size = @text_widget.visible_rows - (@has_status and 1 or 0) - (@has_header and 1 or 0)
-    if @has_items and @page_size < 1
-      error 'insufficient height - cant display any items'
+    @text_widget.buffer\change 1, @text_widget.buffer.size, (buffer) ->
+      buffer.text = ''
+      @page_size = @text_widget.visible_rows - (@has_status and 1 or 0) - (@has_header and 1 or 0)
+      if @has_items and @page_size < 1
+        error 'insufficient height - cant display any items'
 
-    items = {}
-    last_idx = @page_start_idx + @page_size - 1
-    for idx = @page_start_idx, min(last_idx, #@_items)
-      append items, @_items[idx]
+      items = {}
+      last_idx = @page_start_idx + @page_size - 1
+      for idx = @page_start_idx, min(last_idx, #@_items)
+        append items, @_items[idx]
 
-    @text_widget.buffer\append StyledText.for_table items, @columns
+      buffer\append StyledText.for_table items, @columns
 
-    for i = 1, last_idx - #@_items
-      @text_widget.buffer\append @opts.filler_text..'\n', 'comment'
+      for i = 1, last_idx - #@_items
+        buffer\append @opts.filler_text..'\n', 'comment'
 
-    header_offset = @has_header and 1 or 0
-    for lno = 1, #items
-      line = @text_widget.buffer.lines[lno + header_offset]
-      @_highlight_matches line.text, line.start_pos
+      header_offset = @has_header and 1 or 0
+      for lno = 1, #items
+        line = buffer.lines[lno + header_offset]
+        @_highlight_matches line.text, line.start_pos
 
-    @_write_status!
+      @_write_status!
+
     @text_widget.view.first_visible_line = 1
     @text_widget\adjust_height!
 

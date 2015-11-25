@@ -367,6 +367,8 @@ View = {
           -- recreate the display line since subsequent modifications has to
           -- know what the display properties was for the modified lines
           d_lines[line.nr]
+        elseif opts.update
+          d_line\refresh!
 
         min_y or= y
         max_y = y + d_line.height
@@ -696,10 +698,12 @@ View = {
       if @_first_visible_line > 1 and @lines_showing < lines_showing
         @last_visible_line = @buffer.nr_lines
 
-  _on_buffer_markers_changed: (buffer, markers) =>
-    from_offset = markers[1].start_offset
-    to_offset = markers[#markers].end_offset
-    @refresh_display :from_offset, :to_offset, invalidate: true
+  _on_buffer_markers_changed: (buffer, args) =>
+    @refresh_display {
+      from_offset: args.start_offset,
+      to_offset: args.end_offset,
+      update: true
+    }
 
   _on_buffer_undo: (buffer, revision) =>
     pos = revision.meta.cursor_before or revision.offset

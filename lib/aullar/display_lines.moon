@@ -299,6 +299,9 @@ DisplayLine = define_class {
       @_lines
    }
 
+  refresh: =>
+    @_flairs = nil
+
   draw: (x, y, cr, clip, opts = {}) =>
     base_x = @view.base_x
     block = @block
