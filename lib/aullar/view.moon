@@ -754,6 +754,7 @@ View = {
 
     pos = @position_from_coordinates(event.x, event.y)
     if pos
+      @selection.persistent = false
 
       if pos != @cursor.pos
         @cursor\move_to :pos, :extend
