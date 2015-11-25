@@ -39,7 +39,7 @@ Connects `handler` to the signal specified by `name`. The optional `index`
 argument specifies where in the handler list the handler should be placed. All
 handlers for a specific signal are stored in a list, and the index specifies the
 order in which they are invoked whenever a signal is emitted, where the handler
-with index 1 is invoked first, followed by the handlers with greater indices.
+with index 1 is invoked first, followed by handlers with greater indices.
 
 An error is raised when trying to connect a handler for a signal that has not
 been registered.
@@ -56,8 +56,8 @@ keys matching those of the parameters specified for [register](#register). An
 error is raised when trying to emit a signal that has not been registered.
 
 When a signal is emitted each connected handler is invoked in turn, with
-`parameters` as the sole argument. Should any handler return `true`, the
-processing is halted and `emit` returns `true`. Otherwise, `false` is returned.
+`parameters` as the sole argument. Should any handler return `'abort'`, the
+processing is halted and `emit` returns `'abort'`. Otherwise, `false` is returned.
 Any error triggered in a signal handler is logged, and processing continues.
 
 ### register (name, options)

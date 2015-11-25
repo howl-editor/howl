@@ -56,17 +56,17 @@ describe 'signal', ->
       it 'raises an error when the second parameter is not a table', ->
         assert.raises 'table', -> signal.emit 'foo', 2
 
-      context 'when a handler returns true', ->
+      context 'when a handler returns "abort"', ->
         it 'skips invoking subsequent handlers', ->
           handler2 = spy.new -> true
-          signal.connect 'foo', -> true
+          signal.connect 'foo', -> 'abort'
           signal.connect 'foo', handler2
           signal.emit 'foo'
           assert.spy(handler2).was.not_called!
 
-        it 'returns true', ->
-          signal.connect 'foo', -> true
-          assert.is_true signal.emit 'foo'
+        it 'returns "abort"', ->
+          signal.connect 'foo', -> 'abort'
+          assert.equals 'abort', signal.emit 'foo'
 
       context 'when a handler raises an error', ->
         it 'logs an error message', ->

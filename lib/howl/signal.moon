@@ -27,7 +27,8 @@ emit = (name, params, illegal) ->
     status, ret = coroutine.resume co, params
 
     if status
-      return true if ret == true and coroutine.status(co) == 'dead'
+      if ret == 'abort' and coroutine.status(co) == 'dead'
+        return 'abort'
     else
       _G.log.error 'Error invoking handler for "' .. name .. '": ' .. ret
 
