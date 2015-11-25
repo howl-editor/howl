@@ -412,7 +412,7 @@ View = {
       if (y >= cur_y and y <= end_y)
         line = @_buffer\get_line(line_nr)
         pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
-        line_y = (y - cur_y) * Pango.SCALE
+        line_y = max(0, min(y - cur_y, d_line.text_height - 1)) * Pango.SCALE
         inside, index = d_line.layout\xy_to_index pango_x, line_y
         if not inside
           -- left of the area, point it to first char in line

@@ -83,6 +83,13 @@ describe 'View', ->
         line_height = view.display_lines[1].height
         assert.equals 6, view\position_from_coordinates(view.edit_area_x - dim.width, line_height + 1)
 
+      it 'returns the correct position when in the line padding', ->
+        view.config.view_line_padding = 4
+        buffer.text = '1234'
+        assert.equals 3, view\position_from_coordinates(view.edit_area_x + dim.width * 2, 0)
+        line_height = view.display_lines[1].height
+        assert.equals 3, view\position_from_coordinates(view.edit_area_x + dim.width * 2, line_height - 1)
+
     describe 'coordinates_from_position(pos)', ->
       it 'returns the bounding rectangle for the character at pos', ->
         buffer.text = '1234\n6789'
