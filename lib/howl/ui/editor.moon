@@ -671,11 +671,6 @@ class Editor extends PropertyObject
       line = @current_line
       @selection\set line.start_pos, line.end_pos
 
-  _on_selection_changed: =>
-    @_update_position!
-    @_brace_highlight!
-    signal.emit 'selection-changed', editor: self, selection: @selection
-
   _on_pos_changed: =>
     @_update_position!
     @_brace_highlight!

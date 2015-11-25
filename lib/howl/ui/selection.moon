@@ -13,6 +13,7 @@ class Selection extends PropertyObject
   new: (@_view) =>
     @_sel = _view.selection
     @includes_cursor = false
+    @_sel.listener = on_selection_changed: self\_on_selection_changed
     super!
 
   @property _buffer: get: => @_view.buffer
@@ -85,6 +86,7 @@ class Selection extends PropertyObject
     unless @empty
       @_sel\clear!
       @persistent = false
+      signal.emit 'selection-removed'
 
   copy: (clip_options = {}, clipboard_options) =>
     return if @empty
@@ -100,6 +102,9 @@ class Selection extends PropertyObject
     @remove!
     @persistent = false
     signal.emit 'selection-cut'
+
+  _on_selection_changed: =>
+    signal.emit 'selection-changed'
 
   _copy_to_clipboard: (clip_options = {}, clipboard_options) =>
     clip = moon.copy clip_options
@@ -130,10 +135,9 @@ Emitted whenever a selection has been changed.
 This could be the result of a copy, cut or an explicit request to remove
 or create a selection.
 ]]
-    parameters: {
-      editor: 'The editor holding the selection'
-      selection: 'The selection instance that has been changed'
-    }
+
+  .register 'selection-removed',
+    description: 'Emitted whenever a selection has been removed.'
 
   .register 'selection-copied',
     description: 'Emitted whenever a selection has been copied.'
