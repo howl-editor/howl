@@ -30,12 +30,13 @@ with_lines_selected = (editor, count, f) ->
     .includes_cursor = true
 
 copy_lines = (editor) ->
-  if not state.count or state.count <= 1
-    editor\copy_line!
-  else
-    editor\with_position_restored ->
-      with_lines_selected editor, state.count, (editor) ->
-        editor.selection\copy whole_lines: true
+  state.execute ->
+    if not state.count or state.count <= 1
+      editor\copy_line!
+    else
+      editor\with_position_restored ->
+        with_lines_selected editor, state.count, (editor) ->
+          editor.selection\copy whole_lines: true
 
   state.reset!
 
@@ -115,8 +116,8 @@ map = {
 
     r: (editor) ->  bindings.capture replace_char
 
-    u: 'editor-undo'
-    ctrl_r: 'editor-redo'
+    u: (editor) -> state.execute editor.undo, editor
+    ctrl_r: (editor) -> state.execute editor.redo, editor
 
     v: (editor) -> state.change_mode editor, 'visual'
 

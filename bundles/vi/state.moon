@@ -1,5 +1,5 @@
 import bindings from howl
-import getmetatable, setfenv, pairs, callable, print, tostring from _G
+import getmetatable, setfenv, pairs, callable, print, tostring, pcall from _G
 
 _G = _G
 _ENV = {}
@@ -23,6 +23,13 @@ export reset = ->
   executing = false
   bindings.cancel_capture!
 
+export execute = (f, ...) ->
+  executing = true
+  status, ret = pcall f, ...
+  reset!
+  unless status
+    error ret, 2
+
 export add_number = (number) ->
   count = count or 0
   count = (count * 10) + number
@@ -45,7 +52,6 @@ export change_mode = (editor, to, ...) ->
   map(editor, ...) if callable map
 
 export apply = (editor, f) ->
-  executing = true
   state = :delete, :change, :yank, :count
   state.has_modifier = delete or change or yank
 
@@ -66,8 +72,7 @@ export apply = (editor, f) ->
           \cut!
           change_mode editor, 'insert'
 
-  op editor
-  reset!
+  execute op, editor
 
   if state.delete or state.change
     last_op = op
@@ -77,20 +82,18 @@ export apply = (editor, f) ->
     map.__after_apply editor
 
 export record = (editor, op) ->
-  op editor
-  reset!
+  execute op, editor
   last_op = op
   insert_edit = nil
 
 export repeat_last = (editor) ->
-  if last_op
-    for i = 1, count or 1
-      last_op editor
-      if insert_edit
-        insert_edit editor
-        change_mode editor, 'command'
-
-  reset!
+  execute ->
+    if last_op
+      for i = 1, count or 1
+        last_op editor
+        if insert_edit
+          insert_edit editor
+          change_mode editor, 'command'
 
 export init = (keymaps) ->
   maps = keymaps

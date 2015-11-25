@@ -14,17 +14,19 @@ signal_handlers = {
   'editor-defocused': (args) -> args.editor.indicator.vi.label = '' if state.active
   'after-buffer-switch': (args) -> state.change_mode args.editor, 'command' if state.active
 
-  'selection-changed': (args) ->
+  'selection-changed': ->
     if state.active and not state.executing
+      editor = app.editor
+      selection = editor.selection
       if state.mode == 'visual'
-        state.map.__on_selection_changed args.editor, args.selection
-      -- elseif not args.selection.empty
-      --   print 'switch to visual'
-      --   state.change_mode args.editor, 'visual'
+        state.map.__on_selection_changed editor, selection
+      elseif not selection.empty and selection.anchor != selection.cursor
+        state.change_mode editor, 'visual'
 
   'buffer-saved': (args) ->
     if state.active and app.editor.buffer == args.buffer
       state.change_mode app.editor, 'command'
+    false
 }
 
 vi_commands = {

@@ -289,7 +289,9 @@ Next LinƏ
       press 'v'
       assert.equal 'visual', state.mode
 
-    after_each -> press 'escape'
+    after_each ->
+      press 'escape'
+      assert.equal 'command', state.mode
 
     it 'escape leaves visual mode and enters command mode', ->
       press 'escape'
@@ -307,6 +309,8 @@ Next LinƏ
 
     it '"<" causes the selection to be dedented and leaves visual', ->
       lines[i].indentation = 4 for i in *{1, 2}
+      press 'v'
+      assert.equal 'visual', state.mode
       press '<'
       assert.equals '  LinƏ 1\n    Next LinƏ\n', buffer.text
       assert.equal 'command', state.mode

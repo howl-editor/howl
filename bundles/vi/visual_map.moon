@@ -22,6 +22,12 @@ substitute = (editor) ->
   editor.selection\cut!
   cancel editor, 'insert'
 
+ensure_correct_sel_range = (sel) ->
+  return if not selection_start or sel.empty
+  correct_anchor = sel.cursor < selection_start and selection_start + 1 or selection_start
+  if sel.anchor != correct_anchor
+    sel.anchor = correct_anchor
+
 map = {
   __meta: setmetatable {
     name: 'VISUAL'
@@ -52,23 +58,28 @@ map = {
   }, __index: base_map.editor
 
   __on_selection_changed: (editor, selection) ->
-    if selection.empty and editor.cursor.pos != selection_start
-      cancel editor
+    if selection.empty
+      if editor.cursor.pos != selection_start
+        cancel editor
+    else
+      ensure_correct_sel_range selection
 
   __after_apply: (editor) ->
-    -- adjust the selection if needed to cover the selection start pos
-    sel = editor.selection
-    correct_anchor = sel.cursor < selection_start and selection_start + 1 or selection_start
-    sel.anchor = correct_anchor if sel.anchor != correct_anchor
+    ensure_correct_sel_range editor.selection
 }
 
 setmetatable map, {
   __index: base_map
   __call: (_, editor) ->
-    selection_start = editor.cursor.pos
-    editor.selection.persistent = true
-    with editor.selection
-      \set selection_start, selection_start
-      .persistent = true
+    selection = editor.selection
+    selection.persistent = true
+
+    if selection.anchor
+      selection_start = selection.anchor
+      ensure_correct_sel_range selection
+    else
+      selection_start = editor.cursor.pos
+      selection\set selection_start, selection_start
 }
+
 return map
