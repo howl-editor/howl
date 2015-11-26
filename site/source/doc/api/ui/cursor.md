@@ -177,6 +177,39 @@ new selection, or extends the selection if already present.
 Moves the cursor to the end of the real or display line. If `extend` is true,
 creates a new selection, or extends the selection if already present.
 
+### move_to (opts = {})
+
+Moves the cursor according to `opts`, which can contain the following options:
+
+- `pos`: Moves the cursor to the specified offset
+- `line`: Moves the cursor to the specified line
+- `column`: Moves the cursor to the specified line column on the target line
+- `column_index`: Moves the cursor to the specified line offset on the target
+line
+- `extend`: Extend the selection (or create a new) from the current cursor
+position to the new cursor position
+
+Not all of these are combinable. apart from `extend` which can always be
+specified in order to extend the selection. You can choose to specify `pos` to
+move the cursor to a specific position, specify `line` to go to a specific line,
+`column` or `column_index` to go to a specific column, or finally a combination
+of `line` and either `column` or `column_index` to move the cursor to a certain
+column on a certain line. For the difference between `column` and `column_index`
+see the documentation for [column](#column) and
+[column_index](#column_index), respectively.
+
+For example:
+
+```moonscript
+cursor = editor.cursor
+
+-- move the cursor to the tenth offset, extending the selection
+cursor\move_to pos: 10, extend: true
+
+-- move the cursor to the third line, fifth visual column
+cursor\move_to line: 3, column: 5
+```
+
 ### start (extend = false)
 
 Moves the cursor to the start of the buffer. If `extend` is true, creates a new
