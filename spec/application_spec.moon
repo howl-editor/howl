@@ -25,6 +25,30 @@ describe 'Application', ->
       buffer = application\new_buffer!
       assert.same { buffer }, application.buffers
 
+  describe 'add_buffer(buffer, show)', ->
+    it 'adds the buffer to .buffers', ->
+      buf = Buffer {}
+      application\add_buffer buf
+      assert.same {buf}, application.buffers
+
+    it 'shows the buffer in the current editor', ->
+      buf = Buffer {}
+      application.editor = Editor Buffer {}
+      application\add_buffer buf
+      assert.equals buf, application.editor.buffer
+
+    it 'does not shows the buffer in the current editor if <show> is false', ->
+      buf = Buffer {}
+      application.editor = Editor Buffer {}
+      application\add_buffer buf, false
+      assert.not_equals buf, application.editor.buffer
+
+    it 'prevents the same buffer from being added twice', ->
+      buf = Buffer {}
+      application\add_buffer buf
+      application\add_buffer buf
+      assert.equals 1, #application.buffers
+
   describe 'open_file(file, editor)', ->
     editor = Editor Buffer {}
 

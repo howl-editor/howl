@@ -142,6 +142,9 @@ class Application extends PropertyObject
     buffer
 
   add_buffer: (buffer, show = true) =>
+    for b in *@buffers
+      return if b == buffer
+
     append @_buffers, buffer
     if show and @editor
       @editor.buffer = buffer
