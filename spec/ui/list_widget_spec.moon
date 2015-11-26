@@ -359,7 +359,7 @@ three    four    ]] .. '\n', buf.text
 
     it 'memory usage is stable', ->
       items = {'one', 'two', 'three'}
-      assert_memory_stays_within '30Kb', 20, ->
+      assert_memory_stays_within '30Kb', 30, ->
         w = ListWidget (-> items)
         w\show!
         w\to_gobject!\destroy!
