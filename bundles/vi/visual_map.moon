@@ -9,6 +9,7 @@ cancel = (editor, mode = 'command') ->
   editor.selection.persistent = false
   editor.selection\remove!
   state.change_mode editor, mode
+  true
 
 cut = (editor) ->
   editor.selection\cut!
