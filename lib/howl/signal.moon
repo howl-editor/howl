@@ -4,6 +4,7 @@
 handlers = {}
 all = {}
 append = table.insert
+abort = {}
 
 register = (name, options = {}) ->
   error "Missing field 'description'", 2 unless options.description
@@ -27,8 +28,8 @@ emit = (name, params, illegal) ->
     status, ret = coroutine.resume co, params
 
     if status
-      if ret == 'abort' and coroutine.status(co) == 'dead'
-        return 'abort'
+      if ret == abort and coroutine.status(co) == 'dead'
+        return abort
     else
       _G.log.error 'Error invoking handler for "' .. name .. '": ' .. ret
 
@@ -45,4 +46,4 @@ connect = (name, handler, index) ->
 disconnect = (name, handler) ->
   handlers[name] = [h for h in *handlers_for name when h != handler]
 
-return :register, :unregister, :emit, :connect, :disconnect, :all
+return :abort, :register, :unregister, :emit, :connect, :disconnect, :all

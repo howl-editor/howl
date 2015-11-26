@@ -742,7 +742,7 @@ class Editor extends PropertyObject
   _on_insert_at_cursor: (_, args) =>
     params = moon.copy args
     params.editor = self
-    return if signal.emit('insert-at-cursor', params) == 'abort'
+    return if signal.emit('insert-at-cursor', params) == signal.abort
     return if @buffer.mode.on_insert_at_cursor and @buffer.mode\on_insert_at_cursor(params, self)
 
     if @popup

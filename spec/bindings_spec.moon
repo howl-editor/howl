@@ -123,13 +123,13 @@ describe 'bindings', ->
 
       it 'returns early with true if some handler says to abort', ->
         keymap = A: spy.new -> true
-        with_signal_handler 'key-press', 'abort', (handler) ->
+        with_signal_handler 'key-press', signal.abort, (handler) ->
           status, ret = pcall bindings.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
           assert.spy(handler).was.called!
           assert.spy(keymap.A).was.not_called!
           assert.is_true ret
 
-      it 'continues processing keymaps if the handler returns false', ->
+      it 'continues processing keymaps unless aborted', ->
         keymap = A: spy.new -> true
         with_signal_handler 'key-press', false, (handler) ->
           status, ret = pcall bindings.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
