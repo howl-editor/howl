@@ -103,6 +103,8 @@ struct Abc<1, 2> {};
 class [[a,b,c]] X::Y::Z {};
 class X::Y::Z<A, B> virtual final : B {};
 class [[a,b,c]] [[def]] X::Y::Z virtual : B {};
+class X
+{};
 struct X<A, B> y;
 
 int a = 1, 2 == 2 ? 1 : 0;
