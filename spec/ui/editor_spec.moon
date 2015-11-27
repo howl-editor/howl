@@ -675,6 +675,6 @@ describe 'Editor', ->
     it 'memory usage is stable', ->
       pinned = Editor Buffer!
 
-      assert_memory_stays_within '40Kb', 20, ->
+      assert_memory_stays_within '40Kb', 30, ->
         e = Editor Buffer!
         e\to_gobject!\destroy!

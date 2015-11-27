@@ -186,7 +186,8 @@ export process = (event, source, extra_keymaps = {},  ...) ->
   event = substitute_keyname event
   translations = translate_key event
   return true if process_capture event, source, translations, ...
-  return true if signal.emit 'key-press', :event, :source, :translations, parameters: {...}
+  emit_result = signal.emit 'key-press', :event, :source, :translations, parameters: {...}
+  return true if emit_result == signal.abort
 
   maps = {}
   append maps, map for map in *extra_keymaps
