@@ -50,6 +50,7 @@ export change_mode = (editor, to, ...) ->
   bindings.pop! if active
   bindings.push map
   map(editor, ...) if callable map
+  true
 
 export apply = (editor, f) ->
   state = :delete, :change, :yank, :count
