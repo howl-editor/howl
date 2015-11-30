@@ -85,7 +85,7 @@ describe 'Application', ->
           application\open_file file, editor
         assert.spy(handler).was_called!
 
-  it '.buffers are sorted by visibility status and last_shown', ->
+  it '.buffers are sorted by focus, visibility status and last_shown', ->
     view = {}
     hidden_buffer = application\new_buffer!
     hidden_buffer.title = 'hidden'
@@ -100,8 +100,12 @@ describe 'Application', ->
     editor.buffer = visible_buffer
     visible_buffer.title = 'visible'
 
+    visible_focus_buffer = application\new_buffer!
+    visible_focus_buffer.title = 'visible-focus'
+    application.editor = buffer: visible_focus_buffer
+
     buffers = [b.title for b in *application.buffers]
-    assert.same { 'visible', 'last_shown', 'hidden' }, buffers
+    assert.same { 'visible-focus', 'visible', 'last_shown', 'hidden' }, buffers
 
   describe '.recently_closed', ->
     editor = Editor Buffer {}

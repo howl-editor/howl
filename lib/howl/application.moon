@@ -43,8 +43,9 @@ dispatcher = (f, description, ...)->
 
   false
 
-sort_buffers = (buffers) ->
+sort_buffers = (buffers, current_buffer=nil) ->
   table.sort buffers, (a, b) ->
+    return current_buffer == a if current_buffer
     return true if a.showing and not b.showing
     return false if b.showing and not a.showing
     ls_a = a.last_shown or 0
@@ -78,7 +79,7 @@ class Application extends PropertyObject
 
   @property buffers: get: =>
     buffers = { table.unpack @_buffers }
-    sort_buffers buffers
+    sort_buffers buffers, (@editor and @editor.buffer)
     buffers
 
   @property recently_closed: get: => moon.copy @_recently_closed
