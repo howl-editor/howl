@@ -45,7 +45,8 @@ dispatcher = (f, description, ...)->
 
 sort_buffers = (buffers, current_buffer=nil) ->
   table.sort buffers, (a, b) ->
-    return current_buffer == a if current_buffer
+    if current_buffer == a return true
+    if current_buffer == b return false
     return true if a.showing and not b.showing
     return false if b.showing and not a.showing
     ls_a = a.last_shown or 0
