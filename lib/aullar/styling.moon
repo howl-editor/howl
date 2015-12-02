@@ -216,9 +216,11 @@ define_class {
     index or= 1
     if not_present
       append @sub_style_offsets, index, entry
-    elseif not @sub_style_offsets[index].updated_offsets
-      @sub_style_offsets[index] = entry
     else
-      @sub_style_offsets[index].updated_offsets = nil
+      current_entry = @sub_style_offsets[index]
+      if not (current_entry.updated_offsets and current_entry.end_offset == entry.end_offset + 1)
+        @sub_style_offsets[index] = entry
+      else
+        @sub_style_offsets[index].updated_offsets = nil
     require('moon').p @sub_style_offsets
 }
