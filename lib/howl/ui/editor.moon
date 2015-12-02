@@ -233,7 +233,7 @@ class Editor extends PropertyObject
       @buffer\chunk start, stop - 1
 
   @property current_mode: get: =>
-    return @last_mode if @last_pos and @cursor.pos == @last_pos
+    return @last_mode if @last_pos and @cursor.pos == @last_pos and @last_mode == @buffer.mode
     @last_pos = @cursor.pos
     @last_mode = @buffer\mode_at_pos @cursor.pos
     @last_mode
