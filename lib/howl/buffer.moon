@@ -6,6 +6,7 @@ import File from howl.io
 import style from howl.ui
 import PropertyObject from howl.aux.moon
 import destructor from howl.aux
+import mode from howl
 aullar = require 'aullar'
 {:copy} = moon
 
@@ -56,6 +57,7 @@ class Buffer extends PropertyObject
       old_mode = @_mode
       @_mode = mode
       @config.chain_to mode.config
+      @_buffer.styling\clear_style_offsets!
       if mode.lexer
         @_buffer.lexer = (text) -> mode.lexer text, @
       else
@@ -266,6 +268,16 @@ class Buffer extends PropertyObject
     if @_mode.lexer
       b_end_pos = @byte_offset end_pos
       @_buffer\ensure_styled_to pos: b_end_pos
+
+  mode_at_pos: (pos) =>
+    b_pos = @byte_offset pos
+    entry = @_buffer.styling\get_nearest_style_entry b_pos
+    if entry
+      print entry.mode
+      mode.by_name entry.mode
+    else
+      print '!!'
+      @mode
 
   add_view_ref: =>
     @viewers += 1
