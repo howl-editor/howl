@@ -25,6 +25,7 @@ define_class {
   new: (size, @listener) =>
     @style_buffer = GapBuffer 'uint16_t', size
     @last_pos_styled = 0
+    @sub_style_offsets = {}
 
   reset: (size) =>
     @style_buffer\set nil, size
@@ -119,7 +120,7 @@ define_class {
 
       else -- embedded styling (sub lexing)
         if #style > 0
-          sub_base = styling[s_idx + 2]\match '[^|]*|(.+)'
+          mode_name, sub_base = styling[s_idx + 2]\match '([^|]*)|(.+)'
           sub_start_offset = base + styling_start
 
           -- determine sub styling end, so we can fill it with base
@@ -133,6 +134,10 @@ define_class {
 
           @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
           @apply sub_start_offset, style, base: sub_base, no_notify: true
+          @_insert_sub_style
+            mode: mode_name
+            start_offset: sub_start_offset
+            end_offset: sub_end_offset
           styled_up_to = sub_end_offset
 
     styled_from = offset + styling[1] - 1
@@ -151,6 +156,14 @@ define_class {
     @style_buffer\insert offset - 1, nil, count
     @last_pos_styled += count if offset <= @last_pos_styled
     @_notify(offset, offset + count - 1) unless opts.no_notify
+
+    for i=#@sub_style_offsets,1,-1
+      entry = @sub_style_offsets[i]
+      break if entry.start_offset < offset
+      entry.start_offset += count
+      entry.end_offset += count
+
+    require('moon').p @sub_style_offsets
 
   delete: (offset, count, opts = {}) =>
     @style_buffer\delete offset - 1, count
@@ -177,4 +190,20 @@ define_class {
 
     if end_offset and (end_offset <= 0 or end_offset > @style_buffer.size)
       error "Styling: Illegal end_offset #{end_offset}", 3
+
+  _get_nearest_style_index: (start_offset) =>
+    for i, entry in ipairs @sub_style_offsets
+      if entry.start_offset >= start_offset
+        return i, entry.start_offset != start_offset
+    return 1, true
+
+  _insert_sub_style: (entry) =>
+    offset_count = #@sub_style_offsets
+    index, insert = @_get_nearest_style_index entry.start_offset
+    -- print index, insert
+    if insert
+      append @sub_style_offsets, index, entry
+    else
+      @sub_style_offsets[index] = entry
+    require('moon').p @sub_style_offsets
 }
