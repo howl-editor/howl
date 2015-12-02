@@ -165,12 +165,22 @@ define_class {
       unless opts.no_notify
         @_notify(offset, offset + style_positions_removed - 1)
 
+      to_delete = {}
+
       for i=#@sub_style_offsets,1,-1
         entry = @sub_style_offsets[i]
         break if entry.start_offset < offset and entry.end_offset < offset
+        if offset < entry.start_offset and offset+count > entry.end_offset
+          append to_delete, i
+          continue
         entry.start_offset -= count if entry.start_offset > offset
         entry.end_offset -= count
         entry.updated_offsets = true
+
+      deleted = 0
+      for index in *to_delete
+        table.remove @sub_style_offsets, index - deleted
+        deleted += 1
 
   at: (offset) =>
     return nil if offset < 1 or offset > @style_buffer.size
