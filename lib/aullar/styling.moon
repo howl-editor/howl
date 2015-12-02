@@ -180,7 +180,7 @@ define_class {
 
   get_nearest_style_entry: (offset) =>
     for entry in *@sub_style_offsets
-      return entry if entry.start_offset < offset and entry.end_offset > offset
+      return entry if entry.start_offset < offset and entry.end_offset >= offset
 
   _notify: (start_offset, end_offset) =>
     if @listener and @listener.on_changed
