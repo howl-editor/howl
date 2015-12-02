@@ -293,10 +293,8 @@ class Buffer extends PropertyObject
     b_pos = @byte_offset pos
     entry = @_buffer.styling\get_nearest_style_entry b_pos
     if entry
-      print entry.mode
       mode.by_name entry.mode
     else
-      print '!!'
       @mode
 
   add_view_ref: =>

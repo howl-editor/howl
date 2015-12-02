@@ -214,13 +214,13 @@ define_class {
   _insert_sub_style: (entry) =>
     index, not_present = @_get_nearest_style_index entry.start_offset
     index or= 1
+
     if not_present
       append @sub_style_offsets, index, entry
     else
       current_entry = @sub_style_offsets[index]
+
       if not (current_entry.updated_offsets and current_entry.end_offset == entry.end_offset + 1)
         @sub_style_offsets[index] = entry
-      else
-        @sub_style_offsets[index].updated_offsets = nil
-    require('moon').p @sub_style_offsets
+      @sub_style_offsets[index].updated_offsets = nil
 }

@@ -746,7 +746,6 @@ class Editor extends PropertyObject
     false
 
   _on_insert_at_cursor: (_, args) =>
-    print @current_mode.name
     params = moon.copy args
     params.editor = self
     return if signal.emit('insert-at-cursor', params) == signal.abort
