@@ -33,7 +33,7 @@ handle_backspace = (event, editor, auto_pairs) ->
 
 handle = (event, editor) ->
   buffer = editor.buffer
-  auto_pairs = buffer.mode.auto_pairs
+  auto_pairs = editor.current_mode.auto_pairs
   char = event.character
   return unless auto_pairs and buffer.config.auto_pair and char
   return handle_backspace(event, editor, auto_pairs) if event.key_name == 'backspace'
