@@ -159,11 +159,11 @@ define_class {
 
     for i=#@sub_style_offsets,1,-1
       entry = @sub_style_offsets[i]
-      break if entry.start_offset < offset
-      entry.start_offset += count
+      break if entry.start_offset < offset and entry.end_offset < offset
+      entry.start_offset += count if entry.start_offset > offset
       entry.end_offset += count
 
-    require('moon').p @sub_style_offsets
+    -- require('moon').p @sub_style_offsets
 
   delete: (offset, count, opts = {}) =>
     @style_buffer\delete offset - 1, count
@@ -173,6 +173,14 @@ define_class {
 
       unless opts.no_notify
         @_notify(offset, offset + style_positions_removed - 1)
+
+      for i=#@sub_style_offsets,1,-1
+        entry = @sub_style_offsets[i]
+        break if entry.start_offset < offset and entry.end_offset < offset
+        entry.start_offset -= count if entry.start_offset > offset
+        entry.end_offset -= count
+
+      -- require('moon').p @sub_style_offsets
 
   at: (offset) =>
     return nil if offset < 1 or offset > @style_buffer.size
@@ -198,12 +206,6 @@ define_class {
     return 1, true
 
   _insert_sub_style: (entry) =>
-    offset_count = #@sub_style_offsets
     index, insert = @_get_nearest_style_index entry.start_offset
-    -- print index, insert
-    if insert
-      append @sub_style_offsets, index, entry
-    else
-      @sub_style_offsets[index] = entry
-    require('moon').p @sub_style_offsets
+    append @sub_style_offsets, index, entry if insert
 }
