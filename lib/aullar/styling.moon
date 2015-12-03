@@ -4,6 +4,7 @@
 {:fill} = require 'ffi'
 {:define_class} = require 'aullar.util'
 GapBuffer = require 'aullar.gap_buffer'
+Markers = require 'aullar.markers'
 append = table.insert
 {:min, :max} = math
 
@@ -25,7 +26,7 @@ define_class {
   new: (size, @listener) =>
     @style_buffer = GapBuffer 'uint16_t', size
     @last_pos_styled = 0
-    @sub_style_offsets = {}
+    @sub_style_markers = Markers!
 
   reset: (size) =>
     @style_buffer\set nil, size
@@ -108,6 +109,8 @@ define_class {
     no_notify = no_notify: true
     styled_up_to = 1
 
+    markers = {}
+
     for s_idx = 1, #styling, 3
       styling_start = styling[s_idx]
       style = styling[s_idx + 1]
@@ -126,13 +129,15 @@ define_class {
 
           @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
           @apply sub_start_offset, style, base: sub_base, no_notify: true
-          @_insert_sub_style
+          append markers,
             mode: mode_name
             start_offset: sub_start_offset
             end_offset: sub_end_offset
           styled_up_to = sub_end_offset
 
     styled_from = offset + styling[1] - 1
+    @sub_style_markers\remove_for_range styled_from, styled_up_to
+    @_insert_sub_markers markers
     @_notify(styled_from, styled_up_to) unless opts.no_notify
     styled_up_to
 
@@ -149,15 +154,9 @@ define_class {
     @last_pos_styled += count if offset <= @last_pos_styled
     @_notify(offset, offset + count - 1) unless opts.no_notify
 
-    for i=#@sub_style_offsets,1,-1
-      entry = @sub_style_offsets[i]
-      break if entry.start_offset < offset and entry.end_offset < offset
-      entry.start_offset += count if entry.start_offset > offset
-      entry.end_offset += count
-      entry.updated_offsets = true
-
   delete: (offset, count, opts = {}) =>
     @style_buffer\delete offset - 1, count
+    @sub_style_markers\remove_for_range offset, offset + count
     if offset <= @last_pos_styled
       style_positions_removed = min(@last_pos_styled - offset, count)
       @last_pos_styled -= style_positions_removed
@@ -165,34 +164,17 @@ define_class {
       unless opts.no_notify
         @_notify(offset, offset + style_positions_removed - 1)
 
-      to_delete = {}
-
-      for i=#@sub_style_offsets,1,-1
-        entry = @sub_style_offsets[i]
-        break if entry.start_offset < offset and entry.end_offset < offset
-        if offset < entry.start_offset and offset+count > entry.end_offset
-          append to_delete, i
-          continue
-        entry.start_offset -= count if entry.start_offset > offset
-        entry.end_offset -= count
-        entry.updated_offsets = true
-
-      deleted = 0
-      for index in *to_delete
-        table.remove @sub_style_offsets, index - deleted
-        deleted += 1
-
   at: (offset) =>
     return nil if offset < 1 or offset > @style_buffer.size
     return nil if offset > @last_pos_styled
     ptr = @style_buffer\get_ptr(offset - 1, 1)
     style_map[ptr[0]]
 
-  clear_style_offsets: => @sub_style_offsets = {}
+  clear_style_offsets: => @sub_style_markers = Markers!
 
-  get_nearest_style_entry: (offset) =>
-    for entry in *@sub_style_offsets
-      return entry if entry.start_offset < offset and entry.end_offset >= offset
+  get_nearest_style_marker: (pos) =>
+    found = @sub_style_markers\at pos
+    found and found[1]
 
   _notify: (start_offset, end_offset) =>
     if @listener and @listener.on_changed
@@ -205,22 +187,7 @@ define_class {
     if end_offset and (end_offset <= 0 or end_offset > @style_buffer.size)
       error "Styling: Illegal end_offset #{end_offset}", 3
 
-  _get_nearest_style_index: (start_offset) =>
-    for i, entry in ipairs @sub_style_offsets
-      if entry.start_offset >= start_offset
-        return i, entry.start_offset != start_offset
-    return nil, true
-
-  _insert_sub_style: (entry) =>
-    index, not_present = @_get_nearest_style_index entry.start_offset
-    index or= 1
-
-    if not_present
-      append @sub_style_offsets, index, entry
-    else
-      current_entry = @sub_style_offsets[index]
-
-      if not (current_entry.updated_offsets and current_entry.end_offset == entry.end_offset + 1)
-        @sub_style_offsets[index] = entry
-      @sub_style_offsets[index].updated_offsets = nil
+  _insert_sub_markers: (markers) =>
+    marker.name = 'sub_style' for marker in *markers
+    @sub_style_markers\add markers
 }

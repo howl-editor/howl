@@ -291,11 +291,8 @@ class Buffer extends PropertyObject
 
   mode_at_pos: (pos) =>
     b_pos = @byte_offset pos
-    entry = @_buffer.styling\get_nearest_style_entry b_pos
-    if entry
-      mode.by_name entry.mode
-    else
-      @mode
+    marker = @_buffer.styling\get_nearest_style_marker b_pos
+    if marker then mode.by_name marker.mode else @mode
 
   add_view_ref: =>
     @viewers += 1
