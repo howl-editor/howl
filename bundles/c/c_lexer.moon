@@ -4,7 +4,7 @@
 howl.aux.lpeg_lexer ->
   c = capture
   ident = (alpha + '_')^1 * (alpha + digit + '_')^0
-  ws = c 'whitespace', blank
+  ws = c 'whitespace', space
 
   identifer = c 'identifer', ident
 
@@ -13,7 +13,7 @@ howl.aux.lpeg_lexer ->
     'alignas', 'alignof', 'and_eq', 'and', 'asm', 'bitand', 'bitor',
     'catch', 'class', 'compl', 'constexpr',
     'const_cast', 'decltype', 'delete', 'dynamic_cast', 'explicit', 'export',
-    'friend', 'mutable', 'namespace', 'new', 'noexcept', 'not_eq',
+    'friend', 'final', 'mutable', 'namespace', 'new', 'noexcept', 'not_eq',
     'not', 'nullptr', 'operator', 'or_eq', 'or', 'private', 'protected',
     'public', 'reinterpret_cast', 'static_assert', 'static_cast', 'template',
     'this', 'thread_local', 'throw', 'try', 'typeid', 'typename',
@@ -30,6 +30,13 @@ howl.aux.lpeg_lexer ->
     'long', 'short', 'unsigned', 'void', 'wchar_t'
   }
 
+  attribute_spec = sequence {
+    c 'operator', '[['
+    c 'special', scan_until ']]'
+    c 'operator', ']]'
+    ws^0
+  }
+
   classdef = any {
     sequence {
       c('keyword', word { 'enum', 'union' })
@@ -41,13 +48,15 @@ howl.aux.lpeg_lexer ->
     sequence {
       c('keyword', word { 'class', 'struct' })
       ws^1
-      c('type_def', ident)
+      attribute_spec^0
+      c('type_def', ident) * (c('operator', P'::') + c('type_def', ident))^0
       ws^0
+      (((V'all' + P 1) - S':{}=;') + ws)^0
       c('operator', S':{')
     }
   }
 
-  operator = c 'operator', S('+-*/%=<>~&^|!(){}[];.')
+  operator = c 'operator', S'+-*/%=<>~&^|!(){}[];.,?:'
 
   comment = c 'comment', any {
     P'//' * scan_until eol,
@@ -85,17 +94,21 @@ howl.aux.lpeg_lexer ->
 
   constant = c 'constant', word any('_', upper)^1 * any('_', upper, digit)^0
 
-  any {
-    include_stmt,
-    preproc,
-    comment,
-    string,
-    classdef,
-    type,
-    keyword,
-    special,
-    operator,
-    number,
-    constant,
-    identifer,
+  P {
+    'all'
+
+    all: any {
+      include_stmt,
+      preproc,
+      comment,
+      string,
+      classdef,
+      type,
+      keyword,
+      special,
+      operator,
+      number,
+      constant,
+      identifer,
+    }
   }
