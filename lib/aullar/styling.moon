@@ -153,6 +153,7 @@ define_class {
     @_check_offsets offset
     return if offset > @last_pos_styled
     @clear offset, @last_pos_styled, no_notify: true
+    @sub_style_markers\remove_for_range offset, @last_pos_styled
     last_pos_styled = @last_pos_styled
     @last_pos_styled = max(0, offset - 1)
     @_notify(offset, last_pos_styled) unless opts.no_notify
