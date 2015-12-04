@@ -269,7 +269,7 @@ class Buffer extends PropertyObject
       b_end_pos = @byte_offset end_pos
       @_buffer\ensure_styled_to pos: b_end_pos
 
-  mode_at_pos: (pos) =>
+  mode_at: (pos) =>
     b_pos = @byte_offset pos
     marker = @_buffer.styling\get_nearest_style_marker b_pos
     if marker then mode.by_name marker.mode else @mode

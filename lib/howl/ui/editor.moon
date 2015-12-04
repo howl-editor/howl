@@ -235,7 +235,7 @@ class Editor extends PropertyObject
   @property current_mode: get: =>
     return @last_mode if @last_pos and @cursor.pos == @last_pos and @last_mode == @buffer.mode
     @last_pos = @cursor.pos
-    @last_mode = @buffer\mode_at_pos @cursor.pos
+    @last_mode = @buffer\mode_at @cursor.pos
     @last_mode
 
   refresh_display: => @view\refresh_display from_line: 1, invalidate: true
