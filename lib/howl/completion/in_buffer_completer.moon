@@ -62,9 +62,9 @@ near_tokens = (context) ->
   start_pos = 1
   chunk_text = chunk.text
   buffer = context.buffer
-  pattern = buffer.config.word_pattern
 
   while start_pos < #chunk_text
+    pattern = buffer\config_at(start_pos).word_pattern
     start_pos, end_pos = chunk_text\ufind pattern, start_pos
     break unless start_pos
     token = chunk_text\usub start_pos, end_pos

@@ -274,6 +274,11 @@ class Buffer extends PropertyObject
     marker = @_buffer.styling\get_nearest_style_marker b_pos
     if marker then mode.by_name marker.mode else @mode
 
+  config_at: (pos) =>
+    new_config = config.local_proxy!
+    new_config.chain_to @mode_at(pos).config
+    new_config
+
   add_view_ref: =>
     @viewers += 1
 
