@@ -77,6 +77,7 @@ pump_stream = (stream, handler, parking) ->
     else
       handler ret
       if ret == nil
+        stream\close!
         dispatch.resume parking
       else
         stream\read_async nil, read_handler
