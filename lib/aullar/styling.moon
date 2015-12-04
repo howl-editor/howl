@@ -132,7 +132,7 @@ define_class {
           append markers,
             mode: mode_name
             start_offset: sub_start_offset
-            end_offset: sub_end_offset
+            end_offset: sub_end_offset + 1
           styled_up_to = sub_end_offset
 
     styled_from = offset + styling[1] - 1
