@@ -276,6 +276,8 @@ class Buffer extends PropertyObject
 
   config_at: (pos) =>
     new_config = config.local_proxy!
+    mode_at = @mode_at pos
+    return @config if mode_at == @mode
     new_config.chain_to @mode_at(pos).config
     new_config
 
