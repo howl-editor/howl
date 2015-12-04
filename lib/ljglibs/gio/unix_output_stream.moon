@@ -8,6 +8,10 @@ core = require 'ljglibs.core'
 
 C = ffi.C
 
+release = (p) ->
+  C.g_output_stream_close, p, nil
+  C.g_object_unref(p)
+
 core.define 'GUnixOutputStream < GOutputStream', {
   properties: {
     fd: 'gint'
@@ -15,4 +19,4 @@ core.define 'GUnixOutputStream < GOutputStream', {
   }
 
 }, (t, fd, close_fd = true) ->
-  ref_ptr C.g_unix_output_stream_new fd, close_fd
+  ffi.gc C.g_unix_output_stream_new(fd, close_fd), release
