@@ -199,7 +199,7 @@ class DefaultMode
         p, neg_match = p[1], p[2]
 
       match = text\umatch p
-      if text\umatch(p) and (not neg_match or not text\umatch neg_match)
+      if match and (not neg_match or not text\umatch neg_match)
         return true
 
     false
