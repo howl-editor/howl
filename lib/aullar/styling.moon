@@ -121,7 +121,15 @@ define_class {
         if #style > 0
           sub_base = styling[s_idx + 2]\match '[^|]*|(.+)'
           sub_start_offset = base + styling_start
-          sub_end_offset = sub_start_offset + style[#style] - 1
+
+          -- determine sub styling end, so we can fill it with base
+          sub_style = style
+          last_offset = sub_style[#sub_style]
+          while type(last_offset) == 'string' -- nested sub lexing
+            sub_style = sub_style[#sub_style - 1]
+            last_offset = sub_style[#sub_style]
+
+          sub_end_offset = sub_start_offset + last_offset - 1
 
           @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
           @apply sub_start_offset, style, base: sub_base, no_notify: true
