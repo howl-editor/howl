@@ -11,7 +11,7 @@ LUAJIT = deps/${LUAJIT_VER}
 LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
 LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
-LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
+LUAJIT_URL = http://nordman.org/mirror/luajit/$(LUAJIT_VER).tar.gz
 
 LPEG_VER = lpeg-0.10.2
 LPEG_CHECKSUM = 1402433f02e37ddadff04a3d4118b026
