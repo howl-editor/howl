@@ -30,6 +30,7 @@ define_class {
 
   reset: (size) =>
     @style_buffer\set nil, size
+    @sub_style_markers = Markers!
     @last_pos_styled = 0
 
   sub: (styling, start_offset, end_offset) ->
@@ -95,6 +96,7 @@ define_class {
     @_notify(start_offset, end_offset) unless opts.no_notify
 
   clear: (start_offset, end_offset, opts = {}) =>
+    @sub_style_markers\remove_for_range start_offset, end_offset
     @style_buffer\fill start_offset - 1, end_offset - 1, 0
     @_notify(start_offset, end_offset) unless opts.no_notify
 
@@ -136,8 +138,11 @@ define_class {
           styled_up_to = sub_end_offset
 
     styled_from = offset + styling[1] - 1
+
     @sub_style_markers\remove_for_range styled_from, styled_up_to
-    @_insert_sub_markers markers
+    marker.name = 'sub_style' for marker in *markers
+    @sub_style_markers\add markers
+
     @_notify(styled_from, styled_up_to) unless opts.no_notify
     styled_up_to
 
@@ -171,8 +176,6 @@ define_class {
     ptr = @style_buffer\get_ptr(offset - 1, 1)
     style_map[ptr[0]]
 
-  clear_style_offsets: => @sub_style_markers = Markers!
-
   get_nearest_style_marker: (pos) =>
     found = @sub_style_markers\at pos
     found and found[1]
@@ -189,6 +192,4 @@ define_class {
       error "Styling: Illegal end_offset #{end_offset}", 3
 
   _insert_sub_markers: (markers) =>
-    marker.name = 'sub_style' for marker in *markers
-    @sub_style_markers\add markers
 }
