@@ -145,7 +145,7 @@ proxy_mt = {
   __newindex: (proxy, key, value) -> proxy_set key, value, proxy
 }
 
-local_proxy = () ->
+local_proxy = ->
   proxy = {}
   proxy.chain_to = (base) -> rawset proxy, '_base', base
   setmetatable proxy, proxy_mt
