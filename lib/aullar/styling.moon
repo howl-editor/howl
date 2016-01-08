@@ -140,7 +140,7 @@ define_class {
           @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
           @apply sub_start_offset, style, base: sub_base, no_notify: true
           append markers,
-            mode: mode_name
+            name: mode_name
             start_offset: sub_start_offset
             end_offset: sub_end_offset + 1
           styled_up_to = sub_end_offset
@@ -148,7 +148,6 @@ define_class {
     styled_from = offset + styling[1] - 1
 
     @sub_style_markers\remove_for_range styled_from, styled_up_to
-    marker.name = 'sub_style' for marker in *markers
     @sub_style_markers\add markers
 
     @_notify(styled_from, styled_up_to) unless opts.no_notify
