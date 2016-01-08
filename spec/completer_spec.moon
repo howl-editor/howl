@@ -82,6 +82,24 @@ describe 'Completer', ->
       completions = Completer(buffer, 3)\complete 3
       assert.same { 'Hello', 'hello' }, completions
 
+    it 'takes sub modes into account', ->
+      mode1 = completers: { -> complete: -> { 'mode1' } }
+      buffer.mode = mode1
+      mode2 = completers: { -> complete: -> { 'mode2' } }
+      mode2_reg = name: 'completer_test', create: -> mode2
+      howl.mode.register mode2_reg
+
+      buffer.text = ' m'
+      buffer._buffer.styling\apply 1, {
+        1, 'whitespace', 2,
+        2, { 1, 's1', 2 }, 'completer_test|s1',
+      }
+      completions = Completer(buffer, 3)\complete 3
+      assert.same { 'mode2' }, completions
+
+      howl.mode.unregister 'completer_test'
+
+
     context 'limiting completions', ->
       it 'returns at most `completion_max_shown` completions', ->
         completions = ["cand-#{i}" for i = 1,15]
