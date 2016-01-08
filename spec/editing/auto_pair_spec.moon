@@ -115,3 +115,17 @@ describe 'auto_pair', ->
       buffer.mode.auto_pairs = { ['(']: ')' }
       buffer.config.auto_pair = false
       assert.is_not_true auto_pair.handle event('('), editor
+
+    it 'takes sub modes into account', ->
+      buffer.mode.auto_pairs = { ['(']: ')' }
+      mode2 = auto_pairs: { ['[']: ']' }
+      mode2_reg = name: 'auto_pair_test', create: -> mode2
+      howl.mode.register mode2_reg
+
+      buffer.text = '('
+      buffer._buffer.styling\apply 1, {
+        1, { 1, 's1', 2 }, 'auto_pair_test|s1',
+      }
+      assert.is_true auto_pair.handle event('['), editor
+
+      howl.mode.unregister 'auto_pair_test'
