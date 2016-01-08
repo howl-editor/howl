@@ -198,6 +198,4 @@ define_class {
 
     if end_offset and (end_offset <= 0 or end_offset > @style_buffer.size)
       error "Styling: Illegal end_offset #{end_offset}", 3
-
-  _insert_sub_markers: (markers) =>
 }
