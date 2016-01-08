@@ -1,7 +1,7 @@
 Gtk = require 'ljglibs.gtk'
 append = table.insert
 
-{:Buffer, :config, :signal, :clipboard} = howl
+{:Buffer, :config, :signal, :clipboard, :sys} = howl
 {:Editor} = howl.ui
 
 describe 'Editor', ->
@@ -293,12 +293,12 @@ describe 'Editor', ->
       assert.equal 15, cursor.pos
 
     it 'updates .last_shown for buffer switched out', ->
-      time = os.time
+      time =  sys.time
       now = time!
-      os.time = -> now
+      sys.time = -> now
       pcall ->
         editor.buffer = Buffer {}
-      os.time = time
+      sys.time = time
       assert.same now, buffer.last_shown
 
   context 'previewing', ->
@@ -310,12 +310,12 @@ describe 'Editor', ->
       assert.same 2, new_buffer.last_shown
 
     it 'updates .last_shown for original buffer switched out', ->
-      time = os.time
+      time = sys.time
       now = time!
-      os.time = -> now
+      sys.time = -> now
       pcall ->
         editor\preview Buffer {}
-      os.time = time
+      sys.time= time
       assert.same now, buffer.last_shown
 
   context 'indentation, tabs, spaces and backspace', ->

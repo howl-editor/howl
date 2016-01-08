@@ -24,9 +24,13 @@ find_executable = (name) ->
     if exe.exists and not exe.is_directory
       return exe.path
 
+
+time = -> glib.get_real_time! / 1000000
+
 {
   :env,
   :find_executable
+  :time,
   info: {
     os: jit.os\lower!
   }

@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import BufferContext, BufferLines, BufferMarkers, Chunk, config, signal from howl
+import BufferContext, BufferLines, BufferMarkers, Chunk, config, signal, sys from howl
 import File from howl.io
 import style from howl.ui
 import PropertyObject from howl.aux.moon
@@ -129,7 +129,7 @@ class Buffer extends PropertyObject
   @property showing: get: => @viewers > 0
 
   @property last_shown:
-    get: => @viewers > 0 and os.time! or @_last_shown
+    get: => @viewers > 0 and sys.time! or @_last_shown
     set: (timestamp) => @_last_shown = timestamp
 
   @property multibyte: get: =>

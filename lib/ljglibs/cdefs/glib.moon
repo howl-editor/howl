@@ -282,4 +282,6 @@ ffi.cdef [[
 
   gint64 g_get_monotonic_time (void);
 
+  gint64 g_get_real_time (void);
+
 ]]

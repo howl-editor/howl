@@ -5,7 +5,7 @@ Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 gobject_signal = require 'ljglibs.gobject.signal'
-import Completer, signal, bindings, config, command, clipboard from howl
+import Completer, signal, bindings, config, command, clipboard, sys from howl
 import View from aullar
 aullar_config = aullar.config
 import PropertyObject from howl.aux.moon
@@ -556,7 +556,7 @@ class Editor extends PropertyObject
       @_buf.properties.line_at_top = @line_at_top
       @_buf\remove_view_ref @view
       unless @_is_previewing
-        @_buf.last_shown = os.time!
+        @_buf.last_shown = sys.time!
 
     @_is_previewing = opts.preview
     prev_buffer = @_buf
@@ -635,7 +635,7 @@ class Editor extends PropertyObject
     @buffer\remove_view_ref!
     @completion_popup\destroy!
     @view\destroy!
-    @buffer.last_shown = os.time! unless @_is_previewing
+    @buffer.last_shown = sys.time! unless @_is_previewing
     signal.emit 'editor-destroyed', editor: self
 
   _on_key_press: (view, event) =>
