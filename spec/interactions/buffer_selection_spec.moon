@@ -1,7 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, bindings, interact from howl
+import app, bindings, interact, Project from howl
+import File from howl.io
 import Window from howl.ui
 
 require 'howl.interactions.selection_list'
@@ -28,8 +29,6 @@ describe 'buffer_selection', ->
       b.title = title
       table.insert buffers, b
 
-  normalize_titles = (titles) -> [t\gsub('<.*>', '') for t in *titles]
-
   it "registers interactions", ->
     assert.not_nil interact.select_buffer
 
@@ -38,14 +37,14 @@ describe 'buffer_selection', ->
       local buflist
       within_activity (-> interact.select_buffer :editor), ->
         buflist = get_ui_list_widget_column!
-      assert.same {'a1-buffer', 'a2-buffer', 'b-buffer', 'c-buffer'}, normalize_titles buflist
+      assert.same {'a1-buffer', 'a2-buffer', 'b-buffer', 'c-buffer'}, buflist
 
     it 'filters the buffer list based on entered text', ->
       local buflist
       within_activity (-> interact.select_buffer :editor), ->
         command_line\write 'a-b'
         buflist = get_ui_list_widget_column!
-      assert.same {'a1-buffer', 'a2-buffer'}, normalize_titles buflist
+      assert.same {'a1-buffer', 'a2-buffer'}, buflist
 
     it 'previews currently selected buffer in the editor', ->
       previews = {}
@@ -63,7 +62,7 @@ describe 'buffer_selection', ->
         table.insert previews, editor.buffer.title
         command_line\handle_keypress down_event
         table.insert previews, editor.buffer.title
-      assert.same {'a1-buffer', 'a2-buffer'}, normalize_titles previews
+      assert.same {'a1-buffer', 'a2-buffer'}, previews
 
     context 'sending binding_for("close")', ->
       keymap = ctrl_w: 'close'
@@ -87,7 +86,7 @@ describe 'buffer_selection', ->
           command_line\handle_keypress close_event
           command_line\handle_keypress close_event
           buflist = get_ui_list_widget_column!
-        assert.same {'b-buffer', 'c-buffer'}, normalize_titles buflist
+        assert.same {'b-buffer', 'c-buffer'}, buflist
 
       it 'preserves filter', ->
         local buflist
@@ -95,4 +94,22 @@ describe 'buffer_selection', ->
           command_line\write 'a-b'
           command_line\handle_keypress close_event
           buflist = get_ui_list_widget_column!
-        assert.same {'a2-buffer'}, normalize_titles buflist
+        assert.same {'a2-buffer'}, buflist
+
+    context 'duplicate filenames', ->
+      before_each ->
+        for b in *app.buffers
+          app\close_buffer b
+
+        paths = {'/project1/some/file1', '/project2/some/file1', '/project2/path1/file2', '/project2/path2/file2'}
+        for path in *paths
+          app\open_file File path
+
+        Project.add_root File '/project1'
+        Project.add_root File '/project2'
+
+      it 'uniquifies title by using project name and parent directory prefix', ->
+        local buflist
+        within_activity (-> interact.select_buffer :editor), ->
+          buflist = get_ui_list_widget_column!
+        assert.same {'file1 [project1]', 'file1 [project2]', 'path1/file2 [project2]', 'path2/file2 [project2]'}, buflist

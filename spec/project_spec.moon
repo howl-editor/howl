@@ -2,6 +2,9 @@ import Project, VC from howl
 import File from howl.io
 
 describe 'Project', ->
+  before_each ->
+    Project.roots = {}
+
   after_each ->
     Project.roots = {}
     Project.open = {}
