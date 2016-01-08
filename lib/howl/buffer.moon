@@ -271,7 +271,7 @@ class Buffer extends PropertyObject
   mode_at: (pos) =>
     b_pos = @byte_offset pos
     marker = @_buffer.styling\get_nearest_style_marker b_pos
-    if marker then mode.by_name marker.mode else @mode
+    if marker then mode.by_name marker.name else @mode
 
   config_at: (pos) =>
     new_config = config.local_proxy!
