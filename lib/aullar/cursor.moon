@@ -177,7 +177,7 @@ Cursor = {
     else
       error("Illegal argument #1 to Cursor.move_to (pos: #{opts.pos}, line: #{opts.line}, column: #{opts.column})", 2)
 
-    return if pos == @_pos
+    return if pos == @_pos and not opts.force
 
     extend_selection = opts.extend or @selection.persistent
 

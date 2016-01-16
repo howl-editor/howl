@@ -672,7 +672,7 @@ View = {
       if lines_changed and not @gutter\sync_width buffer
         @area\queue_draw!
 
-    -- adjust cursor if necessary
+    -- adjust cursor to correctly reflect the change
     changes = { { :type, offset: args.offset, size: args.size } }
     changes = args.changes if type == 'changed'
     c_pos = cur_pos
@@ -682,7 +682,7 @@ View = {
       elseif change.type == 'deleted' and change.offset < c_pos
         c_pos -= min(c_pos - change.offset, change.size)
 
-    @cursor.pos = c_pos if c_pos != cur_pos
+    @cursor\move_to pos: c_pos, force: true
 
     @selection\clear!
 
