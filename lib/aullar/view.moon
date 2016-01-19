@@ -633,7 +633,6 @@ View = {
   _on_buffer_modified: (buffer, args, type) =>
     cur_pos = @cursor.pos
     sel_anchor, sel_end = @selection.anchor, @selection.end_pos
-    lines_showing = type != 'inserted' and @lines_showing
     lines_changed = args.lines_changed
 
     if not @showing
@@ -694,8 +693,10 @@ View = {
         .selection_end_pos = sel_end
 
     -- check whether we should scroll up to fit the contents into the view
-    if lines_showing
-      if @_first_visible_line > 1 and @lines_showing < lines_showing
+    -- we ensure this if the line count was changed, we're showing the last
+    -- line, we have non-visible lines above and it was not an insert
+    if lines_changed and @_first_visible_line > 1 and type != 'inserted'
+      if not @buffer\get_line(@last_visible_line + 1)
         @last_visible_line = @buffer.nr_lines
 
   _on_buffer_markers_changed: (buffer, args) =>
