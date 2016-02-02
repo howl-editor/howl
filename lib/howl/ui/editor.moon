@@ -234,7 +234,9 @@ class Editor extends PropertyObject
 
   refresh_display: => @view\refresh_display from_line: 1, invalidate: true
   grab_focus: => @view\grab_focus!
-  newline: => @view\insert @buffer.eol
+  newline: =>
+    @buffer\as_one_undo ->
+      @view\insert @buffer.eol
 
   shift_right: =>
     cursor_line, cursor_col = @cursor.line, @cursor.column
