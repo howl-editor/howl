@@ -33,3 +33,11 @@ for k,v in pairs(env) do
   print(k .. '=' .. v)
 end
 ```
+
+## Functions
+
+### time
+
+Returns the current system time as seconds since the [POSIX
+epoch](https://en.wikipedia.org/wiki/Unix_time). The returned float value has
+microsecond resolution.
