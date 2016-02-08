@@ -103,7 +103,8 @@ describe 'buffer_selection', ->
 
         paths = {'/project1/some/file1', '/project2/some/file1', '/project2/path1/file2', '/project2/path2/file2'}
         for path in *paths
-          app\open_file File path
+          b = app\new_buffer!
+          b.file = File path
 
         Project.add_root File '/project1'
         Project.add_root File '/project2'
