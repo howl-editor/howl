@@ -10,7 +10,7 @@ flair = require 'aullar.flair'
 import File from howl.io
 import config, signal from howl
 import style, colors, highlight from howl.ui
-import PropertyTable, Sandbox from howl.aux
+import PropertyTable, Sandbox, SandboxedLoader from howl.aux
 aullar_config = require 'aullar.config'
 
 css_provider = Gtk.CssProvider!
@@ -18,52 +18,20 @@ screen = Gdk.Screen\get_default!
 Gtk.StyleContext.add_provider_for_screen screen, css_provider, 600
 
 css_template = [[
-GtkWindow.main {
-  background-color: ${editor_background_color};
-  ${window_background};
-}
-
-.editor {
-  border-width: 1px 3px 3px 1px;
-  background-color: ${editor_border_color};
-}
-
-.content_box {
-  border-width: 1px 3px 3px 1px;
-  background-color: ${editor_border_color};
-}
-
-.divider {
-  background-color: ${editor_divider_color};
-}
-
-.aullar_box {
-  background-color: ${editor_background_color};
-}
-
-.aullar_container {
-  background-color: ${editor_background_color};
-}
-
 .header {
-  ${header_background};
   color: ${header_color};
   font: ${header_font};
-  border-width: 0px;
 }
 
 .footer {
-  ${footer_background};
   color: ${footer_color};
   font: ${footer_font};
-  border-width: 0px;
 }
 
 .status {
   font: ${status_font};
   color: ${status_color};
 }
-
 ]]
 
 status_template = [[
@@ -81,16 +49,6 @@ background_color_widgets = setmetatable {}, __mode: 'k'
 
 interpolate = (content, values) ->
   content\gsub '%${([%a_]+)}', values
-
-parse_background = (value, theme_dir) ->
-  if value\match '^%s*#%x+%s*$'
-    'background-color: ' .. value
-  elseif value\find '-gtk-gradient', 1, true
-    'background-image: ' .. value
-  else
-    if not File.is_absolute value
-      value = tostring theme_dir\join(value).path
-    "background-image: url('" .. value .. "')"
 
 parse_font = (font = {}) ->
   size = config.font_size
@@ -128,25 +86,16 @@ status_css = (status) ->
   css
 
 theme_css = (theme, file) ->
-  dir = file.parent
-  window = theme.window
-  status = window.status
+  status = theme.window.status
   editor = theme.editor
   hdr = editor.header
   footer = editor.footer
-  tv_title = hdr.title
   indicators = editor.indicators
   values =
-    editor_background_color: editor.background
-    window_background: parse_background(window.background, dir)
     status_font: parse_font status.font
     status_color: status.color
-    editor_border_color: editor.border_color
-    editor_divider_color: editor.divider_color
-    header_background: parse_background(hdr.background, dir)
     header_color: hdr.color
     header_font: parse_font hdr.font
-    footer_background: parse_background(footer.background, dir)
     footer_color: footer.color
     footer_font: parse_font footer.font
   css = interpolate css_template, values
@@ -156,22 +105,9 @@ theme_css = (theme, file) ->
 
 load_theme = (file) ->
   chunk = loadfile(file.path)
-  box = Sandbox colors
+  box = SandboxedLoader file.parent, 'theme', env: colors, no_implicit_globals: true
   box\put :highlight, :flair
   box chunk
-
-override_widget_background = (widget, background_style) ->
-  if theme_active
-    style_def = current_theme.styles[background_style]
-    bg_color = style_def and style_def.background
-    if not bg_color and style != 'default'
-      style_def = current_theme.styles.default
-      bg_color = style_def and style_def.background
-
-    if bg_color
-      background = Gdk.RGBA!
-      background\parse bg_color
-      widget\override_background_color 0, background
 
 apply_theme = ->
   css = theme_css current_theme, current_theme_file
@@ -184,7 +120,7 @@ apply_theme = ->
   if current_theme.editor.gutter
     aullar_config.gutter_styling = current_theme.editor.gutter
 
-  override_widget_background widget, style for widget, style in pairs background_color_widgets
+  signal.emit 'theme-changed', theme: current_theme
 
 set_theme = (name) ->
   if name == nil
@@ -202,7 +138,6 @@ set_theme = (name) ->
   current_theme_file = file
   if theme_active
     apply_theme!
-    signal.emit 'theme-changed', :theme
 
 with config
   .define
@@ -265,11 +200,4 @@ return PropertyTable {
     error 'No theme set to apply', 2 unless current_theme
     apply_theme!
     theme_active = true
-
-  register_background_widget: (widget, style = 'default') ->
-    background_color_widgets[widget] = style
-    override_widget_background widget, style
-
-  unregister_background_widget: (widget) ->
-    background_color_widgets[widget] = nil
 }

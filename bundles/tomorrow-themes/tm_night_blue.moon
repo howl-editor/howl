@@ -1,3 +1,5 @@
+{:delegate_to} = howl.util.table
+
 background = '#002451'
 current = '#00346e'
 selection = '#0066cc'
@@ -10,12 +12,57 @@ green = '#d1f1a9'
 aqua = '#99ffff'
 blue = '#bbdaff'
 purple = '#ebbbff'
+border_color = '#333333'
 
 embedded_bg = '#25389f'
 
+-- General styling for context boxes (editor, command_line)
+content_box = {
+  background:
+    color: background
+
+  border:
+    width: 1
+    color: border_color
+
+  border_right:
+    width: 3
+    color: border_color
+
+  border_bottom:
+    width: 3
+    color: border_color
+
+  header:
+    background:
+    gradient:
+      type: 'linear'
+      direction: 'horizontal'
+      stops: { '#000022', '#003080' }
+
+    border_bottom:
+      color: base1
+
+    color: brown
+    font: bold: true
+
+  footer:
+    background:
+      color: base2
+
+    border_top:
+      color: base1
+
+    color: brown
+    font: bold: true
+}
+
 return {
   window:
-    background: 'dark_back.png'
+    background:
+      image:
+        path: theme_file('dark_back.png')
+
     status:
       font: bold: true, italic: true
       color: grey
@@ -24,26 +71,15 @@ return {
       warning: color: orange
       'error': color: red
 
-  editor:
-    border_color: '#333333'
-    divider_color: darkblue
-    :background
+  :content_box
 
-    header:
-      background: [[
-        -gtk-gradient (
-          linear,
-          left top, right top,
-          from(#000022),to(#003080))
-        ]]
-      color: blue
-      font: bold: true
+  popup:
+    background:
+      color: '#00346e'
+    border:
+      color: grey
 
-    footer:
-      background: '#002471'
-      color: blue
-      font: bold: true
-
+  editor: delegate_to content_box, {
     indicators:
       default:
         color: blue
@@ -64,6 +100,8 @@ return {
     gutter:
       foreground: comment
       :background
+      background_alpha: 0.4
+  }
 
   flairs:
     indentation_guide:

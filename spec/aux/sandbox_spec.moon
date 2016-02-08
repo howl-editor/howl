@@ -2,7 +2,7 @@ import Sandbox from howl.aux
 
 describe 'Sandbox', ->
   it 'allows running a function with a specified environment', ->
-    box = Sandbox foo: -> 'bar!'
+    box = Sandbox env: {foo: -> 'bar!'}
     assert.equal 'bar!', box -> return foo!
 
   it 'allows passing parameters to the function', ->
@@ -20,12 +20,12 @@ describe 'Sandbox', ->
     assert.equal table, box -> return table
 
   it 'disallows global access if options.no_globals is set', ->
-    box = Sandbox nil, no_globals: true
+    box = Sandbox no_globals: true
     assert.is_nil box -> return table
 
   context 'when options.no_implicit_globals is set', ->
     it 'raises an error upon implicit global writes', ->
-      box = Sandbox nil, no_implicit_globals: true
+      box = Sandbox no_implicit_globals: true
       renegade = -> export frob = 'bar!'
       assert.raises 'implicit global', -> box renegade
 

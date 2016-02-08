@@ -252,9 +252,7 @@ class ListWidget extends PropertyObject
       @max_visible_rows = floor(height / default_line_height)
 
   @property height: get: => @text_widget.height
-  @property padded_height: get: => @text_widget.padded_height
   @property width: get: => @text_widget.width
-  @property padded_width: get: => @text_widget.padded_width
 
   _adjust_height: =>
     new_visible_rows = #@_items + (@has_header and 1 or 0)

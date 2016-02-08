@@ -14,6 +14,10 @@ class MenuPopup extends Popup
       auto_fit_width: true
     @highlight_matches_for = ''
     super @list\to_gobject!
+    with @child
+      .margin_top = 2
+      .margin_left = 2
+
     @list\show!
 
   refresh: =>
@@ -25,7 +29,9 @@ class MenuPopup extends Popup
     @resize!
 
   resize: =>
-    super @list.padded_width, @list.padded_height
+    h_margin = @child.margin_left + @child.margin_right
+    v_margin = @child.margin_top + @child.margin_bottom
+    super @list.width + h_margin, @list.height + v_margin
 
   choose: =>
     if self.callback @list.selection

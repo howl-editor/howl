@@ -1,3 +1,5 @@
+{:delegate_to} = howl.util.table
+
 base0   = '#839496'
 base1   = '#93a1a1'
 base2  = '#eee8d5'
@@ -28,29 +30,88 @@ operator = base00
 member = base02
 key = blue
 
+-- General styling for context boxes (editor, command_line)
+content_box = {
+  background:
+    color: background
+
+  border:
+    width: 1
+    color: base1
+
+  border_right:
+    width: 3
+    color: base1
+
+  border_bottom:
+    width: 3
+    color: base1
+
+  header:
+    background:
+      image:
+        path: theme_file('sprinkles.png')
+
+    border_bottom:
+      color: base1
+
+    color: brown
+    font: bold: true
+
+  footer:
+    background:
+      color: base2
+
+    border_top:
+      color: base1
+
+    color: brown
+    font: bold: true
+}
+
 return {
   window:
-    background: 'lightpaperfibers.png'
+    background:
+      image:
+        path: theme_file('lightpaperfibers.png')
     status:
       font: bold: true, italic: true
       color: blue
 
       info: color: green
       warning: color: orange
-      'error': color: red
+      error: color: red
 
-  editor:
-    border_color: base1
-    divider_color: base1
-    :background
+  :content_box
 
+  popup: {
+    background:
+      color: current
+
+    border:
+      color: base1
+      alpha: 0.5
+  }
+
+  editor: delegate_to content_box, {
     header:
-      background: 'sprinkles.png'
+      background:
+        image:
+          path: theme_file('sprinkles.png')
+
+      border_bottom:
+        color: base1
+
       color: brown
       font: bold: true
 
     footer:
-      background: base2
+      background:
+        color: base2
+
+      border_top:
+        color: base1
+
       color: brown
       font: bold: true
 
@@ -72,6 +133,8 @@ return {
     gutter:
       foreground: base1
       background: base2
+      background_alpha: 0.7
+  }
 
   flairs:
     indentation_guide:
@@ -179,10 +242,6 @@ return {
     blue: color: blue
     magenta: color: magenta
     cyan: color: cyan
-
-    popup:
-      background: current
-      color: foreground
 
     comment:
       font: italic: true

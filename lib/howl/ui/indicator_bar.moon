@@ -12,7 +12,6 @@ class IndicatorBar
       height_request: 20
     }
     @container = Gtk.EventBox { @box }
-    @container.style_context\add_class cls
     @indics = {}
     getmetatable(self).__to_gobject = => @container
 

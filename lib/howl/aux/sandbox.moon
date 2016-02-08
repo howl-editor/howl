@@ -1,8 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-sand_box = (env, options = {}) ->
-  env = if env then moon.copy env else {}
+sand_box = (options = {}) ->
+  env = if options.env then moon.copy options.env else {}
   chain = if options.no_globals then nil else _G
   exports = {}
   setmetatable env,
