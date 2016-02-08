@@ -111,4 +111,6 @@ core.auto_loading 'glib', {
 
   get_monotonic_time: -> tonumber C.g_get_monotonic_time!
 
+  get_real_time: -> tonumber C.g_get_real_time!
+
 }

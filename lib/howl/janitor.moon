@@ -40,7 +40,7 @@ clean_up_buffers = ->
   bufs = app.buffers
   to_remove = #bufs - config.cleanup_min_buffers_open
   return if to_remove <= 0
-  now = os.time!
+  now = sys.time!
   closeable = {}
 
   for b in *bufs

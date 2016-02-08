@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added a new function `sys.time()` which returns the POSIX time for the system
+  with microsecond resolution.
+
 - Added a new module, 'janitor', which automatically closes old buffers and
 tries to release memory back to the OS. The buffer closing is controlled by two
 new configuration variables, `cleanup_min_buffers_open` and
