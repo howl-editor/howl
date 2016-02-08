@@ -5,6 +5,7 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.cairo'
 core = require 'ljglibs.core'
 import gc_ptr from require 'ljglibs.gobject'
+require 'ljglibs.cairo.pattern'
 
 C, gc = ffi.C, ffi.gc
 
@@ -53,14 +54,30 @@ core.define 'cairo_t', {
 
     dash_count: =>
       tonumber C.cairo_get_dash_count(@)
+
+    target: =>
+      C.cairo_get_target @
+
+    source: {
+      get: => @get_source!
+      set: (v) => @set_source v
+    }
+
+    has_current_point: => C.cairo_has_current_point(@) != 0
   }
 
   create: (surface) -> cairo_gc_ptr C.cairo_create surface
   save: => C.cairo_save @
   restore: => C.cairo_restore @
 
+  set_source: (source) => C.cairo_set_source @, source
   set_source_rgb: (r, g, b) => C.cairo_set_source_rgb @, r, g, b
   set_source_rgba: (r, g, b, a) => C.cairo_set_source_rgba @, r, g, b, a
+  set_source_surface: (surface, x, y) => C.cairo_set_source_surface @, surface, x, y
+
+  get_source: =>
+    src = C.cairo_get_source(@)
+    gc(C.cairo_pattern_reference(src), C.cairo_pattern_destroy)
 
   set_dash: (dashes, offset = 1) =>
     count = (#dashes - offset) + 1
@@ -90,10 +107,18 @@ core.define 'cairo_t', {
 
   in_clip: (x, y) => C.cairo_in_clip(@, x, y) != 0
   clip: => C.cairo_clip @
+  clip_preserve: => C.cairo_clip_preserve @
+
+  push_group: => C.cairo_push_group @
+  pop_group: => C.cairo_pop_group @
 
   -- Path operations
   rectangle: (x, y, width, height) => C.cairo_rectangle @, x, y, width, height
   arc: (xc, yc, radius, angle1, angle2) => C.cairo_arc @, xc, yc, radius, angle1, angle2
   close_path: => C.cairo_close_path @
+  new_path: => C.cairo_new_path @
+
+  -- Transformations
+  translate: (tx, ty) => C.cairo_translate @, tx, ty
 
 }, (t, ...) -> t.create ...

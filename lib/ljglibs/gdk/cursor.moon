@@ -10,7 +10,7 @@ ref_ptr = gobject.ref_ptr
 
 C = ffi.C
 
-core.define 'GdkCursor', {
+core.define 'GdkCursor < GObject', {
   properties: {
     cursor_type: 'GdkCursorType'
   }

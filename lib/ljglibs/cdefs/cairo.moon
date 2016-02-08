@@ -123,9 +123,17 @@ ffi.cdef [[
     CAIRO_STATUS_LAST_STATUS
   } cairo_status_t;
 
+  typedef enum {
+      CAIRO_EXTEND_NONE,
+      CAIRO_EXTEND_REPEAT,
+      CAIRO_EXTEND_REFLECT,
+      CAIRO_EXTEND_PAD
+  } cairo_extend_t;
+
   typedef struct {} cairo_t;
   typedef struct {} cairo_surface_t;
   typedef struct {} cairo_pattern_t;
+
   typedef int cairo_bool_t;
 
   typedef struct {
@@ -364,4 +372,39 @@ ffi.cdef [[
                                                            double *y1,
                                                            double *x2,
                                                            double *y2);
+
+  /* Surface and friend */
+  cairo_surface_t *
+  cairo_surface_create_similar (cairo_surface_t  *other,
+                                cairo_content_t	content,
+                                int width,
+                                int	height);
+
+
+
+  void cairo_surface_destroy (cairo_surface_t *surface);
+
+  /* patterns */
+  cairo_pattern_t * cairo_pattern_reference (cairo_pattern_t *pattern);
+  void cairo_pattern_destroy (cairo_pattern_t *pattern);
+
+  void cairo_pattern_set_extend (cairo_pattern_t *pattern, cairo_extend_t extend);
+  cairo_extend_t cairo_pattern_get_extend (cairo_pattern_t *pattern);
+
+  cairo_pattern_t * cairo_pattern_create_linear (double x0,
+                                                 double y0,
+                                                 double x1,
+                                                 double y1);
+
+  void cairo_pattern_add_color_stop_rgba (cairo_pattern_t *pattern,
+                                          double offset,
+                                          double red,
+                                          double green,
+                                          double blue,
+                                          double alpha);
+
+  /* transformations */
+  void cairo_translate (cairo_t *cr, double tx, double ty);
+
+
 ]]

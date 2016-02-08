@@ -118,5 +118,11 @@ core.auto_loading 'cairo', {
     'STATUS_JBIG2_GLOBAL_MISSING',
 
     'STATUS_LAST_STATUS'
+
+    -- cairo_extend_t
+    'EXTEND_NONE',
+    'EXTEND_REPEAT',
+    'EXTEND_REFLECT',
+    'EXTEND_PAD'
   }
 }

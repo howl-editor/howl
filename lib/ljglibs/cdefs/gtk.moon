@@ -127,6 +127,10 @@ ffi.cdef [[
                                    gint y,
                                    gint width,
                                    gint height);
+
+  GdkVisual * gtk_widget_get_visual(GtkWidget *widget);
+  void gtk_widget_set_visual(GtkWidget *widget, GdkVisual *visual);
+
   /* GtkBin */
   typedef struct {} GtkBin;
   GtkWidget * gtk_bin_get_child (GtkBin *bin);

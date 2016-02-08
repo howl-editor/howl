@@ -41,4 +41,7 @@ core.define 'GdkWindow', {
     ret = ffi.new 'gint [2]'
     C.gdk_window_get_position @, ret, ret + 1
     ret[0], ret[1]
+
+  set_opacity: (opacity) =>
+    C.gdk_window_set_opacity @, opacity
 }
