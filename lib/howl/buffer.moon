@@ -14,23 +14,6 @@ ffi = require 'ffi'
 append = table.insert
 min = math.min
 
-buffer_titles = setmetatable {}, __mode: 'v'
-title_counters = {}
-
-file_title = (file) ->
-  title = file.basename
-  while buffer_titles[title]
-    file = file.parent
-    return title if not file
-    title = file.basename .. File.separator .. title
-
-  title
-
-title_counter = (title) ->
-  title_counters[title] = 1 if not title_counters[title]
-  title_counters[title] += 1
-  title_counters[title]
-
 class Buffer extends PropertyObject
   new: (mode = {}) =>
     super!
@@ -81,12 +64,9 @@ class Buffer extends PropertyObject
       signal.emit 'buffer-mode-set', buffer: self, :mode, :old_mode
 
   @property title:
-    get: => @_title or 'Untitled'
+    get: => @_title or (@file and @file.basename) or 'Untitled'
     set: (title) =>
-      buffer_titles[@_title] = nil if @_title
-      title ..= '<' .. title_counter(title) .. '>' if buffer_titles[title]
       @_title = title
-      buffer_titles[title] = self
       signal.emit 'buffer-title-set', buffer: self
 
   @property text:
@@ -298,9 +278,7 @@ class Buffer extends PropertyObject
       error "Attempt to modify read-only buffer '#{@title}'", 2
 
   _associate_with_file: (file) =>
-    buffer_titles[@_title] = nil if @_title
     @_file = file
-    @title = file_title file
 
   _on_text_inserted: (_, _, args) =>
     @_on_buffer_modification 'text-inserted', args

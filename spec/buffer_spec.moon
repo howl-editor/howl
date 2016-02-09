@@ -551,47 +551,17 @@ describe 'Buffer', ->
       b\remove_view_ref!
       assert.equal 0, b.viewers
 
-  describe 'ensuring that buffer titles are globally unique', ->
-    context 'when setting a file for a buffer', ->
-      it 'prepends to the title as many parent directories as needed for uniqueness', ->
-        b1 = Buffer {}
-        b2 = Buffer {}
-        b3 = Buffer {}
-        with_tmpdir (dir) ->
-          sub1 = dir\join('sub1')
-          sub1\mkdir!
-          sub2 = dir\join('sub2')
-          sub2\mkdir!
-          f1 = sub1\join('file.foo')
-          f2 = sub2\join('file.foo')
-          f1\touch!
-          f2\touch!
-          b1.file = f1
-          b2.file = f2
-          assert.equal b2.title, 'sub2' .. File.separator .. 'file.foo'
+  describe 'titles', ->
+    it 'uses file basename as the default title', ->
+      b = Buffer {}
+      b.file = File('/path/to/file.ext')
+      assert.equal b.title, 'file.ext'
 
-          sub_sub = sub1\join('sub2')
-          sub_sub\mkdir!
-          f3 = sub_sub\join('file.foo')
-          f3\touch!
-          b3.file = f3
-          assert.equal b3.title, 'sub1' .. File.separator .. b2.title
-
-      it 'does not unneccesarily transform the title when setting the same file for a buffer', ->
-        b = Buffer!
-        with_tmpfile (file) ->
-          b.file = file
-          title = b.title
-          b.file = file
-          assert.equal title, b.title
-
-    context 'when setting the title explicitly', ->
-      it 'appends a counter number in the format <number> to the title', ->
-        b1 = Buffer {}
-        b2 = Buffer {}
-        b1.title = 'Title'
-        b2.title = 'Title'
-        assert.equal b2.title, 'Title<2>'
+    it 'setting title explicitly overrides default title', ->
+      b = Buffer {}
+      b.file = File('/path/to/file.ext')
+      b.title = 'be something else'
+      assert.equal b.title, 'be something else'
 
   describe 'signals', ->
     it 'buffer-saved is fired whenever a buffer is saved', ->
