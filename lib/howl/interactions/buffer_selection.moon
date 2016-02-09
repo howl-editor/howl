@@ -8,7 +8,11 @@ import Matcher from howl.util
 append = table.insert
 
 buffer_dir = (buffer) ->
-  buffer.file and tostring(buffer.file.parent.short_path) or '(none)'
+  if buffer.file
+    return buffer.file.parent.short_path
+  elseif buffer.directory
+    return buffer.directory.short_path
+  return '(none)'
 
 buffer_status = (buffer) ->
   stat = if buffer.modified then '*' else ''

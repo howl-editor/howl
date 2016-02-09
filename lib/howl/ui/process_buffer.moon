@@ -76,7 +76,7 @@ class ProcessBuffer extends ActionBuffer
     @read_only = true
     @activity = command_activity @process
     @directory = @process.working_directory
-    @title = "[#{@directory.short_path}]$ #{@process.command_line} (running)"
+    @title = "$ #{@process.command_line} (running)"
     @mode = mode.by_name 'process'
 
     @append '[', 'operator'
@@ -115,7 +115,7 @@ class ProcessBuffer extends ActionBuffer
       @append(read, 'error') if read and not @destroyed
 
     @process\pump on_stdout, on_stderr
-    @title = "[#{@directory.short_path}]$ #{@process.command_line} (done)"
+    @title = "$ #{@process.command_line} (done)"
 
     unless @destroyed
       @append '\n' unless @lines[#@lines].is_blank
