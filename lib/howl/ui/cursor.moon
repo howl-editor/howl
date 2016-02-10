@@ -131,7 +131,7 @@ class Cursor extends PropertyObject
          -- eat up space from next char until next token
         _, _, i = text\ufind '^%s*()', 2
         -- do we have a new word at this pos?
-        word_pattern = @container.buffer.config.word_pattern
+        word_pattern = @container.buffer\config_at(@pos).word_pattern
         start_pos, end_pos = text\ufind(word_pattern, i)
         if not end_pos or start_pos != i -- no
           _, end_pos = text\ufind('^%p+', i)
@@ -157,7 +157,7 @@ class Cursor extends PropertyObject
         text = ctx.prefix\match '(.-)%s*$'
         last_group = text\ufind '%S+$'
         if last_group -- scan for a previous word first
-          word_pattern = @container.buffer.config.word_pattern
+          word_pattern = @container.buffer\config_at(@pos).word_pattern
           word_start, word_end = text\ufind word_pattern, last_group
           while word_end and word_end < text.ulen
             word_start, word_end = text\ufind word_pattern, word_end + 1
