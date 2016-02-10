@@ -279,6 +279,7 @@ class Buffer extends PropertyObject
 
   _associate_with_file: (file) =>
     @_file = file
+    @title = file and file.basename or 'Untitled'
 
   _on_text_inserted: (_, _, args) =>
     @_on_buffer_modification 'text-inserted', args
