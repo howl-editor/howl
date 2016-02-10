@@ -111,7 +111,7 @@ define_class {
     no_notify = no_notify: true
     styled_up_to = 1
 
-    markers = {}
+    markers = opts.markers or {}
 
     for s_idx = 1, #styling, 3
       styling_start = styling[s_idx]
@@ -125,20 +125,21 @@ define_class {
 
       else -- embedded styling (sub lexing)
         if #style > 0
-          mode_name, sub_base = styling[s_idx + 2]\match '([^|]*)|(.+)'
+          mode_name, sub_base = @_split_style_name styling[s_idx + 2]
           sub_start_offset = base + styling_start
 
           -- determine sub styling end, so we can fill it with base
           sub_style = style
           last_offset = sub_style[#sub_style]
           while type(last_offset) == 'string' -- nested sub lexing
+            mode_name, _ = @_split_style_name last_offset
             sub_style = sub_style[#sub_style - 1]
             last_offset = sub_style[#sub_style]
 
           sub_end_offset = sub_start_offset + last_offset - 1
 
           @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
-          @apply sub_start_offset, style, base: sub_base, no_notify: true
+          @apply sub_start_offset, style, base: sub_base, no_notify: true, :markers
           append markers,
             name: mode_name
             start_offset: sub_start_offset
@@ -147,8 +148,9 @@ define_class {
 
     styled_from = offset + styling[1] - 1
 
-    @sub_style_markers\remove_for_range styled_from, styled_up_to
-    @sub_style_markers\add markers
+    if not opts.markers
+      @sub_style_markers\remove_for_range styled_from, styled_up_to
+      @sub_style_markers\add markers
 
     @_notify(styled_from, styled_up_to) unless opts.no_notify
     styled_up_to
@@ -197,4 +199,6 @@ define_class {
 
     if end_offset and (end_offset <= 0 or end_offset > @style_buffer.size)
       error "Styling: Illegal end_offset #{end_offset}", 3
+
+  _split_style_name: (name) => name\match '([^|]*)|(.+)'
 }
