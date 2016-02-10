@@ -187,7 +187,7 @@ define_class {
 
   get_nearest_style_marker: (pos) =>
     found = @sub_style_markers\at pos
-    found and found[1]
+    found and found[#found]
 
   _notify: (start_offset, end_offset) =>
     if @listener and @listener.on_changed
