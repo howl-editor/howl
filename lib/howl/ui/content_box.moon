@@ -82,7 +82,7 @@ class ContentBox extends PropertyObject
 
     if @footer and @footer.background
       cr\save!
-      cr\translate 0, @footer.allocation.y
+      cr\translate 0, bg.height - @footer.background.height - bg.padding_bottom - bg.padding_top
       @footer.background\draw cr
       cr\restore!
 
@@ -113,13 +113,15 @@ class ContentBox extends PropertyObject
 
     reconfigure_bar = (bar) ->
       bg = bar.background
-      bar_bg_conf = get_bg_conf def[bar.name]
+      bar_conf = def[bar.name] or {}
+      bar_bg_conf = get_bg_conf bar_conf
       bg\reconfigure bar_bg_conf
+      bar_padding = bar_conf.padding or 0
       with bar.widget
-        .margin_top = bg.padding_top
-        .margin_right = max bg.padding_right, max(corner_padding, main_bg.padding_right)
-        .margin_bottom = bg.padding_bottom
-        .margin_left = max bg.padding_left, max(corner_padding, main_bg.padding_left)
+        .margin_top = bg.padding_top + max(bar_conf.padding_top or 0, bar_padding)
+        .margin_right = max(bg.padding_right, corner_padding, main_bg.padding_right) + max(bar_conf.padding_right or 0, bar_padding)
+        .margin_bottom = bg.padding_bottom + max(bar_conf.padding_bottom or 0, bar_padding)
+        .margin_left = max(bg.padding_left, corner_padding, main_bg.padding_left) + max(bar_conf.padding_left or 0, bar_padding)
 
     reconfigure_bar @header if @header
     reconfigure_bar @footer if @footer
@@ -133,7 +135,8 @@ class ContentBox extends PropertyObject
 
   _create_bar: (widget, background_configuration, parent, name) =>
     bg = Background "#{@name}_#{name}", 0, 0
-    bar = :name, :widget, background: bg
+    b_w = Gtk.Box Gtk.ORIENTATION_VERTICAL, { widget }
+    bar = :name, widget: b_w, background: bg
     append @_handlers, bar.widget\on_size_allocate self\_on_bar_size_allocate, bar
     bar
 
@@ -160,6 +163,8 @@ class ContentBox extends PropertyObject
     allocation = ffi_cast('GdkRectangle *', allocation)
     return if bar.allocation and not allocations_differ(bar.allocation, allocation)
 
-    bar.background\resize nil, allocation.height
+    w = bar.widget
+    height_adjust = w.margin_top + w.margin_bottom
+    bar.background\resize nil, allocation.height + height_adjust
     with allocation
       bar.allocation = x: .x, y: .y, width: .width, height: .height
