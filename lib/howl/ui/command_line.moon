@@ -264,7 +264,7 @@ class CommandLine extends PropertyObject
     @notification_widget = NotificationWidget!
     @box\pack_end @notification_widget\to_gobject!, false, 0, 0
 
-    @header = IndicatorBar 'header', 3
+    @header = IndicatorBar 'header'
     @indic_title = @header\add 'left', 'title'
     @box.margin_left = 2
     @box.margin_top = 2

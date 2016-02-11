@@ -4,16 +4,12 @@
 Gtk = require 'ljglibs.gtk'
 
 class IndicatorBar
-  new: (cls, border_width) =>
+  new: (cls) =>
     error('Missing argument #1 (id)', 2) if not cls
     @box = Gtk.Box {
-      :border_width
-      spacing: 10
       height_request: 20
     }
-    @container = Gtk.EventBox { @box }
     @indics = {}
-    getmetatable(self).__to_gobject = => @container
 
   add: (position, id, widget) =>
     pack = nil
@@ -33,7 +29,7 @@ class IndicatorBar
     indicator = @indics[id]
     indicator\destroy! if indicator
 
-  to_gobject: => @container
+  to_gobject: => @box
 
   _create_indicator: (id, widget) ->
     widget or= Gtk.Label single_line_mode: true

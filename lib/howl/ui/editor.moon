@@ -93,8 +93,8 @@ class Editor extends PropertyObject
     @searcher = Searcher self
     @completion_popup = CompletionPopup self
 
-    @header = IndicatorBar 'header', 3
-    @footer = IndicatorBar 'footer', 3
+    @header = IndicatorBar 'header'
+    @footer = IndicatorBar 'footer'
     content_box = ContentBox 'editor', @view\to_gobject!, {
       header: @header\to_gobject!,
       footer: @footer\to_gobject!

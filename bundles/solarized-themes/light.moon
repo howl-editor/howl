@@ -57,6 +57,7 @@ content_box = {
 
     color: brown
     font: bold: true
+    padding: 1
 
   footer:
     background:
@@ -67,6 +68,7 @@ content_box = {
 
     color: brown
     font: bold: true
+    padding: 1
 }
 
 return {
@@ -94,27 +96,6 @@ return {
   }
 
   editor: delegate_to content_box, {
-    header:
-      background:
-        image:
-          path: theme_file('sprinkles.png')
-
-      border_bottom:
-        color: base1
-
-      color: brown
-      font: bold: true
-
-    footer:
-      background:
-        color: base2
-
-      border_top:
-        color: base1
-
-      color: brown
-      font: bold: true
-
     indicators:
       default:
         color: yellow

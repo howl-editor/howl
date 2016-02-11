@@ -35,16 +35,17 @@ content_box = {
 
   header:
     background:
-    gradient:
-      type: 'linear'
-      direction: 'horizontal'
-      stops: { '#000022', '#003080' }
+      gradient:
+        type: 'linear'
+        direction: 'horizontal'
+        stops: { '#000022', '#003080' }
 
     border_bottom:
       color: base1
 
     color: brown
     font: bold: true
+    padding: 1
 
   footer:
     background:
@@ -55,6 +56,7 @@ content_box = {
 
     color: brown
     font: bold: true
+    padding: 1
 }
 
 return {
