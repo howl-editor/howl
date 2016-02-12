@@ -42,7 +42,6 @@ class FileSelector
 
     @command_line\add_widget 'completion_list', @list_widget
 
-    local parent
     buffer = app.editor and app.editor.buffer
     parent = buffer and buffer.directory or (buffer.file and buffer.file.parent)
     parent or= File.home_dir
