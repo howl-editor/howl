@@ -42,7 +42,9 @@ class FileSelector
 
     @command_line\add_widget 'completion_list', @list_widget
 
-    parent = app.editor and app.editor.buffer and app.editor.buffer.file and app.editor.buffer.file.parent
+    local parent
+    buffer = app.editor and app.editor.buffer
+    parent = buffer and buffer.directory or (buffer.file and buffer.file.parent)
     parent or= File.home_dir
 
     path = @command_line\pop_spillover!
