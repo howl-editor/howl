@@ -55,6 +55,10 @@ code-named `aullar`.
 - The `howl-moon-eval` command was improved by automatically adjusting the
 indentation levels to work as a stand-alone code chunk.
 
+### Keymap changes
+
+- Changed `ctrl_w` to run `buffer-close` instead of `view-close`. Added `ctrl_shift_w` for `view-close`.
+
 ### Bugs fixed
 
 - Issues as seen on [Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=created%3A%3E2015-09-02+state%3Aclosed++type%3Aissue)
