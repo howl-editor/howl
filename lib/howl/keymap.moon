@@ -27,6 +27,10 @@
     shift_end:        'cursor-line-end-extend'
     home:             'cursor-home'
     shift_home:       'cursor-home-extend'
+    ctrl_home:        'cursor-start'
+    ctrl_shift_home:  'cursor-start-extend'
+    ctrl_end:         'cursor-eof'
+    ctrl_shift_end:   'cursor-eof-extend'
 
     ctrl_b:           'switch-buffer'
     ctrl_c:           'editor-copy'
