@@ -166,7 +166,7 @@
       meta_shift_r:     'project-exec'
       meta_shift_b:     'project-build'
 
-      meta_shift_w:           'view-close'
+      meta_shift_w:     'view-close'
       'meta_-':         'zoom-out'
       'meta_+':         'zoom-in'
 
