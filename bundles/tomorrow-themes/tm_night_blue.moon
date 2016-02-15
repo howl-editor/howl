@@ -270,7 +270,6 @@ return {
     embedded:
       color: '#aadaff'
       background: embedded_bg
-      eol_filled: true
 
     -- Markup and visual styles
 

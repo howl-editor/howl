@@ -303,7 +303,6 @@ return {
     embedded:
       background: wheat
       color: foreground
-      eol_filled: true
 
     -- Markup and visual styles
 
@@ -320,7 +319,6 @@ return {
     h1:
       color: white
       background: yellow
-      eol_filled: true
       font: bold: true
 
     h2:
