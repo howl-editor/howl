@@ -394,7 +394,7 @@ View = {
         d_lines[line_nr] = nil
 
     if min_y
-      start_x = @edit_area_x
+      start_x = max 0, @edit_area_x - 1
       start_x = 0 if opts.gutter or start_x == 1
       width = @width - start_x
       height = (max_y - min_y)
