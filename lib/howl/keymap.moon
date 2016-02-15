@@ -27,6 +27,10 @@
     shift_end:        'cursor-line-end-extend'
     home:             'cursor-home'
     shift_home:       'cursor-home-extend'
+    ctrl_home:        'cursor-start'
+    ctrl_shift_home:  'cursor-start-extend'
+    ctrl_end:         'cursor-eof'
+    ctrl_shift_end:   'cursor-eof-extend'
 
     ctrl_b:           'switch-buffer'
     ctrl_c:           'editor-copy'
@@ -40,6 +44,7 @@
     ctrl_k:           'editor-delete-to-end-of-line'
     ctrl_shift_k:     'editor-delete-line'
     ctrl_n:           'new-buffer'
+    ctrl_w:           'buffer-close'
     ctrl_shift_i:     'editor-indent-all'
     ctrl_h:           'buffer-replace'
     ctrl_s:           'save'
@@ -87,7 +92,7 @@
   ctrl_alt_r:       'project-exec'
   ctrl_shift_b:     'project-build'
 
-  ctrl_w:           'view-close'
+  ctrl_shift_w:     'view-close'
   'ctrl_-':         'zoom-out'
   'ctrl_+':         'zoom-in'
 
@@ -122,6 +127,7 @@
         meta_shift_i:     'editor-indent-all'
         meta_h:           'buffer-replace'
         meta_n:           'new-buffer'
+        meta_w:           'buffer-close'
         meta_s:           'save'
         meta_shift_s:     'save-as'
         meta_v:           'editor-paste'
@@ -160,7 +166,7 @@
       meta_shift_r:     'project-exec'
       meta_shift_b:     'project-build'
 
-      meta_w:           'view-close'
+      meta_shift_w:     'view-close'
       'meta_-':         'zoom-out'
       'meta_+':         'zoom-in'
 
