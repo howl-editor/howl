@@ -240,7 +240,7 @@ DisplayLine = define_class {
     -- complexity sanity check before asking Pango to determine extents,
     -- as it will happily block seemingly for ever if someone manages
     -- to cram an entire app into one line (e.g. minimized JS)
-    if #@styling > 3000
+    if #@styling > 2000
       @styling = { 1, 'blob', line.size + 1 }
 
     attributes = styles.get_attributes @styling, line.size
