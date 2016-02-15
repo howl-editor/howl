@@ -495,6 +495,13 @@ describe 'Editor', ->
           editor\delete_back!
           assert.equal buffer.text, '5'
 
+    describe '.delete_back_word()', ->
+      it 'deletes back by one word', ->
+        buffer.text = 'hello world'
+        cursor.pos = 12
+        editor\delete_back_word!
+        assert.equal buffer.text, 'hello '
+
     describe '.delete_forward()', ->
       it 'deletes the character at cursor', ->
         buffer.text = 'hƏllo'
@@ -523,6 +530,13 @@ describe 'Editor', ->
           cursor\eof!
           editor\delete_forward!
           assert.equal 'hƏllo', buffer.text
+
+    describe '.delete_forward_word()', ->
+      it 'deletes forward by one word', ->
+        buffer.text = 'hello world'
+        cursor.pos = 1
+        editor\delete_forward_word!
+        assert.equal buffer.text, 'world'
 
     describe '.shift_right()', ->
       before_each ->

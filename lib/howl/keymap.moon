@@ -16,7 +16,9 @@
     tab:              'editor-smart-tab'
     shift_tab:        'editor-smart-back-tab'
     backspace:        'editor-delete-back'
+    ctrl_backspace:   'editor-delete-back-word'
     delete:           'editor-delete-forward'
+    ctrl_delete:      'editor-delete-forward-word'
     return:           'editor-newline'
 
     page_up:          'cursor-page-up'
