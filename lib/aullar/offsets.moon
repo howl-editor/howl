@@ -147,13 +147,12 @@ Offsets = {
     for i = 0, IDX_LAST
       m = mappings[i]
       if m.c_offset != 0 and m.b_offset > byte_offset
-        -- update the mapping if we can
-        if m.b_offset > bytes
+        -- update the mapping if we can (mapping is outside of deletion)
+        if m.b_offset > byte_offset + bytes
           m.b_offset -= bytes
           m.c_offset -= characters
         else
-          -- but if the result would wrap around we give up
-          -- and invalidate all subsequent mapping
+          -- otherwise invalidate this and subsequent mappings
           @invalidate_from m.b_offset
           break
 
