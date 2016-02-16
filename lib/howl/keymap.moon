@@ -148,6 +148,8 @@
         -- needs option key
         -- meta_shift_left:  'cursor-word-left-extend'
         -- meta_shift_right: 'cursor-word-right-extend'
+        -- meta_backspace:   'editor-delete-back-word'
+        -- meta_delete:      'editor-delete-forward-word'
 
         ctrl_shift_d:     'vc-diff-file'
         ctrl_meta_d:      'vc-diff'
