@@ -16,7 +16,7 @@ grey         = '#595959'
 grey_darker  = '#383830'
 grey_darkest = '#303024'
 grey_light   = '#a6a6a6'
-embedded_bg  = '#25389f'
+embedded_bg  = '#484848'
 
 return {
   window:
@@ -166,7 +166,7 @@ return {
     cyan: color: aqua
 
     popup:
-      background: '#00346e'
+      background: grey_darkest
       color: foreground
 
     comment:
@@ -235,7 +235,7 @@ return {
       background: embedded_bg
 
     embedded:
-      color: '#aadaff'
+      color: blue
       background: embedded_bg
       eol_filled: true
 
@@ -251,17 +251,16 @@ return {
       color: orange
 
     h1:
-      color: white
-      background: '#005491'
+      font: bold: true
+      color: magenta
 
     h2:
-      color: green
       font: bold: true
+      color: aqua
 
     h3:
-      color: purple
-      background: current
       font: italic: true
+      color: purple
 
     emphasis:
       font:
