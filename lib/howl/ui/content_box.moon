@@ -80,7 +80,7 @@ class ContentBox extends PropertyObject
       @header.background\draw cr
       cr\restore!
 
-    if @footer and @footer.background
+    if @footer and @footer.background and @footer.widget.visible
       cr\save!
       cr\translate 0, bg.height - @footer.background.height - bg.padding_bottom - bg.padding_top
       @footer.background\draw cr
@@ -135,8 +135,7 @@ class ContentBox extends PropertyObject
 
   _create_bar: (widget, background_configuration, parent, name) =>
     bg = Background "#{@name}_#{name}", 0, 0
-    b_w = Gtk.Box Gtk.ORIENTATION_VERTICAL, { widget }
-    bar = :name, widget: b_w, background: bg
+    bar = :name, :widget, background: bg
     append @_handlers, bar.widget\on_size_allocate self\_on_bar_size_allocate, bar
     bar
 
