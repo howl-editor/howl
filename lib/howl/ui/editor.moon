@@ -425,9 +425,12 @@ class Editor extends PropertyObject
     @view\delete_back!
 
   delete_back_word: =>
-    pos = @cursor.pos
-    @cursor\word_left!
-    @buffer\delete @cursor.pos, pos-1
+    if @selection.empty
+      pos = @cursor.pos
+      @cursor\word_left!
+      @buffer\delete @cursor.pos, pos-1
+    else
+      @view\delete_back!
 
   delete_forward: =>
     if @selection.empty
@@ -437,9 +440,12 @@ class Editor extends PropertyObject
       @active_chunk\delete!
 
   delete_forward_word: =>
-    pos = @cursor.pos
-    @cursor\word_right!
-    @buffer\delete pos, @cursor.pos-1
+    if @selection.empty
+      pos = @cursor.pos
+      @cursor\word_right!
+      @buffer\delete pos, @cursor.pos-1
+    else
+      @active_chunk\delete!
 
   join_lines: =>
     @buffer\as_one_undo ->

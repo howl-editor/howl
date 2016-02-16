@@ -502,6 +502,14 @@ describe 'Editor', ->
         editor\delete_back_word!
         assert.equal buffer.text, 'hello '
 
+      context 'with a selection', ->
+        it 'deletes the selection', ->
+          buffer.text = ' 2\n 5'
+          selection\set 1, 5
+          cursor.pos = 5
+          editor\delete_back_word!
+          assert.equal buffer.text, '5'
+
     describe '.delete_forward()', ->
       it 'deletes the character at cursor', ->
         buffer.text = 'hƏllo'
@@ -537,6 +545,14 @@ describe 'Editor', ->
         cursor.pos = 1
         editor\delete_forward_word!
         assert.equal buffer.text, 'world'
+
+      context 'when a selection is active', ->
+        it 'deletes the selection', ->
+          buffer.text = 'hƏllo'
+          editor.selection\set 2, 5
+          editor\delete_forward_word!
+          assert.equal 'ho', buffer.text
+          assert.not_equal 'Əll', clipboard.current.text
 
     describe '.shift_right()', ->
       before_each ->
