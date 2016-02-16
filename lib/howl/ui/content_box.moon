@@ -5,10 +5,11 @@ Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 cairo = require 'ljglibs.cairo'
 gobject_signal = require 'ljglibs.gobject.signal'
+Background = require 'ljglibs.aux.background'
 ffi = require 'ffi'
 
 {:signal} = howl
-{:Background, :theme} = howl.ui
+{:theme} = howl.ui
 {:PropertyObject} = howl.aux.moon
 {:RGBA, :Pixbuf} = Gdk
 append = table.insert
@@ -160,7 +161,7 @@ class ContentBox extends PropertyObject
 
   _on_bar_size_allocate: (_, allocation, bar) =>
     allocation = ffi_cast('GdkRectangle *', allocation)
-    return if bar.allocation and not allocations_differ(bar.allocation, allocation)
+    -- return if bar.allocation and not allocations_differ(bar.allocation, allocation)
 
     w = bar.widget
     height_adjust = w.margin_top + w.margin_bottom

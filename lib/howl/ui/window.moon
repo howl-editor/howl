@@ -5,8 +5,9 @@ Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 ffi = require 'ffi'
 gobject_signal = require 'ljglibs.gobject.signal'
+Background = require 'ljglibs.aux.background'
 import PropertyObject from howl.aux.moon
-{:Background, :CommandLine, :Status, :theme} = howl.ui
+{:CommandLine, :Status, :theme} = howl.ui
 import signal from howl
 
 append = table.insert
