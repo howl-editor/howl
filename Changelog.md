@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added a new theme, `monokai`.
+
 - Added a new theme, `steinom`.
 
 - Added a new function `sys.time()` which returns the POSIX time for the system
