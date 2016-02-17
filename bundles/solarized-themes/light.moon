@@ -112,9 +112,10 @@ return {
       background: current
 
     gutter:
-      foreground: base1
-      background: base2
-      background_alpha: 0.7
+      color: base1
+      background:
+        color: base2
+        alpha: 0.7
   }
 
   flairs:

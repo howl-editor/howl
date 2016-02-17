@@ -100,9 +100,10 @@ return {
       background: current
 
     gutter:
-      foreground: comment
-      :background
-      background_alpha: 0.4
+      color: comment
+      background:
+        color: background
+        alpha: 0.4
   }
 
   flairs:

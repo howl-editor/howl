@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+ --Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -54,7 +54,7 @@ View = {
     @cursor.show_when_inactive = @config.view_show_inactive_cursor
     @cursor.blink_interval = @config.cursor_blink_interval
 
-    @gutter = Gutter @
+    @gutter = Gutter @, config.gutter_styling
     @current_line_marker = CurrentLineMarker @
 
     @im_context = Gtk.ImContextSimple!
@@ -499,7 +499,7 @@ View = {
     draw_gutter = conf.view_show_line_numbers and clip.x1 < @gutter_width
 
     if draw_gutter
-      @gutter\start_draw cr, p_ctx, clip, conf.gutter_styling
+      @gutter\start_draw cr, p_ctx, clip
 
     edit_area_x, y = @edit_area_x, @margin
     cr\move_to edit_area_x, y
@@ -562,7 +562,7 @@ View = {
     @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
     @horizontal_scrollbar_alignment.left_padding = @gutter_width
-    @gutter\sync_width @buffer, force: true
+    @gutter\sync_dimensions @buffer, force: true
 
   _on_destroy: =>
     @listener = nil
@@ -668,7 +668,7 @@ View = {
         -- invalid - they need to be invalidated but not visually refreshed
         @_invalidate_display args.invalidate_offset, args.offset - 1
 
-      if lines_changed and not @gutter\sync_width buffer
+      if lines_changed and not @gutter\sync_dimensions buffer
         @area\queue_draw!
 
     -- adjust cursor to correctly reflect the change
@@ -840,6 +840,10 @@ View = {
     elseif option == 'cursor_blink_interval'
       @cursor.blink_interval = val
 
+    elseif option == 'gutter_styling'
+      @gutter\reconfigure val
+      @_reset_display!
+
     elseif option == 'view_show_v_scrollbar'
       @vertical_scrollbar.visible = val
       @vertical_scrollbar.no_show_all = true
@@ -849,9 +853,8 @@ View = {
       @horizontal_scrollbar_alignment.no_show_all = true
       @horizontal_scrollbar_alignment.left_padding = @gutter_width
 
-    elseif option\match('^view_') or option\match('^gutter')
+    elseif option\match('^view_')
       @_reset_display!
-
 }
 
 define_class View

@@ -384,6 +384,9 @@ ffi.cdef [[
 
   void cairo_surface_destroy (cairo_surface_t *surface);
 
+  cairo_status_t cairo_surface_write_to_png (cairo_surface_t *surface,
+                                             const char *filename);
+
   /* patterns */
   cairo_pattern_t * cairo_pattern_reference (cairo_pattern_t *pattern);
   void cairo_pattern_destroy (cairo_pattern_t *pattern);

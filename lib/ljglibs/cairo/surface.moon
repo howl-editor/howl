@@ -18,6 +18,9 @@ core.define 'cairo_surface_t', {
   create_similar: (other, content, width, height) ->
     surface_gc_ptr C.cairo_surface_create_similar other, content, width, height
 
+  write_to_png: (filename) =>
+    C.cairo_surface_write_to_png @, filename
+
   destroy: =>
     gc(@, nil)
     C.cairo_surface_destroy @

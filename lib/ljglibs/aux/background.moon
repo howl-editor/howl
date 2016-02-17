@@ -65,12 +65,17 @@ class Background
         needs_path = false -- clipped by _create_surface
 
     draw_height = min @height, clip.y2 - clip.y1
+    draw_width = min @width, clip.x2 - clip.x1
 
     with cr
       \save!
       \set_source_surface @_surface, 0, 0
-      \rectangle clip.x1 - 1, clip.y1 - 1, clip.x2 - clip.x1 + 2, draw_height + 2
-      \fill_preserve!
+      \rectangle clip.x1 - 1, clip.y1 - 1, draw_width + 2, draw_height + 2
+      if opts.preserve
+        \fill_preserve!
+      else
+        \fill!
+
       \restore!
 
     if opts.should_clip and needs_path and @_needs_clip(clip)

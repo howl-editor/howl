@@ -78,13 +78,13 @@ class ContentBox extends PropertyObject
   _prepare_background: (bg, cr) =>
     if @header and @header.background and @header.widget.visible
       cr\save!
-      @header.background\draw cr
+      @header.background\draw cr, preserve: true
       cr\restore!
 
     if @footer and @footer.background and @footer.widget.visible
       cr\save!
       cr\translate 0, bg.height - @footer.background.height - bg.padding_bottom - bg.padding_top
-      @footer.background\draw cr
+      @footer.background\draw cr, preserve: true
       cr\restore!
 
   _draw: (_, cr) =>
