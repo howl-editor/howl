@@ -16,7 +16,9 @@
     tab:              'editor-smart-tab'
     shift_tab:        'editor-smart-back-tab'
     backspace:        'editor-delete-back'
+    ctrl_backspace:   'editor-delete-back-word'
     delete:           'editor-delete-forward'
+    ctrl_delete:      'editor-delete-forward-word'
     return:           'editor-newline'
 
     page_up:          'cursor-page-up'
@@ -152,6 +154,8 @@
         -- needs option key
         -- meta_shift_left:  'cursor-word-left-extend'
         -- meta_shift_right: 'cursor-word-right-extend'
+        -- meta_backspace:   'editor-delete-back-word'
+        -- meta_delete:      'editor-delete-forward-word'
 
         ctrl_shift_d:     'vc-diff-file'
         ctrl_meta_d:      'vc-diff'

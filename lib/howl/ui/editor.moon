@@ -424,10 +424,26 @@ class Editor extends PropertyObject
 
     @view\delete_back!
 
+  delete_back_word: =>
+    if @selection.empty
+      pos = @cursor.pos
+      @cursor\word_left!
+      @buffer\delete @cursor.pos, pos-1
+    else
+      @view\delete_back!
+
   delete_forward: =>
     if @selection.empty
       unless @cursor.at_end_of_file
         @buffer\delete @cursor.pos, @cursor.pos
+    else
+      @active_chunk\delete!
+
+  delete_forward_word: =>
+    if @selection.empty
+      pos = @cursor.pos
+      @cursor\word_right!
+      @buffer\delete pos, @cursor.pos-1
     else
       @active_chunk\delete!
 
@@ -959,7 +975,9 @@ for cmd_spec in *{
   { 'smart-tab', 'Inserts tab or shifts selected text right', 'smart_tab' }
   { 'smart-back-tab', 'Moves to previous tab stop or shifts text left', 'smart_back_tab' }
   { 'delete-back', 'Deletes one character back', 'delete_back' }
+  { 'delete-back-word', 'Deletes one word back', 'delete_back_word' }
   { 'delete-forward', 'Deletes one character forward', 'delete_forward' }
+  { 'delete-forward-word', 'Deletes one word forward', 'delete_forward_word' }
   { 'shift-right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
   { 'shift-left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
   { 'indent', 'Indents the selected lines, or the current line', 'indent' }
