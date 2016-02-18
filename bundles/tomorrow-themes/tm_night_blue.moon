@@ -92,10 +92,6 @@ return {
       vi:
         color: purple
 
-    caret:
-      color: lightgray
-      width: 2
-
     current_line:
       background: current
 

@@ -104,10 +104,6 @@ return {
         color: yellow
         font: bold: true, italic: true
 
-    caret:
-      color: base01
-      width: 2
-
     current_line:
       background: current
 
