@@ -9,9 +9,16 @@ mode_reg =
     'rb',
     'rbw',
     'gemspec',
-    'builder'
+    'builder',
+    'thor',
+    'jbuilder',
+    'podspec',
+    'rabl'
   }
-  patterns: { 'Rakefile$', 'Gemfile$', 'Guardfile$', 'Capfile$'  }
+  patterns: {
+    'Rakefile$', 'Gemfile$', 'Guardfile$', 'Capfile$',
+    'Cheffile$', 'Thorfile$', 'Podfile$', 'config.ru$', 'Vagrantfile$'
+  }
   shebangs: '[/ ]ruby.*$'
   create: -> bundle_load('ruby_mode')
 
