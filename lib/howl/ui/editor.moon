@@ -470,6 +470,19 @@ class Editor extends PropertyObject
       @buffer\insert @selection.text, max(anchor, cursor)
       @selection\set anchor, cursor
 
+  cut: =>
+    if @selection.empty
+      clipboard.push text: @current_line.text, whole_lines: true
+      @buffer.lines[@cursor.line] = nil
+    else
+      @selection\cut!
+
+  copy: =>
+    if @selection.empty
+      clipboard.push text: @current_line.text, whole_lines: true
+    else
+      @selection\copy!
+
   cycle_case: =>
     _capitalize = (word) ->
       word\usub(1, 1).uupper .. word\usub(2).ulower
@@ -989,6 +1002,8 @@ for cmd_spec in *{
   { 'scroll-up', 'Scrolls one line up', 'scroll_up' }
   { 'scroll-down', 'Scrolls one line down', 'scroll_down' }
   { 'duplicate-current', 'Duplicates the selection or current line', 'duplicate_current' }
+  { 'cut', 'Cuts the selection or current line to the clipboard', 'cut' }
+  { 'copy', 'Copies the selection or current line to the clipboard', 'copy' }
   { 'cycle-case', 'Changes case for current word or selection', 'cycle_case' }
 }
   args = { select 4, table.unpack cmd_spec }
@@ -998,8 +1013,6 @@ for cmd_spec in *{
     handler: -> howl.app.editor[cmd_spec[3]] howl.app.editor, table.unpack args
 
 for sel_cmd_spec in *{
-  { 'copy', 'Copies the current selection to the clipboard' }
-  { 'cut', 'Cuts the current selection to the clipboard' }
   { 'select-all', 'Selects all text' }
 }
   command.register

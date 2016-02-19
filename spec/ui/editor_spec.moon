@@ -676,6 +676,58 @@ describe 'Editor', ->
         editor\duplicate_current!
         assert.equals 'hello\nhello\nwörld', buffer.text
 
+  describe 'cut', ->
+    context 'with an active selection', ->
+      it 'cuts the selection', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 2
+        selection\set 2, 5 -- 'ell'
+        editor\cut!
+        assert.equals 'ho\nwörld', buffer.text
+        cursor.pos = 1
+        editor\paste!
+        assert.equal 'ellho\nwörld', buffer.text
+
+    context 'with no active selection', ->
+      it 'cuts the current line', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 3
+        editor\cut!
+        assert.equals 'wörld', buffer.text
+        cursor.pos = 1
+        editor\paste!
+        assert.equal 'hello\nwörld', buffer.text
+
+      it 'cuts the empty line', ->
+        buffer.text = '\nwörld'
+        cursor.pos = 1
+        editor\cut!
+        assert.equals 'wörld', buffer.text
+        editor\paste!
+        assert.equal '\nwörld', buffer.text
+
+  describe 'copy', ->
+    context 'with an active selection', ->
+      it 'copies the selection', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 2
+        selection\set 2, 5 -- 'ell'
+        editor\copy!
+
+        cursor.pos = 1
+        editor\paste!
+        assert.equals 'ellhello\nwörld', buffer.text
+
+    context 'with no active selection', ->
+      it 'copies the current line', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 3
+        editor\copy!
+
+        cursor.pos = 1
+        editor\paste!
+        assert.equals 'hello\nhello\nwörld', buffer.text
+
   context 'resource management', ->
     it 'editors are collected as they should', ->
       e = Editor Buffer {}
