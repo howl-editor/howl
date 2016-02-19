@@ -64,6 +64,7 @@ class ContentBox extends PropertyObject
       main_widget
     }
     @e_box.app_paintable = true
+    @e_box.visible_window = false
 
     append @_handlers, @e_box\on_size_allocate self\_on_size_allocate
     append @_handlers, @e_box\on_destroy self\_on_destroy

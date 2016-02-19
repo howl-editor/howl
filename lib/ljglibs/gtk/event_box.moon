@@ -12,5 +12,9 @@ C = ffi.C
 jit.off true, true
 
 core.define 'GtkEventBox < GtkBin', {
+  properties: {
+    visible_window: 'gboolean'
+  }
+
   new: -> C.gtk_event_box_new!
 }, (spec) -> spec.new!
