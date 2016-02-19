@@ -1002,8 +1002,8 @@ for cmd_spec in *{
   { 'scroll-up', 'Scrolls one line up', 'scroll_up' }
   { 'scroll-down', 'Scrolls one line down', 'scroll_down' }
   { 'duplicate-current', 'Duplicates the selection or current line', 'duplicate_current' }
-  { 'cut', 'Cut the selection or current line to the clipboard', 'cut' }
-  { 'copy', 'Copy the selection or current line to the clipboard', 'copy' }
+  { 'cut', 'Cuts the selection or current line to the clipboard', 'cut' }
+  { 'copy', 'Copies the selection or current line to the clipboard', 'copy' }
   { 'cycle-case', 'Changes case for current word or selection', 'cycle_case' }
 }
   args = { select 4, table.unpack cmd_spec }
