@@ -5,6 +5,7 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.cairo'
 core = require 'ljglibs.core'
 import gc_ptr from require 'ljglibs.gobject'
+require 'ljglibs.cairo.pattern'
 
 C, gc = ffi.C, ffi.gc
 
@@ -12,118 +13,6 @@ cairo_gc_ptr = (o) ->
   gc(o, C.cairo_destroy)
 
 core.define 'cairo_t', {
-  constants: {
-    prefix: 'CAIRO_'
-
-    -- cairo_content_t;
-    'CONTENT_COLOR',
-    'CONTENT_ALPHA',
-    'CONTENT_COLOR_ALPHA',
-
-    -- cairo_antialias_t;
-    'ANTIALIAS_DEFAULT',
-
-    'ANTIALIAS_NONE',
-    'ANTIALIAS_GRAY',
-    'ANTIALIAS_SUBPIXEL',
-
-    'ANTIALIAS_FAST',
-    'ANTIALIAS_GOOD',
-    'ANTIALIAS_BEST'
-
-    -- cairo_fill_rule_t;
-    'FILL_RULE_WINDING',
-    'FILL_RULE_EVEN_ODD'
-
-    -- cairo_line_cap_t;
-    'LINE_CAP_BUTT',
-    'LINE_CAP_ROUND',
-    'LINE_CAP_SQUARE'
-
-    -- cairo_line_join_t;
-    'LINE_JOIN_MITER',
-    'LINE_JOIN_ROUND',
-    'LINE_JOIN_BEVEL'
-
-    -- cairo_operator_t;
-    'OPERATOR_CLEAR',
-
-    'OPERATOR_SOURCE',
-    'OPERATOR_OVER',
-    'OPERATOR_IN',
-    'OPERATOR_OUT',
-    'OPERATOR_ATOP',
-
-    'OPERATOR_DEST',
-    'OPERATOR_DEST_OVER',
-    'OPERATOR_DEST_IN',
-    'OPERATOR_DEST_OUT',
-    'OPERATOR_DEST_ATOP',
-
-    'OPERATOR_XOR',
-    'OPERATOR_ADD',
-    'OPERATOR_SATURATE',
-
-    'OPERATOR_MULTIPLY',
-    'OPERATOR_SCREEN',
-    'OPERATOR_OVERLAY',
-    'OPERATOR_DARKEN',
-    'OPERATOR_LIGHTEN',
-    'OPERATOR_COLOR_DODGE',
-    'OPERATOR_COLOR_BURN',
-    'OPERATOR_HARD_LIGHT',
-    'OPERATOR_SOFT_LIGHT',
-    'OPERATOR_DIFFERENCE',
-    'OPERATOR_EXCLUSION',
-    'OPERATOR_HSL_HUE',
-    'OPERATOR_HSL_SATURATION',
-    'OPERATOR_HSL_COLOR',
-    'OPERATOR_HSL_LUMINOSITY'
-
-    -- cairo_status_t
-    'STATUS_SUCCESS',
-
-    'STATUS_NO_MEMORY',
-    'STATUS_INVALID_RESTORE',
-    'STATUS_INVALID_POP_GROUP',
-    'STATUS_NO_CURRENT_POINT',
-    'STATUS_INVALID_MATRIX',
-    'STATUS_INVALID_STATUS',
-    'STATUS_NULL_POINTER',
-    'STATUS_INVALID_STRING',
-    'STATUS_INVALID_PATH_DATA',
-    'STATUS_READ_ERROR',
-    'STATUS_WRITE_ERROR',
-    'STATUS_SURFACE_FINISHED',
-    'STATUS_SURFACE_TYPE_MISMATCH',
-    'STATUS_PATTERN_TYPE_MISMATCH',
-    'STATUS_INVALID_CONTENT',
-    'STATUS_INVALID_FORMAT',
-    'STATUS_INVALID_VISUAL',
-    'STATUS_FILE_NOT_FOUND',
-    'STATUS_INVALID_DASH',
-    'STATUS_INVALID_DSC_COMMENT',
-    'STATUS_INVALID_INDEX',
-    'STATUS_CLIP_NOT_REPRESENTABLE',
-    'STATUS_TEMP_FILE_ERROR',
-    'STATUS_INVALID_STRIDE',
-    'STATUS_FONT_TYPE_MISMATCH',
-    'STATUS_USER_FONT_IMMUTABLE',
-    'STATUS_USER_FONT_ERROR',
-    'STATUS_NEGATIVE_COUNT',
-    'STATUS_INVALID_CLUSTERS',
-    'STATUS_INVALID_SLANT',
-    'STATUS_INVALID_WEIGHT',
-    'STATUS_INVALID_SIZE',
-    'STATUS_USER_FONT_NOT_IMPLEMENTED',
-    'STATUS_DEVICE_TYPE_MISMATCH',
-    'STATUS_DEVICE_ERROR',
-    'STATUS_INVALID_MESH_CONSTRUCTION',
-    'STATUS_DEVICE_FINISHED',
-    'STATUS_JBIG2_GLOBAL_MISSING',
-
-    'STATUS_LAST_STATUS'
-  }
 
   properties: {
     line_width: {
@@ -165,14 +54,30 @@ core.define 'cairo_t', {
 
     dash_count: =>
       tonumber C.cairo_get_dash_count(@)
+
+    target: =>
+      C.cairo_get_target @
+
+    source: {
+      get: => @get_source!
+      set: (v) => @set_source v
+    }
+
+    has_current_point: => C.cairo_has_current_point(@) != 0
   }
 
   create: (surface) -> cairo_gc_ptr C.cairo_create surface
   save: => C.cairo_save @
   restore: => C.cairo_restore @
 
+  set_source: (source) => C.cairo_set_source @, source
   set_source_rgb: (r, g, b) => C.cairo_set_source_rgb @, r, g, b
   set_source_rgba: (r, g, b, a) => C.cairo_set_source_rgba @, r, g, b, a
+  set_source_surface: (surface, x, y) => C.cairo_set_source_surface @, surface, x, y
+
+  get_source: =>
+    src = C.cairo_get_source(@)
+    gc(C.cairo_pattern_reference(src), C.cairo_pattern_destroy)
 
   set_dash: (dashes, offset = 1) =>
     count = (#dashes - offset) + 1
@@ -202,10 +107,18 @@ core.define 'cairo_t', {
 
   in_clip: (x, y) => C.cairo_in_clip(@, x, y) != 0
   clip: => C.cairo_clip @
+  clip_preserve: => C.cairo_clip_preserve @
+
+  push_group: => C.cairo_push_group @
+  pop_group: => C.cairo_pop_group @
 
   -- Path operations
   rectangle: (x, y, width, height) => C.cairo_rectangle @, x, y, width, height
   arc: (xc, yc, radius, angle1, angle2) => C.cairo_arc @, xc, yc, radius, angle1, angle2
   close_path: => C.cairo_close_path @
+  new_path: => C.cairo_new_path @
+
+  -- Transformations
+  translate: (tx, ty) => C.cairo_translate @, tx, ty
 
 }, (t, ...) -> t.create ...

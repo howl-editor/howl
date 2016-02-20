@@ -2,24 +2,37 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
+{:RGBA} = require 'ljglibs.gdk'
 Window = Gtk.Window
-import PropertyObject from howl.aux.moon
-import theme from howl.ui
+gobject_signal = require 'ljglibs.gobject.signal'
+{:PropertyObject} = howl.aux.moon
+{:ContentBox, :theme} = howl.ui
+
+append = table.insert
 
 class Popup extends PropertyObject
   comfort_zone: 10
 
-  new: (child, properties = {}) =>
+  new: (@child, properties = {}) =>
     error('Missing argument #1: child', 3) if not child
+
+    @_handlers = {}
+
+    @box = ContentBox 'popup', child, {
+      header: properties.header,
+      footer: properties.footer
+    }
 
     properties.default_height = 150 if not properties.default_height
     properties.default_width = 150 if not properties.default_width
     @window = Window Window.POPUP, properties
-    box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
-      { expand: true, child }
-    }
-    @window\add box
-    theme.register_background_widget @window, 'popup'
+
+    @window.app_paintable = true
+    @_set_alpha!
+
+    append @_handlers, @window\on_screen_changed self\_on_screen_changed
+    append @_handlers, @window\on_destroy self\_on_destroy
+    @window\add @box\to_gobject!
     @showing = false
     super!
 
@@ -110,5 +123,19 @@ class Popup extends PropertyObject
     -- now it's all good
     @resize width, height
     @window\move x, y
+
+  _set_alpha: =>
+    screen = @window.screen
+    if screen.is_composited
+      visual = screen.rgba_visual
+      @window.visual = visual if visual
+
+  _on_screen_changed: =>
+    @_set_alpha!
+
+  _on_destroy: =>
+    -- disconnect signal handlers
+    for h in *@_handlers
+      gobject_signal.disconnect h
 
 return Popup

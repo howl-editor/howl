@@ -6,7 +6,7 @@ jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 require 'ljglibs.gdk.window'
 require 'ljglibs.gobject.object'
-Cairo = require 'ljglibs.cairo.cairo'
+require 'ljglibs.cairo.context'
 require 'ljglibs.pango.context'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
@@ -69,6 +69,9 @@ core.define 'GtkWidget < GObject', {
     allocated_width: => C.gtk_widget_get_allocated_width @
     allocated_height: => C.gtk_widget_get_allocated_height @
     toplevel: => ref_ptr C.gtk_widget_get_toplevel @
+    visual:
+      get: => C.gtk_widget_get_visual @
+      set: (visual) => C.gtk_widget_set_visual @, visual
    }
 
   realize: => C.gtk_widget_realize @

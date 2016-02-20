@@ -1,3 +1,5 @@
+{:delegate_to} = howl.util.table
+
 base0   = '#839496'
 base1   = '#93a1a1'
 base2  = '#eee8d5'
@@ -28,32 +30,72 @@ operator = base00
 member = base02
 key = blue
 
+-- General styling for context boxes (editor, command_line)
+content_box = {
+  background:
+    color: background
+
+  border:
+    width: 1
+    color: base1
+
+  border_right:
+    width: 3
+    color: base1
+
+  border_bottom:
+    width: 3
+    color: base1
+
+  header:
+    background:
+      image:
+        path: theme_file('sprinkles.png')
+
+    border_bottom:
+      color: base1
+
+    color: brown
+    font: bold: true
+    padding: 1
+
+  footer:
+    background:
+      color: base2
+
+    border_top:
+      color: base1
+
+    color: brown
+    font: bold: true
+    padding: 1
+}
+
 return {
   window:
-    background: 'lightpaperfibers.png'
+    background:
+      image:
+        path: theme_file('lightpaperfibers.png')
     status:
       font: bold: true, italic: true
       color: blue
 
       info: color: green
       warning: color: orange
-      'error': color: red
+      error: color: red
 
-  editor:
-    border_color: base1
-    divider_color: base1
-    :background
+  :content_box
 
-    header:
-      background: 'sprinkles.png'
-      color: brown
-      font: bold: true
+  popup: {
+    background:
+      color: current
 
-    footer:
-      background: base2
-      color: brown
-      font: bold: true
+    border:
+      color: base1
+      alpha: 0.5
+  }
 
+  editor: delegate_to content_box, {
     indicators:
       default:
         color: yellow
@@ -62,16 +104,15 @@ return {
         color: yellow
         font: bold: true, italic: true
 
-    caret:
-      color: base01
-      width: 2
-
     current_line:
       background: current
 
     gutter:
-      foreground: base1
-      background: base2
+      color: base1
+      background:
+        color: base2
+        alpha: 0.7
+  }
 
   flairs:
     indentation_guide:
@@ -180,10 +221,6 @@ return {
     magenta: color: magenta
     cyan: color: cyan
 
-    popup:
-      background: current
-      color: foreground
-
     comment:
       font: italic: true
       color: comment
@@ -263,7 +300,6 @@ return {
     embedded:
       background: wheat
       color: foreground
-      eol_filled: true
 
     -- Markup and visual styles
 
@@ -280,7 +316,6 @@ return {
     h1:
       color: white
       background: yellow
-      eol_filled: true
       font: bold: true
 
     h2:

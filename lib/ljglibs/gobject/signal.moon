@@ -40,7 +40,9 @@ signal = {
     callbacks.unref_handle handle
 
   emit_by_name: (instance, signal, ...) ->
-    C.g_signal_emit_by_name ffi.cast('gpointer', instance), signal, ..., nil
+    ret = ffi.new 'gboolean [1]'
+    C.g_signal_emit_by_name ffi.cast('gpointer', instance), signal, ..., ret, nil
+    ret[0]
 
   lookup: (name, gtype) ->
     C.g_signal_lookup name, gtype

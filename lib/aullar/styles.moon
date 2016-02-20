@@ -130,6 +130,7 @@ def_for = (name) ->
   live = name: name, font: base.font
   for k in *{
     'background',
+    'background_alpha',
     'color',
     'underline',
     'letter_spacing',

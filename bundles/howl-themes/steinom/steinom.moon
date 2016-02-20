@@ -1,75 +1,70 @@
+ --Copyright 2016 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 {:delegate_to} = howl.util.table
 
-background = '#002451'
-current = '#00346e'
-selection = '#0066cc'
-foreground = '#ffffff'
-comment = '#7285b7'
-red = '#ff9da4'
-orange = '#ffc58f'
-yellow = '#ffeead'
-green = '#d1f1a9'
-aqua = '#99ffff'
-blue = '#bbdaff'
-purple = '#ebbbff'
-border_color = '#333333'
+orange = '#bf954f'
+aqua = '#85E0DC'
+purple = '#886CD6'
+yellow = '#CED0AD'
+green = '#6Ac081'
+darkblue = '#567DB3'
+lightblue = '#81A7C9'
+red = '#D67C73'
+foreground = '#dddddd'
+base = '#222222'
+border_flair = '#808080'
 
-embedded_bg = '#25389f'
+embedded_bg = lightgray
+comment = grey
 
 -- General styling for context boxes (editor, command_line)
 content_box = {
-  background:
-    color: background
 
   border:
-    width: 1
-    color: border_color
-
-  border_right:
-    width: 3
-    color: border_color
-
-  border_bottom:
-    width: 3
-    color: border_color
+    width: 2
+    color: slategray
+    alpha: 0.3
+    radius: 10
 
   header:
+    color: foreground
+    padding_top: 5
+    padding_bottom: 2
+    background:
+      image:
+        path: theme_file('escheresque_ste.png')
+
+      gradient:
+        type: 'linear'
+        direction: 'vertical'
+        stops: { gray, base, base, base, base }
+        alpha: 0.3
+
+  footer: {
+    color: foreground
+    padding: 1
     background:
       gradient:
         type: 'linear'
         direction: 'horizontal'
-        stops: { '#000022', '#003080' }
-
-    border_bottom:
-      color: base1
-
-    color: brown
-    font: bold: true
-    padding: 1
-
-  footer:
-    background:
-      color: base2
-
-    border_top:
-      color: base1
-
-    color: brown
-    font: bold: true
-    padding: 1
+        stops: { black, base, border_flair, base, black }
+        alpha: 0.2
+  }
 }
 
 return {
   window:
+    outer_padding: 5
     background:
       image:
-        path: theme_file('dark_back.png')
+        path: theme_file('footer_lodyas.png')
 
     status:
       font: bold: true, italic: true
       color: grey
 
-      info: color: blue
+      info: color: lightblue
       warning: color: orange
       'error': color: red
 
@@ -77,81 +72,85 @@ return {
 
   popup:
     background:
-      color: '#00346e'
+      color: '#555555'
+      alpha: 0.95
     border:
-      color: grey
+      color: gray
 
   editor: delegate_to content_box, {
     indicators:
       default:
-        color: blue
+        color: slategray
 
       title:
-        font: bold: true, italic: true
+        font: bold: true
+        color: lightblue
 
       vi:
-        color: purple
-
-    current_line:
-      background: current
+        font: bold: true
 
     gutter:
-      color: comment
+      color: gray
       background:
-        color: background
-        alpha: 0.4
-  }
+        gradient:
+          type: 'linear'
+          direction: 'vertical'
+          stops: { black, base, border_flair, black }
+          alpha: 0.2
+    }
 
   flairs:
     indentation_guide:
-      type: flair.PIPE,
-      foreground: comment,
-      :background,
+      type: flair.PIPE
+      foreground: comment
       line_width: 1
+      foreground_alpha: 0.5
 
     indentation_guide_1:
-      type: flair.PIPE,
-      foreground: blue,
+      type: flair.PIPE
+      foreground: lightblue
       foreground_alpha: 0.5
       line_width: 1
 
     indentation_guide_2:
-      type: flair.PIPE,
-      foreground: green,
+      type: flair.PIPE
+      foreground: green
       foreground_alpha: 0.5
       line_width: 1
 
     indentation_guide_3:
-      type: flair.PIPE,
-      foreground: green,
+      type: flair.PIPE
+      foreground: green
       foreground_alpha: 0.3
       line_width: 1
 
     edge_line:
-      type: flair.PIPE,
-      foreground: blue,
-      foreground_alpha: 0.3,
-      line_width: 0.5
+      type: flair.PIPE
+      foreground: base
+      line_width: 2
+      foreground_alpha: 0.2,
 
     search:
       type: highlight.ROUNDED_RECTANGLE
-      foreground: black
-      foreground_alpha: 1
-      background: green
-      text_color: darkgreen
+      foreground: cyan
+      background: cyan
+      background_alpha: 0.5
+      text_color: white
       height: 'text'
 
     search_secondary:
       type: flair.ROUNDED_RECTANGLE
-      background: lightblue
-      text_color: black
+      background: lightgrey
+      background_alpha: 0.3
+      text_color: lightblue
       height: 'text'
 
     replace_strikeout:
       type: flair.ROUNDED_RECTANGLE
-      foreground: black
+      foreground: lightgrey
       background: red
-      text_color: black
+      background_alpha: 0.5
+      text_color: red
       height: 'text'
 
     brace_highlight:
@@ -161,13 +160,13 @@ return {
       height: 'text'
 
     list_selection:
-      type: flair.RECTANGLE
-      background: white
+      type: flair.ROUNDED_RECTANGLE
+      background: slategray
       background_alpha: 0.4
 
     list_highlight:
       type: highlight.UNDERLINE
-      foreground: white
+      foreground: lightgray
       text_color: white
       line_width: 2
 
@@ -180,14 +179,14 @@ return {
     block_cursor:
       type: flair.ROUNDED_RECTANGLE,
       background: foreground
-      text_color: background
+      text_color: base
       height: 'text',
       min_width: 'letter'
 
     selection:
       type: highlight.ROUNDED_RECTANGLE
-      background: selection
-      background_alpha: 0.6
+      background: darkblue
+      background_alpha: 0.3
       min_width: 'letter'
 
   styles:
@@ -198,13 +197,9 @@ return {
     red: color: red
     green: color: green
     yellow: color: yellow
-    blue: color: blue
+    blue: color: lightblue
     magenta: color: purple
     cyan: color: aqua
-
-    popup:
-      background: '#00346e'
-      color: foreground
 
     comment:
       font: italic: true
@@ -217,15 +212,15 @@ return {
       font: italic: true
 
     key:
-      color: blue
+      color: lightblue
       font: bold: true
 
     fdecl:
-      color: blue
+      color: lightblue
       font: bold: true
 
     keyword:
-      color: purple
+      color: lightblue
       font: bold: true
 
     class:
@@ -242,38 +237,40 @@ return {
     definition: color: yellow
 
     function:
-      color: blue
+      color: lightgrey
       font: bold: true
 
     char: color: green
     number: color: orange
-    operator: color: aqua
-    preproc: color: aqua
-    special: color: purple
+    operator: color: '#85E0DC'
+    preproc: color: darkblue
+    special:
+      color: darkblue
+      font: bold: true
     tag: color: purple
-    type: color: yellow
-    member: color: red
-    info: color: blue
-
-    constant:
-      color: yellow
-
+    type: color: red
+    member: color: yellow
+    info: color: lightblue
+    constant: color: yellow
     string: color: green
 
     regex:
       color: green
       background: embedded_bg
+      background_alpha: 0.1
 
     embedded:
-      color: '#aadaff'
-      background: embedded_bg
+      color: foreground
+      background: lightblue
+      background_alpha: 0.2
 
     -- Markup and visual styles
 
     error:
-      font: italic: true
-      color: white
-      background: darkred
+      font:
+        italic: true
+        bold: true
+      color: red
 
     warning:
       font: italic: true
@@ -281,15 +278,19 @@ return {
 
     h1:
       color: white
-      background: '#005491'
+      background: lightblue
+      background_alpha: 0.4
+      font:
+        family: 'Purisa,Latin Modern Sans'
+        size: 'large'
+        bold: true
 
     h2:
-      color: green
+      color: yellow
       font: bold: true
 
     h3:
-      color: purple
-      background: current
+      color: lightblue
       font: italic: true
 
     emphasis:
@@ -302,8 +303,9 @@ return {
     link_url: color: comment
 
     table:
-      color: blue
+      color: lightblue
       background: embedded_bg
+      background_alpha: 0.2
       underline: true
 
     addition: color: green

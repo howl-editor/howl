@@ -9,9 +9,16 @@ import Completer, signal, bindings, config, command, clipboard, sys from howl
 import View from aullar
 aullar_config = aullar.config
 import PropertyObject from howl.aux.moon
-import style, highlight, theme, IndicatorBar, Cursor, Selection from howl.ui
 import Searcher, CompletionPopup from howl.ui
 import auto_pair from howl.editing
+{
+  :style,
+  :highlight,
+  :IndicatorBar,
+  :Cursor,
+  :Selection,
+  :ContentBox
+} = howl.ui
 {:max, :min, :abs} = math
 append = table.insert
 
@@ -86,45 +93,18 @@ class Editor extends PropertyObject
     @searcher = Searcher self
     @completion_popup = CompletionPopup self
 
-    @header = IndicatorBar 'header', 3
-    @footer = IndicatorBar 'footer', 3
-
-    aullar_box = Gtk.EventBox { @view\to_gobject! }
-
-    hdr_divider = Gtk.EventBox height_request: 1
-    hdr_divider.style_context\add_class 'divider'
-
-    ftr_divider = Gtk.EventBox height_request: 1
-    ftr_divider.style_context\add_class 'divider'
-
-    @bin = Gtk.EventBox {
-      Gtk.Alignment {
-        top_padding: 1,
-        left_padding: 1,
-        right_padding: 3,
-        bottom_padding: 3,
-        Gtk.Box Gtk.ORIENTATION_VERTICAL, {
-          @header\to_gobject!,
-          hdr_divider,
-          {
-            expand: true,
-            aullar_box
-          }
-          ftr_divider,
-          @footer\to_gobject!
-        }
-      }
+    @header = IndicatorBar 'header'
+    @footer = IndicatorBar 'footer'
+    content_box = ContentBox 'editor', @view\to_gobject!, {
+      header: @header\to_gobject!,
+      footer: @footer\to_gobject!
     }
-
-    @bin.style_context\add_class 'content_box'
-    aullar_box.style_context\add_class 'aullar_box'
+    @bin = content_box\to_gobject!
     @bin.can_focus = true
 
     @_handlers = {}
     append @_handlers, @bin\on_destroy self\_on_destroy
     append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
-
-    -- theme.register_background_widget @view\to_gobject!
 
     @buffer = buffer
     @_is_previewing = false
@@ -662,7 +642,6 @@ class Editor extends PropertyObject
     for h in *@_handlers
       gobject_signal.disconnect h
 
-    -- theme.unregister_background_widget @view\to_gobject!
     @buffer\remove_view_ref!
     @completion_popup\destroy!
     @view\destroy!

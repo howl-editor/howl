@@ -10,7 +10,7 @@ ref_ptr = gobject.ref_ptr
 
 C = ffi.C
 
-core.define 'GdkScreen', {
+core.define 'GdkScreen < GObject', {
   properties: {
     font_options: 'gpointer'
     resolution: 'gdouble'
@@ -21,6 +21,8 @@ core.define 'GdkScreen', {
     height: => C.gdk_screen_get_height @
     width_mm: => C.gdk_screen_get_width_mm @
     height_mm: => C.gdk_screen_get_height_mm @
+    rgba_visual: => C.gdk_screen_get_rgba_visual @
+    is_composited: => C.gdk_screen_is_composited(@) != 0
   }
 
   get_default: -> ref_ptr C.gdk_screen_get_default!

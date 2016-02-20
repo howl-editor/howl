@@ -18,7 +18,7 @@ load_file = (file, sandbox, ...) ->
 new = (dir, name, sandbox_options = {}) ->
   loaded = {}
   loading = {}
-  box = Sandbox {}, sandbox_options
+  box = Sandbox sandbox_options
 
   box\put {
     "#{name}_file": (rel_path) -> dir / rel_path

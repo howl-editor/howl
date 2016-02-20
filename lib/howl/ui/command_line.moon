@@ -5,8 +5,8 @@ Gtk = require 'ljglibs.gtk'
 import bindings, dispatch, interact, signal from howl
 import Matcher from howl.util
 import PropertyObject from howl.aux.moon
-import TextWidget, NotificationWidget, IndicatorBar, StyledText from howl.ui
 import highlight, markup, style, theme from howl.ui
+{:TextWidget, :NotificationWidget, :IndicatorBar, :StyledText, :ContentBox} = howl.ui
 
 -- used to generate a unique id for every new activity
 id_counter = 0
@@ -244,24 +244,8 @@ class CommandLine extends PropertyObject
 
   _initialize: =>
     @box = Gtk.Box Gtk.ORIENTATION_VERTICAL
-    border_box = Gtk.EventBox {
-      Gtk.Alignment {
-        top_padding: 1,
-        left_padding: 1,
-        right_padding: 3,
-        bottom_padding: 3,
-        @box
-      }
-    }
-    border_box.style_context\add_class 'content_box'
-    @bin\add border_box
 
     @command_widget = TextWidget
-      top_padding: 3
-      left_padding: 3
-      bottom_padding: 2
-      bottom_border: 1
-      top_border: 1
       line_wrapping: 'char'
       on_keypress: (event) ->
         result = true
@@ -275,15 +259,19 @@ class CommandLine extends PropertyObject
         @command_widget\focus! if @showing
 
     @command_widget.visible_rows = 1
-
     @box\pack_end @command_widget\to_gobject!, false, 0, 0
 
     @notification_widget = NotificationWidget!
     @box\pack_end @notification_widget\to_gobject!, false, 0, 0
 
-    @header = IndicatorBar 'header', 3
+    @header = IndicatorBar 'header'
     @indic_title = @header\add 'left', 'title'
-    @box\pack_start @header\to_gobject!, false, 0, 0
+    @box.margin_left = 2
+    @box.margin_top = 2
+    c_box = ContentBox 'command_line', @box, {
+      header: @header\to_gobject!
+    }
+    @bin\add c_box\to_gobject!
 
   @property width_cols:
     get: => @command_widget.width_cols

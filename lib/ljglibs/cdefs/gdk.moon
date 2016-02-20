@@ -142,6 +142,7 @@ ffi.cdef [[
   guint32 gdk_keyval_to_unicode(guint keyval);
 
   typedef cairo_rectangle_int_t         GdkRectangle;
+  typedef struct {} GdkVisual;
 
   /* screen */
   typedef struct {} GdkScreen;
@@ -151,6 +152,8 @@ ffi.cdef [[
   gint gdk_screen_get_height (GdkScreen *screen);
   gint gdk_screen_get_width_mm (GdkScreen *screen);
   gint gdk_screen_get_height_mm (GdkScreen *screen);
+  GdkVisual * gdk_screen_get_rgba_visual(GdkScreen *screen);
+  gboolean gdk_screen_is_composited(GdkScreen   *screen);
 
   /* GdkRGBA */
   typedef struct {
@@ -277,6 +280,9 @@ ffi.cdef [[
   GdkCursor * gdk_window_get_cursor (GdkWindow *window);
   void gdk_window_set_cursor (GdkWindow *window, GdkCursor *cursor);
 
+  void gdk_window_set_opacity (GdkWindow *window, gdouble opacity);
+
+
   /* GdkDevice */
   typedef struct {} GdkDevice;
 
@@ -340,6 +346,19 @@ ffi.cdef [[
   /* GdkPixbuf */
   typedef struct {} GdkPixbuf;
 
+  GdkPixbuf * gdk_pixbuf_new_from_file (const char *filename, GError **error);
+
+  GdkPixbuf * gdk_pixbuf_new_from_file_at_size (const char *filename,
+                                                int width,
+                                                int height,
+                                                GError **error);
+
+  GdkPixbuf * gdk_pixbuf_new_from_file_at_scale (const char *filename,
+                                                 int width,
+                                                 int height,
+                                                 gboolean preserve_aspect_ratio,
+                                                 GError **error);
+
   GdkPixbuf * gdk_pixbuf_get_from_window (GdkWindow *window,
                                           gint src_x,
                                           gint src_y,
@@ -360,4 +379,10 @@ ffi.cdef [[
   typedef struct { gulong val; } GdkAtom;
   GdkAtom gdk_atom_intern (const gchar *atom_name, gboolean only_if_exists);
   gchar * gdk_atom_name (GdkAtom atom);
+
+  /* cairo integration */
+  void gdk_cairo_set_source_pixbuf (cairo_t *cr,
+                                    const GdkPixbuf *pixbuf,
+                                    gdouble pixbuf_x,
+                                    gdouble pixbuf_y);
 ]]

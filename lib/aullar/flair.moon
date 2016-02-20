@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:RGBA} = require 'ljglibs.gdk'
-Cairo = require 'ljglibs.cairo.cairo'
+require 'ljglibs.cairo.context'
 {:SCALE, :Layout, :AttrList, :Attribute, :Color, :cairo} = require 'ljglibs.pango'
 
 {:define_class} = require 'aullar.util'

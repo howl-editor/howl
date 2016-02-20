@@ -50,7 +50,9 @@ parse_background_ranges = (styling) ->
       range = {
         start_offset: styling[i],
         end_offset: styling[i + 2],
-        style: background: def.background
+        style:
+          background: def.background
+          alpha: def.background_alpha or 1
       }
     elseif range
       ranges[#ranges + 1] = range
@@ -238,7 +240,7 @@ DisplayLine = define_class {
     -- complexity sanity check before asking Pango to determine extents,
     -- as it will happily block seemingly for ever if someone manages
     -- to cram an entire app into one line (e.g. minimized JS)
-    if #@styling > 3000
+    if #@styling > 2000
       @styling = { 1, 'blob', line.size + 1 }
 
     attributes = styles.get_attributes @styling, line.size
@@ -315,7 +317,7 @@ DisplayLine = define_class {
       bg_flair = flair.build {
         type: flair.RECTANGLE,
         background: bg_range.style.background
-        background_alpha: 0.3
+        background_alpha: bg_range.style.alpha
         :width
       }
       flair.draw bg_flair, @, bg_range.start_offset, bg_range.end_offset, x, y, cr

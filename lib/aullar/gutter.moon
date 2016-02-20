@@ -5,32 +5,51 @@
 {:define_class} = require 'aullar.util'
 Pango = require 'ljglibs.pango'
 {:RGBA} = require 'ljglibs.gdk'
+Background = require 'ljglibs.aux.background'
 Layout = Pango.Layout
 pango_cairo = Pango.cairo
 
+get_bg_conf = (styling = {}) ->
+  bg_conf = {}
+  if styling.background
+    for k, v in pairs styling.background
+      bg_conf[k] = v
+
+  for k, v in pairs styling
+    bg_conf[k] = v if k\match '^border'
+
+  bg_conf
+
 define_class {
-  new: (@view) =>
+  new: (@view, styling = {}) =>
     @number_chars = 0
     @width = 0
+    @background = Background 'gutter', 0, 0
+    @reconfigure styling
 
-  sync_width: (buffer, opts = {}) =>
+  reconfigure: (styling) =>
+    @background\reconfigure get_bg_conf(styling)
+    @_foreground = RGBA(styling.color or '#000000')
+    @_foreground_alpha = styling.alpha or 1
+
+  sync_dimensions: (buffer, opts = {}) =>
     lines_text = tostring(buffer.nr_lines)
     num_chars = #lines_text
     return true if not opts.force and @number_chars == num_chars
     {:width} = @view\text_dimensions(lines_text)
-    @width = width + 10
+    @_text_width = width + 10
+    @width = @_text_width + @background.padding_left + @background.padding_right
     @number_chars = num_chars
+    @background\resize @width, @view.height
     false
 
-  start_draw: (@cairo_context, pango_context, @clip, styling) =>
+  start_draw: (@cairo_context, pango_context, @clip) =>
     @layout = nil
     return if @clip.x1 >= @width
-    @_draw_background styling
+    @_draw_background!
     @layout = Layout pango_context
-    @layout.width = (@width - 5) * Pango.SCALE
+    @layout.width = (@_text_width - 5) * Pango.SCALE
     @layout.alignment = Pango.ALIGN_RIGHT
-    @_foreground = RGBA(styling.foreground or '#000000')
-    @_foreground_alpha = styling.foreground_alpha or 1
 
   draw_for_line: (line_nr, x, y, display_line) =>
     return unless @layout
@@ -48,20 +67,15 @@ define_class {
       _, log_rect = layout_line\get_pixel_extents!
       line_height = log_rect.height
 
-    cr\move_to x, y + (line_height - text_height) / 2
+    cr\move_to x + @background.padding_left, y + (line_height - text_height) / 2
     pango_cairo.show_layout cr, @layout
     cr\restore!
 
   end_draw: =>
     @cairo_context, @clip, @layout = nil, nil, nil
 
-  _draw_background: (styling) =>
-    with @cairo_context
-      \save!
-      color = RGBA(styling.background or '#8294ab')
-      alpha = styling.background_alpha or 1
-      \set_source_rgba color.red, color.green, color.blue, alpha
-      \rectangle @clip.x1, @clip.y1, min(@clip.x2 - @clip.x1, @width), @clip.y2 - @clip.y1
-      \fill!
-      \restore!
+  _draw_background: =>
+    @cairo_context\save!
+    @background\draw @cairo_context
+    @cairo_context\restore!
 }

@@ -31,8 +31,8 @@ describe 'DisplayLines', ->
 
         ranges = display_lines[1].background_ranges
         assert.equals 2, #ranges
-        assert.same { start_offset: 1, end_offset: 5, style: { background: '#112233' } }, ranges[1]
-        assert.same { start_offset: 9, end_offset: 13, style: { background: '#445566' } }, ranges[2]
+        assert.same { start_offset: 1, end_offset: 5, style: { background: '#112233', alpha: 1 } }, ranges[1]
+        assert.same { start_offset: 9, end_offset: 13, style: { background: '#445566', alpha: 1 } }, ranges[2]
 
       it 'merges adjacent ranges', ->
         buffer.text = 'background'
@@ -41,7 +41,7 @@ describe 'DisplayLines', ->
 
         ranges = display_lines[1].background_ranges
         assert.equals 1, #ranges
-        assert.same { start_offset: 1, end_offset: 11, style: { background: '#112233' } }, ranges[1]
+        assert.same { start_offset: 1, end_offset: 11, style: { background: '#112233', alpha: 1 } }, ranges[1]
 
     describe '.indentation', ->
       it 'is the indentation level for the line', ->

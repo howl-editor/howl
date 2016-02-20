@@ -3,10 +3,15 @@
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
+ffi = require 'ffi'
+gobject_signal = require 'ljglibs.gobject.signal'
+Background = require 'ljglibs.aux.background'
 import PropertyObject from howl.aux.moon
-import Status, CommandLine, theme from howl.ui
+{:CommandLine, :Status, :theme} = howl.ui
 import signal from howl
+
 append = table.insert
+ffi_cast = ffi.cast
 
 to_gobject = (o) ->
   status, gobject = pcall -> o\to_gobject!
@@ -21,38 +26,37 @@ placements = {
 
 class Window extends PropertyObject
   new: (properties = {}) =>
+    @_handlers = {}
     @status = Status!
     @command_line = CommandLine self
-
+    @background = Background "window_bg", 0, 0
     @grid = Gtk.Grid
-      row_spacing: 4
-      column_spacing: 4
       column_homogeneous: true
       row_homogeneous: true
 
-    alignment = Gtk.Alignment {
-      top_padding: 5,
-      left_padding: 5,
-      right_padding: 5,
-      bottom_padding: 5,
-      Gtk.Box Gtk.ORIENTATION_VERTICAL, {
-        spacing: 3,
-        { expand: true, @grid },
-        @command_line\to_gobject!
-        @status\to_gobject!,
-      }
+    @box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
+      { expand: true, @grid },
+      @command_line\to_gobject!
+      @status\to_gobject!,
     }
 
     @win = Gtk.Window Gtk.Window.TOPLEVEL
     @win[k] = v for k,v in pairs properties
-    @win\on_focus_in_event self\_on_focus
-    @win\on_focus_out_event self\_on_focus_lost
+    append @_handlers, @win\on_size_allocate self\_on_size_allocate
+    append @_handlers, @win\on_focus_in_event self\_on_focus
+    append @_handlers, @win\on_focus_out_event self\_on_focus_lost
+    append @_handlers, @win\on_draw self\_on_draw
+    append @_handlers, @win\on_destroy self\_on_destroy
+    append @_handlers, @win\on_screen_changed self\_on_screen_changed
+    @win.app_paintable = true
+    @_set_alpha!
 
-    @win\add alignment
-    @win.style_context\add_class 'main'
-    theme.register_background_widget @win
+    @win\add @box
 
+    @_theme_changed = self\_on_theme_changed
+    signal.connect 'theme-changed', @_theme_changed
     @data = {}
+    @_on_theme_changed theme: theme.current
     super @win
 
   @property views: get: =>
@@ -235,6 +239,42 @@ class Window extends PropertyObject
     @_insert_column anchor, placement if placement == 'left_of' or placement == 'right_of'
     @grid\attach_next_to gobject, anchor, Gtk[where], 1, 1
 
+  _on_theme_changed: (opts) =>
+    def = {}
+    outer_padding = 5
+    inner_padding = 4
+    if opts.theme and opts.theme.window
+      with opts.theme.window
+        def = .background or def
+        outer_padding = .outer_padding or outer_padding
+        inner_padding = .inner_padding or inner_padding
+
+    @box.margin = outer_padding
+    @box.spacing = inner_padding
+    with @grid
+      .row_spacing = inner_padding
+      .column_spacing = inner_padding
+
+    @background\reconfigure def
+    @win\queue_draw!
+
+  _on_size_allocate: (_, alloc) =>
+    alloc = ffi_cast('GdkRectangle *', alloc)
+    @background\resize alloc.width, alloc.height
+
+  _on_destroy: =>
+    -- disconnect signal handlers
+    for h in *@_handlers
+      gobject_signal.disconnect h
+
+    signal.disconnect 'theme-changed', @_theme_changed
+
+  _on_draw: (_, cr) =>
+    cr\save!
+    @background\draw cr
+    cr\restore!
+    false
+
   _on_focus: =>
     howl.app.window = self
     signal.emit 'window-focused', window: self
@@ -243,6 +283,15 @@ class Window extends PropertyObject
   _on_focus_lost: =>
     signal.emit 'window-defocused', window: self
     false
+
+  _set_alpha: =>
+    screen = @win.screen
+    if screen.is_composited
+      visual = screen.rgba_visual
+      @win.visual = visual if visual
+
+  _on_screen_changed: =>
+    @_set_alpha!
 
 -- Signals
 signal.register 'window-focused',

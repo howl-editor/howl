@@ -4,8 +4,7 @@
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 import View from aullar
-import destructor from howl.aux
-import Popup, style, highlight, theme from howl.ui
+import Popup, style from howl.ui
 {:ceil, :max} = math
 
 class BufferPopup extends Popup
@@ -19,14 +18,9 @@ class BufferPopup extends Popup
       .view_show_line_numbers = false
       .view_show_cursor = false
 
-    @bin = Gtk.EventBox {
-      @view\to_gobject!
-    }
+    @bin = @view\to_gobject!
 
     super @bin, @_get_dimensions!
-
-    theme.register_background_widget @bin, @default_style
-    theme.register_background_widget @view\to_gobject!, @default_style
 
   resize: =>
     dimensions = @_get_dimensions!
@@ -38,7 +32,7 @@ class BufferPopup extends Popup
     -- right: => @sci\line_scroll 1, 0
     -- left: => @sci\line_scroll -1, 0
     space: => @view.cursor\page_down!
-    backspace: => @sci\page_up!
+    -- backspace: => @sci\page_up!
     page_down: => @view.cursor\page_down!
     page_up: => @view.cursor\page_up!
   }
