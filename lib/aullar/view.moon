@@ -82,6 +82,7 @@ View = {
         size: @config.view_font_size * Pango.SCALE
       }
       \override_font font_desc
+      .style_context\add_class 'transparent_bg'
 
       append @_handlers, \on_key_press_event self\_on_key_press
       append @_handlers, \on_button_press_event self\_on_button_press

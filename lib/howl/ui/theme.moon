@@ -18,6 +18,10 @@ screen = Gdk.Screen\get_default!
 Gtk.StyleContext.add_provider_for_screen screen, css_provider, 600
 
 css_template = [[
+.transparent_bg {
+  background: rgba(0,0,0,0);
+}
+
 .header {
   color: ${header_color};
   font: ${header_font};
