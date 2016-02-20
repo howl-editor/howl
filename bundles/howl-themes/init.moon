@@ -1,9 +1,9 @@
  --Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-olive = bundle_file('steinom/steinom.moon')
+steinom = bundle_file('steinom/steinom.moon')
 
-howl.ui.theme.register('Steinom', olive)
+howl.ui.theme.register('Steinom', steinom)
 
 unload = ->
   howl.ui.theme.unregister 'Steinom'

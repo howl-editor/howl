@@ -14,10 +14,7 @@ license.
 The bundle itself is under the following copyright:
 
 Copyright 2016 The Howl Developers
-
-The bundle is licensed under:
-
-The MIT License
+License: The MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
