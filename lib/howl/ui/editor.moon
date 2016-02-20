@@ -212,6 +212,12 @@ class Editor extends PropertyObject
       start, stop = @selection\range!
       @buffer\chunk start, stop - 1
 
+  @property current_mode: get: =>
+    return @last_mode if @last_pos and @cursor.pos == @last_pos and @last_mode == @buffer.mode
+    @last_pos = @cursor.pos
+    @last_mode = @buffer\mode_at @cursor.pos
+    @last_mode
+
   refresh_display: => @view\refresh_display from_line: 1, invalidate: true
   grab_focus: => @view\grab_focus!
   newline: =>
@@ -304,17 +310,17 @@ class Editor extends PropertyObject
       @_show_buffer @_pre_preview_buffer
       @_pre_preview_buffer = nil
 
-  indent: => if @buffer.mode.indent then @buffer.mode\indent self
+  indent: => if @current_mode.indent then @current_mode\indent self
 
   indent_all: =>
     @with_position_restored ->
       @selection\select_all!
       @indent!
 
-  comment: => if @buffer.mode.comment then @buffer.mode\comment self
-  uncomment: => if @buffer.mode.uncomment then @buffer.mode\uncomment self
+  comment: => if @current_mode.comment then @current_mode\comment self
+  uncomment: => if @current_mode.uncomment then @current_mode\uncomment self
   toggle_comment: =>
-    if @buffer.mode.toggle_comment then @buffer.mode\toggle_comment self
+    if @current_mode.toggle_comment then @current_mode\toggle_comment self
 
   delete_line: => @buffer.lines[@cursor.line] = nil
 
@@ -666,7 +672,7 @@ class Editor extends PropertyObject
       @remove_popup!
       return true
 
-    maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
+    maps = { @buffer.keymap, @current_mode and @current_mode.keymap }
     return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
@@ -698,7 +704,7 @@ class Editor extends PropertyObject
 
     should_highlight = @buffer.config.matching_braces_highlighted
     return unless should_highlight
-    auto_pairs = @buffer.mode.auto_pairs
+    auto_pairs = @current_mode.auto_pairs
     return unless auto_pairs
 
     get_brace_pos = (buffer, pos, auto_pairs) ->
@@ -754,7 +760,7 @@ class Editor extends PropertyObject
     params = moon.copy args
     params.editor = self
     return if signal.emit('insert-at-cursor', params) == signal.abort
-    return if @buffer.mode.on_insert_at_cursor and @buffer.mode\on_insert_at_cursor(params, self)
+    return if @current_mode.on_insert_at_cursor and @current_mode\on_insert_at_cursor(params, self)
 
     if @popup
       @popup.window\on_insert_at_cursor(self, params) if @popup.window.on_insert_at_cursor

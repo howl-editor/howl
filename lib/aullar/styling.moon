@@ -4,6 +4,7 @@
 {:fill} = require 'ffi'
 {:define_class} = require 'aullar.util'
 GapBuffer = require 'aullar.gap_buffer'
+Markers = require 'aullar.markers'
 append = table.insert
 {:min, :max} = math
 
@@ -25,9 +26,11 @@ define_class {
   new: (size, @listener) =>
     @style_buffer = GapBuffer 'uint16_t', size
     @last_pos_styled = 0
+    @sub_style_markers = Markers!
 
   reset: (size) =>
     @style_buffer\set nil, size
+    @sub_style_markers = Markers!
     @last_pos_styled = 0
 
   sub: (styling, start_offset, end_offset) ->
@@ -93,6 +96,7 @@ define_class {
     @_notify(start_offset, end_offset) unless opts.no_notify
 
   clear: (start_offset, end_offset, opts = {}) =>
+    @sub_style_markers\remove_for_range start_offset, end_offset
     @style_buffer\fill start_offset - 1, end_offset - 1, 0
     @_notify(start_offset, end_offset) unless opts.no_notify
 
@@ -107,6 +111,8 @@ define_class {
     no_notify = no_notify: true
     styled_up_to = 1
 
+    markers = opts.markers or {}
+
     for s_idx = 1, #styling, 3
       styling_start = styling[s_idx]
       style = styling[s_idx + 1]
@@ -119,23 +125,33 @@ define_class {
 
       else -- embedded styling (sub lexing)
         if #style > 0
-          sub_base = styling[s_idx + 2]\match '[^|]*|(.+)'
+          mode_name, sub_base = @_split_style_name styling[s_idx + 2]
           sub_start_offset = base + styling_start
 
           -- determine sub styling end, so we can fill it with base
           sub_style = style
           last_offset = sub_style[#sub_style]
           while type(last_offset) == 'string' -- nested sub lexing
+            mode_name, _ = @_split_style_name last_offset
             sub_style = sub_style[#sub_style - 1]
             last_offset = sub_style[#sub_style]
 
           sub_end_offset = sub_start_offset + last_offset - 1
 
           @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
-          @apply sub_start_offset, style, base: sub_base, no_notify: true
+          @apply sub_start_offset, style, base: sub_base, no_notify: true, :markers
+          append markers,
+            name: mode_name
+            start_offset: sub_start_offset
+            end_offset: sub_end_offset + 1
           styled_up_to = sub_end_offset
 
     styled_from = offset + styling[1] - 1
+
+    if not opts.markers
+      @sub_style_markers\remove_for_range styled_from, styled_up_to
+      @sub_style_markers\add markers
+
     @_notify(styled_from, styled_up_to) unless opts.no_notify
     styled_up_to
 
@@ -143,6 +159,7 @@ define_class {
     @_check_offsets offset
     return if offset > @last_pos_styled
     @clear offset, @last_pos_styled, no_notify: true
+    @sub_style_markers\remove_for_range offset, @last_pos_styled
     last_pos_styled = @last_pos_styled
     @last_pos_styled = max(0, offset - 1)
     @_notify(offset, last_pos_styled) unless opts.no_notify
@@ -154,6 +171,7 @@ define_class {
 
   delete: (offset, count, opts = {}) =>
     @style_buffer\delete offset - 1, count
+    @sub_style_markers\remove_for_range offset, offset + count
     if offset <= @last_pos_styled
       style_positions_removed = min(@last_pos_styled - offset, count)
       @last_pos_styled -= style_positions_removed
@@ -167,6 +185,10 @@ define_class {
     ptr = @style_buffer\get_ptr(offset - 1, 1)
     style_map[ptr[0]]
 
+  get_nearest_style_marker: (pos) =>
+    found = @sub_style_markers\at pos
+    found and found[#found]
+
   _notify: (start_offset, end_offset) =>
     if @listener and @listener.on_changed
       @listener\on_changed start_offset, end_offset
@@ -177,4 +199,6 @@ define_class {
 
     if end_offset and (end_offset <= 0 or end_offset > @style_buffer.size)
       error "Styling: Illegal end_offset #{end_offset}", 3
+
+  _split_style_name: (name) => name\match '([^|]*)|(.+)'
 }
