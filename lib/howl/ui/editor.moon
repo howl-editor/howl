@@ -404,10 +404,26 @@ class Editor extends PropertyObject
 
     @view\delete_back!
 
+  delete_back_word: =>
+    if @selection.empty
+      pos = @cursor.pos
+      @cursor\word_left!
+      @buffer\delete @cursor.pos, pos-1
+    else
+      @view\delete_back!
+
   delete_forward: =>
     if @selection.empty
       unless @cursor.at_end_of_file
         @buffer\delete @cursor.pos, @cursor.pos
+    else
+      @active_chunk\delete!
+
+  delete_forward_word: =>
+    if @selection.empty
+      pos = @cursor.pos
+      @cursor\word_right!
+      @buffer\delete pos, @cursor.pos-1
     else
       @active_chunk\delete!
 
@@ -433,6 +449,19 @@ class Editor extends PropertyObject
       {:anchor, :cursor} = @selection
       @buffer\insert @selection.text, max(anchor, cursor)
       @selection\set anchor, cursor
+
+  cut: =>
+    if @selection.empty
+      clipboard.push text: @current_line.text, whole_lines: true
+      @buffer.lines[@cursor.line] = nil
+    else
+      @selection\cut!
+
+  copy: =>
+    if @selection.empty
+      clipboard.push text: @current_line.text, whole_lines: true
+    else
+      @selection\copy!
 
   cycle_case: =>
     _capitalize = (word) ->
@@ -938,7 +967,9 @@ for cmd_spec in *{
   { 'smart-tab', 'Inserts tab or shifts selected text right', 'smart_tab' }
   { 'smart-back-tab', 'Moves to previous tab stop or shifts text left', 'smart_back_tab' }
   { 'delete-back', 'Deletes one character back', 'delete_back' }
+  { 'delete-back-word', 'Deletes one word back', 'delete_back_word' }
   { 'delete-forward', 'Deletes one character forward', 'delete_forward' }
+  { 'delete-forward-word', 'Deletes one word forward', 'delete_forward_word' }
   { 'shift-right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
   { 'shift-left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
   { 'indent', 'Indents the selected lines, or the current line', 'indent' }
@@ -950,6 +981,8 @@ for cmd_spec in *{
   { 'scroll-up', 'Scrolls one line up', 'scroll_up' }
   { 'scroll-down', 'Scrolls one line down', 'scroll_down' }
   { 'duplicate-current', 'Duplicates the selection or current line', 'duplicate_current' }
+  { 'cut', 'Cuts the selection or current line to the clipboard', 'cut' }
+  { 'copy', 'Copies the selection or current line to the clipboard', 'copy' }
   { 'cycle-case', 'Changes case for current word or selection', 'cycle_case' }
 }
   args = { select 4, table.unpack cmd_spec }
@@ -959,8 +992,6 @@ for cmd_spec in *{
     handler: -> howl.app.editor[cmd_spec[3]] howl.app.editor, table.unpack args
 
 for sel_cmd_spec in *{
-  { 'copy', 'Copies the current selection to the clipboard' }
-  { 'cut', 'Cuts the current selection to the clipboard' }
   { 'select-all', 'Selects all text' }
 }
   command.register

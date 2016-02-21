@@ -495,6 +495,21 @@ describe 'Editor', ->
           editor\delete_back!
           assert.equal buffer.text, '5'
 
+    describe '.delete_back_word()', ->
+      it 'deletes back by one word', ->
+        buffer.text = 'hello world'
+        cursor.pos = 12
+        editor\delete_back_word!
+        assert.equal buffer.text, 'hello '
+
+      context 'with a selection', ->
+        it 'deletes the selection', ->
+          buffer.text = ' 2\n 5'
+          selection\set 1, 5
+          cursor.pos = 5
+          editor\delete_back_word!
+          assert.equal buffer.text, '5'
+
     describe '.delete_forward()', ->
       it 'deletes the character at cursor', ->
         buffer.text = 'hƏllo'
@@ -523,6 +538,21 @@ describe 'Editor', ->
           cursor\eof!
           editor\delete_forward!
           assert.equal 'hƏllo', buffer.text
+
+    describe '.delete_forward_word()', ->
+      it 'deletes forward by one word', ->
+        buffer.text = 'hello world'
+        cursor.pos = 1
+        editor\delete_forward_word!
+        assert.equal buffer.text, 'world'
+
+      context 'when a selection is active', ->
+        it 'deletes the selection', ->
+          buffer.text = 'hƏllo'
+          editor.selection\set 2, 5
+          editor\delete_forward_word!
+          assert.equal 'ho', buffer.text
+          assert.not_equal 'Əll', clipboard.current.text
 
     describe '.shift_right()', ->
       before_each ->
@@ -644,6 +674,58 @@ describe 'Editor', ->
         buffer.text = 'hello\nwörld'
         cursor.pos = 3
         editor\duplicate_current!
+        assert.equals 'hello\nhello\nwörld', buffer.text
+
+  describe 'cut', ->
+    context 'with an active selection', ->
+      it 'cuts the selection', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 2
+        selection\set 2, 5 -- 'ell'
+        editor\cut!
+        assert.equals 'ho\nwörld', buffer.text
+        cursor.pos = 1
+        editor\paste!
+        assert.equal 'ellho\nwörld', buffer.text
+
+    context 'with no active selection', ->
+      it 'cuts the current line', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 3
+        editor\cut!
+        assert.equals 'wörld', buffer.text
+        cursor.pos = 1
+        editor\paste!
+        assert.equal 'hello\nwörld', buffer.text
+
+      it 'cuts the empty line', ->
+        buffer.text = '\nwörld'
+        cursor.pos = 1
+        editor\cut!
+        assert.equals 'wörld', buffer.text
+        editor\paste!
+        assert.equal '\nwörld', buffer.text
+
+  describe 'copy', ->
+    context 'with an active selection', ->
+      it 'copies the selection', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 2
+        selection\set 2, 5 -- 'ell'
+        editor\copy!
+
+        cursor.pos = 1
+        editor\paste!
+        assert.equals 'ellhello\nwörld', buffer.text
+
+    context 'with no active selection', ->
+      it 'copies the current line', ->
+        buffer.text = 'hello\nwörld'
+        cursor.pos = 3
+        editor\copy!
+
+        cursor.pos = 1
+        editor\paste!
         assert.equals 'hello\nhello\nwörld', buffer.text
 
   context 'resource management', ->

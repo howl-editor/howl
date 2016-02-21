@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Added a new theme, `monokai`.
+
+- Added a new theme, `steinom`.
+
 - Added a new function `sys.time()` which returns the POSIX time for the system
   with microsecond resolution.
 
@@ -54,6 +58,10 @@ code-named `aullar`.
 
 - The `howl-moon-eval` command was improved by automatically adjusting the
 indentation levels to work as a stand-alone code chunk.
+
+### Keymap changes
+
+- Changed `ctrl_w` to run `buffer-close` instead of `view-close`. Added `ctrl_shift_w` for `view-close`.
 
 ### Bugs fixed
 
