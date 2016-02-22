@@ -453,11 +453,12 @@ View = {
         layout = d_line.layout
         index = pos - line.start_offset -- <-- at this byte index
         rect =  layout\index_to_pos index
+        bottom = y + ((rect.y + rect.height) / Pango.SCALE) + @config.view_line_padding
         return {
           x: x + (rect.x / Pango.SCALE)
           x2: x + ((rect.x + rect.width) / Pango.SCALE)
           y: y + (rect.y / Pango.SCALE)
-          y2: y + (rect.y / Pango.SCALE) + d_line.height
+          y2: bottom
         }
 
       y += d_line.height
