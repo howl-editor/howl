@@ -92,7 +92,7 @@ return {
         font: bold: true
 
       vi:
-        color: purple
+        font: bold: true
 
     caret:
       color: grey_light
