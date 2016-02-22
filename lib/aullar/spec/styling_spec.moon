@@ -288,6 +288,16 @@ describe 'Styling', ->
         }
         assert.spy(listener.on_changed).was_called_with listener, 3, 5
 
+      it 'handles empty sub lexing elements', ->
+        styling\apply 1, {
+          1, 's1', 2,
+          2, {}, 'my_sub|s1'
+        }
+        assert.same {
+          1, 's1', 2,
+        }, styling\get(1, 4)
+
+
       it 'handles nested sub lexing', ->
         -- ">'x'"
         styling\apply 1, {
@@ -303,6 +313,21 @@ describe 'Styling', ->
           1, 's1:operator', 2,
           2, 's2:string', 5,
         }, styling\get(1, 5)
+
+      it 'handles empty nested sub style elements', ->
+        styling\apply 1, {
+          1, 's1', 2, 2, {
+            1, 's3', 2,
+            2, {}, 'sub2|s2',
+            3, {
+              1, {}, 'subsub1|s2'
+            }, 'sub3|s2'
+          }, 'my_sub|s1'
+        }
+        assert.same {
+          1, 's1', 2,
+          2, 's1:s3', 3,
+        }, styling\get(1, 6)
 
   describe '(run-through)', ->
     it 'generally works', ->

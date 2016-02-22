@@ -21,6 +21,15 @@ style_id_for_name = (name) ->
 
   id
 
+get_sub_style_end = (sub_start_offset, styling) ->
+  for i = #styling, 3, -3
+    e = styling[i]
+    if type(e) != 'string'
+      return sub_start_offset + e - 1
+    else
+      sub_end = get_sub_style_end sub_start_offset + styling[i - 2] - 1, styling[i - 1]
+      return sub_end if sub_end
+
 define_class {
   new: (size, @listener) =>
     @style_buffer = GapBuffer 'uint16_t', size
@@ -123,17 +132,11 @@ define_class {
           sub_start_offset = base + styling_start
 
           -- determine sub styling end, so we can fill it with base
-          sub_style = style
-          last_offset = sub_style[#sub_style]
-          while type(last_offset) == 'string' -- nested sub lexing
-            sub_style = sub_style[#sub_style - 1]
-            last_offset = sub_style[#sub_style]
-
-          sub_end_offset = sub_start_offset + last_offset - 1
-
-          @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
-          @apply sub_start_offset, style, base: sub_base, no_notify: true
-          styled_up_to = sub_end_offset
+          sub_end_offset = get_sub_style_end sub_start_offset, style
+          if sub_end_offset -- no sub_end_offset == empty nested styling blocks
+            @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
+            @apply sub_start_offset, style, base: sub_base, no_notify: true
+            styled_up_to = sub_end_offset
 
     styled_from = offset + styling[1] - 1
     @_notify(styled_from, styled_up_to) unless opts.no_notify
