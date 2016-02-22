@@ -61,6 +61,7 @@ class ContentBox extends PropertyObject
     @main.widget = main_widget
     @e_box = Gtk.EventBox {
       hexpand: true,
+      vexpand: false,
       main_widget
     }
     @e_box.app_paintable = true
