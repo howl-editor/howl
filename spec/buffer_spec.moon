@@ -226,11 +226,44 @@ describe 'Buffer', ->
 
       assert.equals 'zed', ret
 
-  it 'undo undoes the last operation', ->
-    b = buffer 'hello'
-    b\delete 1, 1
-    b\undo!
-    assert.equal 'hello', b.text
+  describe 'undo', ->
+    it 'undoes the last operation', ->
+      b = buffer 'hello'
+      b\delete 1, 1
+      b\undo!
+      assert.equal 'hello', b.text
+
+    it 'resets the .modified flag when at synced file revision', ->
+      with_tmpfile (file) ->
+        b = buffer ''
+        b.file = file
+        b.text = 'hello'
+        b\delete 1, 1
+        b\save!
+        b\delete 1, 1
+        assert.equal true, b.modified
+        b\undo!
+        assert.equal false, b.modified
+        b\undo!
+        assert.equal true, b.modified
+
+  describe 'redo', ->
+    it 'redoes the last undo operation', ->
+      b = buffer 'hello'
+      b\delete 1, 1
+      b\undo!
+      b\redo!
+      assert.equal 'ello', b.text
+
+    it 'resets the .modified flag when at synced file revision', ->
+      with_tmpfile (file) ->
+        b = buffer ''
+        b.file = file
+        b.text = 'hello'
+        b\delete 1, 1
+        b\save!
+        b\undo!
+        b\redo!
 
   it '.can_undo returns true if undo is possible, and false otherwise', ->
     b = Buffer {}

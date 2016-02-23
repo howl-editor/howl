@@ -29,6 +29,7 @@ class Buffer extends PropertyObject
     @_eol = '\n'
     @viewers = 0
     @_modified = false
+    @sync_snapshot_id = @_buffer\snapshot!
 
     @_buffer\add_listener
       on_inserted: self\_on_text_inserted
@@ -48,6 +49,7 @@ class Buffer extends PropertyObject
         @sync_etag = nil
 
       @_modified = false
+      @sync_snapshot_id = @_buffer\snapshot!
       @can_undo = false
 
   @property mode:
@@ -190,6 +192,7 @@ class Buffer extends PropertyObject
       @file.contents = @text
       @_modified = false
       @sync_etag = @file.etag
+      @sync_snapshot_id = @_buffer\snapshot!
       signal.emit 'buffer-saved', buffer: self
 
   save_as: (file) =>
@@ -198,8 +201,15 @@ class Buffer extends PropertyObject
 
   as_one_undo: (f) => @_buffer\as_one_undo f
 
-  undo: => @_buffer\undo!
-  redo: => @_buffer\redo!
+  undo: =>
+    @_buffer\undo!
+    if @_buffer\is_snapshot(@sync_snapshot_id)
+      @_modified = false
+
+  redo: =>
+    @_buffer\redo!
+    if @_buffer\is_snapshot(@sync_snapshot_id)
+      @_modified = false
 
   char_offset: (byte_offset) =>
     @_buffer\char_offset byte_offset

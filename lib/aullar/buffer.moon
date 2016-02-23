@@ -447,6 +447,10 @@ Buffer = {
 
   clear_revisions: => @revisions\clear!
 
+  snapshot: => @revisions\snapshot!
+
+  is_snapshot: (snapshot_id)=> @revisions\is_snapshot(snapshot_id)
+
   notify: (event, parameters) =>
     for listener in *@listeners
       callback = listener["on_#{event}"]

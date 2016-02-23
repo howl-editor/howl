@@ -30,6 +30,7 @@ define_class {
   new: =>
     @clear!
     @processing = false
+    @snapshot_id = 0
 
   properties: {
     last: => @entries[@current]
@@ -43,7 +44,7 @@ define_class {
     group = @grouping > 0 and @group_id or nil
     entry =  :type, :offset, :text, :prev_text, :meta, :group
     last = @last
-    if last and entry.group == last.group
+    if last and entry.group == last.group and not last.dont_coalesce
       return last if coalesce(entry, last)
 
     @current += 1
@@ -123,6 +124,21 @@ define_class {
       if @current > 0 and @entries[@current].group == @group_id
         @count += 1
         @_prune!
+
+  snapshot: =>
+    return 0 unless @last
+    return @last.snapshot_id if @last.snapshot_id
+
+    @snapshot_id += 1
+    @last.dont_coalesce = true
+    @last.snapshot_id = @snapshot_id
+    return @snapshot_id
+
+  is_snapshot: (snapshot_id) =>
+    if @last
+      return @last.snapshot_id == snapshot_id
+    else
+      return 0 == snapshot_id
 
   _prune: =>
     limit = config.undo_limit
