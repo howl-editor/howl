@@ -1,17 +1,26 @@
- --Copyright 2016 The Howl Developers
+--Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-steinom = bundle_file('steinom/steinom.moon')
+theme = howl.ui.theme
 
-howl.ui.theme.register('Steinom', steinom)
+themes = {
+  'Steinom': bundle_file('steinom/steinom.moon')
+  'Tomorrow Night Blue': bundle_file('tomorrow_night_blue/tm_night_blue.moon')
+  'Solarized Light': bundle_file('solarized_light/solarized_light.moon')
+  'Monokai': bundle_file('monokai/monokai.moon')
+}
+
+for name, file in pairs themes
+  theme.register(name, file)
 
 unload = ->
-  howl.ui.theme.unregister 'Steinom'
+  for name in pairs themes
+    theme.unregister name
 
 {
   info: {
     author: 'The Howl Developers',
-    description: 'Core themes for the Howl editor',
+    description: 'Bundled themes for the Howl editor',
     license: 'Mixed (see README.md)',
   },
   unload: unload

@@ -2,7 +2,7 @@
 
 ## What is it?
 
-This bundle contains custom made themes for the Howl editor.
+This bundle contains bundled themes for the Howl editor.
 
 ## License
 
@@ -11,9 +11,10 @@ licensed under the
 [Attribution-ShareAlike 3.0 Unported](http://creativecommons.org/licenses/by-sa/3.0/deed.en_US)
 license.
 
-The bundle itself is under the following copyright:
+The different themes have additional copyrights and notes listed at the bottom,
+if any. The bundle itself is under the following copyright:
 
-Copyright 2016 The Howl Developers
+Copyright 2012-2016 The Howl Developers
 License: The MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,3 +34,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+### Tomorrow Night Blue
+
+This theme is based upon the
+[https://github.com/chriskempson/tomorrow-theme](Tomorrow theme) designed by
+Chris Kempson.
+
+Copyright (C) 2013 Chris Kempson
+
+### Solarized Light
+
+This theme is based upon the
+[http://ethanschoonover.com/solarized](Solarized themes) designed by Ethan
+Schoonover.
+
+Copyright (c) 2011 Ethan Schoonover
+
+### Monokai
+
+This theme is based upon the Monokai theme from the Textmate editor.
