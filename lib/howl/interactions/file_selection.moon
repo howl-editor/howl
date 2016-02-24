@@ -139,15 +139,13 @@ class FileSelector
         if @list_widget.selection and not @list_widget.selection.is_new
           @_open!
       else
-        -- if we're not on the new entry, go forward once
-        @list_widget\select_next! unless @list_widget.selection.is_new
-        -- if we land on the new entry (or were on it originally), skip it by going forward again
+        @list_widget\select_next!
+        -- if we land on the new entry, skip it by going forward again
         @list_widget\select_next! if @list_widget.selection.is_new
 
     shift_tab: =>
-      -- if we're not on the new entry, go backward once
-      @list_widget\select_prev! unless @list_widget.selection.is_new
-      -- if we land on the new entry (or were on it originally), skip it by going backward again
+      @list_widget\select_prev!
+      -- if we land on the new entry, skip it by going backward again
       @list_widget\select_prev! if @list_widget.selection.is_new
 
     backspace: =>
