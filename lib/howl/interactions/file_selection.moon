@@ -111,23 +111,42 @@ class FileSelector
       @command_line.text = path.basename
     self.finish path
 
+  _open: =>
+    app.editor\cancel_preview!
+    file = @list_widget.selection and @list_widget.selection.file
+    name = @list_widget.selection and @list_widget.selection.name
+    if not @opts.allow_new and (not file or not file.exists)
+      log.error "Invalid path: #{file}"
+      return
+
+    if name == ".#{separator}"
+      @_submit @directory
+    elseif file.exists and file.is_directory
+      @_chdir file
+    else
+      @_submit file
+
   keymap:
     enter: =>
-      app.editor\cancel_preview!
-      file = @list_widget.selection and @list_widget.selection.file
-      name = @list_widget.selection and @list_widget.selection.name
-      if not @opts.allow_new and (not file or not file.exists)
-        log.error 'Invalid path: '..tostring(file)
-        return
+      @_open!
 
-      if name == ".#{separator}"
-        @_submit @directory
-        return
-
-      if file.exists and file.is_directory
-        @_chdir file
+    tab: =>
+      count = 0
+      for item in *@list_widget.items
+        count += 1 unless item.is_new
+      if count == 1
+        -- open a unique completion
+        if @list_widget.selection and not @list_widget.selection.is_new
+          @_open!
       else
-        @_submit file
+        @list_widget\select_next!
+        -- if we land on the new entry, skip it by going forward again
+        @list_widget\select_next! if @list_widget.selection.is_new
+
+    shift_tab: =>
+      @list_widget\select_prev!
+      -- if we land on the new entry, skip it by going backward again
+      @list_widget\select_prev! if @list_widget.selection.is_new
 
     backspace: =>
       return false unless @command_line.text.is_empty
