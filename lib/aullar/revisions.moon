@@ -7,7 +7,7 @@ config = require 'aullar.config'
 {:max} = math
 
 coalesce = (entry, prev) ->
-  return false if not prev
+  return false if not prev or prev.dont_merge
   if entry.type == 'inserted' and prev.type == 'inserted'
     if entry.offset == prev.offset + #prev.text
       prev.text ..= entry.text
@@ -30,10 +30,11 @@ define_class {
   new: =>
     @clear!
     @processing = false
-    @snapshot_id = 0
+    @_revision_id = 0
 
   properties: {
     last: => @entries[@current]
+    revision_id: => @last and @last.revision_id or 0
   }
 
   push: (type, offset, text, prev_text = nil, meta = {}) =>
@@ -44,10 +45,12 @@ define_class {
     group = @grouping > 0 and @group_id or nil
     entry =  :type, :offset, :text, :prev_text, :meta, :group
     last = @last
-    if last and entry.group == last.group and not last.dont_coalesce
+    if last and entry.group == last.group
       return last if coalesce(entry, last)
 
     @current += 1
+    @_revision_id += 1
+    entry.revision_id = @_revision_id
     @entries[@current] = entry
 
     -- reset any outstanding forward revisions
@@ -124,21 +127,6 @@ define_class {
       if @current > 0 and @entries[@current].group == @group_id
         @count += 1
         @_prune!
-
-  snapshot: =>
-    return 0 unless @last
-    return @last.snapshot_id if @last.snapshot_id
-
-    @snapshot_id += 1
-    @last.dont_coalesce = true
-    @last.snapshot_id = @snapshot_id
-    return @snapshot_id
-
-  is_snapshot: (snapshot_id) =>
-    if @last
-      return @last.snapshot_id == snapshot_id
-    else
-      return 0 == snapshot_id
 
   _prune: =>
     limit = config.undo_limit

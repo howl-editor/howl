@@ -20,7 +20,8 @@ describe 'Revisions', ->
         type: 'inserted',
         offset: 3,
         text: 'foo',
-        meta: {}
+        meta: {},
+        revision_id: 1
       }, revisions.entries[1]
 
       revisions\push 'deleted', 3, 'f', nil, foo: 1
@@ -28,7 +29,8 @@ describe 'Revisions', ->
         type: 'deleted',
         offset: 3,
         text: 'f',
-        meta: { foo: 1 }
+        meta: { foo: 1 },
+        revision_id: 2
       }, revisions.entries[2]
 
       revisions\push 'changed', 3, 'f', 'x'
@@ -37,7 +39,8 @@ describe 'Revisions', ->
         offset: 3,
         text: 'f',
         prev_text: 'x',
-        meta: {}
+        meta: {},
+        revision_id: 3
       }, revisions.entries[3]
 
     it 'returns the added revision', ->
@@ -46,7 +49,8 @@ describe 'Revisions', ->
         type: 'inserted',
         offset: 3,
         text: 'foo',
-        meta: {}
+        meta: {},
+        revision_id: 1
       }, rev
 
     it 'keeps at most config.undo_limit revisions', ->
@@ -65,7 +69,8 @@ describe 'Revisions', ->
           type: 'inserted',
           offset: 2,
           text: 'fooba',
-          meta: {}
+          meta: {},
+          revision_id: 1
         }, revisions.last
 
       it 'merges preceeding deletes', ->
@@ -78,7 +83,8 @@ describe 'Revisions', ->
           type: 'deleted',
           offset: 2,
           text: '234',
-          meta: {}
+          meta: {},
+          revision_id: 1
         }, revisions.last
 
       it 'merges deletes at the same offset', ->
@@ -91,7 +97,33 @@ describe 'Revisions', ->
           type: 'deleted',
           offset: 4,
           text: '456',
-          meta: {}
+          meta: {},
+          revision_id: 1
+        }, revisions.last
+
+      it 'does not merge if dont_merge is set on a revision', ->
+        buffer.text = 'a'
+        revisions\push 'inserted', 2, 'foo'
+        revisions.last.dont_merge = true
+        revisions\push 'inserted', 5, 'ba'
+        assert.equal 2, #revisions
+        buffer.text = 'afooba'
+
+        assert.same {
+          type: 'inserted',
+          offset: 5,
+          text: 'ba',
+          meta: {},
+          revision_id: 2
+        }, revisions\pop(buffer)
+
+        assert.same {
+          type: 'inserted',
+          offset: 2,
+          text: 'foo',
+          meta: {},
+          revision_id: 1
+          dont_merge: true
         }, revisions.last
 
     it 'raises an error if the type is unknown', ->
@@ -121,7 +153,8 @@ describe 'Revisions', ->
         type: 'deleted',
         offset: 9,
         text: '9',
-        meta: {}
+        meta: {},
+        revision_id: 1
       }, revisions\pop(buffer)
 
   describe 'forward(buffer)', ->
@@ -179,7 +212,8 @@ describe 'Revisions', ->
         offset: 4,
         text: 'x',
         group: 1,
-        meta: {}
+        meta: {},
+        revision_id: 2
       }, revisions\pop(buffer)
 
       assert.equal '12345678', buffer.text -- and both should be undone
@@ -191,7 +225,8 @@ describe 'Revisions', ->
         offset: 2,
         text: 'y',
         group: 1,
-        meta: {}
+        meta: {},
+        revision_id: 3
       }, revisions\forward(buffer)
 
       assert.equal '1y23x45678', buffer.text -- and both should be reapplied
