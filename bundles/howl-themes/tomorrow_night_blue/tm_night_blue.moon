@@ -14,7 +14,7 @@ blue = '#bbdaff'
 purple = '#ebbbff'
 border_color = '#333333'
 
-embedded_bg = '#25389f'
+embedded_bg = '#25384f'
 
 -- General styling for context boxes (editor, command_line)
 content_box = {
@@ -78,8 +78,6 @@ return {
   popup:
     background:
       color: '#00346e'
-    border:
-      color: grey
 
   editor: delegate_to content_box, {
     indicators:
