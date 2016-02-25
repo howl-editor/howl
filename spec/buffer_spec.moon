@@ -262,8 +262,14 @@ describe 'Buffer', ->
         b.text = 'hello'
         b\delete 1, 1
         b\save!
+        b\delete 1, 1
         b\undo!
+        b\undo!
+        assert.equal true, b.modified
         b\redo!
+        assert.equal false, b.modified
+        b\redo!
+        assert.equal true, b.modified
 
   it '.can_undo returns true if undo is possible, and false otherwise', ->
     b = Buffer {}
