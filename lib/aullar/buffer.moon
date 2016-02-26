@@ -447,6 +447,11 @@ Buffer = {
 
   clear_revisions: => @revisions\clear!
 
+  get_revision_id: (snapshot=false) =>
+    if snapshot and @revisions.last
+      @revisions.last.dont_merge = true
+    return @revisions.revision_id
+
   notify: (event, parameters) =>
     for listener in *@listeners
       callback = listener["on_#{event}"]

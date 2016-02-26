@@ -7,7 +7,7 @@ config = require 'aullar.config'
 {:max} = math
 
 coalesce = (entry, prev) ->
-  return false if not prev
+  return false if not prev or prev.dont_merge
   if entry.type == 'inserted' and prev.type == 'inserted'
     if entry.offset == prev.offset + #prev.text
       prev.text ..= entry.text
@@ -30,9 +30,11 @@ define_class {
   new: =>
     @clear!
     @processing = false
+    @_revision_id = 0
 
   properties: {
     last: => @entries[@current]
+    revision_id: => @last and @last.revision_id or 0
   }
 
   push: (type, offset, text, prev_text = nil, meta = {}) =>
@@ -47,6 +49,8 @@ define_class {
       return last if coalesce(entry, last)
 
     @current += 1
+    @_revision_id += 1
+    entry.revision_id = @_revision_id
     @entries[@current] = entry
 
     -- reset any outstanding forward revisions
