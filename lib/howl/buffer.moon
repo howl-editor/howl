@@ -284,9 +284,9 @@ class Buffer extends PropertyObject
     if marker then mode.by_name marker.name else @mode
 
   config_at: (pos) =>
-    new_config = config.local_proxy!
     mode_at = @mode_at pos
     return @config if mode_at == @mode
+    new_config = config.local_proxy!
     new_config.chain_to @mode_at(pos).config
     new_config
 
