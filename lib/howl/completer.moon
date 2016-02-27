@@ -45,7 +45,8 @@ class Completer
     @buffer = buffer
     @context = buffer\context_at pos
     @start_pos = @context.word.start_pos
-    @completers = load_completers buffer, @context, buffer.mode
+    @completers =
+      [buffer.mode]: load_completers buffer, @context, buffer.mode
 
   complete: (pos, limit = @buffer.config.completion_max_shown) =>
     context = @context.start_pos == pos and @context or @buffer\context_at pos
@@ -54,10 +55,9 @@ class Completer
     completions = {}
 
     mode = @buffer\mode_at pos
-    completers = if mode == @buffer.mode
-      @completers
-    else
-      load_completers @buffer, context, mode
+    if not @completers[mode]
+      @completers[mode] = load_completers @buffer, context, mode
+    completers = @completers[mode]
 
     for completer in *completers
       comps = completer\complete context
