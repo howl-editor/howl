@@ -25,13 +25,21 @@ howl.aux.lpeg_lexer ->
     'append', 'cap', 'close', 'complex', 'copy', 'delete', 'imag', 'len', 'make',
     'new', 'panic', 'print', 'println', 'real', 'recover'
   }
-  
+
   fdecl = sequence {
     c 'keyword', 'func'
-    ws^1
-    (span '(', ')' * ws^1) ^ -1
+    any {
+      sequence({
+        ws^0
+        c 'operator', '('
+        (P 1 + ws - P')')^0
+        c 'operator', ')'
+        ws^0
+      })
+      ws^1
+    }
     c 'fdecl', ident
-  }
+  } 
 
   operator = c 'operator', S'+-*/%&|^<>=!:;.,()[]{}'
 
@@ -56,7 +64,7 @@ howl.aux.lpeg_lexer ->
     span('`', '`', nil)
   }
 
-  constant = c 'constant', word { 'true', 'false', 'iota', 'nil' }
+  constant = c 'special', word { 'true', 'false', 'iota', 'nil' }
 
   P {
     'all'
