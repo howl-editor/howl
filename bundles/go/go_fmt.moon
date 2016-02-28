@@ -31,8 +31,6 @@ calculate_new_pos = (pos, before, after) ->
   new_pos-1
 
 fmt = (buffer) ->
-  return unless buffer.mode.name == 'go'
-
   before = buffer.text
   after = run_command before
   return if not after or after == before
