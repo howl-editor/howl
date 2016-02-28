@@ -16,8 +16,6 @@ install_gocode = ->
   editor.cursor\eof!
   buffer\pump!
   
-completions_enabled = true
-
 run_gocode = (context) ->
   cmd = { 'gocode', '-f=csv', 'autocomplete', context.pos-1 }
   status, out, err, process = pcall Process.execute, cmd, stdin: context.buffer.text
@@ -27,7 +25,7 @@ run_gocode = (context) ->
       install_gocode!
     else
       log.warn "gocode completions disabled"
-      completions_enabled = false
+      config.go_complete = false
     return nil
   
   unless process.successful
@@ -38,7 +36,7 @@ run_gocode = (context) ->
   
 class GoCompleter
   complete: (context) =>
-    return {} unless completions_enabled
+    return {} unless config.go_complete
 
     out = run_gocode context
     candidates = {}

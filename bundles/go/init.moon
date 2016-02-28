@@ -25,11 +25,18 @@ register_mode!
 register_commands!
 signal.connect 'buffer-saved', buffer_saved
 
-config.define
-  name: 'go_fmt_command'
-  description: 'Command to run for go-fmt'
-  default: 'gofmt -w'
-  scope: 'global'
+with config
+  .define
+    name: 'go_fmt_command'
+    description: 'Command to run for go-fmt'
+    default: 'gofmt -w'
+    scope: 'global'
+
+  .define
+    name: 'go_complete'
+    description: 'Whether to use go completions in go mode'
+    default: true
+    type_of: 'boolean'
 
 unload = ->
   mode.unregister 'go'
