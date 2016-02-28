@@ -26,19 +26,11 @@ howl.aux.lpeg_lexer ->
     'new', 'panic', 'print', 'println', 'real', 'recover'
   }
   
-  fdecl = any {
-    sequence {
-      c 'keyword', 'func'
-      ws^1
-      c 'fdecl', ident
-    }
-    sequence {
-      c 'keyword', 'func'
-      ws^1
-      span '(', ')'
-      ws^1
-      c 'fdecl', ident      
-    }
+  fdecl = sequence {
+    c 'keyword', 'func'
+    ws^1
+    (span '(', ')' * ws^1) ^ -1
+    c 'fdecl', ident
   }
 
   operator = c 'operator', S'+-*/%&|^<>=!:;.,()[]{}'
