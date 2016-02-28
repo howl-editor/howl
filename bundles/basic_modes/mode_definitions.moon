@@ -159,13 +159,6 @@ common_auto_pairs = {
       '"': '"'
     }
 
-  go:
-    extensions: 'go'
-    aliases: 'golang'
-    comment_syntax: '//'
-    auto_pairs: common_auto_pairs
-    parent: 'curly_mode'
-
   groovy:
     extensions: { 'groovy', 'gvy' }
     comment_syntax: '//'
