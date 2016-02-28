@@ -18,18 +18,14 @@ register_commands = ->
     handler: ->
       fmt app.editor.buffer
       
-buffer_saved = (args) ->
-  fmt args.buffer
-  
 register_mode!
 register_commands!
-signal.connect 'buffer-saved', buffer_saved
 
 with config
   .define
     name: 'go_fmt_command'
     description: 'Command to run for go-fmt'
-    default: 'gofmt -w'
+    default: 'gofmt'
     scope: 'global'
 
   .define
@@ -41,7 +37,6 @@ with config
 unload = ->
   mode.unregister 'go'
   command.unregister 'go-fmt'
-  signal.disconnect 'buffer-saved', buffer_saved
 
 return {
   info:

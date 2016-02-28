@@ -181,6 +181,7 @@ class Buffer extends PropertyObject
 
   save: =>
     if @file
+      @_mode.before_save @ if @_mode.before_save
       if @config.strip_trailing_whitespace
         ws = '[\t ]'
         @replace "(#{ws}+)#{@eol}", ''

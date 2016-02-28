@@ -3,24 +3,20 @@ import Process from howl.io
 
 append = table.insert
 
-run_command = (file) ->
+run_command = (contents) ->
   args = {}
   for arg in config.go_fmt_command\gmatch '%S+'
     append args, arg
-  append args, file
-  success, out, err, p = pcall Process.execute, args
+  args.stdin = contents
+  success, out, err, p = pcall Process.execute, args, stdin: contents
   unless success
     log.error out
-    return
+    return nil
   unless p.successful
     log.error err
-    return
+    return nil
+  out
 
-reload_buffer = (buffer) ->
-  buffer.text = buffer.file.contents
-  buffer.sync_etag = buffer.file.etag
-  buffer.modified = false
-  
 calculate_new_pos = (pos, before, after) ->
   new_pos = 1
   i = 1
@@ -37,21 +33,21 @@ calculate_new_pos = (pos, before, after) ->
 fmt = (buffer) ->
   return unless buffer.mode.name == 'go'
 
-  file = buffer.file
-  before = file.contents
-  run_command file
+  before = buffer.text
+  after = run_command before
+  return if not after or after == before
 
   editor = app\editor_for_buffer buffer
   if editor
     -- reload the contents, adjusting position
     pos = editor.cursor.pos
     top_line = editor.line_at_top
-    reload_buffer buffer
+    buffer.text = after
     
-    editor.cursor.pos = calculate_new_pos pos, before, file.contents
+    editor.cursor.pos = calculate_new_pos pos, before, after
     editor.line_at_top = top_line
   else
-    reload_buffer buffer
+    buffer.text = after
 
 {
   :fmt
