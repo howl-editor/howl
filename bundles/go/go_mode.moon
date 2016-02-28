@@ -1,6 +1,8 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+bundle_load 'go_completer'
+
 {
   auto_pairs: {
     '(': ')'
@@ -13,6 +15,8 @@
 
   comment_syntax: '//'
 
+  completers: { 'in_buffer', 'go_completer' }
+  
   lexer: bundle_load('go_lexer')
 
   structure: (editor) =>
