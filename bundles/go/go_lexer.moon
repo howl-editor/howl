@@ -60,7 +60,6 @@ howl.aux.lpeg_lexer ->
   }
 
   string = c 'string', any {
-    span("'", "'", '\\')
     span('"', '"', '\\')
     span('`', '`', nil)
   }
