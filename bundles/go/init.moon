@@ -28,6 +28,12 @@ register_commands!
 
 with config
   .define
+    name: 'go_fmt_on_save'
+    description: 'Whether to run gofmt when go files are saved'
+    default: true
+    type_of: 'boolean'
+
+  .define
     name: 'go_fmt_command'
     description: 'Command to run for go-fmt'
     default: 'gofmt'
