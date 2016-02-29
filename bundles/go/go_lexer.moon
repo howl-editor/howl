@@ -32,14 +32,20 @@ howl.aux.lpeg_lexer ->
       sequence({
         ws^0
         c 'operator', '('
-        (P 1 + ws - P')')^0
+        ((V'all' + P 1 + ws) - P')')^0
         c 'operator', ')'
         ws^0
       })
       ws^1
     }
     c 'fdecl', ident
-  } 
+  }
+  
+  type_def = sequence {
+    c 'keyword', 'type'
+    ws^1
+    c 'type_def', ident
+  }
 
   operator = c 'operator', S'+-*/%&|^<>=!:;.,()[]{}'
 
@@ -73,6 +79,7 @@ howl.aux.lpeg_lexer ->
       comment,
       string,
       fdecl,
+      type_def,
       type,
       keyword,
       builtin,
