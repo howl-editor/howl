@@ -1,5 +1,7 @@
 import app, command, config, mode, signal from howl
 
+{:fmt} = bundle_load 'go_fmt'
+
 register_mode = ->
   mode_reg =
     name: 'go'
@@ -33,7 +35,7 @@ with config
 
   .define
     name: 'go_complete'
-    description: 'Whether to use go completions in go mode'
+    description: 'Whether to use gocode completions in go mode'
     default: true
     type_of: 'boolean'
 

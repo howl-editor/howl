@@ -31,8 +31,10 @@ calculate_new_pos = (pos, before, after) ->
   new_pos-1
 
 fmt = (buffer) ->
+  log.info "Running #{config.go_fmt_command}..."
   before = buffer.text
   after = run_command before
+  log.info "#{config.go_fmt_command} completed"
   return if not after or after == before
 
   editor = app\editor_for_buffer buffer
