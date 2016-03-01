@@ -711,9 +711,11 @@ class Editor extends PropertyObject
           return cur_char, pos, k, false
 
     pos = cursor.pos
-    cur_char, start_pos, matching, forward = get_brace_pos buffer, pos, auto_pairs
-    if not matching and pos > 1
+    local cur_char, start_pos, matching, forward
+    if pos > 1
       cur_char, start_pos, matching, forward = get_brace_pos buffer, pos - 1, auto_pairs
+    unless matching
+      cur_char, start_pos, matching, forward = get_brace_pos buffer, pos, auto_pairs
 
     return if not matching or cur_char == matching
 
@@ -731,6 +733,12 @@ class Editor extends PropertyObject
         flair: 'brace_highlight',
         start_offset: match_pos,
         end_offset: match_pos + 1
+      }}
+      buffer.markers\add {{
+        name: 'brace_highlight',
+        flair: 'brace_highlight',
+        start_offset: start_pos,
+        end_offset: start_pos + 1
       }}
       @_brace_highlighted = true
 
