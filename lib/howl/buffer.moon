@@ -25,7 +25,6 @@ class Buffer extends PropertyObject
     @mode = mode
     @properties = {}
     @data = {}
-    @read_only = false
     @_eol = '\n'
     @viewers = 0
     @_modified = false
@@ -120,6 +119,10 @@ class Buffer extends PropertyObject
   @property modified_on_disk: get: =>
     return false if not @file or not @file.exists
     @file and @file.etag != @sync_etag
+
+  @property read_only:
+    get: => @_buffer.read_only
+    set: (v) => @_buffer.read_only = v
 
   chunk: (start_pos, end_pos) => Chunk self, start_pos, end_pos
 

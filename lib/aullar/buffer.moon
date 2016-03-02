@@ -90,6 +90,7 @@ Buffer = {
     @_collect_revisions = false
     @text = text
     @_collect_revisions = true
+    @read_only = false
 
   properties: {
     size: => tonumber @text_buffer.size
@@ -123,6 +124,7 @@ Buffer = {
     text: {
       get: => @tostring!
       set: (text) =>
+        @_ensure_writable!
         old_text = @text_buffer and @tostring!
         size = #text
         -- +1 on styling size to account for dangling virtual line
@@ -155,6 +157,7 @@ Buffer = {
     @listeners = [l for l in *@listeners when l != listener]
 
   insert: (offset, text, size = #text) =>
+    @_ensure_writable!
     return if size == 0
     error "insert: Illegal offset '#{offset}'", 2 if offset < 1 or offset > @size + 1
 
@@ -174,6 +177,7 @@ Buffer = {
     @_on_modification 'inserted', offset, text, nil, size, invalidate_offset
 
   delete: (offset, count) =>
+    @_ensure_writable!
     return if count == 0 or offset > @size
     error "delete: Illegal offset '#{offset}'", 2 if offset < 1
 
@@ -192,11 +196,13 @@ Buffer = {
     @_on_modification 'deleted', offset, text, nil, count, invalidate_offset
 
   replace: (offset, count, replacement, replacement_size = #replacement) =>
+    @_ensure_writable!
     @change offset, count, ->
       @delete offset, count
       @insert offset, replacement, replacement_size
 
   change: (offset, count, changer) =>
+    @_ensure_writable!
     if @_change_sink
       if @_change_sink\can_reenter offset, count
         changer @
@@ -429,10 +435,12 @@ Buffer = {
     @offsets\byte_offset(@text_buffer, char_offset - 1) + 1
 
   undo: =>
+    @_ensure_writable!
     revision = @revisions\pop @
     @notify('undo', revision) if revision
 
   redo: =>
+    @_ensure_writable!
     revision = @revisions\forward @
     @notify('redo', revision) if revision
 
@@ -615,6 +623,10 @@ Buffer = {
       return
 
     @notify('markers_changed', :start_offset, :end_offset)
+
+  _ensure_writable: =>
+    if @read_only
+      error "Attempt to modify read-only buffer", 2
 
 }
 

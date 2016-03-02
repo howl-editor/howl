@@ -30,6 +30,11 @@ describe 'Buffer', ->
       b\undo!
       assert.equals 'hello', b.text
 
+    it 'errors out when setting for a read-only buffer', ->
+      b = Buffer '1234567'
+      b.read_only = true
+      assert.raises 'read%-only', -> b.text = 'NO'
+
   describe '.multibyte', ->
     it 'returns true if the buffer contains multibyte characters', ->
       assert.is_false Buffer('vanilla').multibyte
@@ -390,6 +395,11 @@ describe 'Buffer', ->
       b\insert 5, 'XX'
       assert.same { 1, 'keyword', 5, 7, 'keyword', 10 }, b.styling\get(1, 9)
 
+    it 'errors out for a read-only buffer', ->
+      b = Buffer '1234567'
+      b.read_only = true
+      assert.raises 'read%-only', -> b\insert 2, 'xx'
+
   describe 'delete(offset, count)', ->
     it 'deletes <count> bytes from <offset>', ->
       b = Buffer 'goodbye world'
@@ -418,6 +428,11 @@ describe 'Buffer', ->
       b.styling\set 5, 7, 'string'
       b\delete 3, 3
       assert.same { 1, 'keyword', 3, 3, 'string', 5 }, b.styling\get(1, 4)
+
+    it 'errors out for a read-only buffer', ->
+      b = Buffer '1234567'
+      b.read_only = true
+      assert.raises 'read%-only', -> b\delete 2, 1
 
   describe 'replace(offset, count, replacement, replacement_size)', ->
     it 'replaces the specified number of characters with the replacement', ->
@@ -497,6 +512,12 @@ describe 'Buffer', ->
       b\undo!
       assert.equal 'hello', b.text
       assert.same {true, true}, flags
+
+    it 'errors out for a read-only buffer', ->
+      b = Buffer '1234567'
+      b\insert 2, 'foo'
+      b.read_only = true
+      assert.raises 'read%-only', -> b\undo!
 
   describe 'change(offset, count, f)', ->
     local b, notified, notified_styled, notified_markers
