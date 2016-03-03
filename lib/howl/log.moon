@@ -19,6 +19,8 @@ setfenv 1, log
 essentials_of = (s) ->
   first_line = s\match '[^\n\r]*'
   essentials = first_line\match '^%[[^]]+%]:%d+: (.+)'
+  unless essentials
+    essentials = first_line\match ':%d+: (.-)[\'"]?$'
   essentials or first_line
 
 dispatch = (level, message) ->

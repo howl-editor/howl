@@ -309,8 +309,6 @@ View = {
     @_updating_scrolling = false
 
   insert: (text) =>
-    return unless @_begin_modification!
-
     if @selection.is_empty
       @_buffer\insert @cursor.pos, text
     else
@@ -321,8 +319,6 @@ View = {
     nil
 
   delete_back: =>
-    return unless @_begin_modification!
-
     if @selection.is_empty
       cur_pos = @cursor.pos
       @cursor\backward!
@@ -486,13 +482,6 @@ View = {
       height += d_line.height
 
     width, height
-
-  _begin_modification: =>
-    if @buffer.read_only
-      notify @, 'on_read_only_mod_attempt'
-      return false
-
-    true
 
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width

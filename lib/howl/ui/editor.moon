@@ -82,7 +82,6 @@ class Editor extends PropertyObject
       on_preedit_change: (_, args) ->
         log.info "Pre-edit: #{args.str} (Enter to submit, escape to cancel)"
       on_preedit_end: -> log.info "Pre-edit mode finished"
-      on_read_only_mod_attempt: -> log.warn "Attempt to modify read-only buffer"
 
     @view.listener = listener
     @view.cursor.listener = {

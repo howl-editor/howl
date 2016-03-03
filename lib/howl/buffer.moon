@@ -73,7 +73,6 @@ class Buffer extends PropertyObject
   @property text:
     get: => @_buffer.text
     set: (text) =>
-      @_ensure_writable!
       @_buffer.text = text
 
   @property modified:
@@ -129,19 +128,16 @@ class Buffer extends PropertyObject
   context_at: (pos) => BufferContext self, pos
 
   delete: (start_pos, end_pos) =>
-    @_ensure_writable!
     return if start_pos > end_pos
     b_start, b_end = @byte_offset(start_pos), @byte_offset(end_pos + 1)
     @_buffer\delete b_start, b_end - b_start
 
   insert: (text, pos) =>
-    @_ensure_writable!
     b_pos = @byte_offset pos
     @_buffer\insert b_pos, text
     pos + text.ulen
 
   append: (text) =>
-    @_ensure_writable!
     @_buffer\insert @_buffer.size + 1, text
     @length + 1
 
@@ -283,10 +279,6 @@ class Buffer extends PropertyObject
 
   remove_view_ref: (view) =>
     @viewers -= 1
-
-  _ensure_writable: =>
-    if @read_only
-      error "Attempt to modify read-only buffer '#{@title}'", 2
 
   _associate_with_file: (file) =>
     @_file = file

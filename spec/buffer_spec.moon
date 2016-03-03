@@ -38,7 +38,7 @@ describe 'Buffer', ->
     b.read_only = true
     assert.equal true, b.read_only
     assert.raises 'read%-only', -> b\append 'illegal'
-    assert.raises 'read%-only', -> b\insert 1, 'illegal'
+    assert.raises 'read%-only', -> b\insert 'illegal', 1
     assert.raises 'read%-only', -> b.text = 'illegal'
     assert.equal 'kept', b.text
     b.read_only = false
