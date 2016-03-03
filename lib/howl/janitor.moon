@@ -75,6 +75,8 @@ run = ->
   if window and #window.command_line.running == 0
     clean_up_buffers!
 
+    howl.app\save_session!
+
   release_memory!
 
 start = ->
