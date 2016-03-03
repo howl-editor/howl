@@ -408,7 +408,7 @@ Cursor = {
     @view.buffer\get_line nr
 
   _enable_blink: =>
-    return if @_blink_cb_handle
+    return if @_blink_cb_handle or @_blink_interval == 0
     jit.off true, true
 
     @_blink_cb_handle = callbacks.register self\_blink, "cursor-blink"
