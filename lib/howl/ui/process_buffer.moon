@@ -79,21 +79,11 @@ class ProcessBuffer extends ActionBuffer
     @title = "$ #{@process.command_line} (running)"
     @mode = mode.by_name 'process'
 
-    @append '[', 'operator'
-    @append tostring(@process.working_directory.short_path), 'special'
-    @append ']$', 'operator'
-    @append " #{@process.command_line}\n"
-
-  insert: (object, pos, style_name) =>
     @modify ->
-      super object, pos, style_name
-
-  append: (object, style_name) =>
-    @modify ->
-      editor = app\editor_for_buffer @
-      at_end_of_file = editor and editor.cursor.at_end_of_file
-      super object, style_name
-      editor.cursor\eof! if at_end_of_file
+      @append '[', 'operator'
+      @append tostring(@process.working_directory.short_path), 'special'
+      @append ']$', 'operator'
+      @append " #{@process.command_line}\n"
 
   modify: (f) =>
     @read_only = false
@@ -109,17 +99,18 @@ class ProcessBuffer extends ActionBuffer
           len = @length
           @modify ->  @delete len - (delete_back - 1), len
 
-        @append output
+        @_append output
 
     on_stderr = (read) ->
-      @append(read, 'error') if read and not @destroyed
+      @_append(read, 'error') if read and not @destroyed
 
     @process\pump on_stdout, on_stderr
     @title = "$ #{@process.command_line} (done)"
 
     unless @destroyed
-      @append '\n' unless @lines[#@lines].is_blank
-      @append "=> Process terminated (#{@process.exit_status_string})", 'comment'
+      @modify ->
+        @append '\n' unless @lines[#@lines].is_blank
+        @append "=> Process terminated (#{@process.exit_status_string})", 'comment'
 
     editor = app\editor_for_buffer @
     editor.indicator.activity.visible = false if editor
@@ -133,6 +124,13 @@ class ProcessBuffer extends ActionBuffer
   destroy: =>
     @process\send_signal('KILL') unless @process.exited
     super!
+
+  _append: (object, style_name) =>
+    @modify ->
+      editor = app\editor_for_buffer @
+      at_end_of_file = editor and editor.cursor.at_end_of_file
+      @append object, style_name
+      editor.cursor\eof! if at_end_of_file
 
 howl.mode.register {
   name: 'process'

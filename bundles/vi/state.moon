@@ -1,5 +1,5 @@
 import bindings from howl
-import getmetatable, setfenv, pairs, callable, print, tostring, pcall from _G
+import getmetatable, setfenv, pairs, callable, print, tostring, pcall, error from _G
 
 _G = _G
 _ENV = {}
