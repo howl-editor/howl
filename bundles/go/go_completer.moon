@@ -8,30 +8,26 @@ import Matcher from howl.util
 append = table.insert
 
 install_gocode = ->
-  p = Process {
-    cmd: { 'go', 'get', '-u', '-v', 'github.com/nsf/gocode' },
-    read_stdout: true,
-    read_stderr: true,
-  }
-
-  buffer = ProcessBuffer p
-  editor = app\add_buffer buffer
-  editor.cursor\eof!
-  buffer\pump!
+  howl.command.exec nil, 'go get -u -v github.com/nsf/gocode'
   
 run_gocode = (context) ->
-  cmd = { 'gocode', '-f=csv', 'autocomplete', context.pos-1 }
-  status, out, err, process = pcall Process.execute, cmd, stdin: context.buffer.text
-  unless status
-    error out unless out\match 'No such file'
+  gopath = howl.sys.env['GOPATH']
+  if not gopath
+    log.error 'GOPATH needs to be set to use gocode completions. See "go help gopath" for more information.'
+    config.go_complete = false
+    return nil
+  exe = howl.io.File(gopath) / "bin"/ "gocode"
+  unless exe.exists
     if interact.yes_or_no prompt: 'gocode not found for completions. Would you like to run "go get github.com/nsf/gocode" to install it?'
       install_gocode!
     else
       log.warn "gocode completions disabled"
       config.go_complete = false
-    return nil
-  
-  unless process.successful
+      return nil
+    
+  cmd = { exe.path, '-f=csv', 'autocomplete', context.pos-1 }
+  status, out, err, process = pcall Process.execute, cmd, stdin: context.buffer.text
+  unless status and process.successful
     log.error "gocode failed to execute: #{err}"
     return nil
     
@@ -48,6 +44,7 @@ class GoCompleter
         sym, name, type = line\match '(%w*),,(%w*),,([^,]*)'
         append candidates, name
       candidates.authoritive = true
+      table.sort candidates
     candidates
 
 howl.completion.register name: 'go_completer', factory: GoCompleter

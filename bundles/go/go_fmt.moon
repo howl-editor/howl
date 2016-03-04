@@ -21,6 +21,7 @@ run_command = (contents) ->
   out
 
 calculate_new_pos = (pos, before, after) ->
+  -- adjust for whitespace changes made by go fmt
   new_pos = 1
   i = 1
   while i <= pos and new_pos <= #after
@@ -36,7 +37,9 @@ calculate_new_pos = (pos, before, after) ->
 fmt = (buffer) ->
   log.info "Running #{config.go_fmt_command}..."
   before = buffer.text
+  buffer.read_only = true
   after = run_command before
+  buffer.read_only = false
   log.info "#{config.go_fmt_command} completed"
   return if not after or after == before
 
