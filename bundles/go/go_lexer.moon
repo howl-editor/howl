@@ -18,7 +18,7 @@ howl.aux.lpeg_lexer ->
   type = c 'type', word {
     'bool', 'byte', 'complex64', 'complex128', 'float32', 'float64', 'int8',
     'int16', 'int32', 'int64', 'rune', 'string', 'uint8', 'uint16', 'uint32', 'uint64',
-    'complex', 'float', 'int', 'uint', 'uintptr'
+    'complex', 'int', 'uint', 'uintptr'
   }
   
   builtin = c 'function', word {
