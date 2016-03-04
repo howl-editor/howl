@@ -3,9 +3,18 @@
 
 import app, interact, Project from howl
 import File from howl.io
+import icon, markup from howl.ui
 import Matcher from howl.util
 
 append = table.insert
+
+icon.define_default 'buffer', 'font-awesome-square'
+icon.define_default 'buffer-modified', 'font-awesome-pencil-square-o'
+icon.define_default 'buffer-modified-on-disk', 'font-awesome-clone'
+icon.define_default 'process-success', 'font-awesome-check-circle'
+icon.define_default 'process-running', 'font-awesome-play-circle'
+icon.define_default 'process-failure', 'font-awesome-exclamation-circle'
+
 
 buffer_dir = (buffer) ->
   if buffer.file
@@ -14,11 +23,22 @@ buffer_dir = (buffer) ->
     return buffer.directory.short_path
   return '(none)'
 
-buffer_status = (buffer) ->
-  stat = if buffer.modified then '*' else ''
-  stat ..= '[modified on disk]' if buffer.modified_on_disk
-  stat
+buffer_status_icon = (buffer) ->
+  local name
+  if typeof(buffer) == 'ProcessBuffer'
+    if buffer.process.exited
+      name = buffer.process.successful and 'process-success' or 'process-failure'
+    else
+      name = 'process-running'
+  else
+    if buffer.modified_on_disk
+      name = 'buffer-modified-on-disk'
+    elseif buffer.modified
+      name = 'buffer-modified'
+    else
+      name = 'buffer'
 
+  return icon.get(name, 'operator')
 
 make_title = (buffer, opts={}) ->
   file = buffer.file
@@ -67,7 +87,7 @@ get_buffer_list = ->
     for i=1,#buffers
       enhanced_titles[buffers[i]] = titles[i]
 
-  return [{enhanced_titles[buffer] or buffer.title, buffer_status(buffer), buffer_dir(buffer), :buffer} for buffer in *app.buffers]
+  return [{buffer_status_icon(buffer), enhanced_titles[buffer] or buffer.title, buffer_dir(buffer), :buffer} for buffer in *app.buffers]
 
 buffer_matcher = (text) ->
   matcher = Matcher get_buffer_list!
@@ -82,8 +102,8 @@ interact.register
       .title or= 'Buffers'
       .matcher = buffer_matcher
       .columns = {
+        {},
         {style: 'string'}
-        {style: 'operator'}
         {style: 'comment'}
       }
       .keymap = {
