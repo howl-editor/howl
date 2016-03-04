@@ -19,6 +19,11 @@ bundle_load 'go_completer'
 
   completers: { 'in_buffer', 'go_completer' }
   
+  default_config:
+    use_tabs: true
+    tab_width: 4
+    indent: 4
+  
   lexer: bundle_load('go_lexer')
 
   structure: (editor) =>
