@@ -1,3 +1,6 @@
+-- Copyright 2016 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 import app, command, config, mode, signal from howl
 
 {:fmt} = bundle_load 'go_fmt'

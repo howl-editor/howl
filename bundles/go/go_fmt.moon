@@ -1,3 +1,6 @@
+-- Copyright 2016 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 import app, config, mode, signal from howl
 import Process from howl.io
 
