@@ -753,10 +753,3 @@ describe 'Editor', ->
       assert.is_nil editors[1]
       assert.is_nil buffers[1]
       assert.is_nil buffers[2]
-
-    it 'memory usage is stable', ->
-      pinned = Editor Buffer!
-
-      assert_memory_stays_within '80Kb', 50, ->
-        e = Editor Buffer!
-        e\to_gobject!\destroy!
