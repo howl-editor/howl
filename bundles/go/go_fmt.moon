@@ -23,14 +23,19 @@ run_command = (contents) ->
 calculate_new_pos = (pos, before, after) ->
   -- adjust for whitespace changes made by go fmt
   new_pos = 1
-  i = 1
-  while i <= pos and new_pos <= #after
-    if before[i] == after[new_pos]
-      i += 1
+  biter = before\sub(1, pos)\gmatch '.'
+  aiter = after\gmatch '.'
+  bch = biter()
+  ach = aiter()
+  while bch and ach
+    if bch == ach
+      bch = biter()
+      ach = aiter()
       new_pos += 1
-    elseif before[i]\match '%s'
-      i += 1
+    elseif bch\match '%s'
+      bch = biter()
     else
+      ach = aiter()
       new_pos += 1
   new_pos-1
 
