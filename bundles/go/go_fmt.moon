@@ -12,13 +12,10 @@ run_command = (contents) ->
     append args, arg
   args.stdin = contents
   success, out, err, p = pcall Process.execute, args, stdin: contents
-  unless success
-    log.error out
-    return nil
-  unless p.successful
-    log.error err
-    return nil
-  out
+  if success and p.successful
+    return true, out
+  
+  return false, err or out
 
 calculate_new_pos = (pos, before, after) ->
   -- adjust for whitespace changes made by go fmt
@@ -43,22 +40,25 @@ fmt = (buffer) ->
   log.info "Running #{config.go_fmt_command}..."
   before = buffer.text
   buffer.read_only = true
-  after = run_command before
+  success, result = run_command before
   buffer.read_only = false
+  unless success
+    log.error "#{config.go_fmt_command} error: #{result}"
+    return
   log.info "#{config.go_fmt_command} completed"
-  return if not after or after == before
+  return if result == before
 
   editor = app\editor_for_buffer buffer
   if editor
     -- reload the contents, adjusting position
     pos = editor.cursor.pos
     top_line = editor.line_at_top
-    buffer.text = after
+    buffer.text = result
     
-    editor.cursor.pos = calculate_new_pos pos, before, after
+    editor.cursor.pos = calculate_new_pos pos, before, result
     editor.line_at_top = top_line
   else
-    buffer.text = after
+    buffer.text = result
 
 {
   :fmt
