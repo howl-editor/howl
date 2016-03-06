@@ -12,7 +12,7 @@ run_command = (contents) ->
     append args, arg
   args.stdin = contents
   success, out, err, p = pcall Process.execute, args, stdin: contents
-  if success and p.successful
+  if success and p.successful and err == ""
     return true, out
   
   return false, err or out
