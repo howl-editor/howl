@@ -534,6 +534,39 @@ describe 'Buffer', ->
       assert.is_nil b\rfind('a', -6)
       assert.is_nil b\rfind('a', 6)
 
+  describe 'mode_at(pos)', ->
+    it 'returns the mode at the given offset', ->
+      b = buffer 'abc def ghi jkl'
+      b.mode = { comment_syntax: '//' }
+      mode_at_test = { comment_syntax: '#' }
+      mode_reg = name: 'mode_at_test', create: -> mode_at_test
+      howl.mode.register mode_reg
+
+      b._buffer\style 1, {
+        1, 's1', 3,
+        5, { 1, 's3', 3 }, 'mode_at_test|s2',
+        9, { 1, 's3', 3 }, 'nonexistent_mode|s2',
+        13, 's1', 15,
+      }
+
+      assert.same '//', b\mode_at(1).comment_syntax
+      assert.same '//', b\mode_at(2).comment_syntax
+      assert.same '//', b\mode_at(3).comment_syntax
+      assert.same '//', b\mode_at(4).comment_syntax
+      assert.same '#', b\mode_at(5).comment_syntax
+      assert.same '#', b\mode_at(6).comment_syntax
+      assert.same '#', b\mode_at(7).comment_syntax
+      assert.same '//', b\mode_at(8).comment_syntax
+      assert.same '//', b\mode_at(9).comment_syntax
+      assert.same '//', b\mode_at(10).comment_syntax
+      assert.same '//', b\mode_at(11).comment_syntax
+      assert.same '//', b\mode_at(12).comment_syntax
+      assert.same '//', b\mode_at(13).comment_syntax
+      assert.same '//', b\mode_at(14).comment_syntax
+      assert.same '//', b\mode_at(15).comment_syntax
+
+      howl.mode.unregister 'mode_at_test'
+
   describe 'reload(force = false)', ->
     it 'reloads the buffer contents from file and returns true', ->
       with_tmpfile (file) ->
