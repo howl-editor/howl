@@ -323,31 +323,14 @@ describe 'Styling', ->
             1, 'operator', 2,
             2, {
               1, 'string', 4
-            }, 'my_sub2|s2'
-          }, 'my_sub1|s1'
+            }, 'my_sub|s2'
+          }, 'my_sub|s1'
         }
 
         assert.same {
           1, 's1:operator', 2,
           2, 's2:string', 5,
         }, styling\get(1, 5)
-
-
-        marker1 =
-          name: 'my_sub1'
-          start_offset: 1
-          end_offset: 6
-
-        marker2 =
-          name: 'my_sub2'
-          start_offset: 2
-          end_offset: 6
-
-        assert.same marker1, styling\get_nearest_style_marker 1
-        assert.same marker2, styling\get_nearest_style_marker 2
-        assert.same marker2, styling\get_nearest_style_marker 3
-        assert.same marker2, styling\get_nearest_style_marker 4
-        assert.same marker2, styling\get_nearest_style_marker 5
 
       it 'handles empty nested sub style elements', ->
         styling\apply 1, {
@@ -363,6 +346,49 @@ describe 'Styling', ->
           1, 's1', 2,
           2, 's1:s3', 3,
         }, styling\get(1, 6)
+
+  describe 'get_nearest_style_marker(pos)', ->
+    it 'generally works', ->
+      styling\apply 1, {
+        1, 'operator', 2,
+        2, { 1, 's2', 2, 2, 's3', 3 }, 'my_sub|s1'
+      }
+
+      assert.same nil, styling\get_nearest_style_marker 1
+      marker =
+        name: 'my_sub'
+        start_offset: 2
+        end_offset: 5
+      assert.same marker, styling\get_nearest_style_marker 2
+      assert.same marker, styling\get_nearest_style_marker 3
+      assert.same marker, styling\get_nearest_style_marker 4
+      assert.same nil, styling\get_nearest_style_marker 5
+
+    it 'works with nested sub modes', ->
+      styling\apply 1, {
+        1, {
+          1, 'operator', 2,
+          2, {
+            1, 'string', 4
+          }, 'my_sub2|s2'
+        }, 'my_sub1|s1'
+      }
+
+      marker1 =
+        name: 'my_sub1'
+        start_offset: 1
+        end_offset: 6
+
+      marker2 =
+        name: 'my_sub2'
+        start_offset: 2
+        end_offset: 6
+
+      assert.same marker1, styling\get_nearest_style_marker 1
+      assert.same marker2, styling\get_nearest_style_marker 2
+      assert.same marker2, styling\get_nearest_style_marker 3
+      assert.same marker2, styling\get_nearest_style_marker 4
+      assert.same marker2, styling\get_nearest_style_marker 5
 
   describe '(run-through)', ->
     it 'generally works', ->
