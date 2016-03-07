@@ -256,11 +256,6 @@ common_auto_pairs = {
     auto_pairs: common_auto_pairs
     parent: 'curly_mode'
 
-  pascal:
-    extensions: { 'dpk', 'dpr', 'p', 'pas' }
-    comment_syntax: '//'
-    auto_pairs: common_auto_pairs
-
   perl:
     extensions: { 'al', 'perl', 'pl', 'pm', 'pod' }
     shebangs: '[/ ]perl.*$'
