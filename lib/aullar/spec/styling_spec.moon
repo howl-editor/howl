@@ -253,24 +253,6 @@ describe 'Styling', ->
           6, 's1:s2', 7
         }, styling\get(1, 7)
 
-        assert.same nil, styling\get_nearest_style_marker 1
-        marker =
-          name: 'my_sub'
-          start_offset: 2
-          end_offset: 5
-        assert.same marker, styling\get_nearest_style_marker 2
-        assert.same marker, styling\get_nearest_style_marker 3
-        assert.same marker, styling\get_nearest_style_marker 4
-        assert.same nil, styling\get_nearest_style_marker 5
-
-        marker =
-          name: 'my_sub'
-          start_offset: 6
-          end_offset: 8
-        assert.same marker, styling\get_nearest_style_marker 6
-        assert.same marker, styling\get_nearest_style_marker 7
-        assert.same nil, styling\get_nearest_style_marker 8
-
       it 'styles any holes with the base style', ->
         styling\apply 1, {
           1, { 2, 's3', 3, 7, 's4', 8 }, 'my_sub|s1'
