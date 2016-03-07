@@ -59,9 +59,10 @@ get_buffer_list = ->
     continue if #buffers == 1
 
     options_list = {
+      { project: true }
       { project: false, parents: 1 }
-      { project: false, parents: 2 }
       { project: true, parents: 1 }
+      { project: false, parents: 2 }
       { project: true, parents: 2 }
     }
 
