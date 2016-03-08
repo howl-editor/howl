@@ -1,4 +1,4 @@
-# Nim bundle
+# Pascal bundle
 
 ## What is it?
 
