@@ -35,6 +35,82 @@ howl.aux.lpeg_lexer ->
 
   special = c 'special', pascal_word { 'true', 'false', 'dispose', 'exit', 'new' }
 
+  functions = c 'function', pascal_word {
+    'AbstractError', 'AcquireExceptionObject', 'AddExitProc', 'Addr', 'Align',
+    'AllocMem', 'AnsiToUtf8', 'Append', 'ArrayStringToPPchar', 'Assert',
+    'Assigned', 'Assign', 'BEtoN', 'BasicEventCreate', 'BeginThread', 'BlockRead',
+    'BlockWrite', 'Break', 'BsfByte', 'BsfDWord', 'BsfQWord', 'BsfWord', 'BsrByte',
+    'BsrDWord', 'BsrQWord', 'BsrWord', 'CaptureBacktrace', 'CloseThread', 'Close',
+    'CompareByte', 'CompareChar0', 'CompareChar', 'CompareDWord', 'CompareWord',
+    'Concat', 'Continue', 'CopyArray', 'Copy', 'Cseg', 'Dec',
+    'DefaultAnsi2UnicodeMove', 'DefaultAnsi2WideMove', 'DefaultUnicode2AnsiMove',
+    'Default', 'Delete', 'Dispose', 'DoneCriticalsection', 'DoneThread', 'Dseg',
+    'DumpExceptionBackTrace', 'Dump_Stack', 'DynArrayBounds', 'DynArrayClear',
+    'DynArrayDim', 'DynArrayIndex', 'DynArraySetLength', 'DynArraySize', 'EOF',
+    'EOLn', 'EmptyMethod', 'EndThread', 'EnterCriticalsection',
+    'EnumResourceLanguages', 'EnumResourceNames', 'EnumResourceTypes', 'Erase',
+    'Error', 'Exclude', 'Exit', 'FMADouble', 'FMAExtended', 'FMASingle',
+    'FPower10', 'Fail', 'FilePos', 'FileSize', 'FillByte', 'FillChar', 'FillDWord',
+    'FillQWord', 'FillWord', 'FinalizeArray', 'Finalize', 'FindResourceEx',
+    'FindResource', 'FlushThread', 'Flush', 'FreeMem', 'FreeResource',
+    'Freememory', 'Freemem', 'GetCPUCount', 'GetCurrentThreadId',
+    'GetFPCHeapStatus', 'GetHeapStatus', 'GetMemory', 'GetMemoryManager', 'GetMem',
+    'GetProcessID', 'GetResourceManager', 'GetTextCodePage', 'GetThreadID',
+    'GetThreadManager', 'GetUnicodeStringManager', 'GetVariantManager',
+    'GetWideStringManager', 'Get_pc_addr', 'HINSTANCE', 'High', 'IOResult',
+    'Include', 'Inc', 'IndexByte', 'IndexChar0', 'IndexChar', 'IndexDWord',
+    'IndexQWord', 'Indexword', 'InitCriticalSection', 'InitThreadVars',
+    'InitThread', 'InitializeArray', 'Initialize', 'Insert',
+    'InterLockedDecrement', 'InterLockedExchangeAdd', 'InterLockedExchange',
+    'InterLockedIncrement', 'InterlockedCompareExchange', 'IsDynArrayRectangular',
+    'IsMemoryManagerSet', 'Is_IntResource', 'KillThread', 'LEtoN',
+    'LeaveCriticalsection', 'Length', 'LoadResource', 'LockResource', 'Low',
+    'MakeLangID', 'MemSize', 'MoveChar0', 'Move', 'New', 'NtoBE', 'NtoLE', 'Null',
+    'OctStr', 'Ofs', 'Ord', 'Pack', 'ParamStr', 'Paramcount', 'PopCnt', 'Pos',
+    'Power', 'Pred', 'RTLEventCreate', 'RTLeventResetEvent', 'RTLeventSetEvent',
+    'RTLeventWaitFor', 'RTLeventdestroy', 'RaiseList', 'Randomize', 'Random',
+    'ReAllocMemory', 'ReAllocMem', 'ReadBarrier', 'ReadDependencyBarrier',
+    'ReadLn', 'ReadStr', 'ReadWriteBarrier', 'Read', 'Real2Double',
+    'ReleaseExceptionObject', 'Rename', 'Reset', 'ResumeThread', 'Rewrite',
+    'RolByte', 'RolDWord', 'RolQWord', 'RolWord', 'RorByte', 'RorDWord',
+    'RorQWord', 'RorWord', 'RunError', 'SarInt64', 'SarLongint', 'SarShortint',
+    'SarSmallint', 'SeekEOF', 'SeekEOLn', 'Seek', 'Seg', 'SemaphoreDestroy',
+    'SemaphoreInit', 'SemaphorePost', 'SemaphoreWait', 'SetCodePage', 'SetLength',
+    'SetMemoryManager', 'SetMultiByteConversionCodePage',
+    'SetMultiByteFileSystemCodePage', 'SetMultiByteRTLFileSystemCodePage',
+    'SetResourceManager', 'SetString', 'SetTextBuf', 'SetTextCodePage',
+    'SetTextLineEnding', 'SetThreadManager', 'SetUnicodeStringManager',
+    'SetVariantManager', 'SetWideStringManager', 'Setjmp', 'ShortCompareText',
+    'SizeOf', 'SizeofResource', 'Slice', 'Space', 'Sptr', 'Sseg', 'StackTop',
+    'StringCodePage', 'StringElementSize', 'StringOfChar', 'StringRefCount',
+    'StringToPPChar', 'StringToUnicodeChar', 'StringToWideChar', 'Str', 'Succ',
+    'SuspendThread', 'SwapEndian', 'Swap', 'SysAllocMem', 'SysAssert',
+    'SysBackTraceStr', 'SysFlushStdIO', 'SysFreememSize', 'SysFreemem',
+    'SysGetFPCHeapStatus', 'SysGetHeapStatus', 'SysGetmem', 'SysInitExceptions',
+    'SysInitFPU', 'SysInitStdIO', 'SysMemSize', 'SysReAllocMem', 'SysResetFPU',
+    'SysSetCtrlBreakHandler', 'SysTryResizeMem', 'ThreadGetPriority',
+    'ThreadSetPriority', 'ThreadSwitch', 'ToSingleByteFileSystemEncodedFileName',
+    'Truncate', 'TryEnterCriticalsection', 'TypeInfo', 'TypeOf',
+    'UCS4StringToUnicodeString', 'UCS4StringToWideString', 'UTF8Decode',
+    'UTF8Encode', 'UnPack', 'Unassigned', 'UnicodeCharLenToStrVar',
+    'UnicodeCharLenToString', 'UnicodeCharToStrVar', 'UnicodeCharToString',
+    'UnicodeStringToUCS4String', 'UnicodeToUtf8', 'UniqueString', 'UnlockResource',
+    'Utf8CodePointLen', 'Utf8ToAnsi', 'Utf8ToUnicode', 'Val', 'VarArrayGet',
+    'VarArrayPut', 'VarArrayRedim', 'VarCast', 'WaitForThreadTerminate',
+    'WideCharLenToStrVar', 'WideCharLenToString', 'WideCharToStrVar',
+    'WideCharToString', 'WideStringToUCS4String', 'WriteBarrier', 'WriteLn',
+    'WriteStr', 'Write', 'abs', 'add', 'arctan', 'assign', 'basiceventResetEvent',
+    'basiceventSetEvent', 'basiceventWaitFor', 'basiceventdestroy', 'binStr',
+    'chdir', 'chr', 'cos', 'divide', 'equal', 'exp', 'float_raise', 'fpc_SarInt64',
+    'frac', 'get_caller_addr', 'get_caller_frame', 'get_caller_stackinfo',
+    'get_cmdline', 'get_frame', 'getdir', 'greaterthanorequal', 'greaterthan',
+    'halt', 'hexStr', 'hi', 'intdivide', 'int', 'leftshift', 'lessthanorequal',
+    'lessthan', 'ln', 'logicaland', 'logicalnot', 'logicalor', 'logicalxor',
+    'longjmp', 'lowerCase', 'lo', 'mkdir', 'modulus', 'multiply', 'negative',
+    'odd', 'pi', 'power', 'prefetch', 'ptr', 'rightshift', 'rmdir', 'round', 'sin',
+    'sqrt', 'sqr', 'strlen', 'strpas', 'subtract', 'trunc', 'upCase'
+  }
+
   builtin_types = pascal_word {
     'AnsiChar', 'AnsiString', 'Boolean', 'ByteBool', 'Byte', 'Cardinal', 'Char',
     'Comp', 'Currency', 'Double', 'Extended', 'Int64', 'Integer', 'LongBool',
@@ -44,7 +120,7 @@ howl.aux.lpeg_lexer ->
     'WordBool', 'Word'
   }
 
-  type_name = S'TPI' * id
+  type_name = S'TPI' * upper * id^-1
 
   types = c 'type', builtin_types + type_name
 
@@ -126,6 +202,7 @@ howl.aux.lpeg_lexer ->
       fdecl
       keyword
       special
+      functions
       types
       identifier
     }
