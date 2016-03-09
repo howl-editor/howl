@@ -4,7 +4,7 @@
   comment_syntax: { '{', '}' }
 
   indentation:
-    more_after: { r'\\b(else|then|var|do|begin|repeat|object|record|uses|class|interface)\\s*$', '[[(]%s*$' }
+    more_after: { r'\\b(else|then|var|const|type|uses|do|begin|repeat|object|record|uses|class|interface)\\s*$', '[[(]%s*$' }
     less_for: { r'\\b(begin|end|until|else)' }
 
   code_blocks:
