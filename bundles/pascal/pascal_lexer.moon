@@ -21,7 +21,7 @@ howl.aux.lpeg_lexer ->
     'file', 'finalization', 'finally', 'forward', 'for', 'function', 'generic',
     'goto', 'helper', 'if', 'implementation', 'implements', 'index', 'inherited',
     'initialization', 'inline', 'interface', 'interrupt', 'in', 'iochecks', 'is',
-    'label', 'library', 'local', 'message', 'mod', 'name', 'near', 'nil',
+    'label', 'library', 'local', 'message', 'mod', 'name', 'near',
     'nodefault', 'noreturn', 'nostackframe', 'not', 'object', 'of', 'oldfpccall',
     'on', 'operator', 'or', 'otherwise', 'out', 'overload', 'override', 'packed',
     'pascal', 'platform', 'private', 'procedure', 'program', 'property',
@@ -33,7 +33,7 @@ howl.aux.lpeg_lexer ->
     'varargs', 'var', 'virtual', 'while', 'with', 'xor'
   }
 
-  special = c 'special', pascal_word { 'true', 'false', 'dispose', 'exit', 'new' }
+  special = c 'special', pascal_word { 'true', 'false', 'nil' }
 
   functions = c 'function', pascal_word {
     'AbstractError', 'AcquireExceptionObject', 'AddExitProc', 'Addr', 'Align',
@@ -108,7 +108,8 @@ howl.aux.lpeg_lexer ->
     'lessthan', 'ln', 'logicaland', 'logicalnot', 'logicalor', 'logicalxor',
     'longjmp', 'lowerCase', 'lo', 'mkdir', 'modulus', 'multiply', 'negative',
     'odd', 'pi', 'power', 'prefetch', 'ptr', 'rightshift', 'rmdir', 'round', 'sin',
-    'sqrt', 'sqr', 'strlen', 'strpas', 'subtract', 'trunc', 'upCase'
+    'sqrt', 'sqr', 'strlen', 'strpas', 'subtract', 'trunc', 'upCase',
+    'dispose', 'exit', 'new'
   }
 
   builtin_types = pascal_word {
