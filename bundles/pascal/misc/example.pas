@@ -35,12 +35,18 @@ var
   var
     res: Integer;
     i: Integer;
+    &String: String;
 begin
   if a = 1 then
     res := a mod b;
   else begin
     res := 34567;
   end;
+
+  &String := res;
+
+  Result := &String;
+  Xyz.Close;
 
   for i := 1 to 10 do
     if res <> 10 then res := i;

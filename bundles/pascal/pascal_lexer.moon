@@ -26,16 +26,16 @@ howl.aux.lpeg_lexer ->
     'on', 'operator', 'or', 'otherwise', 'out', 'overload', 'override', 'packed',
     'pascal', 'platform', 'private', 'procedure', 'program', 'property',
     'protected', 'public', 'published', 'raise', 'read', 'record', 'register',
-    'reintroduce', 'repeat', 'resourcestring', 'result', 'safecall',
+    'reintroduce', 'repeat', 'resourcestring', 'safecall',
     'saveregisters', 'self', 'set', 'shl', 'shr', 'softfloat', 'specialize',
-    'static', 'stdcall', 'stored', 'strict', 'string', 'then', 'threadvar', 'to',
+    'static', 'stdcall', 'stored', 'strict', 'then', 'threadvar', 'to',
     'try', 'type', 'unaligned', 'unimplemented', 'unit', 'until', 'uses',
     'varargs', 'var', 'virtual', 'while', 'with', 'xor'
   }
 
-  special = c 'special', -B'&' * pascal_word { 'true', 'false', 'nil' }
+  special = c 'special', -B'&' * pascal_word { 'true', 'false', 'nil', 'result' }
 
-  functions = c 'function', -B'&' * pascal_word {
+  functions = c 'function', -B(S'&.') * pascal_word {
     'AbstractError', 'AcquireExceptionObject', 'AddExitProc', 'Addr', 'Align',
     'AllocMem', 'AnsiToUtf8', 'Append', 'ArrayStringToPPchar', 'Assert',
     'Assigned', 'Assign', 'BEtoN', 'BasicEventCreate', 'BeginThread', 'BlockRead',
@@ -196,9 +196,9 @@ howl.aux.lpeg_lexer ->
 
     all: any {
       comment
-      operator
       string
       number
+      operator
       type_def
       fdecl
       keyword
