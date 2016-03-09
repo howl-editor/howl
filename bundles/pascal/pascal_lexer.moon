@@ -153,7 +153,7 @@ howl.aux.lpeg_lexer ->
   }
 
   fdecl = sequence {
-    c 'keyword', pascal_word { 'procedure', 'function' }
+    c 'keyword', pascal_word { 'procedure', 'function', 'constructor', 'destructor' }
     ws
     c 'fdecl', (id + '.')^1
   }
