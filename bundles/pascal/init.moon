@@ -1,6 +1,6 @@
 howl.mode.register
   name: 'pascal'
-  extensions: {'pas', 'pp', 'p', 'dpk', 'dpr'}
+  extensions: {'pas', 'pp', 'p', 'dpk', 'dpr', 'lpr'}
   aliases: {'pas', 'pp', 'fpc', 'delphi'}
   create: -> bundle_load 'pascal_mode'
 
