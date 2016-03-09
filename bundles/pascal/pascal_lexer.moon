@@ -33,9 +33,9 @@ howl.aux.lpeg_lexer ->
     'varargs', 'var', 'virtual', 'while', 'with', 'xor'
   }
 
-  special = c 'special', pascal_word { 'true', 'false', 'nil' }
+  special = c 'special', -B'&' * pascal_word { 'true', 'false', 'nil' }
 
-  functions = c 'function', pascal_word {
+  functions = c 'function', -B'&' * pascal_word {
     'AbstractError', 'AcquireExceptionObject', 'AddExitProc', 'Addr', 'Align',
     'AllocMem', 'AnsiToUtf8', 'Append', 'ArrayStringToPPchar', 'Assert',
     'Assigned', 'Assign', 'BEtoN', 'BasicEventCreate', 'BeginThread', 'BlockRead',
@@ -112,7 +112,7 @@ howl.aux.lpeg_lexer ->
     'dispose', 'exit', 'new'
   }
 
-  builtin_types = pascal_word {
+  builtin_types = -B'&' * pascal_word {
     'AnsiChar', 'AnsiString', 'Boolean', 'ByteBool', 'Byte', 'Cardinal', 'Char',
     'Comp', 'Currency', 'Double', 'Extended', 'Int64', 'Integer', 'LongBool',
     'Longint', 'Longword', 'QWord', 'RawByteString', 'Real', 'ShortString',
@@ -189,7 +189,7 @@ howl.aux.lpeg_lexer ->
     P'#' * unsigned
   }
 
-  operator = c 'operator', S'+-*/=<>[].,():;^@'
+  operator = c 'operator', S'+-*/=&<>[].,():;^@'
 
   P {
     'all'
