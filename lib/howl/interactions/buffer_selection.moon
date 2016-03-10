@@ -1,12 +1,19 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, interact, Project from howl
+import app, config, interact, Project from howl
 import File from howl.io
 import icon, markup from howl.ui
 import Matcher from howl.util
 
 append = table.insert
+
+config.define
+  name: 'buffer_icons'
+  description: 'Whether buffer icons are displayed'
+  scope: 'global'
+  type_of: 'boolean'
+  default: true
 
 icon.define_default 'buffer', 'font-awesome-square'
 icon.define_default 'buffer-modified', 'font-awesome-pencil-square-o'
@@ -15,13 +22,17 @@ icon.define_default 'process-success', 'font-awesome-check-circle'
 icon.define_default 'process-running', 'font-awesome-play-circle'
 icon.define_default 'process-failure', 'font-awesome-exclamation-circle'
 
-
 buffer_dir = (buffer) ->
   if buffer.file
     return buffer.file.parent.short_path
   elseif buffer.directory
     return buffer.directory.short_path
   return '(none)'
+
+buffer_status_text = (buffer) ->
+  stat = if buffer.modified then '*' else ''
+  stat ..= '[modified on disk]' if buffer.modified_on_disk
+  stat
 
 buffer_status_icon = (buffer) ->
   local name
@@ -87,7 +98,11 @@ get_buffer_list = ->
     for i=1,#buffers
       enhanced_titles[buffers[i]] = titles[i]
 
-  return [{buffer_status_icon(buffer), enhanced_titles[buffer] or buffer.title, buffer_dir(buffer), :buffer} for buffer in *app.buffers]
+  title = (buffer) -> enhanced_titles[buffer] or buffer.title
+  if config.buffer_icons
+    return [{buffer_status_icon(buffer), title(buffer), buffer_dir(buffer), :buffer} for buffer in *app.buffers]
+  else
+    return [{title(buffer), buffer_status_text(buffer), buffer_dir(buffer), :buffer} for buffer in *app.buffers]
 
 buffer_matcher = (text) ->
   matcher = Matcher get_buffer_list!
@@ -98,14 +113,23 @@ interact.register
   description: 'Selection list for buffers'
   handler: (opts={}) ->
     opts = moon.copy opts
-    with opts
-      .title or= 'Buffers'
-      .matcher = buffer_matcher
-      .columns = {
+    local columns
+    if config.buffer_icons
+      columns = {
         {},
         {style: 'string'}
         {style: 'comment'}
       }
+    else
+      columns = {
+        {style: 'string'}
+        {style: 'operator'}
+        {style: 'comment'}
+      }
+    with opts
+      .title or= 'Buffers'
+      .matcher = buffer_matcher
+      .columns = columns
       .keymap = {
         binding_for:
           ['close']: (current) ->
