@@ -36,14 +36,14 @@ describe 'buffer_selection', ->
     it 'displays a list of active buffers', ->
       local buflist
       within_activity (-> interact.select_buffer :editor), ->
-        buflist = get_ui_list_widget_column!
+        buflist = get_ui_list_widget_column 2
       assert.same {'a1-buffer', 'a2-buffer', 'b-buffer', 'c-buffer'}, buflist
 
     it 'filters the buffer list based on entered text', ->
       local buflist
       within_activity (-> interact.select_buffer :editor), ->
         command_line\write 'a-b'
-        buflist = get_ui_list_widget_column!
+        buflist = get_ui_list_widget_column 2
       assert.same {'a1-buffer', 'a2-buffer'}, buflist
 
     it 'previews currently selected buffer in the editor', ->
@@ -85,7 +85,7 @@ describe 'buffer_selection', ->
         within_activity (-> interact.select_buffer :editor), ->
           command_line\handle_keypress close_event
           command_line\handle_keypress close_event
-          buflist = get_ui_list_widget_column!
+          buflist = get_ui_list_widget_column 2
         assert.same {'b-buffer', 'c-buffer'}, buflist
 
       it 'preserves filter', ->
@@ -93,7 +93,7 @@ describe 'buffer_selection', ->
         within_activity (-> interact.select_buffer :editor), ->
           command_line\write 'a-b'
           command_line\handle_keypress close_event
-          buflist = get_ui_list_widget_column!
+          buflist = get_ui_list_widget_column 2
         assert.same {'a2-buffer'}, buflist
 
     context 'duplicate filenames', ->
@@ -112,5 +112,5 @@ describe 'buffer_selection', ->
       it 'uniquifies title by using project name and parent directory prefix', ->
         local buflist
         within_activity (-> interact.select_buffer :editor), ->
-          buflist = get_ui_list_widget_column!
+          buflist = get_ui_list_widget_column 2
         assert.same {'file1 [project1]', 'file1 [project2]', 'path1/file2', 'path2/file2'}, buflist
