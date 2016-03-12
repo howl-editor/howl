@@ -561,6 +561,7 @@ class Editor extends PropertyObject
   -- private
   _show_buffer: (buffer, opts={}) =>
     @selection\remove!
+    @remove_popup!
 
     if @_buf
       @_buf.properties.position = @cursor.pos

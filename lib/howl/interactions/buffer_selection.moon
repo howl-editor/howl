@@ -89,11 +89,18 @@ get_buffer_list = ->
   for basename, buffers in pairs(basenames)
     continue if #buffers == 1
 
-    titles = [make_title(buffer, project:true) for buffer in *buffers]
-    if has_duplicates(titles)
-      titles = [make_title(buffer, project:true, parents:1) for buffer in *buffers]
-      if has_duplicates(titles)
-        titles = [make_title(buffer, project:true, parents:2) for buffer in *buffers]
+    options_list = {
+      { project: true }
+      { project: false, parents: 1 }
+      { project: true, parents: 1 }
+      { project: false, parents: 2 }
+      { project: true, parents: 2 }
+    }
+
+    titles = nil
+    for options in *options_list
+      titles = [make_title buffer, options for buffer in *buffers]
+      break if not has_duplicates titles
 
     for i=1,#buffers
       enhanced_titles[buffers[i]] = titles[i]

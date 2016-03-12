@@ -113,4 +113,4 @@ describe 'buffer_selection', ->
         local buflist
         within_activity (-> interact.select_buffer :editor), ->
           buflist = get_ui_list_widget_column 2
-        assert.same {'file1 [project1]', 'file1 [project2]', 'path1/file2 [project2]', 'path2/file2 [project2]'}, buflist
+        assert.same {'file1 [project1]', 'file1 [project2]', 'path1/file2', 'path2/file2'}, buflist
