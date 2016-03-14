@@ -35,6 +35,7 @@ class SelectionList
       @on_update @opts.text
     else
       spillover = @command_line\pop_spillover!
+      @command_line\write spillover
       if @opts.selection
         @list_widget\update spillover
         @list_widget.selection = @opts.selection

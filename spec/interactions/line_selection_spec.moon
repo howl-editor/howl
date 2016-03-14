@@ -49,6 +49,16 @@ describe 'select_line', ->
       assert.same {'one'}, lines[3]
       assert.same {'one', 'two', 'three'}, lines[4]
 
+    it 'handles spillover text, when present', ->
+      command_line\write_spillover 'one'
+      local text, lines
+      within_activity (-> interact.select_line(:editor, lines: buffer.lines)), ->
+        lines = get_ui_list_widget_column 2
+        text = command_line.text
+
+      assert.same {'one'}, lines
+      assert.same 'one', text
+
     context 'when `find` function is provided', ->
       it 'uses the find function to find matching lines', ->
         find = (query, text) ->
