@@ -159,6 +159,13 @@ return {
       background: '#0064b1'
       height: 'text'
 
+    brace_highlight_secondary:
+      type: flair.RECTANGLE
+      foreground: '#0064b1'
+      text_color: foreground
+      line_width: 1
+      height: 'text'
+
     list_selection:
       type: flair.ROUNDED_RECTANGLE
       background: slategray

@@ -702,7 +702,7 @@ class Editor extends PropertyObject
     auto_pairs = @buffer.mode.auto_pairs
     return unless auto_pairs
 
-    get_brace_pos = (buffer, pos, auto_pairs) ->
+    get_brace_pos = (pos) ->
       cur_char = buffer\sub pos, pos
       matching = auto_pairs[cur_char]
       return cur_char, pos, matching, true if matching
@@ -711,29 +711,58 @@ class Editor extends PropertyObject
         if v == cur_char
           return cur_char, pos, k, false
 
+    get_matching_pair = (pos) ->
+      return if pos < 1 or pos > buffer.size
+      cur_char, start_pos, matching, forward = get_brace_pos pos
+      return unless matching and matching != cur_char
+
+      if matching
+        match_pos = if forward
+          last_visible_line = buffer\get_line(@view.last_visible_line)
+          search_to = last_visible_line and last_visible_line.end_offset or buffer.size
+          buffer\pair_match_forward(start_pos, matching, search_to)
+        else
+          search_to = buffer\get_line(@view.first_visible_line).start_offset
+          buffer\pair_match_backward(start_pos, matching, search_to)
+        return unless match_pos
+        if forward
+          return start_pos, match_pos
+        else
+          return match_pos, start_pos
+
+    highlight_pair = (pos, start_pos, end_pos) ->
+      flair = if start_pos == pos or end_pos == pos
+        'brace_highlight'
+        else
+          'brace_highlight_secondary'
+
+      buffer.markers\add {
+        {
+          name: 'brace_highlight',
+          :flair,
+          start_offset: start_pos,
+          end_offset: start_pos + 1
+        },
+        {
+          name: 'brace_highlight',
+          :flair,
+          start_offset: end_pos,
+          end_offset: end_pos + 1
+        },
+      }
+
     pos = cursor.pos
-    cur_char, start_pos, matching, forward = get_brace_pos buffer, pos, auto_pairs
-    if not matching and pos > 1
-      cur_char, start_pos, matching, forward = get_brace_pos buffer, pos - 1, auto_pairs
 
-    return if not matching or cur_char == matching
-
-    match_pos = if forward
-      last_visible_line = buffer\get_line(@view.last_visible_line)
-      search_to = last_visible_line and last_visible_line.end_offset or buffer.size
-      buffer\pair_match_forward(start_pos, matching, search_to)
-    else
-      search_to = buffer\get_line(@view.first_visible_line).start_offset
-      buffer\pair_match_backward(start_pos, matching, search_to)
-
-    if match_pos and abs(match_pos - start_pos) > 1
-      buffer.markers\add {{
-        name: 'brace_highlight',
-        flair: 'brace_highlight',
-        start_offset: match_pos,
-        end_offset: match_pos + 1
-      }}
+    start_pos, end_pos = get_matching_pair pos - 1
+    if start_pos
+      highlight_pair pos, start_pos, end_pos
       @_brace_highlighted = true
+
+    start_pos, end_pos = get_matching_pair pos
+    if start_pos
+      highlight_pair pos, start_pos, end_pos
+      @_brace_highlighted = true
+
 
   _update_position: =>
     pos = @cursor.line .. ':' .. @cursor.column

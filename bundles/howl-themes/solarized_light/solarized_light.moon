@@ -178,6 +178,12 @@ return {
       background_alpha: 0.6
       height: 'text'
 
+    brace_highlight_secondary:
+      type: highlight.RECTANGLE
+      foreground: blue
+      line_width: 1
+      height: 'text'
+
     list_selection:
       type: highlight.RECTANGLE
       foreground: blue
