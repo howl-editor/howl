@@ -303,20 +303,21 @@ Buffer = {
       end_offset += offset_delta
 
     opening = arr[i]
+    opening_style = @styling\at offset
     closing = string.byte closing
     delta = 1
     i += 1 -- start at following byte
 
     while i < end_offset
-      c = arr[i]
+      if opening_style == @styling\at i - offset_delta + 1
+        c = arr[i]
 
-      if c == opening
-        delta += 1
-      elseif c == closing
-        delta -= 1
-        if delta == 0
-          return (i - offset_delta) + 1
-
+        if c == opening
+          delta += 1
+        elseif c == closing
+          delta -= 1
+          if delta == 0
+            return (i - offset_delta) + 1
       i += 1
       if i >= tb.gap_start and offset_delta == 0
         offset_delta = tb.gap_size
@@ -340,17 +341,19 @@ Buffer = {
 
     closing = arr[i]
     opening = string.byte opening
+    opening_style = @styling\at offset
     delta = 0
 
     while i >= end_offset
-      c = arr[i]
+      if opening_style == @styling\at i - offset_delta + 1
+        c = arr[i]
 
-      if c == closing
-        delta += 1
-      elseif c == opening
-        delta -= 1
-        if delta == 0
-          return (i - offset_delta) + 1
+        if c == closing
+          delta += 1
+        elseif c == opening
+          delta -= 1
+          if delta == 0
+            return (i - offset_delta) + 1
 
       i -= 1
       if i > tb.gap_start and i < tb.gap_end
