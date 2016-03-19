@@ -36,6 +36,7 @@ var
     res: Integer;
     i: Integer;
     &String: String;
+    j: TMyCoolType = 123;
 begin
   if a = 1 then
     res := a mod b;

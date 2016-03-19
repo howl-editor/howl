@@ -132,6 +132,13 @@ howl.aux.lpeg_lexer ->
     ws
   }
 
+  -- Eat up var defs to avoid the type portion being matches as a type def.
+  var_def = sequence {
+    c 'operator', P':'
+    ws
+    types
+  }
+
   type_def = any {
     sequence {
       c 'type_def', type_name
@@ -198,6 +205,7 @@ howl.aux.lpeg_lexer ->
       comment
       string
       number
+      var_def
       operator
       type_def
       fdecl
