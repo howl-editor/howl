@@ -330,7 +330,7 @@ describe 'Styling', ->
         }, styling\get(1, 6)
 
   describe 'get_nearest_style_marker(pos)', ->
-    it 'generally works', ->
+    it 'correctly returns the style marker nearest the requested position', ->
       styling\apply 1, {
         1, 'operator', 2,
         2, { 1, 's2', 2, 2, 's3', 3 }, 'my_sub|s1'
