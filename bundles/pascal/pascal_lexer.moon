@@ -172,10 +172,10 @@ howl.aux.lpeg_lexer ->
     'comment'
 
     comment: any {
-      comment_span P'//', eol
+      comment_span P'{', '}'
       comment_span P'/*', '*/'
       comment_span P'(*', '*)'
-      comment_span P'{', '}'
+      comment_span P'//', B(eol)
     }
   }
 
