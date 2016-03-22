@@ -558,6 +558,11 @@ class Editor extends PropertyObject
     else
       @line_at_bottom = math.min #@buffer.lines, line + 2
 
+  get_matching_brace: (pos, start_pos=1, end_pos=@buffer.length) =>
+    byte_offset = @buffer\byte_offset
+    pos = @_get_matching_brace(byte_offset(pos), byte_offset(start_pos), byte_offset(end_pos))
+    return pos and @buffer\char_offset pos
+
   -- private
   _show_buffer: (buffer, opts={}) =>
     @selection\remove!
@@ -688,6 +693,30 @@ class Editor extends PropertyObject
     @_brace_highlight!
     signal.emit 'cursor-changed', editor: self, cursor: @cursor
 
+  _get_matching_brace: (byte_pos, start_pos, end_pos) =>
+    buffer = @view.buffer
+    return if byte_pos < 1 or byte_pos > buffer.size
+
+    auto_pairs = @buffer.mode.auto_pairs
+    return unless auto_pairs
+
+    cur_char = buffer\sub byte_pos, byte_pos
+    matching_close = auto_pairs[cur_char]
+
+    local matching_open
+    for k, v in pairs auto_pairs
+      if v == cur_char
+        matching_open = k
+        break
+
+    matching = matching_close or matching_open
+    return unless matching and matching != cur_char
+
+    if matching_close
+        return buffer\pair_match_forward(byte_pos, matching_close, end_pos)
+    else
+        return buffer\pair_match_backward(byte_pos, matching_open, start_pos)
+
   _brace_highlight: =>
     return unless @view.showing
 
@@ -699,70 +728,37 @@ class Editor extends PropertyObject
 
     should_highlight = @buffer.config.matching_braces_highlighted
     return unless should_highlight
-    auto_pairs = @buffer.mode.auto_pairs
-    return unless auto_pairs
 
-    get_brace_pos = (pos) ->
-      cur_char = buffer\sub pos, pos
-      matching = auto_pairs[cur_char]
-      return cur_char, pos, matching, true if matching
-
-      for k, v in pairs auto_pairs
-        if v == cur_char
-          return cur_char, pos, k, false
-
-    get_matching_pair = (pos) ->
-      return if pos < 1 or pos > buffer.size
-      cur_char, start_pos, matching, forward = get_brace_pos pos
-      return unless matching and matching != cur_char
-
-      if matching
-        match_pos = if forward
-          last_visible_line = buffer\get_line(@view.last_visible_line)
-          search_to = last_visible_line and last_visible_line.end_offset or buffer.size
-          buffer\pair_match_forward(start_pos, matching, search_to)
-        else
-          search_to = buffer\get_line(@view.first_visible_line).start_offset
-          buffer\pair_match_backward(start_pos, matching, search_to)
-        return unless match_pos
-        if forward
-          return start_pos, match_pos
-        else
-          return match_pos, start_pos
-
-    highlight_pair = (pos, start_pos, end_pos) ->
-      flair = if start_pos == pos or end_pos == pos
-        'brace_highlight'
-        else
-          'brace_highlight_secondary'
-
+    highlight_braces = (pos1, pos2, flair) ->
       buffer.markers\add {
         {
           name: 'brace_highlight',
           :flair,
-          start_offset: start_pos,
-          end_offset: start_pos + 1
+          start_offset: pos1,
+          end_offset: pos1 + 1
         },
         {
           name: 'brace_highlight',
           :flair,
-          start_offset: end_pos,
-          end_offset: end_pos + 1
+          start_offset: pos2,
+          end_offset: pos2 + 1
         },
       }
+      @_brace_highlighted = true
+
+    start_pos = buffer\get_line(@view.first_visible_line).start_offset
+    last_visible_line = buffer\get_line(@view.last_visible_line)
+    end_pos = last_visible_line and last_visible_line.end_offset or buffer.size
 
     pos = cursor.pos
 
-    start_pos, end_pos = get_matching_pair pos - 1
-    if start_pos
-      highlight_pair pos, start_pos, end_pos
-      @_brace_highlighted = true
+    match_pos = @_get_matching_brace pos - 1
+    if match_pos
+      highlight_braces match_pos, pos - 1, 'brace_highlight_secondary'
 
-    start_pos, end_pos = get_matching_pair pos
-    if start_pos
-      highlight_pair pos, start_pos, end_pos
-      @_brace_highlighted = true
-
+    match_pos = @_get_matching_brace pos
+    if match_pos
+      highlight_braces match_pos, pos, 'brace_highlight'
 
   _update_position: =>
     pos = @cursor.line .. ':' .. @cursor.column

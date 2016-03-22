@@ -753,3 +753,35 @@ describe 'Editor', ->
       assert.is_nil editors[1]
       assert.is_nil buffers[1]
       assert.is_nil buffers[2]
+
+  context 'get_matching_brace', ->
+    it 'finds position of matching opending/closing brace', ->
+      editor.buffer.mode.auto_pairs = {'[': ']'}
+
+      editor.buffer.text = '[]'
+      assert.same 2, editor\get_matching_brace 1
+      assert.same 1, editor\get_matching_brace 2
+      assert.same nil, editor\get_matching_brace 3
+
+      editor.buffer.text = '[Ü]'
+      assert.same 3, editor\get_matching_brace 1
+      assert.same 1, editor\get_matching_brace 3
+      assert.same nil, editor\get_matching_brace 2
+
+      editor.buffer.text = '1ÜÜ4[6ÜÜ9]---'
+      assert.same 10, editor\get_matching_brace 5
+      assert.same 5, editor\get_matching_brace 10
+      assert.same nil, editor\get_matching_brace 1
+      assert.same nil, editor\get_matching_brace 4
+      assert.same nil, editor\get_matching_brace 6
+      assert.same nil, editor\get_matching_brace 11
+
+    it 'returns nil for unmatched/mismatched braces', ->
+      editor.buffer.mode.auto_pairs = {'[': ']'}
+      editor.buffer.text = ']['
+      assert.same nil, editor\get_matching_brace 1
+      assert.same nil, editor\get_matching_brace 2
+
+      editor.buffer.text = '([]]'
+      assert.same nil, editor\get_matching_brace 4
+
