@@ -384,9 +384,10 @@ class Editor extends PropertyObject
 
     conf = @buffer.config
     if conf.tab_indents and @current_context.prefix.is_blank
+      cursor_col = @cursor.column
       cur_line = @current_line
       cur_line\unindent!
-      @cursor.column = cur_line.indentation + 1
+      @cursor.column = min(cursor_col, cur_line.indentation + 1)
     else
       return if @cursor.column == 1
       tab_stops = math.floor (@cursor.column - 1) / conf.tab_width
@@ -395,11 +396,12 @@ class Editor extends PropertyObject
       @cursor.column = col
 
   delete_back: =>
-    if @selection.empty and @current_context.prefix\match '^%s+$'
+    if @selection.empty and @current_context.prefix.is_blank
       if @buffer.config.backspace_unindents
         cur_line = @current_line
+        gap = cur_line.indentation - @cursor.column
         cur_line\unindent!
-        @cursor.column = cur_line.indentation + 1
+        @cursor.column = max(1, cur_line.indentation - gap)
         return
 
     @view\delete_back!
@@ -554,9 +556,9 @@ class Editor extends PropertyObject
 
     line = @buffer.lines\at_pos(pos).nr
     if @line_at_top > line
-      @line_at_top = math.max 1,  line - 2
+      @line_at_top = max 1,  line - 2
     else
-      @line_at_bottom = math.min #@buffer.lines, line + 2
+      @line_at_bottom = min #@buffer.lines, line + 2
 
   -- private
   _show_buffer: (buffer, opts={}) =>
