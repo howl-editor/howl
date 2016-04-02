@@ -180,6 +180,14 @@ describe 'Buffer', ->
       assert.equals 5, b\pair_match_forward 2, ']', 5
       assert.is_nil b\pair_match_forward 2, ']', 4
 
+    it 'match braces with identical style only', ->
+      b = Buffer '1[3]5]7'
+      b.styling.at = spy.new (pos) =>
+        styles = {nil, 'operator', nil, 'string', nil, 'operator'}
+        return styles[pos]
+
+      assert.equal 6, b\pair_match_forward 2, ']'
+
   describe 'pair_match_backward(offset, opening [, end_offset])', ->
     it 'returns the offset of the closing preceeding pair character', ->
       b = Buffer '1[34]6'

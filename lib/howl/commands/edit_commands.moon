@@ -143,3 +143,12 @@ command.register
     return tonumber line_str
 
   handler: (line_no) -> app.editor.cursor\move_to line: line_no, column: 1
+
+command.register
+  name: 'cursor-goto-brace'
+  description: 'Go to the brace matching the current brace, if any'
+  handler: ->
+    cursor = app.editor.cursor
+    pos = app.editor\get_matching_brace cursor.pos
+    cursor\move_to(:pos, :extend) if pos
+
