@@ -158,7 +158,7 @@ describe 'DefaultMode', ->
       assert.equals '  line\n  \n', buffer.text
       assert.equals 3, cursor.column
 
-  describe 'comment(editor)', ->
+  describe 'comment(editor, lines)', ->
     text = [[
   liñe 1
 
@@ -230,7 +230,17 @@ describe 'DefaultMode', ->
         mode\comment editor
         assert.equal 6, cursor.column
 
-  describe 'uncomment(editor)', ->
+      it 'comments the given lines', ->
+        editor.selection\remove!
+        mode\comment editor, editor.buffer.lines\for_text_range 1, 12
+        assert.equal [[
+  /* liñe 1 */
+
+  /*   liñe 2 */
+    liñe 3
+  ]], buffer.text
+
+  describe 'uncomment(editor, lines)', ->
 
     context 'when .comment_syntax is not set', ->
       it 'does nothing', ->
@@ -317,7 +327,13 @@ describe 'DefaultMode', ->
         mode\uncomment editor
         assert.equal "line\n", buffer.text
 
-  describe 'toggle_comment(editor)', ->
+    it 'comments the given lines', ->
+      buffer.mode.comment_syntax = '--'
+      buffer.text = '-- foo\n-- bar\n-- baz'
+      mode\uncomment editor, editor.buffer.lines\for_text_range 1, 9
+      assert.equal 'foo\nbar\n-- baz', buffer.text
+
+  describe 'toggle_comment(editor, lines)', ->
     context 'when mode does not provide .comment_syntax', ->
       it 'does nothing', ->
         buffer.text = '-- foo'

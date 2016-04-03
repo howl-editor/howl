@@ -83,7 +83,8 @@ describe 'Editor', ->
         it 'calls that passing itself a parameter', ->
           buffer.mode = [method]: spy.new -> nil
           editor[method] editor
-          assert.spy(buffer.mode[method]).was_called_with buffer.mode, editor
+          assert.spy(buffer.mode[method]).was_called_with buffer.mode, editor,
+            {editor.buffer.lines[1]}
 
   describe 'with_position_restored(f)', ->
     before_each ->

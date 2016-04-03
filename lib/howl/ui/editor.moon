@@ -280,12 +280,13 @@ class Editor extends PropertyObject
       extend: anchor_line
     }
 
-  transform_active_lines: (f) =>
-    lines = @active_lines
-    return if #@active_lines == 0
-    start_pos = @active_lines[1].start_pos
-    end_pos = @active_lines[#@active_lines].end_pos
+  transform_lines: (lines, f) =>
+    return if #lines == 0
+    start_pos = lines[1].start_pos
+    end_pos = lines[#lines].end_pos
     @buffer\change start_pos, end_pos, -> f lines
+
+  transform_active_lines: (f) => @transform_lines @active_lines, f
 
   with_position_restored: (f) =>
     line, column, indentation, top_line = @cursor.line, @cursor.column, @current_line.indentation, @line_at_top
@@ -306,17 +307,16 @@ class Editor extends PropertyObject
       @_show_buffer @_pre_preview_buffer
       @_pre_preview_buffer = nil
 
-  indent: => if @current_mode.indent then @current_mode\indent self
+  indent: => @_apply_to_line_modes 'indent'
 
   indent_all: =>
     @with_position_restored ->
       @selection\select_all!
       @indent!
 
-  comment: => if @current_mode.comment then @current_mode\comment self
-  uncomment: => if @current_mode.uncomment then @current_mode\uncomment self
-  toggle_comment: =>
-    if @current_mode.toggle_comment then @current_mode\toggle_comment self
+  comment: => @_apply_to_line_modes 'comment'
+  uncomment: => @_apply_to_line_modes 'uncomment'
+  toggle_comment: => @_apply_to_line_modes 'toggle_comment'
 
   delete_line: => @buffer.lines[@cursor.line] = nil
 
@@ -648,6 +648,12 @@ class Editor extends PropertyObject
     bar = y == 'top' and @header or @footer
     bar\remove id
     @indicator[id] = nil
+
+  _apply_to_line_modes: (method) =>
+    lines = @active_lines
+    for line in *lines
+      mode = @buffer\mode_at line.start_pos
+      mode[method] mode, self, {line} if mode[method]
 
   _on_destroy: =>
     for h in *@_handlers

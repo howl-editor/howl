@@ -14,13 +14,13 @@ class DefaultMode
 
   code_blocks: {}
 
-  indent: (editor) =>
+  indent: (editor, lines=editor.active_lines) =>
     indent_level = editor.buffer.config.indent
     dont_indent_styles = comment: true, string: true
     buffer = editor.buffer
     current_line = editor.current_line
 
-    editor\transform_active_lines (lines) ->
+    editor\transform_lines lines, ->
       comment_prefix = @_comment_pair!
       local prev_line
 
@@ -43,7 +43,7 @@ class DefaultMode
       if .line != current_line.nr or .column < current_line.indentation
         \move_to line: current_line.nr, column: current_line.indentation
 
-  comment: (editor) =>
+  comment: (editor, lines=editor.active_lines) =>
     prefix, suffix = @_comment_pair!
     return unless prefix
 
@@ -54,7 +54,7 @@ class DefaultMode
     current_column = cursor.column
     tab_expansion = string.rep ' ', buffer.config.tab_width
 
-    editor\transform_active_lines (lines) ->
+    editor\transform_lines lines, ->
       min_indent = math.huge
       min_indent = math.min(min_indent, l.indentation) for l in *lines when not l.is_blank
 
@@ -66,7 +66,7 @@ class DefaultMode
 
     cursor.column = current_column + #prefix unless current_column == 1
 
-  uncomment: (editor) =>
+  uncomment: (editor, lines=editor.active_lines) =>
     prefix, suffix = @_comment_pair!
     return unless prefix
 
@@ -77,7 +77,7 @@ class DefaultMode
     cur_line_length = #cur_line
     cursor_delta = nil
 
-    editor\transform_active_lines (lines) ->
+    editor\transform_lines lines, ->
       for line in *lines
         pfx_start, middle_start, sfx_start, trail_start = line\umatch pattern
         if pfx_start
@@ -90,15 +90,15 @@ class DefaultMode
     if cursor_delta
       cursor.column = math.max 1, current_column - cursor_delta
 
-  toggle_comment: (editor) =>
+  toggle_comment: (editor, lines=editor.active_lines) =>
     prefix, suffix = @_comment_pair!
     return unless prefix
     pattern = r"^\\s*#{r.escape prefix}.*"
 
-    if editor.active_lines[1]\umatch pattern
-      @uncomment editor
+    if lines[1]\umatch pattern
+      @uncomment editor, lines
     else
-      @comment editor
+      @comment editor, lines
 
   structure: (editor) =>
     buffer = editor.buffer
