@@ -1,4 +1,5 @@
-{ Comments }
+{ Comments
+  which can be multiline }
 { and /* multiple (* nested { comments } *) */ }
 
 { integers }
