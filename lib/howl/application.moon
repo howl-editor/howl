@@ -262,6 +262,8 @@ class Application extends PropertyObject
       howl.clipboard.store!
 
   save_session: =>
+    return if @args.no_profile or #@args > 1
+
     session = {
       version: 1
       buffers: {}
@@ -296,7 +298,10 @@ class Application extends PropertyObject
       if @settings.dir
         append bundle.dirs, @settings.dir\join 'bundles'
       bundle.load_all!
-      @settings\load_user!
+
+      unless @args.no_profile
+        @settings\load_user!
+
       theme.apply!
       @_load_application_icon!
 
@@ -316,14 +321,16 @@ class Application extends PropertyObject
       signal.emit 'file-opened', :file, :buffer
 
     unless @_loaded
-      @_restore_session window, #files == 0
+      unless @args.no_profile
+        @_restore_session window, #files == 0
 
     if #@editors == 0
       @editor = @new_editor @_buffers[1] or @new_buffer!
 
-    window\show_all! if window
-    @_loaded = true
-    signal.emit 'app-ready'
+    unless @_loaded
+      window\show_all! if window
+      @_loaded = true
+      signal.emit 'app-ready'
 
   _should_abort_quit: =>
     modified = [b for b in *@_buffers when b.modified]
