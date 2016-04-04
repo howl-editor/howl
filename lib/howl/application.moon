@@ -113,9 +113,7 @@ class Application extends PropertyObject
         true
 
     window\on_destroy (window) ->
-      for k, win in ipairs @windows
-        if win\to_gobject! == window
-          @windows[k] = nil
+      @windows = [w for w in *@windows when w\to_gobject! != window]
 
     @g_app\add_window window\to_gobject!
 
