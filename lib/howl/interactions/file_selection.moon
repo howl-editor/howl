@@ -198,7 +198,7 @@ interact.register
     matcher = project_matcher(project)
 
     result = interact.select_location
-      title: opts.title or project.root.path .. separator
+      title: opts.title or project.root.short_path .. separator
       prompt: opts.prompt or ''
       :matcher
 
