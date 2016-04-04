@@ -177,9 +177,18 @@ class Window extends PropertyObject
   remember_focus: =>
     @data.focus_child = @grid.focus_child
 
-  save_screenshot: (filename, type='png', image_opts={}) =>
-    pixbuf = Gdk.Pixbuf.get_from_window @window, 0, 0, @allocated_width, @allocated_height
-    pixbuf\save filename, type, image_opts
+  save_screenshot: (file, opts={}) =>
+    type = opts.type or 'png'
+    image_opts = opts.image_opts or {}
+    x, y, w, h = 0, 0, @allocated_width, @allocated_height
+    window = @window
+
+    if opts.with_overlays
+      x, y = window\get_position!
+      window = @screen.root_window
+
+    pixbuf = Gdk.Pixbuf.get_from_window window, x, y, w, h
+    pixbuf\save tostring(file), type, image_opts
 
   _as_rows: (views) =>
     rows = {}

@@ -144,17 +144,6 @@ ffi.cdef [[
   typedef cairo_rectangle_int_t         GdkRectangle;
   typedef struct {} GdkVisual;
 
-  /* screen */
-  typedef struct {} GdkScreen;
-  GdkScreen * gdk_screen_get_default (void);
-  gint gdk_screen_get_number (GdkScreen *screen);
-  gint gdk_screen_get_width (GdkScreen *screen);
-  gint gdk_screen_get_height (GdkScreen *screen);
-  gint gdk_screen_get_width_mm (GdkScreen *screen);
-  gint gdk_screen_get_height_mm (GdkScreen *screen);
-  GdkVisual * gdk_screen_get_rgba_visual(GdkScreen *screen);
-  gboolean gdk_screen_is_composited(GdkScreen   *screen);
-
   /* GdkRGBA */
   typedef struct {
     gdouble red;
@@ -254,6 +243,12 @@ ffi.cdef [[
 
   GdkCursor * gdk_cursor_new (GdkCursorType cursor_type);
 
+  /* display */
+  typedef struct {} GdkDisplay;
+  void gdk_display_sync (GdkDisplay *display);
+  gboolean gdk_display_has_pending (GdkDisplay *display);
+  GdkDisplay * gdk_display_get_default (void);
+
   /* GdkWindow */
   typedef struct {} GdkWindow;
 
@@ -281,7 +276,20 @@ ffi.cdef [[
   void gdk_window_set_cursor (GdkWindow *window, GdkCursor *cursor);
 
   void gdk_window_set_opacity (GdkWindow *window, gdouble opacity);
+  GdkDisplay * gdk_window_get_display (GdkWindow *window);
 
+  /* screen */
+  typedef struct {} GdkScreen;
+  GdkScreen * gdk_screen_get_default (void);
+  GdkWindow * gdk_screen_get_root_window (GdkScreen *screen);
+  gint gdk_screen_get_number (GdkScreen *screen);
+  gint gdk_screen_get_width (GdkScreen *screen);
+  gint gdk_screen_get_height (GdkScreen *screen);
+  gint gdk_screen_get_width_mm (GdkScreen *screen);
+  gint gdk_screen_get_height_mm (GdkScreen *screen);
+  GdkVisual * gdk_screen_get_rgba_visual(GdkScreen *screen);
+  gboolean gdk_screen_is_composited(GdkScreen *screen);
+  GdkDisplay * gdk_screen_get_display(GdkScreen *screen);
 
   /* GdkDevice */
   typedef struct {} GdkDevice;

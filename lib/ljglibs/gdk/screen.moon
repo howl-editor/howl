@@ -5,6 +5,7 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.gdk'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
+require 'ljglibs.gdk.display'
 
 ref_ptr = gobject.ref_ptr
 
@@ -23,6 +24,8 @@ core.define 'GdkScreen < GObject', {
     height_mm: => C.gdk_screen_get_height_mm @
     rgba_visual: => C.gdk_screen_get_rgba_visual @
     is_composited: => C.gdk_screen_is_composited(@) != 0
+    root_window: => ref_ptr C.gdk_screen_get_root_window @
+    display: => ref_ptr C.gdk_screen_get_display @
   }
 
   get_default: -> ref_ptr C.gdk_screen_get_default!
