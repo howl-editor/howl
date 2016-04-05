@@ -49,9 +49,11 @@ sort_buffers = (buffers, current_buffer=nil) ->
     if current_buffer == b return false
     return true if a.showing and not b.showing
     return false if b.showing and not a.showing
-    ls_a = a.last_shown or 0
-    ls_b = b.last_shown or 0
-    return ls_a > ls_b if ls_a != ls_b
+    -- if none of the buffers are showing, we compare the last shown time
+    unless a.showing
+      ls_a = a.last_shown or 0
+      ls_b = b.last_shown or 0
+      return ls_a > ls_b if ls_a != ls_b
     a.title < b.title
 
 class Application extends PropertyObject
