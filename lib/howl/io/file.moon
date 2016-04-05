@@ -7,8 +7,6 @@ glib = require 'ljglibs.glib'
 import PropertyObject from howl.aux.moon
 append = table.insert
 
-home_dir = glib.get_home_dir!
-
 file_types = {
   [tonumber GFileInfo.TYPE_DIRECTORY]: 'directory',
   [tonumber GFileInfo.TYPE_SYMBOLIC_LINK]: 'symlink',
@@ -26,7 +24,7 @@ class File extends PropertyObject
     file
 
   tmpdir: ->
-    with File assert os.tmpname!
+    with File os.tmpname!
       \delete! if .exists
       \mkdir!
 
@@ -40,7 +38,7 @@ class File extends PropertyObject
     (path\match('^/') or path\match('^%a:\\\\')) != nil
 
   expand_path: (path) ->
-    res = path\gsub "~#{File.separator}", home_dir .. File.separator
+    res = path\gsub "~#{File.separator}", File.home_dir.path .. File.separator
     res
 
   separator: jit.os == 'Windows' and '\\' or '/'
@@ -83,7 +81,7 @@ class File extends PropertyObject
   @property readable: get: => @exists and @_info('access')\get_attribute_boolean 'access::can-read'
   @property etag: get: => @exists and @_info('etag').etag
   @property modified_at: get: => @exists and @_info('time')\get_attribute_uint64 'time::modified'
-  @property short_path: get: => @path\gsub "^#{home_dir}", '~'
+  @property short_path: get: => @path\gsub "^#{File.home_dir.path}", '~'
 
   @property root_dir:
     get: =>
@@ -238,7 +236,7 @@ class File extends PropertyObject
     error @tostring! .. ': ' .. msg, 3 if not status
     ...
 
-File.home_dir = File home_dir
+File.home_dir = File glib.get_home_dir!
 File.__base.rm = File.delete
 File.__base.unlink = File.delete
 File.__base.rm_r = File.delete_all

@@ -1,0 +1,17 @@
+#! /bin/sh
+
+ROOT=$(cd $(dirname $0)/.. && pwd)
+for howl in $ROOT/bin/howl $ROOT/src/howl; do
+  if [ -e $howl ]; then
+    HOWL=$howl
+    break
+  fi
+done
+
+if [ -z "$HOWL" ]; then
+  echo "Could not locate howl executable"
+  exit 1
+fi
+
+export SNAPSHOT_CMD="$HOWL --no-profile --run $ROOT/lib/scripts/screen-shooter.moon"
+exec $SNAPSHOT_CMD $@
