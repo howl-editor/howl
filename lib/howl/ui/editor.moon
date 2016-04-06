@@ -396,7 +396,8 @@ class Editor extends PropertyObject
       @cursor.column = col
 
   delete_back: =>
-    if @selection.empty and @current_context.prefix.is_blank
+    prefix = @current_context.prefix
+    if @selection.empty and prefix.is_blank and not prefix.is_empty
       if @buffer.config.backspace_unindents
         cur_line = @current_line
         gap = cur_line.indentation - @cursor.column

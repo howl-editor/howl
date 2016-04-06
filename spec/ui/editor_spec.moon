@@ -470,6 +470,19 @@ describe 'Editor', ->
         editor\delete_back!
         assert.equal buffer.text, 'Əllo'
 
+      it 'deletes previous newline when at start of line', ->
+        config.backspace_unindents = false
+        buffer.text = 'hƏllo\nworld'
+        cursor.pos = 7
+        editor\delete_back!
+        assert.equal 'hƏlloworld', buffer.text
+
+        config.backspace_unindents = true
+        buffer.text = 'hƏllo\nworld'
+        cursor.pos = 7
+        editor\delete_back!
+        assert.equal 'hƏlloworld', buffer.text
+
       it 'unindents if in whitespace and backspace_unindents is true', ->
         config.indent = 2
         buffer.text = '  hƏllo'
