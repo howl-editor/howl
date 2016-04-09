@@ -2,6 +2,16 @@
 
 ## Unreleased (in master)
 
+- Added a new command, `cursor-goto-brace` for moving cursor to matching brace.
+
+- Changed brace highlighting logic to match braces of same styles only.
+
+- New [Go](http://golang.org) bundle (lexing, autocompletion and formatting).
+
+- Added icons for buffer listings.
+
+- Undo now resets the buffer modified flag if it reaches the original revision. 
+
 - Added a new theme, `monokai`.
 
 - Added a new theme, `steinom`.
