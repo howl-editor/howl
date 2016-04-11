@@ -37,9 +37,6 @@ class CommandLine extends PropertyObject
         error "activity '#{activity_frame.name}' factory returned nil"
 
       activity_frame.activity = activity
-      if activity.keymap
-        activity_frame.command_line_keymap = activity.keymap
-
       parked_handle = dispatch.park 'activity'
       activity_frame.parked_handle = parked_handle
 
@@ -343,12 +340,12 @@ class CommandLine extends PropertyObject
       @clear!
       @write text
 
-  @property keymap:
-    get: => @current and @current.command_line_keymap
+  @property persistent_keymap:
+    get: => @current and @current.command_line_persistent_keymap
     set: (keymap) =>
       unless @current
         error 'Cannot set keymap - no running activity', 2
-      @current.command_line_keymap = keymap
+      @current.command_line_persistent_keymap = keymap
 
   notify: (text, style='info') =>
     if @notification_widget
@@ -418,7 +415,8 @@ class CommandLine extends PropertyObject
     -- keymaps checked in order:
     --   @preemptive_keymap - keys that cannot be remapped by activities
     --   widget.keymap for widget in @_widgets
-    --   registered keymaps for every running activity, newest to oldest
+    --   @_activity.keymap
+    --   persistent keymaps for every running activity, newest to oldest
     --   @default_keymap
     @clear_notification!
     @window.status\clear!
@@ -430,9 +428,13 @@ class CommandLine extends PropertyObject
         if widget.keymap
           return true if bindings.dispatch event, 'commandline', { widget.keymap }, widget
 
+    activity = @_activity
+    if activity.keymap
+      return true if bindings.dispatch event, 'commandline', { activity.keymap }, activity
+
     for i = @stack_depth, 1, -1
       frame = @running[i]
-      keymap = frame.command_line_keymap
+      keymap = frame.command_line_persistent_keymap
       continue unless keymap
       return true if bindings.dispatch event, 'commandline', { keymap }, frame.activity
 

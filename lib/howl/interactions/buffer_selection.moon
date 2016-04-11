@@ -142,7 +142,7 @@ interact.register
         current_selection = selection
 
     command_line = howl.app.window.command_line
-    command_line.keymap = {
+    command_line.persistent_keymap = {
       binding_for:
         ['buffer-close']: =>
           if current_selection and current_selection.buffer
