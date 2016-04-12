@@ -127,6 +127,7 @@ screenshots = {
   {
     name: 'clipboard'
     ->
+      howl.clipboard.clear!
       howl.clipboard.push 'http://howl.io/'
       howl.clipboard.push 'howl.clipboard.push "text"'
       howl.clipboard.push 'abc def'
