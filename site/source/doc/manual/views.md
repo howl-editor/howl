@@ -12,14 +12,14 @@ to have multiple views open in the same window, which let's you view one or more
 buffers simultaneously. This is supported in Howl, where windows can contain an
 arbitrary number of views, arranged in a grid pattern.
 
-![Multiple views](/images/doc/multi-views.png)
+![Multiple views](/images/screenshots/steinom/multi-views.png)
 
 In the above picture you have two editors in the first row, each occupying one
 column each. In the bottom row you see one editor view occupying two columns.
 While the most you'll likely ever want is around two or three separate view, you
 can divide windows up in unreasonable ways should you so desire:
 
-![Lots of views](/images/doc/lots-of-views.png)
+![Lots of views](/images/screenshots/steinom/lots-of-views.png)
 
 There is currently no way to manually resize views; views are reflowed to fill
 the entire window, and will occupy the maximum amount of space available to
