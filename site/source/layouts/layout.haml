@@ -10,6 +10,11 @@
     %title= "Howl :: #{current_page.data.title || 'Editor'}"
 
     = stylesheet_link_tag "bootstrap.min", "syntax", "howl"
+
+    = javascript_include_tag 'https://code.jquery.com/jquery-1.12.3.min.js'
+    = javascript_include_tag "bootstrap.min"
+    = preserve yield_content(:javascript)
+
     %link(href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css')
     %link(href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css')
 
@@ -37,7 +42,6 @@
 
 
       = breadcrumbs
-
       = preserve yield
 
       .footer.text-muted

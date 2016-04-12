@@ -7,6 +7,19 @@ module SitemapHelpers
     grouped(sitemap.resources.select { |r| r.url.start_with? '/doc/api' })
   end
 
+  def howl_screenshots
+    shots = sitemap.resources.select { |r| r.url =~ %r|/images/screenshots/.+/.+\.png$| }
+    shots.sort_by(&:url).group_by do |doc|
+      File.basename(File.dirname(doc.url))
+    end
+  end
+
+  def howl_themes
+    howl_screenshots.keys.map do |n|
+      [n, n.tr('-', ' ').split(/\s+/).map(&:capitalize).join(' ')]
+    end
+  end
+
   def sliced_for_columns(nr_cols, packages)
     return if packages.empty?
     header_size = 3

@@ -273,6 +273,12 @@ body.doc {
     }
   }
 
+  @media (max-width: 1644px) {
+    .toc {
+      margin-bottom: 1em;
+    }
+  }
+
   h1 {
     margin: 1em 0 0.5em 0;
   }
@@ -356,4 +362,11 @@ body.doc_spec {
     font-weight: bold;
     font-style: italic;
   }
+}
+.howl-theme-selector {
+  margin-top: -10px;
+  float: right;
+}
+.howl-theme-selector > * {
+  float: left;
 }

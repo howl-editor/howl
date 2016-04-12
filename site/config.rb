@@ -19,6 +19,7 @@ activate :blog do |blog|
 end
 
 page "blog/*", :layout => :blog_layout
+page "doc/manual/*", :layout => :manual_layout
 
 activate :s3_sync do |s3_sync|
   auth_file = File.expand_path('~/.howl-auth')
