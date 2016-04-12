@@ -112,8 +112,8 @@ screenshots = {
     name: 'buffer-grep'
     ->
       open_files { 'lib/howl/dispatch.moon' }
+      dispatch.launch -> command.run 'buffer-grep resume'
       app.editor.line_at_top = 8
-      command.run 'buffer-grep resume'
   }
 
   {
