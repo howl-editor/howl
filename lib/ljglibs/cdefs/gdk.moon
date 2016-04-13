@@ -354,6 +354,13 @@ ffi.cdef [[
   /* GdkPixbuf */
   typedef struct {} GdkPixbuf;
 
+  typedef enum {
+      GDK_INTERP_NEAREST,
+      GDK_INTERP_TILES,
+      GDK_INTERP_BILINEAR,
+      GDK_INTERP_HYPER
+  } GdkInterpType;
+
   GdkPixbuf * gdk_pixbuf_new_from_file (const char *filename, GError **error);
 
   GdkPixbuf * gdk_pixbuf_new_from_file_at_size (const char *filename,
@@ -367,18 +374,23 @@ ffi.cdef [[
                                                  gboolean preserve_aspect_ratio,
                                                  GError **error);
 
-  GdkPixbuf * gdk_pixbuf_get_from_window (GdkWindow *window,
-                                          gint src_x,
-                                          gint src_y,
-                                          gint width,
-                                          gint height);
-
   gboolean gdk_pixbuf_savev (GdkPixbuf *pixbuf,
                              const char *filename,
                              const char *type,
                              char **option_keys,
                              char **option_values,
                              GError **error);
+
+  GdkPixbuf * gdk_pixbuf_scale_simple (const GdkPixbuf *src,
+                                       int dest_width,
+                                       int dest_height,
+                                       GdkInterpType interp_type);
+
+  GdkPixbuf * gdk_pixbuf_get_from_window (GdkWindow *window,
+                                          gint src_x,
+                                          gint src_y,
+                                          gint width,
+                                          gint height);
 
   /* GdkAtom
 

@@ -5,6 +5,7 @@ import app, command, dispatch, timer from howl
 import theme from howl.ui
 import File from howl.io
 import get_cwd from howl.util.paths
+Gdk = require 'ljglibs.gdk'
 
 args = {...}
 
@@ -34,7 +35,11 @@ snapshot = (name, dir, opts) ->
   parking = dispatch.park 'shot'
 
   howl.timer.after (opts.wait_before or 0.5), ->
-    app.window\save_screenshot dir\join("#{name}.png"), with_overlays: opts.with_overlays
+    pb = app.window\get_screenshot with_overlays: opts.with_overlays
+    pb\save dir\join("#{name}.png").path, 'png', {}
+    thumbnail = pb\scale_simple 314, 144, Gdk.INTERP_HYPER
+    thumbnail\save dir\join("#{name}_tn.png").path, 'png', {}
+
     wait_for (opts.wait_after) or 0.5
     app.window.command_line\abort_all!
     dispatch.resume parking

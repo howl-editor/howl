@@ -5,7 +5,7 @@ ffi = require 'ffi'
 {:catch_error, :char_p_arr} = require 'ljglibs.glib'
 core = require 'ljglibs.core'
 require 'ljglibs.gobject.object'
-require 'ljglibs.cdefs.gdk'
+require 'ljglibs.cdefs.pixbuf'
 
 {:C, :gc} = ffi
 
@@ -37,6 +37,12 @@ core.define 'GdkPixbuf < GObject', {
   get_from_window: (window, x, y, width, height) ->
     pixbuf = C.gdk_pixbuf_get_from_window(window, x, y, width, height)
     error 'Failed to get pixbuf' unless pixbuf
+    gc(pixbuf, C.g_object_unref)
+    pixbuf
+
+  scale_simple: (dest_width, dest_height, interp_type) =>
+    pixbuf = C.gdk_pixbuf_scale_simple @, dest_width, dest_height, interp_type
+    error 'Failed to scale pixbuf' unless pixbuf
     gc(pixbuf, C.g_object_unref)
     pixbuf
 
