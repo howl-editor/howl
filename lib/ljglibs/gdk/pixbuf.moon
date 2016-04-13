@@ -5,7 +5,7 @@ ffi = require 'ffi'
 {:catch_error, :char_p_arr} = require 'ljglibs.glib'
 core = require 'ljglibs.core'
 require 'ljglibs.gobject.object'
-require 'ljglibs.cdefs.pixbuf'
+require 'ljglibs.cdefs.gdk'
 
 {:C, :gc} = ffi
 
