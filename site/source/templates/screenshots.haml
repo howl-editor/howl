@@ -1,0 +1,15 @@
+---
+title: Howl Screenshots
+---
+
+%h1 Howl Screenshots (#{theme_name} theme)
+
+.row
+  - howl_screenshots[theme].map(&:path).grep(/_tn/).each_slice(3) do |shots|
+    - shots.each do |shot|
+      - big_shot = shot.gsub('_tn', '')
+      .col-sm-6.col-md-3
+        .thumbnail
+          %a(href="/#{big_shot}")
+            %img{data: {src: "holder.js/100%x180"}, alt:"", src: "/#{shot}"}
+          %h4= File.basename(shot).gsub(/_tn\..+$/, '').tr('-', ' ').capitalize

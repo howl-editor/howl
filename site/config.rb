@@ -91,3 +91,13 @@ helpers do
     crum + '</ol>'
   end
 end
+
+['steinom', 'monokai', 'solarized-light', 'tomorrow-night-blue'].each do |theme|
+  proxy "/screenshots/#{theme}.html", "/templates/screenshots.html", {
+    locals: {
+      theme: theme,
+      theme_name: theme.tr('-', ' ').capitalize
+    },
+    ignore: true
+  }
+end

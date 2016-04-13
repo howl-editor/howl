@@ -14,8 +14,11 @@
         %span.glyphicon.glyphicon-download
 
     %p
-      = link_to image_tag('screenshots/howl-midnight-t.png'), "images/screenshots/howl-midnight.png"
-      = link_to image_tag('screenshots/howl-solarized-t.png'), "images/screenshots/howl-solarized.png"
+      = link_to image_tag('screenshots/steinom/buffer-grep_tn.png', width: 130), "screenshots/steinom.html"
+      = link_to image_tag('screenshots/tomorrow-night-blue/buffer-grep_tn.png', width: 130), "screenshots/tomorrow-night-blue.html"
+    %p
+      = link_to image_tag('screenshots/solarized-light/buffer-grep_tn.png', width: 130), "screenshots/solarized-light.html"
+      = link_to image_tag('screenshots/monokai/buffer-grep_tn.png', width: 130), "screenshots/monokai.html"
     %h1 Latest news
     %table.news
       - blog.articles[0..1].each do |article|
