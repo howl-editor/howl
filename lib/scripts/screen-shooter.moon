@@ -126,7 +126,8 @@ screenshots = {
     ->
       open_files { 'lib/howl/application.moon' }
       dispatch.launch -> command.run 'buffer-replace /showing/'
-      app.editor.line_at_top = 10
+      app.editor.searcher\forward_to 'showing'
+      app.editor.line_at_top = math.max(app.editor.cursor.line - 2, 1)
   }
 
   {
