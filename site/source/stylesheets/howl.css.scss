@@ -90,6 +90,7 @@ code {
   margin: 0 1em 0 1em;
   text-align: center;
   box-sizing: border-box;
+  max-width: 90%;
 
   white-space: nowrap;
   overflow: hidden;
@@ -273,6 +274,12 @@ body.doc {
     }
   }
 
+  @media (max-width: 1644px) {
+    .toc {
+      margin-bottom: 1em;
+    }
+  }
+
   h1 {
     margin: 1em 0 0.5em 0;
   }
@@ -356,4 +363,20 @@ body.doc_spec {
     font-weight: bold;
     font-style: italic;
   }
+}
+.howl-theme-selector {
+  margin-top: -10px;
+  float: right;
+}
+.howl-theme-selector > * {
+  float: left;
+}
+
+.thumbnail {
+  margin-bottom: 1em;
+}
+
+#screenshot-popup > .modal-dialog {
+  width: 1150px;
+  max-width: 100%;
 }

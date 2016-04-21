@@ -40,6 +40,12 @@ core.define 'GdkPixbuf < GObject', {
     gc(pixbuf, C.g_object_unref)
     pixbuf
 
+  scale_simple: (dest_width, dest_height, interp_type) =>
+    pixbuf = C.gdk_pixbuf_scale_simple @, dest_width, dest_height, interp_type
+    error 'Failed to scale pixbuf' unless pixbuf
+    gc(pixbuf, C.g_object_unref)
+    pixbuf
+
   save: (filename, type, opts={}) =>
     opts_pairs = [{:key, :value} for key, value in pairs opts]
     option_keys = char_p_arr [item.key for item in *opts_pairs]

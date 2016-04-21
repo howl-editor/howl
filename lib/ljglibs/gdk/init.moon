@@ -203,6 +203,12 @@ def = {
     'LAST_CURSOR',
     'BLANK_CURSOR',
     'CURSOR_IS_PIXMAP'
+
+    -- GdkInterpType
+    'INTERP_NEAREST'
+    'INTERP_TILES'
+    'INTERP_BILINEAR'
+    'INTERP_HYPER'
    }
 }
 

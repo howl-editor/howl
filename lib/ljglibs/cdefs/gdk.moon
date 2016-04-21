@@ -144,17 +144,6 @@ ffi.cdef [[
   typedef cairo_rectangle_int_t         GdkRectangle;
   typedef struct {} GdkVisual;
 
-  /* screen */
-  typedef struct {} GdkScreen;
-  GdkScreen * gdk_screen_get_default (void);
-  gint gdk_screen_get_number (GdkScreen *screen);
-  gint gdk_screen_get_width (GdkScreen *screen);
-  gint gdk_screen_get_height (GdkScreen *screen);
-  gint gdk_screen_get_width_mm (GdkScreen *screen);
-  gint gdk_screen_get_height_mm (GdkScreen *screen);
-  GdkVisual * gdk_screen_get_rgba_visual(GdkScreen *screen);
-  gboolean gdk_screen_is_composited(GdkScreen   *screen);
-
   /* GdkRGBA */
   typedef struct {
     gdouble red;
@@ -254,6 +243,12 @@ ffi.cdef [[
 
   GdkCursor * gdk_cursor_new (GdkCursorType cursor_type);
 
+  /* display */
+  typedef struct {} GdkDisplay;
+  void gdk_display_sync (GdkDisplay *display);
+  gboolean gdk_display_has_pending (GdkDisplay *display);
+  GdkDisplay * gdk_display_get_default (void);
+
   /* GdkWindow */
   typedef struct {} GdkWindow;
 
@@ -281,7 +276,20 @@ ffi.cdef [[
   void gdk_window_set_cursor (GdkWindow *window, GdkCursor *cursor);
 
   void gdk_window_set_opacity (GdkWindow *window, gdouble opacity);
+  GdkDisplay * gdk_window_get_display (GdkWindow *window);
 
+  /* screen */
+  typedef struct {} GdkScreen;
+  GdkScreen * gdk_screen_get_default (void);
+  GdkWindow * gdk_screen_get_root_window (GdkScreen *screen);
+  gint gdk_screen_get_number (GdkScreen *screen);
+  gint gdk_screen_get_width (GdkScreen *screen);
+  gint gdk_screen_get_height (GdkScreen *screen);
+  gint gdk_screen_get_width_mm (GdkScreen *screen);
+  gint gdk_screen_get_height_mm (GdkScreen *screen);
+  GdkVisual * gdk_screen_get_rgba_visual(GdkScreen *screen);
+  gboolean gdk_screen_is_composited(GdkScreen *screen);
+  GdkDisplay * gdk_screen_get_display(GdkScreen *screen);
 
   /* GdkDevice */
   typedef struct {} GdkDevice;
@@ -346,6 +354,13 @@ ffi.cdef [[
   /* GdkPixbuf */
   typedef struct {} GdkPixbuf;
 
+  typedef enum {
+      GDK_INTERP_NEAREST,
+      GDK_INTERP_TILES,
+      GDK_INTERP_BILINEAR,
+      GDK_INTERP_HYPER
+  } GdkInterpType;
+
   GdkPixbuf * gdk_pixbuf_new_from_file (const char *filename, GError **error);
 
   GdkPixbuf * gdk_pixbuf_new_from_file_at_size (const char *filename,
@@ -359,18 +374,23 @@ ffi.cdef [[
                                                  gboolean preserve_aspect_ratio,
                                                  GError **error);
 
-  GdkPixbuf * gdk_pixbuf_get_from_window (GdkWindow *window,
-                                          gint src_x,
-                                          gint src_y,
-                                          gint width,
-                                          gint height);
-
   gboolean gdk_pixbuf_savev (GdkPixbuf *pixbuf,
                              const char *filename,
                              const char *type,
                              char **option_keys,
                              char **option_values,
                              GError **error);
+
+  GdkPixbuf * gdk_pixbuf_scale_simple (const GdkPixbuf *src,
+                                       int dest_width,
+                                       int dest_height,
+                                       GdkInterpType interp_type);
+
+  GdkPixbuf * gdk_pixbuf_get_from_window (GdkWindow *window,
+                                          gint src_x,
+                                          gint src_y,
+                                          gint width,
+                                          gint height);
 
   /* GdkAtom
 

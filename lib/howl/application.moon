@@ -49,9 +49,11 @@ sort_buffers = (buffers, current_buffer=nil) ->
     if current_buffer == b return false
     return true if a.showing and not b.showing
     return false if b.showing and not a.showing
-    ls_a = a.last_shown or 0
-    ls_b = b.last_shown or 0
-    return ls_a > ls_b if ls_a != ls_b
+    -- if none of the buffers are showing, we compare the last shown time
+    unless a.showing
+      ls_a = a.last_shown or 0
+      ls_b = b.last_shown or 0
+      return ls_a > ls_b if ls_a != ls_b
     a.title < b.title
 
 class Application extends PropertyObject
@@ -113,9 +115,7 @@ class Application extends PropertyObject
         true
 
     window\on_destroy (window) ->
-      for k, win in ipairs @windows
-        if win\to_gobject! == window
-          @windows[k] = nil
+      @windows = [w for w in *@windows when w\to_gobject! != window]
 
     @g_app\add_window window\to_gobject!
 
@@ -264,6 +264,8 @@ class Application extends PropertyObject
       howl.clipboard.store!
 
   save_session: =>
+    return if @args.no_profile or #@args > 1
+
     session = {
       version: 1
       buffers: {}
@@ -298,7 +300,10 @@ class Application extends PropertyObject
       if @settings.dir
         append bundle.dirs, @settings.dir\join 'bundles'
       bundle.load_all!
-      @settings\load_user!
+
+      unless @args.no_profile
+        @settings\load_user!
+
       theme.apply!
       @_load_application_icon!
 
@@ -318,14 +323,16 @@ class Application extends PropertyObject
       signal.emit 'file-opened', :file, :buffer
 
     unless @_loaded
-      @_restore_session window, #files == 0
+      unless @args.no_profile
+        @_restore_session window, #files == 0
 
     if #@editors == 0
       @editor = @new_editor @_buffers[1] or @new_buffer!
 
-    window\show_all! if window
-    @_loaded = true
-    signal.emit 'app-ready'
+    unless @_loaded
+      window\show_all! if window
+      @_loaded = true
+      signal.emit 'app-ready'
 
   _should_abort_quit: =>
     modified = [b for b in *@_buffers when b.modified]

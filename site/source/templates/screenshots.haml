@@ -1,0 +1,32 @@
+---
+title: Howl Screenshots
+---
+
+- content_for :javascript do
+  = javascript_include_tag "screenshots"
+
+%h1 Howl Screenshots (#{theme_name} theme)
+
+.modal#screenshot-popup(tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
+        %h4.modal-title
+          Modal title
+      .modal-body(style='text-align:center')
+        %img.screenshot-display{data: {src: "holder.js/100%x180"}, alt:"", src: "/images/screenshots/steinom/buffer-grep.png"}
+      .modal-footer
+        %button.prev.btn.btn-default.btn-sm(type="button") Prev
+        %button.next.btn.btn-default.btn-sm(type="button") Next
+
+.row
+  - howl_screenshots[theme].map(&:path).grep(/_tn/).each_slice(3) do |shots|
+    - shots.each do |shot|
+      - big_shot = shot.gsub('_tn', '')
+      - title = File.basename(shot).gsub(/_tn\..+$/, '').tr('-', ' ').capitalize
+      .col-sm-6.col-md-3
+        .thumbnail
+          %a.screenshot(href="/#{big_shot}" data-title="#{title}")
+            %img{data: {src: "holder.js/100%x180"}, alt:"", src: "/#{shot}"}
+          %h4= title

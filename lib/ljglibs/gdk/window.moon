@@ -4,8 +4,11 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gdk'
 core = require 'ljglibs.core'
+gobject = require 'ljglibs.gobject'
 require 'ljglibs.gdk.cursor'
+require 'ljglibs.gdk.display'
 
+ref_ptr = gobject.ref_ptr
 bit_flags = core.bit_flags
 
 C = ffi.C
@@ -35,6 +38,8 @@ core.define 'GdkWindow', {
       get: => C.gdk_window_get_cursor @
       set: (cursor) => C.gdk_window_set_cursor @,cursor
     }
+
+    display: => ref_ptr C.gdk_window_get_display @
   }
 
   get_position: =>

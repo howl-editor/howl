@@ -1,3 +1,6 @@
+-- Copyright 2012-2016 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 import const_char_p from howl.cdefs
 import g_string from howl.cdefs.glib
 import string, type from _G

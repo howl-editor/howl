@@ -57,7 +57,7 @@ class CommandLine extends PropertyObject
           @show!
           bindings.cancel_capture!
           if @spillover and not @spillover.is_empty
-            -- allow editor to resize for correct focussing behavior
+            -- allow editor to resize for correct focusing behavior
             howl.timer.asap ->
               @write @spillover if not @spillover.is_empty
               @spillover = nil

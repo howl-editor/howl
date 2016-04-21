@@ -1,0 +1,16 @@
+- wrap_layout :layout do
+  - content_for :javascript do
+    = javascript_include_tag "manual"
+
+  .howl-theme-selector(style='display:none')
+    .dropdown
+      %button.btn.btn-default.btn-sm(type='button' data-toggle="dropdown")
+        Select theme for pictures..
+        %b.caret
+      %ul.dropdown-menu(role='menu')
+        - howl_themes.each do |key, name|
+          %li(role='presentation')
+            %a.set-howl-theme{role: 'menuitem', href: '#', data: {key: key}}
+              = name
+
+  = preserve yield

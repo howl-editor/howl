@@ -19,6 +19,7 @@ activate :blog do |blog|
 end
 
 page "blog/*", :layout => :blog_layout
+page "doc/manual/*", :layout => :manual_layout
 
 activate :s3_sync do |s3_sync|
   auth_file = File.expand_path('~/.howl-auth')
@@ -89,4 +90,14 @@ helpers do
     crum += "<li>#{components[-1].title}</li>"
     crum + '</ol>'
   end
+end
+
+['steinom', 'monokai', 'solarized-light', 'tomorrow-night-blue'].each do |theme|
+  proxy "/screenshots/#{theme}.html", "/templates/screenshots.html", {
+    locals: {
+      theme: theme,
+      theme_name: theme.tr('-', ' ').capitalize
+    },
+    ignore: true
+  }
 end

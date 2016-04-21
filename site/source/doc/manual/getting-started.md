@@ -16,11 +16,11 @@ what Howl is and how you can use it.
 ## The visual components
 
 To begin with, let's examine the basic visual components that you see when you
-use Howl. Using one of the screen shots as an example:
+use Howl. Using one of the screenshots as an example:
 
-![Visual components](doc/visual-components.png)
+![Visual components](screenshots/steinom/buffer-structure.png)
 
-As per the above image, the three basic visual components are windows, views and
+The above image shows the three basic visual components: a window, a view and
 the command line.
 
 ### Windows

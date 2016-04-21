@@ -17,7 +17,7 @@ while `exec` starts out in the directory associated with the current buffer.
 
 ## Interacting with the prompt
 
-![Exec prompt](/images/doc/exec-prompt.png)
+![Exec prompt](/images/screenshots/steinom/exec-prompt.png)
 
 Upon executing one of the above commands, you'll end up in the prompt. The
 prompt offers specific completions and ways of making it easier to input your
@@ -47,7 +47,7 @@ runs. There is also no limitation on the number of concurrently executing
 commands you might have - they will all be associated with their own buffers
 that you can switch between as you please, as illustrated by the below image.
 
-![Concurrent commands](/images/doc/concurrent-commands.png)
+![Concurrent commands](/images/screenshots/steinom/concurrent-commands.png)
 
 Also illustrated by the above image is the fact that Howl adds some extra
 support for displaying a command's output, with the example in question showing

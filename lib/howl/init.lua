@@ -12,6 +12,7 @@ Where options can be any of:
   --reuse       Opens any named files in an existing instance of Howl, if present
   --compile     Compiles the given files to bytecode
   --run         Loads and runs the specified file from within Howl
+  --no-profile  Starts Howl without loading any user profile (settings, etc)
   -h, --help    This help
 ]=]
 
@@ -23,6 +24,7 @@ local function parse_args(argv)
     ['--help'] = 'help',
     ['--reuse'] = 'reuse',
     ['--compile'] = 'compile',
+    ['--no-profile'] = 'no_profile',
     ['--run'] = 'run',
   }
   local args = {}
