@@ -131,6 +131,19 @@ screenshots = {
   }
 
   {
+    name: 'buffer-replace-regex'
+    ->
+      open_files { 'lib/howl/application.moon' }
+      command.run 'buffer-replace-regex /\\w+\\s*=\\s*require(.+)/'
+  }
+
+  {
+    name: 'buffer-modes'
+    ->
+      command.run 'buffer-mode'
+  }
+
+  {
     name: 'clipboard'
     ->
       howl.clipboard.clear!
@@ -223,6 +236,24 @@ screenshots = {
       command.exec project_dir, 'while true; do echo "foo"; sleep 1; done'
       command.exec source_project, './bin/howl-spec'
       command.run 'switch-buffer'
+  }
+
+  {
+    name: 'commands'
+    ->
+      howl.interact.select_command title: 'Command', prompt: ':'
+  }
+
+  {
+    name: 'configuration'
+    ->
+      command.run 'set'
+  }
+
+  {
+    name: 'configuration help'
+    ->
+      command.run 'set indent='
   }
 }
 
