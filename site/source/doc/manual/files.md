@@ -14,7 +14,7 @@ also aliased as `e` for those more comfortable with VI. Triggering that command
 opens up the command line prompt and displays the contents of the current
 directory, as determined by the current buffer:
 
-![File open](/images/screenshots/steinom/file-open.png)
+![File open](/images/screenshots/monokai/file-open.png)
 
 Once you're in the prompt, you  can then select the file of your choice. You can
 choose the file from the list by manually navigating using the arrow keys,
@@ -60,7 +60,7 @@ somewhat similar to `project-open`, however it can be activated in any
 directory. To switch back to the regular, single level view, press `ctrl_s`
 again.
 
-![Project open](/images/screenshots/steinom/project-open.png)
+![Project open](/images/screenshots/monokai/project-open.png)
 
 ## Saving buffers
 
@@ -81,7 +81,7 @@ supporting multiple open views, you'll likely have more buffers open than you
 can fit on your screen. In order to switch to another buffer, you can use the
 `switch-buffer` command (bound to `ctrl_b` by default):
 
-![switch-buffer](/images/screenshots/steinom/switch-buffer.png)
+![switch-buffer](/images/screenshots/monokai/switch-buffer.png)
 
 This let's you select an open buffer to display in the current view. The list as
 presented is ordered by access time, thus you'll see your most recent buffers at

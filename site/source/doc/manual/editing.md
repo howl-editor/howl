@@ -50,7 +50,7 @@ When editing a larger buffer, it can be challenging to quickly jump to a
 specific part of it. The `buffer-structure` command (bound to `alt_s` by
 default) can provide you with an outline for the current buffer:
 
-![Buffer structure](/images/screenshots/steinom/buffer-structure.png)
+![Buffer structure](/images/screenshots/monokai/buffer-structure.png)
 
 How well this works is depending on the language mode - should the mode not
 provide custom support for this a general, indentation-based, structure is
@@ -63,7 +63,7 @@ The `buffer-search-forward` and `buffer-search-backward` commands (bound to
 near the cursor. The visible matches are highlighted in real-time, as you type
 your search text.
 
-![Buffer search](/images/screenshots/steinom/buffer-search-forward.png)
+![Buffer search](/images/screenshots/monokai/buffer-search-forward.png)
 
 The match closest to the cursor is focused and you can use the `up` and `down`
 keys to jump between different matches. Hitting `enter` moves the cursor to the
@@ -77,7 +77,7 @@ sub-string matches that you want to ignore. The `buffer-search-word-forward` and
 work similar to the buffer search commands above, but they only match whole
 words and they also automatically search for the current word at the cursor.
 
-![Whole word search](/images/screenshots/steinom/whole-word-search.png)
+![Whole word search](/images/screenshots/monokai/whole-word-search.png)
 
 Note that the match within 'text_len' is not highlighted in the screenshot
 above.
@@ -90,7 +90,7 @@ Buffer grep commands are an alternative to the regular `buffer-search-` commands
 for searching the current buffer. These commands search the entire buffer as you
 type and display all matching lines in real-time:
 
-![Buffer grep](/images/screenshots/steinom/buffer-grep.png)
+![Buffer grep](/images/screenshots/monokai/buffer-grep.png)
 
 There are three buffer grep commands available for three types of searches:
 
@@ -114,7 +114,7 @@ separator), followed by the replacement text. As an example, if you want to
 replace all instances of 'showing' with 'visible', you would invoke
 `buffer-replace` and then type 'showing/visible'.
 
-![Buffer replace](/images/screenshots/steinom/buffer-replace.png)
+![Buffer replace](/images/screenshots/monokai/buffer-replace.png)
 
 As you type, the displayed preview buffer is updated to show the effect of your
 replacement. You can use the `up` and `down` arrow keys to jump between
@@ -152,7 +152,7 @@ the latest text in the clipboard. The `editor-paste..` command (bound to
 `ctrl_shift_v` by default) opens a list of previous clips and pastes any
 available clip that you choose:
 
-![Clipboard paste](/images/screenshots/steinom/clipboard.png)
+![Clipboard paste](/images/screenshots/monokai/clipboard.png)
 
 ## Word wrapping
 
@@ -191,7 +191,7 @@ available for Lua and Moonscript._
 The `show-doc-at-cursor` command, bound to `ctrl_q` by default, pops up
 documentation for the symbol at the cursor if available:
 
-![Show doc](/images/screenshots/steinom/show-doc.png)
+![Show doc](/images/screenshots/monokai/show-doc.png)
 
 ---
 

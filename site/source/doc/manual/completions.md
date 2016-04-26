@@ -51,7 +51,7 @@ boundaries in the completion, typically defined as underscores, slashes, etc.
 The below image illustrates the two different types of matches for a completion
 list:
 
-![Completion types](/images/screenshots/steinom/completion-types.png)
+![Completion types](/images/screenshots/monokai/completion-types.png)
 
 In the above example we can see that "aa" matches "attr_accessor" as a boundary
 match, while "mraardvark" is an exact match. The order of the completions above

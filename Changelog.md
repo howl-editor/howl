@@ -10,9 +10,10 @@
 
 - Added icons for buffer listings.
 
-- Undo now resets the buffer modified flag if it reaches the original revision. 
+- Undo now resets the buffer modified flag if it reaches the original revision.
 
-- Added a new theme, `monokai`.
+- Added a new theme, `monokai`. This will be the new default theme, starting
+with the 0.4 release.
 
 - Added a new theme, `steinom`.
 

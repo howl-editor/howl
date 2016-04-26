@@ -151,7 +151,7 @@ with config
   .define
     name: 'theme'
     description: 'The theme to use (colors, styles, highlights, etc.)'
-    default: 'Solarized Light'
+    default: 'Monokai'
     type_of: 'string'
     options: -> [name for name in pairs theme_files]
     scope: 'global'

@@ -18,7 +18,7 @@ what Howl is and how you can use it.
 To begin with, let's examine the basic visual components that you see when you
 use Howl. Using one of the screenshots as an example:
 
-![Visual components](screenshots/steinom/buffer-structure.png)
+![Visual components](screenshots/monokai/buffer-structure.png)
 
 The above image shows the three basic visual components: a window, a view and
 the command line.
