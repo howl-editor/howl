@@ -382,3 +382,10 @@ body.doc_spec {
   width: 1150px;
   max-width: 100%;
 }
+
+iframe {
+  @media (max-width: 669px) {
+    max-width: 100%;
+    max-height: 315px;
+  }
+}
