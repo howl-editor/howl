@@ -22,6 +22,10 @@ css_template = [[
   background: rgba(0,0,0,0);
 }
 
+.scrollbar.trough {
+    background: rgba(0,0,0,0);
+}
+
 .header {
   color: ${header_color};
   font: ${header_font};
