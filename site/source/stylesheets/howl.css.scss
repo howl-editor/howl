@@ -134,6 +134,8 @@ code {
     margin-bottom: 0.5em;
   }
 
+  overflow: auto;
+
   @media (min-width: 670px) {
     h1 + p > img, h2 + p > img {
       float: right;
