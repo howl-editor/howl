@@ -125,9 +125,11 @@ screenshots = {
     name: 'buffer-replace'
     ->
       open_files { 'lib/howl/application.moon' }
-      dispatch.launch -> command.run 'buffer-replace /showing/'
-      app.editor.searcher\forward_to 'showing'
+      with app.editor.searcher
+        \forward_to 'showing'
+        \commit!
       app.editor.line_at_top = math.max(app.editor.cursor.line - 2, 1)
+      command.run 'buffer-replace /showing/'
   }
 
   {
@@ -251,7 +253,7 @@ screenshots = {
   }
 
   {
-    name: 'configuration help'
+    name: 'configuration-help'
     ->
       command.run 'set indent='
   }
