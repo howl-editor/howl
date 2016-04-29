@@ -212,7 +212,7 @@ class Editor extends PropertyObject
       start, stop = @selection\range!
       @buffer\chunk start, stop - 1
 
-  @property current_mode: get: => @buffer\mode_at @cursor.pos
+  @property mode_at_cursor: get: => @buffer\mode_at @cursor.pos
 
   refresh_display: => @view\refresh_display from_line: 1, invalidate: true
   grab_focus: => @view\grab_focus!
@@ -683,7 +683,7 @@ class Editor extends PropertyObject
       @remove_popup!
       return true
 
-    maps = { @buffer.keymap, @current_mode and @current_mode.keymap }
+    maps = { @buffer.keymap, @mode_at_cursor and @mode_at_cursor.keymap }
     return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
@@ -739,7 +739,7 @@ class Editor extends PropertyObject
 
     should_highlight = @buffer.config.matching_braces_highlighted
     return unless should_highlight
-    auto_pairs = @current_mode.auto_pairs
+    auto_pairs = @mode_at_cursor.auto_pairs
     return unless auto_pairs
 
     highlight_braces = (pos1, pos2, flair) ->
@@ -793,7 +793,7 @@ class Editor extends PropertyObject
     params = moon.copy args
     params.editor = self
     return if signal.emit('insert-at-cursor', params) == signal.abort
-    return if @current_mode.on_insert_at_cursor and @current_mode\on_insert_at_cursor(params, self)
+    return if @mode_at_cursor.on_insert_at_cursor and @mode_at_cursor\on_insert_at_cursor(params, self)
 
     if @popup
       @popup.window\on_insert_at_cursor(self, params) if @popup.window.on_insert_at_cursor
