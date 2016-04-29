@@ -67,7 +67,7 @@ class File extends PropertyObject
     base = @basename
     @is_directory and "#{base}#{File.separator}" or base
 
-  @property extension: get: => @basename\match('%.(%w+)$')
+  @property extension: get: => @basename\match('%.([^.]+)$')
   @property uri: get: => @gfile.uri
   @property is_directory: get: => @exists and @_file_type == GFileInfo.TYPE_DIRECTORY
   @property is_link: get: => @exists and @_file_type == GFileInfo.TYPE_SYMBOLIC_LINK

@@ -77,6 +77,7 @@ describe 'File', ->
 
   it '.extension returns the extension of the path', ->
     assert.equal File('/foo/base.ext').extension, 'ext'
+    assert.equal File('/foo/base.ex+').extension, 'ex+'
 
   it '.path returns the path of the file', ->
     assert.equal '/foo/base.ext', File('/foo/base.ext').path
