@@ -1,3 +1,6 @@
+-- Copyright 2012-2016 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 {
   lexer: bundle_load 'pascal_lexer'
 
