@@ -280,9 +280,9 @@ class Buffer extends PropertyObject
 
   mode_at: (pos) =>
     b_pos = @byte_offset pos
-    marker = @_buffer.styling\get_nearest_style_marker b_pos
+    mode_name = @_buffer.styling\get_mode_name_at b_pos
     -- Returns @mode if there's no marker or the requested mode doesn't exist.
-    marker and mode.by_name(marker.name) or @mode
+    mode_name and mode.by_name(mode_name) or @mode
 
   config_at: (pos) =>
     mode_at = @mode_at pos

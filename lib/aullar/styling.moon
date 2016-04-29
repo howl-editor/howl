@@ -187,9 +187,9 @@ define_class {
     ptr = @style_buffer\get_ptr(offset - 1, 1)
     style_map[ptr[0]]
 
-  get_nearest_style_marker: (pos) =>
+  get_mode_name_at: (pos) =>
     found = @sub_style_markers\at pos
-    found and found[#found]
+    found and found[#found] and found[#found].name
 
   _notify: (start_offset, end_offset) =>
     if @listener and @listener.on_changed

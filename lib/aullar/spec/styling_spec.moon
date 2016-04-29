@@ -329,22 +329,18 @@ describe 'Styling', ->
           2, 's1:s3', 3,
         }, styling\get(1, 6)
 
-  describe 'get_nearest_style_marker(pos)', ->
-    it 'correctly returns the style marker nearest the requested position', ->
+  describe 'get_mode_name_at(pos)', ->
+    it 'correctly returns the mode name nearest the requested position', ->
       styling\apply 1, {
         1, 'operator', 2,
         2, { 1, 's2', 2, 2, 's3', 3 }, 'my_sub|s1'
       }
 
-      assert.same nil, styling\get_nearest_style_marker 1
-      marker =
-        name: 'my_sub'
-        start_offset: 2
-        end_offset: 5
-      assert.same marker, styling\get_nearest_style_marker 2
-      assert.same marker, styling\get_nearest_style_marker 3
-      assert.same marker, styling\get_nearest_style_marker 4
-      assert.same nil, styling\get_nearest_style_marker 5
+      assert.same nil, styling\get_mode_name_at 1
+      assert.same 'my_sub', styling\get_mode_name_at 2
+      assert.same 'my_sub', styling\get_mode_name_at 3
+      assert.same 'my_sub', styling\get_mode_name_at 4
+      assert.same nil, styling\get_mode_name_at 5
 
     it 'works with nested sub modes', ->
       styling\apply 1, {
@@ -366,11 +362,11 @@ describe 'Styling', ->
         start_offset: 2
         end_offset: 6
 
-      assert.same marker1, styling\get_nearest_style_marker 1
-      assert.same marker2, styling\get_nearest_style_marker 2
-      assert.same marker2, styling\get_nearest_style_marker 3
-      assert.same marker2, styling\get_nearest_style_marker 4
-      assert.same marker2, styling\get_nearest_style_marker 5
+      assert.same 'my_sub1', styling\get_mode_name_at 1
+      assert.same 'my_sub2', styling\get_mode_name_at 2
+      assert.same 'my_sub2', styling\get_mode_name_at 3
+      assert.same 'my_sub2', styling\get_mode_name_at 4
+      assert.same 'my_sub2', styling\get_mode_name_at 5
 
   describe '(run-through)', ->
     it 'generally works', ->
