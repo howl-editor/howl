@@ -146,6 +146,13 @@ define_class {
             append markers,
               name: mode_name
               start_offset: sub_start_offset
+              -- Note that the use of + 1 here vs. the -1 in the above call to @set is
+              -- NOT an error. Take something like this HTML:
+              -- <script>xyz</script>
+              -- The styling end is defined as column 11. But, from the user's
+              -- perspective, column 12 is still part of the script. So you end
+              -- up removing the - 1. Then, the marker lookups treat the end_offset
+              -- as one *past* the end of the section, so then you add the + 1.
               end_offset: sub_end_offset + 1
 
     styled_from = offset + styling[1] - 1
