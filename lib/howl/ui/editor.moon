@@ -316,7 +316,7 @@ class Editor extends PropertyObject
 
   comment: => @_apply_to_line_modes 'comment'
   uncomment: => @_apply_to_line_modes 'uncomment'
-  toggle_comment: => @_apply_to_line_modes 'toggle_comment'
+  toggle_comment: => @_apply_to_line_modes 'toggle_comment', true
 
   delete_line: => @buffer.lines[@cursor.line] = nil
 
@@ -649,10 +649,20 @@ class Editor extends PropertyObject
     bar\remove id
     @indicator[id] = nil
 
-  _apply_to_line_modes: (method) =>
+  _apply_to_line_modes: (method, single=false) =>
     lines = @active_lines
+
+    mode = nil
+    if single
+      modes = [@buffer\mode_at line.start_pos for line in *lines]
+      mode = modes[1]
+      for other_mode in *modes
+        if mode != other_mode
+          mode = @buffer.mode
+          break
+
     for line in *lines
-      mode = @buffer\mode_at line.start_pos
+      mode = @buffer\mode_at line.start_pos unless single
       mode[method] mode, self, {line} if mode[method]
 
   _on_destroy: =>
