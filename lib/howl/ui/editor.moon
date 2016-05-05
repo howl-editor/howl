@@ -661,9 +661,10 @@ class Editor extends PropertyObject
           mode = @buffer.mode
           break
 
-    for line in *lines
-      mode = @buffer\mode_at line.start_pos unless single
-      mode[method] mode, self, {line} if mode[method]
+    @buffer\as_one_undo ->
+      for line in *lines
+        mode = @buffer\mode_at line.start_pos unless single
+        mode[method] mode, self, {line} if mode[method]
 
   _on_destroy: =>
     for h in *@_handlers
