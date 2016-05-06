@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- New Pascal bundle (lexing, indentation support, etc). Replaces the old basic
+Pascal mode.
+
 - Added a new command, `cursor-goto-brace` for moving cursor to matching brace.
 
 - Changed brace highlighting logic to match braces of same styles only.
