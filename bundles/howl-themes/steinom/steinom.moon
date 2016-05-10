@@ -126,8 +126,8 @@ return {
 
     edge_line:
       type: flair.PIPE
-      foreground: base
-      line_width: 2
+      foreground: slategray
+      line_width: 1.5
       foreground_alpha: 0.2,
 
     search:
