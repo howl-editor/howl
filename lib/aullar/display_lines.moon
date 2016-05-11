@@ -10,6 +10,7 @@ Pango = require 'ljglibs.pango'
 pango_cairo = Pango.cairo
 flair = require 'aullar.flair'
 
+{:rawset, :rawget} = _G
 {:max, :min, :floor} = math
 {:copy} = moon
 
@@ -385,12 +386,12 @@ get_wrap_indicator = (pango_context, view) ->
       last = last + edge
 
       for i = @min, first - 1
-        l = @[i]
-        @[i] = nil if l and not l.block
+        l = rawget @, i
+        @[i] = nil if l and not l._block
 
       for i = last, @max
-        l = @[i]
-        @[i] = nil if l and not l.block
+        l = rawget @, i
+        @[i] = nil if l and not l._block
 
       @window = :first, :last, size: (last - first) + 1
       @min = max first, @min
