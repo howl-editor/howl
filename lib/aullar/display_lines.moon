@@ -385,10 +385,12 @@ get_wrap_indicator = (pango_context, view) ->
       last = last + edge
 
       for i = @min, first - 1
-        @[i] = nil
+        l = @[i]
+        @[i] = nil if l and not l.block
 
       for i = last, @max
-        @[i] = nil
+        l = @[i]
+        @[i] = nil if l and not l.block
 
       @window = :first, :last, size: (last - first) + 1
       @min = max first, @min
