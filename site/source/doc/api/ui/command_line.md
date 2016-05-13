@@ -69,6 +69,14 @@ the text for the active interaction. Read/write.
 The title of the CommandLine view. This property only gets or sets the title for
 the active interaction. Read/write.
 
+### persistent_keymap
+
+A [keymap](../bindings.html) associated with the currently active interaction.
+This keymap is active while associated interaction, or any nested interaction,
+is active. By contract, keymaps specified in the interaction
+[factory](../interact.md#register) are only active when the associated
+interaction is active and not active when a nested interaction is running.
+
 ## Methods
 
 ### add_widget (name, widget)

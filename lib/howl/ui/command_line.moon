@@ -37,7 +37,6 @@ class CommandLine extends PropertyObject
         error "activity '#{activity_frame.name}' factory returned nil"
 
       activity_frame.activity = activity
-
       parked_handle = dispatch.park 'activity'
       activity_frame.parked_handle = parked_handle
 
@@ -341,6 +340,13 @@ class CommandLine extends PropertyObject
       @clear!
       @write text
 
+  @property persistent_keymap:
+    get: => @current and @current.command_line_persistent_keymap
+    set: (keymap) =>
+      unless @current
+        error 'Cannot set keymap - no running activity', 2
+      @current.command_line_persistent_keymap = keymap
+
   notify: (text, style='info') =>
     if @notification_widget
       @notification_widget\notify style, text
@@ -408,31 +414,38 @@ class CommandLine extends PropertyObject
   handle_keypress: (event) =>
     -- keymaps checked in order:
     --   @preemptive_keymap - keys that cannot be remapped by activities
-    --   @_activity.keymap
     --   widget.keymap for widget in @_widgets
-    --   @keymap
+    --   @_activity.keymap
+    --   persistent keymaps for every running activity, newest to oldest
+    --   @default_keymap
     @clear_notification!
     @window.status\clear!
 
     return true if bindings.dispatch event, 'commandline', { @preemptive_keymap}, self
-
-    activity = @_activity
-    if activity and activity.keymap
-      return true if bindings.dispatch event, 'commandline', { activity.keymap }, activity
 
     if @_widgets
       for _, widget in pairs @_widgets
         if widget.keymap
           return true if bindings.dispatch event, 'commandline', { widget.keymap }, widget
 
-    return true if bindings.dispatch event, 'commandline', { @keymap }, self
+    activity = @_activity
+    if activity.keymap
+      return true if bindings.dispatch event, 'commandline', { activity.keymap }, activity
+
+    for i = @stack_depth, 1, -1
+      frame = @running[i]
+      keymap = frame.command_line_persistent_keymap
+      continue unless keymap
+      return true if bindings.dispatch event, 'commandline', { keymap }, frame.activity
+
+    return true if bindings.dispatch event, 'commandline', { @default_keymap }, self
 
     return false
 
   preemptive_keymap:
     ctrl_shift_backspace: => @abort_all!
 
-  keymap:
+  default_keymap:
     binding_for:
       ["cursor-home"]: => @command_widget.cursor.pos = @_prompt_end
 
@@ -498,6 +511,10 @@ class CommandLine extends PropertyObject
       @window.status\show!
       @last_focused\grab_focus! if @last_focused
       @last_focused = nil
+
+  refresh: =>
+    for frame in *@running
+      frame.activity\refresh! if frame.activity.refresh
 
 style.define_default 'prompt', 'keyword'
 
