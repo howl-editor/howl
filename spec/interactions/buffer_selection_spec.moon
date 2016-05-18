@@ -64,8 +64,8 @@ describe 'buffer_selection', ->
         table.insert previews, editor.buffer.title
       assert.same {'a1-buffer', 'a2-buffer'}, previews
 
-    context 'sending binding_for("close")', ->
-      keymap = ctrl_w: 'close'
+    context 'sending binding_for("buffer-close")', ->
+      keymap = ctrl_w: 'buffer-close'
       before_each -> bindings.push keymap
       after_each -> bindings.remove keymap
 

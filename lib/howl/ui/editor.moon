@@ -984,35 +984,35 @@ with config
 
 -- Commands
 for cmd_spec in *{
-  { 'newline', 'Adds a new line at the current position', 'newline' }
-  { 'comment', 'Comments the selection or current line', 'comment' }
-  { 'uncomment', 'Uncomments the selection or current line', 'uncomment' }
-  { 'toggle-comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
-  { 'delete-line', 'Deletes the current line', 'delete_line' }
-  { 'cut-to-end-of-line', 'Cuts to the end of line', 'delete_to_end_of_line' }
-  { 'delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line', no_copy: true }
-  { 'copy-line', 'Copies the current line to the clipboard', 'copy_line' }
-  { 'paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
-  { 'smart-tab', 'Inserts tab or shifts selected text right', 'smart_tab' }
-  { 'smart-back-tab', 'Moves to previous tab stop or shifts text left', 'smart_back_tab' }
-  { 'delete-back', 'Deletes one character back', 'delete_back' }
-  { 'delete-back-word', 'Deletes one word back', 'delete_back_word' }
-  { 'delete-forward', 'Deletes one character forward', 'delete_forward' }
-  { 'delete-forward-word', 'Deletes one word forward', 'delete_forward_word' }
-  { 'shift-right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
-  { 'shift-left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
-  { 'indent', 'Indents the selected lines, or the current line', 'indent' }
-  { 'indent-all', 'Indents the entire buffer', 'indent_all' }
-  { 'join-lines', 'Joins the current line with the line below', 'join_lines' }
-  { 'complete', 'Starts completion at cursor', 'complete' }
+  { 'newline', 'Add a new line at the current position', 'newline' }
+  { 'comment', 'Comment the selection or current line', 'comment' }
+  { 'uncomment', 'Uncomment the selection or current line', 'uncomment' }
+  { 'toggle-comment', 'Comment or uncomment the selection or current line', 'toggle_comment' }
+  { 'delete-line', 'Delete the current line', 'delete_line' }
+  { 'cut-to-end-of-line', 'Cut to the end of line', 'delete_to_end_of_line' }
+  { 'delete-to-end-of-line', 'Delete to the end of line', 'delete_to_end_of_line', no_copy: true }
+  { 'copy-line', 'Copy the current line to the clipboard', 'copy_line' }
+  { 'paste', 'Paste the contents of the clipboard at the current position', 'paste' }
+  { 'smart-tab', 'Insert tab or shift selected text right', 'smart_tab' }
+  { 'smart-back-tab', 'Move to previous tab stop or shifts text left', 'smart_back_tab' }
+  { 'delete-back', 'Delete one character back', 'delete_back' }
+  { 'delete-back-word', 'Delete one word back', 'delete_back_word' }
+  { 'delete-forward', 'Delete one character forward', 'delete_forward' }
+  { 'delete-forward-word', 'Delete one word forward', 'delete_forward_word' }
+  { 'shift-right', 'Shift the selected lines, or the current line, right', 'shift_right' }
+  { 'shift-left', 'Shift the selected lines, or the current line, left', 'shift_left' }
+  { 'indent', 'Indent the selected lines, or the current line', 'indent' }
+  { 'indent-all', 'Indent the entire buffer', 'indent_all' }
+  { 'join-lines', 'Join the current line with the line below', 'join_lines' }
+  { 'complete', 'Start completion at cursor', 'complete' }
   { 'undo', 'Undo last edit for the current editor', 'undo' }
   { 'redo', 'Redo last undo for the current editor', 'redo' }
-  { 'scroll-up', 'Scrolls one line up', 'scroll_up' }
-  { 'scroll-down', 'Scrolls one line down', 'scroll_down' }
-  { 'duplicate-current', 'Duplicates the selection or current line', 'duplicate_current' }
-  { 'cut', 'Cuts the selection or current line to the clipboard', 'cut' }
-  { 'copy', 'Copies the selection or current line to the clipboard', 'copy' }
-  { 'cycle-case', 'Changes case for current word or selection', 'cycle_case' }
+  { 'scroll-up', 'Scroll one line up', 'scroll_up' }
+  { 'scroll-down', 'Scroll one line down', 'scroll_down' }
+  { 'duplicate-current', 'Duplicate the selection or current line', 'duplicate_current' }
+  { 'cut', 'Cut the selection or current line to the clipboard', 'cut' }
+  { 'copy', 'Copy the selection or current line to the clipboard', 'copy' }
+  { 'cycle-case', 'Change case for current word or selection', 'cycle_case' }
 }
   args = { select 4, table.unpack cmd_spec }
   command.register

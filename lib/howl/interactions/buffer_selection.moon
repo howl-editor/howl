@@ -133,16 +133,26 @@ interact.register
         {style: 'operator'}
         {style: 'comment'}
       }
+    current_selection = nil
     with opts
       .title or= 'Buffers'
       .matcher = buffer_matcher
       .columns = columns
-      .keymap = {
-        binding_for:
-          ['close']: (current) ->
-            if current.selection
-              app\close_buffer current.selection.buffer
-      }
+      .on_change = (selection, text, items) ->
+        current_selection = selection
+
+    command_line = howl.app.window.command_line
+    command_line\add_keymap {
+      binding_for:
+        ['buffer-close']: =>
+          if current_selection and current_selection.buffer
+            app\close_buffer current_selection.buffer
+            command_line\refresh!
+    }
+
+    command_line\add_help
+      key_for: 'buffer-close'
+      action: 'Close the currently selected buffer'
 
     result = interact.select_location opts
     if result

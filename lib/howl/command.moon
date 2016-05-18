@@ -119,6 +119,10 @@ class CommandInput
     @command_line\clear!
     @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
 
+    @command_line\add_help
+      heading: "Command '#{cmd_name}'"
+      text: cmd.description
+
     unless cmd.input
       @command_line\record_history!
       self.finish cmd, {}
@@ -166,6 +170,21 @@ class CommandInput
           log.error "No such command '#{@command_line.text}'"
           return
         @read_command_input cmd, @command_line.text
+
+  help: {
+    {
+      heading: "Command 'run'"
+      text: 'Run a command'
+    }
+    {
+      key: 'tab'
+      action: 'Show command list'
+    }
+    {
+      key: 'up'
+      action: 'Show command history'
+    }
+  }
 
 command_input_reader = {
   name: 'command-input-reader'

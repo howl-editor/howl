@@ -6,7 +6,7 @@ import BufferPopup from howl.ui
 
 command.register
   name: 'buffer-search-forward',
-  description: 'Starts an interactive forward search'
+  description: 'Start an interactive forward search'
   input: ->
     if interact.forward_search!
       return true
@@ -15,7 +15,7 @@ command.register
 
 command.register
   name: 'buffer-search-backward',
-  description: 'Starts an interactive backward search'
+  description: 'Start an interactive backward search'
   input: ->
     if interact.backward_search!
       return true
@@ -24,7 +24,7 @@ command.register
 
 command.register
   name: 'buffer-search-word-forward',
-  description: 'Jumps to next occurence of word at cursor'
+  description: 'Jump to next occurence of word at cursor'
   input: ->
     app.window.command_line\write_spillover app.editor.current_context.word.text
     if interact.forward_search_word!
@@ -34,7 +34,7 @@ command.register
 
 command.register
   name: 'buffer-search-word-backward',
-  description: 'Jumps to previous occurence of word at cursor'
+  description: 'Jump to previous occurence of word at cursor'
   input: ->
     app.window.command_line\write_spillover app.editor.current_context.word.text
     if interact.backward_search_word!
@@ -44,12 +44,12 @@ command.register
 
 command.register
   name: 'buffer-repeat-search',
-  description: 'Repeats the last search'
+  description: 'Repeat the last search'
   handler: -> app.editor.searcher\repeat_last!
 
 command.register
   name: 'buffer-replace'
-  description: 'Replaces text (within selection or globally)'
+  description: 'Replace text (within selection or globally)'
   input: ->
     buffer = app.editor.buffer
     chunk = app.editor.active_chunk
@@ -74,7 +74,7 @@ command.register
 
 command.register
   name: 'buffer-replace-regex',
-  description: 'Replaces text using regular expressions (within selection or globally)'
+  description: 'Replace text using regular expressions (within selection or globally)'
   input: ->
     buffer = app.editor.buffer
     chunk = app.editor.active_chunk
@@ -99,13 +99,13 @@ command.register
 
 command.register
   name: 'editor-paste..',
-  description: 'Pastes a selected clip from the clipboard at the current position'
+  description: 'Paste a selected clip from the clipboard at the current position'
   input: interact.select_clipboard_item
   handler: (clip) -> app.editor\paste :clip
 
 command.register
   name: 'show-doc-at-cursor',
-  description: 'Shows documentation for symbol at cursor, if available'
+  description: 'Show documentation for symbol at cursor, if available'
   handler: ->
     m = app.editor.buffer.mode
     ctx = app.editor.current_context
@@ -128,7 +128,7 @@ command.register
 
 command.register
   name: 'buffer-mode',
-  description: 'Sets a specified mode for the current buffer'
+  description: 'Set a specified mode for the current buffer'
   input: interact.select_mode
   handler: (selected_mode) ->
     buffer = app.editor.buffer

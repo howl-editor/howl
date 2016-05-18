@@ -3,7 +3,7 @@
 
 import Matcher, TaskRunner from howl.util
 import app, command, config, interact, timer from howl
-import highlight, ListWidget, NotificationWidget from howl.ui
+import highlight, markup, ListWidget, NotificationWidget from howl.ui
 
 append = table.insert
 
@@ -345,6 +345,33 @@ class Replacement
 
       ['buffer-replace']: => @_switch_to 'buffer-replace'
       ['buffer-replace-regex']: => @_switch_to 'buffer-replace-regex'
+
+  help: {
+    {
+      heading: 'Syntax'
+      text: markup.howl '<operator>/</>text<operator>/</>replacement'
+    }
+    {
+      key: 'up'
+      action: 'Select previous match'
+    }
+    {
+      key: 'down'
+      action: 'Select next match'
+    }
+    {
+      key: 'alt_enter'
+      action: 'Toggle replacement for currently selected match'
+    }
+    {
+      key: 'ctrl_r'
+      action: 'Switch to buffer-replace-regex'
+    }
+    {
+      key_for: 'buffer-replace'
+      action: 'Switch to buffer-replace'
+    }
+  }
 
 interact.register
   name: 'get_replacement'

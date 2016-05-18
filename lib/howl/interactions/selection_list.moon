@@ -43,6 +43,8 @@ class SelectionList
       else
         @on_update spillover
 
+  refresh: => @list_widget\update @command_line.text, true
+
   show_list: =>
     @command_line\add_widget 'completion_list', @list_widget
     @showing_list = true
@@ -81,17 +83,6 @@ class SelectionList
         @show_list!
       else
         @submit!
-
-    on_unhandled: (event, source, translations, self) ->
-      return false if not @opts.keymap
-      return ->
-        if bindings.dispatch event, source, { @opts.keymap }, {
-            selection: @list_widget.selection
-            text: @command_line.text
-          }
-          @list_widget\update @command_line.text, true
-          @_handle_change!
-        return false
 
 interact.register
   name: 'select'
