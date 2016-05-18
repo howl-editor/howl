@@ -13,13 +13,6 @@ append = table.insert
 -- used to generate a unique id for every new activity
 id_counter = 0
 
-config.define
-  name: 'show_command_line_help'
-  description: 'Whether to automatically display help in command line where available'
-  type_of: 'boolean'
-  default: true
-  scope: 'global'
-
 class CommandLine extends PropertyObject
   new: (@window) =>
     super!
