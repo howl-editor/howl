@@ -268,6 +268,7 @@ class CommandLine extends PropertyObject
       on_changed: ->
         @on_update!
       on_focus_lost: ->
+        @close_popup!
         @command_widget\focus! if @showing
 
     @command_widget.visible_rows = 1
