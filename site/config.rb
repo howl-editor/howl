@@ -18,6 +18,7 @@ activate :blog do |blog|
   blog.paginate = true
 end
 
+page "index.html", :layout => :base_layout
 page "blog/*", :layout => :blog_layout
 page "doc/manual/*", :layout => :manual_layout
 
@@ -71,7 +72,7 @@ helpers do
     parts.each do |part|
       path = path.join part
       resource = sitemap.find_resource_by_path(path.to_s) || sitemap.find_resource_by_path("#{path}/index.html")
-      title = resource && resource.metadata[:page]['title']
+      title = resource && (resource.metadata[:locals][:page_title] || resource.metadata[:page]['title'])
       title ||= part =~ /([^.]+)/ && $1.capitalize
       components << component.new(path.relative_path_from(base), title, !!resource)
     end
@@ -96,7 +97,8 @@ end
   proxy "/screenshots/#{theme}.html", "/templates/screenshots.html", {
     locals: {
       theme: theme,
-      theme_name: theme.tr('-', ' ').capitalize
+      theme_name: theme.tr('-', ' ').capitalize,
+      page_title: theme.tr('-', ' ').capitalize + ' theme'
     },
     ignore: true
   }
