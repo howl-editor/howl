@@ -55,6 +55,7 @@ class Replacement
     self.find = opts.find or default_find
 
     self.replace = opts.replace or (match, replacement) -> replacement
+    self.replacer_help = opts.help
 
     @orig_buffer = app.editor.buffer
     app.editor.buffer = @preview_buffer
@@ -346,41 +347,53 @@ class Replacement
       ['buffer-replace']: => @_switch_to 'buffer-replace'
       ['buffer-replace-regex']: => @_switch_to 'buffer-replace-regex'
 
-  help: {
-    {
-      heading: 'Syntax'
-      text: markup.howl '<operator>/</>text<operator>/</>replacement'
+  help: =>
+    help = {
+      {
+        heading: "Syntax '/match/replacement'"
+        text: markup.howl "Replaces occurences of <string>'match'</> with <string>'replacement'</>.
+If match text contains <string>'/'</>, a different separator can be specified
+by replacing the first character with the desired separator."
+      }
+      {
+        key: 'up'
+        action: 'Select previous match'
+      }
+      {
+        key: 'down'
+        action: 'Select next match'
+      }
+      {
+        key: 'alt_enter'
+        action: 'Toggle replacement for currently selected match'
+      }
+      {
+        key: 'ctrl_r'
+        action: 'Switch to buffer-replace-regex'
+      }
+      {
+        key_for: 'buffer-replace'
+        action: 'Switch to buffer-replace'
+      }
+      {
+        key: 'enter'
+        action: 'Apply replacements'
+      }
     }
-    {
-      key: 'up'
-      action: 'Select previous match'
-    }
-    {
-      key: 'down'
-      action: 'Select next match'
-    }
-    {
-      key: 'alt_enter'
-      action: 'Toggle replacement for currently selected match'
-    }
-    {
-      key: 'ctrl_r'
-      action: 'Switch to buffer-replace-regex'
-    }
-    {
-      key_for: 'buffer-replace'
-      action: 'Switch to buffer-replace'
-    }
-  }
+    if @replacer_help
+      for item in *@replacer_help
+        append help, item
+
+    return help
 
 interact.register
   name: 'get_replacement'
-  description: 'Return text with user specified replacments applied'
+  description: 'Return text with user specified replacements applied'
   factory: Replacement
 
 interact.register
   name: 'get_replacement_regex'
-  description: 'Return text with user specified regex based replacments applied'
+  description: 'Return text with user specified regex based replacements applied'
   handler: (opts) ->
     opts = moon.copy opts
     with opts
@@ -429,6 +442,13 @@ interact.register
               return match.captures[ref_idx] or ''
             return ''
           return result
+
+      .help = {
+          {
+            text: markup.howl "Here <string>'match'</> is a PCRE regular expression and <string>'replacement'</> is
+text which may contain backreferences such as <string>'\\1'</string>"
+          }
+        }
 
     interact.get_replacement opts
 
