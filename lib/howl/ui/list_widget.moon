@@ -183,7 +183,7 @@ class ListWidget extends PropertyObject
     length = #lines[offset]
     highlight.apply 'list_selection', @text_widget.buffer, pos, length
 
-  _jump_to_page_at: (idx, select_idx=nil) =>
+  _jump_to_page_at: (idx) =>
     start_of_last_page = #@_items - @page_size + 1
     if idx < 1
       idx = 1
@@ -199,6 +199,7 @@ class ListWidget extends PropertyObject
       idx = #@items
     else
       idx = max 1, @selected_idx - @page_size
+    @_jump_to_page_at @page_start_idx + @page_size
     @_select idx
 
   next_page: =>
@@ -207,6 +208,7 @@ class ListWidget extends PropertyObject
       idx = 1
     else
       idx = min #@items, @selected_idx + @page_size
+    @_jump_to_page_at @page_start_idx + @page_size
     @_select idx
 
   select_prev: =>
