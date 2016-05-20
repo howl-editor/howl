@@ -163,11 +163,10 @@ class ListWidget extends PropertyObject
     if @page_start_idx <= idx and @page_start_idx + @page_size > idx
       return
 
-    edge_gap = min 1, @page_size - 1
     if idx < @page_start_idx
-      @_jump_to_page_at idx - @page_size + 1 + edge_gap
+      @_jump_to_page_at idx
     elseif @page_start_idx + @page_size - 1 < idx
-      @_jump_to_page_at idx - edge_gap
+      @_jump_to_page_at idx - @page_size + 1
 
   _highlight: (idx) =>
     highlight.remove_all 'list_selection', @text_widget.buffer
@@ -292,6 +291,7 @@ class ListWidget extends PropertyObject
     if preserve_position and current_idx
       idx = min(current_idx, #@_items)
 
+    @page_start_idx = 1
     if @text_widget.showing
       @_adjust_height!
       @_write_page!
