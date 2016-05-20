@@ -85,6 +85,15 @@ describe 'StyledText', ->
         }
         assert.same tbl.styles, {1, 'comment', 4, 4, 'comment', 6, 7, 'string', 10, 10, 'comment', 12, 13, 'comment', 18}
 
+    context 'when column min_width is provided', ->
+      it 'pads small cells to respect min_width', ->
+        tbl = StyledText.for_table { 'one', 'two' }, { {min_width: 10} }
+        assert.same tbl.text, 'one       \ntwo       \n'
+
+      it 'expands column width beyond min_width if necessary', ->
+        tbl = StyledText.for_table { 'one', 'twothreefour' }, { {min_width: 4} }
+        assert.same tbl.text, 'one         \ntwothreefour\n'
+
 
     context 'when a header is provided', ->
       it 'includes header row', ->

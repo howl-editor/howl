@@ -60,7 +60,7 @@ compute_column_widths = (columns, items) ->
   if columns
     for i = 1, #columns
       header = columns[i].header or ''
-      widths[i] = math.max widths[i] or 1, header and tostring(header).ulen or 0
+      widths[i] = math.max widths[i] or 1, header and tostring(header).ulen or 0, columns[i].min_width or 0
       widths.num = math.max widths.num, i
 
   for item in *items

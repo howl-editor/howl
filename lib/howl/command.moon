@@ -242,8 +242,8 @@ interact.register
       .items = get_command_items!
       .headers = { 'Command', 'Key binding', 'Description' }
       .columns = {
-        { style: 'string' }
-        { style: 'keyword' }
+        { style: 'string', min_width: 30 }
+        { style: 'keyword', min_width: 15 }
         { style: 'comment' }
       }
     result = interact.select opts
