@@ -174,17 +174,19 @@ need_text_object = (flair) ->
     flair = flairs[flair] if type(flair) == 'string'
     return unless flair
 
-    {:layout, :view, :y_offset, :is_wrapped, :lines} = display_line
+    {:layout, :view, :is_wrapped, :lines} = display_line
     clip = cr.clip_extents
     base_x = view.base_x
     line_count = display_line.line_count
     width_of_space = display_line.width_of_space
+    line_y_offset = 0
 
     for nr = 1, #lines
       line = lines[nr]
 
       off_line = start_offset > line.line_end or end_offset < line.line_start
       if off_line or end_offset == line.line_start and (start_offset != end_offset)
+        line_y_offset += line.height
         continue -- flair not within this layout line
 
       f_start_offset = max start_offset, line.line_start
@@ -218,9 +220,14 @@ need_text_object = (flair) ->
       height = type(flair.height) == 'number' and flair.height or line.height
       adjusted_for_text_height = false
 
-      if flair.height == 'text' and height > text_object.height
-        flair_y += floor (line.height - text_object.height) / 2
-        height = text_object.height
+      if (flair.height == 'text' or flair.text_color) and height > text_object.height
+        l_baseline = line.baseline - line_y_offset
+        bl_diff = floor (l_baseline - (text_object.layout.baseline / SCALE)) + 1
+
+        if bl_diff > 0
+          flair_y += bl_diff
+          height -= floor bl_diff
+
         adjusted_for_text_height = true
 
       cr\save!
@@ -228,9 +235,6 @@ need_text_object = (flair) ->
       cr\restore!
 
       if flair.text_color
-        if not adjusted_for_text_height and height > text_object.height
-          flair_y += floor (line.height - text_object.height) / 2
-
         cr\save!
         if base_x > 0
           cr\rectangle x, flair_y, clip.x2 - x, clip.y2
@@ -239,5 +243,7 @@ need_text_object = (flair) ->
         cr\move_to text_start_x, flair_y
         cairo.show_layout cr, text_object.layout
         cr\restore!
+
+      line_y_offset += line.height
 
 }
