@@ -226,7 +226,7 @@ need_text_object = (flair) ->
 
         if bl_diff > 0
           flair_y += bl_diff
-          height -= floor bl_diff
+          height = text_object.height
 
         adjusted_for_text_height = true
 
