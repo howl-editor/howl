@@ -120,11 +120,17 @@ get_text_object = (display_line, start_offset, end_offset, flair) ->
   layout\set_text t_ptr + start_offset - 1, text_size
   layout.tabs = dline_layout.tabs
 
-  if flair.text_color
+
+  -- need to set the correct attributes when we have a different text color
+  -- or need to determine the height of the text object correctly
+  if flair.text_color or flair.height == 'text'
     styling = Styling.sub display_line.styling, start_offset, end_offset
-    attributes = styles.get_attributes styling, text_size, exclude: { color: true }
-    color = Color flair.text_color
-    attributes\insert_before Attribute.Foreground(color.red, color.green, color.blue)
+    exclude = flair.text_color and {color: true} or {}
+    attributes = styles.get_attributes styling, text_size, :exclude
+
+    if flair.text_color
+      color = Color flair.text_color
+      attributes\insert_before Attribute.Foreground(color.red, color.green, color.blue)
     layout.attributes = attributes
 
   width, height = layout\get_pixel_size!
