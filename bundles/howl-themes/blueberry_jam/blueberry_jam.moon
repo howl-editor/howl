@@ -1,20 +1,21 @@
 {:delegate_to} = howl.util.table
 
-light_grey  = '#E1EEF6'
+light_grey = '#E1EEF6'
 dark_blue = '#003A4c'
 dark_blue_off = '#336170'
 deep_dark_blue = '#002F3D'
 orange = '#FF5F2E'
 yellow = '#FCBE32'
 
-grey   = '#999'
-very_light_grey  = '#F0F0F0'
+grey = '#999'
+very_light_grey = '#F0F0F0'
 dark_grey = '#666'
-blue  = '#0055AA'
-red     = '#B23610'
+blue = '#0055AA'
+red = '#B23610'
+light_red = '#FF9F8F'
 magenta = '#D33682'
-violet  = '#6C71c4'
-cyan    = '#2AA198'
+violet = '#6C71c4'
+cyan = '#2AA198'
 green = '#00B284'
 
 background = dark_blue
@@ -59,19 +60,17 @@ content_box = {
 
 return {
   window:
+    outer_padding: 6
     background:
-      gradient:
-        type: 'linear'
-        direction: 'vertical'
-        stops: {dark_blue_off}
+      image: theme_file('circle.png')
 
     status:
       font: bold: true
       color: blue
 
-      info: color: dark_blue
+      info: color: white
       warning: color: yellow
-      error: color: white
+      error: color: light_red
 
   :content_box
 
@@ -108,8 +107,7 @@ return {
       background: current
 
     gutter:
-      color: white
-      alpha: 0.2
+      color: dark_blue_off
       background:
         color: dark_blue
   }
