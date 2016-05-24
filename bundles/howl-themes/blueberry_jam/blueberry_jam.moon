@@ -2,26 +2,26 @@
 
 light_grey  = '#E1EEF6'
 dark_blue = '#003A4c'
+dark_blue_off = '#336170'
 deep_dark_blue = '#002F3D'
 orange = '#FF5F2E'
 yellow = '#FCBE32'
 
 grey   = '#999'
-very_light_grey  = '#f0f0f0'
+very_light_grey  = '#F0F0F0'
 dark_grey = '#666'
 blue  = '#0055AA'
-
 red     = '#B23610'
-magenta = '#d33682'
-violet  = '#6c71c4'
-cyan    = '#2aa198'
+magenta = '#D33682'
+violet  = '#6C71c4'
+cyan    = '#2AA198'
 green = '#00B284'
 
 background = dark_blue
 current = grey
 
 selection = lightblue
-comment = grey
+
 string = green
 number = green
 
@@ -30,51 +30,48 @@ keyword = yellow
 class_name = orange
 
 special = green
-member = white
+member = light_grey
 key = orange
 
 -- General styling for context boxes (editor)
 content_box = {
   background:
-    color: background
+    color: deep_dark_blue
 
   border:
-    radius: 3
+    radius: 5
     color: deep_dark_blue
 
   header:
-    background:
-      gradient:
-        type: 'linear'
-        direction: 'vertical'
-        stops: { deep_dark_blue, deep_dark_blue, deep_dark_blue, dark_blue}
-
+    background: color: deep_dark_blue
     color: white
-    padding_bottom: 10
     padding: 4
+    border_bottom:
+      width: 0.5
+      color: dark_blue_off
 
   footer:
-    background:
-      gradient:
-        type: 'linear'
-        direction: 'vertical'
-        stops: { dark_blue, deep_dark_blue, deep_dark_blue}
+    background: color: deep_dark_blue
     color: white
-    padding_top: 10
     padding: 4
+
 }
 
 return {
   window:
-    background: color: grey
+    background:
+      gradient:
+        type: 'linear'
+        direction: 'vertical'
+        stops: {dark_blue_off}
 
     status:
       font: bold: true
       color: blue
 
-      info: color: white
-      warning: color: orange
-      error: color: red
+      info: color: dark_blue
+      warning: color: yellow
+      error: color: white
 
   :content_box
 
@@ -85,9 +82,27 @@ return {
 
   editor: delegate_to content_box, {
 
+    background: color: dark_blue
     indicators:
       default:
         color: yellow
+
+    header:
+      background:
+        gradient:
+          type: 'linear'
+          direction: 'vertical'
+          stops: { deep_dark_blue, deep_dark_blue, deep_dark_blue, dark_blue}
+      padding_bottom: 10
+      border_bottom: width: 0
+
+    footer:
+      background:
+        gradient:
+          type: 'linear'
+          direction: 'vertical'
+          stops: { dark_blue, deep_dark_blue, deep_dark_blue}
+      padding_top: 10
 
     current_line:
       background: current
@@ -103,14 +118,14 @@ return {
     indentation_guide_1:
       type: flair.PIPE,
       foreground: yellow,
-      foreground_alpha: 0.2
+      foreground_alpha: 0.3
       line_width: 1
       line_type: 'solid'
 
     indentation_guide_2:
       type: flair.PIPE,
       foreground: yellow,
-      foreground_alpha: 0.1
+      foreground_alpha: 0.2
       line_width: 1
       line_type: 'solid'
 
@@ -118,20 +133,20 @@ return {
       type: flair.PIPE,
       foreground: yellow,
       foreground_alpha: 0.1
-      line_width: 0.5
+      line_width: 1
       line_type: 'solid'
 
     indentation_guide:
       type: flair.PIPE,
       foreground: yellow,
       foreground_alpha: 0.1
-      line_width: 0.5
+      line_width: 1
       line_type: 'solid'
 
     edge_line:
       type: flair.PIPE,
-      foreground: yellow,
-      foreground_alpha: 0.7,
+      foreground: white,
+      foreground_alpha: 0.2,
       line_type: 'solid'
       line_width: 0.5
 
@@ -146,7 +161,7 @@ return {
       line_width: 1
       type: highlight.ROUNDED_RECTANGLE
       background: yellow
-      background_alpha: 0.6
+      background_alpha: 0.4
       text_color: light_grey
       height: 'text'
 
@@ -160,14 +175,13 @@ return {
 
     brace_highlight:
       type: highlight.ROUNDED_RECTANGLE
-      text_color: white
-      background: blue
-      background_alpha: 0.6
+      text_color: background
+      background: yellow
       height: 'text'
 
     brace_highlight_secondary:
       type: highlight.RECTANGLE
-      foreground: blue
+      foreground: orange
       line_width: 1
       height: 'text'
 
@@ -213,7 +227,8 @@ return {
     cyan: color: cyan
 
     comment:
-      color: dark_grey
+      color: dark_blue_off
+      font: italic: true
 
     variable: color: yellow
 
@@ -275,7 +290,7 @@ return {
 
     member:
       color: member
-      font: bold: true
+      -- font: bold: true
 
     info: color: light_grey
     constant: color: orange
