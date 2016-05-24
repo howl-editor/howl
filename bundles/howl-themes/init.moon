@@ -8,7 +8,7 @@ themes = {
   'Tomorrow Night Blue': bundle_file('tomorrow_night_blue/tm_night_blue.moon')
   'Solarized Light': bundle_file('solarized_light/solarized_light.moon')
   'Monokai': bundle_file('monokai/monokai.moon')
-  'Blueberry Jam': bundle_file('blueberry_jam/blueberry_jam.moon')
+  'Blueberry Blend': bundle_file('blueberry_blend/blueberry_blend.moon')
 }
 
 for name, file in pairs themes
