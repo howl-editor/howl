@@ -7,7 +7,7 @@ deep_dark_blue = '#002F3D'
 orange = '#FF5F2E'
 yellow = '#FCBE32'
 
-grey = '#999'
+grey = '#888'
 very_light_grey = '#F0F0F0'
 dark_grey = '#666'
 blue = '#0055AA'
@@ -17,6 +17,7 @@ magenta = '#D33682'
 violet = '#6C71c4'
 cyan = '#2AA198'
 green = '#00B284'
+purple = '#C687FF'
 
 background = dark_blue
 current = grey
@@ -28,7 +29,7 @@ number = green
 
 operator = yellow
 keyword = yellow
-class_name = orange
+class_name = purple
 
 special = green
 member = light_grey
@@ -77,6 +78,9 @@ return {
   popup: {
     background:
       color: deep_dark_blue
+    border:
+      color: dark_blue_off
+      width: 0.5
   }
 
   editor: delegate_to content_box, {
@@ -225,7 +229,7 @@ return {
     cyan: color: cyan
 
     comment:
-      color: dark_blue_off
+      color: grey
       font: italic: true
 
     variable: color: yellow
@@ -244,7 +248,6 @@ return {
       color: key
       font:
         bold: true
-        size: 'large'
 
     keyword:
       color: keyword
@@ -282,9 +285,7 @@ return {
 
     tag: color: purple
 
-    type:
-      color: class_name
-      font: bold: true
+    type: color: class_name
 
     member:
       color: member
