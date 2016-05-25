@@ -94,6 +94,10 @@ describe 'StyledText', ->
         tbl = StyledText.for_table { 'one', 'twothreefour' }, { {min_width: 4} }
         assert.same tbl.text, 'one         \ntwothreefour\n'
 
+    context 'when column align:"right" is specified', ->
+      it 'right aligns the text in the column with one extra space to the right', ->
+        tbl = StyledText.for_table { {'o', 'x'}, {'two', 'x'} }, { {align: 'right'} }
+        assert.same tbl.text, '  o x\ntwo x\n'
 
     context 'when a header is provided', ->
       it 'includes header row', ->

@@ -97,6 +97,10 @@ interact.register
     opts.matcher = matcher
     opts.on_change = line_match_highlighter(editor, matcher.explain)
     opts.force_preview = true
+    opts.columns = {
+        {align: 'right', style: 'comment', min_width: 3},
+        {}
+      }
 
     result = interact.select_location opts
 
