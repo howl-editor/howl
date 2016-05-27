@@ -10,7 +10,7 @@ yellow = '#FCBE32'
 grey = '#888'
 very_light_grey = '#F0F0F0'
 dark_grey = '#666'
-blue = '#0055AA'
+blue = '#738DFC'
 red = '#B23610'
 light_red = '#FF9F8F'
 magenta = '#D33682'
@@ -29,7 +29,7 @@ number = green
 
 operator = yellow
 keyword = yellow
-class_name = purple
+class_name = blue
 
 special = green
 member = light_grey
@@ -245,7 +245,7 @@ return {
     wrap_indicator: 'blue'
 
     fdecl:
-      color: key
+      color: orange
       font:
         bold: true
 
@@ -288,8 +288,8 @@ return {
     type: color: class_name
 
     member:
-      color: member
-      -- font: bold: true
+      color: light_grey
+      font: bold: true
 
     info: color: light_grey
     constant: color: orange
