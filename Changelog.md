@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added a new theme 'Blueberry Blend'
+
 - New Pascal bundle (lexing, indentation support, etc). Replaces the old basic
 Pascal mode.
 
