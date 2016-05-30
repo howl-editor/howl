@@ -2,8 +2,6 @@
 
 ## 0.4 (2016-05-30)
 
-- Added a new theme, `Blueberry Blend`.
-
 - Added a new theme 'Blueberry Blend'
 
 - New Pascal bundle (lexing, indentation support, etc). Replaces the old basic
@@ -83,13 +81,18 @@ indentation levels to work as a stand-alone code chunk.
 
 ### Bugs fixed
 
-- Issues as seen on [Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=created%3A%3E2015-09-02+state%3Aclosed++type%3Aissue)
+- Issues as seen on
+[Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=created%3A%3E2015-09-02+created%3A%3C%3D2016-05-30+state%3Aclosed+type%3Aissue)
 
 ### API changes
 
 - The `on_selection_change` callback for interactions has been renamed to
 `on_change` and triggers even when selection stays the same but the text
 changes.
+
+- The theming support has been updated. Custom themes for previous versions will
+have to be updated for 0.4, which is easiest done by looking at the built-in
+themes shipping with Howl.
 
 ## 0.3 (2015-09-01)
 
