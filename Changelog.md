@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased (in master)
+## 0.4 (2016-05-30)
+
+- Added a new theme, `Blueberry Blend`.
 
 - New Pascal bundle (lexing, indentation support, etc). Replaces the old basic
 Pascal mode.
