@@ -93,7 +93,7 @@ helpers do
   end
 end
 
-['steinom', 'monokai', 'solarized-light', 'tomorrow-night-blue'].each do |theme|
+['steinom', 'monokai', 'solarized-light', 'tomorrow-night-blue', 'blueberry-blend'].each do |theme|
   proxy "/screenshots/#{theme}.html", "/templates/screenshots.html", {
     locals: {
       theme: theme,
