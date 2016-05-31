@@ -15,17 +15,17 @@ Arch package available from the AUR (after verifying the version).
 
 ## Latest release
 
-The latest release of Howl is 0.3. It was released at 2015-09-02, and is
+The latest release of Howl is 0.4. It was released at 2016-05-31, and is
 available for download from:
 
-[https://github.com/howl-editor/howl/releases/download/0.3/howl-0.3.tgz](https://github.com/howl-editor/howl/releases/download/0.3/howl-0.3.tgz)
+[https://github.com/howl-editor/howl/releases/download/0.4/howl-0.4.tgz](https://github.com/howl-editor/howl/releases/download/0.4/howl-0.4.tgz)
 
-_MD5_: 30014d5a9d6adda87c8f0048afc25893
+_MD5_: aa4761e657b2cedbae0f2f843731a17f
 
-_SHA1_: 102f47badbcfd43c0c1f1d3921d70ba11767b0e4
+_SHA1_: 557fea5af8e6768ea6408ab2d11db63c0ae5fdf4
 
 __Release notes:__
-[Howl 0.3 Released](/blog/2015/09/01/howl-0-dot-3-released.html)
+[Howl 0.4 Released](/blog/2016/05/31/howl-0-4-released.html)
 
 ## Building Howl from source
 
@@ -41,8 +41,8 @@ dependencies).
 
   As an example, on Debian-based based systems you would need the `libgtk-3-dev` package.
 
-- `C/C++ compiler`: Howl has a very small C core itself, but it embedds dependencies built both
-  in C and C++.
+- `C compiler`: Howl has a very small C core itself, and it embedds dependencies
+built both in C.
 
 ### Building
 
@@ -111,6 +111,16 @@ $ sudo packer -S howl-editor
 ```
 
 ## Older releases
+
+### Howl 0.3, released 2015-09-02.
+
+[Download](https://github.com/howl-editor/howl/releases/download/0.3/howl-0.3.tgz)
+
+_MD5_: 30014d5a9d6adda87c8f0048afc25893
+
+_SHA1_: 102f47badbcfd43c0c1f1d3921d70ba11767b0e4
+
+[Release notes](/blog/2015/09/01/howl-0-dot-3-released.html)
 
 ### Howl 0.2.1, released 2014-04-29.
 
