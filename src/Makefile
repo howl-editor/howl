@@ -22,6 +22,9 @@ LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
 CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
 ARCHIVES = $(LUAJIT_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
+ifeq ($(UNAME_S),FreeBSD)
+    LIBS = -lm ${GTK_LIBS} -lstdc++
+endif
 ifeq ($(UNAME_S),Darwin)
 	LD_FLAGS = -Wl,-export_dynamic -pagezero_size 10000 -image_base 100000000
 else
