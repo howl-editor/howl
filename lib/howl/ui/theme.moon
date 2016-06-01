@@ -18,6 +18,11 @@ screen = Gdk.Screen\get_default!
 Gtk.StyleContext.add_provider_for_screen screen, css_provider, 600
 
 css_template = [[
+.window-frame {
+  box-shadow: none;
+  margin: 0px 1px 2px 1px;
+}
+
 .transparent_bg {
   background: rgba(0,0,0,0);
 }
