@@ -1,9 +1,17 @@
 PREFIX ?= /usr/local
 UNAME_S := $(shell uname -s)
+CWD := $(shell pwd)
+ifneq (, $(findstring _NT-,$(UNAME_S)))
+	WIN32 = 1
+endif
 
 GTK = gtk+-3.0
 GTK_CFLAGS = $(shell pkg-config --cflags $(GTK))
-GTK_LIBS = $(shell pkg-config --libs $(GTK) gmodule-2.0 gio-unix-2.0)
+GTK_LIBNAMES = $(GTK) gmodule-2.0 gio-unix-2.0
+ifdef WIN32
+	GTK_LIBNAMES = $(GTK) gmodule-2.0
+endif
+GTK_LIBS = $(shell pkg-config --libs $(GTK_LIBNAMES))
 
 LUAJIT_VER = LuaJIT-2.1.0-beta1
 LUAJIT_CHECKSUM = 5a5bf71666e77cf6e7a1ae851127b834
@@ -12,6 +20,11 @@ LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
 LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
 LUAJIT_URL = http://nordman.org/mirror/luajit/$(LUAJIT_VER).tar.gz
+ifdef WIN32
+	LUAJIT_PATCHES = \
+		001-luajit-ffi-win32-walk-all-modules.patch \
+		002-luajit-win32-build-static.patch
+endif
 
 LPEG_VER = lpeg-0.10.2
 LPEG_CHECKSUM = 1402433f02e37ddadff04a3d4118b026
@@ -29,6 +42,10 @@ ifeq ($(UNAME_S),Darwin)
 	LD_FLAGS = -Wl,-export_dynamic -pagezero_size 10000 -image_base 100000000
 else
 	LD_FLAGS = -Wl,-E
+endif
+ifdef WIN32
+	LIBS = -lm ${GTK_LIBS} -lstdc++
+	LD_FLAGS = -Wl,--export-all
 endif
 OBJECTS = main.o process_helpers.o
 DEP_OBJECTS = $(LPEG_OBJECT)
@@ -50,6 +67,7 @@ $(LPEG_OBJECT): $(LPEG) $(LUAJIT)
 $(LUAJIT):
 	@tools/download $(LUAJIT_URL) $(LUAJIT_CHECKSUM) tar xzf {file} -C deps
 	@perl -piorig -e 's/LUA_IDSIZE\s*\d+/LUA_IDSIZE 120/' $(LUAJIT)/src/luaconf.h
+	cd ${LUAJIT} && for p in $(LUAJIT_PATCHES); do patch -Np1 -i $(CWD)/$$p; done
 
 $(LUAJIT_ARCHIVE): $(LUAJIT)
 	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT"

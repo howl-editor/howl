@@ -19,6 +19,8 @@ Where options can be any of:
 ]=]
 
 local path_separator = jit.os == 'Windows' and '\\' or '/'
+local path_prefix = jit.os == 'Windows' and '\\\\.\\' or ''
+app_root = path_prefix .. app_root
 
 local function parse_args(argv)
   local options = {

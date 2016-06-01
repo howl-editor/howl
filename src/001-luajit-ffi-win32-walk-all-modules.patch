@@ -1,0 +1,102 @@
+--- LuaJIT-2.1.0-beta1-orig/src/lj_clib.c	2015-08-25 16:35:00.000000000 -0500
++++ LuaJIT-2.1.0-beta1/src/lj_clib.c	2016-06-01 08:56:37.805150100 -0500
+@@ -146,6 +146,7 @@
+ 
+ #define WIN32_LEAN_AND_MEAN
+ #include <windows.h>
++#include <intrin.h>
+ 
+ #ifndef GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS
+ #define GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS	4
+@@ -231,33 +232,69 @@
+   }
+ }
+ 
++typedef struct LdrListEntry {
++  struct LdrListEntry *Flink;
++  struct LdrListEntry *Blink;
++} LdrListEntry;
++
++typedef struct LdrDataTableEntry {
++  LdrListEntry InLoadOrderLinks;
++  LdrListEntry InMemoryOrderLinks;
++  LdrListEntry InInitializationOrderLinks;
++  void *ModuleBase;
++} LdrDataTableEntry;
++
++typedef struct LdrData {
++  unsigned int Length;
++  int Initialized;
++  void *SsHandle;
++  LdrListEntry InLoadOrderModuleList;
++  LdrListEntry InMemoryOrderModuleList;
++  LdrListEntry InInitializationOrderModuleList;
++  void *EntryInProgress;
++} LdrData;
++
++typedef struct Win32Peb {
++  void *Reserved[3];
++  LdrData *Ldr;
++} Win32Peb;
++
++/* These definitions depend on MingW's shims for the MSVC instrinsics. */
++/* Can copy those shims from intrin.h if a non-mingw gcc is encountered. */
++#if _WIN64
++
++static Win32Peb *clib_win32_getpeb() {
++  return (Win32Peb *)__readgsqword(0x60);
++}
++
++#else
++
++static Win32Peb *clib_win32_getpeb() {
++  return (Win32Peb *)__readfsdword(0x30);
++}
++
++#endif
++
+ static void *clib_getsym(CLibrary *cl, const char *name)
+ {
+   void *p = NULL;
+   if (cl->handle == CLIB_DEFHANDLE) {  /* Search default libraries. */
+-    MSize i;
+-    for (i = 0; i < CLIB_HANDLE_MAX; i++) {
+-      HINSTANCE h = (HINSTANCE)clib_def_handle[i];
+-      if (!(void *)h) {  /* Resolve default library handles (once). */
+-	switch (i) {
+-	case CLIB_HANDLE_EXE: GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, NULL, &h); break;
+-	case CLIB_HANDLE_DLL:
+-	  GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+-			     (const char *)clib_def_handle, &h);
+-	  break;
+-	case CLIB_HANDLE_CRT:
+-	  GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+-			     (const char *)&_fmode, &h);
+-	  break;
+-	case CLIB_HANDLE_KERNEL32: h = LoadLibraryExA("kernel32.dll", NULL, 0); break;
+-	case CLIB_HANDLE_USER32: h = LoadLibraryExA("user32.dll", NULL, 0); break;
+-	case CLIB_HANDLE_GDI32: h = LoadLibraryExA("gdi32.dll", NULL, 0); break;
+-	}
+-	if (!h) continue;
+-	clib_def_handle[i] = (void *)h;
++    LdrListEntry *begin, *end;
++    LdrDataTableEntry *curr;
++    Win32Peb *peb = clib_win32_getpeb();
++    end = &peb->Ldr->InLoadOrderModuleList;
++    begin = end->Flink;
++    while (begin != end) {
++      curr = (LdrDataTableEntry *)((char *)begin);
++      /* From what I've seen, this is unnecessary since ModuleBase == HMODULE */
++      HINSTANCE h;
++      GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
++			 (const char *)curr->ModuleBase, &h);
++      if (h) {
++	p = (void *)GetProcAddress(h, name);
++	if (p) break;
+       }
+-      p = (void *)GetProcAddress(h, name);
+-      if (p) break;
++      begin = begin->Flink;
+     }
+   } else {
+     p = (void *)GetProcAddress((HINSTANCE)cl->handle, name);
