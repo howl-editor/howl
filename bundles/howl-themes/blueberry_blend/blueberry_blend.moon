@@ -84,6 +84,10 @@ return {
   }
 
   editor: delegate_to content_box, {
+    scrollbars:
+      slider:
+        color: keyword
+        alpha: 0.8
 
     background: color: dark_blue
     indicators:

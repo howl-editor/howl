@@ -80,6 +80,10 @@ return {
       color: '#00346e'
 
   editor: delegate_to content_box, {
+    scrollbars:
+      slider:
+        color: '#00549e'
+
     indicators:
       default:
         color: blue
