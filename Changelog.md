@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased (in master)
+
+- Makefile fixes for FreeBSD (thanks @maxc01)
+
+- Compatibility fixes for certain Gtk versions and window managers where the
+  window would end up with a lot of extra outer padding.
+
 ## 0.4 (2016-05-30)
 
 - Added a new theme 'Blueberry Blend'
