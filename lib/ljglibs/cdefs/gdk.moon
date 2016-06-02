@@ -153,6 +153,7 @@ ffi.cdef [[
   } GdkRGBA;
 
   gboolean gdk_rgba_parse (GdkRGBA *rgba, const gchar *spec);
+  gchar * gdk_rgba_to_string (const GdkRGBA *rgba);
 
   /* GdkCursor */
   typedef struct {} GdkCursor;

@@ -6,6 +6,7 @@ Gtk = require 'ljglibs.gtk'
 Gdk = require 'ljglibs.gdk'
 require 'ljglibs.gtk.widget'
 flair = require 'aullar.flair'
+RGBA = Gdk.RGBA
 
 import File from howl.io
 import config, signal from howl
@@ -27,8 +28,12 @@ css_template = [[
   background: rgba(0,0,0,0);
 }
 
+.scrollbar.slider, .scrollbar.button {
+  background: ${scrollbar_slider_color};
+}
+
 .scrollbar.trough {
-    background: rgba(0,0,0,0);
+  background: ${scrollbar_background_color};
 }
 
 .header {
@@ -62,6 +67,11 @@ background_color_widgets = setmetatable {}, __mode: 'k'
 
 interpolate = (content, values) ->
   content\gsub '%${([%a_]+)}', values
+
+parse_color = (spec, alpha = 1) ->
+  c = RGBA(spec)
+  c.alpha = alpha
+  tostring(c)
 
 parse_font = (font = {}) ->
   size = config.font_size
@@ -104,6 +114,12 @@ theme_css = (theme, file) ->
   hdr = editor.header
   footer = editor.footer
   indicators = editor.indicators
+  scrollbars = editor.scrollbars or {}
+  sb_slider = scrollbars.slider or {}
+  sb_bg = scrollbars.background or {}
+  sb_slider_color = parse_color(sb_slider.color or 'gray', sb_slider.alpha or 1)
+  sb_bg_color = parse_color(sb_bg.color or 'black', sb_bg.alpha or 0)
+
   values =
     status_font: parse_font status.font
     status_color: status.color
@@ -111,6 +127,8 @@ theme_css = (theme, file) ->
     header_font: parse_font hdr.font
     footer_color: footer.color
     footer_font: parse_font footer.font
+    scrollbar_slider_color: sb_slider_color
+    scrollbar_background_color: sb_bg_color
   css = interpolate css_template, values
   css ..= indicators_css indicators
   css ..= status_css status

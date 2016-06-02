@@ -84,6 +84,10 @@ return {
       color: grey
 
   editor: delegate_to content_box, {
+    scrollbars:
+      slider:
+        color: magenta
+
     indicators:
       default:
         color: grey_light
