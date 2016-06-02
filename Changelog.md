@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Make scrollbars themeable (on newer Gtk versions). Avoids the problem where a
+theme with black scrollbars would make the scrollbars effectively invisible.
+
 - Makefile fixes for FreeBSD (thanks @maxc01)
 
 - Compatibility fixes for certain Gtk versions and window managers where the
