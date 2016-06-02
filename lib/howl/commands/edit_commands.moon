@@ -163,7 +163,7 @@ howl.command.register
     return unless working_directory
     return chunk, working_directory, cmd
 
-  handler: (chunk, working_directory, cmd)->
+  handler: (chunk, working_directory, cmd) ->
     stdout, stderr, process = howl.io.Process.execute cmd,
       :working_directory,
       stdin: chunk.text

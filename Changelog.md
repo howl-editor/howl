@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added new command, `editor-replace-exec`, for replacing selection or buffer
+content with the result of piping it to an external command.
+
 - Make scrollbars themeable (on newer Gtk versions). Avoids the problem where a
 theme with black scrollbars would make the scrollbars effectively invisible.
 
