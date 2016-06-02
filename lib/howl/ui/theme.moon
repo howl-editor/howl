@@ -171,7 +171,7 @@ with config
   .define
     name: 'font_size'
     description: 'The size of the main font'
-    default: 11
+    default: aullar_config.view_font_size
     type_of: 'number'
     scope: 'global'
 
