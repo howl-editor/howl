@@ -152,3 +152,23 @@ command.register
     pos = app.editor\get_matching_brace cursor.pos
     cursor\move_to(:pos, :extend) if pos
 
+
+howl.command.register
+  name: 'editor-replace-exec'
+  description: 'Replace selection with output of selection fed into external command'
+  input: ->
+    chunk = app.editor.active_chunk
+    app.window.command_line.title = 'External command'
+    working_directory, cmd = howl.interact.get_external_command!
+    return unless working_directory
+    return chunk, working_directory, cmd
+
+  handler: (chunk, working_directory, cmd)->
+    stdout, stderr, process = howl.io.Process.execute cmd,
+      :working_directory,
+      stdin: chunk.text
+    if process.successful
+      chunk.text = stdout
+      log.info "Replaced with output of '#{cmd}'"
+    else
+      log.error "Failed to run #{cmd}"
