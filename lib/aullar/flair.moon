@@ -226,17 +226,16 @@ need_text_object = (flair) ->
 
       -- height calculations
       height = type(flair.height) == 'number' and flair.height or line.height
-      adjusted_for_text_height = false
 
       if (flair.height == 'text' or flair.text_color) and height > text_object.height
+        flair_y += display_line.y_offset
+        height = text_object.height
         l_baseline = line.baseline - line_y_offset
-        bl_diff = floor (l_baseline - (text_object.layout.baseline / SCALE)) + 1
+        bl_diff = floor (l_baseline - (text_object.layout.baseline / SCALE))
 
         if bl_diff > 0
           flair_y += bl_diff
-          height = text_object.height
 
-        adjusted_for_text_height = true
 
       cr\save!
       flair.draw flair, start_x, flair_y, width, height, cr
