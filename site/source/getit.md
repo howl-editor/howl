@@ -6,7 +6,7 @@ title: Installation
 
 Howl is developed on Linux, but it builds on other \*NIX platforms as well such
 as FreeBSD (with other \*BSDs presumably requiring only little work). It should
-be possible to port to OSX or Window, should any brave soul be willing to put in
+be possible to port to OSX or Windows, should any brave soul be willing to put in
 the work.
 
 You can install Howl by building it from source, either from a release or by
