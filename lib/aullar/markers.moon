@@ -84,8 +84,14 @@ define_class {
         m.end_offset -= count
       elseif m.start_offset <= offset and m.end_offset >= end_offset -- enclosing
         m.end_offset -= count
-      else -- otherwise affected, remove it
-        insert to_remove, i
+      else -- partial or full overlap
+        if m.preserve
+          m.start_offset = offset if offset < m.start_offset
+          m.end_offset -= math.min count, (m.end_offset - offset)
+          if m.start_offset == m.end_offset
+            insert to_remove, i
+        else
+          insert to_remove, i
 
     for i = #to_remove, 1, -1
       remove @markers, to_remove[i]
