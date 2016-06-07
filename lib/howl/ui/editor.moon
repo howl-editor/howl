@@ -221,64 +221,17 @@ class Editor extends PropertyObject
       @view\insert @buffer.eol
 
   shift_right: =>
-    cursor_line, cursor_col = @cursor.line, @cursor.column
-    anchor_line, anchor_col = nil, nil
-
-    unless @selection.empty
-      line = @buffer.lines\at_pos @selection.anchor
-      anchor_line = line.nr
-      anchor_col = line\virtual_column (@selection.anchor - line.start_pos) + 1
-
-    @transform_active_lines (lines) ->
-      for line in *lines
-        line\indent!
-
-    if anchor_line
-      line = @buffer.lines[anchor_line]
-      unless anchor_col == 1 and anchor_line > cursor_line
-        anchor_col += @buffer.config.indent
-
-      real_column = line\real_column anchor_col
-      @selection.anchor = line.start_pos + real_column - 1
-
-    unless cursor_col == 1 and cursor_line > anchor_line
-      cursor_col += @buffer.config.indent
-
-    @cursor\move_to {
-      line: cursor_line,
-      column: cursor_col,
-      extend: anchor_line != nil
-    }
+    @with_selection_preserved ->
+      @transform_active_lines (lines) ->
+        for line in *lines
+          line\indent!
 
   shift_left: =>
-    cursor_line, cursor_col = @cursor.line, @cursor.column
-    anchor_line, anchor_col, adjust_anchor = nil, nil, false
-    adjust_cursor = @current_line.indentation != 0
-
-    unless @selection.empty
-      line = @buffer.lines\at_pos @selection.anchor
-      anchor_line = line.nr
-      anchor_col = line\virtual_column (@selection.anchor - line.start_pos) + 1
-      adjust_anchor = line.indentation != 0
-
-    @transform_active_lines (lines) ->
-      for line in *lines
-        if line.indentation > 0
-          line\unindent!
-
-    if anchor_line
-      line = @buffer.lines[anchor_line]
-      anchor_col -= @buffer.config.indent if adjust_anchor
-      real_column = line\real_column max(1, anchor_col)
-      @selection.anchor = line.start_pos + real_column - 1
-
-    cursor_col -= @buffer.config.indent if adjust_cursor
-
-    @cursor\move_to {
-      line: cursor_line,
-      column: max(1, cursor_col),
-      extend: anchor_line
-    }
+    @with_selection_preserved ->
+      @transform_active_lines (lines) ->
+        for line in *lines
+          if line.indentation > 0
+            line\unindent!
 
   transform_active_lines: (f) =>
     lines = @active_lines
@@ -294,6 +247,36 @@ class Editor extends PropertyObject
     delta = @current_line.indentation - indentation
     @cursor.column = max 1, column + delta
     @line_at_top = top_line
+    error ret unless status
+
+  with_selection_preserved: (f) =>
+    if @selection.empty
+      return @with_position_restored f
+
+    start_offset, end_offset = @selection.anchor, @selection.cursor
+    invert = start_offset > end_offset
+    start_offset, end_offset = end_offset, start_offset if invert
+
+    @buffer.markers\add {
+      {
+        name: 'howl-selection'
+        :start_offset
+        :end_offset
+        preserve: true
+      }
+    }
+
+    status, ret = pcall f, self
+
+    markers = @buffer.markers\for_range 1, @buffer.length, name: 'howl-selection'
+    @buffer.markers\remove name: 'howl-selection'
+
+    marker = markers[1]
+    if marker
+      start_offset, end_offset = marker.start_offset, marker.end_offset
+      start_offset, end_offset = end_offset, start_offset if invert
+      @selection\set start_offset, end_offset
+
     error ret unless status
 
   preview: (buffer) =>

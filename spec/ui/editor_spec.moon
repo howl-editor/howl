@@ -128,6 +128,22 @@ describe 'Editor', ->
 
         assert.equals 4, cursor.pos
 
+  describe 'with_selection_preserved(f)', ->
+    before_each ->
+      buffer.text = '\nhello hello hello\n'
+      selection\set 10, 8
+
+    it 'calls <f> passing itself a parameter', ->
+      f = spy.new -> nil
+      editor\with_selection_preserved f
+      assert.spy(f).was_called_with editor
+
+    it 'restores the selection afterwards', ->
+      editor\with_selection_preserved ->
+        selection\set 1, 2
+      assert.equals 10, selection.anchor
+      assert.equals 8, selection.cursor
+
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->
     buffer.text = 'hƏllo'
     cursor.pos = 6

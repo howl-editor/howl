@@ -150,8 +150,7 @@ command.register
     pos = app.editor\get_matching_brace cursor.pos
     cursor\move_to(:pos) if pos
 
-
-howl.command.register
+command.register
   name: 'editor-replace-exec'
   description: 'Replace selection with output of selection fed into external command'
   input: ->
@@ -170,3 +169,43 @@ howl.command.register
       log.info "Replaced with output of '#{cmd}'"
     else
       log.error "Failed to run #{cmd}"
+
+command.register
+  name: 'editor-move-lines-up'
+  description: 'Move current or selected lines up by one line'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    selection = editor.selection
+    lines = editor.active_lines
+    first = lines[1].nr
+    last = lines[#lines].nr
+    return unless first > 1
+
+    nr = first - 1
+    text = buffer.lines[nr].text
+
+    buffer\as_one_undo ->
+      editor\with_selection_preserved ->
+        buffer.lines\delete nr, nr
+        buffer.lines\insert last, text
+
+command.register
+  name: 'editor-move-lines-down'
+  description: 'Move current or selected lines down by one line'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    selection = editor.selection
+    lines = editor.active_lines
+    first = lines[1].nr
+    last = lines[#lines].nr
+    return unless last < #buffer.lines
+
+    nr = last + 1
+    text = buffer.lines[nr].text
+
+    buffer\as_one_undo ->
+      editor\with_selection_preserved ->
+        buffer.lines\delete nr, nr
+        buffer.lines\insert first, text
