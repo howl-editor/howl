@@ -368,6 +368,31 @@ describe 'Styling', ->
       assert.same 'my_sub2', styling\get_mode_name_at 4
       assert.same 'my_sub2', styling\get_mode_name_at 5
 
+    it 'shrinks the sub mode offsets upon deletion', ->
+      styling\apply 1, {
+        1, 'operator', 5,
+        5, { 1, 's2', 2, 2, 's3', 3 }, 'my_sub|s1'
+      }
+      styling\delete 2, 2
+
+      assert.same nil, styling\get_mode_name_at 1
+      assert.same nil, styling\get_mode_name_at 2
+      assert.same 'my_sub', styling\get_mode_name_at 3
+      assert.same 'my_sub', styling\get_mode_name_at 4
+
+    it 'expands the sub mode offsets upon insertion', ->
+      styling\apply 1, {
+        1, 'operator', 2,
+        2, { 1, 's2', 2, 2, 's3', 3 }, 'my_sub|s1'
+      }
+      styling\insert 1, 2
+
+      assert.same nil, styling\get_mode_name_at 1
+      assert.same nil, styling\get_mode_name_at 2
+      assert.same nil, styling\get_mode_name_at 3
+      assert.same 'my_sub', styling\get_mode_name_at 4
+      assert.same 'my_sub', styling\get_mode_name_at 5
+
   describe '(run-through)', ->
     it 'generally works', ->
       styling\set 1, 10, 'keyword'

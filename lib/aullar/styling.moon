@@ -175,12 +175,14 @@ define_class {
 
   insert: (offset, count, opts = {}) =>
     @style_buffer\insert offset - 1, nil, count
+    @sub_style_markers\expand offset, count
     @last_pos_styled += count if offset <= @last_pos_styled
     @_notify(offset, offset + count - 1) unless opts.no_notify
 
   delete: (offset, count, opts = {}) =>
     @style_buffer\delete offset - 1, count
-    @sub_style_markers\remove_for_range offset, offset + count
+    @sub_style_markers\shrink offset, count
+
     if offset <= @last_pos_styled
       style_positions_removed = min(@last_pos_styled - offset, count)
       @last_pos_styled -= style_positions_removed
