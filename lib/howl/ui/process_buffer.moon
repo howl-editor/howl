@@ -144,7 +144,5 @@ highlight.define_default 'stderr',
   type: highlight.UNDERLINE
   foreground: 'red'
   line_width: 1
-  line_type: 'dotted'
-  foreground_alpha: 0.7
 
 return ProcessBuffer
