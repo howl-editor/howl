@@ -174,10 +174,10 @@ class Application extends PropertyObject
           editor.buffer = @next_buffer
 
   open_file: (file, editor = @editor) =>
-    for b in *@buffers
-      if b.file == file
-        editor.buffer = b
-        return b, editor
+    buffer = @_buffer_for_file file
+    if buffer
+      editor.buffer = buffer
+      return buffer, editor
 
     buffer = @new_buffer mode.for_file file
     status, err = pcall ->
@@ -292,8 +292,16 @@ class Application extends PropertyObject
 
     @settings\save_system 'session', session
 
+  _buffer_for_file: (file) =>
+    for b in *@buffers
+      return b if b.file == file
+
+    nil
+
   _load: (files = {}) =>
     local window
+
+    -- bootstrap if we're booting up
     unless @_loaded
       @settings = Settings!
       @_load_core!
@@ -316,12 +324,29 @@ class Application extends PropertyObject
 
       howl.janitor.start!
 
+    -- load files from command line
+    loaded_buffers = {}
     for path in *files
       file = File path
-      buffer = @new_buffer mode.for_file file
-      buffer.file = file
-      signal.emit 'file-opened', :file, :buffer
+      buffer = @_buffer_for_file file
+      unless buffer
+        buffer = @new_buffer mode.for_file file
+        buffer.file = file
+        signal.emit 'file-opened', :file, :buffer
 
+      append loaded_buffers, buffer
+
+    -- files we've loaded via a --reuse invocation should be shown
+    if #loaded_buffers > 0 and @_loaded
+      for i = 1, math.min(#@editors, #loaded_buffers)
+        @editors[i].buffer = loaded_buffers[i]
+
+    -- all loaded files should be considered as having been viewed just now
+    now = howl.sys.time!
+    for b in *loaded_buffers
+      b.last_shown = now
+
+    -- restore session properties
     unless @_loaded
       unless @args.no_profile
         @_restore_session window, #files == 0
