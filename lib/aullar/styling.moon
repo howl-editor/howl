@@ -201,7 +201,7 @@ define_class {
 
   get_mode_name_at: (pos) =>
     found = @sub_style_markers\at pos
-    found and found[#found] and found[#found].name
+    found[#found] and found[#found].name
 
   _notify: (start_offset, end_offset) =>
     if @listener and @listener.on_changed
