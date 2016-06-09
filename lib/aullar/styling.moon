@@ -100,6 +100,7 @@ define_class {
 
   set: (start_offset, end_offset, style, opts = {}) =>
     style_id = style_id_for_name style
+    @sub_style_markers\remove_for_range start_offset, end_offset unless opts.ignore_styles
     @style_buffer\fill start_offset - 1, end_offset - 1, style_id
     @last_pos_styled = max(@last_pos_styled, end_offset)
     @_notify(start_offset, end_offset) unless opts.no_notify
@@ -117,7 +118,9 @@ define_class {
     arr = sb.array
     base = offset - 1
     base_style = opts.base and "#{opts.base}:" or ''
-    no_notify = no_notify: true
+    set_opts =
+      no_notify: true
+      ignore_styles: true
     styled_up_to = 1
 
     markers = opts.markers or {}
@@ -130,7 +133,7 @@ define_class {
       if type(style) != 'table' -- normal lexing
         styling_end = styling[s_idx + 2]
         styled_up_to = base + styling_end - 1
-        @set base + styling_start, styled_up_to, base_style .. style, no_notify
+        @set base + styling_start, styled_up_to, base_style .. style, set_opts
 
       else -- embedded styling (sub lexing)
         if #style > 0
@@ -140,7 +143,7 @@ define_class {
           -- determine sub styling end, so we can fill it with base
           sub_end_offset = get_sub_style_end sub_start_offset, style
           if sub_end_offset -- no sub_end_offset == empty nested styling blocks
-            @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
+            @set sub_start_offset, sub_end_offset - 1, sub_base, set_opts
             @apply sub_start_offset, style, base: sub_base, no_notify: true, :markers
             styled_up_to = sub_end_offset
             append markers,

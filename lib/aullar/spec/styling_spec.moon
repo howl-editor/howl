@@ -393,6 +393,32 @@ describe 'Styling', ->
       assert.same 'my_sub', styling\get_mode_name_at 4
       assert.same 'my_sub', styling\get_mode_name_at 5
 
+    it 'removes the sub mode offsets upon explicit set', ->
+      styling\apply 1, {
+        1, 'operator', 2,
+        2, { 1, 's2', 2, 2, 's3', 3 }, 'my_sub|s1'
+        4, { 1, 's2', 2, 2, 's3', 3 }, 'my_sub|s2'
+      }
+      styling\set 2, 3, 's10'
+
+      assert.same nil, styling\get_mode_name_at 1
+      assert.same nil, styling\get_mode_name_at 2
+      assert.same nil, styling\get_mode_name_at 3
+      assert.same 'my_sub', styling\get_mode_name_at 4
+      assert.same 'my_sub', styling\get_mode_name_at 5
+      assert.same 'my_sub', styling\get_mode_name_at 6
+
+    it 'avoids touching styles when ignore_styles is passed to set', ->
+      styling\apply 1, {
+        1, 'operator', 2,
+        2, { 1, 's2', 2, 2, 's3', 3 }, 'my_sub|s1'
+      }
+      styling\set 2, 3, 's10', ignore_styles: true
+      assert.same nil, styling\get_mode_name_at 1
+      assert.same 'my_sub', styling\get_mode_name_at 2
+      assert.same 'my_sub', styling\get_mode_name_at 3
+      assert.same 'my_sub', styling\get_mode_name_at 4
+
   describe '(run-through)', ->
     it 'generally works', ->
       styling\set 1, 10, 'keyword'
