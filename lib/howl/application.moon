@@ -320,7 +320,6 @@ class Application extends PropertyObject
       signal.connect 'buffer-saved', self\_on_buffer_saved
 
       window = @new_window!
-      @_set_initial_status window
 
       howl.janitor.start!
 
@@ -331,10 +330,15 @@ class Application extends PropertyObject
       buffer = @_buffer_for_file file
       unless buffer
         buffer = @new_buffer mode.for_file file
-        buffer.file = file
-        signal.emit 'file-opened', :file, :buffer
+        status, ret = pcall -> buffer.file = file
+        if status
+          signal.emit 'file-opened', :file, :buffer
+        else
+          @close_buffer buffer
+          log.error "Failed to open file '#{file}': #{ret}"
 
-      append loaded_buffers, buffer
+      if buffer
+        append loaded_buffers, buffer
 
     -- files we've loaded via a --reuse invocation should be shown
     if #loaded_buffers > 0 and @_loaded
@@ -358,6 +362,7 @@ class Application extends PropertyObject
       window\show_all! if window
       @_loaded = true
       signal.emit 'app-ready'
+      @_set_initial_status window
 
   _should_abort_quit: =>
     modified = [b for b in *@_buffers when b.modified]
@@ -428,7 +433,8 @@ class Application extends PropertyObject
 
   _set_initial_status: (window) =>
     if log.last_error
-      window.status\error log.last_error.message
+      startup_errors = [e for e in *log.entries when e.level == 'error']
+      window.status\error "#{log.last_error.message} (#{#startup_errors} startup errors in total)"
     else
       window.status\info 'Howl ready.'
 
