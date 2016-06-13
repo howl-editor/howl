@@ -158,7 +158,8 @@ class CommandInput
     tab: => @command_completion!
     up: => @run_historical!
     ctrl_r: => @run_historical!
-    escape: => self.finish!
+    binding_for:
+      ["cancel"]: => self.finish!
     enter: =>
       if @command_line.text
         cmd = resolve_command(@command_line.text)

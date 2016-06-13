@@ -183,12 +183,13 @@ class ExternalCommandEntry
 
       @_select_completion!
 
-    escape: =>
-      if @list_widget and @list_widget.showing
-        @list_widget\hide!
-        @auto_show_list = false
-      else
-        self.finish!
+    binding_for:
+      ["cancel"]: =>
+        if @list_widget and @list_widget.showing
+          @list_widget\hide!
+          @auto_show_list = false
+        else
+          self.finish!
 
     tab: =>
       @auto_show_list = true
