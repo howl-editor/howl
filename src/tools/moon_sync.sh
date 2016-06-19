@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright 2012-2015 The Howl Developers
+# Copyright 2012-2016 The Howl Developers
 # License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 source_dir=$1
@@ -14,7 +14,7 @@ fi
 echo "Updating $target_dir from $source_dir.."
 rm -rf $target_dir/*
 
-for file in README.md moon moonscript moonscript/compile moonscript/transform moonscript/parse; do
+for file in README.md moon moonscript moonscript/compile moonscript/transform moonscript/parse moonscript/cmd; do
   target=$target_dir/$file
   source=$source_dir/$file
   echo "* $file"

@@ -17,6 +17,16 @@ local string_chars = {
   ["\n"] = "\\n"
 }
 return {
+  scoped = function(self, node)
+    local _, before, value, after
+    _, before, value, after = node[1], node[2], node[3], node[4]
+    _ = before and before:call(self)
+    do
+      local _with_0 = self:value(value)
+      _ = after and after:call(self)
+      return _with_0
+    end
+  end,
   exp = function(self, node)
     local _comp
     _comp = function(i, value)
@@ -71,11 +81,13 @@ return {
   chain = function(self, node)
     local callee = node[2]
     local callee_type = ntype(callee)
-    if callee == -1 then
+    local item_offset = 3
+    if callee_type == "dot" or callee_type == "colon" or callee_type == "index" then
       callee = self:get("scope_var")
-      if not callee then
+      if not (callee) then
         user_error("Short-dot syntax must be called within a with block")
       end
+      item_offset = 2
     end
     if callee_type == "ref" and callee[2] == "super" or callee == "super" then
       do
@@ -95,7 +107,7 @@ return {
       elseif t == "dot" then
         return ".", tostring(arg)
       elseif t == "colon" then
-        return ":", arg, chain_item(node[3])
+        return ":", tostring(arg)
       elseif t == "colon_stub" then
         return user_error("Uncalled colon stub")
       else
@@ -112,7 +124,7 @@ return {
     local actions
     do
       local _with_0 = self:line()
-      for _index_0 = 3, #node do
+      for _index_0 = item_offset, #node do
         local action = node[_index_0]
         _with_0:append(chain_item(action))
       end
@@ -246,9 +258,7 @@ return {
           else
             assign = self:line("[", _with_0:value(key), "]")
           end
-          _with_0:set("current_block", key)
           local out = self:line(assign, " = ", _with_0:value(value))
-          _with_0:set("current_block", nil)
           return out
         else
           return self:line(_with_0:value(tuple[1]))

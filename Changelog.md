@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Upgrade Moonscript to 0.4.0
+
 - Added new command, `editor-replace-exec`, for replacing selection or buffer
 content with the result of piping it to an external command.
 
