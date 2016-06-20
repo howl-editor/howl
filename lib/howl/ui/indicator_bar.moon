@@ -8,6 +8,7 @@ class IndicatorBar
     error('Missing argument #1 (id)', 2) if not cls
     @box = Gtk.Box {
       height_request: 20
+      spacing: 10
     }
     @indics = {}
 
