@@ -5,6 +5,7 @@ gio = require 'ljglibs.gio'
 glib = require 'ljglibs.glib'
 ffi = require 'ffi'
 core = require 'ljglibs.core'
+require 'ljglibs.gobject.object'
 callbacks = require 'ljglibs.callbacks'
 jit = require 'jit'
 
