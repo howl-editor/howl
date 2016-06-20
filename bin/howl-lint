@@ -1,0 +1,19 @@
+#! /bin/sh
+#
+# Copyright 2016 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
+ROOT=$(cd $(dirname $0)/.. && pwd)
+for howl in $ROOT/bin/howl $ROOT/src/howl; do
+  if [ -e $howl ]; then
+    HOWL=$howl
+    break
+  fi
+done
+
+if [ -z "$HOWL" ]; then
+  echo "Could not locate howl executable"
+  exit 1
+fi
+
+exec $HOWL --lint $*
