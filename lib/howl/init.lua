@@ -122,7 +122,9 @@ local function lint(args)
   local lint = require("moonscript.cmd.lint")
   local errors = 0
   local paths = {}
-  local moon_filter = function(f) return f.extension ~= 'moon' end
+  local moon_filter = function(f)
+    return f.extension ~= 'moon' and not f.is_directory
+  end
 
   for i = 2, #args do
     local path = args[i]
@@ -130,7 +132,9 @@ local function lint(args)
     if file.is_directory then
       local sub_files = file:find({filter = moon_filter})
       for j = 1, #sub_files do
-        paths[#paths + 1] = sub_files[j].path
+        if not sub_files[j].is_directory then
+          paths[#paths + 1] = sub_files[j].path
+        end
       end
     else
       paths[#paths + 1] = path
