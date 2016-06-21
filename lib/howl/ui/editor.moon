@@ -694,6 +694,13 @@ class Editor extends PropertyObject
     @_brace_highlight!
     signal.emit 'cursor-changed', editor: self, cursor: @cursor
 
+    inspections = @buffer.data.inspections
+    current = inspections and inspections[@cursor.line]
+    if current
+      markers = @buffer.markers.markers\at @view.cursor.pos
+      markers = [m.message for m in *markers when m.message]
+      log.warning table.concat(markers, '; ')
+
   _get_matching_brace: (byte_pos, start_pos, end_pos) =>
     buffer = @view.buffer
     return if byte_pos < 1 or byte_pos > buffer.size
@@ -806,6 +813,7 @@ with Editor
   .register_indicator 'title', 'top_left'
   .register_indicator 'position', 'bottom_right'
   .register_indicator 'activity', 'top_right', -> Gtk.Spinner!
+  .register_indicator 'inspections', 'bottom_left'
 
 -- Config variables
 

@@ -22,6 +22,7 @@ class Buffer extends PropertyObject
     @config = config.local_proxy!
     @markers = BufferMarkers @_buffer
     @completers = {}
+    @inspectors = {}
     @mode = mode
     @properties = {}
     @data = {}

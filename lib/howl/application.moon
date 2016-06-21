@@ -464,6 +464,7 @@ class Application extends PropertyObject
     require 'howl.editing'
     require 'howl.ui.icons.font_awesome'
     require 'howl.janitor'
+    require 'howl.inspect'
 
   _load_application_icon: =>
     dir = @root_dir
