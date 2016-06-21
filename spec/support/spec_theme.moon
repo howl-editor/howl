@@ -7,7 +7,7 @@ return {
 
   editor:
     background:
-      color: red
+      color: '#ff0000'
 
     header:
       background:
@@ -21,5 +21,5 @@ return {
 
   styles:
     default:
-      color: blue
+      color: '#0000ff'
 }

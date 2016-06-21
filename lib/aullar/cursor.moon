@@ -305,7 +305,7 @@ Cursor = {
       if wrapped_line.nr != 1
         -- move up into the previous visual (wrapped) line
         prev_l_line = d_line.layout\get_line_readonly wrapped_line.nr - 2
-        inside, offset = prev_l_line\x_to_index @current_x
+        _, offset = prev_l_line\x_to_index @current_x
         @move_to pos: @buffer_line.start_offset + offset, extend: opts.extend
         return
 
@@ -314,7 +314,7 @@ Cursor = {
       if prev.is_wrapped and @_navigate_visual
         -- move up into the previous visual (wrapped) line
         prev_l_line = prev.layout\get_line_readonly prev.line_count - 1
-        inside, offset = prev_l_line\x_to_index @_sticky_x or @current_x
+        _, offset = prev_l_line\x_to_index @_sticky_x or @current_x
         buf_line = @view.buffer\get_line prev.nr
         @move_to pos: buf_line.start_offset + offset, extend: opts.extend
       else
@@ -327,7 +327,7 @@ Cursor = {
       if wrapped_line.nr != d_line.line_count
         -- move down into the next visual (wrapped) line
         next_l_line = d_line.layout\get_line_readonly wrapped_line.nr
-        inside, offset = next_l_line\x_to_index @current_x
+        _, offset = next_l_line\x_to_index @current_x
         @move_to pos: @buffer_line.start_offset + offset, extend: opts.extend
         return
 

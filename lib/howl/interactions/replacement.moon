@@ -119,10 +119,10 @@ class Replacement
       @adjusted_positions = {}
       @excluded = {}
       @selected_idx = nil
+      preview_start = 1
 
       if @target and not @target.is_empty
         batch_start = @start_pos
-        preview_start = 1
         find = self.find
         for found_match in find @buffer, @target, @start_pos, @end_pos
           if found_match.end_pos > @end_pos
@@ -242,7 +242,6 @@ class Replacement
         @preview_buffer\chunk(first, last).text = table.concat substituted
 
     @_preview_highlights!
-    return last_idx
 
   _preview_highlights: =>
     if @matches[@selected_idx]
@@ -260,6 +259,7 @@ class Replacement
     -- skip until visible section
     local visible_start
     for i = 1, @num_matches
+      match = @matches[i]
       preview_position = @adjusted_positions[i] or match.start_pos
       if preview_position >= first_visible
         visible_start = i

@@ -95,7 +95,6 @@ draw_ops = {
     if flair.foreground
       set_source_from_color cr, 'foreground', flair
       set_line_type_from_flair cr, flair
-      line_width = flair.line_width or 0.5
       cr\move_to x + 0.5, y
       cr\rel_line_to 0, height
       cr\stroke!
@@ -185,7 +184,6 @@ need_text_object = (flair) ->
     {:layout, :view, :is_wrapped, :lines} = display_line
     clip = cr.clip_extents
     base_x = view.base_x
-    line_count = display_line.line_count
     width_of_space = display_line.width_of_space
     line_y_offset = 0
 

@@ -1,8 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-ffi = require 'ffi'
-ffi_string = ffi.string
 import string, type from _G
 append = table.insert
 {:min, :max} = math
@@ -94,8 +92,8 @@ Line = (nr, buffer) ->
         pos
       start_pos: => buffer\char_offset @byte_start_pos
       end_pos: => buffer\char_offset @byte_end_pos
-      previous: => if nr > 1 then Line nr - 1, buffer, sci
-      next: => if nr < a_buf.nr_lines then Line nr + 1, buffer, sci
+      previous: => if nr > 1 then Line nr - 1, buffer
+      next: => if nr < a_buf.nr_lines then Line nr + 1, buffer
       size: => get_line!.size
       has_eol: => get_line!.has_eol
 
@@ -142,8 +140,6 @@ Line = (nr, buffer) ->
         config = @buffer.config
         cur_indent, real_indent = get_indentation text!, config
         return if indent == cur_indent
-
-        content = text!\match '^%s*(.*)$'
 
         indent_s = if config.use_tabs
           nr_tabs = math.floor(indent / config.tab_width)

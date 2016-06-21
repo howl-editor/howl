@@ -22,7 +22,6 @@ config = require 'aullar.config'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs, :floor} = math
 
-s_unref = signal.unref_handle
 append = table.insert
 
 jit.off true, true
@@ -741,7 +740,7 @@ View = {
 
   _on_key_press: (_, e) =>
     if @in_preedit
-      ret = @im_context\filter_keypress(e)
+      @im_context\filter_keypress(e)
       return true
 
     event = parse_key_event e

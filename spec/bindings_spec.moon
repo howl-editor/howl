@@ -113,7 +113,7 @@ describe 'bindings', ->
         event = character: 'A', key_name: 'a', key_code: 65
 
         with_signal_handler 'key-press', nil, (handler) ->
-          status, ret = pcall bindings.process, event, 'editor', {}, 'yowser'
+          pcall bindings.process, event, 'editor', {}, 'yowser'
           assert.spy(handler).was.called_with {
             :event
             source: 'editor'
@@ -124,7 +124,7 @@ describe 'bindings', ->
       it 'returns early with true if some handler says to abort', ->
         keymap = A: spy.new -> true
         with_signal_handler 'key-press', signal.abort, (handler) ->
-          status, ret = pcall bindings.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
+          _, ret = pcall bindings.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
           assert.spy(handler).was.called!
           assert.spy(keymap.A).was.not_called!
           assert.is_true ret
@@ -132,7 +132,7 @@ describe 'bindings', ->
       it 'continues processing keymaps unless aborted', ->
         keymap = A: spy.new -> true
         with_signal_handler 'key-press', false, (handler) ->
-          status, ret = pcall bindings.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
+          pcall bindings.process, { character: 'A', key_name: 'A', key_code: 65 }, 'editor', { keymap }
           assert.spy(keymap.A).was_called!
 
     context 'when looking up handlers', ->
@@ -331,7 +331,7 @@ describe 'bindings', ->
 
   describe 'cancel_capture()', ->
     it 'cancels any currently set capture', ->
-        thief = spy.new -> return ret
+        thief = spy.new -> nil
         bindings.capture thief
         bindings.cancel_capture!
         bindings.process { character: 'A', key_name: 'A', key_code: 65 }, 'editor'

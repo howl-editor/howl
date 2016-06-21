@@ -4,8 +4,6 @@
 callbacks = require 'ljglibs.callbacks'
 ffi = require 'ffi'
 
-C = ffi.C
-
 dispatch = (handle, arg) ->
   cb = ffi.cast('GVCallback2', callbacks.void2)
   cb callbacks.cast_arg(arg), callbacks.cast_arg(handle.id)
@@ -35,7 +33,7 @@ describe 'callbacks', ->
     context '(gc lifecycle management)', ->
       it 'anchors a handler, preventing it from being garbage collected', ->
         holder = setmetatable { handler: -> }, __mode: 'v'
-        handle = callbacks.register holder.handler, 'test handler'
+        callbacks.register holder.handler, 'test handler'
         collectgarbage!
         assert.is_not_nil holder.handler
 
@@ -62,6 +60,7 @@ describe 'callbacks', ->
       assert.is_nil holder[1]
 
     it 'returns true if there was a handler to unregister', ->
+      handler = spy.new -> nil
       handle = callbacks.register handler, 'test handler'
       assert.is_true callbacks.unregister handle
       assert.is_false callbacks.unregister handle

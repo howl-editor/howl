@@ -11,8 +11,7 @@ jit = require 'jit'
 import catch_error, get_error from glib
 
 C = ffi.C
-ffi_string, ffi_new, ffi_cast = ffi.string, ffi.new, ffi.cast
-buf_t = ffi.typeof 'unsigned char[?]'
+ffi_new, ffi_cast = ffi.new, ffi.cast
 const_void_p = ffi.typeof 'const void *'
 
 OutputStream = core.define 'GOutputStream < GObject', {

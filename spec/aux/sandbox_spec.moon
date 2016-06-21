@@ -2,8 +2,8 @@ import Sandbox from howl.aux
 
 describe 'Sandbox', ->
   it 'allows running a function with a specified environment', ->
-    box = Sandbox env: {foo: -> 'bar!'}
-    assert.equal 'bar!', box -> return foo!
+    box = Sandbox env: {from_env: -> 'bar!'}
+    assert.equal 'bar!', box -> from_env!
 
   it 'allows passing parameters to the function', ->
     box = Sandbox!
@@ -12,8 +12,8 @@ describe 'Sandbox', ->
 
   it '.put allows modifiying the environment', ->
     box = Sandbox!
-    box\put what: -> 'bar!'
-    assert.equal 'bar!', box -> return what!
+    box\put from_env: -> 'bar!'
+    assert.equal 'bar!', box -> from_env!
 
   it 'allows global access by default', ->
     box = Sandbox!

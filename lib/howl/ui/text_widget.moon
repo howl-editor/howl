@@ -1,7 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 import config from howl
 import View from aullar
@@ -105,4 +104,4 @@ class TextWidget extends PropertyObject
   _set_width: (width) =>
     return if @_width == width
     @_width = width
-    @view_gobject.width_request = height
+    @view_gobject.width_request = width

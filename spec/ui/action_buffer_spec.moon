@@ -1,5 +1,4 @@
 import ActionBuffer, style, StyledText from howl.ui
-append = table.insert
 
 describe 'ActionBuffer', ->
   buf = ActionBuffer!

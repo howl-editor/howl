@@ -87,15 +87,15 @@ describe 'Settings', ->
       init_moon.contents = '_G.__init_moon = true'
 
       settings\load_user!
-      assert.equal true, __init_moon
+      assert.equal true, _G.__init_moon
 
       _G.__init_moon = false
       init_lua = tmpdir\join('init.lua')
       init_lua.contents = '_G.__init_lua = true'
 
       settings\load_user!
-      assert.is_true __init_lua
-      assert.is_false __init_moon
+      assert.is_true _G.__init_lua
+      assert.is_false _G.__init_moon
 
     it 'does nothing if the directory is not set', ->
       assert.has.no_error -> Settings(tmpdir\join('sub', 'bar'))\load_user!

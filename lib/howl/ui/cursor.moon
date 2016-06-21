@@ -4,8 +4,6 @@
 import PropertyObject from howl.aux.moon
 import command from howl
 aullar = require 'aullar'
-ffi = require 'ffi'
-ffi_string = ffi.string
 {:max, :min} = math
 
 class Cursor extends PropertyObject

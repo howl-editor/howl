@@ -36,5 +36,5 @@ describe 'style', ->
     buffer\insert 'hƏllo', 1, 'keyword'
     buffer\insert 'Bačon', 6, 'stylish'
 
-    name, def = style.at_pos(buffer, 5)
+    name = style.at_pos(buffer, 5)
     assert.equal name, 'keyword'

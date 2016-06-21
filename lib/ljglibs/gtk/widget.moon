@@ -12,7 +12,7 @@ core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 
 C, ffi_cast = ffi.C, ffi.cast
-ref_ptr, signal = gobject.ref_ptr, gobject.signal
+ref_ptr, gc_ptr, signal = gobject.ref_ptr, gobject.gc_ptr, gobject.signal
 widget_t = ffi.typeof 'GtkWidget *'
 cairo_t = ffi.typeof 'cairo_t *'
 pack, unpack = table.pack, table.unpack

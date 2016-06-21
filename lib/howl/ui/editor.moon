@@ -11,6 +11,7 @@ aullar_config = aullar.config
 import PropertyObject from howl.aux.moon
 import Searcher, CompletionPopup from howl.ui
 import auto_pair from howl.editing
+
 {
   :style,
   :highlight,
@@ -118,6 +119,7 @@ class Editor extends PropertyObject
     get: => @_buf
     set: (buffer) =>
       signal.emit 'before-buffer-switch', editor: self, current_buffer: @_buf, new_buffer: buffer
+      prev_buffer = @_buf
       @_show_buffer buffer
       signal.emit 'after-buffer-switch', editor: self, current_buffer: buffer, old_buffer: prev_buffer
 
@@ -500,9 +502,6 @@ class Editor extends PropertyObject
 
   show_popup: (popup, options = {}) =>
     @remove_popup!
-
-    dimensions = @view\text_dimensions 'M'
-    x_adjust = 0
     pos = @buffer\byte_offset options.position or @cursor.pos
     coordinates = @view\coordinates_from_position pos
     x = coordinates.x
@@ -579,7 +578,6 @@ class Editor extends PropertyObject
         @_buf.last_shown = sys.time!
 
     @_is_previewing = opts.preview
-    prev_buffer = @_buf
     @_buf = buffer
     @indicator.title.label = buffer.title
 
@@ -642,7 +640,7 @@ class Editor extends PropertyObject
   _remove_indicator: (id) =>
     def = indicators[id]
     return unless def
-    y, x = def.placement\match('^(%w+)_(%w+)$')
+    y = def.placement\match('^(%w+)_%w+$')
     bar = y == 'top' and @header or @footer
     bar\remove id
     @indicator[id] = nil
@@ -748,10 +746,6 @@ class Editor extends PropertyObject
         },
       }
       @_brace_highlighted = true
-
-    start_pos = buffer\get_line(@view.first_visible_line).start_offset
-    last_visible_line = buffer\get_line(@view.last_visible_line)
-    end_pos = last_visible_line and last_visible_line.end_offset or buffer.size
 
     pos = cursor.pos
 

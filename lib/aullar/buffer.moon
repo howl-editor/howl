@@ -368,7 +368,6 @@ Buffer = {
     at_line = @get_line line_nr
     return unless at_line and lexer
 
-    last_styled_line = 1
     start_line = at_line
     if (@styling.last_pos_styled + 1) < start_line.start_offset
       start_line = @get_line_at_offset(@styling.last_pos_styled + 1)
@@ -592,7 +591,6 @@ Buffer = {
       :revision,
       :part_of_revision,
       :lines_changed,
-      :changes
     }
     if extra
       for k, v in pairs extra

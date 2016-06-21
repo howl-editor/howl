@@ -15,10 +15,6 @@ jit.off true, true
 idle_handlers = {}
 idle_fired = 0
 
-dispatch = (handle) ->
-  co = coroutine.create (...) -> handle.handler, unpack(handle.args)
-  status, ret = coroutine.resume co, params
-
 check_for_idle = ->
   idle = howl.app.idle
   unless idle >= 1

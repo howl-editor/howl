@@ -1,6 +1,5 @@
 ffi = require 'ffi'
 core = require 'ljglibs.core'
-Type = require 'ljglibs.gobject.type'
 Gtk = require 'ljglibs.gtk'
 import OffscreenWindow, Window, Box from Gtk
 

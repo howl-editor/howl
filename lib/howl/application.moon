@@ -1,8 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-ffi = require 'ffi'
-
 import Window, Editor, theme from howl.ui
 import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
 import File, Process from howl.io
@@ -374,7 +372,6 @@ class Application extends PropertyObject
 
   _on_mode_registered: (args) =>
     -- check if any buffers with default_mode could use this new mode
-    mode_name = args.name
     default_mode = mode.by_name 'default'
     for buffer in *@_buffers
       if buffer.file and buffer.mode == default_mode

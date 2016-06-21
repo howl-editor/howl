@@ -4,7 +4,6 @@
 import Buffer from howl
 import ListWidget, TextWidget, style, highlight from howl.ui
 import Matcher from howl.util
-s = require 'serpent'
 
 describe 'ListWidget', ->
   local list, buf

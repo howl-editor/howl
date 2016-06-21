@@ -306,7 +306,7 @@ run = (theme_name, only) ->
   image_dir\mkdir_p! unless image_dir.is_directory
 
   print "- Setting up test project.."
-  out, err, p = howl.io.Process.execute "git clone --shared '#{source_project}' '#{project_dir}'"
+  _, err, p = howl.io.Process.execute "git clone --shared '#{source_project}' '#{project_dir}'"
   unless p.successful
     error err
 

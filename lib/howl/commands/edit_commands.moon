@@ -52,7 +52,6 @@ command.register
   description: 'Replaces text (within selection or globally)'
   input: ->
     buffer = app.editor.buffer
-    chunk = app.editor.active_chunk
     replacement = interact.get_replacement
       title: 'Preview replacements for ' .. buffer.title
       editor: app.editor
@@ -77,7 +76,6 @@ command.register
   description: 'Replaces text using regular expressions (within selection or globally)'
   input: ->
     buffer = app.editor.buffer
-    chunk = app.editor.active_chunk
     replacement = interact.get_replacement_regex
       title: 'Preview replacements for ' .. buffer.title
       editor: app.editor
@@ -150,7 +148,7 @@ command.register
   handler: ->
     cursor = app.editor.cursor
     pos = app.editor\get_matching_brace cursor.pos
-    cursor\move_to(:pos, :extend) if pos
+    cursor\move_to(:pos) if pos
 
 
 howl.command.register
@@ -164,7 +162,7 @@ howl.command.register
     return chunk, working_directory, cmd
 
   handler: (chunk, working_directory, cmd) ->
-    stdout, stderr, process = howl.io.Process.execute cmd,
+    stdout, _, process = howl.io.Process.execute cmd,
       :working_directory,
       stdin: chunk.text
     if process.successful

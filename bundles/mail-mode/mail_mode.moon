@@ -1,8 +1,6 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see README.md at the top-level directory of the bundle)
 
-append = table.insert
-
 class MailMode
   new: =>
     @lexer = bundle_load('mail_lexer')

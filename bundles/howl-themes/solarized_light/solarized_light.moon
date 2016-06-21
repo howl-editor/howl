@@ -1,13 +1,11 @@
 {:delegate_to} = howl.util.table
 
-base0   = '#839496'
 base1   = '#93a1a1'
 base2  = '#eee8d5'
 base3   = '#fdf6e3'
 base00  = '#657b83'
 base01  = '#586e75'
 base02  = '#073642'
-base03  = '#002b36'
 yellow  = '#b58900'
 orange  = '#cb4b16'
 red     = '#dc322f'
@@ -25,7 +23,6 @@ string = cyan
 number = blue
 keyword = green
 class_name = yellow
-special = orange
 operator = base00
 member = base02
 key = blue
@@ -305,7 +302,7 @@ return {
 
     embedded:
       background: wheat
-      color: foreground
+      color: black
 
     -- Markup and visual styles
 
@@ -349,7 +346,7 @@ return {
 
     table:
       background: wheat
-      color: foreground
+      color: black
       underline: true
 
     addition: color: green
