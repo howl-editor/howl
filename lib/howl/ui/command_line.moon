@@ -342,6 +342,10 @@ class CommandLine extends PropertyObject
       @write text
 
   notify: (text, style='info') =>
+    if #text == 0
+      @clear_notification!
+      return
+
     if @notification_widget
       @notification_widget\notify style, text
       @notification_widget\show!
