@@ -5,7 +5,6 @@ import app, mode from howl
 import ActionBuffer, highlight from howl.ui
 import terminal from howl.ui.markup
 import File from howl.io
-append = table.insert
 
 command_activity = (process) ->
   {

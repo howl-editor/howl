@@ -9,7 +9,6 @@ ffi = require 'ffi'
 bit = require 'bit'
 
 import C from ffi
-ffi_string = ffi.string
 append = table.insert
 
 transform_rets = (s, ...) ->
@@ -139,7 +138,6 @@ ufind = (s, pattern, init = 1, plain = false) ->
 
 rfind = (s, text, init = #s) ->
   init -= 1  -- 0-based indexing
-  s_len = #s
   text_len = #text
   s_bytes = const_char_p(s)
   text_bytes = const_char_p(text)

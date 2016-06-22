@@ -5,8 +5,6 @@ Buffer = require 'aullar.buffer'
 require 'ljglibs.cdefs.glib'
 
 ffi = require 'ffi'
-bit = require 'bit'
-C = ffi.C
 append = table.insert
 
 describe 'Buffer', ->
@@ -972,7 +970,7 @@ describe 'Buffer', ->
 
       it 'invalidates all subsequent styling', ->
         b.lexer = -> { 1, 'operator', 2 }
-        res = b\refresh_styling_at 1, 2, force_full: true
+        b\refresh_styling_at 1, 2, force_full: true
         assert.same {}, b.styling\get(8, 10)
 
       it 'sets the styling last_pos_styled to the last line styled', ->

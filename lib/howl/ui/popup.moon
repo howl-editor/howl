@@ -114,7 +114,7 @@ class Popup extends PropertyObject
       x = win_h_center - (width / 2)
 
     -- are we outside of the comfort zone vertically?
-    if y < @comfort_zone or y + heigth > (screen.height - @comfort_zone)
+    if y < @comfort_zone or y + height > (screen.height - @comfort_zone)
       -- hunch down
       min_outside_v = math.min(w_y, screen.height - (w_y + w_height))
       height = (w_height + min_outside_v) - @comfort_zone

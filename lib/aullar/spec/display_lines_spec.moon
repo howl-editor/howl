@@ -4,9 +4,6 @@
 View = require 'aullar.view'
 Buffer = require 'aullar.buffer'
 styles = require 'aullar.styles'
-DisplayLines = require 'aullar.display_lines'
-
-ffi = require 'ffi'
 
 describe 'DisplayLines', ->
 

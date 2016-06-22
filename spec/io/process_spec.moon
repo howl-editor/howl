@@ -50,7 +50,7 @@ describe 'Process', ->
 
     it "allows specifying a different shell", (done) ->
       howl_async ->
-        status, out, err, process = pcall Process.execute, 'blargh', shell: '/bin/echo'
+        status, out, _, process = pcall Process.execute, 'blargh', shell: '/bin/echo'
         assert.is_true status
         assert.match out, 'blargh'
         assert.equal 'blargh', process.command_line

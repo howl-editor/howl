@@ -2,8 +2,6 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 core = require 'ljglibs.core'
-ffi = require 'ffi'
-C = ffi.C
 
 def = {
   constants: {

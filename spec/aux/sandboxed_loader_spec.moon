@@ -16,7 +16,6 @@ describe 'SandboxedLoader', ->
   context 'exposed sandbox helpers', ->
     it '<name>_file(rel_path)', ->
       it 'returns a File object for the given file', ->
-        f = dir\join('file.lua')
         assert.equals dir\join('file.lua'), loader -> foo_file 'file.lua'
 
     describe '<name>_load(rel_basename)', ->

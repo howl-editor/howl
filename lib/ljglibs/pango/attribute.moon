@@ -5,7 +5,7 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.pango'
 core = require 'ljglibs.core'
 
-C, ffi_new, ffi_gc, ffi_cast = ffi.C, ffi.new, ffi.gc, ffi.cast
+C, ffi_gc, ffi_cast = ffi.C, ffi.gc, ffi.cast
 
 attr_gc = (o) ->
   ffi_gc o, (o) ->

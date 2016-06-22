@@ -3,8 +3,6 @@
 
 {:Attribute} = require 'ljglibs.pango'
 
-ffi = require 'ffi'
-C = ffi.C
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
 flair = require 'aullar.flair'
@@ -97,7 +95,6 @@ Selection = {
     stop >= line.start_offset
 
   draw: (x, y, cr, display_line, line) =>
-    start_x, width = x, display_line.width - @view.base_x
     start, stop = @range!
     start_col, end_col = 1, line.size + 1
     sel_start, sel_end = false, false

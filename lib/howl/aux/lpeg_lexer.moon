@@ -2,11 +2,11 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import mode from howl
+lpeg = _G.lpeg
 import P, B, S, Cp, Cc, Ct, Cmt, Cg, Cb from lpeg
 import pairs, setfenv, setmetatable, type, print, tostring from _G
 l = lpeg.locale!
 import space, alpha from l
-lpeg_type = lpeg.type
 unpack, append, tinsert = table.unpack, table.insert, table.insert
 
 eol_p = P'\n' + P'\r\n' + P'\r'
@@ -171,6 +171,7 @@ lexer = {
 lexer[k] = v for k,v in pairs lpeg when k\match '^%u'
 lpeg.locale lexer
 
+{:C, :digit} = lexer
 setfenv 1, lexer
 export *
 

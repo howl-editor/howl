@@ -4,7 +4,6 @@
 flair = require 'aullar.flair'
 {:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
-Styling = require 'aullar.styling'
 Pango = require 'ljglibs.pango'
 {:Layout, :AttrList, :SCALE} = Pango
 pango_cairo = Pango.cairo

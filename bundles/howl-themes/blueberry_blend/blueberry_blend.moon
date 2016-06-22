@@ -8,13 +8,10 @@ orange = '#FF5F2E'
 yellow = '#FCBE32'
 
 grey = '#888'
-very_light_grey = '#F0F0F0'
-dark_grey = '#666'
 blue = '#738DFC'
 red = '#B23610'
 light_red = '#FF9F8F'
 magenta = '#D33682'
-violet = '#6C71c4'
 cyan = '#2AA198'
 green = '#00B284'
 purple = '#C687FF'
@@ -32,7 +29,6 @@ keyword = yellow
 class_name = blue
 
 special = green
-member = light_grey
 key = orange
 
 -- General styling for context boxes (editor)

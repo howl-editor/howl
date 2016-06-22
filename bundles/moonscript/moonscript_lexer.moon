@@ -45,8 +45,6 @@ howl.aux.lpeg_lexer ->
     (sq_string + dq_string) * P':'
   }
 
-  dq_string_end = scan_to(P'"' + #P'#{', P'\\')
-
   ws = capture 'whitespace', blank^0
 
   cdef = sequence {

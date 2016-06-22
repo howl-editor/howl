@@ -31,7 +31,7 @@ get_capture = (match_info, index, ptr, fetch_positions = false) ->
 
 get_captures = (match_info, ptr, matches, start, count, offset = 0) ->
   for i = start, count - 1
-    match, start_pos, end_pos = get_capture match_info, i, ptr
+    match, start_pos = get_capture match_info, i, ptr
     matches[#matches + 1] = #match > 0 and match or start_pos + offset
 
 properties = {
@@ -54,7 +54,7 @@ methods = {
     match_info, ptr, count = do_match @re, s, init
     return nil unless match_info
 
-    match, start_pos, end_pos = get_capture match_info, 0, ptr, true
+    _, start_pos, end_pos = get_capture match_info, 0, ptr, true
     matches = { start_pos + init - 1, end_pos + init - 1 }
     get_captures match_info, ptr, matches, 1, count, init - 1
     return table.unpack matches

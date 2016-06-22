@@ -154,7 +154,7 @@ command.register
 
     buffer.read_only = true
     buffer.modified = false
-    editor = howl.app\add_buffer buffer
+    howl.app\add_buffer buffer
 
 command.register
   name: 'bundle-unload'

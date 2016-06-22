@@ -54,7 +54,7 @@ export load_from_dir = (dir) ->
 
   loader = SandboxedLoader dir, 'bundle', no_implicit_globals: true
   bundle = loader -> bundle_load 'init'
-  verify_bundle bundle, init
+  verify_bundle bundle, dir
   _G.bundles[module_name dir.basename] = bundle
   signal.emit 'bundle-loaded', bundle: mod_name
 

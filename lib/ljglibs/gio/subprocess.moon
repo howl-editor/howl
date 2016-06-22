@@ -18,7 +18,7 @@ callbacks = require 'ljglibs.callbacks'
 import ref_ptr from gobject
 import get_error, catch_error, Bytes from glib
 C = ffi.C
-ffi_string, ffi_cast = ffi.string, ffi.cast
+ffi_cast = ffi.cast
 
 core.define 'GSubprocess < GObject', {
   constants: {

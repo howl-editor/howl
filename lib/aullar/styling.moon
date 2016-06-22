@@ -109,8 +109,6 @@ define_class {
     return if #styling == 0
     @_check_offsets offset
 
-    sb = @style_buffer
-    arr = sb.array
     base = offset - 1
     base_style = opts.base and "#{opts.base}:" or ''
     no_notify = no_notify: true

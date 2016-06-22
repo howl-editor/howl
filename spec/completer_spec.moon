@@ -24,7 +24,7 @@ describe 'Completer', ->
       factory = spy.new -> nil
       completion.register name: 'comp-name', :factory
       append buffer.completers, 'comp-name'
-      completer = Completer(buffer, 3)
+      Completer(buffer, 3)
       assert.spy(factory).was.called
 
     it 'returns completions for completers in buffer and mode', ->

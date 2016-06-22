@@ -3,7 +3,6 @@
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
-cairo = require 'ljglibs.cairo'
 gobject_signal = require 'ljglibs.gobject.signal'
 Background = require 'ljglibs.aux.background'
 ffi = require 'ffi'

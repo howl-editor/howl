@@ -1,7 +1,6 @@
 import Buffer, config, signal from howl
 import File from howl.io
 import with_tmpfile from File
-append = table.insert
 
 describe 'Buffer', ->
   buffer = (text) ->

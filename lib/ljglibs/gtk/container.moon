@@ -26,7 +26,7 @@ core.define 'GtkContainer < GtkWidget', {
   properties: {
     focus_child:
       get: => ref_ptr cast_widget_ptr C.gtk_container_get_focus_child to_c(@)
-      set: (c) => C.gtk_container_set_focus_child to_c(@), to_w(child)
+      set: (c) => C.gtk_container_set_focus_child to_c(@), to_w(c)
 
     children: =>
       list = C.gtk_container_get_children to_c(@)

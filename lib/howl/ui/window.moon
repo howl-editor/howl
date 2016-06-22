@@ -112,7 +112,6 @@ class Window extends PropertyObject
     return {} unless current and #views > 1
 
     local left, right, up, down, index
-    gobject = to_gobject view
     vertical_siblings = {}
 
     for i = 1, #views
@@ -178,7 +177,6 @@ class Window extends PropertyObject
     @data.focus_child = @grid.focus_child
 
   get_screenshot: (opts={}) =>
-    image_opts = opts.image_opts or {}
     x, y, w, h = 0, 0, @allocated_width, @allocated_height
     window = @window
 

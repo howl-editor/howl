@@ -90,6 +90,10 @@ return {
         font: bold: true
         color: lightblue
 
+      inspections:
+        font: italic: true
+        color: orange
+
       vi:
         font: bold: true
 

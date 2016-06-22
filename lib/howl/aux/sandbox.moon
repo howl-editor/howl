@@ -23,4 +23,4 @@ sand_box = (options = {}) ->
       setfenv f, env
       f ...
 
-return setmetatable {}, __call: (_, env, options) -> sand_box env, options
+return setmetatable {}, __call: (_, options) -> sand_box options

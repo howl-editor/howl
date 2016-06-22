@@ -64,8 +64,6 @@ define_class {
     (@_scan start_offset, end_offset, selector)
 
   expand: (offset, count) =>
-    end_offset = offset + count
-
     for i = 1, #@markers
       m = @markers[i]
       if m.start_offset >= offset -- after expansion

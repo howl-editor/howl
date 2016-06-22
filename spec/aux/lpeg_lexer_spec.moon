@@ -1,5 +1,6 @@
 import lpeg_lexer from howl.aux
 import mode from howl
+lpeg = _G.lpeg
 import P,V, C, Cp, Cg, Cb from lpeg
 
 l = lpeg_lexer

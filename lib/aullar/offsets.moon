@@ -9,8 +9,7 @@ ffi = require 'ffi'
 bit = require 'bit'
 require 'ljglibs.cdefs.glib'
 
-tonumber, max, abs = tonumber, math.max, math.abs
-C = ffi.C
+tonumber = tonumber
 band = bit.band
 
 ffi.cdef [[

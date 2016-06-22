@@ -41,7 +41,7 @@ content_box = {
         stops: { '#000022', '#003080' }
 
     border_bottom:
-      color: base1
+      color: border_color
 
     color: brown
     font: bold: true
@@ -49,10 +49,10 @@ content_box = {
 
   footer:
     background:
-      color: base2
+      color: '#002471'
 
     border_top:
-      color: base1
+      color: border_color
 
     color: brown
     font: bold: true

@@ -50,7 +50,6 @@ class MoonscriptMode
     }
 
   structure: (editor) =>
-    buffer = editor.buffer
     lines = {}
     parents = {}
     prev_line = nil

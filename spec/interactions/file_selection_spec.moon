@@ -5,7 +5,7 @@ import app, config, interact from howl
 import File from howl.io
 import Window from howl.ui
 require 'howl.ui.icons.font_awesome'
-file_selection = require 'howl.interactions.file_selection'
+require 'howl.interactions.file_selection'
 
 describe 'file_selection', ->
   local tmpdir, command_line

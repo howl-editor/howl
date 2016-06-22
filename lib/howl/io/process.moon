@@ -7,7 +7,6 @@ jit = require 'jit'
 callbacks = require 'ljglibs.callbacks'
 dispatch = howl.dispatch
 {:File, :InputStream, :OutputStream} = howl.io
-sys = howl.sys
 
 C, ffi_cast = ffi.C, ffi.cast
 append = table.insert

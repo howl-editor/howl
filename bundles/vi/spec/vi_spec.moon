@@ -7,7 +7,7 @@ import app, Buffer, bindings, bundle, dispatch from howl
 import Editor, Window from howl.ui
 
 bundle.load_by_name 'vi'
-state = bundles.vi.state
+state = _G.bundles.vi.state
 
 text = [[
 LinƏ 1

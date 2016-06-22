@@ -3,7 +3,6 @@
 
 GapBuffer = require 'aullar.gap_buffer'
 ffi = require 'ffi'
-C = ffi.C
 
 describe 'GapBuffer', ->
   buffer = (s, gap_size) ->

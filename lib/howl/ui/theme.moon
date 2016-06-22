@@ -1,7 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-ffi = require 'ffi'
 Gtk = require 'ljglibs.gtk'
 Gdk = require 'ljglibs.gdk'
 require 'ljglibs.gtk.widget'
@@ -63,7 +62,6 @@ theme_files = {}
 current_theme = nil
 current_theme_file = nil
 theme_active = false
-background_color_widgets = setmetatable {}, __mode: 'k'
 
 interpolate = (content, values) ->
   content\gsub '%${([%a_]+)}', values

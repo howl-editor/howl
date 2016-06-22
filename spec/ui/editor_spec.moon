@@ -1,5 +1,4 @@
 Gtk = require 'ljglibs.gtk'
-append = table.insert
 
 {:Buffer, :config, :signal, :clipboard, :sys} = howl
 {:Editor} = howl.ui

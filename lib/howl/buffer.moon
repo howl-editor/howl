@@ -81,7 +81,7 @@ class Buffer extends PropertyObject
       if status
         notify = not @_modified
         @_modified = true
-        if not @_modified
+        if notify
           signal.emit 'buffer-modified', buffer: self
       else
         @_modified = false
