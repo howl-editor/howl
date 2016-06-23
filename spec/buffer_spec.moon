@@ -32,6 +32,26 @@ describe 'Buffer', ->
     assert.is_true b.modified
     assert.equal b.text, 'hello' -- toggling should not have changed text
 
+  describe '.last_changed', ->
+    sys = howl.sys
+
+    it 'is set to the current time for a new buffer', ->
+      b = buffer 'time'
+      now = math.floor sys.time!
+      assert.is_true math.floor(b.last_changed) > now - 1
+      assert.is_true math.floor(b.last_changed) <= now
+
+    it 'is updated whenever the buffer is changed in some way', ->
+      b = buffer 'time'
+      cur = b.last_changed
+
+      b\insert 'foo', 1
+      assert.is_true b.last_changed > cur
+
+      cur = b.last_changed
+      b\delete 1, 3
+      assert.is_true b.last_changed > cur
+
   it '.read_only can be set to mark the buffer as read-only', ->
     b = buffer 'kept'
     b.read_only = true
