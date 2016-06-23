@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :config, :log, :signal, :config} = howl
+{:app, :config, :log, :signal, :config, :timer} = howl
 {:highlight} = howl.ui
 {:pcall} = _G
 {:concat, :sort} = table
@@ -81,6 +81,7 @@ mark_criticisms = (buffer, criticisms) ->
 
   criticisms.count = #ms
   buffer.data.inspections = criticisms
+  buffer.data.last_inspect = buffer.last_changed
 
   if #ms > 0
     markers\add ms
@@ -106,13 +107,21 @@ criticize = (buffer, criticisms) ->
   mark_criticisms buffer, criticisms
 
 update_buffer = (buffer, editor) ->
-  return unless buffer.config.auto_inspect
-  return unless buffer.size < 1024 * 1020 -- 1MB
+  data = buffer.data
+  if data.last_inspect and data.last_inspect >= buffer.last_changed
+    return
 
   criticize buffer
   editor or= app\editor_for_buffer buffer
   if editor
     update_inspections_display editor
+
+on_idle = ->
+  b = app.editor.buffer
+  return unless b.config.auto_inspect == 'idle'
+  return unless b.size < 1024 * 1024 -- 1MB
+  update_buffer app.editor.buffer, app.editor
+  timer.on_idle 0.5, on_idle
 
 signal.connect 'buffer-modified', (args) ->
   with args.buffer
@@ -124,10 +133,27 @@ signal.connect 'buffer-modified', (args) ->
     editor.indicator.inspections.text = ''
 
 signal.connect 'buffer-saved', (args) ->
-  update_buffer args.buffer
+  b = args.buffer
+  return unless b.config.auto_inspect == 'save'
+  return unless b.size < 1024 * 1024 -- 1MB
+  update_buffer b
 
 signal.connect 'after-buffer-switch', (args) ->
   update_buffer args.current_buffer, args.editor
+
+signal.connect 'app-ready', (args) ->
+  timer.on_idle 0.5, on_idle
+
+config.define {
+  name: 'auto_inspect'
+  description: 'When to automatically inspect code for abberrations-'
+  default: 'idle'
+  options: {
+    { 'manual', 'Only inspect when explicitly asked' }
+    { 'idle', 'Inspect on idle' }
+    { 'save', 'Inspect when saving a buffer' }
+  }
+}
 
 highlight.define_default 'error',
   type: highlight.UNDERLINE
@@ -136,12 +162,9 @@ highlight.define_default 'error',
   line_type: 'dashed'
 
 highlight.define_default 'warning',
-  type: highlight.ROUNDED_RECTANGLE
-  background: 'orange'
-  background_alpha: 0.3
-  foreground: 'white'
-  text_color: 'lightgray'
-  line_width: 0.5
-  line_type: 'dotted'
+  type: highlight.UNDERLINE
+  foreground: 'orange'
+  line_width: 1
+  line_type: 'dashed'
 
 :inspect, :criticize

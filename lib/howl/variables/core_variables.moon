@@ -27,12 +27,6 @@ config.define
   type_of: 'boolean'
 
 config.define
-  name: 'auto_inspect'
-  description: 'Whether to automatically inspect code for abberrations'
-  default: true
-  type_of: 'boolean'
-
-config.define
   name: 'preview_files'
   description: 'Whether to automatically preview the selected file or buffer'
   default: true
