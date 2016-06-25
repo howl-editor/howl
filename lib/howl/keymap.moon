@@ -176,8 +176,7 @@
       meta_shift_w:     'view-close'
       'meta_-':         'zoom-out'
       'meta_+':         'zoom-in'
-
-      ctrl_meta_f:      'window-toggle-fullscreen'
-      ctrl_x:      'run'
-      -- ease of use.
+      -- how is ctrl_meta supposed to work? it doesnt.
+      meta_shift_f:      'window-toggle-fullscreen'
+      meta_e:      'run'
 }
