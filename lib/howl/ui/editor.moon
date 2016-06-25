@@ -251,7 +251,7 @@ class Editor extends PropertyObject
 
   with_selection_preserved: (f) =>
     if @selection.empty
-      return @with_position_restored f
+      return f!
 
     start_offset, end_offset = @selection.anchor, @selection.cursor
     invert = start_offset > end_offset
