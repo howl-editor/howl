@@ -114,7 +114,7 @@
 
     osx:
       editor: {
-        meta_shift_a:     'editor-select-all'
+        meta_a:           'editor-select-all'
         meta_b:           'switch-buffer'
         meta_c:           'editor-copy'
         meta_d:           'editor-duplicate-current'
@@ -137,10 +137,13 @@
         meta_x:           'editor-cut'
         meta_z:           'editor-undo'
         meta_Z:           'editor-redo'
-        meta_space:       'editor-complete'
+        -- NO! This is a built-in key-combo for os x! meta_space:       'editor-complete'
+        -- Instead use this:
+        ctrl_space:       'editor-complete'
+        
         meta_slash:       'editor-toggle-comment'
         meta_insert:      'editor-copy'
-
+  
         ctrl_tab:         'view-right-wraparound'
         ctrl_shift_tab:   'view-left-wraparound'
         ctrl_meta_d:      'show-doc-at-cursor'
@@ -175,5 +178,6 @@
       'meta_+':         'zoom-in'
 
       ctrl_meta_f:      'window-toggle-fullscreen'
-      ctrl_meta_x:      'run'
+      ctrl_x:      'run'
+      -- ease of use.
 }
