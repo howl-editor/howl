@@ -176,7 +176,6 @@ command.register
   handler: ->
     editor = howl.app.editor
     buffer = editor.buffer
-    selection = editor.selection
     lines = editor.active_lines
     first = lines[1].nr
     last = lines[#lines].nr
@@ -196,7 +195,6 @@ command.register
   handler: ->
     editor = howl.app.editor
     buffer = editor.buffer
-    selection = editor.selection
     lines = editor.active_lines
     first = lines[1].nr
     last = lines[#lines].nr
