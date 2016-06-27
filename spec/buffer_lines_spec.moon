@@ -93,6 +93,27 @@ describe 'BufferLines', ->
         lines[2].indentation = 2
         assert.equal 'first\n  ', buf.text
 
+      context 'when markers are present in the intentation', ->
+        it 'preserves and shifts markers', ->
+          buf.text = '    abc\n'
+          buf.markers\add {{
+            name: 'test'
+            start_offset: 3
+            end_offset: 5
+          }}
+
+          line = buf.lines[1]
+
+          line.indentation -= 1
+          assert.same {{name: 'test', start_offset: 2, end_offset: 4}}, buf.markers\for_range(1, #buf)
+
+          line.indentation -= 1
+          assert.same {{name: 'test', start_offset: 1, end_offset: 3}}, buf.markers\for_range(1, #buf)
+
+          line.indentation += 2
+          assert.same {{name: 'test', start_offset: 3, end_offset: 5}}, buf.markers\for_range(1, #buf)
+
+
     it '.start_pos returns the start position for line', ->
       assert.equal lines[2].start_pos, 7
       buf.text = ''
