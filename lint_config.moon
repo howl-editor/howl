@@ -1,21 +1,19 @@
 {
   whitelist_globals: {
     ["."]: {
-      'howl',
-      'log',
-      'r',
-      'callable',
-      'typeof',
-      'jit',
-      'moon',
-
-      'bundle_load',
       'bundle_file',
-    },
-
-    ['settings.moon']: {
-      'user_load'
-    },
+      'bundle_load',
+      'bundles',
+      'callable',
+      'howl',
+      'jit',
+      'log',
+      'moon',
+      'moonscript',
+      'r',
+      'typeof',
+      'user_load',
+   },
 
     ['themes/']: {
       'flair',
@@ -217,6 +215,7 @@
       'C',
       'Cc',
       'Cg',
+      'Cmt',
       'compose',
       'complement',
       'digit',
