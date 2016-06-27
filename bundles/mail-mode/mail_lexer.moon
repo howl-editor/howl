@@ -40,7 +40,7 @@ howl.aux.lpeg_lexer ->
   -- quoted correspondence
   quote_pattern = (start, level) ->
     s = "mail_level_#{level}"
-    c(s, start) * sub_lex_by_inline(s, eol, mail_markup)
+    c(s, start) * sub_lex_by_inline(s, scan_until(eol), mail_markup)
 
   quoted = line_start * any {
     quote_pattern('>>>>', 4),
