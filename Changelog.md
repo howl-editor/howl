@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Added new commands `editor-move-lines-up` and `editor-move-lines-down` bound
+to `alt_up` and `alt_down` by default. These move the current or selected lines
+up (or down) by one line while preserving the selection.
+
 - Upgrade Moonscript to 0.4.0
 
 - Added new command, `editor-replace-exec`, for replacing selection or buffer
