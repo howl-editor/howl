@@ -9,7 +9,7 @@ get_indentation = (text, config) ->
   leading = text\match '^%s*'
   spaces = leading\count ' '
   tabs = leading\count '\t'
-  spaces + tabs * config.tab_width, #leading
+  spaces + tabs * config.tab_width, #leading, leading
 
 line_mt =
   __index: (k) =>
@@ -138,7 +138,7 @@ Line = (nr, buffer) ->
 
       indentation: (indent) =>
         config = @buffer.config
-        cur_indent, real_indent = get_indentation text!, config
+        cur_indent, real_indent, whitespace = get_indentation text!, config
         return if indent == cur_indent
 
         indent_s = if config.use_tabs
@@ -146,6 +146,10 @@ Line = (nr, buffer) ->
           string.rep('\t', nr_tabs) .. string.rep(' ', indent % config.tab_width)
         else
           string.rep ' ', indent
+
+        while real_indent > 0 and #indent_s > 0 and whitespace[real_indent] == indent_s[#indent_s]
+          real_indent -= 1
+          indent_s = indent_s\sub 1, -2
 
         @replace 1, real_indent, indent_s
 
