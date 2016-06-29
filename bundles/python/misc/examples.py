@@ -35,7 +35,8 @@ type, unichr, unicode, vars, xrange, zip]
 
 # Identifiers
 if False:
-  idents = [a, b, cde, fgh1, _blah, _foo_abc013, UPPER_CASE, Mixed8347df_]
+  idents = [a, b, cde, fgh1, _blah, _foo_abc013,
+            UPPERCASE_USER_DEFINED_CONSTANT]
 
 
 # Integers
@@ -257,7 +258,7 @@ if False:
   class Name(base1, base2):
     class_attr = a
     def method(self):
-      pass
+      return self.member + self.memberf(CONSTANT)
 
     def __special__(self):
       pass

@@ -46,12 +46,15 @@ howl.aux.lpeg_lexer ->
   operator = c 'operator', S'+-*/%~&^=!<>;:,.(){}[]|`'
 
   name = (alpha + '_')^1 * (alpha + digit + P'_')^0
+  user_defined_constant = c('constant', (upper + '_')^1) * -#(alpha + digit)
 
   dunder_identifier = c 'special', (P'__' * (alpha^1 * (alpha + digit)^0) * P'__')
 
   identifier = c 'identifier', name
   fdecl = c('keyword', 'def') * c('whitespace', space^1) * c('fdecl', name)
   classdef = c('keyword', 'class') * c('whitespace', space^1) * c('type_def', name)
+  self = c 'member', word {'self'}
+  member = self * c('operator', '.') * c('member', name)
 
   hexadecimal =  P'0' * S'xX' * xdigit^1
   octal = P'0' * S'oO'^-1 * R'07'^1
@@ -117,6 +120,9 @@ howl.aux.lpeg_lexer ->
       functions,
       constant,
       dunder_identifier,
+      user_defined_constant,
+      member,
+      self,
       identifier,
       decorator
     }
