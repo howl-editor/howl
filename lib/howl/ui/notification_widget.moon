@@ -16,9 +16,9 @@ class NotificationWidget
 
   clear: => @text_widget.text = ''
 
-  notify: (level, text) =>
+  notify: (style, text) =>
     @clear!
-    @text_widget.buffer\append text, level
+    @text_widget.buffer\append text, style
     @text_widget.visible_rows = #@text_widget.buffer.lines
 
   hide: => @text_widget\hide!

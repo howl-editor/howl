@@ -53,7 +53,7 @@ command.register
   input: ->
     buffer = app.editor.buffer
     replacement = interact.get_replacement
-      title: 'Preview replacements for ' .. buffer.title
+      preview_title: 'Preview replacements for ' .. buffer.title
       editor: app.editor
 
     return replacement if replacement
@@ -77,7 +77,8 @@ command.register
   input: ->
     buffer = app.editor.buffer
     replacement = interact.get_replacement_regex
-      title: 'Preview replacements for ' .. buffer.title
+      title: 'Replace regex'
+      preview_title: 'Preview replacements for ' .. buffer.title
       editor: app.editor
 
     return replacement if replacement

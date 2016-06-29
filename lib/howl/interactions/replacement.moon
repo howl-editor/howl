@@ -39,7 +39,7 @@ class Replacement
 
     -- @preview_buffer holds replaced text
     @preview_buffer = app\new_buffer opts.editor.buffer.mode
-    @preview_buffer.title = opts.title or 'Preview Replacements'
+    @preview_buffer.title = opts.preview_title or 'Preview Replacements'
     @preview_buffer.text = @text
 
     -- @buffer always holds original text
@@ -53,8 +53,8 @@ class Replacement
     @runner = TaskRunner!
 
     self.find = opts.find or default_find
-
     self.replace = opts.replace or (match, replacement) -> replacement
+    @command_line.title = opts.title or 'Replace'
 
     @orig_buffer = app.editor.buffer
     app.editor.buffer = @preview_buffer
@@ -183,7 +183,7 @@ class Replacement
     else
       numr = math.max(0, @num_replacements - @num_excluded)
       msg = "Replacing #{numr}#{morer} of #{@num_matches}#{morem} matches."
-    @caption_widget\caption msg
+    @caption_widget\notify 'comment', msg
 
   _preview_replacements: (start_idx=1, strikeout_removals=true) =>
     adjust = 0
