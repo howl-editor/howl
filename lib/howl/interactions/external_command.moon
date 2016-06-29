@@ -51,6 +51,7 @@ class ExternalCommandEntry
 
     @command_line\clear_all!
     @command_line\disable_auto_record_history!
+    @command_line.title = @opts.title or 'Command'
     @_chdir directory
 
   on_update: (text) =>
@@ -117,7 +118,7 @@ class ExternalCommandEntry
     selected = interact.select
       items: @commands
       title: 'Commands'
-      columns: { { header: 'Commands', style: 'string' } }
+      columns: { { style: 'string' } }
       submit_on_space: true
       cancel_on_backspace: true
       :text
