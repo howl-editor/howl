@@ -208,3 +208,42 @@ command.register
       editor\with_selection_preserved ->
         buffer.lines\delete nr, nr
         buffer.lines\insert first, text
+
+command.register
+  name: 'editor-move-text-right'
+  description: 'Move selected text or current character right by one character'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    start_pos, end_pos = editor.selection\range!
+    unless start_pos
+      start_pos = editor.cursor.pos
+      end_pos = start_pos + 1
+
+    return unless end_pos < #buffer
+
+    buffer\as_one_undo ->
+      editor\with_selection_preserved ->
+        text = buffer\chunk(end_pos, end_pos).text
+        buffer\delete end_pos, end_pos
+        buffer\insert text, start_pos
+
+command.register
+  name: 'editor-move-text-left'
+  description: 'Move selected text or current character left by one character'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    start_pos, end_pos = editor.selection\range!
+    unless start_pos
+      start_pos = editor.cursor.pos
+      end_pos = start_pos + 1
+
+    return unless start_pos > 1
+
+    buffer\as_one_undo ->
+      editor\with_selection_preserved ->
+        text = buffer\chunk(start_pos - 1, start_pos - 1).text
+        buffer\insert text, end_pos
+        buffer\delete start_pos - 1, start_pos - 1
+
