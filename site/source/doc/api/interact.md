@@ -99,12 +99,17 @@ passed as two arguments to the function.
 the `run` or the `on_update` function then `on_update` is not called. However,
 if the command line text is updated when the user types some text, or from
 within a keymap function, `on_update` is called.
+
 - `keymap`: _[optional]_ A [keymap](bindings.html) that is used while the
 interaction is active. This table specifies a mapping from keystroke names to
 functions. When a key matching the keystroke name is pressed, the function is
 invoked and the interaction instance table is passed as the first argument.
 
-Here is an example implementation of an interaction using a factor:
+- `help`: _[optional]_ A table containing one or more help entries, which
+specify the help text for bound keystrokes. The format of help entries is the
+same as used by [`add_help`](ui/command_line.html#add_help).
+
+Here is an example implementation of an interaction using a factory:
 
 ```moonscript
   factory: -> {
@@ -120,6 +125,17 @@ Here is an example implementation of an interaction using a factor:
       escape: => self.finish!
       binding_for:
         ['view-close']: => self.finish!
+
+    help: {
+      {
+        key_for: 'view-close'
+        action: 'Cancel this'
+      }
+      {
+        heading: 'Syntax'
+        title: 'Use [some specific syntax]'
+      }
+    }
   }
 ```
 
@@ -134,10 +150,14 @@ keystroke can be specified [indirectly](bindings.html#indirect-bindings) instead
 of by hard-coding. In the above example, the "view-close" key within
 "binding-for" refers to the keystroke currently bound to the "view-close"
 command. This means if the user presses the keystroke that is bound to the
-"view-close" command - which is `alt_w` by default - the associated function
-will be invoked, closing the command line and returning `nil`. If the user has
-changed the key binding for the "view-close" command, that keystroke will be
-bound to the function above instead.
+"view-close" command - which is `ctrl_shift_w` by default - the associated
+function will be invoked, closing the command line and returning `nil`. If the
+user has changed the key binding for the "view-close" command, that keystroke
+will be bound to the function above instead.
+
+Also note that help text has been specified for the keystroke bound to the
+`view-close` command. For the default binding, this will display a message like
+'ctrl_shift_w Cancel this' in the command help.
 
 ### unregister (name)
 

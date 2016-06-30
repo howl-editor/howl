@@ -7,17 +7,17 @@ serpent = require 'serpent'
 
 command.register
   name: 'window-toggle-fullscreen',
-  description: 'Toggles fullscreen for the current window'
+  description: 'Toggle fullscreen for the current window'
   handler: -> app.window.fullscreen = not app.window.fullscreen
 
 command.register
   name: 'window-toggle-maximized',
-  description: 'Toggles maximized state for the current window'
+  description: 'Toggle maximized state for the current window'
   handler: -> app.window.maximized = not app.window.maximized
 
 command.register
   name: 'describe-style',
-  description: 'Describes the current style at cursor'
+  description: 'Describe the current style at cursor'
   handler: ->
     name = style.at_pos app.editor.buffer, app.editor.cursor.pos
     unless name
@@ -41,7 +41,7 @@ command.register
 
 command.register
   name: 'zoom-in',
-  description: 'Increases the current font size by 1 (globally)'
+  description: 'Increase the current font size by 1 (globally)'
   handler: ->
     size = config.font_size + 1
     config.font_size = size
@@ -49,7 +49,7 @@ command.register
 
 command.register
   name: 'zoom-out',
-  description: 'Decreases the current font size by 1 (globally)'
+  description: 'Decrease the current font size by 1 (globally)'
   handler: ->
     size = config.font_size - 1
     if size <= 6

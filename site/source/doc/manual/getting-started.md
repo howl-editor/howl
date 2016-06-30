@@ -98,6 +98,11 @@ open a file. You will automatically be presented with completions. Navigate up
 and down the directory tree as needed, using `backspace` and `enter`, and press
 `enter` once you've found the file you wanted.
 
+When the command line is visible, you can press `f1` to display help for the
+current command. This shows a popup containing some information about the
+current command and key bindings for actions within the command, if any. The
+popup can be dismissed by pressing `esc`.
+
 #### Using completions
 
 Completions are available within the command line, using the `tab` key. Completions

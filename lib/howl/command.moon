@@ -85,6 +85,24 @@ get_command_items = ->
 
   return items
 
+get_command_help = (cmd_name) ->
+  cmd = resolve_command cmd_name
+  return unless cmd
+
+  heading = "Command '#{cmd_name}'"
+  if cmd != commands[cmd_name]
+    heading ..= ", alias for '#{cmd.name}'"
+
+  keys = howl.bindings.keystrokes_for cmd_name
+  if #keys == 0
+    keys = howl.bindings.keystrokes_for cmd_name, 'editor'
+  if #keys > 0
+    heading ..= " (#{keys[1]})"
+  return {
+    :heading
+    text: cmd.description
+  }
+
 class CommandInput
   run: (@finish, cmd_string='', @cmd_args) =>
     @command_line = howl.app.window.command_line
@@ -118,6 +136,8 @@ class CommandInput
   read_command_input: (cmd, cmd_name) =>
     @command_line\clear!
     @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
+    help = {get_command_help cmd_name}
+    @command_line\add_help(help) if help
 
     unless cmd.input
       @command_line\record_history!
@@ -166,6 +186,24 @@ class CommandInput
           log.error "No such command '#{@command_line.text}'"
           return
         @read_command_input cmd, @command_line.text
+
+  help: {
+    {
+      heading: "Command 'run'"
+      text: 'Run a command'
+    }
+    {
+      text: markup.howl 'Type a command name and press <keystroke>enter</> to run.'
+    }
+    {
+      key: 'tab'
+      action: 'Show command list'
+    }
+    {
+      key: 'up'
+      action: 'Show command history'
+    }
+  }
 
 command_input_reader = {
   name: 'command-input-reader'

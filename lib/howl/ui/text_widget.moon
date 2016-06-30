@@ -20,6 +20,7 @@ class TextWidget extends PropertyObject
       .view_show_inactive_cursor = false
       .view_line_padding = config.line_padding
       .view_show_h_scrollbar = false
+      .view_line_wrap = @opts.line_wrap
 
     @selection = Selection @view
     @cursor = Cursor self, @selection

@@ -158,6 +158,13 @@ class FileSelector
       @show_subtree = not @show_subtree
       @_chdir @directory
 
+  help: {
+    {
+      key: 'ctrl_s'
+      action: 'Toggle recursive search'
+    }
+  }
+
 interact.register
   name: 'select_file'
   description: 'File browser based file selection'

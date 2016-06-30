@@ -2,11 +2,13 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
-import bindings, dispatch, interact, signal from howl
+import bindings, config, dispatch, interact, signal from howl
 import Matcher from howl.util
 import PropertyObject from howl.aux.moon
-import highlight, markup, style, theme from howl.ui
+import ActionBuffer, BufferPopup, highlight, markup, style, theme from howl.ui
 {:TextWidget, :NotificationWidget, :IndicatorBar, :StyledText, :ContentBox} = howl.ui
+
+append = table.insert
 
 -- used to generate a unique id for every new activity
 id_counter = 0
@@ -37,7 +39,6 @@ class CommandLine extends PropertyObject
         error "activity '#{activity_frame.name}' factory returned nil"
 
       activity_frame.activity = activity
-
       parked_handle = dispatch.park 'activity'
       activity_frame.parked_handle = parked_handle
 
@@ -55,6 +56,7 @@ class CommandLine extends PropertyObject
         if @current and @current.activity_id == activity_frame.activity_id
           @current.state = 'running'
           @show!
+          @close_popup!
           bindings.cancel_capture!
           if @spillover and not @spillover.is_empty
             -- allow editor to resize for correct focusing behavior
@@ -100,13 +102,15 @@ class CommandLine extends PropertyObject
     else
       @_init_activity_from_handler activity_frame
 
-    table.insert @running, activity_frame
+    append @running, activity_frame
 
     @_initialize! if not @box
 
     with @current
       .command_line_left_stop = @command_widget.text.ulen + 1
       .command_line_widgets = { }
+      .command_line_keymaps = { }
+      .command_line_help = { keys: { } }
       .command_line_prompt_len = 0
 
     if @stack_depth == 1
@@ -131,7 +135,7 @@ class CommandLine extends PropertyObject
   run_after_finish: (f) =>
     if not (@stack_depth > 0)
       error 'Cannot run_after_finish - no running activity'
-    table.insert @next_run_queue, f
+    append @next_run_queue, f
 
   switch_to: (new_command) =>
     captured_text = @text
@@ -189,6 +193,7 @@ class CommandLine extends PropertyObject
 
     if @stack_depth > 0
       @title = @title
+      @close_popup!
     else
       @hide!
       @pop_spillover!
@@ -230,7 +235,7 @@ class CommandLine extends PropertyObject
     last_cmd = current_history[1]
 
     unless last_cmd == command_line or command_line\find '\n' or command_line\find '\r'
-      table.insert @_command_history, 1, {name: @running[1].name, cmd: command_line}
+      append @_command_history, 1, {name: @running[1].name, cmd: command_line}
 
   _capture_command_line: (end_pos) =>
       buf = @command_widget.buffer
@@ -246,7 +251,7 @@ class CommandLine extends PropertyObject
     @box = Gtk.Box Gtk.ORIENTATION_VERTICAL
 
     @command_widget = TextWidget
-      line_wrapping: 'char'
+      line_wrap: 'char'
       on_keypress: (event) ->
         result = true
         if not @handle_keypress(event)
@@ -256,10 +261,13 @@ class CommandLine extends PropertyObject
       on_changed: ->
         @on_update!
       on_focus_lost: ->
+        @close_popup!
         @command_widget\focus! if @showing
 
     @command_widget.visible_rows = 1
     @box\pack_end @command_widget\to_gobject!, false, 0, 0
+
+    @help_buffer = ActionBuffer!
 
     @notification_widget = NotificationWidget!
     @box\pack_end @notification_widget\to_gobject!, false, 0, 0
@@ -282,12 +290,18 @@ class CommandLine extends PropertyObject
   @property _widgets:
     get: => @current and @current.command_line_widgets
 
+  @property _help:
+    get: => @current and @current.command_line_help
+
+  @property _keymaps:
+    get: => @current and @current.command_line_keymaps
+
   @property _all_widgets:
     get: =>
       widgets = {}
       for frame in *@running
         for _, widget in pairs frame.command_line_widgets
-          table.insert widgets, widget
+          append widgets, widget
       return widgets
 
   @property _left_stop:
@@ -340,6 +354,48 @@ class CommandLine extends PropertyObject
 
       @clear!
       @write text
+
+  refresh_help: =>
+    buffer = @help_buffer
+    buffer.text = ''
+
+    help_texts, help_keys = @get_help!
+    for def in *help_texts
+      if def.heading
+        buffer\append markup.howl "<h1>#{def.heading}</>\n"
+      if def.text
+        buffer\append def.text
+        buffer\append '\n'
+      buffer\append '\n' if #help_keys > 0
+
+    if #help_keys > 0
+      buffer\append markup.howl "<h1>Keys</>\n"
+      keys = {}
+      for def in *help_keys
+        append keys, {markup.howl("<keystroke>#{def.key}</>"), def.action}
+      buffer\append howl.ui.StyledText.for_table keys
+
+  show_help: =>
+    @refresh_help!
+    popup = BufferPopup @help_buffer
+    @show_popup popup
+
+  close_popup: =>
+    if @popup
+      @popup\destroy!
+      @popup = nil
+      return true
+
+  show_popup: (popup, options = {}) =>
+    @close_popup!
+    window = howl.app.window
+    x, y = window.window\get_position!
+    width = window.allocated_width
+    height = math.ceil window.allocated_height / 2
+
+    popup\show howl.app.window\to_gobject!, x:1, y:1
+    popup\center!
+    @popup = popup
 
   notify: (text, style='info') =>
     if @notification_widget
@@ -397,6 +453,7 @@ class CommandLine extends PropertyObject
       @_updating = false
       if not ok
         error err
+      @refresh_help!
 
   enforce_left_pos: =>
     -- don't allow cursor to go left into prompt
@@ -408,31 +465,41 @@ class CommandLine extends PropertyObject
   handle_keypress: (event) =>
     -- keymaps checked in order:
     --   @preemptive_keymap - keys that cannot be remapped by activities
-    --   @_activity.keymap
     --   widget.keymap for widget in @_widgets
-    --   @keymap
+    --   @_activity.keymap
+    --   command_line_keymaps for every running activity, newest to oldest
+    --   @default_keymap
     @clear_notification!
     @window.status\clear!
+    @close_popup! unless event.key_name == 'escape'
 
     return true if bindings.dispatch event, 'commandline', { @preemptive_keymap}, self
-
-    activity = @_activity
-    if activity and activity.keymap
-      return true if bindings.dispatch event, 'commandline', { activity.keymap }, activity
 
     if @_widgets
       for _, widget in pairs @_widgets
         if widget.keymap
           return true if bindings.dispatch event, 'commandline', { widget.keymap }, widget
 
-    return true if bindings.dispatch event, 'commandline', { @keymap }, self
+    activity = @_activity
+    if activity.keymap
+      return true if bindings.dispatch event, 'commandline', { activity.keymap }, activity
+
+    for i = @stack_depth, 1, -1
+      frame = @running[i]
+      for keymap in *frame.command_line_keymaps
+        return true if bindings.dispatch event, 'commandline', { keymap }, frame.activity
+
+    return true if bindings.dispatch event, 'commandline', { @default_keymap }, self
 
     return false
 
   preemptive_keymap:
     ctrl_shift_backspace: => @abort_all!
+    escape: =>
+      return false unless @close_popup!
 
-  keymap:
+
+  default_keymap:
     binding_for:
       ["cursor-home"]: => @command_widget.cursor.pos = @_prompt_end
 
@@ -455,6 +522,8 @@ class CommandLine extends PropertyObject
         if clipboard.current
           @write clipboard.current.text
 
+    f1: => @show_help!
+
   add_widget: (name, widget) =>
     error('No widget provided', 2) if not widget
 
@@ -472,6 +541,51 @@ class CommandLine extends PropertyObject
     @_widgets[name] = nil
 
   get_widget: (name) => @_widgets[name]
+
+  add_keymap: (keymap) => append @current.command_line_keymaps, 1, keymap
+
+  add_help: (help_defs) =>
+    if #help_defs == 0
+      help_defs = {help_defs}
+
+    for def in *help_defs
+      if def.key or def.key_for
+        @_help.keys[def.key or def.key_for] = def
+      elseif def.text or def.heading
+        @_help.text = def
+
+    @refresh_help!
+
+  get_help: =>
+    help_keys = {}
+    help_texts = {}
+
+    resolve_keys = (def) ->
+      return def unless def.key_for
+      keys = howl.bindings.keystrokes_for def.key_for, 'editor'
+      if keys and keys[1]
+        def = moon.copy def
+        def.key = keys[1]
+        return def
+
+    for frame in *@running
+      for _, def in pairs(frame.command_line_help.keys)
+        def = resolve_keys def
+        append(help_keys, def) if def
+      if frame.command_line_help.text
+        append help_texts, frame.command_line_help.text
+
+    if @_activity.help
+      help = @_activity.help
+      help = help(@_activity) if type(help) == 'function'
+      for def in *help
+        if def.key or def.key_for
+          def = resolve_keys def
+          append(help_keys, def) if def
+        elseif def.text
+          append help_texts, def
+
+    return help_texts, help_keys
 
   show: =>
     return if @showing
@@ -499,7 +613,12 @@ class CommandLine extends PropertyObject
       @last_focused\grab_focus! if @last_focused
       @last_focused = nil
 
+  refresh: =>
+    for frame in *@running
+      frame.activity\refresh! if frame.activity.refresh
+
 style.define_default 'prompt', 'keyword'
+style.define_default 'keystroke', 'special'
 
 return CommandLine
 
