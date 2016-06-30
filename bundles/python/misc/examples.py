@@ -36,7 +36,7 @@ type, unichr, unicode, vars, xrange, zip]
 # Identifiers
 if False:
   idents = [a, b, cde, fgh1, _blah, _foo_abc013,
-            UPPERCASE_USER_DEFINED_CONSTANT]
+            UPPERCASE_USER_DEFINED_CONSTANT, _UNDERSCORE_CONSTANT]
 
 
 # Integers
@@ -262,3 +262,7 @@ if False:
 
     def __special__(self):
       pass
+
+# unused
+
+_ = f()

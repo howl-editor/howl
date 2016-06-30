@@ -46,7 +46,7 @@ howl.aux.lpeg_lexer ->
   operator = c 'operator', S'+-*/%~&^=!<>;:,.(){}[]|`'
 
   name = (alpha + '_')^1 * (alpha + digit + P'_')^0
-  user_defined_constant = c('constant', (upper + '_')^1) * -#(alpha + digit)
+  user_defined_constant = c('constant', (upper + (P'_' * upper)) * (upper + '_')^0) * -#(alpha + digit)
 
   dunder_identifier = c 'special', (P'__' * (alpha^1 * (alpha + digit)^0) * P'__')
 
