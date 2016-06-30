@@ -258,6 +258,7 @@ if False:
   class Name(base1, base2):
     class_attr = a
     def method(self):
+      self . spaced_member
       return self.member + self.memberf(CONSTANT)
 
     def __special__(self):

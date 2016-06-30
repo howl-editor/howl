@@ -54,7 +54,7 @@ howl.aux.lpeg_lexer ->
   fdecl = c('keyword', 'def') * c('whitespace', space^1) * c('fdecl', name)
   classdef = c('keyword', 'class') * c('whitespace', space^1) * c('type_def', name)
   self = c 'member', word {'self'}
-  member = self * c('operator', '.') * c('member', name)
+  member = self * space^0 * c('operator', '.') * space^0 * c('member', name)
 
   hexadecimal =  P'0' * S'xX' * xdigit^1
   octal = P'0' * S'oO'^-1 * R'07'^1
