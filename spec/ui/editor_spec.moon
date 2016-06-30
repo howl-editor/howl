@@ -83,8 +83,7 @@ describe 'Editor', ->
         it 'calls that passing itself a parameter', ->
           buffer.mode = [method]: spy.new -> nil
           editor[method] editor
-          assert.spy(buffer.mode[method]).was_called_with buffer.mode, editor,
-            {editor.buffer.lines[1]}
+          assert.spy(buffer.mode[method]).was_called_with buffer.mode, editor
 
       if method == 'toggle_comment'
         it 'uses the buffer mode when the one to use is ambiguous', ->
