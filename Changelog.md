@@ -2,7 +2,11 @@
 
 ## Unreleased (in master)
 
-- Added new commands `editor-move-lines-up` and `editor-move-lines-down` bound
+- Added new commands `editor-move-text-left` and `editor-move-text-right`, bound
+to `alt_left` and `alt_right` by default. These move the current character or
+selected text left or right by one character while preserving the selection.
+
+- Added new commands `editor-move-lines-up` and `editor-move-lines-down`, bound
 to `alt_up` and `alt_down` by default. These move the current or selected lines
 up (or down) by one line while preserving the selection.
 
