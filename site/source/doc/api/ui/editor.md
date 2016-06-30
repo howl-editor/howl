@@ -139,6 +139,10 @@ variable instead of being set explicitly for an editor instance.
 
 Holds the number of lines currently visible on the screen. Read-only.
 
+### mode_at_cursor
+
+Returns the buffer mode located at the cursor using [Buffer.mode_at].
+
 ### overtype
 
 A boolean indicating whether typing inserts new characters in the [.buffer] or
@@ -380,6 +384,7 @@ attempts to automatically adjust the column for the new indentation.
 [.buffer]: #.buffer
 [.current_line]: #.current_line
 [Buffer]: ../buffer.html
+[Buffer.mode_at]: ../buffer.html#mode_at
 [Chunk]: ../chunk.html
 [Context]: ../context.html
 [Cursor]: cursor.html

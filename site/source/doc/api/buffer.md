@@ -94,10 +94,12 @@ content.
 
 ### mode
 
-The buffer's [mode]. When assigning to this:
+The buffer's root [mode]. When assigning to this:
 
 - the `buffer-mode-set` signal is emitted.
 - any previously lexed content is re-lexed using the new mode's lexer, if any
+
+Note that, in most cases, you probably want to use [mode_at](#mode_at).
 
 ### modified
 
@@ -205,6 +207,12 @@ after newly inserted text. examples.
 
 Lexes the buffer content using the [mode](#mode)s lexer, if available. The
 content is lexed up until `end_pos`, or until the end of the buffer if omitted.
+
+### mode_at(pos)
+
+Returns the mode at the given position. If inside a sub lexer (e.g.
+`ffi.cdef [[ C code here ]]`), then the lexer's mode will be returned; otherwise,
+the buffer's root mode will be returned.
 
 ### redo()
 
