@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added command line help which is invoked by pressing `f1` while any
+interactive command is running. This displays a popup containing a description
+
 - Added new commands `editor-move-text-left` and `editor-move-text-right`, bound
 to `alt_left` and `alt_right` by default. These move the current character or
 selected text left or right by one character while preserving the selection.
