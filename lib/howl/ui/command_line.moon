@@ -388,11 +388,6 @@ class CommandLine extends PropertyObject
 
   show_popup: (popup, options = {}) =>
     @close_popup!
-    window = howl.app.window
-    x, y = window.window\get_position!
-    width = window.allocated_width
-    height = math.ceil window.allocated_height / 2
-
     popup\show howl.app.window\to_gobject!, x:1, y:1
     popup\center!
     @popup = popup
