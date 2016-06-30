@@ -26,7 +26,7 @@ complete = (context) =>
   candidates
 
 howl.completion.register name: 'api', factory: (buffer, context) ->
-  mode = buffer.mode
+  mode = buffer\mode_at context.pos
   if mode.api
     {
       :complete

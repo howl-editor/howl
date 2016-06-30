@@ -6,14 +6,14 @@ import style from howl.ui
 tinsert = table.insert
 
 paragraph_break_line = (line) ->
-  mode_check = line.buffer.mode.is_paragraph_break
+  mode_check = line.buffer\mode_at(line.start_pos).is_paragraph_break
   return mode_check(line) if mode_check
   return true if line.is_blank or line\umatch '^[ \t]'
   start_style = style.at_pos line.buffer, line.start_pos
   start_style and start_style\contains 'embedded'
 
 mode_allows_breaking = (line) ->
-  mode = line.buffer.mode
+  mode = line.buffer\mode_at line.start_pos
   if mode and mode.line_is_reflowable
     return mode\line_is_reflowable(line)
 

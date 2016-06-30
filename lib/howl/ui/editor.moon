@@ -715,7 +715,7 @@ class Editor extends PropertyObject
     buffer = @view.buffer
     return if byte_pos < 1 or byte_pos > buffer.size
 
-    auto_pairs = @buffer.mode.auto_pairs
+    auto_pairs = @buffer\mode_at(buffer\char_offset byte_pos).auto_pairs
     return unless auto_pairs
 
     cur_char = buffer\sub byte_pos, byte_pos
