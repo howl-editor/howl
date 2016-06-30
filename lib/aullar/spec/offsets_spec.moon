@@ -3,7 +3,6 @@ Offsets = require 'aullar.offsets'
 GapBuffer = require 'aullar.gap_buffer'
 ffi = require 'ffi'
 C = ffi.C
-bit = require 'bit'
 
 describe 'offsets', ->
 

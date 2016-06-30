@@ -2,7 +2,8 @@
 
 [![MoonScript](http://leafo.net/dump/sailormoonscript.png)](http://moonscript.org)
 
-[![Build Status](https://travis-ci.org/leafo/moonscript.svg?branch=master)](https://travis-ci.org/leafo/moonscript)
+[![Build Status](https://travis-ci.org/leafo/moonscript.svg?branch=master)](https://travis-ci.org/leafo/moonscript) [![Build status](https://ci.appveyor.com/api/projects/status/f5prpi4wvytul290/branch/binaries?svg=true)](https://ci.appveyor.com/project/leafo/moonscript/branch/binaries)
+
 
 MoonScript is a programmer friendly language that compiles into
 [Lua](http://www.lua.org/). It gives you the power of the fastest scripting
@@ -23,6 +24,8 @@ To run tests, execute from the root directory:
 ```bash
 busted
 ```
+
+Writing specs is a bit more complicated. Check out [the spec writing guide](spec/README.md).
 
 ## License (MIT)
 

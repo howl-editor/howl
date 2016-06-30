@@ -1,5 +1,0 @@
-#! /bin/sh
-
-ROOT=$(cd $(dirname $0)/.. && pwd)
-cd $ROOT
-exec ./src/howl --run lib/aullar/aullar-test.moon $@

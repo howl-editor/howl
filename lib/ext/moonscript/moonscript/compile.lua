@@ -8,10 +8,10 @@ do
 end
 local Set
 Set = require("moonscript.data").Set
-local ntype, has_value
+local ntype, value_can_be_statement
 do
   local _obj_0 = require("moonscript.types")
-  ntype, has_value = _obj_0.ntype, _obj_0.has_value
+  ntype, value_can_be_statement = _obj_0.ntype, _obj_0.value_can_be_statement
 end
 local statement_compilers = require("moonscript.compile.statement")
 local value_compilers = require("moonscript.compile.value")
@@ -26,6 +26,7 @@ local mtype = util.moon.type
 local indent_char = "  "
 local Line, DelayedLine, Lines, Block, RootBlock
 do
+  local _class_0
   local _base_0 = {
     mark_pos = function(self, pos, line)
       if line == nil then
@@ -127,7 +128,7 @@ do
     end
   }
   _base_0.__index = _base_0
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function(self)
       self.posmap = { }
     end,
@@ -145,6 +146,7 @@ do
   Lines = _class_0
 end
 do
+  local _class_0
   local _base_0 = {
     pos = nil,
     append_list = function(self, items, delim)
@@ -208,7 +210,7 @@ do
     end
   }
   _base_0.__index = _base_0
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function() end,
     __base = _base_0,
     __name = "Line"
@@ -224,6 +226,7 @@ do
   Line = _class_0
 end
 do
+  local _class_0
   local _base_0 = {
     prepare = function() end,
     render = function(self)
@@ -232,7 +235,7 @@ do
     end
   }
   _base_0.__index = _base_0
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function(self, fn)
       self.prepare = fn
     end,
@@ -250,6 +253,7 @@ do
   DelayedLine = _class_0
 end
 do
+  local _class_0
   local _base_0 = {
     header = "do",
     footer = "end",
@@ -525,7 +529,9 @@ do
         if fn then
           result = fn(self, node, ...)
         else
-          if has_value(node) then
+          if value_can_be_statement(node) then
+            result = self:value(node)
+          else
             result = self:stm({
               "assign",
               {
@@ -535,8 +541,6 @@ do
                 node
               }
             })
-          else
-            result = self:value(node)
           end
         end
       end
@@ -573,7 +577,7 @@ do
     end
   }
   _base_0.__index = _base_0
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function(self, parent, header, footer)
       self.parent, self.header, self.footer = parent, header, footer
       self._lines = Lines()
@@ -613,6 +617,7 @@ do
   Block = _class_0
 end
 do
+  local _class_0
   local _parent_0 = Block
   local _base_0 = {
     __tostring = function(self)
@@ -634,11 +639,11 @@ do
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
+  _class_0 = setmetatable({
     __init = function(self, options)
       self.options = options
       self.root = self
-      return _parent_0.__init(self)
+      return _class_0.__parent.__init(self)
     end,
     __base = _base_0,
     __name = "RootBlock",
@@ -647,7 +652,10 @@ do
     __index = function(cls, name)
       local val = rawget(_base_0, name)
       if val == nil then
-        return _parent_0[name]
+        local parent = rawget(cls, "__parent")
+        if parent then
+          return parent[name]
+        end
       else
         return val
       end

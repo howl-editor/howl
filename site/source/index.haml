@@ -1,68 +1,72 @@
--# Jumbotron
-.jumbotron
-  = image_tag "howl.png", class: 'image-responsive', width: 100, height: 100
-  %h1
-    The Howl Editor
-  %p.lead
-    A general purpose, lightweight, customizable editor.
+.heading-box
+  .container
+    .row
+      .col-lg-12
+        .logo.center
+          = image_tag "howl.png", class: 'image-responsive', width: 130
+    .row
+      .col-lg-12.text-center
+        %h1.title
+          The Howl Editor
+        .lead
+          %p
+            A general purpose, fast and lightweight editor with a
+            keyboard-centric minimalistic user interface.
+          %p
+            Built on LuaJIT and fully programmable using Lua or Moonscript.
 
-.text-center
-  .info-box
-    %p
-      %a.btn.btn-success(href="getit.html")
-        Current version: 0.3
-        %span.glyphicon.glyphicon-download
+.screenshots-box
+  .container
+    .row
+      .col-xs-1
+      .col-xs-2
+        = link_to image_tag('screenshots/monokai/buffer-structure_tn.png'), "screenshots/monokai.html"
+      .col-xs-2
+        = link_to image_tag('screenshots/tomorrow-night-blue/buffer-structure_tn.png'), "screenshots/tomorrow-night-blue.html"
+      .col-xs-2
+        = link_to image_tag('screenshots/solarized-light/buffer-structure_tn.png'), "screenshots/solarized-light.html"
+      .col-xs-2
+        = link_to image_tag('screenshots/steinom/buffer-structure_tn.png'), "screenshots/steinom.html"
+      .col-xs-2
+        = link_to image_tag('screenshots/blueberry-blend/buffer-structure_tn.png'), "screenshots/blueberry-blend.html"
+      .col-cs-1
 
-    %p
-      = link_to image_tag('screenshots/steinom/buffer-grep_tn.png', width: 130), "screenshots/steinom.html"
-      = link_to image_tag('screenshots/tomorrow-night-blue/buffer-grep_tn.png', width: 130), "screenshots/tomorrow-night-blue.html"
-    %p
-      = link_to image_tag('screenshots/solarized-light/buffer-grep_tn.png', width: 130), "screenshots/solarized-light.html"
-      = link_to image_tag('screenshots/monokai/buffer-grep_tn.png', width: 130), "screenshots/monokai.html"
-    %h1 Latest news
-    %table.news
-      - blog.articles[0..1].each do |article|
-        %tr
-          %td.date= article.date.strftime('%b %e %Y') + ' - '
-          %td.title= link_to article.title, article
 
-.row
-  .col-lg-4
-    %h2 What is it?
-    %p
-      Howl is a general purpose, text oriented, editor, that aims to be both light-weight
-      and fully customizable. It's built on top of the very fast
-      #{link_to "LuaJIT", "http://luajit.org"} runtime, and can be extended in either
-      #{link_to "Lua", "http://www.lua.org"} or #{link_to "Moonscript", "http://www.moonscript.org"}.
+.container
+  .row.spaced-box
+    .col-lg-4
+      %h2 What is it?
+      %p
+        Howl is a general purpose editor that aims to be both lightweight and fully
+        customizable. It is built on top of the very fast
+        #{link_to "LuaJIT", "http://luajit.org"} runtime, and can be extended in either
+        #{link_to "Lua", "http://www.lua.org"} or #{link_to "Moonscript", "http://www.moonscript.org"}.
+        It has a minimalistic UI driven mainly by the keyboard.
 
-      It is released as free software under the #{link_to "MIT", "http://opensource.org/licenses/MIT"}
-      license, with the source being available on #{link_to "Github", "https://github.com/howl-editor/howl"}.
-    %p
-      %a.btn.btn-primary(href="about.html") Tell me more! &raquo;
+      %a.btn.btn-primary(href="about.html") More about Howl &raquo;
 
-  .col-lg-4
-    %h2 Try it out!
+    .col-lg-4
+      %h2 Try it out!
+      %p
+        Howl #{link_to "version 0.4", "/getit.html"}
+        was released on 2016-05-31. Howl source is available on
+        #{link_to "GitHub", "https://github.com/howl-editor/howl"} and released under
+        the #{link_to "MIT", "http://opensource.org/licenses/MIT"} license.
+        Howl is currently developed on and available for Linux, though porting to other
+        operating systems is possible.
 
-    %p
-      Howl has few build dependencies, and should not take to long to install.
-      It is being developed on Linux, but it should build on other *NIX platforms
-      as well such as the *BSD family, although your mileage may vary. Have a
-      look at the installation instructions to get started.
-    %p
-      %a.btn.btn-primary(href="getit.html") View details &raquo;
+      %a.btn.btn-primary(href="getit.html") Download & install &raquo;
 
-  .col-lg-4
-    %h2 Learn more
-    %p
-      Start off with the
-      #{link_to "Getting started", "doc/manual/getting-started.html"} section
-      from the user manual, which should hopefully get you off the ground.
-      For more information about the API and what you can do with Howl,
-      head over to the #{link_to "Documentation index", "doc/"}.
-    %p
-      Follow the development on #{link_to "Twitter", "http://twitter.com/howleditor"},
-      or keep an eye on the
-      %a(href="/blog/") blog
-      for the latest developments.
-    %p
-      %a.btn.btn-primary(href="doc/") View documentation &raquo;
+    .col-lg-4
+      %h2 Latest News
+      - blog.articles[0..2].each do |article|
+        .news-item
+          %span.date= article.date.strftime('%b %e, %Y')
+          %span.title= link_to article.title, article
+
+      %p
+      %a.btn.btn-primary(href="blog/") More blog entries &raquo;
+
+    .col-lg-4
+
+

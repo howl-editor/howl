@@ -5,7 +5,7 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.pango'
 core = require 'ljglibs.core'
 
-C, ffi_new, ffi_gc = ffi.C, ffi.new, ffi.gc
+C = ffi.C
 
 pc_t = ffi.typeof 'PangoColor'
 

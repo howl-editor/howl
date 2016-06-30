@@ -1,5 +1,4 @@
 Gtk = require 'ljglibs.gtk'
-append = table.insert
 
 {:Buffer, :config, :signal, :clipboard, :sys} = howl
 {:Editor} = howl.ui
@@ -128,6 +127,39 @@ describe 'Editor', ->
           error 'ARGH!'
 
         assert.equals 4, cursor.pos
+
+  describe 'with_selection_preserved(f)', ->
+    before_each ->
+      buffer.text = '\nhello hello hello\n'
+      selection\set 10, 8
+
+    it 'calls <f> passing itself a parameter', ->
+      f = spy.new -> nil
+      editor\with_selection_preserved f
+      assert.spy(f).was_called_with editor
+
+    it 'restores the selected region', ->
+      editor\with_selection_preserved ->
+        selection\set 1, 2
+      assert.equals 10, selection.anchor
+      assert.equals 8, selection.cursor
+
+    context 'when buffer is modified outside the selection', ->
+      it 'preserves the selected text', ->
+        editor\with_selection_preserved ->
+          buffer\insert 'abc', 1
+          buffer\insert 'abc', 14
+        assert.equals 13, selection.anchor
+        assert.equals 11, selection.cursor
+
+    context 'when no selection present', ->
+      it 'preserves relative position of cursor', ->
+        selection\set 1, 0
+        editor.cursor.pos = 5
+        editor\with_selection_preserved ->
+          buffer\insert 'abc\n', 1
+          buffer\insert 'abc\n', 10
+        assert.equals 9, editor.cursor.pos
 
   it 'insert(text) inserts the text at the cursor, and moves cursor after text', ->
     buffer.text = 'hƏllo'

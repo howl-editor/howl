@@ -9,7 +9,7 @@ append = table.insert
 
 install_gocode = ->
   howl.command.exec nil, 'go get -u -v github.com/nsf/gocode'
-  
+
 run_gocode = (context) ->
   gopath = howl.sys.env['GOPATH']
   if not gopath
@@ -24,15 +24,15 @@ run_gocode = (context) ->
       log.warn "gocode completions disabled"
       config.go_complete = false
       return nil
-    
+
   cmd = { exe.path, '-f=csv', 'autocomplete', context.pos-1 }
   status, out, err, process = pcall Process.execute, cmd, stdin: context.buffer.text
   unless status and process.successful
     log.error "gocode failed to execute: #{err}"
     return nil
-    
+
   out
-  
+
 class GoCompleter
   complete: (context) =>
     return {} unless config.go_complete
@@ -41,7 +41,7 @@ class GoCompleter
     candidates = {}
     if out
       for line in out\gmatch '[^\n]+'
-        sym, name, type = line\match '(%w*),,(%w*),,([^,]*)'
+        name = line\match '%w*,,(%w*),,[^,]*'
         append candidates, name
       candidates.authoritive = true
       table.sort candidates

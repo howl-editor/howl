@@ -45,7 +45,6 @@ class NimMode
     }
 
   structure: (editor) =>
-    buffer = editor.buffer
     lines = {}
 
     patterns = {

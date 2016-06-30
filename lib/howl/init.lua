@@ -11,6 +11,7 @@ Usage: howl [options] [<file> [, <file>, ..]]
 Where options can be any of:
   --reuse       Opens any named files in an existing instance of Howl, if present
   --compile     Compiles the given files to bytecode
+  --lint        Lints the given files
   --run         Loads and runs the specified file from within Howl
   --no-profile  Starts Howl without loading any user profile (settings, etc)
   -h, --help    This help
@@ -24,6 +25,7 @@ local function parse_args(argv)
     ['--help'] = 'help',
     ['--reuse'] = 'reuse',
     ['--compile'] = 'compile',
+    ['--lint'] = 'lint',
     ['--no-profile'] = 'no_profile',
     ['--run'] = 'run',
   }
@@ -114,6 +116,46 @@ local function compile(args)
   end
 end
 
+local function lint(args)
+  local root = howl.io.File(app_root)
+  package.loaded.lint_config = loadfile(root:join('lint_config.moon').path)()
+  local lint = require("moonscript.cmd.lint")
+  local errors = 0
+  local paths = {}
+  local moon_filter = function(f)
+    return f.extension ~= 'moon' and not f.is_directory
+  end
+
+  for i = 2, #args do
+    local path = args[i]
+    local file = howl.io.File(path)
+    if file.is_directory then
+      local sub_files = file:find({filter = moon_filter})
+      for j = 1, #sub_files do
+        if not sub_files[j].is_directory then
+          paths[#paths + 1] = sub_files[j].path
+        end
+      end
+    else
+      paths[#paths + 1] = path
+    end
+  end
+
+  for i = 1, #paths do
+    local path = paths[i]
+    local res, err = lint.lint_file(path)
+    if res then
+      io.stderr:write(res .. "\n\n")
+      errors = errors + 1
+    elseif err then
+      io.stderr:write(path .. "\n" .. err.. "\n\n")
+      errors = errors + 1
+    end
+  end
+
+  os.exit(errors > 0 and 1 or 0)
+end
+
 local function main(args)
   set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
   require 'howl.moonscript_support'
@@ -129,6 +171,8 @@ local function main(args)
 
   if args.compile then
     compile(args)
+  elseif args.lint then
+    lint(args)
   else
     -- set up the the GC to be more aggressive, we have a lot
     -- of cdata that needs to be collected

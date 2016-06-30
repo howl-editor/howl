@@ -21,7 +21,7 @@ accessible_name = (name) ->
   name\lower!\gsub '[%s%p]+', '_'
 
 parse_cmd = (text) ->
-  cmd_start, cmd_end, cmd_name, rest = text\find '^%s*([^%s]+)%s+(.*)$'
+  cmd_name, rest = text\match '^%s*([^%s]+)%s+(.*)$'
   return resolve_command(cmd_name), cmd_name, rest if cmd_name
 
 register = (cmd_def) ->

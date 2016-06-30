@@ -66,7 +66,6 @@ class CoffeeScriptMode
     @parent.indent_for self, line, indent_level
 
   structure: (editor) =>
-    buffer = editor.buffer
     lines = {}
     parents = {}
     prev_line = nil

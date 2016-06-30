@@ -113,7 +113,6 @@ file_matcher = (files, directory, allow_new=false) ->
   table.sort children, (f1, f2) ->
     d1, d2 = f1.is_directory, f2.is_directory
     h1, h2 = f1.is_hidden, f2.is_hidden
-    return false if u1 and not u2
     return false if h1 and not h2
     return true if h2 and not h1
     return true if d1 and not d2

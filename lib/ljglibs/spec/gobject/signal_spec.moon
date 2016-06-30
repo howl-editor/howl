@@ -30,7 +30,7 @@ describe 'signal', ->
     context '(gc lifecycle management)', ->
       it 'anchors a handler, preventing it from being garbage collected', ->
         holder = setmetatable { handler: -> }, __mode: 'v'
-        handle = signal.connect('void2', widget, 'show', holder.handler, 'myarg', nil, 123)
+        signal.connect('void2', widget, 'show', holder.handler, 'myarg', nil, 123)
         collectgarbage!
         assert.is_not_nil holder.handler
 

@@ -1,8 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-glib = require 'ljglibs.glib'
-
 import app, clipboard, config, interact, log, Project from howl
 import File from howl.io
 import Preview from howl.interactions.util

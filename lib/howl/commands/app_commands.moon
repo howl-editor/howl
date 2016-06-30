@@ -154,7 +154,7 @@ command.register
 
     buffer.read_only = true
     buffer.modified = false
-    editor = howl.app\add_buffer buffer
+    howl.app\add_buffer buffer
 
 command.register
   name: 'bundle-unload'
@@ -305,9 +305,12 @@ do_howl_eval = (load_f, mode_name, transform_f) ->
     for i = 2, #ret
       out ..= "\n#{serpent.block ret[i], comment: false}"
 
-    buf = Buffer mode.by_name mode_name
-    buf.text = "-- Howl eval (#{mode_name}) =>#{out}"
-    editor\show_popup BufferPopup buf
+    if editor.popup
+      log.info "(Eval) => #{ret[2]}"
+    else
+      buf = Buffer mode.by_name mode_name
+      buf.text = "-- Howl eval (#{mode_name}) =>#{out}"
+      editor\show_popup BufferPopup buf
     howl.clipboard.push out
    else
     log.error "(ERROR) => #{ret[2]}"

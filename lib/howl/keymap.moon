@@ -12,6 +12,10 @@
     shift_right:      'cursor-right-extend'
     shift_up:         'cursor-up-extend'
     shift_down:       'cursor-down-extend'
+    alt_up:           'editor-move-lines-up'
+    alt_down:         'editor-move-lines-down'
+    alt_left:         'editor-move-text-left'
+    alt_right:        'editor-move-text-right'
 
     tab:              'editor-smart-tab'
     shift_tab:        'editor-smart-back-tab'

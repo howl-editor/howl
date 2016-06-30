@@ -1,9 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Cursor = require 'aullar.cursor'
 View = require 'aullar.view'
-Selection = require 'aullar.selection'
 Buffer = require 'aullar.buffer'
 Gtk = require 'ljglibs.gtk'
 

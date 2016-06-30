@@ -181,12 +181,27 @@ describe 'markers', ->
       markers\shrink 5, 1
       assert.equals 5, markers\at(2)[1].end_offset
 
-    it 'removes partially affected markers', ->
-      markers\add { {name: 'test1', start_offset: 2, end_offset: 4} }
-      markers\add { {name: 'test2', start_offset: 5, end_offset: 10} }
+    context 'for partially affected markers', ->
+      it 'removes markers with marker.preserve = false', ->
+        markers\add { {name: 'test1', start_offset: 2, end_offset: 4} }
+        markers\add { {name: 'test2', start_offset: 5, end_offset: 10} }
 
-      markers\shrink 8, 3
-      assert.same {}, markers\at(5)
+        markers\shrink 8, 3
+        assert.same { {name: 'test1', start_offset: 2, end_offset: 4} }, markers\for_range 1, 100
 
-      markers\shrink 1, 3
-      assert.same {}, markers\at(2)
+        markers\shrink 1, 3
+        assert.same {}, markers\for_range 1, 100
+
+      it 'trims markers with marker.preserve = true', ->
+        markers\add { {name: 'test1', start_offset: 2, end_offset: 4, preserve: true} }
+        markers\add { {name: 'test2', start_offset: 5, end_offset: 10, preserve: true} }
+
+        -- trim end
+        markers\shrink 8, 3
+        assert.same { {name: 'test2', start_offset: 5, end_offset: 8, preserve: true} }, markers\at(5)
+
+        -- trim start
+        markers\shrink 4, 2
+        assert.same { {name: 'test2', start_offset: 4, end_offset: 6, preserve: true} }, markers\at(4)
+
+        assert.same { {name: 'test1', start_offset: 2, end_offset: 4, preserve: true} }, markers\at(2)

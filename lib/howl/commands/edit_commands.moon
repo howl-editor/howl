@@ -52,9 +52,8 @@ command.register
   description: 'Replace text (within selection or globally)'
   input: ->
     buffer = app.editor.buffer
-    chunk = app.editor.active_chunk
     replacement = interact.get_replacement
-      title: 'Preview replacements for ' .. buffer.title
+      preview_title: 'Preview replacements for ' .. buffer.title
       editor: app.editor
 
     return replacement if replacement
@@ -77,9 +76,9 @@ command.register
   description: 'Replace text using regular expressions (within selection or globally)'
   input: ->
     buffer = app.editor.buffer
-    chunk = app.editor.active_chunk
     replacement = interact.get_replacement_regex
-      title: 'Preview replacements for ' .. buffer.title
+      title: 'Replace regex'
+      preview_title: 'Preview replacements for ' .. buffer.title
       editor: app.editor
 
     return replacement if replacement
@@ -150,5 +149,101 @@ command.register
   handler: ->
     cursor = app.editor.cursor
     pos = app.editor\get_matching_brace cursor.pos
-    cursor\move_to(:pos, :extend) if pos
+    cursor\move_to(:pos) if pos
+
+command.register
+  name: 'editor-replace-exec'
+  description: 'Replace selection with output of selection fed into external command'
+  input: ->
+    chunk = app.editor.active_chunk
+    app.window.command_line.title = 'External command'
+    working_directory, cmd = howl.interact.get_external_command!
+    return unless working_directory
+    return chunk, working_directory, cmd
+
+  handler: (chunk, working_directory, cmd) ->
+    stdout, _, process = howl.io.Process.execute cmd,
+      :working_directory,
+      stdin: chunk.text
+    if process.successful
+      chunk.text = stdout
+      log.info "Replaced with output of '#{cmd}'"
+    else
+      log.error "Failed to run #{cmd}"
+
+command.register
+  name: 'editor-move-lines-up'
+  description: 'Move current or selected lines up by one line'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    lines = editor.active_lines
+    first = lines[1].nr
+    last = lines[#lines].nr
+    return unless first > 1
+
+    nr = first - 1
+    text = buffer.lines[nr].text
+
+    buffer\as_one_undo ->
+      editor\with_selection_preserved ->
+        buffer.lines\delete nr, nr
+        buffer.lines\insert last, text
+
+command.register
+  name: 'editor-move-lines-down'
+  description: 'Move current or selected lines down by one line'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    lines = editor.active_lines
+    first = lines[1].nr
+    last = lines[#lines].nr
+    return unless last < #buffer.lines
+
+    nr = last + 1
+    text = buffer.lines[nr].text
+
+    buffer\as_one_undo ->
+      editor\with_selection_preserved ->
+        buffer.lines\delete nr, nr
+        buffer.lines\insert first, text
+
+command.register
+  name: 'editor-move-text-right'
+  description: 'Move selected text or current character right by one character'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    start_pos, end_pos = editor.selection\range!
+    unless start_pos
+      start_pos = editor.cursor.pos
+      end_pos = start_pos + 1
+
+    return unless end_pos < #buffer
+
+    buffer\as_one_undo ->
+      editor\with_selection_preserved ->
+        text = buffer\chunk(end_pos, end_pos).text
+        buffer\delete end_pos, end_pos
+        buffer\insert text, start_pos
+
+command.register
+  name: 'editor-move-text-left'
+  description: 'Move selected text or current character left by one character'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    start_pos, end_pos = editor.selection\range!
+    unless start_pos
+      start_pos = editor.cursor.pos
+      end_pos = start_pos + 1
+
+    return unless start_pos > 1
+
+    buffer\as_one_undo ->
+      editor\with_selection_preserved ->
+        text = buffer\chunk(start_pos - 1, start_pos - 1).text
+        buffer\insert text, end_pos
+        buffer\delete start_pos - 1, start_pos - 1
 

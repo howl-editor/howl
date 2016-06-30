@@ -80,7 +80,7 @@ describe 'Project', ->
           file = dir / 'test.moon'
           file2 = dir / 'test2.moon'
           p = Project.for_file file
-          p2 = Project.for_file file
+          p2 = Project.for_file file2
           assert.not_nil p
           assert.equal p2, p
 

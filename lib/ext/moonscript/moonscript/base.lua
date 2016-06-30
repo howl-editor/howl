@@ -18,14 +18,32 @@ local dirsep, line_tables, create_moonpath, to_lua, moon_loader, loadstring, loa
 dirsep = "/"
 line_tables = require("moonscript.line_tables")
 create_moonpath = function(package_path)
-  local paths = split(package_path, ";")
-  for i, path in ipairs(paths) do
-    local p = path:match("^(.-)%.lua$")
-    if p then
-      paths[i] = p .. ".moon"
+  local moonpaths
+  do
+    local _accum_0 = { }
+    local _len_0 = 1
+    local _list_0 = split(package_path, ";")
+    for _index_0 = 1, #_list_0 do
+      local _continue_0 = false
+      repeat
+        local path = _list_0[_index_0]
+        local prefix = path:match("^(.-)%.lua$")
+        if not (prefix) then
+          _continue_0 = true
+          break
+        end
+        local _value_0 = prefix .. ".moon"
+        _accum_0[_len_0] = _value_0
+        _len_0 = _len_0 + 1
+        _continue_0 = true
+      until true
+      if not _continue_0 then
+        break
+      end
     end
+    moonpaths = _accum_0
   end
-  return concat(paths, ";")
+  return concat(moonpaths, ";")
 end
 to_lua = function(text, options)
   if options == nil then
@@ -48,9 +66,7 @@ end
 moon_loader = function(name)
   local name_path = name:gsub("%.", dirsep)
   local file, file_path
-  local _list_0 = split(package.moonpath, ";")
-  for _index_0 = 1, #_list_0 do
-    local path = _list_0[_index_0]
+  for path in package.moonpath:gmatch("[^;]+") do
     file_path = path:gsub("?", name_path)
     file = io.open(file_path)
     if file then
@@ -132,5 +148,6 @@ return {
   dirsep = dirsep,
   dofile = dofile,
   loadfile = loadfile,
-  loadstring = loadstring
+  loadstring = loadstring,
+  create_moonpath = create_moonpath
 }

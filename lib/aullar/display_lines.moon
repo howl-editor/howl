@@ -4,7 +4,6 @@
 flair = require 'aullar.flair'
 {:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
-Styling = require 'aullar.styling'
 Pango = require 'ljglibs.pango'
 {:Layout, :AttrList, :SCALE} = Pango
 pango_cairo = Pango.cairo
@@ -284,19 +283,25 @@ DisplayLine = define_class {
     lines: =>
       unless @_lines
         @_lines = {}
-        for nr = 1, @layout.line_count
-          layout_line = @layout\get_line_readonly nr - 1
+        iter = @layout.iter
+        nr = 1
+        while true
+          layout_line = iter.line_readonly
           _, extents = layout_line\get_pixel_extents!
           line_start = layout_line.start_index + 1
           line_end = layout_line.length + line_start
-          line_end -= 1 unless nr == @layout.line_count
+          line_end -= 1 unless iter.at_last_line
           @_lines[#@_lines + 1] = {
             :nr,
             :line_start,
             :line_end,
-            :extents
+            :extents,
+            baseline: iter.baseline / SCALE
             height: extents.height + @y_offset * 2
           }
+          nr += 1
+          break unless iter\next_line!
+
         setmetatable @_lines, __index: LinesMt
 
       @_lines

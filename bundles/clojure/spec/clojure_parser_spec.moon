@@ -5,7 +5,7 @@ describe 'clojure_parser', ->
 
   setup ->
     bundle.load_by_name 'clojure'
-    parser = bundles.clojure.parser
+    parser = _G.bundles.clojure.parser
     buffer = Buffer!
 
   context 'parse(buffer)', ->

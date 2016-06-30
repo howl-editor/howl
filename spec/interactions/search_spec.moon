@@ -4,8 +4,6 @@
 import app, interact, Buffer from howl
 import Editor, Window from howl.ui
 
-append = table.insert
-
 require 'howl.interactions.search'
 require 'howl.interactions.selection_list'
 

@@ -2,11 +2,11 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import mode from howl
+lpeg = _G.lpeg
 import P, B, S, Cp, Cc, Ct, Cmt, Cg, Cb from lpeg
 import pairs, setfenv, setmetatable, type, print, tostring from _G
 l = lpeg.locale!
 import space, alpha from l
-lpeg_type = lpeg.type
 unpack, append, tinsert = table.unpack, table.insert, table.insert
 
 eol_p = P'\n' + P'\r\n' + P'\r'
@@ -171,6 +171,7 @@ lexer = {
 lexer[k] = v for k,v in pairs lpeg when k\match '^%u'
 lpeg.locale lexer
 
+{:C, :digit} = lexer
 setfenv 1, lexer
 export *
 
@@ -283,10 +284,15 @@ sub_lex_by_pattern_match_time = (mode_p, mode_style, match_time_p) ->
 sub_lex_by_lexer = (base_style, stop_p, lexer) ->
   Cmt(Cc(base_style) * Cc(lexer) * C(scan_until(stop_p)), lexer_sub_lex_capture)
 
-sub_lex_by_inline = (base_style, stop_p, pattern) ->
+sub_lex_by_inline = (base_style, match_p, pattern) ->
   p = Ct lenient_pattern(pattern)^0
   f = (text) -> p\match text
-  Cmt(Cc(base_style) * Cc(f) * C(scan_until(stop_p)), function_sub_lex_capture)
+  Cmt(Cc(base_style) * Cc(f) * C(match_p), function_sub_lex_capture)
+
+sub_lex_by_inline_match_time = (base_style, match_time_p, pattern) ->
+  p = Ct lenient_pattern(pattern)^0
+  f = (text) -> p\match text
+  Cmt(Cc(base_style) * Cc(f) * C(match_time_p), function_sub_lex_capture)
 
 compose = (mode_name, definition_p) ->
   m = mode.by_name mode_name

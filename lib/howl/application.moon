@@ -1,8 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-ffi = require 'ffi'
-
 import Window, Editor, theme from howl.ui
 import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
 import File, Process from howl.io
@@ -174,10 +172,10 @@ class Application extends PropertyObject
           editor.buffer = @next_buffer
 
   open_file: (file, editor = @editor) =>
-    for b in *@buffers
-      if b.file == file
-        editor.buffer = b
-        return b, editor
+    buffer = @_buffer_for_file file
+    if buffer
+      editor.buffer = buffer
+      return buffer, editor
 
     buffer = @new_buffer mode.for_file file
     status, err = pcall ->
@@ -292,8 +290,16 @@ class Application extends PropertyObject
 
     @settings\save_system 'session', session
 
+  _buffer_for_file: (file) =>
+    for b in *@buffers
+      return b if b.file == file
+
+    nil
+
   _load: (files = {}) =>
     local window
+
+    -- bootstrap if we're booting up
     unless @_loaded
       @settings = Settings!
       @_load_core!
@@ -312,16 +318,37 @@ class Application extends PropertyObject
       signal.connect 'buffer-saved', self\_on_buffer_saved
 
       window = @new_window!
-      @_set_initial_status window
 
       howl.janitor.start!
 
+    -- load files from command line
+    loaded_buffers = {}
     for path in *files
       file = File path
-      buffer = @new_buffer mode.for_file file
-      buffer.file = file
-      signal.emit 'file-opened', :file, :buffer
+      buffer = @_buffer_for_file file
+      unless buffer
+        buffer = @new_buffer mode.for_file file
+        status, ret = pcall -> buffer.file = file
+        if status
+          signal.emit 'file-opened', :file, :buffer
+        else
+          @close_buffer buffer
+          log.error "Failed to open file '#{file}': #{ret}"
 
+      if buffer
+        append loaded_buffers, buffer
+
+    -- files we've loaded via a --reuse invocation should be shown
+    if #loaded_buffers > 0 and @_loaded
+      for i = 1, math.min(#@editors, #loaded_buffers)
+        @editors[i].buffer = loaded_buffers[i]
+
+    -- all loaded files should be considered as having been viewed just now
+    now = howl.sys.time!
+    for b in *loaded_buffers
+      b.last_shown = now
+
+    -- restore session properties
     unless @_loaded
       unless @args.no_profile
         @_restore_session window, #files == 0
@@ -333,6 +360,7 @@ class Application extends PropertyObject
       window\show_all! if window
       @_loaded = true
       signal.emit 'app-ready'
+      @_set_initial_status window
 
   _should_abort_quit: =>
     modified = [b for b in *@_buffers when b.modified]
@@ -344,7 +372,6 @@ class Application extends PropertyObject
 
   _on_mode_registered: (args) =>
     -- check if any buffers with default_mode could use this new mode
-    mode_name = args.name
     default_mode = mode.by_name 'default'
     for buffer in *@_buffers
       if buffer.file and buffer.mode == default_mode
@@ -403,7 +430,8 @@ class Application extends PropertyObject
 
   _set_initial_status: (window) =>
     if log.last_error
-      window.status\error log.last_error.message
+      startup_errors = [e for e in *log.entries when e.level == 'error']
+      window.status\error "#{log.last_error.message} (#{#startup_errors} startup errors in total)"
     else
       window.status\info 'Howl ready.'
 

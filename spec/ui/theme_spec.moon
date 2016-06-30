@@ -1,7 +1,6 @@
 import config, signal from howl
 import theme from howl.ui
 import File from howl.io
-Gtk = require 'ljglibs.gtk'
 
 serpent = require 'serpent'
 
@@ -101,7 +100,7 @@ describe 'theme', ->
         file.contents = 'spec_global = "noo!"\n' .. serpent.dump spec_theme
         theme.register 'foo', file
         config.theme = 'foo'
-        assert.is_nil spec_global
+        assert.is_nil _G.spec_global
 
     it 'allows the use of named colors', ->
       File.with_tmpfile (file) ->

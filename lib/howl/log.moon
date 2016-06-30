@@ -16,6 +16,8 @@ config.define
 log = {}
 setfenv 1, log
 
+export entries = {}
+
 essentials_of = (s) ->
   first_line = s\match '[^\n\r]*'
   essentials = first_line\match '^%[[^]]+%]:%d+: (.+)'
@@ -42,7 +44,6 @@ dispatch = (level, message) ->
   entry
 
 export *
-entries = {}
 last_error = nil
 
 info = (message) -> dispatch 'info', message

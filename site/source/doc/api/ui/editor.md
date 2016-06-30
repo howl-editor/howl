@@ -376,6 +376,13 @@ Invokes `f`, and restores the position to the original line and column after `f`
 has returned. Should the indentation level for the current line have changed,
 attempts to automatically adjust the column for the new indentation.
 
+### with_selection_preserved (f)
+
+Invokes `f`, and preserves any selection - i.e. the selected text stays
+selected. If `f` modifies text outside of the current selection, the selection
+is preserved exactly. If `f` adds or removes text within the selection, the selection
+is adjusted to contain the modified text. If `f` deletes text at the boundary of the selection, the selection is trimmed.
+
 [.active_lines]: #.active_lines
 [.buffer]: #.buffer
 [.current_line]: #.current_line

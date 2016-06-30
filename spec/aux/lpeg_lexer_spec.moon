@@ -1,5 +1,6 @@
 import lpeg_lexer from howl.aux
 import mode from howl
+lpeg = _G.lpeg
 import P,V, C, Cp, Cg, Cb from lpeg
 
 l = lpeg_lexer
@@ -381,13 +382,13 @@ describe 'lpeg_lexer', ->
 
       }, lexer('x2')
 
-  describe 'sub_lex_by_inline(name, base_style, pattern)', ->
-    it 'sub lexes using the provided pattern', ->
+  describe 'sub_lex_by_inline(base_style, match_p, pattern)', ->
+    it 'sub lexes the matched text using the provided pattern', ->
       lexer = l ->
         sub_lexer = capture('number', digit^1)
         sequence {
           capture('keyword', 'x'),
-          sub_lex_by_inline('string', l.eol, sub_lexer)
+          sub_lex_by_inline('string', l.scan_until(l.eol), sub_lexer)
         }
       assert.same {
         1, 'keyword', 2
@@ -398,7 +399,7 @@ describe 'lpeg_lexer', ->
     it 'adds a zero width styling instruction at the end if needed', ->
       lexer = l ->
         sub_lexer = capture('number', digit^1)
-        alpha * sub_lex_by_inline('string', l.eol, sub_lexer)
+        alpha * sub_lex_by_inline('string', l.scan_until(l.eol), sub_lexer)
 
       assert.same {
         2, {

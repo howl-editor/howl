@@ -22,7 +22,6 @@ config = require 'aullar.config'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :abs, :floor} = math
 
-s_unref = signal.unref_handle
 append = table.insert
 
 jit.off true, true
@@ -138,7 +137,12 @@ View = {
       on_undo: (_, b, args) -> self\_on_buffer_undo b, args
       on_redo: (_, b, args) -> self\_on_buffer_redo b, args
       on_markers_changed: (_, b, args) -> self\_on_buffer_markers_changed b, args
-      last_line_shown: (_, b) -> @last_visible_line
+      last_viewable_line: (_, b) ->
+        last = @last_visible_line
+        if @height
+          last = max last, @height / @default_line_height
+
+        last
     }
 
     @buffer = buffer
@@ -559,7 +563,9 @@ View = {
   _reset_display: =>
     @_last_visible_line = nil
     p_ctx = @area.pango_context
-    @width_of_space = @text_dimensions(' ').width
+    tm = @text_dimensions(' ')
+    @width_of_space = tm.width
+    @default_line_height = tm.height + floor @config.view_line_padding
     tab_size = @config.view_tab_size
     @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
@@ -734,7 +740,7 @@ View = {
 
   _on_key_press: (_, e) =>
     if @in_preedit
-      ret = @im_context\filter_keypress(e)
+      @im_context\filter_keypress(e)
       return true
 
     event = parse_key_event e

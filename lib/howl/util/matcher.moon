@@ -71,13 +71,12 @@ class Matcher
     return [c for c in *@candidates] if not search or search.is_empty
 
     search = search.ulower
-    prev_search = search\usub 1, -2
     matches = @cache.matches[search] or {}
     if #matches > 0 then return matches
 
     lines = @cache.lines[search\usub 1, -2] or @lines
     matching_lines = {}
-    matcher = create_matcher search, reverse
+    matcher = create_matcher search, @options.reverse
 
     for i, line in ipairs lines
       text = line.text
@@ -97,7 +96,7 @@ class Matcher
     matching_candidates
 
   explain: (search, text, options = {}) ->
-    how, match = create_matcher(search, reverse)(text.ulower, text)
+    how, match = create_matcher(search, options.reverse)(text.ulower, text)
     return nil unless match
 
     segments = {}

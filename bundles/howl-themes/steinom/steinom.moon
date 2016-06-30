@@ -78,6 +78,10 @@ return {
       color: gray
 
   editor: delegate_to content_box, {
+    scrollbars:
+      slider:
+        color: slategray
+
     indicators:
       default:
         color: slategray
@@ -85,6 +89,10 @@ return {
       title:
         font: bold: true
         color: lightblue
+
+      inspections:
+        font: italic: true
+        color: orange
 
       vi:
         font: bold: true

@@ -2,10 +2,9 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import app, mode from howl
-import ActionBuffer from howl.ui
+import ActionBuffer, highlight from howl.ui
 import terminal from howl.ui.markup
 import File from howl.io
-append = table.insert
 
 command_activity = (process) ->
   {
@@ -71,12 +70,13 @@ ProcessMode = {
 }
 
 class ProcessBuffer extends ActionBuffer
-  new: (@process) =>
+  new: (@process, @opts={}) =>
     super!
     @read_only = true
     @activity = command_activity @process
     @directory = @process.working_directory
-    @title = "$ #{@process.command_line} (running)"
+    @base_title = @opts.title or "$ #{@process.command_line}"
+    @title = "#{@base_title} (running)"
     @mode = mode.by_name 'process'
 
     @modify ->
@@ -92,20 +92,11 @@ class ProcessBuffer extends ActionBuffer
     @modified = false
 
   pump: =>
-    on_stdout = (read) ->
-      if read and not @destroyed
-        delete_back, output = parse_output read
-        if delete_back > 0
-          len = @length
-          @modify ->  @delete len - (delete_back - 1), len
-
-        @_append output
-
-    on_stderr = (read) ->
-      @_append(read, 'error') if read and not @destroyed
+    on_stdout = (read) -> @_append read
+    on_stderr = (read) -> @_append read, 'stderr'
 
     @process\pump on_stdout, on_stderr
-    @title = "$ #{@process.command_line} (done)"
+    @title = "#{@base_title} (done)"
 
     unless @destroyed
       @modify ->
@@ -125,16 +116,32 @@ class ProcessBuffer extends ActionBuffer
     @process\send_signal('KILL') unless @process.exited
     super!
 
-  _append: (object, style_name) =>
+  _append: (read, flair_name) =>
+    local output
+    if read and not @destroyed
+      delete_back, output = parse_output read
+      if delete_back > 0
+        len = @length
+        @modify ->  @delete len - (delete_back - 1), len
+
+    return unless output
     @modify ->
       editor = app\editor_for_buffer @
       at_end_of_file = editor and editor.cursor.at_end_of_file
-      @append object, style_name
+      start_pos = @length
+      @append output
       editor.cursor\eof! if at_end_of_file
+      if flair_name
+        highlight.apply flair_name, @, start_pos, @length - start_pos
 
 howl.mode.register {
   name: 'process'
   create: -> ProcessMode
 }
+
+highlight.define_default 'stderr',
+  type: highlight.UNDERLINE
+  foreground: 'red'
+  line_width: 1
 
 return ProcessBuffer

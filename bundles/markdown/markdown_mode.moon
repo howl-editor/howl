@@ -32,7 +32,7 @@ is_header = (line) ->
     line\umatch r'^(?:[\\s-*[]|```)'
 
   line_is_reflowable: (line) =>
-    no_break = { '^```', '^%s*#' }
+    no_break = { '^```', '^%s*#', '^%s*|'  }
     for p in *no_break
       return false if line\find p
 
