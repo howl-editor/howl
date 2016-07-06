@@ -267,9 +267,13 @@ interact.register
       matcher: Matcher line_items, preserve_order: true
       reverse: true
       title: 'Command History'
+      allow_new_value: true
 
     if result
-      return result.selection.command\sub 2
+      if result.selection
+        return result.selection.command\sub 2
+      else
+        return result.text
 
 return setmetatable {:register, :unregister, :alias, :run, :names, :get}, {
   __index: (key) =>
