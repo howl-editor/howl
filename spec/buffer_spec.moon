@@ -232,7 +232,7 @@ describe 'Buffer', ->
       b\undo!
       assert.equal 'hello', b.text
 
-    it 'resets the .modified flag when at synced file revision', ->
+    it 'resets the .modified flag when at last saved file revision', ->
       with_tmpfile (file) ->
         b = buffer ''
         b.file = file
@@ -245,6 +245,16 @@ describe 'Buffer', ->
         assert.equal false, b.modified
         b\undo!
         assert.equal true, b.modified
+
+    it 'resets the .modified flag when at originally loaded revision', ->
+      with_tmpfile (file) ->
+        file.contents = 'hello hello'
+        b = buffer ''
+        b.file = file
+        b\delete 1, 1
+        assert.equal true, b.modified
+        b\undo!
+        assert.equal false, b.modified
 
   describe 'redo', ->
     it 'redoes the last undo operation', ->

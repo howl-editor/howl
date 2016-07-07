@@ -47,9 +47,9 @@ class Buffer extends PropertyObject
         @text = ''
         @sync_etag = nil
 
+      @can_undo = false
       @_modified = false
       @sync_revision_id = @_buffer\get_revision_id true
-      @can_undo = false
 
   @property mode:
     get: => @_mode
