@@ -102,6 +102,15 @@ describe 'VI', ->
     press 'F', 'i'
     assert.equal 2, cursor.column
 
+  it '<t><character> searches forward in the current line to one character before <character>', ->
+    press 't', 'n'
+    assert.equal 2, cursor.column
+
+  it '<T><character> searches backwards in the current line to one character before <character>', ->
+    cursor.column = 5
+    press 'T', 'i'
+    assert.equal 3, cursor.column
+
   it '<c><w> deletes to the end of word and enters insert', ->
     press 'c', 'w'
     assert.equal ' two', editor.current_line.text

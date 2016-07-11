@@ -26,6 +26,22 @@ back_to_char = (event, source, translations, editor) ->
   else
     return false
 
+forward_till_char = (event, source, translations, editor) ->
+  if event.character
+    apply editor, (editor) ->
+      editor\forward_to_match event.character
+      editor.cursor\left!
+  else
+    return false
+
+back_till_char = (event, source, translations, editor) ->
+  if event.character
+    apply editor, (editor) ->
+      editor\backward_to_match event.character
+      editor.cursor\right!
+  else
+    return false
+
 end_of_word = (cursor) ->
   with cursor
     current_pos = .pos
@@ -100,6 +116,8 @@ map = {
 
     f: (editor) -> bindings.capture forward_to_char
     F: (editor) -> bindings.capture back_to_char
+    t: (editor) -> bindings.capture forward_till_char
+    T: (editor) -> bindings.capture back_till_char
     '/': 'buffer-search-forward'
     '?': 'buffer-search-backward'
     n: 'buffer-repeat-search'
