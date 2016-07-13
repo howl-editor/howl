@@ -25,9 +25,10 @@ class CommandLine extends PropertyObject
     @showing = false
     @spillover = nil
     @running = {}
-    @_command_history = {}
     @aborted = {}
     @next_run_queue = {}
+    @_command_history = {}
+    @sync_history!
 
   @property current: get: => @running[#@running]
 
@@ -234,8 +235,38 @@ class CommandLine extends PropertyObject
     current_history = @get_history @running[1].name
     last_cmd = current_history[1]
 
+
     unless last_cmd == command_line or command_line\find '\n' or command_line\find '\r'
-      append @_command_history, 1, {name: @running[1].name, cmd: command_line}
+      name = @running[1].name
+      append @_command_history, 1, {:name, cmd: command_line, timestamp: howl.sys.time!}
+
+    @sync_history!
+
+  sync_history: =>
+    return unless howl.app.settings
+    saved_history = howl.app.settings\load_system 'command_line_history'
+    saved_history or= {}
+
+    history = {}
+    for item in *@_command_history
+      history[item.timestamp] = item
+
+    for item in *saved_history
+      continue if history[item.timestamp]
+      item.cmd = StyledText item.cmd.text, item.cmd.styles
+      history[item.timestamp] = item
+
+    merged_history = [item for _, item in pairs history]
+    table.sort merged_history, (a, b) -> a.timestamp > b.timestamp
+    deduped_history = {}
+    commands = {}
+    for item in *merged_history
+      continue if commands[item.cmd.text]
+      append deduped_history, item
+      commands[item.cmd.text] = true
+
+    howl.app.settings\save_system 'command_line_history', deduped_history
+    @_command_history = deduped_history
 
   _capture_command_line: (end_pos) =>
       buf = @command_widget.buffer
