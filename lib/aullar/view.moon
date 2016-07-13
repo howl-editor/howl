@@ -774,11 +774,13 @@ View = {
 
   _on_button_release: (_, event) =>
     event = ffi_cast('GdkEventButton *', event)
+    return true if notify @, 'on_button_release', event
     return if event.button != 1
     @_selection_active = false
 
   _on_motion_event: (_, event) =>
     event = ffi_cast('GdkEventMotion *', event)
+    return true if notify @, 'on_motion_event', event
     unless @_selection_active
       if @_cur_mouse_cursor != text_cursor
         if event.x > @gutter_width
@@ -793,8 +795,11 @@ View = {
     pos = @position_from_coordinates(event.x, event.y)
     if pos
       @cursor\move_to :pos, extend: true
-    elseif event.y < 0
-      @cursor\up extend: true
+    elseif event.y < 10
+      if @_first_visible_line == 1
+        @cursor\move_to pos:1, extend: true
+      else
+        @cursor\up extend: true
     else
       @cursor\down extend: true
 
