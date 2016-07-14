@@ -41,7 +41,7 @@ describe 'StyledText', ->
 
   it 'serializable by serpent into a table', ->
     st = StyledText 'text', {1, 'string', 2}
-    ok, copy = serpent.load serpent.dump(st)
+    _, copy = serpent.load serpent.dump(st)
     assert.equal 'text', copy.text
     assert.same {1, 'string', 2}, copy.styles
 
