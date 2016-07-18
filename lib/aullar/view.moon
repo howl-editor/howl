@@ -795,13 +795,16 @@ View = {
     pos = @position_from_coordinates(event.x, event.y)
     if pos
       @cursor\move_to :pos, extend: true
-    elseif event.y < 10
-      if @_first_visible_line == 1
+    elseif event.y < @margin
+      if @first_visible_line == 1
         @cursor\move_to pos:1, extend: true
       else
         @cursor\up extend: true
     else
-      @cursor\down extend: true
+      if @last_visible_line == @buffer.nr_lines
+        @cursor\move_to pos:@buffer.size+1, extend: true
+      else
+        @cursor\down extend: true
 
   _on_scroll: (_, event) =>
     event = ffi_cast('GdkEventScroll *', event)

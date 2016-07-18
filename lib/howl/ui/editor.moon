@@ -630,6 +630,38 @@ class Editor extends PropertyObject
     bar\remove id
     @indicator[id] = nil
 
+  _word_or_token_at: (pos) =>
+    context = @buffer\context_at pos
+    chunk = context.word
+    chunk = context.token if chunk.empty
+    chunk
+
+  _expand_to_word_token_boundaries: (pos1, pos2) =>
+    chunk1 = @_word_or_token_at pos1
+    chunk2 = if pos2
+      @_word_or_token_at pos2
+    else
+      chunk1
+    if pos1 <= pos2
+      chunk1.start_pos, chunk2.end_pos + 1
+    else
+      chunk1.end_pos + 1, chunk2.start_pos
+
+  _expand_to_line_starts: (pos1, pos2) =>
+    line1 = @view.buffer\get_line_at_offset pos1
+    line2 = @view.buffer\get_line_at_offset pos2
+    if pos1 <= pos2
+      @buffer.lines[line1.nr].start_pos, @_next_line_start(line2)
+    else
+      @_next_line_start(line1), @buffer.lines[line2.nr].start_pos
+
+  _next_line_start: (line) =>
+    next_line_nr = line.nr + 1
+    if @buffer.lines[next_line_nr]
+      @buffer.lines[next_line_nr].start_pos
+    else
+      @buffer.lines[line.nr].end_pos
+
   _on_destroy: =>
     for h in *@_handlers
       gobject_signal.disconnect h
@@ -674,54 +706,24 @@ class Editor extends PropertyObject
         true
 
     elseif event.type == Gdk.GDK_3BUTTON_PRESS
-      line = @current_line
-      next_line_nr = line.nr + 1
-      end_pos = if @buffer.lines[next_line_nr]
-        @buffer.lines[next_line_nr].start_pos
-      else
-        line.end_pos
-      @selection\set line.start_pos, end_pos
+      @selection\set @current_line.start_pos, @_next_line_start(@current_line)
 
   _on_button_release: (view, event) =>
     @drag_press_type = nil
 
   _on_motion_event: (view, event) =>
-    if @selection.empty
-      return false
-    else
+    unless @selection.empty or @drag_press_type == nil
       pos = @view\position_from_coordinates(event.x, event.y)
       if pos
+        sel_start, sel_end = @drag_press_pos, pos
         if @drag_press_type == Gdk.GDK_2BUTTON_PRESS
-          -- Find start/end of drag start word.
-          drag_press_context = @buffer\context_at @drag_press_pos
-          drag_press_group = drag_press_context.word
-          drag_press_group = drag_press_context.token if drag_press_group.empty
-          -- Find start/end of this word.
-          context = @buffer\context_at pos
-          group = context.word
-          group = context.token if group.empty
-          -- Set selection to encompass all.
-          unless group.empty or drag_press_group.empty
-            if pos < @drag_press_pos
-              @selection\set drag_press_group.end_pos + 1, group.start_pos
-            else
-              @selection\set drag_press_group.start_pos, group.end_pos + 1
-            return true
-
+          sel_start, sel_end = @_expand_to_word_token_boundaries sel_start, sel_end
         elseif @drag_press_type == Gdk.GDK_3BUTTON_PRESS
-          drag_press_line = @view.buffer\get_line_at_offset @drag_press_pos
-          line = @view.buffer\get_line_at_offset pos
-          -- Set selection from start of drag_press_pos line to start of line after event line (or line after drag_press_pos to event line if event pos less than drag_press_pos).
-          if pos < @drag_press_pos
-            @selection\set @buffer.lines[drag_press_line.nr+1].start_pos, @buffer.lines[line.nr].start_pos
-          else
-            next_line_nr = line.nr + 1
-            end_pos = if @buffer.lines[next_line_nr]
-              @buffer.lines[next_line_nr].start_pos
-            else
-              @buffer.lines[line.nr].end_pos
-            @selection\set @buffer.lines[drag_press_line.nr].start_pos, end_pos
-          return true
+          sel_start, sel_end = @_expand_to_line_starts sel_start, sel_end
+
+        unless sel_start == sel_end
+          @selection\set sel_start, sel_end
+          true
 
   _on_pos_changed: =>
     @_update_position!
