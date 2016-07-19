@@ -107,6 +107,7 @@ criticize = (buffer, criticisms) ->
   mark_criticisms buffer, criticisms
 
 update_buffer = (buffer, editor) ->
+  return if buffer.read_only
   data = buffer.data
   if data.last_inspect and data.last_inspect >= buffer.last_changed
     return
