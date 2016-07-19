@@ -156,13 +156,13 @@ config.define {
 }
 
 highlight.define_default 'error',
-  type: highlight.UNDERLINE
+  type: highlight.WAVY_UNDERLINE
   foreground: 'red'
   line_width: 1
   line_type: 'dashed'
 
 highlight.define_default 'warning',
-  type: highlight.UNDERLINE
+  type: highlight.WAVY_UNDERLINE
   foreground: 'orange'
   line_width: 1
   line_type: 'dashed'
