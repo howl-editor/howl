@@ -160,12 +160,12 @@ highlight.define_default 'error',
   type: highlight.WAVY_UNDERLINE
   foreground: 'red'
   line_width: 1
-  line_type: 'dashed'
+  line_type: 'solid'
 
 highlight.define_default 'warning',
   type: highlight.WAVY_UNDERLINE
   foreground: 'orange'
   line_width: 1
-  line_type: 'dashed'
+  line_type: 'solid'
 
 :inspect, :criticize
