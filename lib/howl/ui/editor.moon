@@ -630,6 +630,11 @@ class Editor extends PropertyObject
     bar\remove id
     @indicator[id] = nil
 
+  _pos_from_coordinates: (x, y) =>
+    byte_offset = @view\position_from_coordinates(x, y)
+    if byte_offset
+      @buffer\char_offset byte_offset
+
   _word_or_token_at: (pos) =>
     context = @buffer\context_at pos
     chunk = context.word
@@ -648,19 +653,19 @@ class Editor extends PropertyObject
       chunk1.end_pos + 1, chunk2.start_pos
 
   _expand_to_line_starts: (pos1, pos2) =>
-    line1 = @view.buffer\get_line_at_offset pos1
-    line2 = @view.buffer\get_line_at_offset pos2
+    line1 = @buffer.lines\at_pos(pos1)
+    line2 = @buffer.lines\at_pos(pos2)
     if pos1 <= pos2
-      @buffer.lines[line1.nr].start_pos, @_next_line_start(line2)
+      line1.start_pos, @_next_line_start(line2)
     else
-      @_next_line_start(line1), @buffer.lines[line2.nr].start_pos
+      @_next_line_start(line1), line2.start_pos
 
   _next_line_start: (line) =>
-    next_line_nr = line.nr + 1
-    if @buffer.lines[next_line_nr]
-      @buffer.lines[next_line_nr].start_pos
+    next_line = line.next
+    if next_line
+      next_line.start_pos
     else
-      @buffer.lines[line.nr].end_pos
+      line.end_pos
 
   _on_destroy: =>
     for h in *@_handlers
@@ -695,7 +700,7 @@ class Editor extends PropertyObject
 
   _on_button_press: (view, event) =>
     @drag_press_type = event.type
-    @drag_press_pos = @view\position_from_coordinates(event.x, event.y)
+    @drag_press_pos = @_pos_from_coordinates(event.x, event.y)
 
     if event.type == Gdk.GDK_2BUTTON_PRESS
       group = @current_context.word
@@ -712,8 +717,8 @@ class Editor extends PropertyObject
     @drag_press_type = nil
 
   _on_motion_event: (view, event) =>
-    unless @selection.empty or @drag_press_type == nil
-      pos = @view\position_from_coordinates(event.x, event.y)
+    if @drag_press_type == Gdk.GDK_2BUTTON_PRESS or @drag_press_type == Gdk.GDK_3BUTTON_PRESS
+      pos = @_pos_from_coordinates(event.x, event.y)
       if pos
         sel_start, sel_end = @drag_press_pos, pos
         if @drag_press_type == Gdk.GDK_2BUTTON_PRESS
