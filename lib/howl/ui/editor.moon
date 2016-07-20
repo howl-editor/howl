@@ -281,10 +281,11 @@ class Editor extends PropertyObject
     }
 
   transform_active_lines: (f) =>
-    return if #@active_lines == 0
-    start_pos = @active_lines[1].start_pos
-    end_pos = @active_lines[#@active_lines].end_pos
-    @buffer\change start_pos, end_pos, -> f @active_lines
+    lines = @active_lines
+    return if #lines == 0
+    start_pos = lines[1].start_pos
+    end_pos = lines[#lines].end_pos
+    @buffer\change start_pos, end_pos, -> f lines
 
   with_position_restored: (f) =>
     line, column, indentation, top_line = @cursor.line, @cursor.column, @current_line.indentation, @line_at_top
