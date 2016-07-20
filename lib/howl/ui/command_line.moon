@@ -260,10 +260,14 @@ class CommandLine extends PropertyObject
     table.sort merged_history, (a, b) -> a.timestamp > b.timestamp
     deduped_history = {}
     commands = {}
+    limit = config.command_history_limit
+    count = 0
     for item in *merged_history
       continue if commands[item.cmd.text]
       append deduped_history, item
       commands[item.cmd.text] = true
+      count += 1
+      break if count >= limit
 
     howl.app.settings\save_system 'command_line_history', deduped_history
     @_command_history = deduped_history
@@ -645,6 +649,13 @@ class CommandLine extends PropertyObject
 
 style.define_default 'prompt', 'keyword'
 style.define_default 'keystroke', 'special'
+
+config.define
+  name: 'command_history_limit'
+  description: 'The number of commands persisted in command line history'
+  scope: 'global'
+  type_of: 'number'
+  default: 100
 
 return CommandLine
 
