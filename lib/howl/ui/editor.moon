@@ -658,9 +658,7 @@ class Editor extends PropertyObject
         mode = @buffer.mode
         break
 
-    @buffer\as_one_undo ->
-      for line in *lines
-        mode[method] mode, self if mode[method]
+    mode[method] mode, self if mode[method]
 
   _on_destroy: =>
     for h in *@_handlers
