@@ -352,16 +352,6 @@ describe 'Styling', ->
         }, 'my_sub1|s1'
       }
 
-      marker1 =
-        name: 'my_sub1'
-        start_offset: 1
-        end_offset: 6
-
-      marker2 =
-        name: 'my_sub2'
-        start_offset: 2
-        end_offset: 6
-
       assert.same 'my_sub1', styling\get_mode_name_at 1
       assert.same 'my_sub2', styling\get_mode_name_at 2
       assert.same 'my_sub2', styling\get_mode_name_at 3
