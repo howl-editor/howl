@@ -9,10 +9,9 @@ append = table.insert
 
 update_inspections_display = (editor) ->
   text = ''
-  inspections = editor.buffer.data.inspections
-  count = inspections and inspections.count
-  if inspections and count > 0
-    text = "(#{count} inspection#{inspections.count > 1 and 's' or ''})"
+  count = #editor.buffer.markers\find(name: 'inspection')
+  if count > 0
+    text = "(#{count} inspection#{count > 1 and 's' or ''})"
 
   editor.indicator.inspections.text = text
 
@@ -79,8 +78,6 @@ mark_criticisms = (buffer, criticisms) ->
         message: c.message
       }
 
-  criticisms.count = #ms
-  buffer.data.inspections = criticisms
   buffer.data.last_inspect = buffer.last_changed
 
   if #ms > 0
@@ -127,7 +124,6 @@ on_idle = ->
 signal.connect 'buffer-modified', (args) ->
   with args.buffer
     .markers\remove name: 'inspection'
-    .data.inspections = nil
 
   editor = app\editor_for_buffer args.buffer
   if editor
