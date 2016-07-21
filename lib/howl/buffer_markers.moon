@@ -56,3 +56,7 @@ class BufferMarkers extends PropertyObject
     end_offset = @a_buffer\byte_offset end_offset
 
     @markers\remove_for_range start_offset, end_offset, selector
+
+  find: (selector) =>
+    ms = @markers\find selector
+    [translate(m, @a_buffer) for m in *ms]
