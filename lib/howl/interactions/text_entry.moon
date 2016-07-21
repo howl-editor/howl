@@ -13,7 +13,8 @@ class ReadText
     enter: =>
       self.finish app.window.command_line.text
 
-    escape: => self.finish!
+    binding_for:
+      ["cancel"]: => self.finish!
 
 interact.register
   name: 'read_text'

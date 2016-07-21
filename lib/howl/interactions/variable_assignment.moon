@@ -125,8 +125,8 @@ class VariableAssignment
         @command_line\clear!
         @command_line\write @list_widget.selection[1] .. '='
 
-    escape: =>
-      self.finish!
+    binding_for:
+      ["cancel"]: => self.finish!
 
 interact.register
   name: 'get_variable_assignment'

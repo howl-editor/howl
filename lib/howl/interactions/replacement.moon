@@ -302,8 +302,6 @@ class Replacement
     @_restore_return!
 
   keymap:
-    escape: => @_restore_return!
-
     alt_enter: => @_toggle_current!
 
     enter: => @runner\run 'submit', ->
@@ -324,6 +322,8 @@ class Replacement
     ctrl_r: => @_switch_to 'buffer-replace-regex'
 
     binding_for:
+      ["cancel"]: => @_restore_return!
+              
       ["cursor-down"]: =>
         return unless (@num_matches > 0) and @selected_idx
         if @selected_idx == @num_matches
