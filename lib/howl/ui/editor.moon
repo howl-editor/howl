@@ -694,11 +694,9 @@ class Editor extends PropertyObject
     @_brace_highlight!
     signal.emit 'cursor-changed', editor: self, cursor: @cursor
 
-    inspections = @buffer.data.inspections
-    current = inspections and inspections[@cursor.line]
-    if current
-      markers = @buffer.markers.markers\at @view.cursor.pos
-      markers = [m.message for m in *markers when m.message]
+    markers = @buffer.markers.markers\at @view.cursor.pos
+    markers = [m.message for m in *markers when m.message]
+    if #markers > 0
       log.warning table.concat(markers, '; ')
 
   _get_matching_brace: (byte_pos, start_pos, end_pos) =>
