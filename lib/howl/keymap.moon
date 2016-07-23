@@ -37,6 +37,7 @@
     ctrl_b:           'switch-buffer'
     ctrl_c:           'editor-copy'
     ctrl_d:           'editor-duplicate-current'
+    ctrl_shift_e:     'cursor-goto-inspection'
     ctrl_f:           'buffer-search-forward'
     ctrl_r:           'buffer-search-backward'
     ctrl_comma:       'buffer-search-word-backward'

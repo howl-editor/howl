@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :config, :log, :signal, :config, :timer} = howl
+{:app, :bindings, :config, :command, :interact, :log, :signal, :config, :timer} = howl
 {:highlight} = howl.ui
 {:pcall} = _G
 {:concat, :sort} = table
@@ -11,7 +11,9 @@ update_inspections_display = (editor) ->
   text = ''
   count = #editor.buffer.markers\find(name: 'inspection')
   if count > 0
-    text = "(#{count} inspection#{count > 1 and 's' or ''})"
+    keys = bindings.keystrokes_for 'cursor-goto-inspection', 'editor'
+    access = #keys > 0 and keys[1] or 'cursor-goto-inspection'
+    text = "(#{count} inspection#{count > 1 and 's' or ''} - #{access} to view)"
 
   editor.indicator.inspections.text = text
 
@@ -163,5 +165,84 @@ highlight.define_default 'warning',
   foreground: 'orange'
   line_width: 1
   line_type: 'solid'
+
+command.register
+  name: 'cursor-goto-inspection'
+  description: 'Goes to a specific inspection in the current buffer'
+  input: ->
+    editor = app.editor
+    buffer = editor.buffer
+    inspections = buffer.markers\find(name: 'inspection')
+    unless #inspections > 0
+      log.info "No inspections for the current buffer"
+      return nil
+
+    last_line = 0
+    items = {}
+    pbuf = howl.ui.ActionBuffer!
+    popup = howl.ui.BufferPopup pbuf
+
+    for inspection in *inspections
+      l = buffer.lines\at_pos inspection.start_offset
+      item = items[#items]
+      if l.nr != last_line
+        item = {
+          tostring(l.nr),
+          l.chunk,
+          :buffer,
+          line_nr: l.nr,
+          inspections: {},
+          spans: {},
+          offset: inspection.start_offset
+        }
+
+      append item.inspections, {
+        message: inspection.message,
+        type: inspection.flair,
+      }
+      append item.spans, {
+        start_offset: inspection.start_offset,
+        count: inspection.end_offset - inspection.start_offset
+      }
+      if l.nr != last_line
+        append items, item
+      last_line = l.nr
+
+    on_change = (selection) ->
+      pbuf\as_one_undo ->
+        pbuf.text = ''
+
+        inspections = selection.inspections
+        prefix = #inspections > 1 and '- ' or ''
+        for i = 1, #inspections
+          pbuf\append "#{prefix}#{inspections[i].message}", inspections[i].type
+          unless i == #inspections
+            pbuf\append "\n"
+
+      popup.view.cursor.line = 1
+
+      spans = selection.spans
+      highlight.remove_all 'search', buffer
+      highlight.remove_all 'search_secondary', buffer
+      highlight.apply 'search', buffer, spans[1].start_offset, spans[1].count
+      for i = 2, #spans
+        span = spans[i]
+        highlight.apply 'search_secondary', buffer, span.start_offset, span.count
+
+      editor\show_popup popup, {
+        position: selection.offset,
+        keep_alive: true,
+      }
+
+    return interact.select_location
+      title: "Inspections in #{buffer.title}"
+      editor: editor
+      items: items,
+      force_preview: true
+      selection: items[1]
+      :on_change
+
+  handler: (res) ->
+    app.editor.cursor.pos = res.selection.offset
 
 :inspect, :criticize

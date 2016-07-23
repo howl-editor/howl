@@ -16,6 +16,7 @@ class BufferPopup extends Popup
     with @view.config
       .view_show_line_numbers = false
       .view_show_cursor = false
+      .view_show_h_scrollbar = false
 
     @bin = @view\to_gobject!
 
@@ -28,10 +29,7 @@ class BufferPopup extends Popup
   keymap: {
     down: => @view.cursor\down!
     up: => @view.cursor\up!
-    -- right: => @sci\line_scroll 1, 0
-    -- left: => @sci\line_scroll -1, 0
     space: => @view.cursor\page_down!
-    -- backspace: => @sci\page_up!
     page_down: => @view.cursor\page_down!
     page_up: => @view.cursor\page_up!
   }
