@@ -219,7 +219,9 @@ command.register
           unless i == #inspections
             pbuf\append "\n"
 
-      popup.view.cursor.line = 1
+      with popup.view
+        .cursor.line = 1
+        .base_x = 0
 
       spans = selection.spans
       highlight.remove_all 'search', buffer
