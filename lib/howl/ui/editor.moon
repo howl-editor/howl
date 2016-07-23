@@ -504,6 +504,10 @@ class Editor extends PropertyObject
     @remove_popup!
     pos = @buffer\byte_offset options.position or @cursor.pos
     coordinates = @view\coordinates_from_position pos
+    unless coordinates
+      pos = @buffer.lines[@line_at_top].start_pos
+      coordinates = @view\coordinates_from_position pos
+
     x = coordinates.x
     y = coordinates.y2 + 2
 
