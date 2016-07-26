@@ -75,6 +75,8 @@ class Editor extends PropertyObject
     listener =
       on_key_press: self\_on_key_press
       on_button_press: self\_on_button_press
+      on_button_release: self\_on_button_release
+      on_motion_event: self\_on_motion_event
       on_focus_in: self\_on_focus
       on_focus_out: self\_on_focus_lost
       on_insert_at_cursor: self\_on_insert_at_cursor
@@ -628,6 +630,43 @@ class Editor extends PropertyObject
     bar\remove id
     @indicator[id] = nil
 
+  _pos_from_coordinates: (x, y) =>
+    byte_offset = @view\position_from_coordinates(x, y)
+    if byte_offset
+      @buffer\char_offset byte_offset
+
+  _word_or_token_at: (pos) =>
+    context = @buffer\context_at pos
+    chunk = context.word
+    chunk = context.token if chunk.empty
+    chunk
+
+  _expand_to_word_token_boundaries: (pos1, pos2) =>
+    chunk1 = @_word_or_token_at pos1
+    chunk2 = if pos2
+      @_word_or_token_at pos2
+    else
+      chunk1
+    if pos1 <= pos2
+      chunk1.start_pos, chunk2.end_pos + 1
+    else
+      chunk1.end_pos + 1, chunk2.start_pos
+
+  _expand_to_line_starts: (pos1, pos2) =>
+    line1 = @buffer.lines\at_pos(pos1)
+    line2 = @buffer.lines\at_pos(pos2)
+    if pos1 <= pos2
+      line1.start_pos, @_next_line_start(line2)
+    else
+      @_next_line_start(line1), line2.start_pos
+
+  _next_line_start: (line) =>
+    next_line = line.next
+    if next_line
+      next_line.start_pos
+    else
+      line.end_pos
+
   _on_destroy: =>
     for h in *@_handlers
       gobject_signal.disconnect h
@@ -660,6 +699,9 @@ class Editor extends PropertyObject
     return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
+    @drag_press_type = event.type
+    @drag_press_pos = @_pos_from_coordinates(event.x, event.y)
+
     if event.type == Gdk.GDK_2BUTTON_PRESS
       group = @current_context.word
       group = @current_context.token if group.empty
@@ -669,8 +711,24 @@ class Editor extends PropertyObject
         true
 
     elseif event.type == Gdk.GDK_3BUTTON_PRESS
-      line = @current_line
-      @selection\set line.start_pos, line.end_pos
+      @selection\set @current_line.start_pos, @_next_line_start(@current_line)
+
+  _on_button_release: (view, event) =>
+    @drag_press_type = nil
+
+  _on_motion_event: (view, event) =>
+    if @drag_press_type == Gdk.GDK_2BUTTON_PRESS or @drag_press_type == Gdk.GDK_3BUTTON_PRESS
+      pos = @_pos_from_coordinates(event.x, event.y)
+      if pos
+        sel_start, sel_end = @drag_press_pos, pos
+        if @drag_press_type == Gdk.GDK_2BUTTON_PRESS
+          sel_start, sel_end = @_expand_to_word_token_boundaries sel_start, sel_end
+        elseif @drag_press_type == Gdk.GDK_3BUTTON_PRESS
+          sel_start, sel_end = @_expand_to_line_starts sel_start, sel_end
+
+        unless sel_start == sel_end
+          @selection\set sel_start, sel_end
+          true
 
   _on_pos_changed: =>
     @_update_position!
