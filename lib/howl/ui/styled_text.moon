@@ -12,6 +12,11 @@ style.define_default 'list_header', color: '#5E5E5E', underline: true
 styled_text_mt = {
   __tostring: => @text,
 
+  __serialize: => {
+    text: @text
+    styles: @styles
+  }
+
   __concat: (op1, op2) ->
     text = tostring(op1) .. tostring(op2)
     return text unless typeof(op1) == "StyledText" and typeof(op2) == "StyledText"

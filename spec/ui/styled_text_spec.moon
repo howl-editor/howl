@@ -4,6 +4,8 @@
 import StyledText from howl.ui
 import Buffer from howl
 
+serpent = require 'serpent'
+
 describe 'StyledText', ->
 
   it 'has a type of StyledText', ->
@@ -36,6 +38,12 @@ describe 'StyledText', ->
     assert.equal StyledText('foo', {1, 'number', 3}), StyledText('foo', {1, 'number', 3})
     assert.not_equal StyledText('fo1', {1, 'number', 3}), StyledText('foo', {1, 'number', 3})
     assert.not_equal StyledText('foo', {1, 'number', 2}), StyledText('foo', {1, 'number', 3})
+
+  it 'serializable by serpent into a table', ->
+    st = StyledText 'text', {1, 'string', 2}
+    _, copy = serpent.load serpent.dump(st)
+    assert.equal 'text', copy.text
+    assert.same {1, 'string', 2}, copy.styles
 
   context 'for_table', ->
     it 'returns a table containing rows padded and newline terminated', ->
