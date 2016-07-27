@@ -27,7 +27,18 @@ if [ -n "$busted" ]; then
 
   if [ -f $busted_script ]; then
     export BUSTED='yes'
-    exec $HOWL $busted_script --pattern=_spec.moon $*
+    if [ -z "$HOWL_SPEC_SINGLY" ]; then
+      exec $HOWL $busted_script --pattern=_spec.moon $*
+    else
+      for spec in `find $* -name '*_spec.moon'`
+      do
+        echo $spec
+        $HOWL $busted_script $spec
+        exit_code=$?;
+        if [ "$exit_code" != "0" ]; then exit $exit_code; fi
+      done
+      exit 0
+    fi
   fi
 fi
 
