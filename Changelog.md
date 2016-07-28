@@ -3,7 +3,8 @@
 ## Unreleased (in master)
 
 - Added command line help which is invoked by pressing `f1` while any
-interactive command is running. This displays a popup containing a description
+interactive command is running. This displays a popup containing information
+about the command.
 
 - Added new commands `editor-move-text-left` and `editor-move-text-right`, bound
 to `alt_left` and `alt_right` by default. These move the current character or
