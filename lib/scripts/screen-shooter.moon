@@ -257,6 +257,20 @@ screenshots = {
     ->
       command.run 'set indent='
   }
+
+
+  {
+    name: 'command-line-help'
+    with_overlays: true
+    ->
+      open_files {
+        'lib/howl/application.moon'
+        'site/source/doc/index.haml'
+        'lib/howl/command.moon'
+      }
+      dispatch.launch -> command.run 'switch-buffer'
+      app.window.command_line\show_help!
+  }
 }
 
 take_snapshots = (theme_name, to_dir, only) ->
