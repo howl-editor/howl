@@ -19,7 +19,8 @@ interact.register
       preview = Preview!
       opts.on_change = (selection, text, items) ->
         if selection
-          buffer = selection.buffer or preview\get_buffer selection.file
+          buffer = selection.buffer or preview\get_buffer selection.file,
+            full: selection.line_nr and selection.line_nr > 1
           editor\preview buffer
           if selection.line_nr
             editor.line_at_center = selection.line_nr
