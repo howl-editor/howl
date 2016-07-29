@@ -131,6 +131,7 @@ command.register
   handler: (file) ->
     buffer = app.editor.buffer
     buffer\save_as file
+    buffer.mode = mode.for_file file
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
       #buffer.lines, #buffer
 
