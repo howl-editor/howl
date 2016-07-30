@@ -94,7 +94,13 @@ class DefaultMode
     return unless prefix
     pattern = r"^\\s*#{r.escape prefix}.*"
 
-    if editor.active_lines[1]\umatch pattern
+    all_active_lines_commented = true
+    for line in *editor.active_lines
+      unless line\umatch pattern
+        all_active_lines_commented = false
+        break
+
+    if all_active_lines_commented
       @uncomment editor
     else
       @comment editor
