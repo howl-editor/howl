@@ -2,10 +2,11 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:app, :bindings, :command, :inspection, :interact, :log, :signal, :timer} = howl
-{:highlight} = howl.ui
+{:ActionBuffer, :BufferPopup, :highlight} = howl.ui
 {:pcall} = _G
 {:concat, :sort} = table
 append = table.insert
+local popup
 
 update_inspections_display = (editor) ->
   text = ''
@@ -115,12 +116,49 @@ update_buffer = (buffer, editor) ->
   if editor
     update_inspections_display editor
 
+show_popup = (editor, inspections, pos) ->
+  popup or= BufferPopup ActionBuffer!
+  buf = popup.buffer
+
+  buf\as_one_undo ->
+    buf.text = ''
+
+    prefix = #inspections > 1 and '- ' or ''
+    for i = 1, #inspections
+      buf\append "#{prefix}#{inspections[i].message}", inspections[i].type
+      unless i == #inspections
+        buf\append "\n"
+
+  with popup.view
+    .cursor.line = 1
+    .base_x = 0
+
+  editor\show_popup popup, {
+    position: pos,
+    keep_alive: true,
+  }
+
+display_inspections = (editor) ->
+  pos = editor.view.cursor.pos
+  a_markers = editor.buffer.markers
+  markers = a_markers\at pos
+  if #markers == 0 and pos > 1
+    markers = a_markers\at pos - 1
+
+  markers = [{message: m.message, type: m.flair} for m in *markers when m.message]
+  if #markers > 0
+    show_popup editor, markers, editor.cursor.pos
+
 on_idle = ->
-  b = app.editor.buffer
-  return unless b.config.auto_inspect == 'idle'
-  return unless b.size < 1024 * 1024 -- 1MB
-  update_buffer app.editor.buffer, app.editor
   timer.on_idle 0.5, on_idle
+  editor = app.editor
+  b = editor.buffer
+  if b.config.auto_inspect == 'idle'
+    if b.size < 1024 * 1024 * 5 -- 5 MB
+      update_buffer b, editor
+
+  if editor.has_focus
+    display_inspections editor
 
 signal.connect 'buffer-modified', (args) ->
   with args.buffer
@@ -170,8 +208,8 @@ command.register
     pbuf = howl.ui.ActionBuffer!
     popup = howl.ui.BufferPopup pbuf
 
-    for inspection in *inspections
-      l = buffer.lines\at_pos inspection.start_offset
+    for i in *inspections
+      l = buffer.lines\at_pos i.start_offset
       item = items[#items]
       if l.nr != last_line
         item = {
@@ -181,36 +219,22 @@ command.register
           line_nr: l.nr,
           inspections: {},
           spans: {},
-          offset: inspection.start_offset
+          offset: i.start_offset
         }
 
       append item.inspections, {
-        message: inspection.message,
-        type: inspection.flair,
+        message: i.message,
+        type: i.flair,
       }
       append item.spans, {
-        start_offset: inspection.start_offset,
-        count: inspection.end_offset - inspection.start_offset
+        start_offset: i.start_offset,
+        count: i.end_offset - i.start_offset
       }
       if l.nr != last_line
         append items, item
       last_line = l.nr
 
     on_change = (selection) ->
-      pbuf\as_one_undo ->
-        pbuf.text = ''
-
-        inspections = selection.inspections
-        prefix = #inspections > 1 and '- ' or ''
-        for i = 1, #inspections
-          pbuf\append "#{prefix}#{inspections[i].message}", inspections[i].type
-          unless i == #inspections
-            pbuf\append "\n"
-
-      with popup.view
-        .cursor.line = 1
-        .base_x = 0
-
       spans = selection.spans
       highlight.remove_all 'search', buffer
       highlight.remove_all 'search_secondary', buffer
@@ -219,10 +243,7 @@ command.register
         span = spans[i]
         highlight.apply 'search_secondary', buffer, span.start_offset, span.count
 
-      editor\show_popup popup, {
-        position: selection.offset,
-        keep_alive: true,
-      }
+      show_popup editor, selection.inspections, selection.offset
 
     return interact.select_location
       title: "Inspections in #{buffer.title}"
