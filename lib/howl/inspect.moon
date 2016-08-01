@@ -152,6 +152,9 @@ display_inspections = (editor) ->
 on_idle = ->
   timer.on_idle 0.5, on_idle
   editor = app.editor
+  -- if there's a popup open already of any sorts, don't interfere
+  return if editor.popup
+
   b = editor.buffer
   if b.config.auto_inspect == 'idle'
     if b.size < 1024 * 1024 * 5 -- 5 MB
