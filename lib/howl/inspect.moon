@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :bindings, :command, :inspection, :interact, :log, :signal, :timer} = howl
+{:app, :bindings, :command, :config, :inspection, :interact, :log, :signal, :timer} = howl
 {:ActionBuffer, :BufferPopup, :highlight} = howl.ui
 {:pcall} = _G
 {:concat, :sort} = table
@@ -139,7 +139,12 @@ show_popup = (editor, inspections, pos) ->
     keep_alive: true,
   }
 
-display_inspections = (editor) ->
+display_inspections = ->
+  timer.on_idle (config.display_inspections_delay / 1000), display_inspections
+
+  editor = app.editor
+  return unless editor.has_focus
+
   pos = editor.view.cursor.pos
 
   -- if we've already displayed the message at this position, punt
@@ -166,9 +171,6 @@ on_idle = ->
     if b.size < 1024 * 1024 * 5 -- 5 MB
       update_buffer b, editor
 
-  if editor.has_focus
-    display_inspections editor
-
 signal.connect 'buffer-modified', (args) ->
   with args.buffer
     .markers\remove name: 'inspection'
@@ -191,6 +193,7 @@ signal.connect 'cursor-changed', (args) ->
 
 signal.connect 'app-ready', (args) ->
   timer.on_idle 0.5, on_idle
+  timer.on_idle (config.display_inspections_delay / 1000), display_inspections
 
 highlight.define_default 'error',
   type: highlight.WAVY_UNDERLINE

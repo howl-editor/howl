@@ -50,3 +50,15 @@ config.define {
     { 'save', 'Inspect when saving a buffer' }
   }
 }
+
+config.define {
+  name: 'display_inspections_delay'
+  description: 'The delay before inspections are displayed at the current pos (ms, minimum 500ms)'
+  type_of: 'number'
+  default: 500
+  scope: 'global'
+  validate: (v) ->
+    return false unless type(v) == 'number'
+    v >= 500
+
+}
