@@ -96,7 +96,7 @@ class DefaultMode
 
     all_active_lines_commented = true
     for line in *editor.active_lines
-      unless line\umatch pattern
+      if not line\umatch(pattern) and not line.is_blank
         all_active_lines_commented = false
         break
 

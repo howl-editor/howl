@@ -327,11 +327,11 @@ describe 'DefaultMode', ->
     context 'when mode provides .comment_syntax', ->
       before_each -> buffer.mode.comment_syntax = '--'
 
-      it 'it uncomments if all selected lines start with the comment prefix', ->
-        buffer.text = '  -- foo\n  -- foo2'
+      it 'uncomments if all non-empty selected lines start with the comment prefix', ->
+        buffer.text = '  -- foo\n\n  -- foo2'
         selection\select_all!
         mode\toggle_comment editor
-        assert.equal '  foo\n  foo2', buffer.text
+        assert.equal '  foo\n\n  foo2', buffer.text
 
       it 'comments if first selected line does not start with the comment prefix', ->
         buffer.text = 'foo\n-- foo2'
