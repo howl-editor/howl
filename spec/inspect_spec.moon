@@ -1,46 +1,44 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import inspect, Buffer, completion from howl
+import inspect, inspection, Buffer, completion, mode from howl
 import Editor from howl.ui
-append = table.insert
 
-describe 'inspector', ->
-  local buffer, mode
+describe 'inspect', ->
+  local buffer, inspector
+
   before_each ->
-    mode = inspectors: {}
-    buffer = Buffer mode
+    mode.register name: 'inspect-mode', create: -> {}
+    inspector = spy.new -> {}
+    inspection.register name: 'test-inspector', factory: -> inspector
+    buffer = Buffer mode.by_name('inspect-mode')
+
+  after_each ->
+    mode.unregister 'inspect-mode'
+    inspection.unregister 'test-inspector'
 
   describe 'inspect(buffer)', ->
     it 'runs inspectors specified for the buffer', ->
-      inspector = spy.new -> nil
-      append buffer.inspectors, inspector
+      buffer.config.inspectors = {'test-inspector'}
       inspect.inspect(buffer)
       assert.spy(inspector).was_called_with(buffer)
 
     it 'runs inspectors specified for the mode', ->
-      inspector = spy.new -> nil
-      append mode.inspectors, inspector
+      buffer.mode.config.inspectors = {'test-inspector'}
       inspect.inspect(buffer)
       assert.spy(inspector).was_called_with(buffer)
 
-    it 'runs all inspectors specified for either buffer or mode', ->
-      b_inspector = spy.new -> nil
-      m_inspector = spy.new -> nil
-      append buffer.inspectors, b_inspector
-      append mode.inspectors, m_inspector
-      inspect.inspect(buffer)
-      assert.spy(b_inspector).was_called_with(buffer)
-      assert.spy(m_inspector).was_called_with(buffer)
-
     it 'merges inspection results into one scathing result', ->
-      b_inspector = -> { { line: 1, type: 'error', message: 'foo' } }
-      m_inspector = -> {
-        { line: 1, type: 'error', message: 'foo_mode' }
-        { line: 3, type: 'warning', message: 'bar' }
-      }
-      append buffer.inspectors, b_inspector
-      append mode.inspectors, m_inspector
+      inspection.register name: 'inspector1', factory: ->
+        -> { { line: 1, type: 'error', message: 'foo' } }
+
+      inspection.register name: 'inspector2', factory: ->
+        -> {
+          { line: 1, type: 'error', message: 'foo_mode' }
+          { line: 3, type: 'warning', message: 'bar' }
+        }
+
+      buffer.config.inspectors = {'inspector1', 'inspector2'}
       res = inspect.inspect(buffer)
       assert.same {
         [1]: {

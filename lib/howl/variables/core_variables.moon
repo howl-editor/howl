@@ -32,3 +32,21 @@ config.define
   default: true
   type_of: 'boolean'
   scope: 'global'
+
+config.define {
+  name: 'inspectors'
+  description: 'List of inspectors to run for a buffer'
+  type_of: 'string_list'
+  default: {}
+}
+
+config.define {
+  name: 'auto_inspect'
+  description: 'When to automatically inspect code for abberrations'
+  default: 'idle'
+  options: {
+    { 'manual', 'Only inspect when explicitly asked' }
+    { 'idle', 'Inspect on idle' }
+    { 'save', 'Inspect when saving a buffer' }
+  }
+}

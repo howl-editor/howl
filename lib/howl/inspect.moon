@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :bindings, :config, :command, :interact, :log, :signal, :config, :timer} = howl
+{:app, :bindings, :command, :inspection, :interact, :log, :signal, :timer} = howl
 {:highlight} = howl.ui
 {:pcall} = _G
 {:concat, :sort} = table
@@ -20,13 +20,12 @@ update_inspections_display = (editor) ->
 load_inspectors = (buffer) ->
   inspectors = {}
 
-  if buffer.inspectors
-    for i in *buffer.inspectors
-      append inspectors, i
-
-  if buffer.mode.inspectors
-    for i in *buffer.mode.inspectors
-      append inspectors, i
+  for inspector in *buffer.config.inspectors
+    conf = inspection[inspector]
+    if conf
+      append inspectors, conf.factory!
+    else
+      log.warn "Invalid inspector '#{inspector}' specified for '#{buffer.title}'"
 
   inspectors
 
@@ -142,17 +141,6 @@ signal.connect 'after-buffer-switch', (args) ->
 
 signal.connect 'app-ready', (args) ->
   timer.on_idle 0.5, on_idle
-
-config.define {
-  name: 'auto_inspect'
-  description: 'When to automatically inspect code for abberrations-'
-  default: 'idle'
-  options: {
-    { 'manual', 'Only inspect when explicitly asked' }
-    { 'idle', 'Inspect on idle' }
-    { 'save', 'Inspect when saving a buffer' }
-  }
-}
 
 highlight.define_default 'error',
   type: highlight.WAVY_UNDERLINE

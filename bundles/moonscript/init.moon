@@ -5,8 +5,15 @@ mode_reg =
   create: -> bundle_load('moonscript_mode')!
 
 howl.mode.register mode_reg
+howl.inspection.register {
+  name: 'moonscript',
+  factory: ->
+    bundle_load('moonscript_inspector')
+}
 
-unload = -> howl.mode.unregister 'moonscript'
+unload = ->
+  howl.mode.unregister 'moonscript'
+  howl.inspection.unregister 'moonscript'
 
 return {
   info:
