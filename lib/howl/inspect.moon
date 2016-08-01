@@ -6,7 +6,8 @@
 {:pcall} = _G
 {:concat, :sort} = table
 append = table.insert
-local popup
+
+local popup, last_display_position
 
 update_inspections_display = (editor) ->
   text = ''
@@ -140,6 +141,10 @@ show_popup = (editor, inspections, pos) ->
 
 display_inspections = (editor) ->
   pos = editor.view.cursor.pos
+
+  -- if we've already displayed the message at this position, punt
+  return if pos == last_display_position
+
   a_markers = editor.buffer.markers
   markers = a_markers\at pos
   if #markers == 0 and pos > 1
@@ -147,6 +152,7 @@ display_inspections = (editor) ->
 
   markers = [{message: m.message, type: m.flair} for m in *markers when m.message]
   if #markers > 0
+    last_display_position = pos
     show_popup editor, markers, editor.cursor.pos
 
 on_idle = ->
@@ -179,6 +185,9 @@ signal.connect 'buffer-saved', (args) ->
 
 signal.connect 'after-buffer-switch', (args) ->
   update_buffer args.current_buffer, args.editor
+
+signal.connect 'cursor-changed', (args) ->
+  last_display_position = nil
 
 signal.connect 'app-ready', (args) ->
   timer.on_idle 0.5, on_idle
