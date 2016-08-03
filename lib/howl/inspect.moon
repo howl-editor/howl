@@ -208,6 +208,16 @@ highlight.define_default 'warning',
   line_type: 'solid'
 
 command.register
+  name: 'buffer-inspect'
+  description: 'Inspects the current buffer for abberations'
+  handler: ->
+    buffer = app.editor.buffer
+    criticize buffer
+    editor or= app\editor_for_buffer buffer
+    if editor
+      update_inspections_display editor
+
+command.register
   name: 'cursor-goto-inspection'
   description: 'Goes to a specific inspection in the current buffer'
   input: ->
