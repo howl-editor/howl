@@ -150,7 +150,7 @@ display_inspections = ->
   -- if we've already displayed the message at this position, punt
   return if pos == last_display_position
 
-  a_markers = editor.buffer.markers
+  a_markers = editor.buffer.markers.markers
   markers = a_markers\at pos
   if #markers == 0 and pos > 1
     markers = a_markers\at pos - 1
