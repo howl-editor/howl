@@ -191,6 +191,9 @@ signal.connect 'after-buffer-switch', (args) ->
 signal.connect 'cursor-changed', (args) ->
   last_display_position = nil
 
+signal.connect 'editor-defocused', (args) ->
+  last_display_position = nil
+
 signal.connect 'app-ready', (args) ->
   timer.on_idle 0.5, on_idle
   timer.on_idle (config.display_inspections_delay / 1000), display_inspections
