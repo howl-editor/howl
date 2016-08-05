@@ -119,7 +119,7 @@ command.register
       if node and node.description
         buf = Buffer mode.by_name('markdown')
         buf.text = node.description
-        app.editor\show_popup BufferPopup buf
+        app.editor\show_popup BufferPopup buf, scrollable: true
         return
 
     log.info "No documentation found for '#{ctx.word}'"

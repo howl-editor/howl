@@ -296,7 +296,7 @@ do_howl_eval = (load_f, mode_name, transform_f) ->
     else
       buf = Buffer mode.by_name mode_name
       buf.text = "-- Howl eval (#{mode_name}) =>#{out}"
-      editor\show_popup BufferPopup buf
+      editor\show_popup BufferPopup buf, scrollable: true
     howl.clipboard.push out
    else
     log.error "(ERROR) => #{ret[2]}"
@@ -358,7 +358,7 @@ command.register
       editor.buffer = buf
     else
       buf\insert "-- #{title}\n", 1
-      editor\show_popup BufferPopup buf
+      editor\show_popup BufferPopup buf, scrollable: true
 
 -----------------------------------------------------------------------
 -- Launch commands
