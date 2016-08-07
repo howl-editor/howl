@@ -4,7 +4,7 @@
 import Window, Editor, theme from howl.ui
 import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
 import File, Process from howl.io
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 Gtk = require 'ljglibs.gtk'
 callbacks = require 'ljglibs.callbacks'
 {:get_monotonic_time} = require 'ljglibs.glib'

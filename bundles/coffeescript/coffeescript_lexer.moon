@@ -3,7 +3,7 @@
 
 r = r
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
   c = capture
 
   keyword = c 'keyword', -B'.' * word {

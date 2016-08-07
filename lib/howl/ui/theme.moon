@@ -10,7 +10,7 @@ RGBA = Gdk.RGBA
 import File from howl.io
 import config, signal from howl
 import style, colors, highlight from howl.ui
-import PropertyTable, Sandbox, SandboxedLoader from howl.aux
+import PropertyTable, Sandbox, SandboxedLoader from howl.util
 aullar_config = require 'aullar.config'
 
 css_provider = Gtk.CssProvider!

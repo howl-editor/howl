@@ -10,7 +10,7 @@ style.define_default 'css_color', 'string'
 style.define_default 'css_at', 'preproc'
 style.define_default 'css_pseudo', 'class'
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
 
   blank = capture 'whitespace', S(' \t')^1
   operator = capture 'operator', S'>{},():'

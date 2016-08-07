@@ -5,7 +5,7 @@ Gtk = require 'ljglibs.gtk'
 {:RGBA} = require 'ljglibs.gdk'
 Window = Gtk.Window
 gobject_signal = require 'ljglibs.gobject.signal'
-{:PropertyObject} = howl.aux.moon
+{:PropertyObject} = howl.util.moon
 {:ContentBox, :theme} = howl.ui
 
 append = table.insert

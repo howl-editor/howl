@@ -1,4 +1,4 @@
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
 
   keyword = capture 'keyword', word {
     'return', 'break', 'local', 'for', 'while', 'if', 'elseif', 'else', 'then',

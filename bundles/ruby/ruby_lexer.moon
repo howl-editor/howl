@@ -3,7 +3,7 @@
 
 pairs = pairs
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
   c = capture
 
   ruby_pairs = {

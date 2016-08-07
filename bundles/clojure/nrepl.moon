@@ -1,7 +1,7 @@
 bencode = bundle_load 'bencode'
 has_luasocket, socket = pcall require, 'socket'
 
-import PropertyTable from howl.aux
+import PropertyTable from howl.util
 
 local conn, host, port
 

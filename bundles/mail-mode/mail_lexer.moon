@@ -10,7 +10,7 @@ style.define_default 'mail_level_4', 'comment'
 style.define_default 'mail_ref', 'bold'
 style.define_default 'mail_link', 'link_url'
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
   c = capture
 
   -- mail markup conventions

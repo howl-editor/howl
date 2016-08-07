@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 import highlight, style, TextWidget, StyledText from howl.ui
 import Matcher from howl.util
 {:max, :min, :floor} = math

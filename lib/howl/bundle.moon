@@ -3,7 +3,7 @@
 
 import signal from howl
 import File from howl.io
-import SandboxedLoader from howl.aux
+import SandboxedLoader from howl.util
 
 _G = _G
 import assert, error, loadfile, log, type, callable, table, tostring, pairs, typeof, pcall from _G

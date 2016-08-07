@@ -1,4 +1,4 @@
-import PropertyTable from howl.aux
+import PropertyTable from howl.util
 
 describe 'PropertyTable', ->
   it 'returns a table with the properties in the passed table', ->

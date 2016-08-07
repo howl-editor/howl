@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import PropertyTable from howl.aux
+import PropertyTable from howl.util
 
 inspections = {}
 

@@ -4,7 +4,7 @@
 GFile = require 'ljglibs.gio.file'
 GFileInfo = require 'ljglibs.gio.file_info'
 glib = require 'ljglibs.glib'
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 append = table.insert
 
 file_types = {

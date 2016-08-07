@@ -1,4 +1,4 @@
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
 
   comment = capture 'comment', span(';', eol)
   operator = capture 'operator', S'/.%^#,(){}[]'
