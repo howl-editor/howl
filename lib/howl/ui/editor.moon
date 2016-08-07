@@ -489,6 +489,10 @@ class Editor extends PropertyObject
     @remove_popup!
     pos = @buffer\byte_offset options.position or @cursor.pos
     coordinates = @view\coordinates_from_position pos
+    unless coordinates
+      pos = @buffer.lines[@line_at_top].start_pos
+      coordinates = @view\coordinates_from_position pos
+
     x = coordinates.x
     y = coordinates.y2 + 2
 
@@ -847,6 +851,7 @@ with Editor
   .register_indicator 'title', 'top_left'
   .register_indicator 'position', 'bottom_right'
   .register_indicator 'activity', 'top_right', -> Gtk.Spinner!
+  .register_indicator 'inspections', 'bottom_left'
 
 -- Config variables
 

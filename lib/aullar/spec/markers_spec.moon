@@ -59,6 +59,19 @@ describe 'markers', ->
         markers\add { {name: 'test2', start_offset: 4, end_offset: 6, frob: 'nic'} }
         assert.same {}, markers\for_range(1, 6, foo: 'other')
 
+  describe 'find(selector)', ->
+    it 'finds all markers matching the selector', ->
+      markers\add { {name: 'test1', start_offset: 1, end_offset: 2} }
+      markers\add { {name: 'test2', start_offset: 1, end_offset: 2} }
+      assert.same {
+        {name: 'test1', start_offset: 1, end_offset: 2}
+      }, markers\find name: 'test1'
+
+      assert.same {
+        {name: 'test2', start_offset: 1, end_offset: 2}
+      }, markers\find name: 'test2'
+      assert.same {}, markers\find foo: 'bar'
+
   it 'markers can overlap', ->
     markers\add { {name: 'test1', start_offset: 2, end_offset: 4} }
     markers\add { {name: 'test2', start_offset: 3, end_offset: 4} }

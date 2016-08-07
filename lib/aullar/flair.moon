@@ -91,6 +91,27 @@ draw_ops = {
     cr\rel_line_to width, 0
     cr\stroke!
 
+  wavy_underline: (flair, x, y, width, height, cr) ->
+    wave_height = flair.wave_height or 2
+    line_run = (flair.wave_width or 8) / 2
+
+    runs = math.floor (width / line_run)
+    cr\move_to x, y + height - 0.5
+
+    set_source_from_color cr, 'foreground', flair
+    set_line_type_from_flair cr, flair
+
+    direction = -1
+    for i = 1, runs
+      cr\rel_line_to line_run, direction * wave_height
+      direction *= -1
+
+    partial_run = width - (runs * line_run)
+    if partial_run > 0
+      cr\rel_line_to partial_run, (direction * wave_height * partial_run / line_run)
+
+    cr\stroke!
+
   pipe: (flair, x, y, width, height, cr) ->
     if flair.foreground
       set_source_from_color cr, 'foreground', flair
@@ -145,6 +166,7 @@ need_text_object = (flair) ->
   ROUNDED_RECTANGLE: 'rounded_rectangle'
   SANDWICH: 'sandwich'
   UNDERLINE: 'underline'
+  WAVY_UNDERLINE: 'wavy_underline'
   PIPE: 'pipe'
 
   :build

@@ -58,7 +58,7 @@ do
     lint_mark_used = function(self, name)
       if self.lint_unused_names and self.lint_unused_names[name] then
         self.lint_unused_names[name] = false
-        return 
+        return
       end
       if self.parent then
         return self.parent:lint_mark_used(name)
@@ -66,7 +66,7 @@ do
     end,
     lint_check_unused = function(self)
       if not (self.lint_unused_names and next(self.lint_unused_names)) then
-        return 
+        return
       end
       local names_by_position = { }
       for name, pos in pairs(self.lint_unused_names) do
@@ -230,7 +230,7 @@ end
 local format_lint
 format_lint = function(errors, code, header)
   if not (next(errors)) then
-    return 
+    return
   end
   local pos_to_line, get_line
   do
@@ -319,5 +319,6 @@ lint_file = function(fname)
 end
 return {
   lint_code = lint_code,
-  lint_file = lint_file
+  lint_file = lint_file,
+  default_whitelist = default_whitelist
 }

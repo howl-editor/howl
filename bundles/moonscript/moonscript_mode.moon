@@ -1,13 +1,18 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 append = table.insert
 
 class MoonscriptMode
   new: =>
     @lexer = bundle_load('moonscript_lexer')
+
     with howl.mode.by_name('lua')
       @api = .api
       @completers = .completers
+
+  default_config:
+    inspectors: { 'moonscript' }
 
   comment_syntax: '--'
 
@@ -79,5 +84,3 @@ class MoonscriptMode
           break
 
     #lines > 0 and lines or self.parent.structure @, editor
-
-return MoonscriptMode

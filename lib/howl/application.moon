@@ -12,16 +12,16 @@ callbacks = require 'ljglibs.callbacks'
 append = table.insert
 coro_create, coro_status = coroutine.create, coroutine.status
 
-idle_dispatches = {
-  '^signal draw$',
-  '^cursor%-blink$',
-  'timer'
+non_idle_dispatches = {
+  '^signal motion%-',
+  '^signal key%-press%-event',
+  '^signal button%-',
 }
 
 is_idle_dispatch = (desc) ->
-  for p in *idle_dispatches
-    return true if desc\find(p) != nil
-  false
+  for p in *non_idle_dispatches
+    return false if desc\find(p) != nil
+  true
 
 last_activity = get_monotonic_time!
 
@@ -464,6 +464,7 @@ class Application extends PropertyObject
     require 'howl.editing'
     require 'howl.ui.icons.font_awesome'
     require 'howl.janitor'
+    require 'howl.inspect'
 
   _load_application_icon: =>
     dir = @root_dir

@@ -250,7 +250,9 @@ DisplayLine = define_class {
     @y_offset = floor config.view_line_padding
     @text_height = height
     @height = height + @y_offset * 2
-    @width = width + view.cursor.width
+    @width = width
+    if config.view_show_cursor
+      @width += view.cursor.width
     @is_wrapped = @layout.is_wrapped
     @line_count = @layout.line_count
 

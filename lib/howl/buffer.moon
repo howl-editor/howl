@@ -22,6 +22,7 @@ class Buffer extends PropertyObject
     @config = config.local_proxy!
     @markers = BufferMarkers @_buffer
     @completers = {}
+    @inspectors = {}
     @mode = mode
     @properties = {}
     @data = {}
@@ -29,6 +30,7 @@ class Buffer extends PropertyObject
     @viewers = 0
     @_modified = false
     @sync_revision_id = @_buffer\get_revision_id true
+    @last_changed = sys.time!
 
     @_buffer\add_listener
       on_inserted: self\_on_text_inserted
@@ -298,6 +300,7 @@ class Buffer extends PropertyObject
 
   _on_buffer_modification: (what, args) =>
     @_modified = true
+    @last_changed = sys.time!
     args = {
       buffer: self,
       at_pos: @char_offset(args.offset),

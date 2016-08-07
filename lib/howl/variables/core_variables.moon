@@ -32,3 +32,33 @@ config.define
   default: true
   type_of: 'boolean'
   scope: 'global'
+
+config.define {
+  name: 'inspectors'
+  description: 'List of inspectors to run for a buffer'
+  type_of: 'string_list'
+  default: {}
+}
+
+config.define {
+  name: 'auto_inspect'
+  description: 'When to automatically inspect code for abberrations'
+  default: 'idle'
+  options: {
+    { 'manual', 'Only inspect when explicitly asked' }
+    { 'idle', 'Inspect on idle' }
+    { 'save', 'Inspect when saving a buffer' }
+  }
+}
+
+config.define {
+  name: 'display_inspections_delay'
+  description: 'The delay before inspections are displayed at the current pos (ms, minimum 500ms)'
+  type_of: 'number'
+  default: 500
+  scope: 'global'
+  validate: (v) ->
+    return false unless type(v) == 'number'
+    v >= 500
+
+}

@@ -5,6 +5,8 @@
 {:insert, :remove} = table
 
 selector_matches = (selector, marker) ->
+  return true unless selector
+
   for k, v in pairs selector
     return false unless marker[k] == v
 
@@ -62,6 +64,9 @@ define_class {
 
   for_range: (start_offset, end_offset, selector) =>
     (@_scan start_offset, end_offset, selector)
+
+  find: (selector) =>
+    [m for m in *@markers when selector_matches(selector, m)]
 
   expand: (offset, count) =>
     for i = 1, #@markers

@@ -428,6 +428,10 @@ class CommandLine extends PropertyObject
     @popup = popup
 
   notify: (text, style='info') =>
+    if #text == 0
+      @clear_notification!
+      return
+
     if @notification_widget
       @notification_widget\notify style, text
       @notification_widget\show!

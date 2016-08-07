@@ -95,7 +95,8 @@ define = (var = {}) ->
     var = moon.copy var
     predef = predefined_types[var.type_of]
     error('Unknown type"' .. var.type_of .. '"', 2) if not predef
-    var[k] = v for k,v in pairs predef
+    for k,v in pairs predef
+      var[k] = v unless var[k] != nil
 
   defs[var.name] = var
   broadcast var.name, var.default, false

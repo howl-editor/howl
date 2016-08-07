@@ -12,7 +12,6 @@ interact.register
   handler: (opts) ->
     opts = moon.copy opts
     editor = opts.editor or app.editor
-    buffer = editor.buffer
 
     if howl.config.preview_files or opts.force_preview
       on_change = opts.on_change
