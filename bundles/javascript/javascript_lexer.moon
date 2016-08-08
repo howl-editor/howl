@@ -46,7 +46,11 @@ howl.aux.lpeg_lexer ->
       scan_to(any('/', eol), '\\'),
       B('/'),
     }),
-    c('operator', S'gim'^1)^0
+    c('operator', S'gim'^1)^0,
+    #sequence {
+      blank^0,
+      any(S',;.)', P(-1))
+    }
   }
 
   fdecl = any {
