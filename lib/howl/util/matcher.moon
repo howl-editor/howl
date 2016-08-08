@@ -1,4 +1,4 @@
--- Copyright 2012-2014-2015 The Howl Developers
+-- Copyright 2012-2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 append = table.insert
@@ -14,7 +14,7 @@ boundary_part_p = (p) ->
 
 case_boundary_part_p = (p) ->
   upper = p.uupper
-  "(?:#{p}|#{upper}|\\p{Ll}*#{upper})()"
+  "(?:#{p}|#{upper}|.+#{upper})()"
 
 boundary_pattern = (search, reverse) ->
   parts = [r.escape(search[i]) for i = 1, search.ulen]
@@ -80,6 +80,7 @@ class Matcher
 
     for i, line in ipairs lines
       text = line.text
+      continue if #text < #search
       type, match = matcher text, line.case_text
       if match
         score = score_for match, text, type, @options.reverse, @base_score
