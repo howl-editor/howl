@@ -42,7 +42,7 @@ describe 'View', ->
       it 'scrolls the view to show the specified line in the center when set', ->
         view.middle_visible_line = nr_lines_in_screen
         assert.equals nr_lines_in_screen, view.middle_visible_line
-        assert.equals math.ceil(nr_lines_in_screen / 2), view.first_visible_line
+        assert.equals math.ceil((nr_lines_in_screen / 2) + 0.5), view.first_visible_line
 
     describe '.last_visible_line', ->
       it 'is the last visible line', ->
