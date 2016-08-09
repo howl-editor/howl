@@ -169,7 +169,7 @@ howl.aux.lpeg_lexer ->
   }
 
   comment_span = (start_pat, end_pat) ->
-    start_pat * ((V'comment' + P 1) - end_pat)^0 * end_pat
+    start_pat * ((V'comment' + P 1) - end_pat)^0 * (end_pat + P(-1))
 
   comment = c 'comment', P {
     'comment'
