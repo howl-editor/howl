@@ -20,6 +20,7 @@ loadfile = function(filename, mode, env)
 end
 
 local function error_rewriter(err)
+  if type(err) ~= 'string' then return err end
   if not err:match('%.moon') then return err end
   moon_file = err:match('^%[string "([^"]+%.moon)"%]')
   if not moon_file then return err end
