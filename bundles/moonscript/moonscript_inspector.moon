@@ -46,7 +46,18 @@ load_project_lint_whitelist = (root, for_file, lint) ->
       howl_lint_config = app.root_dir\join('lint_config.moon')
       lint_whitelist = load_lint_whitelist app.settings.dir, howl_lint_config, buffer.file, lint
 
-  res, err = lint.lint_code buffer.text, buffer.title, lint_whitelist
+  status, res, err = pcall lint.lint_code, buffer.text, buffer.title, lint_whitelist
+  unless status
+    msg = res
+    if type(msg) == 'table' and msg[1] == 'user-error'
+      msg = msg[2]
+
+    return {{
+      line: 1
+      message: "Moonscript error at unknown location: #{msg}"
+      type: 'error'
+    }}
+
   unless res
     if err and err\match '%[%d+%]'
       return {{
