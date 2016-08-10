@@ -186,7 +186,7 @@ signal.connect 'buffer-saved', (args) ->
   update_buffer b
 
 signal.connect 'after-buffer-switch', (args) ->
-  update_buffer args.current_buffer, args.editor
+  update_inspections_display args.editor
 
 signal.connect 'cursor-changed', (args) ->
   last_display_position = nil
