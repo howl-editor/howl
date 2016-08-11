@@ -284,12 +284,26 @@ class Editor extends PropertyObject
   preview: (buffer) =>
     unless @_is_previewing
       @_pre_preview_buffer = @buffer
+
     @_show_buffer buffer, preview: true
+
+    signal.emit 'preview-opened', {
+      editor: self,
+      current_buffer: @_pre_preview_buffer,
+      preview_buffer: buffer
+    }
 
   cancel_preview: =>
     if @_is_previewing and @_pre_preview_buffer
+      preview_buffer = @buffer
       @_show_buffer @_pre_preview_buffer
       @_pre_preview_buffer = nil
+
+      signal.emit 'preview-closed', {
+        editor: self,
+        current_buffer: @buffer,
+        :preview_buffer
+      }
 
   indent: => if @buffer.mode.indent then @buffer.mode\indent self
 
@@ -1083,6 +1097,20 @@ signal.register 'after-buffer-switch',
     editor: 'The editor for which the buffer was set'
     current_buffer: 'The new buffer that was set for the editor'
     old_buffer: 'The buffer that was previously set for the editor'
+
+signal.register 'preview-opened',
+  description: 'Signaled right after a preview buffer was opened in an editor'
+  parameters:
+    editor: 'The editor for which the preview was opened'
+    current_buffer: 'The current non-preview buffer associated with the editor'
+    preview_buffer: 'The new preview buffer that is open in the editor'
+
+signal.register 'preview-closed',
+  description: 'Signaled right after a preview buffer has been removed for an editor'
+  parameters:
+    editor: 'The editor for which the preview was opened'
+    current_buffer: 'The orignal buffer that was restored for the editor'
+    preview_buffer: 'The preview buffer that was previously open in the editor'
 
 signal.register 'editor-focused',
   description: 'Signaled right after an editor has recieved focus'
