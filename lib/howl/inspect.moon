@@ -188,6 +188,12 @@ signal.connect 'buffer-saved', (args) ->
 signal.connect 'after-buffer-switch', (args) ->
   update_inspections_display args.editor
 
+signal.connect 'preview-opened', (args) ->
+  args.editor.indicator.inspections.text = ''
+
+signal.connect 'preview-closed', (args) ->
+  update_inspections_display args.editor
+
 signal.connect 'cursor-changed', (args) ->
   last_display_position = nil
 
