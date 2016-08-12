@@ -24,9 +24,8 @@ describe 'VI', ->
   window\add editor\to_gobject!
   window\show_all!
 
-  howl.app = window: Window!
-
   before_each ->
+    howl.app.window = window: Window!
     buffer = Buffer {}
     buffer.text = text
     lines = buffer.lines
@@ -36,6 +35,7 @@ describe 'VI', ->
     state.activate editor
 
   after_each ->
+    howl.app.window = nil
     state.reset!
     state.deactivate!
     app.editor = nil

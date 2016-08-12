@@ -4,15 +4,11 @@ sudo: false
 addons:
   apt:
     packages:
-      - luarocks
       - libgtk-3-dev
 
 before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
-  - luarocks --local --from=http://rocks.moonscript.org install luassert 1.7.6
-  - luarocks --local --from=http://rocks.moonscript.org install lua_cliargs 2.5-4
-  - luarocks --local --from=http://rocks.moonscript.org install busted 1.11.1-2
 
 install:
   - (cd src && make -j 4)
