@@ -308,7 +308,9 @@ class Application extends PropertyObject
       bundle.load_all!
 
       unless @args.no_profile
-        @settings\load_user!
+        status, ret = pcall @settings.load_user, @settings
+        unless status
+          log.error "Failed to load user settings: #{ret}"
 
       theme.apply!
       @_load_application_icon!
