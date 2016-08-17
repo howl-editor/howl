@@ -25,7 +25,10 @@ available_bundles = ->
     continue if not dir.is_directory
     for c in *dir.children
       if c.is_directory and not c.is_hidden
-        avail[module_name c.basename] = c
+        b_name = module_name(c.basename)
+        if avail[b_name]
+          error "Conflicting bundles: '#{c}' <-> '#{avail[b_name]}'"
+        avail[b_name] = c
 
   avail
 

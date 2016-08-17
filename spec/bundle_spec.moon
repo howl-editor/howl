@@ -115,6 +115,16 @@ describe 'bundle', ->
         bundle.load_all!
         assert.same [name for name, _ in pairs _G.bundles], {}
 
+    it 'raises an error if bundle names conflict', ->
+      with_tmpdir (dir) ->
+        for name in *{'foo', 'bar'}
+          b_dir = dir / name / 'my_bundle'
+          b_dir\mkdir_p!
+          b_dir\join('init.lua').contents = bundle_init :name
+        bundle.dirs = {dir\join('foo'), dir\join('bar')}
+
+        assert.raises 'conflict', -> bundle.load_all!
+
   describe 'load_by_name(name)', ->
     it 'loads the bundle with the specified name, if not already loaded', ->
       with_tmpdir (dir) ->
