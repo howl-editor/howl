@@ -9,7 +9,7 @@ ffi = require 'ffi'
 
 {:signal} = howl
 {:theme} = howl.ui
-{:PropertyObject} = howl.aux.moon
+{:PropertyObject} = howl.util.moon
 {:RGBA, :Pixbuf} = Gdk
 append = table.insert
 ffi_cast = ffi.cast

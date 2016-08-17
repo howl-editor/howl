@@ -56,4 +56,4 @@ Clipboard = {
   registers: get: -> registers
 }
 
-howl.aux.PropertyTable Clipboard
+howl.util.PropertyTable Clipboard

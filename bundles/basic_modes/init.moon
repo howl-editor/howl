@@ -9,7 +9,7 @@ create = (name) ->
   def = definitions[name]
   lexer = bundle_file "lexers/#{name}.lua"
   m = {
-    lexer: howl.aux.ScintilluaLexer name, lexer
+    lexer: howl.util.ScintilluaLexer name, lexer
   }
   m[k] = v for k, v in pairs def
   m

@@ -4,7 +4,7 @@
 Gtk = require 'ljglibs.gtk'
 import bindings, config, dispatch, interact, signal from howl
 import Matcher from howl.util
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 import ActionBuffer, BufferPopup, highlight, markup, style, theme from howl.ui
 {:TextWidget, :NotificationWidget, :IndicatorBar, :StyledText, :ContentBox} = howl.ui
 

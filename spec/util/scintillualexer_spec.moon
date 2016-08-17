@@ -1,6 +1,6 @@
 import mode from howl
 import File from howl.io
-import ScintilluaLexer from howl.aux
+import ScintilluaLexer from howl.util
 
 describe 'ScintilluaLexer', ->
   it 'calling it lexes text using the specified Scintillua lexer', ->

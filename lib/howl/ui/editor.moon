@@ -8,7 +8,7 @@ gobject_signal = require 'ljglibs.gobject.signal'
 import Completer, signal, bindings, config, command, clipboard, sys from howl
 import View from aullar
 aullar_config = aullar.config
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 import Searcher, CompletionPopup from howl.ui
 import auto_pair from howl.editing
 

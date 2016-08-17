@@ -1,5 +1,5 @@
 import File from howl.io
-import SandboxedLoader from howl.aux
+import SandboxedLoader from howl.util
 
 describe 'SandboxedLoader', ->
   local loader, dir

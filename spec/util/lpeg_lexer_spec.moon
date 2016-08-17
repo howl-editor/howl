@@ -1,4 +1,4 @@
-import lpeg_lexer from howl.aux
+import lpeg_lexer from howl.util
 import mode from howl
 lpeg = _G.lpeg
 import P,V, C, Cp, Cg, Cb from lpeg

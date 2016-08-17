@@ -6,7 +6,7 @@ Gtk = require 'ljglibs.gtk'
 ffi = require 'ffi'
 gobject_signal = require 'ljglibs.gobject.signal'
 Background = require 'ljglibs.aux.background'
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 {:CommandLine, :Status, :theme} = howl.ui
 import signal from howl
 

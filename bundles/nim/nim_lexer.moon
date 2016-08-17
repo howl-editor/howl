@@ -1,7 +1,7 @@
 -- Copyright 2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
   c = capture
 
   nim_identifier = (identifier) ->

@@ -1,4 +1,4 @@
-import destructor from howl.aux
+import destructor from howl.util
 
 describe 'destructor', ->
   it 'returns an object, for which <callback> is called when it is collected', ->

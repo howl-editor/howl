@@ -3,7 +3,7 @@
 
 dispatch = howl.dispatch
 {:UnixOutputStream} = require 'ljglibs.gio'
-{:PropertyObject} = howl.aux.moon
+{:PropertyObject} = howl.util.moon
 
 class OutputStream extends PropertyObject
   new: (fd) =>

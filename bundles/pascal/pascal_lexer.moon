@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
   c = capture
 
   id = (alpha + '_')^1 * (alpha + digit + P'_')^0

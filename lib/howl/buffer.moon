@@ -4,8 +4,8 @@
 import BufferContext, BufferLines, BufferMarkers, Chunk, config, signal, sys from howl
 import File from howl.io
 import style from howl.ui
-import PropertyObject from howl.aux.moon
-import destructor from howl.aux
+import PropertyObject from howl.util.moon
+import destructor from howl.util
 aullar = require 'aullar'
 {:copy} = moon
 

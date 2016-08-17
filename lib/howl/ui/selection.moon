@@ -5,7 +5,7 @@ ffi = require 'ffi'
 
 import signal, clipboard from howl
 import const_char_p from howl.cdefs
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 import C from ffi
 {:max, :min} = math
 

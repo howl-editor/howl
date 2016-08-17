@@ -1,4 +1,4 @@
-import Sandbox from howl.aux
+import Sandbox from howl.util
 
 describe 'Sandbox', ->
   it 'allows running a function with a specified environment', ->

@@ -4,7 +4,7 @@
 aullar = require 'aullar'
 import config from howl
 import View from aullar
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 import theme, Cursor, Selection, ActionBuffer from howl.ui
 {:max} = math
 

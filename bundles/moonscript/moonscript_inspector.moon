@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:Project, :app} = howl
-{:sandbox} = howl.aux
+{:sandbox} = howl.util
 append = table.insert
 
 project_lint_config = (root) ->
