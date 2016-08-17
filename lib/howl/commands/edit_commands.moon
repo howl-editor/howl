@@ -128,7 +128,7 @@ command.register
 command.register
   name: 'buffer-mode',
   description: 'Set a specified mode for the current buffer'
-  input: interact.select_mode
+  input: -> interact.select_mode buffer: app.editor.buffer
   handler: (selected_mode) ->
     buffer = app.editor.buffer
     buffer.mode = selected_mode
