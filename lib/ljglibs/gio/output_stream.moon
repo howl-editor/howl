@@ -31,7 +31,10 @@ OutputStream = core.define 'GOutputStream < GObject', {
     catch_error C.g_output_stream_write_all, @, ffi_cast(const_void_p, data), count, written, nil
 
   write_async: (data, count = #data, callback) =>
-    return if count <= 0
+    if count <= 0
+      callback true, 0
+      return
+
     local handle
 
     handler = (source, res) ->

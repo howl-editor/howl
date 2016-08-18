@@ -31,6 +31,14 @@ describe 'OutputStream', ->
           assert.equals 'number', type(written)
           done!
 
+    it 'handles being invoked with a zero byte count', (done) ->
+      with_stream (p, stream) ->
+        stream\write_async '', 0, async (status, written) ->
+          assert.is_true status
+          assert.equals 'number', type(written)
+          assert.equals 0, written
+          done!
+
   describe 'close_async(handler)', ->
     it 'invokes the handler with the status and any eventual error message', (done) ->
       with_stream (p, stream) ->

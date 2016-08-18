@@ -13,6 +13,7 @@ class OutputStream extends PropertyObject
   @property is_closed: get: => @stream.is_closed
 
   write: (contents) =>
+    return if #contents == 0
     handle = dispatch.park 'output-stream-write'
 
     @stream\write_async contents, nil, (status, ret, err_code) ->
