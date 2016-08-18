@@ -94,19 +94,15 @@ class Process
       shell: opts.shell,
       read_stdout: true,
       read_stderr: true,
-      write_stdin: opts.stdin != nil
+      write_stdin: opts.stdin != nil and not opts.stdin.is_empty
     }
     p = Process p_opts
-    if opts.stdin
+    if p_opts.write_stdin
       p.stdin\write opts.stdin
       p.stdin\close!
 
-    stdout = {}
-    stderr = {}
-    on_stdout = (out) -> stdout[#stdout + 1] = out
-    on_stderr = (err) -> stderr[#stderr + 1] = err
-    p\pump on_stdout, on_stderr
-    table.concat(stdout), table.concat(stderr), p
+    stdout, stderr = p\pump!
+    stdout, stderr, p
 
   new: (opts) =>
     @argv, @command_line = get_command opts.cmd, opts.shell
@@ -140,6 +136,17 @@ class Process
     if on_stderr and not @stderr
       error 'Can not pump process error: .stderr not set', 2
 
+    stdout = nil
+    stderr = nil
+
+    if not on_stdout and @stdout
+      stdout = {}
+      on_stdout = (out) -> stdout[#stdout + 1] = out
+
+    if not on_stderr and @stderr
+      stderr = {}
+      on_stderr = (err) -> stderr[#stderr + 1] = err
+
     stdout_done = on_stdout and dispatch.park "process-wait-stdout-#{@pid}"
     stderr_done = on_stderr and dispatch.park "process-wait-stderr-#{@pid}"
     pump_stream(@stderr, on_stderr, stderr_done, true) if on_stderr
@@ -148,6 +155,10 @@ class Process
     dispatch.wait(stdout_done) if on_stdout
     dispatch.wait(stderr_done) if on_stderr
     @wait!
+
+    stdout = stdout and table.concat(stdout)
+    stderr = stderr and table.concat(stderr)
+    stdout, stderr
 
   _handle_finish: (status) =>
     callbacks.unregister @_exit_handle

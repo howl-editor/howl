@@ -193,20 +193,38 @@ howl.io.Process.execute 'cat', stdin: 'give it back!'
 
 ## Methods
 
-### pump (on_stdout, on_stderr)
+### pump ([on_stdout, on_stderr])
 
-"Pumps" the process for any output, invoking either the `on_stdout` handler for
-any process output, or the `on_stderr` handler for any error output. The method
-will return once the process has exited. The `on_stdout` and `on_stderr`
-handlers will be invoked as soon as any output from the respective stream is
-available from the process, receiving as their sole argument the output as a
-string. As the process output streams are closed the handlers will be invoked a
-final time with nil, signifying end-of-file.
+"Pumps" the process for any output. The method will return once the process has
+exited. Note that you need to create the process with the corresponding `read_*`
+flags in order to read any output - `read_stdout` to capture stdout, and
+`read_stderr` to capture stderr.
 
-Any of the two handlers (`on_stdout` and `on_stderr`) can be omitted in case
-you're only interested in one of the two. Note that you need to create the
-process with the corresponding `read_*` flag - `read_stdout` if `on_stdout` is
-specified, and `read_stderr` if `on_stderr` is specified.
+The `on_stdout` and `on_stderr` handlers, if specified, will be invoked
+as soon as any output from the respective stream is available from the process,
+receiving as their sole argument the output as a string. As the process output
+streams are closed the handlers will be invoked a final time with nil,
+signifying end-of-file.
+
+Any of the two handlers (`on_stdout` and `on_stderr`), or both, can be omitted.
+In this case any output from the related stream is collected and returned as a a
+return value from `pump`, with stdout being returned before stderr. For example,
+invoking `pump` without arguments for a process opened with the `read_stdout`
+and the `read_stderr` flags would collect both stdout and stderr and return
+(`stdout`, `stderr`) as the return values.
+
+Example:
+
+```moonscript
+p = howl.io.Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
+p\pump!
+-- => "out\n", "err\n"
+
+p = howl.io.Process cmd: 'echo out; echo err >&2', read_stdout: true
+p\pump!
+-- => "out\n", nil
+
+```
 
 ### send_signal (signal)
 

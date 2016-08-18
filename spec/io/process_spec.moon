@@ -117,6 +117,23 @@ describe 'Process', ->
           assert.spy(on_stderr).was_called_with nil
           done!
 
+    context 'when handlers are not specified', ->
+      it 'collects and returns <out> and <err> output', ->
+        p = Process cmd: 'echo foo', read_stdout: true
+        stdout, stderr = p\pump!
+        assert.equals 'foo\n', stdout
+        assert.is_nil stderr
+
+        p = Process cmd: 'echo err >&2', read_stderr: true
+        stdout, stderr = p\pump!
+        assert.equals 'err\n', stderr
+        assert.is_nil stdout
+
+        p = Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
+        stdout, stderr = p\pump!
+        assert.equals 'out\n', stdout
+        assert.equals 'err\n', stderr
+
   describe 'wait()', ->
     it 'waits until the process is finished', (done) ->
       settimeout 2
