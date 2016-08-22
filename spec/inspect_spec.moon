@@ -27,6 +27,66 @@ describe 'inspect', ->
       inspect.inspect(buffer)
       assert.spy(inspector).was_called_with(buffer)
 
+    context 'when the returned inspector is a string', ->
+      it 'is run as an external command, translating default output parsing', (done) ->
+        inspector = 'echo "foo:1: warning: foo\nline 2: wrong val \\`foo\\`"'
+        howl_async ->
+          buffer.mode.config.inspectors = {'test-inspector'}
+          res = inspect.inspect(buffer)
+          assert.same {
+            [1]: {
+              { message: 'warning: foo', type: 'warning' },
+            }
+            [2]: {
+              { message: 'wrong val `foo`', search: 'foo' }
+            }
+           }, res
+          done!
+
+    context 'when the returned inspector is a table', ->
+      it 'uses the `cmd` key as the external command to run', (done) ->
+        inspector = cmd: 'echo "foo:1: some warning"'
+        howl_async ->
+          buffer.mode.config.inspectors = {'test-inspector'}
+          res = inspect.inspect(buffer)
+          assert.same {
+            [1]: {
+              { message: 'some warning' },
+            }
+           }, res
+          done!
+
+      it 'allows for custom parsing via the `parse` key', (done) ->
+        inspector = {
+          cmd: 'echo "output"'
+          parse: spy.new -> { {line: 1, message: 'foo' } }
+        }
+        howl_async ->
+          buffer.mode.config.inspectors = {'test-inspector'}
+          res = inspect.inspect(buffer)
+          assert.spy(inspector.parse).was_called_with('output\n')
+          assert.same {
+            [1]: {
+              { message: 'foo' },
+            }
+           }, res
+          done!
+
+      it 'allows for custom post processing via the `post_parse` key', (done) ->
+        inspector = {
+          cmd: 'echo "foo:1: some warning"'
+          post_parse: (inspections) -> inspections[1].search = 'zed'
+        }
+        howl_async ->
+          buffer.mode.config.inspectors = {'test-inspector'}
+          res = inspect.inspect(buffer)
+          assert.same {
+            [1]: {
+              { message: 'some warning', search: 'zed' },
+            }
+           }, res
+          done!
+
     it 'merges inspection results into one scathing result', ->
       inspection.register name: 'inspector1', factory: ->
         -> { { line: 1, type: 'error', message: 'foo' } }
