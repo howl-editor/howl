@@ -162,15 +162,16 @@ ffi.cdef [[
 
   typedef struct {} GMatchInfo;
 
-  gint      g_match_info_get_match_count(const GMatchInfo *match_info);
-  gboolean  g_match_info_matches        (const GMatchInfo *match_info);
-  gboolean  g_match_info_next           (GMatchInfo *match_info, GError **error);
-  gchar *   g_match_info_fetch          (const GMatchInfo *match_info, gint match_num);
-  void      g_match_info_unref          (GMatchInfo *match_info);
-  gboolean  g_match_info_fetch_pos      (const GMatchInfo *match_info,
-                                         gint match_num,
-                                         gint *start_pos,
-                                         gint *end_pos);
+  gint      g_match_info_get_match_count (const GMatchInfo *match_info);
+  gboolean  g_match_info_matches         (const GMatchInfo *match_info);
+  gboolean  g_match_info_next            (GMatchInfo *match_info, GError **error);
+  gchar *   g_match_info_fetch           (const GMatchInfo *match_info, gint match_num);
+  void      g_match_info_unref           (GMatchInfo *match_info);
+  gboolean  g_match_info_fetch_pos       (const GMatchInfo *match_info,
+                                          gint match_num,
+                                          gint *start_pos,
+                                          gint *end_pos);
+  gboolean g_match_info_is_partial_match (const GMatchInfo *match_info);
 
   typedef struct {} GRegex;
 

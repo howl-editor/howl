@@ -12,6 +12,7 @@ C, ffi_string, ffi_gc = ffi.C, ffi.string, ffi.gc
 core.define 'GMatchInfo', {
   properties: {
     match_count: => C.g_match_info_get_match_count @
+    is_partial_match: => C.g_match_info_is_partial_match(@) != 0
   }
 
   matches: =>  C.g_match_info_matches(@) != 0
