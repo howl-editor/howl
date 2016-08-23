@@ -101,7 +101,7 @@ class File extends PropertyObject
   @property contents:
     get: => @gfile\load_contents!
     set: (contents) =>
-      with @_assert io.open @path, 'w'
+      with @_assert io.open @path, 'wb'
         \write tostring contents
         \close!
 

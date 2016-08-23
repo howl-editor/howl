@@ -6,7 +6,7 @@ glib = require 'ljglibs.glib'
 
 with_tmpfile = (contents, f) ->
   p = os.tmpname!
-  fh = io.open p, 'w'
+  fh = io.open p, 'wb'
   fh\write contents
   fh\close!
   status, err = pcall f, p

@@ -112,7 +112,7 @@ local function compile(args)
     print('Compiling ' .. file)
     local func = assert(loadfile(file))
     local bytecode = string.dump(func, false)
-    local file = assert(io.open(target, 'w'))
+    local file = assert(io.open(target, 'wb'))
     assert(file:write(bytecode))
     file:close()
   end
