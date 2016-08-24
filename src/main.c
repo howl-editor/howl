@@ -14,8 +14,6 @@
 DWORD fr_private = FR_PRIVATE;
 #endif
 
-lua_State* globalL;
-
 static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 {
   gchar *start_script;
@@ -101,7 +99,6 @@ int main(int argc, char *argv[])
   }
   gchar *app_root = get_app_root(argv[0]);
   lua_State *L = open_lua_state(app_root);
-  globalL = L;
   lua_run(argc, argv, app_root, L);
   lua_close(L);
   g_free(app_root);
