@@ -263,7 +263,7 @@ return {
       font:
         bold: true
         size: 'large'
-        family: 'Purisa,Latin Modern Sans'
+        family: 'Purisa,Comic Sans,Latin Modern Sans,Lucida Sans Unicode'
 
     definition: color: yellow
     function: color: blue
