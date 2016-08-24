@@ -20,13 +20,13 @@ describe 'SandboxedLoader', ->
 
     describe '<name>_load(rel_basename)', ->
       it 'loads relative bytecode, lua and moonscript files', ->
-        dir\join('aux_lua.lua').contents = '_G.loaded_lua = true'
-        dir\join('aux_moon.moon').contents = '_G.loaded_moon = true'
-        dir\join('aux_bc.bc').contents = string.dump loadstring('_G.loaded_bc = true'), false
+        dir\join('util_lua.lua').contents = '_G.loaded_lua = true'
+        dir\join('util_moon.moon').contents = '_G.loaded_moon = true'
+        dir\join('util_bc.bc').contents = string.dump loadstring('_G.loaded_bc = true'), false
         loader ->
-          foo_load 'aux_lua'
-          foo_load 'aux_moon'
-          foo_load 'aux_bc'
+          foo_load 'util_lua'
+          foo_load 'util_moon'
+          foo_load 'util_bc'
 
         assert.is_true _G.loaded_lua
         assert.is_true _G.loaded_moon
@@ -43,13 +43,13 @@ describe 'SandboxedLoader', ->
         assert.equal 'lua', loader -> foo_load 'two'
 
       it 'only loads each file once', ->
-        dir\join('aux.lua').contents = [[
+        dir\join('util.lua').contents = [[
           _G.load_count = _G.load_count or 0
           _G.load_count = _G.load_count + 1
           return _G.load_count
         ]]
-        assert.equals 1, loader -> foo_load 'aux'
-        assert.equals 1, loader -> foo_load 'aux'
+        assert.equals 1, loader -> foo_load 'util'
+        assert.equals 1, loader -> foo_load 'util'
 
       context '(loading files from sub directories)', ->
         it 'supports both slashes and dots in the path', ->
@@ -74,10 +74,10 @@ describe 'SandboxedLoader', ->
           assert.equals 1, loader -> foo_load 'down.sub'
 
       it 'signals an error upon cyclic dependencies', ->
-        dir\join('aux.lua').contents = 'foo_load("aux2")'
-        dir\join('aux2.lua').contents = 'foo_load("aux")'
-        assert.raises 'Cyclic dependency', -> loader -> foo_load 'aux'
+        dir\join('util.lua').contents = 'foo_load("util2")'
+        dir\join('util2.lua').contents = 'foo_load("util")'
+        assert.raises 'Cyclic dependency', -> loader -> foo_load 'util'
 
       it 'allows passing parameters to the loaded file', ->
-        dir\join('aux.lua').contents = 'return ...'
-        assert.equal 123, loader -> foo_load 'aux', 123
+        dir\join('util.lua').contents = 'return ...'
+        assert.equal 123, loader -> foo_load 'util', 123
