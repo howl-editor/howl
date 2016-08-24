@@ -6,6 +6,7 @@ ffi = require 'ffi'
 ffi.cdef [[
   typedef void* HANDLE;
   typedef int DWORD;
+  typedef int BOOL;
 
   DWORD GetProcessId(HANDLE process);
   HANDLE _get_osfhandle(int fd);

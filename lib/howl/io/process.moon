@@ -8,7 +8,7 @@ callbacks = require 'ljglibs.callbacks'
 dispatch = howl.dispatch
 {:File, :InputStream, :OutputStream} = howl.io
 
-C, ffi_cast = ffi.C, ffi.cast
+C, ffi_cast, ffi_os = ffi.C, ffi.cast, ffi.os
 append = table.insert
 child_watch_callback = ffi.cast 'GChildWatchFunc', callbacks.void3
 
@@ -21,6 +21,10 @@ for s in *{
   'XCPU', 'XFSZ', 'VTALRM', 'PROF', 'WINCH', 'SYS'
 }
   signals[s] = tonumber C["sig_#{s}"]
+
+win_signals = {}
+win_signals[signals['KILL']] = 1
+win_signals[signals['INT']] = 1
 
 jit.off true, true
 
@@ -72,12 +76,12 @@ pump_stream = (stream, handler, parking) ->
   local read_handler
   read_handler = (status, ret, err_code) ->
     if not status
-      dispatch.resume_with_error parking, "#{ret} (#{err_code})"
+      dispatch.resume_with_error, parking, "#{ret} (#{err_code})"
     else
       handler ret
       if ret == nil
         stream\close!
-        dispatch.resume parking
+        pcall dispatch.resume, parking
       else
         stream\read_async nil, read_handler
 
@@ -114,6 +118,8 @@ class Process
     @stdin = OutputStream(@_process.stdin_pipe) if @_process.stdin_pipe
     @stdout = InputStream(@_process.stdout_pipe) if @_process.stdout_pipe
     @stderr = InputStream(@_process.stderr_pipe, PRIORITY_LOW - 10) if @_process.stderr_pipe
+    @stdout_done = nil
+    @stderr_done = nil
     @exited = false
 
     @@running[@pid] = @
@@ -128,7 +134,14 @@ class Process
 
   send_signal: (signal) =>
     signal = signals[signal] if type(signal) == 'string'
-    C.kill(@pid, signal)
+    if ffi_os == 'Windows'
+      error "Signal #{signal} is not supported on Windows" unless win_signals[signal]
+      -- On Bash, when a process exits due to a signal, it's exit code is
+      -- 128+{signal code}. Since killing a process like that doesn't
+      -- necessarily work on Windows, this emulates that exit code.
+      C.TerminateProcess(@true_pid, 128+signal)
+    else
+      C.kill(@pid, signal)
 
   pump: (on_stdout, on_stderr) =>
     if on_stdout and not @stdout
@@ -148,13 +161,15 @@ class Process
       stderr = {}
       on_stderr = (err) -> stderr[#stderr + 1] = err
 
-    stdout_done = on_stdout and dispatch.park "process-wait-stdout-#{@pid}"
-    stderr_done = on_stderr and dispatch.park "process-wait-stderr-#{@pid}"
-    pump_stream(@stderr, on_stderr, stderr_done, true) if on_stderr
-    pump_stream(@stdout, on_stdout, stdout_done) if on_stdout
+    @stdout_done = on_stdout and dispatch.park "process-wait-stdout-#{@pid}"
+    @stderr_done = on_stderr and dispatch.park "process-wait-stderr-#{@pid}"
+    pump_stream(@stderr, on_stderr, @stderr_done, true) if on_stderr
+    pump_stream(@stdout, on_stdout, @stdout_done) if on_stdout
 
-    dispatch.wait(stdout_done) if on_stdout
-    dispatch.wait(stderr_done) if on_stderr
+    dispatch.wait(@stdout_done) if on_stdout
+    @stdout_done = nil
+    dispatch.wait(@stderr_done) if on_stderr
+    @stderr_done = nil
     @wait!
 
     stdout = stdout and table.concat(stdout)
@@ -186,3 +201,12 @@ class Process
     if @_exit
       dispatch.resume(@_exit)
       @_exit = nil
+
+    -- On Windows, read_async may never call the callback, so the dispatchers
+    -- need to be resumed here instead.
+    if @stdout_done
+      pcall dispatch.resume, @stdout_done
+      @stdout_done = nil
+    if @stderr_done
+      pcall dispatch.resume, @stderr_done
+      @stderr_done = nil
