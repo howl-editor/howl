@@ -3,6 +3,11 @@
 
 ffi = require 'ffi'
 
+if ffi.os == 'Windows'
+  ffi.cdef 'typedef void* GPid;'
+else
+  ffi.cdef 'typedef int GPid;'
+
 ffi.cdef [[
   typedef char          gchar;
   typedef long          glong;
@@ -28,7 +33,6 @@ ffi.cdef [[
   typedef double        gdouble;
   typedef float         gfloat;
   typedef const void *  gconstpointer;
-  typedef int GPid;
 
   /* version definitions */
   extern const guint glib_major_version;

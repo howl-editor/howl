@@ -15,8 +15,6 @@ int kill(pid_t pid, int sig);
 /* process helpers */
 int process_exited_normally(int status);
 int process_exit_status(int status);
-int process_was_signalled(int status);
-int process_get_term_sig(int status);
 
 int sig_HUP;
 int sig_INT;
@@ -50,6 +48,9 @@ int sig_POLL;
 int sig_PWR;
 int sig_SYS;
 ]]
+
+if ffi.os == 'Windows'
+  require 'howl.cdefs.windows'
 
 return {
   const_char_p: ffi.typeof 'const char *'

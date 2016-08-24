@@ -108,6 +108,7 @@ class Process
     @argv, @command_line = get_command opts.cmd, opts.shell
     error 'opts.cmd missing or invalid', 2 unless @argv
     @_process = launch @argv, opts
+    @true_pid = @_process.true_pid
     @pid = @_process.pid
     @working_directory = File opts.working_directory or get_current_dir!
     @stdin = OutputStream(@_process.stdin_pipe) if @_process.stdin_pipe
@@ -118,7 +119,7 @@ class Process
     @@running[@pid] = @
 
     @_exit_handle = callbacks.register child_exited, "process-watch-#{@pid}", @
-    C.g_child_watch_add ffi_cast('GPid', @pid), child_watch_callback, callbacks.cast_arg(@_exit_handle.id)
+    C.g_child_watch_add ffi_cast('GPid', @true_pid), child_watch_callback, callbacks.cast_arg(@_exit_handle.id)
 
   wait: =>
     return if @exited

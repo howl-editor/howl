@@ -2,12 +2,16 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 dispatch = howl.dispatch
-{:UnixOutputStream} = require 'ljglibs.gio'
+{:Win32OutputStream, :UnixOutputStream} = require 'ljglibs.gio'
 {:PropertyObject} = howl.util.moon
+ffi = require 'ffi'
 
 class OutputStream extends PropertyObject
   new: (fd) =>
-    @stream = UnixOutputStream fd
+    if ffi.os == 'Windows'
+      @stream = Win32OutputStream ffi.C._get_osfhandle @stream
+    else
+      @stream = UnixOutputStream @stream
     super!
 
   @property is_closed: get: => @stream.is_closed

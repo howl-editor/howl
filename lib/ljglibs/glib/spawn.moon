@@ -34,6 +34,8 @@ spawn = {
     argv = char_p_arr opts.argv
     pid = ffi_new 'GPid[1]'
     spawn_flags = core.parse_flags('G_SPAWN_', opts.flags)
+    if ffi.os == 'Windows'
+      spawn_flags = bit.bor spawn_flags, flags['DO_NOT_REAP_CHILD']
     envp = get_envp opts.env
 
     stdin = opts.write_stdin and ffi_new('gint[1]') or nil
@@ -47,13 +49,18 @@ spawn = {
       pid,
       stdin, stdout, stderr
 
-    pid = tonumber pid[0]
+    true_pid = pid[0]
+    pid = if ffi.os == 'Windows'
+      C.GetProcessId true_pid
+    else
+      tonumber true_pid
 
     caller_will_reap = bit.band(flags['DO_NOT_REAP_CHILD'], spawn_flags) != 0
     destructor = caller_will_reap and nil or ffi_gc ffi_new('struct {}'), ->
-      C.g_spawn_close_pid pid
+      C.g_spawn_close_pid true_pid
 
     {
+      :true_pid
       :pid
       flags: spawn_flags
       stdin_pipe: stdin and stdin[0] or nil
