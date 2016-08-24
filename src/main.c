@@ -12,6 +12,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 DWORD fr_private = FR_PRIVATE;
+int max_path = MAX_PATH;
 #endif
 
 static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)

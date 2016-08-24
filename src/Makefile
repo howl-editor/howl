@@ -44,7 +44,7 @@ else
 	LD_FLAGS = -Wl,-E
 endif
 ifdef WIN32
-	LIBS = -lm ${GTK_LIBS} -lstdc++ -lgdi32
+	LIBS = -lm ${GTK_LIBS} -lstdc++ -lkernel32 -lgdi32
 	LD_FLAGS = -Wl,--export-all
 endif
 OBJECTS = main.o process_helpers.o
