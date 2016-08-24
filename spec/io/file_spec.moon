@@ -100,7 +100,7 @@ describe 'File', ->
   describe '.short_path', ->
     it 'returns the path with the home directory replace by "~"', ->
       file = File(os.getenv('HOME')) / 'foo.txt'
-      assert.equal '~/foo.txt', file.short_path
+      assert.equal "~#{pathsep}foo.txt", file.short_path
 
   describe 'contents', ->
     it 'assigning a string writes the string to the file', ->
