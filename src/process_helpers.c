@@ -5,8 +5,10 @@
 #ifndef _WIN32
 #include <sys/wait.h>
 #else
-#define WIFEXITED(w)    ((w) != 3)
+#define WIFEXITED(w)    ((w) < 128)
 #define WEXITSTATUS(w)	(w)
+#define WIFSIGNALED(w)  ((w) >= 128)
+#define WTERMSIG(w)     ((w) - 128)
 
 #define	SIGHUP	1	/* hangup */
 #define	SIGINT	2	/* interrupt */
@@ -48,6 +50,8 @@
 
 int process_exited_normally(int status) { return WIFEXITED(status);  }
 int process_exit_status(int status) { return WEXITSTATUS(status);  }
+int process_was_signaled(int status) { return WIFSIGNALED(status); }
+int process_get_term_sig(int status) { return WTERMSIG(status); }
 
 int sig_HUP = SIGHUP;
 int sig_INT = SIGINT;
