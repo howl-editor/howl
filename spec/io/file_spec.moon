@@ -36,7 +36,8 @@ describe 'File', ->
 
   describe 'expand_path(path)', ->
     it 'expands "~" into the full path of the home directory', ->
-      assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '~/foo.txt')
+      assert.equals "#{os.getenv('HOME')}#{pathsep}foo.txt",
+        File.expand_path("~#{pathsep}foo.txt")
 
   describe 'new(p, cwd)', ->
     it 'accepts a string as denothing a path', ->
@@ -59,7 +60,7 @@ describe 'File', ->
 
   describe '.is_absolute', ->
     it 'returns true if the given path is absolute', ->
-      assert.is_true File.is_absolute "#{pathsep}bin#{pathsep}ls"
+      assert.is_true File.is_absolute '/bin/ls'
       assert.is_true File.is_absolute 'c:\\\\bin\\ls'
 
     it 'returns false if the given path is not absolute', ->
