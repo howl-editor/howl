@@ -79,7 +79,14 @@ describe 'File', ->
       assert.equal 'base.ext', File('/foo/base.ext').display_name
 
     it 'has a trailing separator for directories', ->
-      assert.equal "bin#{pathsep}", File('/usr/bin').display_name
+      local dir, expected
+      if ffi_os == 'Windows'
+        dir = File os.getenv 'SYSTEMROOT'
+        expected = "#{dir.basename}\\"
+      else
+        dir = File '/usr/bin'
+        expected = 'bin/'
+      assert.equal expected, dir.display_name
 
   it '.extension returns the extension of the path', ->
     assert.equal File('/foo/base.ext').extension, 'ext'
