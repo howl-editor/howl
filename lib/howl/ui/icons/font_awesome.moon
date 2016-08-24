@@ -3,8 +3,6 @@
 
 -- Font Awesome version 4.4.0
 
-ffi = require 'ffi'
-
 icon_text = {
   '500px': '\239\137\174',
   'adjust': '\239\129\130',
@@ -683,7 +681,7 @@ icon_text = {
 }
 
 -- On Windows, when the font is loaded, it gets labeled as "FontAwesome".
-family = if ffi.os == 'Windows'
+family = if jit.os == 'Windows'
   'FontAwesome'
 else
   'Font Awesome'

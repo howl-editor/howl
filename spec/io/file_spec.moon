@@ -1,10 +1,6 @@
 import File from howl.io
-ffi_os = require('ffi').os
 
-pathsep = if ffi_os == 'Windows'
-  '\\'
-else
-  '/'
+pathsep = File.separator
 
 describe 'File', ->
 
@@ -80,7 +76,7 @@ describe 'File', ->
 
     it 'has a trailing separator for directories', ->
       local dir, expected
-      if ffi_os == 'Windows'
+      if jit.os == 'Windows'
         dir = File os.getenv 'SYSTEMROOT'
         expected = "#{dir.basename}\\"
       else
@@ -134,7 +130,7 @@ describe 'File', ->
       assert.same [v.basename for v in *kids], { 'child1', 'child2' }
 
   it '.file_type is a string describing the file type', ->
-    if ffi_os == 'Windows'
+    if jit.os == 'Windows'
       sysroot = os.getenv 'SYSTEMROOT'
       assert.equal 'directory', File(sysroot).file_type
       assert.equal 'regular', File("#{sysroot}#{pathsep}explorer.exe").file_type

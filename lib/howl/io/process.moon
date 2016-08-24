@@ -8,7 +8,7 @@ callbacks = require 'ljglibs.callbacks'
 dispatch = howl.dispatch
 {:File, :InputStream, :OutputStream} = howl.io
 
-C, ffi_cast, ffi_os = ffi.C, ffi.cast, ffi.os
+C, ffi_cast = ffi.C, ffi.cast
 append = table.insert
 child_watch_callback = ffi.cast 'GChildWatchFunc', callbacks.void3
 
@@ -134,7 +134,7 @@ class Process
 
   send_signal: (signal) =>
     signal = signals[signal] if type(signal) == 'string'
-    if ffi_os == 'Windows'
+    if jit.os == 'Windows'
       error "Signal #{signal} is not supported on Windows" unless win_signals[signal]
       -- On Bash, when a process exits due to a signal, it's exit code is
       -- 128+{signal code}. Since killing a process like that doesn't
