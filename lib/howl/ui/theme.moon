@@ -180,7 +180,7 @@ with config
   .define
     name: 'font'
     description: 'The main font used within the application'
-    default: 'Liberation Mono, Monaco'
+    default: 'Liberation Mono, Monaco, Courier New'
     type_of: 'string'
     scope: 'global'
 
