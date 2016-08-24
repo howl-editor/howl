@@ -19,16 +19,17 @@ describe 'paths', ->
       assert.same {File.home_dir, ''}, {paths.get_dir_and_leftover ''}
 
     it 'returns the root directory for "/"', ->
-      assert.same {File.home_dir.root_dir, ''}, {paths.get_dir_and_leftover '/'}
+      assert.same {File.home_dir.root_dir, ''},
+        {paths.get_dir_and_leftover File.home_dir.root_dir.path}
 
     it 'returns the matched path and unmatched parts of a path', ->
       assert.same {tmpdir, 'unmatched'}, {paths.get_dir_and_leftover tostring(tmpdir / 'unmatched')}
 
     it 'when given a directory path ending in the path separator, matches the given directory', ->
-      assert.same {tmpdir / 'subdir', ''}, {paths.get_dir_and_leftover tostring(tmpdir).."/subdir/"}
+      assert.same {tmpdir / 'subdir', ''}, {paths.get_dir_and_leftover tostring(tmpdir).."#{pathsep}subdir#{pathsep}"}
 
     it 'when given a directory path not ending in "/", matches the parent directory', ->
-      assert.same {tmpdir, 'subdir'}, {paths.get_dir_and_leftover tostring(tmpdir)..'/subdir'}
+      assert.same {tmpdir, 'subdir'}, {paths.get_dir_and_leftover tostring(tmpdir).."#{pathsep}subdir"}
 
     it 'unmatched part can contain slashes', ->
       assert.same {tmpdir, "unmatched#{pathsep}no#{pathsep}such#{pathsep}file"},

@@ -51,7 +51,7 @@ class File extends PropertyObject
     error err if not status
 
   is_absolute: (path) ->
-    (path\match('^/') or path\match('^%a:\\\\')) != nil
+    (path\match('^/') or path\match('^%a:\\')) != nil
 
   expand_path: (path) ->
     res = path\gsub "~#{File.separator}", File.home_dir.path .. File.separator
