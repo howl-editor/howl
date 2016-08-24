@@ -50,7 +50,7 @@
 
 int process_exited_normally(int status) { return WIFEXITED(status);  }
 int process_exit_status(int status) { return WEXITSTATUS(status);  }
-int process_was_signaled(int status) { return WIFSIGNALED(status); }
+int process_was_signalled(int status) { return WIFSIGNALED(status); }
 int process_get_term_sig(int status) { return WTERMSIG(status); }
 
 int sig_HUP = SIGHUP;
