@@ -36,7 +36,7 @@ class File extends PropertyObject
 
   tmpfile: ->
     file = File platform_tmpname!
-    file.touch if not file.exists
+    file\touch! if not file.exists
     file
 
   tmpdir: ->
