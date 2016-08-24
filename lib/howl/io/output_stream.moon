@@ -9,7 +9,7 @@ ffi = require 'ffi'
 class OutputStream extends PropertyObject
   new: (fd) =>
     if ffi.os == 'Windows'
-      @stream = Win32OutputStream ffi.C._get_osfhandle @stream
+      @stream = Win32OutputStream ffi.C._get_osfhandle fd
     else
       @stream = UnixOutputStream @stream
     super!
