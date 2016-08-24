@@ -3,6 +3,8 @@
 
 -- Font Awesome version 4.4.0
 
+ffi = require 'ffi'
+
 icon_text = {
   '500px': '\239\137\174',
   'adjust': '\239\129\130',
@@ -680,9 +682,15 @@ icon_text = {
   'youtube-square': '\239\133\166',
 }
 
+-- On Windows, when the font is loaded, it gets labeled as "FontAwesome".
+family = if ffi.os == 'Windows'
+  'FontAwesome'
+else
+  'Font Awesome'
+
 for name, text in pairs icon_text
   howl.ui.icon.define 'font-awesome-'..name,
     font:
-      family: 'Font Awesome'
+      :family
       size: 'small'
     :text

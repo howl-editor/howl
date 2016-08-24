@@ -9,6 +9,11 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
+#ifdef _WIN32
+#include <Windows.h>
+DWORD fr_private = FR_PRIVATE;
+#endif
+
 lua_State* globalL;
 
 static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
