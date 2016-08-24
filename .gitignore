@@ -1,6 +1,7 @@
 src/deps/*/*
 src/*.o
 src/howl
+src/howl.exe
 *.bc
 *.bak
 site/build/
