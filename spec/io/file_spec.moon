@@ -62,7 +62,7 @@ describe 'File', ->
       assert.is_true File.is_absolute "#{pathsep}bin#{pathsep}ls"
       assert.is_true File.is_absolute 'c:\\\\bin\\ls'
 
-    it 'returns false if the given path is absolute', ->
+    it 'returns false if the given path is not absolute', ->
       assert.is_false File.is_absolute 'bin/ls'
       assert.is_false File.is_absolute 'bin\\ls'
 
