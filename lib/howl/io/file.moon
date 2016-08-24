@@ -95,7 +95,7 @@ class File extends PropertyObject
   @property size: get: => @_info!.size
   @property exists: get: => @gfile.exists
   @property readable: get: => @exists and @_info('access')\get_attribute_boolean 'access::can-read'
-  @property etag: get: => @exists and @_info('etag').etag
+  @property etag: get: => @exists and @_info('etag').etag or nil
   @property modified_at: get: => @exists and @_info('time')\get_attribute_uint64 'time::modified'
   @property short_path: get: => @path\gsub "^#{File.home_dir.path}", '~'
 
