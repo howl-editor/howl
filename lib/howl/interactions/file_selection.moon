@@ -45,6 +45,8 @@ class FileSelector
     parent or= File.home_dir
 
     path = @command_line\pop_spillover!
+    -- Make / work on Windows.
+    path = path\gsub '/', File.separator
 
     if path.is_empty
       path = tostring(parent) .. File.separator
