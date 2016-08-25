@@ -49,7 +49,7 @@ describe 'file_selection', ->
         local prompt
         within_activity interact.select_file, ->
           prompt = command_line.prompt
-        assert.same tostring(tmpdir)..pathsep, prompt
+        assert.same tostring(tmpdir)..pathsep, File.expand_path prompt
 
     it 'typing a path opens the closest parent', ->
       prompts = {}
@@ -116,7 +116,7 @@ describe 'file_selection', ->
           within_activity interact.select_file, ->
             prompt = command_line.prompt
             text = command_line.text
-          assert.same tostring(tmpdir)..pathsep, prompt
+          assert.same tostring(tmpdir)..pathsep, File.expand_path prompt
           assert.same 'matchthis', text
 
       context 'when spillover is a directory path that exists', ->
@@ -129,7 +129,7 @@ describe 'file_selection', ->
           within_activity interact.select_file, ->
             prompt = command_line.prompt
             text = command_line.text
-          assert.same tostring(tmpdir / 'subdir')..pathsep, prompt
+          assert.same tostring(tmpdir / 'subdir')..pathsep, File.expand_path prompt
           assert.same '', text
 
         it 'opens the parent when specified without any trailing "/"', ->
@@ -138,7 +138,7 @@ describe 'file_selection', ->
           within_activity interact.select_file, ->
             prompt = command_line.prompt
             text = command_line.text
-          assert.same tostring(tmpdir)..pathsep, prompt
+          assert.same tostring(tmpdir)..pathsep, File.expand_path prompt
           assert.same 'subdir', text
 
     context 'when config.hidden_file_extensions is set', ->
@@ -171,10 +171,11 @@ describe 'file_selection', ->
 
     context 'in subtree mode', ->
       it 'shows files and directories in the subtree', ->
-        files = { 'ab1', 'ab2/', 'ab2/xy', 'ef/', 'ef/gh/', 'ef/gh/ab4'}
+        files = { 'ab1', "ab2#{pathsep}", "ab2#{pathsep}xy", "ef#{pathsep}",
+                  "ef#{pathsep}gh#{pathsep}", "ef#{pathsep}gh#{pathsep}ab4" }
         for name in *files
           f = tmpdir / name
-          if name\ends_with '/'
+          if name\ends_with pathsep
             f\mkdir!
           else
             f.contents = 'a'
@@ -188,7 +189,9 @@ describe 'file_selection', ->
           items2 = get_ui_list_widget_column(2)
 
         assert.same files, items
-        assert.same {'ab1', 'ab2/', 'ab2/xy', 'ef/gh/ab4'}, items2
+        expected = {'ab1', "ab2#{pathsep}", "ab2#{pathsep}xy",
+                    "ef#{pathsep}gh#{pathsep}ab4"}
+        assert.same expected, items2
 
 
   describe 'interact.select_directory', ->
