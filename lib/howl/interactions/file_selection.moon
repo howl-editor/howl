@@ -97,7 +97,10 @@ class FileSelector
 
     -- This allows one to use / as a directory separator, even on Windows.
     text = text\gsub '/', File.separator
-    path = @directory.path .. File.separator .. text
+    path = if File.is_absolute text
+      text
+    else
+      @directory.path .. File.separator .. text
     directory, text = get_dir_and_leftover path
 
     if directory != @directory
