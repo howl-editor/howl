@@ -6,6 +6,7 @@ import File from howl.io
 import Window from howl.ui
 require 'howl.ui.icons.font_awesome'
 require 'howl.interactions.file_selection'
+pathsep = File.separator
 
 describe 'file_selection', ->
   local tmpdir, command_line
@@ -38,7 +39,7 @@ describe 'file_selection', ->
       local prompt
       within_activity interact.select_file, ->
         prompt = command_line.prompt
-      assert.same '~/', prompt
+      assert.same "~#{pathsep}", prompt
 
     context 'when a buffer associated with a file is open', ->
       local buf
@@ -48,7 +49,7 @@ describe 'file_selection', ->
         local prompt
         within_activity interact.select_file, ->
           prompt = command_line.prompt
-        assert.same tostring(tmpdir)..'/', prompt
+        assert.same tostring(tmpdir)..pathsep, prompt
 
     it 'typing a path opens the closest parent', ->
       prompts = {}
@@ -105,7 +106,7 @@ describe 'file_selection', ->
           within_activity interact.select_file, ->
             prompt = command_line.prompt
             text = command_line.text
-          assert.same '~/', prompt
+          assert.same "~#{pathsep}", prompt
           assert.same 'matchthis', text
 
       context 'when spillover is an absolute path', ->
@@ -115,7 +116,7 @@ describe 'file_selection', ->
           within_activity interact.select_file, ->
             prompt = command_line.prompt
             text = command_line.text
-          assert.same tostring(tmpdir)..'/', prompt
+          assert.same tostring(tmpdir)..pathsep, prompt
           assert.same 'matchthis', text
 
       context 'when spillover is a directory path that exists', ->
@@ -128,7 +129,7 @@ describe 'file_selection', ->
           within_activity interact.select_file, ->
             prompt = command_line.prompt
             text = command_line.text
-          assert.same tostring(tmpdir / 'subdir')..'/', prompt
+          assert.same tostring(tmpdir / 'subdir')..pathsep, prompt
           assert.same '', text
 
         it 'opens the parent when specified without any trailing "/"', ->
@@ -137,7 +138,7 @@ describe 'file_selection', ->
           within_activity interact.select_file, ->
             prompt = command_line.prompt
             text = command_line.text
-          assert.same tostring(tmpdir)..'/', prompt
+          assert.same tostring(tmpdir)..pathsep, prompt
           assert.same 'subdir', text
 
     context 'when config.hidden_file_extensions is set', ->

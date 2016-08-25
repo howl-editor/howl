@@ -47,11 +47,11 @@ class FileSelector
     path = @command_line\pop_spillover!
 
     if path.is_empty
-      path = tostring(parent) .. '/'
+      path = tostring(parent) .. File.separator
     else
-      trailing = path\ends_with('/') and '/' or ''
+      trailing = path\ends_with(File.separator) and File.separator or ''
       path = tostring parent / path
-      if not path\ends_with '/'
+      if not path\ends_with File.separator
         path ..= trailing
 
     directory, unmatched = get_dir_and_leftover path
@@ -93,7 +93,7 @@ class FileSelector
   on_update: (text) =>
     return if @submitting
 
-    path = @directory.path .. '/' .. text
+    path = @directory.path .. File.separator .. text
     directory, text = get_dir_and_leftover path
 
     if directory != @directory
