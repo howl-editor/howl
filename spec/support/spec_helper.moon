@@ -163,3 +163,5 @@ if jit.os == 'Windows'
   require 'howl.cdefs.windows'
   FILE_ATTRIBUTE_HIDDEN = 2
   export make_hidden = (path) -> C.SetFileAttributesA(path, FILE_ATTRIBUTE_HIDDEN)
+else
+  export make_hidden = (path) -> nil
