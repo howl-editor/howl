@@ -110,6 +110,7 @@ describe 'bundle', ->
         bundle.dirs = {dir}
         b_dir = dir / '.hidden'
         b_dir\mkdir!
+        make_hidden b_dir.path
         b_dir\join('init.lua').contents = bundle_init name: 'hidden'
 
         bundle.load_all!

@@ -159,3 +159,7 @@ export assert_memory_stays_within = (units, iterations, f) ->
         baseline, avg_used, diff, percentual
       error err
 
+if jit.os == 'Windows'
+  require 'howl.cdefs.windows'
+  FILE_ATTRIBUTE_HIDDEN = 2
+  export make_hidden = (path) -> C.SetFileAttributesA(path, FILE_ATTRIBUTE_HIDDEN)

@@ -15,6 +15,7 @@ ffi.cdef [[
   HANDLE _get_osfhandle(int fd);
   BOOL TerminateProcess(HANDLE process, unsigned int exitcode);
   int AddFontResourceExA(LPCTSTR lpszFilename, DWORD fl, PVOID pdv);
+  BOOL SetFileAttributesA(LPCTSTR file, DWORD attrs);
 
   int fr_private;
 ]]
