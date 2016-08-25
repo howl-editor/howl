@@ -23,13 +23,8 @@ platform_tmpname = ->
   -- os.tmpname is broken on Windows and returns a filename prefixed with \.
   -- This causes a lot of "Access denied"-related errors.
   filename = assert os.tmpname!
-  if ffi.os == 'Windows'
-    -- Remove the prefix \.
-    filename = filename\sub 2
-    buflen = ffi.C.max_path+1
-    buf = ffi.new 'char[?]', buflen
-    if ffi.C.GetTempPathA(buflen, buf) != 0
-      filename = File(ffi.string(buf)) / filename
+  -- Remove the prefix \.
+  filename = filename\sub 2 if ffi.os == 'Windows'
   filename
 
 class File extends PropertyObject

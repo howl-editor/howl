@@ -15,7 +15,6 @@ ffi.cdef [[
   HANDLE _get_osfhandle(int fd);
   BOOL TerminateProcess(HANDLE process, unsigned int exitcode);
   int AddFontResourceExA(LPCTSTR lpszFilename, DWORD fl, PVOID pdv);
-  DWORD GetTempPathA(DWORD buflen, LPTSTR buf);
 
-  int fr_private, max_path;
+  int fr_private;
 ]]
