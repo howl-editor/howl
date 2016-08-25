@@ -93,6 +93,8 @@ class FileSelector
   on_update: (text) =>
     return if @submitting
 
+    -- This allows one to use / as a directory separator, even on Windows.
+    text = text\gsub '/', File.separator
     path = @directory.path .. File.separator .. text
     directory, text = get_dir_and_leftover path
 
