@@ -79,7 +79,7 @@ describe 'file_selection', ->
       within_activity interact.select_file, ->
         command_line\write '/'
         prompt = command_line.prompt
-      assert.same '/', prompt
+      assert.same pathsep, prompt
 
     it 'shows files matching entered text in the current directory', ->
       files = { 'ab1', 'ab2', 'bc1' }
