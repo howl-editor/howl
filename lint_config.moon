@@ -182,6 +182,7 @@
       'howl_async',
       'howl_main_ctx'
       'it',
+      'make_hidden',
       'moon',
       'pump_mainloop',
       'set_howl_loop',
