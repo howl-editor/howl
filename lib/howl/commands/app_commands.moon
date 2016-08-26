@@ -379,7 +379,7 @@ command.register
 -----------------------------------------------------------------------
 
 launch_cmd = (working_directory, cmd) ->
-  shell = howl.sys.env.SHELL or '/bin/sh'
+  shell = howl.sys.env.SHELL
   p = Process {
     :cmd,
     :shell,

@@ -40,11 +40,25 @@ shell_quote = (s) ->
   else
     s
 
-get_command = (v, shell = '/bin/sh') ->
+default_shell = if jit.os == 'Windows'
+  if howl.sys.env.MSYSCON
+    -- Running under MSYS2.
+    "#{howl.sys.env.WD}sh.exe"
+  else
+    "#{howl.sys.env.SYSTEMROOT}/System32/cmd.exe"
+else
+  '/bin/sh'
+
+get_command = (v, shell = default_shell) ->
   t = type v
 
   if t == 'string'
-    return { shell, '-c', v }, v
+    arg = if shell\find 'cmd'
+      -- Likely cmd.exe.
+      '/C'
+    else
+      '-c'
+    return { shell, arg, v }, v
   elseif t != 'table'
     return nil
 

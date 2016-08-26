@@ -2,6 +2,24 @@ Process = howl.io.Process
 File = howl.io.File
 glib = require 'ljglibs.glib'
 
+sh, echo = if jit.os == 'Windows'
+  if not howl.sys.env.MSYSCON
+    error 'These specs must be run under MSYS!'
+  "#{howl.sys.env.WD}sh.exe", "#{howl.sys.env.WD}echo.exe"
+else
+  '/bin/sh', '/bin/echo'
+
+fix_paths = (path) ->
+  if jit.os == 'Windows'
+    -- On MSYS, often the shell will output paths like:
+    -- /usr/bin/sh
+    -- but the specs use (and therefore expect) stuff like:
+    -- C:/msys64/usr/bin/sh.exe
+    -- This fixes up those paths to make the latter like the former.
+    path\gsub('\\', '/')\gsub('.*msys[^/]*/', '/')\gsub('%.exe$', '')
+  else
+    path
+
 describe 'Process', ->
 
   run = (...) ->
@@ -26,16 +44,16 @@ describe 'Process', ->
       assert.same {'echo', 'foo'}, p.argv
 
       p = Process cmd: 'echo "foo bar"'
-      assert.same { '/bin/sh', '-c', 'echo "foo bar"'}, p.argv
+      assert.same { sh, '-c', 'echo "foo bar"'}, p.argv
 
     it 'allows specifying a different shell', ->
-      p = Process cmd: 'foo', shell: '/bin/echo'
-      assert.same { '/bin/echo', '-c', 'foo'}, p.argv
+      p = Process cmd: 'foo', shell: echo
+      assert.same { echo, '-c', 'foo'}, p.argv
 
   describe 'Process.execute(cmd, opts)', ->
     it 'executes the specified command and return <out, err, process>', (done) ->
       howl_async ->
-        out, err, p = Process.execute {'sh', '-c', 'cat; echo foo >&2'}, stdin: 'reverb'
+        out, err, p = Process.execute {sh, '-c', 'cat; echo foo >&2'}, stdin: 'reverb'
         assert.equal 'reverb', out
         assert.equal 'foo\n', err
         assert.equal 'Process', typeof(p)
@@ -45,12 +63,13 @@ describe 'Process', ->
       howl_async ->
         status, out = pcall Process.execute, 'echo $0'
         assert.is_true status
-        assert.equal '/bin/sh\n', out
+        expected = fix_paths sh
+        assert.equal "#{expected}\n", out
         done!
 
     it "allows specifying a different shell", (done) ->
       howl_async ->
-        status, out, _, process = pcall Process.execute, 'blargh', shell: '/bin/echo'
+        status, out, _, process = pcall Process.execute, 'blargh', shell: echo
         assert.is_true status
         assert.match out, 'blargh'
         assert.equal 'blargh', process.command_line
@@ -215,14 +234,19 @@ describe 'Process', ->
 
   describe '.working_directory', ->
     context 'when provided during launch', ->
+      bindir = if jit.os == 'Windows'
+        howl.sys.env.SYSTEMROOT
+      else
+        '/bin'
+
       it 'is the same directory', ->
-        cwd = File '/bin'
+        cwd = File bindir
         p = Process(cmd: 'true', working_directory: cwd)
         assert.equal cwd, p.working_directory
 
       it 'is always a File instance', ->
-        p = Process(cmd: 'true', working_directory: '/bin')
-        assert.equal 'File', typeof  p.working_directory
+        p = Process(cmd: 'true', working_directory: bindir)
+        assert.equal 'File', typeof p.working_directory
 
     context 'when not provided', ->
       it 'is the current working directory', ->
