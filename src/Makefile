@@ -44,6 +44,8 @@ else
 	LD_FLAGS = -Wl,-E
 endif
 ifdef WIN32
+	# MSYS sets CC to cc, even though it doesn't actually exist.
+	CC=gcc
 	LIBS = -lm ${GTK_LIBS} -lstdc++ -lkernel32 -lgdi32
 	LD_FLAGS = -Wl,--export-all
 endif
