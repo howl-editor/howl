@@ -13,7 +13,7 @@
       'r',
       'typeof',
       'user_load',
-   },
+    },
 
     ['themes/']: {
       'flair',
