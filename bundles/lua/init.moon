@@ -1,6 +1,6 @@
 mode_reg =
   name: 'lua'
-  shebangs: '/lua.*$'
+  shebangs: {'/lua.*$', '/env lua.*$'}
   extensions: 'lua'
   create: bundle_load('lua_mode')
 
