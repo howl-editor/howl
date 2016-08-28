@@ -2,12 +2,8 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import BufferContext, BufferLines, BufferMarkers, Chunk, config, signal, sys from howl
-import File from howl.io
-import style from howl.ui
 import PropertyObject from howl.util.moon
-import destructor from howl.util
 aullar = require 'aullar'
-{:copy} = moon
 
 ffi = require 'ffi'
 

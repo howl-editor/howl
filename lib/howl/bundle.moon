@@ -6,7 +6,7 @@ import File from howl.io
 import SandboxedLoader from howl.util
 
 _G = _G
-import assert, error, loadfile, log, type, callable, table, tostring, pairs, typeof, pcall from _G
+import error, log, type, callable, table, pairs, tostring, typeof, pcall from _G
 
 _G.bundles = {}
 

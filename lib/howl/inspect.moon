@@ -4,7 +4,7 @@
 {:app, :bindings, :command, :config, :inspection, :interact, :log, :signal, :timer} = howl
 {:ActionBuffer, :BufferPopup, :highlight} = howl.ui
 {:pcall} = _G
-{:concat, :sort} = table
+{:sort} = table
 append = table.insert
 
 local popup, last_display_position

@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 _G = _G
-import table, tostring, print from _G
+import table from _G
 import config from howl
 
 append = table.insert

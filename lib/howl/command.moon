@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import dispatch, interact, config from howl
+import dispatch, interact from howl
 import Matcher from howl.util
-import style, markup, StyledText from howl.ui
+import style, markup from howl.ui
 
 append = table.insert
 

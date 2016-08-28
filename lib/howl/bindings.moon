@@ -3,7 +3,7 @@
 
 _G = _G
 import table, coroutine, pairs from _G
-import tostring, pcall, callable, type, print, setmetatable, typeof from _G
+import pcall, callable, setmetatable, typeof from _G
 import signal, command, sys from howl
 append = table.insert
 
