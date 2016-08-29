@@ -78,7 +78,7 @@ class Matcher
     matching_lines = {}
     matcher = create_matcher search, @options.reverse
 
-    for i, line in ipairs lines
+    for line in *lines
       text = line.text
       continue if #text < #search
       type, match = matcher text, line.case_text

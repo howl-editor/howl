@@ -1,10 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, Buffer, command, config, bindings, bundle, dispatch, interact, signal, mode, Project from howl
+import app, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
 import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
-import File, Process from howl.io
-import get_cwd from howl.util.paths
+import Process from howl.io
 serpent = require 'serpent'
 
 command.register

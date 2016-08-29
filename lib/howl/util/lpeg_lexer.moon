@@ -4,9 +4,9 @@
 import mode from howl
 lpeg = _G.lpeg
 import P, B, S, Cp, Cc, Ct, Cmt, Cg, Cb from lpeg
-import pairs, setfenv, setmetatable, type, print, tostring from _G
+import pairs, setfenv, setmetatable, type, tostring from _G
 l = lpeg.locale!
-import space, alpha from l
+import alpha from l
 unpack, append, tinsert = table.unpack, table.insert, table.insert
 
 eol_p = P'\n' + P'\r\n' + P'\r'
