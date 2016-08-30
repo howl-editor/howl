@@ -484,7 +484,7 @@ describe 'Buffer', ->
     it 'updates automatically with modification', ->
       b = Buffer string.rep('äåö', 100)
       assert.equal 300, b.length
-      for i = 1, 40
+      for _ = 1, 40
         cur_length = b.length
 
         pos = math.floor math.random(b.size - 10)
@@ -841,7 +841,7 @@ describe 'Buffer', ->
       assert.is_false b.can_undo
 
   describe 'refresh_styling_at(line_nr, to_line [, opts])', ->
-    local b, styling, mode
+    local b, mode
 
     before_each ->
       b = Buffer ''

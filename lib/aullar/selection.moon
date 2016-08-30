@@ -1,8 +1,6 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:Attribute} = require 'ljglibs.pango'
-
 {:max, :min, :abs} = math
 {:define_class} = require 'aullar.util'
 flair = require 'aullar.flair'

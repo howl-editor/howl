@@ -1,7 +1,6 @@
 -- Copyright 2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:fill} = require 'ffi'
 {:define_class} = require 'aullar.util'
 GapBuffer = require 'aullar.gap_buffer'
 append = table.insert

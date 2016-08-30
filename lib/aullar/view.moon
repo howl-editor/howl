@@ -20,7 +20,7 @@ config = require 'aullar.config'
 
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
-{:max, :min, :abs, :floor} = math
+{:max, :min, :floor} = math
 
 append = table.insert
 

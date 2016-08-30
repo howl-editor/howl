@@ -3,9 +3,8 @@
 
 {:RGBA} = require 'ljglibs.gdk'
 require 'ljglibs.cairo.context'
-{:SCALE, :Layout, :AttrList, :Attribute, :Color, :cairo} = require 'ljglibs.pango'
+{:SCALE, :Layout, :Attribute, :Color, :cairo} = require 'ljglibs.pango'
 
-{:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
 {:min, :max, :floor, :pi} = math
@@ -102,7 +101,7 @@ draw_ops = {
     set_line_type_from_flair cr, flair
 
     direction = -1
-    for i = 1, runs
+    for _ = 1, runs
       cr\rel_line_to line_run, direction * wave_height
       direction *= -1
 
@@ -203,7 +202,7 @@ need_text_object = (flair) ->
     flair = flairs[flair] if type(flair) == 'string'
     return unless flair
 
-    {:layout, :view, :is_wrapped, :lines} = display_line
+    {:layout, :view, :lines} = display_line
     clip = cr.clip_extents
     base_x = view.base_x
     width_of_space = display_line.width_of_space

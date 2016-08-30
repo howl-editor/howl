@@ -3,7 +3,7 @@
 
 ffi = require 'ffi'
 C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
-{:max, :min, :abs, :ceil} = math
+{:max, :min, :ceil} = math
 {:define_class} = require 'aullar.util'
 Styling = require 'aullar.styling'
 Offsets = require 'aullar.offsets'

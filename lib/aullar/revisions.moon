@@ -140,7 +140,7 @@ define_class {
           idx += 1
           rev = next
 
-      for i = 1, idx
+      for _ = 1, idx
         remove @entries, 1
         @current -= 1
 

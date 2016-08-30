@@ -3,7 +3,7 @@
 
 ffi = require 'ffi'
 C, ffi_copy, ffi_fill, ffi_gc, ffi_cast = ffi.C, ffi.copy, ffi.fill, ffi.gc, ffi.cast
-{:max, :min, :abs} = math
+{:min} = math
 {:define_class} = require 'aullar.util'
 
 ffi.cdef [[
