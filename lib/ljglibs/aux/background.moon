@@ -5,7 +5,7 @@ Gdk = require 'ljglibs.gdk'
 cairo = require 'ljglibs.cairo'
 
 {:RGBA, :Pixbuf} = Gdk
-{:min, :max, :pi, :ceil, :floor} = math
+{:min, :max, :pi, :ceil} = math
 
 -- surface cache
 surfaces = {}

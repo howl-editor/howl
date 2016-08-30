@@ -1,5 +1,5 @@
 gio = require 'ljglibs.gio'
-import Application, File from gio
+import Application from gio
 
 describe 'Application', ->
   local app

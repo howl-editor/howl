@@ -30,7 +30,7 @@ core.define 'GtkContainer < GtkWidget', {
 
     children: =>
       list = C.gtk_container_get_children to_c(@)
-      children = [ref_ptr(cast_widget_ptr(c)) for i, c in ipairs list]
+      children = [ref_ptr(cast_widget_ptr(c)) for _, c in ipairs list]
       list\free
       children
 
