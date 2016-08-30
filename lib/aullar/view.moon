@@ -282,9 +282,14 @@ View = {
 
     if opts.vertical
       page_size = @lines_showing - 1
+      upper = @buffer.nr_lines
+      if page_size == 0
+        -- GtkRange docs mention that page_size is normally >0 for GtkScrollbar
+        upper = 2
+        page_size = 1
       adjustment = @vertical_scrollbar.adjustment
       if adjustment
-        adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
+        adjustment\configure @first_visible_line, 1, upper, 1, page_size, page_size
 
     if opts.horizontal
       max_width = 0
