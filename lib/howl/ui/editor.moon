@@ -5,22 +5,19 @@ Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 gobject_signal = require 'ljglibs.gobject.signal'
-import Completer, signal, bindings, config, command, clipboard, sys from howl
-import View from aullar
+import signal, bindings, config, command, clipboard, sys from howl
 aullar_config = aullar.config
 import PropertyObject from howl.util.moon
 import Searcher, CompletionPopup from howl.ui
 import auto_pair from howl.editing
 
 {
-  :style,
-  :highlight,
   :IndicatorBar,
   :Cursor,
   :Selection,
   :ContentBox
 } = howl.ui
-{:max, :min, :abs} = math
+{:max, :min} = math
 append = table.insert
 
 _editors = setmetatable {}, __mode: 'v'

@@ -94,7 +94,7 @@ class ListWidget extends PropertyObject
 
       buffer\append StyledText.for_table items, @columns
 
-      for i = 1, last_idx - #@_items
+      for _ = 1, last_idx - #@_items
         buffer\append @opts.filler_text..'\n', 'comment'
 
       header_offset = @has_header and 1 or 0

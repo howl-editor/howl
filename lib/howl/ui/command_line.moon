@@ -2,10 +2,9 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
-import bindings, config, dispatch, interact, signal from howl
-import Matcher from howl.util
+import bindings, config, dispatch from howl
 import PropertyObject from howl.util.moon
-import ActionBuffer, BufferPopup, highlight, markup, style, theme from howl.ui
+import ActionBuffer, BufferPopup, markup, style from howl.ui
 {:TextWidget, :NotificationWidget, :IndicatorBar, :StyledText, :ContentBox} = howl.ui
 
 append = table.insert

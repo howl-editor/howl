@@ -1,11 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, bindings, interact, timer from howl
+import app, interact, timer from howl
 import ListWidget from howl.ui
 import Matcher from howl.util
-
-attach_list = (interactor) ->
 
 class SelectionList
   run: (@finish, @opts) =>

@@ -3,7 +3,7 @@
 
 import app, config, interact, Project from howl
 import File from howl.io
-import icon, markup from howl.ui
+import icon from howl.ui
 import Matcher from howl.util
 
 append = table.insert
@@ -56,7 +56,7 @@ make_title = (buffer, opts={}) ->
   title = file.basename
   if opts.parents
     parent = file.parent
-    for i=1,opts.parents
+    for _ = 1, opts.parents
       if parent
         title = "#{parent.basename}#{File.separator}#{title}"
         parent = parent.parent
@@ -86,7 +86,7 @@ get_buffer_list = ->
     basenames[buf.file.basename] or= {}
     append basenames[buf.file.basename], buf
 
-  for basename, buffers in pairs(basenames)
+  for _, buffers in pairs(basenames)
     continue if #buffers == 1
 
     options_list = {

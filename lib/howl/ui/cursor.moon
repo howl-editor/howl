@@ -4,7 +4,7 @@
 import PropertyObject from howl.util.moon
 import command from howl
 aullar = require 'aullar'
-{:max, :min} = math
+{:min} = math
 
 class Cursor extends PropertyObject
   new: (@container, @selection) =>
