@@ -311,6 +311,7 @@ View = {
           @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
+    notify @, 'on_scroll', opts
 
   insert: (text) =>
     if @selection.is_empty
