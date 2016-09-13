@@ -1,6 +1,6 @@
 Gtk = require 'ljglibs.gtk'
-{:Buffer, :signal, :clipboard} =  howl
-{:Editor, :theme} = howl.ui
+{:Buffer, :clipboard} =  howl
+{:Editor} = howl.ui
 
 describe 'Selection', ->
 

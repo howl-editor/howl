@@ -144,7 +144,7 @@ export assert_memory_stays_within = (units, iterations, f) ->
   baseline = math.ceil(collectgarbage 'count')
   total_used = 0
 
-  for i = 1, iterations
+  for _ = 1, iterations
     f!
     collect_memory!
     used = math.ceil(collectgarbage 'count')

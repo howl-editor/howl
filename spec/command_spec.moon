@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, dispatch, interact, config, keymap from howl
+import app, command, dispatch from howl
 import Window from howl.ui
 
 describe 'command', ->

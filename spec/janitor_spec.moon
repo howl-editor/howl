@@ -38,7 +38,7 @@ describe 'janitor', ->
     it 'does not leave less than <cleanup_min_buffers_open> buffers', ->
       config.cleanup_min_buffers_open = 2
       config.cleanup_close_buffers_after = 0
-      for i = 1, 2
+      for _ = 1, 2
         b = app\new_buffer!
         b.last_shown = one_hour_ago - 60
 

@@ -1,4 +1,4 @@
-import Buffer, BufferMarkers from howl
+import Buffer from howl
 
 describe 'BufferMarkers', ->
   local buffer, markers

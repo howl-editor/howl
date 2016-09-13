@@ -3,7 +3,7 @@ import Editor from howl.ui
 import formatting from howl.editing
 
 describe 'formatting', ->
-  local buffer, editor, cursor, lines
+  local buffer, editor, cursor
   before_each ->
     buffer = Buffer!
     buffer.config.indent = 2

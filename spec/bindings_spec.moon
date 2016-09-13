@@ -277,7 +277,7 @@ describe 'bindings', ->
           coros[co] = true unless main
 
         keymap = k: coro_register
-        for i = 1,2
+        for _ = 1,2
           bindings.process { character: 'k', key_code: 65 }, 'editor', { keymap }
 
         assert.equal 2, #[v for _, v in pairs coros]

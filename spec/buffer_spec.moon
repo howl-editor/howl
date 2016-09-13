@@ -1,4 +1,4 @@
-import Buffer, config, signal from howl
+import Buffer, config from howl
 import File from howl.io
 import with_tmpfile from File
 

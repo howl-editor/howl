@@ -1,8 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import inspect, inspection, Buffer, completion, mode from howl
-import Editor from howl.ui
+import inspect, inspection, Buffer, mode from howl
 
 describe 'inspect', ->
   local buffer, inspector

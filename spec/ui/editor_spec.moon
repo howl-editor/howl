@@ -1,6 +1,6 @@
 Gtk = require 'ljglibs.gtk'
 
-{:Buffer, :config, :signal, :clipboard, :sys} = howl
+{:Buffer, :config, :clipboard, :sys} = howl
 {:Editor} = howl.ui
 
 describe 'Editor', ->

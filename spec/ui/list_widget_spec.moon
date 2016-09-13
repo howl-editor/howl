@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Buffer from howl
-import ListWidget, TextWidget, style, highlight from howl.ui
+import ListWidget, style, highlight from howl.ui
 import Matcher from howl.util
 
 describe 'ListWidget', ->
