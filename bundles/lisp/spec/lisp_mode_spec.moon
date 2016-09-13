@@ -1,5 +1,4 @@
-import bundle, mode, config, Buffer from howl
-import File from howl.io
+import bundle, mode, Buffer from howl
 import Editor from howl.ui
 
 require 'howl.variables.core_variables'

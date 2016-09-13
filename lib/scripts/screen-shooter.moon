@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, dispatch, timer from howl
+import app, command, dispatch from howl
 import theme from howl.ui
 import File from howl.io
 import get_cwd from howl.util.paths
@@ -50,7 +50,7 @@ snapshot = (name, dir, opts) ->
   for buffer in *app.buffers
     app\close_buffer buffer, true
 
-  for i = 1, #app.window.views - 1
+  for _ = 1, #app.window.views - 1
     command.view_close!
 
   log.info ''
@@ -274,7 +274,7 @@ screenshots = {
 }
 
 take_snapshots = (theme_name, to_dir, only) ->
-  for i, def in ipairs screenshots
+  for _, def in ipairs screenshots
     if only and only != def.name
       continue
 

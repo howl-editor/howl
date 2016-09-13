@@ -1,4 +1,4 @@
-import bindings, config from howl
+import config from howl
 state = ...
 
 local insert_pos

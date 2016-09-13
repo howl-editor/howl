@@ -1,10 +1,10 @@
-import bundle, mode, config, Buffer from howl
+import bundle, mode, Buffer from howl
 import File from howl.io
 import Editor from howl.ui
 
 describe 'moonscript-mode', ->
   local m
-  local buffer, editor, cursor, lines
+  local buffer, editor, cursor
 
   setup ->
     bundle.load_by_name 'lua'
@@ -20,7 +20,6 @@ describe 'moonscript-mode', ->
     buffer = Buffer m
     editor = Editor buffer
     cursor = editor.cursor
-    lines = buffer.lines
 
   it 'registers a mode', ->
     assert.not_nil m

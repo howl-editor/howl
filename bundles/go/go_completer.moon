@@ -1,10 +1,8 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, config, interact from howl
-import ProcessBuffer from howl.ui
+import config, interact from howl
 import Process from howl.io
-import Matcher from howl.util
 append = table.insert
 
 install_gocode = ->

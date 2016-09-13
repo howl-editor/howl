@@ -92,7 +92,7 @@ map = {
     w: (editor) -> apply editor, (editor, _state) ->
       if _state.change or _state.yank then end_of_word editor.cursor
       elseif _state.delete
-        for i = 1,_state.count or 1 do editor.cursor\word_right!
+        for _ = 1,_state.count or 1 do editor.cursor\word_right!
         editor.cursor\left!
         true
       else

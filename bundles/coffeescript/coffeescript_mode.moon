@@ -87,7 +87,7 @@ class CoffeeScriptMode
 
       for p in *patterns
         if line\umatch p
-          for i = 1, #parents
+          for _ = 1, #parents
             append lines, table.remove parents, 1
 
           append lines, line

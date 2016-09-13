@@ -45,13 +45,13 @@ x += 1
 y and= x
 
 empty_function = ->
-args_function = (arg1, arg2) -> arg1 + arg2
+args_function = (arg1, arg2) -> arg1 + arg2 + member
 var_args_function = (...) -> table.concat {...}, '|'
 cond = true
 
 while cond == true do empty_function!
 
-comprehension = [item * 2 for i, item in ipairs lint_vars when item != 3]
+comprehension = [item * 2 for _, item in ipairs lint_vars when item != 3]
 
 for i = 1,10
   continue unless i != 2
@@ -93,3 +93,10 @@ ffi.cdef [[
 
 ffi.cdef 'typedef char gchar;' -- single quoted string cdef
 ffi.cdef "typedef char gchar;" -- double quoted string cdef
+
+-- lint clean
+->
+  args_function 1, 2
+  var_args_function 1, 2
+  c = MyClass!
+  c + comprehension
