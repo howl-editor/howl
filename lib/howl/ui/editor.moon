@@ -82,6 +82,7 @@ class Editor extends PropertyObject
       on_preedit_change: (_, args) ->
         log.info "Pre-edit: #{args.str} (Enter to submit, escape to cancel)"
       on_preedit_end: -> log.info "Pre-edit mode finished"
+      on_scroll: self\_on_scroll
 
     @view.listener = listener
     @view.cursor.listener = {
@@ -498,14 +499,7 @@ class Editor extends PropertyObject
 
   show_popup: (popup, options = {}) =>
     @remove_popup!
-    pos = @buffer\byte_offset options.position or @cursor.pos
-    coordinates = @view\coordinates_from_position pos
-    unless coordinates
-      pos = @buffer.lines[@line_at_top].start_pos
-      coordinates = @view\coordinates_from_position pos
-
-    x = coordinates.x
-    y = coordinates.y2 + 2
+    x, y = @_get_popup_coordinates options.position
 
     popup\show @view\to_gobject!, :x, :y
     @popup = window: popup, :options
@@ -817,6 +811,17 @@ class Editor extends PropertyObject
     pos = @cursor.line .. ':' .. @cursor.column
     @indicator.position.label = pos
 
+  _get_popup_coordinates: (pos=@cursor.pos) =>
+    pos = @buffer\byte_offset pos
+    coordinates = @view\coordinates_from_position pos
+    unless coordinates
+      pos = @buffer.lines[@line_at_top].start_pos
+      coordinates = @view\coordinates_from_position pos
+
+    x = coordinates.x
+    y = coordinates.y2 + 2
+    x, y
+
   _on_focus: (args) =>
     howl.app.editor = self
     @has_focus = true
@@ -855,6 +860,11 @@ class Editor extends PropertyObject
     if @popup
       params = text: args.text, editor: self, at_pos: @buffer\char_offset(args.pos)
       @popup.window\on_delete_back self, params if @popup.window.on_delete_back
+
+  _on_scroll: =>
+    return unless @popup
+    x, y = @_get_popup_coordinates @popup.options.position
+    @popup.window\move_to x, y
 
 -- Default indicators
 

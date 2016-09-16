@@ -311,6 +311,7 @@ View = {
           @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
+    notify @, 'on_scroll', opts
 
   insert: (text) =>
     if @selection.is_empty
@@ -459,8 +460,8 @@ View = {
         rect =  layout\index_to_pos index
         bottom = y + ((rect.y + rect.height) / Pango.SCALE) + @config.view_line_padding
         return {
-          x: x + (rect.x / Pango.SCALE)
-          x2: x + ((rect.x + rect.width) / Pango.SCALE)
+          x: x + (rect.x / Pango.SCALE) - @base_x
+          x2: x + ((rect.x + rect.width) / Pango.SCALE) - @base_x
           y: y + (rect.y / Pango.SCALE)
           y2: bottom
         }
