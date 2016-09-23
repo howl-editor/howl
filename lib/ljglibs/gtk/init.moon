@@ -53,4 +53,8 @@ core.auto_loading 'gtk', {
 
   cairo_should_draw_window: (cr, window) ->
     C.gtk_cairo_should_draw_window(cr, window) != 0
+
+  get_major_version: -> tonumber C.gtk_get_major_version!
+  get_minor_version: -> tonumber C.gtk_get_minor_version!
+  get_micro_version: -> tonumber C.gtk_get_micro_version!
 }
