@@ -75,13 +75,18 @@ parse_color = (spec, alpha = 1) ->
   tostring(c)
 
 parse_font = (font = {}) ->
+  font_size_unit = 'px'
+
+  if Gtk.get_major_version! == 3 and Gtk.get_minor_version! < 10
+    font_size_unit = ''
+
   size = config.font_size
   decls = {
     "font-family: #{config.font};"
   }
 
   if size
-    append decls, "font-size: #{config.font_size}px;"
+    append decls, "font-size: #{config.font_size}#{font_size_unit};"
 
   if font.italic
     append decls, "font-style: italic;"

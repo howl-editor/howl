@@ -432,4 +432,8 @@ ffi.cdef [[
   /* Misc */
   gboolean gtk_cairo_should_draw_window (cairo_t *cr,
                                          GdkWindow *window);
+
+  guint gtk_get_major_version (void);
+  guint gtk_get_minor_version (void);
+  guint gtk_get_micro_version (void);
 ]]
