@@ -11,6 +11,7 @@ import config, signal from howl
 import style, colors, highlight from howl.ui
 import PropertyTable, SandboxedLoader from howl.util
 aullar_config = require 'aullar.config'
+append = table.insert
 
 css_provider = Gtk.CssProvider!
 screen = Gdk.Screen\get_default!
@@ -36,23 +37,23 @@ css_template = [[
 
 .header {
   color: ${header_color};
-  font: ${header_font};
+  ${header_font}
 }
 
 .footer {
   color: ${footer_color};
-  font: ${footer_font};
+  ${footer_font}
 }
 
 .status {
-  font: ${status_font};
+  ${status_font}
   color: ${status_color};
 }
 ]]
 
 status_template = [[
 .status_${name} {
-  font: ${font};
+  ${font}
   color: ${color};
 }
 ]]
@@ -72,18 +73,27 @@ parse_color = (spec, alpha = 1) ->
 
 parse_font = (font = {}) ->
   size = config.font_size
-  desc = config.font
-  desc ..= ' bold' if font.bold
-  desc ..= ' italic' if font.italic
-  desc ..= ' ' .. size if size
-  desc
+  decls = {
+    "font-family: #{config.font};"
+  }
+
+  if size
+    append decls, "font-size: #{config.font_size}px;"
+
+  if font.italic
+    append decls, "font-style: italic;"
+
+  if font.bold
+    append decls, "font-weight: bold;"
+
+  table.concat decls, '\n  '
 
 indicator_css = (id, def) ->
-  clazz = '.indic_' .. id
-  indic_css = clazz .. ' { '
-  if def.color then indic_css ..= 'color: ' .. def.color .. '; '
-  indic_css ..= 'font: ' .. parse_font(def.font).. '; '
-  indic_css ..= ' }\n'
+  clazz = ".indic_#{id}"
+  indic_css = "#{clazz} {\n  "
+  if def.color then indic_css ..= "color: #{def.color};\n  "
+  indic_css ..= parse_font(def.font)
+  indic_css ..= '\n}\n'
   indic_css
 
 indicators_css = (indicators = {}) ->
