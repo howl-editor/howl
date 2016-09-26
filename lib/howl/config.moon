@@ -34,7 +34,7 @@ predefined_types =
         [v.stripped for v in value\gmatch '[^,]+']
       elseif what == 'string' and value.is_blank
         {}
-       else
+      else
         { tostring value }
 
     validate: (value) -> type(value) == 'table'
