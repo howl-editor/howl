@@ -1,7 +1,10 @@
 local Transformer
 Transformer = require("moonscript.transform.transformer").Transformer
-local NameProxy
-NameProxy = require("moonscript.transform.names").NameProxy
+local NameProxy, LocalName, is_name_proxy
+do
+  local _obj_0 = require("moonscript.transform.names")
+  NameProxy, LocalName, is_name_proxy = _obj_0.NameProxy, _obj_0.LocalName, _obj_0.is_name_proxy
+end
 local Run, transform_last_stm, implicitly_return, last_stm
 do
   local _obj_0 = require("moonscript.transform.statements")
@@ -201,7 +204,13 @@ return Transformer({
           local _continue_0 = false
           repeat
             local name = names[_index_0]
-            if not (name[2]:match("^%u")) then
+            local str_name
+            if ntype(name) == "ref" then
+              str_name = name[2]
+            else
+              str_name = name
+            end
+            if not (str_name:match("^%u")) then
               _continue_0 = true
               break
             end
@@ -339,7 +348,7 @@ return Transformer({
     end
   end,
   update = function(self, node)
-    local _, name, op, exp = unpack(node)
+    local name, op, exp = unpack(node, 2)
     local op_final = op:match("^(.+)=$")
     if not op_final then
       error("Unknown op: " .. op)
@@ -358,7 +367,7 @@ return Transformer({
     })
   end,
   import = function(self, node)
-    local _, names, source = unpack(node)
+    local names, source = unpack(node, 2)
     local table_values
     do
       local _accum_0 = { }
@@ -399,7 +408,7 @@ return Transformer({
     }
   end,
   comprehension = function(self, node, action)
-    local _, exp, clauses = unpack(node)
+    local exp, clauses = unpack(node, 2)
     action = action or function(exp)
       return {
         exp
@@ -475,21 +484,39 @@ return Transformer({
     return wrapped
   end,
   unless = function(self, node)
-    return {
-      "if",
-      {
-        "not",
+    local clause = node[2]
+    if ntype(clause) == "assign" then
+      if destructure.has_destructure(clause[2]) then
+        error("destructure not allowed in unless assignment")
+      end
+      return build["do"]({
+        clause,
         {
-          "parens",
-          node[2]
+          "if",
+          {
+            "not",
+            clause[2][1]
+          },
+          unpack(node, 3)
         }
-      },
-      unpack(node, 3)
-    }
+      })
+    else
+      return {
+        "if",
+        {
+          "not",
+          {
+            "parens",
+            clause
+          }
+        },
+        unpack(node, 3)
+      }
+    end
   end,
   ["if"] = function(self, node, ret)
     if ntype(node[2]) == "assign" then
-      local _, assign, body = unpack(node)
+      local assign, body = unpack(node, 2)
       if destructure.has_destructure(assign[2]) then
         local name = NameProxy("des")
         body = {
@@ -649,6 +676,18 @@ return Transformer({
           }
         }
       end
+      local names
+      do
+        local _accum_0 = { }
+        local _len_0 = 1
+        local _list_0 = node.names
+        for _index_0 = 1, #_list_0 do
+          local n = _list_0[_index_0]
+          _accum_0[_len_0] = is_name_proxy(n) and n or LocalName(n) or n
+          _len_0 = _len_0 + 1
+        end
+        names = _accum_0
+      end
       return build.group({
         list_name ~= list and build.assign_one(list_name, list) or NOOP,
         slice_var or NOOP,
@@ -658,7 +697,7 @@ return Transformer({
           body = {
             {
               "assign",
-              node.names,
+              names,
               {
                 NameProxy.index(list_name, index_name)
               }
@@ -679,7 +718,7 @@ return Transformer({
     node.body = with_continue_listener(node.body)
   end,
   switch = function(self, node, ret)
-    local _, exp, conds = unpack(node)
+    local exp, conds = unpack(node, 2)
     local exp_name = NameProxy("exp")
     local convert_cond
     convert_cond = function(cond)
