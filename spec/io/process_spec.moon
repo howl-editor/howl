@@ -20,6 +20,18 @@ fix_paths = (path) ->
   else
     path
 
+proc_async = (f) ->
+  local co
+  if jit.os == 'Windows'
+    co = coroutine.create f
+  else
+    set_howl_loop!
+    co = coroutine.create busted.async(f)
+  status, err = coroutine.resume co
+  error err unless status
+
+be_done = (done) -> done! unless jit.os == 'Windows'
+
 describe 'Process', ->
 
   run = (...) ->
@@ -65,79 +77,79 @@ describe 'Process', ->
 
   describe 'Process.execute(cmd, opts)', ->
     it 'executes the specified command and return <out, err, process>', (done) ->
-      howl_async ->
+      proc_async ->
         out, err, p = Process.execute {sh, '-c', 'cat; echo foo >&2'}, stdin: 'reverb'
         assert.equal 'reverb', out
         assert.equal 'foo\n', err
         assert.equal 'Process', typeof(p)
-        done!
+        be_done done
 
     it "executes string commands using /bin/sh by default", (done) ->
-      howl_async ->
+      proc_async ->
         status, out = pcall Process.execute, 'echo $0'
         assert.is_true status
         expected = fix_paths sh
         assert.equal "#{expected}\n", out
-        done!
+        be_done done
 
     it "allows specifying a different shell", (done) ->
-      howl_async ->
+      proc_async ->
         status, out, _, process = pcall Process.execute, 'blargh', shell: echo
         assert.is_true status
         assert.match out, 'blargh'
         assert.equal 'blargh', process.command_line
-        done!
+        be_done done
 
     it 'opts.working_directory sets the working working directory', (done) ->
-      howl_async ->
+      proc_async ->
         with_tmpdir (dir) ->
           out = Process.execute 'pwd', working_directory: dir
           assert.equal dir.path, out.stripped
-          done!
+          be_done done
 
     it 'opts.env sets the process environment', (done) ->
-      howl_async ->
+      proc_async ->
         out = Process.execute 'env', env: { foo: 'bar' }
         assert.equal 'foo=bar', out.stripped
-        done!
+        be_done done
 
     it 'works with large process outputs', (done) ->
-      howl_async ->
+      proc_async ->
         File.with_tmpfile (f) ->
           file_contents = string.rep "xxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzz\n", 5000
           f.contents = file_contents
           status, out = pcall Process.execute, "cat #{f.path}"
           assert.is_true status
           assert.equal file_contents, out
-          done!
+          be_done done
 
   describe 'pump(on_stdout, on_stderr)', ->
 
     context 'when the <on_stdout> handler is provided', ->
       it 'invokes the handler for any stdout output before returning', (done) ->
-        howl_async ->
+        proc_async ->
           on_stdout = spy.new -> nil
           p = Process cmd: 'echo foo', read_stdout: true
           p\pump on_stdout
           assert.is_true p.exited
           assert.spy(on_stdout).was_called_with 'foo\n'
           assert.spy(on_stdout).was_called_with nil
-          done!
+          be_done done
 
     context 'when the <on_stderr> handler is provided', ->
       it 'invokes the handler for any stderr output before returning', (done) ->
-        howl_async ->
+        proc_async ->
           on_stderr = spy.new -> nil
           p = Process cmd: 'echo err >&2', read_stderr: true
           p\pump nil, on_stderr
           assert.is_true p.exited
           assert.spy(on_stderr).was_called_with 'err\n'
           assert.spy(on_stderr).was_called_with nil
-          done!
+          be_done done
 
     context 'when both handlers are provided', ->
       it 'invokes both handlers for any output before returning', (done) ->
-        howl_async ->
+        proc_async ->
           on_stdout = spy.new -> nil
           on_stderr = spy.new -> nil
           p = Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
@@ -147,11 +159,11 @@ describe 'Process', ->
           assert.spy(on_stdout).was_called_with nil
           assert.spy(on_stderr).was_called_with 'err\n'
           assert.spy(on_stderr).was_called_with nil
-          done!
+          be_done done
 
     context 'when handlers are not specified', ->
       it 'collects and returns <out> and <err> output', ->
-        howl_async ->
+        proc_async ->
           p = Process cmd: 'echo foo', read_stdout: true
           stdout, stderr = p\pump!
           assert.equals 'foo\n', stdout
@@ -170,72 +182,72 @@ describe 'Process', ->
   describe 'wait()', ->
     it 'waits until the process is finished', (done) ->
       settimeout 2
-      howl_async ->
+      proc_async ->
         File.with_tmpfile (file) ->
           file\delete!
           p = Process cmd: { 'sh', '-c', "sleep 1; touch '#{file.path}'" }
           p\wait!
           assert.is_true file.exists
-          done!
+          be_done done
 
   context 'signal handling', ->
     describe 'send_signal(signal) and .signalled', ->
       it 'sends the specified signal to the process', (done) ->
-        howl_async ->
+        proc_async ->
           p = Process cmd: 'cat', write_stdin: true
           p\send_signal 9
           p\wait!
           assert.is_true p.signalled
-          done!
+          be_done done
 
       it '.signalled is false for a non-signaled process', (done) ->
-        howl_async ->
+        proc_async ->
           p = Process cmd: 'id'
           p\wait!
           assert.is_false p.signalled
-          done!
+          be_done done
 
       it '.signal holds the signal used for terminating the process', (done) ->
-        howl_async ->
+        proc_async ->
           p = Process cmd: 'cat', write_stdin: true
           p\send_signal 9
           p\wait!
           assert.equals 9, p.signal
-          done!
+          be_done done
 
       it '.signal_name holds the name of the signal used for terminating the process', (done) ->
-        howl_async ->
+        proc_async ->
           p = Process cmd: 'cat', write_stdin: true
           p\send_signal 9
           p\wait!
           assert.equals 'KILL', p.signal_name
-          done!
+          be_done done
 
       it 'signals can be referred to by name as well', (done) ->
-        howl_async ->
+        proc_async ->
           p = Process cmd: 'cat', write_stdin: true
           p\send_signal 'KILL'
           p\wait!
           assert.equals 9, p.signal
-          done!
+          be_done done
 
   describe '.exit_status', ->
     it 'is nil for a running process', ->
-      howl_async ->
+      proc_async ->
         p = Process cmd: { 'sh', '-c', "sleep 1; true" }
         assert.is_nil p.exit_status
         p\wait!
 
     it 'is nil for a signalled process', (done) ->
-      howl_async ->
+      proc_async ->
         p = Process cmd: 'cat', write_stdin: true
         p\send_signal 9
         p\wait!
         assert.is_nil p.exit_status
-        done!
+        be_done done
 
     it 'is set to the exit status for a normally exited process', (done) ->
-      howl_async ->
+      proc_async ->
         p = run 'echo foo'
         assert.equals 0, p.exit_status
 
@@ -245,7 +257,7 @@ describe 'Process', ->
         p = run {'sh', '-c', 'exit 2' }
         assert.equals 2, p.exit_status
 
-        done!
+        be_done done
 
   describe '.working_directory', ->
     context 'when provided during launch', ->
@@ -270,41 +282,41 @@ describe 'Process', ->
 
   describe '.successful', ->
     it 'is true if the process exited cleanly with a zero exit code', (done) ->
-      howl_async ->
+      proc_async ->
         assert.is_true run('id').successful
-        done!
+        be_done done
 
     it 'is false if the process exited with a non-zero exit code', (done) ->
-      howl_async ->
+      proc_async ->
         assert.is_false run('false').successful
-        done!
+        be_done done
 
     it 'is false if the process exited due to a signal', (done) ->
-      howl_async ->
+      proc_async ->
         p = Process cmd: 'cat', write_stdin: true
         p\send_signal 9
         p\wait!
         assert.is_false p.successful
-        done!
+        be_done done
 
   describe '.stdout', ->
     it 'allows reading process output', (done) ->
-      howl_async ->
+      proc_async ->
         p = collected_process cmd: {'echo', 'one\ntwo'}, read_stdout: true
         assert.equals 'one\ntwo\n', p.stdout\read!
         assert.is_nil p.stdout\read!
-        done!
+        be_done done
 
   describe '.stderr', ->
     it 'allows reading process error output', (done) ->
-      howl_async ->
+      proc_async ->
         p = collected_process cmd: {'sh', '-c', 'echo foo >&2'}, read_stderr: true
         assert.equals 'foo\n', p.stderr\read!
-        done!
+        be_done done
 
   describe '.stdin', ->
     it 'allows writing to the process input', (done) ->
-      howl_async ->
+      proc_async ->
         p = Process cmd: {'cat'}, write_stdin: true, read_stdout: true
         with p.stdin
           \write 'round-trip'
@@ -312,39 +324,39 @@ describe 'Process', ->
 
         assert.equals 'round-trip', p.stdout\read!
         p\wait!
-        done!
+        be_done done
 
   describe '.command_line', ->
     context 'when the command is specified as a string', ->
       it 'is the same', (done) ->
-        howl_async ->
+        proc_async ->
           assert.equal 'echo command "bar"', run('echo command "bar"').command_line
-          done!
+          be_done done
 
     context 'when the command is specified as a table', ->
       it 'is a created shell command line', (done) ->
-        howl_async ->
+        proc_async ->
           assert.equal "echo command 'bar zed'", run({'echo', 'command', 'bar zed'}).command_line
-          done!
+          be_done done
 
   describe '.exit_status_string', ->
     it 'provides the exit code for a normally terminated process', (done) ->
-      howl_async ->
+      proc_async ->
         assert.equals 'exited normally with code 0', run('id').exit_status_string
         assert.equals 'exited normally with code 1', run('exit 1').exit_status_string
-        done!
+        be_done done
 
     it 'provides the signal name for a killed process', (done) ->
-      howl_async ->
+      proc_async ->
         p = Process cmd: {'cat'}, write_stdin: true, read_stdout: true
         p\send_signal 'KILL'
         p\wait!
         assert.equals 'killed by signal 9 (KILL)', p.exit_status_string
-        done!
+        be_done done
 
   describe 'Process.running', ->
     it 'is a table of currently running processes, keyed by pid', (done) ->
-      howl_async ->
+      proc_async ->
         collect!
         assert.same {}, Process.running
         p = Process cmd: {'cat'}, write_stdin: true
@@ -352,12 +364,12 @@ describe 'Process', ->
         p.stdin\close!
         p\wait!
         assert.same {}, Process.running
-        done!
+        be_done done
 
   context 'resource management', ->
 
     it 'processes are collected correctly', (done) ->
-      howl_async ->
+      proc_async ->
         p = Process cmd: {'echo', 'one\ntwo'}, read_stdout: true
         assert.equals 'one\ntwo\n', p.stdout\read!
         p\wait!
@@ -367,4 +379,4 @@ describe 'Process', ->
         p = nil
         collect_memory!
         assert.is_nil list[1]
-        done!
+        be_done done

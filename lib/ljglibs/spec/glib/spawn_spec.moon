@@ -2,11 +2,13 @@
 {:UnixInputStream, :UnixOutputStream, :Win32InputStream, :Win32OutputStream} = require 'ljglibs.gio'
 ffi = require 'ffi'
 
-InputStream, OutputStream = if jit.os == 'Windows'
+InputStream, OutputStream, shell = if jit.os == 'Windows'
   forward = (cls) -> (pipe) -> cls ffi.C._get_osfhandle pipe
-  forward(Win32InputStream), forward(Win32OutputStream)
+  if not os.getenv 'MSYSCON'
+    error 'These tests only work on MSYS2'
+  forward(Win32InputStream), forward(Win32OutputStream), "#{os.getenv 'WD'}/sh.exe"
 else
-  UnixInputStream, UnixOutputStream
+  UnixInputStream, UnixOutputStream, 'sh'
 
 describe 'spawn', ->
 
@@ -63,7 +65,7 @@ describe 'spawn', ->
     context 'when .env is set', ->
       it 'spawns the process with the set values as the environment', ->
         p = spawn.async_with_pipes {
-          argv: { 'env' },
+          argv: { shell, '-c', 'echo $MY_SOLE_VAR' },
           read_stdout: true,
           flags: { 'SEARCH_PATH' },
           env: { MY_SOLE_VAR: 'alone' }
