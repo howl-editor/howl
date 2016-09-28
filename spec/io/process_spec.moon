@@ -26,15 +26,24 @@ describe 'Process', ->
     with Process cmd: ...
       \wait!
 
+  procs = {}
+  collected_process = (...) ->
+    proc = Process ...
+    table.insert procs, proc
+    proc
+  collect = ->
+    for proc in *procs
+      proc\wait!
+
   describe 'Process(opts)', ->
     it 'raises an error if opts.cmd is missing or invalid', ->
       assert.raises 'cmd', -> Process {}
       assert.raises 'cmd', -> Process cmd: 2
-      assert.not_error -> Process cmd: 'id'
-      assert.not_error -> Process cmd: {'echo', 'foo'}
+      assert.not_error -> collected_process cmd: 'id'
+      assert.not_error -> collected_process cmd: {'echo', 'foo'}
 
     it 'returns a process object', ->
-      assert.equal 'Process', typeof Process cmd: 'true'
+      assert.equal 'Process', typeof collected_process cmd: 'true'
 
     it 'raises an error for an unknown command', ->
       errstring = if jit.os == 'Windows'
@@ -44,14 +53,14 @@ describe 'Process', ->
       assert.raises errstring, -> Process cmd: {'howlblargh'}
 
     it 'sets .argv to the parsed command line', ->
-      p = Process cmd: {'echo', 'foo'}
+      p = collected_process cmd: {'echo', 'foo'}
       assert.same {'echo', 'foo'}, p.argv
 
-      p = Process cmd: 'echo "foo bar"'
+      p = collected_process cmd: 'echo "foo bar"'
       assert.same { sh, '-c', 'echo "foo bar"'}, p.argv
 
     it 'allows specifying a different shell', ->
-      p = Process cmd: 'foo', shell: echo
+      p = collected_process cmd: 'foo', shell: echo
       assert.same { echo, '-c', 'foo'}, p.argv
 
   describe 'Process.execute(cmd, opts)', ->
@@ -247,16 +256,16 @@ describe 'Process', ->
 
       it 'is the same directory', ->
         cwd = File bindir
-        p = Process(cmd: 'true', working_directory: cwd)
+        p = collected_process(cmd: 'true', working_directory: cwd)
         assert.equal cwd, p.working_directory
 
       it 'is always a File instance', ->
-        p = Process(cmd: 'true', working_directory: bindir)
+        p = collected_process(cmd: 'true', working_directory: bindir)
         assert.equal 'File', typeof p.working_directory
 
     context 'when not provided', ->
       it 'is the current working directory', ->
-        p = Process(cmd: 'true')
+        p = collected_process(cmd: 'true')
         assert.equal File(glib.get_current_dir!), p.working_directory
 
   describe '.successful', ->
@@ -281,7 +290,7 @@ describe 'Process', ->
   describe '.stdout', ->
     it 'allows reading process output', (done) ->
       howl_async ->
-        p = Process cmd: {'echo', 'one\ntwo'}, read_stdout: true
+        p = collected_process cmd: {'echo', 'one\ntwo'}, read_stdout: true
         assert.equals 'one\ntwo\n', p.stdout\read!
         assert.is_nil p.stdout\read!
         done!
@@ -289,7 +298,7 @@ describe 'Process', ->
   describe '.stderr', ->
     it 'allows reading process error output', (done) ->
       howl_async ->
-        p = Process cmd: {'sh', '-c', 'echo foo >&2'}, read_stderr: true
+        p = collected_process cmd: {'sh', '-c', 'echo foo >&2'}, read_stderr: true
         assert.equals 'foo\n', p.stderr\read!
         done!
 
@@ -336,6 +345,7 @@ describe 'Process', ->
   describe 'Process.running', ->
     it 'is a table of currently running processes, keyed by pid', (done) ->
       howl_async ->
+        collect!
         assert.same {}, Process.running
         p = Process cmd: {'cat'}, write_stdin: true
         assert.same {[p.pid]: p}, Process.running
