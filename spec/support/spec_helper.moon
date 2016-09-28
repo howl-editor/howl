@@ -92,8 +92,12 @@ howl_loop = setmetatable {
 export set_howl_loop = -> _G.setloop howl_loop
 
 export howl_async = (f) ->
-  _G.setloop howl_loop
-  co = coroutine.create busted.async(f)
+  local co
+  if jit.os == 'Windows'
+    co = coroutine.create f
+  else
+    set_howl_loop!
+    co = coroutine.create busted.async(f)
   status, err = coroutine.resume co
   error err unless status
 

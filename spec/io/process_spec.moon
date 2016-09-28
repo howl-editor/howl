@@ -84,7 +84,7 @@ describe 'Process', ->
 
     it 'opts.env sets the process environment', (done) ->
       howl_async ->
-        out = Process.execute {'env'}, env: { foo: 'bar' }
+        out = Process.execute 'env', env: { foo: 'bar' }
         assert.equal 'foo=bar', out.stripped
         done!
 
@@ -138,20 +138,21 @@ describe 'Process', ->
 
     context 'when handlers are not specified', ->
       it 'collects and returns <out> and <err> output', ->
-        p = Process cmd: 'echo foo', read_stdout: true
-        stdout, stderr = p\pump!
-        assert.equals 'foo\n', stdout
-        assert.is_nil stderr
+        howl_async ->
+          p = Process cmd: 'echo foo', read_stdout: true
+          stdout, stderr = p\pump!
+          assert.equals 'foo\n', stdout
+          assert.is_nil stderr
 
-        p = Process cmd: 'echo err >&2', read_stderr: true
-        stdout, stderr = p\pump!
-        assert.equals 'err\n', stderr
-        assert.is_nil stdout
+          p = Process cmd: 'echo err >&2', read_stderr: true
+          stdout, stderr = p\pump!
+          assert.equals 'err\n', stderr
+          assert.is_nil stdout
 
-        p = Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
-        stdout, stderr = p\pump!
-        assert.equals 'out\n', stdout
-        assert.equals 'err\n', stderr
+          p = Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
+          stdout, stderr = p\pump!
+          assert.equals 'out\n', stdout
+          assert.equals 'err\n', stderr
 
   describe 'wait()', ->
     it 'waits until the process is finished', (done) ->
@@ -207,9 +208,10 @@ describe 'Process', ->
 
   describe '.exit_status', ->
     it 'is nil for a running process', ->
-      p = Process cmd: { 'sh', '-c', "sleep 1; true" }
-      assert.is_nil p.exit_status
-      p\wait!
+      howl_async ->
+        p = Process cmd: { 'sh', '-c', "sleep 1; true" }
+        assert.is_nil p.exit_status
+        p\wait!
 
     it 'is nil for a signalled process', (done) ->
       howl_async ->
