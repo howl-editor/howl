@@ -37,7 +37,11 @@ describe 'Process', ->
       assert.equal 'Process', typeof Process cmd: 'true'
 
     it 'raises an error for an unknown command', ->
-      assert.raises 'howlblargh', -> Process cmd: {'howlblargh'}
+      errstring = if jit.os == 'Windows'
+        'No such file or directory'
+      else
+        'howlblargh'
+      assert.raises errstring, -> Process cmd: {'howlblargh'}
 
     it 'sets .argv to the parsed command line', ->
       p = Process cmd: {'echo', 'foo'}
