@@ -23,8 +23,8 @@ set_source_from_color = (cr, name, opts) ->
       cr\set_source_rgba color.red, color.green, color.blue, alpha
     else
       cr\set_source_rgb color.red, color.green, color.blue
-    else
-      cr\set_source_rgba 0, 0, 0, 0, 0
+  else
+    cr\set_source_rgba 0, 0, 0, 0, 0
 
 set_line_type_from_flair = (cr, flair) ->
   cr.line_width = flair._line_width

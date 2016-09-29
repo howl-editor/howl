@@ -54,7 +54,7 @@ ProcessMode = {
           else
             process\send_signal 'INT'
             log.info "Sent SIGINT to #{process.pid}"
-       else
+        else
          editor.selection\copy!
 
       ctrl_backslash: (editor) ->
