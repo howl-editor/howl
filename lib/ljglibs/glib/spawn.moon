@@ -50,10 +50,12 @@ spawn = {
       stdin, stdout, stderr
 
     true_pid = pid[0]
-    pid = if ffi.os == 'Windows'
-      C.GetProcessId true_pid
+    local pid
+    if ffi.os == 'Windows'
+      pid = C.GetProcessId true_pid
     else
-      tonumber true_pid
+      true_pid = tonumber true_pid
+      pid = true_pid
 
     caller_will_reap = bit.band(flags['DO_NOT_REAP_CHILD'], spawn_flags) != 0
     destructor = caller_will_reap and nil or ffi_gc ffi_new('struct {}'), ->

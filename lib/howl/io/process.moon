@@ -90,7 +90,7 @@ pump_stream = (stream, handler, parking) ->
   local read_handler
   read_handler = (status, ret, err_code) ->
     if not status
-      dispatch.resume_with_error, parking, "#{ret} (#{err_code})"
+      dispatch.resume_with_error parking, "#{ret} (#{err_code})"
     else
       handler ret
       if ret == nil
