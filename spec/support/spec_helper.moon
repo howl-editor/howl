@@ -7,7 +7,7 @@ import theme from howl.ui
 import dispatch, signal, config from howl
 _G.Spy = require 'howl.spec.spy'
 
-if not howl.sys.env.MSYSCON
+if jit.os == 'Windows' and not howl.sys.env.MSYSCON
   error 'These specs must be run under MSYS2!'
 
 -- additional aliases
