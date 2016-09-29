@@ -8,7 +8,6 @@ else
   '/'
 ls = "#{sep}bin#{sep}ls"
 demo_file = if jit.os == 'Windows'
-  error 'These tests must be run under MSYS2' unless os.getenv 'MSYSCON'
   "#{os.getenv 'WD'}ls.exe"
 else
   '/bin/ls'

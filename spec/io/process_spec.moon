@@ -3,8 +3,6 @@ File = howl.io.File
 glib = require 'ljglibs.glib'
 
 sh, echo = if jit.os == 'Windows'
-  if not howl.sys.env.MSYSCON
-    error 'These specs must be run under MSYS!'
   "#{howl.sys.env.WD}sh.exe", "#{howl.sys.env.WD}echo.exe"
 else
   '/bin/sh', '/bin/echo'

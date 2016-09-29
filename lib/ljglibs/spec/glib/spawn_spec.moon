@@ -4,8 +4,6 @@ ffi = require 'ffi'
 
 InputStream, OutputStream, shell = if jit.os == 'Windows'
   forward = (cls) -> (pipe) -> cls ffi.C._get_osfhandle pipe
-  if not os.getenv 'MSYSCON'
-    error 'These tests only work on MSYS2'
   forward(Win32InputStream), forward(Win32OutputStream), "#{os.getenv 'WD'}/sh.exe"
 else
   UnixInputStream, UnixOutputStream, 'sh'
