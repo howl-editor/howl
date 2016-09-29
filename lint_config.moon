@@ -184,6 +184,8 @@
       'it',
       'make_hidden',
       'moon',
+      'proc_async',
+      'proc_done',
       'pump_mainloop',
       'set_howl_loop',
       'settimeout',
