@@ -5,6 +5,50 @@
 {:sandbox} = howl.util
 append = table.insert
 
+builtin_whitelist_globals = {s, true for s in *{
+  '_G'
+  '_VERSION'
+  'assert'
+  'collectgarbage'
+  'dofile'
+  'error'
+  'getfenv'
+  'getmetatable'
+  'ipairs'
+  'load'
+  'loadfile'
+  'loadstring'
+  'module'
+  'next'
+  'pairs'
+  'pcall'
+  'print'
+  'rawequal'
+  'rawget'
+  'rawset'
+  'require'
+  'select'
+  'setfenv'
+  'setmetatable'
+  'tonumber'
+  'tostring'
+  'type'
+  'unpack'
+  'xpcall'
+  'coroutine'
+  'debug'
+  'io'
+  'math'
+  'os'
+  'package'
+  'string'
+  'table'
+
+  'true',
+  'false',
+  'nil'
+}}
+
 project_lint_config = (root) ->
   for p in *{'lint_config.moon', 'lint_config.lua'}
     config = root\join(p)
@@ -14,13 +58,13 @@ load_lint_whitelist = (root, config, for_file, lint) ->
   cfg, err = loadfile config
   unless cfg
     log.error "Failed to load lint config from '#{config}': #{err}"
-    return lint.default_whitelist
+    return builtin_whitelist_globals
 
   s_box = sandbox no_globals: true
   wl = s_box -> cfg!.whitelist_globals
-  return lint.default_whitelist unless wl
+  return builtin_whitelist_globals unless wl
 
-  whitelist = setmetatable {}, __index: lint.default_whitelist
+  whitelist = setmetatable {}, __index: builtin_whitelist_globals
   rel_path = for_file\relative_to_parent root
   for pattern, list in pairs wl
     if rel_path\match(pattern)
@@ -31,12 +75,12 @@ load_lint_whitelist = (root, config, for_file, lint) ->
 
 load_project_lint_whitelist = (root, for_file, lint) ->
   lint_config = project_lint_config root
-  return lint.default_whitelist unless lint_config
+  return builtin_whitelist_globals unless lint_config
   load_lint_whitelist root, lint_config, for_file, lint
 
 (buffer) ->
   lint = require "moonscript.cmd.lint"
-  lint_whitelist = lint.default_whitelist
+  lint_whitelist = builtin_whitelist_globals
 
   if buffer.file
     project = Project.for_file buffer.file
