@@ -7,9 +7,9 @@ C, ffi_cast, ffi_new = ffi.C, ffi.cast, ffi.new
 lua_value = types.lua_value
 
 core.define 'GObject', {
-  new: (type) ->
+  new: (type, ...) ->
     error 'Undefined gtype passed in', 2 if type == 0 or type == nil
-    C.g_object_new type
+    C.g_object_new type, ...
 
   ref: (o) ->
     return nil if o == nil
@@ -42,5 +42,5 @@ core.define 'GObject', {
   set_typed: (k, type, v) =>
     C.g_object_set @, k, ffi_cast(type, v), nil
 
-}, (spec, type) -> spec.new type
+}, (spec, type, ...) -> spec.new type, ...
 

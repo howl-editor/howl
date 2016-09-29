@@ -9,12 +9,12 @@ describe 'Object', ->
   context '(constructing)', ->
     it 'can be created using an existing gtype', ->
       type = Type.from_name 'GtkEventBox'
-      o = Object type
+      o = Object type, nil
       assert.is_not_nil o
 
     it 'raises an error if type is nil', ->
       type = Type.from_name 'GtkButton2'
-      assert.raises 'undefined', -> Object type
+      assert.raises 'undefined', -> Object type, nil
 
   describe 'get_typed(k, type)', ->
     it 'returns a property value converted according to <type>', ->
