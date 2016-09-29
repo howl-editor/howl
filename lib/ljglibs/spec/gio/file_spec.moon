@@ -1,10 +1,23 @@
 glib = require 'ljglibs.glib'
 GFile = require 'ljglibs.gio.file'
 
+sep = if jit.os == 'Windows'
+  '\\'
+else
+  '/'
+ls = "#{sep}bin#{sep}ls"
+demo_file = if jit.os == 'Windows'
+  error 'These tests must be run under MSYS2' unless os.getenv 'MSYSCON'
+  "#{os.getenv 'WD'}ls.exe"
+else
+  '/bin/ls'
+
 describe 'GFile', ->
 
   with_tmpfile = (contents, f) ->
     p = os.tmpname!
+    if jit.os == 'Windows'
+      p = p\sub 2
     fh = io.open p, 'wb'
     fh\write contents
     fh\close!
@@ -15,28 +28,28 @@ describe 'GFile', ->
   if glib.check_version 2, 36, 0
     describe 'new_for_commandline_arg_and_cwd(path, cwd)', ->
       it 'resolves a relative <path> from <cwd>', ->
-        assert.equals '/bin/ls', GFile.new_for_commandline_arg_and_cwd('ls', '/bin').path
+        assert.equals ls, GFile.new_for_commandline_arg_and_cwd('ls', '/bin').path
 
       it 'resolves an absolute <path> as is', ->
-        assert.equals '/bin/touch', GFile.new_for_commandline_arg_and_cwd('/bin/touch', '/home').path
+        assert.equals ls, GFile.new_for_commandline_arg_and_cwd('/bin/ls', '/home').path
 
   it '.path contains the path', ->
-    assert.equals '/bin/ls', GFile('/bin/ls').path
+    assert.equals ls, GFile('/bin/ls').path
 
   it '.uri contains an URI representing the path', ->
     assert.equal 'file:///foo.txt', GFile('/foo.txt').uri
 
   it '.exists returns true if the path exists', ->
-   assert.is_true GFile('/bin/ls').exists
+   assert.is_true GFile(demo_file).exists
    assert.is_false GFile('/pleasedontputadirectorylikethisinyourroot').exists
 
   it '.parent return the parent of the file', ->
-    assert.equal '/bin', GFile('/bin/ls').parent.path
+    assert.equal "#{sep}bin", GFile('/bin/ls').parent.path
 
   describe 'get_child(name)', ->
     it 'returns a new file for the given child', ->
       parent = GFile '/bin'
-      assert.equals '/bin/ls', parent\get_child('ls').path
+      assert.equals ls, parent\get_child('ls').path
 
   describe 'has_parent([file])', ->
     it 'returns true if the file has a parent', ->
@@ -61,7 +74,7 @@ describe 'GFile', ->
 
     context 'for an existing file', ->
       it 'returns an info object', ->
-        f = GFile '/bin/ls'
+        f = GFile demo_file
         info = f\query_info '*', GFile.QUERY_INFO_NONE
         assert.is_false info.is_hidden
         assert.is_false info.is_symlink
@@ -78,4 +91,4 @@ describe 'GFile', ->
     it 'tostring returns the path as a string', ->
       collectgarbage!
       file = GFile '/bin/ls'
-      assert.equal '/bin/ls', tostring file
+      assert.equal ls, tostring file
