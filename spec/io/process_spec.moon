@@ -33,6 +33,11 @@ describe 'Process', ->
     for proc in *procs
       proc\wait!
 
+  win_async = if jit.os == 'Windows'
+    proc_async
+  else
+    (f) -> f!
+
   describe 'Process(opts)', ->
     it 'raises an error if opts.cmd is missing or invalid', ->
       assert.raises 'cmd', -> Process {}
@@ -95,7 +100,11 @@ describe 'Process', ->
 
     it 'opts.env sets the process environment', (done) ->
       proc_async ->
-        out = Process.execute 'env', env: { foo: 'bar' }
+        cmd = if jit.os == 'Windows'
+          'env'
+        else
+          {'env'}
+        out = Process.execute cmd, env: { foo: 'bar' }
         assert.equal 'foo=bar', out.stripped
         proc_done done
 
@@ -148,7 +157,7 @@ describe 'Process', ->
           proc_done done
 
     context 'when handlers are not specified', ->
-      it 'collects and returns <out> and <err> output', ->
+      it 'collects and returns <out> and <err> output', (done) ->
         proc_async ->
           p = Process cmd: 'echo foo', read_stdout: true
           stdout, stderr = p\pump!
@@ -164,6 +173,8 @@ describe 'Process', ->
           stdout, stderr = p\pump!
           assert.equals 'out\n', stdout
           assert.equals 'err\n', stderr
+
+          proc_done done
 
   describe 'wait()', ->
     it 'waits until the process is finished', (done) ->
@@ -219,7 +230,7 @@ describe 'Process', ->
 
   describe '.exit_status', ->
     it 'is nil for a running process', ->
-      proc_async ->
+      win_async ->
         p = Process cmd: { 'sh', '-c', "sleep 1; true" }
         assert.is_nil p.exit_status
         p\wait!
