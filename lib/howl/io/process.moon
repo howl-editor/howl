@@ -218,9 +218,10 @@ class Process
 
     -- On Windows, read_async may never call the callback, so the dispatchers
     -- need to be resumed here instead.
-    if @stdout_done
-      pcall dispatch.resume, @stdout_done
-      @stdout_done = nil
-    if @stderr_done
-      pcall dispatch.resume, @stderr_done
-      @stderr_done = nil
+    if jit.os == 'Windows'
+      if @stdout_done
+        pcall dispatch.resume, @stdout_done
+        @stdout_done = nil
+      if @stderr_done
+        pcall dispatch.resume, @stderr_done
+        @stderr_done = nil
