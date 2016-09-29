@@ -73,12 +73,13 @@ describe 'Subprocess', ->
           process\wait!
           assert.equal 9, process.term_sig
 
-  describe 'force_exit()', ->
-    it 'tries to terminate the process in some way', ->
-      process = Subprocess(Subprocess.FLAGS_STDIN_PIPE, 'cat')
-      process\force_exit!
-      process\wait!
-      assert.is_true process.if_exited
+  if jit.os != 'Windows'
+    describe 'force_exit()', ->
+      it 'tries to terminate the process in some way', ->
+        process = Subprocess(Subprocess.FLAGS_STDIN_PIPE, 'cat')
+        process\force_exit!
+        process\wait!
+        assert.is_true process.if_signaled
 
   describe 'wait_check()', ->
     it 'waits until the process is finished and returns true for a succesful termination', ->

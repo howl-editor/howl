@@ -11,7 +11,7 @@ class OutputStream extends PropertyObject
     if ffi.os == 'Windows'
       @stream = Win32OutputStream ffi.C._get_osfhandle fd
     else
-      @stream = UnixOutputStream @stream
+      @stream = UnixOutputStream fd
     super!
 
   @property is_closed: get: => @stream.is_closed
