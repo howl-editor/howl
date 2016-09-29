@@ -1,5 +1,6 @@
 glib = require 'ljglibs.glib'
 GFile = require 'ljglibs.gio.file'
+File = require 'howl.io.file'
 
 sep = if jit.os == 'Windows'
   '\\'

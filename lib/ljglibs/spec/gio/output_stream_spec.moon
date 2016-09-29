@@ -5,6 +5,8 @@
 
 with_tmpfile = (f) ->
   p = os.tmpname!
+  if jit.os == 'Windows'
+    p = p\sub 2
   status, err = pcall f, p
   os.remove p
   error err unless status

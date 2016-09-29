@@ -19,7 +19,11 @@ describe 'Subprocess', ->
 
   describe 'creation', ->
     it 'raises an error for an unknown command', ->
-      assert.raises 'howlblargh', -> Subprocess nil, 'howlblargh', 'urk'
+      errstring = if jit.os == 'Windows'
+        'No such file or directory'
+      else
+        'howlblargh'
+      assert.raises errstring, -> Subprocess nil, 'howlblargh', 'urk'
 
     it 'returns a Subprocess for a valid command', ->
       assert.not_nil Subprocess(Subprocess.FLAGS_STDOUT_SILENCE, 'id')
@@ -51,29 +55,30 @@ describe 'Subprocess', ->
       assert.equal 0, run('id').exit_status
       assert.not_equal 0, run('false').exit_status
 
-  context 'signal handling', ->
-    describe 'send_signal(signal) and .if_signaled', ->
-      it 'sends the specified signal to the process', ->
-        process = Subprocess(Subprocess.FLAGS_STDIN_PIPE, 'cat')
-        process\send_signal 9
-        process\wait!
-        assert.is_true process.if_signaled
+  if jit.os != 'Windows'
+    context 'signal handling', ->
+      describe 'send_signal(signal) and .if_signaled', ->
+        it 'sends the specified signal to the process', ->
+          process = Subprocess(Subprocess.FLAGS_STDIN_PIPE, 'cat')
+          process\send_signal 9
+          process\wait!
+          assert.is_true process.if_signaled
 
-      it '.if_signaled returns false for a non-signaled process', ->
-        assert.is_false run('id').if_signaled
+        it '.if_signaled returns false for a non-signaled process', ->
+          assert.is_false run('id').if_signaled
 
-      it '.term_sig holds the signal used for terminating the process', ->
-        process = Subprocess(Subprocess.FLAGS_STDIN_PIPE, 'cat')
-        process\send_signal 9
-        process\wait!
-        assert.equal 9, process.term_sig
+        it '.term_sig holds the signal used for terminating the process', ->
+          process = Subprocess(Subprocess.FLAGS_STDIN_PIPE, 'cat')
+          process\send_signal 9
+          process\wait!
+          assert.equal 9, process.term_sig
 
   describe 'force_exit()', ->
     it 'tries to terminate the process in some way', ->
       process = Subprocess(Subprocess.FLAGS_STDIN_PIPE, 'cat')
       process\force_exit!
       process\wait!
-      assert.is_true process.if_signaled
+      assert.is_true process.if_exited
 
   describe 'wait_check()', ->
     it 'waits until the process is finished and returns true for a succesful termination', ->
@@ -83,10 +88,11 @@ describe 'Subprocess', ->
       process = Subprocess(Subprocess.FLAGS_STDOUT_SILENCE, 'false')
       assert.raises 'exited', -> process\wait_check!
 
-    it 'raises an error if the process was killed by a signal', ->
-      process = Subprocess(Subprocess.FLAGS_STDIN_PIPE, 'cat')
-      process\send_signal 9
-      assert.raises 'killed', -> process\wait_check!
+    if jit.os != 'Windows'
+      it 'raises an error if the process was killed by a signal', ->
+        process = Subprocess(Subprocess.FLAGS_STDIN_PIPE, 'cat')
+        process\send_signal 9
+        assert.raises 'killed', -> process\wait_check!
 
   describe '.stdout_pipe', ->
     it 'allows reading process output', ->
