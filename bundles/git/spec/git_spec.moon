@@ -2,6 +2,11 @@ import bundle, config, VC from howl
 import File from howl.io
 import Spy from howl.spec
 
+echo = if jit.os == 'Windows'
+  "#{howl.sys.env.WD}echo.exe"
+else
+  '/bin/echo'
+
 describe 'Git bundle', ->
   setup -> bundle.load_by_name 'git'
   teardown -> bundle.unload 'git'
@@ -27,8 +32,7 @@ describe 'Git bundle', ->
           assert.equal instance.root, dir
 
     it 'returns nil if no git root was found', ->
-      File.with_tmpfile (file) ->
-        assert.is_nil git_vc.find file
+      assert.is_nil git_vc.find howl.io.File echo
 
   describe 'A Git instance', ->
     root = nil
@@ -52,7 +56,7 @@ describe 'Git bundle', ->
         assert.same list1, list2
 
       it 'returns a list of git files, including untracked', (done) ->
-        howl_async ->
+        proc_async ->
           assert_same_files git\files!, {}
           file = root / 'new.lua'
           file\touch!
@@ -67,7 +71,7 @@ describe 'Git bundle', ->
           file2 = root / 'another.lua'
           file2\touch!
           assert_same_files git\files!, { file2, file }
-          done!
+          proc_done done
 
     describe 'diff([file])', ->
       local file
@@ -79,37 +83,37 @@ describe 'Git bundle', ->
         os.execute "cd #{root} && git commit -q -m 'rev1' #{file}"
 
       it 'returns nil if <file> has not changed', (done) ->
-        howl_async ->
+        proc_async ->
           assert.is_nil git\diff file
-          done!
+          proc_done done
 
       it 'returns a string containing the diff if <file> has changed', (done) ->
-        howl_async ->
+        proc_async ->
           file.contents ..= 'line 2\n'
           diff = git\diff file
           assert.includes diff, file.basename
           assert.includes diff, '+line 2'
-          done!
+          proc_done done
 
       it 'returns a diff for the entire directory if file is not specified', (done) ->
-        howl_async ->
+        proc_async ->
           file.contents ..= 'line 2\n'
           diff = git\diff!
           assert.includes diff, file.basename
           assert.includes diff, '+line 2'
-          done!
+          proc_done done
 
     describe 'run(...)', ->
       it 'runs git in the root dir with the given arguments and returns the output', (done) ->
-        howl_async ->
+        proc_async ->
           assert.includes git\run('config', '--local', '-l'), "Howl Spec"
-          done!
+          proc_done done
 
       it 'uses the executable in variable `git_path` if specified', (done) ->
-        howl_async ->
-          config.git_path = '/bin/echo'
+        proc_async ->
+          config.git_path = echo
           status, out = pcall git.run, git, 'using echo'
           config.git_path = nil
           assert status, out
           assert.includes out, "using echo"
-          done!
+          proc_done done
