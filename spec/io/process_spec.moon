@@ -33,11 +33,6 @@ describe 'Process', ->
     for proc in *procs
       proc\wait!
 
-  win_async = if jit.os == 'Windows'
-    proc_async
-  else
-    (f) -> f!
-
   describe 'Process(opts)', ->
     it 'raises an error if opts.cmd is missing or invalid', ->
       assert.raises 'cmd', -> Process {}
@@ -229,11 +224,13 @@ describe 'Process', ->
           proc_done done
 
   describe '.exit_status', ->
-    it 'is nil for a running process', ->
-      win_async ->
+    it 'is nil for a running process', (done) ->
+      settimeout 2
+      proc_async ->
         p = Process cmd: { 'sh', '-c', "sleep 1; true" }
         assert.is_nil p.exit_status
         p\wait!
+        proc_done done
 
     it 'is nil for a signalled process', (done) ->
       proc_async ->
