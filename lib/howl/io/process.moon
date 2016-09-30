@@ -22,9 +22,7 @@ for s in *{
 }
   signals[s] = tonumber C["sig_#{s}"]
 
-win_signals = {}
-win_signals[signals['KILL']] = 1
-win_signals[signals['INT']] = 1
+win_signals = win_signals = {signals[s], true for s in *{'KILL', 'INT'}}
 
 jit.off true, true
 
@@ -53,7 +51,7 @@ get_command = (v, shell = default_shell) ->
   t = type v
 
   if t == 'string'
-    arg = if shell\find 'cmd'
+    arg = if shell\find 'cmd.exe'
       -- Likely cmd.exe.
       '/C'
     else
@@ -95,7 +93,7 @@ pump_stream = (stream, handler, parking) ->
       handler ret
       if ret == nil
         stream\close!
-        pcall dispatch.resume, parking
+        dispatch.resume parking
       else
         stream\read_async nil, read_handler
 

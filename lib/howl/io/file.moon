@@ -17,8 +17,6 @@ file_types = {
   [tonumber GFileInfo.TYPE_UNKNOWN]: 'unknown',
 }
 
-local File
-
 platform_tmpname = ->
   -- os.tmpname is broken on Windows and returns a filename prefixed with \.
   -- This causes a lot of "Access denied"-related errors.
