@@ -289,4 +289,6 @@ ffi.cdef [[
 
   gint64 g_get_real_time (void);
 
+  void g_usleep(unsigned long ms);
+
 ]]

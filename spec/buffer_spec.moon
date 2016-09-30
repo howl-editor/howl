@@ -1,8 +1,6 @@
 import Buffer, config, signal from howl
 import File from howl.io
 import with_tmpfile from File
-ffi = require 'ffi'
-ffi.cdef [[ void g_usleep(unsigned long ms); ]]
 
 describe 'Buffer', ->
   buffer = (text) ->
