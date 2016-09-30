@@ -43,7 +43,7 @@ default_shell = if jit.os == 'Windows'
     -- Running under MSYS2.
     "#{howl.sys.env.WD}sh.exe"
   else
-    "#{howl.sys.env.SYSTEMROOT}/System32/cmd.exe"
+    "#{howl.sys.env.SYSTEMROOT}\\System32\\cmd.exe"
 else
   '/bin/sh'
 
