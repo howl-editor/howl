@@ -176,8 +176,8 @@ local function main(args)
     for _, font in ipairs(fonts) do
       local loaded = ffi.C.AddFontResourceExA(font.path, ffi.C.fr_private, nil)
       if loaded == 0 then
-        print('failed to load font ' .. font.path)
-        io:flush()
+        io.stderr:write('failed to load font ', font.path, '\n')
+        io.stderr:flush()
       end
     end
   else
