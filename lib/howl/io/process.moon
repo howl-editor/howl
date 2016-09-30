@@ -22,7 +22,7 @@ for s in *{
 }
   signals[s] = tonumber C["sig_#{s}"]
 
-win_signals = win_signals = {signals[s], true for s in *{'KILL', 'INT'}}
+win_signals = {signals[s], true for s in *{'KILL', 'INT'}}
 
 jit.off true, true
 
@@ -173,15 +173,13 @@ class Process
       stderr = {}
       on_stderr = (err) -> stderr[#stderr + 1] = err
 
-    @stdout_done = on_stdout and dispatch.park "process-wait-stdout-#{@pid}"
-    @stderr_done = on_stderr and dispatch.park "process-wait-stderr-#{@pid}"
-    pump_stream(@stderr, on_stderr, @stderr_done, true) if on_stderr
-    pump_stream(@stdout, on_stdout, @stdout_done) if on_stdout
+    stdout_done = on_stdout and dispatch.park "process-wait-stdout-#{@pid}"
+    stderr_done = on_stderr and dispatch.park "process-wait-stderr-#{@pid}"
+    pump_stream(@stderr, on_stderr, stderr_done, true) if on_stderr
+    pump_stream(@stdout, on_stdout, stdout_done) if on_stdout
 
-    dispatch.wait(@stdout_done) if on_stdout
-    @stdout_done = nil
-    dispatch.wait(@stderr_done) if on_stderr
-    @stderr_done = nil
+    dispatch.wait(stdout_done) if on_stdout
+    dispatch.wait(stderr_done) if on_stderr
     @wait!
 
     stdout = stdout and table.concat(stdout)
@@ -213,13 +211,3 @@ class Process
     if @_exit
       dispatch.resume(@_exit)
       @_exit = nil
-
-    -- On Windows, read_async may never call the callback, so the dispatchers
-    -- need to be resumed here instead.
-    if jit.os == 'Windows'
-      if @stdout_done
-        pcall dispatch.resume, @stdout_done
-        @stdout_done = nil
-      if @stderr_done
-        pcall dispatch.resume, @stderr_done
-        @stderr_done = nil
