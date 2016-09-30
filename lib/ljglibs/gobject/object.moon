@@ -9,7 +9,7 @@ lua_value = types.lua_value
 core.define 'GObject', {
   new: (type, ...) ->
     error 'Undefined gtype passed in', 2 if type == 0 or type == nil
-    C.g_object_new type, ...
+    C.g_object_new type, ..., nil
 
   ref: (o) ->
     return nil if o == nil
