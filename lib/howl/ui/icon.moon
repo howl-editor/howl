@@ -20,16 +20,16 @@ define = (name, definition={}) ->
 define_default = (name, definition) ->
   define(name, definition) unless icons[name]
 
-get = (name, style='icon') ->
+get = (name, icon_style = 'icon') ->
   icon = name
   while type(icon) == 'string'
     name = icon
     icon = icons[name]
     error "Invalid icon '#{name}'" unless icon
 
-  style = style_name(name) .. ':' .. style
+  icon_style = style_name(name) .. ':' .. icon_style
   text = icon.text
-  return StyledText(text, {1, style, #text + 1})
+  return StyledText(text, {1, icon_style, #text + 1})
 
 {
   :define

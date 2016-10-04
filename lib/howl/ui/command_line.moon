@@ -426,13 +426,13 @@ class CommandLine extends PropertyObject
     popup\center!
     @popup = popup
 
-  notify: (text, style='info') =>
+  notify: (text, notification_style = 'info') =>
     if #text == 0
       @clear_notification!
       return
 
     if @notification_widget
-      @notification_widget\notify style, text
+      @notification_widget\notify notification_style, text
       @notification_widget\show!
     else
       io.stderr\write text

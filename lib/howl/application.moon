@@ -112,8 +112,8 @@ class Application extends PropertyObject
 
         true
 
-    window\on_destroy (window) ->
-      @windows = [w for w in *@windows when w\to_gobject! != window]
+    window\on_destroy (destroy_window) ->
+      @windows = [w for w in *@windows when w\to_gobject! != destroy_window]
 
     @g_app\add_window window\to_gobject!
 
@@ -243,8 +243,8 @@ class Application extends PropertyObject
     @g_app\on_open (_, files) -> @_load [File(path) for path in *files]
 
     signal.connect 'window-focused', self\synchronize
-    signal.connect 'editor-destroyed', (args) ->
-      @_editors =  [e for e in *@_editors when e != args.editor]
+    signal.connect 'editor-destroyed', (s_args) ->
+      @_editors =  [e for e in *@_editors when e != s_args.editor]
 
     @g_app\run args
 

@@ -1,4 +1,10 @@
 {
+  whitelist_shadowing: {
+    ['bundles/vi']: {
+      'editor'
+    }
+  }
+
   whitelist_globals: {
     ["."]: {
       'bundle_file',

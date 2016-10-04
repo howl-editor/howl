@@ -526,10 +526,10 @@ describe 'Buffer', ->
       assert.raises 'read%-only', -> b\undo!
 
   describe 'change(offset, count, f)', ->
-    local b, notified, notified_styled, notified_markers
+    local buffer, notified, notified_styled, notified_markers
 
     before_each ->
-      b = Buffer ''
+      buffer = Buffer ''
       notified = nil
       l = {
         on_changed: (_, args) =>
@@ -542,37 +542,37 @@ describe 'Buffer', ->
           notified_markers = args
       }
 
-      b\add_listener l
+      buffer\add_listener l
 
     it 'invokes <f>, grouping all modification as one revision', ->
-      b.text = '123456789'
-      b\change 3, 3, (b) -> -- change '345'
+      buffer.text = '123456789'
+      buffer\change 3, 3, (b) -> -- change '345'
         b\delete 4, 2 -- remove 45
         b\insert 3, 'XY'
 
-      assert.equal '12XY36789', b.text
+      assert.equal '12XY36789', buffer.text
       assert.equal 3, notified.offset
       assert.equal 3, notified.size
       assert.equal 'XY3', notified.text
       assert.equal '345', notified.prev_text
 
-      b\undo!
-      assert.equal '123456789', b.text
+      buffer\undo!
+      assert.equal '123456789', buffer.text
 
     it 'returns the return value of <f> as its own return value', ->
-      b.text = '12345'
-      ret = b\change 1, 3, ->
+      buffer.text = '12345'
+      ret = buffer\change 1, 3, ->
         'zed'
 
       assert.equals 'zed', ret
 
     it 'provides a consistent state during the changes', ->
       jit.off!
-      b.text = '123456789'
-      assert.equal '123456789', b\get_line(1).text
-      assert.equal 1, b.nr_lines
+      buffer.text = '123456789'
+      assert.equal '123456789', buffer\get_line(1).text
+      assert.equal 1, buffer.nr_lines
 
-      b\change 3, 3, (b) -> -- change '345'
+      buffer\change 3, 3, (b) -> -- change '345'
         b\delete 4, 2 -- remove 45
         assert.equal '1236789', b\get_line(1).text
         b\insert 4, 'xy'
@@ -581,94 +581,94 @@ describe 'Buffer', ->
         assert.equal 3, b.nr_lines
 
     it 'supports growing changes', ->
-      b.text = '123456789'
-      b\change 3, 3, (b) -> -- change '345'
+      buffer.text = '123456789'
+      buffer\change 3, 3, (b) -> -- change '345'
         b\delete 4, 1 -- remove 4
         b\insert 4, 'four'
         b\delete 7, 1 -- remove 'r'
 
-      assert.equal '123fou56789', b.text
+      assert.equal '123fou56789', buffer.text
       assert.equal 3, notified.offset
       assert.equal 5, notified.size
       assert.equal '3fou5', notified.text
       assert.equal '345', notified.prev_text
 
-      b\undo!
-      assert.equal '123456789', b.text
+      buffer\undo!
+      assert.equal '123456789', buffer.text
 
     it 'supports appending changes', ->
-      b.text = '1234'
-      b\change 1, b.size, (b) ->
+      buffer.text = '1234'
+      buffer\change 1, buffer.size, (b) ->
         b.text = ''
         b\insert 1, 'xxxx'
         b\insert 5, 'y'
 
-      assert.equal 'xxxxy', b.text
+      assert.equal 'xxxxy', buffer.text
       assert.equal 1, notified.offset
       assert.equal 5, notified.size
       assert.equal 'xxxxy', notified.text
       assert.equal '1234', notified.prev_text
 
-      b\undo!
-      assert.equal '1234', b.text
+      buffer\undo!
+      assert.equal '1234', buffer.text
 
     it 'supports shrinking changes', ->
-      b.text = '123456789'
-      b\change 1, 4, (b) -> -- change '1234'
+      buffer.text = '123456789'
+      buffer\change 1, 4, (b) -> -- change '1234'
         b\delete 1, 3 -- remove 123
         b\insert 1, 'X'
 
-      assert.equal 'X456789', b.text
+      assert.equal 'X456789', buffer.text
       assert.equal 1, notified.offset
       assert.equal 4, notified.size
       assert.equal 'X4', notified.text
       assert.equal '1234', notified.prev_text
 
-      b\undo!
-      assert.equal '123456789', b.text
+      buffer\undo!
+      assert.equal '123456789', buffer.text
 
     it 'supports changing from nothing to something', ->
-      b.text = '123456789'
-      b\change 3, 0, (b) -> -- change right before '3'
+      buffer.text = '123456789'
+      buffer\change 3, 0, (b) -> -- change right before '3'
         b\insert 3, 'XYZ'
         b\delete 5, 1
 
-      assert.equal '12XY3456789', b.text
+      assert.equal '12XY3456789', buffer.text
       assert.equal 3, notified.offset
       assert.equal 2, notified.size
       assert.equal 'XY', notified.text
       assert.equal '', notified.prev_text
 
-      b\undo!
-      assert.equal '123456789', b.text
+      buffer\undo!
+      assert.equal '123456789', buffer.text
 
     it 'supports changing from nothing to nothing', ->
-      b.text = '123456789'
-      b\change 3, 0, (b) -> -- change right before '3'
+      buffer.text = '123456789'
+      buffer\change 3, 0, (b) -> -- change right before '3'
         b\insert 3, 'X'
         b\delete 3, 1
 
-      assert.equal '123456789', b.text
+      assert.equal '123456789', buffer.text
       assert.is_nil notified
 
     it 'supports changing from something to nothing', ->
-      b.text = '123456789'
-      b\change 3, 3, (b) -> -- change '345'
+      buffer.text = '123456789'
+      buffer\change 3, 3, (b) -> -- change '345'
         b\delete 3, 3
 
-      assert.equal '126789', b.text
+      assert.equal '126789', buffer.text
       assert.equal 3, notified.offset
       assert.equal 3, notified.size
       assert.equal '', notified.text
       assert.equal '345', notified.prev_text
 
-      b\undo!
-      assert.equal '123456789', b.text
+      buffer\undo!
+      assert.equal '123456789', buffer.text
 
     it 'collapses marker notification into one notification', ->
-      b.text = '123456789'
-      markers = b.markers
-      b\change 1, 9, (b) ->
+      buffer.text = '123456789'
+      markers = buffer.markers
+      buffer\change 1, 9, (b) ->
         markers\add { {name: 'first', start_offset: 2, end_offset: 4} }
         markers\add { {name: 'second', start_offset: 6, end_offset: 8} }
 
@@ -677,8 +677,8 @@ describe 'Buffer', ->
     describe 'styling notifications', ->
       describe 'when coupled with modifications', ->
         it 'collapses styling notifications in the change event', ->
-          b.text = '123456789'
-          b\change 3, 3, (b) -> -- change '345'
+          buffer.text = '123456789'
+          buffer\change 3, 3, (b) -> -- change '345'
             b.styling\set 3, 4, 'string'
             b.styling\set 5, 6, 'keyword'
             b\delete 3, 3
@@ -691,8 +691,8 @@ describe 'Buffer', ->
           }, notified.styled
 
         it 'expands the styled range to cover all modified lines as needed', ->
-          b.text = '12\n456\n890'
-          b\change 1, 10, (b) ->
+          buffer.text = '12\n456\n890'
+          buffer\change 1, 10, (b) ->
             b\delete 1, 1
             b.styling\set 4, 5, 'string'
             b\delete 9, 1
@@ -706,8 +706,8 @@ describe 'Buffer', ->
 
       describe 'when only styling changes are present', ->
         it 'fires a single on_styled notification', ->
-          b.text = '12\n456\n890'
-          b\change 1, 10, (b) ->
+          buffer.text = '12\n456\n890'
+          buffer\change 1, 10, (b) ->
             b.styling\set 4, 5, 'string'
             b.styling\set 9, 10, 'keyword'
 
@@ -719,26 +719,26 @@ describe 'Buffer', ->
           }, notified_styled
 
     it 'bubbles up any errors in <f>', ->
-      b.text = 'hello'
+      buffer.text = 'hello'
       assert.raises 'BOOM', ->
-        b\change 1, 3, -> error 'BOOM'
+        buffer\change 1, 3, -> error 'BOOM'
 
     describe 'recursive changes', ->
       it 'is reentrant', ->
-        b.text = '123456789'
-        b\change 3, 3, (b) -> -- change '345'
+        buffer.text = '123456789'
+        buffer\change 3, 3, (b) -> -- change '345'
           b\delete 4, 2 -- remove 45
           b\change 3, 1, ->
             b\delete 3, 1 -- remove 3
             b\insert 3, 'XY'
 
-        assert.equal '12XY6789', b.text
-        b\undo!
-        assert.equal '123456789', b.text
+        assert.equal '12XY6789', buffer.text
+        buffer\undo!
+        assert.equal '123456789', buffer.text
 
       it 'handles border cases', ->
-        b.text = '123'
-        b\change 1, 3, (b) -> -- change all
+        buffer.text = '123'
+        buffer\change 1, 3, (b) -> -- change all
           -- all these should work
           b\change 3, 1, -> nil
           b\change 2, 2, -> nil
@@ -754,32 +754,32 @@ describe 'Buffer', ->
           b\change 1, 4, -> nil
 
     it 'is a no-op when no changes were made', ->
-      b.text = 'hello'
-      b\change 1, 3, -> nil
+      buffer.text = 'hello'
+      buffer\change 1, 3, -> nil
       assert.is_nil notified
 
     it 'raises an error for recursive out of range changes', ->
-      b.text = '123456789'
+      buffer.text = '123456789'
       assert.raises "range", ->
-        b\change 3, 3, (b) ->
+        buffer\change 3, 3, (b) ->
           b\change(2, 1, ->)
 
       assert.raises "range", ->
-        b\change 3, 3, (b) ->
+        buffer\change 3, 3, (b) ->
           b\change(4, 3, ->)
 
       assert.raises "range", ->
-        b\change 3, 3, (b) ->
+        buffer\change 3, 3, (b) ->
           b\change(4, 3, ->)
 
     it 'raises an error for out-of-scope modifications', ->
-      b.text = '123456789'
+      buffer.text = '123456789'
       assert.raises "range", ->
-        b\change 3, 3, (b) ->
+        buffer\change 3, 3, (b) ->
           b\insert 2, 'x'
 
       assert.raises "range", ->
-        b\change 3, 3, (b) ->
+        buffer\change 3, 3, (b) ->
           b\insert 7, 'x'
 
   describe '.can_undo', ->

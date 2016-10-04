@@ -82,12 +82,12 @@ export action_for = (tr, source='editor') ->
     return handler if handler
   nil
 
-find_handlers = (event, source, translations, keymaps, ...) ->
+find_handlers = (event, source, translations, maps_to_search, ...) ->
   handlers = {}
   empty = {}
   os = sys.info.os
 
-  for map in *keymaps
+  for map in *maps_to_search
     continue unless map
 
     source_map = map[source] or empty
@@ -172,10 +172,10 @@ export translate_key = (event) ->
 
   translations
 
-export dispatch = (event, source, keymaps, ...) ->
+export dispatch = (event, source, maps_to_search, ...) ->
   event = substitute_keyname event
   translations = translate_key event
-  handlers, halt_map, map_opts = find_handlers event, source, translations, keymaps, ...
+  handlers, halt_map, map_opts = find_handlers event, source, translations, maps_to_search, ...
   remove halt_map if halt_map and map_opts.pop
 
   for handler in *handlers

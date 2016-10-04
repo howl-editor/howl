@@ -340,13 +340,13 @@ run = (theme_name, only) ->
 
   print "- Taking screenshots.."
   app.window\resize 1048, 480
-  for theme_name in *for_themes
-    howl.config.theme = theme_name
+  for cur_theme in *for_themes
+    howl.config.theme = cur_theme
     wait_a_bit!
-    ss_dir = image_dir\join((theme_name\lower!\gsub('%s', '-')))
+    ss_dir = image_dir\join((cur_theme\lower!\gsub('%s', '-')))
     ss_dir\mkdir_p! unless ss_dir.exists
-    print "  * #{theme_name}.."
-    take_snapshots theme_name, ss_dir, only
+    print "  * #{cur_theme}.."
+    take_snapshots cur_theme, ss_dir, only
 
 howl.signal.connect 'app-ready', ->
   log.info ''

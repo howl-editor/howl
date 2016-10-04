@@ -194,10 +194,10 @@ need_text_object = (flair) ->
 
   draw: (flair, display_line, start_offset, end_offset, x, y, cr) ->
 
-    get_defined_width = (x, flair, cr, clip) ->
-      return flair.width if type(flair.width) == 'number'
-      if flair.width == 'full'
-        clip.x2 - x
+    get_defined_width = (at_x, f, clip) ->
+      return f.width if type(f.width) == 'number'
+      if f.width == 'full'
+        clip.x2 - at_x
 
     flair = flairs[flair] if type(flair) == 'string'
     return unless flair
@@ -223,7 +223,7 @@ need_text_object = (flair) ->
       text_start_x = x + max((start_rect.x / SCALE), 0) - base_x
       start_x = max(text_start_x, view.edit_area_x)
 
-      width = get_defined_width(start_x, flair, cr, clip)
+      width = get_defined_width(start_x, flair, clip)
       unless width
         end_rect = layout\index_to_pos f_end_offset - 1
         end_x = end_rect.x / SCALE

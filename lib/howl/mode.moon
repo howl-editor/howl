@@ -83,8 +83,8 @@ register = (mode = {}) ->
 unregister = (name) ->
   mode = modes[name]
   if mode
-    remove_from = (table, mode) ->
-      keys = [k for k, m in pairs table when m == mode]
+    remove_from = (table, remove_mode) ->
+      keys = [k for k, m in pairs table when m == remove_mode]
       table[k] = nil for k in *keys
 
     remove_from modes, mode

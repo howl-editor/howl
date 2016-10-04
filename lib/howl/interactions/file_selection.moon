@@ -181,9 +181,7 @@ interact.register
         append dirs, 1, directory
         return dirs
 
-      .subtree_reader = (directory, opts={}) ->
-        opts = moon.copy opts
-        opts.filter = (file) -> not file.is_directory
+      .subtree_reader = (directory) ->
         dirs, timed_out = subtree_reader directory, filter: (file) -> not file.is_directory
         append dirs, 1, directory
         return dirs, timed_out

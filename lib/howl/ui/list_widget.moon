@@ -111,9 +111,9 @@ class ListWidget extends PropertyObject
     if not @highlight_matches_for or @highlight_matches_for.is_empty
       return
 
-    highlighter = self.highlighter or (text) ->
+    highlighter = self.highlighter or (t) ->
       explain = type(@matcher) == 'table' and @matcher.explain or Matcher.explain
-      explain @highlight_matches_for, text
+      explain @highlight_matches_for, t
 
     segments = highlighter text
     if segments

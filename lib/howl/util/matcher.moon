@@ -135,7 +135,7 @@ class Matcher
       text = if type(candidate) == 'table' and #candidate > 0
         table.concat [tostring(c) for c in *candidate], ' '
       else
-        text = tostring candidate
+        tostring candidate
 
       append @lines, index: i, text: text.ulower, case_text: text
       max_len = max max_len, #text

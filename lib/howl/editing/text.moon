@@ -67,9 +67,9 @@ reflow_paragraph_at = (line, limit) ->
   lines = paragraph_at line
   return false unless #lines > 0
   start_line = nil
-  for line in *lines
-    if can_reflow line, limit
-      start_line = line
+  for p_line in *lines
+    if can_reflow p_line, limit
+      start_line = p_line
       break
 
   return false unless start_line -- no, we're good already

@@ -86,7 +86,7 @@ for_table = (items, columns=nil) ->
   styles = {}
   offset = 0
 
-  write = (text, style=nil) ->
+  write = (text, text_style = nil) ->
     return unless #text > 0
     append text_parts, tostring text
 
@@ -99,9 +99,9 @@ for_table = (items, columns=nil) ->
         i += 1
         append styles, text.styles[i] + offset
         i += 1
-    elseif style
+    elseif text_style
       append styles, offset + 1
-      append styles, style
+      append styles, text_style
       append styles, offset + #text + 1
 
     offset += #(tostring text)

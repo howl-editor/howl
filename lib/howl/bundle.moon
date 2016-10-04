@@ -37,18 +37,18 @@ unloaded = ->
   table.sort l
   l
 
-verify_bundle = (bundle, dir) ->
-  if type(bundle) != 'table'
+verify_bundle = (b, dir) ->
+  if type(b) != 'table'
     error "Incorrect bundle: no table returned from #{dir}"
 
-  info = bundle.info
+  info = b.info
   if type(info) != 'table'
     error "Incorrect bundle: info missing for #{dir}"
 
   for field in *{ 'description', 'license', 'author' }
     error "Incorrect bundle: missing info field '#{field}' for #{dir}" if not info[field]
 
-  error "Missing bundle function 'unload' in #{dir}" unless callable bundle.unload
+  error "Missing bundle function 'unload' in #{dir}" unless callable b.unload
 
 export load_from_dir = (dir) ->
   error "Not a directory: #{dir}", 2 if not dir or typeof(dir) != 'File' or not dir.is_directory

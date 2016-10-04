@@ -63,13 +63,13 @@ change_sink = (start_offset, count) ->
       else
         @roof += size
 
-    add_styling_change: (start_offset, end_offset) =>
-      @styling_start = min(@styling_start or start_offset, start_offset)
-      @styling_end = max(@styling_end or 0, end_offset)
+    add_styling_change: (change_start, change_end) =>
+      @styling_start = min(@styling_start or change_start, change_start)
+      @styling_end = max(@styling_end or 0, change_end)
 
-    add_markers_change: (start_offset, end_offset) =>
-      @markers_start = min(@markers_start or start_offset, start_offset)
-      @markers_end = max(@markers_end or 0, end_offset)
+    add_markers_change: (change_start, change_end) =>
+      @markers_start = min(@markers_start or change_start, change_start)
+      @markers_end = max(@markers_end or 0, change_end)
 
     can_reenter: (offset, _count) =>
       return false if offset < start_offset

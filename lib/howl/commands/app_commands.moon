@@ -133,11 +133,11 @@ command.register
   name: 'describe-signal',
   description: 'Describe a given signal'
   input: interact.select_signal
-  handler: (name) ->
-    def = signal.all[name]
-    error "Unknown signal '#{name}'" unless def
+  handler: (signal_name) ->
+    def = signal.all[signal_name]
+    error "Unknown signal '#{signal_name}'" unless def
     buffer = with ActionBuffer!
-      .title = "Signal: #{name}"
+      .title = "Signal: #{signal_name}"
       \append "#{def.description}\n\n"
       \append "Parameters:"
 
