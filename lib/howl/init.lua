@@ -120,8 +120,8 @@ end
 
 local function lint(args)
   local root = howl.io.File(app_root)
-  package.loaded.lint_config = loadfile(root:join('lint_config.moon').path)()
-  local lint = require("moonscript.cmd.lint")
+  lint_config = root:join('lint_config.moon').path
+  local moonpick = require("moonpick")
   local errors = 0
   local paths = {}
   local moon_filter = function(f)
@@ -145,9 +145,10 @@ local function lint(args)
 
   for i = 1, #paths do
     local path = paths[i]
-    local res, err = lint.lint_file(path)
-    if res then
-      io.stderr:write(res .. "\n\n")
+    local res, err = moonpick.lint_file(path, {lint_config = lint_config})
+    if res and #res > 0 then
+      io.stderr:write(path .. "\n\n")
+      io.stderr:write(moonpick.format_inspections(res) .. "\n\n")
       errors = errors + 1
     elseif err then
       io.stderr:write(path .. "\n" .. err.. "\n\n")
