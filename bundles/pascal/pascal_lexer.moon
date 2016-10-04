@@ -11,7 +11,7 @@ howl.util.lpeg_lexer ->
 
   pascal_word = (words) ->
     new_words = for w in *words
-      sequence [P(c\upper!) + c\lower! for c in w\gmatch '.']
+      sequence [P(ch\upper!) + ch\lower! for ch in w\gmatch '.']
 
     word new_words
 

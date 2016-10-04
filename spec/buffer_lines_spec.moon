@@ -10,8 +10,7 @@ describe 'BufferLines', ->
     assert.equal #b.lines, 3
 
   describe 'Line objects', ->
-    buf = nil
-    lines = nil
+    local buf, lines
 
     before_each ->
       buf = buffer 'hƏllØ\n  wØrld\nagain!'
@@ -66,11 +65,7 @@ describe 'BufferLines', ->
           assert.equal '        first\n', buf.text
 
       context 'when `use_tabs` is true', ->
-        local buf, lines
-
         before_each ->
-          buf = buffer ''
-          lines = buf.lines
           buf.config.use_tabs = true
           buf.config.tab_width = 4
 

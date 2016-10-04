@@ -121,7 +121,7 @@ describe 'formatting', ->
           assert.equals '{\n    \n}\n', buffer.text
 
         it 'indents the new line using the editor', ->
-          buffer.mode = indent: (editor) => editor.current_line.indentation = 5
+          buffer.mode = indent: (ed) => ed.current_line.indentation = 5
           buffer.text = '{\n'
           cursor.line = 2
           formatting.ensure_block editor, '{$', '}', '}'

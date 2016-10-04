@@ -94,8 +94,6 @@ describe 'command', ->
           assert.spy(cmd.handler).was_called 1
 
         context 'and the command specifies an input function', ->
-          local cmd
-
           before_each ->
             cmd =
               name: 'with-input'

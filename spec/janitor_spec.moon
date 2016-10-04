@@ -93,5 +93,5 @@ describe 'janitor', ->
       config.cleanup_close_buffers_after = 1
       janitor.clean_up_buffers!
 
-      assert.same {'15-min-old'}, [b.title for b in *app.buffers]
+      assert.same {'15-min-old'}, [_b.title for _b in *app.buffers]
 
