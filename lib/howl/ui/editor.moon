@@ -862,7 +862,7 @@ class Editor extends PropertyObject
       @popup.window\on_delete_back self, params if @popup.window.on_delete_back
 
   _on_scroll: =>
-    return unless @popup
+    return unless @popup and @popup.showing
     x, y = @_get_popup_coordinates @popup.options.position
     @popup.window\move_to x, y
 
