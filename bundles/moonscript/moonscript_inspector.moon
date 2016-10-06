@@ -5,92 +5,38 @@
 {:sandbox} = howl.util
 append = table.insert
 
-builtin_whitelist_globals = {s, true for s in *{
-  '_G'
-  '_VERSION'
-  'assert'
-  'collectgarbage'
-  'dofile'
-  'error'
-  'getfenv'
-  'getmetatable'
-  'ipairs'
-  'load'
-  'loadfile'
-  'loadstring'
-  'module'
-  'next'
-  'pairs'
-  'pcall'
-  'print'
-  'rawequal'
-  'rawget'
-  'rawset'
-  'require'
-  'select'
-  'setfenv'
-  'setmetatable'
-  'tonumber'
-  'tostring'
-  'type'
-  'unpack'
-  'xpcall'
-  'coroutine'
-  'debug'
-  'io'
-  'math'
-  'os'
-  'package'
-  'string'
-  'table'
-
-  'true',
-  'false',
-  'nil'
-}}
+moonpick = require "moonpick"
+moonpick_config = require "moonpick.config"
 
 project_lint_config = (root) ->
   for p in *{'lint_config.moon', 'lint_config.lua'}
     config = root\join(p)
     return config if config.exists
 
-load_lint_whitelist = (root, config, for_file, lint) ->
-  cfg, err = loadfile config
-  unless cfg
-    log.error "Failed to load lint config from '#{config}': #{err}"
-    return builtin_whitelist_globals
-
+load_lint_config = (config_file, for_file) ->
   s_box = sandbox no_globals: true
-  wl = s_box -> cfg!.whitelist_globals
-  return builtin_whitelist_globals unless wl
-
-  whitelist = setmetatable {}, __index: builtin_whitelist_globals
-  rel_path = for_file\relative_to_parent root
-  for pattern, list in pairs wl
-    if rel_path\match(pattern)
-      for symbol in *list
-        whitelist[symbol] = true
-
-  whitelist
-
-load_project_lint_whitelist = (root, for_file, lint) ->
-  lint_config = project_lint_config root
-  return builtin_whitelist_globals unless lint_config
-  load_lint_whitelist root, lint_config, for_file, lint
+  s_box ->
+    moonpick_config.load_config_from config_file.path, for_file.path
 
 (buffer) ->
-  lint = require "moonscript.cmd.lint"
-  lint_whitelist = builtin_whitelist_globals
+  local lint_config
+  file = buffer.file or buffer.directory
 
-  if buffer.file
-    project = Project.for_file buffer.file
-    if project
-      lint_whitelist = load_project_lint_whitelist project.root, buffer.file, lint
-    elseif buffer.file\is_below(app.settings.dir)
-      howl_lint_config = app.root_dir\join('lint_config.moon')
-      lint_whitelist = load_lint_whitelist app.settings.dir, howl_lint_config, buffer.file, lint
+  if file
+    config_file = nil
 
-  status, res, err = pcall lint.lint_code, buffer.text, buffer.title, lint_whitelist
+    if buffer.file\is_below(app.settings.dir)
+      config_file = app.root_dir\join('lint_config.moon')
+    else
+      project = Project.for_file file
+      if project
+        config_file = project_lint_config project.root
+
+    if config_file
+      lint_config = load_lint_config config_file, file
+
+  status, res, err = pcall moonpick.lint, buffer.text, lint_config
+
   unless status
     msg = res
     if type(msg) == 'table' and msg[1] == 'user-error'
@@ -112,13 +58,14 @@ load_project_lint_whitelist = (root, for_file, lint) ->
     return nil
 
   inspections = {}
-  for nr, message in res\gmatch 'line (%d+): ([^\n\r]+)'
+
+  for i in *res
     inspection = {
-      line: tonumber(nr)
+      line: i.line
       type: 'warning'
-      :message
+      message: i.msg
     }
-    symbols = [s for s in message\gmatch "`([^`]+)`"]
+    symbols = [s for s in i.msg\gmatch "`([^`]+)`"]
     if #symbols == 1
       inspection.search = symbols[1]
 
