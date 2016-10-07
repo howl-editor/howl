@@ -419,6 +419,7 @@ class Application extends PropertyObject
             buffer.file = file
             buffer.last_shown = entry.last_shown
             buffer.properties = entry.properties
+            signal.emit 'file-opened', :file, :buffer
 
           log.error "Failed to load #{file}: #{err}" unless status
 
