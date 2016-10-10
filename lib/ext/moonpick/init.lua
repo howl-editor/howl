@@ -166,7 +166,7 @@ destructuring_decls = function(list)
   end
 end
 local handlers = {
-  update = function(node, scope, walk)
+  update = function(node, scope, walk, ref_pos)
     local target, val = node[2], node[4]
     if not (scope.is_wrapper) then
       if is_loop_assignment({
@@ -178,19 +178,19 @@ local handlers = {
     end
     if target[1] == 'ref' then
       scope:add_assignment(target[2], {
-        pos = target[-1]
+        pos = target[-1] or ref_pos
       })
     else
-      walk(target, scope)
+      walk(target, scope, ref_pos)
     end
     return walk({
       val
-    }, scope)
+    }, scope, ref_pos)
   end,
-  assign = function(node, scope, walk)
+  assign = function(node, scope, walk, ref_pos)
     local targets = node[2]
     local values = node[3]
-    local pos = node[-1]
+    local pos = node[-1] or ref_pos
     if not (scope.is_wrapper) then
       if is_loop_assignment(values) then
         scope = scope:open_scope(node, 'loop-assignment')
@@ -199,7 +199,7 @@ local handlers = {
     end
     local is_fndef = is_fndef_assignment(values)
     if not (is_fndef) then
-      walk(values, scope)
+      walk(values, scope, ref_pos)
     end
     for _index_0 = 1, #targets do
       local t = targets[_index_0]
@@ -209,7 +209,7 @@ local handlers = {
           pos = t[-1] or pos
         })
       elseif 'chain' == _exp_0 then
-        walk(t, scope)
+        walk(t, scope, ref_pos)
       elseif 'table' == _exp_0 then
         for name, d_pos in destructuring_decls(t[2]) do
           scope:add_assignment(name, {
@@ -219,76 +219,77 @@ local handlers = {
       end
     end
     if is_fndef then
-      return walk(values, scope)
+      return walk(values, scope, ref_pos)
     end
   end,
-  chain = function(node, scope, walk)
+  chain = function(node, scope, walk, ref_pos)
     if not scope.is_wrapper and is_loop_assignment({
       node
     }) then
       scope = scope:open_scope(node, 'chain')
       scope.is_wrapper = true
     end
-    return walk(node, scope)
+    return walk(node, scope, ref_pos)
   end,
-  ref = function(node, scope)
+  ref = function(node, scope, walk, ref_pos)
     return scope:add_ref(node[2], {
-      pos = node[-1]
+      pos = node[-1] or ref_pos
     })
   end,
-  fndef = function(node, scope, walk)
+  fndef = function(node, scope, walk, ref_pos)
     local params, f_type, body = node[2], node[4], node[5]
     local t = f_type == 'fat' and 'method' or 'function'
     scope = scope:open_scope(node, t)
+    local pos = node[-1] or ref_pos
     for _index_0 = 1, #params do
       local p = params[_index_0]
       local def = p[1]
       if type(def) == 'string' then
         scope:add_declaration(def, {
-          pos = node[-1],
+          pos = pos,
           type = 'param'
         })
         if p[2] then
           walk({
             p[2]
-          }, scope)
+          }, scope, ref_pos)
         end
       elseif type(def) == 'table' and def[1] == 'self' then
         scope:add_declaration(def[2], {
-          pos = node[-1],
+          pos = pos,
           type = 'param'
         })
         scope:add_ref(def[2], {
-          pos = node[-1]
+          pos = pos
         })
         if p[2] then
           walk({
             p[2]
-          }, scope)
+          }, scope, ref_pos)
         end
       else
         walk({
           p
-        }, scope)
+        }, scope, ref_pos)
       end
     end
-    return walk(body, scope)
+    return walk(body, scope, ref_pos)
   end,
-  ["for"] = function(node, scope, walk)
+  ["for"] = function(node, scope, walk, ref_pos)
     local var, args, body = node[2], node[3], node[4]
     if not (scope.is_wrapper) then
       scope = scope:open_scope(node, 'for')
     end
     scope:add_declaration(var, {
-      pos = node[-1],
+      pos = node[-1] or ref_pos,
       type = 'loop-var'
     })
-    walk(args, scope)
+    walk(args, scope, ref_pos)
     if body then
-      return walk(body, scope)
+      return walk(body, scope, ref_pos)
     end
   end,
-  foreach = function(node, scope, walk)
+  foreach = function(node, scope, walk, ref_pos)
     local vars, args, body = node[2], node[3], node[4]
     if not body then
       body = args
@@ -298,39 +299,39 @@ local handlers = {
       scope = scope:open_scope(node, 'for-each')
     end
     if args then
-      walk(args, scope)
+      walk(args, scope, ref_pos)
     end
     for _index_0 = 1, #vars do
       local var = vars[_index_0]
       local _exp_0 = type(var)
       if 'string' == _exp_0 then
         scope:add_declaration(var, {
-          pos = node[-1],
+          pos = node[-1] or ref_pos,
           type = 'loop-var'
         })
       elseif 'table' == _exp_0 then
         if var[1] == 'table' then
           for name, pos in destructuring_decls(var[2]) do
             scope:add_declaration(name, {
-              pos = pos,
+              pos = pos or ref_pos,
               type = 'loop-var'
             })
           end
         end
       end
     end
-    return walk(body, scope)
+    return walk(body, scope, ref_pos)
   end,
-  declare_with_shadows = function(node, scope, walk)
+  declare_with_shadows = function(node, scope, walk, ref_pos)
     local names = node[2]
     for _index_0 = 1, #names do
       local name = names[_index_0]
       scope:add_declaration(name, {
-        pos = node[-1]
+        pos = node[-1] or ref_pos
       })
     end
   end,
-  export = function(node, scope, walk)
+  export = function(node, scope, walk, ref_pos)
     local names, vals = node[2], node[3]
     if type(names) == 'string' then
       scope.exported_from = node[-1]
@@ -338,7 +339,7 @@ local handlers = {
       for _index_0 = 1, #names do
         local name = names[_index_0]
         scope:add_declaration(name, {
-          pos = node[-1],
+          pos = node[-1] or ref_pos,
           is_exported = true,
           type = 'export'
         })
@@ -347,36 +348,39 @@ local handlers = {
     if vals then
       return walk({
         vals
-      }, scope)
+      }, scope, ref_pos)
     end
   end,
-  import = function(node, scope, walk)
+  import = function(node, scope, walk, ref_pos)
     local names, values = node[2], node[3]
     for _index_0 = 1, #names do
       local name = names[_index_0]
+      if type(name) == 'table' and name[1] == 'colon' then
+        name = name[2]
+      end
       scope:add_declaration(name, {
-        pos = node[-1],
+        pos = node[-1] or ref_pos,
         type = 'import'
       })
     end
     return walk({
       values
-    }, scope)
+    }, scope, ref_pos)
   end,
-  decorated = function(node, scope, walk)
+  decorated = function(node, scope, walk, ref_pos)
     local stm, vals = node[2], node[3]
     if not (vals[1] == 'if' or vals[1] == 'unless') then
       scope = scope:open_scope(node, 'decorated')
       scope.is_wrapper = true
     end
     walk({
-      stm
-    }, scope)
-    return walk({
       vals
-    }, scope)
+    }, scope, ref_pos)
+    return walk({
+      stm
+    }, scope, ref_pos)
   end,
-  comprehension = function(node, scope, walk)
+  comprehension = function(node, scope, walk, ref_pos)
     local exps, loop = node[2], node[3]
     if not (scope.is_wrapper) then
       scope = scope:open_scope(node, 'comprehension')
@@ -388,14 +392,14 @@ local handlers = {
     end
     walk({
       loop
-    }, scope)
+    }, scope, ref_pos)
     if exps then
       return walk({
         exps
-      }, scope)
+      }, scope, ref_pos)
     end
   end,
-  tblcomprehension = function(node, scope, walk)
+  tblcomprehension = function(node, scope, walk, ref_pos)
     local exps, loop = node[2], node[3]
     if not (scope.is_wrapper) then
       scope = scope:open_scope(node, 'tblcomprehension')
@@ -407,48 +411,66 @@ local handlers = {
     end
     walk({
       loop
-    }, scope)
+    }, scope, ref_pos)
     if exps then
       return walk({
         exps
-      }, scope)
+      }, scope, ref_pos)
     end
   end,
-  class = function(node, scope, walk)
+  class = function(node, scope, walk, ref_pos)
     local name, parent, body = node[2], node[3], node[4]
-    scope:add_declaration(name, {
-      pos = node[-1],
-      type = 'class'
-    })
-    if scope.node[#scope.node] == node then
+    local handle_name = name and type(name) == 'string'
+    if handle_name then
+      scope:add_declaration(name, {
+        pos = node[-1] or ref_pos,
+        type = 'class'
+      })
+    end
+    if handle_name and scope.node[#scope.node] == node then
       scope:add_ref(name, {
-        pos = node[-1]
+        pos = node[-1] or ref_pos
       })
     end
     walk({
       parent
-    }, scope)
+    }, scope, ref_pos)
     scope = scope:open_scope(node, 'class')
-    return walk(body, scope)
+    return walk(body, scope, ref_pos)
   end,
-  ["while"] = function(node, scope, walk)
+  ["while"] = function(node, scope, walk, ref_pos)
     local conds, body = node[2], node[3]
     walk({
       conds
-    }, scope)
+    }, scope, ref_pos)
     local cond_scope = scope:open_scope(node, 'while')
     if body then
-      return walk(body, cond_scope)
+      return walk(body, cond_scope, ref_pos)
     end
   end,
-  cond_block = function(node, scope, walk)
+  with = function(node, scope, walk, ref_pos)
+    local assigns, body = node[2], node[3]
+    local with_scope = scope:open_scope(node, 'with')
+    walk({
+      assigns
+    }, with_scope, ref_pos)
+    for name in pairs(with_scope.declared) do
+      with_scope:add_ref(name, {
+        pos = ref_pos
+      })
+    end
+    return walk({
+      body
+    }, with_scope, ref_pos)
+  end,
+  cond_block = function(node, scope, walk, ref_pos)
     local op, conds, body = node[1], node[2], node[3]
     walk({
       conds
-    }, scope)
+    }, scope, ref_pos)
     local cond_scope = scope:open_scope(node, op)
     if body then
-      walk(body, cond_scope)
+      walk(body, cond_scope, ref_pos)
     end
     local rest
     do
@@ -463,35 +485,56 @@ local handlers = {
       rest = _accum_0
     end
     if #rest > 0 then
-      return walk(rest, scope)
+      return walk(rest, scope, ref_pos)
     end
   end,
-  ["else"] = function(node, scope, walk)
+  ["else"] = function(node, scope, walk, ref_pos)
     local body = node[2]
     scope = scope:open_scope(node, 'else')
-    return walk(body, scope)
+    return walk(body, scope, ref_pos)
   end
 }
 handlers['if'] = handlers.cond_block
 handlers['elseif'] = handlers.cond_block
 handlers['unless'] = handlers.cond_block
+local resolve_pos
+resolve_pos = function(node, base_pos)
+  if node[-1] then
+    return node[-1]
+  end
+  if type(node) == 'table' then
+    for _index_0 = 1, #node do
+      local sub_node = node[_index_0]
+      if type(sub_node) == 'table' then
+        if sub_node[-1] then
+          return sub_node[-1]
+        end
+      end
+    end
+  end
+  return base_pos
+end
 local walk
-walk = function(tree, scope)
+walk = function(tree, scope, base_pos)
   if not (tree) then
     error("nil passed for node: " .. tostring(debug.traceback()))
   end
+  if not (base_pos) then
+    error("nil passed for base_pos: " .. tostring(debug.traceback()))
+  end
   for _index_0 = 1, #tree do
     local node = tree[_index_0]
+    local ref_pos = resolve_pos(node, base_pos)
     local handler = handlers[node[1]]
     if handler then
-      handler(node, scope, walk)
+      handler(node, scope, walk, ref_pos)
     else
       for _index_1 = 1, #node do
         local sub_node = node[_index_1]
         if type(sub_node) == 'table' then
           walk({
             sub_node
-          }, scope)
+          }, scope, ref_pos)
         end
       end
     end
@@ -635,7 +678,7 @@ lint = function(code, opts)
     require('moon').p(tree)
   end
   local scope = Scope(tree)
-  walk(tree, scope)
+  walk(tree, scope, 1)
   return report(scope, code, opts)
 end
 local lint_file
