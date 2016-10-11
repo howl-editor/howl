@@ -238,12 +238,18 @@ interact.register
   evade_history: true
   handler: (opts={}) ->
     opts = moon.copy opts
+    command_items = get_command_items!
+    name_width = 0
+    shortcut_width = 0
+    for item in *command_items
+      name_width = math.max(name_width, item[1].ulen)
+      shortcut_width = math.max(shortcut_width, item[2].ulen)
     with opts
-      .items = get_command_items!
+      .items = command_items
       .headers = { 'Command', 'Key binding', 'Description' }
       .columns = {
-        { style: 'string', min_width: 30 }
-        { style: 'keyword', min_width: 15 }
+        { style: 'string', min_width: name_width }
+        { style: 'keyword', min_width: shortcut_width }
         { style: 'comment' }
       }
     result = interact.select opts
