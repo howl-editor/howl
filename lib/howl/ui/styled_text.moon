@@ -60,7 +60,7 @@ compute_column_widths = (columns, items) ->
   if columns
     for i = 1, #columns
       header = columns[i].header or ''
-      widths[i] = math.max widths[i] or 1, header and tostring(header).ulen or 0
+      widths[i] = math.max widths[i] or 1, header and tostring(header).ulen or 0, columns[i].min_width or 0
       widths.num = math.max widths.num, i
 
   for item in *items
@@ -124,10 +124,21 @@ for_table = (items, columns=nil) ->
     for i = 1, column_widths.num
       cell = display_str item[i]
       cell_style = columns and columns[i] and columns[i].style
+      right_align = columns and columns[i] and columns[i].align == 'right'
+
+      left_pad_width = 0
+      right_pad_width = 0
       pad_width = column_widths[i] - tostring(cell).ulen
-      pad_width += 1 if i < column_widths.num
+      if right_align
+        left_pad_width = pad_width
+      else
+        right_pad_width = pad_width
+
+      right_pad_width += 1 if i < column_widths.num
+
+      write padding(left_pad_width), cell_style
       write cell, cell_style
-      write padding(pad_width), cell_style
+      write padding(right_pad_width), cell_style
 
     write '\n'
 

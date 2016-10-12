@@ -5,6 +5,8 @@ import interact from howl
 import highlight from howl.ui
 import Matcher from howl.util
 
+append = table.insert
+
 line_match_highlighter = (editor, explain) ->
   local buffer
   (selection, text, items) ->
@@ -79,7 +81,11 @@ interact.register
       error '"matcher", "items" or "on_change" not allowed', 2
 
     editor = opts.editor or howl.app.editor
-    line_items = [{tostring(line.nr), line.chunk, buffer: line.buffer, line_nr: line.nr, :line} for line in *lines]
+    line_items = {}
+    largest_nr = 0
+    for line in *lines
+      append line_items, {tostring(line.nr), line.chunk, buffer: line.buffer, line_nr: line.nr, :line}
+      largest_nr = math.max(largest_nr, line.nr)
 
     selected_line = opts.selected_line
     if selected_line
@@ -94,9 +100,14 @@ interact.register
       matcher = create_matcher(line_items, opts.find)
     else
       matcher = Matcher line_items, preserve_order: true
+
     opts.matcher = matcher
     opts.on_change = line_match_highlighter(editor, matcher.explain)
     opts.force_preview = true
+    opts.columns = {
+        {align: 'right', style: 'comment', min_width: tostring(largest_nr).ulen},
+        {}
+      }
 
     result = interact.select_location opts
 
