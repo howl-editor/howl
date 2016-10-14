@@ -15,17 +15,17 @@ Arch package available from the [AUR](#archlinux).
 
 ## Latest release
 
-The latest release of Howl is 0.4. It was released at 2016-05-31, and is
+The latest release of Howl is 0.4.1. It was released at 2016-10-14, and is
 available for download from:
 
-[https://github.com/howl-editor/howl/releases/download/0.4/howl-0.4.tgz](https://github.com/howl-editor/howl/releases/download/0.4/howl-0.4.tgz)
+[https://github.com/howl-editor/howl/releases/download/0.4.1/howl-0.4.1.tgz](https://github.com/howl-editor/howl/releases/download/0.4.1/howl-0.4.1.tgz)
 
-_MD5_: aa4761e657b2cedbae0f2f843731a17f
+_MD5_: 9ef463f4d8b31e8954e70e507fbb1858
 
-_SHA1_: 557fea5af8e6768ea6408ab2d11db63c0ae5fdf4
+_SHA1_: 1434af03c5bc9f10d64ef93ca0ae68ccc7092fee
 
 __Release notes:__
-[Howl 0.4 Released](/blog/2016/05/31/howl-0-4-released.html)
+[Howl 0.4.1 Released](/blog/2016/10/14/howl-0-4-1-released.html)
 
 ## Building Howl from source
 
@@ -100,27 +100,15 @@ pull the latest additions, and issue make again from the src directory. _Don't
 forget to make again though_, as this would cause stale byte code to be loaded
 and confusion to arise.
 
-## Distribution packages
-
-### ArchLinux
-
-![ArchLinux](logos/archlinux-logo.png)
-
-Courtesy of [Bartłomiej Piotrowski](http://bpiotrowski.pl), Howl is available as
-a package in the [Arch User Repository](https://aur.archlinux.org/) (AUR). You
-can install it using your AUR
-[helper](https://wiki.archlinux.org/index.php/AUR_Helpers) of choice, or by
-doing a manual install from AUR. As an example, using the `packer` helper you
-can install Howl by issuing:
-
-```shell
-$ sudo packer -S howl-editor
-```
-
-The package version might be out-of-date right after a new release, so verify
-that the version in the archive is the latest.
-
 ## Older releases
+
+### Howl 0.4, released 2016-05-31
+
+[Download](https://github.com/howl-editor/howl/releases/download/0.4/howl-0.4.tgz)
+
+_MD5_: aa4761e657b2cedbae0f2f843731a17f
+
+_SHA1_: 557fea5af8e6768ea6408ab2d11db63c0ae5fdf4
 
 ### Howl 0.3, released 2015-09-02.
 
