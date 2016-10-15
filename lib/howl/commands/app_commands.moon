@@ -46,6 +46,17 @@ command.register
   handler: (buf) -> app.editor.buffer = buf
 
 command.register
+  name: 'buffer-next',
+  description: 'Jump to the next buffer'
+  handler: ->
+    buffers = moon.copy app.buffers
+    table.sort buffers, (a, b) -> a.title < b.title
+    for i, buffer in ipairs buffers
+      if buffer.title == app.editor.buffer.title
+        app.editor.buffer = buffers[i % #buffers + 1]
+        break
+
+command.register
   name: 'buffer-reload',
   description: 'Reload the current buffer from file'
   handler: ->

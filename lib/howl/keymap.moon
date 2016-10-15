@@ -39,6 +39,7 @@
     ctrl_shift_end:   'cursor-eof-extend'
 
     ctrl_b:           'switch-buffer'
+    ctrl_tab:         'buffer-next'
     ctrl_c:           'editor-copy'
     ctrl_d:           'editor-duplicate-current'
     ctrl_shift_e:     'cursor-goto-inspection'
@@ -65,7 +66,7 @@
     ctrl_q:           'show-doc-at-cursor'
     ctrl_space:       'editor-complete'
     ctrl_slash:       'editor-toggle-comment'
-    ctrl_tab:         'view-next'
+    ctrl_shift_tab:   'view-next'
 
     shift_insert:     'editor-paste'
     ctrl_insert:      'editor-copy'
@@ -121,6 +122,7 @@
       editor: {
         meta_shift_a:     'editor-select-all'
         meta_b:           'switch-buffer'
+        meta_tab:         'buffer-next'
         meta_c:           'editor-copy'
         meta_d:           'editor-duplicate-current'
         meta_f:           'buffer-search-forward'
