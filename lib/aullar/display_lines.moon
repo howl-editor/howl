@@ -142,7 +142,9 @@ get_flairs = (buffer, line, display_line) ->
     f.flair = flair.compile f.flair, f.start_offset, f.end_offset, display_line
     f
 
-  markers = buffer.markers\for_range start_offset, line.end_offset
+  end_offset = line.end_offset
+  end_offset += 1 unless line.has_eol
+  markers = buffer.markers\for_range start_offset, end_offset
   markers = [translate(m) for m in *markers when m.flair]
   markers
 
