@@ -388,23 +388,35 @@ get_wrap_indicator = (pango_context, view) ->
     tab_array: tab_array,
     wrap_indicator: get_wrap_indicator pango_context, view
     window: {}
+
     set_window: (first, last) =>
       w_size = (last - first) + 1
       edge = floor w_size / 4
       first = max 1, first - edge
       last = last + edge
+      new_first = first
+      new_last = last
 
       for i = @min, first - 1
         l = rawget @, i
-        @[i] = nil if l and not l._block
+        if l
+          if l._block
+            new_first = min l.nr, new_first
+          else
+            @[i] = nil
 
       for i = last, @max
         l = rawget @, i
-        @[i] = nil if l and not l._block
 
-      @window = :first, :last, size: (last - first) + 1
-      @min = max first, @min
-      @max = min last, @max
+        if l
+          if l._block
+            new_last = max l.nr, new_last
+          else
+            @[i] = nil
+
+      @window = first: new_first, last: new_last, size: (new_last - new_first) + 1
+      @min = max new_first, @min
+      @max = min new_last, @max
 
   }, {
     __index: (nr) =>
