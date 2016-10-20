@@ -35,6 +35,10 @@ Assigning another buffer to this property would cause that buffer to be
 displayed in the editor, and would cause the `before-buffer-switch` and
 `after-buffer-switch` signals to be emitted.
 
+### config_at_cursor
+
+Returns the buffer config located at the cursor using [Buffer.config_at].
+
 ### cursor
 
 A [Cursor] instance for the particular editor. Can be used to access and
@@ -385,6 +389,7 @@ attempts to automatically adjust the column for the new indentation.
 [.current_line]: #.current_line
 [Buffer]: ../buffer.html
 [Buffer.mode_at]: ../buffer.html#mode_at
+[Buffer.config_at]: ../buffer.html#config_at
 [Chunk]: ../chunk.html
 [Context]: ../context.html
 [Cursor]: cursor.html

@@ -54,6 +54,8 @@ buffer's mode's config property, meaning it will defer to what is set for the
 mode (and in extension set globally) should a particular configuration variable
 not be set specifically for the buffer.
 
+Note that, in most cases, you probably want to use [config_at](#config_at).
+
 ### data
 
 A general-purpose table that can be used for storing arbitrary information about
@@ -210,9 +212,15 @@ content is lexed up until `end_pos`, or until the end of the buffer if omitted.
 
 ### mode_at(pos)
 
-Returns the mode at the given position. If inside a sub lexer (e.g.
+Returns the mode at the given position. If the position is inside a sub lexer (e.g.
 `ffi.cdef [[ C code here ]]`), then the lexer's mode will be returned; otherwise,
 the buffer's root mode will be returned.
+
+### config_at(pos)
+
+Returns the buffer config at the given position. If the position is inside a sub
+lexer, then the config will be chained to the sub lexer's mode config instead of
+the buffer's root mode config.
 
 ### redo()
 
