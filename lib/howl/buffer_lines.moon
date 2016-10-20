@@ -46,10 +46,10 @@ Line = (nr, buffer) ->
   setmetatable {
     :nr
     :buffer
-    indent: => @indentation += buffer.config.indent
+    indent: => @indentation += @_config.indent
 
     unindent: =>
-      buffer_indent = buffer.config.indent
+      buffer_indent = @_config.indent
       new_indent = max 0, @indentation - buffer_indent
       if new_indent != @indentation
         incorrect = new_indent % buffer_indent
@@ -66,7 +66,7 @@ Line = (nr, buffer) ->
       return 1 if col == 1
       line_text = text!
       error "Illegal column #{col}", 2 if col < 1
-      tab_width = buffer.config.tab_width
+      tab_width = @_config.tab_width
       c_col = 1
       v_col = 1
       for i = 1, line_text.ulen
@@ -82,7 +82,7 @@ Line = (nr, buffer) ->
       error "Illegal column #{col}" if col < 1 or col > line_text.ulen + 1
       nr_tabs = line_text\sub(1, col)\count('\t')
       return col if nr_tabs == 0
-      col - nr_tabs + (nr_tabs * buffer.config.tab_width)
+      col - nr_tabs + (nr_tabs * @_config.tab_width)
 
     _getters:
       text: => text!
@@ -100,7 +100,7 @@ Line = (nr, buffer) ->
       has_eol: => get_line!.has_eol
 
       indentation: =>
-        (get_indentation text!, @buffer.config)
+        (get_indentation text!, @_config)
 
       chunk: =>
         start_pos = @start_pos
@@ -132,6 +132,8 @@ Line = (nr, buffer) ->
           next_line = next_line.next
         next_line
 
+      _config: => buffer\config_at @start_pos
+
     _setters:
       text: (value) =>
         error 'line text can not be set to nil', 2 if value == nil
@@ -139,7 +141,7 @@ Line = (nr, buffer) ->
         a_buf\replace line.start_offset, line.size, value
 
       indentation: (indent) =>
-        config = @buffer.config
+        config = @_config
         cur_indent, real_indent = get_indentation text!, config
         return if indent == cur_indent
 

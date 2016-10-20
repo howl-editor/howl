@@ -43,12 +43,13 @@ class Completer
 
   new: (buffer, pos) =>
     @buffer = buffer
+    @config = buffer\config_at pos
     @context = buffer\context_at pos
     @start_pos = @context.word.start_pos
     @completers =
       [buffer.mode]: load_completers buffer, @context, buffer.mode
 
-  complete: (pos, limit = @buffer.config.completion_max_shown) =>
+  complete: (pos, limit = @config.completion_max_shown) =>
     context = @context.start_pos == pos and @context or @buffer\context_at pos
 
     seen = {}
@@ -76,7 +77,7 @@ class Completer
 
   accept: (completion, pos) =>
     chunk = @buffer\context_at(pos).word
-    chunk = @buffer\chunk(chunk.start_pos, pos - 1) unless @buffer.config.hungry_completion
+    chunk = @buffer\chunk(chunk.start_pos, pos - 1) unless @config.hungry_completion
     chunk.text = completion
     pos_after = chunk.start_pos + completion.ulen
     mode = @buffer\mode_at pos

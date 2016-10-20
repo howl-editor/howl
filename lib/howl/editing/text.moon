@@ -149,7 +149,7 @@ command.register
     cur_line = editor.current_line
     paragraph = paragraph_at cur_line
     if #paragraph > 0
-      hard_wrap_column = editor.buffer.config.hard_wrap_column
+      hard_wrap_column = editor.buffer\config_at(cur_line.start_pos).hard_wrap_column
       if do_reflow editor, cur_line, hard_wrap_column
         log.info "Reflowed paragraph to max #{hard_wrap_column} columns"
       else
@@ -163,14 +163,14 @@ reflow_check = (args) ->
   return unless editor
   return if args.part_of_revision or not editor.buffer == args.buffer
 
-  config = args.buffer.config
+  at_pos = args.buffer\char_offset args.at_pos
+  config = args.buffer\config_at at_pos
   return if is_reflowing or not config.auto_reflow_text
   reflow_at = config.hard_wrap_column
   if not reflow_at
     log.error "`auto_reflow_text` enabled but `hard_wrap_column` is not set"
     return
 
-  at_pos = args.buffer\char_offset args.at_pos
   cur_style = style.at_pos args.buffer, math.max(at_pos - 1, 1)
   return if cur_style and cur_style\contains 'embedded'
 

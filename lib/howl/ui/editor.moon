@@ -213,6 +213,7 @@ class Editor extends PropertyObject
       @buffer\chunk start, stop - 1
 
   @property mode_at_cursor: get: => @buffer\mode_at @cursor.pos
+  @property config_at_cursor: get: => @buffer\config_at @cursor.pos
 
   refresh_display: => @view\refresh_display from_line: 1, invalidate: true
   grab_focus: => @view\grab_focus!
@@ -224,7 +225,11 @@ class Editor extends PropertyObject
     cursor_line, cursor_col = @cursor.line, @cursor.column
     anchor_line, anchor_col = nil, nil
 
-    unless @selection.empty
+    local config
+    if @selection.empty
+      config = @config_at_cursor
+    else
+      config = @buffer\config_at @selection.anchor
       line = @buffer.lines\at_pos @selection.anchor
       anchor_line = line.nr
       anchor_col = line\virtual_column (@selection.anchor - line.start_pos) + 1
@@ -236,13 +241,13 @@ class Editor extends PropertyObject
     if anchor_line
       line = @buffer.lines[anchor_line]
       unless anchor_col == 1 and anchor_line > cursor_line
-        anchor_col += @buffer.config.indent
+        anchor_col += config.indent
 
       real_column = line\real_column anchor_col
       @selection.anchor = line.start_pos + real_column - 1
 
     unless cursor_col == 1 and cursor_line > anchor_line
-      cursor_col += @buffer.config.indent
+      cursor_col += config.indent
 
     @cursor\move_to {
       line: cursor_line,
@@ -255,7 +260,11 @@ class Editor extends PropertyObject
     anchor_line, anchor_col, adjust_anchor = nil, nil, false
     adjust_cursor = @current_line.indentation != 0
 
-    unless @selection.empty
+    local config
+    if @selection.empty
+      config = @config_at_cursor
+    else
+      config = @buffer\config_at @selection.anchor
       line = @buffer.lines\at_pos @selection.anchor
       anchor_line = line.nr
       anchor_col = line\virtual_column (@selection.anchor - line.start_pos) + 1
@@ -268,11 +277,11 @@ class Editor extends PropertyObject
 
     if anchor_line
       line = @buffer.lines[anchor_line]
-      anchor_col -= @buffer.config.indent if adjust_anchor
+      anchor_col -= config.indent if adjust_anchor
       real_column = line\real_column max(1, anchor_col)
       @selection.anchor = line.start_pos + real_column - 1
 
-    cursor_col -= @buffer.config.indent if adjust_cursor
+    cursor_col -= config.indent if adjust_cursor
 
     @cursor\move_to {
       line: cursor_line,
@@ -366,11 +375,11 @@ class Editor extends PropertyObject
       @shift_right!
       return
 
-    conf = @buffer.config
+    conf = @config_at_cursor
     if conf.tab_indents and @current_context.prefix.is_blank
       cur_line = @current_line
-      next_indent = cur_line.indentation + config.indent
-      next_indent -= (next_indent % config.indent)
+      next_indent = cur_line.indentation + conf.indent
+      next_indent -= (next_indent % conf.indent)
       cur_line.indentation = next_indent
       @cursor.column = next_indent + 1
     else if conf.use_tabs
@@ -383,7 +392,7 @@ class Editor extends PropertyObject
       @shift_left!
       return
 
-    conf = @buffer.config
+    conf = @config_at_cursor
     if conf.tab_indents and @current_context.prefix.is_blank
       cursor_col = @cursor.column
       cur_line = @current_line
@@ -399,7 +408,7 @@ class Editor extends PropertyObject
   delete_back: =>
     prefix = @current_context.prefix
     if @selection.empty and prefix.is_blank and not prefix.is_empty
-      if @buffer.config.backspace_unindents
+      if @config_at_cursor.backspace_unindents
         cur_line = @current_line
         gap = cur_line.indentation - @cursor.column
         cur_line\unindent!
@@ -743,7 +752,7 @@ class Editor extends PropertyObject
       buffer.markers\remove name: 'brace_highlight'
       @_brace_highlighted = false
 
-    should_highlight = @buffer.config.matching_braces_highlighted
+    should_highlight = @config_at_cursor.matching_braces_highlighted
     return unless should_highlight
     auto_pairs = @mode_at_cursor.auto_pairs
     return unless auto_pairs
@@ -804,7 +813,7 @@ class Editor extends PropertyObject
     if @popup
       @popup.window\on_insert_at_cursor(self, params) if @popup.window.on_insert_at_cursor
     elseif args.text.ulen == 1
-      config = @buffer.config
+      config = @config_at_cursor
       return unless config.complete != 'manual'
       return unless #@current_context.word_prefix >= config.completion_popup_after
       skip_styles = config.completion_skip_auto_within

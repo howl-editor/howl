@@ -35,7 +35,7 @@ handle = (event, editor) ->
   buffer = editor.buffer
   auto_pairs = editor.mode_at_cursor.auto_pairs
   char = event.character
-  return unless auto_pairs and buffer.config.auto_pair and char
+  return unless auto_pairs and editor.config_at_cursor.auto_pair and char
   return handle_backspace(event, editor, auto_pairs) if event.key_name == 'backspace'
 
   mate = auto_pairs[char]
