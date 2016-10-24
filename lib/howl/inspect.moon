@@ -20,22 +20,33 @@ update_inspections_display = (editor) ->
 
   editor.indicator.inspections.text = text
 
+resolve_inspector = (inspector, buffer) ->
+  return inspector unless inspector.cmd\find '<file>', 1, true
+  return nil unless buffer.file
+  copy = {k,v for k, v in pairs inspector}
+  copy.cmd = copy.cmd\gsub '<file>', buffer.file.path
+  copy
+
 load_inspectors = (buffer) ->
   inspectors = {}
 
   for inspector in *buffer.config.inspectors
     conf = inspection[inspector]
     if conf
-      instance = conf.factory!
+      instance = conf.factory buffer
       if callable(instance)
-        true
+        append inspectors, instance
       elseif type(instance) == 'string'
-        instance = cmd: instance
+        instance = resolve_inspector {cmd: instance}, buffer
+        if instance
+          append inspectors, instance
       elseif type(instance) == 'table'
         unless instance.cmd
           error "Missing cmd key for inspector returned for '#{inspector}'"
+        instance = resolve_inspector instance, buffer
+        if instance
+          append inspectors, instance
 
-      append inspectors, instance
     else
       log.warn "Invalid inspector '#{inspector}' specified for '#{buffer.title}'"
 

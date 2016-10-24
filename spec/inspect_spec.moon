@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import inspect, inspection, Buffer, mode from howl
+File = howl.io.File
 
 describe 'inspect', ->
   local buffer, inspector
@@ -85,6 +86,28 @@ describe 'inspect', ->
               { message: 'some warning', search: 'zed' },
             }
            }, res
+          done!
+
+    context 'when an inspector command contains a <file> placeholder', ->
+      it "is skipped if the buffer has no associated file", (done) ->
+        inspector = 'echo "foo:1: <file> urk"'
+        howl_async ->
+          buffer.mode.config.inspectors = {'test-inspector'}
+          assert.same {}, inspect.inspect(buffer)
+          done!
+
+      it "is expanded with the buffer's file's path", (done) ->
+        file = File '/foo/bar'
+        buffer.file = file
+        inspector = cmd: 'echo "foo:1: <file>"'
+        howl_async ->
+          buffer.mode.config.inspectors = {'test-inspector'}
+          res = inspect.inspect(buffer)
+          assert.same {
+            [1]: {
+              { message: '/foo/bar' },
+            }
+          }, res
           done!
 
     it 'merges inspection results into one scathing result', ->
