@@ -182,7 +182,18 @@ update_buffer = (buffer, editor) ->
   if data.last_inspect and data.last_inspect >= buffer.last_changed
     return
 
-  criticize buffer
+  -- we mark this automatic inspection run with a serial
+  update_serial = (data.inspections_update or 0) + 1
+  data.inspections_update = update_serial
+
+  criticisms = inspect buffer
+  -- check serial to avoid applying out-of-date criticisms
+  unless data.inspections_update == update_serial
+    log.warn "Ignoring stale inspection update - slow inspection processes?"
+    return
+
+  criticize buffer, criticisms
+
   editor or= app\editor_for_buffer buffer
   if editor
     update_inspections_display editor
