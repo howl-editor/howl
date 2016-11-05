@@ -130,8 +130,6 @@ class Process
     @stdin = OutputStream(@_process.stdin_pipe) if @_process.stdin_pipe
     @stdout = InputStream(@_process.stdout_pipe) if @_process.stdout_pipe
     @stderr = InputStream(@_process.stderr_pipe, PRIORITY_LOW - 10) if @_process.stderr_pipe
-    @stdout_done = nil
-    @stderr_done = nil
     @exited = false
 
     @@running[@pid] = @
