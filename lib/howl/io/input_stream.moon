@@ -5,16 +5,14 @@ dispatch = howl.dispatch
 glib = require 'ljglibs.glib'
 {:Win32InputStream, :UnixInputStream} = require 'ljglibs.gio'
 {:PropertyObject} = howl.util.moon
+{:platform} = howl.sys
 append = table.insert
 ffi = require 'ffi'
 
 class InputStream extends PropertyObject
   new: (@stream, @priority = glib.PRIORITY_LOW) =>
     if type(@stream) == 'number'
-      if ffi.os == 'Windows'
-        @stream = Win32InputStream ffi.C._get_osfhandle @stream
-      else
-        @stream = UnixInputStream @stream
+      @stream = platform.fd_to_stream Win32InputStream, UnixInputStream, @stream
     super!
 
   @property is_closed: get: => @stream.is_closed

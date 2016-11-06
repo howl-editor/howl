@@ -4,14 +4,12 @@
 dispatch = howl.dispatch
 {:Win32OutputStream, :UnixOutputStream} = require 'ljglibs.gio'
 {:PropertyObject} = howl.util.moon
+{:platform} = howl.sys
 ffi = require 'ffi'
 
 class OutputStream extends PropertyObject
   new: (fd) =>
-    if ffi.os == 'Windows'
-      @stream = Win32OutputStream ffi.C._get_osfhandle fd
-    else
-      @stream = UnixOutputStream fd
+    @stream = platform.fd_to_stream Win32OutputStream, UnixOutputStream, fd
     super!
 
   @property is_closed: get: => @stream.is_closed

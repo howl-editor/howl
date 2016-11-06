@@ -170,20 +170,7 @@ local function main(args)
   require('howl.globals')
 
   local font_dir = table.concat({app_root, 'fonts'}, path_separator)
-  if ffi.os == 'Windows' then
-    require 'howl.cdefs.windows'
-    local fonts = howl.io.File(font_dir).children
-    for _, font in ipairs(fonts) do
-      local loaded = ffi.C.AddFontResourceExA(font.path, ffi.C.fr_private, nil)
-      if loaded == 0 then
-        io.stderr:write('failed to load font ', font.path, '\n')
-        io.stderr:flush()
-      end
-    end
-  else
-    require 'howl.cdefs.fontconfig'
-    ffi.C.FcConfigAppFontAddDir(nil, font_dir)
-  end
+  require('howl.sys').platform.load_font_dir(font_dir)
 
   _G.log = require('howl.log')
   local args = parse_args(argv)

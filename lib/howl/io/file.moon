@@ -5,6 +5,7 @@ GFile = require 'ljglibs.gio.file'
 GFileInfo = require 'ljglibs.gio.file_info'
 glib = require 'ljglibs.glib'
 import PropertyObject from howl.util.moon
+import platform from howl.sys
 append = table.insert
 ffi = require 'ffi'
 
@@ -17,23 +18,15 @@ file_types = {
   [tonumber GFileInfo.TYPE_UNKNOWN]: 'unknown',
 }
 
-platform_tmpname = ->
-  -- os.tmpname is broken on Windows and returns a filename prefixed with \.
-  -- This causes a lot of "Access denied"-related errors.
-  filename = assert os.tmpname!
-  -- Remove the prefix \.
-  filename = filename\sub 2 if ffi.os == 'Windows'
-  filename
-
 class File extends PropertyObject
 
   tmpfile: ->
-    file = File platform_tmpname!
+    file = File platform.tmpname!
     file\touch! if not file.exists
     file
 
   tmpdir: ->
-    with File platform_tmpname!
+    with File platform.tmpname!
       \delete! if .exists
       \mkdir!
 

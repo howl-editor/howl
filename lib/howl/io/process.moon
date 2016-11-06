@@ -7,6 +7,7 @@ jit = require 'jit'
 callbacks = require 'ljglibs.callbacks'
 dispatch = howl.dispatch
 {:File, :InputStream, :OutputStream} = howl.io
+{:platform} = howl.sys
 
 C, ffi_cast = ffi.C, ffi.cast
 append = table.insert
@@ -22,8 +23,6 @@ for s in *{
 }
   signals[s] = tonumber C["sig_#{s}"]
 
-win_signals = {signals[s], true for s in *{'KILL', 'INT'}}
-
 jit.off true, true
 
 signal_name = (signal) ->
@@ -38,16 +37,7 @@ shell_quote = (s) ->
   else
     s
 
-default_shell = if jit.os == 'Windows'
-  if howl.sys.env.MSYSCON
-    -- Running under MSYS2.
-    "#{howl.sys.env.WD}sh.exe"
-  else
-    "#{howl.sys.env.SYSTEMROOT}\\System32\\cmd.exe"
-else
-  '/bin/sh'
-
-get_command = (v, shell = default_shell) ->
+get_command = (v, shell = platform.default_shell!) ->
   t = type v
 
   if t == 'string'
@@ -144,14 +134,7 @@ class Process
 
   send_signal: (signal) =>
     signal = signals[signal] if type(signal) == 'string'
-    if jit.os == 'Windows'
-      error "Signal #{signal} is not supported on Windows" unless win_signals[signal]
-      -- On Bash, when a process exits due to a signal, it's exit code is
-      -- 128+{signal code}. Since killing a process like that doesn't
-      -- necessarily work on Windows, this emulates that exit code.
-      C.TerminateProcess(@true_pid, 128+signal)
-    else
-      C.kill(@pid, signal)
+    platform.send_signal @true_pid, signal
 
   pump: (on_stdout, on_stderr) =>
     if on_stdout and not @stdout
