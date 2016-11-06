@@ -4,7 +4,6 @@
 require 'ljglibs.gio.output_stream'
 ffi = require 'ffi'
 core = require 'ljglibs.core'
-{:ref_ptr} = require 'ljglibs.gobject'
 
 C = ffi.C
 
