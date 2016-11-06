@@ -5,7 +5,6 @@ dispatch = howl.dispatch
 {:Win32OutputStream, :UnixOutputStream} = require 'ljglibs.gio'
 {:PropertyObject} = howl.util.moon
 {:platform} = howl.sys
-ffi = require 'ffi'
 
 class OutputStream extends PropertyObject
   new: (fd) =>

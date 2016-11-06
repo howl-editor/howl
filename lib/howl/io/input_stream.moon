@@ -7,7 +7,6 @@ glib = require 'ljglibs.glib'
 {:PropertyObject} = howl.util.moon
 {:platform} = howl.sys
 append = table.insert
-ffi = require 'ffi'
 
 class InputStream extends PropertyObject
   new: (@stream, @priority = glib.PRIORITY_LOW) =>

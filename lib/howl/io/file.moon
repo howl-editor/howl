@@ -7,7 +7,6 @@ glib = require 'ljglibs.glib'
 import PropertyObject from howl.util.moon
 import platform from howl.sys
 append = table.insert
-ffi = require 'ffi'
 
 file_types = {
   [tonumber GFileInfo.TYPE_DIRECTORY]: 'directory',
