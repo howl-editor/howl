@@ -54,13 +54,13 @@ class Buffer extends PropertyObject
     set: (new_mode = {}) =>
       old_mode = @_mode
       @_mode = new_mode
-      @config.chain_to mode.config
+      @config.chain_to new_mode.config
       if new_mode.lexer
         @_buffer.lexer = (text) -> new_mode.lexer text, @
       else
         @_buffer.lexer = nil
 
-      signal.emit 'buffer-mode-set', buffer: self, :mode, :old_mode
+      signal.emit 'buffer-mode-set', buffer: self, mode: new_mode, :old_mode
 
   @property title:
     get: => @_title or (@file and @file.basename) or 'Untitled'
