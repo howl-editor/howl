@@ -7,7 +7,7 @@ style.define 'haml_element', 'keyword'
 style.define 'haml_doctype', 'special'
 style.define 'haml_id', 'constant'
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
 
   blank = capture 'whitespace', space^1
   operator = capture 'operator', S',=>-'

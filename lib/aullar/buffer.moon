@@ -3,7 +3,7 @@
 
 ffi = require 'ffi'
 C, ffi_string, ffi_copy = ffi.C, ffi.string, ffi.copy
-{:max, :min, :abs, :ceil} = math
+{:max, :min, :ceil} = math
 {:define_class} = require 'aullar.util'
 Styling = require 'aullar.styling'
 Offsets = require 'aullar.offsets'
@@ -63,13 +63,13 @@ change_sink = (start_offset, count) ->
       else
         @roof += size
 
-    add_styling_change: (start_offset, end_offset) =>
-      @styling_start = min(@styling_start or start_offset, start_offset)
-      @styling_end = max(@styling_end or 0, end_offset)
+    add_styling_change: (change_start, change_end) =>
+      @styling_start = min(@styling_start or change_start, change_start)
+      @styling_end = max(@styling_end or 0, change_end)
 
-    add_markers_change: (start_offset, end_offset) =>
-      @markers_start = min(@markers_start or start_offset, start_offset)
-      @markers_end = max(@markers_end or 0, end_offset)
+    add_markers_change: (change_start, change_end) =>
+      @markers_start = min(@markers_start or change_start, change_start)
+      @markers_end = max(@markers_end or 0, change_end)
 
     can_reenter: (offset, _count) =>
       return false if offset < start_offset
@@ -116,9 +116,9 @@ Buffer = {
       set: (lexer) =>
         @_lexer = lexer
         @styling\invalidate_from 1
-        last_line_shown = @_get_last_line_shown!
-        if last_line_shown > 0
-          @ensure_styled_to line: last_line_shown
+        last_viewable_line = @_get_last_viewable_line!
+        if last_viewable_line > 0
+          @ensure_styled_to line: last_viewable_line
     }
 
     text: {
@@ -368,7 +368,6 @@ Buffer = {
     at_line = @get_line line_nr
     return unless at_line and lexer
 
-    last_styled_line = 1
     start_line = at_line
     if (@styling.last_pos_styled + 1) < start_line.start_offset
       start_line = @get_line_at_offset(@styling.last_pos_styled + 1)
@@ -551,14 +550,14 @@ Buffer = {
           @_last_scanned_line = line.nr - 1
           break
 
-  _get_last_line_shown: =>
-    last_line_shown = 0
+  _get_last_viewable_line: =>
+    last_viewable_line = 0
 
     for listener in *@listeners
-      if listener.last_line_shown
-        last_line_shown = max last_line_shown, listener.last_line_shown!
+      if listener.last_viewable_line
+        last_viewable_line = max last_viewable_line, listener.last_viewable_line!
 
-    last_line_shown
+    last_viewable_line
 
   _get_styled_notification: (start_offset, end_offset, invalidated = false) =>
     start_line = @get_line_at_offset start_offset
@@ -592,7 +591,6 @@ Buffer = {
       :revision,
       :part_of_revision,
       :lines_changed,
-      :changes
     }
     if extra
       for k, v in pairs extra
@@ -601,8 +599,8 @@ Buffer = {
     if @lexer
       at_line = @get_line_at_offset(offset)
       if at_line -- else at eof
-        last_line_shown = max at_line.nr, @_get_last_line_shown!
-        style_to = min(last_line_shown + 20, @nr_lines)
+        last_viewable_line = max at_line.nr, @_get_last_viewable_line!
+        style_to = min(last_viewable_line + 20, @nr_lines)
         args.styled = @refresh_styling_at at_line.nr, style_to, {
           force_full: lines_changed
           no_notify: true

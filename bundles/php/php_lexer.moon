@@ -1,7 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-php = howl.aux.lpeg_lexer ->
+php = howl.util.lpeg_lexer ->
   c = capture
   ident = (alpha + '_' + '$')^1 * (alpha + digit + '_')^0
   ws = c 'whitespace', blank
@@ -178,7 +178,7 @@ php = howl.aux.lpeg_lexer ->
 
  }
 
-embedded_php = howl.aux.lpeg_lexer ->
+embedded_php = howl.util.lpeg_lexer ->
   embedded_php = P {
     any(V'expansion')
 

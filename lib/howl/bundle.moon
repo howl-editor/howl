@@ -3,10 +3,10 @@
 
 import signal from howl
 import File from howl.io
-import SandboxedLoader from howl.aux
+import SandboxedLoader from howl.util
 
 _G = _G
-import assert, error, loadfile, log, type, callable, table, tostring, pairs, typeof, pcall from _G
+import error, log, type, callable, table, pairs, tostring, typeof, pcall from _G
 
 _G.bundles = {}
 
@@ -25,7 +25,10 @@ available_bundles = ->
     continue if not dir.is_directory
     for c in *dir.children
       if c.is_directory and not c.is_hidden
-        avail[module_name c.basename] = c
+        b_name = module_name(c.basename)
+        if avail[b_name]
+          error "Conflicting bundles: '#{c}' <-> '#{avail[b_name]}'"
+        avail[b_name] = c
 
   avail
 
@@ -34,18 +37,18 @@ unloaded = ->
   table.sort l
   l
 
-verify_bundle = (bundle, dir) ->
-  if type(bundle) != 'table'
+verify_bundle = (b, dir) ->
+  if type(b) != 'table'
     error "Incorrect bundle: no table returned from #{dir}"
 
-  info = bundle.info
+  info = b.info
   if type(info) != 'table'
     error "Incorrect bundle: info missing for #{dir}"
 
   for field in *{ 'description', 'license', 'author' }
     error "Incorrect bundle: missing info field '#{field}' for #{dir}" if not info[field]
 
-  error "Missing bundle function 'unload' in #{dir}" unless callable bundle.unload
+  error "Missing bundle function 'unload' in #{dir}" unless callable b.unload
 
 export load_from_dir = (dir) ->
   error "Not a directory: #{dir}", 2 if not dir or typeof(dir) != 'File' or not dir.is_directory
@@ -54,7 +57,7 @@ export load_from_dir = (dir) ->
 
   loader = SandboxedLoader dir, 'bundle', no_implicit_globals: true
   bundle = loader -> bundle_load 'init'
-  verify_bundle bundle, init
+  verify_bundle bundle, dir
   _G.bundles[module_name dir.basename] = bundle
   signal.emit 'bundle-loaded', bundle: mod_name
 

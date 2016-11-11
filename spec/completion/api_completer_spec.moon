@@ -21,7 +21,7 @@ describe 'api_completer', ->
       }
     }
 
-    local buffer, lines, mode
+    local buffer, mode
 
     complete_at = (pos) ->
       context = buffer\context_at pos
@@ -35,7 +35,6 @@ describe 'api_completer', ->
       mode.api = api
       mode.completers = { 'api' }
       buffer = Buffer mode
-      lines = buffer.lines
 
     it 'returns global completions when no prefix is found', ->
       buffer.text = ' k\nfun'

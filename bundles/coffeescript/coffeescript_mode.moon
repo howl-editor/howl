@@ -66,7 +66,6 @@ class CoffeeScriptMode
     @parent.indent_for self, line, indent_level
 
   structure: (editor) =>
-    buffer = editor.buffer
     lines = {}
     parents = {}
     prev_line = nil
@@ -88,7 +87,7 @@ class CoffeeScriptMode
 
       for p in *patterns
         if line\umatch p
-          for i = 1, #parents
+          for _ = 1, #parents
             append lines, table.remove parents, 1
 
           append lines, line

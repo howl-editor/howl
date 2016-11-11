@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 (base) ->
-  howl.aux.lpeg_lexer ->
+  howl.util.lpeg_lexer ->
 
     ruby = P {
       any(V'expansion', V'string')

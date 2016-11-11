@@ -6,7 +6,7 @@ require 'ljglibs.cdefs.pango'
 core = require 'ljglibs.core'
 Pango = require 'ljglibs.pango'
 
-C, ffi_string, ffi_gc = ffi.C, ffi.string, ffi.gc
+C, ffi_gc = ffi.C, ffi.gc
 
 core.define 'PangoTabArray', {
   properties: {

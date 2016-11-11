@@ -2,9 +2,8 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Buffer from howl
-import ListWidget, TextWidget, style, highlight from howl.ui
+import ListWidget, style, highlight from howl.ui
 import Matcher from howl.util
-s = require 'serpent'
 
 describe 'ListWidget', ->
   local list, buf
@@ -359,7 +358,7 @@ three    four    ]] .. '\n', buf.text
 
     it 'memory usage is stable', ->
       items = {'one', 'two', 'three'}
-      assert_memory_stays_within '50Kb', 30, ->
+      assert_memory_stays_within '60Kb', 30, ->
         w = ListWidget (-> items)
         w\show!
         w\to_gobject!\destroy!

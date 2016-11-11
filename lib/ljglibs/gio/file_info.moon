@@ -4,8 +4,6 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gio'
 core = require 'ljglibs.core'
-glib = require 'ljglibs.glib'
-import g_string from glib
 
 C, ffi_string = ffi.C, ffi.string
 

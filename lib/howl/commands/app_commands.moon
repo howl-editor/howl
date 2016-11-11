@@ -1,22 +1,21 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, Buffer, command, config, bindings, bundle, dispatch, interact, signal, mode, Project from howl
+import app, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
 import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
-import File, Process from howl.io
-import get_cwd from howl.util.paths
+import Process from howl.io
 serpent = require 'serpent'
 
 command.register
   name: 'quit',
-  description: 'Quits the application'
+  description: 'Quit the application'
   handler: -> howl.app\quit!
 
 command.alias 'quit', 'q'
 
 command.register
   name: 'save-and-quit',
-  description: 'Saves modified buffers and quits the application'
+  description: 'Save modified buffers and quit the application'
   handler: ->
     with howl.app
       \quit! if \save_all!
@@ -25,14 +24,14 @@ command.alias 'save-and-quit', 'wq'
 
 command.register
   name: 'quit-without-save',
-  description: 'Quits the application, disregarding any modified buffers'
+  description: 'Quit the application, disregarding any modified buffers'
   handler: -> howl.app\quit true
 
 command.alias 'quit-without-save', 'q!'
 
 command.register
   name: 'run'
-  description: 'Runs a command'
+  description: 'Run a command'
   handler: command.run
 
 command.register
@@ -42,13 +41,13 @@ command.register
 
 command.register
   name: 'switch-buffer',
-  description: 'Switches to another buffer'
+  description: 'Switch to another buffer'
   input: interact.select_buffer
   handler: (buf) -> app.editor.buffer = buf
 
 command.register
   name: 'buffer-reload',
-  description: 'Reloads the current buffer from file'
+  description: 'Reload the current buffer from file'
   handler: ->
     buffer = app.editor.buffer
     if buffer.modified
@@ -61,7 +60,7 @@ command.register
 
 command.register
   name: 'switch-to-last-hidden-buffer',
-  description: 'Switches to the last active hidden buffer'
+  description: 'Switch to the last active hidden buffer'
   handler: ->
     for buffer in *howl.app.buffers
       if not buffer.showing
@@ -81,27 +80,27 @@ set_variable = (assignment, target) ->
 
 command.register
   name: 'set',
-  description: 'Sets a configuration variable globally'
+  description: 'Set a configuration variable globally'
   input: interact.get_variable_assignment
   handler: (variable_assignment) -> set_variable variable_assignment, config
 
 command.register
   name: 'set-for-mode',
-  description: 'Sets a configuration variable for the current mode'
+  description: 'Set a configuration variable for the current mode'
   input: interact.get_variable_assignment
   handler: (variable_assignment) ->
     set_variable variable_assignment, app.editor.buffer.mode.config
 
 command.register
   name: 'set-for-buffer',
-  description: 'Sets a configuration variable for the current buffer'
+  description: 'Set a configuration variable for the current buffer'
   input: interact.get_variable_assignment
   handler: (variable_assignment) ->
     set_variable variable_assignment, app.editor.buffer.config
 
 command.register
   name: 'describe-key',
-  description: 'Shows information for a key'
+  description: 'Show information for a key'
   handler: ->
     buffer = ActionBuffer!
     buffer.title = 'Key watcher'
@@ -132,13 +131,13 @@ command.register
 
 command.register
   name: 'describe-signal',
-  description: 'Describes a given signal'
+  description: 'Describe a given signal'
   input: interact.select_signal
-  handler: (name) ->
-    def = signal.all[name]
-    error "Unknown signal '#{name}'" unless def
+  handler: (signal_name) ->
+    def = signal.all[signal_name]
+    error "Unknown signal '#{signal_name}'" unless def
     buffer = with ActionBuffer!
-      .title = "Signal: #{name}"
+      .title = "Signal: #{signal_name}"
       \append "#{def.description}\n\n"
       \append "Parameters:"
 
@@ -154,11 +153,11 @@ command.register
 
     buffer.read_only = true
     buffer.modified = false
-    editor = howl.app\add_buffer buffer
+    howl.app\add_buffer buffer
 
 command.register
   name: 'bundle-unload'
-  description: 'Unloads a specified bundle'
+  description: 'Unload a specified bundle'
   input: interact.select_loaded_bundle
   handler: (name) ->
     log.info "Unloading bundle '#{name}'.."
@@ -167,7 +166,7 @@ command.register
 
 command.register
   name: 'bundle-load'
-  description: 'Loads a specified, currently unloaded, bundle'
+  description: 'Load a specified, currently unloaded, bundle'
   input: interact.select_unloaded_bundle
   handler: (name) ->
     log.info "Loading bundle '#{name}'.."
@@ -176,7 +175,7 @@ command.register
 
 command.register
   name: 'bundle-reload'
-  description: 'Reloads a specified bundle'
+  description: 'Reload a specified bundle'
   input: interact.select_loaded_bundle
   handler: (name) ->
     log.info "Reloading bundle '#{name}'.."
@@ -186,7 +185,7 @@ command.register
 
 command.register
   name: 'bundle-reload-current'
-  description: 'Reloads the last active bundle (with files open)'
+  description: 'Reload the last active bundle (with files open)'
   handler: ->
     for buffer in *app.buffers
       bundle_name = buffer.file and bundle.from_file(buffer.file) or nil
@@ -198,23 +197,35 @@ command.register
 
 command.register
   name: 'buffer-grep'
-  description: 'Shows buffer lines containing boundary and exact matches in real time'
+  description: 'Show buffer lines containing boundary and exact matches in real time'
   input: ->
+    command_line = app.window.command_line
+    command_line\add_keymap
+        binding_for: ['buffer-grep']: -> command_line\switch_to 'buffer-grep-regex'
+    command_line\add_help
+      key_for: 'buffer-grep'
+      action: 'Switch to regular expression search'
+
     buffer = app.editor.buffer
     return interact.select_line
       title: "Buffer grep in #{buffer.title}"
       editor: app.editor
       lines: buffer.lines
-      keymap:
-        binding_for:
-          ['buffer-grep']: -> app.window.command_line\switch_to 'buffer-grep-regex'
+
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column: selection.column
 
 command.register
   name: 'buffer-grep-exact'
-  description: 'Shows buffer lines containing exact matches in real time'
+  description: 'Show buffer lines containing exact matches in real time'
   input: ->
+    command_line = app.window.command_line
+    command_line\add_keymap
+        binding_for: ['buffer-grep']: -> command_line\switch_to 'buffer-grep'
+    command_line\add_help
+      key_for: 'buffer-grep'
+      action: 'Switch to default search'
+
     buffer = app.editor.buffer
     return interact.select_line
       title: "Buffer grep exact in #{buffer.title}"
@@ -224,16 +235,21 @@ command.register
         start_pos, end_pos = text\ufind query, 1, true
         if start_pos
           return {{start_pos, end_pos - start_pos + 1}}
-      keymap:
-        binding_for:
-          ['buffer-grep']: -> app.window.command_line\switch_to 'buffer-grep'
+
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
 
 command.register
   name: 'buffer-grep-regex'
-  description: 'Shows buffer lines containing regular expression matches in real time'
+  description: 'Show buffer lines containing regular expression matches in real time'
   input: ->
+    command_line = app.window.command_line
+    command_line\add_keymap
+        binding_for: ['buffer-grep']: -> command_line\switch_to 'buffer-grep-exact'
+    command_line\add_help
+      key_for: 'buffer-grep'
+      action: 'Switch to exact search'
+
     buffer = app.editor.buffer
     return interact.select_line
       title: "Buffer grep regex in #{buffer.title}"
@@ -246,15 +262,12 @@ command.register
         start_pos, end_pos = rex\find text
         if start_pos
           return {{start_pos, end_pos - start_pos + 1}}
-      keymap:
-        binding_for:
-          ['buffer-grep']: -> app.window.command_line\switch_to 'buffer-grep-exact'
   handler: (selection) ->
     app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
 
 command.register
   name: 'buffer-structure'
-  description: 'Shows the structure for the given buffer'
+  description: 'Show the structure for the current buffer'
   input: ->
     buffer = app.editor.buffer
     lines = buffer.mode\structure app.editor
@@ -291,16 +304,19 @@ do_howl_eval = (load_f, mode_name, transform_f) ->
     for i = 2, #ret
       out ..= "\n#{serpent.block ret[i], comment: false}"
 
-    buf = Buffer mode.by_name mode_name
-    buf.text = "-- Howl eval (#{mode_name}) =>#{out}"
-    editor\show_popup BufferPopup buf
+    if editor.popup
+      log.info "(Eval) => #{ret[2]}"
+    else
+      buf = Buffer mode.by_name mode_name
+      buf.text = "-- Howl eval (#{mode_name}) =>#{out}"
+      editor\show_popup BufferPopup buf, scrollable: true
     howl.clipboard.push out
-   else
+  else
     log.error "(ERROR) => #{ret[2]}"
 
 command.register
   name: 'howl-lua-eval'
-  description: 'Evals the current line or selection as Lua'
+  description: 'Eval the current line or selection as Lua'
   handler: ->
     do_howl_eval load, 'lua', (text) ->
       unless text\match 'return%s'
@@ -312,7 +328,7 @@ command.register
 
 command.register
   name: 'howl-moon-eval'
-  description: 'Evals the current line or selection as Moonscript'
+  description: 'Eval the current line or selection as Moonscript'
   handler: ->
     moonscript = require('moonscript')
     transform = (text) ->
@@ -327,7 +343,7 @@ command.register
 
 command.register
   name: 'howl-moon-print'
-  description: 'Compiles and shows the Lua for the current buffer or selection'
+  description: 'Compile and show the Lua for the current buffer or selection'
   handler: ->
     moonscript = require('moonscript.base')
     editor = app.editor
@@ -355,7 +371,7 @@ command.register
       editor.buffer = buf
     else
       buf\insert "-- #{title}\n", 1
-      editor\show_popup BufferPopup buf
+      editor\show_popup BufferPopup buf, scrollable: true
 
 -----------------------------------------------------------------------
 -- Launch commands
@@ -386,18 +402,18 @@ get_project_root = ->
 
 command.register
   name: 'project-exec',
-  description: 'Runs an external command from within the project directory'
+  description: 'Run an external command from within the project directory'
   input: -> interact.get_external_command path: get_project_root!
   handler: launch_cmd
 
 command.register
   name: 'project-build'
-  description: 'Runs the command in config.project_build_command from within the project directory'
+  description: 'Run the command in config.project_build_command from within the project directory'
   handler: -> launch_cmd get_project_root!, config.project_build_command
 
 command.register
   name: 'exec',
-  description: 'Runs an external command'
+  description: 'Run an external command'
   input: (path=nil) -> interact.get_external_command :path
   handler: launch_cmd
 

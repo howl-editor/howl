@@ -2,11 +2,11 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 glib = require 'ljglibs.glib'
-{:File, :FileInputStream} = require 'ljglibs.gio'
+{:File} = require 'ljglibs.gio'
 
 with_tmpfile = (contents, f) ->
   p = os.tmpname!
-  fh = io.open p, 'w'
+  fh = io.open p, 'wb'
   fh\write contents
   fh\close!
   status, err = pcall f, p

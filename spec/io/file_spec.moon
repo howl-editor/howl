@@ -104,7 +104,7 @@ describe 'File', ->
 
     it 'returns the contents of the file', ->
       File.with_tmpfile (file) ->
-        f = io.open file.path, 'w'
+        f = io.open file.path, 'wb'
         f\write 'hello world'
         f\close!
         assert.equal file.contents, 'hello world'

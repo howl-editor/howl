@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 _G = _G
-import table, tostring, print from _G
+import table from _G
 import config from howl
 
 append = table.insert
@@ -15,6 +15,8 @@ config.define
 
 log = {}
 setfenv 1, log
+
+export entries = {}
 
 essentials_of = (s) ->
   first_line = s\match '[^\n\r]*'
@@ -33,8 +35,8 @@ dispatch = (level, message) ->
     essentials = essentials_of message
     status[level] status, essentials
     command_line\notify essentials, level if command_line.showing
-  else
-    print message if not _G.os.getenv('BUSTED')
+  elseif not _G.howl.app.args.spec
+    _G.print message
 
   while #entries > config.max_log_entries and #entries > 0
     table.remove entries, 1
@@ -42,7 +44,6 @@ dispatch = (level, message) ->
   entry
 
 export *
-entries = {}
 last_error = nil
 
 info = (message) -> dispatch 'info', message

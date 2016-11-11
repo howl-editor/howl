@@ -1,4 +1,4 @@
--- Copyright 2012-2014-2015 The Howl Developers
+-- Copyright 2012-2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 append = table.insert
@@ -14,7 +14,7 @@ boundary_part_p = (p) ->
 
 case_boundary_part_p = (p) ->
   upper = p.uupper
-  "(?:#{p}|#{upper}|\\p{Ll}*#{upper})()"
+  "(?:#{p}|#{upper}|.+#{upper})()"
 
 boundary_pattern = (search, reverse) ->
   parts = [r.escape(search[i]) for i = 1, search.ulen]
@@ -71,16 +71,16 @@ class Matcher
     return [c for c in *@candidates] if not search or search.is_empty
 
     search = search.ulower
-    prev_search = search\usub 1, -2
     matches = @cache.matches[search] or {}
     if #matches > 0 then return matches
 
     lines = @cache.lines[search\usub 1, -2] or @lines
     matching_lines = {}
-    matcher = create_matcher search, reverse
+    matcher = create_matcher search, @options.reverse
 
-    for i, line in ipairs lines
+    for line in *lines
       text = line.text
+      continue if #text < #search
       type, match = matcher text, line.case_text
       if match
         score = score_for match, text, type, @options.reverse, @base_score
@@ -97,7 +97,7 @@ class Matcher
     matching_candidates
 
   explain: (search, text, options = {}) ->
-    how, match = create_matcher(search, reverse)(text.ulower, text)
+    how, match = create_matcher(search, options.reverse)(text.ulower, text)
     return nil unless match
 
     segments = {}
@@ -135,7 +135,7 @@ class Matcher
       text = if type(candidate) == 'table' and #candidate > 0
         table.concat [tostring(c) for c in *candidate], ' '
       else
-        text = tostring candidate
+        tostring candidate
 
       append @lines, index: i, text: text.ulower, case_text: text
       max_len = max max_len, #text

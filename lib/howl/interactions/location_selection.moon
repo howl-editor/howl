@@ -1,10 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, interact, mode, Buffer from howl
+import app, interact from howl
 import Preview from howl.interactions.util
-import highlight from howl.ui
-import Matcher from howl.util
 
 interact.register
   name: 'select_location'
@@ -12,7 +10,6 @@ interact.register
   handler: (opts) ->
     opts = moon.copy opts
     editor = opts.editor or app.editor
-    buffer = editor.buffer
 
     if howl.config.preview_files or opts.force_preview
       on_change = opts.on_change

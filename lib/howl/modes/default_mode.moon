@@ -70,11 +70,10 @@ class DefaultMode
     prefix, suffix = @_comment_pair!
     return unless prefix
 
-    buffer, cursor = editor.buffer, editor.cursor
+    cursor = editor.cursor
     pattern = r"()#{r.escape prefix}\\s?().*?()\\s?#{r.escape suffix}()$"
     current_column = cursor.column
     cur_line = editor.current_line
-    cur_line_length = #cur_line
     cursor_delta = nil
 
     editor\transform_active_lines (lines) ->
@@ -91,11 +90,17 @@ class DefaultMode
       cursor.column = math.max 1, current_column - cursor_delta
 
   toggle_comment: (editor) =>
-    prefix, suffix = @_comment_pair!
+    prefix, _ = @_comment_pair!
     return unless prefix
     pattern = r"^\\s*#{r.escape prefix}.*"
 
-    if editor.active_lines[1]\umatch pattern
+    all_active_lines_commented = true
+    for line in *editor.active_lines
+      if not line\umatch(pattern) and not line.is_blank
+        all_active_lines_commented = false
+        break
+
+    if all_active_lines_commented
       @uncomment editor
     else
       @comment editor

@@ -4,7 +4,6 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.cairo'
 core = require 'ljglibs.core'
-import gc_ptr from require 'ljglibs.gobject'
 require 'ljglibs.cairo.pattern'
 
 C, gc = ffi.C, ffi.gc

@@ -327,15 +327,29 @@ describe 'DefaultMode', ->
     context 'when mode provides .comment_syntax', ->
       before_each -> buffer.mode.comment_syntax = '--'
 
-      it 'it uncomments if the first line starts with the comment prefix', ->
-        buffer.text = '  -- foo'
+      it 'uncomments if all non-empty selected lines start with the comment prefix', ->
+        buffer.text = '  -- foo\n\n  -- foo2'
+        selection\select_all!
         mode\toggle_comment editor
-        assert.equal '  foo', buffer.text
+        assert.equal '  foo\n\n  foo2', buffer.text
 
-      it 'comments if the first line do no start with the comment prefix', ->
-        buffer.text = 'foo'
+      it 'comments if first selected line does not start with the comment prefix', ->
+        buffer.text = 'foo\n-- foo2'
+        selection\select_all!
         mode\toggle_comment editor
-        assert.equal '-- foo', buffer.text
+        assert.equal '-- foo\n-- -- foo2', buffer.text
+
+      it 'comments if any one selected line does not start with the comment prefix', ->
+        buffer.text = '-- foo\nfoo2'
+        selection\select_all!
+        mode\toggle_comment editor
+        assert.equal '-- -- foo\n-- foo2', buffer.text
+
+      it 'comments if no selected line starts with the comment prefix', ->
+        buffer.text = 'foo\nfoo2'
+        selection\select_all!
+        mode\toggle_comment editor
+        assert.equal '-- foo\n-- foo2', buffer.text
 
   describe 'auto-formatting after newline', ->
     it 'indents the new line automatically given the indent patterns', ->

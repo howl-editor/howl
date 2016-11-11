@@ -5,7 +5,7 @@ Gdk = require 'ljglibs.gdk'
 cairo = require 'ljglibs.cairo'
 
 {:RGBA, :Pixbuf} = Gdk
-{:min, :max, :pi, :ceil, :floor} = math
+{:min, :max, :pi, :ceil} = math
 
 -- surface cache
 surfaces = {}
@@ -131,7 +131,7 @@ class Background
         cr\set_source_rgba color.red, color.green, color.blue, border.alpha or 1
         cr\stroke!
 
-    draw_line = (cr, x, y, rel_x, rel_y, def) ->
+    draw_line = (x, y, rel_x, rel_y, def) ->
       cr\save!
       cr\new_path!
       width = def.width or 1
@@ -146,20 +146,20 @@ class Background
 
     if border_top
       width = border_top.width or 1
-      draw_line cr, 0, width / 2, @width, 0, border_top
+      draw_line 0, width / 2, @width, 0, border_top
 
     if border_bottom
       width = border_bottom.width or 1
 
-      draw_line cr, 0, (@height - width) + (width / 2), @width, 0, border_bottom
+      draw_line 0, (@height - width) + (width / 2), @width, 0, border_bottom
 
     if border_right
       width = border_right.width or 1
-      draw_line cr, (@width - width) + (width / 2), 0, 0, @height, border_right
+      draw_line (@width - width) + (width / 2), 0, 0, @height, border_right
 
     if border_left
       width = border_left.width or 1
-      draw_line cr, (width / 2), 0, 0, @height, border_left
+      draw_line (width / 2), 0, 0, @height, border_left
 
   _draw_background: (cr) =>
     {:color, :image, :gradient} = @opts

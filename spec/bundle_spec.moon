@@ -44,14 +44,14 @@ describe 'bundle', ->
       with_bundle_dir 'foo', (dir) ->
         dir\join('init.lua').contents = bundle_init mod
         bundle.load_from_dir dir
-        assert.same bundles.foo.info, mod
-        assert.is_equal 'function', type bundles.foo.unload
+        assert.same _G.bundles.foo.info, mod
+        assert.is_equal 'function', type _G.bundles.foo.unload
 
     it 'massages the assigned module name to fit with naming standards if necessary', ->
       with_bundle_dir 'Test-hello 2', (dir) ->
         dir\join('init.lua').contents = bundle_init!
         bundle.load_from_dir dir
-        assert.not_nil bundles.test_hello_2
+        assert.not_nil _G.bundles.test_hello_2
 
     it 'raises an error if the bundle is already loaded', ->
       with_bundle_dir 'two_times', (dir) ->
@@ -75,7 +75,7 @@ describe 'bundle', ->
             }
           ]]
           bundle.load_from_dir dir
-          assert.equal bundles.test.file, dir / 'bundle_aux.lua'
+          assert.equal _G.bundles.test.file, dir / 'bundle_aux.lua'
 
     it 'raises an error upon implicit global writes', ->
       with_tmpdir (dir) ->
@@ -102,8 +102,8 @@ describe 'bundle', ->
           b_dir\join('init.lua').contents = bundle_init :name
 
         bundle.load_all!
-        assert.not_nil bundles.foo
-        assert.not_nil bundles.bar
+        assert.not_nil _G.bundles.foo
+        assert.not_nil _G.bundles.bar
 
     it 'skips any hidden entries', ->
       with_tmpdir (dir) ->
@@ -114,6 +114,16 @@ describe 'bundle', ->
 
         bundle.load_all!
         assert.same [name for name, _ in pairs _G.bundles], {}
+
+    it 'raises an error if bundle names conflict', ->
+      with_tmpdir (dir) ->
+        for name in *{'foo', 'bar'}
+          b_dir = dir / name / 'my_bundle'
+          b_dir\mkdir_p!
+          b_dir\join('init.lua').contents = bundle_init :name
+        bundle.dirs = {dir\join('foo'), dir\join('bar')}
+
+        assert.raises 'conflict', -> bundle.load_all!
 
   describe 'load_by_name(name)', ->
     it 'loads the bundle with the specified name, if not already loaded', ->
@@ -144,14 +154,14 @@ describe 'bundle', ->
           bundle.load_from_dir dir
           bundle.unload 'bunny'
           assert.is_true _G.bunny_bundle_unload
-          assert.is_nil bundles.bunny
+          assert.is_nil _G.bundles.bunny
 
       it 'returns early with an error if the unload function raises an error', ->
         with_bundle_dir 'bad_seed', (dir) ->
           dir\join('init.lua').contents = bundle_init mod, unload: 'function() error("barf!") end'
           bundle.load_from_dir dir
           assert.raises 'barf!', -> bundle.unload 'bad_seed'
-          assert.is_not_nil bundles.bad_seed
+          assert.is_not_nil _G.bundles.bad_seed
 
       it 'transforms the given name to match the module name', ->
         with_bundle_dir 'dash-love', (dir) ->

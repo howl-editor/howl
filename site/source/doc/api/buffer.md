@@ -80,10 +80,17 @@ contents. If the file does not exist, the buffer's current contents will be
 emptied. The buffer's [title](#title) is automatically updated from the file's
 name as part of the assignment.
 
+### last_changed
+
+A timestamp value, as obtained from [howl.sys.time](sys.html#time), specifying
+when the buffer was last changed due to any modification operation, such as a
+insert or delete. Note that this is not related to any potential [file](#file)
+association, but only reflects the buffer's in-memory status.
+
 ### last_shown
 
-A timestamp value, as obtained from Lua's `os.time`, specifying when the buffer
-was last [showing](#showing).
+A timestamp value, as obtained from [howl.sys.time](sys.html#time), specifying
+when the buffer was last [showing](#showing).
 
 ### length
 

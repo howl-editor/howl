@@ -7,7 +7,7 @@ style.define 'html_tag', 'keyword'
 style.define 'html_attr', 'key'
 style.define 'html_entity', 'preproc'
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
   c = capture
   ws = c 'whitespace', space^1
   operator = c 'operator', S('<>')

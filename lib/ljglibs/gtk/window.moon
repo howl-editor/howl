@@ -9,9 +9,9 @@ core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 require 'ljglibs.gtk.bin'
 
-C, ffi_string = ffi.C, ffi.string
+C = ffi.C
 catch_error = glib.catch_error
-{:ref_ptr, :gc_ptr} = gobject
+{:ref_ptr} = gobject
 
 jit.off true, true
 

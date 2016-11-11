@@ -1,13 +1,18 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 append = table.insert
 
 class MoonscriptMode
   new: =>
     @lexer = bundle_load('moonscript_lexer')
+
     with howl.mode.by_name('lua')
       @api = .api
       @completers = .completers
+
+  default_config:
+    inspectors: { 'moonscript' }
 
   comment_syntax: '--'
 
@@ -50,7 +55,6 @@ class MoonscriptMode
     }
 
   structure: (editor) =>
-    buffer = editor.buffer
     lines = {}
     parents = {}
     prev_line = nil
@@ -72,7 +76,7 @@ class MoonscriptMode
 
       for p in *patterns
         if line\umatch p
-          for i = 1, #parents
+          for _ = 1, #parents
             append lines, table.remove parents, 1
 
           append lines, line
@@ -80,5 +84,3 @@ class MoonscriptMode
           break
 
     #lines > 0 and lines or self.parent.structure @, editor
-
-return MoonscriptMode

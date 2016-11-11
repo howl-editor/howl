@@ -1,6 +1,6 @@
 Gtk = require 'ljglibs.gtk'
-{:Buffer, :signal, :clipboard} =  howl
-{:Editor, :theme} = howl.ui
+{:Buffer, :clipboard} =  howl
+{:Editor} = howl.ui
 
 describe 'Selection', ->
 
@@ -53,11 +53,12 @@ describe 'Selection', ->
       assert.equal 1, selection.anchor
       assert.equal buffer.text.ulen + 1, selection.cursor
 
-    it 'moves the editor cursor to the end of the buffer', ->
-      buffer.text = '12345'
+    it 'does not change the scroll position', ->
+      buffer.text = '1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0'
       cursor.pos = 1
+      editor.view.first_visible_line = 2
       selection\select_all!
-      assert.equal 6, cursor.pos
+      assert.equal 2, editor.view.first_visible_line
 
   describe '.anchor', ->
     it 'is nil if nothing is selected', ->

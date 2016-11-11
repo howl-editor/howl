@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
-glib = require 'ljglibs.cdefs.glib'
+require 'ljglibs.cdefs.glib'
 
 ffi.cdef [[
   /* GType */

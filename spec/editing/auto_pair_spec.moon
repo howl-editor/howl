@@ -108,6 +108,12 @@ describe 'auto_pair', ->
         buffer\undo!
         assert.equal '()', buffer.text
 
+      it 'does nothing if a selection is active', ->
+        buffer.text = 'x()'
+        editor.selection\set 1, 3
+        assert.is_not_true auto_pair.handle event('\8', 'backspace'), editor
+        assert.equal 'x()', buffer.text
+
     it 'returns non-true when the character does not match a known pair', ->
       assert.is_not_true auto_pair.handle event('x'), editor
 

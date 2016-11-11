@@ -20,9 +20,8 @@ config = require 'aullar.config'
 
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
-{:max, :min, :abs, :floor} = math
+{:max, :min, :floor} = math
 
-s_unref = signal.unref_handle
 append = table.insert
 
 jit.off true, true
@@ -138,7 +137,12 @@ View = {
       on_undo: (_, b, args) -> self\_on_buffer_undo b, args
       on_redo: (_, b, args) -> self\_on_buffer_redo b, args
       on_markers_changed: (_, b, args) -> self\_on_buffer_markers_changed b, args
-      last_line_shown: (_, b) -> @last_visible_line
+      last_viewable_line: (_, b) ->
+        last = @last_visible_line
+        if @height
+          last = max last, @height / @default_line_height
+
+        last
     }
 
     @buffer = buffer
@@ -307,6 +311,7 @@ View = {
           @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
+    notify @, 'on_scroll', opts
 
   insert: (text) =>
     if @selection.is_empty
@@ -455,8 +460,8 @@ View = {
         rect =  layout\index_to_pos index
         bottom = y + ((rect.y + rect.height) / Pango.SCALE) + @config.view_line_padding
         return {
-          x: x + (rect.x / Pango.SCALE)
-          x2: x + ((rect.x + rect.width) / Pango.SCALE)
+          x: x + (rect.x / Pango.SCALE) - @base_x
+          x2: x + ((rect.x + rect.width) / Pango.SCALE) - @base_x
           y: y + (rect.y / Pango.SCALE)
           y2: bottom
         }
@@ -559,7 +564,9 @@ View = {
   _reset_display: =>
     @_last_visible_line = nil
     p_ctx = @area.pango_context
-    @width_of_space = @text_dimensions(' ').width
+    tm = @text_dimensions(' ')
+    @width_of_space = tm.width
+    @default_line_height = tm.height + floor @config.view_line_padding
     tab_size = @config.view_tab_size
     @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
@@ -734,7 +741,7 @@ View = {
 
   _on_key_press: (_, e) =>
     if @in_preedit
-      ret = @im_context\filter_keypress(e)
+      @im_context\filter_keypress(e)
       return true
 
     event = parse_key_event e
@@ -768,11 +775,13 @@ View = {
 
   _on_button_release: (_, event) =>
     event = ffi_cast('GdkEventButton *', event)
+    return true if notify @, 'on_button_release', event
     return if event.button != 1
     @_selection_active = false
 
   _on_motion_event: (_, event) =>
     event = ffi_cast('GdkEventMotion *', event)
+    return true if notify @, 'on_motion_event', event
     unless @_selection_active
       if @_cur_mouse_cursor != text_cursor
         if event.x > @gutter_width
@@ -787,10 +796,16 @@ View = {
     pos = @position_from_coordinates(event.x, event.y)
     if pos
       @cursor\move_to :pos, extend: true
-    elseif event.y < 0
-      @cursor\up extend: true
+    elseif event.y < @margin
+      if @first_visible_line == 1
+        @cursor\move_to pos:1, extend: true
+      else
+        @cursor\up extend: true
     else
-      @cursor\down extend: true
+      if @last_visible_line == @buffer.nr_lines
+        @cursor\move_to pos:@buffer.size+1, extend: true
+      else
+        @cursor\down extend: true
 
   _on_scroll: (_, event) =>
     event = ffi_cast('GdkEventScroll *', event)

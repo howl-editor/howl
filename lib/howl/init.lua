@@ -11,8 +11,10 @@ Usage: howl [options] [<file> [, <file>, ..]]
 Where options can be any of:
   --reuse       Opens any named files in an existing instance of Howl, if present
   --compile     Compiles the given files to bytecode
+  --lint        Lints the given files
   --run         Loads and runs the specified file from within Howl
   --no-profile  Starts Howl without loading any user profile (settings, etc)
+  --spec        Runs the specified Howl spec file(s)
   -h, --help    This help
 ]=]
 
@@ -24,7 +26,9 @@ local function parse_args(argv)
     ['--help'] = 'help',
     ['--reuse'] = 'reuse',
     ['--compile'] = 'compile',
+    ['--lint'] = 'lint',
     ['--no-profile'] = 'no_profile',
+    ['--spec'] = 'spec',
     ['--run'] = 'run',
   }
   local args = {}
@@ -38,7 +42,7 @@ local function parse_args(argv)
     end
   end
 
-  if args.help then
+  if args.help and not args.spec then
     print(help)
     os.exit(0)
   end
@@ -52,7 +56,9 @@ local function set_package_path(...)
     paths[#paths + 1] = app_root .. '/' .. path .. '/?.lua'
     paths[#paths + 1] = app_root .. '/' .. path .. '/?/init.lua'
   end
-  package.path = table.concat(paths, ';') .. ';' .. package.path
+  -- base path is system path except the crazy default current directory
+  base_path = package.path:gsub('./?.lua;', '')
+  package.path = table.concat(paths, ';') .. ';' .. base_path
 end
 
 local function auto_module(name)
@@ -108,10 +114,51 @@ local function compile(args)
     print('Compiling ' .. file)
     local func = assert(loadfile(file))
     local bytecode = string.dump(func, false)
-    local file = assert(io.open(target, 'w'))
+    local file = assert(io.open(target, 'wb'))
     assert(file:write(bytecode))
     file:close()
   end
+end
+
+local function lint(args)
+  local root = howl.io.File(app_root)
+  lint_config = root:join('lint_config.moon').path
+  local moonpick = require("moonpick")
+  local errors = 0
+  local paths = {}
+  local moon_filter = function(f)
+    return f.extension ~= 'moon' and not f.is_directory
+  end
+
+  for i = 2, #args do
+    local path = args[i]
+    local file = howl.io.File(path)
+    if file.is_directory then
+      local sub_files = file:find({filter = moon_filter})
+      for j = 1, #sub_files do
+        if not sub_files[j].is_directory then
+          paths[#paths + 1] = sub_files[j].path
+        end
+      end
+    else
+      paths[#paths + 1] = path
+    end
+  end
+
+  for i = 1, #paths do
+    local path = paths[i]
+    local res, err = moonpick.lint_file(path, {lint_config = lint_config})
+    if res and #res > 0 then
+      io.stderr:write(path .. "\n\n")
+      io.stderr:write(moonpick.format_inspections(res) .. "\n\n")
+      errors = errors + 1
+    elseif err then
+      io.stderr:write(path .. "\n" .. err.. "\n\n")
+      errors = errors + 1
+    end
+  end
+
+  os.exit(errors > 0 and 1 or 0)
 end
 
 local function main(args)
@@ -129,6 +176,8 @@ local function main(args)
 
   if args.compile then
     compile(args)
+  elseif args.lint then
+    lint(args)
   else
     -- set up the the GC to be more aggressive, we have a lot
     -- of cdata that needs to be collected
@@ -138,8 +187,10 @@ local function main(args)
     howl.app = howl.Application(howl.io.File(app_root), args)
     assert(jit.status(), "JIT is inadvertently switched off")
 
-    if os.getenv('BUSTED') then
-      local busted = assert(loadfile(argv[2]))
+    if args.spec then
+      set_package_path('lib/ext/spec-support')
+      package.loaded.lfs = loadfile(app_root .. '/lib/ext/spec-support/howl-lfs-shim.moon')()
+      local busted = assert(loadfile(app_root .. '/lib/ext/spec-support/busted/busted_bootstrap'))
       arg = {table.unpack(argv, 3, #argv)}
       local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
       support()

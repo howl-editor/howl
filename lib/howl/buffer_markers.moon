@@ -1,7 +1,7 @@
 -- Copyright 2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 {:copy} = moon
 
 translate = (m, buf) ->
@@ -56,3 +56,7 @@ class BufferMarkers extends PropertyObject
     end_offset = @a_buffer\byte_offset end_offset
 
     @markers\remove_for_range start_offset, end_offset, selector
+
+  find: (selector) =>
+    ms = @markers\find selector
+    [translate(m, @a_buffer) for m in *ms]

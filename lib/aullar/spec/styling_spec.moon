@@ -2,7 +2,6 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Styling = require 'aullar.styling'
-ffi = require 'ffi'
 
 describe 'Styling', ->
 

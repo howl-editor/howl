@@ -4,10 +4,8 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.glib'
 core = require 'ljglibs.core'
-glib = require 'ljglibs.glib'
-import g_string, catch_error from glib
 
-C, ffi_string, ffi_gc, ffi_cast = ffi.C, ffi.string, ffi.gc, ffi.cast
+C, ffi_gc, ffi_cast = ffi.C, ffi.gc, ffi.cast
 gconstpointer_t = ffi.typeof 'gconstpointer'
 to_gcp = (v) -> ffi_cast gconstpointer_t, v
 

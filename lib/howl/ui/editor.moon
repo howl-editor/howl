@@ -5,21 +5,19 @@ Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 gobject_signal = require 'ljglibs.gobject.signal'
-import Completer, signal, bindings, config, command, clipboard, sys from howl
-import View from aullar
+import signal, bindings, config, command, clipboard, sys from howl
 aullar_config = aullar.config
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 import Searcher, CompletionPopup from howl.ui
 import auto_pair from howl.editing
+
 {
-  :style,
-  :highlight,
   :IndicatorBar,
   :Cursor,
   :Selection,
   :ContentBox
 } = howl.ui
-{:max, :min, :abs} = math
+{:max, :min} = math
 append = table.insert
 
 _editors = setmetatable {}, __mode: 'v'
@@ -74,6 +72,8 @@ class Editor extends PropertyObject
     listener =
       on_key_press: self\_on_key_press
       on_button_press: self\_on_button_press
+      on_button_release: self\_on_button_release
+      on_motion_event: self\_on_motion_event
       on_focus_in: self\_on_focus
       on_focus_out: self\_on_focus_lost
       on_insert_at_cursor: self\_on_insert_at_cursor
@@ -82,6 +82,7 @@ class Editor extends PropertyObject
       on_preedit_change: (_, args) ->
         log.info "Pre-edit: #{args.str} (Enter to submit, escape to cancel)"
       on_preedit_end: -> log.info "Pre-edit mode finished"
+      on_scroll: self\_on_scroll
 
     @view.listener = listener
     @view.cursor.listener = {
@@ -118,6 +119,7 @@ class Editor extends PropertyObject
     get: => @_buf
     set: (buffer) =>
       signal.emit 'before-buffer-switch', editor: self, current_buffer: @_buf, new_buffer: buffer
+      prev_buffer = @_buf
       @_show_buffer buffer
       signal.emit 'after-buffer-switch', editor: self, current_buffer: buffer, old_buffer: prev_buffer
 
@@ -222,72 +224,17 @@ class Editor extends PropertyObject
       @view\insert @buffer.eol
 
   shift_right: =>
-    cursor_line, cursor_col = @cursor.line, @cursor.column
-    anchor_line, anchor_col = nil, nil
-
-    local config
-    if @selection.empty
-      config = @config_at_cursor
-    else
-      config = @buffer\config_at @selection.anchor
-      line = @buffer.lines\at_pos @selection.anchor
-      anchor_line = line.nr
-      anchor_col = line\virtual_column (@selection.anchor - line.start_pos) + 1
-
-    @transform_active_lines (lines) ->
-      for line in *lines
-        line\indent!
-
-    if anchor_line
-      line = @buffer.lines[anchor_line]
-      unless anchor_col == 1 and anchor_line > cursor_line
-        anchor_col += config.indent
-
-      real_column = line\real_column anchor_col
-      @selection.anchor = line.start_pos + real_column - 1
-
-    unless cursor_col == 1 and cursor_line > anchor_line
-      cursor_col += config.indent
-
-    @cursor\move_to {
-      line: cursor_line,
-      column: cursor_col,
-      extend: anchor_line != nil
-    }
+    @with_selection_preserved ->
+      @transform_active_lines (lines) ->
+        for line in *lines
+          line\indent!
 
   shift_left: =>
-    cursor_line, cursor_col = @cursor.line, @cursor.column
-    anchor_line, anchor_col, adjust_anchor = nil, nil, false
-    adjust_cursor = @current_line.indentation != 0
-
-    local config
-    if @selection.empty
-      config = @config_at_cursor
-    else
-      config = @buffer\config_at @selection.anchor
-      line = @buffer.lines\at_pos @selection.anchor
-      anchor_line = line.nr
-      anchor_col = line\virtual_column (@selection.anchor - line.start_pos) + 1
-      adjust_anchor = line.indentation != 0
-
-    @transform_active_lines (lines) ->
-      for line in *lines
-        if line.indentation > 0
-          line\unindent!
-
-    if anchor_line
-      line = @buffer.lines[anchor_line]
-      anchor_col -= config.indent if adjust_anchor
-      real_column = line\real_column max(1, anchor_col)
-      @selection.anchor = line.start_pos + real_column - 1
-
-    cursor_col -= config.indent if adjust_cursor
-
-    @cursor\move_to {
-      line: cursor_line,
-      column: max(1, cursor_col),
-      extend: anchor_line
-    }
+    @with_selection_preserved ->
+      @transform_active_lines (lines) ->
+        for line in *lines
+          if line.indentation > 0
+            line\unindent!
 
   transform_active_lines: (f) =>
     lines = @active_lines
@@ -305,15 +252,59 @@ class Editor extends PropertyObject
     @line_at_top = top_line
     error ret unless status
 
+  with_selection_preserved: (f) =>
+    if @selection.empty
+      return f!
+
+    start_offset, end_offset = @selection.anchor, @selection.cursor
+    invert = start_offset > end_offset
+    start_offset, end_offset = end_offset, start_offset if invert
+
+    @buffer.markers\add {
+      {
+        name: 'howl-selection'
+        :start_offset
+        :end_offset
+        preserve: true
+      }
+    }
+
+    status, ret = pcall f, self
+
+    markers = @buffer.markers\for_range 1, @buffer.length, name: 'howl-selection'
+    @buffer.markers\remove name: 'howl-selection'
+
+    marker = markers[1]
+    if marker
+      start_offset, end_offset = marker.start_offset, marker.end_offset
+      start_offset, end_offset = end_offset, start_offset if invert
+      @selection\set start_offset, end_offset
+
+    error ret unless status
+
   preview: (buffer) =>
     unless @_is_previewing
       @_pre_preview_buffer = @buffer
+
     @_show_buffer buffer, preview: true
+
+    signal.emit 'preview-opened', {
+      editor: self,
+      current_buffer: @_pre_preview_buffer,
+      preview_buffer: buffer
+    }
 
   cancel_preview: =>
     if @_is_previewing and @_pre_preview_buffer
+      preview_buffer = @buffer
       @_show_buffer @_pre_preview_buffer
       @_pre_preview_buffer = nil
+
+      signal.emit 'preview-closed', {
+        editor: self,
+        current_buffer: @buffer,
+        :preview_buffer
+      }
 
   indent: => @_apply_to_line_modes 'indent'
 
@@ -510,13 +501,7 @@ class Editor extends PropertyObject
 
   show_popup: (popup, options = {}) =>
     @remove_popup!
-
-    dimensions = @view\text_dimensions 'M'
-    x_adjust = 0
-    pos = @buffer\byte_offset options.position or @cursor.pos
-    coordinates = @view\coordinates_from_position pos
-    x = coordinates.x
-    y = coordinates.y2 + 2
+    x, y = @_get_popup_coordinates options.position
 
     popup\show @view\to_gobject!, :x, :y
     @popup = window: popup, :options
@@ -531,7 +516,7 @@ class Editor extends PropertyObject
       @popup = nil
 
   complete: =>
-    return if @completion_popup.showing
+    return if @completion_popup.active
     @completion_popup\complete!
     if not @completion_popup.empty
       @show_popup @completion_popup, {
@@ -589,7 +574,6 @@ class Editor extends PropertyObject
         @_buf.last_shown = sys.time!
 
     @_is_previewing = opts.preview
-    prev_buffer = @_buf
     @_buf = buffer
     @indicator.title.label = buffer.title
 
@@ -652,7 +636,7 @@ class Editor extends PropertyObject
   _remove_indicator: (id) =>
     def = indicators[id]
     return unless def
-    y, x = def.placement\match('^(%w+)_(%w+)$')
+    y = def.placement\match('^(%w+)_%w+$')
     bar = y == 'top' and @header or @footer
     bar\remove id
     @indicator[id] = nil
@@ -669,6 +653,43 @@ class Editor extends PropertyObject
         break
 
     mode[method] mode, self if mode[method]
+
+  _pos_from_coordinates: (x, y) =>
+    byte_offset = @view\position_from_coordinates(x, y)
+    if byte_offset
+      @buffer\char_offset byte_offset
+
+  _word_or_token_at: (pos) =>
+    context = @buffer\context_at pos
+    chunk = context.word
+    chunk = context.token if chunk.empty
+    chunk
+
+  _expand_to_word_token_boundaries: (pos1, pos2) =>
+    chunk1 = @_word_or_token_at pos1
+    chunk2 = if pos2
+      @_word_or_token_at pos2
+    else
+      chunk1
+    if pos1 <= pos2
+      chunk1.start_pos, chunk2.end_pos + 1
+    else
+      chunk1.end_pos + 1, chunk2.start_pos
+
+  _expand_to_line_starts: (pos1, pos2) =>
+    line1 = @buffer.lines\at_pos(pos1)
+    line2 = @buffer.lines\at_pos(pos2)
+    if pos1 <= pos2
+      line1.start_pos, @_next_line_start(line2)
+    else
+      @_next_line_start(line1), line2.start_pos
+
+  _next_line_start: (line) =>
+    next_line = line.next
+    if next_line
+      next_line.start_pos
+    else
+      line.end_pos
 
   _on_destroy: =>
     for h in *@_handlers
@@ -702,6 +723,9 @@ class Editor extends PropertyObject
     return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
+    @drag_press_type = event.type
+    @drag_press_pos = @_pos_from_coordinates(event.x, event.y)
+
     if event.type == Gdk.GDK_2BUTTON_PRESS
       group = @current_context.word
       group = @current_context.token if group.empty
@@ -711,8 +735,24 @@ class Editor extends PropertyObject
         true
 
     elseif event.type == Gdk.GDK_3BUTTON_PRESS
-      line = @current_line
-      @selection\set line.start_pos, line.end_pos
+      @selection\set @current_line.start_pos, @_next_line_start(@current_line)
+
+  _on_button_release: (view, event) =>
+    @drag_press_type = nil
+
+  _on_motion_event: (view, event) =>
+    if @drag_press_type == Gdk.GDK_2BUTTON_PRESS or @drag_press_type == Gdk.GDK_3BUTTON_PRESS
+      pos = @_pos_from_coordinates(event.x, event.y)
+      if pos
+        sel_start, sel_end = @drag_press_pos, pos
+        if @drag_press_type == Gdk.GDK_2BUTTON_PRESS
+          sel_start, sel_end = @_expand_to_word_token_boundaries sel_start, sel_end
+        elseif @drag_press_type == Gdk.GDK_3BUTTON_PRESS
+          sel_start, sel_end = @_expand_to_line_starts sel_start, sel_end
+
+        unless sel_start == sel_end
+          @selection\set sel_start, sel_end
+          true
 
   _on_pos_changed: =>
     @_update_position!
@@ -774,10 +814,6 @@ class Editor extends PropertyObject
       }
       @_brace_highlighted = true
 
-    start_pos = buffer\get_line(@view.first_visible_line).start_offset
-    last_visible_line = buffer\get_line(@view.last_visible_line)
-    end_pos = last_visible_line and last_visible_line.end_offset or buffer.size
-
     pos = cursor.pos
 
     match_pos = @_get_matching_brace pos - 1
@@ -791,6 +827,17 @@ class Editor extends PropertyObject
   _update_position: =>
     pos = @cursor.line .. ':' .. @cursor.column
     @indicator.position.label = pos
+
+  _get_popup_coordinates: (pos=@cursor.pos) =>
+    pos = @buffer\byte_offset pos
+    coordinates = @view\coordinates_from_position pos
+    unless coordinates
+      pos = @buffer.lines[@line_at_top].start_pos
+      coordinates = @view\coordinates_from_position pos
+
+    x = coordinates.x
+    y = coordinates.y2 + 2
+    x, y
 
   _on_focus: (args) =>
     howl.app.editor = self
@@ -831,12 +878,18 @@ class Editor extends PropertyObject
       params = text: args.text, editor: self, at_pos: @buffer\char_offset(args.pos)
       @popup.window\on_delete_back self, params if @popup.window.on_delete_back
 
+  _on_scroll: =>
+    return unless @popup and @popup.showing
+    x, y = @_get_popup_coordinates @popup.options.position
+    @popup.window\move_to x, y
+
 -- Default indicators
 
 with Editor
   .register_indicator 'title', 'top_left'
   .register_indicator 'position', 'bottom_right'
   .register_indicator 'activity', 'top_right', -> Gtk.Spinner!
+  .register_indicator 'inspections', 'bottom_left'
 
 -- Config variables
 
@@ -1009,35 +1062,35 @@ with config
 
 -- Commands
 for cmd_spec in *{
-  { 'newline', 'Adds a new line at the current position', 'newline' }
-  { 'comment', 'Comments the selection or current line', 'comment' }
-  { 'uncomment', 'Uncomments the selection or current line', 'uncomment' }
-  { 'toggle-comment', 'Comments or uncomments the selection or current line', 'toggle_comment' }
-  { 'delete-line', 'Deletes the current line', 'delete_line' }
-  { 'cut-to-end-of-line', 'Cuts to the end of line', 'delete_to_end_of_line' }
-  { 'delete-to-end-of-line', 'Deletes to the end of line', 'delete_to_end_of_line', no_copy: true }
-  { 'copy-line', 'Copies the current line to the clipboard', 'copy_line' }
-  { 'paste', 'Pastes the contents of the clipboard at the current position', 'paste' }
-  { 'smart-tab', 'Inserts tab or shifts selected text right', 'smart_tab' }
-  { 'smart-back-tab', 'Moves to previous tab stop or shifts text left', 'smart_back_tab' }
-  { 'delete-back', 'Deletes one character back', 'delete_back' }
-  { 'delete-back-word', 'Deletes one word back', 'delete_back_word' }
-  { 'delete-forward', 'Deletes one character forward', 'delete_forward' }
-  { 'delete-forward-word', 'Deletes one word forward', 'delete_forward_word' }
-  { 'shift-right', 'Shifts the selected lines, or the current line, right', 'shift_right' }
-  { 'shift-left', 'Shifts the selected lines, or the current line, left', 'shift_left' }
-  { 'indent', 'Indents the selected lines, or the current line', 'indent' }
-  { 'indent-all', 'Indents the entire buffer', 'indent_all' }
-  { 'join-lines', 'Joins the current line with the line below', 'join_lines' }
-  { 'complete', 'Starts completion at cursor', 'complete' }
+  { 'newline', 'Add a new line at the current position', 'newline' }
+  { 'comment', 'Comment the selection or current line', 'comment' }
+  { 'uncomment', 'Uncomment the selection or current line', 'uncomment' }
+  { 'toggle-comment', 'Comment or uncomment the selection or current line', 'toggle_comment' }
+  { 'delete-line', 'Delete the current line', 'delete_line' }
+  { 'cut-to-end-of-line', 'Cut to the end of line', 'delete_to_end_of_line' }
+  { 'delete-to-end-of-line', 'Delete to the end of line', 'delete_to_end_of_line', no_copy: true }
+  { 'copy-line', 'Copy the current line to the clipboard', 'copy_line' }
+  { 'paste', 'Paste the contents of the clipboard at the current position', 'paste' }
+  { 'smart-tab', 'Insert tab or shift selected text right', 'smart_tab' }
+  { 'smart-back-tab', 'Move to previous tab stop or shifts text left', 'smart_back_tab' }
+  { 'delete-back', 'Delete one character back', 'delete_back' }
+  { 'delete-back-word', 'Delete one word back', 'delete_back_word' }
+  { 'delete-forward', 'Delete one character forward', 'delete_forward' }
+  { 'delete-forward-word', 'Delete one word forward', 'delete_forward_word' }
+  { 'shift-right', 'Shift the selected lines, or the current line, right', 'shift_right' }
+  { 'shift-left', 'Shift the selected lines, or the current line, left', 'shift_left' }
+  { 'indent', 'Indent the selected lines, or the current line', 'indent' }
+  { 'indent-all', 'Indent the entire buffer', 'indent_all' }
+  { 'join-lines', 'Join the current line with the line below', 'join_lines' }
+  { 'complete', 'Start completion at cursor', 'complete' }
   { 'undo', 'Undo last edit for the current editor', 'undo' }
   { 'redo', 'Redo last undo for the current editor', 'redo' }
-  { 'scroll-up', 'Scrolls one line up', 'scroll_up' }
-  { 'scroll-down', 'Scrolls one line down', 'scroll_down' }
-  { 'duplicate-current', 'Duplicates the selection or current line', 'duplicate_current' }
-  { 'cut', 'Cuts the selection or current line to the clipboard', 'cut' }
-  { 'copy', 'Copies the selection or current line to the clipboard', 'copy' }
-  { 'cycle-case', 'Changes case for current word or selection', 'cycle_case' }
+  { 'scroll-up', 'Scroll one line up', 'scroll_up' }
+  { 'scroll-down', 'Scroll one line down', 'scroll_down' }
+  { 'duplicate-current', 'Duplicate the selection or current line', 'duplicate_current' }
+  { 'cut', 'Cut the selection or current line to the clipboard', 'cut' }
+  { 'copy', 'Copy the selection or current line to the clipboard', 'copy' }
+  { 'cycle-case', 'Change case for current word or selection', 'cycle_case' }
 }
   args = { select 4, table.unpack cmd_spec }
   command.register
@@ -1068,6 +1121,20 @@ signal.register 'after-buffer-switch',
     editor: 'The editor for which the buffer was set'
     current_buffer: 'The new buffer that was set for the editor'
     old_buffer: 'The buffer that was previously set for the editor'
+
+signal.register 'preview-opened',
+  description: 'Signaled right after a preview buffer was opened in an editor'
+  parameters:
+    editor: 'The editor for which the preview was opened'
+    current_buffer: 'The current non-preview buffer associated with the editor'
+    preview_buffer: 'The new preview buffer that is open in the editor'
+
+signal.register 'preview-closed',
+  description: 'Signaled right after a preview buffer has been removed for an editor'
+  parameters:
+    editor: 'The editor for which the preview was opened'
+    current_buffer: 'The orignal buffer that was restored for the editor'
+    preview_buffer: 'The preview buffer that was previously open in the editor'
 
 signal.register 'editor-focused',
   description: 'Signaled right after an editor has recieved focus'

@@ -1,4 +1,4 @@
-import Buffer, BufferMarkers from howl
+import Buffer from howl
 
 describe 'BufferMarkers', ->
   local buffer, markers
@@ -61,6 +61,20 @@ describe 'BufferMarkers', ->
       assert.same {'test2'}, names(markers\for_range(5, 5))
       assert.same {'test2'}, names(markers\for_range(5, 10))
       assert.same {'test1', 'test2'}, names(markers\for_range(1, 6))
+
+  describe 'find(selector)', ->
+    it 'finds all markers matching the selector', ->
+      buffer.text = 'åäö€ᛖ'
+      markers\add { {name: 'test1', start_offset: 1, end_offset: 2} }
+      markers\add { {name: 'test2', start_offset: 3, end_offset: 5} }
+      assert.same {
+        {name: 'test1', start_offset: 1, end_offset: 2}
+      }, markers\find name: 'test1'
+
+      assert.same {
+        {name: 'test2', start_offset: 3, end_offset: 5}
+      }, markers\find name: 'test2'
+      assert.same {}, markers\find foo: 'bar'
 
   describe 'remove(selector)', ->
     it 'removes all markers matching the selector', ->

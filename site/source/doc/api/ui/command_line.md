@@ -71,6 +71,42 @@ the active interaction. Read/write.
 
 ## Methods
 
+### add_help (help_entries)
+
+Adds help entries for the current interaction, which are displayed when help is
+invoked by pressing `f1` while the current or nested interaction is running.
+`help_entries` is a table containing multiple entries, where each entry is a
+table in one of the following forms:
+
+- `{key: 'keystroke', action: 'help text'}`:
+  Specifies a keystroke, such as `'ctrl_w'` and the description of
+  the action bound to it.
+
+- `{key_for: 'command-name', action: 'help text'}`:
+  Specifies a keystroke indirectly by specifying the bound command, such as
+  `'buffer-close'`, and the description of the action bound to it. This is
+  useful for associating help with key bindings that are specified indirectly,
+  using [`binding_for`](interact.html#keymap).
+
+- `{heading: 'heading', text: 'help text'}`
+  Specifies free form text help consisting of a heading and some text.
+  `heading` is optional and if ommitted just
+  the `text will displayed as a separate paragraph.
+
+By contrast, help specified in the interaction
+[factory](../interact.html#register) is only displayed when that interaction is
+active but not when a nested interaction is active.
+
+### add_keymap (keymap)
+
+Install a [keymap](../bindings.html) for the currently active interaction. This
+keymap is active while associated interaction, or any nested interaction, is
+active.
+
+By contract, keymaps specified in the interaction
+[factory](../interact.html#register) are only active when the associated
+interaction is active and not active when a nested interaction is running.
+
 ### add_widget (name, widget)
 
 Adds a custom widget `widget` in the command line view. `name` is the name used

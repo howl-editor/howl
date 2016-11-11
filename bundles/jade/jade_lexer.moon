@@ -6,7 +6,7 @@ import style from howl.ui
 style.define 'jade_element', 'keyword'
 style.define 'jade_id', 'constant'
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
 
   dq_string = capture 'string', span('"', '"', '\\')
   -- sq_string = capture 'string', span("'", "'")

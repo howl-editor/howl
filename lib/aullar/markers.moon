@@ -5,6 +5,8 @@
 {:insert, :remove} = table
 
 selector_matches = (selector, marker) ->
+  return true unless selector
+
   for k, v in pairs selector
     return false unless marker[k] == v
 
@@ -63,9 +65,10 @@ define_class {
   for_range: (start_offset, end_offset, selector) =>
     (@_scan start_offset, end_offset, selector)
 
-  expand: (offset, count) =>
-    end_offset = offset + count
+  find: (selector) =>
+    [m for m in *@markers when selector_matches(selector, m)]
 
+  expand: (offset, count) =>
     for i = 1, #@markers
       m = @markers[i]
       if m.start_offset >= offset -- after expansion
@@ -86,8 +89,14 @@ define_class {
         m.end_offset -= count
       elseif m.start_offset <= offset and m.end_offset >= end_offset -- enclosing
         m.end_offset -= count
-      else -- otherwise affected, remove it
-        insert to_remove, i
+      else -- partial or full overlap
+        if m.preserve
+          m.start_offset = offset if offset < m.start_offset
+          m.end_offset -= math.min count, (m.end_offset - offset)
+          if m.start_offset == m.end_offset
+            insert to_remove, i
+        else
+          insert to_remove, i
 
     for i = #to_remove, 1, -1
       remove @markers, to_remove[i]

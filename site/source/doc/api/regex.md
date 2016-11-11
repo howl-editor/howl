@@ -44,6 +44,46 @@ are currently implemented on top of GLibs regular expression support. You can
 read more about the full syntax supported by the implementation
 [here][glib-regex-syntax].
 
+#### Comparison with Lua patterns
+
+As mentioned above, the operations provided by the regex module closely mimics
+the corresponding operations found in the Lua string standard library. Thus you
+have `match`, and `find` and `gmatch`, which work similarly to their
+counterparts. Lua patterns are more limited than regular expressions, but even
+so they also offer functionality not present in ordinary regular expressions.
+One such example is the support for positional captures using an empty capture,
+`()`, which returns the position of the match within the target string. The
+methods in the `regex` module allows for these kind of captures within regular
+expressions as well.
+
+One important thing to note is the handling of offsets, both when passed as
+arguments and when returned as result values. In contrast to Lua, offsets are
+considered as character offsets, and not byte offsets. Consider for instance
+the following use of positional captures:
+
+```moonscript
+('å1')\umatch(r'()\\d') -- => 2
+
+('å1')\match('()%d') -- => 3
+
+```
+
+Another thing to be aware of is how optional captures are handled by the `regex`
+module. This is not supported by Lua patterns, so there's no corresponding
+functionality to contrast with, but consider the following regular expression:
+
+`'(1)(\\w)?(2)`
+
+This expression contains three different captures, but the second of these is
+not required to match. In the case where such a capture does not actually match,
+the corresponding returned match is the empty string, `''`:
+
+```moonscript
+r'(1)(\\w)?(2)'\match '1x2' -- => '1', 'x', '2'
+
+r'(1)(\\w)?(2)'\match '12' -- => '1', '', '2'
+```
+
 _See also_:
 
 - The [spec](../spec/regex_spec.html) for regex

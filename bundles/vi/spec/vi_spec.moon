@@ -7,7 +7,7 @@ import app, Buffer, bindings, bundle, dispatch from howl
 import Editor, Window from howl.ui
 
 bundle.load_by_name 'vi'
-state = bundles.vi.state
+state = _G.bundles.vi.state
 
 text = [[
 LinƏ 1
@@ -24,9 +24,8 @@ describe 'VI', ->
   window\add editor\to_gobject!
   window\show_all!
 
-  howl.app = window: Window!
-
   before_each ->
+    howl.app.window = window: Window!
     buffer = Buffer {}
     buffer.text = text
     lines = buffer.lines
@@ -36,6 +35,7 @@ describe 'VI', ->
     state.activate editor
 
   after_each ->
+    howl.app.window = nil
     state.reset!
     state.deactivate!
     app.editor = nil
@@ -101,6 +101,15 @@ describe 'VI', ->
     cursor.column = 4
     press 'F', 'i'
     assert.equal 2, cursor.column
+
+  it '<t><character> searches forward in the current line to one character before <character>', ->
+    press 't', 'n'
+    assert.equal 2, cursor.column
+
+  it '<T><character> searches backwards in the current line to one character before <character>', ->
+    cursor.column = 5
+    press 'T', 'i'
+    assert.equal 3, cursor.column
 
   it '<c><w> deletes to the end of word and enters insert', ->
     press 'c', 'w'

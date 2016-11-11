@@ -1,6 +1,5 @@
 import bundle, config, VC from howl
 import File from howl.io
-import Spy from howl.spec
 
 describe 'Git bundle', ->
   setup -> bundle.load_by_name 'git'

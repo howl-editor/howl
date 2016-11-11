@@ -1,11 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, bindings, interact, timer from howl
+import app, interact, timer from howl
 import ListWidget from howl.ui
 import Matcher from howl.util
-
-attach_list = (interactor) ->
 
 class SelectionList
   run: (@finish, @opts) =>
@@ -42,6 +40,8 @@ class SelectionList
         timer.asap -> @_handle_change!
       else
         @on_update spillover
+
+  refresh: => @list_widget\update @command_line.text, true
 
   show_list: =>
     @command_line\add_widget 'completion_list', @list_widget
@@ -81,17 +81,6 @@ class SelectionList
         @show_list!
       else
         @submit!
-
-    on_unhandled: (event, source, translations, self) ->
-      return false if not @opts.keymap
-      return ->
-        if bindings.dispatch event, source, { @opts.keymap }, {
-            selection: @list_widget.selection
-            text: @command_line.text
-          }
-          @list_widget\update @command_line.text, true
-          @_handle_change!
-        return false
 
 interact.register
   name: 'select'

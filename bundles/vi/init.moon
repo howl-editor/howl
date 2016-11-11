@@ -1,4 +1,4 @@
-import app, signal, config, bindings, command from howl
+import app, signal, config, command from howl
 import Editor from howl.ui
 
 state = bundle_load 'state'

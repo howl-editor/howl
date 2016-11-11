@@ -19,7 +19,11 @@ get_capture = (match_info, index, ptr, fetch_positions = false) ->
   return match unless fetch_positions or #match == 0
 
   start_pos, end_pos = match_info\fetch_pos index
+
   return match unless start_pos
+
+  -- negative start_pos indicates an non-matching optional capture
+  return nil, 0, 0 if start_pos == -1
 
   start_ptr = ptr + start_pos
   start_offset = tonumber 1 + C.g_utf8_pointer_to_offset ptr, start_ptr
@@ -31,8 +35,12 @@ get_capture = (match_info, index, ptr, fetch_positions = false) ->
 
 get_captures = (match_info, ptr, matches, start, count, offset = 0) ->
   for i = start, count - 1
-    match, start_pos, end_pos = get_capture match_info, i, ptr
-    matches[#matches + 1] = #match > 0 and match or start_pos + offset
+    match, start_pos = get_capture match_info, i, ptr
+    if match == nil
+      match = ''
+    else
+      match = #match > 0 and match or start_pos + offset
+    matches[#matches + 1] = match
 
 properties = {
   pattern: => @re.pattern
@@ -54,7 +62,7 @@ methods = {
     match_info, ptr, count = do_match @re, s, init
     return nil unless match_info
 
-    match, start_pos, end_pos = get_capture match_info, 0, ptr, true
+    _, start_pos, end_pos = get_capture match_info, 0, ptr, true
     matches = { start_pos + init - 1, end_pos + init - 1 }
     get_captures match_info, ptr, matches, 1, count, init - 1
     return table.unpack matches

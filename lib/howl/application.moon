@@ -1,12 +1,10 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-ffi = require 'ffi'
-
 import Window, Editor, theme from howl.ui
 import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
 import File, Process from howl.io
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 Gtk = require 'ljglibs.gtk'
 callbacks = require 'ljglibs.callbacks'
 {:get_monotonic_time} = require 'ljglibs.glib'
@@ -14,16 +12,16 @@ callbacks = require 'ljglibs.callbacks'
 append = table.insert
 coro_create, coro_status = coroutine.create, coroutine.status
 
-idle_dispatches = {
-  '^signal draw$',
-  '^cursor%-blink$',
-  'timer'
+non_idle_dispatches = {
+  '^signal motion%-',
+  '^signal key%-press%-event',
+  '^signal button%-',
 }
 
 is_idle_dispatch = (desc) ->
-  for p in *idle_dispatches
-    return true if desc\find(p) != nil
-  false
+  for p in *non_idle_dispatches
+    return false if desc\find(p) != nil
+  true
 
 last_activity = get_monotonic_time!
 
@@ -114,8 +112,8 @@ class Application extends PropertyObject
 
         true
 
-    window\on_destroy (window) ->
-      @windows = [w for w in *@windows when w\to_gobject! != window]
+    window\on_destroy (destroy_window) ->
+      @windows = [w for w in *@windows when w\to_gobject! != destroy_window]
 
     @g_app\add_window window\to_gobject!
 
@@ -174,10 +172,10 @@ class Application extends PropertyObject
           editor.buffer = @next_buffer
 
   open_file: (file, editor = @editor) =>
-    for b in *@buffers
-      if b.file == file
-        editor.buffer = b
-        return b, editor
+    buffer = @_buffer_for_file file
+    if buffer
+      editor.buffer = buffer
+      return buffer, editor
 
     buffer = @new_buffer mode.for_file file
     status, err = pcall ->
@@ -245,8 +243,8 @@ class Application extends PropertyObject
     @g_app\on_open (_, files) -> @_load [File(path) for path in *files]
 
     signal.connect 'window-focused', self\synchronize
-    signal.connect 'editor-destroyed', (args) ->
-      @_editors =  [e for e in *@_editors when e != args.editor]
+    signal.connect 'editor-destroyed', (s_args) ->
+      @_editors =  [e for e in *@_editors when e != s_args.editor]
 
     @g_app\run args
 
@@ -292,8 +290,16 @@ class Application extends PropertyObject
 
     @settings\save_system 'session', session
 
+  _buffer_for_file: (file) =>
+    for b in *@buffers
+      return b if b.file == file
+
+    nil
+
   _load: (files = {}) =>
     local window
+
+    -- bootstrap if we're booting up
     unless @_loaded
       @settings = Settings!
       @_load_core!
@@ -302,7 +308,9 @@ class Application extends PropertyObject
       bundle.load_all!
 
       unless @args.no_profile
-        @settings\load_user!
+        status, ret = pcall @settings.load_user, @settings
+        unless status
+          log.error "Failed to load user settings: #{ret}"
 
       theme.apply!
       @_load_application_icon!
@@ -312,16 +320,37 @@ class Application extends PropertyObject
       signal.connect 'buffer-saved', self\_on_buffer_saved
 
       window = @new_window!
-      @_set_initial_status window
 
       howl.janitor.start!
 
+    -- load files from command line
+    loaded_buffers = {}
     for path in *files
       file = File path
-      buffer = @new_buffer mode.for_file file
-      buffer.file = file
-      signal.emit 'file-opened', :file, :buffer
+      buffer = @_buffer_for_file file
+      unless buffer
+        buffer = @new_buffer mode.for_file file
+        status, ret = pcall -> buffer.file = file
+        if status
+          signal.emit 'file-opened', :file, :buffer
+        else
+          @close_buffer buffer
+          log.error "Failed to open file '#{file}': #{ret}"
 
+      if buffer
+        append loaded_buffers, buffer
+
+    -- files we've loaded via a --reuse invocation should be shown
+    if #loaded_buffers > 0 and @_loaded
+      for i = 1, math.min(#@editors, #loaded_buffers)
+        @editors[i].buffer = loaded_buffers[i]
+
+    -- all loaded files should be considered as having been viewed just now
+    now = howl.sys.time!
+    for b in *loaded_buffers
+      b.last_shown = now
+
+    -- restore session properties
     unless @_loaded
       unless @args.no_profile
         @_restore_session window, #files == 0
@@ -333,6 +362,7 @@ class Application extends PropertyObject
       window\show_all! if window
       @_loaded = true
       signal.emit 'app-ready'
+      @_set_initial_status window
 
   _should_abort_quit: =>
     modified = [b for b in *@_buffers when b.modified]
@@ -344,7 +374,6 @@ class Application extends PropertyObject
 
   _on_mode_registered: (args) =>
     -- check if any buffers with default_mode could use this new mode
-    mode_name = args.name
     default_mode = mode.by_name 'default'
     for buffer in *@_buffers
       if buffer.file and buffer.mode == default_mode
@@ -390,6 +419,7 @@ class Application extends PropertyObject
             buffer.file = file
             buffer.last_shown = entry.last_shown
             buffer.properties = entry.properties
+            signal.emit 'file-opened', :file, :buffer
 
           log.error "Failed to load #{file}: #{err}" unless status
 
@@ -403,7 +433,8 @@ class Application extends PropertyObject
 
   _set_initial_status: (window) =>
     if log.last_error
-      window.status\error log.last_error.message
+      startup_errors = [e for e in *log.entries when e.level == 'error']
+      window.status\error "#{log.last_error.message} (#{#startup_errors} startup errors in total)"
     else
       window.status\info 'Howl ready.'
 
@@ -436,6 +467,7 @@ class Application extends PropertyObject
     require 'howl.editing'
     require 'howl.ui.icons.font_awesome'
     require 'howl.janitor'
+    require 'howl.inspect'
 
   _load_application_icon: =>
     dir = @root_dir

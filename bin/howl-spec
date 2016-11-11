@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright 2012-2015 The Howl Developers
+# Copyright 2016 The Howl Developers
 # License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ROOT=$(cd $(dirname $0)/.. && pwd)
@@ -16,33 +16,16 @@ if [ -z "$HOWL" ]; then
   exit 1
 fi
 
-busted=$(luarocks list busted|grep installed|head -n 1)
-if [ -n "$busted" ]; then
-  version=$(echo "$busted" | awk '{ print $1 }')
-  path=$(echo "$busted" | awk '{ print $4 }')
-  busted_script="$path/busted/$version/bin/busted_bootstrap"
-  if [ ! -f $busted_script ]; then
-    busted_script="$path/busted/$version/bin/busted"
-  fi
-
-  if [ -f $busted_script ]; then
-    export BUSTED='yes'
-    exec $HOWL $busted_script --pattern=_spec.moon $*
-  fi
+if [ -z "$HOWL_SPEC_SINGLY" ]; then
+  exec $HOWL --spec --pattern=_spec.moon $*
+else
+  for spec in `find $* -name '*_spec.moon'`
+  do
+    echo $spec
+    $HOWL --spec --pattern=_spec.moon $spec
+    exit_code=$?;
+    if [ "$exit_code" != "0" ]; then exit $exit_code; fi
+  done
+  exit 0
 fi
 
-cat <<ERR
-Error: 'busted' not found
----------------------------------
-
-To run $0 you need to have the busted testing framework installed via luarocks.
-With luarocks installed, execute:
-
-$ luarocks --from=http://rocks.moonscript.org install luassert 1.7.6
-$ luarocks --from=http://rocks.moonscript.org install lua_cliargs 2.5-4
-$ luarocks --from=http://rocks.moonscript.org install busted 1.11.1-2
-
-luarocks might be available from your package manager, or you can install
-it using the instructions from http://luarocks.org
-ERR
-exit 1

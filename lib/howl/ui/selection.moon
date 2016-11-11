@@ -4,8 +4,7 @@
 ffi = require 'ffi'
 
 import signal, clipboard from howl
-import const_char_p from howl.cdefs
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 import C from ffi
 {:max, :min} = math
 
@@ -74,7 +73,6 @@ class Selection extends PropertyObject
     @set start_pos, end_pos
 
   select_all: =>
-    @_view.cursor.pos = @_buffer.size + 1
     @_sel\set 1, @_buffer.size + 1
 
   range: =>

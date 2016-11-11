@@ -1,7 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md)
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
   c = capture
 
   keyword = c 'keyword', word {

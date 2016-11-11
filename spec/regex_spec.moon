@@ -46,6 +46,9 @@ describe 'Regex', ->
       it 'position captures are character based', ->
         assert.same { 2, 3 }, { r'å()ä()'\match 'åäö' }
 
+      it 'return non-matching optional captures as empty strings', ->
+        assert.same { '1', '', '2' }, { r'(1)(\\w)?(2)'\match '12' }
+
     context 'when init is specified', ->
       it 'matching starts from the init position', ->
         assert.equal 'right', r'r\\S+'\match 'red right hand', 2

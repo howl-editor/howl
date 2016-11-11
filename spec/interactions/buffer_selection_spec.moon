@@ -5,6 +5,7 @@ import app, bindings, interact, Project from howl
 import File from howl.io
 import Window from howl.ui
 
+require 'howl.ui.icons.font_awesome'
 require 'howl.interactions.selection_list'
 require 'howl.interactions.location_selection'
 require 'howl.interactions.buffer_selection'
@@ -64,8 +65,8 @@ describe 'buffer_selection', ->
         table.insert previews, editor.buffer.title
       assert.same {'a1-buffer', 'a2-buffer'}, previews
 
-    context 'sending binding_for("close")', ->
-      keymap = ctrl_w: 'close'
+    context 'sending binding_for("buffer-close")', ->
+      keymap = ctrl_w: 'buffer-close'
       before_each -> bindings.push keymap
       after_each -> bindings.remove keymap
 

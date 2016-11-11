@@ -75,15 +75,15 @@ class Completer
     prefix = context.word_prefix
     return differentiate_by_case(prefix, at_most(limit, completions)), prefix
 
-  accept: (completion, pos) =>
+  accept: (compl, pos) =>
     chunk = @buffer\context_at(pos).word
     chunk = @buffer\chunk(chunk.start_pos, pos - 1) unless @config.hungry_completion
-    chunk.text = completion
-    pos_after = chunk.start_pos + completion.ulen
+    chunk.text = compl
+    pos_after = chunk.start_pos + compl.ulen
     mode = @buffer\mode_at pos
 
     if mode.on_completion_accepted
-      pos = mode\on_completion_accepted completion, @buffer\context_at(pos_after)
+      pos = mode\on_completion_accepted compl, @buffer\context_at(pos_after)
       pos_after = pos if type(pos) == 'number'
 
     pos_after

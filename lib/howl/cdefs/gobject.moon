@@ -3,7 +3,6 @@
 
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gobject'
-glib = require 'howl.cdefs.glib'
 
 C = ffi.C
 

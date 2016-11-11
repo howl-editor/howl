@@ -1,7 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:File, :FileOutputStream} = require 'ljglibs.gio'
+{:File} = require 'ljglibs.gio'
 
 with_tmpfile = (f) ->
   p = os.tmpname!
@@ -29,6 +29,14 @@ describe 'OutputStream', ->
         stream\write_async 'foobar', nil, async (status, written) ->
           assert.is_true status
           assert.equals 'number', type(written)
+          done!
+
+    it 'handles being invoked with a zero byte count', (done) ->
+      with_stream (p, stream) ->
+        stream\write_async '', 0, async (status, written) ->
+          assert.is_true status
+          assert.equals 'number', type(written)
+          assert.equals 0, written
           done!
 
   describe 'close_async(handler)', ->

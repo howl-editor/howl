@@ -16,6 +16,17 @@ class SearchInteraction
   on_update: (text) =>
     @searcher[@operation] @searcher, text, @type
 
+  help: {
+    {
+      key: 'up'
+      action: 'Select previous match'
+    }
+    {
+      key: 'down'
+      action: 'Select next match'
+    }
+  }
+
   keymap:
     up: => @searcher\previous!
     down: => @searcher\next!

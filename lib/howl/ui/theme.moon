@@ -1,50 +1,59 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-ffi = require 'ffi'
 Gtk = require 'ljglibs.gtk'
 Gdk = require 'ljglibs.gdk'
 require 'ljglibs.gtk.widget'
 flair = require 'aullar.flair'
+RGBA = Gdk.RGBA
 
-import File from howl.io
 import config, signal from howl
 import style, colors, highlight from howl.ui
-import PropertyTable, Sandbox, SandboxedLoader from howl.aux
+import PropertyTable, SandboxedLoader from howl.util
 aullar_config = require 'aullar.config'
+append = table.insert
 
 css_provider = Gtk.CssProvider!
 screen = Gdk.Screen\get_default!
 Gtk.StyleContext.add_provider_for_screen screen, css_provider, 600
 
 css_template = [[
+.window-frame {
+  box-shadow: none;
+  margin: 0px 1px 2px 1px;
+}
+
 .transparent_bg {
   background: rgba(0,0,0,0);
 }
 
+.scrollbar.slider, .scrollbar.button {
+  background: ${scrollbar_slider_color};
+}
+
 .scrollbar.trough {
-    background: rgba(0,0,0,0);
+  background: ${scrollbar_background_color};
 }
 
 .header {
   color: ${header_color};
-  font: ${header_font};
+  ${header_font}
 }
 
 .footer {
   color: ${footer_color};
-  font: ${footer_font};
+  ${footer_font}
 }
 
 .status {
-  font: ${status_font};
+  ${status_font}
   color: ${status_color};
 }
 ]]
 
 status_template = [[
 .status_${name} {
-  font: ${font};
+  ${font}
   color: ${color};
 }
 ]]
@@ -53,25 +62,43 @@ theme_files = {}
 current_theme = nil
 current_theme_file = nil
 theme_active = false
-background_color_widgets = setmetatable {}, __mode: 'k'
 
 interpolate = (content, values) ->
   content\gsub '%${([%a_]+)}', values
 
+parse_color = (spec, alpha = 1) ->
+  c = RGBA(spec)
+  c.alpha = alpha
+  tostring(c)
+
 parse_font = (font = {}) ->
+  font_size_unit = 'px'
+
+  if Gtk.get_major_version! == 3 and Gtk.get_minor_version! < 10
+    font_size_unit = ''
+
   size = config.font_size
-  desc = config.font
-  desc ..= ' bold' if font.bold
-  desc ..= ' italic' if font.italic
-  desc ..= ' ' .. size if size
-  desc
+  decls = {
+    "font-family: #{config.font};"
+  }
+
+  if size
+    append decls, "font-size: #{config.font_size}#{font_size_unit};"
+
+  if font.italic
+    append decls, "font-style: italic;"
+
+  if font.bold
+    append decls, "font-weight: bold;"
+
+  table.concat decls, '\n  '
 
 indicator_css = (id, def) ->
-  clazz = '.indic_' .. id
-  indic_css = clazz .. ' { '
-  if def.color then indic_css ..= 'color: ' .. def.color .. '; '
-  indic_css ..= 'font: ' .. parse_font(def.font).. '; '
-  indic_css ..= ' }\n'
+  clazz = ".indic_#{id}"
+  indic_css = "#{clazz} {\n  "
+  if def.color then indic_css ..= "color: #{def.color};\n  "
+  indic_css ..= parse_font(def.font)
+  indic_css ..= '\n}\n'
   indic_css
 
 indicators_css = (indicators = {}) ->
@@ -99,6 +126,12 @@ theme_css = (theme, file) ->
   hdr = editor.header
   footer = editor.footer
   indicators = editor.indicators
+  scrollbars = editor.scrollbars or {}
+  sb_slider = scrollbars.slider or {}
+  sb_bg = scrollbars.background or {}
+  sb_slider_color = parse_color(sb_slider.color or 'gray', sb_slider.alpha or 1)
+  sb_bg_color = parse_color(sb_bg.color or 'black', sb_bg.alpha or 0)
+
   values =
     status_font: parse_font status.font
     status_color: status.color
@@ -106,6 +139,8 @@ theme_css = (theme, file) ->
     header_font: parse_font hdr.font
     footer_color: footer.color
     footer_font: parse_font footer.font
+    scrollbar_slider_color: sb_slider_color
+    scrollbar_background_color: sb_bg_color
   css = interpolate css_template, values
   css ..= indicators_css indicators
   css ..= status_css status
@@ -166,7 +201,7 @@ with config
   .define
     name: 'font_size'
     description: 'The size of the main font'
-    default: 11
+    default: aullar_config.view_font_size
     type_of: 'number'
     scope: 'global'
 

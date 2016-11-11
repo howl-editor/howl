@@ -35,7 +35,7 @@ auto_mkdir = (directory) ->
 
 command.register
   name: 'open',
-  description: 'Open file'
+  description: 'Open a file'
   input: -> interact.select_file allow_new: true
   handler: (file) -> app\open_file file
 
@@ -69,7 +69,7 @@ command.alias 'open', 'e'
 
 command.register
   name: 'project-open',
-  description: 'Open project file'
+  description: 'Open a file in the current project'
   input: ->
     buffer = app.editor and app.editor.buffer
     file = buffer and (buffer.file or buffer.directory)
@@ -85,7 +85,7 @@ command.register
 
 command.register
   name: 'save',
-  description: 'Saves the current buffer to file'
+  description: 'Save the current buffer to file'
   handler: ->
     buffer = app.editor.buffer
     if not buffer.file
@@ -112,7 +112,7 @@ command.alias 'save', 'w'
 
 command.register
   name: 'save-as',
-  description: 'Saves the current buffer to a given file'
+  description: 'Save the current buffer to a given file'
   input: ->
     file = interact.select_file allow_new: true
     return unless file
@@ -131,12 +131,13 @@ command.register
   handler: (file) ->
     buffer = app.editor.buffer
     buffer\save_as file
+    buffer.mode = mode.for_file file
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
       #buffer.lines, #buffer
 
 command.register
   name: 'buffer-close',
-  description: 'Closes the current buffer'
+  description: 'Close the current buffer'
   handler: ->
     buffer = app.editor.buffer
     app\close_buffer buffer
@@ -145,7 +146,7 @@ command.alias 'buffer-close', 'close'
 
 command.register
   name: 'vc-diff-file',
-  description: 'Shows a diff against the VC for the current file'
+  description: 'Show a diff against the VC for the current file'
   handler: ->
     with_vc (vc, buffer) ->
       diff = vc\diff buffer.file
@@ -156,7 +157,7 @@ command.register
 
 command.register
   name: 'vc-diff',
-  description: 'Shows a diff against the VC for the current project'
+  description: 'Show a diff against the VC for the current project'
   handler: ->
     with_vc (vc, buffer, project) ->
       diff = vc\diff!
@@ -167,7 +168,7 @@ command.register
 
 command.register
   name: 'diff-buffer-against-saved',
-  description: 'Shows a diff against the saved file for the current buffer'
+  description: 'Show a diff against the saved file for the current buffer'
   handler: ->
     buffer = app.editor.buffer
     unless buffer.file

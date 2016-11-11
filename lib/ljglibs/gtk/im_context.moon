@@ -14,8 +14,6 @@ pack, unpack = table.pack, table.unpack
 
 jit.off true, true
 
-GtkIMContext = ffi.typeof 'GtkIMContext *'
-
 core.define 'GtkIMContext < GObject', {
   properties: {
     client_window:

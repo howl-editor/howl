@@ -1,7 +1,6 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-mode = howl.mode
 local lexers
 
 {

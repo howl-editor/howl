@@ -61,7 +61,16 @@ Things that are meant to be configurable in Howl are exposed as "configuration
 variables". Configuration variables can be set either interactively from within
 Howl, using the `set` command, or programmatically from code. To get an overview
 of currently available variables, type `set` and press `space` at the command
-line to view a list.
+line to view a list:
+
+![Configuration](/images/screenshots/monokai/configuration.png)
+
+For example, to change the current theme interactively you can open up the
+prompt, and type `set theme`. Pressing enter to choose the theme variable would
+then present you with a list of available themes - after choosing one you can
+press enter again to switch to the specified theme. See the section below,
+[Setting variables upon startup](#setting-variables-upon-startup), for
+information on how to change a setting so that it persists across restarts.
 
 Configuration variables can be specified at three different levels in Howl,
 in ascending order of priority:

@@ -5,7 +5,7 @@ import app, config, interact from howl
 import File from howl.io
 import Window from howl.ui
 require 'howl.ui.icons.font_awesome'
-file_selection = require 'howl.interactions.file_selection'
+require 'howl.interactions.file_selection'
 
 describe 'file_selection', ->
   local tmpdir, command_line
@@ -41,10 +41,8 @@ describe 'file_selection', ->
       assert.same '~/', prompt
 
     context 'when a buffer associated with a file is open', ->
-      local buf
-
       it 'opens the directory of the current buffer, if any', ->
-        buf, app.editor = app\open_file tmpdir / 'f'
+        _, app.editor = app\open_file tmpdir / 'f'
         local prompt
         within_activity interact.select_file, ->
           prompt = command_line.prompt

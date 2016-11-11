@@ -46,12 +46,19 @@ dog.color;    // also results in "brown"
 
 // regular expressions
 /ab{3}c/;
-
 /ab{3}\/dc/; // with escaped terminator
 /ab{3}/gim; // with flags
 
-// not a regex below
+// regexes used in various contexts
+if (/[0-9]/.test('6')) alert('Digit');
+invoke(/[0-9]/, /abc/);
+invoke(/[0-9]/, on_res(/abc/));
+
+// not regexes below
 var foo = 2 / 2;
+var bar = 2 / 2 / 3;
+var zed = 2 / 2 / other_var;
+var frob = var1 / var2 / other_var;
 
 // function declarations
 var add = new Function('x', 'y', 'return x+y');
@@ -64,4 +71,4 @@ var f = function* (a, b) { yield* 123; }
 function* g(c) { yield c; }
 var
   foo = 1,
-  my_func = function() {}
+  my_func = function() {};

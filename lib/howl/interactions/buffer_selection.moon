@@ -3,7 +3,7 @@
 
 import app, config, interact, Project from howl
 import File from howl.io
-import icon, markup from howl.ui
+import icon from howl.ui
 import Matcher from howl.util
 
 append = table.insert
@@ -56,7 +56,7 @@ make_title = (buffer, opts={}) ->
   title = file.basename
   if opts.parents
     parent = file.parent
-    for i=1,opts.parents
+    for _ = 1, opts.parents
       if parent
         title = "#{parent.basename}#{File.separator}#{title}"
         parent = parent.parent
@@ -86,7 +86,7 @@ get_buffer_list = ->
     basenames[buf.file.basename] or= {}
     append basenames[buf.file.basename], buf
 
-  for basename, buffers in pairs(basenames)
+  for _, buffers in pairs(basenames)
     continue if #buffers == 1
 
     options_list = {
@@ -133,16 +133,26 @@ interact.register
         {style: 'operator'}
         {style: 'comment'}
       }
+    current_selection = nil
     with opts
       .title or= 'Buffers'
       .matcher = buffer_matcher
       .columns = columns
-      .keymap = {
-        binding_for:
-          ['close']: (current) ->
-            if current.selection
-              app\close_buffer current.selection.buffer
-      }
+      .on_change = (selection, text, items) ->
+        current_selection = selection
+
+    command_line = howl.app.window.command_line
+    command_line\add_keymap {
+      binding_for:
+        ['buffer-close']: =>
+          if current_selection and current_selection.buffer
+            app\close_buffer current_selection.buffer
+            command_line\refresh!
+    }
+
+    command_line\add_help
+      key_for: 'buffer-close'
+      action: 'Close the currently selected buffer'
 
     result = interact.select_location opts
     if result

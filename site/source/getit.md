@@ -4,28 +4,28 @@ title: Installation
 
 # Installing Howl
 
-Howl is developed on Linux, but it should build on other \*NIX platforms as well
-such as the \*BSD family, although this hasn't been verified yet (there's also
-nothing the author is aware of that should prevent it from being ported to OSX
-or Window, should any brave soul like to try).
+Howl is developed on Linux, but it builds on other \*NIX platforms as well such
+as FreeBSD (with other \*BSDs presumably requiring only little work). It should
+be possible to port to OSX or Windows, should any brave soul be willing to put in
+the work.
 
 You can install Howl by building it from source, either from a release or by
 cloning the repository from Github. If you're on ArchLinux you can install the
-Arch package available from the AUR (after verifying the version).
+Arch package available from the [AUR](#archlinux).
 
 ## Latest release
 
-The latest release of Howl is 0.3. It was released at 2015-09-02, and is
+The latest release of Howl is 0.4.1. It was released at 2016-10-14, and is
 available for download from:
 
-[https://github.com/howl-editor/howl/releases/download/0.3/howl-0.3.tgz](https://github.com/howl-editor/howl/releases/download/0.3/howl-0.3.tgz)
+[https://github.com/howl-editor/howl/releases/download/0.4.1/howl-0.4.1.tgz](https://github.com/howl-editor/howl/releases/download/0.4.1/howl-0.4.1.tgz)
 
-_MD5_: 30014d5a9d6adda87c8f0048afc25893
+_MD5_: 9ef463f4d8b31e8954e70e507fbb1858
 
-_SHA1_: 102f47badbcfd43c0c1f1d3921d70ba11767b0e4
+_SHA1_: 1434af03c5bc9f10d64ef93ca0ae68ccc7092fee
 
 __Release notes:__
-[Howl 0.3 Released](/blog/2015/09/01/howl-0-dot-3-released.html)
+[Howl 0.4.1 Released](/blog/2016/10/14/howl-0-4-1-released.html)
 
 ## Building Howl from source
 
@@ -39,21 +39,25 @@ dependencies).
 
 - `GTK+`: Version >= 3, with development files.
 
-  As an example, on Debian-based based systems you would need the `libgtk-3-dev` package.
+  For example:
 
-- `C/C++ compiler`: Howl has a very small C core itself, but it embedds dependencies built both
-  in C and C++.
+  * On Debian-based based systems you would need the `libgtk-3-dev` package.
+  * For Fedora you would need the `gtk3-devel` package.
+
+- `C compiler`: Howl has a very small C core itself, and it embedds a few
+dependencies built in C.
 
 ### Building
 
 Download and unpack a Howl release, or get the source from
-[Github](https://github.com/howl-editor/howl), either by cloning the repository or by
-download a Zip-file of the desired branch/tag.. Compile Howl by issuing `make`
-from the `src` directory. When building directly from a source checkout, in-app
-dependencies will automatically be downloaded for you using `wget`. Once it's
-built, you can if you want run it directly as is from the `src` directory, like
-so: `$ ./howl`. To install it properly however, so that it integrates into your
-desktop, you'll want to run the `make install` command.
+[Github](https://github.com/howl-editor/howl), either by cloning the repository
+or by download a Zip-file of the desired branch/tag.. Compile Howl by issuing
+`make` from the `src` directory (`gmake` for \*BSD). When building directly from
+a source checkout, in-app dependencies will automatically be downloaded for you
+using `wget`. Once it's built, you can if you want run it directly as is from
+the `src` directory, like so: `$ ./howl`. To install it properly however, so
+that it integrates into your desktop, you'll want to run the `make install`
+command.
 
 *Example session:*
 
@@ -88,29 +92,33 @@ look ugly as the result.*
 
 ### Tracking the latest from Github
 
-If you want to track the latest version of Howl, clone the repository from
-Github and build as per the above instructions. To update just pull the latest
-additions, and issue make again from the src directory. Don't forget to make
-again, as this would cause stale code to be loaded.
-
-## Distribution packages
-
-### ArchLinux
-
-![ArchLinux](logos/archlinux-logo.png)
-
-Courtesy of [Bartłomiej Piotrowski](http://bpiotrowski.pl), Howl is available as
-a package in the [Arch User Repository](https://aur.archlinux.org/) (AUR). You
-can install it using your AUR
-[helper](https://wiki.archlinux.org/index.php/AUR_Helpers) of choice, or by
-doing a manual install from AUR. As an example, using the `packer` helper you
-can install Howl by issuing:
-
-```shell
-$ sudo packer -S howl-editor
-```
+We developers use Howl every day for our daily development, and we try our best
+to keep the master branch stable and suitable for production usage at all times.
+If you want to follow along with the latest updates for Howl, simply clone the
+repository from Github and build as per the above instructions. To update just
+pull the latest additions, and issue make again from the src directory. _Don't
+forget to make again though_, as this would cause stale byte code to be loaded
+and confusion to arise.
 
 ## Older releases
+
+### Howl 0.4, released 2016-05-31
+
+[Download](https://github.com/howl-editor/howl/releases/download/0.4/howl-0.4.tgz)
+
+_MD5_: aa4761e657b2cedbae0f2f843731a17f
+
+_SHA1_: 557fea5af8e6768ea6408ab2d11db63c0ae5fdf4
+
+### Howl 0.3, released 2015-09-02.
+
+[Download](https://github.com/howl-editor/howl/releases/download/0.3/howl-0.3.tgz)
+
+_MD5_: 30014d5a9d6adda87c8f0048afc25893
+
+_SHA1_: 102f47badbcfd43c0c1f1d3921d70ba11767b0e4
+
+[Release notes](/blog/2015/09/01/howl-0-dot-3-released.html)
 
 ### Howl 0.2.1, released 2014-04-29.
 

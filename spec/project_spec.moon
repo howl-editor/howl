@@ -68,7 +68,7 @@ describe 'Project', ->
           Project.add_root dir
           file = dir / 'test.moon'
           vc = name: 'vc', root: dir, files: -> {}
-          VC.register 'vc', find: (file) -> return vc if file == file
+          VC.register 'vc', find: (f) -> return vc if f == file
           p = Project.for_file file
           VC.unregister 'vc'
           assert.equal p.vc, vc
@@ -80,7 +80,7 @@ describe 'Project', ->
           file = dir / 'test.moon'
           file2 = dir / 'test2.moon'
           p = Project.for_file file
-          p2 = Project.for_file file
+          p2 = Project.for_file file2
           assert.not_nil p
           assert.equal p2, p
 

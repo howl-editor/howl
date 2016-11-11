@@ -4,7 +4,7 @@
 dispatch = howl.dispatch
 glib = require 'ljglibs.glib'
 {:UnixInputStream} = require 'ljglibs.gio'
-{:PropertyObject} = howl.aux.moon
+{:PropertyObject} = howl.util.moon
 append = table.insert
 
 class InputStream extends PropertyObject

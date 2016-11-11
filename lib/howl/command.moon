@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import dispatch, interact, config from howl
+import dispatch, interact from howl
 import Matcher from howl.util
-import style, markup, StyledText from howl.ui
+import style, markup from howl.ui
 
 append = table.insert
 
@@ -21,7 +21,7 @@ accessible_name = (name) ->
   name\lower!\gsub '[%s%p]+', '_'
 
 parse_cmd = (text) ->
-  cmd_start, cmd_end, cmd_name, rest = text\find '^%s*([^%s]+)%s+(.*)$'
+  cmd_name, rest = text\match '^%s*([^%s]+)%s+(.*)$'
   return resolve_command(cmd_name), cmd_name, rest if cmd_name
 
 register = (cmd_def) ->
@@ -85,6 +85,24 @@ get_command_items = ->
 
   return items
 
+get_command_help = (cmd_name) ->
+  cmd = resolve_command cmd_name
+  return unless cmd
+
+  heading = "Command '#{cmd_name}'"
+  if cmd != commands[cmd_name]
+    heading ..= ", alias for '#{cmd.name}'"
+
+  keys = howl.bindings.keystrokes_for cmd_name
+  if #keys == 0
+    keys = howl.bindings.keystrokes_for cmd_name, 'editor'
+  if #keys > 0
+    heading ..= " (#{keys[1]})"
+  return {
+    :heading
+    text: cmd.description
+  }
+
 class CommandInput
   run: (@finish, cmd_string='', @cmd_args) =>
     @command_line = howl.app.window.command_line
@@ -118,6 +136,8 @@ class CommandInput
   read_command_input: (cmd, cmd_name) =>
     @command_line\clear!
     @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
+    help = {get_command_help cmd_name}
+    @command_line\add_help(help) if help
 
     unless cmd.input
       @command_line\record_history!
@@ -167,6 +187,24 @@ class CommandInput
           return
         @read_command_input cmd, @command_line.text
 
+  help: {
+    {
+      heading: "Command 'run'"
+      text: 'Run a command'
+    }
+    {
+      text: markup.howl 'Type a command name and press <keystroke>enter</> to run.'
+    }
+    {
+      key: 'tab'
+      action: 'Show command list'
+    }
+    {
+      key: 'up'
+      action: 'Show command history'
+    }
+  }
+
 command_input_reader = {
   name: 'command-input-reader'
   factory: CommandInput
@@ -200,12 +238,18 @@ interact.register
   evade_history: true
   handler: (opts={}) ->
     opts = moon.copy opts
+    command_items = get_command_items!
+    name_width = 0
+    shortcut_width = 0
+    for item in *command_items
+      name_width = math.max(name_width, item[1].ulen)
+      shortcut_width = math.max(shortcut_width, item[2].ulen)
     with opts
-      .items = get_command_items!
+      .items = command_items
       .headers = { 'Command', 'Key binding', 'Description' }
       .columns = {
-        { style: 'string' }
-        { style: 'keyword' }
+        { style: 'string', min_width: name_width }
+        { style: 'keyword', min_width: shortcut_width }
         { style: 'comment' }
       }
     result = interact.select opts
@@ -229,9 +273,13 @@ interact.register
       matcher: Matcher line_items, preserve_order: true
       reverse: true
       title: 'Command History'
+      allow_new_value: true
 
     if result
-      return result.selection.command\sub 2
+      if result.selection
+        return result.selection.command\sub 2
+      else
+        return result.text
 
 return setmetatable {:register, :unregister, :alias, :run, :names, :get}, {
   __index: (key) =>

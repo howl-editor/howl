@@ -4,12 +4,12 @@
 flair = require 'aullar.flair'
 {:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
-Styling = require 'aullar.styling'
 Pango = require 'ljglibs.pango'
 {:Layout, :AttrList, :SCALE} = Pango
 pango_cairo = Pango.cairo
 flair = require 'aullar.flair'
 
+{:rawset, :rawget} = _G
 {:max, :min, :floor} = math
 {:copy} = moon
 
@@ -142,7 +142,9 @@ get_flairs = (buffer, line, display_line) ->
     f.flair = flair.compile f.flair, f.start_offset, f.end_offset, display_line
     f
 
-  markers = buffer.markers\for_range start_offset, line.end_offset
+  end_offset = line.end_offset
+  end_offset += 1 unless line.has_eol
+  markers = buffer.markers\for_range start_offset, end_offset
   markers = [translate(m) for m in *markers when m.flair]
   markers
 
@@ -250,7 +252,9 @@ DisplayLine = define_class {
     @y_offset = floor config.view_line_padding
     @text_height = height
     @height = height + @y_offset * 2
-    @width = width + view.cursor.width
+    @width = width
+    if config.view_show_cursor
+      @width += view.cursor.width
     @is_wrapped = @layout.is_wrapped
     @line_count = @layout.line_count
 
@@ -283,19 +287,25 @@ DisplayLine = define_class {
     lines: =>
       unless @_lines
         @_lines = {}
-        for nr = 1, @layout.line_count
-          layout_line = @layout\get_line_readonly nr - 1
+        iter = @layout.iter
+        nr = 1
+        while true
+          layout_line = iter.line_readonly
           _, extents = layout_line\get_pixel_extents!
           line_start = layout_line.start_index + 1
           line_end = layout_line.length + line_start
-          line_end -= 1 unless nr == @layout.line_count
+          line_end -= 1 unless iter.at_last_line
           @_lines[#@_lines + 1] = {
             :nr,
             :line_start,
             :line_end,
-            :extents
+            :extents,
+            baseline: iter.baseline / SCALE
             height: extents.height + @y_offset * 2
           }
+          nr += 1
+          break unless iter\next_line!
+
         setmetatable @_lines, __index: LinesMt
 
       @_lines
@@ -378,21 +388,35 @@ get_wrap_indicator = (pango_context, view) ->
     tab_array: tab_array,
     wrap_indicator: get_wrap_indicator pango_context, view
     window: {}
+
     set_window: (first, last) =>
       w_size = (last - first) + 1
       edge = floor w_size / 4
       first = max 1, first - edge
       last = last + edge
+      new_first = first
+      new_last = last
 
       for i = @min, first - 1
-        @[i] = nil
+        l = rawget @, i
+        if l
+          if l._block
+            new_first = min l.nr, new_first
+          else
+            @[i] = nil
 
       for i = last, @max
-        @[i] = nil
+        l = rawget @, i
 
-      @window = :first, :last, size: (last - first) + 1
-      @min = max first, @min
-      @max = min last, @max
+        if l
+          if l._block
+            new_last = max l.nr, new_last
+          else
+            @[i] = nil
+
+      @window = first: new_first, last: new_last, size: (new_last - new_first) + 1
+      @min = max new_first, @min
+      @max = min new_last, @max
 
   }, {
     __index: (nr) =>

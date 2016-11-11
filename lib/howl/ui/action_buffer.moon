@@ -2,8 +2,6 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Buffer from howl
-import style from howl.ui
-append = table.insert
 
 class ActionBuffer extends Buffer
   new:  =>

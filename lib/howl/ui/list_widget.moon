@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 import highlight, style, TextWidget, StyledText from howl.ui
 import Matcher from howl.util
 {:max, :min, :floor} = math
@@ -94,7 +94,7 @@ class ListWidget extends PropertyObject
 
       buffer\append StyledText.for_table items, @columns
 
-      for i = 1, last_idx - #@_items
+      for _ = 1, last_idx - #@_items
         buffer\append @opts.filler_text..'\n', 'comment'
 
       header_offset = @has_header and 1 or 0
@@ -111,9 +111,9 @@ class ListWidget extends PropertyObject
     if not @highlight_matches_for or @highlight_matches_for.is_empty
       return
 
-    highlighter = self.highlighter or (text) ->
+    highlighter = self.highlighter or (t) ->
       explain = type(@matcher) == 'table' and @matcher.explain or Matcher.explain
-      explain @highlight_matches_for, text
+      explain @highlight_matches_for, t
 
     segments = highlighter text
     if segments
@@ -163,11 +163,10 @@ class ListWidget extends PropertyObject
     if @page_start_idx <= idx and @page_start_idx + @page_size > idx
       return
 
-    edge_gap = min 1, @page_size - 1
     if idx < @page_start_idx
-      @_jump_to_page_at idx - @page_size + 1 + edge_gap
+      @_jump_to_page_at idx
     elseif @page_start_idx + @page_size - 1 < idx
-      @_jump_to_page_at idx - edge_gap
+      @_jump_to_page_at idx - @page_size + 1
 
   _highlight: (idx) =>
     highlight.remove_all 'list_selection', @text_widget.buffer
@@ -184,7 +183,7 @@ class ListWidget extends PropertyObject
     length = #lines[offset]
     highlight.apply 'list_selection', @text_widget.buffer, pos, length
 
-  _jump_to_page_at: (idx, select_idx=nil) =>
+  _jump_to_page_at: (idx) =>
     start_of_last_page = #@_items - @page_size + 1
     if idx < 1
       idx = 1
@@ -200,6 +199,7 @@ class ListWidget extends PropertyObject
       idx = #@items
     else
       idx = max 1, @selected_idx - @page_size
+    @_jump_to_page_at @page_start_idx + @page_size
     @_select idx
 
   next_page: =>
@@ -208,6 +208,7 @@ class ListWidget extends PropertyObject
       idx = 1
     else
       idx = min #@items, @selected_idx + @page_size
+    @_jump_to_page_at @page_start_idx + @page_size
     @_select idx
 
   select_prev: =>
@@ -292,6 +293,7 @@ class ListWidget extends PropertyObject
     if preserve_position and current_idx
       idx = min(current_idx, #@_items)
 
+    @page_start_idx = 1
     if @text_widget.showing
       @_adjust_height!
       @_write_page!

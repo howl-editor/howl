@@ -21,6 +21,7 @@ start_character = (character, auto_pairs) ->
   nil
 
 handle_backspace = (event, editor, auto_pairs) ->
+  return false unless editor.selection.empty
   context = editor.current_context
   prev_char = context.prev_char
   mate = auto_pairs[prev_char]
@@ -29,7 +30,10 @@ handle_backspace = (event, editor, auto_pairs) ->
     buffer\as_one_undo ->
       pos = editor.cursor.pos
       buffer\delete pos - 1, pos
-    true
+
+    return true
+
+  false
 
 handle = (event, editor) ->
   buffer = editor.buffer

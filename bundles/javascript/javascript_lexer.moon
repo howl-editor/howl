@@ -1,7 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
   c = capture
   ident = (alpha + '_')^1 * (alpha + digit + '_')^0
   ws = c 'whitespace', blank
@@ -46,7 +46,11 @@ howl.aux.lpeg_lexer ->
       scan_to(any('/', eol), '\\'),
       B('/'),
     }),
-    c('operator', S'gim'^1)^0
+    c('operator', S'gim'^1)^0,
+    #sequence {
+      blank^0,
+      any(S',;.)', P(-1))
+    }
   }
 
   fdecl = any {

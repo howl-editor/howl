@@ -1,29 +1,27 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:signal, :config} = howl
 callbacks = require 'ljglibs.callbacks'
 cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
 jit = require 'jit'
 C = ffi.C
 timer_callback = callbacks.source_func
-{:pack, :unpack, :remove} = table
+{:pack, :unpack} = table
 
 jit.off true, true
 
 idle_handlers = {}
 idle_fired = 0
-
-dispatch = (handle) ->
-  co = coroutine.create (...) -> handle.handler, unpack(handle.args)
-  status, ret = coroutine.resume co, params
+last_idle = 0
 
 check_for_idle = ->
   idle = howl.app.idle
-  unless idle >= 1
+  if (last_idle + 0.4) > idle
     idle_fired = 0
-    return
+
+  last_idle = idle
+  return unless idle >= 0.5
 
   fired = {}
   for i = 1, #idle_handlers
@@ -37,7 +35,7 @@ check_for_idle = ->
       fired[#fired + 1] = i
 
   for i = #fired, 1, -1
-    table.remove idle_handlers, i
+    table.remove idle_handlers, fired[i]
 
   idle_fired = idle
 
@@ -68,11 +66,6 @@ asap = (f, ...) ->
 
 after = (seconds, f, ...) ->
   t_handle = type: 'sys'
-
-  handler = (...) ->
-    cancel t_handle
-    f ...
-
   interval = seconds * 1000
   t_handle.cb = callbacks.register f, "timer-after-#{seconds}", ...
   t_handle.tag = C.g_timeout_add_full C.G_PRIORITY_LOW,
@@ -96,7 +89,7 @@ on_idle = (seconds, f, ...) ->
 second_handle = {}
 second_handle.cb = callbacks.register every_second, "timer-every-second"
 second_handle.tag = C.g_timeout_add_full C.G_PRIORITY_LOW,
-  1000,
+  500,
   timer_callback,
   cast_arg(second_handle.cb.id),
   nil

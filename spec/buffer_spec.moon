@@ -1,7 +1,6 @@
-import Buffer, config, signal from howl
+import Buffer, config from howl
 import File from howl.io
 import with_tmpfile from File
-append = table.insert
 
 describe 'Buffer', ->
   buffer = (text) ->
@@ -32,6 +31,26 @@ describe 'Buffer', ->
     b.modified = true
     assert.is_true b.modified
     assert.equal b.text, 'hello' -- toggling should not have changed text
+
+  describe '.last_changed', ->
+    sys = howl.sys
+
+    it 'is set to the current time for a new buffer', ->
+      b = buffer 'time'
+      now = math.floor sys.time!
+      assert.is_true math.floor(b.last_changed) > now - 1
+      assert.is_true math.floor(b.last_changed) <= now
+
+    it 'is updated whenever the buffer is changed in some way', ->
+      b = buffer 'time'
+      cur = b.last_changed
+
+      b\insert 'foo', 1
+      assert.is_true b.last_changed > cur
+
+      cur = b.last_changed
+      b\delete 1, 3
+      assert.is_true b.last_changed > cur
 
   it '.read_only can be set to mark the buffer as read-only', ->
     b = buffer 'kept'
@@ -233,7 +252,7 @@ describe 'Buffer', ->
       b\undo!
       assert.equal 'hello', b.text
 
-    it 'resets the .modified flag when at synced file revision', ->
+    it 'resets the .modified flag when at last saved file revision', ->
       with_tmpfile (file) ->
         b = buffer ''
         b.file = file
@@ -246,6 +265,16 @@ describe 'Buffer', ->
         assert.equal false, b.modified
         b\undo!
         assert.equal true, b.modified
+
+    it 'resets the .modified flag when at originally loaded revision', ->
+      with_tmpfile (file) ->
+        file.contents = 'hello hello'
+        b = buffer ''
+        b.file = file
+        b\delete 1, 1
+        assert.equal true, b.modified
+        b\undo!
+        assert.equal false, b.modified
 
   describe 'redo', ->
     it 'redoes the last undo operation', ->

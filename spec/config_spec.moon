@@ -1,4 +1,4 @@
-import app, config, signal from howl
+import app, config from howl
 
 describe 'config', ->
   before_each ->

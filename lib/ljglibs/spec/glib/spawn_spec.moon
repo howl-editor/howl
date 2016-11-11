@@ -1,4 +1,3 @@
-ffi = require 'ffi'
 {:spawn} = require 'ljglibs.glib'
 {:UnixInputStream, :UnixOutputStream} = require 'ljglibs.gio'
 

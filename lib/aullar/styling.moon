@@ -1,7 +1,6 @@
 -- Copyright 2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:fill} = require 'ffi'
 {:define_class} = require 'aullar.util'
 GapBuffer = require 'aullar.gap_buffer'
 Markers = require 'aullar.markers'
@@ -114,8 +113,6 @@ define_class {
     return if #styling == 0
     @_check_offsets offset
 
-    sb = @style_buffer
-    arr = sb.array
     base = offset - 1
     base_style = opts.base and "#{opts.base}:" or ''
     set_opts =

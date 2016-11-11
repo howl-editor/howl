@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, config, mode, signal from howl
+import app, config from howl
 import Process from howl.io
 
 append = table.insert
@@ -14,7 +14,7 @@ run_command = (contents) ->
   success, out, err, p = pcall Process.execute, args, stdin: contents
   if success and p.successful and err == ""
     return true, out
-  
+
   return false, err or out
 
 calculate_new_pos = (pos, before, after) ->
@@ -54,7 +54,7 @@ fmt = (buffer) ->
     pos = editor.cursor.pos
     top_line = editor.line_at_top
     buffer.text = result
-    
+
     editor.cursor.pos = calculate_new_pos pos, before, result
     editor.line_at_top = top_line
   else

@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, dispatch, timer from howl
+import app, command, dispatch from howl
 import theme from howl.ui
 import File from howl.io
 import get_cwd from howl.util.paths
@@ -50,7 +50,7 @@ snapshot = (name, dir, opts) ->
   for buffer in *app.buffers
     app\close_buffer buffer, true
 
-  for i = 1, #app.window.views - 1
+  for _ = 1, #app.window.views - 1
     command.view_close!
 
   log.info ''
@@ -257,10 +257,24 @@ screenshots = {
     ->
       command.run 'set indent='
   }
+
+
+  {
+    name: 'command-line-help'
+    with_overlays: true
+    ->
+      open_files {
+        'lib/howl/application.moon'
+        'site/source/doc/index.haml'
+        'lib/howl/command.moon'
+      }
+      dispatch.launch -> command.run 'switch-buffer'
+      app.window.command_line\show_help!
+  }
 }
 
 take_snapshots = (theme_name, to_dir, only) ->
-  for i, def in ipairs screenshots
+  for _, def in ipairs screenshots
     if only and only != def.name
       continue
 
@@ -306,7 +320,7 @@ run = (theme_name, only) ->
   image_dir\mkdir_p! unless image_dir.is_directory
 
   print "- Setting up test project.."
-  out, err, p = howl.io.Process.execute "git clone --shared '#{source_project}' '#{project_dir}'"
+  _, err, p = howl.io.Process.execute "git clone --shared '#{source_project}' '#{project_dir}'"
   unless p.successful
     error err
 
@@ -326,13 +340,13 @@ run = (theme_name, only) ->
 
   print "- Taking screenshots.."
   app.window\resize 1048, 480
-  for theme_name in *for_themes
-    howl.config.theme = theme_name
+  for cur_theme in *for_themes
+    howl.config.theme = cur_theme
     wait_a_bit!
-    ss_dir = image_dir\join((theme_name\lower!\gsub('%s', '-')))
+    ss_dir = image_dir\join((cur_theme\lower!\gsub('%s', '-')))
     ss_dir\mkdir_p! unless ss_dir.exists
-    print "  * #{theme_name}.."
-    take_snapshots theme_name, ss_dir, only
+    print "  * #{cur_theme}.."
+    take_snapshots cur_theme, ss_dir, only
 
 howl.signal.connect 'app-ready', ->
   log.info ''

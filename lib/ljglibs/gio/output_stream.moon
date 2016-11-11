@@ -11,8 +11,7 @@ jit = require 'jit'
 import catch_error, get_error from glib
 
 C = ffi.C
-ffi_string, ffi_new, ffi_cast = ffi.string, ffi.new, ffi.cast
-buf_t = ffi.typeof 'unsigned char[?]'
+ffi_new, ffi_cast = ffi.new, ffi.cast
 const_void_p = ffi.typeof 'const void *'
 
 OutputStream = core.define 'GOutputStream < GObject', {
@@ -32,7 +31,10 @@ OutputStream = core.define 'GOutputStream < GObject', {
     catch_error C.g_output_stream_write_all, @, ffi_cast(const_void_p, data), count, written, nil
 
   write_async: (data, count = #data, callback) =>
-    return if count <= 0
+    if count <= 0
+      callback true, 0
+      return
+
     local handle
 
     handler = (source, res) ->

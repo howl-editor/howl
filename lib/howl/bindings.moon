@@ -3,7 +3,7 @@
 
 _G = _G
 import table, coroutine, pairs from _G
-import tostring, pcall, callable, type, print, setmetatable, typeof from _G
+import pcall, callable, setmetatable, typeof from _G
 import signal, command, sys from howl
 append = table.insert
 
@@ -68,12 +68,26 @@ substitute_keyname = (event) ->
   copy.key_name = key_name
   copy
 
-find_handlers = (event, source, translations, keymaps, ...) ->
+export action_for = (tr, source='editor') ->
+  os = sys.info.os
+  empty = {}
+
+  for i = #keymaps, 1, -1
+    km = keymaps[i]
+    continue unless km
+    source_km = km[source] or empty
+    os_map = km.for_os and km.for_os[os] or empty
+    os_source_map = os_map[source] or empty
+    handler = os_source_map[tr] or os_map[tr] or source_km[tr] or km[tr]
+    return handler if handler
+  nil
+
+find_handlers = (event, source, translations, maps_to_search, ...) ->
   handlers = {}
   empty = {}
   os = sys.info.os
 
-  for map in *keymaps
+  for map in *maps_to_search
     continue unless map
 
     source_map = map[source] or empty
@@ -105,6 +119,10 @@ find_handlers = (event, source, translations, keymaps, ...) ->
     return handlers, map, opts if opts.block or opts.pop
 
   handlers
+
+export cancel_capture = ->
+  capture_handler = nil
+  is_capturing = false
 
 process_capture = (event, source, translations, ...) ->
   if capture_handler
@@ -154,10 +172,10 @@ export translate_key = (event) ->
 
   translations
 
-export dispatch = (event, source, keymaps, ...) ->
+export dispatch = (event, source, maps_to_search, ...) ->
   event = substitute_keyname event
   translations = translate_key event
-  handlers, halt_map, map_opts = find_handlers event, source, translations, keymaps, ...
+  handlers, halt_map, map_opts = find_handlers event, source, translations, maps_to_search, ...
   remove halt_map if halt_map and map_opts.pop
 
   for handler in *handlers
@@ -200,10 +218,6 @@ export capture = (handler) ->
   capture_handler = handler
   is_capturing = true
 
-export cancel_capture = ->
-  capture_handler = nil
-  is_capturing = false
-
 export keystrokes_for = (handler, source = nil) ->
   keystrokes = {}
   for i = #keymaps, 1, -1
@@ -219,19 +233,5 @@ export keystrokes_for = (handler, source = nil) ->
         append keystrokes, keystroke
 
   keystrokes
-
-export action_for = (tr, source='editor') ->
-  os = sys.info.os
-  empty = {}
-
-  for i = #keymaps, 1, -1
-    km = keymaps[i]
-    continue unless km
-    source_km = km[source] or empty
-    os_map = km.for_os and km.for_os[os] or empty
-    os_source_map = os_map[source] or empty
-    handler = os_source_map[tr] or os_map[tr] or source_km[tr] or km[tr]
-    return handler if handler
-  nil
 
 return _ENV

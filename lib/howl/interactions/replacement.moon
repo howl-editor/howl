@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import Matcher, TaskRunner from howl.util
-import app, command, config, interact, timer from howl
-import highlight, ListWidget, NotificationWidget from howl.ui
+import TaskRunner from howl.util
+import app, command, interact from howl
+import highlight, markup, NotificationWidget from howl.ui
 
 append = table.insert
 
@@ -39,7 +39,7 @@ class Replacement
 
     -- @preview_buffer holds replaced text
     @preview_buffer = app\new_buffer opts.editor.buffer.mode
-    @preview_buffer.title = opts.title or 'Preview Replacements'
+    @preview_buffer.title = opts.preview_title or 'Preview Replacements'
     @preview_buffer.text = @text
 
     -- @buffer always holds original text
@@ -53,8 +53,9 @@ class Replacement
     @runner = TaskRunner!
 
     self.find = opts.find or default_find
-
     self.replace = opts.replace or (match, replacement) -> replacement
+    self.replacer_help = opts.help
+    @command_line.title = opts.title or 'Replace'
 
     @orig_buffer = app.editor.buffer
     app.editor.buffer = @preview_buffer
@@ -119,10 +120,10 @@ class Replacement
       @adjusted_positions = {}
       @excluded = {}
       @selected_idx = nil
+      preview_start = 1
 
       if @target and not @target.is_empty
         batch_start = @start_pos
-        preview_start = 1
         find = self.find
         for found_match in find @buffer, @target, @start_pos, @end_pos
           if found_match.end_pos > @end_pos
@@ -183,7 +184,7 @@ class Replacement
     else
       numr = math.max(0, @num_replacements - @num_excluded)
       msg = "Replacing #{numr}#{morer} of #{@num_matches}#{morem} matches."
-    @caption_widget\caption msg
+    @caption_widget\notify 'comment', msg
 
   _preview_replacements: (start_idx=1, strikeout_removals=true) =>
     adjust = 0
@@ -242,7 +243,6 @@ class Replacement
         @preview_buffer\chunk(first, last).text = table.concat substituted
 
     @_preview_highlights!
-    return last_idx
 
   _preview_highlights: =>
     if @matches[@selected_idx]
@@ -260,6 +260,7 @@ class Replacement
     -- skip until visible section
     local visible_start
     for i = 1, @num_matches
+      match = @matches[i]
       preview_position = @adjusted_positions[i] or match.start_pos
       if preview_position >= first_visible
         visible_start = i
@@ -346,14 +347,53 @@ class Replacement
       ['buffer-replace']: => @_switch_to 'buffer-replace'
       ['buffer-replace-regex']: => @_switch_to 'buffer-replace-regex'
 
+  help: =>
+    help = {
+      {
+        heading: "Syntax '/match/replacement'"
+        text: markup.howl "Replaces occurences of <string>'match'</> with <string>'replacement'</>.
+If match text contains <string>'/'</>, a different separator can be specified
+by replacing the first character with the desired separator."
+      }
+      {
+        key: 'up'
+        action: 'Select previous match'
+      }
+      {
+        key: 'down'
+        action: 'Select next match'
+      }
+      {
+        key: 'alt_enter'
+        action: 'Toggle replacement for currently selected match'
+      }
+      {
+        key: 'ctrl_r'
+        action: 'Switch to buffer-replace-regex'
+      }
+      {
+        key_for: 'buffer-replace'
+        action: 'Switch to buffer-replace'
+      }
+      {
+        key: 'enter'
+        action: 'Apply replacements'
+      }
+    }
+    if @replacer_help
+      for item in *@replacer_help
+        append help, item
+
+    return help
+
 interact.register
   name: 'get_replacement'
-  description: 'Return text with user specified replacments applied'
+  description: 'Return text with user specified replacements applied'
   factory: Replacement
 
 interact.register
   name: 'get_replacement_regex'
-  description: 'Return text with user specified regex based replacments applied'
+  description: 'Return text with user specified regex based replacements applied'
   handler: (opts) ->
     opts = moon.copy opts
     with opts
@@ -402,6 +442,13 @@ interact.register
               return match.captures[ref_idx] or ''
             return ''
           return result
+
+      .help = {
+          {
+            text: markup.howl "Here <string>'match'</> is a PCRE regular expression and <string>'replacement'</> is
+text which may contain backreferences such as <string>'\\1'</string>"
+          }
+        }
 
     interact.get_replacement opts
 

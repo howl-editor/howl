@@ -2,11 +2,10 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
-{:RGBA} = require 'ljglibs.gdk'
 Window = Gtk.Window
 gobject_signal = require 'ljglibs.gobject.signal'
-{:PropertyObject} = howl.aux.moon
-{:ContentBox, :theme} = howl.ui
+{:PropertyObject} = howl.util.moon
+{:ContentBox} = howl.ui
 
 append = table.insert
 
@@ -114,7 +113,7 @@ class Popup extends PropertyObject
       x = win_h_center - (width / 2)
 
     -- are we outside of the comfort zone vertically?
-    if y < @comfort_zone or y + heigth > (screen.height - @comfort_zone)
+    if y < @comfort_zone or y + height > (screen.height - @comfort_zone)
       -- hunch down
       min_outside_v = math.min(w_y, screen.height - (w_y + w_height))
       height = (w_height + min_outside_v) - @comfort_zone

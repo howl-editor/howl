@@ -3,7 +3,7 @@
 
 ffi = require 'ffi'
 C, ffi_copy, ffi_fill, ffi_gc, ffi_cast = ffi.C, ffi.copy, ffi.fill, ffi.gc, ffi.cast
-{:max, :min, :abs} = math
+{:min} = math
 {:define_class} = require 'aullar.util'
 
 ffi.cdef [[
@@ -19,8 +19,8 @@ define_class {
     @default_gap_size = opts.gap_size or GAP_SIZE
     @type_size = ffi.sizeof type
     @arr_ptr = ffi.typeof "const #{type} *"
-    @new_arr = (size) ->
-      ffi_gc(ffi_cast("#{@type} *", C.g_malloc0(size * @type_size)), C.g_free)
+    @new_arr = (arr_size) ->
+      ffi_gc(ffi_cast("#{@type} *", C.g_malloc0(arr_size * @type_size)), C.g_free)
 
     @set opts.initial, size
 

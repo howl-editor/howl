@@ -1,8 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import dispatch from howl
-
 interactions = {}  -- registry
 
 register = (spec) ->

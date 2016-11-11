@@ -1,4 +1,4 @@
-howl.aux.lpeg_lexer ->
+howl.util.lpeg_lexer ->
 
   keyword = capture 'keyword', word {
     'return', 'break', 'local', 'for', 'while', 'if', 'elseif', 'else', 'then',
@@ -44,8 +44,6 @@ howl.aux.lpeg_lexer ->
     ident * P':',
     (sq_string + dq_string) * P':'
   }
-
-  dq_string_end = scan_to(P'"' + #P'#{', P'\\')
 
   ws = capture 'whitespace', blank^0
 

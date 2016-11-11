@@ -1,12 +1,11 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 import config from howl
 import View from aullar
-import PropertyObject from howl.aux.moon
-import theme, Cursor, Selection, ActionBuffer from howl.ui
+import PropertyObject from howl.util.moon
+import Cursor, Selection, ActionBuffer from howl.ui
 {:max} = math
 
 class TextWidget extends PropertyObject
@@ -21,6 +20,7 @@ class TextWidget extends PropertyObject
       .view_show_inactive_cursor = false
       .view_line_padding = config.line_padding
       .view_show_h_scrollbar = false
+      .view_line_wrap = @opts.line_wrap
 
     @selection = Selection @view
     @cursor = Cursor self, @selection
@@ -105,4 +105,4 @@ class TextWidget extends PropertyObject
   _set_width: (width) =>
     return if @_width == width
     @_width = width
-    @view_gobject.width_request = height
+    @view_gobject.width_request = width

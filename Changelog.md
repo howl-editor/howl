@@ -2,6 +2,38 @@
 
 ## Unreleased (in master)
 
+- Added command line help which is invoked by pressing `f1` while any
+interactive command is running. This displays a popup containing information
+about the command.
+
+- Added new commands `editor-move-text-left` and `editor-move-text-right`, bound
+to `alt_left` and `alt_right` by default. These move the current character or
+selected text left or right by one character while preserving the selection.
+
+- Added new commands `editor-move-lines-up` and `editor-move-lines-down`, bound
+to `alt_up` and `alt_down` by default. These move the current or selected lines
+up (or down) by one line while preserving the selection.
+
+- Upgrade Moonscript to 0.4.0
+
+- Added new command, `editor-replace-exec`, for replacing selection or buffer
+content with the result of piping it to an external command.
+
+- Make scrollbars themeable (on newer Gtk versions). Avoids the problem where a
+theme with black scrollbars would make the scrollbars effectively invisible.
+
+- Makefile fixes for FreeBSD (thanks @maxc01)
+
+- Compatibility fixes for certain Gtk versions and window managers where the
+  window would end up with a lot of extra outer padding.
+
+## 0.4 (2016-05-30)
+
+- Added a new theme 'Blueberry Blend'
+
+- New Pascal bundle (lexing, indentation support, etc). Replaces the old basic
+Pascal mode.
+
 - Added a new command, `cursor-goto-brace` for moving cursor to matching brace.
 
 - Changed brace highlighting logic to match braces of same styles only.
@@ -76,13 +108,18 @@ indentation levels to work as a stand-alone code chunk.
 
 ### Bugs fixed
 
-- Issues as seen on [Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=created%3A%3E2015-09-02+state%3Aclosed++type%3Aissue)
+- Issues as seen on
+[Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=created%3A%3E2015-09-02+created%3A%3C%3D2016-05-30+state%3Aclosed+type%3Aissue)
 
 ### API changes
 
 - The `on_selection_change` callback for interactions has been renamed to
 `on_change` and triggers even when selection stays the same but the text
 changes.
+
+- The theming support has been updated. Custom themes for previous versions will
+have to be updated for 0.4, which is easiest done by looking at the built-in
+themes shipping with Howl.
 
 ## 0.3 (2015-09-01)
 

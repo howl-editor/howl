@@ -79,7 +79,7 @@ theme.apply!
 
 default_loop = require'busted.loop.default'
 
-howl_main_ctx = C.g_main_context_default!
+export howl_main_ctx = C.g_main_context_default!
 howl_loop = setmetatable {
     step: (...) ->
       jit.off true, false
@@ -89,10 +89,10 @@ howl_loop = setmetatable {
     pcall: pcall
   }, __index: default_loop
 
-export set_howl_loop = -> setloop howl_loop
+export set_howl_loop = -> _G.setloop howl_loop
 
 export howl_async = (f) ->
-  setloop howl_loop
+  _G.setloop howl_loop
   co = coroutine.create busted.async(f)
   status, err = coroutine.resume co
   error err unless status
@@ -144,7 +144,7 @@ export assert_memory_stays_within = (units, iterations, f) ->
   baseline = math.ceil(collectgarbage 'count')
   total_used = 0
 
-  for i = 1, iterations
+  for _ = 1, iterations
     f!
     collect_memory!
     used = math.ceil(collectgarbage 'count')

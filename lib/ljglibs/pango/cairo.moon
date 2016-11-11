@@ -1,12 +1,12 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
-core = require 'ljglibs.core'
+require 'ljglibs.core'
 
 require 'ljglibs.cdefs.pango'
 require 'ljglibs.pango.layout'
 ffi = require 'ffi'
 import gc_ptr from require 'ljglibs.gobject'
-C, ffi_string, ffi_gc, ffi_new = ffi.C, ffi.string, ffi.gc, ffi.new
+C = ffi.C
 
 {
   create_context: (cr) ->

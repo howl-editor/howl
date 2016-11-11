@@ -2,13 +2,8 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import BufferContext, BufferLines, BufferMarkers, Chunk, config, signal, sys from howl
-import File from howl.io
-import style from howl.ui
-import PropertyObject from howl.aux.moon
-import destructor from howl.aux
-import mode from howl
+import PropertyObject from howl.util.moon
 aullar = require 'aullar'
-{:copy} = moon
 
 ffi = require 'ffi'
 
@@ -23,6 +18,7 @@ class Buffer extends PropertyObject
     @config = config.local_proxy!
     @markers = BufferMarkers @_buffer
     @completers = {}
+    @inspectors = {}
     @mode = mode
     @properties = {}
     @data = {}
@@ -30,6 +26,7 @@ class Buffer extends PropertyObject
     @viewers = 0
     @_modified = false
     @sync_revision_id = @_buffer\get_revision_id true
+    @last_changed = sys.time!
 
     @_buffer\add_listener
       on_inserted: self\_on_text_inserted
@@ -48,9 +45,9 @@ class Buffer extends PropertyObject
         @text = ''
         @sync_etag = nil
 
+      @can_undo = false
       @_modified = false
       @sync_revision_id = @_buffer\get_revision_id true
-      @can_undo = false
 
   @property mode:
     get: => @_mode
@@ -82,7 +79,7 @@ class Buffer extends PropertyObject
       if status
         notify = not @_modified
         @_modified = true
-        if not @_modified
+        if notify
           signal.emit 'buffer-modified', buffer: self
       else
         @_modified = false
@@ -312,6 +309,7 @@ class Buffer extends PropertyObject
 
   _on_buffer_modification: (what, args) =>
     @_modified = true
+    @last_changed = sys.time!
     args = {
       buffer: self,
       at_pos: @char_offset(args.offset),

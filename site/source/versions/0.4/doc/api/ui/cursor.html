@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.ui.Cursor</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="https://code.jquery.com/jquery-1.12.3.min.js" type="text/javascript"></script>
+    <script src="/javascripts/bootstrap.min.js" type="text/javascript"></script>
+    
+    <link href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_ui doc_api_ui_cursor'>
+    <div class='container'>
+      <div class='masthead'>
+        <ul class='nav nav-pills'>
+          <li>
+            <a href='/'>
+              <span class='glyphicon glyphicon-home'></span>
+              Home
+            </a>
+          </li>
+          <li>
+            <a href='/doc/'>
+              <span class='glyphicon glyphicon-book'></span>
+              Documentation
+            </a>
+          </li>
+          <li>
+            <a href='/blog/'>
+              <span class='glyphicon glyphicon-bullhorn'></span>
+              Blog
+            </a>
+          </li>
+          <li>
+            <a href='/contact.html'>
+              <span class='glyphicon glyphicon-inbox'></span>
+              Contact
+            </a>
+          </li>
+        </ul>
+      </div>
+      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../../'>Howl Documentation (master branch)</a></li><li>Api</li><li>Ui</li><li>howl.ui.Cursor</li></ol>
+      <h1 id="howl.ui.cursor">howl.ui.Cursor</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.ui.Cursor</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header overview">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#properties" class="toc-group-header properties">Properties</a>
+<li class=""><a href="#column">column</a></li>
+<li class=""><a href="#at_end_of_line">at_end_of_line</a></li>
+<li class=""><a href="#at_start_of_line">at_start_of_line</a></li>
+<li class=""><a href="#blink_interval">blink_interval</a></li>
+<li class=""><a href="#column_index">column_index</a></li>
+<li class=""><a href="#line">line</a></li>
+<li class=""><a href="#pos">pos</a></li>
+<li class=""><a href="#style">style</a></li>
+</div>
+<div class="toc-group">
+<a href="#methods" class="toc-group-header methods">Methods</a>
+<li class=""><a href="#down">down </a></li>
+<li class=""><a href="#up">up </a></li>
+<li class=""><a href="#left">left </a></li>
+<li class=""><a href="#right">right </a></li>
+<li class=""><a href="#word_left">word_left </a></li>
+<li class=""><a href="#word_left_end">word_left_end </a></li>
+<li class=""><a href="#word_part_left">word_part_left </a></li>
+<li class=""><a href="#word_right">word_right </a></li>
+<li class=""><a href="#word_right_end">word_right_end </a></li>
+<li class=""><a href="#word_part_right">word_part_right </a></li>
+<li class=""><a href="#home">home </a></li>
+<li class=""><a href="#home_indent">home_indent </a></li>
+<li class=""><a href="#home_indent_display">home_indent_display </a></li>
+<li class=""><a href="#home_display">home_display </a></li>
+<li class=""><a href="#home_auto">home_auto </a></li>
+<li class=""><a href="#home_indent_auto">home_indent_auto </a></li>
+<li class=""><a href="#line_end">line_end </a></li>
+<li class=""><a href="#line_end_display">line_end_display </a></li>
+<li class=""><a href="#line_end_auto">line_end_auto </a></li>
+<li class=""><a href="#move_to">move_to </a></li>
+<li class=""><a href="#start">start </a></li>
+<li class=""><a href="#eof">eof </a></li>
+<li class=""><a href="#page_up">page_up </a></li>
+<li class=""><a href="#page_down">page_down </a></li>
+<li class=""><a href="#para_down">para_down </a></li>
+<li class=""><a href="#para_up">para_up </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>A cursor is associated with a particular <a href="editor.html">Editor</a>, and represents the&#x000A;cursor/caret/point for that editor. It provides a veritable smorgasbord of&#x000A;operations for manipulating the cursor, as well as properties that can be used&#x000A;for obtaining information about the cursor as well as moving it. You would never&#x000A;create a Cursor instance yourself; instead you access a cursor instance through&#x000A;<a href="editor.html#cursor">Editor.cursor</a>.</p>&#x000A;&#x000A;<p>The cursor is also aware of the Editor&rsquo;s <a href="selection.html">Selection</a>, in particular it will&#x000A;honor a persistent selection by adjusting the selection upon any cursor&#x000A;movement.</p>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../../spec/ui/cursor_spec.html">spec</a> for Cursor</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="properties">Properties</h2>&#x000A;&#x000A;<h3 id="column">column</h3>&#x000A;&#x000A;<p>The column at where the cursor currently is. Setting it moves the cursor to the&#x000A;specified column. This refers to the visual column, and not necessarily to the&#x000A;character offset for the current line. For a line not containing tabs, these&#x000A;will be the same. With tabs, however, the column can be greater than the&#x000A;corresponding string offset for the line. See <a href="#column_index">column_index</a> if&#x000A;you need access to the string offset instead. Consider:</p>&#x000A;<pre class="highlight moonscript"><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'\tstart'</span><span class="w">&#x000A;</span><span class="c1">-- with the above loaded into 'editor', and config.tab_width = 4..</span><span class="w">&#x000A;</span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">&#x000A;</span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span><span class="w"> </span><span class="c1">-- =&gt; 5</span><span class="w">&#x000A;</span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="p">.</span><span class="n">column_index</span><span class="w"> </span><span class="c1">-- =&gt; 2</span><span class="w">&#x000A;</span></pre>&#x000A;<h3 id="at_end_of_line">at_end_of_line</h3>&#x000A;&#x000A;<p>True if the cursor is currently at the end of the line, and false otherwise.</p>&#x000A;&#x000A;<h3 id="at_start_of_line">at_start_of_line</h3>&#x000A;&#x000A;<p>True if the cursor is currently at the start of the line, and false otherwise.</p>&#x000A;&#x000A;<h3 id="blink_interval">blink_interval</h3>&#x000A;&#x000A;<p>The interval at which the cursor blinks, in milliseconds. You would typically&#x000A;not set this directly on a cursor instance, since it&rsquo;s controlled with the&#x000A;<code>cursor_blink_interval</code> configuration variable.</p>&#x000A;&#x000A;<h3 id="column_index">column_index</h3>&#x000A;&#x000A;<p>The &ldquo;real&rdquo; column at where the cursor currently is. Setting it moves the cursor&#x000A;to the specified column. This refers to the &ldquo;real&rdquo; column, and not necessarily&#x000A;the column you visually perceive the cursor to be at. For a line not containing&#x000A;tabs, these will be the same. With tabs, however, the column_index can be&#x000A;smaller than what the graphical column appears to be. See <a href="#column">column</a> for&#x000A;more information about this.</p>&#x000A;&#x000A;<h3 id="line">line</h3>&#x000A;&#x000A;<p>The line at where the cursor currently is. Setting it moves the cursor to the&#x000A;specified line. Any out of bounds line numbers are automatically adjusted upon&#x000A;assignment.</p>&#x000A;&#x000A;<h3 id="pos">pos</h3>&#x000A;&#x000A;<p>The position of the cursor relative to the documents start. Setting it moves the&#x000A;cursor to the specified offset. Any out of bounds offsets are automatically&#x000A;adjusted upon assignment.</p>&#x000A;&#x000A;<h3 id="style">style</h3>&#x000A;&#x000A;<p>The &ldquo;style&rdquo; of the cursor. Can be either &ldquo;block&rdquo; or &ldquo;line&rdquo;, for a wide block&#x000A;cursor or standard thin line cursor.</p>&#x000A;&#x000A;<h2 id="methods">Methods</h2>&#x000A;&#x000A;<h3 id="down">down <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor down one line. If <code>extend</code> is true, creates a new selection, or&#x000A;extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="up">up <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor up a line. If <code>extend</code> is true, creates a new selection, or&#x000A;extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="left">left <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor left one character. If <code>extend</code> is true, creates a new&#x000A;selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="right">right <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor right one character. If <code>extend</code> is true, creates a new&#x000A;selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="word_left">word_left <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor one word left. If <code>extend</code> is true, creates a new selection, or&#x000A;extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="word_left_end">word_left_end <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor left, to the end of the preceding word. If <code>extend</code> is true,&#x000A;creates a new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="word_part_left">word_part_left <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor left, to the start of word part. If <code>extend</code> is true, creates a&#x000A;new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="word_right">word_right <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor one word right. If <code>extend</code> is true, creates a new selection,&#x000A;or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="word_right_end">word_right_end <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor right, to the end of the word. If <code>extend</code> is true, creates a&#x000A;new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="word_part_right">word_part_right <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor right, to the start of the next word part. If <code>extend</code> is true,&#x000A;creates a new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="home">home <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor to the first column of the line. If <code>extend</code> is true, creates a&#x000A;new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="home_indent">home_indent <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor to the first non-blank column. If <code>extend</code> is true, creates a&#x000A;new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="home_indent_display">home_indent_display <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor to the first non-blank column of the display line. If <code>extend</code>&#x000A;is true, creates a new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="home_display">home_display <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor to the first column of the display line. If <code>extend</code> is true,&#x000A;creates a new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="home_auto">home_auto <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor the first column of the real or display line. If <code>extend</code> is&#x000A;true, creates a new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="home_indent_auto">home_indent_auto <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor the first column or the first non-blank column. If <code>extend</code> is&#x000A;true, creates a new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="line_end">line_end <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor to the end of line. If <code>extend</code> is true, creates a new&#x000A;selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="line_end_display">line_end_display <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor to the end of the display line. If <code>extend</code> is true, creates a&#x000A;new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="line_end_auto">line_end_auto <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor to the end of the real or display line. If <code>extend</code> is true,&#x000A;creates a new selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="move_to">move_to <span class="arg-list">(opts = {})</span></h3>&#x000A;&#x000A;<p>Moves the cursor according to <code>opts</code>, which can contain the following options:</p>&#x000A;&#x000A;<ul>&#x000A;<li><code>pos</code>: Moves the cursor to the specified offset</li>&#x000A;<li><code>line</code>: Moves the cursor to the specified line</li>&#x000A;<li><code>column</code>: Moves the cursor to the specified line column on the target line</li>&#x000A;<li><code>column_index</code>: Moves the cursor to the specified line offset on the target&#x000A;line</li>&#x000A;<li><code>extend</code>: Extend the selection (or create a new) from the current cursor&#x000A;position to the new cursor position</li>&#x000A;</ul>&#x000A;&#x000A;<p>Not all of these are combinable. apart from <code>extend</code> which can always be&#x000A;specified in order to extend the selection. You can choose to specify <code>pos</code> to&#x000A;move the cursor to a specific position, specify <code>line</code> to go to a specific line,&#x000A;<code>column</code> or <code>column_index</code> to go to a specific column, or finally a combination&#x000A;of <code>line</code> and either <code>column</code> or <code>column_index</code> to move the cursor to a certain&#x000A;column on a certain line. For the difference between <code>column</code> and <code>column_index</code>&#x000A;see the documentation for <a href="#column">column</a> and&#x000A;<a href="#column_index">column_index</a>, respectively.</p>&#x000A;&#x000A;<p>For example:</p>&#x000A;<pre class="highlight moonscript"><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="w">&#x000A;&#x000A;</span><span class="c1">-- move the cursor to the tenth offset, extending the selection</span><span class="w">&#x000A;</span><span class="n">cursor</span><span class="o">\</span><span class="n">move_to</span><span class="w"> </span><span class="ss">pos:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="ss">extend:</span><span class="w"> </span><span class="kc">true</span><span class="w">&#x000A;&#x000A;</span><span class="c1">-- move the cursor to the third line, fifth visual column</span><span class="w">&#x000A;</span><span class="n">cursor</span><span class="o">\</span><span class="n">move_to</span><span class="w"> </span><span class="ss">line:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">5</span><span class="w">&#x000A;</span></pre>&#x000A;<h3 id="start">start <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor to the start of the buffer. If <code>extend</code> is true, creates a new&#x000A;selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="eof">eof <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor to the end of the buffer. If <code>extend</code> is true, creates a new&#x000A;selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="page_up">page_up <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor one page up. If <code>extend</code> is true, creates a new selection, or&#x000A;extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="page_down">page_down <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor one page down. If <code>extend</code> is true, creates a new selection, or&#x000A;extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="para_down">para_down <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor one paragraph down. If <code>extend</code> is true, creates a new&#x000A;selection, or extends the selection if already present.</p>&#x000A;&#x000A;<h3 id="para_up">para_up <span class="arg-list">(extend = false)</span></h3>&#x000A;&#x000A;<p>Moves the cursor one paragraph up. If <code>extend</code> is true, creates a new selection,&#x000A;or extends the selection if already present.</p>
+      <div class='footer text-muted'>
+        <a href='/'>
+          <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+        </a>
+        <div class='footer-follow'>
+          <p>
+            <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+              Follow @howleditor
+            </a>
+          </p>
+          <p>
+            <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+              Tweet
+            </a>
+          </p>
+        </div>
+        <div class='footer-blurb'>
+          <div>The Howl editor.</div>
+          <div>
+            Copyright 2012-2016
+            <a class='alert-link' href='https://github.com/howl-editor/howl/contributors'>
+              The Howl Developers.
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>

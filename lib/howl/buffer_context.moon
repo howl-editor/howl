@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Chunk from howl
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 import style from howl.ui
 
 class Context extends PropertyObject

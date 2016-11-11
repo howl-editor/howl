@@ -1,0 +1,10 @@
+#! /bin/sh
+
+ROOT=$(cd $(dirname $0)/.. && pwd)
+cd $ROOT
+
+for d in lib/howl lib/aullar lib/ljglibs lib/scripts bundles spec; do
+  echo "$d >>"
+  ./bin/howl-lint $d || exit 1
+done
+echo "All OK"

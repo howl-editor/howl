@@ -1,15 +1,13 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, config, interact from howl
-import ProcessBuffer from howl.ui
+import config, interact from howl
 import Process from howl.io
-import Matcher from howl.util
 append = table.insert
 
 install_gocode = ->
   howl.command.exec nil, 'go get -u -v github.com/nsf/gocode'
-  
+
 run_gocode = (context) ->
   gopath = howl.sys.env['GOPATH']
   if not gopath
@@ -24,15 +22,15 @@ run_gocode = (context) ->
       log.warn "gocode completions disabled"
       config.go_complete = false
       return nil
-    
+
   cmd = { exe.path, '-f=csv', 'autocomplete', context.pos-1 }
   status, out, err, process = pcall Process.execute, cmd, stdin: context.buffer.text
   unless status and process.successful
     log.error "gocode failed to execute: #{err}"
     return nil
-    
+
   out
-  
+
 class GoCompleter
   complete: (context) =>
     return {} unless config.go_complete
@@ -41,7 +39,7 @@ class GoCompleter
     candidates = {}
     if out
       for line in out\gmatch '[^\n]+'
-        sym, name, type = line\match '(%w*),,(%w*),,([^,]*)'
+        name = line\match '%w*,,(%w*),,[^,]*'
         append candidates, name
       candidates.authoritive = true
       table.sort candidates

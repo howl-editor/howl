@@ -10,7 +10,7 @@ require 'ljglibs.gtk.bin'
 require 'ljglibs.gtk.adjustment'
 
 C = ffi.C
-{:ref_ptr, :gc_ptr} = gobject
+{:gc_ptr} = gobject
 
 jit.off true, true
 

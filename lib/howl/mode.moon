@@ -1,5 +1,5 @@
 import config, signal from howl
-import PropertyTable from howl.aux
+import PropertyTable from howl.util
 
 by_extension = {}
 by_pattern = {}
@@ -83,8 +83,8 @@ register = (mode = {}) ->
 unregister = (name) ->
   mode = modes[name]
   if mode
-    remove_from = (table, mode) ->
-      keys = [k for k, m in pairs table when m == mode]
+    remove_from = (table, remove_mode) ->
+      keys = [k for k, m in pairs table when m == remove_mode]
       table[k] = nil for k in *keys
 
     remove_from modes, mode

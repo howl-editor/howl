@@ -78,6 +78,10 @@ return {
       color: gray
 
   editor: delegate_to content_box, {
+    scrollbars:
+      slider:
+        color: slategray
+
     indicators:
       default:
         color: slategray
@@ -85,6 +89,10 @@ return {
       title:
         font: bold: true
         color: lightblue
+
+      inspections:
+        font: italic: true
+        color: orange
 
       vi:
         font: bold: true
@@ -126,8 +134,8 @@ return {
 
     edge_line:
       type: flair.PIPE
-      foreground: base
-      line_width: 2
+      foreground: slategray
+      line_width: 1.5
       foreground_alpha: 0.2,
 
     search:

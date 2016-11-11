@@ -3,8 +3,7 @@ require 'ljglibs.cdefs.gobject'
 core = require 'ljglibs.core'
 types = require 'ljglibs.types'
 
-C, ffi_cast, ffi_new, ffi_string = ffi.C, ffi.cast, ffi.new, ffi.string
-gpointer_t = ffi.typeof 'gpointer'
+C, ffi_cast, ffi_new = ffi.C, ffi.cast, ffi.new
 lua_value = types.lua_value
 
 core.define 'GObject', {

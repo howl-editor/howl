@@ -4,7 +4,7 @@
 GFile = require 'ljglibs.gio.file'
 GFileInfo = require 'ljglibs.gio.file_info'
 glib = require 'ljglibs.glib'
-import PropertyObject from howl.aux.moon
+import PropertyObject from howl.util.moon
 append = table.insert
 
 file_types = {
@@ -101,7 +101,7 @@ class File extends PropertyObject
   @property contents:
     get: => @gfile\load_contents!
     set: (contents) =>
-      with @_assert io.open @path, 'w'
+      with @_assert io.open @path, 'wb'
         \write tostring contents
         \close!
 

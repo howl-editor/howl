@@ -9,8 +9,7 @@ ffi = require 'ffi'
 bit = require 'bit'
 require 'ljglibs.cdefs.glib'
 
-tonumber, max, abs = tonumber, math.max, math.abs
-C = ffi.C
+tonumber = tonumber
 band = bit.band
 
 ffi.cdef [[
@@ -28,9 +27,7 @@ zero_mapping = ffi.new 'struct ao_mapping'
 
 mapping_for_char = (mappings, char_offset) ->
   m = zero_mapping
-  idx = 0
   for i = 0, IDX_LAST
-    idx = i
     nm = mappings[i]
     break if nm.c_offset == 0 or nm.c_offset > char_offset
     m = nm
@@ -39,9 +36,7 @@ mapping_for_char = (mappings, char_offset) ->
 
 mapping_for_byte = (mappings, byte_offset) ->
   m = zero_mapping
-  idx = 0
   for i = 0, IDX_LAST
-    idx = i
     nm = mappings[i]
     break if nm.c_offset == 0 or nm.b_offset > byte_offset
     m = nm

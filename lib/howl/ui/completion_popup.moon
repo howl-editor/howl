@@ -18,12 +18,15 @@ class CompletionPopup extends MenuPopup
   @property empty: get: => #@items == 0
 
   complete: =>
+    return if @active
+    @active = true
     @_init_completer!
     @_load_completions!
 
   close: =>
     @completer = nil
     super!
+    @active = nil
 
   on_insert_at_cursor: (editor, args) =>
     return unless @completer

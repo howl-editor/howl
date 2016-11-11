@@ -68,7 +68,7 @@ extract_assign_names = function(name, accum, prefix)
       local s
       if ntype(key) == "key_literal" then
         local key_name = key[2]
-        if ntype(key_name) == "colon_stub" then
+        if ntype(key_name) == "colon" then
           s = key_name
         else
           s = {
@@ -228,5 +228,6 @@ end
 return {
   has_destructure = has_destructure,
   split_assign = split_assign,
-  build_assign = build_assign
+  build_assign = build_assign,
+  extract_assign_names = extract_assign_names
 }
