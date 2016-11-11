@@ -13,10 +13,10 @@ signal.connect 'buffer-modified', (args) ->
     data = args.buffer.data.inbuffer_completer
     data.is_stale = true if data
 
-completion_buffers_for = (buffer, config) ->
+completion_buffers_for = (buffer, conf) ->
   candidates = { buffer }
-  max_buffers = config.inbuffer_completion_max_buffers
-  same_only = config.inbuffer_completion_same_mode_only
+  max_buffers = conf.inbuffer_completion_max_buffers
+  same_only = conf.inbuffer_completion_same_mode_only
 
   for b in *app.buffers
     if b != buffer and not same_only or b.mode == buffer.mode
@@ -28,15 +28,15 @@ completion_buffers_for = (buffer, config) ->
 should_update = (data) ->
   data.is_stale and os.difftime(os.time!, data.updated_at) > RESCAN_STALE_AFTER
 
-load = (buffer, config) ->
-  candidates = completion_buffers_for buffer, config
+load = (buffer, conf) ->
+  candidates = completion_buffers_for buffer, conf
 
   tokens = {}
   for b in *candidates
     data = b.data.inbuffer_completer or {}
     b_tokens = data.tokens
     if not b_tokens or should_update data
-      b_tokens = { token, true for token in b.text\ugmatch config.word_pattern when token.ulen <= MAX_TOKEN_LENGTH }
+      b_tokens = { token, true for token in b.text\ugmatch conf.word_pattern when token.ulen <= MAX_TOKEN_LENGTH }
       data.tokens = b_tokens
       data.updated_at = os.time!
       b.data.inbuffer_completer = data

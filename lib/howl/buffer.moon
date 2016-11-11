@@ -11,7 +11,7 @@ append = table.insert
 min = math.min
 
 class Buffer extends PropertyObject
-  new: (mode = {}) =>
+  new: (b_mode = {}) =>
     super!
 
     @_buffer = aullar.Buffer!
@@ -19,7 +19,7 @@ class Buffer extends PropertyObject
     @markers = BufferMarkers @_buffer
     @completers = {}
     @inspectors = {}
-    @mode = mode
+    @mode = b_mode
     @properties = {}
     @data = {}
     @_eol = '\n'
@@ -51,12 +51,12 @@ class Buffer extends PropertyObject
 
   @property mode:
     get: => @_mode
-    set: (mode = {}) =>
+    set: (new_mode = {}) =>
       old_mode = @_mode
-      @_mode = mode
+      @_mode = new_mode
       @config.chain_to mode.config
-      if mode.lexer
-        @_buffer.lexer = (text) -> mode.lexer text, @
+      if new_mode.lexer
+        @_buffer.lexer = (text) -> new_mode.lexer text, @
       else
         @_buffer.lexer = nil
 
