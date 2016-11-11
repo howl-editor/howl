@@ -13,10 +13,10 @@ signal.connect 'buffer-modified', (args) ->
     data = args.buffer.data.inbuffer_completer
     data.is_stale = true if data
 
-completion_buffers_for = (buffer) ->
+completion_buffers_for = (buffer, conf) ->
   candidates = { buffer }
-  max_buffers = buffer.config.inbuffer_completion_max_buffers
-  same_only = buffer.config.inbuffer_completion_same_mode_only
+  max_buffers = conf.inbuffer_completion_max_buffers
+  same_only = conf.inbuffer_completion_same_mode_only
 
   for b in *app.buffers
     if b != buffer and not same_only or b.mode == buffer.mode
@@ -28,15 +28,15 @@ completion_buffers_for = (buffer) ->
 should_update = (data) ->
   data.is_stale and os.difftime(os.time!, data.updated_at) > RESCAN_STALE_AFTER
 
-load = (buffer) ->
-  candidates = completion_buffers_for buffer
+load = (buffer, conf) ->
+  candidates = completion_buffers_for buffer, conf
 
   tokens = {}
   for b in *candidates
     data = b.data.inbuffer_completer or {}
     b_tokens = data.tokens
     if not b_tokens or should_update data
-      b_tokens = { token, true for token in b.text\ugmatch b.config.word_pattern when token.ulen <= MAX_TOKEN_LENGTH }
+      b_tokens = { token, true for token in b.text\ugmatch conf.word_pattern when token.ulen <= MAX_TOKEN_LENGTH }
       data.tokens = b_tokens
       data.updated_at = os.time!
       b.data.inbuffer_completer = data
@@ -62,9 +62,9 @@ near_tokens = (context) ->
   start_pos = 1
   chunk_text = chunk.text
   buffer = context.buffer
-  pattern = buffer.config.word_pattern
 
   while start_pos < #chunk_text
+    pattern = buffer\config_at(start_pos).word_pattern
     start_pos, end_pos = chunk_text\ufind pattern, start_pos
     break unless start_pos
     token = chunk_text\usub start_pos, end_pos
@@ -83,9 +83,10 @@ near_tokens = (context) ->
 
 class InBufferCompleter
   new: (buffer, context) =>
+    config = buffer\config_at context.pos
     @near_tokens = near_tokens context
-    @matcher = Matcher load buffer
-    @limit = buffer.config.completion_max_shown
+    @matcher = Matcher load buffer, config
+    @limit = config.completion_max_shown
 
   complete: (context) =>
     pattern = '^' .. context.word_prefix .. '.'

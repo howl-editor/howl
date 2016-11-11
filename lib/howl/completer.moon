@@ -4,10 +4,9 @@
 import completion, config from howl
 append = table.insert
 
-load_completers = (buffer, context) ->
+load_completers = (buffer, context, mode = {}) ->
   completers = {}
 
-  mode = buffer.mode or {}
   for factories in *{buffer.completers, mode.completers}
     if factories
       for f in *factories
@@ -44,17 +43,24 @@ class Completer
 
   new: (buffer, pos) =>
     @buffer = buffer
+    @config = buffer\config_at pos
     @context = buffer\context_at pos
     @start_pos = @context.word.start_pos
-    @completers = load_completers buffer, @context
+    @completers =
+      [buffer.mode]: load_completers buffer, @context, buffer.mode
 
-  complete: (pos, limit = @buffer.config.completion_max_shown) =>
+  complete: (pos, limit = @config.completion_max_shown) =>
     context = @context.start_pos == pos and @context or @buffer\context_at pos
 
     seen = {}
     completions = {}
 
-    for completer in *@completers
+    mode = @buffer\mode_at pos
+    if not @completers[mode]
+      @completers[mode] = load_completers @buffer, context, mode
+    completers = @completers[mode]
+
+    for completer in *completers
       comps = completer\complete context
       if comps
         if comps.authoritive
@@ -71,12 +77,13 @@ class Completer
 
   accept: (compl, pos) =>
     chunk = @buffer\context_at(pos).word
-    chunk = @buffer\chunk(chunk.start_pos, pos - 1) unless @buffer.config.hungry_completion
+    chunk = @buffer\chunk(chunk.start_pos, pos - 1) unless @config.hungry_completion
     chunk.text = compl
     pos_after = chunk.start_pos + compl.ulen
+    mode = @buffer\mode_at pos
 
-    if @buffer.mode.on_completion_accepted
-      pos = @buffer.mode\on_completion_accepted compl, @buffer\context_at(pos_after)
+    if mode.on_completion_accepted
+      pos = mode\on_completion_accepted compl, @buffer\context_at(pos_after)
       pos_after = pos if type(pos) == 'number'
 
     pos_after

@@ -59,7 +59,7 @@ class Context extends PropertyObject
   }
 
   _get_word_boundaries: =>
-    word_pattern = @buffer.config.word_pattern
+    word_pattern = @buffer\config_at(@pos).word_pattern
 
     line_text = @line.text
     line_start_pos = @line.start_pos

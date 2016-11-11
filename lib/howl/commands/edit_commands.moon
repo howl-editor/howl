@@ -106,8 +106,8 @@ command.register
   name: 'show-doc-at-cursor',
   description: 'Show documentation for symbol at cursor, if available'
   handler: ->
-    m = app.editor.buffer.mode
     ctx = app.editor.current_context
+    m = app.editor.buffer\mode_at ctx.pos
     if m.api and m.resolve_type
       node = m.api
       path, parts = m\resolve_type ctx

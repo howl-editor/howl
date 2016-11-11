@@ -84,6 +84,34 @@ describe 'Editor', ->
           editor[method] editor
           assert.spy(buffer.mode[method]).was_called_with buffer.mode, editor
 
+      if method == 'toggle_comment'
+        it 'uses the buffer mode when the one to use is ambiguous', ->
+          mode1 = comment_syntax: '//'
+          mode2 = comment_syntax: '#'
+
+          mode1_reg = name: 'toggle_comment_test1', create: -> mode1
+          mode2_reg = name: 'toggle_comment_test2', create: -> mode2
+          howl.mode.register mode1_reg
+          howl.mode.register mode2_reg
+          buffer.mode = howl.mode.by_name 'toggle_comment_test1'
+
+          buffer.text = 'ab\nc'
+          buffer._buffer.styling\apply 1, {
+            1, 'whitespace', 2,
+            2, { 1, 's1', 3 }, 'toggle_comment_test|s1',
+          }
+
+          selection\set 1, 5
+          editor[method] editor
+          assert.equal '// ab\n// c', buffer.text
+
+          selection\set 1, 11
+          editor[method] editor
+          assert.equal 'ab\nc', buffer.text
+
+          howl.mode.unregister 'toggle_comment_test1'
+          howl.mode.unregister 'toggle_comment_test2'
+
   describe 'with_position_restored(f)', ->
     before_each ->
       buffer.text = '  yowser!\n  yikes!'

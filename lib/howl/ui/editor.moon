@@ -214,6 +214,9 @@ class Editor extends PropertyObject
       start, stop = @selection\range!
       @buffer\chunk start, stop - 1
 
+  @property mode_at_cursor: get: => @buffer\mode_at @cursor.pos
+  @property config_at_cursor: get: => @buffer\config_at @cursor.pos
+
   refresh_display: => @view\refresh_display from_line: 1, invalidate: true
   grab_focus: => @view\grab_focus!
   newline: =>
@@ -235,9 +238,9 @@ class Editor extends PropertyObject
 
   transform_active_lines: (f) =>
     lines = @active_lines
-    return if #@active_lines == 0
-    start_pos = @active_lines[1].start_pos
-    end_pos = @active_lines[#@active_lines].end_pos
+    return if #lines == 0
+    start_pos = lines[1].start_pos
+    end_pos = lines[#lines].end_pos
     @buffer\change start_pos, end_pos, -> f lines
 
   with_position_restored: (f) =>
@@ -303,17 +306,16 @@ class Editor extends PropertyObject
         :preview_buffer
       }
 
-  indent: => if @buffer.mode.indent then @buffer.mode\indent self
+  indent: => @_apply_to_line_modes 'indent'
 
   indent_all: =>
     @with_position_restored ->
       @selection\select_all!
       @indent!
 
-  comment: => if @buffer.mode.comment then @buffer.mode\comment self
-  uncomment: => if @buffer.mode.uncomment then @buffer.mode\uncomment self
-  toggle_comment: =>
-    if @buffer.mode.toggle_comment then @buffer.mode\toggle_comment self
+  comment: => @_apply_to_line_modes 'comment'
+  uncomment: => @_apply_to_line_modes 'uncomment'
+  toggle_comment: => @_apply_to_line_modes 'toggle_comment'
 
   delete_line: => @buffer.lines[@cursor.line] = nil
 
@@ -364,11 +366,11 @@ class Editor extends PropertyObject
       @shift_right!
       return
 
-    conf = @buffer.config
+    conf = @config_at_cursor
     if conf.tab_indents and @current_context.prefix.is_blank
       cur_line = @current_line
-      next_indent = cur_line.indentation + config.indent
-      next_indent -= (next_indent % config.indent)
+      next_indent = cur_line.indentation + conf.indent
+      next_indent -= (next_indent % conf.indent)
       cur_line.indentation = next_indent
       @cursor.column = next_indent + 1
     else if conf.use_tabs
@@ -381,7 +383,7 @@ class Editor extends PropertyObject
       @shift_left!
       return
 
-    conf = @buffer.config
+    conf = @config_at_cursor
     if conf.tab_indents and @current_context.prefix.is_blank
       cursor_col = @cursor.column
       cur_line = @current_line
@@ -397,7 +399,7 @@ class Editor extends PropertyObject
   delete_back: =>
     prefix = @current_context.prefix
     if @selection.empty and prefix.is_blank and not prefix.is_empty
-      if @buffer.config.backspace_unindents
+      if @config_at_cursor.backspace_unindents
         cur_line = @current_line
         gap = cur_line.indentation - @cursor.column
         cur_line\unindent!
@@ -639,6 +641,19 @@ class Editor extends PropertyObject
     bar\remove id
     @indicator[id] = nil
 
+  _apply_to_line_modes: (method) =>
+    lines = @active_lines
+
+    mode = nil
+    modes = [@buffer\mode_at line.start_pos for line in *lines]
+    mode = modes[1]
+    for other_mode in *modes
+      if mode != other_mode
+        mode = @buffer.mode
+        break
+
+    mode[method] mode, self if mode[method]
+
   _pos_from_coordinates: (x, y) =>
     byte_offset = @view\position_from_coordinates(x, y)
     if byte_offset
@@ -704,7 +719,7 @@ class Editor extends PropertyObject
       @remove_popup!
       return true
 
-    maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
+    maps = { @buffer.keymap, @mode_at_cursor and @mode_at_cursor.keymap }
     return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
@@ -748,7 +763,7 @@ class Editor extends PropertyObject
     buffer = @view.buffer
     return if byte_pos < 1 or byte_pos > buffer.size
 
-    auto_pairs = @buffer.mode.auto_pairs
+    auto_pairs = @buffer\mode_at(buffer\char_offset byte_pos).auto_pairs
     return unless auto_pairs
 
     cur_char = buffer\sub byte_pos, byte_pos
@@ -777,8 +792,10 @@ class Editor extends PropertyObject
       buffer.markers\remove name: 'brace_highlight'
       @_brace_highlighted = false
 
-    should_highlight = @buffer.config.matching_braces_highlighted
+    should_highlight = @config_at_cursor.matching_braces_highlighted
     return unless should_highlight
+    auto_pairs = @mode_at_cursor.auto_pairs
+    return unless auto_pairs
 
     highlight_braces = (pos1, pos2, flair) ->
       buffer.markers\add {
@@ -838,12 +855,12 @@ class Editor extends PropertyObject
     params = moon.copy args
     params.editor = self
     return if signal.emit('insert-at-cursor', params) == signal.abort
-    return if @buffer.mode.on_insert_at_cursor and @buffer.mode\on_insert_at_cursor(params, self)
+    return if @mode_at_cursor.on_insert_at_cursor and @mode_at_cursor\on_insert_at_cursor(params, self)
 
     if @popup
       @popup.window\on_insert_at_cursor(self, params) if @popup.window.on_insert_at_cursor
     elseif args.text.ulen == 1
-      config = @buffer.config
+      config = @config_at_cursor
       return unless config.complete != 'manual'
       return unless #@current_context.word_prefix >= config.completion_popup_after
       skip_styles = config.completion_skip_auto_within

@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import BufferContext, BufferLines, BufferMarkers, Chunk, config, signal, sys from howl
+import BufferContext, BufferLines, BufferMarkers, Chunk, config, mode, signal, sys from howl
 import PropertyObject from howl.util.moon
 aullar = require 'aullar'
 
@@ -11,7 +11,7 @@ append = table.insert
 min = math.min
 
 class Buffer extends PropertyObject
-  new: (mode = {}) =>
+  new: (b_mode = {}) =>
     super!
 
     @_buffer = aullar.Buffer!
@@ -19,7 +19,7 @@ class Buffer extends PropertyObject
     @markers = BufferMarkers @_buffer
     @completers = {}
     @inspectors = {}
-    @mode = mode
+    @mode = b_mode
     @properties = {}
     @data = {}
     @_eol = '\n'
@@ -51,16 +51,16 @@ class Buffer extends PropertyObject
 
   @property mode:
     get: => @_mode
-    set: (mode = {}) =>
+    set: (new_mode = {}) =>
       old_mode = @_mode
-      @_mode = mode
-      @config.chain_to mode.config
-      if mode.lexer
-        @_buffer.lexer = (text) -> mode.lexer text, @
+      @_mode = new_mode
+      @config.chain_to new_mode.config
+      if new_mode.lexer
+        @_buffer.lexer = (text) -> new_mode.lexer text, @
       else
         @_buffer.lexer = nil
 
-      signal.emit 'buffer-mode-set', buffer: self, :mode, :old_mode
+      signal.emit 'buffer-mode-set', buffer: self, mode: new_mode, :old_mode
 
   @property title:
     get: => @_title or (@file and @file.basename) or 'Untitled'
@@ -274,6 +274,19 @@ class Buffer extends PropertyObject
     if @_mode.lexer
       b_end_pos = @byte_offset end_pos
       @_buffer\ensure_styled_to pos: b_end_pos
+
+  mode_at: (pos) =>
+    b_pos = @byte_offset pos
+    mode_name = @_buffer.styling\get_mode_name_at b_pos
+    -- Returns @mode if there's no marker or the requested mode doesn't exist.
+    mode_name and mode.by_name(mode_name) or @mode
+
+  config_at: (pos) =>
+    mode_at = @mode_at pos
+    return @config if mode_at == @mode
+    new_config = config.local_proxy!
+    new_config.chain_to @mode_at(pos).config
+    new_config
 
   add_view_ref: =>
     @viewers += 1
