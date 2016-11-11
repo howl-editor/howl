@@ -44,7 +44,10 @@ describe 'VI', ->
 
   press = (...) ->
     for key in *{...}
-      bindings.process {key_name: key, character: key, key_code: 123}, 'editor', nil, editor
+      if #key >= 2 and key[1] == "="
+        editor\insert(string.sub(key, 2))
+      else
+        bindings.process {key_name: key, character: key, key_code: 123}, 'editor', nil, editor
 
   it '<j> moves down one line', ->
     press 'j'
@@ -149,6 +152,21 @@ describe 'VI', ->
     assert.equal cursor.line, 2
     assert.equal 'first\n\nsecond', buffer.text
     assert.equal 'insert', state.mode
+
+  it '<A> appends at the end of the current line', ->
+    buffer.text = 'first\nsecond'
+    cursor.pos = 3
+    press 'A', '=X', 'escape'
+    assert.equal 'firstX\nsecond', buffer.text
+    press 'j', 'A', '=Y', 'escape'
+    assert.equal 'firstX\nsecondY', buffer.text
+    press '0', 'A', '=Z', 'escape'
+    assert.equal 'firstX\nsecondYZ', buffer.text
+    press 'k', '.'
+    assert.equal 'firstXZ\nsecondYZ', buffer.text
+    press '0', '.'
+    assert.equal 'ZfirstXZ\nsecondYZ', buffer.text -- FIXME: this is WRONG
+    assert.equal 'firstXZZ\nsecondYZ', buffer.text -- FIXME: this FAILS
 
   it '<y><y> yanks the current line', ->
     buffer.text = 'first\nsecond'
