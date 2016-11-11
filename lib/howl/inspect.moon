@@ -3,6 +3,7 @@
 
 {:app, :bindings, :command, :config, :inspection, :interact, :log, :signal, :timer} = howl
 {:ActionBuffer, :BufferPopup, :highlight} = howl.ui
+{:Process, :process_output} = howl.io
 {:pcall} = _G
 {:sort} = table
 append = table.insert
@@ -19,13 +20,33 @@ update_inspections_display = (editor) ->
 
   editor.indicator.inspections.text = text
 
+resolve_inspector = (inspector, buffer) ->
+  return inspector unless inspector.cmd\find '<file>', 1, true
+  return nil unless buffer.file
+  copy = {k,v for k, v in pairs inspector}
+  copy.cmd = copy.cmd\gsub '<file>', buffer.file.path
+  copy
+
 load_inspectors = (buffer) ->
   inspectors = {}
 
   for inspector in *buffer.config.inspectors
     conf = inspection[inspector]
     if conf
-      append inspectors, conf.factory!
+      instance = conf.factory buffer
+      if callable(instance)
+        append inspectors, instance
+      elseif type(instance) == 'string'
+        instance = resolve_inspector {cmd: instance}, buffer
+        if instance
+          append inspectors, instance
+      elseif type(instance) == 'table'
+        unless instance.cmd
+          error "Missing cmd key for inspector returned for '#{inspector}'"
+        instance = resolve_inspector instance, buffer
+        if instance
+          append inspectors, instance
+
     else
       log.warn "Invalid inspector '#{inspector}' specified for '#{buffer.title}'"
 
@@ -88,16 +109,65 @@ mark_criticisms = (buffer, criticisms) ->
 
   return #ms
 
+parse_errors = (out, inspector) ->
+  if inspector.parse
+    return inspector.parse out
+
+  inspections = {}
+
+  for loc in *process_output.parse(out)
+    complaint = {
+      line: loc.line,
+      message: loc.message,
+    }
+    if loc.tokens
+      complaint.search = loc.tokens[1]
+
+    complaint.type = loc.message\umatch(r'^(warning|error)')
+
+    append inspections, complaint
+
+  if inspector.post_parse
+    inspector.post_parse inspections
+
+  inspections
+
+launch_inspector_process = (opts, buffer) ->
+  p = Process {
+    cmd: opts.cmd,
+    read_stdout: true,
+    read_stderr: true,
+    write_stdin: true
+    env: opts.env,
+    shell: opts.shell,
+    working_directory: opts.working_directory
+  }
+  p.stdin\write buffer.text
+  p.stdin\close!
+  p
+
 inspect = (buffer) ->
   criticisms = {}
+  processes = {}
 
-  for i in *load_inspectors(buffer)
-    status, ret = pcall i, buffer
-    if status
-      if ret
-        merge ret, criticisms
+  for inspector in *load_inspectors(buffer)
+    if callable(inspector)
+      status, ret = pcall inspector, buffer
+      if status
+        merge(ret or {}, criticisms)
+      else
+        log.error "inspector '#{inspector}' failed: #{ret}"
     else
-      log.error "inspector '#{i}' failed: #{ret}"
+      p = launch_inspector_process inspector, buffer
+      processes[#processes + 1] = { process: p, :inspector }
+
+  -- finish off processes
+  for p in *processes
+    out, err = p.process\pump!
+    buf = out
+    buf ..= "\n#{err}" unless err.is_blank
+    inspections = parse_errors buf, p.inspector
+    merge(inspections, criticisms)
 
   criticisms
 
@@ -112,7 +182,18 @@ update_buffer = (buffer, editor) ->
   if data.last_inspect and data.last_inspect >= buffer.last_changed
     return
 
-  criticize buffer
+  -- we mark this automatic inspection run with a serial
+  update_serial = (data.inspections_update or 0) + 1
+  data.inspections_update = update_serial
+
+  criticisms = inspect buffer
+  -- check serial to avoid applying out-of-date criticisms
+  unless data.inspections_update == update_serial
+    log.warn "Ignoring stale inspection update - slow inspection processes?"
+    return
+
+  criticize buffer, criticisms
+
   editor or= app\editor_for_buffer buffer
   if editor
     update_inspections_display editor
