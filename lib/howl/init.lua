@@ -57,7 +57,7 @@ local function set_package_path(...)
     paths[#paths + 1] = app_root .. '/' .. path .. '/?/init.lua'
   end
   -- base path is system path except the crazy default current directory
-  base_path = package.path:gsub('./?.lua;', '')
+  base_path = package.path:gsub('%./?.lua;', '')
   package.path = table.concat(paths, ';') .. ';' .. base_path
 end
 
