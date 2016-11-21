@@ -92,6 +92,10 @@ describe 'VI', ->
   it '<r><character> replaces the current character with <character>', ->
     press 'r', 'F'
     assert.equal 'FinƏ two', lines[2].text
+    press 'r', 'G'
+    assert.equal 'GinƏ two', lines[2].text
+    press '4', 'r', 'X', 'r', 'Y'
+    assert.equal 'XXXY two', lines[2].text
 
   it '<f><character> searches forward in the current line to <character>', ->
     press 'f', 'n'
