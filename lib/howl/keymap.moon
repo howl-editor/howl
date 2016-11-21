@@ -67,6 +67,7 @@
     ctrl_slash:       'editor-toggle-comment'
     ctrl_tab:         'view-next'
 
+    shift_delete:     'editor-cut'
     shift_insert:     'editor-paste'
     ctrl_insert:      'editor-copy'
 
