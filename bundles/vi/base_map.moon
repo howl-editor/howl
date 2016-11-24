@@ -118,8 +118,8 @@ map = {
     F: (editor) -> bindings.capture back_to_char
     t: (editor) -> bindings.capture forward_till_char
     T: (editor) -> bindings.capture back_till_char
-    '/': 'buffer-search-forward'
-    '?': 'buffer-search-backward'
+    '/': 'vi-buffer-search-forward'
+    '?': 'vi-buffer-search-backward'
     n: 'buffer-repeat-search' -- repeat search in same direction
     N: (editor) -> -- repeat search in opposite direction
       searcher = editor.searcher
