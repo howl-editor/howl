@@ -2,7 +2,8 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 append = table.insert
 
-values = {}
+scopes = {}
+layer_defs = {'default': {}}
 defs = {}
 watchers = {}
 
@@ -101,36 +102,57 @@ define = (var = {}) ->
   defs[var.name] = var
   broadcast var.name, var.default, false
 
-set = (name, value) ->
+define_layer = (name, def={}) ->
+  layer_defs[name] = moon.copy(def)
+
+set = (name, value, scope='', layer='default') ->
   def = get_def name
 
-  if def.scope and def.scope == 'local'
-    error 'Attempt to set a global value for local variable "' .. name .. '"', 2
+  error "Unknown layer '#{layer}'" if not layer_defs[layer]
+
+  if def.scope
+    if def.scope == 'local' and scope == ''
+      error 'Attempt to set a global value for local variable "' .. name .. '"', 2
+    if def.scope == 'global' and scope != ''
+     error 'Attempt to set a local value for global variable "' .. name .. '"', 2
 
   value = convert def, value
   validate def, value
 
-  values[name] = value
-  broadcast name, value, false
+  unless scopes[scope]
+    scopes[scope] = {}
+  unless scopes[scope][name]
+    scopes[scope][name] = {}
 
-proxy_set = (name, value, proxy) ->
-  def = get_def name
+  scopes[scope][name][layer] = value
 
-  if def.scope and def.scope == 'global'
-    error 'Attempt to set a local value for global variable "' .. name .. '"', 2
+  broadcast name, value, (scope != '' or layer != 'default')
 
-  value = convert def, value
-  validate def, value
-  rawset proxy, name, value
-  broadcast name, value, true
+parent = (scope) ->
+  pos = scope\rfind('/')
+  return '' unless pos
+  return scope\sub(1, pos - 1)
 
-get = (name) ->
-  value = values[name]
-  return value if value != nil
+get = (name, scope='', layer) ->
+  values = scopes[scope] and scopes[scope][name]
+
+  if values
+    current_layer = layer
+    while current_layer
+      value = values[current_layer]
+      if value != nil
+        return value
+      current_layer = layer_defs[current_layer].parent
+    if values['default'] != nil
+      return values['default']
+
+  if scope != ''
+    return get(name, parent(scope), layer)
+
   def = defs[name]
   return def.default if def
 
-reset = -> values = {}
+reset = -> scopes = {}
 
 watch = (name, callback) ->
   list = watchers[name]
@@ -140,25 +162,44 @@ watch = (name, callback) ->
   append list, callback
 
 proxy_mt = {
-  __index: (proxy, key) ->
-    base = rawget proxy, '_base'
-    if base then base[key] else get key
-  __newindex: (proxy, key, value) -> proxy_set key, value, proxy
+  __index: (proxy, key) -> get(key, proxy._scope, proxy._read_layer)
+  __newindex: (proxy, key, value) -> set(key, value, proxy._scope, proxy._write_layer)
 }
 
-local_proxy = ->
-  proxy = {}
-  proxy.chain_to = (base) -> rawset proxy, '_base', base
+proxy = (scope, write_layer='default', read_layer=write_layer) ->
+  proxy = {
+    clear: => scopes[@_scope] = {}
+    _scope: scope
+    _write_layer: write_layer
+    _read_layer: read_layer
+  }
   setmetatable proxy, proxy_mt
+
+
+copy = (scope, new_scope) ->
+  scopes[new_scope] = scopes[scope]
+
+delete = (scope) ->
+  error 'Cannot delete global scope' if scope == ''
+  scopes[scope] = nil
+
+move = (scope, new_scope) ->
+  error 'Cannot move global scope' if scope == ''
+  copy(scope, new_scope)
+  delete(scope)
 
 config = {
   :definitions
   :define
+  :define_layer
   :set
   :get
   :watch
   :reset
-  :local_proxy
+  :proxy
+  :copy
+  :delete
+  :move
 }
 
 return setmetatable config, {

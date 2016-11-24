@@ -10,6 +10,8 @@ mode_variables = {}
 
 local by_name
 
+layer_for = (name) -> 'mode:' .. name
+
 instance_for_mode = (m) ->
   return live[m] if live[m]
 
@@ -17,7 +19,7 @@ instance_for_mode = (m) ->
   parent = if m.name != 'default' then by_name m.parent or 'default'
   target = m.create m.name
 
-  mode_config = config.local_proxy!
+  mode_config = config.proxy '', layer_for(m.name)
 
   if target.default_config
     mode_config[k] = v for k,v in pairs target.default_config
@@ -26,11 +28,10 @@ instance_for_mode = (m) ->
   if mode_vars
     mode_config[k] = v for k,v in pairs mode_vars
 
-  mode_config.chain_to parent.config if parent
-
   instance = setmetatable {
     name: m.name
     config: mode_config
+    config_layer: layer_for(m.name)
     :parent
   }, {
     __index: (_, k) -> target[k] or parent and parent[k]
@@ -77,6 +78,9 @@ register = (mode = {}) ->
 
   modes[mode.name] = mode
   modes[alias] = mode for alias in *multi_value mode.aliases
+
+  parent = mode.parent and layer_for(mode.parent)
+  config.define_layer layer_for(mode.name), :parent
 
   signal.emit 'mode-registered', name: mode.name
 

@@ -10,16 +10,25 @@ ffi = require 'ffi'
 append = table.insert
 min = math.min
 
+buffer_id = 1
+
+_next_id = ->
+  buffer_id += 1
+  return buffer_id
+
 class Buffer extends PropertyObject
   new: (b_mode = {}) =>
     super!
 
+    @id = _next_id!
     @_buffer = aullar.Buffer!
-    @config = config.local_proxy!
     @markers = BufferMarkers @_buffer
     @completers = {}
     @inspectors = {}
     @mode = b_mode
+    @_set_config!
+    @config\clear!
+
     @properties = {}
     @data = {}
     @_eol = '\n'
@@ -54,12 +63,12 @@ class Buffer extends PropertyObject
     set: (new_mode = {}) =>
       old_mode = @_mode
       @_mode = new_mode
-      @config.chain_to new_mode.config
       if new_mode.lexer
         @_buffer.lexer = (text) -> new_mode.lexer text, @
       else
         @_buffer.lexer = nil
 
+      @_set_config!
       signal.emit 'buffer-mode-set', buffer: self, mode: new_mode, :old_mode
 
   @property title:
@@ -120,6 +129,9 @@ class Buffer extends PropertyObject
   @property read_only:
     get: => @_buffer.read_only
     set: (v) => @_buffer.read_only = v
+
+  @property _config_scope:
+    get: => @_file and ('file' .. @_file.path) or ('buffer/' .. @id)
 
   chunk: (start_pos, end_pos) => Chunk self, start_pos, end_pos
 
@@ -284,9 +296,7 @@ class Buffer extends PropertyObject
   config_at: (pos) =>
     mode_at = @mode_at pos
     return @config if mode_at == @mode
-    new_config = config.local_proxy!
-    new_config.chain_to @mode_at(pos).config
-    new_config
+    return config.proxy @_config_scope, mode_at.config_layer
 
   add_view_ref: =>
     @viewers += 1
@@ -295,8 +305,14 @@ class Buffer extends PropertyObject
     @viewers -= 1
 
   _associate_with_file: (file) =>
+    scope = @_config_scope
     @_file = file
+    config.copy scope, @_config_scope
+
     @title = file and file.basename or 'Untitled'
+
+  _set_config: =>
+    @config = config.proxy @_config_scope, 'default', @mode.config_layer
 
   _on_text_inserted: (_, _, args) =>
     @_on_buffer_modification 'text-inserted', args
