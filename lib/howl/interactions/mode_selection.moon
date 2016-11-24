@@ -11,9 +11,12 @@ interact.register
     if opts.buffer
       selection = opts.buffer.mode.name
 
+    mode_names = mode.names
+    table.sort mode_names
+
     selected = interact.select
       title: opts.title or 'Mode'
-      items: mode.names
+      items: mode_names
       :selection
 
     return unless selected
