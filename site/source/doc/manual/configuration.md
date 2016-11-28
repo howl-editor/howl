@@ -127,7 +127,7 @@ Let's have a look at configuring the `indent` variable as discussed in the
 
 ```moon
 import config, mode, signal from howl
-import File from howl.fs
+import File from howl.io
 
 -- Set indent globally to two spaces
 config.indent = 2
