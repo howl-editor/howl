@@ -13,11 +13,12 @@ LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
 LUAJIT_URL = http://nordman.org/mirror/luajit/$(LUAJIT_VER).tar.gz
 
-LPEG_VER = lpeg-0.10.2
-LPEG_CHECKSUM = 1402433f02e37ddadff04a3d4118b026
+LPEG_VER = lpeg-1.0.0
+LPEG_CHECKSUM = 0aec64ccd13996202ad0c099e2877ece
 LPEG = deps/$(LPEG_VER)
-LPEG_OBJECT = $(LPEG)/lpeg.o
-LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
+LPEG_OBJECTS = $(LPEG)/lpcap.o $(LPEG)/lpcode.o $(LPEG)/lpprint.o $(LPEG)/lptree.o $(LPEG)/lpvm.o
+#LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
+LPEG_URL = http://www.inf.puc-rio.br/~roberto/lpeg/$(LPEG_VER).tar.gz
 
 CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
 ARCHIVES = $(LUAJIT_ARCHIVE)
@@ -31,7 +32,7 @@ else
 	LD_FLAGS = -Wl,-E
 endif
 OBJECTS = main.o process_helpers.o
-DEP_OBJECTS = $(LPEG_OBJECT)
+DEP_OBJECTS = $(LPEG_OBJECTS)
 
 all: howl bytecode
 
@@ -44,8 +45,8 @@ ${OBJECTS}: %.o : %.c main.h $(LUAJIT)
 $(LPEG):
 	@tools/download $(LPEG_URL) $(LPEG_CHECKSUM) tar xzf {file} -C deps
 
-$(LPEG_OBJECT): $(LPEG) $(LUAJIT)
-	cd ${LPEG} && $(MAKE) lpeg.o LUADIR=../../$(LUAJIT)/src
+$(LPEG_OBJECTS): $(LPEG) $(LUAJIT)
+	$(MAKE) -C $(LPEG) $(notdir $@) LUADIR=../../$(LUAJIT)/src
 
 $(LUAJIT):
 	@tools/download $(LUAJIT_URL) $(LUAJIT_CHECKSUM) tar xzf {file} -C deps
@@ -60,8 +61,8 @@ deps-purge:
 	rm -rf $(LUAJIT) $(LPEG)
 
 deps-clean:
-	@rm $(LPEG_OBJECT) || true
-	@cd $(LUAJIT) && $(MAKE) clean
+	@make -C $(LPEG) clean
+	@make -C $(LUAJIT) clean
 
 clean:
 	-rm -f ${OBJECTS}
