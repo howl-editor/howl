@@ -32,4 +32,6 @@ return {
     description: 'Ruby bundle',
     license: 'MIT',
   :unload
+
+  util: bundle_load('util')
 }
