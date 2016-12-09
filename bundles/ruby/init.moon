@@ -23,8 +23,15 @@ mode_reg =
   create: -> bundle_load('ruby_mode')
 
 howl.mode.register mode_reg
+howl.inspection.register {
+  name: 'ruby',
+  factory: (buffer) ->
+    bundle_load('ruby_inspector') buffer
+}
 
-unload = -> howl.mode.unregister 'ruby'
+unload = ->
+  howl.mode.unregister 'ruby'
+  howl.inspection.unregister 'ruby'
 
 return {
   info:
