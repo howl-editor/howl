@@ -106,7 +106,7 @@ howl.app:new_buffer().config.my_var = 'foo'
 ```
 
 Note that internally the values are organized within scopes and layers, but this
-convinient API is available on [buffer] and [mode] objects. [Proxy](#proxy)
+convenient API is available on [buffer] and [mode] objects. [Proxy](#proxy)
 objects, described below are used to build the convinience API.
 
 _See also_:
@@ -132,7 +132,7 @@ Defines a new config variable. Options can contain the following fields:
 
 - `scope`: An optional value specifying the scope of the variable. One of
   `local` and `global`. Local variables can be set at any scope, whereas
-  global variables can only be directly at the global scope.
+  global variables can only be set directly at the global scope.
 
 - `validate`: A function that will be used for validating any values set
   for this variable. Whenever a value is set for the variable, this function
@@ -171,7 +171,7 @@ into a native representation.
 Gets the global value of the variable named `name` for the scope `scope` and
 layer `layer`. While getting the value of a variable using `get` is perfectly
 fine, note that the idiomatic way of getting variables values globally is to
-just to index the config module, like so:
+just index the config module, like so:
 
 ```lua
 local val = howl.config.my_variable
@@ -181,7 +181,7 @@ The [Evaluation](#Evaluation) section above describes how the value is computed.
 
 ### proxy (scope, write_layer='default', read_layer)
 
-Returns a new configuration proxy object, which offers a convinient API to get
+Returns a new configuration proxy object, which offers a convenient API to get
 and set values for a specific scope and layer. A proxy object offers access to
 all configuration variables, using simple indexing:
 
@@ -204,7 +204,7 @@ Getting and setting values use the default layer, when neither `write_layer` nor
 when getting and setting values. When `read_layer` is also specified, that layer
 is used when getting values only.
 
-Note that `proxy` objects are used to provide the convinient config API for
+Note that `proxy` objects are used to provide the convenient config API for
 [buffer] and [mode] objects, as described in [API](#API) above.
 
 ### set (name, value, scope='', layer='default')
@@ -216,7 +216,7 @@ scenarios:
 - There exists no known variable with name `name`
 - `value` is not a valid value for the parameter
 - The scope is `''` (i.e. global) but the parameter is defined as 'local'
-- The scope is not global, but the parameter is defained as 'global'
+- The scope is not global, but the parameter is defined as 'global'
 
 Upon a successful change, any listeners are notified. To remove any previously
 set value, pass `nil` as `value`. While setting a variable using `set` is
