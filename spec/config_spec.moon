@@ -39,12 +39,50 @@ describe 'config', ->
       config.set 'foo', nil
       assert.is_nil config.foo
 
-  describe 'get(name)', ->
+  describe 'get(name, scope, layer)', ->
     before_each -> config.define name: 'var', description: 'test variable'
 
     it 'returns the global value of <name>', ->
       config.set 'var', 'hello'
       assert.equal config.get('var'), 'hello'
+
+  context 'scopes', ->
+    it 'get() returns value set for specific scope', ->
+      config.set 'var', 'global-value'
+      config.set 'var', 'scope-value', 'scope1'
+      assert.equal 'scope-value', config.get 'var', 'scope1'
+
+    it 'get() looks up the value set() in parent scopes if necessary', ->
+      config.set 'var', 'global-value'
+      config.set 'var', 'top-value', 'root'
+      config.set 'var', 'scope-value', 'root/scope1'
+      assert.equal 'scope-value', config.get 'var', 'root/scope1'
+      assert.equal 'top-value', config.get 'var', 'root/scope2'
+      assert.equal 'global-value', config.get 'var', 'scope3'
+
+  context 'layers', ->
+    before_each ->
+      config.define name: 'var', description: 'test variable'
+      config.define_layer 'layer1'
+      config.define_layer 'layer2'
+
+    it 'set() errors for undefined layer', ->
+      assert.raises 'Unknown', -> config.set 'var', 'value', '', 'no-such-layer'
+
+    it 'get() looks up specified layer before default', ->
+      config.set 'var', 'layer1-value', '', 'layer1'
+      config.set 'var', 'default-value', ''
+      assert.equal 'layer1-value', config.get 'var', '', 'layer1'
+      assert.equal 'default-value', config.get 'var', '', 'layer2'
+
+    it 'layers are looked up at each scope', ->
+      config.set 'var', 'layer1-top', '', 'layer1'
+      config.set 'var', 'layer2-top', '', 'layer2'
+      config.set 'var', 'default-top', ''
+      config.set 'var', 'layer1-scope', 'scope1', 'layer1'
+
+      assert.equal 'layer1-scope', config.get 'var', 'scope1', 'layer1'
+      assert.equal 'layer2-top', config.get 'var', 'scope1', 'layer2'
 
   context 'when a default is provided', ->
     before_each -> config.define name: 'with_default', description: 'test', default: 123
@@ -351,26 +389,40 @@ describe 'config', ->
 
           assert.same 4, proxy_inner_mixed.my_var
 
-  context 'move()', ->
+
+  context 'copy()', ->
     before_each ->
       config.define_layer 'layer1'
       config.define_layer 'layer2'
       config.define name: 'name1', description: 'description'
       config.define name: 'name2', description: 'description'
 
-    it 'moves all values from one scope into a new scope', ->
+    it 'deep copies all values from one scope into a new scope', ->
       config.set 'name1', 'value1', 'here', 'layer1'
       config.set 'name2', 'value2', 'here', 'layer2'
 
       assert.is_nil config.get 'name1', 'there', 'layer1'
       assert.is_nil config.get 'name2', 'there', 'layer2'
 
-      config.move 'here', 'there'
+      config.copy 'here', 'there'
 
-      assert.is_nil config.get 'name1', 'here', 'layer1'
-      assert.is_nil config.get 'name2', 'here', 'layer2'
       assert.same 'value1', config.get 'name1', 'there', 'layer1'
       assert.same 'value2', config.get 'name2', 'there', 'layer2'
 
-    it 'does not allow moving global scope', ->
-      assert.raises 'global', -> config.move '', 'there'
+      -- ensure configs are not shared
+
+      config.set 'name1', 'value1-new', 'here', 'layer1'
+      assert.same 'value1', config.get 'name1', 'there', 'layer1'
+
+  context 'delete()', ->
+    before_each ->
+      config.define name: 'name1', description: 'description'
+
+    it 'deletes all values at specified scope', ->
+      config.set 'name1', 'val1', 'scope1'
+      config.set 'name1', 'top-val'
+      config.delete 'scope1'
+      assert.equal 'top-val', config.get 'name1', 'scope1'
+
+    it 'errors when trying to delete global scope', ->
+      assert.raises 'global', -> config.delete ''
