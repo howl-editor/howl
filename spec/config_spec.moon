@@ -364,7 +364,6 @@ describe 'config', ->
           proxy_inner_mixed = config.proxy '/outer/inner', 'default', 'layer:one'
           proxy_inner_sub = config.proxy '/outer/inner', 'layer:sub'
 
-
         it 'layer is checked before default values at each scope', ->
           proxy_inner_layered.my_var = 4
           proxy_inner.my_var = 3
