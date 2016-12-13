@@ -196,7 +196,6 @@ config = {
   :proxy
   :copy
   :delete
-  :move
 }
 
 return setmetatable config, {
