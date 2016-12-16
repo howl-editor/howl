@@ -178,7 +178,7 @@ export *
 -- helper patterns
 eol = eol_p
 blank = blank_p
-line_start = -B(1) + B(eol)
+line_start = B'\n' + B'\r\n' + B'\r' + -B(1)
 float = digit^0 * P'.' * digit^1 * (S'eE' * P('-')^0 * digit^1)^0
 hexadecimal = P'0' * S'xX' * xdigit^1 * -#(digit + alpha)
 hexadecimal_float =  P'0' * S'xX' * xdigit^1 * (P'.' * xdigit^1)^0 * (S'pP' * S'-+'^0 * xdigit^1)^0 * -#(digit + alpha)
@@ -204,11 +204,11 @@ sequence = (...) ->
 
 word = (...) ->
   word_char = alpha + '_' + digit
-  (-B(1) + B(-word_char)) * any(...) * -word_char
+  (-B(1) + -B(word_char)) * any(...) * -word_char
 
 separate = (p) ->
   word_char = alpha + '_' + digit
-  (-B(1) + B(-word_char)) * p * (-word_char + -#P(1))
+  (-B(1) + -B(word_char)) * p * (-word_char + -#P(1))
 
 scan_until = (stop_p, escape_p) ->
   stop_p = P(stop_p)
