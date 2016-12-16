@@ -21,7 +21,7 @@ Values for configuration variables can be specified at multiple levels, called
 ### Scopes
 
 The *scope* is a path within a hierarchical namespace. An example of a scope is
-`'file/home/user/my_dir'` with represents the file path  `/home/user/my_dir`.
+`'file/home/user/my_dir'` which represents the file path  `/home/user/my_dir`.
 Some common scopes are:
 
 - **Global scope**
@@ -67,7 +67,7 @@ The `set-for-mode` command sets the mode specific layer at the global scope.
 The evaluation of a configuration value works as follows:
 
   - scopes are inspected most specific to least specific
-  - withn each scope the specified layer is checked before falling back to the `default` layer.
+  - within each scope the specified layer is checked before falling back to the `default` layer.
 
 Consider an example - evaluation of the configuration variable, say `font_size`,
 for the file `/home/user/my_file.moon` in `moonscript` mode. The following
@@ -130,9 +130,12 @@ Defines a new config variable. Options can contain the following fields:
 
 - `description`: A description of the configuration variable (_required_)
 
-- `scope`: An optional value specifying the scope of the variable. One of
-  `local` and `global`. Local variables can be set at any scope, whereas
-  global variables can only be set directly at the global scope.
+- `scope`: An optional value that specifies what scopes are valid for this
+  config variable. Note that this parameter does not specify a scope directly,
+  but instead specifies one of the following values:
+
+  - `"local"` - variable can be set for any scope
+  - `"global"` - variable can be set for the global scope only
 
 - `validate`: A function that will be used for validating any values set
   for this variable. Whenever a value is set for the variable, this function
