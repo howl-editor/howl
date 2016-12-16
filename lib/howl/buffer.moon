@@ -12,7 +12,7 @@ min = math.min
 
 buffer_id = 1
 
-_next_id = ->
+next_id = ->
   buffer_id += 1
   return buffer_id
 
@@ -20,7 +20,7 @@ class Buffer extends PropertyObject
   new: (b_mode = {}) =>
     super!
 
-    @id = _next_id!
+    @id = next_id!
     @_buffer = aullar.Buffer!
     @markers = BufferMarkers @_buffer
     @completers = {}
