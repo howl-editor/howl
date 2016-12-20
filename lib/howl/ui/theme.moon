@@ -31,6 +31,10 @@ css_template = [[
   background: ${scrollbar_slider_color};
 }
 
+scrollbar slider {
+  background-color: ${scrollbar_slider_color};
+}
+
 .scrollbar.trough {
   background: ${scrollbar_background_color};
 }
