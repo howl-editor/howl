@@ -96,8 +96,8 @@ returned:
 
 The primitive API consists of [`get()`](#get) and [`set`](#set) calls which
 accept scope and layer as additional parameters. However, the following code
-snippet illustrates the idiomatic ways of setting variables globally, globally
-for a mode, and for a specific buffer only:
+snippet illustrates the idiomatic ways of setting variables globally, for a
+mode, and for a specific buffer only:
 
 ```lua
 howl.config.my_var = 'foo'
@@ -107,7 +107,7 @@ howl.app:new_buffer().config.my_var = 'foo'
 
 Note that internally the values are organized within scopes and layers, but this
 convenient API is available on [buffer] and [mode] objects. [Proxy](#proxy)
-objects, described below are used to build the convinience API.
+objects, described below are used to build the convenience API.
 
 _See also_:
 
