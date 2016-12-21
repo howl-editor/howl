@@ -10,7 +10,7 @@ ffi = require 'ffi'
 append = table.insert
 min = math.min
 
-buffer_id = 1
+buffer_id = 0
 
 next_id = ->
   buffer_id += 1
