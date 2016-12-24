@@ -89,7 +89,6 @@ class Selection extends PropertyObject
   copy: (clip_options = {}, clipboard_options) =>
     return if @empty
     @_copy_to_clipboard clip_options, clipboard_options
-    @remove!
     signal.emit 'selection-copied'
 
   cut: (clip_options = {}, clipboard_options) =>
