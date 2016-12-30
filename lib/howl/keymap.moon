@@ -104,7 +104,7 @@
   'ctrl_-':         'zoom-out'
   'ctrl_+':         'zoom-in'
 
-  alt_f11:          'window-toggle-fullscreen'
+  f11:              'window-toggle-fullscreen'
   alt_x:            'run'
 
   shift_alt_left:  'view-left-or-create'
