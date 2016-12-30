@@ -202,12 +202,14 @@ class Buffer extends PropertyObject
   as_one_undo: (f) => @_buffer\as_one_undo f
 
   undo: =>
-    @_buffer\undo!
-    @_modified = @_buffer\get_revision_id! != @sync_revision_id
+    if @_buffer\undo!
+      @_modified = @_buffer\get_revision_id! != @sync_revision_id
+      signal.emit 'buffer-modified', buffer: self, as_undo: true
 
   redo: =>
-    @_buffer\redo!
-    @_modified = @_buffer\get_revision_id! != @sync_revision_id
+    if @_buffer\redo!
+      @_modified = @_buffer\get_revision_id! != @sync_revision_id
+      signal.emit 'buffer-modified', buffer: self, as_redo: true
 
   char_offset: (byte_offset) =>
     @_buffer\char_offset byte_offset
