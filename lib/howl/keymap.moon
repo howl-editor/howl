@@ -71,7 +71,7 @@
     shift_insert:     'editor-paste'
     ctrl_insert:      'editor-copy'
 
-    ctrl_shift_a:     'editor-select-all'
+    ctrl_a:           'editor-select-all'
 
     alt_s:            'buffer-structure'
     alt_q:            'editor-reflow-paragraph'
@@ -120,7 +120,7 @@
 
     osx:
       editor: {
-        meta_shift_a:     'editor-select-all'
+        meta_a:           'editor-select-all'
         meta_b:           'switch-buffer'
         meta_c:           'editor-copy'
         meta_d:           'editor-duplicate-current'
