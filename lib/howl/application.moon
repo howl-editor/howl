@@ -331,10 +331,9 @@ class Application extends PropertyObject
       unless buffer
         buffer = @new_buffer mode.for_file file
         status, ret = pcall -> buffer.file = file
-        if status
-          signal.emit 'file-opened', :file, :buffer
-        else
+        if not status
           @close_buffer buffer
+          buffer = nil
           log.error "Failed to open file '#{file}': #{ret}"
 
       if buffer
@@ -357,6 +356,9 @@ class Application extends PropertyObject
 
     if #@editors == 0
       @editor = @new_editor @_buffers[1] or @new_buffer!
+
+    for b in *loaded_buffers
+      signal.emit 'file-opened', file: b.file, buffer: b
 
     unless @_loaded
       window\show_all! if window
