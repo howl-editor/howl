@@ -41,9 +41,11 @@ class Buffer extends PropertyObject
       if file.exists
         @text = file.contents
         @sync_etag = file.etag
+        @sync_size = file.size
       else
         @text = ''
         @sync_etag = nil
+        @sync_size = nil
 
       @can_undo = false
       @_modified = false
@@ -115,7 +117,7 @@ class Buffer extends PropertyObject
 
   @property modified_on_disk: get: =>
     return false if not @file or not @file.exists
-    @file and @file.etag != @sync_etag
+    @file.etag != @sync_etag or @file.size != @sync_size
 
   @property read_only:
     get: => @_buffer.read_only
@@ -192,6 +194,7 @@ class Buffer extends PropertyObject
       @file.contents = @text
       @_modified = false
       @sync_etag = @file.etag
+      @sync_size = @file.size
       @sync_revision_id = @_buffer\get_revision_id true
       signal.emit 'buffer-saved', buffer: self
 
