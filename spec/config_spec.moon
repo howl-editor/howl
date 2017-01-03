@@ -39,12 +39,50 @@ describe 'config', ->
       config.set 'foo', nil
       assert.is_nil config.foo
 
-  describe 'get(name)', ->
+  describe 'get(name, scope, layer)', ->
     before_each -> config.define name: 'var', description: 'test variable'
 
     it 'returns the global value of <name>', ->
       config.set 'var', 'hello'
       assert.equal config.get('var'), 'hello'
+
+  context 'scopes', ->
+    it 'get() returns value set for specific scope', ->
+      config.set 'var', 'global-value'
+      config.set 'var', 'scope-value', 'scope1'
+      assert.equal 'scope-value', config.get 'var', 'scope1'
+
+    it 'get() looks up the value set() in parent scopes if necessary', ->
+      config.set 'var', 'global-value'
+      config.set 'var', 'top-value', 'root'
+      config.set 'var', 'scope-value', 'root/scope1'
+      assert.equal 'scope-value', config.get 'var', 'root/scope1'
+      assert.equal 'top-value', config.get 'var', 'root/scope2'
+      assert.equal 'global-value', config.get 'var', 'scope3'
+
+  context 'layers', ->
+    before_each ->
+      config.define name: 'var', description: 'test variable'
+      config.define_layer 'layer1'
+      config.define_layer 'layer2'
+
+    it 'set() errors for undefined layer', ->
+      assert.raises 'Unknown', -> config.set 'var', 'value', '', 'no-such-layer'
+
+    it 'get() looks up specified layer before default', ->
+      config.set 'var', 'layer1-value', '', 'layer1'
+      config.set 'var', 'default-value', ''
+      assert.equal 'layer1-value', config.get 'var', '', 'layer1'
+      assert.equal 'default-value', config.get 'var', '', 'layer2'
+
+    it 'layers are looked up at each scope', ->
+      config.set 'var', 'layer1-top', '', 'layer1'
+      config.set 'var', 'layer2-top', '', 'layer2'
+      config.set 'var', 'default-top', ''
+      config.set 'var', 'layer1-scope', 'scope1', 'layer1'
+
+      assert.equal 'layer1-scope', config.get 'var', 'scope1', 'layer1'
+      assert.equal 'layer2-top', config.get 'var', 'scope1', 'layer2'
 
   context 'when a default is provided', ->
     before_each -> config.define name: 'with_default', description: 'test', default: 123
@@ -256,49 +294,134 @@ describe 'config', ->
         assert.match log.last_error.message, 'watcher'
 
   describe 'proxy', ->
-    config.define name: 'my_var', description: 'base', type_of: 'number'
-    local proxy
+    config.define
+      name: 'my_var'
+      description: 'base'
+      type_of: 'number'
+
+    local proxy_inner, proxy_outer
 
     before_each ->
       config.my_var = 123
-      proxy = config.local_proxy!
+      proxy_inner = config.proxy '/outer/inner'
+      proxy_outer = config.proxy '/outer'
 
     it 'returns a table with access to all previously defined variables', ->
-      assert.equal 123, proxy.my_var
+      assert.equal 123, proxy_outer.my_var
+      assert.equal 123, proxy_inner.my_var
 
     it 'changing a variable changes it locally only', ->
-      proxy.my_var = 321
-      assert.equal 321, proxy.my_var
+      proxy_inner.my_var = 321
+      assert.equal 321, proxy_inner.my_var
+      assert.equal 123, proxy_outer.my_var
       assert.equal 123, config.my_var
 
     it 'assignments are still validated and converted as usual', ->
-      assert.has_error -> proxy.my_var = 'not a number'
-      proxy.my_var = '111'
-      assert.equal 111, proxy.my_var
+      assert.has_error -> proxy_inner.my_var = 'not a number'
+      proxy_inner.my_var = '111'
+      assert.equal 111, proxy_inner.my_var
 
     it 'an error is raised if trying to set a variable with global scope', ->
       config.define name: 'global', description: 'global', scope: 'global'
-      assert.has_error -> proxy.global = 'illegal'
+      assert.has_error -> proxy_inner.global = 'illegal'
 
     it 'an error is raised if the variable is not defined', ->
-      assert.raises 'Undefined', -> proxy.que = 'si'
+      assert.raises 'Undefined', -> proxy_inner.que = 'si'
 
     it 'setting a value to nil clears the value', ->
-      proxy.my_var = 666
-      proxy.my_var = nil
-      assert.equal 123, proxy.my_var
+      proxy_inner.my_var = 666
+      proxy_inner.my_var = nil
+      assert.equal 123, proxy_inner.my_var
 
     it 'setting a variable via a proxy invokes watchers with <name>, <value> and true', ->
       callback = spy.new ->
       config.watch 'my_var', callback
-      proxy.my_var = 333
-      assert.spy(callback).was.called_with, { 'my_var', 333, true }
+      proxy_inner.my_var = 333
+      assert.spy(callback).was_called_with 'my_var', 333, true
 
-    it 'can be chained to another proxy to create a lookup chain', ->
-      config.my_var = 222
-      base_proxy = config.local_proxy!
-      proxy.chain_to base_proxy
-      assert.equal 222, proxy.my_var
-      base_proxy.my_var = 333
-      assert.equal 333, proxy.my_var
-      assert.equal 222, config.my_var
+    context 'chaining', ->
+      it 'resolution automatically walks up scope hierarchy', ->
+        proxy_inner.my_var = 1
+        proxy_outer.my_var = 2
+
+        assert.same 1, proxy_inner.my_var
+        assert.same 2, proxy_outer.my_var
+
+        proxy_inner.my_var = nil
+        assert.same 2, proxy_inner.my_var
+
+        proxy_outer.my_var = nil
+        assert.same 123, proxy_inner.my_var
+
+      context 'when layers are specified', ->
+        local proxy_inner_layered, proxy_outer_layered, proxy_inner_mixed, proxy_inner_sub
+
+        before_each ->
+          config.define_layer 'layer:one'
+          config.define_layer 'layer:sub', parent: 'layer:one'
+          proxy_inner_layered = config.proxy '/outer/inner', 'layer:one'
+          proxy_outer_layered = config.proxy '/outer', 'layer:one'
+          proxy_inner_mixed = config.proxy '/outer/inner', 'default', 'layer:one'
+          proxy_inner_sub = config.proxy '/outer/inner', 'layer:sub'
+
+        it 'layer is checked before default values at each scope', ->
+          proxy_inner_layered.my_var = 4
+          proxy_inner.my_var = 3
+          proxy_outer_layered.my_var = 2
+          proxy_outer.my_var = 1
+
+          assert.same 4, proxy_inner_layered.my_var
+
+          proxy_inner_layered.my_var = nil
+          assert.same 3, proxy_inner_layered.my_var
+
+          proxy_inner.my_var = nil
+          assert.same 2, proxy_inner_layered.my_var
+
+        it 'read for a layer auto delegates up to parent layer', ->
+          proxy_inner_layered.my_var = 5
+          assert.same 5, proxy_inner_sub.my_var
+
+        it 'read layer can be different from write layer', ->
+          proxy_inner_layered.my_var = 4
+          proxy_inner_mixed.my_var = 3
+
+          assert.same 4, proxy_inner_mixed.my_var
+
+
+  context 'copy()', ->
+    before_each ->
+      config.define_layer 'layer1'
+      config.define_layer 'layer2'
+      config.define name: 'name1', description: 'description'
+      config.define name: 'name2', description: 'description'
+
+    it 'deep copies all values from one scope into a new scope', ->
+      config.set 'name1', 'value1', 'here', 'layer1'
+      config.set 'name2', 'value2', 'here', 'layer2'
+
+      assert.is_nil config.get 'name1', 'there', 'layer1'
+      assert.is_nil config.get 'name2', 'there', 'layer2'
+
+      config.copy 'here', 'there'
+
+      assert.same 'value1', config.get 'name1', 'there', 'layer1'
+      assert.same 'value2', config.get 'name2', 'there', 'layer2'
+
+      -- ensure configs are not shared
+
+      config.set 'name1', 'value1-new', 'here', 'layer1'
+      assert.same 'value1', config.get 'name1', 'there', 'layer1'
+
+  context 'delete()', ->
+    before_each ->
+      config.define name: 'name1', description: 'description'
+
+    it 'deletes all values at specified scope', ->
+      config.set 'name1', 'val1', 'scope1'
+      config.set 'name1', 'top-val'
+      config.delete 'scope1'
+      assert.equal 'top-val', config.get 'name1', 'scope1'
+
+    it 'errors when trying to delete global scope', ->
+      assert.raises 'global', -> config.delete ''

@@ -76,14 +76,22 @@ describe 'Buffer', ->
       describe 'and the buffer is not modified', ->
 
         before_each ->
+          config.reset!
+          config.define name: 'buf_var', description: 'some var', default: 'def value'
           b.text = 'foo'
           b.modified = false
+          b.config.buf_var = 'orig_value'
 
         it 'sets the buffer text to the contents of the file', ->
           with_tmpfile (file) ->
             file.contents = 'yes sir'
             b.file = file
             assert.equal b.text, 'yes sir'
+
+        it 'preserves the buffer config', ->
+          with_tmpfile (file) ->
+            b.file = file
+            assert.equal b.config.buf_var, 'orig_value'
 
       it 'overwrites any existing buffer text even if the buffer is modified', ->
         b.text = 'foo'
@@ -149,7 +157,7 @@ describe 'Buffer', ->
       assert.is_false Buffer!.modified_on_disk
 
     it "is true if the file's etag is changed after a load or save", ->
-      file = contents: 'foo', etag: '1', basename: 'changeable', exists: true
+      file = contents: 'foo', etag: '1', basename: 'changeable', exists: true, path: '/tmp/changeable'
       b = Buffer!
       b.file = file
       file.etag = '2'
@@ -158,7 +166,10 @@ describe 'Buffer', ->
       assert.is_false b.modified_on_disk
 
   describe '.config', ->
-    config.define name: 'buf_var', description: 'some var', default: 'def value'
+    before_each ->
+      config.reset!
+      config.define_layer 'mode:config'
+      config.define name: 'buf_var', description: 'some var', default: 'def value'
 
     it 'allows reading and writing (local) variables', ->
       b = buffer 'config'
@@ -168,8 +179,8 @@ describe 'Buffer', ->
       assert.equal 'def value', config.buf_var
 
     it 'is chained to the mode config when available', ->
-      mode_config = config.local_proxy!
-      mode = config: mode_config
+      mode_config = config.proxy '', 'mode:config'
+      mode = config_layer: 'mode:config'
       b = buffer 'config'
       b.mode = mode
       mode_config.buf_var = 'from_mode'
@@ -179,6 +190,14 @@ describe 'Buffer', ->
       b = buffer 'config'
       b.mode = {}
       assert.equal 'def value', b.config.buf_var
+
+    it 'each new buffer gets a distinct config', ->
+      b1 = buffer 'config'
+      b2 = buffer 'config'
+      b1.config.buf_var = 'b1_value'
+      b2.config.buf_var = 'b2_value'
+      assert.equal 'b1_value', b1.config.buf_var
+      assert.equal 'b2_value', b2.config.buf_var
 
   describe 'delete(start_pos, end_pos)', ->
     it 'deletes the specified range, inclusive', ->
