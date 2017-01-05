@@ -389,21 +389,21 @@ describe 'config', ->
           assert.same 4, proxy_inner_mixed.my_var
 
 
-  context 'copy()', ->
+  context 'replace()', ->
     before_each ->
       config.define_layer 'layer1'
       config.define_layer 'layer2'
       config.define name: 'name1', description: 'description'
       config.define name: 'name2', description: 'description'
 
-    it 'deep copies all values from one scope into a new scope', ->
+    it 'clobbers new scope and deep copies all values from scope to new scope', ->
       config.set 'name1', 'value1', 'here', 'layer1'
       config.set 'name2', 'value2', 'here', 'layer2'
 
       assert.is_nil config.get 'name1', 'there', 'layer1'
       assert.is_nil config.get 'name2', 'there', 'layer2'
 
-      config.copy 'here', 'there'
+      config.replace 'here', 'there'
 
       assert.same 'value1', config.get 'name1', 'there', 'layer1'
       assert.same 'value2', config.get 'name2', 'there', 'layer2'
@@ -412,6 +412,29 @@ describe 'config', ->
 
       config.set 'name1', 'value1-new', 'here', 'layer1'
       assert.same 'value1', config.get 'name1', 'there', 'layer1'
+
+  context 'merge()', ->
+    before_each ->
+      config.define_layer 'layer1'
+      config.define_layer 'layer2'
+      config.define name: 'name1', description: 'description'
+      config.define name: 'name2', description: 'description'
+      config.define name: 'name3', description: 'description'
+
+    it 'deep copies values from scope to new scope, preserves other values in old scope', ->
+      config.set 'name1', 'value1', 'here', 'layer1'
+      config.set 'name2', 'value2', 'here', 'layer2'
+      config.set 'name1', 'there-value1', 'there', 'layer1'
+      config.set 'name3', 'there-value3', 'there', 'layer2'
+
+      assert.same 'there-value1', config.get 'name1', 'there', 'layer1'
+      assert.same nil, config.get 'name2', 'there', 'layer2'
+
+      config.merge 'here', 'there'
+
+      assert.same 'value1', config.get 'name1', 'there', 'layer1'
+      assert.same 'value2', config.get 'name2', 'there', 'layer2'
+      assert.same 'there-value3', config.get 'name3', 'there', 'layer2'
 
   context 'delete()', ->
     before_each ->

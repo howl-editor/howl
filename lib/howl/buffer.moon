@@ -307,7 +307,7 @@ class Buffer extends PropertyObject
   _associate_with_file: (file) =>
     scope = @_config_scope
     @_file = file
-    config.copy scope, @_config_scope
+    config.merge scope, @_config_scope
 
     @title = file and file.basename or 'Untitled'
 

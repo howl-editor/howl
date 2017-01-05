@@ -175,11 +175,21 @@ proxy = (scope, write_layer='default', read_layer=write_layer) ->
   }
   setmetatable proxy, proxy_mt
 
-copy = (scope, new_scope) ->
-  scopes[new_scope] = {}
+merge = (scope, target_scope) ->
   if scopes[scope]
-    for k, v in pairs scopes[scope]
-      scopes[new_scope][k] = moon.copy v
+    scopes[target_scope] or= {}
+    target = scopes[target_scope]
+    source = scopes[scope]
+    for layer, layer_config in pairs source
+      if target[layer]
+        for name, value in pairs layer_config
+          target[layer][name] = value
+      else
+        target[layer] = moon.copy layer_config
+
+replace = (scope, target_scope) ->
+  scopes[target_scope] = {}
+  merge scope, target_scope
 
 delete = (scope) ->
   error 'Cannot delete global scope' if scope == ''
@@ -194,7 +204,8 @@ config = {
   :watch
   :reset
   :proxy
-  :copy
+  :replace
+  :merge
   :delete
 }
 
