@@ -201,10 +201,24 @@ class Buffer extends PropertyObject
       if @config.ensure_newline_at_eof and not @text\match "#{@eol}$"
         @append @eol
 
+      local backup
+      if config.backup_files
+        backup = howl.app.settings.backupdir / ("#{@file.basename}::#{ffi.C.getpid!}")
+        status, err = pcall -> backup.contents = @file.contents
+        if not status
+          log.error "Failed to write backup file #{backup} for #{@file}: #{err}"
+          backup = nil
+
       @file.contents = @text
       @_modified = false
       @sync_etag = @file.etag
       @sync_revision_id = @_buffer\get_revision_id true
+
+      if backup
+        status, err = pcall backup\delete
+        if not status
+          log.warn "Failed to delete backup file #{backup} for #{@file}: #{err}"
+
       signal.emit 'buffer-saved', buffer: self
 
   save_as: (file) =>
@@ -354,6 +368,12 @@ with config
   .define
     name: 'ensure_newline_at_eof'
     description: 'Whether to ensure a trailing newline is present at eof upon save'
+    default: true
+    type_of: 'boolean'
+
+  .define
+    name: 'backup_files'
+    description: 'Whether or not to make temporary backups of files while saving'
     default: true
     type_of: 'boolean'
 

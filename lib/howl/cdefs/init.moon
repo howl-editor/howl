@@ -11,6 +11,7 @@ int strncmp(const char *s1, const char *s2, size_t n);
 
 typedef int pid_t;
 int kill(pid_t pid, int sig);
+pid_t getpid();
 
 /* process helpers */
 int process_exited_normally(int status);
