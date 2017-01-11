@@ -49,8 +49,12 @@ class Settings
         return
 
     @dir = dir
+
     @sysdir = @dir / 'system'
     @sysdir\mkdir! unless @sysdir.exists
+
+    @backupdir = @dir / 'backups'
+    @backupdir\mkdir! unless @backupdir.exists
 
   load_user: =>
     return unless @dir
