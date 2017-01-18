@@ -448,3 +448,56 @@ describe 'config', ->
 
     it 'errors when trying to delete global scope', ->
       assert.raises 'global', -> config.delete ''
+
+  context 'persistence', ->
+    before_each ->
+      config.define name: 'name1', description: 'description'
+      config.define name: 'name2', description: 'description'
+      config.define_layer 'layer1'
+
+    it 'save_config() saves and load_config() loads the saved config', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1'
+        config.set 'name2', 'value2', 'scope1'
+        config.save_config dir
+
+        config.set 'name1', nil
+        assert.same nil, config.get 'name1'
+
+        config.load_config true, dir
+        assert.same 'value1', config.get 'name1'
+        assert.same 'value2', config.get 'name2', 'scope1'
+
+    it 'only saves scopes where persist_config is true', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1'
+        config.set 'name1', 'value2', 'scope1'
+        config.set 'name1', 'value3', 'scope2'
+        config.set 'name1', 'value4', 'scope2/scope3'
+        config.set 'persist_config', false, 'scope2'
+        config.save_config dir
+
+        config.set 'name1', nil
+        assert.same nil, config.get 'name1'
+
+        config.load_config true, dir
+        assert.same 'value1', config.get 'name1'
+        assert.same 'value2', config.get 'name1', 'scope1'
+        assert.same 'value1', config.get 'name1', 'scope2'
+        assert.same 'value1', config.get 'name1', 'scope2/scope3'
+
+
+    it 'always saves persist_config for each scope', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1'
+        config.set 'persist_config', true, 'scope1'
+        config.set 'persist_config', false, 'scope2'
+        config.save_config dir
+
+        config.set 'name1', nil
+        assert.same nil, config.get 'name1'
+
+        config.load_config true, dir
+        assert.same true, config.get 'persist_config', 'scope1'
+        assert.same false, config.get 'persist_config', 'scope2'
+

@@ -1,8 +1,9 @@
 -- Copyright 2012-2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+import Settings from howl
 append = table.insert
 
-scopes = {}
+local scopes
 layer_defs = {'default': {}}
 defs = {}
 watchers = {}
@@ -105,7 +106,38 @@ define = (var = {}) ->
 define_layer = (name, def={}) ->
   layer_defs[name] = moon.copy(def)
 
+define
+  name: 'persist_config'
+  description: 'Whether to save the configuration values'
+  type: 'boolean'
+  default: true
+
+load_config = (force=false, dir=nil) ->
+  return if scopes and not force
+  settings = Settings dir
+  scopes = settings\load_system('config') or {}
+
+local get
+
+save_config = (dir=nil) ->
+  return unless scopes
+  settings = Settings dir
+  scopes_copy = {}
+  for scope, values in pairs scopes
+    persisted_values = nil
+    if get 'persist_config', scope
+      persisted_values = values
+    else
+      persisted_values = {'persist_config': values['persist_config']}
+
+    if persisted_values
+      scopes_copy[scope] = persisted_values
+
+  settings\save_system('config', scopes_copy)
+
 set = (name, value, scope='', layer='default') ->
+  load_config! unless scopes
+
   def = get_def name
 
   error "Unknown layer '#{layer}'" if not layer_defs[layer]
@@ -133,7 +165,8 @@ parent = (scope) ->
   return '' unless pos
   return scope\sub(1, pos - 1)
 
-get = (name, scope='', layer) ->
+get = (name, scope='', layer=nil) ->
+  load_config! unless scopes
   values = scopes[scope] and scopes[scope][name]
 
   if values
@@ -197,6 +230,8 @@ delete = (scope) ->
 
 config = {
   :definitions
+  :load_config
+  :save_config
   :define
   :define_layer
   :set
