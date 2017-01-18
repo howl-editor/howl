@@ -308,7 +308,8 @@ class Buffer extends PropertyObject
     scope = @_config_scope
     @_file = file
     config.merge scope, @_config_scope
-
+    config.delete scope
+    @_set_config!
     @title = file and file.basename or 'Untitled'
 
   _set_config: =>
