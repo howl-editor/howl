@@ -202,7 +202,7 @@ class Buffer extends PropertyObject
         @append @eol
 
       local backup
-      if config.backup_files
+      if config.backup_files and @file.exists
         backup = howl.app.settings.backupdir / ("#{@file.basename}::#{ffi.C.getpid!}")
         status, err = pcall -> backup.contents = @file.contents
         if not status
