@@ -112,6 +112,13 @@ define
   type: 'boolean'
   default: true
 
+define
+  name: 'save_config_on_exit'
+  description: 'Whether to automatically save the current configuration on exit'
+  type: 'boolean'
+  default: false
+  scope: 'global'
+
 load_config = (force=false, dir=nil) ->
   return if scopes and not force
   settings = Settings dir
