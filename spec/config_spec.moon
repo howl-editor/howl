@@ -501,3 +501,10 @@ describe 'config', ->
         assert.same true, config.get 'persist_config', 'scope1'
         assert.same false, config.get 'persist_config', 'scope2'
 
+    it 'does not save buffer scopes', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1-global'
+        config.set 'name1', 'value2-buffer', 'buffer/123'
+        config.save_config dir
+        config.load_config true, dir
+        assert.same 'value1-global', config.get 'name1', 'buffer/123'

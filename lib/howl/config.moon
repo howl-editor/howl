@@ -8,6 +8,8 @@ layer_defs = {'default': {}}
 defs = {}
 watchers = {}
 
+unsaved_scopes = howl.Regex '^buffer/'
+
 predefined_types =
   boolean: {
     options: { true, false }
@@ -131,13 +133,15 @@ save_config = (dir=nil) ->
   settings = Settings dir
   scopes_copy = {}
   for scope, values in pairs scopes
+    continue if unsaved_scopes\match scope
     persisted_values = nil
     if get 'persist_config', scope
       persisted_values = values
     else
       persisted_values = {'persist_config': values['persist_config']}
 
-    if persisted_values
+    empty = not next persisted_values
+    if persisted_values and not empty
       scopes_copy[scope] = persisted_values
 
   settings\save_system('config', scopes_copy)
