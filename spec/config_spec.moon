@@ -84,7 +84,7 @@ describe 'config', ->
       assert.equal 'layer1-scope', config.get 'var', 'scope1', 'layer1'
       assert.equal 'layer2-top', config.get 'var', 'scope1', 'layer2'
 
-  context 'when a default is provided', ->
+  context 'when a default is provided in the definition', ->
     before_each -> config.define name: 'with_default', description: 'test', default: 123
 
     it 'the default value is returned if no value has been set', ->
@@ -94,12 +94,36 @@ describe 'config', ->
       config.set 'with_default', 'foo'
       assert.equal config.get('with_default'), 'foo'
 
+  context 'when a default has been set by set_default', ->
+    before_each ->
+      config.define name: 'var', description: 'test variable', default: 'def-default'
+      config.define_layer 'layer1'
+      config.define_layer 'layer2'
+
+    it 'set_default value takes precedence over definition default', ->
+      config.set_default 'var', 'set-default', 'layer1'
+      assert.equal 'set-default', config.get 'var', 'scope1', 'layer1'
+      assert.equal 'def-default', config.get 'var', 'scope1'
+
+    it 'set_default value is not persisted', ->
+      with_tmpdir (dir) ->
+        config.set_default 'var', 'set-default', 'layer1'
+        config.save_config dir
+        config.load_config true, dir
+        assert.equal 'set-default', config.get 'var', 'scope1', 'layer1'
+        assert.equal 'def-default', config.get 'var', 'scope1'
+
   it 'reset clears all set values, but keeps the definitions', ->
     config.define name: 'var', description: 'test'
+    config.define name: 'var2', description: 'test'
     config.set 'var', 'set'
+    config.set_default 'var2', 'set-default'
+
     config.reset!
+
     assert.is_not_nil config.definitions['var']
     assert.is_nil config.get 'var'
+    assert.is_nil config.get 'var2'
 
   it 'global variables can be set and get directly on config', ->
     config.define name: 'direct', description: 'test', default: 123

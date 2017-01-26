@@ -19,19 +19,20 @@ instance_for_mode = (m) ->
   parent = if m.name != 'default' then by_name m.parent or 'default'
   target = m.create m.name
 
-  mode_config = config.proxy '', layer_for(m.name)
+  config_layer = layer_for m.name
+  mode_config = config.proxy '', config_layer
 
   if target.default_config
-    mode_config[k] = v for k,v in pairs target.default_config
+    config.set_default(k, v, config_layer) for k,v in pairs target.default_config
 
   mode_vars = mode_variables[m.name]
   if mode_vars
-    mode_config[k] = v for k,v in pairs mode_vars
+    config.set_default(k, v, config_layer) for k,v in pairs mode_vars
 
   instance = setmetatable {
     name: m.name
     config: mode_config
-    config_layer: layer_for(m.name)
+    :config_layer
     :parent
   }, {
     __index: (_, k) -> target[k] or parent and parent[k]

@@ -106,7 +106,9 @@ define = (var = {}) ->
   broadcast var.name, var.default, false
 
 define_layer = (name, def={}) ->
+  error 'defaults not allowed' if def.defaults
   layer_defs[name] = moon.copy(def)
+  layer_defs[name].defaults = {}
 
 define
   name: 'persist_config'
@@ -171,12 +173,20 @@ set = (name, value, scope='', layer='default') ->
 
   broadcast name, value, (scope != '' or layer != 'default')
 
+set_default = (name, value, layer='default') ->
+  def = get_def name
+  error "Unknown layer '#{layer}'" if not layer_defs[layer]
+  value = convert def, value
+  validate def, value
+
+  layer_defs[layer].defaults[name] = value
+
 parent = (scope) ->
   pos = scope\rfind('/')
   return '' unless pos
   return scope\sub(1, pos - 1)
 
-get = (name, scope='', layer=nil) ->
+get = (name, scope='', layer='default') ->
   load_config! unless scopes
   values = scopes[scope] and scopes[scope][name]
 
@@ -193,10 +203,17 @@ get = (name, scope='', layer=nil) ->
   if scope != ''
     return get(name, parent(scope), layer)
 
+  if layer_defs[layer].defaults
+    value = layer_defs[layer].defaults[name]
+    return value if value != nil
+
   def = defs[name]
   return def.default if def
 
-reset = -> scopes = {}
+reset = ->
+  scopes = {}
+  for _, layer_def in pairs layer_defs
+    layer_def.defaults = {}
 
 watch = (name, callback) ->
   list = watchers[name]
@@ -246,6 +263,7 @@ config = {
   :define
   :define_layer
   :set
+  :set_default
   :get
   :watch
   :reset
