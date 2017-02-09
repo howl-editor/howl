@@ -30,7 +30,7 @@ check_for_idle = ->
       co = coroutine.create (...) -> h.handler ...
       status, ret = coroutine.resume co, unpack(h.args)
       unless status
-        _G.log.error "Error invoking on_idle handler: '#{ret}'"
+        _G.log.critical "Error invoking on_idle handler: '#{ret}'"
 
       fired[#fired + 1] = i
 

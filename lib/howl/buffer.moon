@@ -191,8 +191,7 @@ class Buffer extends PropertyObject
   save: =>
     if @file
       if @_mode.before_save
-        success, ret = pcall @_mode.before_save, @
-        log.error "Error invoking #{@_mode.name} mode before_save #{ret}" unless success
+        howl.util.safecall "Error invoking #{@_mode.name} mode before_save", @_mode.before_save, @
       if @config.strip_trailing_whitespace
         ws = '[\t ]'
         @replace "(#{ws}+)#{@eol}", ''

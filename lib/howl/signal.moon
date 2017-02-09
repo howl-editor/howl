@@ -24,14 +24,13 @@ emit = (name, params, illegal) ->
   error "expected table as second parameter", 2 if params and type(params) != 'table'
 
   for handler in *handlers_for name
-    co = coroutine.create (...) -> handler ...
-    status, ret = coroutine.resume co, params
+    co = coroutine.create (...) ->
+      howl.util.safecall "Error invoking handler for '#{name}'", handler, ...
+    _, status, ret = coroutine.resume co, params
 
     if status
       if ret == abort and coroutine.status(co) == 'dead'
         return abort
-    else
-      _G.log.error 'Error invoking handler for "' .. name .. '": ' .. ret
 
   false
 
