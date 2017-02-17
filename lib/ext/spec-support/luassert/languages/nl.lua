@@ -22,4 +22,4 @@ s:set("assertion.falsy.negative", "Verwachtte een niet 'onwarige' (falsy) waarde
 
 -- errors
 s:set("assertion.internal.argtolittle", "de '%s' functie verwacht minimaal %s parameters, maar kreeg er: %s")
-s:set("assertion.internal.badargtype", "de '%s' functie verwacht een %s als parameter, maar kreeg een: %s")
+s:set("assertion.internal.badargtype", "bad argument #%s: de '%s' functie verwacht een %s als parameter, maar kreeg een: %s")

@@ -53,7 +53,7 @@ class Context extends PropertyObject
   @meta {
     __eq: (a, b) ->
       t = typeof a
-      t == 'Context' and t == typeof(b) and a.buffer == b.buffer and a.pos == b.pos
+      t == 'Context' and t == typeof(b) and a.buffer.id == b.buffer.id and a.pos == b.pos
 
     __tostring: => "Context<#{tostring @buffer}@#{@pos}>"
   }

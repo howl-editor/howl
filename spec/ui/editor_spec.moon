@@ -1,4 +1,5 @@
 Gtk = require 'ljglibs.gtk'
+match = require 'luassert.match'
 
 {:Buffer, :config, :clipboard, :sys} = howl
 {:Editor} = howl.ui
@@ -164,7 +165,7 @@ describe 'Editor', ->
     it 'calls <f> passing itself a parameter', ->
       f = spy.new -> nil
       editor\with_selection_preserved f
-      assert.spy(f).was_called_with editor
+      assert.spy(f).was_called_with(match.is_ref(editor))
 
     it 'restores the selected region', ->
       editor\with_selection_preserved ->

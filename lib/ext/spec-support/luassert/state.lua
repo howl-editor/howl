@@ -2,9 +2,12 @@
 -- records; formatters, parameters, spies and stubs
 
 local state_mt = {
-      __call = function(self)
-        self:revert()
-      end }
+  __call = function(self)
+    self:revert()
+  end
+}
+
+local spies_mt = { __mode = "kv" }
 
 local nilvalue = {} -- unique ID to refer to nil values for parameters
 
@@ -36,9 +39,9 @@ state.revert = function(self)
   -- revert parameters in 'last'
   self.parameters = {}
   -- revert spies/stubs in 'last'
-  while self.spies[1] do
-    self.spies[1]:revert()
-    table.remove(self.spies, 1)
+  for s,_ in pairs(self.spies) do
+    self.spies[s] = nil
+    s:revert()
   end
   setmetatable(self, nil) -- invalidate as a snapshot
   current = self.previous
@@ -53,7 +56,7 @@ state.snapshot = function()
   local new = setmetatable ({
     formatters = {},
     parameters = {},
-    spies = {},
+    spies = setmetatable({}, spies_mt),
     previous = current,
     revert = state.revert,
   }, state_mt)
@@ -82,15 +85,15 @@ state.remove_formatter = function(callback, s)
   end
 end
 
-state.format_argument = function(val, s)
+state.format_argument = function(val, s, fmtargs)
   s = s or current
   for _, fmt in ipairs(s.formatters) do
-    local valfmt = fmt(val)
+    local valfmt = fmt(val, fmtargs)
     if valfmt ~= nil then return valfmt end
   end
   -- nothing found, check snapshot 1 up in list
   if s.previous then
-    return state.format_argument(val, s.previous)
+    return state.format_argument(val, s.previous, fmtargs)
   end
   return nil -- end of list, couldn't format
 end
@@ -117,7 +120,7 @@ end
 
 --  SPIES / STUBS
 state.add_spy = function(spy)
-  table.insert(current.spies, 1, spy)
+  current.spies[spy] = true
 end
 
 state.snapshot()  -- create initial state
