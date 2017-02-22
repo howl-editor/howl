@@ -1,15 +1,57 @@
 -- module will not return anything, only register formatters with the main assert engine
 local assert = require('luassert.assert')
 
+local colors = setmetatable({
+  none = function(c) return c end
+},{ __index = function(self, key)
+  local ok, term = pcall(require, 'term')
+  local isatty = io.type(io.stdout) == 'file' and ok and term.isatty(io.stdout)
+  if not ok or not isatty or not term.colors then
+    return function(c) return c end
+  end
+  return function(c)
+    for token in key:gmatch("[^%.]+") do
+      c = term.colors[token](c)
+    end
+    return c
+  end
+end
+})
+
 local function fmt_string(arg)
   if type(arg) == "string" then
     return string.format("(string) '%s'", arg)
   end
 end
 
+-- A version of tostring which formats numbers more precisely.
+local function tostr(arg)
+  if type(arg) ~= "number" then
+    return tostring(arg)
+  end
+
+  if arg ~= arg then
+    return "NaN"
+  elseif arg == 1/0 then
+    return "Inf"
+  elseif arg == -1/0 then
+    return "-Inf"
+  end
+
+  local str = string.format("%.20g", arg)
+
+  if math.type and math.type(arg) == "float" and not str:find("[%.,]") then
+    -- Number is a float but looks like an integer.
+    -- Insert ".0" after first run of digits.
+    str = str:gsub("%d+", "%0.0", 1)
+  end
+
+  return str
+end
+
 local function fmt_number(arg)
   if type(arg) == "number" then
-    return string.format("(number) %s", tostring(arg))
+    return string.format("(number) %s", tostr(arg))
   end
 end
 
@@ -70,43 +112,60 @@ local function get_sorted_keys(t)
   return keys, nkeys
 end
 
-local function fmt_table(arg)
+local function fmt_table(arg, fmtargs)
+  if type(arg) ~= "table" then
+    return
+  end
+
   local tmax = assert:get_parameter("TableFormatLevel")
-  local ft
-  ft = function(t, l)
-    local result = ""
+  local showrec = assert:get_parameter("TableFormatShowRecursion")
+  local errchar = assert:get_parameter("TableErrorHighlightCharacter") or ""
+  local errcolor = assert:get_parameter("TableErrorHighlightColor") or "none"
+  local crumbs = fmtargs and fmtargs.crumbs or {}
+  local cache = {}
+
+  local function ft(t, l, with_crumbs)
+    if showrec and cache[t] and cache[t] > 0 then
+      return "{ ... recursive }"
+    end
+
+    if next(t) == nil then
+      return "{ }"
+    end
+
+    if l > tmax and tmax >= 0 then
+      return "{ ... more }"
+    end
+
+    local result = "{"
     local keys, nkeys = get_sorted_keys(t)
+
+    cache[t] = (cache[t] or 0) + 1
+    local crumb = crumbs[#crumbs - l + 1]
+
     for i = 1, nkeys do
       local k = keys[i]
       local v = t[k]
+      local use_crumbs = with_crumbs and k == crumb
+
       if type(v) == "table" then
-        if l < tmax or tmax < 0 then
-          result = result .. string.format(string.rep(" ",l * 2) .. "[%s] = {\n%s }\n", tostring(k), tostring(ft(v, l + 1):sub(1,-2)))
-        else
-          result = result .. string.format(string.rep(" ",l * 2) .. "[%s] = { ... more }\n", tostring(k))
-        end
-      else
-        if type(v) == "string" then v = "'"..v.."'" end
-        result = result .. string.format(string.rep(" ",l * 2) .. "[%s] = %s\n", tostring(k), tostring(v))
+        v = ft(v, l + 1, use_crumbs)
+      elseif type(v) == "string" then
+        v = "'"..v.."'"
       end
+
+      local ch = use_crumbs and errchar or ""
+      local indent = string.rep(" ",l * 2 - ch:len())
+      local mark = (ch:len() == 0 and "" or colors[errcolor](ch))
+      result = result .. string.format("\n%s%s[%s] = %s", indent, mark, tostr(k), tostr(v))
     end
-    return result
+
+    cache[t] = cache[t] - 1
+
+    return result .. " }"
   end
-  if type(arg) == "table" then
-    local result
-    if tmax == 0 then
-      if next(arg) then
-        result = "(table): { ... more }"
-      else
-        result = "(table): { }"
-      end
-    else
-      result = "(table): {\n" .. ft(arg, 1):sub(1,-2) .. " }\n"
-      result = result:gsub("{\n }\n", "{ }\n") -- cleanup empty tables
-      result = result:sub(1,-2)                -- remove trailing newline
-    end
-    return result
-  end
+
+  return "(table) " .. ft(arg, 1, true)
 end
 
 local function fmt_function(arg)
@@ -138,3 +197,6 @@ assert:add_formatter(fmt_userdata)
 assert:add_formatter(fmt_thread)
 -- Set default table display depth for table formatter
 assert:set_parameter("TableFormatLevel", 3)
+assert:set_parameter("TableFormatShowRecursion", false)
+assert:set_parameter("TableErrorHighlightCharacter", "*")
+assert:set_parameter("TableErrorHighlightColor", "none")
