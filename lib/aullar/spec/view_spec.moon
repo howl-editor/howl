@@ -37,12 +37,12 @@ describe 'View', ->
 
     describe '.middle_visible_line', ->
       it 'is the center vertical line', ->
-        assert.equals math.ceil(nr_lines_in_screen / 2), view.middle_visible_line
+        assert.is_near nr_lines_in_screen / 2, view.middle_visible_line, 1
 
       it 'scrolls the view to show the specified line in the center when set', ->
         view.middle_visible_line = nr_lines_in_screen
         assert.equals nr_lines_in_screen, view.middle_visible_line
-        assert.equals math.ceil((nr_lines_in_screen / 2) + 0.5), view.first_visible_line
+        assert.is_near (nr_lines_in_screen / 2), view.first_visible_line, 1
 
     describe '.last_visible_line', ->
       it 'is the last visible line', ->
