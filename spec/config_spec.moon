@@ -482,7 +482,7 @@ describe 'config', ->
     it 'save_config() saves and load_config() loads the saved config', ->
       with_tmpdir (dir) ->
         config.set 'name1', 'value1'
-        config.set 'name2', 'value2', 'scope1'
+        config.set 'name2', 'value2'
         config.save_config dir
 
         config.set 'name1', nil
@@ -490,40 +490,46 @@ describe 'config', ->
 
         config.load_config true, dir
         assert.same 'value1', config.get 'name1'
-        assert.same 'value2', config.get 'name2', 'scope1'
+        assert.same 'value2', config.get 'name2'
 
-    it 'only saves scopes where persist_config is true', ->
+    it 'non global scopes are not persisted', ->
       with_tmpdir (dir) ->
-        config.set 'name1', 'value1'
+        config.set 'name1', 'value1', 'scope1'
+        config.save_config dir
+
         config.set 'name1', 'value2', 'scope1'
-        config.set 'name1', 'value3', 'scope2'
-        config.set 'name1', 'value4', 'scope2/scope3'
-        config.set 'persist_config', false, 'scope2'
-        config.save_config dir
-
-        config.set 'name1', nil
-        assert.same nil, config.get 'name1'
 
         config.load_config true, dir
-        assert.same 'value1', config.get 'name1'
-        assert.same 'value2', config.get 'name1', 'scope1'
-        assert.same 'value1', config.get 'name1', 'scope2'
-        assert.same 'value1', config.get 'name1', 'scope2/scope3'
+        assert.same nil, config.get 'name1', 'scope1'
 
 
-    it 'always saves persist_config for each scope', ->
+    it 'does not save values if persist_config is false', ->
       with_tmpdir (dir) ->
         config.set 'name1', 'value1'
-        config.set 'persist_config', true, 'scope1'
-        config.set 'persist_config', false, 'scope2'
+        config.set 'name2', 'value2'
+        config.set 'persist_config', false
+        config.save_config dir
+
+        config.set 'name1', nil
+        config.set 'name2', nil
+        assert.same nil, config.get 'name1'
+
+        config.load_config true, dir
+        assert.same nil, config.get 'name1'
+        assert.same nil, config.get 'name1', 'scope1'
+
+
+    it 'saves persist_config value', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1'
+        config.set 'persist_config', false
         config.save_config dir
 
         config.set 'name1', nil
         assert.same nil, config.get 'name1'
 
         config.load_config true, dir
-        assert.same true, config.get 'persist_config', 'scope1'
-        assert.same false, config.get 'persist_config', 'scope2'
+        assert.same false, config.get 'persist_config'
 
     it 'does not save buffer scopes', ->
       with_tmpdir (dir) ->

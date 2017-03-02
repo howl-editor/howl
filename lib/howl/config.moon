@@ -8,7 +8,7 @@ layer_defs = {'default': {}}
 defs = {}
 watchers = {}
 
-unsaved_scopes = howl.Regex '^buffer/'
+saved_scopes = {''}
 
 predefined_types =
   boolean: {
@@ -134,8 +134,9 @@ save_config = (dir=nil) ->
   return unless scopes
   settings = Settings dir
   scopes_copy = {}
-  for scope, values in pairs scopes
-    continue if unsaved_scopes\match scope
+  for scope, values in *saved_scopes
+    values = scopes[scope]
+    continue unless values
     persisted_values = nil
     if get 'persist_config', scope
       persisted_values = values
