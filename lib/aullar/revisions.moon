@@ -37,13 +37,20 @@ define_class {
     revision_id: => @last and @last.revision_id or 0
   }
 
-  push: (type, offset, text, prev_text = nil, meta = {}) =>
+  push: (type, offset, text, opts = {}) =>
     unless VALID_TYPES[type]
       error "Unknown revision type '#{type}'", 2
 
     return if @processing
     group = @grouping > 0 and @group_id or nil
-    entry =  :type, :offset, :text, :prev_text, :meta, :group
+    entry =  {
+      :type,
+      :offset,
+      :text,
+      prev_text: opts.prev_text,
+      meta: opts.meta or {},
+      :group
+    }
     last = @last
     if last and entry.group == last.group
       return last if coalesce(entry, last)

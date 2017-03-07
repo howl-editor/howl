@@ -594,7 +594,7 @@ Buffer = {
 
     part_of_revision = @revisions.processing
     revision = if not part_of_revision and @_collect_revisions
-      @revisions\push(type, offset, text, prev_text)
+      @revisions\push(type, offset, text, :prev_text)
 
     args = {
       :offset,

@@ -24,7 +24,7 @@ describe 'Revisions', ->
         revision_id: 1
       }, revisions.entries[1]
 
-      revisions\push 'deleted', 3, 'f', nil, foo: 1
+      revisions\push 'deleted', 3, 'f', meta: {foo: 1}
       assert.same {
         type: 'deleted',
         offset: 3,
@@ -33,7 +33,7 @@ describe 'Revisions', ->
         revision_id: 2
       }, revisions.entries[2]
 
-      revisions\push 'changed', 3, 'f', 'x'
+      revisions\push 'changed', 3, 'f', prev_text: 'x'
       assert.same {
         type: 'changed',
         offset: 3,
@@ -134,7 +134,7 @@ describe 'Revisions', ->
       -- starting with '123456789'
       revisions\push 'deleted', 9, '9' -- and we've deleted '9' at 9
       revisions\push 'inserted', 4, 'xxx' -- and inserted 'xxx' at 3
-      revisions\push 'changed', 1, 'abc', '123' -- and replaced '123' with 'abc'
+      revisions\push 'changed', 1, 'abc', prev_text: '123' -- and replaced '123' with 'abc'
       buffer.text = 'abcxxx45678' -- this is what it looks like
 
       revisions\pop buffer -- pop the change
@@ -177,7 +177,7 @@ describe 'Revisions', ->
 
       it 'handles changes', ->
         buffer.text = '12xy'
-        revisions\push 'changed', 3, 'xy', '3'
+        revisions\push 'changed', 3, 'xy', prev_text: '3'
         revisions\pop buffer
         assert.equal '123', buffer.text
         revisions\forward buffer
