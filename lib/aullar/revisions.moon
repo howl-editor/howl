@@ -7,7 +7,9 @@ config = require 'aullar.config'
 {:max} = math
 
 coalesce = (entry, prev) ->
-  return false if not prev or prev.dont_merge
+  return false unless prev
+  return false unless prev.allow_coalescing and entry.allow_coalescing
+
   if entry.type == 'inserted' and prev.type == 'inserted'
     if entry.offset == prev.offset + #prev.text
       prev.text ..= entry.text
@@ -49,7 +51,8 @@ define_class {
       :text,
       prev_text: opts.prev_text,
       meta: opts.meta or {},
-      :group
+      :group,
+      allow_coalescing: opts.allow_coalescing
     }
     last = @last
     if last and entry.group == last.group

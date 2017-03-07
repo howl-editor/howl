@@ -472,7 +472,7 @@ Buffer = {
 
   get_revision_id: (snapshot=false) =>
     if snapshot and @revisions.last
-      @revisions.last.dont_merge = true
+      @revisions.last.allow_coalescing = false
     return @revisions.revision_id
 
   notify: (event, parameters) =>

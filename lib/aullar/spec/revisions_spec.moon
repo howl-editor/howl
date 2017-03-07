@@ -55,56 +55,58 @@ describe 'Revisions', ->
 
     it 'keeps at most config.undo_limit revisions', ->
       config.undo_limit = 1
-      revisions\push 'inserted', 3, 'foo'
-      revisions\push 'inserted', 1, 'bar'
+      revisions\push 'inserted', 3, 'foo', allow_coalescing: true
+      revisions\push 'inserted', 1, 'bar', allow_coalescing: true
       assert.equals 1, #revisions
       assert.equals 'bar', revisions.entries[1].text
 
     describe 'adjacent edits', ->
-      it 'merges subsequent inserts', ->
-        revisions\push 'inserted', 2, 'foo'
-        revisions\push 'inserted', 5, 'ba'
+      it 'merges subsequent inserts when revisions allow it', ->
+        revisions\push 'inserted', 2, 'foo', allow_coalescing: true
+        revisions\push 'inserted', 5, 'ba', allow_coalescing: true
         assert.equal 1, #revisions
         assert.same {
           type: 'inserted',
           offset: 2,
           text: 'fooba',
           meta: {},
-          revision_id: 1
+          revision_id: 1,
+          allow_coalescing: true
         }, revisions.last
 
-      it 'merges preceeding deletes', ->
+      it 'merges preceeding deletes when revisions allow it', ->
         -- 123456
-        revisions\push 'deleted', 4, '4'
-        revisions\push 'deleted', 3, '3'
-        revisions\push 'deleted', 2, '2'
+        revisions\push 'deleted', 4, '4', allow_coalescing: true
+        revisions\push 'deleted', 3, '3', allow_coalescing: true
+        revisions\push 'deleted', 2, '2', allow_coalescing: true
         assert.equal 1, #revisions
         assert.same {
           type: 'deleted',
           offset: 2,
           text: '234',
           meta: {},
-          revision_id: 1
+          revision_id: 1,
+          allow_coalescing: true
         }, revisions.last
 
-      it 'merges deletes at the same offset', ->
+      it 'merges deletes at the same offset when revisions allow it', ->
         -- 123456
-        revisions\push 'deleted', 4, '4'
-        revisions\push 'deleted', 4, '5'
-        revisions\push 'deleted', 4, '6'
+        revisions\push 'deleted', 4, '4', allow_coalescing: true
+        revisions\push 'deleted', 4, '5', allow_coalescing: true
+        revisions\push 'deleted', 4, '6', allow_coalescing: true
         assert.equal 1, #revisions
         assert.same {
           type: 'deleted',
           offset: 4,
           text: '456',
           meta: {},
-          revision_id: 1
+          revision_id: 1,
+          allow_coalescing: true
         }, revisions.last
 
-      it 'does not merge if dont_merge is set on a revision', ->
+      it 'does not merge if coalesce is not explicitly enabled', ->
         buffer.text = 'a'
         revisions\push 'inserted', 2, 'foo'
-        revisions.last.dont_merge = true
         revisions\push 'inserted', 5, 'ba'
         assert.equal 2, #revisions
         buffer.text = 'afooba'
@@ -123,7 +125,6 @@ describe 'Revisions', ->
           text: 'foo',
           meta: {},
           revision_id: 1
-          dont_merge: true
         }, revisions.last
 
     it 'raises an error if the type is unknown', ->
