@@ -163,7 +163,7 @@ Buffer = {
   remove_listener: (listener) =>
     @listeners = [l for l in *@listeners when l != listener]
 
-  insert: (offset, text, size = #text) =>
+  insert: (offset, text, size = #text, opts = {}) =>
     @_ensure_writable!
     return if size == 0
     error "insert: Illegal offset '#{offset}'", 2 if offset < 1 or offset > @size + 1
@@ -181,9 +181,14 @@ Buffer = {
     @styling\insert offset, size, no_notify: true
     @multibyte = @text_buffer.size != @_length
 
-    @_on_modification 'inserted', offset, text: text, :size, :invalidate_offset
+    @_on_modification 'inserted', offset, {
+      text: text,
+      :size,
+      :invalidate_offset,
+      allow_coalescing: opts.allow_coalescing
+    }
 
-  delete: (offset, count) =>
+  delete: (offset, count, opts = {}) =>
     @_ensure_writable!
     return if count == 0 or offset > @size
     error "delete: Illegal offset '#{offset}'", 2 if offset < 1
@@ -200,13 +205,18 @@ Buffer = {
     @styling\delete offset, count, no_notify: true
     @multibyte = @text_buffer.size != @_length
 
-    @_on_modification 'deleted', offset, :text, size: count, :invalidate_offset
+    @_on_modification 'deleted', offset, {
+      :text,
+      size: count,
+      :invalidate_offset,
+      allow_coalescing: opts.allow_coalescing
+    }
 
-  replace: (offset, count, replacement, replacement_size = #replacement) =>
+  replace: (offset, count, replacement, replacement_size = #replacement, opts = {}) =>
     @_ensure_writable!
     @change offset, count, ->
-      @delete offset, count
-      @insert offset, replacement, replacement_size
+      @delete offset, count, opts
+      @insert offset, replacement, replacement_size, opts
 
   change: (offset, count, changer) =>
     @_ensure_writable!
@@ -594,7 +604,10 @@ Buffer = {
 
     part_of_revision = @revisions.processing
     revision = if not part_of_revision and @_collect_revisions
-      @revisions\push(type, offset, text, :prev_text)
+      @revisions\push type, offset, text, {
+        :prev_text,
+        allow_coalescing: opts.allow_coalescing
+      }
 
     args = {
       :offset,
