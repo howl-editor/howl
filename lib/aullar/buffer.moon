@@ -144,9 +144,16 @@ Buffer = {
 
         @as_one_undo ->
           if old_text
-            @_on_modification 'deleted', 1, old_text, nil, #old_text, 1
-
-          @_on_modification 'inserted', 1, text, nil, size, 1
+            @_on_modification 'deleted', 1, {
+              text: old_text,
+              size: #old_text,
+              invalidate_offset: 1
+            }
+          @_on_modification 'inserted', 1, {
+            text: text,
+            :size,
+            invalidate_offset: 1
+          }
     }
   }
 
@@ -174,7 +181,7 @@ Buffer = {
     @styling\insert offset, size, no_notify: true
     @multibyte = @text_buffer.size != @_length
 
-    @_on_modification 'inserted', offset, text, nil, size, invalidate_offset
+    @_on_modification 'inserted', offset, text: text, :size, :invalidate_offset
 
   delete: (offset, count) =>
     @_ensure_writable!
@@ -193,7 +200,7 @@ Buffer = {
     @styling\delete offset, count, no_notify: true
     @multibyte = @text_buffer.size != @_length
 
-    @_on_modification 'deleted', offset, text, nil, count, invalidate_offset
+    @_on_modification 'deleted', offset, :text, size: count, :invalidate_offset
 
   replace: (offset, count, replacement, replacement_size = #replacement) =>
     @_ensure_writable!
@@ -230,7 +237,13 @@ Buffer = {
         styling_end = max styling_end, roof
         extra.styled = @_get_styled_notification styling_start, styling_end, true
 
-      @_on_modification 'changed', offset, new_text, prev_text, size, invalidate_offset, extra
+      @_on_modification 'changed', offset, {
+        text: new_text,
+        :prev_text,
+        :size,
+        :invalidate_offset,
+        :extra
+      }
 
     elseif styling_start
       @notify('styled', @_get_styled_notification(styling_start, styling_end))
@@ -567,7 +580,8 @@ Buffer = {
 
     start_line: start_line.nr, end_line: end_line.nr, :invalidated
 
-  _on_modification: (type, offset, text, prev_text, size, invalidate_offset, extra) =>
+  _on_modification: (type, offset, opts) =>
+    {:text, :size, :prev_text, :invalidate_offset, :extra} = opts
     lines_changed = text\find('[\n\r]') != nil
     if not lines_changed and prev_text
       lines_changed = prev_text\find('[\n\r]') != nil
