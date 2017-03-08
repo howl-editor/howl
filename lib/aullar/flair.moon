@@ -36,8 +36,8 @@ set_line_type_from_flair = (cr, flair) ->
 
 draw_ops = {
   custom: (flair, x, y, width, height, cr) ->
-    if flair.custom_draw and
-         pcall flair.custom_draw, flair, x, y, width, height, cr
+    custom_fn = flair.custom_draw
+    if custom_fn and pcall custom_fn, flair, x, y, width, height, cr
       return
     else
       -- Something went wrong in custom_draw, so draw an intensely red "missing"
