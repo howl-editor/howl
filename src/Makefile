@@ -31,7 +31,7 @@ endif
 ifeq ($(UNAME_S),Darwin)
 	LD_FLAGS = -Wl,-export_dynamic -pagezero_size 10000 -image_base 100000000
 else
-  LOCAL_OPT := -march=native -flto
+	LOCAL_OPT := -march=native -flto
 	LD_FLAGS = -Wl,-E $(LOCAL_OPT)
 endif
 
