@@ -72,8 +72,9 @@ deps-clean:
 
 clean:
 	-rm -f ${OBJECTS}
+	rm -f ./howl
 
-bytecode: $(BYTECODE_TARGETS)
+bytecode: howl $(BYTECODE_TARGETS)
 
 %.bc: %.moon
 	./howl --compile $^
