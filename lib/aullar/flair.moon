@@ -40,7 +40,8 @@ draw_ops = {
          pcall flair.custom_draw, flair, x, y, width, height, cr
       return
     else
-      -- Draw an intensely red "shit has gone bad"-cross instead
+      -- Something went wrong in custom_draw, so draw an intensely red "missing"
+      -- cross, for visual attention and to maintain functioning of the editor.
       cr\set_source_rgba 1, 0, 0, 1
       cr.line_width = 2
       cr\move_to x, y
