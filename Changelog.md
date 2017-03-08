@@ -2,6 +2,12 @@
 
 ## Unreleased (in master)
 
+- Added `custom_draw` flair type (`highlight.CUSTOM`).
+
+- Modified Makefile to: only recompile bytecode when needed, optimize machine
+code for local architecture (Linux only in lack of test machines), forcefully
+copy `howl` binary on make install, to not have to close instances to rebuild.
+
 - Added command line help which is invoked by pressing `f1` while any
 interactive command is running. This displays a popup containing information
 about the command.

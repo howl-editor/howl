@@ -4,6 +4,7 @@
 flair = require 'aullar.flair'
 
 -- Highlight styles
+export CUSTOM = flair.CUSTOM
 export SANDWICH = flair.SANDWICH
 export UNDERLINE = flair.UNDERLINE
 export WAVY_UNDERLINE = flair.WAVY_UNDERLINE
@@ -11,6 +12,7 @@ export RECTANGLE = flair.RECTANGLE
 export ROUNDED_RECTANGLE = flair.ROUNDED_RECTANGLE
 
 setmetatable {
+  CUSTOM: flair.CUSTOM
   SANDWICH: flair.SANDWICH
   UNDERLINE: flair.UNDERLINE
   WAVY_UNDERLINE: flair.WAVY_UNDERLINE

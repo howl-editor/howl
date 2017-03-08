@@ -35,8 +35,21 @@ set_line_type_from_flair = (cr, flair) ->
       cr.dash = {6, 3}
 
 draw_ops = {
-  rectangle: (flair, x, y, width, height, cr) ->
+  custom: (flair, x, y, width, height, cr) ->
+    if flair.custom_draw and
+         pcall flair.custom_draw, flair, x, y, width, height, cr
+      return
+    else
+      -- Draw an intensely red "shit has gone bad"-cross instead
+      cr\set_source_rgba 1, 0, 0, 1
+      cr.line_width = 2
+      cr\move_to x, y
+      cr\line_to x + width, y + height
+      cr\move_to x, y + height
+      cr\line_to x + width, y
+      cr\stroke!
 
+  rectangle: (flair, x, y, width, height, cr) ->
     if flair.background
       set_source_from_color cr, 'background', flair
       cr\rectangle x, y, width, height
@@ -161,6 +174,7 @@ need_text_object = (flair) ->
   flair.text_color or flair.height == 'text'
 
 {
+  CUSTOM: 'custom'
   RECTANGLE: 'rectangle'
   ROUNDED_RECTANGLE: 'rounded_rectangle'
   SANDWICH: 'sandwich'
