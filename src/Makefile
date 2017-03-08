@@ -19,10 +19,7 @@ LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
 LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
 
-LUA_AND_MOON_SOURCES := $(shell find ../lib ../bundles -name '*.lua' -o -name '*.moon')
-INTERMEDIATE_SOURCES := $(LUA_AND_MOON_SOURCES:%.lua=%.bc)
-BYTECODE_TARGETS := $(INTERMEDIATE_SOURCES:%.moon=%.bc)
-
+CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
 ARCHIVES = $(LUAJIT_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS}
 ifeq ($(UNAME_S),FreeBSD)
@@ -31,12 +28,8 @@ endif
 ifeq ($(UNAME_S),Darwin)
 	LD_FLAGS = -Wl,-export_dynamic -pagezero_size 10000 -image_base 100000000
 else
-	# LOCAL_OPT := -march=native -flto
-	LD_FLAGS = -Wl,-E $(LOCAL_OPT)
+	LD_FLAGS = -Wl,-E
 endif
-
-CFLAGS = $(LOCAL_OPT) -Wall -O2 -g $(LUAJIT_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
-
 OBJECTS = main.o process_helpers.o
 DEP_OBJECTS = $(LPEG_OBJECT)
 
@@ -72,18 +65,10 @@ deps-clean:
 
 clean:
 	-rm -f ${OBJECTS}
-	rm -f ./howl
 
-bytecode-clean:
-	rm -f $(BYTECODE_TARGETS)
-
-bytecode: howl $(BYTECODE_TARGETS)
-
-%.bc: %.moon
-	./howl --compile $^
-
-%.bc: %.lua
-	./howl --compile $^
+bytecode: howl
+	-@find ../lib ../bundles -name '*.bc' | xargs rm
+	@find ../lib ../bundles -name '*.lua' -o -name '*.moon' | xargs ./howl --compile
 
 install: all
 	@echo Installing to $(DESTDIR)$(PREFIX)..
@@ -91,8 +76,8 @@ install: all
 	@mkdir -p $(DESTDIR)$(PREFIX)/share/howl/
 	@mkdir -p $(DESTDIR)$(PREFIX)/share/howl/spec
 
-	@cp -pf howl $(DESTDIR)$(PREFIX)/bin/
-	@cp -pf ../bin/howl-spec $(DESTDIR)$(PREFIX)/bin/
+	@cp -p howl $(DESTDIR)$(PREFIX)/bin/
+	@cp -p ../bin/howl-spec $(DESTDIR)$(PREFIX)/bin/
 	@cp -rp ../bundles $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../fonts $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../lib $(DESTDIR)$(PREFIX)/share/howl
