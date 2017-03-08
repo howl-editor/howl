@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added `custom_draw` flair type (`highlight.CUSTOM`).
+
 - Added command line help which is invoked by pressing `f1` while any
 interactive command is running. This displays a popup containing information
 about the command.
