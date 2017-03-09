@@ -36,12 +36,17 @@ set_line_type_from_flair = (cr, flair) ->
 
 draw_ops = {
   custom: (flair, x, y, width, height, cr) ->
-    custom_fn = flair.custom_draw
-    if custom_fn and pcall custom_fn, flair, x, y, width, height, cr
-      return
+    local ok, err
+
+    if flair.custom_draw
+      ok, err = pcall flair.custom_draw, flair, x, y, width, height, cr
     else
+      ok ,err = false, "'custom_draw' function missing"
+
+    if not ok
       -- Something went wrong in custom_draw, so draw an intensely red "missing"
       -- cross, for visual attention and to maintain functioning of the editor.
+      log.error err
       cr\set_source_rgba 1, 0, 0, 1
       cr.line_width = 2
       cr\move_to x, y
