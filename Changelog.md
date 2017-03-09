@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added a new command `project-other-open` that allows opening a file in any
+  project.
+
 - Added command line help which is invoked by pressing `f1` while any
 interactive command is running. This displays a popup containing information
 about the command.

@@ -84,6 +84,20 @@ command.register
     app\open_file file
 
 command.register
+  name: 'project-other-open',
+  description: 'Open a file in another project'
+  input: ->
+    selected = interact.select
+      title: 'Project'
+      items: [{root.basename, root.path, :root} for root in *Project.roots]
+      columns: {{style: 'keyword'}, {style: 'comment'}}
+
+    return unless selected
+    return interact.select_file_in_project project: Project.for_file selected.selection.root
+  handler: (file) ->
+    app\open_file file
+
+command.register
   name: 'save',
   description: 'Save the current buffer to file'
   handler: ->
