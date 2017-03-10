@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- **breaking** - Default for `line-padding` setting has been changed to `0`. If
+you've relied on it: set it to its' previous value `1` in your "init.moon".
+
 - Added `config.save_config_on_exit` variable to automatically save global
 configuration to `~/.howl/system/config.lua`.
 
