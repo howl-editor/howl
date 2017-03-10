@@ -46,7 +46,8 @@ draw_ops = {
     if not ok
       -- Something went wrong in custom_draw, so draw an intensely red "missing"
       -- cross, for visual attention and to maintain functioning of the editor.
-      log.error err
+      io.stderr\write err ..'\n'
+
       cr\set_source_rgba 1, 0, 0, 1
       cr.line_width = 2
       cr\move_to x, y
