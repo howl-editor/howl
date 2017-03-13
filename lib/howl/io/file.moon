@@ -6,6 +6,7 @@ GFileInfo = require 'ljglibs.gio.file_info'
 glib = require 'ljglibs.glib'
 import PropertyObject from howl.util.moon
 append = table.insert
+bit = require 'bit'
 
 file_types = {
   [tonumber GFileInfo.TYPE_DIRECTORY]: 'directory',
@@ -200,6 +201,17 @@ class File extends PropertyObject
 
 
     files, false
+
+  copy: (dest, flags, progress) =>
+    bitflags = 0
+    flags or= {}
+
+    for flag in *flags
+      bitflag = GFile["COPY_#{flag\upper!}"]
+      error "invalid copy flag '#{flag}'" if not bitflag
+      bitflags = bit.bor bitflags, bitflag
+
+    @gfile\copy File(dest).gfile, bitflags, nil, progress
 
   tostring: => tostring @path or @uri
 

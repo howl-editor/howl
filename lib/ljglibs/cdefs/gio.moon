@@ -162,6 +162,20 @@ ffi.cdef [[
     G_FILE_CREATE_REPLACE_DESTINATION = (1 << 1)
   } GFileCreateFlags;
 
+  typedef enum {
+    G_FILE_COPY_NONE                 = 0,          /*< nick=none >*/
+    G_FILE_COPY_OVERWRITE            = (1 << 0),
+    G_FILE_COPY_BACKUP               = (1 << 1),
+    G_FILE_COPY_NOFOLLOW_SYMLINKS    = (1 << 2),
+    G_FILE_COPY_ALL_METADATA         = (1 << 3),
+    G_FILE_COPY_NO_FALLBACK_FOR_MOVE = (1 << 4),
+    G_FILE_COPY_TARGET_DEFAULT_PERMS = (1 << 5)
+  } GFileCopyFlags;
+
+  typedef void (*GFileProgressCallback)(goffset current_num_bytes,
+                                        goffset total_num_bytes,
+                                        gpointer user_data);
+
   GFile * g_file_new_for_path (const char *path);
   GFile * g_file_new_for_commandline_arg_and_cwd (const gchar *arg,
                                                   const gchar *cwd);
@@ -192,6 +206,12 @@ ffi.cdef [[
                                                GFileQueryInfoFlags flags,
                                                GCancellable *cancellable,
                                                GError **error);
+
+  gboolean g_file_copy (GFile *source, GFile *destination,
+                        GFileCopyFlags flags, GCancellable *cancellable,
+                        GFileProgressCallback progress_callback,
+                        gpointer progress_callback_data,
+                        GError **error);
 
   GFile * g_file_get_child (GFile *file, const char *name);
 

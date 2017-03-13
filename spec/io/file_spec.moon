@@ -342,6 +342,22 @@ describe 'File', ->
 
           assert.same { 'child1', 'sandwich.lua' }, [f.basename for f in *files]
 
+  describe 'copy(dest)', ->
+    it 'copies the given file', ->
+      with_tmpdir (dir) ->
+        a = dir/'a.txt'
+        b = dir/'b.txt'
+        a.contents = 'hello'
+        a\copy b
+        assert.same b.contents, 'hello'
+
+        a.contents = 'hello 2'
+        assert.has_errors -> a\copy b
+        assert.same b.contents, 'hello'
+
+        a\copy b, {'overwrite'}
+        assert.same b.contents, 'hello 2'
+
   describe 'meta methods', ->
     it '/ and .. joins the file with the specified argument', ->
       file = File('/bin')
