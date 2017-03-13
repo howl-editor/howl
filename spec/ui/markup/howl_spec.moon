@@ -26,3 +26,11 @@ describe 'howl', ->
       1, 'string', 4
     }
     assert.same expected, m "<string>x\nx</string>"
+
+  it 'handles unicode sequences correctly', ->
+    run = 'ííí'
+    expected = StyledText "#{run}#{run}Z", {
+      1, 'x', #run + 1
+      #run + 1, 'y', (#run * 2) + 1
+    }
+    assert.same expected, m "<x>#{run}</x><y>#{run}</>Z"

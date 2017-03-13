@@ -16,11 +16,11 @@ style_chunk_p = r '<(\\w+)>(.*?)</(?:\\1>|>)', {r.DOTALL}
     start_p, end_p, style, content = style_chunk_p\find text, pos
 
     unless start_p
-      stripped_text ..= text\sub pos, len
+      stripped_text ..= text\usub pos, len
       break
 
     unless start_p == pos
-      stripped_text ..= text\sub pos, start_p - 1
+      stripped_text ..= text\usub pos, start_p - 1
 
     style_start = #stripped_text + 1
     append styles, style_start
