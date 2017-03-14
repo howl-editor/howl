@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Changed undo coalescing to not be as greedy (e.g. coalescing pastes and
+ordinary edit revisions).
+
 - Added `custom_draw` flair type (`highlight.CUSTOM`).
 
 - Added command line help which is invoked by pressing `f1` while any
