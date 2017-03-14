@@ -59,7 +59,7 @@ View = {
     @im_context = Gtk.ImContextSimple!
     with @im_context
       append @_handlers, \on_commit (ctx, s) ->
-        @insert s
+        @insert s, allow_coalescing: true
 
       append @_handlers, \on_preedit_start ->
         @in_preedit = true
@@ -313,17 +313,17 @@ View = {
     @_updating_scrolling = false
     notify @, 'on_scroll', opts
 
-  insert: (text) =>
+  insert: (text, opts = {}) =>
     if @selection.is_empty
-      @_buffer\insert @cursor.pos, text
+      @_buffer\insert @cursor.pos, text, #text, opts
     else
       start_pos = @selection\range!
-      @_buffer\replace start_pos, @selection.size, text
+      @_buffer\replace start_pos, @selection.size, text, #text, opts
 
     notify @, 'on_insert_at_cursor', :text
     nil
 
-  delete_back: =>
+  delete_back: (opts = {}) =>
     if @selection.is_empty
       cur_pos = @cursor.pos
       @cursor\backward!
@@ -333,11 +333,11 @@ View = {
 
       if size > 0
         text = @_buffer\sub prev_pos, cur_pos
-        @_buffer\delete(prev_pos, size)
+        @_buffer\delete prev_pos, size, opts
         notify @, 'on_delete_back', :text, pos: prev_pos
     else
       start_pos = @selection\range!
-      @_buffer\delete start_pos, @selection.size
+      @_buffer\delete start_pos, @selection.size, opts
 
   to_gobject: => @bin
 

@@ -144,9 +144,16 @@ Buffer = {
 
         @as_one_undo ->
           if old_text
-            @_on_modification 'deleted', 1, old_text, nil, #old_text, 1
-
-          @_on_modification 'inserted', 1, text, nil, size, 1
+            @_on_modification 'deleted', 1, {
+              text: old_text,
+              size: #old_text,
+              invalidate_offset: 1
+            }
+          @_on_modification 'inserted', 1, {
+            text: text,
+            :size,
+            invalidate_offset: 1
+          }
     }
   }
 
@@ -156,7 +163,7 @@ Buffer = {
   remove_listener: (listener) =>
     @listeners = [l for l in *@listeners when l != listener]
 
-  insert: (offset, text, size = #text) =>
+  insert: (offset, text, size = #text, opts = {}) =>
     @_ensure_writable!
     return if size == 0
     error "insert: Illegal offset '#{offset}'", 2 if offset < 1 or offset > @size + 1
@@ -174,9 +181,14 @@ Buffer = {
     @styling\insert offset, size, no_notify: true
     @multibyte = @text_buffer.size != @_length
 
-    @_on_modification 'inserted', offset, text, nil, size, invalidate_offset
+    @_on_modification 'inserted', offset, {
+      text: text,
+      :size,
+      :invalidate_offset,
+      allow_coalescing: opts.allow_coalescing
+    }
 
-  delete: (offset, count) =>
+  delete: (offset, count, opts = {}) =>
     @_ensure_writable!
     return if count == 0 or offset > @size
     error "delete: Illegal offset '#{offset}'", 2 if offset < 1
@@ -193,13 +205,18 @@ Buffer = {
     @styling\delete offset, count, no_notify: true
     @multibyte = @text_buffer.size != @_length
 
-    @_on_modification 'deleted', offset, text, nil, count, invalidate_offset
+    @_on_modification 'deleted', offset, {
+      :text,
+      size: count,
+      :invalidate_offset,
+      allow_coalescing: opts.allow_coalescing
+    }
 
-  replace: (offset, count, replacement, replacement_size = #replacement) =>
+  replace: (offset, count, replacement, replacement_size = #replacement, opts = {}) =>
     @_ensure_writable!
     @change offset, count, ->
-      @delete offset, count
-      @insert offset, replacement, replacement_size
+      @delete offset, count, opts
+      @insert offset, replacement, replacement_size, opts
 
   change: (offset, count, changer) =>
     @_ensure_writable!
@@ -230,7 +247,13 @@ Buffer = {
         styling_end = max styling_end, roof
         extra.styled = @_get_styled_notification styling_start, styling_end, true
 
-      @_on_modification 'changed', offset, new_text, prev_text, size, invalidate_offset, extra
+      @_on_modification 'changed', offset, {
+        text: new_text,
+        :prev_text,
+        :size,
+        :invalidate_offset,
+        :extra
+      }
 
     elseif styling_start
       @notify('styled', @_get_styled_notification(styling_start, styling_end))
@@ -459,7 +482,7 @@ Buffer = {
 
   get_revision_id: (snapshot=false) =>
     if snapshot and @revisions.last
-      @revisions.last.dont_merge = true
+      @revisions.last.allow_coalescing = false
     return @revisions.revision_id
 
   notify: (event, parameters) =>
@@ -567,7 +590,8 @@ Buffer = {
 
     start_line: start_line.nr, end_line: end_line.nr, :invalidated
 
-  _on_modification: (type, offset, text, prev_text, size, invalidate_offset, extra) =>
+  _on_modification: (type, offset, opts) =>
+    {:text, :size, :prev_text, :invalidate_offset, :extra} = opts
     lines_changed = text\find('[\n\r]') != nil
     if not lines_changed and prev_text
       lines_changed = prev_text\find('[\n\r]') != nil
@@ -580,7 +604,10 @@ Buffer = {
 
     part_of_revision = @revisions.processing
     revision = if not part_of_revision and @_collect_revisions
-      @revisions\push(type, offset, text, prev_text)
+      @revisions\push type, offset, text, {
+        :prev_text,
+        allow_coalescing: opts.allow_coalescing
+      }
 
     args = {
       :offset,

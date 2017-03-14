@@ -406,7 +406,7 @@ class Editor extends PropertyObject
         @cursor.column = max(1, cur_line.indentation - gap)
         return
 
-    @view\delete_back!
+    @view\delete_back allow_coalescing: true
 
   delete_back_word: =>
     if @selection.empty
