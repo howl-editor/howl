@@ -250,7 +250,12 @@ class Application extends PropertyObject
 
   quit: (force = false) =>
     if force or not @_should_abort_quit!
-      @save_session! unless #@args > 1
+      unless #@args > 1
+        @save_session!
+
+        if config.save_config_on_exit
+          unless pcall config.save_config
+            print 'Error saving config'
 
       for _, process in pairs Process.running
         process\send_signal 'KILL'

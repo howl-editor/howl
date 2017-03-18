@@ -199,6 +199,19 @@ describe 'Buffer', ->
       assert.equal 'b1_value', b1.config.buf_var
       assert.equal 'b2_value', b2.config.buf_var
 
+    it 'uses a buffer scoped config for unsaved files', ->
+      b1 = buffer 'unsaved'
+      b1.config.buf_var = 'b1_value'
+      assert.equal 'b1_value', config.get 'buf_var', 'buffer/'..b1.id
+
+    it 'uses a file scoped config when associated with a file', ->
+      b1 = buffer 'saved'
+      with_tmpfile (file) ->
+        b1.file = file
+        b1.config.buf_var = 'f1_value'
+        assert.equal 'f1_value', config.get 'buf_var', 'file'..file.path
+        assert.equal 'def value', config.get 'buf_var', 'buffer'..b1.id
+
   describe 'delete(start_pos, end_pos)', ->
     it 'deletes the specified range, inclusive', ->
       b = buffer 'ño örf'

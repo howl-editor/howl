@@ -84,7 +84,7 @@ describe 'config', ->
       assert.equal 'layer1-scope', config.get 'var', 'scope1', 'layer1'
       assert.equal 'layer2-top', config.get 'var', 'scope1', 'layer2'
 
-  context 'when a default is provided', ->
+  context 'when a default is provided in the definition', ->
     before_each -> config.define name: 'with_default', description: 'test', default: 123
 
     it 'the default value is returned if no value has been set', ->
@@ -94,12 +94,36 @@ describe 'config', ->
       config.set 'with_default', 'foo'
       assert.equal config.get('with_default'), 'foo'
 
+  context 'when a default has been set by set_default', ->
+    before_each ->
+      config.define name: 'var', description: 'test variable', default: 'def-default'
+      config.define_layer 'layer1'
+      config.define_layer 'layer2'
+
+    it 'set_default value takes precedence over definition default', ->
+      config.set_default 'var', 'set-default', 'layer1'
+      assert.equal 'set-default', config.get 'var', 'scope1', 'layer1'
+      assert.equal 'def-default', config.get 'var', 'scope1'
+
+    it 'set_default value is not persisted', ->
+      with_tmpdir (dir) ->
+        config.set_default 'var', 'set-default', 'layer1'
+        config.save_config dir
+        config.load_config true, dir
+        assert.equal 'set-default', config.get 'var', 'scope1', 'layer1'
+        assert.equal 'def-default', config.get 'var', 'scope1'
+
   it 'reset clears all set values, but keeps the definitions', ->
     config.define name: 'var', description: 'test'
+    config.define name: 'var2', description: 'test'
     config.set 'var', 'set'
+    config.set_default 'var2', 'set-default'
+
     config.reset!
+
     assert.is_not_nil config.definitions['var']
     assert.is_nil config.get 'var'
+    assert.is_nil config.get 'var2'
 
   it 'global variables can be set and get directly on config', ->
     config.define name: 'direct', description: 'test', default: 123
@@ -389,21 +413,21 @@ describe 'config', ->
           assert.same 4, proxy_inner_mixed.my_var
 
 
-  context 'copy()', ->
+  context 'replace()', ->
     before_each ->
       config.define_layer 'layer1'
       config.define_layer 'layer2'
       config.define name: 'name1', description: 'description'
       config.define name: 'name2', description: 'description'
 
-    it 'deep copies all values from one scope into a new scope', ->
+    it 'clobbers new scope and deep copies all values from scope to new scope', ->
       config.set 'name1', 'value1', 'here', 'layer1'
       config.set 'name2', 'value2', 'here', 'layer2'
 
       assert.is_nil config.get 'name1', 'there', 'layer1'
       assert.is_nil config.get 'name2', 'there', 'layer2'
 
-      config.copy 'here', 'there'
+      config.replace 'here', 'there'
 
       assert.same 'value1', config.get 'name1', 'there', 'layer1'
       assert.same 'value2', config.get 'name2', 'there', 'layer2'
@@ -412,6 +436,29 @@ describe 'config', ->
 
       config.set 'name1', 'value1-new', 'here', 'layer1'
       assert.same 'value1', config.get 'name1', 'there', 'layer1'
+
+  context 'merge()', ->
+    before_each ->
+      config.define_layer 'layer1'
+      config.define_layer 'layer2'
+      config.define name: 'name1', description: 'description'
+      config.define name: 'name2', description: 'description'
+      config.define name: 'name3', description: 'description'
+
+    it 'deep copies values from scope to new scope, preserves other values in old scope', ->
+      config.set 'name1', 'value1', 'here', 'layer1'
+      config.set 'name2', 'value2', 'here', 'layer2'
+      config.set 'name1', 'there-value1', 'there', 'layer1'
+      config.set 'name3', 'there-value3', 'there', 'layer2'
+
+      assert.same 'there-value1', config.get 'name1', 'there', 'layer1'
+      assert.same nil, config.get 'name2', 'there', 'layer2'
+
+      config.merge 'here', 'there'
+
+      assert.same 'value1', config.get 'name1', 'there', 'layer1'
+      assert.same 'value2', config.get 'name2', 'there', 'layer2'
+      assert.same 'there-value3', config.get 'name3', 'there', 'layer2'
 
   context 'delete()', ->
     before_each ->
@@ -425,3 +472,69 @@ describe 'config', ->
 
     it 'errors when trying to delete global scope', ->
       assert.raises 'global', -> config.delete ''
+
+  context 'persistence', ->
+    before_each ->
+      config.define name: 'name1', description: 'description'
+      config.define name: 'name2', description: 'description'
+      config.define_layer 'layer1'
+
+    it 'save_config() saves and load_config() loads the saved config', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1'
+        config.set 'name2', 'value2'
+        config.save_config dir
+
+        config.set 'name1', nil
+        assert.same nil, config.get 'name1'
+
+        config.load_config true, dir
+        assert.same 'value1', config.get 'name1'
+        assert.same 'value2', config.get 'name2'
+
+    it 'non global scopes are not persisted', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1', 'scope1'
+        config.save_config dir
+
+        config.set 'name1', 'value2', 'scope1'
+
+        config.load_config true, dir
+        assert.same nil, config.get 'name1', 'scope1'
+
+
+    it 'does not save values if persist_config is false', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1'
+        config.set 'name2', 'value2'
+        config.set 'persist_config', false
+        config.save_config dir
+
+        config.set 'name1', nil
+        config.set 'name2', nil
+        assert.same nil, config.get 'name1'
+
+        config.load_config true, dir
+        assert.same nil, config.get 'name1'
+        assert.same nil, config.get 'name1', 'scope1'
+
+
+    it 'saves persist_config value', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1'
+        config.set 'persist_config', false
+        config.save_config dir
+
+        config.set 'name1', nil
+        assert.same nil, config.get 'name1'
+
+        config.load_config true, dir
+        assert.same false, config.get 'persist_config'
+
+    it 'does not save buffer scopes', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1-global'
+        config.set 'name1', 'value2-buffer', 'buffer/123'
+        config.save_config dir
+        config.load_config true, dir
+        assert.same 'value1-global', config.get 'name1', 'buffer/123'

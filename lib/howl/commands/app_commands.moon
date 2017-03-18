@@ -417,6 +417,13 @@ command.register
   input: (path=nil) -> interact.get_external_command :path
   handler: launch_cmd
 
+command.register
+  name: 'save-config'
+  description: 'Save the current configuration'
+  handler: ->
+    config.save_config!
+    log.info 'Configuration saved'
+
 config.define
   name: 'project_build_command'
   description: 'The command to execute when project-build is run'
