@@ -68,9 +68,10 @@ line to view a list:
 For example, to change the current theme interactively you can open up the
 prompt, and type `set theme`. Pressing enter to choose the theme variable would
 then present you with a list of available themes - after choosing one you can
-press enter again to switch to the specified theme. See the section below,
-[Setting variables upon startup](#setting-variables-upon-startup), for
-information on how to change a setting so that it persists across restarts.
+press enter again to switch to the specified theme. See the sections below,
+[Setting variables upon startup](#setting-variables-upon-startup) and
+[Automatic persistence](#automatic-persistence), for information on how to
+change a setting so that it persists across restarts.
 
 Configuration variables can be specified at three different levels in Howl,
 in ascending order of priority:
@@ -160,6 +161,32 @@ A few notes on the above example:
 - We use [signal.connect](../api/signal.html#connect) to add a signal handler
   for the `file-opened` signal, and set the indent for a certain buffer with
   an associated file under a given directory.
+
+
+### Automatic persistence
+
+Howl does not, by default, automatically save any configuration variables
+updated via the command line or the API. One way to save your settings is to
+manually update the `init.moon` file as described in the previous section.
+Another way is to use the  `save_config_on_exit` configuration variable which
+enables automatic persistence of global configuration variables.
+
+A simple way to enable automatic persistence is to add the following line to
+your `init.moon`:
+
+```moonscript
+config.save_config_on_exit = true
+```
+
+Once `save_config_on_exit` is set to `true`, the current state of global
+configuration variables is automatically saved on exit and reloaded on startup.
+Note that automatic persistence applies to global variables and mode
+configuration only - buffer level variables are not automatically persisted
+currently.
+
+Automatically persisted variables are stored in the file
+`~/.howl/system/config.lua`. Any variables set via `init.moon` override the
+variables automatically loaded from `config.lua`.
 
 ## Key bindings
 
