@@ -2,6 +2,12 @@
 
 ## Unreleased (in master)
 
+- Added `config.save_config_on_exit` variable to automatically save global
+configuration to `~/.howl/system/config.lua`.
+
+- Added the `save-config` command that saves the current global configuration to
+`~/.howl/system/config.lua`.
+
 - Changed undo coalescing to not be as greedy (e.g. coalescing pastes and
 ordinary edit revisions).
 
