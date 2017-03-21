@@ -121,9 +121,3 @@ describe 'ActionBuffer', ->
       b = nil
       collectgarbage!
       assert.is_nil buffers[1]
-
-    it 'memory usage is stable', ->
-      assert_memory_stays_within '20Kb', 50, ->
-        b = ActionBuffer!
-        b.text = 'collect me!'
-
