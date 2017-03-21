@@ -259,6 +259,22 @@ describe 'Editor', ->
           editor\paste where: 'after'
           assert.equal 'hƏllo\ncruel\nworld', buffer.text
 
+        it 'accounts for trailing newline separators', ->
+          buffer.text = 'hƏllo\nworld'
+          clipboard.push text: 'cruel\n', whole_lines: true
+          cursor.line = 1
+          cursor.column = 3
+          editor\paste where: 'after'
+          assert.equal 'hƏllo\ncruel\nworld', buffer.text
+
+        it 'handles pasting at the end of the buffer', ->
+          buffer.text = 'at'
+          clipboard.push text: 'last\n', whole_lines: true
+          cursor.line = 1
+          cursor.column = 3
+          editor\paste where: 'after'
+          assert.equal 'at\nlast\n', buffer.text
+
     context 'when a selection is present', ->
       it 'deletes the selection before pasting', ->
         buffer.text = 'hƏllo\nwonderful\nworld'
