@@ -82,6 +82,10 @@ class SelectionList
       else
         @submit!
 
+  handle_back: =>
+    if @opts.cancel_on_back
+      self.finish back: true
+
 interact.register
   name: 'select'
   description: 'Get selection made by user from a list of items'
