@@ -28,6 +28,12 @@ class SelectionList
     if not @opts.hide_until_tab
       @show_list!
 
+    @quick_selections = {}
+    if @opts.items
+      for item in *@opts.items
+        if item.quick_select
+          @quick_selections[item.quick_select] = item
+
     if @opts.text
       @command_line\write @opts.text
       @on_update @opts.text
@@ -48,6 +54,13 @@ class SelectionList
     @showing_list = true
 
   on_update: (text) =>
+    if @quick_selections[text]
+      self.finish
+        selection: @quick_selections[text]
+        :text
+        quick: true
+      return
+
     @_change_triggered = false
     @list_widget\update text
     @_handle_change! unless @_change_triggered
