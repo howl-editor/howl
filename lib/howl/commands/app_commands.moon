@@ -69,34 +69,14 @@ command.register
 
     _G.log.error 'No hidden buffer found'
 
-set_variable = (assignment, target) ->
-  if assignment
-    value = assignment.value
-    if config.definitions[assignment.name]
-      target[assignment.name] = value
-      _G.log.info ('"%s" is now set to "%s"')\format assignment.name, assignment.value
-    else
-      log.error "Undefined variable '#{assignment.name}'"
-
 command.register
   name: 'set',
-  description: 'Set a configuration variable globally'
-  input: interact.get_variable_assignment
-  handler: (variable_assignment) -> set_variable variable_assignment, config
-
-command.register
-  name: 'set-for-mode',
-  description: 'Set a configuration variable for the current mode'
+  description: 'Set a configuration variable'
   input: interact.get_variable_assignment
   handler: (variable_assignment) ->
-    set_variable variable_assignment, app.editor.buffer.mode.config
-
-command.register
-  name: 'set-for-buffer',
-  description: 'Set a configuration variable for the current buffer'
-  input: interact.get_variable_assignment
-  handler: (variable_assignment) ->
-    set_variable variable_assignment, app.editor.buffer.config
+    scope = if variable_assignment.scope == 'global' then '' else variable_assignment.buffer.config_scope
+    config.set variable_assignment.var, variable_assignment.value, scope, variable_assignment.layer
+    _G.log.info ('"%s" is now set to "%s"')\format variable_assignment.var, variable_assignment.value
 
 command.register
   name: 'describe-key',
