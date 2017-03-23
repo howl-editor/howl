@@ -563,12 +563,19 @@ class CommandLine extends PropertyObject
 
     f1: => @show_help!
 
-  add_widget: (name, widget) =>
+  add_widget: (name, widget, pos='bottom') =>
     error('No widget provided', 2) if not widget
 
     @remove_widget name
 
-    @box\pack_end widget\to_gobject!, false, 0, 0
+    local pack
+    if pos == 'bottom'
+        pack = @box\pack_end
+    elseif pos == 'top'
+        pack = @box\pack_start
+    else
+        error "Invalid pos #{pos}"
+    pack widget\to_gobject!, false, 0, 0
     @_widgets[name] = widget
 
     widget\show!
