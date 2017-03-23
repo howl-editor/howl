@@ -130,7 +130,7 @@ class Buffer extends PropertyObject
     get: => @_buffer.read_only
     set: (v) => @_buffer.read_only = v
 
-  @property _config_scope:
+  @property config_scope:
     get: => @_file and ('file' .. @_file.path) or ('buffer/' .. @id)
 
   chunk: (start_pos, end_pos) => Chunk self, start_pos, end_pos
@@ -296,7 +296,7 @@ class Buffer extends PropertyObject
   config_at: (pos) =>
     mode_at = @mode_at pos
     return @config if mode_at == @mode
-    return config.proxy @_config_scope, mode_at.config_layer
+    return config.proxy @config_scope, mode_at.config_layer
 
   add_view_ref: =>
     @viewers += 1
@@ -305,15 +305,15 @@ class Buffer extends PropertyObject
     @viewers -= 1
 
   _associate_with_file: (file) =>
-    scope = @_config_scope
+    scope = @config_scope
     @_file = file
-    config.merge scope, @_config_scope
+    config.merge scope, @config_scope
     config.delete scope
     @_set_config!
     @title = file and file.basename or 'Untitled'
 
   _set_config: =>
-    @config = config.proxy @_config_scope, 'default', @mode.config_layer
+    @config = config.proxy @config_scope, 'default', @mode.config_layer
 
   _on_text_inserted: (_, _, args) =>
     @_on_buffer_modification 'text-inserted', args
