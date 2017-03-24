@@ -71,6 +71,7 @@ map = {
 setmetatable map, {
   __index: base_map
   __call: (_, editor) ->
+    state.leave_edit_mode editor
     selection = editor.selection
     selection.persistent = true
 
@@ -81,5 +82,3 @@ setmetatable map, {
       selection_start = editor.cursor.pos
       selection\set selection_start, selection_start
 }
-
-return map
