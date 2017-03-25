@@ -44,11 +44,13 @@ scope_items = (def, buffer) ->
   return items if def.scope == 'global' or not buffer
 
   append items,
-    { scope_str('global', mode_layer), to_s(buffer.mode.config[def.name]), '',
+    { scope_str('global', mode_layer), to_s(buffer.mode.config[def.name]),
+      "For all buffers with mode #{buffer.mode.name}",
       scope: 'global', layer: mode_layer, quick_select: scope_str('global', mode_layer) .. '='}
 
   append items,
-    { scope_str('buffer'), to_s(buffer.config[def.name]), buffer.title,
+    { scope_str('buffer'), to_s(buffer.config[def.name]),
+      "For #{buffer.title} only",
       scope: 'buffer', quick_select: scope_str('buffer') .. '='}
 
   return items
