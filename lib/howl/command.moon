@@ -216,10 +216,12 @@ launch_cmd = (cmd, args) ->
     if not ok
       log.error err
 
-run = (cmd_string=nil, ...) ->
+ensure_command_can_run = (cmd) ->
   unless howl.app.window
-    error "Cannot run command '#{cmd_string}', application not initialized. Try using the 'app-ready' signal.", 2
+    error "Cannot run command '#{cmd}', application not initialized. Try using the 'app-ready' signal.", 3
 
+run = (cmd_string=nil, ...) ->
+  ensure_command_can_run cmd_string
   local args
   cmd = resolve_command cmd_string
 
@@ -285,5 +287,6 @@ return setmetatable {:register, :unregister, :alias, :run, :names, :get}, {
   __index: (key) =>
     command = commands[key] or accessible_names[key]
     return unless command
+    ensure_command_can_run command.name
     (...) -> launch_cmd command, table.pack ...
 }
