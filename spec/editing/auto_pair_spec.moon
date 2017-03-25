@@ -117,10 +117,17 @@ describe 'auto_pair', ->
     it 'returns non-true when the character does not match a known pair', ->
       assert.is_not_true auto_pair.handle event('x'), editor
 
-    it 'always returns non-true if the auto_pair config variable is false', ->
+    it 'skips processing if the auto_pair config variable is false', ->
       buffer.mode.auto_pairs = { ['(']: ')' }
       buffer.config.auto_pair = false
       assert.is_not_true auto_pair.handle event('('), editor
+      assert.equal '', buffer.text
+
+    it 'skips processing if the buffer is read only', ->
+      buffer.mode.auto_pairs = { ['(']: ')' }
+      buffer.read_only = true
+      assert.is_not_true auto_pair.handle event('('), editor
+      assert.equal '', buffer.text
 
     it 'takes sub modes into account', ->
       buffer.mode.auto_pairs = { ['(']: ')' }
