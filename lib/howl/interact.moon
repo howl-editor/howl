@@ -21,13 +21,15 @@ sequence = (order, def) ->
 
     state = {}
     pos = 1
+    local current
 
     while true
       def.update state if def.update
 
+      prev = current
       current = order[pos]
       if current
-        result = def[current](state)
+        result = def[current](state, prev)
         return nil unless result
 
         if result.back

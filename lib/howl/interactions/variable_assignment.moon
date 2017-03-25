@@ -74,10 +74,13 @@ interact.register
           { header: 'Description', style: 'comment' }
         }
 
-      scope: (state) ->
+      scope: (state, from_state) ->
         def = state.var.selection.def
         if def.scope == 'global'
-          return {selection: {'global', scope: 'global'}}
+          if from_state == 'value'
+            return { back: true }
+          else
+            return { selection: { 'global', scope: 'global' } }
 
         interact.select
           title: def.name
