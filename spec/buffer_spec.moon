@@ -3,9 +3,6 @@ import File from howl.io
 import with_tmpfile from File
 
 describe 'Buffer', ->
-  before_each ->
-    config.backup_files = false
-
   buffer = (text) ->
     with Buffer {}
       .text = text
