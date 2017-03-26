@@ -56,7 +56,7 @@ scope_items = (def, buffer) ->
   return items
 
 get_vars = ->
-  vars = [{name, def.description, :def, quick_select: name..'='} for name, def in pairs config.definitions]
+  vars = [{name, def.description, :def, quick_select: {name..'=', name..'@'}} for name, def in pairs config.definitions]
   table.sort vars, (a, b) -> a[1] < b[1]
   return vars
 

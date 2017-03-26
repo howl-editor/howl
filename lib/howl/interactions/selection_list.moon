@@ -32,7 +32,11 @@ class SelectionList
     if @opts.items
       for item in *@opts.items
         if item.quick_select
-          @quick_selections[item.quick_select] = item
+          if type(item.quick_select) == 'table'
+            for quick_select in *item.quick_select
+              @quick_selections[quick_select] = item
+          else
+            @quick_selections[item.quick_select] = item
 
     if @opts.text
       @command_line\write @opts.text
