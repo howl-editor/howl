@@ -374,7 +374,7 @@ with config
   .define
     name: 'backup_files'
     description: 'Whether or not to make temporary backups of files while saving'
-    default: true
+    default: false
     type_of: 'boolean'
 
 -- Signals
