@@ -35,7 +35,6 @@ export add_number = (number) ->
   count = (count * 10) + number
 
 export change_mode = (editor, to, ...) ->
-  return if mode == to
   map = maps[to]
   error 'Invalid mode "' .. to .. '"' if not map
 
@@ -119,7 +118,9 @@ export enter_edit_mode = (editor) ->
 
 export leave_edit_mode = (editor) ->
   buffer = editor.buffer
-  buffer.data.vi_orig_auto_pair = buffer.config.auto_pair
+  if buffer.data.vi_orig_auto_pair == nil
+    buffer.data.vi_orig_auto_pair = buffer.config.auto_pair
+
   buffer.config.auto_pair = false
 
 return _ENV
