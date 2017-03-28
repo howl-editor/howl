@@ -11,9 +11,9 @@ variables". An example configuration variable is `font_size`, which sets the
 size of the main font.
 
 Configuration variables are set either interactively from within Howl, using the
-`set` command, or programmatically from code. To get an overview of currently
-available variables, open the command line, type `set` and press `space` - this
-shows a list of all variables.
+[`set`](../manual/configuration.html) command, or programmatically from code. To
+get an overview of currently available variables, open the command line, type
+`set` and press `space` - this shows a list of all variables.
 
 Values for configuration variables can be specified at multiple levels, called
 *scopes*, and at multiple *layers* within each scope. These are described below.
@@ -41,11 +41,9 @@ Some common scopes are:
 
 - **Unsaved file scope (buffer scope)**
 
-  Unsaved file scopes are used to specify configuraiton for buffers that are not
+  Unsaved file scopes are used to specify configuration for buffers that are not
   associated with any file. These scopes start with `'buffer'`, e.g.
   `'buffer/1234'`, and the value applies to the specific buffer only.
-
-  The `set-for-buffer` command sets variables at the file or buffer scope.
 
 ### Layers
 
@@ -59,8 +57,6 @@ available at *all* scopes.
 
 Within each scope, the layer specific value applies. If the requested layer
 value does not exist, the `default` layer value applies.
-
-The `set-for-mode` command sets the mode specific layer at the global scope.
 
 ### Evaluation
 
@@ -97,12 +93,13 @@ returned:
 The primitive API consists of [`get()`](#get) and [`set`](#set) calls which
 accept scope and layer as additional parameters. However, the following code
 snippet illustrates the idiomatic ways of setting variables globally, for a
-mode, and for a specific buffer only:
+mode, for a specific buffer and for a specific file only:
 
 ```lua
 howl.config.my_var = 'foo'
 howl.mode.by_name('ruby').config.my_var = 'foo'
 howl.app:new_buffer().config.my_var = 'foo'
+howl.config.for_file('/path/to/file').my_var = 'foo'
 ```
 
 Note that internally the values are organized within scopes and layers, but this
@@ -168,6 +165,16 @@ into a native representation.
   - number
   - string
   - string_list
+
+### for_file (path)
+
+Returns a [proxy](#proxy) config object for the specified file scope. The
+returned object can be used to get and set configuration variables directly for the file scope, for instance:
+
+```moonscript
+c = config.for_file '/home/user/some/path'
+c.indent = 4
+```
 
 ### get (name, scope, layer)
 
