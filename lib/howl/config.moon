@@ -260,6 +260,8 @@ scope_for_file = (file) -> 'file'..file
 
 for_file = (file) -> proxy scope_for_file file
 
+for_layer = (layer) -> proxy '', layer
+
 merge = (scope, target_scope) ->
   if scopes[scope]
     scopes[target_scope] or= {}
@@ -294,6 +296,7 @@ config = {
   :proxy
   :scope_for_file
   :for_file
+  :for_layer
   :replace
   :merge
   :delete
