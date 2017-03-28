@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import VC, interact from howl
+import config, VC, interact from howl
 
 append = table.insert
 
@@ -55,6 +55,7 @@ class Project
   new: (root, vc) =>
     @root = root
     @vc = vc
+    @config = config.for_file root
 
   files: =>
     if @vc and @vc.files

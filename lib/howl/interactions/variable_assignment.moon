@@ -1,7 +1,7 @@
 --- Copyright 2012-2017 The Howl Developers
 --- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import config, interact from howl
+import config, interact, Project from howl
 import StyledText from howl.ui
 
 append = table.insert
@@ -30,28 +30,45 @@ option_current_value = (def, options, current_buffer) ->
     if option == cur_val or (type(option) == 'table' and option[1] == cur_val)
       return option
 
-scope_str = (scope, layer=nil) ->
-  scope ..= "[#{layer}]" if layer
-  return scope
+scope_str = (scope_name, layer=nil) ->
+  scope_name ..= "[#{layer}]" if layer
+  return scope_name
+
+scope_item = (def, scope_name, target, description='', layer=nil) ->
+  if layer
+    target = target.for_layer layer
+  to_s = def.tostring or tostring
+  {
+    scope_str(scope_name, layer), to_s(target[def.name]), description,
+    :scope_name, :layer, :target,
+    quick_select: scope_str(scope_name, layer) .. '='
+  }
 
 scope_items = (def, buffer) ->
   mode_layer = buffer and buffer.mode.config_layer
-  to_s = def.tostring or tostring
-  items = {
-    { scope_str('global'), to_s(config[def.name]), '',
-      scope: 'global', quick_select: scope_str('global') .. '=' }
-  }
+  mode_name = mode_layer and buffer.mode.name
+  items = {}
+  append items, scope_item(def, 'global', config)
+
   return items if def.scope == 'global' or not buffer
 
-  append items,
-    { scope_str('global', mode_layer), to_s(buffer.mode.config[def.name]),
-      "For all buffers with mode #{buffer.mode.name}",
-      scope: 'global', layer: mode_layer, quick_select: scope_str('global', mode_layer) .. '='}
+  append items, scope_item(
+    def, 'global', config, "For all buffers with mode #{mode_name}", mode_layer)
 
-  append items,
-    { scope_str('buffer'), to_s(buffer.config[def.name]),
-      "For #{buffer.title} only",
-      scope: 'buffer', quick_select: scope_str('buffer') .. '='}
+  if buffer.file
+    project = Project.for_file buffer.file
+    if project
+      append items, scope_item(
+        def, 'project', project.config,
+        "For all files under #{project.root.basename}")
+
+      append items, scope_item(
+        def, 'project', project.config,
+        "For all files under #{project.root.basename} with mode #{mode_name}", mode_layer)
+
+  append items, scope_item(
+    def, 'buffer', buffer.config,
+    "For #{buffer.title} only")
 
   return items
 
@@ -82,7 +99,7 @@ interact.register
           if from_state == 'value'
             return { back: true }
           else
-            return { selection: { 'global', scope: 'global' } }
+            return { selection: { 'global', scope_name: 'global', target: config } }
 
         interact.select
           title: def.name
@@ -96,10 +113,11 @@ interact.register
 
       value: (state) ->
         def = state.var.selection.def
+        title = "#{def.name} for #{state.scope.selection.scope_name}"
         if def.options
           items, columns = option_completions def
           selected = interact.select
-            title: def.name
+            :title
             :items
             :columns
             selection: option_current_value def, items, buffer
@@ -112,7 +130,9 @@ interact.register
             return selected.selection[1]
           return selected.selection
         else
-          interact.read_text cancel_on_back: true
+          interact.read_text
+            :title
+            cancel_on_back: true
 
       update: (state) ->
         prompt = ''
@@ -121,7 +141,7 @@ interact.register
 
         if state.scope
           item = state.scope.selection
-          prompt ..= scope_str item.scope, item.layer
+          prompt ..= scope_str item.scope_name, item.layer
           prompt ..= '='
 
         command_line.prompt = prompt
@@ -151,9 +171,10 @@ interact.register
         return unless state
 
         return {
+          target: state.scope.selection.target,
           var: state.var.selection.def.name,
-          scope: state.scope.selection.scope,
-          layer: state.scope.selection.layer,
           value: state.value
+          scope_name: state.scope.selection.scope_name,
+          layer: state.scope.selection.layer,
           :buffer
         }

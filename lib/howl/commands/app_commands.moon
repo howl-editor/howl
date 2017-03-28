@@ -74,9 +74,10 @@ command.register
   description: 'Set a configuration variable'
   input: interact.get_variable_assignment
   handler: (variable_assignment) ->
-    scope = if variable_assignment.scope == 'global' then '' else variable_assignment.buffer.config_scope
-    config.set variable_assignment.var, variable_assignment.value, scope, variable_assignment.layer
-    _G.log.info ('"%s" is now set to "%s"')\format variable_assignment.var, variable_assignment.value
+    target = variable_assignment.target
+    target[variable_assignment.var] = variable_assignment.value
+
+    _G.log.info ('"%s" is now set to "%s" for %s')\format variable_assignment.var, variable_assignment.value, variable_assignment.scope_name
 
 command.register
   name: 'describe-key',
