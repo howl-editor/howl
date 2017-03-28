@@ -1028,7 +1028,7 @@ with config
   .define
     name: 'line_padding'
     description: 'Extra spacing above and below each line'
-    default: 1
+    default: 0
     type_of: 'number'
 
   .define
