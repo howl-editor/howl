@@ -245,14 +245,20 @@ proxy_mt = {
   __newindex: (proxy, key, value) -> set(key, value, proxy._scope, proxy._write_layer)
 }
 
+local proxy
 proxy = (scope, write_layer='default', read_layer=write_layer) ->
-  proxy = {
+  _proxy = {
     clear: => scopes[@_scope] = {}
+    for_layer: (layer) -> proxy scope, layer
     _scope: scope
     _write_layer: write_layer
     _read_layer: read_layer
   }
-  setmetatable proxy, proxy_mt
+  setmetatable _proxy, proxy_mt
+
+scope_for_file = (file) -> 'file'..file
+
+for_file = (file) -> proxy scope_for_file file
 
 merge = (scope, target_scope) ->
   if scopes[scope]
@@ -286,6 +292,8 @@ config = {
   :watch
   :reset
   :proxy
+  :scope_for_file
+  :for_file
   :replace
   :merge
   :delete

@@ -131,7 +131,7 @@ class Buffer extends PropertyObject
     set: (v) => @_buffer.read_only = v
 
   @property config_scope:
-    get: => @_file and ('file' .. @_file.path) or ('buffer/' .. @id)
+    get: => @_file and config.scope_for_file(@_file.path) or ('buffer/' .. @id)
 
   chunk: (start_pos, end_pos) => Chunk self, start_pos, end_pos
 
