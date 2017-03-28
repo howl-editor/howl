@@ -15,13 +15,12 @@ after Howl is initialized, which includes loading all available bundles.
 Howl does not have any special configuration format for use with the
 startup file, instead it's just plain Lua or Moonscript.
 
-The startup file is typically used for various type of configuration, there's no
-restriction to what you can do in it - you have access to the entire
+The startup file is typically used for various types of configuration, but
+there's no restriction to what you can do in it - you have access to the entire
 [Howl API](../#api-reference). However, some parts of the API, such as running
 commands, can only be accessed after the application has fully initialized, and
-need be bound to the `'app-ready'` signal, rather than at the top level in the
-init file. For instance, this code launches the file selection command on
-startup:
+needs be run within an `'app-ready'` signal handler, rather than at the top
+level. For instance, this code launches the file selection command on startup:
 
 ```moon
 howl.signal.connect 'app-ready', ->
