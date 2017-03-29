@@ -182,34 +182,51 @@ set_default = (name, value, layer='default') ->
 
   layer_defs[layer].defaults[name] = value
 
+  broadcast name, value, true
+
+get_default = (name, layer='default') ->
+  if layer_defs[layer].defaults
+    return layer_defs[layer].defaults[name]
+
 parent = (scope) ->
   pos = scope\rfind('/')
   return '' unless pos
   return scope\sub(1, pos - 1)
 
-get = (name, scope='', layer='default') ->
-  load_config! unless scopes
+local _get
+_get = (name, scope, layers) ->
   values = scopes[scope] and scopes[scope][name]
+  values = {} if values == nil
 
-  if values
-    current_layer = layer
-    while current_layer
-      value = values[current_layer]
-      if value != nil
-        return value
-      current_layer = layer_defs[current_layer].parent
-    if values['default'] != nil
-      return values['default']
+  if scope == ''
+    for _layer in *layers
+      value = values[_layer]
+      return value if value != nil
+      value = get_default name, _layer
+      return value if value != nil
+  else
+    for _layer in *layers
+      value = values[_layer]
+      return value if value != nil
 
   if scope != ''
-    return get(name, parent(scope), layer)
-
-  if layer_defs[layer].defaults
-    value = layer_defs[layer].defaults[name]
-    return value if value != nil
+    return _get(name, parent(scope), layers)
 
   def = defs[name]
   return def.default if def
+
+get = (name, scope='', layer='default') ->
+  load_config! unless scopes
+
+  current_layer = layer
+  layers = {layer}
+  while current_layer
+    current_layer = layer_defs[current_layer].parent
+    append layers, current_layer
+  if layers[#layers] != 'default'
+    append layers, 'default'
+
+  _get name, scope, layers
 
 reset = ->
   scopes = {}
