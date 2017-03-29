@@ -30,15 +30,12 @@ indicator_placements =
   bottom_left: true
   bottom_right: true
 
-apply_variable = (option, value) ->
-  for e in *editors!
-    e.view.config[option] = value
-
 apply_global_variable = (name, value) ->
   aullar_config[name] = value
 
-apply_property = (name, value) ->
-  e[name] = value for e in *editors!
+apply_variable = ->
+  for e in *editors!
+    e\_set_config_settings!
 
 signal.connect 'buffer-saved', (args) ->
   for e in *editors!
@@ -1039,29 +1036,23 @@ with config
     scope: 'global'
 
   for watched_property in *{
+    'indent',
     'indentation_guides',
     'edge_column',
     'line_wrapping',
+    'line_wrapping_symbol',
     'line_wrapping_navigation',
     'horizontal_scrollbar',
     'vertical_scrollbar',
     'cursor_line_highlighted',
+    'cursor_blink_interval',
     'line_numbers',
     'line_padding',
+    'font',
+    'font_size',
+    'tab_width'
   }
-    .watch watched_property, apply_property
-
-  for live_update in *{
-    { 'font', 'view_font_name' }
-    { 'font_size', 'view_font_size' }
-    { 'tab_width', 'view_tab_size' }
-    { 'line_numbers', 'view_show_line_numbers' }
-    { 'indent', 'view_indent' }
-    { 'cursor_blink_interval', 'cursor_blink_interval' }
-    { 'line_wrapping_symbol', 'view_line_wrap_symbol' }
-  }
-    .watch live_update[1], (_, value) -> apply_variable live_update[2], value
-
+    .watch watched_property, apply_variable
 
   for global_var in *{
     'undo_limit'

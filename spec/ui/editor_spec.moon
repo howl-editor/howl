@@ -875,3 +875,17 @@ describe 'Editor', ->
       editor.buffer.text = '([]]'
       assert.same nil, editor\get_matching_brace 4
 
+  context 'config updates', ->
+    local editor2
+    before_each ->
+      editor2 = Editor Buffer {}
+
+    it 'buffer config updates affect containing editor only', ->
+      editor.buffer.config.line_numbers = true
+      editor2.buffer.config.line_numbers = true
+      assert.true editor.line_numbers
+      assert.true editor2.line_numbers
+
+      editor2.buffer.config.line_numbers = false
+      assert.true editor.line_numbers
+      assert.false editor2.line_numbers
