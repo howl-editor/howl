@@ -731,19 +731,31 @@ class Editor extends PropertyObject
     return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
-    @drag_press_type = event.type
-    @drag_press_pos = @_pos_from_coordinates(event.x, event.y)
+    return false if event.button == 3
 
-    if event.type == Gdk.GDK_2BUTTON_PRESS
-      group = @current_context.word
-      group = @current_context.token if group.empty
+    if event.button == 1
+      @drag_press_type = event.type
+      @drag_press_pos = @_pos_from_coordinates(event.x, event.y)
 
-      unless group.empty
-        @selection\set group.start_pos, group.end_pos + 1
-        true
+      if event.type == Gdk.GDK_2BUTTON_PRESS
+        group = @current_context.word
+        group = @current_context.token if group.empty
 
-    elseif event.type == Gdk.GDK_3BUTTON_PRESS
-      @selection\set @current_line.start_pos, @_next_line_start(@current_line)
+        unless group.empty
+          @selection\set group.start_pos, group.end_pos + 1
+          true
+
+      elseif event.type == Gdk.GDK_3BUTTON_PRESS
+        @selection\set @current_line.start_pos, @_next_line_start(@current_line)
+
+    elseif event.button == 2
+      text = clipboard.primary.text
+      if text
+        pos = @_pos_from_coordinates(event.x, event.y)
+        @selection\remove!
+        @cursor.pos = pos
+        @insert text
+        clipboard.primary.text = text
 
   _on_button_release: (view, event) =>
     @drag_press_type = nil
