@@ -7,9 +7,10 @@ title: howl.clipboard
 ## Overview
 
 The clipboard module keeps track of copied text in Howl, and handles
-synchronization with the system clipboard. It provides two ways of remembering
-clipboard items: As a list of anynomous clips that is automatically updated with
-each copy/delete/cut operation, and within named registers.
+synchronization with the system clipboard and primary selection. It provides two
+ways of remembering clipboard items: As a list of anynomous clips that is
+automatically updated with each copy/delete/cut operation, and within named
+registers.
 
 ### Clipboard items
 
@@ -40,6 +41,28 @@ new item and removing older items as necessary.
 ### current
 
 The most recent anynomous clipboard item available on the clipboard.
+
+### primary
+
+The `primary` object is used for synchronization with the systems primary
+selection (i.e. the one used for middle button action). It has a `.text`
+property that can be used to fetch or store the contents of the primary
+selection, as well as a `clear` method that can be used for clearing the
+selection. In contrast to the ordinary clipboard it's possible to set virtual
+content for the primary clipboard, via the use of a provider function. Such a
+function would be called on-demand as necessary to provide the content.
+
+Example:
+
+```moonscript
+primary = howl.clipboard.primary
+primary.text = 'direct'
+print primary.text -- => 'direct'
+primary.text = -> 'on-demand'
+print primary.text -- => 'on-demand'
+primary\clear!
+```
+
 
 ### registers
 
