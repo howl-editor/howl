@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- **breaking** - Default for `line-padding` setting has been changed to `0`. If
+you've relied on it: set it explicitly to its' previous value `1` in your Howl
+configuration.
+
 - Added `config.save_config_on_exit` variable to automatically save global
 configuration to `~/.howl/system/config.lua`.
 
