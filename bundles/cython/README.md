@@ -4,7 +4,7 @@
 
 This is a [Cython](http://cython.org) bundle for the Howl editor, providing
 Cython specific lexing and a Cython mode. It is automatically enabled for
-Cython extensions such as `pyx` and `pyi`.
+Cython extensions such as `pyx` and `pxd`.
 
 ## License
 
