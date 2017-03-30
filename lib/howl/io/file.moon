@@ -203,8 +203,7 @@ class File extends PropertyObject
     files, false
 
   copy: (dest, flags) =>
-    bitflags = core.parse_flags 'G_FILE_', flags
-    @gfile\copy File(dest).gfile, bitflags, nil, nil
+    @gfile\copy File(dest).gfile, flags, nil, nil
 
   tostring: => tostring @path or @uri
 

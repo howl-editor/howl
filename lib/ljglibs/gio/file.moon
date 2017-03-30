@@ -70,6 +70,8 @@ core.define 'GFile', {
     self = @
     local handler, cb_handle, cb_cast, cb_data
 
+    copy_flags = core.parse_flags 'G_FILE_COPY_', flags
+
     if progress_callback
       handler = (current_bytes, total_bytes) ->
         progress_callback self, current_bytes, total_bytes
@@ -78,7 +80,7 @@ core.define 'GFile', {
       cb_cast = ffi.cast('GFileProgressCallback', callbacks.void3)
       cb_data = callbacks.cast_arg(cb_handle.id)
 
-    catch_error(C.g_file_copy, @, dest, flags, cancellable, cb_cast, cb_data) != 0
+    catch_error(C.g_file_copy, @, dest, copy_flags, cancellable, cb_cast, cb_data) != 0
 
   make_directory: => catch_error(C.g_file_make_directory, @, nil) != 0
   make_directory_with_parents: => catch_error(C.g_file_make_directory_with_parents, @, nil) != 0

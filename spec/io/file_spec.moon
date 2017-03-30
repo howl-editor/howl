@@ -355,7 +355,7 @@ describe 'File', ->
         assert.has_errors -> a\copy b
         assert.same b.contents, 'hello'
 
-        a\copy b, {'overwrite'}
+        a\copy b, {'OVERWRITE'}
         assert.same b.contents, 'hello 2'
 
   describe 'meta methods', ->
