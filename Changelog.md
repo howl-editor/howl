@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- New Cython bundle provides syntax and structure support for
+[Cython](http://cython.org) code.
+
 - Added `config.save_config_on_exit` variable to automatically save global
 configuration to `~/.howl/system/config.lua`.
 
