@@ -66,16 +66,19 @@ core.define 'GFile', {
   enumerate_children: (attributes, flags = @QUERY_INFO_NONE) =>
     gc_ptr catch_error C.g_file_enumerate_children, @, attributes, flags, nil
 
-  copy: (dest, flags, cancellable, callback) =>
+  copy: (dest, flags, cancellable, progress_callback) =>
     self = @
-    local cb_handle
+    local handler, cb_handle, cb_cast, cb_data
 
-    handler = (current_bytes, total_bytes) ->
-      callback self, current_bytes, total_bytes
+    if progress_callback
+      handler = (current_bytes, total_bytes) ->
+        progress_callback self, current_bytes, total_bytes
 
-    cb_handle = callbacks.register handler, 'file-progress'
-    cb_cast = ffi.cast('GFileProgressCallback', callbacks.void3)
-    catch_error(C.g_file_copy, @, dest, flags, cancellable, cb_cast, callbacks.cast_arg(cb_handle.id)) != 0
+      cb_handle = callbacks.register handler, 'file-progress'
+      cb_cast = ffi.cast('GFileProgressCallback', callbacks.void3)
+      cb_data = callbacks.cast_arg(cb_handle.id)
+
+    catch_error(C.g_file_copy, @, dest, flags, cancellable, cb_cast, cb_data) != 0
 
   make_directory: => catch_error(C.g_file_make_directory, @, nil) != 0
   make_directory_with_parents: => catch_error(C.g_file_make_directory_with_parents, @, nil) != 0
