@@ -142,4 +142,7 @@ map = {
   ':': -> command.run!
 }
 
-return setmetatable map, __index: base_map
+return setmetatable map, {
+  __index: base_map
+  __call: (_, editor) -> state.leave_edit_mode editor
+}

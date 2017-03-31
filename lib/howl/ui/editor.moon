@@ -348,16 +348,24 @@ class Editor extends PropertyObject
       @insert clip.text
     else
       line = @current_line
+      text = clip.text
+      trailing_eol = text\ends_with @buffer.eol
 
       if opts.where == 'after'
-        line = @buffer.lines\insert @current_line.nr + 1, ''
-      elseif not clip.text\ends_with @buffer.eol
+        if trailing_eol and line.next
+          line = line.next
+        else
+          line = @buffer.lines\insert @current_line.nr + 1, ''
+          if trailing_eol
+            text = text\sub(1, -(#@buffer.eol + 1))
+
+      elseif not trailing_eol
         line = @buffer.lines\insert line.nr, ''
 
       @cursor.pos = line.start_pos
 
       @with_position_restored ->
-        @insert clip.text
+        @insert text
 
   insert: (text) => @view\insert text
 
@@ -1020,7 +1028,7 @@ with config
   .define
     name: 'line_padding'
     description: 'Extra spacing above and below each line'
-    default: 1
+    default: 0
     type_of: 'number'
 
   .define

@@ -76,7 +76,6 @@ for name, handler in pairs signal_handlers
 
 command.register cmd for cmd in *vi_commands
 
--- state.activate!
 info = {
   author: 'The Howl Developers',
   description: 'VI bundle',

@@ -107,6 +107,20 @@ export activate = (editor) ->
 export deactivate = ->
   if active
     bindings.pop!
+    mode = nil
+    map = nil
     active = false
+
+export enter_edit_mode = (editor) ->
+  buffer = editor.buffer
+  if buffer.data.vi_orig_auto_pair != nil
+    buffer.config.auto_pair = buffer.data.vi_orig_auto_pair
+
+export leave_edit_mode = (editor) ->
+  buffer = editor.buffer
+  if buffer.data.vi_orig_auto_pair == nil
+    buffer.data.vi_orig_auto_pair = buffer.config.auto_pair
+
+  buffer.config.auto_pair = false
 
 return _ENV

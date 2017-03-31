@@ -37,6 +37,7 @@ handle_backspace = (event, editor, auto_pairs) ->
 
 handle = (event, editor) ->
   buffer = editor.buffer
+  return if buffer.read_only
   auto_pairs = editor.mode_at_cursor.auto_pairs
   char = event.character
   return unless auto_pairs and editor.config_at_cursor.auto_pair and char
