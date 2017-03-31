@@ -1,4 +1,4 @@
-{:app, :Buffer} = howl
+{:app, :config, :Buffer} = howl
 require 'howl.dev'
 
 describe 'dev', ->
@@ -32,3 +32,13 @@ describe 'dev', ->
         buffer.text = 'return {}'
         buffer\save_as dir\join('l-test.lua')
         assert.is_false dir\join('l-test.bc').exists
+
+    context 'when config.howl_src_dir is set', ->
+      it 'compiles files under that directory as well', ->
+        buffer = Buffer!
+
+        with_tmpdir (dir) ->
+          config.howl_src_dir = dir.path
+          buffer.text = '{}'
+          buffer\save_as dir\join('m-test.moon')
+          assert.is_true dir\join('m-test.bc').exists
