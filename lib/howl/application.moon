@@ -322,7 +322,6 @@ class Application extends PropertyObject
 
       signal.connect 'mode-registered', self\_on_mode_registered
       signal.connect 'mode-unregistered', self\_on_mode_unregistered
-      signal.connect 'buffer-saved', self\_on_buffer_saved
 
       window = @new_window!
 
@@ -399,20 +398,6 @@ class Application extends PropertyObject
         else
           buffer.mode = default_mode
 
-  _on_buffer_saved: (args) =>
-    file = args.buffer.file
-
-    -- automatically update bytecode for howl files
-    -- todo: move this away
-    if file.extension and file.extension\umatch(r'(lua|moon)') and file\is_below(@root_dir)
-      bc_file = File file.path\gsub "#{file.extension}$", 'bc'
-      f, err = loadfile file
-      if f
-        bc_file.contents = string.dump f, false
-      else
-        bc_file\delete! if bc_file.exists
-        log.error "Failed to update byte code for #{file}: #{err}"
-
   _restore_session: (window, restore_buffers) =>
     session = @settings\load_system 'session'
 
@@ -475,6 +460,7 @@ class Application extends PropertyObject
     require 'howl.ui.icons.font_awesome'
     require 'howl.janitor'
     require 'howl.inspect'
+    require 'howl.dev'
 
   _load_application_icon: =>
     dir = @root_dir
