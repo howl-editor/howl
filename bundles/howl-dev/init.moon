@@ -23,7 +23,6 @@ on_buffer_saved = (args) ->
       bc_file.contents = string.dump f, false
     else
       bc_file\delete! if bc_file.exists
-      print err
       log.error "Failed to update byte code for #{file}: #{err}"
 
 config.define {
@@ -33,3 +32,14 @@ config.define {
 }
 
 signal.connect 'buffer-saved', on_buffer_saved
+
+info = {
+  author: 'The Howl Developers',
+  description: 'Howl development bundle',
+  license: 'MIT',
+}
+
+unload = ->
+  signal.disconnect 'buffer-saved', on_buffer_saved
+
+return :info, :unload

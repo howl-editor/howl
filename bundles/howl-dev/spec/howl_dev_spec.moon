@@ -1,7 +1,9 @@
-{:app, :config, :Buffer} = howl
-require 'howl.dev'
+{:app, :bundle, :config, :Buffer} = howl
 
-describe 'dev', ->
+describe 'dev bundle', ->
+  setup -> bundle.load_by_name 'howl-dev'
+  teardown -> bundle.unload 'howl-dev'
+
   describe 'when buffers are saved', ->
     local orig_root_dir
 
