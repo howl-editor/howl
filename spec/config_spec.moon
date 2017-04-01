@@ -105,6 +105,12 @@ describe 'config', ->
       assert.equal 'set-default', config.get 'var', 'scope1', 'layer1'
       assert.equal 'def-default', config.get 'var', 'scope1'
 
+    it 'set_default for a layer takes precedence over global config value', ->
+      config.set_default 'var', 'set-default', 'layer1'
+      config.var = 'global-value'
+      assert.equal 'set-default', config.get 'var', 'scope1', 'layer1'
+      assert.equal 'global-value', config.get 'var', 'scope1'
+
     it 'set_default value is not persisted', ->
       with_tmpdir (dir) ->
         config.set_default 'var', 'set-default', 'layer1'
