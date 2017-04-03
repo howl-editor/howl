@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added support for X11 primary selection (e.g. copy & paste using middle
+button).
+
 - New Cython bundle provides syntax and structure support for
 [Cython](http://cython.org) code.
 
