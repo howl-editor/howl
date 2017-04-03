@@ -3,6 +3,8 @@
 
 Atom = require 'ljglibs.gdk.atom'
 GtkClipboard = require 'ljglibs.gtk.clipboard'
+TargetEntry = require 'ljglibs.gtk.target_entry'
+{:PropertyTable} = howl.util
 ffi = require 'ffi'
 
 {:config} = howl
@@ -18,9 +20,25 @@ config.define {
 clips = {}
 registers = {}
 system_clipboard = GtkClipboard.get(Atom.SELECTION_CLIPBOARD)
+system_primary = GtkClipboard.get(Atom.SELECTION_PRIMARY)
 sync_counter = ffi.new 'uint64_t'
 
+UTF8_TARGET = TargetEntry('UTF8_STRING')
+
+primary = PropertyTable {
+  clear: -> system_primary\clear!
+  text:
+    set: (v) =>
+      if callable(v)
+        system_primary\set UTF8_TARGET, 1, v
+      else
+        system_primary.text = v
+
+    get: => system_primary.text
+}
+
 local Clipboard
+
 Clipboard = {
   push: (item, opts = {}) ->
     item = { text: item } if type(item) == 'string'
@@ -31,7 +49,7 @@ Clipboard = {
       table.insert clips, 1, item
       clips[config.clipboard_max_items + 1] = nil
       system_clipboard.text = item.text
-      system_clipboard\set_can_store!
+      system_clipboard\set_can_store nil, 0
       sync_counter += 1
 
   store: ->
@@ -54,6 +72,7 @@ Clipboard = {
 
   clips: get: -> clips
   registers: get: -> registers
+  primary: get: -> primary
 }
 
-howl.util.PropertyTable Clipboard
+PropertyTable Clipboard

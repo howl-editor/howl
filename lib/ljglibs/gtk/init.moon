@@ -49,6 +49,12 @@ core.auto_loading 'gtk', {
     'ALIGN_END',
     'ALIGN_CENTER',
     'ALIGN_BASELINE',
+
+    -- GtkTargetFlags
+    'TARGET_SAME_APP',
+    'TARGET_SAME_WIDGET',
+    'TARGET_OTHER_APP',
+    'TARGET_OTHER_WIDGET',
   }
 
   cairo_should_draw_window: (cr, window) ->

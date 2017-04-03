@@ -1,5 +1,6 @@
 Atom = require 'ljglibs.gdk.atom'
 Clipboard = require 'ljglibs.gtk.clipboard'
+TargetEntry = require 'ljglibs.gtk.target_entry'
 
 describe 'Clipboard', ->
   describe 'get(atom)', ->
@@ -22,3 +23,23 @@ describe 'Clipboard', ->
       assert.equals 'set!', cb.text
       cb.text = 'new'
       assert.equals 'new', cb\wait_for_text!
+
+  describe 'set(targets, get_func, clear_func)', ->
+    local cb, target
+
+    before_each ->
+      cb = Clipboard.get Atom.SELECTION_PRIMARY
+      target = TargetEntry('UTF8_STRING')
+
+    it 'invokes and returns the value of `get_func` on demand', ->
+      get_func = () -> 'SPEC_TEXT'
+      cb\set target, 1, get_func
+      assert.equals 'SPEC_TEXT', cb.text
+
+    it 'invokes the clear_func if the clipboard is cleared', ->
+      get_func = () -> 'SPEC_TEXT'
+      clear_func = spy.new ->
+      cb\set target, 1, get_func, clear_func
+      cb\clear!
+      assert.spy(clear_func).was_called_with(cb)
+      assert.is_nil cb.text
