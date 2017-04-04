@@ -32,6 +32,10 @@ else
 endif
 OBJECTS = main.o process_helpers.o
 DEP_OBJECTS = $(LPEG_OBJECT)
+LUASRC := $(shell find ../lib ../bundles -name '*.lua')
+LUABC := $(patsubst %.lua,%.bc,$(LUASRC))
+MOONSRC := $(shell find ../lib ../bundles -name '*.moon')
+MOONBC := $(patsubst %.moon,%.bc,$(MOONSRC))
 
 all: howl bytecode
 
@@ -66,9 +70,15 @@ deps-clean:
 clean:
 	-rm -f ${OBJECTS}
 
-bytecode: howl
-	-@find ../lib ../bundles -name '*.bc' | xargs rm
-	@find ../lib ../bundles -name '*.lua' -o -name '*.moon' | xargs ./howl --compile
+bytecode: howl $(LUABC) $(MOONBC)
+
+$(LUABC): %.bc: %.lua howl
+	rm -f $@
+	./howl --compile $<
+
+$(MOONBC): %.bc: %.moon howl
+	rm -f $@
+	./howl --compile $<
 
 install: all
 	@echo Installing to $(DESTDIR)$(PREFIX)..
