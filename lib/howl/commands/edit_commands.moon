@@ -97,6 +97,25 @@ command.register
       app.editor.line_at_top = replacement.line_at_top
 
 command.register
+  name: 'buffer-sort-lines'
+  description: 'Sort the selected lines or the entire buffer'
+  handler: ->
+    editor = howl.app.editor
+    local lines
+    if editor.selection.empty
+      lines = editor.buffer.lines
+    else
+      lines = editor.active_lines
+    return unless #lines > 1
+
+    texts = [line.text for line in *lines]
+    table.sort texts, (a, b) -> a.stripped < b.stripped
+    editor.buffer\as_one_undo ->
+      for idx, line in ipairs lines
+        line.text = texts[idx]
+
+
+command.register
   name: 'editor-paste..',
   description: 'Paste a selected clip from the clipboard at the current position'
   input: interact.select_clipboard_item
