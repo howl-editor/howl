@@ -76,10 +76,13 @@ parse_color = (spec, alpha = 1) ->
   tostring(c)
 
 parse_font = (font = {}) ->
-  font_size_unit = 'px'
+  font_size_unit = 'pt'
 
-  if Gtk.get_major_version! == 3 and Gtk.get_minor_version! < 10
-    font_size_unit = ''
+  if Gtk.get_major_version! == 3
+    if Gtk.get_minor_version! < 10
+      font_size_unit = ''
+    elseif Gtk.get_minor_version! < 22
+      font_size_unit = 'px'
 
   size = config.font_size
   decls = {
