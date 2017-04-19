@@ -150,9 +150,10 @@ class FileSelector
       return false unless @command_line.text.is_empty
       @_chdir @directory.parent if @directory.parent
 
-    escape: =>
-      app.editor\cancel_preview!
-      self.finish!
+    binding_for:
+      ["cancel"]: =>
+        app.editor\cancel_preview!
+        self.finish!
 
     ctrl_s: =>
       @show_subtree = not @show_subtree

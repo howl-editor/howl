@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
+import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config, command from howl
 import File, Process from howl.io
 import PropertyObject from howl.util.moon
 Gtk = require 'ljglibs.gtk'
@@ -501,5 +501,10 @@ signal.register 'file-opened',
 
 signal.register 'app-ready',
   description: 'Signaled right after the application has completed initialization'
+
+command.register
+  name: 'cancel'
+  description: 'Command used to abort from action'
+  handler: -> nil
 
 return Application

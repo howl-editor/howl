@@ -69,7 +69,27 @@ substituted_names = {
   kp_next: 'kp_page_down'
 }
 
+export remapped_keys = {
+--  ctrl_g: 'escape'
+}
+
 substitute_keyname = (event) ->
+  -- for key, val in pairs event
+  --   print key, val
+  -- print "_____"      
+  
+  remapped_event = remapped_keys[event]
+  if remapped_event
+    print "Inside here"
+    event = remapped_event
+
+-- if event.key_name == "g" and event.control == true
+  --   print "HERE"
+  --   event.control = false
+  --   event.key_name = "escape"
+  --   event.key_code = 65307
+  --   --copy.character = "\e" // not needed
+  --   return event
   key_name = substituted_names[event.key_name]
   return event unless key_name
   copy = {k,v for k,v in pairs event}
@@ -189,7 +209,6 @@ export dispatch = (event, source, maps_to_search, ...) ->
   translations = translate_key event
   handlers, halt_map, map_opts = find_handlers event, source, translations, maps_to_search, ...
   remove halt_map if halt_map and map_opts.pop
-
   for handler in *handlers
     status, ret = true, true
     htype = typeof handler

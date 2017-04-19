@@ -31,7 +31,8 @@ class SearchInteraction
     up: => @searcher\previous!
     down: => @searcher\next!
     enter: => self.finish true
-    escape: => self.finish!
+    binding_for:
+      ["cancel"]: => self.finish!
 
 interact.register
   name: 'search'

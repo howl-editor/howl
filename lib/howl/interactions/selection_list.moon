@@ -69,7 +69,8 @@ class SelectionList
 
   keymap:
     enter: => @submit!
-    escape: => self.finish!
+    binding_for:
+      ["cancel"]: => self.finish!
     tab: =>
       if not @showing_list
         @show_list!

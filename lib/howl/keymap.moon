@@ -93,6 +93,7 @@
 
   }
 
+  escape:           'cancel'
   ctrl_o:           'open'
   ctrl_shift_o:     'open-recent'
   ctrl_p:           'project-open'
