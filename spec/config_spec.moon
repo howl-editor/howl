@@ -578,16 +578,16 @@ describe 'config', ->
         assert.same nil, config.for_file(dir).name33
         assert.same nil, config.name3
 
-    context 'for_layer', ->
-      it 'creates another proxy for specified layer at same scope', ->
-        with_tmpdir (dir) ->
-          with config.for_file(dir).for_layer('layer1')
-            .name1 = 'dir-layer1-value1'
-          with config.for_file(dir)
-            .name1 = 'dir-value1'
+  context 'for_layer', ->
+    it 'creates another proxy for specified layer at same scope', ->
+      with_tmpdir (dir) ->
+        with config.for_file(dir).for_layer('layer1')
+          .name1 = 'dir-layer1-value1'
+        with config.for_file(dir)
+          .name1 = 'dir-value1'
 
-          with config.for_file(dir..'abc').for_layer('layer1')
-            .name1 =  'file-layer1-value1'
+        with config.for_file(dir..'abc').for_layer('layer1')
+          .name1 =  'file-layer1-value1'
 
-          assert.same 'file-layer1-value1', config.for_file(dir..'abc').for_layer('layer1').name1
-          assert.same 'dir-value1', config.for_file(dir..'abc').name1
+        assert.same 'file-layer1-value1', config.for_file(dir..'abc').for_layer('layer1').name1
+        assert.same 'dir-value1', config.for_file(dir..'abc').name1
