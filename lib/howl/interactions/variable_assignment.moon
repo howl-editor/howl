@@ -45,13 +45,13 @@ scope_item = (def, scope_name, target, description='', layer=nil) ->
   }
 
 scope_items = (def, buffer) ->
-  mode_layer = buffer and buffer.mode.config_layer
-  mode_name = mode_layer and buffer.mode.name
   items = {}
   append items, scope_item(def, 'global', config)
 
   return items if def.scope == 'global' or not buffer
 
+  mode_layer = buffer.mode.config_layer
+  mode_name = buffer.mode.name
   append items, scope_item(
     def, 'global', config, "For all buffers with mode #{mode_name}", mode_layer)
 
@@ -60,11 +60,11 @@ scope_items = (def, buffer) ->
     if project
       append items, scope_item(
         def, 'project', project.config,
-        "For all files under #{project.root.basename}")
+        "For all files under #{project.root.short_path}")
 
       append items, scope_item(
         def, 'project', project.config,
-        "For all files under #{project.root.basename} with mode #{mode_name}", mode_layer)
+        "For all files under #{project.root.short_path} with mode #{mode_name}", mode_layer)
 
   append items, scope_item(
     def, 'buffer', buffer.config,
