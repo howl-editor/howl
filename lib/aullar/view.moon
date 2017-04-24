@@ -90,7 +90,6 @@ View = {
       append @_handlers, \on_scroll_event self\_on_scroll
       append @_handlers, \on_draw self\_draw
       append @_handlers, \on_screen_changed self\_on_screen_changed
-      append @_handlers, \on_size_allocate self\_on_size_allocate
       append @_handlers, \on_focus_in_event self\_on_focus_in
       append @_handlers, \on_focus_out_event self\_on_focus_out
 
@@ -128,6 +127,7 @@ View = {
     }
 
     append @_handlers, @bin\on_destroy self\_on_destroy
+    append @_handlers, @bin\on_size_allocate self\_on_size_allocate
 
     @_buffer_listener = {
       on_inserted: (_, b, args) -> self\_on_buffer_modified b, args, 'inserted'
