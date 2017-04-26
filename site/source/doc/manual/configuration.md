@@ -13,14 +13,23 @@ for [Moonscript](http://moonscript.org) and `init.lua` for
 [Lua](http://www.lua.org). Should a startup file be found, it is loaded
 after Howl is initialized, which includes loading all available bundles.
 Howl does not have any special configuration format for use with the
-startup file, instead it's just plain Lua or Moonscript. While the startup
-file would typically be mostly used for various type of configuration,
+startup file, instead it's just plain Lua or Moonscript.
+
+The startup file is typically used for various types of configuration, but
 there's no restriction to what you can do in it - you have access to the entire
-[Howl API](../#api-reference).
+[Howl API](../#api-reference). However, some parts of the API, such as running
+commands, can only be accessed after the application has fully initialized, and
+needs be run within an `'app-ready'` signal handler, rather than at the top
+level. For instance, this code launches the file selection command on startup:
+
+```moon
+howl.signal.connect 'app-ready', ->
+  howl.command.run 'open'
+```
 
 You can split up your startup code in multiple files if you like. Your local
 user files will be not found by an ordinary `require`, since the user directory
-is not part of the search path. However, there is an `user_load` helper available
+is not part of the search path. However, there is a `user_load` helper available
 from your startup files that works the same way. For example, given
 `init.moon` and `other.moon` in the Howl user directory, you could load
 'other' from init like so:
@@ -73,44 +82,71 @@ press enter again to switch to the specified theme. See the sections below,
 [Automatic persistence](#automatic-persistence), for information on how to
 change a setting so that it persists across restarts.
 
-Configuration variables can be specified at three different levels in Howl,
-in ascending order of priority:
+### Scopes and layers
 
-- *Globally*
+The value for each configuration variable can be set at multiple levels, called
+*scopes*, and at multiple *layers* for each scope. The scope is the path for
+which the configuration value applies. For instance, a configuration value set
+at the *global* scope applies to all buffers. A configuration value at a
+*file* scope applies to a specific file only, overriding any global value for
+the same variable. A folder scope (similar to file scope, but referencing a
+folder) applies a value to all files under a specific folder.
 
-The value set for the variable is used unless overridden by a mode or buffer
-specific setting (the `set` command always sets variables globally).
+Scopes work well when the same configuration value applies to all types of files
+within a scope. To use different values depending on the
+[mode](getting-started.html#modes), configuration *layers* are used. A layer is
+a string such as `'mode:moonscript'` and can by specified in addition to the
+scope for a variable. So a value set at global scope for layer
+`'mode:moonscript'` is applied to all moonscript buffers. A value set for scope
+`'file/path/to/project'` and layer `'mode:python'` is applied to all python
+files under the `path/to/project` folder.
 
-- *Per mode*
+### Interactive configuration
 
-The value is set for a particular mode (e.g. "Lua" or "Ruby"), and is applied
-whenever a buffer with that particular mode is active. The value is used unless
-overridden by a buffer specific setting, and overrides any global setting.
+As seen above, the `set` command is used to specify values for configuration
+variables. When setting the `theme`, you did not have a choice for scope because
+the theme can only be specified for the `global` scope. For other variables, the
+`set` command allows you to specify the scope, and optionally, the layer.
 
-- *Per buffer*
+The syntax for the `set` command is:
 
-The value is set for a particular buffer, and is applied whenever that buffer
-is active. The value overrides any mode specific or global setting.
+```
+set name@scope_name[layer]=value
+```
 
-As an example of how this could be used a real life scenario, consider the
-case of indentation: You might generally prefer your source code to be indented
-with two spaces. However, some languages might have generally accepted style
-guidelines where four spaces is considered the norm. Even so, certain projects
-written in such a language might have adopted the inexplicable custom of using
-three spaces for indentation.
+While you can type out the entire command by hand, a selection list for the
+scope_name and another for the value (if applicable) is displayed to make
+command entry easier. Let's see a few examples of using this command to set the
+`indent` configuration variable for different scopes and layers. The `indent`
+variable specifies the number of characters to use for each level of
+indentation.
 
-In such a scenario, you could set the `indent` variable to 2 globally, override
-it with 4 for a given mode, and override with 3 for any buffer with an associated
-file in a certain directory.
+* *Global scope*: To set the global value of indent to '3', use the command `set
+indent@global=3`. Note that after you type `set indent@`, the command shows an
+auto complete list containing different options for *scope* and the current
+effective value at each scope.
+
+* *For current buffer*: To set the configuration for the current buffer only to
+4, use the command `set indent@buffer=4`. This applies the the currently active
+buffer only, and no other buffers.
+
+* *For current mode*: Another available option applies to the global scope and
+mode layer for the current mode. This command looks something like `set
+indent@globa[mode:moonscript]=2` (assuming the current mode is *moonscript*).
+This applies indent=2 to all buffers with that are in moonscript mode.
+
+Once you type the full command, pressing `enter` makes it effective and pressing
+`escape` cancels, making no changes. You can also press `backspace` to go back
+and change the selected scope, or the originally selected variable.
 
 ### Programmatic access
 
-As described above, variables can be set on three different levels. No matter
-the on what level they're set, they're always set (and accessed) using
-`config` objects. For global accesses, you can use the main config object in
-the howl namespace. For mode variables you access variables using the config
-object on a particular mode instance, and similarily for buffer variables
-you use the config object for a particular buffer.
+The Howl API can be used to update the configuration values as well. An easy way
+to set (and access) variables is using `config` objects. For the global scope,
+you can use the main config object in the `howl` namespace. For a specific mode,
+you access variables using the config object on a particular mode instance, and
+similarily for buffer variables you use the config object for a particular
+buffer.
 
 The following code snippet illustrates the various ways of setting variables on
 different levels:
@@ -121,13 +157,17 @@ howl.mode.by_name('ruby').config.my_var = 'foo'
 howl.app:new_buffer().config.my_var = 'foo'
 ```
 
+For more fine grained access to configuration variables, see the [config
+API](../api/config.html).
+
 ### Setting variables upon startup
 
-Let's have a look at configuring the `indent` variable as discussed in the
-[overview](#overview), using the below example Moonscript init file (init.moon):
+Let's have a look at configuring the `indent` variable as discussed in
+[Interactive configuration](#interactive-configuration) earlier, using the below
+example Moonscript init file (init.moon):
 
 ```moon
-import config, mode, signal from howl
+import config, mode from howl
 import File from howl.io
 
 -- Set indent globally to two spaces
@@ -138,12 +178,8 @@ mode.configure 'c', {
   indent: 4
 }
 
--- Hook up a signal handler to set it to three for this weird project
-that_project_root = File '/home/nino/code/that_project'
-
-signal.connect 'file-opened', (args) ->
-  if args.file\is_below that_project_root
-    args.buffer.config.indent = 3
+-- Set it to three for this weird project
+config.for_file('/home/nino/code/some_project').indent = 3
 ```
 
 A few notes on the above example:
@@ -158,31 +194,29 @@ A few notes on the above example:
   to set a variable. Using configure() instead means that it will be set once
   the mode is loaded (or straight away should the mode already be loaded).
 
-- We use [signal.connect](../api/signal.html#connect) to add a signal handler
-  for the `file-opened` signal, and set the indent for a certain buffer with
-  an associated file under a given directory.
-
+- We use [config.for_file](../api/config.html#for_file) to add access a config
+  *proxy* object that sets and gets variables for the file scope.
 
 ### Automatic persistence
 
-Howl does not, by default, automatically save any configuration variables
-updated via the command line or the API. One way to save your settings is to
-manually update the `init.moon` file as described in the previous section.
-Another way is to use the  `save_config_on_exit` configuration variable which
-enables automatic persistence of global configuration variables.
+Howl does not automatically save any configuration variables updated via the
+command line or the API. One way to save your settings is to manually update the
+`init.moon` file as described in the previous section. Another way is to use the
+ `save_config_on_exit` configuration variable which enables automatic
+persistence of global configuration variables.
 
 A simple way to enable automatic persistence is to add the following line to
 your `init.moon`:
 
-```moonscript
+```moon
 config.save_config_on_exit = true
 ```
 
 Once `save_config_on_exit` is set to `true`, the current state of global
 configuration variables is automatically saved on exit and reloaded on startup.
 Note that automatic persistence applies to global variables and mode
-configuration only - buffer level variables are not automatically persisted
-currently.
+configuration only - configuration at other scopes such as files and buffer is
+not currently persisted.
 
 Automatically persisted variables are stored in the file
 `~/.howl/system/config.lua`. Any variables set via `init.moon` override the

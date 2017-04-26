@@ -544,3 +544,50 @@ describe 'config', ->
         config.save_config dir
         config.load_config true, dir
         assert.same 'value1-global', config.get 'name1', 'buffer/123'
+
+  context 'for_file', ->
+    before_each ->
+      config.define name: 'name1', description: ''
+      config.define name: 'name2', description: ''
+      config.define name: 'name3', description: ''
+      config.define_layer 'layer1'
+      config.define_layer 'layer2'
+
+    it 'returns a proxy that inherits from global', ->
+      with_tmpdir (dir) ->
+        config.set 'name1', 'value1'
+        assert.same 'value1', config.for_file(dir .. 'abc').name1
+
+    it 'returns the same config for same file path', ->
+      with_tmpdir (dir) ->
+        fileconfig = config.for_file(dir .. 'abc')
+        fileconfig.name1 = 'file-value1'
+        fileconfig2 =  config.for_file(dir.path .. '/abc')
+        assert.same 'file-value1', fileconfig2.name1
+
+    it 'constructs scopes that inherit from ancestor file scopes', ->
+      with_tmpdir (dir) ->
+        with config.for_file(dir)
+          .name1 = 'dir-value1'
+          .name2 = 'dir-value2'
+        with config.for_file(dir .. 'abc')
+          .name1 = 'file-value1'
+          .name3= 'file-value3'
+        assert.same 'file-value1', config.for_file(dir .. 'abc').name1
+        assert.same 'dir-value2', config.for_file(dir .. 'abc').name2
+        assert.same nil, config.for_file(dir).name33
+        assert.same nil, config.name3
+
+  context 'for_layer', ->
+    it 'creates another proxy for specified layer at same scope', ->
+      with_tmpdir (dir) ->
+        with config.for_file(dir).for_layer('layer1')
+          .name1 = 'dir-layer1-value1'
+        with config.for_file(dir)
+          .name1 = 'dir-value1'
+
+        with config.for_file(dir..'abc').for_layer('layer1')
+          .name1 =  'file-layer1-value1'
+
+        assert.same 'file-layer1-value1', config.for_file(dir..'abc').for_layer('layer1').name1
+        assert.same 'dir-value1', config.for_file(dir..'abc').name1

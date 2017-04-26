@@ -543,8 +543,14 @@ class CommandLine extends PropertyObject
       ["cursor-right"]: => @command_widget.cursor\right!
 
       ["editor-delete-back"]: =>
-        -- don't backspace into prompt
-        return true if @command_widget.cursor.pos <= @_prompt_end
+        if @command_widget.cursor.pos <= @_prompt_end
+          -- backspace attempted into prompt
+          if @_activity and @_activity.handle_back
+            @_activity\handle_back!
+            return true
+          else
+            return true
+
         range_start = @command_widget.selection\range!
         return if range_start and range_start < @_prompt_end
         @command_widget\delete_back!
@@ -557,12 +563,19 @@ class CommandLine extends PropertyObject
 
     f1: => @show_help!
 
-  add_widget: (name, widget) =>
+  add_widget: (name, widget, pos='bottom') =>
     error('No widget provided', 2) if not widget
 
     @remove_widget name
 
-    @box\pack_end widget\to_gobject!, false, 0, 0
+    local pack
+    if pos == 'bottom'
+        pack = @box\pack_end
+    elseif pos == 'top'
+        pack = @box\pack_start
+    else
+        error "Invalid pos #{pos}"
+    pack widget\to_gobject!, false, 0, 0
     @_widgets[name] = widget
 
     widget\show!

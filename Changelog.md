@@ -14,6 +14,10 @@ button).
 you've relied on it: set it explicitly to its' previous value `1` in your Howl
 configuration.
 
+- **breaking** - Overhauled the configuration system to use a flexible *scope*
+and *layer* structure. Replaced all 'set*' commands with a new `set` command as
+part of this. See the documentation for more details.
+
 - Added `config.save_config_on_exit` variable to automatically save global
 configuration to `~/.howl/system/config.lua`.
 

@@ -1,16 +1,10 @@
--- Copyright 2012-2015 The Howl Developers
--- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+--- Copyright 2012-2017 The Howl Developers
+--- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import Matcher from howl.util
-import app, config, interact from howl
-import ListWidget, NotificationWidget, StyledText from howl.ui
+import config, interact, Project from howl
+import StyledText from howl.ui
 
 append = table.insert
-
-parse_assignment = (text) ->
-  name, val = text\match('%s*(%S+)%s*=%s*(%S.*)%s*')
-  return name, val if name
-  return text\match('%s*(%S+)%s*=')
 
 stringify = (value, to_s) ->
   return to_s(value) if type(value) != 'table'
@@ -36,99 +30,151 @@ option_current_value = (def, options, current_buffer) ->
     if option == cur_val or (type(option) == 'table' and option[1] == cur_val)
       return option
 
-option_caption = (name, current_buffer, def) ->
+scope_str = (scope_name, layer=nil) ->
+  scope_name ..= "[#{layer}]" if layer
+  return scope_name
+
+scope_item = (def, scope_name, target, description='', layer=nil) ->
+  if layer
+    target = target.for_layer layer
   to_s = def.tostring or tostring
-  caption = StyledText def.description .. '\n\n', {}
-  mode_val = current_buffer.mode.config and current_buffer.mode.config[name]
-  value_table = StyledText.for_table {
-    { "Global value:", to_s config[name] },
-    { "For current mode:", to_s mode_val },
-    { "For current buffer:", to_s current_buffer.config[name] }
-  }, { {}, { style: 'string' } }
-  return caption .. value_table
+  {
+    scope_str(scope_name, layer), to_s(target[def.name]), description,
+    :scope_name, :layer, :target,
+    quick_select: scope_str(scope_name, layer) .. '='
+  }
 
-class VariableAssignment
-  run: (@finish) =>
-    @command_line = app.window.command_line
-    vars = [{name, def.description} for name, def in pairs config.definitions]
-    table.sort vars, (a, b) -> a[1] < b[1]
-    @name_matcher = Matcher vars
+scope_items = (def, buffer) ->
+  items = {}
+  append items, scope_item(def, 'global', config)
 
-    @list_widget = ListWidget @name_matcher, never_shrink: true
-    @list_widget.max_height_request = app.window.allocated_height * 0.5
-    @command_line\add_widget 'completion_list', @list_widget
+  return items if def.scope == 'global' or not buffer
 
-    @caption_widget = NotificationWidget!
-    @command_line\add_widget 'caption', @caption_widget
-    @caption_widget\hide!
-    @on_update ''
+  mode_layer = buffer.mode.config_layer
+  mode_name = buffer.mode.name
+  append items, scope_item(
+    def, 'global', config, "For all buffers with mode #{mode_name}", mode_layer)
 
-  on_update: (text) =>
-    @caption_widget\hide!
-    name, val = parse_assignment text
-    if name
-      def = config.definitions[name]
-      unless def
-        log.error "Unknown variable #{name}"
-        return
+  if buffer.file
+    project = Project.for_file buffer.file
+    if project
+      append items, scope_item(
+        def, 'project', project.config,
+        "For all files under #{project.root.short_path}")
 
-      @command_line.title = name
-      caption = option_caption name, app.editor.buffer, def
-      if caption
-        with @caption_widget
-          \caption caption
-          \show!
+      append items, scope_item(
+        def, 'project', project.config,
+        "For all files under #{project.root.short_path} with mode #{mode_name}", mode_layer)
 
-      if def.options
-        if not @value_matcher
-          options, columns = option_completions def
-          @value_matcher = Matcher options
-          @current_value = option_current_value def, options, app.editor.buffer
-          with @list_widget
-            .matcher = @value_matcher
-            .columns = columns
+  append items, scope_item(
+    def, 'buffer', buffer.config,
+    "For #{buffer.title} only")
 
-        @list_widget\show! if not @list_widget.showing
-        @list_widget\update val
-        if not val or val.is_blank and @current_value
-          @list_widget.selection = @current_value
+  return items
 
-      else
-        @list_widget\hide! if @list_widget.showing
-    else
-      @value_matcher = nil
-      @current_value = nil
-
-      @command_line.title = 'Set Variable'
-
-      with @list_widget
-        .matcher = @name_matcher
-        .columns = {
-          { header: 'Variable', style: 'string' }
-          { header: 'Description', style: 'comment' }
-        }
-        \show!
-        \update text
-
-  keymap:
-    enter: =>
-      name, val = parse_assignment @command_line.text
-      if name
-        if @list_widget.showing and @list_widget.selection
-          val = @list_widget.selection
-          val = val[1] if type(val) == 'table'
-          @command_line.text = name .. '=' .. val
-        self.finish
-          name: name
-          value: val
-      else
-        @command_line\clear!
-        @command_line\write @list_widget.selection[1] .. '='
-
-    escape: =>
-      self.finish!
+get_vars = ->
+  vars = [{name, def.description, :def, quick_select: {name..'=', name..'@'}} for name, def in pairs config.definitions]
+  table.sort vars, (a, b) -> a[1] < b[1]
+  return vars
 
 interact.register
   name: 'get_variable_assignment'
   description: 'Get config variable and value selected by user'
-  factory: VariableAssignment
+  handler: ->
+    command_line = howl.app.window.command_line
+    buffer = howl.app.editor.buffer
+
+    interact.sequence {'var', 'scope', 'value'},
+      var: -> interact.select
+        title: 'Select Variable'
+        items: get_vars!
+        columns: {
+          { header: 'Variable', style: 'string' }
+          { header: 'Description', style: 'comment' }
+        }
+
+      scope: (state, from_state) ->
+        def = state.var.selection.def
+        if def.scope == 'global'
+          if from_state == 'value'
+            return { back: true }
+          else
+            return { selection: { 'global', scope_name: 'global', target: config } }
+
+        interact.select
+          title: def.name
+          items: scope_items def, buffer
+          columns: {
+            { header: 'Scope', style: 'key' }
+            { header: 'Value', style: 'string' }
+            { header: '', style: 'comment' }
+          }
+          cancel_on_back: true
+
+      value: (state) ->
+        def = state.var.selection.def
+        title = "#{def.name} for #{state.scope.selection.scope_name}"
+        if def.options
+          items, columns = option_completions def
+          selected = interact.select
+            :title
+            :items
+            :columns
+            selection: option_current_value def, items, buffer
+            cancel_on_back: true
+
+          return unless selected
+          return selected if selected.back
+
+          if type(selected.selection) == 'table'
+            return selected.selection[1]
+          return selected.selection
+        else
+          interact.read_text
+            :title
+            cancel_on_back: true
+
+      update: (state) ->
+        prompt = ''
+        if state.var
+          prompt ..= state.var.selection.def.name .. '@'
+
+        if state.scope
+          item = state.scope.selection
+          prompt ..= scope_str item.scope_name, item.layer
+          prompt ..= '='
+
+        command_line.prompt = prompt
+
+        local caption
+        if state.var
+          def = state.var.selection.def
+          caption = StyledText def.description .. '\n', {}
+          if state.scope
+            caption ..= StyledText '\n', {}
+            caption ..= StyledText.for_table scope_items(def, buffer), {
+              { style: 'key' },
+              { style: 'string' }
+              { style: 'comment' }
+            }
+
+        if caption
+          caption_widget = howl.ui.NotificationWidget!
+          command_line\add_widget 'caption', caption_widget, 'top'
+          with caption_widget
+            \caption caption
+            \show!
+        else
+          command_line\remove_widget 'caption'
+
+      finish: (state) ->
+        return unless state
+
+        return {
+          target: state.scope.selection.target,
+          var: state.var.selection.def.name,
+          value: state.value
+          scope_name: state.scope.selection.scope_name,
+          layer: state.scope.selection.layer,
+          :buffer
+        }

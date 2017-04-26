@@ -116,3 +116,48 @@ describe 'interact', ->
         finish2 = captured_finish
 
         assert.has_no_error finish2
+
+  describe 'sequence()', ->
+    it 'runs specified functions in serial, returns table containing all results', ->
+      calls = {}
+      local result
+      run_in_coroutine ->
+        result = interact.sequence {'first', 'second', 'third'},
+          first: ->
+            table.insert calls, 'first'
+            'first-result'
+          second: ->
+            table.insert calls, 'second'
+            'second-result'
+          third: ->
+            table.insert calls, 'third'
+            'third-result'
+      assert.same {'first', 'second', 'third'}, calls
+      assert.same 'first-result', result.first
+      assert.same 'second-result', result.second
+      assert.same 'third-result', result.third
+
+    it 'a function returning nil cancels the entire interaction', ->
+      calls = {}
+      local result
+      run_in_coroutine ->
+        result = interact.sequence {'first', 'second', 'third'},
+          first: ->
+            table.insert calls, 'first'
+            'first-result'
+          second: ->
+            table.insert calls, 'second'
+            nil
+          third: ->
+            table.insert calls, 'third'
+            'third-result'
+      assert.same {'first', 'second'}, calls
+      assert.same nil, result
+
+    it 'calls `finish`, if present, on the final result and returns that', ->
+      local result
+      run_in_coroutine ->
+        result = interact.sequence {'first'},
+          first: -> 'first-result'
+          finish: (r) -> 'finish ' .. r.first
+      assert.same 'finish first-result', result
