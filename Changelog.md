@@ -2,7 +2,9 @@
 
 ## Unreleased (in master)
 
-- Quiet Gtk size allocation warnings
+- Theme compatibility fixes for newer Gtk versions
+
+- Quiet Gtk size allocation warnings in newer Gtk versions
 
 - Added support for X11 primary selection (e.g. copy & paste using middle
 button).
