@@ -43,6 +43,7 @@ MODPATH_ISS_CHECKSUM = a39bb32a15e0f4b90b38933e6ceb6a78
 MODPATH_ISS_URL = https://www.legroom.net/files/software/modpath.iss
 
 ISCC=iscc
+CONVERT=convert
 
 CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
 ARCHIVES = $(LUAJIT_ARCHIVE)
@@ -58,21 +59,37 @@ endif
 ifdef WIN32
 	# MSYS sets CC to cc, even though it doesn't actually exist.
 	CC=gcc
+	CFLAGS += -mwindows
 	LIBS = -lm ${GTK_LIBS} -lstdc++ -lkernel32 -lgdi32
-	LD_FLAGS = -Wl,--export-all
+	LD_FLAGS = -mwindows -Wl,--export-all
+	ifdef MAKE_RC
+		WINRES=howl.res
+	endif
 endif
 OBJECTS = main.o process_helpers.o
 DEP_OBJECTS = $(LPEG_OBJECT)
+
+ICON=howl.ico
 
 .PHONY: all bytecode deps-download deps-purge deps-clean clean install uninstall windist wininstall
 
 all: ${HOWL_EXE} bytecode
 
-${HOWL_EXE}: ${OBJECTS} main.h $(ARCHIVES) $(DEP_OBJECTS) Makefile
-	${CC} -o howl ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
+${HOWL_EXE}: ${OBJECTS} main.h $(ARCHIVES) $(DEP_OBJECTS) Makefile $(WINRES)
+	${CC} -o howl ${OBJECTS} $(DEP_OBJECTS) ${WINRES} ${ARCHIVES} ${LIBS} ${LD_FLAGS}
 
 ${OBJECTS}: %.o : %.c main.h $(LUAJIT)
 	${CC} -c $< ${CFLAGS}
+
+${WINRES}: howl.rc ${ICON}
+	windres $< -O coff -o $@
+
+# Doing the full conversion using ImageMagick gives nasty results. So, RSVG-Convert
+# is used first, *then* ImageMagick.
+
+${ICON}: ../share/icons/hicolor/scalable/apps/howl.svg
+	RSVG-Convert $< -d 300 -p 300 -o howl.png
+	${CONVERT} -background transparent howl.png -define icon:auto-resize=128,64,48,32,16 $@
 
 $(LPEG):
 	@tools/download $(LPEG_URL) $(LPEG_CHECKSUM) tar xzf {file} -C deps
@@ -132,19 +149,19 @@ uninstall:
 	@echo All done.
 
 windist:
-	rm -rf windist
-	mkdir -p windist
-	mkdir -p windist/lib
+	@rm -rf windist
+	@mkdir -p windist
 
-	$(MAKE) install PREFIX=windist
-	for dll in `ldd howl.exe | grep mingw32 | cut -d= -f1 | cut -f1`; do \
-		cp -v /mingw32/bin/$dll windist/bin; \
+	@$(MAKE) install PREFIX=windist MAKE_RC=1
+	@for dll in `ldd howl.exe | grep mingw32 | cut -d= -f1 | cut -f2`; do \
+		cp -v /mingw32/bin/$$dll windist/bin; \
 	done
-	rm windist/bin/howl-spec
-	cp -v /mingw32/bin/librsvg*.dll /mingw32/bin/gspawn-win32-helper* windist/bin
-	cp -v howl.exe windist/bin
-	cp -rv /mingw32/lib/gdk-pixbuf-2.0 windist/lib
-	zip -r windist/howl.zip windist/bin windist/lib windist/share
+	@rm windist/bin/howl-spec
+	@cp -v /mingw32/bin/librsvg*.dll /mingw32/bin/gspawn-win32-helper* windist/bin
+	@cp -v howl.exe windist/bin
+	@mkdir -p windist/lib
+	@cp -rv /mingw32/lib/gdk-pixbuf-2.0 windist/lib
+	@zip -r windist/howl.zip windist/bin windist/lib windist/share
 
 wininst: $(MODPATH_ISS) windist
 	$(ISCC) wininst.iss
