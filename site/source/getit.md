@@ -27,6 +27,10 @@ _SHA1_: 557fea5af8e6768ea6408ab2d11db63c0ae5fdf4
 __Release notes:__
 [Howl 0.4 Released](/blog/2016/05/31/howl-0-4-released.html)
 
+## Building or installing Howl on Windows
+
+See [the Windows-specific documentation](/getit.windows.html).
+
 ## Building Howl from source
 
 ### Build requirements
@@ -46,17 +50,6 @@ dependencies).
 
 - `C compiler`: Howl has a very small C core itself, and it embedds a few
 dependencies built in C.
-
-####Windows dependencies
-
-On Windows, you need to build Howl under [MSYS2](https://msys2.github.io/). To
-install all the dependencies, you can open up the MSYS2 shell and run:
-
-```shell
-pacman -S make tar git wget patch  # utilities
-pacman -S mingw32/mingw-w64-i686-gcc mingw32/mingw-w64-i686-pkg-config  # toolchain
-pacman -S mingw32/mingw-w64-i686-gtk3  # dependencies
-```
 
 ### Building
 
@@ -96,12 +89,6 @@ by specifying `PREFIX` to make, like so:
 make PREFIX=~/.local
 make PREFIX=~/.local install
 ```
-
-**If you are using Windows, make sure you run the build commands inside MSYS2's
-MinGW32 shell, NOT the standard MSYS2 shell or the MinGW64 shell.** Using the
-wrong shell may result in very bizarre build errors. If you find you began the
-build in the wrong shell, make sure you run `make clean`, otherwise the build
-may still fail.
 
 *NB: If you install to a non-standard location, your desktop environment might
 not pick up on the fact that Howl is installed, and the application icon will
