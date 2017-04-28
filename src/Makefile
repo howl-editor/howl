@@ -13,6 +13,12 @@ ifdef WIN32
 endif
 GTK_LIBS = $(shell pkg-config --libs $(GTK_LIBNAMES))
 
+ifdef WIN32
+	HOWL_EXE=howl.exe
+else
+	HOWL_EXE=howl
+endif
+
 LUAJIT_VER = LuaJIT-2.1.0-beta1
 LUAJIT_CHECKSUM = 5a5bf71666e77cf6e7a1ae851127b834
 LUAJIT = deps/${LUAJIT_VER}
@@ -52,9 +58,11 @@ endif
 OBJECTS = main.o process_helpers.o
 DEP_OBJECTS = $(LPEG_OBJECT)
 
-all: howl bytecode
+.PHONY: all bytecode deps-download deps-purge deps-clean clean install uninstall windist
 
-howl: ${OBJECTS} main.h $(ARCHIVES) $(DEP_OBJECTS) Makefile
+all: ${HOWL_EXE} bytecode
+
+${HOWL_EXE}: ${OBJECTS} main.h $(ARCHIVES) $(DEP_OBJECTS) Makefile
 	${CC} -o howl ${OBJECTS} $(DEP_OBJECTS) ${ARCHIVES} ${LIBS} ${LD_FLAGS}
 
 ${OBJECTS}: %.o : %.c main.h $(LUAJIT)
@@ -112,3 +120,18 @@ uninstall:
 	@rm -v $(DESTDIR)$(PREFIX)/share/applications/howl.desktop
 	@rm -v $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/howl.svg
 	@echo All done.
+
+windist:
+	rm -rf windist
+	mkdir -p windist
+	mkdir -p windist/lib
+
+	$(MAKE) install PREFIX=windist
+	for dll in `ldd howl.exe | grep mingw32 | cut -d= -f1 | cut -f1`; do \
+		cp -v /mingw32/bin/$dll windist/bin; \
+	done
+	rm windist/bin/howl-spec
+	cp -v /mingw32/bin/librsvg*.dll /mingw32/bin/gspawn-win32-helper* windist/bin
+	cp -v howl.exe windist/bin
+	cp -rv /mingw32/lib/gdk-pixbuf-2.0 windist/lib
+	zip -r windist/howl.zip windist/bin windist/lib windist/share
