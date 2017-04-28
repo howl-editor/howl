@@ -57,6 +57,6 @@ const
 function ModPathDir(): TArrayOfString; 
 begin 
     setArrayLength(Result, 1) 
-    Result[0] := ExpandConstant('{app}\host\bin'); 
+    Result[0] := ExpandConstant('{app}\bin');
 end; 
 #include "deps/modpath.iss"
