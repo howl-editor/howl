@@ -56,7 +56,7 @@ describe 'Git bundle', ->
         assert.same list1, list2
 
       it 'returns a list of git files, including untracked', (done) ->
-        proc_async ->
+        howl_async ->
           assert_same_files git\files!, {}
           file = root / 'new.lua'
           file\touch!
@@ -71,7 +71,7 @@ describe 'Git bundle', ->
           file2 = root / 'another.lua'
           file2\touch!
           assert_same_files git\files!, { file2, file }
-          proc_done done
+          done!
 
     describe 'diff([file])', ->
       local file
@@ -83,37 +83,37 @@ describe 'Git bundle', ->
         os.execute "cd #{root} && git commit -q -m 'rev1' #{file}"
 
       it 'returns nil if <file> has not changed', (done) ->
-        proc_async ->
+        howl_async ->
           assert.is_nil git\diff file
-          proc_done done
+          done!
 
       it 'returns a string containing the diff if <file> has changed', (done) ->
-        proc_async ->
+        howl_async ->
           file.contents ..= 'line 2\n'
           diff = git\diff file
           assert.includes diff, file.basename
           assert.includes diff, '+line 2'
-          proc_done done
+          done!
 
       it 'returns a diff for the entire directory if file is not specified', (done) ->
-        proc_async ->
+        howl_async ->
           file.contents ..= 'line 2\n'
           diff = git\diff!
           assert.includes diff, file.basename
           assert.includes diff, '+line 2'
-          proc_done done
+          done!
 
     describe 'run(...)', ->
       it 'runs git in the root dir with the given arguments and returns the output', (done) ->
-        proc_async ->
+        howl_async ->
           assert.includes git\run('config', '--local', '-l'), "Howl Spec"
-          proc_done done
+          done!
 
       it 'uses the executable in variable `git_path` if specified', (done) ->
-        proc_async ->
+        howl_async ->
           config.git_path = echo
           status, out = pcall git.run, git, 'using echo'
           config.git_path = nil
           assert status, out
           assert.includes out, "using echo"
-          proc_done done
+          done!

@@ -100,18 +100,6 @@ export howl_async = (f) ->
   status, err = coroutine.resume co
   error err unless status
 
-export proc_async = (f) ->
-  local co
-  if jit.os == 'Windows'
-    co = coroutine.create f
-  else
-    set_howl_loop!
-    co = coroutine.create busted.async(f)
-  status, err = coroutine.resume co
-  error err unless status
-
-export proc_done = (done) -> done! unless jit.os == 'Windows'
-
 export pump_mainloop = ->
   jit.off true, true
   count = 0

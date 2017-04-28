@@ -42,12 +42,34 @@ spawn = {
     stdout = opts.read_stdout and ffi_new('gint[1]') or nil
     stderr = opts.read_stderr and ffi_new('gint[1]') or nil
 
-    catch_error C.g_spawn_async_with_pipes,
-      opts.working_directory,
-      argv, envp, spawn_flags,
-      nil, nil,
-      pid,
-      stdin, stdout, stderr
+    -- XXX: This is a nasty hack!!
+    -- On Windows, for reasons unknown, g_spawn_async_with_pipes will randomly
+    -- fail with an EOF error (?). In order to work around that, on Windows,
+    -- the spawn will be attempted three times first.
+
+    limit = if jit.os == 'Windows'
+      3
+    else
+      1
+
+    for i=1,limit
+      status, err = pcall catch_error, C.g_spawn_async_with_pipes,
+        opts.working_directory,
+        argv, envp, spawn_flags,
+        nil, nil,
+        pid,
+        stdin, stdout, stderr
+
+      if status
+        break
+      if jit.os == 'Windows' and err\match 'Failed to read from child pipe %(EOF%)'
+        _G.print i, limit
+        _G.io.flush!
+        if i < limit
+          -- Try sleeping for 1/10th second.
+          C.g_usleep 100000
+          continue
+      error err
 
     true_pid = pid[0]
     local pid
