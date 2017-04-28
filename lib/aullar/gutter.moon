@@ -5,7 +5,7 @@
 {:define_class} = require 'aullar.util'
 Pango = require 'ljglibs.pango'
 {:RGBA} = require 'ljglibs.gdk'
-Background = require 'ljglibs.aux.background'
+Background = require 'ljglibs.util.background'
 Layout = Pango.Layout
 pango_cairo = Pango.cairo
 

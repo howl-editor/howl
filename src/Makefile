@@ -38,6 +38,12 @@ LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
 LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
 
+MODPATH_ISS = deps/modpath.iss
+MODPATH_ISS_CHECKSUM = a39bb32a15e0f4b90b38933e6ceb6a78
+MODPATH_ISS_URL = https://www.legroom.net/files/software/modpath.iss
+
+ISCC=iscc
+
 CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
 ARCHIVES = $(LUAJIT_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
@@ -58,7 +64,7 @@ endif
 OBJECTS = main.o process_helpers.o
 DEP_OBJECTS = $(LPEG_OBJECT)
 
-.PHONY: all bytecode deps-download deps-purge deps-clean clean install uninstall windist
+.PHONY: all bytecode deps-download deps-purge deps-clean clean install uninstall windist wininstall
 
 all: ${HOWL_EXE} bytecode
 
@@ -82,10 +88,13 @@ $(LUAJIT):
 $(LUAJIT_ARCHIVE): $(LUAJIT)
 	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT"
 
+$(MODPATH_ISS):
+	@tools/download $(MODPATH_ISS_URL) $(MODPATH_ISS_CHECKSUM) cp {file} $(MODPATH_ISS)
+
 deps-download: $(LUAJIT) $(LPEG)
 
 deps-purge:
-	rm -rf $(LUAJIT) $(LPEG)
+	rm -rf $(LUAJIT) $(LPEG) $(MODPATH_ISS)
 
 deps-clean:
 	@rm $(LPEG_OBJECT) || true
@@ -97,6 +106,7 @@ clean:
 bytecode: howl
 	-@find ../lib ../bundles -name '*.bc' | xargs rm
 	@find ../lib ../bundles -name '*.lua' -o -name '*.moon' | xargs ./howl --compile
+	@rm -rf windist wininst
 
 install: all
 	@echo Installing to $(DESTDIR)$(PREFIX)..
@@ -135,3 +145,6 @@ windist:
 	cp -v howl.exe windist/bin
 	cp -rv /mingw32/lib/gdk-pixbuf-2.0 windist/lib
 	zip -r windist/howl.zip windist/bin windist/lib windist/share
+
+wininst: $(MODPATH_ISS) windist
+	$(ISCC) wininst.iss

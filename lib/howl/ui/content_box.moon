@@ -4,7 +4,7 @@
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 gobject_signal = require 'ljglibs.gobject.signal'
-Background = require 'ljglibs.aux.background'
+Background = require 'ljglibs.util.background'
 ffi = require 'ffi'
 
 {:signal} = howl
