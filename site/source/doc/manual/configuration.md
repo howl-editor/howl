@@ -127,13 +127,13 @@ auto complete list containing different options for *scope* and the current
 effective value at each scope.
 
 * *For current buffer*: To set the configuration for the current buffer only to
-4, use the command `set indent@buffer=4`. This applies the the currently active
+4, use the command `set indent@buffer=4`. This applies to the currently active
 buffer only, and no other buffers.
 
 * *For current mode*: Another available option applies to the global scope and
 mode layer for the current mode. This command looks something like `set
-indent@globa[mode:moonscript]=2` (assuming the current mode is *moonscript*).
-This applies indent=2 to all buffers with that are in moonscript mode.
+indent@global[mode:moonscript]=2` (assuming the current mode is *moonscript*).
+This applies indent=2 to all buffers that are in moonscript mode.
 
 Once you type the full command, pressing `enter` makes it effective and pressing
 `escape` cancels, making no changes. You can also press `backspace` to go back
