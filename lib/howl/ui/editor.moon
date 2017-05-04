@@ -637,9 +637,6 @@ class Editor extends PropertyObject
       error "Invalid var #{name}"
 
   _set_config_settings: =>
-    buf = @buffer
-    config = buf.config
-
     for name, _ in pairs editor_config_vars
       @refresh_variable name
 
