@@ -30,15 +30,33 @@ indicator_placements =
   bottom_left: true
   bottom_right: true
 
-apply_variable = (option, value) ->
-  for e in *editors!
-    e.view.config[option] = value
+editor_config_vars = {
+  indentation_guides: 'indentation_guides'
+  line_wrapping: 'line_wrapping'
+  line_wrapping_navigation: 'line_wrapping_navigation'
+  horizontal_scrollbar: 'horizontal_scrollbar'
+  vertical_scrollbar: 'vertical_scrollbar'
+  cursor_line_highlighted: 'cursor_line_highlighted'
+  line_numbers: 'line_numbers'
+  line_padding: 'line_padding'
+  edge_column: 'edge_column'
+}
+
+aullar_config_vars = {
+  cursor_blink_interval: 'cursor_blink_interval'
+  indent: 'view_indent'
+  tab_width: 'view_tab_size'
+  font_name: 'view_font_name'
+  font_size: 'view_font_size'
+  line_wrapping_symbol: 'view_line_wrap_symbol'
+}
 
 apply_global_variable = (name, value) ->
   aullar_config[name] = value
 
-apply_property = (name, value) ->
-  e[name] = value for e in *editors!
+apply_variable = (name) ->
+  for e in *editors!
+    e\refresh_variable name
 
 signal.connect 'buffer-saved', (args) ->
   for e in *editors!
@@ -609,27 +627,21 @@ class Editor extends PropertyObject
     else
       @_on_pos_changed!
 
-  _set_config_settings: =>
-    buf = @buffer
-    config = buf.config
-    view_conf = @view.config
+  refresh_variable: (name) =>
+    value = @buffer.config[name]
+    if aullar_config_vars[name]
+      @view.config[aullar_config_vars[name]] = value
+    elseif editor_config_vars[name]
+      @[editor_config_vars[name]] = value
+    else
+      error "Invalid var #{name}"
 
-    with config
-      @indentation_guides = .indentation_guides
-      @line_wrapping = .line_wrapping
-      @line_wrapping_navigation = .line_wrapping_navigation
-      @horizontal_scrollbar = .horizontal_scrollbar
-      @vertical_scrollbar = .vertical_scrollbar
-      @cursor_line_highlighted = .cursor_line_highlighted
-      @line_numbers = .line_numbers
-      @line_padding = .line_padding
-      @edge_column = .edge_column
-      view_conf.cursor_blink_interval = .cursor_blink_interval
-      view_conf.view_indent = .indent
-      view_conf.view_tab_size = .tab_width
-      view_conf.view_font_name = .font_name
-      view_conf.view_font_size = .font_size
-      view_conf.view_line_wrap_symbol = .line_wrapping_symbol
+  _set_config_settings: =>
+    for name, _ in pairs editor_config_vars
+      @refresh_variable name
+
+    for name, _ in pairs aullar_config_vars
+      @refresh_variable name
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
@@ -1050,30 +1062,11 @@ with config
     type_of: 'number'
     scope: 'global'
 
-  for watched_property in *{
-    'indentation_guides',
-    'edge_column',
-    'line_wrapping',
-    'line_wrapping_navigation',
-    'horizontal_scrollbar',
-    'vertical_scrollbar',
-    'cursor_line_highlighted',
-    'line_numbers',
-    'line_padding',
-  }
-    .watch watched_property, apply_property
+  for watched_property, _ in pairs aullar_config_vars
+    .watch watched_property, apply_variable
 
-  for live_update in *{
-    { 'font', 'view_font_name' }
-    { 'font_size', 'view_font_size' }
-    { 'tab_width', 'view_tab_size' }
-    { 'line_numbers', 'view_show_line_numbers' }
-    { 'indent', 'view_indent' }
-    { 'cursor_blink_interval', 'cursor_blink_interval' }
-    { 'line_wrapping_symbol', 'view_line_wrap_symbol' }
-  }
-    .watch live_update[1], (_, value) -> apply_variable live_update[2], value
-
+  for watched_property, _ in pairs editor_config_vars
+    .watch watched_property, apply_variable
 
   for global_var in *{
     'undo_limit'
