@@ -99,6 +99,10 @@ core.define 'GtkWidget < GObject', {
 
   add_events: (events) => C.gtk_widget_add_events @, events
 
+  queue_allocate: => C.gtk_widget_queue_allocate @
+
+  queue_resize: => C.gtk_widget_queue_resize @
+
   queue_draw: => C.gtk_widget_queue_draw @
 
   queue_draw_area: (x, y, width, height) =>

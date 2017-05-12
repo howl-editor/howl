@@ -121,7 +121,9 @@ ffi.cdef [[
   PangoContext * gtk_widget_get_pango_context (GtkWidget *widget);
   void gtk_widget_add_events (GtkWidget *widget, gint events);
 
+  void gtk_widget_queue_allocate (GtkWidget *widget);
   void gtk_widget_queue_draw (GtkWidget *widget);
+  void gtk_widget_queue_resize (GtkWidget *widget);
   void gtk_widget_queue_draw_area (GtkWidget *widget,
                                    gint x,
                                    gint y,
