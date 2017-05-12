@@ -15,8 +15,3 @@ describe 'Popup', ->
       o = nil
       collectgarbage!
       assert.is_nil list[1]
-
-    it 'memory usage is stable', ->
-      assert_memory_stays_within '5Kb', 20, ->
-        p = Popup child
-        p\destroy!

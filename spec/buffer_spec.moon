@@ -760,6 +760,6 @@ describe 'Buffer', ->
       assert.is_nil buffers[1]
 
     it 'memory usage is stable', ->
-      assert_memory_stays_within '5Kb', 30, ->
+      assert_memory_stays_within '10Kb', 30, ->
         buffer 'collect me!'
 
