@@ -34,8 +34,15 @@ config.define
   scope: 'global'
 
 config.define {
-  name: 'inspectors'
-  description: 'List of inspectors to run for a buffer'
+  name: 'inspectors_on_idle'
+  description: 'List of on-idle inspectors to run for a buffer'
+  type_of: 'string_list'
+  default: {}
+}
+
+config.define {
+  name: 'inspectors_on_save'
+  description: 'List of on-save inspectors to run for a buffer'
   type_of: 'string_list'
   default: {}
 }
@@ -45,9 +52,9 @@ config.define {
   description: 'When to automatically inspect code for abberrations'
   default: 'idle'
   options: {
-    { 'manual', 'Only inspect when explicitly asked' }
-    { 'idle', 'Inspect on idle' }
-    { 'save', 'Inspect when saving a buffer' }
+    { 'manual', 'Run all inspectors when explicitly asked' }
+    { 'idle', 'Run on-idle inspectors on idle and on-save inspectors on save' }
+    { 'save', 'Run all inspectors, but only on save' }
   }
 }
 

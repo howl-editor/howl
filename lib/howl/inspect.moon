@@ -27,28 +27,34 @@ resolve_inspector = (inspector, buffer) ->
   copy.cmd = copy.cmd\gsub '<file>', buffer.file.path
   copy
 
-load_inspectors = (buffer) ->
+load_inspectors = (buffer, scope = 'idle') ->
+  to_load = if scope == 'all'
+    {'inspectors_on_idle', 'inspectors_on_save'}
+  else
+    {"inspectors_on_#{scope}"}
+
   inspectors = {}
 
-  for inspector in *buffer.config.inspectors
-    conf = inspection[inspector]
-    if conf
-      instance = conf.factory buffer
-      if callable(instance)
-        append inspectors, instance
-      elseif type(instance) == 'string'
-        instance = resolve_inspector {cmd: instance}, buffer
-        if instance
+  for variable in *to_load
+    for inspector in *buffer.config[variable]
+      conf = inspection[inspector]
+      if conf
+        instance = conf.factory buffer
+        if callable(instance)
           append inspectors, instance
-      elseif type(instance) == 'table'
-        unless instance.cmd
-          error "Missing cmd key for inspector returned for '#{inspector}'"
-        instance = resolve_inspector instance, buffer
-        if instance
-          append inspectors, instance
+        elseif type(instance) == 'string'
+          instance = resolve_inspector {cmd: instance}, buffer
+          if instance
+            append inspectors, instance
+        elseif type(instance) == 'table'
+          unless instance.cmd
+            error "Missing cmd key for inspector returned for '#{inspector}'"
+          instance = resolve_inspector instance, buffer
+          if instance
+            append inspectors, instance
 
-    else
-      log.warn "Invalid inspector '#{inspector}' specified for '#{buffer.title}'"
+      else
+        log.warn "Invalid inspector '#{inspector}' specified for '#{buffer.title}'"
 
   inspectors
 
@@ -102,8 +108,6 @@ mark_criticisms = (buffer, criticisms) ->
         message: c.message
       }
 
-  buffer.data.last_inspect = buffer.last_changed
-
   if #ms > 0
     markers\add ms
 
@@ -146,11 +150,12 @@ launch_inspector_process = (opts, buffer) ->
   p.stdin\close!
   p
 
-inspect = (buffer) ->
+inspect = (buffer, opts = {}) ->
   criticisms = {}
   processes = {}
+  inspector_scope = opts.scope or 'all'
 
-  for inspector in *load_inspectors(buffer)
+  for inspector in *load_inspectors(buffer, inspector_scope)
     if callable(inspector)
       status, ret = pcall inspector, buffer
       if status
@@ -171,28 +176,34 @@ inspect = (buffer) ->
 
   criticisms
 
-criticize = (buffer, criticisms) ->
+criticize = (buffer, criticisms, opts = {}) ->
   criticisms or= inspect buffer
-  buffer.markers\remove name: 'inspection'
+
+  if opts.clear
+    buffer.markers\remove name: 'inspection'
+
   mark_criticisms buffer, criticisms
 
-update_buffer = (buffer, editor) ->
+update_buffer = (buffer, editor, scope) ->
   return if buffer.read_only
   data = buffer.data
-  if data.last_inspect and data.last_inspect >= buffer.last_changed
-    return
+  if data.last_inspect
+    li = data.last_inspect
+    if scope == 'idle' and li.ts >= buffer.last_changed
+      return
 
   -- we mark this automatic inspection run with a serial
   update_serial = (data.inspections_update or 0) + 1
   data.inspections_update = update_serial
 
-  criticisms = inspect buffer
+  criticisms = inspect buffer, :scope
   -- check serial to avoid applying out-of-date criticisms
   unless data.inspections_update == update_serial
     log.warn "Ignoring stale inspection update - slow inspection processes?"
     return
 
   criticize buffer, criticisms
+  buffer.data.last_inspect = ts: buffer.last_changed, :scope
 
   editor or= app\editor_for_buffer buffer
   if editor
@@ -250,7 +261,7 @@ on_idle = ->
   b = editor.buffer
   if b.config.auto_inspect == 'idle'
     if b.size < 1024 * 1024 * 5 -- 5 MB
-      update_buffer b, editor
+      update_buffer b, editor, 'idle'
 
 signal.connect 'buffer-modified', (args) ->
   with args.buffer
@@ -262,9 +273,11 @@ signal.connect 'buffer-modified', (args) ->
 
 signal.connect 'buffer-saved', (args) ->
   b = args.buffer
-  return unless b.config.auto_inspect == 'save'
-  return unless b.size < 1024 * 1024 -- 1MB
-  update_buffer b
+  return unless b.size < 1024 * 1024 * 5 -- 5 MB
+  return if b.config.auto_inspect == 'manual'
+  -- what to load? if config says 'save', all, otherwise only save inspectors
+  scope = b.config.auto_inspect == 'save' and 'all' or 'save'
+  update_buffer b, nil, scope
 
 signal.connect 'after-buffer-switch', (args) ->
   update_inspections_display args.editor

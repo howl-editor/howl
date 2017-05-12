@@ -12,7 +12,7 @@ class MoonscriptMode
       @completers = .completers
 
   default_config:
-    inspectors: { 'moonscript' }
+    inspectors_on_idle: { 'moonscript' }
 
   comment_syntax: '--'
 

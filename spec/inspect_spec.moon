@@ -5,34 +5,58 @@ import inspect, inspection, Buffer, mode from howl
 File = howl.io.File
 
 describe 'inspect', ->
-  local buffer, inspector
+  local buffer, idle_inspector, save_inspector
 
   before_each ->
     mode.register name: 'inspect-mode', create: -> {}
-    inspector = spy.new -> {}
-    inspection.register name: 'test-inspector', factory: -> inspector
+    idle_inspector = spy.new -> {}
+    save_inspector = spy.new -> {}
+    inspection.register name: 'test-idle-inspector', factory: -> idle_inspector
+    inspection.register name: 'test-save-inspector', factory: -> save_inspector
     buffer = Buffer mode.by_name('inspect-mode')
 
   after_each ->
     mode.unregister 'inspect-mode'
-    inspection.unregister 'test-inspector'
+    inspection.unregister 'test-idle-inspector'
+    inspection.unregister 'test-save-inspector'
 
-  describe 'inspect(buffer)', ->
+  describe 'inspect(buffer, scope)', ->
     it 'runs inspectors specified for the buffer', ->
-      buffer.config.inspectors = {'test-inspector'}
+      buffer.config.inspectors_on_idle = {'test-idle-inspector'}
       inspect.inspect(buffer)
-      assert.spy(inspector).was_called_with(buffer)
+      assert.spy(idle_inspector).was_called_with(buffer)
 
     it 'runs inspectors specified for the mode', ->
-      buffer.mode.config.inspectors = {'test-inspector'}
+      buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
       inspect.inspect(buffer)
-      assert.spy(inspector).was_called_with(buffer)
+      assert.spy(idle_inspector).was_called_with(buffer)
+
+    context 'inspector types', ->
+      before_each ->
+        with buffer.mode.config
+          .inspectors_on_idle = {'test-idle-inspector'}
+          .inspectors_on_save = {'test-save-inspector'}
+
+      it 'runs both idle and save inspectors by default', ->
+        inspect.inspect(buffer)
+        assert.spy(idle_inspector).was_called_with(buffer)
+        assert.spy(save_inspector).was_called_with(buffer)
+
+      it 'runs only idle inspectors if specified', ->
+        inspect.inspect(buffer, scope: 'idle')
+        assert.spy(idle_inspector).was_called_with(buffer)
+        assert.spy(save_inspector).was_not_called!
+
+      it 'runs only save inspectors if specified', ->
+        inspect.inspect(buffer, scope: 'save')
+        assert.spy(save_inspector).was_called_with(buffer)
+        assert.spy(idle_inspector).was_not_called!
 
     context 'when the returned inspector is a string', ->
       it 'is run as an external command, translating default output parsing', (done) ->
-        inspector = 'echo "foo:1: warning: foo\nline 2: wrong val \\`foo\\`"'
+        idle_inspector = 'echo "foo:1: warning: foo\nline 2: wrong val \\`foo\\`"'
         howl_async ->
-          buffer.mode.config.inspectors = {'test-inspector'}
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
           res = inspect.inspect(buffer)
           assert.same {
             [1]: {
@@ -46,9 +70,9 @@ describe 'inspect', ->
 
     context 'when the returned inspector is a table', ->
       it 'uses the `cmd` key as the external command to run', (done) ->
-        inspector = cmd: 'echo "foo:1: some warning"'
+        idle_inspector = cmd: 'echo "foo:1: some warning"'
         howl_async ->
-          buffer.mode.config.inspectors = {'test-inspector'}
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
           res = inspect.inspect(buffer)
           assert.same {
             [1]: {
@@ -58,14 +82,14 @@ describe 'inspect', ->
           done!
 
       it 'allows for custom parsing via the `parse` key', (done) ->
-        inspector = {
+        idle_inspector = {
           cmd: 'echo "output"'
           parse: spy.new -> { {line: 1, message: 'foo' } }
         }
         howl_async ->
-          buffer.mode.config.inspectors = {'test-inspector'}
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
           res = inspect.inspect(buffer)
-          assert.spy(inspector.parse).was_called_with('output\n')
+          assert.spy(idle_inspector.parse).was_called_with('output\n')
           assert.same {
             [1]: {
               { message: 'foo' },
@@ -74,12 +98,12 @@ describe 'inspect', ->
           done!
 
       it 'allows for custom post processing via the `post_parse` key', (done) ->
-        inspector = {
+        idle_inspector = {
           cmd: 'echo "foo:1: some warning"'
           post_parse: (inspections) -> inspections[1].search = 'zed'
         }
         howl_async ->
-          buffer.mode.config.inspectors = {'test-inspector'}
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
           res = inspect.inspect(buffer)
           assert.same {
             [1]: {
@@ -90,18 +114,18 @@ describe 'inspect', ->
 
     context 'when an inspector command contains a <file> placeholder', ->
       it "is skipped if the buffer has no associated file", (done) ->
-        inspector = 'echo "foo:1: <file> urk"'
+        idle_inspector = 'echo "foo:1: <file> urk"'
         howl_async ->
-          buffer.mode.config.inspectors = {'test-inspector'}
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
           assert.same {}, inspect.inspect(buffer)
           done!
 
       it "is expanded with the buffer's file's path", (done) ->
         file = File '/foo/bar'
         buffer.file = file
-        inspector = cmd: 'echo "foo:1: <file>"'
+        idle_inspector = cmd: 'echo "foo:1: <file>"'
         howl_async ->
-          buffer.mode.config.inspectors = {'test-inspector'}
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
           res = inspect.inspect(buffer)
           assert.same {
             [1]: {
@@ -120,7 +144,7 @@ describe 'inspect', ->
           { line: 3, type: 'warning', message: 'bar' }
         }
 
-      buffer.config.inspectors = {'inspector1', 'inspector2'}
+      buffer.config.inspectors_on_idle = {'inspector1', 'inspector2'}
       res = inspect.inspect(buffer)
       assert.same {
         [1]: {
@@ -132,7 +156,7 @@ describe 'inspect', ->
         }
        }, res
 
-  describe 'criticize(buffer, criticism)', ->
+  describe 'criticize(buffer, criticism, opts)', ->
     before_each ->
       buffer.text = 'linƏ 1\nline 2\nline 3'
 
@@ -161,6 +185,29 @@ describe 'inspect', ->
           message: 'zed'
         }
       }, buffer.markers.all
+
+    it 'leaves previous inspection markers alone by default', ->
+      inspect.criticize buffer, {
+        [1]: { {type: 'error', message: 'bar'} }
+      }
+
+      inspect.criticize buffer, {
+        [2]: { {type: 'error', message: 'zed'} }
+      }
+
+      assert.equal 2, #buffer.markers.all
+
+    it 'clears previous inspection markers when opts.clear is set', ->
+      inspect.criticize buffer, {
+        [1]: { {type: 'error', message: 'bar'} }
+      }
+
+      inspect.criticize buffer, {
+        [2]: { {type: 'error', message: 'zed'} }
+      }, clear: true
+
+      assert.equal 1, #buffer.markers.all
+      assert.equal 8, buffer.markers.all[1].start_offset
 
     it 'starts the visual marker at the start of text for line inspections', ->
       buffer.text = '  34567\n'
