@@ -44,7 +44,11 @@ describe 'VI', ->
 
   press = (...) ->
     for key in *{...}
-      bindings.process {key_name: key, character: key, key_code: 123}, 'editor', nil, editor
+      if #key >= 2 and key[1] == '+'
+        editor\insert(string.sub(key, 2))
+        press 'escape'
+      else
+        bindings.process {key_name: key, character: key, key_code: 123}, 'editor', nil, editor
 
   it '<j> moves down one line', ->
     press 'j'
@@ -270,9 +274,7 @@ describe 'VI', ->
       it 'that is repeated and command mode is re-entered', ->
         buffer.text = '\nhello world'
         cursor.pos = 2
-        press 'c', 'w'
-        editor\insert 'börk'
-        press 'escape'
+        press 'c', 'w', '+börk'
         press 'w', '.'
         assert.equal 'command', state.mode
         assert.equal '\nbörk börk', buffer.text
@@ -280,9 +282,7 @@ describe 'VI', ->
       it 'just entering insert is considered a command', ->
         buffer.text = 'hello world'
         cursor.pos = 7
-        press 'i'
-        editor\insert 'bã'
-        press 'escape'
+        press 'i', '+bã'
         press 'l', '.'
         assert.equal 'command', state.mode
         assert.equal 'hello bãbãworld', buffer.text
