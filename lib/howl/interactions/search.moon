@@ -12,9 +12,14 @@ class SearchInteraction
     for keystroke in *opts.forward_keys
       @keymap[keystroke] = -> @searcher\next!
     app.window.command_line.title = opts.title
+    if @operation == 'jump_to'
+      @search_opts = opts.search_opts
 
   on_update: (text) =>
-    @searcher[@operation] @searcher, text, @type
+    if @operation == 'jump_to'
+      @searcher[@operation] @searcher, text, @search_opts
+    else
+      @searcher[@operation] @searcher, text, @type
 
   help: {
     {
@@ -73,3 +78,13 @@ interact.register
       title: 'Backward Word Search',
       forward_keys: howl.bindings.keystrokes_for('buffer-search-word-forward', 'editor')
       backward_keys: howl.bindings.keystrokes_for('buffer-search-word-backward', 'editor')
+
+interact.register
+  name: 'search_jump_to'
+  description: ''
+  handler: (search_opts={}) ->
+    interact.search 'jump_to', nil,
+      title: 'Search Jump To'
+      forward_keys: howl.bindings.keystrokes_for('buffer-search-forward', 'editor')
+      backward_keys: howl.bindings.keystrokes_for('buffer-search-backward', 'editor')
+      search_opts: search_opts

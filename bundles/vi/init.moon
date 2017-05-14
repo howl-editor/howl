@@ -55,6 +55,26 @@ vi_commands = {
     description: 'Toggles VI mode'
     handler: -> if state.active then command.vi_off! else command.vi_on!
   }
+
+  {
+    name: 'vi-buffer-search-forward',
+    description: 'Start an interactive forward search'
+    input: ->
+      if howl.interact.search_jump_to direction: 'forward', type: 'plain', match_at_cursor: false
+        return true
+      app.editor.searcher\cancel!
+    handler: -> app.editor.searcher\commit!
+  }
+
+  {
+    name: 'vi-buffer-search-backward',
+    description: 'Start an interactive backward search'
+    input: ->
+      if howl.interact.search_jump_to direction: 'backward', type: 'plain', match_at_cursor: false
+        return true
+      app.editor.searcher\cancel!
+    handler: -> app.editor.searcher\commit!
+  }
 }
 
 unload = ->
