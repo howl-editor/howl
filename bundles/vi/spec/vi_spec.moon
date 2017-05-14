@@ -121,6 +121,11 @@ describe 'VI', ->
     cursor.pos = 10
     press 'd', 'd'
     assert.equal 'LinƏ 1\nAnd third linƏ\n', buffer.text
+    press 'd', 'd'
+    assert.equal 'LinƏ 1\n', buffer.text
+    press 'u'
+    assert.equal 'LinƏ 1\nSecond\nAnd third linƏ\n', buffer.text -- FIXME: this is WRONG
+    assert.equal 'LinƏ 1\nAnd third linƏ\n', buffer.text -- FIXME: this FAILS
 
     -- empty lines
     buffer.text = '\n\n'
@@ -219,6 +224,10 @@ describe 'VI', ->
       assert.equals 'line3', buffer.text
       cursor.pos = 3
       editor\paste!
+      assert.equals 'line1\nline2\nline3', buffer.text
+      press 'u'
+      assert.equals 'line3', buffer.text
+      press 'u'
       assert.equals 'line1\nline2\nline3', buffer.text
 
     it 'Y yanks <count> lines', ->
