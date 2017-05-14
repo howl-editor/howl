@@ -149,6 +149,13 @@ describe 'VI', ->
     assert.equal cursor.line, 2
     assert.equal 'first\n\nsecond', buffer.text
     assert.equal 'insert', state.mode
+    editor\insert 'börk'
+    press 'escape'
+    assert.equal 'first\nbörk\nsecond', buffer.text
+    assert.equal 'command', state.mode
+    press '.'
+    assert.equal 'first\nbörk\nsecond', buffer.text -- FIXME: this is WRONG
+    assert.equal 'first\nbörk\nbörk\nsecond', buffer.text -- FIXME: this FAILS
 
   it '<y><y> yanks the current line', ->
     buffer.text = 'first\nsecond'
