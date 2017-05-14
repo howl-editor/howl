@@ -118,8 +118,10 @@ map = {
     F: (editor) -> bindings.capture back_to_char
     t: (editor) -> bindings.capture forward_till_char
     T: (editor) -> bindings.capture back_till_char
-    '/': 'buffer-search-forward'
-    '?': 'buffer-search-backward'
+    '/': (editor) ->
+      howl.command.run 'buffer-search-forward', match_at_cursor: false
+    '?': (editor) ->
+      howl.command.run 'buffer-search-backward', match_at_cursor: false
     n: 'buffer-repeat-search' -- repeat search in same direction
     N: (editor) -> -- repeat search in opposite direction
       searcher = editor.searcher
