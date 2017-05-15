@@ -62,13 +62,18 @@ map = {
       to_insert editor
 
     c: (editor) ->
-      if state.change then apply editor, (editor) ->
-        editor\copy_line!
-        editor.cursor\home!
-        editor\delete_to_end_of_line!
-        to_insert editor
-      else
-        state.change = true
+      if not state.change
+          state.change = true
+          return
+
+      --cc
+      count = state.count or 1
+
+      record editor, (editor) ->
+        with_lines_selected editor, count, (editor) ->
+          editor.selection\cut whole_lines: true
+
+      to_insert editor
 
     C: (editor) -> apply editor, (editor) ->
       editor\delete_to_end_of_line!
