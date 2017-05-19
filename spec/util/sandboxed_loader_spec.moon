@@ -52,26 +52,31 @@ describe 'SandboxedLoader', ->
         assert.equals 1, loader -> foo_load 'aux'
 
       context '(loading files from sub directories)', ->
+        local sub_dir
+
+        before_each ->
+          sub_dir = dir\join('subdir')
+          sub_dir\mkdir!
+
         it 'supports both slashes and dots in the path', ->
-          sub = dir\join('down/sub.lua')
-          sub.parent\mkdir!
-          sub.contents = 'return "sub"'
+          sub_dir\join('sub.lua').contents = 'return "sub"'
+          sub_dir\join('sub2.lua').contents = 'return "sub2"'
 
-          dir\join('down/sub2.lua').contents = 'return "sub2"'
-
-          assert.equals 'sub', loader -> foo_load 'down/sub'
-          assert.equals 'sub2', loader -> foo_load 'down.sub2'
+          assert.equals 'sub', loader -> foo_load 'subdir/sub'
+          assert.equals 'sub2', loader -> foo_load 'subdir.sub2'
 
         it 'loads the file once regardless of whether dots or slashes are used', ->
-          sub = dir\join('down/sub.lua')
-          sub.parent\mkdir!
-          sub.contents = [[
+          sub_dir\join('sub.lua').contents = [[
             _G.load_count = _G.load_count + 1
             return _G.load_count
           ]]
           _G.load_count = 0
-          assert.equals 1, loader -> foo_load 'down/sub'
-          assert.equals 1, loader -> foo_load 'down.sub'
+          assert.equals 1, loader -> foo_load 'subdir/sub'
+          assert.equals 1, loader -> foo_load 'subdir.sub'
+
+        it 'loads an implicit init file for bare directory references', ->
+          sub_dir\join('init.lua').contents = 'return "lua"'
+          assert.equals 'lua', loader -> foo_load 'subdir'
 
       it 'signals an error upon cyclic dependencies', ->
         dir\join('aux.lua').contents = 'foo_load("aux2")'
