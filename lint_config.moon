@@ -21,6 +21,10 @@
       'user_load',
     },
 
+    ['bundles/']: {
+      'provide_module'
+    }
+
     ['themes/']: {
       'flair',
       'highlight',
