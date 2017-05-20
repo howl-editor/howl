@@ -16,6 +16,7 @@ Where options can be any of:
   --no-profile  Starts Howl without loading any user profile (settings, etc)
   --spec        Runs the specified Howl spec file(s)
   -h, --help    This help
+  -v, --version Shows version
 ]=]
 
 local path_separator = jit.os == 'Windows' and '\\' or '/'
@@ -30,6 +31,8 @@ local function parse_args(argv)
     ['--no-profile'] = 'no_profile',
     ['--spec'] = 'spec',
     ['--run'] = 'run',
+    ['-v'] = 'version',
+    ['--version'] = 'version' 
   }
   local args = {}
 
@@ -178,6 +181,11 @@ local function main(args)
     compile(args)
   elseif args.lint then
     lint(args)
+  elseif args.version then
+    -- Change version here
+    print("howl version 0.4.1\n")
+    print("Copyright 2012-2017 The Howl Developers\nLicense: MIT License")
+    os.exit(0)
   else
     -- set up the the GC to be more aggressive, we have a lot
     -- of cdata that needs to be collected
