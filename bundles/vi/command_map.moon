@@ -63,17 +63,16 @@ map = {
 
     c: (editor) ->
       if not state.change
-          state.change = true
-          return
+        state.change = true
+        return
 
-      --cc
-      count = state.count or 1
-
-      record editor, (editor) ->
-        with_lines_selected editor, count, (editor) ->
-          editor.selection\cut whole_lines: true
-
-      to_insert editor
+      -- cc
+      editor.buffer\as_one_undo ->
+        for _ = 1, ((state.count or 1) - 1)
+          editor\cut!
+        editor.cursor\home_indent!
+        editor\delete_to_end_of_line!
+        to_insert editor
 
     C: (editor) -> apply editor, (editor) ->
       editor\delete_to_end_of_line!
