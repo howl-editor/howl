@@ -1,3 +1,6 @@
+-- Copyright 2012-2017 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 import bundle from howl
 import File from howl.io
 
@@ -10,12 +13,17 @@ describe 'bundle', ->
     with_tmpdir (dir) ->
       b_dir = dir / name
       b_dir\mkdir!
-      f b_dir
+      pcall f, b_dir
+
+      mod_name = name\lower!\gsub '[%s%p]+', '_'
+      pcall(bundle.unload, mod_name) if _G.bundles[mod_name]
 
   bundle_init = (info = {}, spec = {}) ->
+    ret = ''
+    ret ..= "#{spec.code}\n" if spec.code
     mod = author: 'bundle_spec', description: 'spec_bundle', license: 'MIT'
     mod[k] = v for k,v in pairs info
-    ret = 'return { info = {'
+    ret ..= 'return { info = {'
     ret ..= table.concat [k .. '="' .. v .. '"' for k,v in pairs mod], ','
     ret ..= '}, '
     if spec.unload
@@ -76,6 +84,20 @@ describe 'bundle', ->
           ]]
           bundle.load_from_dir dir
           assert.equal _G.bundles.test.file, dir / 'bundle_aux.lua'
+
+      describe 'provide_module(name, prefix = nil)', ->
+        it 'makes a sub directory available for loading globally with require', ->
+          with_bundle_dir 'test', (dir) ->
+            mod = dir\join('testmod')
+            mod\mkdir_p!
+            mod\join('init.moon').contents = '{root: true}'
+            mod\join('other.moon').contents = '{other: true}'
+            dir\join('init.lua').contents = bundle_init nil, {
+              code: 'provide_module("testmod")'
+            }
+            bundle.load_from_dir dir
+            assert.same {root: true}, require 'testmod'
+            assert.same {other: true}, require 'testmod.other'
 
     it 'raises an error upon implicit global writes', ->
       with_tmpdir (dir) ->
@@ -168,6 +190,22 @@ describe 'bundle', ->
           dir\join('init.lua').contents = bundle_init name: 'dash-love'
           bundle.load_from_dir dir
           assert.no_error -> bundle.unload 'dash-love'
+
+      it 'removes any references to provided modules', ->
+        with_bundle_dir 'test', (dir) ->
+          mod = dir\join('testmod')
+          mod\mkdir_p!
+          mod\join('init.moon').contents = '{root: true}'
+          mod\join('other.moon').contents = '{other: true}'
+          dir\join('init.lua').contents = bundle_init nil, {
+            code: 'provide_module("testmod")'
+          }
+          bundle.load_from_dir dir
+          assert.same {root: true}, require 'testmod'
+          assert.same {other: true}, require 'testmod.other'
+          bundle.unload 'test'
+          assert.is_false pcall require, 'testmod'
+          assert.is_false pcall require, 'testmod.other'
 
   describe 'from_file(file)', ->
     it 'returns the adjusted name of the containing bundle if any', ->

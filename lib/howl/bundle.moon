@@ -14,6 +14,22 @@ bundle = {}
 setfenv 1, bundle
 
 export dirs = {}
+provided = {}
+
+provided_loader = (name) ->
+  base = name\match('^([^.]+)')
+  lookup = provided[base]
+  if lookup
+    load_path = "#{lookup.prefix or ''}#{name}"
+    lookup.loader ->
+      status, ret = pcall bundle_load, load_path
+      if status
+        table.insert lookup.loaded, name
+        return -> ret
+      else
+        nil
+
+table.insert(_G.package.loaders, 1, provided_loader)
 
 module_name = (name) ->
   (name\lower!\gsub '[%s%p]+', '_')
@@ -56,9 +72,21 @@ export load_from_dir = (dir) ->
   error "Bundle '#{mod_name}' already loaded", 2 if _G.bundles[mod_name]
 
   loader = SandboxedLoader dir, 'bundle', no_implicit_globals: true
+  loader\put provide_module: (name, prefix) ->
+    existing = provided[name]
+    if existing
+      error "Module 'name' provided both by '#{existing.bundle}' and '#{mod_name}'", 2
+
+    provided[name] = {
+      :prefix,
+      bundle: mod_name,
+      :loader,
+      loaded: {}
+    }
+
   bundle = loader -> bundle_load 'init'
   verify_bundle bundle, dir
-  _G.bundles[module_name dir.basename] = bundle
+  _G.bundles[mod_name] = bundle
   signal.emit 'bundle-loaded', bundle: mod_name
 
 export load_by_name = (name) ->
@@ -80,6 +108,14 @@ export unload = (name) ->
   error "Bundle with name '#{name}' not found" unless def
   def.unload!
   _G.bundles[mod_name] = nil
+
+  for provided_name, lookup in pairs provided
+    if lookup.bundle == mod_name
+      for loaded_name in *lookup.loaded
+        _G.package.loaded[loaded_name] = nil
+
+      provided[provided_name] = nil
+
   signal.emit 'bundle-unloaded', bundle: mod_name
 
 export from_file = (file) ->

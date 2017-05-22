@@ -29,7 +29,12 @@ new = (dir, name, sandbox_options = {}) ->
       return loaded[rel_path] if loaded[rel_path]
       loading[rel_path] = true
       path = dir / rel_path
-      path = find_file dir, rel_path unless path.exists
+
+      if path.is_directory
+        path = find_file path, 'init'
+      elseif not path.exists
+        path = find_file dir, rel_path
+
       mod = load_file path, box, ...
       loading[rel_path] = false
       loaded[rel_path] = mod
