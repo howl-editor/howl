@@ -71,7 +71,8 @@ map = {
         for _ = 1, ((state.count or 1) - 1)
           editor\cut!
         editor.cursor\home_indent!
-        editor\delete_to_end_of_line!
+        if not editor.cursor.at_end_of_line
+          editor\delete_to_end_of_line!
         to_insert editor
 
     C: (editor) -> apply editor, (editor) ->
