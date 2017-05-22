@@ -127,11 +127,7 @@ describe 'VI', ->
     assert.equal 'LinƏ 1\n\nAnd third linƏ\n', buffer.text
     assert.equal 'insert', state.mode
 
-    buffer.text = 'LinƏ 1\nSecond\nAnd third linƏ'
-    cursor.pos = 10
-    press '2', 'c', 'c'
-    assert.equal 'LinƏ 1\n', buffer.text
-    assert.equal 'insert', state.mode
+
 
     -- empty lines
     buffer.text = '\n\n'
@@ -244,6 +240,13 @@ describe 'VI', ->
       cursor.pos = 3
       editor\paste!
       assert.equals 'line1\nline2\nline3', buffer.text
+
+    it 'cc cuts <count> lines', ->
+      buffer.text = 'LinƏ 1\nSecond\nAnd third linƏs\n'
+      cursor.pos = 10
+      press '2', 'c', 'c'
+      assert.equal 'LinƏ 1\n\n', buffer.text
+      assert.equal 'insert', state.mode
 
     it 'Y yanks <count> lines', ->
       buffer.text = 'line1\nline2\nline3'
