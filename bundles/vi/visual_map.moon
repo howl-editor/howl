@@ -18,6 +18,11 @@ copy = (editor) ->
   editor.selection\copy!
   cancel editor
 
+change = (editor) ->
+  editor.selection\cut!
+  state.change_mode editor, 'insert'
+  state.record editor, ->
+
 substitute = (editor) ->
   editor.selection\cut!
   cancel editor, 'insert'
@@ -36,6 +41,7 @@ map = {
   editor: setmetatable {
     d: cut
     x: cut
+    c: change
     y: copy
     v: cancel
     s: substitute
