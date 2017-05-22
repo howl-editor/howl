@@ -105,15 +105,39 @@ describe 'VI', ->
   it '<t><character> searches forward in the current line to one character before <character>', ->
     press 't', 'n'
     assert.equal 2, cursor.column
+    press 't', 'q'
+    assert.equal 2, cursor.column
 
   it '<T><character> searches backwards in the current line to one character before <character>', ->
     cursor.column = 5
     press 'T', 'i'
     assert.equal 3, cursor.column
+    press 'T', 'q'
+    assert.equal 3, cursor.column
 
   it '<c><w> deletes to the end of word and enters insert', ->
     press 'c', 'w'
     assert.equal ' two', editor.current_line.text
+    assert.equal 'insert', state.mode
+
+  it '<c><c> removes the text in the entire current line regardless of the current column and enters insert mode', ->
+    buffer.text = 'LinƏ 1\nSecond\nAnd third linƏ\n'
+    cursor.pos = 10
+    press 'c', 'c'
+    assert.equal 'LinƏ 1\n\nAnd third linƏ\n', buffer.text
+    assert.equal 'insert', state.mode
+
+    buffer.text = 'LinƏ 1\nSecond\nAnd third linƏ'
+    cursor.pos = 10
+    press '2', 'c', 'c'
+    assert.equal 'LinƏ 1\n', buffer.text
+    assert.equal 'insert', state.mode
+
+    -- empty lines
+    buffer.text = '\n\n'
+    cursor.pos = 1
+    press 'c', 'c'
+    assert.equal '\n\n', buffer.text
     assert.equal 'insert', state.mode
 
   it 'dd removes the entire current line regardless of the current column', ->
