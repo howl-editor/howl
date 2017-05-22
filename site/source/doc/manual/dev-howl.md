@@ -75,4 +75,16 @@ specs, so you don't have to worry about manually installing `busted`, or
 `luarocks`, etc. Instead, simply run the `howl-spec` script (located in the
 `bin/` directory), specifying the spec or specs you want to run. You can either
 specify individual files to run, or specify the path to a directory, in which
-case all specs below that directory will be run.
+case all specs below that directory will be run. Note that you'll need to run
+the `howl-spec` script from within the project root, like so:
+
+```shell
+[howl-dir] $ ./bin/howl-spec <path-to-file-or-directory>
+```
+
+Since running specs manually can get quite tedious, e.g. when doing test driven
+development, you can run a watcher of some sort that will automatically run the
+right specs as files are changed. Howl ships with a ready-made Spookfile that
+can be used with the [spook](https://github.com/johnae/spook) utility (a Lua
+based file watcher). If you install spook, then simply run it in the project
+root in order to run specs as files are changed.
