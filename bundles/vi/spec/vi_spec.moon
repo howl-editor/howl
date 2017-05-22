@@ -127,8 +127,6 @@ describe 'VI', ->
     assert.equal 'LinƏ 1\n\nAnd third linƏ\n', buffer.text
     assert.equal 'insert', state.mode
 
-
-
     -- empty lines
     buffer.text = '\n\n'
     cursor.pos = 1
