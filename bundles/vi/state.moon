@@ -59,6 +59,7 @@ export apply = (editor, f) ->
   op = (editor) -> editor.buffer\as_one_undo ->
     cursor = editor.cursor
     start_pos = cursor.pos
+    eol = cursor.at_end_of_line
     for _ = 1, state.count or 1
       break if true == f editor, state -- count handled by function
     if state.has_modifier
@@ -70,7 +71,10 @@ export apply = (editor, f) ->
         else if state.delete
           \cut!
         else if state.change
-          \cut!
+          if eol and cursor.pos > start_pos
+            cursor.pos = start_pos
+          else
+            \cut!
           change_mode editor, 'insert'
 
   execute op, editor
