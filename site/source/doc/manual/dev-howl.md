@@ -26,7 +26,7 @@ default), or you can run it directly from the checkout directory. When
 developing for, and making changes to Howl itself, the easiest option is to run
 Howl directly from the checkout directory.
 
-## (Automatically) Rebuilding for changes
+## Rebuilding after changes
 
 Howl has a minimal C core, and has some dependencies written in C as well, all
 of which is compiled as you type `make`. Nearly all of Howl is actually written
@@ -64,3 +64,15 @@ this in your Howl configuration (example using `~/.howl/init.moon`):
 
 config.howl_src_dir = File.expand_path('~/code/howl')
 ```
+
+## Running the specs (tests)
+
+Howl has a whole lot of specs that verify different aspects of its behaviour.
+These are written using the [busted](http://olivinelabs.com/busted/) testing
+framework (the stable 1.* version, not the unstable pre-2.* version). Starting
+with the 0.5 release, Howl bundles all dependencies needed for running the
+specs, so you don't have to worry about manually installing `busted`, or
+`luarocks`, etc. Instead, simply run the `howl-spec` script (located in the
+`bin/` directory), specifying the spec or specs you want to run. You can either
+specify individual files to run, or specify the path to a directory, in which
+case all specs below that directory will be run.
