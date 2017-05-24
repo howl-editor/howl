@@ -31,7 +31,8 @@ forward_till_char = (event, source, translations, editor) ->
     apply editor, (editor) ->
       current_pos = editor.cursor.pos
       editor\forward_to_match event.character
-      if current_pos != editor.cursor.pos then editor.cursor\left!
+      if current_pos != editor.cursor.pos
+        editor.cursor\left!
   else
     return false
 
@@ -40,7 +41,8 @@ back_till_char = (event, source, translations, editor) ->
     apply editor, (editor) ->
       current_pos = editor.cursor.pos
       editor\backward_to_match event.character
-      if current_pos != editor.cursor.pos then editor.cursor\right!
+      if current_pos != editor.cursor.pos
+        editor.cursor\right!
   else
     return false
 

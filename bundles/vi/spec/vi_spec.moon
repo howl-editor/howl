@@ -105,6 +105,8 @@ describe 'VI', ->
   it '<t><character> searches forward in the current line to one character before <character>', ->
     press 't', 'n'
     assert.equal 2, cursor.column
+
+    -- No movement when match not found
     press 't', 'q'
     assert.equal 2, cursor.column
 
@@ -112,6 +114,8 @@ describe 'VI', ->
     cursor.column = 5
     press 'T', 'i'
     assert.equal 3, cursor.column
+
+    -- No movement when match not found
     press 'T', 'q'
     assert.equal 3, cursor.column
 
