@@ -259,7 +259,7 @@ on_idle = ->
   return if editor.popup
 
   b = editor.buffer
-  if b.config.auto_inspect == 'idle'
+  if b.config.auto_inspect == 'on'
     if b.size < 1024 * 1024 * 5 -- 5 MB
       update_buffer b, editor, 'idle'
 
@@ -274,9 +274,9 @@ signal.connect 'buffer-modified', (args) ->
 signal.connect 'buffer-saved', (args) ->
   b = args.buffer
   return unless b.size < 1024 * 1024 * 5 -- 5 MB
-  return if b.config.auto_inspect == 'manual'
+  return if b.config.auto_inspect == 'off'
   -- what to load? if config says 'save', all, otherwise only save inspectors
-  scope = b.config.auto_inspect == 'save' and 'all' or 'save'
+  scope = b.config.auto_inspect == 'save_only' and 'all' or 'save'
   update_buffer b, nil, scope
 
 signal.connect 'after-buffer-switch', (args) ->

@@ -50,11 +50,11 @@ config.define {
 config.define {
   name: 'auto_inspect'
   description: 'When to automatically inspect code for abberrations'
-  default: 'idle'
+  default: 'on'
   options: {
-    { 'manual', 'Run all inspectors when explicitly asked' }
-    { 'idle', 'Run on-idle inspectors on idle and on-save inspectors on save' }
-    { 'save', 'Run all inspectors, but only on save' }
+    { 'off', 'Run all inspectors only when explicitly asked to' }
+    { 'on', 'Run on-idle inspectors on idle and on-save inspectors on save' }
+    { 'save_only', 'Run all inspectors, but only on save' }
   }
 }
 
