@@ -68,6 +68,12 @@ signal.connect 'buffer-title-set', (args) ->
     if buffer == e.buffer
       e.indicator.title.label = buffer.title
 
+signal.connect 'buffer-mode-set', (args) ->
+  buffer = args.buffer
+  for e in *editors!
+    if buffer == e.buffer
+      e\_set_config_settings!
+
 class Editor extends PropertyObject
 
   register_indicator: (id, placement = 'bottom_right', factory) ->
@@ -630,9 +636,11 @@ class Editor extends PropertyObject
   refresh_variable: (name) =>
     value = @buffer.config[name]
     if aullar_config_vars[name]
-      @view.config[aullar_config_vars[name]] = value
+      if @view.config[aullar_config_vars[name]] != value
+        @view.config[aullar_config_vars[name]] = value
     elseif editor_config_vars[name]
-      @[editor_config_vars[name]] = value
+      if @[editor_config_vars[name]] != value
+        @[editor_config_vars[name]] = value
     else
       error "Invalid var #{name}"
 
