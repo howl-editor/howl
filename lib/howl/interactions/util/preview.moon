@@ -11,7 +11,7 @@ new_buffer = (title, text, buffer_mode = {}) ->
   buffer.read_only = true
   buffer
 
-get_preview_buffer = (file) ->
+get_preview_buffer = (file, opts={}) ->
   if file.is_directory
     return new_buffer "Directory: #{file.basename}", file.path
 
@@ -20,7 +20,11 @@ get_preview_buffer = (file) ->
 
   buffer_mode = nil
   title = file.basename
-  ok, text = pcall -> file\read(8192) or ''
+  ok, text = pcall ->
+    if opts.full
+      file.contents or ''
+    else
+      file\read(8192) or ''
 
   if ok
     size = file.size
@@ -39,7 +43,7 @@ get_preview_buffer = (file) ->
 ->
   open_buffers = { b.file.path, b for b in *app.buffers when b.file }
   {
-    get_buffer: (file) =>
+    get_buffer: (file, opts={}) =>
       open_buffer = open_buffers[file.path]
-      open_buffer or get_preview_buffer(file)
+      open_buffer or get_preview_buffer(file, opts)
   }
