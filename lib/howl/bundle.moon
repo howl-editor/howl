@@ -3,7 +3,7 @@
 
 import signal from howl
 import File from howl.io
-import SandboxedLoader from howl.util
+import SandboxedLoader, safecall from howl.util
 
 _G = _G
 import error, log, type, callable, table, pairs, tostring, typeof, pcall from _G
@@ -99,8 +99,7 @@ export load_by_name = (name) ->
 
 export load_all = ->
   for _, dir in pairs available_bundles!
-    status, err = pcall load_from_dir, dir
-    log.error "Failed to load bundle in #{dir}: #{err}" if not status
+    safecall "Failed to load bundle in #{dir}: #{err}", load_from_dir, dir
 
 export unload = (name) ->
   mod_name = module_name name

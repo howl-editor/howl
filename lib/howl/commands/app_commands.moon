@@ -293,7 +293,7 @@ do_howl_eval = (load_f, mode_name, transform_f) ->
       editor\show_popup BufferPopup buf, scrollable: true
     howl.clipboard.push out
   else
-    log.error "(ERROR) => #{ret[2]}"
+    log.critical "(ERROR) => #{ret[2]}"
 
 command.register
   name: 'howl-lua-eval'

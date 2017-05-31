@@ -50,9 +50,7 @@ broadcast = (name, value, is_local) ->
   callbacks = watchers[name]
   if callbacks
     for callback in *callbacks
-      status, ret = pcall callback, name, value, is_local
-      if not status
-        log.error 'Error invoking config watcher: ' .. ret
+      howl.util.safecall 'Error invoking config watcher', callback, name, value, is_local
 
 get_def = (name) ->
   def = defs[name]

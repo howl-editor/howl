@@ -121,13 +121,12 @@ class CommandLine extends PropertyObject
       @current.evade_history = previous.evade_history or activity_spec.evade_history
 
     bindings.capture -> false
-    ok, err = pcall activity_frame.runner
+    ok, err = howl.util.safecall nil, activity_frame.runner
     bindings.cancel_capture!
 
     unless ok
       if @current and activity_id == @current.activity_id
         @_finish(activity_id)
-      log.error err
       return
 
     unpack activity_frame.results
