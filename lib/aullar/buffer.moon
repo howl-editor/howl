@@ -462,12 +462,16 @@ Buffer = {
   undo: =>
     @_ensure_writable!
     revision = @revisions\pop @
-    @notify('undo', revision) if revision
+    return false unless revision
+    @notify('undo', revision)
+    return true
 
   redo: =>
     @_ensure_writable!
     revision = @revisions\forward @
-    @notify('redo', revision) if revision
+    return false unless revision
+    @notify('redo', revision)
+    return true
 
   as_one_undo: (f) =>
     unless @_collect_revisions
