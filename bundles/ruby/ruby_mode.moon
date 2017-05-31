@@ -39,7 +39,7 @@ continuation_indent = (line, indent_level) ->
 
   default_config:
     word_pattern: r'\\b\\w[\\w\\d_]+[?!=]?\\b'
-    inspectors: { 'ruby' }
+    inspectors_on_idle: { 'ruby' }
 
   indentation: {
     more_after: {
