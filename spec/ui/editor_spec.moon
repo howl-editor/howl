@@ -889,3 +889,24 @@ describe 'Editor', ->
       editor2.buffer.config.line_numbers = false
       assert.true editor.line_numbers
       assert.false editor2.line_numbers
+
+    it 'buffer mode change triggers config refresh for containing editor', ->
+      mode1 = {}
+      mode2 = {}
+
+      howl.mode.register name: 'test_mode1', create: -> mode1
+      howl.mode.register name: 'test_mode2', create: -> mode2
+      howl.mode.configure 'test_mode1',
+        line_numbers: false
+
+      howl.mode.configure 'test_mode2',
+        line_numbers: true
+
+      buffer.mode = howl.mode.by_name 'test_mode1'
+      assert.false editor.line_numbers
+
+      buffer.mode = howl.mode.by_name 'test_mode2'
+      assert.true editor.line_numbers
+
+      howl.mode.unregister 'test_mode1'
+      howl.mode.unregister 'test_mode2'
