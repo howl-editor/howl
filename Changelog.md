@@ -2,6 +2,15 @@
 
 ## Unreleased (in master)
 
+- Various improvements for vi mode
+
+- Split inspectors for idle and save - `config.inspectors` replaced with
+`config.inspectors_on_idle` and `config.inspectors_on_save`.
+
+- Added `--version` command line flag.
+
+- Bundles can now expose modules using `provide_module` function.
+
 - Theme compatibility fixes for newer Gtk versions
 
 - Quiet Gtk size allocation warnings in newer Gtk versions
