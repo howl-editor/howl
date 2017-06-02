@@ -275,8 +275,16 @@ signal.connect 'buffer-saved', (args) ->
   b = args.buffer
   return unless b.size < 1024 * 1024 * 5 -- 5 MB
   return if b.config.auto_inspect == 'off'
-  -- what to load? if config says 'save', all, otherwise only save inspectors
-  scope = b.config.auto_inspect == 'save_only' and 'all' or 'save'
+
+  -- what to load? if config says 'save', all, otherwise save inspectors
+  -- but if the idle hasn't had a chance to run we also run all
+  scope = if b.config.auto_inspect == 'save_only'
+    'all'
+  elseif b.data.last_inspect and b.data.last_inspect.ts < b.last_changed
+    'all'
+  else
+    'save'
+
   update_buffer b, nil, scope
 
 signal.connect 'after-buffer-switch', (args) ->
