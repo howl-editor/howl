@@ -21,7 +21,7 @@ Where options can be any of:
 
 local path_separator = jit.os == 'Windows' and '\\' or '/'
 
-local function parse_args(argv)
+local function parse_args(arg_vector)
   local options = {
     ['-h'] = 'help',
     ['--help'] = 'help',
@@ -32,12 +32,12 @@ local function parse_args(argv)
     ['--spec'] = 'spec',
     ['--run'] = 'run',
     ['-v'] = 'version',
-    ['--version'] = 'version' 
+    ['--version'] = 'version'
   }
   local args = {}
 
-  for _, arg in ipairs(argv) do
-    opt = options[arg]
+  for _, arg in ipairs(arg_vector) do
+    local opt = options[arg]
     if opt then
       args[opt] = true
     else
@@ -60,7 +60,7 @@ local function set_package_path(...)
     paths[#paths + 1] = app_root .. '/' .. path .. '/?/init.lua'
   end
   -- base path is system path except the crazy default current directory
-  base_path = package.path:gsub('%./?.lua;', '')
+  local base_path = package.path:gsub('%./?.lua;', '')
   package.path = table.concat(paths, ';') .. ';' .. base_path
 end
 
@@ -74,8 +74,8 @@ local function auto_module(name)
       local status, mod = pcall(require, req_name)
       if not status then
         if mod:match('module.*not found') then
-          relative_path = req_name:gsub('%.', path_separator)
-          path = table.concat({ app_root, 'lib', relative_path }, path_separator)
+          local relative_path = req_name:gsub('%.', path_separator)
+          local path = table.concat({ app_root, 'lib', relative_path }, path_separator)
           if ffi.C.g_file_test(path, ffi.C.G_FILE_TEST_IS_DIR) ~= 0 then
             mod = auto_module(req_name)
           else
@@ -112,20 +112,20 @@ end
 
 local function compile(args)
   for i = 2, #args do
-    file = args[i]
+    local file = args[i]
     local target = file:gsub('%.%w+$', '.bc')
     print('Compiling ' .. file)
     local func = assert(loadfile(file))
     local bytecode = string.dump(func, false)
-    local file = assert(io.open(target, 'wb'))
-    assert(file:write(bytecode))
-    file:close()
+    local fd = assert(io.open(target, 'wb'))
+    assert(fd:write(bytecode))
+    fd:close()
   end
 end
 
 local function lint(args)
   local root = howl.io.File(app_root)
-  lint_config = root:join('lint_config.moon').path
+  local lint_config = root:join('lint_config.moon').path
   local moonpick = require("moonpick")
   local errors = 0
   local paths = {}
@@ -164,7 +164,7 @@ local function lint(args)
   os.exit(errors > 0 and 1 or 0)
 end
 
-local function main(args)
+local function main()
   set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
   require 'howl.moonscript_support'
   table.insert(package.loaders, 2, bytecode_loader())
@@ -199,7 +199,7 @@ local function main(args)
       set_package_path('lib/ext/spec-support')
       package.loaded.lfs = loadfile(app_root .. '/lib/ext/spec-support/howl-lfs-shim.moon')()
       local busted = assert(loadfile(app_root .. '/lib/ext/spec-support/busted/busted_bootstrap'))
-      arg = {table.unpack(argv, 3, #argv)}
+      _G.arg = {table.unpack(argv, 3, #argv)}
       local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
       support()
       busted()
@@ -211,7 +211,7 @@ local function main(args)
   end
 end
 
-local status, err = pcall(main, args)
+local status, err = pcall(main)
 if not status then
   print(err)
   error(err)
