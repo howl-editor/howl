@@ -2,14 +2,23 @@
 
 ## Unreleased (in master)
 
-- Various improvements for vi mode
+- Various improvements for VI mode
 
-- Split inspectors for idle and save - `config.inspectors` replaced with
-`config.inspectors_on_idle` and `config.inspectors_on_save`.
+- Code inspection support for Ruby using Ruby interpreter
+
+- Code inspection support for Moonscript using
+[moonpick](https://github.com/nilnor/moonpick)
+
+- Support for a new inspections framework (i.e. linting).
+
+- New Rust bundle provides syntax and structure support for
+[Rust](http://www.rust-lang.org) code.
 
 - Added `--version` command line flag.
 
 - Bundles can now expose modules using `provide_module` function.
+
+- LuaJIT was updated to LuaJIT-2.1.0-beta3
 
 - Theme compatibility fixes for newer Gtk versions
 
@@ -52,10 +61,21 @@ selected text left or right by one character while preserving the selection.
 to `alt_up` and `alt_down` by default. These move the current or selected lines
 up (or down) by one line while preserving the selection.
 
-- Upgrade Moonscript to 0.4.0
+- Bundled all required dependencies for running specs: `./bin/howl-spec` can now
+be run without any type of external dependecy.
+
+- Upgrade Moonscript to 0.5.0
 
 - Added new command, `editor-replace-exec`, for replacing selection or buffer
 content with the result of piping it to an external command.
+
+### Bugs fixed
+
+- Issues as seen on
+[Github](https://github.com/howl-editor/howl/issues?utf8=✓&q=closed%3A2016-05-30..2017-06-05%20is%3Aissue%20is%3Aclosed
+sort%3Acreated-asc)
+
+## 0.4.1 (2016-10-14)
 
 - Make scrollbars themeable (on newer Gtk versions). Avoids the problem where a
 theme with black scrollbars would make the scrollbars effectively invisible.
