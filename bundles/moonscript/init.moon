@@ -6,14 +6,14 @@ mode_reg =
 
 howl.mode.register mode_reg
 howl.inspection.register {
-  name: 'moonscript',
+  name: 'moonpick',
   factory: ->
-    bundle_load('moonscript_inspector')
+    bundle_load('moonpick_inspector')
 }
 
 unload = ->
   howl.mode.unregister 'moonscript'
-  howl.inspection.unregister 'moonscript'
+  howl.inspection.unregister 'moonpick'
 
 return {
   info:
