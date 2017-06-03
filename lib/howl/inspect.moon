@@ -65,26 +65,41 @@ merge = (found, criticisms) ->
     append criticisms[l_nr], {
       message: c.message,
       type: c.type,
-      search: c.search
+      search: c.search,
+      start_col: c.start_col,
+      end_col: c.end_col,
+      byte_start_col: c.byte_start_col,
+      byte_end_col: c.byte_end_col,
     }
 
 get_line_segment = (line, criticism) ->
-  start_pos = line.start_pos
-  end_pos = line.end_pos
-  adjusted = false
+  start_col = criticism.start_col
+  end_col = criticism.end_col
+  line_text = nil
 
-  if criticism.search
+  if not start_col and criticism.byte_start_col
+    line_text or= line.text
+    start_col = line_text\char_offset criticism.byte_start_col
+
+  if not end_col and criticism.byte_end_col
+    line_text or= line.text
+    end_col = line_text\char_offset criticism.byte_end_col
+
+  if not (start_col and end_col) and criticism.search
     p = r"\\b#{r.escape(criticism.search)}\\b"
-    s, e = line\ufind p, 1
+    line_text or= line.text
+    s, e = line_text\ufind p, start_col or 1
     if s
       unless line\ufind p, s + 1
-        end_pos = start_pos + e
-        start_pos += s - 1
-        adjusted = true
+        start_col = s
+        end_col = e + 1
 
-  if not adjusted and not line.is_empty
-    start_pos += line.indentation
+  if not start_col and not line.is_empty
+    start_col = 1 + line.indentation
 
+  -- check spec coverage end_pos
+  start_pos = start_col and line.start_pos + start_col - 1 or line.start_pos
+  end_pos = end_col and line.start_pos + end_col - 1 or line.end_pos
   start_pos, end_pos
 
 mark_criticisms = (buffer, criticisms) ->
