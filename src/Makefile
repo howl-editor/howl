@@ -1,4 +1,5 @@
 PREFIX ?= /usr/local
+SHELL := /usr/bin/env bash
 UNAME_S := $(shell uname -s)
 
 GTK = gtk+-3.0
