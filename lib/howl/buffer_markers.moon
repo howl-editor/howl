@@ -14,12 +14,18 @@ adjust_marker_offsets = (marker, b) ->
   error "Missing field 'name'", 3 unless marker.name
 
   marker = copy marker
-  for f in *{ 'start_offset', 'end_offset' }
-    v = marker[f]
-    error "Missing field '#{f}'", 3 unless v
-    if v < 1 or v > b.length + 1
-      error "Invalid offset '#{v}' (length: #{b.length})"
-    marker[f] = b\byte_offset v
+  if marker.byte_start_offset and marker.byte_end_offset
+    marker.start_offset = marker.byte_start_offset
+    marker.end_offset = marker.byte_end_offset
+    marker.byte_start_offset = nil
+    marker.byte_end_offset = nil
+  else
+    for f in *{ 'start_offset', 'end_offset' }
+      v = marker[f]
+      error "Missing field '#{f}'", 3 unless v
+      if v < 1 or v > b.length + 1
+        error "Invalid offset '#{v}' (length: #{b.length})"
+      marker[f] = b\byte_offset v
 
   marker
 
