@@ -25,6 +25,9 @@ LIBS = -lm -ldl ${GTK_LIBS}
 ifeq ($(UNAME_S),FreeBSD)
     LIBS = -lm ${GTK_LIBS}
 endif
+ifeq ($(UNAME_S),OpenBSD)
+    LIBS = -lm ${GTK_LIBS}
+endif
 ifeq ($(UNAME_S),Darwin)
 	LD_FLAGS = -Wl,-export_dynamic -pagezero_size 10000 -image_base 100000000
 else
