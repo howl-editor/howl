@@ -4,6 +4,9 @@
 
 - Various improvements for VI mode
 
+- Code inspection support for Lua using
+[luacheck](https://github.com/mpeterv/luacheck)
+
 - Code inspection support for Ruby using Ruby interpreter
 
 - Code inspection support for Moonscript using
