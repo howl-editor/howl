@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import signal from howl
@@ -15,6 +15,7 @@ setfenv 1, bundle
 
 export dirs = {}
 provided = {}
+loading = {}
 
 provided_loader = (name) ->
   base = name\match('^([^.]+)')
@@ -53,6 +54,13 @@ unloaded = ->
   table.sort l
   l
 
+dir_from_name = (name) ->
+  mod_name = module_name name
+  dir = available_bundles![mod_name]
+  unless dir
+    error 'Bundle "' .. name .. '" was not found', 2
+  dir
+
 verify_bundle = (b, dir) ->
   if type(b) != 'table'
     error "Incorrect bundle: no table returned from #{dir}"
@@ -69,7 +77,9 @@ verify_bundle = (b, dir) ->
 export load_from_dir = (dir) ->
   error "Not a directory: #{dir}", 2 if not dir or typeof(dir) != 'File' or not dir.is_directory
   mod_name = module_name dir.basename
-  error "Bundle '#{mod_name}' already loaded", 2 if _G.bundles[mod_name]
+  return if _G.bundles[mod_name]
+  if loading[mod_name]
+    error "Cyclic dependency for bundle '#{mod_name}'"
 
   loader = SandboxedLoader dir, 'bundle', no_implicit_globals: true
   loader\put provide_module: (name, prefix) ->
@@ -84,18 +94,22 @@ export load_from_dir = (dir) ->
       loaded: {}
     }
 
-  bundle = loader -> bundle_load 'init'
-  verify_bundle bundle, dir
-  _G.bundles[mod_name] = bundle
+  loader\put require_bundle: (name) ->
+    dir = dir_from_name name
+    load_from_dir dir
+
+  loading[mod_name] = true
+  status, ret = pcall loader, -> bundle_load 'init'
+  loading[mod_name] = nil
+  error(ret) unless status
+
+  verify_bundle ret, dir
+  _G.bundles[mod_name] = ret
   signal.emit 'bundle-loaded', bundle: mod_name
 
 export load_by_name = (name) ->
-  mod_name = module_name name
-  dir = available_bundles![mod_name]
-  if dir
-    load_from_dir dir
-  else
-    error 'Bundle "' .. name .. '" was not found', 2
+  dir = dir_from_name name
+  load_from_dir dir
 
 export load_all = ->
   for _, dir in pairs available_bundles!
