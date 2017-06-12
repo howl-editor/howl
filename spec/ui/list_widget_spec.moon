@@ -355,11 +355,3 @@ three    four    ]] .. '\n', buf.text
       w = nil
       collectgarbage!
       assert.is_nil list[1]
-
-    it 'memory usage is stable', ->
-      items = {'one', 'two', 'three'}
-      assert_memory_stays_within '60Kb', 30, ->
-        w = ListWidget (-> items)
-        w\show!
-        w\to_gobject!\destroy!
-

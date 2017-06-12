@@ -222,8 +222,3 @@ describe 'View', ->
       v = nil
       collect_memory!
       assert.is_nil views[1]
-
-    it 'does not leave lingering memory', ->
-      assert_memory_stays_within '20Kb', 30, ->
-        v = View!
-        v\destroy!

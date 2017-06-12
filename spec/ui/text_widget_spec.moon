@@ -11,9 +11,3 @@ describe 'TextWidget', ->
       w = nil
       collectgarbage!
       assert.is_nil list[1]
-
-    it 'memory usage is stable', ->
-      assert_memory_stays_within '30Kb', 20, ->
-        w = TextWidget!
-        w\show!
-        w\to_gobject!\destroy!

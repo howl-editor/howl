@@ -1068,7 +1068,3 @@ describe 'Buffer', ->
       b = nil
       collect_memory!
       assert.is_nil buffers[1]
-
-    it 'memory usage is stable', ->
-      assert_memory_stays_within '5Kb', 50, ->
-        Buffer 'collect me!'
