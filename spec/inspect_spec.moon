@@ -218,6 +218,42 @@ describe 'inspect', ->
       }
       assert.equal 3, buffer.markers.all[1].start_offset
 
+    it 'starts the visual marker at the unicode pos given by .start_col if present', ->
+      buffer.text = 'åäö\n'
+      inspect.criticize buffer, {
+        [1]: {
+          {type: 'error', message: 'zed', start_col: 2}
+        }
+      }
+      assert.equal 2, buffer.markers.all[1].start_offset
+
+    it 'ends the visual marker at the unicode pos given by .end_col if present', ->
+      buffer.text = 'åäö\n'
+      inspect.criticize buffer, {
+        [1]: {
+          {type: 'error', message: 'zed', end_col: 3}
+        }
+      }
+      assert.equal 3, buffer.markers.all[1].end_offset
+
+    it 'starts the visual marker at the byte offset given by .byte_start_col if present', ->
+      buffer.text = 'åäö\n'
+      inspect.criticize buffer, {
+        [1]: {
+          {type: 'error', message: 'zed', byte_start_col: 3}
+        }
+      }
+      assert.equal 2, buffer.markers.all[1].start_offset
+
+    it 'ends the visual marker at the byte offset given by .byte_end_col if present', ->
+      buffer.text = 'åäö\n'
+      inspect.criticize buffer, {
+        [1]: {
+          {type: 'error', message: 'zed', byte_end_col: 3}
+        }
+      }
+      assert.equal 2, buffer.markers.all[1].end_offset
+
     describe 'when a .search field is present', ->
       it 'is used for selecting a part of the line to highlight', ->
         buffer.text = '1 345 7\n'

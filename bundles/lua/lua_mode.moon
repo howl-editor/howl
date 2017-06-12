@@ -8,6 +8,9 @@ class LuaMode
     @api = bundle_load('api')
     @completers = { 'in_buffer', 'api' }
 
+  default_config:
+    inspectors_on_idle: { 'luacheck' }
+
   comment_syntax: '--'
 
   auto_pairs: {
