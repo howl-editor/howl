@@ -6,6 +6,21 @@ do
 end
 local config = require("moonpick.config")
 local append = table.insert
+local merge
+merge = function(t1, t2)
+  local t
+  do
+    local _tbl_0 = { }
+    for k, v in pairs(t1) do
+      _tbl_0[k] = v
+    end
+    t = _tbl_0
+  end
+  for k, v in pairs(t2) do
+    t[k] = v
+  end
+  return t
+end
 local add
 add = function(map, key, val)
   local list = map[key]
@@ -22,6 +37,8 @@ Scope = function(node, parent)
   local used = { }
   local scopes = { }
   local shadowing_decls = { }
+  local fndef_reassignments = { }
+  local top_level_reassignments = { }
   local pos = node[-1]
   if not pos and parent then
     pos = parent.pos
@@ -31,10 +48,21 @@ Scope = function(node, parent)
     declared = declared,
     used = used,
     shadowing_decls = shadowing_decls,
+    fndef_reassignments = fndef_reassignments,
+    top_level_reassignments = top_level_reassignments,
     scopes = scopes,
     node = node,
     pos = pos,
     type = 'default',
+    scope_is_in = function(self, p)
+      return p(self.type) or (parent and parent:scope_is_in(p))
+    end,
+    get_declaration = function(self, name)
+      if declared[name] then
+        return declared[name][1]
+      end
+      return parent and parent:get_declaration(name)
+    end,
     has_declared = function(self, name)
       if declared[name] then
         return true
@@ -54,14 +82,24 @@ Scope = function(node, parent)
       if parent and parent:has_declared(name) then
         add(shadowing_decls, name, opts)
       end
-      return add(declared, name, opts)
+      return add(declared, name, merge(opts, {
+        top_level = not parent
+      }))
     end,
     add_assignment = function(self, name, ass)
-      if self:has_declared(name) then
-        return 
-      end
-      if not parent or not parent:has_declared(name) then
-        return add(declared, name, ass)
+      local prev_declaration = self:get_declaration(name)
+      if prev_declaration then
+        if prev_declaration.vtype == 'function' then
+          return add(fndef_reassignments, name, ass)
+        elseif prev_declaration.top_level and prev_declaration.has_rvalue then
+          if self:scope_is_in(function(t)
+            return t == 'function' or t == 'method'
+          end) then
+            return add(top_level_reassignments, name, ass)
+          end
+        end
+      else
+        return self:add_declaration(name, ass)
       end
     end,
     add_ref = function(self, name, ref)
@@ -121,14 +159,6 @@ is_loop_assignment = function(list)
   end
   local op = c_target[1][1]
   return op == 'for' or op == 'foreach'
-end
-local is_fndef_assignment
-is_fndef_assignment = function(list)
-  local node = list[1]
-  if not (type(node) == 'table') then
-    return false
-  end
-  return node[1] == 'fndef'
 end
 local destructuring_decls
 destructuring_decls = function(list)
@@ -197,29 +227,46 @@ local handlers = {
         scope.is_wrapper = true
       end
     end
-    local is_fndef = is_fndef_assignment(values)
-    if not (is_fndef) then
-      walk(values, scope, ref_pos)
+    local is_fndef_node
+    is_fndef_node = function(n)
+      if not (n and type(n) == 'table') then
+        return false
+      end
+      return n[1] == 'fndef'
     end
-    for _index_0 = 1, #targets do
-      local t = targets[_index_0]
+    for i, t in ipairs(targets) do
+      local val = values[i]
+      local is_fndef = is_fndef_node(val)
+      if not (is_fndef) then
+        walk({
+          val
+        }, scope, ref_pos)
+      end
       local _exp_0 = t[1]
       if 'ref' == _exp_0 then
         scope:add_assignment(t[2], {
-          pos = t[-1] or pos
+          pos = t[-1] or pos,
+          type = 'variable',
+          has_rvalue = val ~= nil,
+          vtype = is_fndef and 'function' or nil
         })
       elseif 'chain' == _exp_0 then
         walk(t, scope, ref_pos)
       elseif 'table' == _exp_0 then
         for name, d_pos in destructuring_decls(t[2]) do
           scope:add_assignment(name, {
-            pos = d_pos or pos
+            pos = d_pos or pos,
+            type = 'variable',
+            has_rvalue = val ~= nil,
+            vtype = is_fndef and 'function' or nil
           })
         end
       end
-    end
-    if is_fndef then
-      return walk(values, scope, ref_pos)
+      if is_fndef then
+        walk({
+          val
+        }, scope, ref_pos)
+      end
     end
   end,
   chain = function(node, scope, walk, ref_pos)
@@ -622,6 +669,28 @@ report_on_scope = function(scope, evaluator, inspections)
         local node = nodes[_index_0]
         append(inspections, {
           msg = "shadowing outer variable - `" .. tostring(name) .. "`",
+          pos = node.pos or scope.pos
+        })
+      end
+    end
+  end
+  for name, nodes in pairs(scope.fndef_reassignments) do
+    if not (evaluator.allow_fndef_reassignment(name)) then
+      for _index_0 = 1, #nodes do
+        local node = nodes[_index_0]
+        append(inspections, {
+          msg = "reassigning function variable - `" .. tostring(name) .. "`",
+          pos = node.pos or scope.pos
+        })
+      end
+    end
+  end
+  for name, nodes in pairs(scope.top_level_reassignments) do
+    if not (evaluator.allow_top_level_reassignment(name)) then
+      for _index_0 = 1, #nodes do
+        local node = nodes[_index_0]
+        append(inspections, {
+          msg = "reassigning top level variable within function - `" .. tostring(name) .. "`",
           pos = node.pos or scope.pos
         })
       end
