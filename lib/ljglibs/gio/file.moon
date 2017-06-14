@@ -70,10 +70,12 @@ core.define 'GFile', {
     self = @
     local handler, cb_handle, cb_cast, cb_data
 
-    copy_flags = core.parse_flags 'G_FILE_COPY_', flags
+    copy_flags = core.parse_flags 'G_FILE_', flags
 
     if progress_callback
       handler = (current_bytes, total_bytes) ->
+        current_bytes = tonumber ffi.cast 'goffset', current_bytes
+        total_bytes = tonumber ffi.cast 'goffset', total_bytes
         progress_callback self, current_bytes, total_bytes
 
       cb_handle = callbacks.register handler, 'file-progress'

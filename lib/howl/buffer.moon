@@ -204,7 +204,7 @@ class Buffer extends PropertyObject
       local backup
       if config.backup_files and @file.exists
         backup = howl.app.settings.backupdir / ("#{@file.basename}::#{ffi.C.getpid!}::#{@file.etag}")
-        status, err = pcall @file\copy, backup, {'OVERWRITE', 'ALL_METADATA'}
+        status, err = pcall @file\copy, backup, {'COPY_OVERWRITE', 'COPY_ALL_METADATA'}
         if not status
           log.error "Failed to write backup file #{backup} for #{@file}: #{err}"
           backup = nil
