@@ -8,6 +8,7 @@
 
   default_config:
     word_pattern: r'\\b[\\pL_][\\pL\\pN_]+\\b'
+    inspectors_on_idle: { 'mypy' }
 
   indentation: {
     more_after: {
