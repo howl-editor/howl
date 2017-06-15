@@ -1,7 +1,7 @@
 -- Copyright 2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import File, Process from howl.io
+import Process from howl.io
 
 append = table.insert
 
