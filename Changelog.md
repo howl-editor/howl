@@ -19,7 +19,10 @@
 
 - Added `--version` command line flag.
 
-- Bundles can now expose modules using `provide_module` function.
+- Bundles can now declare dependencies on other modules using the
+`require_bundle` helper function.
+
+- Bundles can now expose modules using `provide_module` helper function.
 
 - LuaJIT was updated to LuaJIT-2.1.0-beta3
 
