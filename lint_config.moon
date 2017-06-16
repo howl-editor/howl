@@ -182,7 +182,6 @@
 
     spec: {
       'after_each',
-      'assert_memory_stays_within',
       'async',
       'before_each',
       'close_all_buffers',
