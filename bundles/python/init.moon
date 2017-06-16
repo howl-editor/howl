@@ -12,26 +12,7 @@ mode_reg =
 
 howl.mode.register mode_reg
 
-howl.inspection.register {
-  name: 'mypy',
-  factory: -> bundle_load('mypy_inspector')
-}
-
-config.define {
-  name: 'mypy_path'
-  description: 'Path to the mypy executable script'
-  default: 'mypy'
-}
-
-config.define {
-  name: 'mypy_config_path',
-  description: 'Path to the mypy configuration file',
-  default: 'mypy.ini'
-}
-
-unload = ->
-  howl.mode.unregister 'python'
-  howl.inspection.unregister 'mypy'
+unload = -> howl.mode.unregister 'python'
 
 return {
   info:
