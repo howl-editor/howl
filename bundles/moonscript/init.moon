@@ -1,3 +1,5 @@
+require_bundle 'lua'
+
 mode_reg =
   name: 'moonscript'
   extensions: 'moon'

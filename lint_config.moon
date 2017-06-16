@@ -22,7 +22,8 @@
     },
 
     ['bundles/']: {
-      'provide_module'
+      'provide_module',
+      'require_bundle'
     }
 
     ['themes/']: {
