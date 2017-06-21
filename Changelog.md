@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Make fixes to let OpenBSD build cleanly (thanks @oficial)
+
 - Various improvements for VI mode
 
 - Code inspection support for Lua using
