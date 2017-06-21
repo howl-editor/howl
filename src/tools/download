@@ -4,7 +4,7 @@
 # License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 os=`uname -s`
-([ "$os" = "Darwin" ] || [ "$os" = "FreeBSD" ]) && md5="md5 -r" || md5=md5sum
+([ "$os" = "Darwin" ] || [ "$os" = "FreeBSD" ] || [ "$os" = "OpenBSD" ]) && md5="md5 -r" || md5=md5sum
 
 file=$1; shift
 checksum=$1; shift
