@@ -10,8 +10,7 @@ be possible to port to OSX or Windows, should any brave soul be willing to put i
 the work.
 
 You can install Howl by building it from source, either from a release or by
-cloning the repository from Github. If you're on ArchLinux you can install the
-Arch package available from the [AUR](#archlinux).
+cloning the repository from Github.
 
 ## Latest release
 
