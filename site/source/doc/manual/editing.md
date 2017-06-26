@@ -140,6 +140,45 @@ example, '\1' refers to the first group in the matched text.
 Selecting some text in the editor before invoking a replace command restricts
 the replacement to the selected text only.
 
+## Inspections
+
+Buffer inspections allow you to quickly be notified about potential issues with
+the code you're editing. Support for inspections, and the type of inspections
+available, is of course dependent on the language.
+
+Howl provides a couple of configuration options that allow you to customize how
+and if inspections are enabled. First off, we'll note that the inspection system
+allows for two different type of inspections - inspections designed to be run on
+idle (as you pause typing) and inspections designed to be run on save (as the
+buffer is saved to a file). While this distinction is in some cases arbitrary,
+with a particular type of inspection being suitable for running both on save and
+on idle, some types of inspections are typically only suitable for running on
+save. An obvious example of this is external tools that require an actual file
+to be present, but certain inspections could also be so slow to run that you
+only want to run them on save for that reason. In keeping with this division
+there are two different configuration options for specifying what inspections
+should be run for a particular buffer, `inspectors_on_idle` and
+`inspectors_on_save`. Both of these are lists of named inspectors to run, which
+you can customize to add or remove inspectors to run.
+
+The main configuration option controlling the overall behaviour of inspections
+is `auto_inspect`. The default value, 'on', means that inspectors are run both
+on idle and on save, with the inspectors specified in `inspectors_on_idle` run
+on idle and the inspectors specified in `inspectors_on_save` run on save. You
+can disable automatic run of inspections completely by setting `auto_inspect` to
+'off', in which case you have to manually trigger running of inspectors via the
+`buffer-inspect` command. Finally, you can set `auto_inspect` to `on_save`,
+which will run all inspectors automatically, but only upon save.
+
+When inspections are available you'll see them displayed in the editor view,
+similarily to what is show below:
+
+![Buffer inspections](/images/screenshots/monokai/buffer-inspect.png)
+
+Also shown in the above screenshot is the use of the `cursor-goto-inspection`
+command. This provides a list of all inspections available for the current
+buffer, and let's you easily navigate to them.
+
 ## Comments
 
 The `editor-toggle-comment` is bound to `ctrl_slash` by default, and let's you
