@@ -146,6 +146,16 @@ screenshots = {
   }
 
   {
+    name: 'buffer-inspect'
+    with_overlays: true
+    ->
+      app\open_file examples_dir / 'faulty.moon'
+      app.editor.cursor\move_to line: 12
+      command.run 'buffer-inspect'
+      command.run 'cursor-goto-inspection'
+  }
+
+  {
     name: 'clipboard'
     ->
       howl.clipboard.clear!
@@ -308,6 +318,19 @@ setup_example_files = ->
     aa
   end
     '
+
+    'faulty.moon': "mod = require 'mod'
+{:insert} = table
+
+
+first_func = (x) ->
+  m = mod.foo 'x'
+
+oops_shadow = (mod) ->
+  mod\\gmatch '.*(%w+).*'
+
+oops_shadow('mymod')
+"
   }
 
   examples_dir\mkdir_p!
@@ -360,6 +383,6 @@ howl.signal.connect 'app-ready', ->
   os.exit(0)
 
 howl.config.cursor_blink_interval = 0
-howl.config.font_size = 12
+howl.config.font_size = 10
 app.args = {app.args[0]}
 app\run!
