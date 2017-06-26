@@ -167,7 +167,7 @@ on idle and on save, with the inspectors specified in `inspectors_on_idle` run
 on idle and the inspectors specified in `inspectors_on_save` run on save. You
 can disable automatic run of inspections completely by setting `auto_inspect` to
 'off', in which case you have to manually trigger running of inspectors via the
-`buffer-inspect` command. Finally, you can set `auto_inspect` to `on_save`,
+`buffer-inspect` command. Finally, you can set `auto_inspect` to `save_only`,
 which will run all inspectors automatically, but only upon save.
 
 When inspections are available you'll see them displayed in the editor view,
