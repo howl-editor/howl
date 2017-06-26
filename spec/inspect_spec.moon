@@ -134,6 +134,17 @@ describe 'inspect', ->
           }, res
           done!
 
+      it 'is not passed the buffer content on stdin', (done) ->
+        file = File '/foo/bar'
+        buffer.file = file
+        buffer.text = 'bar:1: mem'
+        idle_inspector = cmd: 'cat <file> -'
+        howl_async ->
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
+          res = inspect.inspect(buffer)
+          assert.same {}, res
+          done!
+
     it 'merges inspection results into one scathing result', ->
       inspection.register name: 'inspector1', factory: ->
         -> { { line: 1, type: 'error', message: 'foo' } }

@@ -25,6 +25,7 @@ resolve_inspector = (inspector, buffer) ->
   return nil unless buffer.file
   copy = {k,v for k, v in pairs inspector}
   copy.cmd = copy.cmd\gsub '<file>', buffer.file.path
+  copy.write_stdin = false
   copy
 
 load_inspectors = (buffer, scope = 'idle') ->
@@ -152,17 +153,22 @@ parse_errors = (out, inspector) ->
   inspections
 
 launch_inspector_process = (opts, buffer) ->
+  write_stdin = true unless opts.write_stdin == false
+
   p = Process {
     cmd: opts.cmd,
     read_stdout: true,
     read_stderr: true,
-    write_stdin: true
+    write_stdin: write_stdin
     env: opts.env,
     shell: opts.shell,
     working_directory: opts.working_directory
   }
-  p.stdin\write buffer.text
-  p.stdin\close!
+
+  if write_stdin
+    p.stdin\write buffer.text
+    p.stdin\close!
+
   p
 
 inspect = (buffer, opts = {}) ->
