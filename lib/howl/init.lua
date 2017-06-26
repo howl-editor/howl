@@ -204,7 +204,8 @@ local function main()
       support()
       busted()
     elseif args.run then
-      loadfile(args[2])(table.unpack(args, 3))
+      local chunk = assert(loadfile(args[2]))
+      chunk(table.unpack(args, 3))
     else
       howl.app:run()
     end
