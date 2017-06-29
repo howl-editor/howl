@@ -7,7 +7,7 @@ howl.util.lpeg_lexer ->
   name = (alpha + '_')^1 * (alpha + digit + P'_')^0
 
   keyword = c 'keyword', word {
-      'cdef', 'cpdef', 'ctypedef', 'struct', 'union', 'include', 'inline', 'public', 'extern'
+      'cimport', 'cdef', 'cpdef', 'ctypedef', 'struct', 'union', 'include', 'inline', 'public', 'extern'
   }
 
   typename = c 'type', word {
