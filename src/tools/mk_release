@@ -28,7 +28,7 @@ echo "Downloading dependencies in $rel_dir.."
 tarball=$rel.tgz
 echo "Creating release tarball as $HOME/tmp/$tarball.."
 cd ~/tmp
-tar czf $tarball $rel --exclude '*/site/*'
+tar czf $tarball --exclude '*/site/*' $rel
 rm -rf $rel_dir
 
 echo -n "MD5: "
