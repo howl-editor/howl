@@ -19,9 +19,9 @@ available for download from:
 
 [https://github.com/howl-editor/howl/releases/download/0.5/howl-0.5.tgz](https://github.com/howl-editor/howl/releases/download/0.5/howl-0.5.tgz)
 
-_MD5_: 3bd902adb1fa8116053431f81b9a8b1f
+_MD5_: 5d254146f174455156cabcbdf1f3c95c
 
-_SHA1_: 905179ceb78f80ffd2612c5f22067d7b7b336bbc
+_SHA1_: 5fb65ebd9e916ca8a63f42f3dce11c6245aeeec5
 
 __Release notes:__
 [Howl 0.5 Released](/blog/2017/06/30/howl-0-5-released.html)
