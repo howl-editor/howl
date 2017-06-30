@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- New Dart bundle for [Dart](https://www.dartlang.org) code.
+
 - Make fixes to let OpenBSD build cleanly (thanks @oficial)
 
 - Various improvements for VI mode
