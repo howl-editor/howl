@@ -19,13 +19,13 @@ howl.util.lpeg_lexer ->
   built_in_type = any {
     c('type',
       word {
-        'num', 'int', 'double', 'String'
+        'num', 'int', 'double', 'bool', 'String'
       }
     ),
     c('keyword', word { 'void' })
   }
 
-  operator = c 'operator', S'+-*/%=<>&^|!(){}[];'
+  operator = c 'operator', S'+-*/%=<>&^|!(){}[]:?;'
 
   comment = c 'comment', any {
     P'//' * scan_until eol,
@@ -53,7 +53,7 @@ howl.util.lpeg_lexer ->
 
   symbol = c('special', P'#' * ident)
 
-  typename = upper^1 * (alpha + digit + '_')^0
+  typename = P'_'^-1 * upper^1 * (alpha + digit + '_')^0
   type = c 'type', typename
   generic_type = c 'type', P'<' * typename * '>'
   named_param = c 'key', ident * ':'

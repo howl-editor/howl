@@ -11,6 +11,9 @@ void main() {
   double z = 3;
   double z = 1.42e5;
   int hex = 0xf0f0ABCD;
+  bool flag = true;
+  bool flag2 = false;
+  Empty obj = null;
 
   // strings
   String s = 'hello\'quote';
@@ -88,6 +91,14 @@ void main() {
     // handle
   } catch (e) {
     // handle
+  }
+
+  // operators
+  ternary = cond ? iftrue : iffalse;
+
+  // leading underscore types
+  _PrivateType function() {
+    return;
   }
 }
 
