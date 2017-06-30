@@ -5,26 +5,26 @@ title: Installation
 # Installing Howl
 
 Howl is developed on Linux, but it builds on other \*NIX platforms as well such
-as FreeBSD (with other \*BSDs presumably requiring only little work). It should
-be possible to port to OSX or Windows, should any brave soul be willing to put in
-the work.
+as FreeBSD and OpenBSD (with other \*BSDs presumably requiring only little
+work). It should be possible to port to OSX or Windows, should any brave soul be
+willing to put in the work.
 
 You can install Howl by building it from source, either from a release or by
 cloning the repository from Github.
 
 ## Latest release
 
-The latest release of Howl is 0.4.1. It was released at 2016-10-14, and is
+The latest release of Howl is 0.5. It was released at 2017-06-30, and is
 available for download from:
 
-[https://github.com/howl-editor/howl/releases/download/0.4.1/howl-0.4.1.tgz](https://github.com/howl-editor/howl/releases/download/0.4.1/howl-0.4.1.tgz)
+[https://github.com/howl-editor/howl/releases/download/0.5/howl-0.5.tgz](https://github.com/howl-editor/howl/releases/download/0.5/howl-0.5.tgz)
 
-_MD5_: 9ef463f4d8b31e8954e70e507fbb1858
+_MD5_: 3bd902adb1fa8116053431f81b9a8b1f
 
-_SHA1_: 1434af03c5bc9f10d64ef93ca0ae68ccc7092fee
+_SHA1_: 905179ceb78f80ffd2612c5f22067d7b7b336bbc
 
 __Release notes:__
-[Howl 0.4.1 Released](/blog/2016/10/14/howl-0-4-1-released.html)
+[Howl 0.5 Released](/blog/2017/06/30/howl-0-5-released.html)
 
 ## Building Howl from source
 
@@ -100,6 +100,14 @@ forget to make again though_, as this would cause stale byte code to be loaded
 and confusion to arise.
 
 ## Older releases
+
+### Howl 0.4.1 released 2016-10-14
+
+_MD5_: 9ef463f4d8b31e8954e70e507fbb1858
+
+_SHA1_: 1434af03c5bc9f10d64ef93ca0ae68ccc7092fee
+
+[Download](https://github.com/howl-editor/howl/releases/download/0.4.1/howl-0.4.1.tgz)
 
 ### Howl 0.4, released 2016-05-31
 

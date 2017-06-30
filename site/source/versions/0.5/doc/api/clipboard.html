@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.clipboard</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="https://code.jquery.com/jquery-1.12.3.min.js" type="text/javascript"></script>
+    <script src="/javascripts/bootstrap.min.js" type="text/javascript"></script>
+    
+    <link href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_clipboard'>
+    <div class='navbar'>
+      <ul class='nav nav-pills'>
+        <li>
+          <a href='/'>
+            HOWL
+          </a>
+        </li>
+        <li>
+          <a href='/doc/'>
+            DOCS
+          </a>
+        </li>
+        <li>
+          <a href='/blog/'>
+            BLOG
+          </a>
+        </li>
+        <li>
+          <a href='/contact.html'>
+            CONTACT
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class='content'>
+      <div class='breadcrumbs'>&#x000A;  <div class='container'>&#x000A;    <div class='row'>&#x000A;      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../'>Howl Documentation (master branch)</a></li><li>Api</li><li>howl.clipboard</li></ol>&#x000A;    </div>&#x000A;  </div>&#x000A;</div>&#x000A;<div class='container'>&#x000A;  <h1 id="howl.clipboard">howl.clipboard</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.clipboard</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header">Overview</a>
+<li class=""><a href="#clipboard-items">Clipboard items</a></li>
+</div>
+<div class="toc-group">
+<a href="#properties" class="toc-group-header">Properties</a>
+<li class=""><a href="#clips">clips</a></li>
+<li class=""><a href="#current">current</a></li>
+<li class=""><a href="#primary">primary</a></li>
+<li class=""><a href="#registers">registers</a></li>
+</div>
+<div class="toc-group">
+<a href="#functions" class="toc-group-header">Functions</a>
+<li class=""><a href="#push">push </a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>The clipboard module keeps track of copied text in Howl, and handles&#x000A;synchronization with the system clipboard and primary selection. It provides two&#x000A;ways of remembering clipboard items: As a list of anynomous clips that is&#x000A;automatically updated with each copy/delete/cut operation, and within named&#x000A;registers.</p>&#x000A;&#x000A;<h3 id="clipboard-items">Clipboard items</h3>&#x000A;&#x000A;<p>A clipboard item is a simple Lua table. The simplest and most common type of&#x000A;item contains only one field, <code>text</code>, that contains the text of the item. There&#x000A;is no real restriction on what additional fields can be available for a&#x000A;clipboard item (the fields can be specified when doing a <a href="#push">push</a>), but so&#x000A;far one specific field is in use; The <code>whole_lines</code> field, when set to <code>true</code>,&#x000A;indicates that the text should be considered a block of stand-alone lines,&#x000A;rather than a simple chunk of text.</p>&#x000A;&#x000A;<hr>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../spec/clipboard_spec.html">spec</a> for clipboard</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="properties">Properties</h2>&#x000A;&#x000A;<h3 id="clips">clips</h3>&#x000A;&#x000A;<p>A table (list) of clipboard items available on the clipboard, with the most&#x000A;recent item being at index 1 in the table. The maximum number of clipboard items&#x000A;is controlled by the <code>clipboard_max_items</code> config variable. <code>clips</code> is&#x000A;automatically updated whenever a new item is <a href="#push">push()ed</a>, prepending the&#x000A;new item and removing older items as necessary.</p>&#x000A;&#x000A;<h3 id="current">current</h3>&#x000A;&#x000A;<p>The most recent anynomous clipboard item available on the clipboard.</p>&#x000A;&#x000A;<h3 id="primary">primary</h3>&#x000A;&#x000A;<p>The <code>primary</code> object is used for synchronization with the systems primary&#x000A;selection (i.e. the one used for middle button action). It has a <code>.text</code>&#x000A;property that can be used to fetch or store the contents of the primary&#x000A;selection, as well as a <code>clear</code> method that can be used for clearing the&#x000A;selection. In contrast to the ordinary clipboard it&rsquo;s possible to set virtual&#x000A;content for the primary clipboard, via the use of a provider function. Such a&#x000A;function would be called on-demand as necessary to provide the content.</p>&#x000A;&#x000A;<p>Example:</p>&#x000A;<pre class="highlight moonscript"><span class="n">primary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">howl</span><span class="p">.</span><span class="n">clipboard</span><span class="p">.</span><span class="n">primary</span><span class="w">&#x000A;</span><span class="n">primary</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'direct'</span><span class="w">&#x000A;</span><span class="nb">print</span><span class="w"> </span><span class="n">primary</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="c1">-- =&gt; 'direct'</span><span class="w">&#x000A;</span><span class="n">primary</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'on-demand'</span><span class="w">&#x000A;</span><span class="nb">print</span><span class="w"> </span><span class="n">primary</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="c1">-- =&gt; 'on-demand'</span><span class="w">&#x000A;</span><span class="n">primary</span><span class="o">\</span><span class="n">clear</span><span class="o">!</span><span class="w">&#x000A;</span></pre>&#x000A;<h3 id="registers">registers</h3>&#x000A;&#x000A;<p>A table containing named clipboard items. As an example, suppose a clipboard&#x000A;item containing the text &ldquo;hello&rdquo; has been <a href="#push">push()ed</a> to the <code>abc</code>&#x000A;register. In that case the <code>registers</code> table would look like the following:</p>&#x000A;<pre class="highlight lua"><span class="p">{</span>&#x000A;  <span class="n">abc</span> <span class="o">=</span> <span class="p">{</span>&#x000A;    <span class="n">text</span><span class="p">:</span> <span class="s1">'hello'</span>&#x000A;  <span class="p">}</span>&#x000A;<span class="p">}</span>&#x000A;</pre>&#x000A;<h2 id="functions">Functions</h2>&#x000A;&#x000A;<h3 id="push">push <span class="arg-list">(item, options = {})</span></h3>&#x000A;&#x000A;<p>Pushes the specified <code>item</code> to the clipboard. <code>item</code> can either be table&#x000A;containing a <code>text</code> field, along with optional additional fields, or it can be a&#x000A;string in which case a clipboard item table is automatically constructed.</p>&#x000A;&#x000A;<p>The optional <code>options</code> table allows for specifying a named register where to&#x000A;store the item. The <code>to</code> field specifies the register name to use for storing&#x000A;the clip in this case.</p>&#x000A;&#x000A;<p>The pushed item is made available to the system clipboard automatically, except&#x000A;when pushing to a named register using the <code>to</code> field in <code>options</code>.</p>&#x000A;&#x000A;<p><em>Examples</em>:</p>&#x000A;<pre class="highlight lua"><span class="c1">-- Push some text to the clipboard</span>&#x000A;<span class="n">howl</span><span class="p">.</span><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="s1">'my text'</span><span class="p">)</span>&#x000A;&#x000A;<span class="c1">-- Push a clipboard item with additional fields</span>&#x000A;<span class="n">howl</span><span class="p">.</span><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="p">({</span><span class="n">text</span> <span class="o">=</span> <span class="s1">'my text'</span><span class="p">,</span> <span class="n">whole_lines</span> <span class="o">=</span> <span class="kc">true</span><span class="p">})</span>&#x000A;&#x000A;<span class="c1">-- Push some text to the register 'a'</span>&#x000A;<span class="n">howl</span><span class="p">.</span><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="s1">'my text'</span><span class="p">,</span> <span class="p">{</span> <span class="n">to</span> <span class="o">=</span> <span class="s1">'a'</span> <span class="p">}</span> <span class="p">)</span>&#x000A;</pre>&#x000A;</div>
+    </div>
+    <div class='footer text-muted'>
+      <div class='container'>
+        <div class='row'>
+          <a href='/'>
+            <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+          </a>
+          <div class='footer-follow'>
+            <p>
+              <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+                Follow @howleditor
+              </a>
+            </p>
+            <p>
+              <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+                Tweet
+              </a>
+            </p>
+          </div>
+          <div class='footer-blurb'>
+            <div>The Howl editor.</div>
+            <div>
+              Copyright 2012-2017
+              <a class='alert-link' href='https://github.com/howl-editor/howl/contributors'>
+                The Howl Developers.
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>
+

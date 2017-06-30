@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.io.File</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="https://code.jquery.com/jquery-1.12.3.min.js" type="text/javascript"></script>
+    <script src="/javascripts/bootstrap.min.js" type="text/javascript"></script>
+    
+    <link href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_io doc_api_io_file'>
+    <div class='navbar'>
+      <ul class='nav nav-pills'>
+        <li>
+          <a href='/'>
+            HOWL
+          </a>
+        </li>
+        <li>
+          <a href='/doc/'>
+            DOCS
+          </a>
+        </li>
+        <li>
+          <a href='/blog/'>
+            BLOG
+          </a>
+        </li>
+        <li>
+          <a href='/contact.html'>
+            CONTACT
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class='content'>
+      <div class='breadcrumbs'>&#x000A;  <div class='container'>&#x000A;    <div class='row'>&#x000A;      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../../'>Howl Documentation (master branch)</a></li><li>Api</li><li>Io</li><li>howl.io.File</li></ol>&#x000A;    </div>&#x000A;  </div>&#x000A;</div>&#x000A;<div class='container'>&#x000A;  <h1 id="howl.ui.file">howl.ui.File</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.ui.File</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#class-properties" class="toc-group-header">Class Properties</a>
+<li class=""><a href="#separator">separator</a></li>
+</div>
+<div class="toc-group">
+<a href="#properties" class="toc-group-header">Properties</a>
+<li class=""><a href="#basename">basename</a></li>
+<li class=""><a href="#children">children</a></li>
+<li class=""><a href="#contents">contents</a></li>
+<li class=""><a href="#display_name">display_name</a></li>
+<li class=""><a href="#etag">etag</a></li>
+<li class=""><a href="#exists">exists</a></li>
+<li class=""><a href="#extension">extension</a></li>
+<li class=""><a href="#file_type">file_type</a></li>
+<li class=""><a href="#is_backup">is_backup</a></li>
+<li class=""><a href="#is_directory">is_directory</a></li>
+<li class=""><a href="#is_hidden">is_hidden</a></li>
+<li class=""><a href="#is_link">is_link</a></li>
+<li class=""><a href="#is_mountable">is_mountable</a></li>
+<li class=""><a href="#is_regular">is_regular</a></li>
+<li class=""><a href="#is_special">is_special</a></li>
+<li class=""><a href="#modified_at">modified_at</a></li>
+<li class=""><a href="#parent">parent</a></li>
+<li class=""><a href="#readable">readable</a></li>
+<li class=""><a href="#size">size</a></li>
+<li class=""><a href="#short_path">short_path</a></li>
+<li class=""><a href="#writeable">writeable</a></li>
+<li class=""><a href="#uri">uri</a></li>
+</div>
+<div class="toc-group">
+<a href="#functions" class="toc-group-header">Functions</a>
+<li class=""><a href="#file">File</a></li>
+<li class=""><a href="#expand_path">expand_path </a></li>
+<li class=""><a href="#is_absolute">is_absolute </a></li>
+<li class=""><a href="#tmpdir">tmpdir</a></li>
+<li class=""><a href="#tmpfile">tmpfile</a></li>
+<li class=""><a href="#with_tmpfile">with_tmpfile </a></li>
+</div>
+<div class="toc-group">
+<a href="#methods" class="toc-group-header">Methods</a>
+<li class=""><a href="#delete">delete </a></li>
+<li class=""><a href="#delete_all">delete_all </a></li>
+<li class=""><a href="#find">find </a></li>
+<li class=""><a href="#is_below">is_below </a></li>
+<li class=""><a href="#join">join </a></li>
+<li class=""><a href="#mkdir">mkdir </a></li>
+<li class=""><a href="#mkdir_p">mkdir_p </a></li>
+<li class=""><a href="#open">open </a></li>
+<li class=""><a href="#read">read </a></li>
+<li class=""><a href="#relative_to_parent">relative_to_parent </a></li>
+<li class=""><a href="#rm">rm </a></li>
+<li class=""><a href="#rm_r">rm_r </a></li>
+<li class=""><a href="#touch">touch </a></li>
+<li class=""><a href="#unlink">unlink </a></li>
+</div>
+<div class="toc-group">
+<a href="#meta-methods" class="toc-group-header">Meta methods</a>
+<li class=""><a href="#joining-files">Joining files</a></li>
+<li class=""><a href="#files-as-strings">Files as strings</a></li>
+<li class=""><a href="#comparing-files">Comparing files</a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>The File class provides an abstraction over a path in the file system, and&#x000A;allows for querying the file for associated information as well as modifying it.</p>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The <a href="../../spec/io/file_spec.html">spec</a> for File</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="class-properties">Class Properties</h2>&#x000A;&#x000A;<h3 id="separator">separator</h3>&#x000A;&#x000A;<p>Holds the directory separator character.</p>&#x000A;&#x000A;<h2 id="properties">Properties</h2>&#x000A;&#x000A;<h3 id="basename">basename</h3>&#x000A;&#x000A;<p>The basename of the file.</p>&#x000A;<pre class="highlight lua">  <span class="n">File</span><span class="p">(</span><span class="s1">'/foo/base.ext'</span><span class="p">).</span><span class="n">basename</span> <span class="c1">-- =&gt; 'base.ext'</span>&#x000A;</pre>&#x000A;<h3 id="children">children</h3>&#x000A;&#x000A;<p>A list of children for the file, as File instances.</p>&#x000A;<pre class="highlight moonscript"><span class="w">  </span><span class="n">children</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">howl</span><span class="p">.</span><span class="n">io</span><span class="p">.</span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin/'</span><span class="p">).</span><span class="n">children</span><span class="w">&#x000A;  </span><span class="o">#</span><span class="n">children</span><span class="w"> </span><span class="c1">-- =&gt; 161</span><span class="w">&#x000A;  </span><span class="n">basenames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">f</span><span class="p">.</span><span class="n">basename</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">children</span><span class="p">]</span><span class="w">&#x000A;  </span><span class="nb">table.concat</span><span class="w"> </span><span class="n">basenames</span><span class="p">,</span><span class="w"> </span><span class="s1">', '</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1">-- =&gt; "bunzip2, bzcat, bzcmp, bzdiff, bzegrep"</span><span class="w">&#x000A;</span></pre>&#x000A;<h3 id="contents">contents</h3>&#x000A;&#x000A;<p>The contents of the file. Provides an easy way of reading a file&rsquo;s content in&#x000A;one go. This is also writeable - assigning to this causes the file&rsquo;s content on&#x000A;disk to be replaced with the assigned value.</p>&#x000A;&#x000A;<h3 id="display_name">display_name</h3>&#x000A;&#x000A;<p>The basename of the file, but with a trailing separator for directories.</p>&#x000A;&#x000A;<h3 id="etag">etag</h3>&#x000A;&#x000A;<p>The &ldquo;entity tag&rdquo; for the file. Entity tags provides a way of determining whether&#x000A;a file is changed on disk or not, and provides a more abstract alternative to&#x000A;checking modified times, etc.</p>&#x000A;&#x000A;<h3 id="exists">exists</h3>&#x000A;&#x000A;<p>True if the file exists, and false otherwise.</p>&#x000A;&#x000A;<h3 id="extension">extension</h3>&#x000A;&#x000A;<p>The basename of the file name.</p>&#x000A;<pre class="highlight lua">  <span class="n">File</span><span class="p">(</span><span class="s1">'/foo/base.ext'</span><span class="p">).</span><span class="n">extension</span> <span class="c1">-- =&gt; 'ext'</span>&#x000A;  <span class="n">File</span><span class="p">(</span><span class="s1">'/foo/base'</span><span class="p">).</span><span class="n">extension</span> <span class="c1">-- =&gt; nil</span>&#x000A;</pre>&#x000A;<h3 id="file_type">file_type</h3>&#x000A;&#x000A;<p>The type of the file as a string. Possible values are:</p>&#x000A;&#x000A;<ul>&#x000A;<li>&lsquo;directory&rsquo;</li>&#x000A;<li>&lsquo;regular&rsquo;</li>&#x000A;<li>&lsquo;symlink&rsquo;</li>&#x000A;<li>&lsquo;special&rsquo;</li>&#x000A;<li>&lsquo;unknown&rsquo;</li>&#x000A;<li>&lsquo;mountable&rsquo;</li>&#x000A;</ul>&#x000A;&#x000A;<h3 id="is_backup">is_backup</h3>&#x000A;&#x000A;<p>True if the file is a backup file, and false otherwise.</p>&#x000A;&#x000A;<h3 id="is_directory">is_directory</h3>&#x000A;&#x000A;<p>True if the file&rsquo;s path denotes a directory, an false otherwise.</p>&#x000A;&#x000A;<h3 id="is_hidden">is_hidden</h3>&#x000A;&#x000A;<p>True if the file is hidden, and false otherwise.</p>&#x000A;&#x000A;<h3 id="is_link">is_link</h3>&#x000A;&#x000A;<p>True if the file&rsquo;s path denotes a symbolic link, an false otherwise.</p>&#x000A;&#x000A;<h3 id="is_mountable">is_mountable</h3>&#x000A;&#x000A;<p>True if the file&rsquo;s path denotes a mountable location, and false otherwise.</p>&#x000A;&#x000A;<h3 id="is_regular">is_regular</h3>&#x000A;&#x000A;<p>True if the file&rsquo;s path denotes a regular file, and false otherwise.</p>&#x000A;&#x000A;<h3 id="is_special">is_special</h3>&#x000A;&#x000A;<p>True if the file&rsquo;s path denotes a &ldquo;special&rdquo; file, such as a fifo, character&#x000A;device, sockets, etc. False if not.</p>&#x000A;&#x000A;<h3 id="modified_at">modified_at</h3>&#x000A;&#x000A;<p>The UNIX time since the file was modified, as an unsigned 64-bit number.</p>&#x000A;<pre class="highlight lua">  <span class="n">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">).</span><span class="n">modified_at</span> <span class="c1">-- =&gt; 1358406188ULL</span>&#x000A;</pre>&#x000A;<h3 id="parent">parent</h3>&#x000A;&#x000A;<p>The file&rsquo;s parent, if available, as another File instance.</p>&#x000A;<pre class="highlight lua">  <span class="n">File</span><span class="p">(</span><span class="s1">'/foo/base.ext'</span><span class="p">).</span><span class="n">parent</span><span class="p">.</span><span class="n">path</span> <span class="c1">-- =&gt; '/foo'</span>&#x000A;  <span class="n">File</span><span class="p">(</span><span class="s1">'/'</span><span class="p">).</span><span class="n">parent</span> <span class="c1">-- =&gt; nil</span>&#x000A;</pre>&#x000A;<h3 id="readable">readable</h3>&#x000A;&#x000A;<p>True if the file is readable, and false otherwise.</p>&#x000A;&#x000A;<h3 id="size">size</h3>&#x000A;&#x000A;<p>The size of the file, in bytes. Trying to read the size of a non-existing file&#x000A;is raises an error.</p>&#x000A;&#x000A;<h3 id="short_path">short_path</h3>&#x000A;&#x000A;<p>The file&rsquo;s path, shortened by replacing any references to the home directory&#x000A;with <code>~</code>.</p>&#x000A;&#x000A;<h3 id="writeable">writeable</h3>&#x000A;&#x000A;<p>True if the file is writeable, and false otherwise.</p>&#x000A;&#x000A;<h3 id="uri">uri</h3>&#x000A;&#x000A;<p>The file&rsquo;s path, as a URI.</p>&#x000A;<pre class="highlight lua">  <span class="n">File</span><span class="p">(</span><span class="s1">'/foo/base.ext'</span><span class="p">).</span><span class="n">uri</span> <span class="c1">-- =&gt; 'file:///foo/base.ext'</span>&#x000A;</pre>&#x000A;<h2 id="functions">Functions</h2>&#x000A;&#x000A;<h3 id="file">File<span class="arg-list">(target, base_directory)</span></h3>&#x000A;&#x000A;<p>Creates a new File instance, pointing to <code>target</code>. <code>target</code> can either a string,&#x000A;in which case it is considered a path, or another File instance. When target is&#x000A;a string holding a relative path, <code>base_directory</code> is used for resolving the&#x000A;relative path to an absolute path if given.</p>&#x000A;&#x000A;<h3 id="expand_path">expand_path <span class="arg-list">(path)</span></h3>&#x000A;&#x000A;<p>Replaces any ocurrences <code>~</code> with the full path to the home directory.</p>&#x000A;&#x000A;<h3 id="is_absolute">is_absolute <span class="arg-list">(path)</span></h3>&#x000A;&#x000A;<p>Returns true if <code>path</code> is an absolute path, and false otherwise.</p>&#x000A;&#x000A;<h3 id="tmpdir">tmpdir<span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Returns a File instance pointing to an existing temporary directory. The&#x000A;directory will not be automatically deleted.</p>&#x000A;&#x000A;<h3 id="tmpfile">tmpfile<span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Returns a File instance pointing to an existing temporary file. The file will&#x000A;not be automatically deleted.</p>&#x000A;&#x000A;<h3 id="with_tmpfile">with_tmpfile <span class="arg-list">(callback)</span></h3>&#x000A;&#x000A;<p>Invokes <code>callback</code> with a File instance pointing to an existing temporary file.&#x000A;The temporary file will be automatically deleted upon the return of <code>callback</code>,&#x000A;if it exists.</p>&#x000A;&#x000A;<h2 id="methods">Methods</h2>&#x000A;&#x000A;<h3 id="delete">delete <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Deletes the file. Raises an error if unsuccesful.</p>&#x000A;&#x000A;<h3 id="delete_all">delete_all <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>For a directory, delete the directory and all files contained within it. Raises&#x000A;an error if unsuccesful.</p>&#x000A;&#x000A;<h3 id="find">find <span class="arg-list">(options = {})</span></h3>&#x000A;&#x000A;<p>For a directory, returns all files within the directory or any sub directory of&#x000A;the directory. <code>options</code> allows for additional control of the operation, and can&#x000A;contain the following fields:</p>&#x000A;&#x000A;<ul>&#x000A;<li><p><code>filter</code>: A callback that will recieve each file as its sole argument. To&#x000A;filter a file, i.e. exclude it from the results, the callback should return&#x000A;true. The search is performed breadth first, so filtering a directory means that&#x000A;it won&rsquo;t be descended into at all.</p></li>&#x000A;<li><p><code>sort</code>: Causes the entries of all directories to be sorted before processing.</p></li>&#x000A;</ul>&#x000A;&#x000A;<h3 id="is_below">is_below <span class="arg-list">(directory)</span></h3>&#x000A;&#x000A;<p>Returns true if the file is located below <code>directory</code>, and false otherwise.</p>&#x000A;&#x000A;<h3 id="join">join <span class="arg-list">(&hellip;)</span></h3>&#x000A;&#x000A;<p>Joins the file with any path components passed in as parameters, and returns a&#x000A;new File pointing to the resulting path.</p>&#x000A;&#x000A;<h3 id="mkdir">mkdir <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Creates a new directory at the path denoted by the file. Raises an error if&#x000A;unsuccesful.</p>&#x000A;&#x000A;<h3 id="mkdir_p">mkdir_p <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Creates a new directory at the path denoted by the file, including any&#x000A;non-existing intermediate directories. Raises an error if unsuccesful.</p>&#x000A;&#x000A;<h3 id="open">open <span class="arg-list">(mode = &lsquo;r&rsquo;, callback = nil)</span></h3>&#x000A;&#x000A;<p>Opens the file in the mode specified by <code>mode</code>, and returns the Lua file&#x000A;descriptor. Any error when opening the file causes an error to be raised.</p>&#x000A;&#x000A;<p>When <code>callback</code> is specified it is invoked with the file descriptor, and any&#x000A;return values from the callback are used as the return values for <code>open</code>. The&#x000A;file description will in this case always be closed prior to <code>open</code> returning.</p>&#x000A;&#x000A;<h3 id="read">read <span class="arg-list">(&hellip;)</span></h3>&#x000A;&#x000A;<p>A quick way of issuing a Lua&#x000A;<a href="http://www.lua.org/manual/5.1/manual.html#pdf-file:read">read</a> call for the&#x000A;file. This will open the file for reading, issue the read call, and close the&#x000A;file before returning the resulting values.</p>&#x000A;&#x000A;<h3 id="relative_to_parent">relative_to_parent <span class="arg-list">(parent)</span></h3>&#x000A;&#x000A;<p>Returns the path for the current file relative to its parent.</p>&#x000A;<pre class="highlight lua"><span class="n">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">):</span><span class="n">relative_to_parent</span><span class="p">(</span><span class="n">File</span><span class="p">(</span><span class="s1">'/bin'</span><span class="p">))</span> <span class="c1">-- =&gt; 'ls'</span>&#x000A;</pre>&#x000A;<h3 id="rm">rm <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Alias for <a href="#delete">delete</a>.</p>&#x000A;&#x000A;<h3 id="rm_r">rm_r <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Alias for <a href="#delete_all">delete_all</a>.</p>&#x000A;&#x000A;<h3 id="touch">touch <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Ensures that the file exists, by creating it if not already present.</p>&#x000A;&#x000A;<h3 id="unlink">unlink <span class="arg-list">()</span></h3>&#x000A;&#x000A;<p>Alias for <a href="#delete">delete</a>.</p>&#x000A;&#x000A;<h2 id="meta-methods">Meta methods</h2>&#x000A;&#x000A;<p>In addition to the above properties and methods, File instances also responds to&#x000A;certain meta methods.</p>&#x000A;&#x000A;<h3 id="joining-files">Joining files</h3>&#x000A;&#x000A;<p>Apart from using the <a href="#join">join</a> method, File instances can also be joined by&#x000A;using the <code>/</code> operator or the <code>..</code> operator:</p>&#x000A;<pre class="highlight lua"><span class="p">(</span><span class="n">File</span><span class="p">(</span><span class="s1">'/bin'</span><span class="p">)</span> <span class="o">/</span> <span class="s1">'ls'</span><span class="p">).</span><span class="n">path</span> <span class="c1">-- =&gt; '/bin/ls'</span>&#x000A;<span class="p">(</span><span class="n">File</span><span class="p">(</span><span class="s1">'/bin'</span><span class="p">)</span> <span class="o">..</span> <span class="s1">'ls'</span><span class="p">).</span><span class="n">path</span> <span class="c1">-- =&gt; '/bin/ls'</span>&#x000A;</pre>&#x000A;<p>Concatenating a File instance to a string returns a string though:</p>&#x000A;<pre class="highlight lua"><span class="s2">"File is "</span> <span class="o">..</span> <span class="n">File</span><span class="p">(</span><span class="s1">'/bin'</span><span class="p">)</span> <span class="c1">-- =&gt; 'File is /bin'</span>&#x000A;</pre>&#x000A;<h3 id="files-as-strings">Files as strings</h3>&#x000A;&#x000A;<p>Files respond to the tostring meta method:</p>&#x000A;<pre class="highlight lua"><span class="nb">tostring</span><span class="p">(</span><span class="n">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">))</span> <span class="c1">-- =&gt; '/bin/ls'</span>&#x000A;</pre>&#x000A;<h3 id="comparing-files">Comparing files</h3>&#x000A;&#x000A;<p>Files can be lexically compared to other File instances.</p>&#x000A;<pre class="highlight lua"><span class="n">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">)</span> <span class="o">==</span> <span class="n">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">)</span> <span class="c1">-- =&gt; true</span>&#x000A;<span class="n">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">)</span> <span class="o">==</span> <span class="n">File</span><span class="p">(</span><span class="s1">'/bin/cat'</span><span class="p">)</span> <span class="c1">-- =&gt; false</span>&#x000A;<span class="n">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">File</span><span class="p">(</span><span class="s1">'/bin/cat'</span><span class="p">)</span> <span class="c1">-- =&gt; false</span>&#x000A;<span class="n">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">File</span><span class="p">(</span><span class="s1">'/bin/cat'</span><span class="p">)</span> <span class="c1">-- =&gt; true</span>&#x000A;</pre>&#x000A;</div>
+    </div>
+    <div class='footer text-muted'>
+      <div class='container'>
+        <div class='row'>
+          <a href='/'>
+            <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+          </a>
+          <div class='footer-follow'>
+            <p>
+              <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+                Follow @howleditor
+              </a>
+            </p>
+            <p>
+              <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+                Tweet
+              </a>
+            </p>
+          </div>
+          <div class='footer-blurb'>
+            <div>The Howl editor.</div>
+            <div>
+              Copyright 2012-2017
+              <a class='alert-link' href='https://github.com/howl-editor/howl/contributors'>
+                The Howl Developers.
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>
+
