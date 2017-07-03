@@ -29,6 +29,7 @@ howl.util.lpeg_lexer ->
 
   comment = c 'comment', any {
     P'//' * scan_until eol,
+    span '/*', '*/'
   }
 
   number = c 'number', any {
