@@ -1,5 +1,10 @@
 // Dart - dartlang.org
 
+/* differnt style of comment
+ *
+
+ end of comment */
+
 // import
 import 'package:subpackage/file.dart';
 
