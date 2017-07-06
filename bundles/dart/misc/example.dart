@@ -24,9 +24,13 @@ void main() {
   String s = 'hello\'quote';
   String s = "hello\"quote";
   var multi_line = '''
-  line one
+  line one 'can have quotes' or even double quotes ''
   line two
   ''';
+  var multi_line2 = """
+  this one has "double quotes" and double double ""
+  line two
+  """;
   var raw_string = r'raw string' ;
 
   // modifiers const and final

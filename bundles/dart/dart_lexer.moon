@@ -45,11 +45,15 @@ howl.util.lpeg_lexer ->
     'static', 'typedef',
     'true', 'false'}
 
+  multiline_str = any {
+    span("'''", "'''", '\\')
+    span('"""', '"""', '\\')
+  }
   str = any {
-    span('"', '"', '\\')
+    span("'", "'", '\\')
     span("'", "'", '\\')
   }
-  string = c 'string', str
+  string = c 'string', any {multiline_str, str}
   raw_string = c('special', P'r') * string
 
   symbol = c('special', P'#' * ident)
