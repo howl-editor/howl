@@ -11,6 +11,11 @@ if [ -n "$answer" ]; then
   ver=$answer
 fi
 
+if ! grep "version $ver" lib/howl/init.lua > /dev/null; then
+  echo "Version mismatch compared to lib/howl/init.lua, please correct"
+  exit 1
+fi
+
 rel=howl-$ver
 rel_dir=~/tmp/$rel
 
