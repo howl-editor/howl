@@ -2,6 +2,14 @@
 
 ## Unreleased (in master)
 
+## 0.5.1 (2017-07-06)
+
+- Corrected version number given by `--version` flag
+
+- Dart lexer fixes
+
+## 0.5 (2017-06-30)
+
 - New Dart bundle for [Dart](https://www.dartlang.org) code.
 
 - Make fixes to let OpenBSD build cleanly (thanks @oficial)
