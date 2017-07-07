@@ -46,6 +46,10 @@ describe 'Completer', ->
       _, search = Completer(buffer, 4)\complete 4
       assert.same search, 'pre'
 
+    it 'allows completions to be tables', ->
+      append buffer.completers, -> complete: -> { {'first', 'second'}, {'third', 'fourth'} }
+      assert.same Completer(buffer, 1)\complete(1), { {'first', 'second'}, {'third', 'fourth'} }
+
     it 'calls <completer.complete()> with (completer, context)', ->
       buffer.text = 'mr.cat'
       comp = complete: spy.new -> {}
@@ -133,6 +137,15 @@ describe 'Completer', ->
         completer = Completer(buffer, 7)
         completer\accept 'over', 7
         assert.equal 'hello overthere', buffer.text
+
+    context 'when completions are tables', ->
+      it 'inserts table.completion text if present, else table[1]', ->
+        buffer.text = 'hello '
+        completer = Completer(buffer, 7)
+        completer\accept {'first', 'second', completion: 'real'}, 7
+        assert.equal 'hello real', buffer.text
+        completer\accept {'third', 'fourth'}, 7
+        assert.equal 'hello thirdreal', buffer.text
 
     it 'returns the position after the accepted completion', ->
         buffer.text = 'hello there'
