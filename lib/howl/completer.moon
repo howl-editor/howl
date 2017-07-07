@@ -28,12 +28,19 @@ at_most = (limit, t) ->
 
   t2
 
+completion_text = (compl) ->
+  if type(compl) == 'table'
+    return compl.completion or tostring compl[1]
+  return compl
+
 differentiate_by_case = (prefix, completions) ->
   for i = 2, #completions
     first = completions[i - 1]
     second = completions[i]
-    if first.ulower == second.ulower
-      if second[1] == prefix[1]
+    first_text = completion_text first
+    second_text = completion_text second
+    if first_text.ulower == second_text.ulower
+      if second_text[1] == prefix[1]
         completions[i - 1] = second
         completions[i] = first
 
@@ -76,6 +83,7 @@ class Completer
     return differentiate_by_case(prefix, at_most(limit, completions)), prefix
 
   accept: (compl, pos) =>
+    compl = completion_text compl
     chunk = @buffer\context_at(pos).word
     chunk = @buffer\chunk(chunk.start_pos, pos - 1) unless @config.hungry_completion
     chunk.text = compl
