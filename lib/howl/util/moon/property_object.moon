@@ -2,7 +2,11 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 class_properties = (cls) ->
-  cls.__base.__properties = {} if not cls.__base.__properties
+  if cls.__base.__properties
+    if rawget(cls.__base, '__properties') != cls.__base.__properties
+      cls.__base.__properties = moon.copy cls.__base.__properties
+  else
+    cls.__base.__properties = {}
   cls.__base.__properties
 
 meta_methods = (cls) ->

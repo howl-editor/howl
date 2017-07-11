@@ -101,6 +101,18 @@ describe 'PropertyObject', ->
       assert.equal 5, o + 2
       assert.equal 'div', o / 2
 
+    it 'properties on subclass and base are independent', ->
+      class Parent extends PropertyObject
+        @property foo:
+          get: => 'parent'
+
+      class SubClass extends Parent
+        @property foo:
+          get: => 'sub'
+
+      assert.equal Parent!.foo, 'parent'
+      assert.equal SubClass!.foo, 'sub'
+
   describe 'delegation', ->
     it 'allows delegating to a default object passed in the constructor', ->
       target = {
