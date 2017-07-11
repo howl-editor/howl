@@ -51,7 +51,7 @@ howl.util.lpeg_lexer ->
   }
   str = any {
     span("'", "'", '\\')
-    span("'", "'", '\\')
+    span('"', '"', '\\')
   }
   string = c 'string', any {multiline_str, str}
   raw_string = c('special', P'r') * string
