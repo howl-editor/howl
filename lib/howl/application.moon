@@ -112,8 +112,8 @@ class Application extends PropertyObject
 
         true
 
-    window\on_destroy (window) ->
-      @windows = [w for w in *@windows when w\to_gobject! != window]
+    window\on_destroy (destroy_window) ->
+      @windows = [w for w in *@windows when w\to_gobject! != destroy_window]
 
     @g_app\add_window window\to_gobject!
 
@@ -243,14 +243,19 @@ class Application extends PropertyObject
     @g_app\on_open (_, files) -> @_load [File(path) for path in *files]
 
     signal.connect 'window-focused', self\synchronize
-    signal.connect 'editor-destroyed', (args) ->
-      @_editors =  [e for e in *@_editors when e != args.editor]
+    signal.connect 'editor-destroyed', (s_args) ->
+      @_editors =  [e for e in *@_editors when e != s_args.editor]
 
     @g_app\run args
 
   quit: (force = false) =>
     if force or not @_should_abort_quit!
-      @save_session! unless #@args > 1
+      unless #@args > 1
+        @save_session!
+
+        if config.save_config_on_exit
+          unless pcall config.save_config
+            print 'Error saving config'
 
       for _, process in pairs Process.running
         process\send_signal 'KILL'
@@ -317,7 +322,6 @@ class Application extends PropertyObject
 
       signal.connect 'mode-registered', self\_on_mode_registered
       signal.connect 'mode-unregistered', self\_on_mode_unregistered
-      signal.connect 'buffer-saved', self\_on_buffer_saved
 
       window = @new_window!
 
@@ -331,10 +335,9 @@ class Application extends PropertyObject
       unless buffer
         buffer = @new_buffer mode.for_file file
         status, ret = pcall -> buffer.file = file
-        if status
-          signal.emit 'file-opened', :file, :buffer
-        else
+        if not status
           @close_buffer buffer
+          buffer = nil
           log.error "Failed to open file '#{file}': #{ret}"
 
       if buffer
@@ -357,6 +360,9 @@ class Application extends PropertyObject
 
     if #@editors == 0
       @editor = @new_editor @_buffers[1] or @new_buffer!
+
+    for b in *loaded_buffers
+      signal.emit 'file-opened', file: b.file, buffer: b
 
     unless @_loaded
       window\show_all! if window
@@ -392,20 +398,6 @@ class Application extends PropertyObject
         else
           buffer.mode = default_mode
 
-  _on_buffer_saved: (args) =>
-    file = args.buffer.file
-
-    -- automatically update bytecode for howl files
-    -- todo: move this away
-    if file.extension and file.extension\umatch(r'(lua|moon)') and file\is_below(@root_dir)
-      bc_file = File file.path\gsub "#{file.extension}$", 'bc'
-      f, err = loadfile file
-      if f
-        bc_file.contents = string.dump f, false
-      else
-        bc_file\delete! if bc_file.exists
-        log.error "Failed to update byte code for #{file}: #{err}"
-
   _restore_session: (window, restore_buffers) =>
     session = @settings\load_system 'session'
 
@@ -419,6 +411,7 @@ class Application extends PropertyObject
             buffer.file = file
             buffer.last_shown = entry.last_shown
             buffer.properties = entry.properties
+            signal.emit 'file-opened', :file, :buffer
 
           log.error "Failed to load #{file}: #{err}" unless status
 

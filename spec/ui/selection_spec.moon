@@ -1,6 +1,6 @@
 Gtk = require 'ljglibs.gtk'
-{:Buffer, :signal, :clipboard} =  howl
-{:Editor, :theme} = howl.ui
+{:Buffer, :clipboard} =  howl
+{:Editor} = howl.ui
 
 describe 'Selection', ->
 
@@ -166,16 +166,16 @@ describe 'Selection', ->
         assert.spy(handler).was_called!
 
   describe 'copy(clip_options = nil, clipboard_options = nil)', ->
-    it 'removes the selection', ->
+    it 'keeps the selection', ->
       selection\set 1, 5
       selection\copy!
-      assert.is_true selection.empty
+      assert.is_false selection.empty
 
-    it 'clears the persistent flag', ->
+    it 'keeps the persistent flag', ->
       selection\set 1, 5
       selection.persistent = true
       selection\copy!
-      assert.is_false selection.persistent
+      assert.is_true selection.persistent
 
     it 'pushes the selection to the clipboard, with any options as specified', ->
       buffer.text = 'Liñe 1 ʘf tƏxt'

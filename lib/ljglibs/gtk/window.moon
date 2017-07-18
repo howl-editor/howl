@@ -11,7 +11,7 @@ require 'ljglibs.gtk.bin'
 
 C = ffi.C
 catch_error = glib.catch_error
-{:ref_ptr, :gc_ptr} = gobject
+{:ref_ptr} = gobject
 
 jit.off true, true
 

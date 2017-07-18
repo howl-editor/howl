@@ -1,14 +1,14 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, interact, Buffer from howl
-import Editor, Window from howl.ui
+import app, interact from howl
+import Window from howl.ui
 
 require 'howl.interactions.search'
 require 'howl.interactions.selection_list'
 
 describe 'search', ->
-  local command_line, buffer, editor, searcher
+  local command_line, searcher
 
   before_each ->
     app.window = Window!

@@ -71,7 +71,7 @@ define_options = ->
 
     view_line_padding: {
       type: 'number',
-      default: 1
+      default: 0
     },
 
     view_line_wrap: {

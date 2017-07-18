@@ -4,10 +4,9 @@
 import completion, config from howl
 append = table.insert
 
-load_completers = (buffer, context) ->
+load_completers = (buffer, context, mode = {}) ->
   completers = {}
 
-  mode = buffer.mode or {}
   for factories in *{buffer.completers, mode.completers}
     if factories
       for f in *factories
@@ -29,12 +28,19 @@ at_most = (limit, t) ->
 
   t2
 
+completion_text = (compl) ->
+  if type(compl) == 'table'
+    return compl.completion or tostring compl[1]
+  return compl
+
 differentiate_by_case = (prefix, completions) ->
   for i = 2, #completions
     first = completions[i - 1]
     second = completions[i]
-    if first.ulower == second.ulower
-      if second[1] == prefix[1]
+    first_text = completion_text first
+    second_text = completion_text second
+    if first_text.ulower == second_text.ulower
+      if second_text[1] == prefix[1]
         completions[i - 1] = second
         completions[i] = first
 
@@ -44,17 +50,24 @@ class Completer
 
   new: (buffer, pos) =>
     @buffer = buffer
+    @config = buffer\config_at pos
     @context = buffer\context_at pos
     @start_pos = @context.word.start_pos
-    @completers = load_completers buffer, @context
+    @completers =
+      [buffer.mode]: load_completers buffer, @context, buffer.mode
 
-  complete: (pos, limit = @buffer.config.completion_max_shown) =>
+  complete: (pos, limit = @config.completion_max_shown) =>
     context = @context.start_pos == pos and @context or @buffer\context_at pos
 
     seen = {}
     completions = {}
 
-    for completer in *@completers
+    mode = @buffer\mode_at pos
+    if not @completers[mode]
+      @completers[mode] = load_completers @buffer, context, mode
+    completers = @completers[mode]
+
+    for completer in *completers
       comps = completer\complete context
       if comps
         if comps.authoritive
@@ -69,14 +82,16 @@ class Completer
     prefix = context.word_prefix
     return differentiate_by_case(prefix, at_most(limit, completions)), prefix
 
-  accept: (completion, pos) =>
+  accept: (compl, pos) =>
+    compl = completion_text compl
     chunk = @buffer\context_at(pos).word
-    chunk = @buffer\chunk(chunk.start_pos, pos - 1) unless @buffer.config.hungry_completion
-    chunk.text = completion
-    pos_after = chunk.start_pos + completion.ulen
+    chunk = @buffer\chunk(chunk.start_pos, pos - 1) unless @config.hungry_completion
+    chunk.text = compl
+    pos_after = chunk.start_pos + compl.ulen
+    mode = @buffer\mode_at pos
 
-    if @buffer.mode.on_completion_accepted
-      pos = @buffer.mode\on_completion_accepted completion, @buffer\context_at(pos_after)
+    if mode.on_completion_accepted
+      pos = mode\on_completion_accepted compl, @buffer\context_at(pos_after)
       pos_after = pos if type(pos) == 'number'
 
     pos_after

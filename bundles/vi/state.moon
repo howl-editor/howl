@@ -1,5 +1,5 @@
 import bindings from howl
-import getmetatable, setfenv, pairs, callable, print, tostring, pcall, error from _G
+import setfenv, pairs, callable, tostring, pcall, error from _G
 
 _G = _G
 _ENV = {}
@@ -59,7 +59,7 @@ export apply = (editor, f) ->
   op = (editor) -> editor.buffer\as_one_undo ->
     cursor = editor.cursor
     start_pos = cursor.pos
-    for i = 1, state.count or 1
+    for _ = 1, state.count or 1
       break if true == f editor, state -- count handled by function
     if state.has_modifier
       with editor.selection
@@ -90,7 +90,7 @@ export record = (editor, op) ->
 export repeat_last = (editor) ->
   execute ->
     if last_op
-      for i = 1, count or 1
+      for _ = 1, count or 1
         last_op editor
         if insert_edit
           insert_edit editor
@@ -107,6 +107,20 @@ export activate = (editor) ->
 export deactivate = ->
   if active
     bindings.pop!
+    mode = nil
+    map = nil
     active = false
+
+export enter_edit_mode = (editor) ->
+  buffer = editor.buffer
+  if buffer.data.vi_orig_auto_pair != nil
+    buffer.config.auto_pair = buffer.data.vi_orig_auto_pair
+
+export leave_edit_mode = (editor) ->
+  buffer = editor.buffer
+  if buffer.data.vi_orig_auto_pair == nil
+    buffer.data.vi_orig_auto_pair = buffer.config.auto_pair
+
+  buffer.config.auto_pair = false
 
 return _ENV

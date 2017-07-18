@@ -1,6 +1,5 @@
 import bundle, config, VC from howl
 import File from howl.io
-import Spy from howl.spec
 
 echo = if jit.os == 'Windows'
   "#{howl.sys.env.WD}echo.exe"

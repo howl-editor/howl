@@ -1,3 +1,6 @@
+-- Copyright 2012-2017 The Howl Developers
+-- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+
 import bundle from howl
 import File from howl.io
 
@@ -10,18 +13,29 @@ describe 'bundle', ->
     with_tmpdir (dir) ->
       b_dir = dir / name
       b_dir\mkdir!
-      f b_dir
+      status, err = pcall f, b_dir
+      error(err) unless status
+      mod_name = name\lower!\gsub '[%s%p]+', '_'
+      pcall(bundle.unload, mod_name) if _G.bundles[mod_name]
 
   bundle_init = (info = {}, spec = {}) ->
+    ret = ''
+    ret ..= "#{spec.code}\n" if spec.code
     mod = author: 'bundle_spec', description: 'spec_bundle', license: 'MIT'
     mod[k] = v for k,v in pairs info
-    ret = 'return { info = {'
+    ret ..= 'return { info = {'
     ret ..= table.concat [k .. '="' .. v .. '"' for k,v in pairs mod], ','
     ret ..= '}, '
+
+    if spec.other_returns
+      ret ..= table.concat [k .. '="' .. tostring(v) .. '"' for k,v in pairs spec.other_returns], ','
+
     if spec.unload
       ret ..= "unload = #{spec.unload} }"
     else
       ret ..= 'unload = function() end }'
+
+
     ret
 
   describe 'load_from_dir(dir)', ->
@@ -53,11 +67,11 @@ describe 'bundle', ->
         bundle.load_from_dir dir
         assert.not_nil _G.bundles.test_hello_2
 
-    it 'raises an error if the bundle is already loaded', ->
+    it 'does nothing if the bundle is already loaded', ->
       with_bundle_dir 'two_times', (dir) ->
         dir\join('init.lua').contents = bundle_init!
         bundle.load_from_dir dir
-        assert.raises 'loaded', -> bundle.load_from_dir dir
+        bundle.load_from_dir dir
 
     context 'exposed bundle helpers', ->
       it 'bundle_file provides access to bundle files', ->
@@ -76,6 +90,60 @@ describe 'bundle', ->
           ]]
           bundle.load_from_dir dir
           assert.equal _G.bundles.test.file, dir / 'bundle_aux.lua'
+
+      describe 'provide_module(name, prefix = nil)', ->
+        it 'makes a sub directory available for loading globally with require', ->
+          with_bundle_dir 'test', (dir) ->
+            mod = dir\join('testmod')
+            mod\mkdir_p!
+            mod\join('init.moon').contents = '{root: true}'
+            mod\join('other.moon').contents = '{other: true}'
+            dir\join('init.lua').contents = bundle_init nil, {
+              code: 'provide_module("testmod")'
+            }
+            bundle.load_from_dir dir
+            assert.same {root: true}, require 'testmod'
+            assert.same {other: true}, require 'testmod.other'
+
+      describe 'require_bundle', ->
+        it 'ensures the required bundle is loaded before the dependent one', ->
+          with_tmpdir (dir) ->
+            bundle.dirs = {dir}
+            first_dir = dir\join('first')
+            first_dir\mkdir!
+            second_dir = dir\join('second')
+            second_dir\mkdir!
+            third_dir = dir\join('third')
+            third_dir\mkdir!
+
+            first_dir\join('init.lua').contents = bundle_init!
+            third_dir\join('init.lua').contents = bundle_init!
+
+            second_dir\join('init.lua').contents = bundle_init nil, {
+              code: 'require_bundle("third")\nrequire_bundle("first")'
+            }
+
+            bundle.load_from_dir second_dir
+            assert.is_not_nil _G.bundles.first
+            assert.is_not_nil _G.bundles.third
+
+        it 'detects cyclic dependencies', ->
+          with_tmpdir (dir) ->
+            bundle.dirs = {dir}
+            first_dir = dir\join('first')
+            first_dir\mkdir!
+            second_dir = dir\join('second')
+            second_dir\mkdir!
+
+            first_dir\join('init.lua').contents = bundle_init nil, {
+              code: 'require_bundle("second")'
+            }
+            second_dir\join('init.lua').contents = bundle_init nil, {
+              code: 'require_bundle("first")'
+            }
+
+            assert.raises 'Cyclic dependency', ->
+              bundle.load_from_dir second_dir
 
     it 'raises an error upon implicit global writes', ->
       with_tmpdir (dir) ->
@@ -137,7 +205,8 @@ describe 'bundle', ->
         bundle.load_by_name 'named'
         assert.not_nil _G.bundles.named
 
-        assert.raises 'loaded', -> bundle.load_by_name 'named'
+        -- should be a no-op
+        bundle.load_by_name 'named'
 
     it 'raises an error if the bundle could not be found', ->
       assert.raises 'not found', -> bundle.load_by_name 'oh_bundle_where_art_thouh'
@@ -169,6 +238,22 @@ describe 'bundle', ->
           dir\join('init.lua').contents = bundle_init name: 'dash-love'
           bundle.load_from_dir dir
           assert.no_error -> bundle.unload 'dash-love'
+
+      it 'removes any references to provided modules', ->
+        with_bundle_dir 'test', (dir) ->
+          mod = dir\join('testmod')
+          mod\mkdir_p!
+          mod\join('init.moon').contents = '{root: true}'
+          mod\join('other.moon').contents = '{other: true}'
+          dir\join('init.lua').contents = bundle_init nil, {
+            code: 'provide_module("testmod")'
+          }
+          bundle.load_from_dir dir
+          assert.same {root: true}, require 'testmod'
+          assert.same {other: true}, require 'testmod.other'
+          bundle.unload 'test'
+          assert.is_false pcall require, 'testmod'
+          assert.is_false pcall require, 'testmod.other'
 
   describe 'from_file(file)', ->
     it 'returns the adjusted name of the containing bundle if any', ->

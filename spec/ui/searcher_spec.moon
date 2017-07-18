@@ -1,4 +1,4 @@
-import Buffer, config from howl
+import Buffer from howl
 import Editor, highlight from howl.ui
 
 describe 'Searcher', ->

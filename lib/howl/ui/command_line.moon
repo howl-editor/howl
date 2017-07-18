@@ -2,10 +2,9 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
-import bindings, config, dispatch, interact, signal from howl
-import Matcher from howl.util
+import bindings, config, dispatch from howl
 import PropertyObject from howl.util.moon
-import ActionBuffer, BufferPopup, highlight, markup, style, theme from howl.ui
+import ActionBuffer, BufferPopup, markup, style from howl.ui
 {:TextWidget, :NotificationWidget, :IndicatorBar, :StyledText, :ContentBox} = howl.ui
 
 append = table.insert
@@ -427,13 +426,13 @@ class CommandLine extends PropertyObject
     popup\center!
     @popup = popup
 
-  notify: (text, style='info') =>
+  notify: (text, notification_style = 'info') =>
     if #text == 0
       @clear_notification!
       return
 
     if @notification_widget
-      @notification_widget\notify style, text
+      @notification_widget\notify notification_style, text
       @notification_widget\show!
     else
       io.stderr\write text
@@ -544,8 +543,14 @@ class CommandLine extends PropertyObject
       ["cursor-right"]: => @command_widget.cursor\right!
 
       ["editor-delete-back"]: =>
-        -- don't backspace into prompt
-        return true if @command_widget.cursor.pos <= @_prompt_end
+        if @command_widget.cursor.pos <= @_prompt_end
+          -- backspace attempted into prompt
+          if @_activity and @_activity.handle_back
+            @_activity\handle_back!
+            return true
+          else
+            return true
+
         range_start = @command_widget.selection\range!
         return if range_start and range_start < @_prompt_end
         @command_widget\delete_back!
@@ -558,12 +563,19 @@ class CommandLine extends PropertyObject
 
     f1: => @show_help!
 
-  add_widget: (name, widget) =>
+  add_widget: (name, widget, pos='bottom') =>
     error('No widget provided', 2) if not widget
 
     @remove_widget name
 
-    @box\pack_end widget\to_gobject!, false, 0, 0
+    local pack
+    if pos == 'bottom'
+        pack = @box\pack_end
+    elseif pos == 'top'
+        pack = @box\pack_start
+    else
+        error "Invalid pos #{pos}"
+    pack widget\to_gobject!, false, 0, 0
     @_widgets[name] = widget
 
     widget\show!

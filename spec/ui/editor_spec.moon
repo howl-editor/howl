@@ -1,6 +1,7 @@
 Gtk = require 'ljglibs.gtk'
+match = require 'luassert.match'
 
-{:Buffer, :config, :signal, :clipboard, :sys} = howl
+{:Buffer, :config, :clipboard, :sys} = howl
 {:Editor} = howl.ui
 
 describe 'Editor', ->
@@ -84,6 +85,34 @@ describe 'Editor', ->
           editor[method] editor
           assert.spy(buffer.mode[method]).was_called_with buffer.mode, editor
 
+      if method == 'toggle_comment'
+        it 'uses the buffer mode when the one to use is ambiguous', ->
+          mode1 = comment_syntax: '//'
+          mode2 = comment_syntax: '#'
+
+          mode1_reg = name: 'toggle_comment_test1', create: -> mode1
+          mode2_reg = name: 'toggle_comment_test2', create: -> mode2
+          howl.mode.register mode1_reg
+          howl.mode.register mode2_reg
+          buffer.mode = howl.mode.by_name 'toggle_comment_test1'
+
+          buffer.text = 'ab\nc'
+          buffer._buffer.styling\apply 1, {
+            1, 'whitespace', 2,
+            2, { 1, 's1', 3 }, 'toggle_comment_test|s1',
+          }
+
+          selection\set 1, 5
+          editor[method] editor
+          assert.equal '// ab\n// c', buffer.text
+
+          selection\set 1, 11
+          editor[method] editor
+          assert.equal 'ab\nc', buffer.text
+
+          howl.mode.unregister 'toggle_comment_test1'
+          howl.mode.unregister 'toggle_comment_test2'
+
   describe 'with_position_restored(f)', ->
     before_each ->
       buffer.text = '  yowser!\n  yikes!'
@@ -136,7 +165,7 @@ describe 'Editor', ->
     it 'calls <f> passing itself a parameter', ->
       f = spy.new -> nil
       editor\with_selection_preserved f
-      assert.spy(f).was_called_with editor
+      assert.spy(f).was_called_with(match.is_ref(editor))
 
     it 'restores the selected region', ->
       editor\with_selection_preserved ->
@@ -229,6 +258,22 @@ describe 'Editor', ->
           cursor.column = 3
           editor\paste where: 'after'
           assert.equal 'hƏllo\ncruel\nworld', buffer.text
+
+        it 'accounts for trailing newline separators', ->
+          buffer.text = 'hƏllo\nworld'
+          clipboard.push text: 'cruel\n', whole_lines: true
+          cursor.line = 1
+          cursor.column = 3
+          editor\paste where: 'after'
+          assert.equal 'hƏllo\ncruel\nworld', buffer.text
+
+        it 'handles pasting at the end of the buffer', ->
+          buffer.text = 'at'
+          clipboard.push text: 'last\n', whole_lines: true
+          cursor.line = 1
+          cursor.column = 3
+          editor\paste where: 'after'
+          assert.equal 'at\nlast\n', buffer.text
 
     context 'when a selection is present', ->
       it 'deletes the selection before pasting', ->
@@ -830,3 +875,38 @@ describe 'Editor', ->
       editor.buffer.text = '([]]'
       assert.same nil, editor\get_matching_brace 4
 
+  context 'config updates', ->
+    local editor2
+    before_each ->
+      editor2 = Editor Buffer {}
+
+    it 'buffer config updates affect containing editor only', ->
+      editor.buffer.config.line_numbers = true
+      editor2.buffer.config.line_numbers = true
+      assert.true editor.line_numbers
+      assert.true editor2.line_numbers
+
+      editor2.buffer.config.line_numbers = false
+      assert.true editor.line_numbers
+      assert.false editor2.line_numbers
+
+    it 'buffer mode change triggers config refresh for containing editor', ->
+      mode1 = {}
+      mode2 = {}
+
+      howl.mode.register name: 'test_mode1', create: -> mode1
+      howl.mode.register name: 'test_mode2', create: -> mode2
+      howl.mode.configure 'test_mode1',
+        line_numbers: false
+
+      howl.mode.configure 'test_mode2',
+        line_numbers: true
+
+      buffer.mode = howl.mode.by_name 'test_mode1'
+      assert.false editor.line_numbers
+
+      buffer.mode = howl.mode.by_name 'test_mode2'
+      assert.true editor.line_numbers
+
+      howl.mode.unregister 'test_mode1'
+      howl.mode.unregister 'test_mode2'

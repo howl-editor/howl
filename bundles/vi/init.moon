@@ -1,4 +1,4 @@
-import app, signal, config, bindings, command from howl
+import app, signal, config, command from howl
 import Editor from howl.ui
 
 state = bundle_load 'state'
@@ -76,7 +76,6 @@ for name, handler in pairs signal_handlers
 
 command.register cmd for cmd in *vi_commands
 
--- state.activate!
 info = {
   author: 'The Howl Developers',
   description: 'VI bundle',

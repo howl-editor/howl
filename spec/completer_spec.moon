@@ -1,5 +1,4 @@
 import Completer, Buffer, completion from howl
-import Editor from howl.ui
 append = table.insert
 
 describe 'Completer', ->
@@ -47,6 +46,10 @@ describe 'Completer', ->
       _, search = Completer(buffer, 4)\complete 4
       assert.same search, 'pre'
 
+    it 'allows completions to be tables', ->
+      append buffer.completers, -> complete: -> { {'first', 'second'}, {'third', 'fourth'} }
+      assert.same Completer(buffer, 1)\complete(1), { {'first', 'second'}, {'third', 'fourth'} }
+
     it 'calls <completer.complete()> with (completer, context)', ->
       buffer.text = 'mr.cat'
       comp = complete: spy.new -> {}
@@ -82,6 +85,24 @@ describe 'Completer', ->
       completions = Completer(buffer, 3)\complete 3
       assert.same { 'Hello', 'hello' }, completions
 
+    it 'takes sub modes into account', ->
+      mode1 = completers: { -> complete: -> { 'mode1' } }
+      buffer.mode = mode1
+      mode2 = completers: { -> complete: -> { 'mode2' } }
+      mode2_reg = name: 'completer_test', create: -> mode2
+      howl.mode.register mode2_reg
+
+      buffer.text = ' m'
+      buffer._buffer.styling\apply 1, {
+        1, 'whitespace', 2,
+        2, { 1, 's1', 2 }, 'completer_test|s1',
+      }
+      completions = Completer(buffer, 3)\complete 3
+      assert.same { 'mode2' }, completions
+
+      howl.mode.unregister 'completer_test'
+
+
     context 'limiting completions', ->
       it 'returns at most `completion_max_shown` completions', ->
         completions = ["cand-#{i}" for i = 1,15]
@@ -116,6 +137,15 @@ describe 'Completer', ->
         completer = Completer(buffer, 7)
         completer\accept 'over', 7
         assert.equal 'hello overthere', buffer.text
+
+    context 'when completions are tables', ->
+      it 'inserts table.completion text if present, else table[1]', ->
+        buffer.text = 'hello '
+        completer = Completer(buffer, 7)
+        completer\accept {'first', 'second', completion: 'real'}, 7
+        assert.equal 'hello real', buffer.text
+        completer\accept {'third', 'fourth'}, 7
+        assert.equal 'hello thirdreal', buffer.text
 
     it 'returns the position after the accepted completion', ->
         buffer.text = 'hello there'

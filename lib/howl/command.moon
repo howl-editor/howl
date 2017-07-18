@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import dispatch, interact, config from howl
+import dispatch, interact from howl
 import Matcher from howl.util
-import style, markup, StyledText from howl.ui
+import style, markup from howl.ui
 
 append = table.insert
 
@@ -216,10 +216,12 @@ launch_cmd = (cmd, args) ->
     if not ok
       log.error err
 
-run = (cmd_string=nil, ...) ->
+ensure_command_can_run = (cmd) ->
   unless howl.app.window
-    error "Cannot run command '#{cmd_string}', application not initialized. Try using the 'app-ready' signal.", 2
+    error "Cannot run command '#{cmd}', application not initialized. Try using the 'app-ready' signal.", 3
 
+run = (cmd_string=nil, ...) ->
+  ensure_command_can_run cmd_string
   local args
   cmd = resolve_command cmd_string
 
@@ -238,12 +240,18 @@ interact.register
   evade_history: true
   handler: (opts={}) ->
     opts = moon.copy opts
+    command_items = get_command_items!
+    name_width = 0
+    shortcut_width = 0
+    for item in *command_items
+      name_width = math.max(name_width, item[1].ulen)
+      shortcut_width = math.max(shortcut_width, item[2].ulen)
     with opts
-      .items = get_command_items!
+      .items = command_items
       .headers = { 'Command', 'Key binding', 'Description' }
       .columns = {
-        { style: 'string' }
-        { style: 'keyword' }
+        { style: 'string', min_width: name_width }
+        { style: 'keyword', min_width: shortcut_width }
         { style: 'comment' }
       }
     result = interact.select opts
@@ -279,5 +287,6 @@ return setmetatable {:register, :unregister, :alias, :run, :names, :get}, {
   __index: (key) =>
     command = commands[key] or accessible_names[key]
     return unless command
+    ensure_command_can_run command.name
     (...) -> launch_cmd command, table.pack ...
 }

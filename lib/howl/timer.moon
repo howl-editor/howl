@@ -1,14 +1,13 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:signal, :config} = howl
 callbacks = require 'ljglibs.callbacks'
 cast_arg = callbacks.cast_arg
 ffi = require 'ffi'
 jit = require 'jit'
 C = ffi.C
 timer_callback = callbacks.source_func
-{:pack, :unpack, :remove} = table
+{:pack, :unpack} = table
 
 jit.off true, true
 
@@ -67,11 +66,6 @@ asap = (f, ...) ->
 
 after = (seconds, f, ...) ->
   t_handle = type: 'sys'
-
-  handler = (...) ->
-    cancel t_handle
-    f ...
-
   interval = seconds * 1000
   t_handle.cb = callbacks.register f, "timer-after-#{seconds}", ...
   t_handle.tag = C.g_timeout_add_full C.G_PRIORITY_LOW,

@@ -2,9 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 flair = require 'aullar.flair'
-{:max, :min} = math
 {:define_class} = require 'aullar.util'
-{:Attribute} = require 'ljglibs.pango'
 
 flair.define 'current-line', {
   type: flair.RECTANGLE,

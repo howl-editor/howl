@@ -1,4 +1,4 @@
-import Buffer, BufferMarkers from howl
+import Buffer from howl
 
 describe 'BufferMarkers', ->
   local buffer, markers
@@ -48,6 +48,15 @@ describe 'BufferMarkers', ->
       assert.same mks, markers\at(2)
       assert.same mks, markers\at(3)
       assert.same {}, markers\at(4)
+
+    it 'allows specifying bytes offsets using byte_{start,end}_offset', ->
+      buffer.text = 'åäöx'
+      mks = { {name: 'test', byte_start_offset: 3, byte_end_offset: 5} }
+      adjusted = { {name: 'test', start_offset: 2, end_offset: 3} }
+      markers\add mks
+      assert.same {}, markers\at(1)
+      assert.same adjusted, markers\at(2)
+      assert.same {}, markers\at(3)
 
   describe 'for_range(start_offset, end_offset)', ->
     it 'returns all markers that intersects with the specified span', ->

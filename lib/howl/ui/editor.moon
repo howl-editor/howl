@@ -5,22 +5,19 @@ Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 gobject_signal = require 'ljglibs.gobject.signal'
-import Completer, signal, bindings, config, command, clipboard, sys from howl
-import View from aullar
+import signal, bindings, config, command, clipboard, sys from howl
 aullar_config = aullar.config
 import PropertyObject from howl.util.moon
 import Searcher, CompletionPopup from howl.ui
 import auto_pair from howl.editing
 
 {
-  :style,
-  :highlight,
   :IndicatorBar,
   :Cursor,
   :Selection,
   :ContentBox
 } = howl.ui
-{:max, :min, :abs} = math
+{:max, :min} = math
 append = table.insert
 
 _editors = setmetatable {}, __mode: 'v'
@@ -33,15 +30,33 @@ indicator_placements =
   bottom_left: true
   bottom_right: true
 
-apply_variable = (option, value) ->
-  for e in *editors!
-    e.view.config[option] = value
+editor_config_vars = {
+  indentation_guides: 'indentation_guides'
+  line_wrapping: 'line_wrapping'
+  line_wrapping_navigation: 'line_wrapping_navigation'
+  horizontal_scrollbar: 'horizontal_scrollbar'
+  vertical_scrollbar: 'vertical_scrollbar'
+  cursor_line_highlighted: 'cursor_line_highlighted'
+  line_numbers: 'line_numbers'
+  line_padding: 'line_padding'
+  edge_column: 'edge_column'
+}
+
+aullar_config_vars = {
+  cursor_blink_interval: 'cursor_blink_interval'
+  indent: 'view_indent'
+  tab_width: 'view_tab_size'
+  font_name: 'view_font_name'
+  font_size: 'view_font_size'
+  line_wrapping_symbol: 'view_line_wrap_symbol'
+}
 
 apply_global_variable = (name, value) ->
   aullar_config[name] = value
 
-apply_property = (name, value) ->
-  e[name] = value for e in *editors!
+apply_variable = (name) ->
+  for e in *editors!
+    e\refresh_variable name
 
 signal.connect 'buffer-saved', (args) ->
   for e in *editors!
@@ -52,6 +67,12 @@ signal.connect 'buffer-title-set', (args) ->
   for e in *editors!
     if buffer == e.buffer
       e.indicator.title.label = buffer.title
+
+signal.connect 'buffer-mode-set', (args) ->
+  buffer = args.buffer
+  for e in *editors!
+    if buffer == e.buffer
+      e\_set_config_settings!
 
 class Editor extends PropertyObject
 
@@ -85,6 +106,7 @@ class Editor extends PropertyObject
       on_preedit_change: (_, args) ->
         log.info "Pre-edit: #{args.str} (Enter to submit, escape to cancel)"
       on_preedit_end: -> log.info "Pre-edit mode finished"
+      on_scroll: self\_on_scroll
 
     @view.listener = listener
     @view.cursor.listener = {
@@ -216,6 +238,9 @@ class Editor extends PropertyObject
       start, stop = @selection\range!
       @buffer\chunk start, stop - 1
 
+  @property mode_at_cursor: get: => @buffer\mode_at @cursor.pos
+  @property config_at_cursor: get: => @buffer\config_at @cursor.pos
+
   refresh_display: => @view\refresh_display from_line: 1, invalidate: true
   grab_focus: => @view\grab_focus!
   newline: =>
@@ -237,9 +262,9 @@ class Editor extends PropertyObject
 
   transform_active_lines: (f) =>
     lines = @active_lines
-    return if #@active_lines == 0
-    start_pos = @active_lines[1].start_pos
-    end_pos = @active_lines[#@active_lines].end_pos
+    return if #lines == 0
+    start_pos = lines[1].start_pos
+    end_pos = lines[#lines].end_pos
     @buffer\change start_pos, end_pos, -> f lines
 
   with_position_restored: (f) =>
@@ -253,7 +278,7 @@ class Editor extends PropertyObject
 
   with_selection_preserved: (f) =>
     if @selection.empty
-      return f!
+      return f self
 
     start_offset, end_offset = @selection.anchor, @selection.cursor
     invert = start_offset > end_offset
@@ -305,17 +330,16 @@ class Editor extends PropertyObject
         :preview_buffer
       }
 
-  indent: => if @buffer.mode.indent then @buffer.mode\indent self
+  indent: => @_apply_to_line_modes 'indent'
 
   indent_all: =>
     @with_position_restored ->
       @selection\select_all!
       @indent!
 
-  comment: => if @buffer.mode.comment then @buffer.mode\comment self
-  uncomment: => if @buffer.mode.uncomment then @buffer.mode\uncomment self
-  toggle_comment: =>
-    if @buffer.mode.toggle_comment then @buffer.mode\toggle_comment self
+  comment: => @_apply_to_line_modes 'comment'
+  uncomment: => @_apply_to_line_modes 'uncomment'
+  toggle_comment: => @_apply_to_line_modes 'toggle_comment'
 
   delete_line: => @buffer.lines[@cursor.line] = nil
 
@@ -348,16 +372,24 @@ class Editor extends PropertyObject
       @insert clip.text
     else
       line = @current_line
+      text = clip.text
+      trailing_eol = text\ends_with @buffer.eol
 
       if opts.where == 'after'
-        line = @buffer.lines\insert @current_line.nr + 1, ''
-      elseif not clip.text\ends_with @buffer.eol
+        if trailing_eol and line.next
+          line = line.next
+        else
+          line = @buffer.lines\insert @current_line.nr + 1, ''
+          if trailing_eol
+            text = text\sub(1, -(#@buffer.eol + 1))
+
+      elseif not trailing_eol
         line = @buffer.lines\insert line.nr, ''
 
       @cursor.pos = line.start_pos
 
       @with_position_restored ->
-        @insert clip.text
+        @insert text
 
   insert: (text) => @view\insert text
 
@@ -366,11 +398,11 @@ class Editor extends PropertyObject
       @shift_right!
       return
 
-    conf = @buffer.config
+    conf = @config_at_cursor
     if conf.tab_indents and @current_context.prefix.is_blank
       cur_line = @current_line
-      next_indent = cur_line.indentation + config.indent
-      next_indent -= (next_indent % config.indent)
+      next_indent = cur_line.indentation + conf.indent
+      next_indent -= (next_indent % conf.indent)
       cur_line.indentation = next_indent
       @cursor.column = next_indent + 1
     else if conf.use_tabs
@@ -383,7 +415,7 @@ class Editor extends PropertyObject
       @shift_left!
       return
 
-    conf = @buffer.config
+    conf = @config_at_cursor
     if conf.tab_indents and @current_context.prefix.is_blank
       cursor_col = @cursor.column
       cur_line = @current_line
@@ -399,14 +431,14 @@ class Editor extends PropertyObject
   delete_back: =>
     prefix = @current_context.prefix
     if @selection.empty and prefix.is_blank and not prefix.is_empty
-      if @buffer.config.backspace_unindents
+      if @config_at_cursor.backspace_unindents
         cur_line = @current_line
         gap = cur_line.indentation - @cursor.column
         cur_line\unindent!
         @cursor.column = max(1, cur_line.indentation - gap)
         return
 
-    @view\delete_back!
+    @view\delete_back allow_coalescing: true
 
   delete_back_word: =>
     if @selection.empty
@@ -501,14 +533,7 @@ class Editor extends PropertyObject
 
   show_popup: (popup, options = {}) =>
     @remove_popup!
-    pos = @buffer\byte_offset options.position or @cursor.pos
-    coordinates = @view\coordinates_from_position pos
-    unless coordinates
-      pos = @buffer.lines[@line_at_top].start_pos
-      coordinates = @view\coordinates_from_position pos
-
-    x = coordinates.x
-    y = coordinates.y2 + 2
+    x, y = @_get_popup_coordinates options.position
 
     popup\show @view\to_gobject!, :x, :y
     @popup = window: popup, :options
@@ -608,27 +633,23 @@ class Editor extends PropertyObject
     else
       @_on_pos_changed!
 
-  _set_config_settings: =>
-    buf = @buffer
-    config = buf.config
-    view_conf = @view.config
+  refresh_variable: (name) =>
+    value = @buffer.config[name]
+    if aullar_config_vars[name]
+      if @view.config[aullar_config_vars[name]] != value
+        @view.config[aullar_config_vars[name]] = value
+    elseif editor_config_vars[name]
+      if @[editor_config_vars[name]] != value
+        @[editor_config_vars[name]] = value
+    else
+      error "Invalid var #{name}"
 
-    with config
-      @indentation_guides = .indentation_guides
-      @line_wrapping = .line_wrapping
-      @line_wrapping_navigation = .line_wrapping_navigation
-      @horizontal_scrollbar = .horizontal_scrollbar
-      @vertical_scrollbar = .vertical_scrollbar
-      @cursor_line_highlighted = .cursor_line_highlighted
-      @line_numbers = .line_numbers
-      @line_padding = .line_padding
-      @edge_column = .edge_column
-      view_conf.cursor_blink_interval = .cursor_blink_interval
-      view_conf.view_indent = .indent
-      view_conf.view_tab_size = .tab_width
-      view_conf.view_font_name = .font_name
-      view_conf.view_font_size = .font_size
-      view_conf.view_line_wrap_symbol = .line_wrapping_symbol
+  _set_config_settings: =>
+    for name, _ in pairs editor_config_vars
+      @refresh_variable name
+
+    for name, _ in pairs aullar_config_vars
+      @refresh_variable name
 
   _create_indicator: (indics, id) =>
     def = indicators[id]
@@ -647,6 +668,19 @@ class Editor extends PropertyObject
     bar = y == 'top' and @header or @footer
     bar\remove id
     @indicator[id] = nil
+
+  _apply_to_line_modes: (method) =>
+    lines = @active_lines
+
+    mode = nil
+    modes = [@buffer\mode_at line.start_pos for line in *lines]
+    mode = modes[1]
+    for other_mode in *modes
+      if mode != other_mode
+        mode = @buffer.mode
+        break
+
+    mode[method] mode, self if mode[method]
 
   _pos_from_coordinates: (x, y) =>
     byte_offset = @view\position_from_coordinates(x, y)
@@ -713,23 +747,35 @@ class Editor extends PropertyObject
       @remove_popup!
       return true
 
-    maps = { @buffer.keymap, @buffer.mode and @buffer.mode.keymap }
+    maps = { @buffer.keymap, @mode_at_cursor and @mode_at_cursor.keymap }
     return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
-    @drag_press_type = event.type
-    @drag_press_pos = @_pos_from_coordinates(event.x, event.y)
+    return false if event.button == 3
 
-    if event.type == Gdk.GDK_2BUTTON_PRESS
-      group = @current_context.word
-      group = @current_context.token if group.empty
+    if event.button == 1
+      @drag_press_type = event.type
+      @drag_press_pos = @_pos_from_coordinates(event.x, event.y)
 
-      unless group.empty
-        @selection\set group.start_pos, group.end_pos + 1
-        true
+      if event.type == Gdk.GDK_2BUTTON_PRESS
+        group = @current_context.word
+        group = @current_context.token if group.empty
 
-    elseif event.type == Gdk.GDK_3BUTTON_PRESS
-      @selection\set @current_line.start_pos, @_next_line_start(@current_line)
+        unless group.empty
+          @selection\set group.start_pos, group.end_pos + 1
+          true
+
+      elseif event.type == Gdk.GDK_3BUTTON_PRESS
+        @selection\set @current_line.start_pos, @_next_line_start(@current_line)
+
+    elseif event.button == 2
+      text = clipboard.primary.text
+      if text
+        pos = @_pos_from_coordinates(event.x, event.y)
+        @selection\remove!
+        @cursor.pos = pos
+        @insert text
+        clipboard.primary.text = text
 
   _on_button_release: (view, event) =>
     @drag_press_type = nil
@@ -757,7 +803,7 @@ class Editor extends PropertyObject
     buffer = @view.buffer
     return if byte_pos < 1 or byte_pos > buffer.size
 
-    auto_pairs = @buffer.mode.auto_pairs
+    auto_pairs = @buffer\mode_at(buffer\char_offset byte_pos).auto_pairs
     return unless auto_pairs
 
     cur_char = buffer\sub byte_pos, byte_pos
@@ -786,8 +832,10 @@ class Editor extends PropertyObject
       buffer.markers\remove name: 'brace_highlight'
       @_brace_highlighted = false
 
-    should_highlight = @buffer.config.matching_braces_highlighted
+    should_highlight = @config_at_cursor.matching_braces_highlighted
     return unless should_highlight
+    auto_pairs = @mode_at_cursor.auto_pairs
+    return unless auto_pairs
 
     highlight_braces = (pos1, pos2, flair) ->
       buffer.markers\add {
@@ -820,6 +868,17 @@ class Editor extends PropertyObject
     pos = @cursor.line .. ':' .. @cursor.column
     @indicator.position.label = pos
 
+  _get_popup_coordinates: (pos=@cursor.pos) =>
+    pos = @buffer\byte_offset pos
+    coordinates = @view\coordinates_from_position pos
+    unless coordinates
+      pos = @buffer.lines[@line_at_top].start_pos
+      coordinates = @view\coordinates_from_position pos
+
+    x = coordinates.x
+    y = coordinates.y2 + 2
+    x, y
+
   _on_focus: (args) =>
     howl.app.editor = self
     @has_focus = true
@@ -836,12 +895,12 @@ class Editor extends PropertyObject
     params = moon.copy args
     params.editor = self
     return if signal.emit('insert-at-cursor', params) == signal.abort
-    return if @buffer.mode.on_insert_at_cursor and @buffer.mode\on_insert_at_cursor(params, self)
+    return if @mode_at_cursor.on_insert_at_cursor and @mode_at_cursor\on_insert_at_cursor(params, self)
 
     if @popup
       @popup.window\on_insert_at_cursor(self, params) if @popup.window.on_insert_at_cursor
     elseif args.text.ulen == 1
-      config = @buffer.config
+      config = @config_at_cursor
       return unless config.complete != 'manual'
       return unless #@current_context.word_prefix >= config.completion_popup_after
       skip_styles = config.completion_skip_auto_within
@@ -858,6 +917,11 @@ class Editor extends PropertyObject
     if @popup
       params = text: args.text, editor: self, at_pos: @buffer\char_offset(args.pos)
       @popup.window\on_delete_back self, params if @popup.window.on_delete_back
+
+  _on_scroll: =>
+    return unless @popup and @popup.showing
+    x, y = @_get_popup_coordinates @popup.options.position
+    @popup.window\move_to x, y
 
 -- Default indicators
 
@@ -996,7 +1060,7 @@ with config
   .define
     name: 'line_padding'
     description: 'Extra spacing above and below each line'
-    default: 1
+    default: 0
     type_of: 'number'
 
   .define
@@ -1006,30 +1070,11 @@ with config
     type_of: 'number'
     scope: 'global'
 
-  for watched_property in *{
-    'indentation_guides',
-    'edge_column',
-    'line_wrapping',
-    'line_wrapping_navigation',
-    'horizontal_scrollbar',
-    'vertical_scrollbar',
-    'cursor_line_highlighted',
-    'line_numbers',
-    'line_padding',
-  }
-    .watch watched_property, apply_property
+  for watched_property, _ in pairs aullar_config_vars
+    .watch watched_property, apply_variable
 
-  for live_update in *{
-    { 'font', 'view_font_name' }
-    { 'font_size', 'view_font_size' }
-    { 'tab_width', 'view_tab_size' }
-    { 'line_numbers', 'view_show_line_numbers' }
-    { 'indent', 'view_indent' }
-    { 'cursor_blink_interval', 'cursor_blink_interval' }
-    { 'line_wrapping_symbol', 'view_line_wrap_symbol' }
-  }
-    .watch live_update[1], (_, value) -> apply_variable live_update[2], value
-
+  for watched_property, _ in pairs editor_config_vars
+    .watch watched_property, apply_variable
 
   for global_var in *{
     'undo_limit'

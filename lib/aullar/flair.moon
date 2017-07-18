@@ -3,9 +3,8 @@
 
 {:RGBA} = require 'ljglibs.gdk'
 require 'ljglibs.cairo.context'
-{:SCALE, :Layout, :AttrList, :Attribute, :Color, :cairo} = require 'ljglibs.pango'
+{:SCALE, :Layout, :Attribute, :Color, :cairo} = require 'ljglibs.pango'
 
-{:define_class} = require 'aullar.util'
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
 {:min, :max, :floor, :pi} = math
@@ -24,8 +23,8 @@ set_source_from_color = (cr, name, opts) ->
       cr\set_source_rgba color.red, color.green, color.blue, alpha
     else
       cr\set_source_rgb color.red, color.green, color.blue
-    else
-      cr\set_source_rgba 0, 0, 0, 0, 0
+  else
+    cr\set_source_rgba 0, 0, 0, 0, 0
 
 set_line_type_from_flair = (cr, flair) ->
   cr.line_width = flair._line_width
@@ -36,8 +35,28 @@ set_line_type_from_flair = (cr, flair) ->
       cr.dash = {6, 3}
 
 draw_ops = {
-  rectangle: (flair, x, y, width, height, cr) ->
+  custom: (flair, x, y, width, height, cr) ->
+    local ok, err
 
+    if flair.custom_draw
+      ok, err = pcall flair.custom_draw, flair, x, y, width, height, cr
+    else
+      ok ,err = false, "'custom_draw' function missing"
+
+    if not ok
+      -- Something went wrong in custom_draw, so draw an intensely red "missing"
+      -- cross, for visual attention and to maintain functioning of the editor.
+      io.stderr\write err ..'\n'
+
+      cr\set_source_rgba 1, 0, 0, 1
+      cr.line_width = 2
+      cr\move_to x, y
+      cr\line_to x + width, y + height
+      cr\move_to x, y + height
+      cr\line_to x + width, y
+      cr\stroke!
+
+  rectangle: (flair, x, y, width, height, cr) ->
     if flair.background
       set_source_from_color cr, 'background', flair
       cr\rectangle x, y, width, height
@@ -102,7 +121,7 @@ draw_ops = {
     set_line_type_from_flair cr, flair
 
     direction = -1
-    for i = 1, runs
+    for _ = 1, runs
       cr\rel_line_to line_run, direction * wave_height
       direction *= -1
 
@@ -162,6 +181,7 @@ need_text_object = (flair) ->
   flair.text_color or flair.height == 'text'
 
 {
+  CUSTOM: 'custom'
   RECTANGLE: 'rectangle'
   ROUNDED_RECTANGLE: 'rounded_rectangle'
   SANDWICH: 'sandwich'
@@ -195,15 +215,15 @@ need_text_object = (flair) ->
 
   draw: (flair, display_line, start_offset, end_offset, x, y, cr) ->
 
-    get_defined_width = (x, flair, cr, clip) ->
-      return flair.width if type(flair.width) == 'number'
-      if flair.width == 'full'
-        clip.x2 - x
+    get_defined_width = (at_x, f, clip) ->
+      return f.width if type(f.width) == 'number'
+      if f.width == 'full'
+        clip.x2 - at_x
 
     flair = flairs[flair] if type(flair) == 'string'
     return unless flair
 
-    {:layout, :view, :is_wrapped, :lines} = display_line
+    {:layout, :view, :lines} = display_line
     clip = cr.clip_extents
     base_x = view.base_x
     width_of_space = display_line.width_of_space
@@ -224,7 +244,7 @@ need_text_object = (flair) ->
       text_start_x = x + max((start_rect.x / SCALE), 0) - base_x
       start_x = max(text_start_x, view.edit_area_x)
 
-      width = get_defined_width(start_x, flair, cr, clip)
+      width = get_defined_width(start_x, flair, clip)
       unless width
         end_rect = layout\index_to_pos f_end_offset - 1
         end_x = end_rect.x / SCALE

@@ -20,7 +20,7 @@ config = require 'aullar.config'
 
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
-{:max, :min, :abs, :floor} = math
+{:max, :min, :floor} = math
 
 append = table.insert
 
@@ -59,7 +59,7 @@ View = {
     @im_context = Gtk.ImContextSimple!
     with @im_context
       append @_handlers, \on_commit (ctx, s) ->
-        @insert s
+        @insert s, allow_coalescing: true
 
       append @_handlers, \on_preedit_start ->
         @in_preedit = true
@@ -90,7 +90,6 @@ View = {
       append @_handlers, \on_scroll_event self\_on_scroll
       append @_handlers, \on_draw self\_draw
       append @_handlers, \on_screen_changed self\_on_screen_changed
-      append @_handlers, \on_size_allocate self\_on_size_allocate
       append @_handlers, \on_focus_in_event self\_on_focus_in
       append @_handlers, \on_focus_out_event self\_on_focus_out
 
@@ -128,6 +127,7 @@ View = {
     }
 
     append @_handlers, @bin\on_destroy self\_on_destroy
+    append @_handlers, @bin\on_size_allocate self\_on_size_allocate
 
     @_buffer_listener = {
       on_inserted: (_, b, args) -> self\_on_buffer_modified b, args, 'inserted'
@@ -316,18 +316,19 @@ View = {
           @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
+    notify @, 'on_scroll', opts
 
-  insert: (text) =>
+  insert: (text, opts = {}) =>
     if @selection.is_empty
-      @_buffer\insert @cursor.pos, text
+      @_buffer\insert @cursor.pos, text, #text, opts
     else
       start_pos = @selection\range!
-      @_buffer\replace start_pos, @selection.size, text
+      @_buffer\replace start_pos, @selection.size, text, #text, opts
 
     notify @, 'on_insert_at_cursor', :text
     nil
 
-  delete_back: =>
+  delete_back: (opts = {}) =>
     if @selection.is_empty
       cur_pos = @cursor.pos
       @cursor\backward!
@@ -337,11 +338,11 @@ View = {
 
       if size > 0
         text = @_buffer\sub prev_pos, cur_pos
-        @_buffer\delete(prev_pos, size)
+        @_buffer\delete prev_pos, size, opts
         notify @, 'on_delete_back', :text, pos: prev_pos
     else
       start_pos = @selection\range!
-      @_buffer\delete start_pos, @selection.size
+      @_buffer\delete start_pos, @selection.size, opts
 
   to_gobject: => @bin
 
@@ -464,8 +465,8 @@ View = {
         rect =  layout\index_to_pos index
         bottom = y + ((rect.y + rect.height) / Pango.SCALE) + @config.view_line_padding
         return {
-          x: x + (rect.x / Pango.SCALE)
-          x2: x + ((rect.x + rect.width) / Pango.SCALE)
+          x: x + (rect.x / Pango.SCALE) - @base_x
+          x2: x + ((rect.x + rect.width) / Pango.SCALE) - @base_x
           y: y + (rect.y / Pango.SCALE)
           y2: bottom
         }

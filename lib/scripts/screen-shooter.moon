@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, dispatch, timer from howl
+import app, command, dispatch from howl
 import theme from howl.ui
 import File from howl.io
 import get_cwd from howl.util.paths
@@ -50,7 +50,7 @@ snapshot = (name, dir, opts) ->
   for buffer in *app.buffers
     app\close_buffer buffer, true
 
-  for i = 1, #app.window.views - 1
+  for _ = 1, #app.window.views - 1
     command.view_close!
 
   log.info ''
@@ -143,6 +143,16 @@ screenshots = {
     name: 'buffer-modes'
     ->
       command.run 'buffer-mode'
+  }
+
+  {
+    name: 'buffer-inspect'
+    with_overlays: true
+    ->
+      app\open_file examples_dir / 'faulty.moon'
+      app.editor.cursor\move_to line: 12
+      command.run 'buffer-inspect'
+      command.run 'cursor-goto-inspection'
   }
 
   {
@@ -274,7 +284,7 @@ screenshots = {
 }
 
 take_snapshots = (theme_name, to_dir, only) ->
-  for i, def in ipairs screenshots
+  for _, def in ipairs screenshots
     if only and only != def.name
       continue
 
@@ -308,6 +318,19 @@ setup_example_files = ->
     aa
   end
     '
+
+    'faulty.moon': "mod = require 'mod'
+{:insert} = table
+
+
+first_func = (x) ->
+  m = mod.foo 'x'
+
+oops_shadow = (mod) ->
+  mod\\gmatch '.*(%w+).*'
+
+oops_shadow('mymod')
+"
   }
 
   examples_dir\mkdir_p!
@@ -340,13 +363,13 @@ run = (theme_name, only) ->
 
   print "- Taking screenshots.."
   app.window\resize 1048, 480
-  for theme_name in *for_themes
-    howl.config.theme = theme_name
+  for cur_theme in *for_themes
+    howl.config.theme = cur_theme
     wait_a_bit!
-    ss_dir = image_dir\join((theme_name\lower!\gsub('%s', '-')))
+    ss_dir = image_dir\join((cur_theme\lower!\gsub('%s', '-')))
     ss_dir\mkdir_p! unless ss_dir.exists
-    print "  * #{theme_name}.."
-    take_snapshots theme_name, ss_dir, only
+    print "  * #{cur_theme}.."
+    take_snapshots cur_theme, ss_dir, only
 
 howl.signal.connect 'app-ready', ->
   log.info ''
@@ -360,6 +383,6 @@ howl.signal.connect 'app-ready', ->
   os.exit(0)
 
 howl.config.cursor_blink_interval = 0
-howl.config.font_size = 12
+howl.config.font_size = 10
 app.args = {app.args[0]}
 app\run!

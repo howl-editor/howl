@@ -4,9 +4,9 @@
 import mode from howl
 lpeg = _G.lpeg
 import P, B, S, Cp, Cc, Ct, Cmt, Cg, Cb from lpeg
-import pairs, setfenv, setmetatable, type, print, tostring from _G
+import pairs, setfenv, setmetatable, type, tostring from _G
 l = lpeg.locale!
-import space, alpha from l
+import alpha from l
 unpack, append, tinsert = table.unpack, table.insert, table.insert
 
 eol_p = P'\n' + P'\r\n' + P'\r'
@@ -281,8 +281,8 @@ sub_lex_by_pattern = (mode_p, mode_style, stop_p) ->
 sub_lex_by_pattern_match_time = (mode_p, mode_style, match_time_p) ->
   Cmt(C(mode_p) * Cc(mode_style) * C(match_time_p), pattern_sub_lex_capture)
 
-sub_lex_by_lexer = (base_style, stop_p, lexer) ->
-  Cmt(Cc(base_style) * Cc(lexer) * C(scan_until(stop_p)), lexer_sub_lex_capture)
+sub_lex_by_lexer = (base_style, stop_p, sub_lexer) ->
+  Cmt(Cc(base_style) * Cc(sub_lexer) * C(scan_until(stop_p)), lexer_sub_lex_capture)
 
 sub_lex_by_inline = (base_style, match_p, pattern) ->
   p = Ct lenient_pattern(pattern)^0

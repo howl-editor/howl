@@ -7,45 +7,104 @@ title: howl.config
 ## Overview
 
 Things that are meant to be configurable in Howl are exposed as "configuration
-variables". Configuration variables can be set either interactively from within
-Howl, using the `set` command, or programmatically from code. To get an overview
-of currently available variables, type `set` and press `space` at the readline
-to view a list.
+variables". An example configuration variable is `font_size`, which sets the
+size of the main font.
 
-Configuration variables can be specified at three different levels in Howl,
-in ascending order of priority:
+Configuration variables are set either interactively from within Howl, using the
+[`set`](../manual/configuration.html) command, or programmatically from code. To
+get an overview of currently available variables, open the command line, type
+`set` and press `space` - this shows a list of all variables.
 
-- *Globally*
+Values for configuration variables can be specified at multiple levels, called
+*scopes*, and at multiple *layers* within each scope. These are described below.
 
-The value set for the variable is used unless overridden by a mode or buffer
-specific setting (the `set` command always sets variables globally).
+### Scopes
 
-- *Per mode*
+The *scope* is a path within a hierarchical namespace. An example of a scope is
+`'file/home/user/my_dir'` which represents the file path  `/home/user/my_dir`.
+Some common scopes are:
 
-The value is set for a particular mode (e.g. "Lua" or "Ruby"), and is applied
-whenever a buffer with that particular mode is active. The value is used unless
-overridden by a buffer specific setting, and overrides any global setting.
+- **Global scope**
 
-- *Per buffer*
+  The global scope is represented as the empty string `''` and the value is used
+  if no specific value is found at any nested scope. The `set` command always
+  sets variables at the global scope.
 
-The value is set for a particular buffer, and is applied whenever that buffer is
-active. The value overrides any mode specific or global setting.
+- **File path scope**
 
-As described above, variables can be set on three different levels. No matter
-the on what level they're set, they're always set (and accessed) using `config`
-objects. For global accesses, you would use `howl.config` (this module). For
-mode variables you access variables using the config object on a particular mode
-instance, and similarly for buffer variables you use the config object for a
-particular buffer.
+  File path scopes are used to specify configuration for specific files
+  directories. A file path scope starts with `'file/'`, e.g.
+  `'file/home/user/folder'`, and the value applies to all files at or below the
+  specified path.
 
-The following code snippet illustrates the idiomatic ways of setting variables
-on different levels:
+  This value overrides any value set by a parent scope.
+
+- **Unsaved file scope (buffer scope)**
+
+  Unsaved file scopes are used to specify configuration for buffers that are not
+  associated with any file. These scopes start with `'buffer'`, e.g.
+  `'buffer/1234'`, and the value applies to the specific buffer only.
+
+### Layers
+
+Within each scope, multiple layers are available for configuration. By default,
+when a value is specified for a scope, it is set for the `default` layer within
+that scope. However, a value may also be set for another layer in the same
+scope, for instance it may be set for the `'mode:moonscript'` layer. This is
+used to define values for specific a buffer [mode]. Layer names are not abitrary
+tags but are a predefined set of string tags and the same set of layers is
+available at *all* scopes.
+
+Within each scope, the layer specific value applies. If the requested layer
+value does not exist, the `default` layer value applies.
+
+### Evaluation
+
+The evaluation of a configuration value works as follows:
+
+  - scopes are inspected most specific to least specific
+  - within each scope the specified layer is checked before falling back to the `default` layer.
+
+Consider an example - evaluation of the configuration variable, say `font_size`,
+for the file `/home/user/my_file.moon` in `moonscript` mode. The following
+configuration values are checked, in order, and the first value found is
+returned:
+
+```
+ 1. scope='file/home/user/my_file.moon', layer='mode:moonscript'
+ 2. scope='file/home/user/my_file.moon', layer='default'
+
+ 3. scope='file/home/user', layer='mode:moonscript'
+ 4. scope='file/home/user', layer='default'
+
+ 5. scope='file/home', layer='mode:moonscript'
+ 6. scope='file/home', layer='default'
+
+ 7. scope='file', layer='mode:moonscript'
+ 8. scope='file', layer='default'
+
+ 9. scope='', layer='mode:moonscript'
+10. scope='', layer='default'
+```
+
+
+### API
+
+The primitive API consists of [`get()`](#get) and [`set`](#set) calls which
+accept scope and layer as additional parameters. However, the following code
+snippet illustrates the idiomatic ways of setting variables globally, for a
+mode, for a specific buffer and for a specific file only:
 
 ```lua
 howl.config.my_var = 'foo'
 howl.mode.by_name('ruby').config.my_var = 'foo'
 howl.app:new_buffer().config.my_var = 'foo'
+howl.config.for_file('/path/to/file').my_var = 'foo'
 ```
+
+Note that internally the values are organized within scopes and layers, but this
+convenient API is available on [buffer] and [mode] objects. [Proxy](#proxy)
+objects, described below are used to build the convenience API.
 
 _See also_:
 
@@ -68,10 +127,12 @@ Defines a new config variable. Options can contain the following fields:
 
 - `description`: A description of the configuration variable (_required_)
 
-- `scope`: An optional value specifying the scope of the variable. One of
-  `local` and `global`. Local variables are only allowed to be set for a
-  [Buffer] or a [mode], whereas a global variable can only be directly on
-  the global config.
+- `scope`: An optional value that specifies what scopes are valid for this
+  config variable. Note that this parameter does not specify a scope directly,
+  but instead specifies one of the following values:
+
+  - `"local"` - variable can be set for any scope
+  - `"global"` - variable can be set for the global scope only
 
 - `validate`: A function that will be used for validating any values set
   for this variable. Whenever a value is set for the variable, this function
@@ -105,59 +166,67 @@ into a native representation.
   - string
   - string_list
 
-### get (name)
+### for_file (path)
 
-Gets the global value of the variable named `name`. While getting the value of a
-variable using `get` is perfectly fine, note that the idiomatic way of getting
-variables values globally is to just to index the config module, like so:
+Returns a [proxy](#proxy) config object for the specified file scope. The
+returned object can be used to get and set configuration variables directly for the file scope, for instance:
+
+```moonscript
+c = config.for_file '/home/user/some/path'
+c.indent = 4
+```
+
+### get (name, scope, layer)
+
+Gets the global value of the variable named `name` for the scope `scope` and
+layer `layer`. While getting the value of a variable using `get` is perfectly
+fine, note that the idiomatic way of getting variables values globally is to
+just index the config module, like so:
 
 ```lua
 local val = howl.config.my_variable
 ```
 
-### local_proxy ()
+The [Evaluation](#Evaluation) section above describes how the value is computed.
 
-Returns a new configuration proxy object. A proxy object offers access to all
-configuration variables defined in Howl, using simple indexing:
+### proxy (scope, write_layer='default', read_layer)
+
+Returns a new configuration proxy object, which offers a convenient API to get
+and set values for a specific scope and layer. A proxy object offers access to
+all configuration variables, using simple indexing:
 
 ```lua
-proxy = howl.config.local_proxy()
+proxy = howl.config.proxy('file/path/to/my_file')
 proxy.indent -- => 2
 ```
 
-Assigning to a proxy object only sets the value locally however:
+Assigning to a proxy object only sets the value for the specified scope:
 
 ```lua
-proxy = howl.config.local_proxy()
+proxy = howl.config.proxy('file/path/to/my_file')
 proxy.indent = 5
 howl.config.indent -- => 2
 proxy.indent -- => 5
 ```
 
-Proxy objects offers one additional feature in addition to the above; the
-possibility of chaining to a different configuration object other than the
-global howl.config module. Using the `chain_to` method, it's possible to create
-hierarchies of configuration objects (as is done in Howl for modes and buffers):
+Getting and setting values use the default layer, when neither `write_layer` nor
+`read_layer` are specified. When `write_layer` is specified, that layer is used
+when getting and setting values. When `read_layer` is also specified, that layer
+is used when getting values only.
 
-```lua
-proxy = howl.config.local_proxy()
-next_proxy = howl.config.local_proxy()
-next_proxy.chain_to(proxy)
-```
+Note that `proxy` objects are used to provide the convenient config API for
+[buffer] and [mode] objects, as described in [API](#API) above.
 
-In the above example, `proxy` would defer any lookups not set locally to the
-global howl.config module, and `next_proxy` would defer any lookups to `proxy`.
-Proxies work against the global configuration variable definitions, and respects
-any validations, conversions, etc., specified.
+### set (name, value, scope='', layer='default')
 
-### set (name, value)
-
-Globally sets the value of the configuration variable with name `name` to be
-`value`. An error is raised for any of the following scenarios:
+Sets the value of the configuration variable with name `name`, for scope `scope`
+and layer `layer` to be `value`. An error is raised for any of the following
+scenarios:
 
 - There exists no known variable with name `name`
 - `value` is not a valid value for the parameter
-- The parameter was defined with the scope "local"
+- The scope is `''` (i.e. global) but the parameter is defined as 'local'
+- The scope is not global, but the parameter is defined as 'global'
 
 Upon a successful change, any listeners are notified. To remove any previously
 set value, pass `nil` as `value`. While setting a variable using `set` is
@@ -178,5 +247,5 @@ callable, will be invoked whenever the specified variable has a new value set.
 *value* - The new value of the parameter
 *is_local* - A boolean indicating whether the value was set locally or globally.
 
-[Buffer]: buffer.html
+[buffer]: buffer.html
 [mode]: mode.html

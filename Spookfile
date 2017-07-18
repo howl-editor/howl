@@ -1,0 +1,72 @@
+-- These helpers come built-in but must
+-- be required for use.
+{
+  :until_success
+  :command
+  :task_filter
+  :notifies
+} = require 'spookfile_helpers'
+
+fs = require 'fs'
+{:notify, :load_spookfile} = _G
+
+log_level "INFO"
+
+-- This notifier is built-in.
+notify.add 'terminal_notifier'
+
+-- Add whatever other notifier you like,
+-- just make sure it's in the package path.
+-- Do note that notifiers are slightly
+-- different in 0.7.x from 0.6.x.
+pcall notify.add, 'notifier'
+
+-- Filters tasks on whether the mapped
+-- file is present (eg. won't run unless it is)
+task_list = task_filter fs.is_present
+
+-- Setup some commands, eg. wrap commands
+-- that can later be called with a path as
+-- input.
+lint = command "./bin/howl-lint"
+spec = command "./bin/howl-spec"
+
+run_spec = (path, event) ->
+  print "\027[1m\027[34m-> \027[22m(#{path}..)\027[0m"
+  until_success ->
+    notifies path, event,
+      task_list(
+        lint, event.path
+        spec, path
+      )
+
+watch "lib", "spec", ->
+  on_changed "_spec%.moon", (event) ->
+    run_spec event.path\match('(.+_spec%.moon)$'), event
+
+  on_changed "^lib/howl/.+%.moon$", (event) ->
+    base = event.path\match '^lib/howl/(.*)%.moon'
+    run_spec "spec/#{base}_spec.moon", event
+
+  on_changed "^lib/aullar/.+%.moon", (event) ->
+    base = event.path\match('^lib/aullar/(.*)%.moon')
+    run_spec "lib/aullar/spec/#{base}_spec.moon", event
+
+  on_changed "^lib/ljglibs/.+%.moon", (event) ->
+    base = event.path\match('^lib/ljglibs/(.*)%.moon')
+    run_spec "lib/ljglibs/spec/#{base}_spec.moon", event
+
+watch "bundles", ->
+  on_changed "^(.+_spec%.moon)", (event) ->
+    base = event.path\match('^(.+_spec%.moon)')
+    run_spec base, event
+
+  on_changed "%.moon$", (event) ->
+    dir, base = event.path\match('^(.+)/(.+)%.moon')
+    unless base\find '_spec'
+      run_spec "#{dir}/spec/#{base}_spec.moon", event
+
+watch_file 'Spookfile', ->
+  on_changed (event) ->
+    notify.info "Reloading Spookfile..."
+    load_spookfile!

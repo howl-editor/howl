@@ -1,4 +1,10 @@
 {
+  whitelist_shadowing: {
+    ['bundles/vi']: {
+      'editor'
+    }
+  }
+
   whitelist_globals: {
     ["."]: {
       'bundle_file',
@@ -13,7 +19,12 @@
       'r',
       'typeof',
       'user_load',
-   },
+    },
+
+    ['bundles/']: {
+      'provide_module',
+      'require_bundle'
+    }
 
     ['themes/']: {
       'flair',
@@ -171,7 +182,6 @@
 
     spec: {
       'after_each',
-      'assert_memory_stays_within',
       'async',
       'before_each',
       'close_all_buffers',

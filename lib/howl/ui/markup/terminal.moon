@@ -4,7 +4,7 @@
 ffi = require 'ffi'
 bit = require 'bit'
 import const_char_p, char_arr from howl.cdefs
-import StyledText, style, colors from howl.ui
+import StyledText, style from howl.ui
 
 band = bit.band
 append = table.insert
@@ -114,8 +114,8 @@ parse_sequence = (p, p_idx, style_state) ->
   if #vals == 0
     reset_style_state style_state
   else
-    for v in vals\gmatch '[^;]+'
-      apply_graphics_value v, style_state
+    for part in vals\gmatch '[^;]+'
+      apply_graphics_value part, style_state
 
   p_idx + 1, style_state
 

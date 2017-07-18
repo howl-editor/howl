@@ -62,13 +62,18 @@ map = {
       to_insert editor
 
     c: (editor) ->
-      if state.change then apply editor, (editor) ->
-        editor\copy_line!
-        editor.cursor\home!
-        editor\delete_to_end_of_line!
-        to_insert editor
-      else
+      if not state.change
         state.change = true
+        return
+
+      -- cc
+      editor.buffer\as_one_undo ->
+        for _ = 1, ((state.count or 1) - 1)
+          editor\cut!
+        editor.cursor\home_indent!
+        if not editor.cursor.at_end_of_line
+          editor\delete_to_end_of_line!
+        to_insert editor
 
     C: (editor) -> apply editor, (editor) ->
       editor\delete_to_end_of_line!
@@ -142,4 +147,7 @@ map = {
   ':': -> command.run!
 }
 
-return setmetatable map, __index: base_map
+return setmetatable map, {
+  __index: base_map
+  __call: (_, editor) -> state.leave_edit_mode editor
+}

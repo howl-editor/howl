@@ -7,7 +7,6 @@ C = ffi.C
 describe 'offsets', ->
 
   gap_b = (data) -> GapBuffer 'char', #data, initial: data
-  char_p = (s) -> ffi.cast('const char *', s)
 
   glib_byte_offset = (ptr, char_offset) ->
     next_ptr = C.g_utf8_offset_to_pointer ptr, char_offset
@@ -87,7 +86,7 @@ describe 'offsets', ->
       nr_chars = tonumber C.g_utf8_strlen(gb.array, gb.size)
 
     it 'returns the correct result as compared to glib', ->
-      for i = 1, 200
+      for _ = 1, 200
         pos = math.floor math.random! * nr_chars
         b_offset = offsets\byte_offset gb, pos
         glib_b_offset = glib_byte_offset gb.array, pos
@@ -103,7 +102,7 @@ describe 'offsets', ->
       replacement_len = tonumber C.g_utf8_strlen(ffi.cast('const char *', replacement), #replacement)
       glib_gb = GapBuffer 'char', #test_data, initial: test_data
 
-      for i = 1, 100
+      for _ = 1, 100
         pos = math.floor math.random! * (nr_chars - 20)
         glib_b_offset = glib_byte_offset glib_gb.array, pos
         b_offset = offsets\byte_offset gb, pos

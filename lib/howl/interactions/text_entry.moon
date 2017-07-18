@@ -8,12 +8,17 @@ class ReadText
     with app.window.command_line
       .prompt = opts.prompt or ''
       .title = opts.title
+    @opts = moon.copy opts
 
   keymap:
     enter: =>
       self.finish app.window.command_line.text
 
     escape: => self.finish!
+
+  handle_back: =>
+    if @opts.cancel_on_back
+      self.finish back: true
 
 interact.register
   name: 'read_text'

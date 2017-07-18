@@ -233,7 +233,7 @@ describe 'GapBuffer', ->
       assert.equals 3, ptr[2]
 
     it 'always returns pointers that are zero terminated at the boundaries', ->
-      for i = 1,20
+      for _ = 1,20
         b = buffer '0123456789', 10
         b\move_gap_to 5
         pre_gap_ptr = b\get_ptr(0, 4)

@@ -7,11 +7,11 @@ require 'ljglibs.gtk.widget'
 flair = require 'aullar.flair'
 RGBA = Gdk.RGBA
 
-import File from howl.io
 import config, signal from howl
 import style, colors, highlight from howl.ui
-import PropertyTable, Sandbox, SandboxedLoader from howl.util
+import PropertyTable, SandboxedLoader from howl.util
 aullar_config = require 'aullar.config'
+append = table.insert
 
 css_provider = Gtk.CssProvider!
 screen = Gdk.Screen\get_default!
@@ -31,29 +31,37 @@ css_template = [[
   background: ${scrollbar_slider_color};
 }
 
+scrollbar {
+  background-color: ${scrollbar_background_color};
+}
+
+scrollbar slider {
+  background-color: ${scrollbar_slider_color};
+}
+
 .scrollbar.trough {
   background: ${scrollbar_background_color};
 }
 
 .header {
   color: ${header_color};
-  font: ${header_font};
+  ${header_font}
 }
 
 .footer {
   color: ${footer_color};
-  font: ${footer_font};
+  ${footer_font}
 }
 
 .status {
-  font: ${status_font};
+  ${status_font}
   color: ${status_color};
 }
 ]]
 
 status_template = [[
 .status_${name} {
-  font: ${font};
+  ${font}
   color: ${color};
 }
 ]]
@@ -72,19 +80,36 @@ parse_color = (spec, alpha = 1) ->
   tostring(c)
 
 parse_font = (font = {}) ->
+  font_size_unit = 'pt'
+
+  if Gtk.get_major_version! == 3
+    if Gtk.get_minor_version! < 10
+      font_size_unit = ''
+    elseif Gtk.get_minor_version! < 22
+      font_size_unit = 'px'
+
   size = config.font_size
-  desc = config.font
-  desc ..= ' bold' if font.bold
-  desc ..= ' italic' if font.italic
-  desc ..= ' ' .. size if size
-  desc
+  decls = {
+    "font-family: #{config.font};"
+  }
+
+  if size
+    append decls, "font-size: #{config.font_size}#{font_size_unit};"
+
+  if font.italic
+    append decls, "font-style: italic;"
+
+  if font.bold
+    append decls, "font-weight: bold;"
+
+  table.concat decls, '\n  '
 
 indicator_css = (id, def) ->
-  clazz = '.indic_' .. id
-  indic_css = clazz .. ' { '
-  if def.color then indic_css ..= 'color: ' .. def.color .. '; '
-  indic_css ..= 'font: ' .. parse_font(def.font).. '; '
-  indic_css ..= ' }\n'
+  clazz = ".indic_#{id}"
+  indic_css = "#{clazz} {\n  "
+  if def.color then indic_css ..= "color: #{def.color};\n  "
+  indic_css ..= parse_font(def.font)
+  indic_css ..= '\n}\n'
   indic_css
 
 indicators_css = (indicators = {}) ->

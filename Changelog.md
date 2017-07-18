@@ -2,6 +2,71 @@
 
 ## Unreleased (in master)
 
+## 0.5.1 (2017-07-06)
+
+- Corrected version number given by `--version` flag
+
+- Dart lexer fixes
+
+## 0.5 (2017-06-30)
+
+- New Dart bundle for [Dart](https://www.dartlang.org) code.
+
+- Make fixes to let OpenBSD build cleanly (thanks @oficial)
+
+- Various improvements for VI mode
+
+- Code inspection support for Lua using
+[luacheck](https://github.com/mpeterv/luacheck)
+
+- Code inspection support for Ruby using Ruby interpreter
+
+- Code inspection support for Moonscript using
+[moonpick](https://github.com/nilnor/moonpick)
+
+- Support for a new inspections framework (i.e. linting).
+
+- New Rust bundle provides syntax and structure support for
+[Rust](http://www.rust-lang.org) code.
+
+- Added `--version` command line flag.
+
+- Bundles can now declare dependencies on other modules using the
+`require_bundle` helper function.
+
+- Bundles can now expose modules using `provide_module` helper function.
+
+- LuaJIT was updated to LuaJIT-2.1.0-beta3
+
+- Theme compatibility fixes for newer Gtk versions
+
+- Quiet Gtk size allocation warnings in newer Gtk versions
+
+- Added support for X11 primary selection (e.g. copy & paste using middle
+button).
+
+- New Cython bundle provides syntax and structure support for
+[Cython](http://cython.org) code.
+
+- **breaking** - Default for `line-padding` setting has been changed to `0`. If
+you've relied on it: set it explicitly to its' previous value `1` in your Howl
+configuration.
+
+- **breaking** - Overhauled the configuration system to use a flexible *scope*
+and *layer* structure. Replaced all 'set*' commands with a new `set` command as
+part of this. See the documentation for more details.
+
+- Added `config.save_config_on_exit` variable to automatically save global
+configuration to `~/.howl/system/config.lua`.
+
+- Added the `save-config` command that saves the current global configuration to
+`~/.howl/system/config.lua`.
+
+- Changed undo coalescing to not be as greedy (e.g. coalescing pastes and
+ordinary edit revisions).
+
+- Added `custom_draw` flair type (`highlight.CUSTOM`).
+
 - Added command line help which is invoked by pressing `f1` while any
 interactive command is running. This displays a popup containing information
 about the command.
@@ -14,10 +79,21 @@ selected text left or right by one character while preserving the selection.
 to `alt_up` and `alt_down` by default. These move the current or selected lines
 up (or down) by one line while preserving the selection.
 
-- Upgrade Moonscript to 0.4.0
+- Bundled all required dependencies for running specs: `./bin/howl-spec` can now
+be run without any type of external dependecy.
+
+- Upgrade Moonscript to 0.5.0
 
 - Added new command, `editor-replace-exec`, for replacing selection or buffer
 content with the result of piping it to an external command.
+
+### Bugs fixed
+
+- Issues as seen on
+[Github](https://github.com/howl-editor/howl/issues?utf8=✓&q=closed%3A2016-05-30..2017-06-05%20is%3Aissue%20is%3Aclosed
+sort%3Acreated-asc)
+
+## 0.4.1 (2016-10-14)
 
 - Make scrollbars themeable (on newer Gtk versions). Avoids the problem where a
 theme with black scrollbars would make the scrollbars effectively invisible.

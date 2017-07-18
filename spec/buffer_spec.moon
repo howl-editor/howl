@@ -1,4 +1,4 @@
-import Buffer, config, signal from howl
+import Buffer, config from howl
 import File from howl.io
 import with_tmpfile from File
 ffi = require 'ffi'
@@ -79,14 +79,22 @@ describe 'Buffer', ->
       describe 'and the buffer is not modified', ->
 
         before_each ->
+          config.reset!
+          config.define name: 'buf_var', description: 'some var', default: 'def value'
           b.text = 'foo'
           b.modified = false
+          b.config.buf_var = 'orig_value'
 
         it 'sets the buffer text to the contents of the file', ->
           with_tmpfile (file) ->
             file.contents = 'yes sir'
             b.file = file
             assert.equal b.text, 'yes sir'
+
+        it 'preserves the buffer config', ->
+          with_tmpfile (file) ->
+            b.file = file
+            assert.equal b.config.buf_var, 'orig_value'
 
       it 'overwrites any existing buffer text even if the buffer is modified', ->
         b.text = 'foo'
@@ -152,7 +160,7 @@ describe 'Buffer', ->
       assert.is_false Buffer!.modified_on_disk
 
     it "is true if the file's etag is changed after a load or save", ->
-      file = contents: 'foo', etag: '1', basename: 'changeable', exists: true
+      file = contents: 'foo', etag: '1', basename: 'changeable', exists: true, path: '/tmp/changeable'
       b = Buffer!
       b.file = file
       file.etag = '2'
@@ -161,7 +169,10 @@ describe 'Buffer', ->
       assert.is_false b.modified_on_disk
 
   describe '.config', ->
-    config.define name: 'buf_var', description: 'some var', default: 'def value'
+    before_each ->
+      config.reset!
+      config.define_layer 'mode:config'
+      config.define name: 'buf_var', description: 'some var', default: 'def value'
 
     it 'allows reading and writing (local) variables', ->
       b = buffer 'config'
@@ -171,8 +182,8 @@ describe 'Buffer', ->
       assert.equal 'def value', config.buf_var
 
     it 'is chained to the mode config when available', ->
-      mode_config = config.local_proxy!
-      mode = config: mode_config
+      mode_config = config.proxy '', 'mode:config'
+      mode = config_layer: 'mode:config'
       b = buffer 'config'
       b.mode = mode
       mode_config.buf_var = 'from_mode'
@@ -182,6 +193,27 @@ describe 'Buffer', ->
       b = buffer 'config'
       b.mode = {}
       assert.equal 'def value', b.config.buf_var
+
+    it 'each new buffer gets a distinct config', ->
+      b1 = buffer 'config'
+      b2 = buffer 'config'
+      b1.config.buf_var = 'b1_value'
+      b2.config.buf_var = 'b2_value'
+      assert.equal 'b1_value', b1.config.buf_var
+      assert.equal 'b2_value', b2.config.buf_var
+
+    it 'uses a buffer scoped config for unsaved files', ->
+      b1 = buffer 'unsaved'
+      b1.config.buf_var = 'b1_value'
+      assert.equal 'b1_value', config.get 'buf_var', 'buffer/'..b1.id
+
+    it 'uses a file scoped config when associated with a file', ->
+      b1 = buffer 'saved'
+      with_tmpfile (file) ->
+        b1.file = file
+        b1.config.buf_var = 'f1_value'
+        assert.equal 'f1_value', config.get 'buf_var', 'file'..file.path
+        assert.equal 'def value', config.get 'buf_var', 'buffer'..b1.id
 
   describe 'delete(start_pos, end_pos)', ->
     it 'deletes the specified range, inclusive', ->
@@ -566,6 +598,39 @@ describe 'Buffer', ->
       assert.is_nil b\rfind('a', -6)
       assert.is_nil b\rfind('a', 6)
 
+  describe 'mode_at(pos)', ->
+    it 'returns the mode at the given offset', ->
+      b = buffer 'abc def ghi jkl'
+      b.mode = { comment_syntax: '//' }
+      mode_at_test = { comment_syntax: '#' }
+      mode_reg = name: 'mode_at_test', create: -> mode_at_test
+      howl.mode.register mode_reg
+
+      b._buffer\style 1, {
+        1, 's1', 3,
+        5, { 1, 's3', 3 }, 'mode_at_test|s2',
+        9, { 1, 's3', 3 }, 'nonexistent_mode|s2',
+        13, 's1', 15,
+      }
+
+      assert.same '//', b\mode_at(1).comment_syntax
+      assert.same '//', b\mode_at(2).comment_syntax
+      assert.same '//', b\mode_at(3).comment_syntax
+      assert.same '//', b\mode_at(4).comment_syntax
+      assert.same '#', b\mode_at(5).comment_syntax
+      assert.same '#', b\mode_at(6).comment_syntax
+      assert.same '#', b\mode_at(7).comment_syntax
+      assert.same '//', b\mode_at(8).comment_syntax
+      assert.same '//', b\mode_at(9).comment_syntax
+      assert.same '//', b\mode_at(10).comment_syntax
+      assert.same '//', b\mode_at(11).comment_syntax
+      assert.same '//', b\mode_at(12).comment_syntax
+      assert.same '//', b\mode_at(13).comment_syntax
+      assert.same '//', b\mode_at(14).comment_syntax
+      assert.same '//', b\mode_at(15).comment_syntax
+
+      howl.mode.unregister 'mode_at_test'
+
   describe 'reload(force = false)', ->
     it 'reloads the buffer contents from file and returns true', ->
       with_tmpfile (file) ->
@@ -696,8 +761,3 @@ describe 'Buffer', ->
       b = nil
       collectgarbage!
       assert.is_nil buffers[1]
-
-    it 'memory usage is stable', ->
-      assert_memory_stays_within '5Kb', 30, ->
-        buffer 'collect me!'
-

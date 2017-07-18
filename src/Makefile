@@ -19,13 +19,13 @@ else
 	HOWL_EXE=howl
 endif
 
-LUAJIT_VER = LuaJIT-2.1.0-beta1
-LUAJIT_CHECKSUM = 5a5bf71666e77cf6e7a1ae851127b834
+LUAJIT_VER = LuaJIT-2.1.0-beta3
+LUAJIT_CHECKSUM = eae40bc29d06ee5e3078f9444fcea39b
 LUAJIT = deps/${LUAJIT_VER}
 LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
 LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
 LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
-LUAJIT_URL = http://nordman.org/mirror/luajit/$(LUAJIT_VER).tar.gz
+LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
 ifdef WIN32
 	LUAJIT_PATCHES = \
 		001-luajit-ffi-win32-walk-all-modules.patch \
@@ -47,9 +47,12 @@ CONVERT=convert
 
 CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
 ARCHIVES = $(LUAJIT_ARCHIVE)
-LIBS = -lm -ldl ${GTK_LIBS} -lstdc++
+LIBS = -lm -ldl ${GTK_LIBS}
 ifeq ($(UNAME_S),FreeBSD)
-    LIBS = -lm ${GTK_LIBS} -lstdc++
+    LIBS = -lm ${GTK_LIBS}
+endif
+ifeq ($(UNAME_S),OpenBSD)
+    LIBS = -lm ${GTK_LIBS}
 endif
 ifeq ($(UNAME_S),Darwin)
 	LD_FLAGS = -Wl,-export_dynamic -pagezero_size 10000 -image_base 100000000
@@ -131,8 +134,8 @@ install: all
 	@mkdir -p $(DESTDIR)$(PREFIX)/share/howl/
 	@mkdir -p $(DESTDIR)$(PREFIX)/share/howl/spec
 
-	@cp -p howl $(DESTDIR)$(PREFIX)/bin/
-	@cp -p ../bin/howl-spec $(DESTDIR)$(PREFIX)/bin/
+	@cp -fp howl $(DESTDIR)$(PREFIX)/bin/
+	@cp -fp ../bin/howl-spec $(DESTDIR)$(PREFIX)/bin/
 	@cp -rp ../bundles $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../fonts $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../lib $(DESTDIR)$(PREFIX)/share/howl

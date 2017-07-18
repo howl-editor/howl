@@ -2,11 +2,10 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
-{:RGBA} = require 'ljglibs.gdk'
 Window = Gtk.Window
 gobject_signal = require 'ljglibs.gobject.signal'
 {:PropertyObject} = howl.util.moon
-{:ContentBox, :theme} = howl.ui
+{:ContentBox} = howl.ui
 
 append = table.insert
 

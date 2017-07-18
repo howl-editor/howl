@@ -1,4 +1,4 @@
-import bindings, config from howl
+import config from howl
 state = ...
 
 local insert_pos
@@ -35,7 +35,9 @@ insert_map = {
   }
 
 setmetatable insert_map, {
-  __call: (_, editor) -> insert_pos = editor.cursor.pos
+  __call: (_, editor) ->
+    state.enter_edit_mode editor
+    insert_pos = editor.cursor.pos
 }
 
 return insert_map

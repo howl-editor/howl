@@ -18,6 +18,11 @@ copy = (editor) ->
   editor.selection\copy!
   cancel editor
 
+change = (editor) ->
+  editor.selection\cut!
+  state.change_mode editor, 'insert'
+  state.record editor, ->
+
 substitute = (editor) ->
   editor.selection\cut!
   cancel editor, 'insert'
@@ -36,6 +41,7 @@ map = {
   editor: setmetatable {
     d: cut
     x: cut
+    c: change
     y: copy
     v: cancel
     s: substitute
@@ -71,6 +77,7 @@ map = {
 setmetatable map, {
   __index: base_map
   __call: (_, editor) ->
+    state.leave_edit_mode editor
     selection = editor.selection
     selection.persistent = true
 
@@ -81,5 +88,3 @@ setmetatable map, {
       selection_start = editor.cursor.pos
       selection\set selection_start, selection_start
 }
-
-return map

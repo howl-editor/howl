@@ -1,9 +1,9 @@
 -- Copyright 2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:fill} = require 'ffi'
 {:define_class} = require 'aullar.util'
 GapBuffer = require 'aullar.gap_buffer'
+Markers = require 'aullar.markers'
 append = table.insert
 {:min, :max} = math
 
@@ -34,9 +34,11 @@ define_class {
   new: (size, @listener) =>
     @style_buffer = GapBuffer 'uint16_t', size
     @last_pos_styled = 0
+    @sub_style_markers = Markers!
 
   reset: (size) =>
     @style_buffer\set nil, size
+    @sub_style_markers = Markers!
     @last_pos_styled = 0
 
   sub: (styling, start_offset, end_offset) ->
@@ -97,11 +99,13 @@ define_class {
 
   set: (start_offset, end_offset, style, opts = {}) =>
     style_id = style_id_for_name style
+    @sub_style_markers\remove_for_range start_offset, end_offset unless opts.ignore_styles
     @style_buffer\fill start_offset - 1, end_offset - 1, style_id
     @last_pos_styled = max(@last_pos_styled, end_offset)
     @_notify(start_offset, end_offset) unless opts.no_notify
 
   clear: (start_offset, end_offset, opts = {}) =>
+    @sub_style_markers\remove_for_range start_offset, end_offset
     @style_buffer\fill start_offset - 1, end_offset - 1, 0
     @_notify(start_offset, end_offset) unless opts.no_notify
 
@@ -111,8 +115,12 @@ define_class {
 
     base = offset - 1
     base_style = opts.base and "#{opts.base}:" or ''
-    no_notify = no_notify: true
+    set_opts =
+      no_notify: true
+      ignore_styles: true
     styled_up_to = 1
+
+    markers = opts.markers or {}
 
     for s_idx = 1, #styling, 3
       styling_start = styling[s_idx]
@@ -122,21 +130,37 @@ define_class {
       if type(style) != 'table' -- normal lexing
         styling_end = styling[s_idx + 2]
         styled_up_to = base + styling_end - 1
-        @set base + styling_start, styled_up_to, base_style .. style, no_notify
+        @set base + styling_start, styled_up_to, base_style .. style, set_opts
 
       else -- embedded styling (sub lexing)
         if #style > 0
-          sub_base = styling[s_idx + 2]\match '[^|]*|(.+)'
+          mode_name, sub_base = styling[s_idx + 2]\match '([^|]*)|(.+)'
           sub_start_offset = base + styling_start
 
           -- determine sub styling end, so we can fill it with base
           sub_end_offset = get_sub_style_end sub_start_offset, style
           if sub_end_offset -- no sub_end_offset == empty nested styling blocks
-            @set sub_start_offset, sub_end_offset - 1, sub_base, no_notify
-            @apply sub_start_offset, style, base: sub_base, no_notify: true
+            @set sub_start_offset, sub_end_offset - 1, sub_base, set_opts
+            @apply sub_start_offset, style, base: sub_base, no_notify: true, :markers
             styled_up_to = sub_end_offset
+            append markers,
+              name: mode_name
+              start_offset: sub_start_offset
+              -- Note that the use of + 1 here vs. the -1 in the above call to @set is
+              -- NOT an error. Take something like this HTML:
+              -- <script>xyz</script>
+              -- The styling end is defined as column 11. But, from the user's
+              -- perspective, column 12 is still part of the script. So you end
+              -- up removing the - 1. Then, the marker lookups treat the end_offset
+              -- as one *past* the end of the section, so then you add the + 1.
+              end_offset: sub_end_offset + 1
 
     styled_from = offset + styling[1] - 1
+
+    if not opts.markers
+      @sub_style_markers\remove_for_range styled_from, styled_up_to
+      @sub_style_markers\add markers
+
     @_notify(styled_from, styled_up_to) unless opts.no_notify
     styled_up_to
 
@@ -144,17 +168,21 @@ define_class {
     @_check_offsets offset
     return if offset > @last_pos_styled
     @clear offset, @last_pos_styled, no_notify: true
+    @sub_style_markers\remove_for_range offset, @last_pos_styled
     last_pos_styled = @last_pos_styled
     @last_pos_styled = max(0, offset - 1)
     @_notify(offset, last_pos_styled) unless opts.no_notify
 
   insert: (offset, count, opts = {}) =>
     @style_buffer\insert offset - 1, nil, count
+    @sub_style_markers\expand offset, count
     @last_pos_styled += count if offset <= @last_pos_styled
     @_notify(offset, offset + count - 1) unless opts.no_notify
 
   delete: (offset, count, opts = {}) =>
     @style_buffer\delete offset - 1, count
+    @sub_style_markers\shrink offset, count
+
     if offset <= @last_pos_styled
       style_positions_removed = min(@last_pos_styled - offset, count)
       @last_pos_styled -= style_positions_removed
@@ -167,6 +195,10 @@ define_class {
     return nil if offset > @last_pos_styled
     ptr = @style_buffer\get_ptr(offset - 1, 1)
     style_map[ptr[0]]
+
+  get_mode_name_at: (pos) =>
+    found = @sub_style_markers\at pos
+    found[#found] and found[#found].name
 
   _notify: (start_offset, end_offset) =>
     if @listener and @listener.on_changed

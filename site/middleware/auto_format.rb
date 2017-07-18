@@ -22,8 +22,8 @@ class AutoFormat
   def separate_arglists(content)
     content.gsub %r|(<h[23]\s+id=")([^"]+)([^>]+>)([^<]+)(</h[23]>)| do |hdr|
       open, anchor, close, middle, post = $1, $2, $3, $4, $5
-      extracted = middle.gsub /(\([^)]*\))/, '<span class="arg-list">\\1</span>'
-      anchor = anchor.gsub /-?\([^)]*\)/, ''
+      extracted = middle.gsub(/(\([^)]*\))/, '<span class="arg-list">\\1</span>')
+      anchor = anchor.gsub(/-?\([^)]*\)/, '')
       open + anchor + close + extracted + post
     end
   end
@@ -45,13 +45,12 @@ class AutoFormat
     hdrs.each_with_index do |hdr, idx|
       level, target_id, text = hdr
       text = text[/^[^(]+/]
-      target_id = target_id.gsub /-?\([^)]*\)/, ''
+      target_id = target_id.gsub(/-?\([^)]*\)/, '')
       next if text.nil? or text.empty?
       if level == '2'
         toc += "</div>\n" unless idx.zero?
         toc += "<div class=\"toc-group\">\n"
-        cls = text.downcase.gsub(' ', '_')
-        toc += "<a href=\"##{target_id}\" class=\"toc-group-header #{cls}\">#{text}</a>\n"
+        toc += "<a href=\"##{target_id}\" class=\"toc-group-header\">#{text}</a>\n"
       else
         toc += "<li class=\"\"><a href=\"##{target_id}\">#{text}</a></li>\n"
       end

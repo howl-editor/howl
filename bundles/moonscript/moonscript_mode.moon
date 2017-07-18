@@ -12,7 +12,7 @@ class MoonscriptMode
       @completers = .completers
 
   default_config:
-    inspectors: { 'moonscript' }
+    inspectors_on_idle: { 'moonpick' }
 
   comment_syntax: '--'
 
@@ -76,7 +76,7 @@ class MoonscriptMode
 
       for p in *patterns
         if line\umatch p
-          for i = 1, #parents
+          for _ = 1, #parents
             append lines, table.remove parents, 1
 
           append lines, line

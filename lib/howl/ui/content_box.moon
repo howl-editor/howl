@@ -1,7 +1,6 @@
 -- Copyright 2015-2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 gobject_signal = require 'ljglibs.gobject.signal'
 Background = require 'ljglibs.util.background'
@@ -10,10 +9,9 @@ ffi = require 'ffi'
 {:signal} = howl
 {:theme} = howl.ui
 {:PropertyObject} = howl.util.moon
-{:RGBA, :Pixbuf} = Gdk
 append = table.insert
 ffi_cast = ffi.cast
-{:min, :max} = math
+{:max} = math
 
 allocations_differ = (a1, a2) ->
   a1.x != a2.x or a1.y != a2.y or a1.width != a2.width or a1.height != a2.height

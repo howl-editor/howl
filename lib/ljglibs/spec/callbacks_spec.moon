@@ -50,12 +50,12 @@ describe 'callbacks', ->
       holder = setmetatable {}, __mode: 'v'
       table.insert holder, ref
 
-      handler = -> ref['foo']
-      handle = callbacks.register handler, 'test handler'
+      handler_holder = handler: -> ref['foo']
+      handle = callbacks.register handler_holder.handler, 'test handler'
       callbacks.unregister handle
 
       ref = nil
-      handler = nil
+      handler_holder.handler = nil
       collectgarbage!
       assert.is_nil holder[1]
 

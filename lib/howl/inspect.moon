@@ -3,8 +3,9 @@
 
 {:app, :bindings, :command, :config, :inspection, :interact, :log, :signal, :timer} = howl
 {:ActionBuffer, :BufferPopup, :highlight} = howl.ui
+{:Process, :process_output} = howl.io
 {:pcall} = _G
-{:concat, :sort} = table
+{:sort} = table
 append = table.insert
 
 local popup, last_display_position
@@ -19,15 +20,42 @@ update_inspections_display = (editor) ->
 
   editor.indicator.inspections.text = text
 
-load_inspectors = (buffer) ->
+resolve_inspector = (inspector, buffer) ->
+  return inspector unless inspector.cmd\find '<file>', 1, true
+  return nil unless buffer.file
+  copy = {k,v for k, v in pairs inspector}
+  copy.cmd = copy.cmd\gsub '<file>', buffer.file.path
+  copy.write_stdin = false
+  copy
+
+load_inspectors = (buffer, scope = 'idle') ->
+  to_load = if scope == 'all'
+    {'inspectors_on_idle', 'inspectors_on_save'}
+  else
+    {"inspectors_on_#{scope}"}
+
   inspectors = {}
 
-  for inspector in *buffer.config.inspectors
-    conf = inspection[inspector]
-    if conf
-      append inspectors, conf.factory!
-    else
-      log.warn "Invalid inspector '#{inspector}' specified for '#{buffer.title}'"
+  for variable in *to_load
+    for inspector in *buffer.config[variable]
+      conf = inspection[inspector]
+      if conf
+        instance = conf.factory buffer
+        if callable(instance)
+          append inspectors, instance
+        elseif type(instance) == 'string'
+          instance = resolve_inspector {cmd: instance}, buffer
+          if instance
+            append inspectors, instance
+        elseif type(instance) == 'table'
+          unless instance.cmd
+            error "Missing cmd key for inspector returned for '#{inspector}'"
+          instance = resolve_inspector instance, buffer
+          if instance
+            append inspectors, instance
+
+      else
+        log.warn "Invalid inspector '#{inspector}' specified for '#{buffer.title}'"
 
   inspectors
 
@@ -38,26 +66,41 @@ merge = (found, criticisms) ->
     append criticisms[l_nr], {
       message: c.message,
       type: c.type,
-      search: c.search
+      search: c.search,
+      start_col: c.start_col,
+      end_col: c.end_col,
+      byte_start_col: c.byte_start_col,
+      byte_end_col: c.byte_end_col,
     }
 
 get_line_segment = (line, criticism) ->
-  start_pos = line.start_pos
-  end_pos = line.end_pos
-  adjusted = false
+  start_col = criticism.start_col
+  end_col = criticism.end_col
+  line_text = nil
 
-  if criticism.search
+  if not start_col and criticism.byte_start_col
+    line_text or= line.text
+    start_col = line_text\char_offset criticism.byte_start_col
+
+  if not end_col and criticism.byte_end_col
+    line_text or= line.text
+    end_col = line_text\char_offset criticism.byte_end_col
+
+  if not (start_col and end_col) and criticism.search
     p = r"\\b#{r.escape(criticism.search)}\\b"
-    s, e = line\ufind p, 1
+    line_text or= line.text
+    s, e = line_text\ufind p, start_col or 1
     if s
       unless line\ufind p, s + 1
-        end_pos = start_pos + e
-        start_pos += s - 1
-        adjusted = true
+        start_col = s
+        end_col = e + 1
 
-  if not adjusted and not line.is_empty
-    start_pos += line.indentation
+  if not start_col and not line.is_empty
+    start_col = 1 + line.indentation
 
+  -- check spec coverage end_pos
+  start_pos = start_col and line.start_pos + start_col - 1 or line.start_pos
+  end_pos = end_col and line.start_pos + end_col - 1 or line.end_pos
   start_pos, end_pos
 
 mark_criticisms = (buffer, criticisms) ->
@@ -81,38 +124,108 @@ mark_criticisms = (buffer, criticisms) ->
         message: c.message
       }
 
-  buffer.data.last_inspect = buffer.last_changed
-
   if #ms > 0
     markers\add ms
 
   return #ms
 
-inspect = (buffer) ->
-  criticisms = {}
+parse_errors = (out, inspector) ->
+  if inspector.parse
+    return inspector.parse out
 
-  for i in *load_inspectors(buffer)
-    status, ret = pcall i, buffer
-    if status
-      if ret
-        merge ret, criticisms
+  inspections = {}
+
+  for loc in *process_output.parse(out)
+    complaint = {
+      line: loc.line,
+      message: loc.message,
+    }
+    if loc.tokens
+      complaint.search = loc.tokens[1]
+
+    complaint.type = loc.message\umatch(r'^(warning|error)')
+
+    append inspections, complaint
+
+  if inspector.post_parse
+    inspector.post_parse inspections
+
+  inspections
+
+launch_inspector_process = (opts, buffer) ->
+  write_stdin = true unless opts.write_stdin == false
+
+  p = Process {
+    cmd: opts.cmd,
+    read_stdout: true,
+    read_stderr: true,
+    write_stdin: write_stdin
+    env: opts.env,
+    shell: opts.shell,
+    working_directory: opts.working_directory
+  }
+
+  if write_stdin
+    p.stdin\write buffer.text
+    p.stdin\close!
+
+  p
+
+inspect = (buffer, opts = {}) ->
+  criticisms = {}
+  processes = {}
+  inspector_scope = opts.scope or 'all'
+
+  for inspector in *load_inspectors(buffer, inspector_scope)
+    if callable(inspector)
+      status, ret = pcall inspector, buffer
+      if status
+        merge(ret or {}, criticisms)
+      else
+        log.error "inspector '#{inspector}' failed: #{ret}"
     else
-      log.error "inspector '#{i}' failed: #{ret}"
+      p = launch_inspector_process inspector, buffer
+      processes[#processes + 1] = { process: p, :inspector }
+
+  -- finish off processes
+  for p in *processes
+    out, err = p.process\pump!
+    buf = out
+    buf ..= "\n#{err}" unless err.is_blank
+    inspections = parse_errors buf, p.inspector
+    merge(inspections, criticisms)
 
   criticisms
 
-criticize = (buffer, criticisms) ->
+criticize = (buffer, criticisms, opts = {}) ->
   criticisms or= inspect buffer
-  buffer.markers\remove name: 'inspection'
+
+  if opts.clear
+    buffer.markers\remove name: 'inspection'
+
   mark_criticisms buffer, criticisms
 
-update_buffer = (buffer, editor) ->
+update_buffer = (buffer, editor, scope) ->
   return if buffer.read_only
   data = buffer.data
-  if data.last_inspect and data.last_inspect >= buffer.last_changed
+  if data.last_inspect
+    li = data.last_inspect
+    if scope == 'idle' and li.ts >= buffer.last_changed
+      return
+
+  -- we mark this automatic inspection run with a serial
+  update_serial = (data.inspections_update or 0) + 1
+  data.inspections_update = update_serial
+
+  criticisms = inspect buffer, :scope
+  -- check serial to avoid applying out-of-date criticisms
+  unless data.inspections_update == update_serial
+    log.warn "Ignoring stale inspection update - slow inspection processes?"
     return
 
-  criticize buffer
+  criticize buffer, criticisms
+  buffer.data.last_inspect = ts: buffer.last_changed, :scope
+
   editor or= app\editor_for_buffer buffer
   if editor
     update_inspections_display editor
@@ -167,9 +280,9 @@ on_idle = ->
   return if editor.popup
 
   b = editor.buffer
-  if b.config.auto_inspect == 'idle'
+  if b.config.auto_inspect == 'on'
     if b.size < 1024 * 1024 * 5 -- 5 MB
-      update_buffer b, editor
+      update_buffer b, editor, 'idle'
 
 signal.connect 'buffer-modified', (args) ->
   with args.buffer
@@ -181,9 +294,19 @@ signal.connect 'buffer-modified', (args) ->
 
 signal.connect 'buffer-saved', (args) ->
   b = args.buffer
-  return unless b.config.auto_inspect == 'save'
-  return unless b.size < 1024 * 1024 -- 1MB
-  update_buffer b
+  return unless b.size < 1024 * 1024 * 5 -- 5 MB
+  return if b.config.auto_inspect == 'off'
+
+  -- what to load? if config says 'save', all, otherwise save inspectors
+  -- but if the idle hasn't had a chance to run we also run all
+  scope = if b.config.auto_inspect == 'save_only'
+    'all'
+  elseif b.data.last_inspect and b.data.last_inspect.ts < b.last_changed
+    'all'
+  else
+    'save'
+
+  update_buffer b, nil, scope
 
 signal.connect 'after-buffer-switch', (args) ->
   update_inspections_display args.editor

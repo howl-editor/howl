@@ -4,8 +4,6 @@
 ffi = require 'ffi'
 require 'ljglibs.cdefs.glib'
 core = require 'ljglibs.core'
-glib = require 'ljglibs.glib'
-import g_string, catch_error from glib
 
 C, ffi_cast = ffi.C, ffi.cast
 gpointer_t = ffi.typeof 'gpointer'
@@ -14,7 +12,7 @@ to_gp = (v) -> ffi_cast gpointer_t, v
 core.define 'GList', {
   properties: {
     length: => tonumber C.g_list_length @
-    elements: => [v for i, v in ipairs @]
+    elements: => [v for _, v in ipairs @]
   }
 
   new: -> ffi.cast('GList *', nil)

@@ -1,10 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, Buffer, command, config, bindings, bundle, dispatch, interact, signal, mode, Project from howl
+import app, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
 import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
-import File, Process from howl.io
-import get_cwd from howl.util.paths
+import Process from howl.io
 serpent = require 'serpent'
 
 command.register
@@ -70,34 +69,15 @@ command.register
 
     _G.log.error 'No hidden buffer found'
 
-set_variable = (assignment, target) ->
-  if assignment
-    value = assignment.value
-    if config.definitions[assignment.name]
-      target[assignment.name] = value
-      _G.log.info ('"%s" is now set to "%s"')\format assignment.name, assignment.value
-    else
-      log.error "Undefined variable '#{assignment.name}'"
-
 command.register
   name: 'set',
-  description: 'Set a configuration variable globally'
-  input: interact.get_variable_assignment
-  handler: (variable_assignment) -> set_variable variable_assignment, config
-
-command.register
-  name: 'set-for-mode',
-  description: 'Set a configuration variable for the current mode'
+  description: 'Set a configuration variable'
   input: interact.get_variable_assignment
   handler: (variable_assignment) ->
-    set_variable variable_assignment, app.editor.buffer.mode.config
+    target = variable_assignment.target
+    target[variable_assignment.var] = variable_assignment.value
 
-command.register
-  name: 'set-for-buffer',
-  description: 'Set a configuration variable for the current buffer'
-  input: interact.get_variable_assignment
-  handler: (variable_assignment) ->
-    set_variable variable_assignment, app.editor.buffer.config
+    _G.log.info ('"%s" is now set to "%s" for %s')\format variable_assignment.var, variable_assignment.value, variable_assignment.scope_name
 
 command.register
   name: 'describe-key',
@@ -134,11 +114,11 @@ command.register
   name: 'describe-signal',
   description: 'Describe a given signal'
   input: interact.select_signal
-  handler: (name) ->
-    def = signal.all[name]
-    error "Unknown signal '#{name}'" unless def
+  handler: (signal_name) ->
+    def = signal.all[signal_name]
+    error "Unknown signal '#{signal_name}'" unless def
     buffer = with ActionBuffer!
-      .title = "Signal: #{name}"
+      .title = "Signal: #{signal_name}"
       \append "#{def.description}\n\n"
       \append "Parameters:"
 
@@ -312,7 +292,7 @@ do_howl_eval = (load_f, mode_name, transform_f) ->
       buf.text = "-- Howl eval (#{mode_name}) =>#{out}"
       editor\show_popup BufferPopup buf, scrollable: true
     howl.clipboard.push out
-   else
+  else
     log.error "(ERROR) => #{ret[2]}"
 
 command.register
@@ -417,6 +397,13 @@ command.register
   description: 'Run an external command'
   input: (path=nil) -> interact.get_external_command :path
   handler: launch_cmd
+
+command.register
+  name: 'save-config'
+  description: 'Save the current configuration'
+  handler: ->
+    config.save_config!
+    log.info 'Configuration saved'
 
 config.define
   name: 'project_build_command'

@@ -38,7 +38,7 @@ describe 'janitor', ->
     it 'does not leave less than <cleanup_min_buffers_open> buffers', ->
       config.cleanup_min_buffers_open = 2
       config.cleanup_close_buffers_after = 0
-      for i = 1, 2
+      for _ = 1, 2
         b = app\new_buffer!
         b.last_shown = one_hour_ago - 60
 
@@ -93,5 +93,5 @@ describe 'janitor', ->
       config.cleanup_close_buffers_after = 1
       janitor.clean_up_buffers!
 
-      assert.same {'15-min-old'}, [b.title for b in *app.buffers]
+      assert.same {'15-min-old'}, [_b.title for _b in *app.buffers]
 

@@ -62,3 +62,19 @@ describe 'Clipboard', ->
       clipboard.synchronize!
       assert.equals 'pushed', clipboard.current.text
       assert.equals 1, #clipboard.clips
+
+  describe '.primary', ->
+    local primary_cb
+
+    before_each ->
+      primary_cb = GtkClipboard.get Atom.SELECTION_PRIMARY
+
+    it 'allows getting and setting the primary clipboard', ->
+      clipboard.primary.text = 'spec'
+      assert.equals 'spec', primary_cb.text
+      primary_cb.text = 'lower'
+      assert.equals 'lower', clipboard.primary.text
+
+    it 'allows setting a provider function instead of the direct text', ->
+      clipboard.primary.text = -> 'async'
+      assert.equals 'async', primary_cb.text

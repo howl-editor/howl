@@ -8,8 +8,8 @@ core = require 'ljglibs.core'
 C, ffi_gc, ffi_cast = ffi.C, ffi.gc, ffi.cast
 
 attr_gc = (o) ->
-  ffi_gc o, (o) ->
-    C.pango_attribute_destroy(ffi_cast('PangoAttribute *', o))
+  ffi_gc o, (_o) ->
+    C.pango_attribute_destroy(ffi_cast('PangoAttribute *', _o))
 
 PangoAttribute = core.define 'PangoAttribute', {
   constants: {

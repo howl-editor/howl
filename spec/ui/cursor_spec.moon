@@ -1,5 +1,5 @@
-import Buffer, config from howl
-import Editor, theme from howl.ui
+import Buffer from howl
+import Editor from howl.ui
 Gtk = require 'ljglibs.gtk'
 
 describe 'Cursor', ->

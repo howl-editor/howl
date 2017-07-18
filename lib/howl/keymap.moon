@@ -67,10 +67,11 @@
     ctrl_slash:       'editor-toggle-comment'
     ctrl_tab:         'view-next'
 
+    shift_delete:     'editor-cut'
     shift_insert:     'editor-paste'
     ctrl_insert:      'editor-copy'
 
-    ctrl_shift_a:     'editor-select-all'
+    ctrl_a:           'editor-select-all'
 
     alt_s:            'buffer-structure'
     alt_q:            'editor-reflow-paragraph'
@@ -103,7 +104,7 @@
   'ctrl_-':         'zoom-out'
   'ctrl_+':         'zoom-in'
 
-  alt_f11:          'window-toggle-fullscreen'
+  f11:              'window-toggle-fullscreen'
   alt_x:            'run'
 
   shift_alt_left:  'view-left-or-create'
@@ -119,7 +120,7 @@
 
     osx:
       editor: {
-        meta_shift_a:     'editor-select-all'
+        meta_a:           'editor-select-all'
         meta_b:           'switch-buffer'
         meta_c:           'editor-copy'
         meta_d:           'editor-duplicate-current'

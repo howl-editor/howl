@@ -1,7 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:File, :FileOutputStream} = require 'ljglibs.gio'
+{:File} = require 'ljglibs.gio'
 
 with_tmpfile = (f) ->
   p = os.tmpname!

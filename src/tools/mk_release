@@ -11,6 +11,11 @@ if [ -n "$answer" ]; then
   ver=$answer
 fi
 
+if ! grep "version $ver" lib/howl/init.lua > /dev/null; then
+  echo "Version mismatch compared to lib/howl/init.lua, please correct"
+  exit 1
+fi
+
 rel=howl-$ver
 rel_dir=~/tmp/$rel
 
@@ -28,7 +33,7 @@ echo "Downloading dependencies in $rel_dir.."
 tarball=$rel.tgz
 echo "Creating release tarball as $HOME/tmp/$tarball.."
 cd ~/tmp
-tar czf $tarball $rel --exclude '*/site/*'
+tar czf $tarball --exclude '*/site/*' $rel
 rm -rf $rel_dir
 
 echo -n "MD5: "

@@ -16,13 +16,14 @@ Where options can be any of:
   --no-profile  Starts Howl without loading any user profile (settings, etc)
   --spec        Runs the specified Howl spec file(s)
   -h, --help    This help
+  -v, --version Shows version
 ]=]
 
 local path_separator = jit.os == 'Windows' and '\\' or '/'
 local path_prefix = jit.os == 'Windows' and '\\\\.\\' or ''
 app_root = path_prefix .. app_root
 
-local function parse_args(argv)
+local function parse_args(arg_vector)
   local options = {
     ['-h'] = 'help',
     ['--help'] = 'help',
@@ -32,11 +33,13 @@ local function parse_args(argv)
     ['--no-profile'] = 'no_profile',
     ['--spec'] = 'spec',
     ['--run'] = 'run',
+    ['-v'] = 'version',
+    ['--version'] = 'version'
   }
   local args = {}
 
-  for _, arg in ipairs(argv) do
-    opt = options[arg]
+  for _, arg in ipairs(arg_vector) do
+    local opt = options[arg]
     if opt then
       args[opt] = true
     else
@@ -58,7 +61,9 @@ local function set_package_path(...)
     paths[#paths + 1] = app_root .. '/' .. path .. '/?.lua'
     paths[#paths + 1] = app_root .. '/' .. path .. '/?/init.lua'
   end
-  package.path = table.concat(paths, ';') .. ';' .. package.path
+  -- base path is system path except the crazy default current directory
+  local base_path = package.path:gsub('%./?.lua;', '')
+  package.path = table.concat(paths, ';') .. ';' .. base_path
 end
 
 local function auto_module(name)
@@ -71,8 +76,8 @@ local function auto_module(name)
       local status, mod = pcall(require, req_name)
       if not status then
         if mod:match('module.*not found') then
-          relative_path = req_name:gsub('%.', path_separator)
-          path = table.concat({ app_root, 'lib', relative_path }, path_separator)
+          local relative_path = req_name:gsub('%.', path_separator)
+          local path = table.concat({ app_root, 'lib', relative_path }, path_separator)
           if ffi.C.g_file_test(path, ffi.C.G_FILE_TEST_IS_DIR) ~= 0 then
             mod = auto_module(req_name)
           else
@@ -109,21 +114,21 @@ end
 
 local function compile(args)
   for i = 2, #args do
-    file = args[i]
+    local file = args[i]
     local target = file:gsub('%.%w+$', '.bc')
     print('Compiling ' .. file)
     local func = assert(loadfile(file))
     local bytecode = string.dump(func, false)
-    local file = assert(io.open(target, 'wb'))
-    assert(file:write(bytecode))
-    file:close()
+    local fd = assert(io.open(target, 'wb'))
+    assert(fd:write(bytecode))
+    fd:close()
   end
 end
 
 local function lint(args)
   local root = howl.io.File(app_root)
-  package.loaded.lint_config = loadfile(root:join('lint_config.moon').path)()
-  local lint = require("moonscript.cmd.lint")
+  local lint_config = root:join('lint_config.moon').path
+  local moonpick = require("moonpick")
   local errors = 0
   local paths = {}
   local moon_filter = function(f)
@@ -147,9 +152,10 @@ local function lint(args)
 
   for i = 1, #paths do
     local path = paths[i]
-    local res, err = lint.lint_file(path)
-    if res then
-      io.stderr:write(res .. "\n\n")
+    local res, err = moonpick.lint_file(path, {lint_config = lint_config})
+    if res and #res > 0 then
+      io.stderr:write(path .. "\n\n")
+      io.stderr:write(moonpick.format_inspections(res) .. "\n\n")
       errors = errors + 1
     elseif err then
       io.stderr:write(path .. "\n" .. err.. "\n\n")
@@ -160,7 +166,7 @@ local function lint(args)
   os.exit(errors > 0 and 1 or 0)
 end
 
-local function main(args)
+local function main()
   set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
   require 'howl.moonscript_support'
   table.insert(package.loaders, 2, bytecode_loader())
@@ -179,6 +185,11 @@ local function main(args)
     compile(args)
   elseif args.lint then
     lint(args)
+  elseif args.version then
+    -- Change version here
+    print("howl version 0.6-dev\n")
+    print("Copyright 2012-2017 The Howl Developers\nLicense: MIT License")
+    os.exit(0)
   else
     -- set up the the GC to be more aggressive, we have a lot
     -- of cdata that needs to be collected
@@ -192,19 +203,20 @@ local function main(args)
       set_package_path('lib/ext/spec-support')
       package.loaded.lfs = loadfile(app_root .. '/lib/ext/spec-support/howl-lfs-shim.moon')()
       local busted = assert(loadfile(app_root .. '/lib/ext/spec-support/busted/busted_bootstrap'))
-      arg = {table.unpack(argv, 3, #argv)}
+      _G.arg = {table.unpack(argv, 3, #argv)}
       local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
       support()
       busted()
     elseif args.run then
-      loadfile(args[2])(table.unpack(args, 3))
+      local chunk = assert(loadfile(args[2]))
+      chunk(table.unpack(args, 3))
     else
       howl.app:run()
     end
   end
 end
 
-local status, err = pcall(main, args)
+local status, err = pcall(main)
 if not status then
   print(err)
   error(err)

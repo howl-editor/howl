@@ -29,16 +29,20 @@ back_to_char = (event, source, translations, editor) ->
 forward_till_char = (event, source, translations, editor) ->
   if event.character
     apply editor, (editor) ->
+      current_pos = editor.cursor.pos
       editor\forward_to_match event.character
-      editor.cursor\left!
+      if current_pos != editor.cursor.pos
+        editor.cursor\left!
   else
     return false
 
 back_till_char = (event, source, translations, editor) ->
   if event.character
     apply editor, (editor) ->
+      current_pos = editor.cursor.pos
       editor\backward_to_match event.character
-      editor.cursor\right!
+      if current_pos != editor.cursor.pos
+        editor.cursor\right!
   else
     return false
 
@@ -92,7 +96,7 @@ map = {
     w: (editor) -> apply editor, (editor, _state) ->
       if _state.change or _state.yank then end_of_word editor.cursor
       elseif _state.delete
-        for i = 1,_state.count or 1 do editor.cursor\word_right!
+        for _ = 1,_state.count or 1 do editor.cursor\word_right!
         editor.cursor\left!
         true
       else
@@ -120,7 +124,13 @@ map = {
     T: (editor) -> bindings.capture back_till_char
     '/': 'buffer-search-forward'
     '?': 'buffer-search-backward'
-    n: 'buffer-repeat-search'
+    n: 'buffer-repeat-search' -- repeat search in same direction
+    N: (editor) -> -- repeat search in opposite direction
+      searcher = editor.searcher
+      d = searcher.last_direction
+      searcher.last_direction = if d == 'forward' then 'backward' else 'forward'
+      searcher\repeat_last!
+      searcher.last_direction = d
 
     M: (editor) -> apply editor, (editor) ->
       editor.cursor.line = editor.line_at_center

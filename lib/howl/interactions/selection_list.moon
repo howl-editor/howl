@@ -1,11 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, bindings, interact, timer from howl
+import app, interact, timer from howl
 import ListWidget from howl.ui
 import Matcher from howl.util
-
-attach_list = (interactor) ->
 
 class SelectionList
   run: (@finish, @opts) =>
@@ -30,6 +28,16 @@ class SelectionList
     if not @opts.hide_until_tab
       @show_list!
 
+    @quick_selections = {}
+    if @opts.items
+      for item in *@opts.items
+        if item.quick_select
+          if type(item.quick_select) == 'table'
+            for quick_select in *item.quick_select
+              @quick_selections[quick_select] = item
+          else
+            @quick_selections[item.quick_select] = item
+
     if @opts.text
       @command_line\write @opts.text
       @on_update @opts.text
@@ -50,6 +58,13 @@ class SelectionList
     @showing_list = true
 
   on_update: (text) =>
+    if @quick_selections[text]
+      self.finish
+        selection: @quick_selections[text]
+        :text
+        quick: true
+      return
+
     @_change_triggered = false
     @list_widget\update text
     @_handle_change! unless @_change_triggered
@@ -83,6 +98,10 @@ class SelectionList
         @show_list!
       else
         @submit!
+
+  handle_back: =>
+    if @opts.cancel_on_back
+      self.finish back: true
 
 interact.register
   name: 'select'

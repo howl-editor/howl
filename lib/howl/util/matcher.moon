@@ -78,7 +78,7 @@ class Matcher
     matching_lines = {}
     matcher = create_matcher search, @options.reverse
 
-    for i, line in ipairs lines
+    for line in *lines
       text = line.text
       continue if #text < #search
       type, match = matcher text, line.case_text
@@ -135,7 +135,7 @@ class Matcher
       text = if type(candidate) == 'table' and #candidate > 0
         table.concat [tostring(c) for c in *candidate], ' '
       else
-        text = tostring candidate
+        tostring candidate
 
       append @lines, index: i, text: text.ulower, case_text: text
       max_len = max max_len, #text

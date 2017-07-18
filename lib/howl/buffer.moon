@@ -1,29 +1,34 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import BufferContext, BufferLines, BufferMarkers, Chunk, config, signal, sys from howl
-import File from howl.io
-import style from howl.ui
+import BufferContext, BufferLines, BufferMarkers, Chunk, config, mode, signal, sys from howl
 import PropertyObject from howl.util.moon
-import destructor from howl.util
 aullar = require 'aullar'
-{:copy} = moon
 
 ffi = require 'ffi'
 
 append = table.insert
 min = math.min
 
+buffer_id = 0
+
+next_id = ->
+  buffer_id += 1
+  return buffer_id
+
 class Buffer extends PropertyObject
-  new: (mode = {}) =>
+  new: (b_mode = {}) =>
     super!
 
+    @id = next_id!
     @_buffer = aullar.Buffer!
-    @config = config.local_proxy!
     @markers = BufferMarkers @_buffer
     @completers = {}
     @inspectors = {}
-    @mode = mode
+    @mode = b_mode
+    @_set_config!
+    @config\clear!
+
     @properties = {}
     @data = {}
     @_eol = '\n'
@@ -55,16 +60,16 @@ class Buffer extends PropertyObject
 
   @property mode:
     get: => @_mode
-    set: (mode = {}) =>
+    set: (new_mode = {}) =>
       old_mode = @_mode
-      @_mode = mode
-      @config.chain_to mode.config
-      if mode.lexer
-        @_buffer.lexer = (text) -> mode.lexer text, @
+      @_mode = new_mode
+      if new_mode.lexer
+        @_buffer.lexer = (text) -> new_mode.lexer text, @
       else
         @_buffer.lexer = nil
 
-      signal.emit 'buffer-mode-set', buffer: self, :mode, :old_mode
+      @_set_config!
+      signal.emit 'buffer-mode-set', buffer: self, mode: new_mode, :old_mode
 
   @property title:
     get: => @_title or (@file and @file.basename) or 'Untitled'
@@ -124,6 +129,9 @@ class Buffer extends PropertyObject
   @property read_only:
     get: => @_buffer.read_only
     set: (v) => @_buffer.read_only = v
+
+  @property _config_scope:
+    get: => @_file and config.scope_for_file(@_file.path) or ('buffer/' .. @id)
 
   chunk: (start_pos, end_pos) => Chunk self, start_pos, end_pos
 
@@ -279,6 +287,17 @@ class Buffer extends PropertyObject
       b_end_pos = @byte_offset end_pos
       @_buffer\ensure_styled_to pos: b_end_pos
 
+  mode_at: (pos) =>
+    b_pos = @byte_offset pos
+    mode_name = @_buffer.styling\get_mode_name_at b_pos
+    -- Returns @mode if there's no marker or the requested mode doesn't exist.
+    mode_name and mode.by_name(mode_name) or @mode
+
+  config_at: (pos) =>
+    mode_at = @mode_at pos
+    return @config if mode_at == @mode
+    return config.proxy @_config_scope, mode_at.config_layer
+
   add_view_ref: =>
     @viewers += 1
 
@@ -286,8 +305,15 @@ class Buffer extends PropertyObject
     @viewers -= 1
 
   _associate_with_file: (file) =>
+    scope = @_config_scope
     @_file = file
+    config.merge scope, @_config_scope
+    config.delete scope
+    @_set_config!
     @title = file and file.basename or 'Untitled'
+
+  _set_config: =>
+    @config = config.proxy @_config_scope, 'default', @mode.config_layer
 
   _on_text_inserted: (_, _, args) =>
     @_on_buffer_modification 'text-inserted', args

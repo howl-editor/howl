@@ -28,4 +28,4 @@ s:set("assertion.called_with.negative", "希望有参数的调用函数")
 
 -- errors
 s:set("assertion.internal.argtolittle", "函数'%s'需要最少%s个参数, 实际有%s个参数\n")
-s:set("assertion.internal.badargtype", "函数'%s'需要一个%s作为参数, 实际为: %s\n")
+s:set("assertion.internal.badargtype", "bad argument #%s: 函数'%s'需要一个%s作为参数, 实际为: %s\n")

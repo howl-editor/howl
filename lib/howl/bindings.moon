@@ -3,7 +3,7 @@
 
 _G = _G
 import table, coroutine, pairs from _G
-import tostring, pcall, callable, type, print, setmetatable, typeof from _G
+import pcall, callable, setmetatable, typeof from _G
 import signal, command, sys from howl
 append = table.insert
 
@@ -34,8 +34,14 @@ alternate_names = {
   kp_right: 'right'
   kp_page_up: 'page_up'
   kp_page_down: 'page_down'
+  kp_home: 'home'
+  kp_end: 'end'
+  kp_insert: 'insert'
+  kp_delete: 'delete'
+  kp_enter: { 'return', 'enter' }
   iso_left_tab: 'tab'
   return: 'enter'
+  enter: 'return'
   altL: 'alt'
   altR: 'alt'
   shiftL: 'shift'
@@ -59,6 +65,8 @@ substituted_names = {
   control_r: 'ctrlR'
   super_l: 'superL'
   super_r: 'superR'
+  kp_prior: 'kp_page_up'
+  kp_next: 'kp_page_down'
 }
 
 substitute_keyname = (event) ->
@@ -82,12 +90,12 @@ export action_for = (tr, source='editor') ->
     return handler if handler
   nil
 
-find_handlers = (event, source, translations, keymaps, ...) ->
+find_handlers = (event, source, translations, maps_to_search, ...) ->
   handlers = {}
   empty = {}
   os = sys.info.os
 
-  for map in *keymaps
+  for map in *maps_to_search
     continue unless map
 
     source_map = map[source] or empty
@@ -167,15 +175,19 @@ export translate_key = (event) ->
   if event.key_name and event.key_name != event.character
     append translations, modifiers .. event.key_name
 
-  append translations, modifiers .. alternate if alternate
+  if typeof(alternate) == 'table'
+    for a in *alternate
+      append translations, modifiers .. a
+  elseif alternate
+    append translations, modifiers .. alternate
   append translations, modifiers .. event.key_code
 
   translations
 
-export dispatch = (event, source, keymaps, ...) ->
+export dispatch = (event, source, maps_to_search, ...) ->
   event = substitute_keyname event
   translations = translate_key event
-  handlers, halt_map, map_opts = find_handlers event, source, translations, keymaps, ...
+  handlers, halt_map, map_opts = find_handlers event, source, translations, maps_to_search, ...
   remove halt_map if halt_map and map_opts.pop
 
   for handler in *handlers

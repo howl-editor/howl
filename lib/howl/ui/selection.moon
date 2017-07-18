@@ -4,7 +4,6 @@
 ffi = require 'ffi'
 
 import signal, clipboard from howl
-import const_char_p from howl.cdefs
 import PropertyObject from howl.util.moon
 import C from ffi
 {:max, :min} = math
@@ -14,6 +13,9 @@ class Selection extends PropertyObject
     @_sel = _view.selection
     @includes_cursor = false
     @_sel.listener = on_selection_changed: self\_on_selection_changed
+
+    self = @
+    @selection_getter = -> self.text
     super!
 
   @property _buffer: get: => @_view.buffer
@@ -90,7 +92,6 @@ class Selection extends PropertyObject
   copy: (clip_options = {}, clipboard_options) =>
     return if @empty
     @_copy_to_clipboard clip_options, clipboard_options
-    @remove!
     signal.emit 'selection-copied'
 
   cut: (clip_options = {}, clipboard_options) =>
@@ -104,6 +105,8 @@ class Selection extends PropertyObject
 
   _on_selection_changed: =>
     signal.emit 'selection-changed'
+    unless @empty
+      clipboard.primary.text = @selection_getter
 
   _copy_to_clipboard: (clip_options = {}, clipboard_options) =>
     clip = moon.copy clip_options

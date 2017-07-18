@@ -3,8 +3,8 @@
 
 import app, Buffer, mode from howl
 
-new_buffer = (title, text, mode = {}) ->
-  buffer = Buffer mode
+new_buffer = (title, text, buffer_mode = {}) ->
+  buffer = Buffer buffer_mode
   buffer.collect_revisions = false
   buffer.title = title
   buffer.text = text

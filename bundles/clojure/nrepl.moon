@@ -3,7 +3,7 @@ has_luasocket, socket = pcall require, 'socket'
 
 import PropertyTable from howl.util
 
-local conn, host, port
+local conn
 
 open = -> conn != nil
 
@@ -19,7 +19,7 @@ send = (cmd) ->
 
   payload = bencode.encode(cmd)
   assert conn\send payload
-  for i = 1,5
+  for _ = 1,5
     res = { conn\receive! }
     error = res[1]
     return bencode.decode error if error

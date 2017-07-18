@@ -47,7 +47,7 @@ ends_previous_block = (line, block_start_p) ->
       modified = true
 
     if modified -- fix up indentation and cursor position
-      new_indent = start_line_indent + editor.buffer.config.indent
+      new_indent = start_line_indent + editor.config_at_cursor.indent
       line.indentation = new_indent
       line.next.indentation = start_line_indent
 

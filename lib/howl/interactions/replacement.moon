@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import Matcher, TaskRunner from howl.util
-import app, command, config, interact, timer from howl
-import highlight, markup, ListWidget, NotificationWidget from howl.ui
+import TaskRunner from howl.util
+import app, command, interact from howl
+import highlight, markup, NotificationWidget from howl.ui
 
 append = table.insert
 

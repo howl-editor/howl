@@ -1,5 +1,5 @@
-import style, theme, ActionBuffer from howl.ui
-import Buffer, config from howl
+import style, ActionBuffer from howl.ui
+import Buffer from howl
 
 describe 'style', ->
   local buffer

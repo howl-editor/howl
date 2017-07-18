@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='' name='description'>
+    <meta content='Nils Nordman' name='author'>
+    <link href='/images/howl.png' rel='shortcut icon'>
+    <title>Howl :: howl.ui.StyledText</title>
+    <link href="/stylesheets/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/syntax.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/howl.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="https://code.jquery.com/jquery-1.12.3.min.js" type="text/javascript"></script>
+    <script src="/javascripts/bootstrap.min.js" type="text/javascript"></script>
+    
+    <link href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'>
+  </head>
+  <body class='doc doc_api doc_api_ui doc_api_ui_styled_text'>
+    <div class='navbar'>
+      <ul class='nav nav-pills'>
+        <li>
+          <a href='/'>
+            HOWL
+          </a>
+        </li>
+        <li>
+          <a href='/doc/'>
+            DOCS
+          </a>
+        </li>
+        <li>
+          <a href='/blog/'>
+            BLOG
+          </a>
+        </li>
+        <li>
+          <a href='/contact.html'>
+            CONTACT
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class='content'>
+      <div class='breadcrumbs'>&#x000A;  <div class='container'>&#x000A;    <div class='row'>&#x000A;      <ol class="breadcrumb"><li><a href="/">Home</a></li><li><a href='../../'>Howl Documentation (master branch)</a></li><li>Api</li><li>Ui</li><li>howl.ui.StyledText</li></ol>&#x000A;    </div>&#x000A;  </div>&#x000A;</div>&#x000A;<div class='container'>&#x000A;  <h1 id="howl.ui.styledtext">howl.ui.StyledText</h1>    <div class="toc">
+      <div class="toc-title">
+        <span>howl.ui.StyledText</span>
+      </div>
+      <div class="toc-entries">
+<div class="toc-group">
+<a href="#overview" class="toc-group-header">Overview</a>
+</div>
+<div class="toc-group">
+<a href="#constructors" class="toc-group-header">Constructors</a>
+<li class=""><a href="#styledtext">StyledText </a></li>
+<li class=""><a href="#styledtext.for_table">StyledText.for_table </a></li>
+</div>
+<div class="toc-group">
+<a href="#properties" class="toc-group-header">Properties</a>
+<li class=""><a href="#styles">styles</a></li>
+<li class=""><a href="#text">text</a></li>
+</div>
+<div class="toc-group">
+<a href="#meta-methods" class="toc-group-header">Meta methods</a>
+<li class=""><a href="#tostring">tostring</a></li>
+<li class=""><a href="#concatenation">Concatenation</a></li>
+<li class=""><a href="#length-operator">Length operator </a></li>
+<li class=""><a href="#comparison">Comparison</a></li>
+</div>
+</div>
+</div>
+&#x000A;&#x000A;<h2 id="overview">Overview</h2>&#x000A;&#x000A;<p>StyledText is a container that holds text as well as the text&rsquo;s associated&#x000A;styling. Its primarily used with <a href="action_buffer.html">ActionBuffer</a>s for easily inserting styled&#x000A;contents. While you can construct StyledText instances manually, it&rsquo;s more&#x000A;convenient to create these from markup, e.g. using <a href="markup/howl.html">Howl&#x000A;markup</a>.</p>&#x000A;&#x000A;<hr>&#x000A;&#x000A;<p><em>See also</em>:</p>&#x000A;&#x000A;<ul>&#x000A;<li>The [Buffer] class which ActionBuffer is based upon</li>&#x000A;<li>The <a href="../../spec/ui/styled_text_spec.html">spec</a> for StyledText</li>&#x000A;</ul>&#x000A;&#x000A;<h2 id="constructors">Constructors</h2>&#x000A;&#x000A;<h3 id="styledtext">StyledText <span class="arg-list">(text, styles)</span></h3>&#x000A;&#x000A;<p>Creates a new <code>StyledText</code> instance, holding the specified <code>text</code> and <code>styles</code>.&#x000A;Here <code>text</code> is a string containing the content and <code>styles</code> is a table described&#x000A;in <a href="#properties">properties</a> below.</p>&#x000A;&#x000A;<h3 id="styledtext.for_table">StyledText.for_table <span class="arg-list">(items, columns=nil)</span></h3>&#x000A;&#x000A;<p>Creates a new <code>StyledText</code> instance holding content laid out as a table.</p>&#x000A;&#x000A;<p><code>items</code> is a table containing rows. Each row can either be a cell representing a&#x000A;single column, or a table of cells representing multiple columns. Each cell is&#x000A;either a string or a <code>StyledText</code> object.</p>&#x000A;&#x000A;<p><code>columns</code> is an optional table containing header and style information for the&#x000A;columns. It is a table containing one or more column definitions. Each column&#x000A;definition is a table with two fields:</p>&#x000A;&#x000A;<ul>&#x000A;<li><code>header</code>: a cell containing the header text</li>&#x000A;<li><code>style</code>: a style name specifying the default style for all cells in the&#x000A;column. This style is used for any cell in the column that is a string and not a&#x000A;<code>StyledText</code>.</li>&#x000A;</ul>&#x000A;&#x000A;<p>The following example generates a table with column headers and column styles:</p>&#x000A;<pre class="highlight moonscript"><span class="n">my_buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">howl</span><span class="p">.</span><span class="n">ui</span><span class="p">.</span><span class="nc">ActionBuffer</span><span class="o">!</span><span class="w">&#x000A;</span><span class="n">my_buffer</span><span class="o">\</span><span class="n">append</span><span class="w"> </span><span class="n">howl</span><span class="p">.</span><span class="n">ui</span><span class="p">.</span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w">&#x000A;    </span><span class="p">{</span><span class="s1">'red'</span><span class="p">,</span><span class="w"> </span><span class="s1">'Error'</span><span class="p">},</span><span class="w">&#x000A;    </span><span class="p">{</span><span class="s1">'orange'</span><span class="p">,</span><span class="w"> </span><span class="s1">'Warning'</span><span class="p">},</span><span class="w">&#x000A;    </span><span class="p">{</span><span class="s1">'blue'</span><span class="p">,</span><span class="w"> </span><span class="s1">'Information'</span><span class="p">}</span><span class="w">&#x000A;  </span><span class="p">},</span><span class="w">&#x000A;  </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Color'</span><span class="p">,</span><span class="w"> </span><span class="ss">style:</span><span class="w"> </span><span class="s1">'string'</span><span class="p">},</span><span class="w">&#x000A;    </span><span class="p">{</span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Level'</span><span class="p">,</span><span class="w"> </span><span class="ss">style:</span><span class="w"> </span><span class="s1">'comment'</span><span class="p">}</span><span class="w">&#x000A;  </span><span class="p">}</span><span class="w">&#x000A;</span></pre>&#x000A;<h2 id="properties">Properties</h2>&#x000A;&#x000A;<h3 id="styles">styles</h3>&#x000A;&#x000A;<p>The styles for the contained <a href="#text">text</a>. <code>styles</code> is a table containing consecutive&#x000A;triplets, each specifying a particular style for a certain range. A triplets&#x000A;consists of a starting position, a style name and an ending position (not&#x000A;included in the range). Note that unlike most other parts of the Howl API, these&#x000A;positions are byte positions and not character positions.</p>&#x000A;&#x000A;<p>To better understand the structure, consider the following example:</p>&#x000A;<pre class="highlight lua"><span class="kd">local</span> <span class="n">styles</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'operator'</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">'keyword'</span><span class="p">,</span> <span class="mi">6</span> <span class="p">}</span>&#x000A;<span class="n">styled_text</span> <span class="o">=</span> <span class="n">StyledText</span><span class="p">(</span><span class="s1">'! foo 2'</span><span class="p">,</span> <span class="n">styles</span><span class="p">)</span>&#x000A;</pre>&#x000A;<p>In the example above, &ldquo;!&rdquo; would be styled as an operator, while &ldquo;foo&rdquo; would be&#x000A;styled as a keyword. All other parts, such as the white space and &ldquo;2&rdquo;, would be&#x000A;unstyled.</p>&#x000A;&#x000A;<h3 id="text">text</h3>&#x000A;&#x000A;<p>The contained text.</p>&#x000A;&#x000A;<h2 id="meta-methods">Meta methods</h2>&#x000A;&#x000A;<h3 id="tostring">tostring</h3>&#x000A;&#x000A;<p>StyledText instances respond to <code>tostring</code>, returning the <a href="#text">text</a> part.</p>&#x000A;&#x000A;<h3 id="concatenation">Concatenation</h3>&#x000A;&#x000A;<p>StyledText instances can be concatenated with strings, returning the resulting&#x000A;concatenation of <a href="#text">text</a> and the specified string.</p>&#x000A;&#x000A;<p>StyledText instances can be concatenated with other StyledText instances&#x000A;returning a new StyledText instance.</p>&#x000A;&#x000A;<h3 id="length-operator">Length operator <span class="arg-list">(#)</span></h3>&#x000A;&#x000A;<p>The length operator returns the length of the <a href="#text">text</a>.</p>&#x000A;&#x000A;<h3 id="comparison">Comparison</h3>&#x000A;&#x000A;<p>StyledText instances can be compared for equality with other StyledText&#x000A;instances, with the comparison evaluating to true if both the text part and&#x000A;corresponding styles match exactly.</p>&#x000A;</div>
+    </div>
+    <div class='footer text-muted'>
+      <div class='container'>
+        <div class='row'>
+          <a href='/'>
+            <img width="50" height="50" class="footer-logo" src="/images/howl.png" />
+          </a>
+          <div class='footer-follow'>
+            <p>
+              <a class='twitter-follow-button' data-lang='en' data-show-count='false' href='https://twitter.com/howleditor' rel='me'>
+                Follow @howleditor
+              </a>
+            </p>
+            <p>
+              <a class='twitter-share-button' data-count='none' data-hashtags='howleditor' data-lang='en' data-text='The Howl Editor, a general purpose, light-weight customizable editor.' data-url='http://howl.io' href='https://twitter.com/share'>
+                Tweet
+              </a>
+            </p>
+          </div>
+          <div class='footer-blurb'>
+            <div>The Howl editor.</div>
+            <div>
+              Copyright 2012-2017
+              <a class='alert-link' href='https://github.com/howl-editor/howl/contributors'>
+                The Howl Developers.
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      <!-- / GA -->
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-45283282-1', 'howl.io');
+      ga('send', 'pageview');
+      <!-- / Twitter -->
+      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
+      js.src="//platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+    </script>
+  </body>
+</html>
+

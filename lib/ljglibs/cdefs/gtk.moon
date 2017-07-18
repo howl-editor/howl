@@ -121,7 +121,9 @@ ffi.cdef [[
   PangoContext * gtk_widget_get_pango_context (GtkWidget *widget);
   void gtk_widget_add_events (GtkWidget *widget, gint events);
 
+  void gtk_widget_queue_allocate (GtkWidget *widget);
   void gtk_widget_queue_draw (GtkWidget *widget);
+  void gtk_widget_queue_resize (GtkWidget *widget);
   void gtk_widget_queue_draw_area (GtkWidget *widget,
                                    gint x,
                                    gint y,
@@ -280,15 +282,52 @@ ffi.cdef [[
   typedef struct {} GtkEntry;
   GtkEntry * gtk_entry_new (void);
 
-  typedef struct {
-    gchar *target;
-    guint  flags;
-    guint  info;
-  } GtkTargetEntry;
+  /*** Clipboard & selections ***/
 
-  /* GtkClipboard */
+  /* GtkTargetEntry */
+  typedef struct {} GtkTargetEntry;
+
+  typedef enum {
+    GTK_TARGET_SAME_APP = 1 << 0,
+    GTK_TARGET_SAME_WIDGET = 1 << 1,
+    GTK_TARGET_OTHER_APP = 1 << 2,
+    GTK_TARGET_OTHER_WIDGET = 1 << 3
+  } GtkTargetFlags;
+
+  GtkTargetEntry * gtk_target_entry_new (const gchar *target,
+                                         guint flags,
+                                         guint info);
+
+  void gtk_target_entry_free (GtkTargetEntry *data);
+
+  /* GtkTargetList */
+  typedef struct {} GtkTargetList;
+
+  GtkTargetList * gtk_target_list_new (const GtkTargetEntry *targets,
+                                      guint ntargets);
+  void gtk_target_list_unref (GtkTargetList *list);
+  void gtk_target_list_add (GtkTargetList *list,
+                            GdkAtom target,
+                            guint flags,
+                            guint info);
+
+  /* GtkTargetTable */
+  GtkTargetEntry * gtk_target_table_new_from_list (GtkTargetList *list,
+                                                   gint *n_targets);
+  void gtk_target_table_free (GtkTargetEntry *targets,
+                              gint n_targets);
+
+  /* GtkSelectionData */
+  typedef struct {} GtkSelectionData;
+
+  gboolean gtk_selection_data_set_text (GtkSelectionData *selection_data,
+                                        const gchar *str,
+                                        gint len);
+
   typedef struct {} GtkClipboard;
   typedef GVCallback3 GtkClipboardTextReceivedFunc;
+  typedef GVCallback4 GtkClipboardGetFunc;
+  typedef GVCallback2 GtkClipboardClearFunc;
 
   GtkClipboard * gtk_clipboard_get (GdkAtom selection);
   gchar * gtk_clipboard_wait_for_text (GtkClipboard *clipboard);
@@ -303,6 +342,13 @@ ffi.cdef [[
   void gtk_clipboard_set_can_store (GtkClipboard *clipboard,
                                     const GtkTargetEntry *targets,
                                     gint n_targets);
+
+  gboolean gtk_clipboard_set_with_data (GtkClipboard *clipboard,
+                                        const GtkTargetEntry *targets,
+                                        guint n_targets,
+                                        GtkClipboardGetFunc get_func,
+                                        GtkClipboardClearFunc clear_func,
+                                        gpointer user_data);
 
   /* GtkSpinner */
   typedef struct {} GtkSpinner;
@@ -432,4 +478,8 @@ ffi.cdef [[
   /* Misc */
   gboolean gtk_cairo_should_draw_window (cairo_t *cr,
                                          GdkWindow *window);
+
+  guint gtk_get_major_version (void);
+  guint gtk_get_minor_version (void);
+  guint gtk_get_micro_version (void);
 ]]
