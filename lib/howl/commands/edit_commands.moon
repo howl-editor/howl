@@ -247,3 +247,28 @@ command.register
         buffer\insert text, end_pos
         buffer\delete start_pos - 1, start_pos - 1
 
+command.register
+  name: 'editor-newline-above'
+  description: 'Add a new line above the current line'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    cursor = editor.cursor
+
+    buffer\as_one_undo ->
+      cursor\home!
+      editor\newline!
+      cursor\up!
+      editor\indent!
+
+command.register
+  name: 'editor-newline-below'
+  description: 'Add a new line below the current line'
+  handler: ->
+    editor = howl.app.editor
+    buffer = editor.buffer
+    cursor = editor.cursor
+
+    buffer\as_one_undo ->
+      cursor\line_end!
+      editor\newline!
