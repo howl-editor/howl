@@ -4,6 +4,7 @@
 ffi = require 'ffi'
 bit = require 'bit'
 ffi_cast = ffi.cast
+callbacks = require 'ljglibs.callbacks'
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
@@ -21,7 +22,8 @@ config = require 'aullar.config'
 {:define_class} = require 'aullar.util'
 {:parse_key_event} = require 'ljglibs.util'
 {:max, :min, :floor} = math
-
+cast_arg = callbacks.cast_arg
+C = ffi.C
 append = table.insert
 
 jit.off true, true
@@ -147,6 +149,9 @@ View = {
 
     @buffer = buffer
     @config\add_listener self\_on_config_changed
+
+    @_refresh_cb_handle = callbacks.register self\_sync_scrollbars, "view-#{@}-refresh"
+    @_cb_handler = callbacks.unref_handle @_refresh_cb_handle
 
   destroy: =>
     @bin\destroy!
@@ -825,23 +830,33 @@ View = {
 
   _on_size_allocate: (_, allocation) =>
     allocation = ffi_cast('GdkRectangle *', allocation)
+    resized = (not @height or @height != allocation.height) or
+      (not @width or @width != allocation.width)
+    return unless resized
+
     gdk_window = @area.window
     @im_context.client_window = gdk_window
     if gdk_window != nil
       gdk_window.cursor = @_cur_mouse_cursor
 
-    is_growing = @height and allocation.height > @height
+    getting_taller = @height and allocation.height > @height
     @width = allocation.width
     @height = allocation.height
     @_reset_display!
 
-    if is_growing and @last_visible_line == @buffer.nr_lines
+    if getting_taller and @last_visible_line == @buffer.nr_lines
       -- since we're growing this could be wrong, and we might need
       -- to re-calculate what the last visible line actually is
       @last_visible_line = @last_visible_line
 
-    @_sync_scrollbars!
     @buffer\ensure_styled_to line: @last_visible_line + 1
+
+    -- we just can't sync the scrollbars here due to a Gtk issue, so we
+    -- work around this by syncing these immediately after the size_allocate
+    -- handling is done
+    -- Ref: https://bugzilla.gnome.org/show_bug.cgi?id=765410
+    C.g_timeout_add_full C.G_PRIORITY_LOW, 0, callbacks.source_func,
+      cast_arg(@_refresh_cb_handle.id), nil
 
   _on_config_changed: (option, val, old_val) =>
     if option == 'view_font_name' or option == 'view_font_size'
