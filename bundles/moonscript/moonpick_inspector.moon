@@ -8,10 +8,24 @@ append = table.insert
 moonpick = require "moonpick"
 moonpick_config = require "moonpick.config"
 
-project_lint_config = (root) ->
+lint_config_in_dir = (dir) ->
   for p in *{'lint_config.moon', 'lint_config.lua'}
-    config = root\join(p)
+    config = dir\join(p)
     return config if config.exists
+
+get_config = (buffer, file) ->
+  if file
+    dir = file.is_directory and file or file.parent
+    while dir
+      conf = lint_config_in_dir dir
+      return conf if conf
+      dir = dir.parent
+
+  project = Project.for_file file
+  if project
+    return lint_config_in_dir project.root
+
+  nil
 
 load_lint_config = (config_file, for_file) ->
   s_box = sandbox no_globals: true
@@ -23,16 +37,15 @@ load_lint_config = (config_file, for_file) ->
   file = buffer.file or buffer.directory
 
   if file
-    config_file = nil
-
-    if buffer.file\is_below(app.settings.dir)
-      config_file = app.root_dir\join('lint_config.moon')
+    config_file = if buffer.data.moonpick_config_file
+      buffer.data.moonpick_config_file
+    elseif buffer.file\is_below(app.settings.dir)
+      app.root_dir\join('lint_config.moon')
     else
-      project = Project.for_file file
-      if project
-        config_file = project_lint_config project.root
+      get_config buffer, file
 
     if config_file
+      buffer.data.moonpick_config_file = config_file
       lint_config = load_lint_config config_file, file
 
   status, res, err = pcall moonpick.lint, buffer.text, lint_config
