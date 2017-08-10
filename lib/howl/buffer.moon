@@ -50,6 +50,13 @@ class Buffer extends PropertyObject
       if file.exists
         @text = file.contents
         @sync_etag = file.etag
+
+        -- update EOL from loaded file if possible
+        first_line = @_buffer\get_line 1
+        if first_line and first_line.has_eol
+          eol = @_buffer\sub first_line.size + 1, first_line.end_offset
+          @eol = eol
+
       else
         @text = ''
         @sync_etag = nil
