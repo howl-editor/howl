@@ -185,6 +185,14 @@ describe 'BufferLines', ->
         assert.equal 7, chunk.start_pos
         assert.equal 10, chunk.end_pos
 
+      it 'respects the buffer eol', ->
+        buf.text = 'MORE\r\nDOS'
+        buf.eol = '\r\n'
+        chunk = lines[1].chunk
+        assert.equal 'MORE', chunk.text
+        assert.equal 1, chunk.start_pos
+        assert.equal 4, chunk.end_pos
+
       it 'is an empty chunk for empty lines', ->
         buf.text = '\n'
         chunk = lines[1].chunk

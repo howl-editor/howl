@@ -103,7 +103,7 @@ Line = (nr, buffer) ->
       chunk: =>
         start_pos = @start_pos
         end_pos = @end_pos
-        end_pos -= 1
+        end_pos -= #buffer.eol
         buffer\chunk start_pos, end_pos
 
       previous_non_blank: =>
