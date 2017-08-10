@@ -84,6 +84,7 @@ install: all
 	@cp -rp ../bundles $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../fonts $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../lib $(DESTDIR)$(PREFIX)/share/howl
+	@cp -p ../lint_config.moon $(DESTDIR)$(PREFIX)/share/howl
 	@cp -rp ../spec/support $(DESTDIR)$(PREFIX)/share/howl/spec
 	@cp -rp ../share/* $(DESTDIR)$(PREFIX)/share/
 	@echo All done.
