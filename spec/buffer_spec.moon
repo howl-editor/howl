@@ -118,12 +118,30 @@ describe 'Buffer', ->
         b.file = file
         assert.is_false b.can_undo
 
-  it '.eol is "\\n" by default', ->
-    assert.equals '\n', buffer('').eol
+  describe '.eol', ->
+    it 'is "\\n" by default', ->
+      assert.equals '\n', buffer('').eol
 
-  describe '.eol = <string>', ->
-    it 'raises an error if the eol is unknown', ->
+    it 'raises an error if a assignment value is unknown', ->
       assert.raises 'Unknown', -> buffer('').eol = 'foo'
+
+    it 'is adjusted automatically when a file is loaded', ->
+      b = buffer('')
+      with_tmpfile (plain_file) ->
+        with_tmpfile (file) ->
+          file.contents = 'o hai\r\nDOS'
+          b.file = file
+          assert.equals '\r\n', b.eol
+
+          b.file = plain_file
+          file.contents = 'o hai\nNIX'
+          b.file = file
+          assert.equals '\n', b.eol
+
+          b.file = plain_file
+          file.contents = 'venerable\rMac'
+          b.file = file
+          assert.equals '\r', b.eol
 
   it '.properties is a table', ->
     assert.equal 'table', type buffer('').properties
