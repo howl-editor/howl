@@ -68,6 +68,19 @@ describe 'bindings', ->
           control: true, shift: true
         assert.same tr, { 'ctrl_A', 'ctrl_shift_a', 'ctrl_shift_123' }
 
+    context 'when lock is on', ->
+      it 'downcases the character for translations', ->
+        tr = bindings.translate_key
+          character: 'A', key_name: 'a', key_code: 123, lock: true
+        assert.same { 'a', '123' }, tr
+
+      context 'and shift is held', ->
+        it 'upcases the character for translations', ->
+          tr = bindings.translate_key
+            character: 'A', key_name: 'a', key_code: 123, lock: true, shift: true
+
+          assert.same { 'A', 'shift_a', 'shift_123' }, tr
+
     it 'adds special case translations for certain common keys', ->
       for_keynames = {
         kp_up: 'up'
