@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Added two new commands, `editor-newline-above` and `editor-newline-below`,
+that insert a new line above/below the current line. Bound these commands to
+`ctrl_shift_return` and `ctrl_return`.
+
 ## 0.5.1 (2017-07-06)
 
 - Corrected version number given by `--version` flag
