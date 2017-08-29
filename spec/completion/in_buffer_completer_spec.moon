@@ -4,6 +4,9 @@ require 'howl.completion.in_buffer_completer'
 require 'howl.variables.core_variables'
 
 describe 'InBufferCompleter', ->
+  setup ->
+    close_all_buffers!
+
   describe 'complete()', ->
     local buffer, lines
     factory = completion.in_buffer.factory
