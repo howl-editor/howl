@@ -81,9 +81,9 @@ describe 'Editor', ->
 
       context "when mode provides a #{method} method", ->
         it 'calls that passing itself a parameter', ->
-          buffer.mode = [method]: spy.new -> nil
+          buffer.mode = [method]: spy.new ->
           editor[method] editor
-          assert.spy(buffer.mode[method]).was_called_with buffer.mode, editor
+          assert.spy(buffer.mode[method]).was_called_with match.is_ref(buffer.mode), match.is_ref(editor)
 
       if method == 'toggle_comment'
         it 'uses the buffer mode when the one to use is ambiguous', ->
@@ -122,7 +122,7 @@ describe 'Editor', ->
     it 'calls <f> passing itself a parameter', ->
       f = spy.new -> nil
       editor\with_position_restored f
-      assert.spy(f).was_called_with editor
+      assert.spy(f).was_called_with match.is_ref(editor)
 
     it 'restores the cursor position afterwards', ->
       editor\with_position_restored -> cursor.pos = 2

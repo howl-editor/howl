@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import app, config from howl
+match = require 'luassert.match'
 
 describe 'log', ->
   after_each ->
@@ -25,15 +26,15 @@ describe 'log', ->
 
         it 'sends the message to howl.app.window.status\\' .. m .. '() if available', ->
           log[m] 'message'
-          assert.spy(method).was.called_with app.window.status, 'message'
+          assert.spy(method).was.called_with match.is_ref(app.window.status), 'message'
 
         it 'only propagates the first line of the message', ->
           log[m] 'message\nline2\nline3'
-          assert.spy(method).was.called_with app.window.status, 'message'
+          assert.spy(method).was.called_with match.is_ref(app.window.status), 'message'
 
         it 'removes any location info before propagating', ->
           log[m] '[string "../foo/bar.lua"]:32: juicy bit'
-          assert.spy(method).was.called_with app.window.status, 'juicy bit'
+          assert.spy(method).was.called_with match.is_ref(app.window.status), 'juicy bit'
 
   it 'warn() is the same as warning()', ->
     assert.same log.warn, log.warning

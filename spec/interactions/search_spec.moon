@@ -3,6 +3,7 @@
 
 import app, interact from howl
 import Window from howl.ui
+match = require 'luassert.match'
 
 require 'howl.interactions.search'
 require 'howl.interactions.selection_list'
@@ -29,11 +30,11 @@ describe 'search', ->
       searcher.forward_to = spy.new -> true
       within_activity interact.forward_search, ->
         command_line\write 'tw'
-      assert.spy(searcher.forward_to).was_called_with searcher, 'tw', 'plain'
+      assert.spy(searcher.forward_to).was_called_with match.is_ref(searcher), 'tw', 'plain'
 
   describe 'interact.forward_search_word', ->
     it 'searches forward for typed word', ->
       searcher.forward_to = spy.new -> true
       within_activity interact.forward_search_word, ->
         command_line\write 'tw'
-      assert.spy(searcher.forward_to).was_called_with searcher, 'tw', 'word'
+      assert.spy(searcher.forward_to).was_called_with match.is_ref(searcher), 'tw', 'word'

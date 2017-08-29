@@ -3,6 +3,7 @@
 
 import inspect, inspection, Buffer, mode from howl
 File = howl.io.File
+match = require 'luassert.match'
 
 describe 'inspect', ->
   local buffer, idle_inspector, save_inspector
@@ -24,12 +25,12 @@ describe 'inspect', ->
     it 'runs inspectors specified for the buffer', ->
       buffer.config.inspectors_on_idle = {'test-idle-inspector'}
       inspect.inspect(buffer)
-      assert.spy(idle_inspector).was_called_with(buffer)
+      assert.spy(idle_inspector).was_called_with(match.is_ref(buffer))
 
     it 'runs inspectors specified for the mode', ->
       buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
       inspect.inspect(buffer)
-      assert.spy(idle_inspector).was_called_with(buffer)
+      assert.spy(idle_inspector).was_called_with(match.is_ref(buffer))
 
     context 'inspector types', ->
       before_each ->
@@ -39,17 +40,17 @@ describe 'inspect', ->
 
       it 'runs both idle and save inspectors by default', ->
         inspect.inspect(buffer)
-        assert.spy(idle_inspector).was_called_with(buffer)
-        assert.spy(save_inspector).was_called_with(buffer)
+        assert.spy(idle_inspector).was_called_with(match.is_ref(buffer))
+        assert.spy(save_inspector).was_called_with(match.is_ref(buffer))
 
       it 'runs only idle inspectors if specified', ->
         inspect.inspect(buffer, scope: 'idle')
-        assert.spy(idle_inspector).was_called_with(buffer)
+        assert.spy(idle_inspector).was_called_with(match.is_ref(buffer))
         assert.spy(save_inspector).was_not_called!
 
       it 'runs only save inspectors if specified', ->
         inspect.inspect(buffer, scope: 'save')
-        assert.spy(save_inspector).was_called_with(buffer)
+        assert.spy(save_inspector).was_called_with(match.is_ref(buffer))
         assert.spy(idle_inspector).was_not_called!
 
     context 'when the returned inspector is a string', ->

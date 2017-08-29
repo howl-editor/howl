@@ -1,5 +1,6 @@
 import Completer, Buffer, completion from howl
 append = table.insert
+match = require 'luassert.match'
 
 describe 'Completer', ->
   buffer = nil
@@ -14,7 +15,7 @@ describe 'Completer', ->
       append buffer.completers, factory
       completer = Completer(buffer, 6)
       completer\complete 6
-      assert.spy(factory).was.called_with buffer, buffer\context_at 6
+      assert.spy(factory).was.called_with match.is_ref(buffer), buffer\context_at 6
       completer\complete 6
       assert.spy(factory).was.called(1)
 
@@ -57,10 +58,10 @@ describe 'Completer', ->
       completer = Completer(buffer, 6)
 
       completer\complete 6
-      assert.spy(comp.complete).was.called_with comp, buffer\context_at 6
+      assert.spy(comp.complete).was.called_with match.is_ref(comp), buffer\context_at 6
 
       completer\complete 7
-      assert.spy(comp.complete).was.called_with comp, buffer\context_at 7
+      assert.spy(comp.complete).was.called_with match.is_ref(comp), buffer\context_at 7
 
     it 'returns completions from just one completer if completions.authoritive is set', ->
       append buffer.completers, -> complete: -> { 'one', authoritive: true }
@@ -157,7 +158,7 @@ describe 'Completer', ->
         buffer.mode = mode
         buffer.text = 'hello there'
         Completer(buffer, 4)\accept 'help', 4
-        assert.spy(mode.on_completion_accepted).was_called_with mode, 'help', buffer\context_at(5)
+        assert.spy(mode.on_completion_accepted).was_called_with match.is_ref(mode), 'help', buffer\context_at(5)
 
       it "uses it's return value as the position returned if it's a number", ->
         mode = on_completion_accepted: -> 6

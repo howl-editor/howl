@@ -2,6 +2,7 @@ require 'howl.completion.api_completer'
 import Buffer from howl
 import completion from howl
 import DefaultMode from howl.modes
+match = require 'luassert.match'
 
 describe 'api_completer', ->
 
@@ -59,7 +60,7 @@ describe 'api_completer', ->
         mode.resolve_type = spy.new -> nil
         buffer.text = 'lookie'
         complete_at 5
-        assert.spy(mode.resolve_type).was_called_with mode, buffer\context_at 5
+        assert.spy(mode.resolve_type).was_called_with match.is_ref(mode), buffer\context_at 5
 
       it 'the returned (path, part) is used for looking up completions', ->
         mode.resolve_type = -> 'sub', {'sub'}

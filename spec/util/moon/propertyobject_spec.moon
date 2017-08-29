@@ -1,4 +1,5 @@
 import PropertyObject from howl.util.moon
+match = require 'luassert.match'
 
 describe 'PropertyObject', ->
   it 'allows specifying a getter and setter using get and set', ->
@@ -116,4 +117,4 @@ describe 'PropertyObject', ->
       assert.equals 'nic',  o.frob
       assert.equals 'bar',  o.foo
       assert.equals 'return',  o\func!
-      assert.spy(target.func).was.called_with target
+      assert.spy(target.func).was.called_with match.is_ref(target)
