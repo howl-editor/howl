@@ -1,8 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import config from howl
-import highlight from howl.ui
+{:breadcrumbs, :config} = howl
+{:highlight} = howl.ui
 
 highlight.define_default 'search', {
   type: highlight.ROUNDED_RECTANGLE,
@@ -104,6 +104,7 @@ class Searcher
       @backward_to @last_search, @last_type, false
 
   commit: =>
+    breadcrumbs.drop buffer: @buffer, pos: @start_pos
     @buffer = nil
     @start_pos = nil
     @active = false

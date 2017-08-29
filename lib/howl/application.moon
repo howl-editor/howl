@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
+import Buffer, Settings, mode, breadcrumbs, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
 import File, Process from howl.io
 import PropertyObject from howl.util.moon
 Gtk = require 'ljglibs.gtk'
@@ -147,6 +147,7 @@ class Application extends PropertyObject
 
     append @_buffers, buffer
     if show and @editor
+      breadcrumbs.drop!
       @editor.buffer = buffer
       @editor
 
@@ -174,12 +175,14 @@ class Application extends PropertyObject
   open_file: (file, editor = @editor) =>
     buffer = @_buffer_for_file file
     if buffer
+      breadcrumbs.drop!
       editor.buffer = buffer
       return buffer, editor
 
     buffer = @new_buffer mode.for_file file
     status, err = pcall ->
       buffer.file = file
+      breadcrumbs.drop!
       if editor
         editor.buffer = buffer
       else

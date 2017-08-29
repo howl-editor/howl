@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
+import app, breadcrumbs, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
 import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
 import Process from howl.io
 serpent = require 'serpent'
@@ -37,13 +37,17 @@ command.register
 command.register
   name: 'new-buffer',
   description: 'Opens a new buffer'
-  handler: -> app.editor.buffer = howl.app\new_buffer!
+  handler: ->
+    breadcrumbs.drop!
+    app.editor.buffer = howl.app\new_buffer!
 
 command.register
   name: 'switch-buffer',
   description: 'Switch to another buffer'
   input: interact.select_buffer
-  handler: (buf) -> app.editor.buffer = buf
+  handler: (buf) ->
+    breadcrumbs.drop!
+    app.editor.buffer = buf
 
 command.register
   name: 'buffer-reload',
@@ -64,6 +68,7 @@ command.register
   handler: ->
     for buffer in *howl.app.buffers
       if not buffer.showing
+        breadcrumbs.drop!
         app.editor.buffer = buffer
         return
 
@@ -194,6 +199,7 @@ command.register
       lines: buffer.lines
 
   handler: (selection) ->
+    breadcrumbs.drop!
     app.editor.cursor\move_to line: selection.line.nr, column: selection.column
 
 command.register
@@ -218,6 +224,7 @@ command.register
           return {{start_pos, end_pos - start_pos + 1}}
 
   handler: (selection) ->
+    breadcrumbs.drop!
     app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
 
 command.register
@@ -244,6 +251,7 @@ command.register
         if start_pos
           return {{start_pos, end_pos - start_pos + 1}}
   handler: (selection) ->
+    breadcrumbs.drop!
     app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
 
 command.register
@@ -267,7 +275,26 @@ command.register
       :selected_line
 
   handler: (selection) ->
+    breadcrumbs.drop!
     app.editor.cursor\move_to line: selection.line.nr, column: selection.column
+
+command.register
+  name: 'navigate-back'
+  description: 'Goes back to the last location recorded'
+  handler: ->
+    if breadcrumbs.previous
+      breadcrumbs.go_back!
+    else
+      log.info "No previous location recorded"
+
+command.register
+  name: 'navigate-forward'
+  description: 'Goes to the next location recorced'
+  handler: ->
+    if breadcrumbs.next
+      breadcrumbs.go_forward!
+    else
+      log.info "No next location recorded"
 
 -----------------------------------------------------------------------
 -- Howl eval commands
@@ -349,6 +376,7 @@ command.register
     buf.modified = false
 
     if #buf.lines > 20
+      breadcrumbs.drop!
       editor.buffer = buf
     else
       buf\insert "-- #{title}\n", 1
@@ -368,6 +396,7 @@ launch_cmd = (working_directory, cmd) ->
     working_directory: working_directory,
   }
 
+  breadcrumbs.drop!
   buffer = ProcessBuffer p
   editor = app\add_buffer buffer
   editor.cursor\eof!
