@@ -284,6 +284,7 @@ command.register
   handler: ->
     if breadcrumbs.previous
       breadcrumbs.go_back!
+      log.info "navigate: now at #{breadcrumbs.location} of #{#breadcrumbs.trail}"
     else
       log.info "No previous location recorded"
 
@@ -293,6 +294,7 @@ command.register
   handler: ->
     if breadcrumbs.next
       breadcrumbs.go_forward!
+      log.info "navigate: now at #{breadcrumbs.location} of #{#breadcrumbs.trail}"
     else
       log.info "No next location recorded"
 
