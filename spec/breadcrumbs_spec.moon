@@ -14,6 +14,7 @@ describe 'breadcrumbs', ->
   setup ->
     app.window = Window!
     app.editor = app\new_editor!
+    breadcrumbs.init!
 
   teardown ->
     app.editor = nil
@@ -84,16 +85,21 @@ describe 'breadcrumbs', ->
     context 'when forward crumbs exists', ->
       it 'invalidates all such crumbs and buffer markers', ->
         b = buffer '123456789\nabcdefgh'
+        app.editor.buffer = b
         breadcrumbs.drop buffer: b, pos: 3
         breadcrumbs.drop buffer: b, pos: 6
         breadcrumbs.drop buffer: b, pos: 9
-        breadcrumbs.go_back!
-        breadcrumbs.go_back!
+        app.editor.cursor.pos = 9
+        breadcrumbs.go_back! -- loc 3
+        breadcrumbs.go_back! -- loc 2
+        assert.equals 3, #breadcrumbs.trail
         assert.is_not_nil breadcrumbs.trail[2]
         assert.is_not_nil breadcrumbs.trail[3]
+
         breadcrumbs.drop buffer: b, pos: 4
         assert.equals 4, breadcrumbs.trail[2].pos
         assert.is_nil breadcrumbs.trail[3]
+
         markers = [m.start_offset for m in *b.markers\find({})]
         table.sort markers
         assert.same { 3, 4 }, markers
@@ -272,7 +278,53 @@ describe 'breadcrumbs', ->
         assert.equals 4, #breadcrumbs.trail
         assert.equals 4, breadcrumbs.location
 
-  it 'memory management', ->
+  context 'when a buffer is closed', ->
+    it 'removes any crumbs missing a file reference', ->
+      b1 = buffer '123456789'
+      b2 = app\new_buffer!
+      b2.text = '123456789'
+      b2.modified = false
+      breadcrumbs.drop buffer: b1, pos: 3
+      breadcrumbs.drop buffer: b2, pos: 5
+      breadcrumbs.drop buffer: b1, pos: 7
+      assert.equals 3, #breadcrumbs.trail
+      assert.equals 4, breadcrumbs.location
+      app\close_buffer b2
+      assert.equals 2, #breadcrumbs.trail
+      assert.equals 3, breadcrumbs.location
+      assert.same {3, 7}, [c.pos for c in *breadcrumbs.trail]
+
+    it 'clears any buffer references for crumbs with a file reference', ->
+      File.with_tmpfile (file) ->
+        file.contents = '123456789'
+        b1 = buffer '123456789'
+        b2 = app\new_buffer!
+        b2.file = file
+        breadcrumbs.drop buffer: b1, pos: 3
+        breadcrumbs.drop buffer: b2, pos: 5
+        breadcrumbs.drop buffer: b1, pos: 7
+        assert.equals 3, #breadcrumbs.trail
+        assert.equals 4, breadcrumbs.location
+        app\close_buffer b2
+        assert.is_nil breadcrumbs.trail[2].buffer_marker
+        assert.equals 3, #breadcrumbs.trail
+        assert.equals 4, breadcrumbs.location
+
+    it 'moves the current location down as necessary', ->
+      File.with_tmpfile (file) ->
+        file.contents = '123456789'
+        b1 = buffer '123456789'
+        b2 = app\new_buffer!
+        b2.file = file
+        breadcrumbs.drop buffer: b1, pos: 3
+        breadcrumbs.drop buffer: b2, pos: 5
+        breadcrumbs.drop buffer: b2, pos: 7
+        assert.equals 4, breadcrumbs.location
+        print "close_buffer b2"
+        app\close_buffer b2
+        assert.equals 1, breadcrumbs.location
+
+  context 'memory management', ->
     it 'keeps weak references to buffers', ->
       holder = setmetatable {
         buffer: buffer '123456789\nabcdefgh'

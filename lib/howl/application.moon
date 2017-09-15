@@ -170,7 +170,12 @@ class Application extends PropertyObject
     if buffer.showing
       for editor in *@editors
         if editor.buffer == buffer
+          if editor == @editor -- if showing in the current editor
+            breadcrumbs.drop! -- we drop a crumb here
+
           editor.buffer = @next_buffer
+
+    signal.emit 'buffer-closed', :buffer
 
   open_file: (file, editor = @editor) =>
     buffer = @_buffer_for_file file
@@ -248,6 +253,8 @@ class Application extends PropertyObject
     signal.connect 'window-focused', self\synchronize
     signal.connect 'editor-destroyed', (s_args) ->
       @_editors =  [e for e in *@_editors when e != s_args.editor]
+
+    breadcrumbs.init!
 
     @g_app\run args
 
@@ -501,6 +508,11 @@ signal.register 'file-opened',
   parameters:
     buffer: 'The buffer that the file was opened into'
     file: 'The file that was opened'
+
+signal.register 'buffer-closed',
+  description: 'Signaled right after a buffer was closed',
+  parameters:
+    buffer: 'The buffer that was closed'
 
 signal.register 'app-ready',
   description: 'Signaled right after the application has completed initialization'
