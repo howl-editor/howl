@@ -1,7 +1,7 @@
 -- Copyright 2012-2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, config, mode from howl
+import app, breadcrumbs, command, config, mode from howl
 import style, ActionBuffer, BufferPopup, StyledText from howl.ui
 serpent = require 'serpent'
 
@@ -63,6 +63,7 @@ command.register
   description: "Closes the current view"
   handler: ->
     if #app.window.views > 1
+      breadcrumbs.drop!
       app.window\remove_view!
       collectgarbage!
     else
@@ -74,6 +75,7 @@ command.register
   handler: ->
     target = app.window\siblings(nil, true).right
     if target
+      breadcrumbs.drop!
       target\grab_focus!
     else
       log.warn "No other view found"
@@ -93,6 +95,7 @@ for cmd in *{
     handler: ->
       target = app.window\siblings![direction]
       if target
+        breadcrumbs.drop!
         target\grab_focus!
       else
         log.info "No view #{human_placement} the current one found"
@@ -103,6 +106,7 @@ for cmd in *{
     handler: ->
       target = app.window\siblings(true)[direction]
       if target
+        breadcrumbs.drop!
         target\grab_focus!
       else
         log.info "No view #{human_placement} the current one found"
@@ -113,6 +117,7 @@ for cmd in *{
     handler: ->
       target = app.window\siblings![direction]
       if target
+        breadcrumbs.drop!
         target\grab_focus!
       else
         howl.app\new_editor :placement
@@ -120,4 +125,6 @@ for cmd in *{
   command.register
     name: "view-new-#{placement\gsub '_', '-'}",
     description: "Adds a new view #{human_placement} the current one"
-    handler: -> howl.app\new_editor :placement
+    handler: ->
+      breadcrumbs.drop!
+      howl.app\new_editor :placement
