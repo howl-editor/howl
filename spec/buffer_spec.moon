@@ -447,6 +447,31 @@ describe 'Buffer', ->
             assert.equal 'look mah no newline!', b.text
             assert.equal file.contents, b.text
 
+      context 'when config.backup_files is true', ->
+        it 'backs up files before saving', ->
+          with_tmpfile (file) ->
+            mockfile = {}
+            setmetatable mockfile, {
+              __index: file
+              __newindex: (_, key, value) ->
+                assert key != 'contents', 'mock to test backup_files'
+                return file[key]
+            }
+
+            with_tmpdir (backups) ->
+              config.backup_files = true
+              config.backup_directory = backups.path
+
+              b = buffer 'hello'
+              b.file = file
+              b\save!
+
+              b.file = mockfile
+              pcall -> b\save!
+
+              assert.equal #backups.children, 1
+              assert.not_nil backups.children[1].basename\match file.basename
+
   describe 'save_as(file)', ->
     context 'when <file> does not exist', ->
       it 'saves the buffer content in the newly created file', ->

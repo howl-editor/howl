@@ -3,6 +3,7 @@
 
 import BufferContext, BufferLines, BufferMarkers, Chunk, config, mode, signal, sys from howl
 import PropertyObject from howl.util.moon
+import File from howl.io
 aullar = require 'aullar'
 
 ffi = require 'ffi'
@@ -203,7 +204,9 @@ class Buffer extends PropertyObject
 
       local backup
       if @config.backup_files and @file.exists
-        backup = howl.app.settings.backupdir / ("#{@file.basename}::#{ffi.C.getpid!}::#{@file.etag}")
+        file_stem = "#{@file.basename}::#{ffi.C.getpid!}::#{@file.etag}"
+        backup_directory = @config.backup_directory or howl.app.backupdir
+        backup = File(@config.backup_directory) / file_stem
         status, err = pcall @file\copy, backup, {'COPY_OVERWRITE', 'COPY_ALL_METADATA'}
         if not status
           log.error "Failed to write backup file #{backup} for #{@file}: #{err}"
@@ -376,6 +379,12 @@ with config
     description: 'Whether or not to make temporary backups of files while saving'
     default: false
     type_of: 'boolean'
+
+  .define
+    name: 'backup_directory'
+    description: 'The directory to backup files while saving (defaults to ~/.howl/backups)'
+    default: nil
+    type_of: 'string'
 
 -- Signals
 
