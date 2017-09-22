@@ -1,7 +1,7 @@
 -- Copyright 2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :Buffer, :breadcrumbs} = howl
+{:app, :Buffer, :breadcrumbs, :config} = howl
 {:File} = howl.io
 {:Window} = howl.ui
 
@@ -112,6 +112,26 @@ describe 'breadcrumbs', ->
         markers = [m.start_offset for m in *b.markers\find({})]
         table.sort markers
         assert.same { 3, 4 }, markers
+
+    context 'house cleaning according to breadcrumb_limit', ->
+      local old_limit
+
+      before_each ->
+        old_limit = config.breadcrumb_limit
+        config.breadcrumb_limit = 2
+
+      after_each ->
+        config.breadcrumb_limit = old_limit
+
+      it 'purges old crumbs according to breadcrumb_limit', ->
+        b = buffer '123456789\nabcdefgh'
+        breadcrumbs.drop buffer: b, pos: 1
+        breadcrumbs.drop buffer: b, pos: 2
+        breadcrumbs.drop buffer: b, pos: 3
+
+        assert.equals 2, #breadcrumbs.trail
+        assert.equals 3, breadcrumbs.location
+        assert.same {2, 3}, [c.pos for c in *breadcrumbs.trail]
 
   describe 'clear', ->
     it 'invalidates any existing crumbs (buffer markers and crumbs)', ->

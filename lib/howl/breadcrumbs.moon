@@ -1,11 +1,11 @@
 -- Copyright 2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:signal} = howl
+{:signal, :config} = howl
 {:File} = howl.io
 {:PropertyTable} = howl.util
 {:remove, :insert} = table
-{:max} = math
+{:min, :max} = math
 
 crumbs = {}
 location = 1
@@ -75,6 +75,14 @@ adjust_crumbs_for_cycle = ->
   previous_match = crumbs[location - 4]
   return unless crumbs_are_equal previous, previous_match
   location -= 2
+
+prune_crumbs_according_to_limit = ->
+  limit = config.breadcrumb_limit
+  nr_to_remove = min max(#crumbs - limit, 0), location
+  for i = 1, nr_to_remove
+    remove crumbs, 1
+
+  location -= nr_to_remove
 
 adjust_location_for_inactive_buffer = (buffer) ->
   return unless location > 1
@@ -190,6 +198,7 @@ drop = (opts) ->
     location = next_location!
 
     adjust_crumbs_for_cycle!
+    prune_crumbs_according_to_limit!
 
     -- clear any existing forward crumbs
     while #crumbs >= location
@@ -231,6 +240,13 @@ init = ->
     adjust_crumbs_for_closed_buffer params.buffer
 
   initialized = true
+
+config.define
+  name: 'breadcrumb_limit'
+  description: 'The maximum number of breadcrumbs to keep'
+  scope: 'global'
+  type_of: 'number'
+  default: 200
 
 PropertyTable {
   :init
