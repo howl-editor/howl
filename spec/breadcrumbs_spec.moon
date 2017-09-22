@@ -82,6 +82,15 @@ describe 'breadcrumbs', ->
       markers = b.markers\find {}
       assert.equals 1, #markers
 
+    it 'reduces unnecessary loops', ->
+      b = buffer '123456789'
+      breadcrumbs.drop buffer: b, pos: 3
+      breadcrumbs.drop buffer: b, pos: 6
+      breadcrumbs.drop buffer: b, pos: 3
+      breadcrumbs.drop buffer: b, pos: 6
+      assert.equals 2, #breadcrumbs.trail
+      assert.equals 3, breadcrumbs.location
+
     context 'when forward crumbs exists', ->
       it 'invalidates all such crumbs and buffer markers', ->
         b = buffer '123456789\nabcdefgh'
@@ -320,7 +329,6 @@ describe 'breadcrumbs', ->
         breadcrumbs.drop buffer: b2, pos: 5
         breadcrumbs.drop buffer: b2, pos: 7
         assert.equals 4, breadcrumbs.location
-        print "close_buffer b2"
         app\close_buffer b2
         assert.equals 1, breadcrumbs.location
 

@@ -66,6 +66,16 @@ adjust_crumbs_for_closed_buffer = (buffer) ->
 
   location = max 1, location - lower_location_by
 
+adjust_crumbs_for_cycle = ->
+  return unless location > 4
+  last = crumbs[location - 1]
+  last_match = crumbs[location - 3]
+  return unless crumbs_are_equal last, last_match
+  previous = crumbs[location - 2]
+  previous_match = crumbs[location - 4]
+  return unless crumbs_are_equal previous, previous_match
+  location -= 2
+
 adjust_location_for_inactive_buffer = (buffer) ->
   return unless location > 1
 
@@ -178,6 +188,8 @@ drop = (opts) ->
 
   if add_crumb crumb, location
     location = next_location!
+
+    adjust_crumbs_for_cycle!
 
     -- clear any existing forward crumbs
     while #crumbs >= location
