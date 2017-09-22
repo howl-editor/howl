@@ -1,8 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import PropertyObject from howl.util.moon
-import command from howl
+{:command, :breadcrumbs} = howl
+{:PropertyObject} = howl.util.moon
 aullar = require 'aullar'
 {:min} = math
 
@@ -221,38 +221,37 @@ class Cursor extends PropertyObject
   @property _line: get: =>
     @container.buffer.lines[@cursor.line]
 
+-- name, aullar name, drop breadcrumb, desc
 commands = {
-  { 'down',               'down',        'Move cursor down' },
-  { 'up',                 'up',          'Move cursor up' },
-  { 'left',               'backward',        'Move cursor left' },
-  { 'right',              'forward',       'Move cursor right' },
-  { 'word_left',          'word_left',        'Move cursor one word left' },
-  { 'word_left_end',      'word_left_end',    'Move cursor left, to the end of the previous word' },
-  { 'word_right',         'word_right',       'Move cursor one word right' },
-  { 'word_right_end',     'word_right_end',   'Move cursor right, to the end of the word' },
-  { 'home',               'start_of_line',             'Move cursor to the first column' },
-  { 'home_indent',        'home_indent',           'Move cursor to the first non-blank column' }, -- { 'home_indent_display','vchome_display',   'Move cursor to the first non-blank column of the display line' },
-  -- { 'home_display',       'home_display',     'Move cursor to the first column of the display line' },
-  -- { 'home_auto',          'home_wrap',        'Move cursor the first column of the real or display line' },
-  { 'home_indent_auto',   'home_indent_auto',      'Move cursor the first column or the first non-blank column' },
-  { 'line_end',           'end_of_line',         'Move cursor to the end of line' },
-  -- { 'line_end_display',   'line_end_display', 'Move cursor to the end of the display line' },
-  -- { 'line_end_auto',      'line_end_wrap',    'Move cursor to the end of the real or display line' },
-  { 'start',              'start_of_file',    'Move cursor to the start of the buffer' },
-  { 'eof',                'end_of_file',     'Move cursor to the end of the buffer' },
-  { 'page_up',            'page_up',          'Move cursor one page up' },
-  { 'page_down',          'page_down',        'Move cursor one page down' },
-  { 'para_down',          'para_down',        'Move cursor one paragraph down' },
-  { 'para_up',            'para_up',          'Move cursor one paragraph up' },
+  { 'down',               'down',           false, 'Move cursor down' },
+  { 'up',                 'up',             false, 'Move cursor up' },
+  { 'left',               'backward',       false, 'Move cursor left' },
+  { 'right',              'forward',        false, 'Move cursor right' },
+  { 'word_left',          nil,              false, 'Move cursor one word left' },
+  { 'word_left_end',      nil,              false, 'Move cursor left, to the end of the previous word' },
+  { 'word_right',         nil,              false, 'Move cursor one word right' },
+  { 'word_right_end',     nil,              false, 'Move cursor right, to the end of the word' },
+  { 'home',               'start_of_line',  false, 'Move cursor to the first column' },
+  { 'home_indent',        nil,              false, 'Move cursor to the first non-blank column' },
+  { 'home_indent_auto',   nil,              false, 'Move cursor the first column or the first non-blank column' },
+  { 'line_end',           'end_of_line',    false, 'Move cursor to the end of line' },
+  { 'start',              'start_of_file',  true,  'Move cursor to the start of the buffer' },
+  { 'eof',                'end_of_file',    true,  'Move cursor to the end of the buffer' },
+  { 'page_up',            'page_up',        false, 'Move cursor one page up' },
+  { 'page_down',          'page_down',      false, 'Move cursor one page down' },
+  { 'para_down',          nil,              false, 'Move cursor one paragraph down' },
+  { 'para_up',            nil,              false, 'Move cursor one paragraph up' },
 }
 
 for cmd in *commands
-  name, key_cmd, description = cmd[1], cmd[2], cmd[3]
+  {name, key_cmd, drop_crumb, description} = cmd
   f = aullar.Cursor[key_cmd]
 
-  unless Cursor.__base[name]
+  if key_cmd
     Cursor.__base[name] = (extend_selection) =>
       opts = extend_selection and {extend: true} or {}
+      if drop_crumb
+        breadcrumbs.drop!
       f @cursor, opts
 
   cmd_name = name\gsub '_', '-'
