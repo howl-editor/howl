@@ -24,7 +24,7 @@ next_marker_id = ->
 clear_crumb = (crumb) ->
   marker = crumb.buffer_marker
   return unless marker
-  buf = marker.buffer_holder.buffer
+  buf = marker.buffer
   return unless buf
   buf.markers\remove name: marker.name
 
@@ -36,15 +36,15 @@ clear = ->
 
 navigable_crumb = (crumb) ->
   return true if crumb.file and crumb.file.exists
-  crumb.buffer_marker and crumb.buffer_marker.buffer_holder.buffer
+  crumb.buffer_marker and crumb.buffer_marker.buffer
 
 crumbs_are_equal = (c1, c2) ->
   return false unless c1 and c2
   return false unless c1.pos == c2.pos
   return true if (c1.file and c2.file) and c1.file == c2.file
 
-  c1_buffer = c1.buffer_marker and c1.buffer_marker.buffer_holder.buffer
-  c2_buffer = c2.buffer_marker and c2.buffer_marker.buffer_holder.buffer
+  c1_buffer = c1.buffer_marker and c1.buffer_marker.buffer
+  c2_buffer = c2.buffer_marker and c2.buffer_marker.buffer
 
   return true if (c1_buffer and c2_buffer) and c1_buffer == c2_buffer
 
@@ -57,7 +57,7 @@ adjust_crumbs_for_closed_buffer = (buffer) ->
   lower_location_by = 0
   for i = #crumbs, 1, -1
     crumb = crumbs[i]
-    if crumb.buffer_marker and crumb.buffer_marker.buffer_holder.buffer == buffer
+    if crumb.buffer_marker and crumb.buffer_marker.buffer == buffer
       if crumb.file and crumb.file.exists
         crumb.buffer_marker = nil
       else
@@ -89,7 +89,7 @@ adjust_location_for_inactive_buffer = (buffer) ->
 
   buf_at_location = (loc) ->
     c = crumbs[loc]
-    c.buffer_marker and c.buffer_marker.buffer_holder.buffer
+    c.buffer_marker and c.buffer_marker.buffer
 
   crumb_buf = buf_at_location location - 1
 
@@ -103,7 +103,7 @@ adjust_location_for_inactive_buffer = (buffer) ->
       break unless crumb_buf == buffer
 
 goto_crumb = (crumb) ->
-  buffer = if crumb.buffer_marker then crumb.buffer_marker.buffer_holder.buffer
+  buffer = if crumb.buffer_marker then crumb.buffer_marker.buffer
   app = _G.howl.app
   local editor
   return unless app.editor
@@ -134,7 +134,7 @@ add_crumb = (crumb, at, insert_crumb = false) ->
   return false if next_crumb and crumbs_are_equal crumb, next_crumb
 
   if crumb.buffer_marker
-    crumb.buffer_marker.buffer_holder.buffer.markers\add {
+    crumb.buffer_marker.buffer.markers\add {
       {
         name: crumb.buffer_marker.name,
         start_offset: crumb.pos,
@@ -165,10 +165,10 @@ new_crumb = (opts = {}) ->
   local buffer_marker
 
   if buffer
-    buffer_marker = {
-      buffer_holder: setmetatable {:buffer}, __mode: 'v'
+    buffer_marker = setmetatable {
+      :buffer,
       name: "breadcrumb-#{next_marker_id!}"
-    }
+    }, __mode: 'v'
 
   {
     :file,

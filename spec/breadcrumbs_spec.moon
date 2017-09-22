@@ -56,7 +56,7 @@ describe 'breadcrumbs', ->
         assert.not_nil breadcrumbs.previous.buffer_marker
 
         m = breadcrumbs.previous.buffer_marker
-        marker_buffer = m.buffer_holder.buffer
+        marker_buffer = m.buffer
         markers = marker_buffer.markers\find name: m.name
         assert.equals 1, #markers
         assert.equals 3, markers[1].start_offset
@@ -71,7 +71,7 @@ describe 'breadcrumbs', ->
           breadcrumbs.drop!
           crumb = breadcrumbs.previous
           assert.equals 7, crumb.pos
-          assert.equals app.editor.buffer, crumb.buffer_marker.buffer_holder.buffer
+          assert.equals app.editor.buffer, crumb.buffer_marker.buffer
           assert.equals file, crumb.file
 
     it 'avoids adding duplicate crumbs', ->
