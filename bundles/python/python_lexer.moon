@@ -96,21 +96,13 @@ howl.util.lpeg_lexer ->
   }
   format_spec = c('operator', ':') * format_part^0
 
-  f_string = sequence {
-    f_prefix
-    c 'string', Cg any({ "'''", '"""', "'", '"' }), 'quote'
-    V'f_string_chunk'
-  }
-
-  string = any { basic_string, raw_string, encoded_string, f_string }
-
   decorator = c 'preproc', P'@' * name * ('.' * name)^0
 
   P {
     'all'
 
     all: any {
-      string,
+      any { basic_string, raw_string, encoded_string, V'f_string' }
       comment,
       number,
       operator,
@@ -127,16 +119,34 @@ howl.util.lpeg_lexer ->
       decorator
     }
 
+    f_string: sequence {
+      f_prefix
+      c 'string', Cg any({ "'''", '"""', "'", '"' }), 'f_quote'
+      V'f_string_chunk'
+    }
+
     f_string_interpolation: sequence {
+      c('operator', '{'),
       ((V'all' + space + P 1) - (S'}:' + format_conv))^0
       format_conv^-1
       format_spec^-1
       c 'operator', '}'
-      V'f_string_chunk'
     }
 
     f_string_chunk: sequence {
-      c 'string', scan_to match_back'quote' + #P'{', P'\\'
-      V'f_string_interpolation'^0
+      c('string', scan_until_capture('f_quote', '\\', '{'))
+      -- now we're looking at either
+      any {
+        c('string', match_back('f_quote')) -- end of string
+        P(-1) -- end of input
+        sequence { -- something we follow with a continued scan, either..
+          any {
+            c('string', '{{') -- double brace escaping
+            V'f_string_interpolation' -- interpolation
+            c('string', P(1)) -- default pass through, eat 1
+          }
+          V'f_string_chunk'
+        }
+      }
     }
   }

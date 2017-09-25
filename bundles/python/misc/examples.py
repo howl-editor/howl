@@ -82,6 +82,7 @@ f_string_spec = f'{v!r}'
 another_braced_f_string = f'{v:a4c{abc}}abc'
 f_string_with_bang = f'{v!=0}'
 triple_dq_f_string = f"""abc{defg}"""
+brace_escape_f_string = f'{{this is not an expr}}'
 
 if False:
   # Dictionaries
