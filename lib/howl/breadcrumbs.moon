@@ -131,7 +131,10 @@ goto_crumb = (crumb) ->
   editor.cursor.pos = pos
 
   if crumb.line_at_top
+    -- we try to maintain the same scrolling offset
     editor.line_at_top = crumb.line_at_top
+    -- but due to potential edits we need to ensure we're actually visible
+    editor\ensure_visible pos
 
 add_crumb = (crumb, at, insert_crumb = false) ->
   prev_crumb = crumbs[at - 1]
