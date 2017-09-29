@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Added support for navigating back and forth in a list of previously visited
+locations. Two new commands, `navigate-back` and `navigate-forward` were added,
+bound to `ctrl_<` and `ctrl_>` respectively.
+
 - Added two new commands, `editor-newline-above` and `editor-newline-below`,
 that insert a new line above/below the current line. Bound these commands to
 `ctrl_shift_return` and `ctrl_return`.
