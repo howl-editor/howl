@@ -154,6 +154,13 @@ describe 'breadcrumbs', ->
         assert.equals b, app.editor.buffer
         assert.equals 1, breadcrumbs.location
 
+      it 'uses a buffer marker for positioning to account for updates', ->
+        b = buffer '123456789'
+        breadcrumbs.drop buffer: b, pos: 6
+        b\insert 'xx', 2
+        breadcrumbs.go_back!
+        assert.equals 8, app.editor.cursor.pos
+
     context 'with a file and pos available', ->
       it 'opens the file and sets the current position', ->
         File.with_tmpfile (file) ->
@@ -223,6 +230,16 @@ describe 'breadcrumbs', ->
         breadcrumbs.go_forward!
         assert.equals 7, app.editor.cursor.pos
         assert.equals b, app.editor.buffer
+
+      it 'uses a buffer marker for positioning to account for updates', ->
+        b = buffer '123456789'
+        breadcrumbs.drop buffer: b, pos: 1
+        breadcrumbs.drop buffer: b, pos: 6
+        breadcrumbs.go_back!
+        breadcrumbs.go_back!
+        b\insert 'xx', 2
+        breadcrumbs.go_forward!
+        assert.equals 8, app.editor.cursor.pos
 
     context 'with a file and pos available', ->
       it 'opens the file and sets the current position', ->

@@ -103,7 +103,8 @@ adjust_location_for_inactive_buffer = (buffer) ->
       break unless crumb_buf == buffer
 
 goto_crumb = (crumb) ->
-  buffer = if crumb.buffer_marker then crumb.buffer_marker.buffer
+  marker = crumb.buffer_marker
+  buffer = if marker then marker.buffer
   app = _G.howl.app
   local editor
   return unless app.editor
@@ -120,7 +121,14 @@ goto_crumb = (crumb) ->
   else
     return
 
-  editor.cursor.pos = crumb.pos
+  pos = crumb.pos
+
+  if marker and buffer
+    markers = buffer.markers\find(name: marker.name)
+    if #markers > 0
+      pos = markers[1].start_offset
+
+  editor.cursor.pos = pos
 
   if crumb.line_at_top
     editor.line_at_top = crumb.line_at_top
