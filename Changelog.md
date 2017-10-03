@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Improved key translation for keys when caps lock is on.
+
+- Fixed a bug manifesting in a SIGSEGV on OpenBSD.
+
 - Added two new commands, `editor-newline-above` and `editor-newline-below`,
 that insert a new line above/below the current line. Bound these commands to
 `ctrl_shift_return` and `ctrl_return`.
