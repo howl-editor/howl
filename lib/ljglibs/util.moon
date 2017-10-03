@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -36,6 +36,7 @@ explain_key_code = (code, event) ->
       alt: band(key_event.state, C.GDK_MOD1_MASK) != 0,
       super: band(key_event.state, C.GDK_SUPER_MASK) != 0,
       meta: band(key_event.state, C.GDK_META_MASK) != 0,
+      lock: band(key_event.state, C.GDK_LOCK_MASK) != 0,
     }
     explain_key_code key_event.keyval, event
     event
