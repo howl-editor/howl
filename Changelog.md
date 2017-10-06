@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Added support for navigating back and forth in a list of previously visited
+locations. Two new commands, `navigate-back` and `navigate-forward` were added,
+bound to `ctrl_<` and `ctrl_>` respectively.
+
 - Improved key translation for keys when caps lock is on.
 
 - Fixed a bug manifesting in a SIGSEGV on OpenBSD.

@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
+import Buffer, Settings, mode, breadcrumbs, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
 import File, Process from howl.io
 import PropertyObject from howl.util.moon
 Gtk = require 'ljglibs.gtk'
@@ -147,6 +147,7 @@ class Application extends PropertyObject
 
     append @_buffers, buffer
     if show and @editor
+      breadcrumbs.drop!
       @editor.buffer = buffer
       @editor
 
@@ -169,17 +170,24 @@ class Application extends PropertyObject
     if buffer.showing
       for editor in *@editors
         if editor.buffer == buffer
+          if editor == @editor -- if showing in the current editor
+            breadcrumbs.drop! -- we drop a crumb here
+
           editor.buffer = @next_buffer
+
+    signal.emit 'buffer-closed', :buffer
 
   open_file: (file, editor = @editor) =>
     buffer = @_buffer_for_file file
     if buffer
+      breadcrumbs.drop!
       editor.buffer = buffer
       return buffer, editor
 
     buffer = @new_buffer mode.for_file file
     status, err = pcall ->
       buffer.file = file
+      breadcrumbs.drop!
       if editor
         editor.buffer = buffer
       else
@@ -245,6 +253,8 @@ class Application extends PropertyObject
     signal.connect 'window-focused', self\synchronize
     signal.connect 'editor-destroyed', (s_args) ->
       @_editors =  [e for e in *@_editors when e != s_args.editor]
+
+    breadcrumbs.init!
 
     @g_app\run args
 
@@ -498,6 +508,11 @@ signal.register 'file-opened',
   parameters:
     buffer: 'The buffer that the file was opened into'
     file: 'The file that was opened'
+
+signal.register 'buffer-closed',
+  description: 'Signaled right after a buffer was closed',
+  parameters:
+    buffer: 'The buffer that was closed'
 
 signal.register 'app-ready',
   description: 'Signaled right after the application has completed initialization'

@@ -2,7 +2,7 @@
 title: Working with files
 ---
 
-# Working with files
+# Working with files & buffers
 
 ## Opening files
 
@@ -74,11 +74,27 @@ command (bound to `ctrl_shift_s` in the default keymap). There's also a related
 command, `save-and-quit`, that allows you to save any modified buffers and exit
 Howl in one go.
 
-## Switching between open buffers
+## Navigating buffers
 
 While Howl provides the ability to view more than one buffer at a time by
 supporting multiple open views, you'll likely have more buffers open than you
-can fit on your screen. In order to switch to another buffer, you can use the
+can fit on your screen, and need ways of viewing different buffers.
+
+### Navigating back and forth
+
+As you open buffers, perform edits and move around, Howl tries to keep track of
+your previous locations. This can be used to quickly move back and forth in your
+editing history, by using the `navigate-back` and `navigate-forward` commands
+(the commands are bound to `ctrl_<` and `ctrl_>` by default).
+
+Note that the navigation is very useful not only as a tool for switching
+buffers, but for keeping track of previous locations even within the same file.
+This can be a useful time saver, as it's quite common to jump around alot in the
+same file as you search or jump to definitions, etc.
+
+### Switching between open buffers
+
+In order to switch to another buffer of your chosing, you can use the
 `switch-buffer` command (bound to `ctrl_b` by default):
 
 ![switch-buffer](/images/screenshots/monokai/switch-buffer.png)
@@ -90,8 +106,8 @@ down the list.
 
 Another command that might prove useful to you is
 `switch-to-last-hidden-buffer`. This will switch to the most recently accessed
-buffer that is not currently showing in any view, and is thus useful for quickly
-switching between to related files in the same view.
+buffer that is not currently showing in any view, and can thus be useful for
+quickly switching between to related files in the same view.
 
 ## Creating new buffers / files
 

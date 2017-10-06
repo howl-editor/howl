@@ -83,6 +83,9 @@
     ctrl_up:           'editor-scroll-up'
     ctrl_down:         'editor-scroll-down'
 
+    'ctrl_<':          'navigate-back'
+    'ctrl_>':          'navigate-forward'
+
     ctrl_shift_left:   'cursor-word-left-extend'
     ctrl_shift_right:  'cursor-word-right-extend'
     ctrl_shift_up:     'editor-scroll-up'
@@ -165,6 +168,9 @@
         -- meta_shift_right:  'cursor-word-right-extend'
         -- meta_backspace:    'editor-delete-back-word'
         -- meta_delete:       'editor-delete-forward-word'
+
+        'ctrl_<':          'navigate-back'
+        'ctrl_>':          'navigate-forward'
 
         ctrl_shift_d:      'vc-diff-file'
         ctrl_meta_d:       'vc-diff'
