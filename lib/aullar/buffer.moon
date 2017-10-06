@@ -18,6 +18,9 @@ scan_line = (base, offset, end_offset) ->
   start_offset = offset
   was_eol = false
 
+  if offset >= end_offset
+    return offset, 0, false
+
   byte = base[offset]
   while byte != 10 and byte != 13 and offset < end_offset
     offset += 1

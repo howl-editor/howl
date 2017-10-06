@@ -169,10 +169,17 @@ export translate_key = (event) ->
   alternate = alternate_names[event.key_name]
 
   translations = {}
-  append translations, ctrl .. meta .. alt .. event.character if event.character
+  character = event.character
+  if event.lock and character
+    if event.shift
+      character = character.uupper
+    else
+      character = character.ulower
+
+  append translations, ctrl .. meta .. alt .. character if character
   modifiers = ctrl .. meta .. shift .. alt
 
-  if event.key_name and event.key_name != event.character
+  if event.key_name and event.key_name != character
     append translations, modifiers .. event.key_name
 
   if typeof(alternate) == 'table'
