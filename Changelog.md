@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+## 0.5.2 (2017-10-06)
+
+Fixed a bug manifesting in a SIGSEGV on OpenBSD.
+
 ## 0.5.1 (2017-07-06)
 
 - Corrected version number given by `--version` flag
