@@ -183,7 +183,7 @@ local function main()
     lint(args)
   elseif args.version then
     -- Change version here
-    print("howl version 0.5.1\n")
+    print("howl version 0.5.2\n")
     print("Copyright 2012-2017 The Howl Developers\nLicense: MIT License")
     os.exit(0)
   else
