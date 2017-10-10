@@ -36,8 +36,8 @@ run_spec = (path, event) ->
   until_success ->
     notifies path, event,
       task_list(
-        lint, event.path
         spec, path
+        lint, event.path
       )
 
 watch "lib", "spec", ->
