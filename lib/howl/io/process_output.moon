@@ -6,7 +6,7 @@ glib = require 'ljglibs.glib'
 
 append = table.insert
 
-line_p = r'(\\d+):(?:(\\d+):)?\\s+(.+)'
+line_p = r'(\\d+):(?:(\\d+):)?\\s*(.+)'
 
 parse = (output, opts = {}) ->
   locations = {}
@@ -18,19 +18,19 @@ parse = (output, opts = {}) ->
 
     continue unless nr
 
-    file = line\match '^([^:]+):%d+'
-    if file
-      if file == '-' or file\match('^%d+$')
-        file = nil
-      else
-        file = File.is_absolute(file) and File(file) or base_dir\join(file)
+    local file
+    path = line\match '^([^:]+):%d+'
+    path = nil if path and path\match('^%d+$')
+    if path and path != '-'
+      file = File.is_absolute(path) and File(path) or base_dir\join(path)
 
     tokens = [t for t in message\gmatch "[`'‘]([^'`‘]+)[`'‘]"]
     tokens = nil if #tokens == 0
 
     append locations, {
+      :path
       :file,
-      line: tonumber(nr),
+      line_nr: tonumber(nr),
       column: tonumber(column),
       :message
       :tokens

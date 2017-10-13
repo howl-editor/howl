@@ -137,7 +137,7 @@ parse_errors = (out, inspector) ->
 
   for loc in *process_output.parse(out)
     complaint = {
-      line: loc.line,
+      line: loc.line_nr,
       message: loc.message,
     }
     if loc.tokens
