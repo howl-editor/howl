@@ -375,7 +375,7 @@ command.register
           :buffer,
           line_nr: l.nr,
           inspections: {},
-          spans: {},
+          highlights: {},
           offset: i.start_offset
         }
 
@@ -383,23 +383,15 @@ command.register
         message: i.message,
         type: i.flair,
       }
-      append item.spans, {
-        start_offset: i.start_offset,
-        count: i.end_offset - i.start_offset
+      append item.highlights, {
+        start_pos: i.start_offset,
+        end_pos: i.end_offset
       }
       if l.nr != last_line
         append items, item
       last_line = l.nr
 
     on_change = (selection) ->
-      spans = selection.spans
-      highlight.remove_all 'search', buffer
-      highlight.remove_all 'search_secondary', buffer
-      highlight.apply 'search', buffer, spans[1].start_offset, spans[1].count
-      for i = 2, #spans
-        span = spans[i]
-        highlight.apply 'search_secondary', buffer, span.start_offset, span.count
-
       show_popup editor, selection.inspections, selection.offset
 
     return interact.select_location
