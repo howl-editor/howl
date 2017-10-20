@@ -8,10 +8,15 @@ jit = require 'jit'
 C = ffi.C
 timer_callback = callbacks.source_func
 {:pack, :unpack} = table
+{:get_monotonic_time} = require 'ljglibs.glib'
+{:abs} = math
 
 jit.off true, true
 
+TICK_INTERVAL = 500
+
 idle_handlers = {}
+tick_handlers = {}
 idle_fired = 0
 last_idle = 0
 
@@ -39,16 +44,35 @@ check_for_idle = ->
 
   idle_fired = idle
 
-every_second = ->
-  check_for_idle!
-  true
-
 cancel = (handle) ->
   if handle.type == 'sys'
     if callbacks.unregister handle.cb
       C.g_source_remove handle.tag
   elseif handle.type == 'idle'
     idle_handlers = [h for h in *idle_handlers when h != handle]
+  elseif handle.type == 'tick'
+    tick_handlers = [h for h in *tick_handlers when h != handle]
+
+every_tick = ->
+  check_for_idle!
+
+  now = get_monotonic_time!
+
+  for i = #tick_handlers, 1, -1
+    h = tick_handlers[i]
+    elapsed = (now - h.start) / 1000
+    run_now_diff = abs(h.after_ms - elapsed)
+    run_next_diff = abs(h.after_ms - (elapsed + TICK_INTERVAL))
+
+    continue if run_next_diff < run_now_diff
+
+    table.remove tick_handlers, i
+    co = coroutine.create (...) -> h.handler ...
+    status, ret = coroutine.resume co, unpack(h.args)
+    unless status
+      _G.log.error "Error invoking tick handler: '#{ret}'"
+
+  true
 
 asap = (f, ...) ->
   t_handle = type: 'sys'
@@ -64,7 +88,7 @@ asap = (f, ...) ->
     nil
   t_handle
 
-after = (seconds, f, ...) ->
+after_exactly = (seconds, f, ...) ->
   t_handle = type: 'sys'
   interval = seconds * 1000
   t_handle.cb = callbacks.register f, "timer-after-#{seconds}", ...
@@ -74,6 +98,23 @@ after = (seconds, f, ...) ->
     cast_arg(t_handle.cb.id),
     nil
   t_handle
+
+after_approximately = (seconds, f, ...) ->
+  t_handle = {
+    type: 'tick',
+    after_ms: seconds * 1000,
+    start: get_monotonic_time!
+    handler: f,
+    args: pack ...
+  }
+  tick_handlers[#tick_handlers + 1] = t_handle
+  t_handle
+
+after = (seconds, f, ...) ->
+  if seconds != 0 and (math.floor(seconds) == seconds or seconds >= 2)
+    after_approximately seconds, f, ...
+  else
+    after_exactly seconds, f, ...
 
 on_idle = (seconds, f, ...) ->
   t_handle = {
@@ -85,17 +126,19 @@ on_idle = (seconds, f, ...) ->
   idle_handlers[#idle_handlers + 1] = t_handle
   t_handle
 
--- set up a shared timer to run every second
-second_handle = {}
-second_handle.cb = callbacks.register every_second, "timer-every-second"
-second_handle.tag = C.g_timeout_add_full C.G_PRIORITY_LOW,
-  500,
+-- set up a shared timer to run repeatedly
+tick_handle = {}
+tick_handle.cb = callbacks.register every_tick, "timer-tick"
+tick_handle.tag = C.g_timeout_add_full C.G_PRIORITY_LOW,
+  TICK_INTERVAL,
   timer_callback,
-  cast_arg(second_handle.cb.id),
+  cast_arg(tick_handle.cb.id),
   nil
 
 {
   :after
+  :after_exactly
+  :after_approximately
   :asap
   :cancel
   :on_idle

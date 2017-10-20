@@ -1,6 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 timer = howl.timer
+{:get_monotonic_time} = require 'ljglibs.glib'
 
 describe 'timer', ->
   setup -> set_howl_loop!
@@ -17,9 +18,21 @@ describe 'timer', ->
 
       timer.asap callback, 'one', nil, 3
 
-  describe 'after(seconds, f, ...)', ->
+  describe 'after_exactly(seconds, f, ...)', ->
     it 'invokes <f> once after approximately <seconds>', (done) ->
-      timer.after 0, async ->
+      start = get_monotonic_time!
+      timer.after_exactly 0.2, async ->
+        elapsed = (get_monotonic_time! - start) / 1000
+        assert.is_near 200, elapsed, 10
+        done!
+
+  describe 'after_approximately(seconds, f, ...)', ->
+    it 'invokes <f> once after approximately <seconds>', (done) ->
+      settimeout 2
+      start = get_monotonic_time!
+      timer.after_approximately 1, async ->
+        elapsed = (get_monotonic_time! - start) / 1000
+        assert.is_near 1000, elapsed, 250
         done!
 
   describe 'cancel(handle)', ->
@@ -32,11 +45,21 @@ describe 'timer', ->
         assert.is_false invoked
         done!
 
-    it 'cancels an after timer', (done) ->
+    it 'cancels an after_exactly timer', (done) ->
       invoked = false
-      handle = timer.after 0.05, async -> invoked = true
+      handle = timer.after_exactly 0.05, async -> invoked = true
       timer.cancel handle
 
       timer.after 0.1, async ->
+        assert.is_false invoked
+        done!
+
+    it 'cancels an after_approximately timer', (done) ->
+      settimeout 2
+      invoked = false
+      handle = timer.after_approximately 0.5, async -> invoked = true
+      timer.cancel handle
+
+      timer.after 1.0, async ->
         assert.is_false invoked
         done!
