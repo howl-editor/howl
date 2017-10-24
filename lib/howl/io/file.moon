@@ -43,7 +43,7 @@ class File extends PropertyObject
 
   separator: jit.os == 'Windows' and '\\' or '/'
 
-  new: (target, cwd) =>
+  new: (target, cwd, opts) =>
     error "missing parameter #1 for File()", 3 unless target
     t = typeof target
     if t == 'File'
@@ -59,6 +59,9 @@ class File extends PropertyObject
         @gfile = target
 
       @path = @gfile.path
+
+    if opts
+      @_ft = opts.type
 
     super!
 
@@ -113,14 +116,14 @@ class File extends PropertyObject
   @property children:
     get: =>
       files = {}
-      enum = @gfile\enumerate_children 'standard::name', GFile.QUERY_INFO_NONE
+      enum = @gfile\enumerate_children 'standard::name,standard::type', GFile.QUERY_INFO_NONE
       while true
         info = enum\next_file!
         unless info
           enum\close!
           return files
 
-        append files, File @gfile\get_child info.name
+        append files, File(enum\get_child(info), nil, type: info.filetype)
 
   open: (mode = 'r', func) =>
     fh = assert io.open @path, mode
@@ -198,22 +201,16 @@ class File extends PropertyObject
       dir = table.remove directories
       append(files, dir) if dir
 
-
     files, false
 
   tostring: => tostring @path or @uri
 
-  _info: (namespace) =>
-    if namespace
-      namespace = namespace .. '::*'
-    else
-      namespace = 'standard::*'
-
-    @gfile\query_info namespace, GFile.QUERY_INFO_NONE
+  _info: (namespace = 'standard') =>
+    @gfile\query_info "#{namespace}::*", GFile.QUERY_INFO_NONE
 
   @property _file_type: get: =>
-    @ft or= @_info!.filetype
-    @ft
+    @_ft or= @_info!.filetype
+    @_ft
 
   @meta {
     __tostring: => @tostring!

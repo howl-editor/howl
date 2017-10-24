@@ -115,6 +115,7 @@ ffi.cdef [[
   typedef struct {} GFileInputStream;
   typedef struct {} GFileOutputStream;
   typedef struct {} GFileInfo;
+  typedef struct {} GFile;
 
   typedef enum {
     G_FILE_TYPE_UNKNOWN = 0,
@@ -148,9 +149,11 @@ ffi.cdef [[
   gboolean g_file_enumerator_close (GFileEnumerator *enumerator,
                                     GCancellable *cancellable,
                                     GError **error);
-  /* GFile */
-  typedef struct {} GFile;
 
+  GFile * g_file_enumerator_get_child (GFileEnumerator *enumerator,
+                                       GFileInfo *info);
+
+  /* GFile */
   typedef enum {
     G_FILE_QUERY_INFO_NONE              = 0,
     G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS = (1 << 0)   /*< nick=nofollow-symlinks >*/

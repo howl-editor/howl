@@ -16,6 +16,7 @@ C = ffi.C
 core.define 'GFileEnumerator', {
   next_file: => gc_ptr catch_error C.g_file_enumerator_next_file, @, nil
   close: => catch_error C.g_file_enumerator_close, @, nil
+  get_child: (info) => C.g_file_enumerator_get_child @, info
 }
 
 core.define 'GFile', {
