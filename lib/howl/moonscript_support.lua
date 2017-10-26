@@ -1,12 +1,13 @@
-moonscript = require('moonscript')
+local moonscript = require('moonscript')
 moonscript.errors = require "moonscript.errors"
-moon = require('moon')
 local line_tables = require "moonscript.line_tables"
 
-lua_loadfile = loadfile
-lua_pcall = pcall
+local lua_loadfile = loadfile
+local lua_pcall = pcall
 
-loadfile = function(filename, mode, env)
+_G.moon = require('moon')
+
+_G.loadfile = function(filename, mode, env)
   filename = tostring(filename)
   if (filename:match('%.moon$')) then
     local status, ret = moonscript.loadfile(filename)
@@ -22,7 +23,7 @@ end
 local function error_rewriter(err)
   if type(err) ~= 'string' then return err end
   if not err:match('%.moon') then return err end
-  moon_file = err:match('^%[string "([^"]+%.moon)"%]')
+  local moon_file = err:match('^%[string "([^"]+%.moon)"%]')
   if not moon_file then return err end
 
   -- if the file hasn't been compiled yet we do it first for error rewriting to work
@@ -36,6 +37,7 @@ local function error_rewriter(err)
   return rewritten or err
 end
 
-pcall = function(f, ...)
-  return xpcall(f, error_rewriter, ...)
+_G.pcall = function(f, ...)
+  local rets = table.pack(xpcall(f, error_rewriter, ...))
+  return table.unpack(rets, 1, rets.n)
 end
