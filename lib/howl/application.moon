@@ -25,7 +25,7 @@ is_idle_dispatch = (desc) ->
 
 last_activity = get_monotonic_time!
 
-dispatcher = (f, description, ...)->
+dispatcher = (f, description, ...) ->
 
   unless is_idle_dispatch(description)
     last_activity = get_monotonic_time!
@@ -37,7 +37,7 @@ dispatcher = (f, description, ...)->
     if coro_status(co) == 'dead'
       return ret
   else
-    _G.log.error "Failed to dispatch '#{description}: #{ret}'"
+    error ret
 
   false
 
