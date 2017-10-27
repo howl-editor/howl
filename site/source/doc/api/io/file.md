@@ -162,6 +162,14 @@ in which case it is considered a path, or another File instance. When target is
 a string holding a relative path, `base_directory` is used for resolving the
 relative path to an absolute path if given.
 
+### copy (dest, flags)
+
+Copies the contents of the current file to `dest`. Valid values for the `flags`
+table include `COPY_OVERWRITE`, `COPY_BACKUP`, `COPY_NOFOLLOW_SYMLINKS`,
+`COPY_ALL_METADATA`, `COPY_NO_FALLBACK_FOR_MOVE`, and
+`COPY_TARGET_DEFAULT_PERMS`. (Their corresponding effects are documented
+[here](https://developer.gnome.org/gio/stable/GFile.html#GFileCopyFlags)).
+
 ### expand_path (path)
 
 Replaces any ocurrences `~` with the full path to the home directory.

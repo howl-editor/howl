@@ -33,6 +33,25 @@ describe 'GFile', ->
   it '.parent return the parent of the file', ->
     assert.equal '/bin', GFile('/bin/ls').parent.path
 
+  describe 'copy(dest, flags, cancellable, progress_callback)', ->
+    it 'copies the given file', ->
+      with_tmpfile 'abc123', (src) ->
+        with_tmpfile '', (dst) ->
+          gdst = GFile dst
+          GFile(src)\copy gdst, {'COPY_OVERWRITE'}, nil, nil
+          assert.equals 'abc123', gdst\load_contents!
+
+    it 'calls the progress callback', ->
+      contents = string.rep "xxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzz\n", 5000
+      with_tmpfile contents, (src) ->
+        with_tmpfile '', (dst) ->
+          finished = false
+          gsrc = GFile src
+          gsrc\copy GFile(dst), {'COPY_OVERWRITE'}, nil, (file, current, total) ->
+            assert.same gsrc, file
+            finished = true if current == total
+          assert.is_true finished
+
   describe 'get_child(name)', ->
     it 'returns a new file for the given child', ->
       parent = GFile '/bin'

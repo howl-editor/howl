@@ -3,6 +3,7 @@
 
 import BufferContext, BufferLines, BufferMarkers, Chunk, config, mode, signal, sys from howl
 import PropertyObject from howl.util.moon
+import File from howl.io
 aullar = require 'aullar'
 
 ffi = require 'ffi'
@@ -208,10 +209,26 @@ class Buffer extends PropertyObject
       if @config.ensure_newline_at_eof and not @text\match "#{@eol}$"
         @append @eol
 
+      local backup
+      if @config.backup_files and @file.exists
+        file_stem = "#{@file.basename}::#{ffi.C.getpid!}::#{@file.etag}"
+        backup_directory = File @config.backup_directory or howl.app.settings.backupdir
+        backup = backup_directory / file_stem
+        status, err = pcall @file\copy, backup, {'COPY_OVERWRITE', 'COPY_ALL_METADATA'}
+        if not status
+          log.error "Failed to write backup file #{backup} for #{@file}: #{err}"
+          backup = nil
+
       @file.contents = @text
       @_modified = false
       @sync_etag = @file.etag
       @sync_revision_id = @_buffer\get_revision_id true
+
+      if backup
+        status, err = pcall backup\delete
+        if not status
+          log.warn "Failed to delete backup file #{backup} for #{@file}: #{err}"
+
       signal.emit 'buffer-saved', buffer: self
 
   save_as: (file) =>
@@ -364,6 +381,18 @@ with config
     description: 'Whether to ensure a trailing newline is present at eof upon save'
     default: true
     type_of: 'boolean'
+
+  .define
+    name: 'backup_files'
+    description: 'Whether or not to make temporary backups of files while saving'
+    default: false
+    type_of: 'boolean'
+
+  .define
+    name: 'backup_directory'
+    description: 'The directory to backup files while saving (defaults to ~/.howl/backups)'
+    default: nil
+    type_of: 'string'
 
 -- Signals
 

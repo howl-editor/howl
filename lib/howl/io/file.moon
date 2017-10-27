@@ -203,6 +203,9 @@ class File extends PropertyObject
 
     files, false
 
+  copy: (dest, flags) =>
+    @gfile\copy File(dest).gfile, flags, nil, nil
+
   tostring: => tostring @path or @uri
 
   _info: (namespace = 'standard') =>

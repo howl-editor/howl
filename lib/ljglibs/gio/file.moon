@@ -8,6 +8,7 @@ require 'ljglibs.gio.file_input_stream'
 require 'ljglibs.gio.file_output_stream'
 core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
+callbacks = require 'ljglibs.callbacks'
 import gc_ptr from require 'ljglibs.gobject'
 import g_string, catch_error from glib
 
@@ -24,7 +25,15 @@ core.define 'GFile', {
     prefix: 'G_FILE_'
 
     'QUERY_INFO_NONE',
-    'QUERY_INFO_NOFOLLOW_SYMLINKS'
+    'QUERY_INFO_NOFOLLOW_SYMLINKS',
+
+    'COPY_NONE',
+    'COPY_OVERWRITE',
+    'COPY_BACKUP',
+    'COPY_NOFOLLOW_SYMLINKS',
+    'COPY_ALL_METADATA',
+    'COPY_NO_FALLBACK_FOR_MOVE',
+    'COPY_TARGET_DEFAULT_PERMS',
   }
 
   new_for_path: (p) -> gc_ptr C.g_file_new_for_path p
@@ -57,6 +66,24 @@ core.define 'GFile', {
 
   enumerate_children: (attributes, flags = @QUERY_INFO_NONE) =>
     gc_ptr catch_error C.g_file_enumerate_children, @, attributes, flags, nil
+
+  copy: (dest, flags, cancellable, progress_callback) =>
+    self = @
+    local handler, cb_handle, cb_cast, cb_data
+
+    copy_flags = core.parse_flags 'G_FILE_', flags
+
+    if progress_callback
+      handler = (current_bytes, total_bytes) ->
+        current_bytes = tonumber ffi.cast 'goffset', current_bytes
+        total_bytes = tonumber ffi.cast 'goffset', total_bytes
+        progress_callback self, current_bytes, total_bytes
+
+      cb_handle = callbacks.register handler, 'file-progress'
+      cb_cast = ffi.cast('GFileProgressCallback', callbacks.void3)
+      cb_data = callbacks.cast_arg(cb_handle.id)
+
+    catch_error(C.g_file_copy, @, dest, copy_flags, cancellable, cb_cast, cb_data) != 0
 
   make_directory: => catch_error(C.g_file_make_directory, @, nil) != 0
   make_directory_with_parents: => catch_error(C.g_file_make_directory_with_parents, @, nil) != 0
