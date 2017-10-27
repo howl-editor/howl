@@ -39,6 +39,9 @@ class Window extends PropertyObject
       @command_line\to_gobject!
       @status\to_gobject!,
     }
+    @bg_box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
+      { expand: true, @box }
+    }
 
     @win = Gtk.Window Gtk.Window.TOPLEVEL
     @win[k] = v for k,v in pairs properties
@@ -46,16 +49,16 @@ class Window extends PropertyObject
     if Gtk.get_major_version! >= 3 and Gtk.get_minor_version! >= 4
       @win.hide_titlebar_when_maximized = true
 
-    append @_handlers, @win\on_size_allocate self\_on_size_allocate
+    append @_handlers, @bg_box\on_size_allocate self\_on_bg_size_allocate
+    append @_handlers, @bg_box\on_draw self\_on_bg_draw
     append @_handlers, @win\on_focus_in_event self\_on_focus
     append @_handlers, @win\on_focus_out_event self\_on_focus_lost
-    append @_handlers, @win\on_draw self\_on_draw
     append @_handlers, @win\on_destroy self\_on_destroy
     append @_handlers, @win\on_screen_changed self\_on_screen_changed
     @win.app_paintable = true
     @_set_alpha!
 
-    @win\add @box
+    @win\add @bg_box
 
     @_theme_changed = self\_on_theme_changed
     signal.connect 'theme-changed', @_theme_changed
@@ -267,7 +270,7 @@ class Window extends PropertyObject
     @background\reconfigure def
     @win\queue_draw!
 
-  _on_size_allocate: (_, alloc) =>
+  _on_bg_size_allocate: (_, alloc) =>
     alloc = ffi_cast('GdkRectangle *', alloc)
     @background\resize alloc.width, alloc.height
 
@@ -278,7 +281,7 @@ class Window extends PropertyObject
 
     signal.disconnect 'theme-changed', @_theme_changed
 
-  _on_draw: (_, cr) =>
+  _on_bg_draw: (_, cr) =>
     cr\save!
     @background\draw cr
     cr\restore!
