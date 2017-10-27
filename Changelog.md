@@ -2,6 +2,11 @@
 
 ## Unreleased (in master)
 
+- Fix background drawing for Wayland/Weston/CSD environments (borders outside
+of the window).
+
+- Requested that titlebar is hidden for newer versions of Gnome 3.
+
 - Added support for navigating back and forth in a list of previously visited
 locations. Two new commands, `navigate-back` and `navigate-forward` were added,
 bound to `ctrl_<` and `ctrl_>` respectively.
