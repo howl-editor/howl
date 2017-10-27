@@ -13,6 +13,7 @@ import gc_ptr from require 'ljglibs.gobject'
 import g_string, catch_error from glib
 
 C = ffi.C
+goffset = ffi.typeof('goffset')
 
 core.define 'GFileEnumerator', {
   next_file: => gc_ptr catch_error C.g_file_enumerator_next_file, @, nil
@@ -68,18 +69,17 @@ core.define 'GFile', {
     gc_ptr catch_error C.g_file_enumerate_children, @, attributes, flags, nil
 
   copy: (dest, flags, cancellable, progress_callback) =>
-    self = @
     local handler, cb_handle, cb_cast, cb_data
 
     copy_flags = core.parse_flags 'G_FILE_', flags
 
     if progress_callback
       handler = (current_bytes, total_bytes) ->
-        current_bytes = tonumber ffi.cast 'goffset', current_bytes
-        total_bytes = tonumber ffi.cast 'goffset', total_bytes
-        progress_callback self, current_bytes, total_bytes
+        current_bytes = tonumber ffi.cast(goffset, current_bytes)
+        total_bytes = tonumber ffi.cast(goffset, total_bytes)
+        progress_callback @, current_bytes, total_bytes
 
-      cb_handle = callbacks.register handler, 'file-progress'
+      cb_handle = callbacks.register handler, 'file-copy-progress'
       cb_cast = ffi.cast('GFileProgressCallback', callbacks.void3)
       cb_data = callbacks.cast_arg(cb_handle.id)
 

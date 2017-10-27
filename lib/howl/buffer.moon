@@ -390,8 +390,7 @@ with config
 
   .define
     name: 'backup_directory'
-    description: 'The directory to backup files while saving (defaults to ~/.howl/backups)'
-    default: nil
+    description: "The directory to backup files while saving"
     type_of: 'string'
 
 -- Signals

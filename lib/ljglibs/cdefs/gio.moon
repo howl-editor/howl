@@ -211,7 +211,8 @@ ffi.cdef [[
                                                GError **error);
 
   gboolean g_file_copy (GFile *source, GFile *destination,
-                        GFileCopyFlags flags, GCancellable *cancellable,
+                        GFileCopyFlags flags,
+                        GCancellable *cancellable,
                         GFileProgressCallback progress_callback,
                         gpointer progress_callback_data,
                         GError **error);
