@@ -42,6 +42,10 @@ class Window extends PropertyObject
 
     @win = Gtk.Window Gtk.Window.TOPLEVEL
     @win[k] = v for k,v in pairs properties
+
+    if Gtk.get_major_version! >= 3 and Gtk.get_minor_version! >= 4
+      @win.hide_titlebar_when_maximized = true
+
     append @_handlers, @win\on_size_allocate self\_on_size_allocate
     append @_handlers, @win\on_focus_in_event self\_on_focus
     append @_handlers, @win\on_focus_out_event self\_on_focus_lost

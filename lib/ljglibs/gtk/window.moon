@@ -56,6 +56,7 @@ core.define 'GtkWindow < GtkBin', {
     type_hint: 'GdkWindowTypeHint'
     urgency_hint: 'gboolean'
     window_position: 'GtkWindowPosition'
+    hide_titlebar_when_maximized: 'gboolean'
 
     -- added properties
     window_type: => C.gtk_window_get_window_type @
