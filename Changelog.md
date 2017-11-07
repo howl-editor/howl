@@ -17,6 +17,10 @@ bound to `ctrl_<` and `ctrl_>` respectively.
 that insert a new line above/below the current line. Bound these commands to
 `ctrl_shift_return` and `ctrl_return`.
 
+## 0.5.3 (2017-11-07)
+
+Added a workaround for a Gtk issue with scrollbars.
+
 ## 0.5.2 (2017-10-06)
 
 - Fixed a bug manifesting in a SIGSEGV on OpenBSD.
