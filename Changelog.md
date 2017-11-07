@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+## 0.5.3 (2017-11-07)
+
+Added a workaround for a Gtk issue with scrollbars.
+
 ## 0.5.2 (2017-10-06)
 
 Fixed a bug manifesting in a SIGSEGV on OpenBSD.
