@@ -59,6 +59,9 @@ View = {
     @gutter = Gutter @, config.gutter_styling
     @current_line_marker = CurrentLineMarker @
 
+    @scroll_speed_y = config.scroll_speed_y
+    @scroll_speed_x = config.scroll_speed_x
+
     @im_context = Gtk.ImContextSimple!
     with @im_context
       append @_handlers, \on_commit (ctx, s) ->
@@ -232,11 +235,8 @@ View = {
       get: => @_y_scroll_offset
       set: (offset) =>
         @_y_scroll_offset += offset
-        if @_y_scroll_offset < -1
-          @first_visible_line -= 1
-          @_y_scroll_offset = 0
-        elseif @_y_scroll_offset > 1
-          @first_visible_line += 1
+        if @_y_scroll_offset < -1 or @_y_scroll_offset > 1
+          @first_visible_line += math.floor(@_y_scroll_offset)
           @_y_scroll_offset = 0
     }
 
@@ -826,6 +826,8 @@ View = {
         @cursor\down extend: true
 
   _scroll_x: (value) =>
+    value = value * (@scroll_speed_x / 100)
+
     if value > 0
       -- Scroll right.
       new_base_x = @base_x + 20 * value
@@ -837,18 +839,21 @@ View = {
       -- Scroll left.
       @base_x -= 20 * -value
 
+  _scroll_y: (value) =>
+    @y_scroll_offset += value * (@scroll_speed_y / 100)
+
   _on_scroll: (_, event) =>
     event = ffi_cast('GdkEventScroll *', event)
     if event.direction == Gdk.SCROLL_UP
-      @scroll_to @first_visible_line - 1
+      @_scroll_y -1
     elseif event.direction == Gdk.SCROLL_DOWN
-      @scroll_to @first_visible_line + 1
+      @_scroll_y 1
     elseif event.direction == Gdk.SCROLL_RIGHT
       @_scroll_x 1
     elseif event.direction == Gdk.SCROLL_LEFT
       @_scroll_x -1
     elseif event.direction == Gdk.SCROLL_SMOOTH
-      @y_scroll_offset += event.delta_y
+      @_scroll_y event.delta_y
       @_scroll_x event.delta_x
 
   _on_size_allocate: (_, allocation) =>
@@ -894,6 +899,9 @@ View = {
 
     elseif option == 'cursor_blink_interval'
       @cursor.blink_interval = val
+
+    elseif option == 'scroll_speed_y' or option == 'scroll_speed_x'
+      @[option] = val
 
     elseif option == 'gutter_styling'
       @gutter\reconfigure val
