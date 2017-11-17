@@ -1,6 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+gio = require 'ljglibs.gio'
 ffi = require 'ffi'
 require 'ljglibs.cdefs.gio'
 require 'ljglibs.gio.file_info'
@@ -10,15 +11,51 @@ core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
 callbacks = require 'ljglibs.callbacks'
 import gc_ptr from require 'ljglibs.gobject'
-import g_string, catch_error from glib
+{:g_string, :catch_error, :get_error} = glib
+{:async_ready_callback} = gio
 
-C = ffi.C
+{:C, cast: ffi_cast} = ffi
 goffset = ffi.typeof('goffset')
+info_t = ffi.typeof 'GFileInfo *'
+to_i = (o) -> ffi_cast info_t, o
 
 core.define 'GFileEnumerator', {
   next_file: => gc_ptr catch_error C.g_file_enumerator_next_file, @, nil
   close: => catch_error C.g_file_enumerator_close, @, nil
   get_child: (info) => C.g_file_enumerator_get_child @, info
+
+  next_files_async: (num_files, priority = glib.PRIORITY_DEFAULT, callback) =>
+    local handle
+
+    handler = (source, res) ->
+      callbacks.unregister handle
+
+      status, ret, err_code = get_error C.g_file_enumerator_next_files_finish, @, res
+      if not status
+        callback false, ret, err_code
+      else
+        ret\consume!
+        infos = [gc_ptr(to_i(i)) for i in *ret.elements]
+        callback true, infos
+
+    handle = callbacks.register handler, 'next-files-async'
+    C.g_file_enumerator_next_files_async @, num_files, priority, nil, async_ready_callback, callbacks.cast_arg(handle.id)
+
+  close_async: (priority = glib.PRIORITY_DEFAULT, callback) =>
+    local handle
+
+    handler = (source, res) ->
+      callbacks.unregister handle
+      status, ret, err_code = get_error C.g_file_enumerator_close_finish, @, res
+
+      if not status
+        callback false, ret, err_code
+      else
+        callback true
+
+    handle = callbacks.register handler, 'enumerator-close-async'
+    C.g_file_enumerator_close_async @, priority, nil, async_ready_callback, callbacks.cast_arg(handle.id)
+
 }
 
 core.define 'GFile', {
@@ -67,6 +104,20 @@ core.define 'GFile', {
 
   enumerate_children: (attributes, flags = @QUERY_INFO_NONE) =>
     gc_ptr catch_error C.g_file_enumerate_children, @, attributes, flags, nil
+
+  enumerate_children_async: (attributes, flags = @QUERY_INFO_NONE, priority = glib.PRIORITY_DEFAULT, callback) =>
+    local handle
+
+    handler = (source, res) ->
+      callbacks.unregister handle
+      status, ret, err_code = get_error C.g_file_enumerate_children_finish, @, res
+      if not status
+        callback false, ret, err_code
+      else
+        callback true, ret
+
+    handle = callbacks.register handler, 'enumerate-children-async'
+    C.g_file_enumerate_children_async @, attributes, flags, priority, nil, async_ready_callback, callbacks.cast_arg(handle.id)
 
   copy: (dest, flags, cancellable, progress_callback) =>
     local handler, cb_handle, cb_cast, cb_data

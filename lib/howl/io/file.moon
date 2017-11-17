@@ -4,6 +4,7 @@
 GFile = require 'ljglibs.gio.file'
 GFileInfo = require 'ljglibs.gio.file_info'
 glib = require 'ljglibs.glib'
+dispatch = howl.dispatch
 import PropertyObject from howl.util.moon
 append = table.insert
 
@@ -124,6 +125,40 @@ class File extends PropertyObject
           return files
 
         append files, File(enum\get_child(info), nil, type: info.filetype)
+
+  @property children_async:
+    get: =>
+      handle = dispatch.park 'enumerate-children-async'
+
+      @gfile\enumerate_children_async 'standard::name,standard::type', nil, nil,  (status, ret, err_code) ->
+        if status
+          dispatch.resume handle, ret
+        else
+          dispatch.resume_with_error handle, "#{ret} (#{err_code})"
+
+      enum = dispatch.wait handle
+
+      handle = dispatch.park 'next-files-async'
+      files = {}
+
+      get_files = (status, ret, err_code) ->
+        if status
+          for info in *ret
+            append files, File(enum\get_child(info))
+
+          if #ret < 100
+            enum\close_async nil, (stat, r, e_code) ->
+              unless stat
+                log.error "Failed closing enumerator: #{ret} (#{err_code})"
+
+              dispatch.resume handle, files
+          else
+            enum\next_files_async 100, nil, get_files
+        else
+          dispatch.resume_with_error handle, "#{ret} (#{err_code})"
+
+      enum\next_files_async 100, nil, get_files
+      dispatch.wait handle
 
   open: (mode = 'r', func) =>
     fh = assert io.open @path, mode

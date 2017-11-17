@@ -153,6 +153,27 @@ ffi.cdef [[
   GFile * g_file_enumerator_get_child (GFileEnumerator *enumerator,
                                        GFileInfo *info);
 
+  void g_file_enumerator_next_files_async (GFileEnumerator *enumerator,
+                                           int num_files,
+                                           int io_priority,
+                                           GCancellable *cancellable,
+                                           GAsyncReadyCallback callback,
+                                           gpointer user_data);
+
+  GList * g_file_enumerator_next_files_finish (GFileEnumerator *enumerator,
+                                               GAsyncResult *result,
+                                               GError **error);
+
+  void g_file_enumerator_close_async (GFileEnumerator *enumerator,
+                                      int io_priority,
+                                      GCancellable *cancellable,
+                                      GAsyncReadyCallback callback,
+                                      gpointer user_data);
+
+  gboolean g_file_enumerator_close_finish (GFileEnumerator *enumerator,
+                                           GAsyncResult *result,
+                                           GError **error);
+
   /* GFile */
   typedef enum {
     G_FILE_QUERY_INFO_NONE              = 0,
@@ -209,6 +230,18 @@ ffi.cdef [[
                                                GFileQueryInfoFlags flags,
                                                GCancellable *cancellable,
                                                GError **error);
+
+  void g_file_enumerate_children_async (GFile *file,
+                                        const char *attributes,
+                                        GFileQueryInfoFlags flags,
+                                        int io_priority,
+                                        GCancellable *cancellable,
+                                        GAsyncReadyCallback callback,
+                                        gpointer user_data);
+
+  GFileEnumerator * g_file_enumerate_children_finish (GFile *file,
+                                                      GAsyncResult *res,
+                                                      GError **error);
 
   gboolean g_file_copy (GFile *source, GFile *destination,
                         GFileCopyFlags flags,

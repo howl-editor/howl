@@ -120,6 +120,16 @@ describe 'File', ->
       table.sort kids, (a,b) -> a.path < b.path
       assert.same [v.basename for v in *kids], { 'child1', 'child2' }
 
+  it '.children_async returns a table of children', (done) ->
+    howl_async ->
+      with_tmpdir (dir) ->
+        dir\join('child1')\mkdir!
+        dir\join('child2')\touch!
+        kids = dir.children_async
+        table.sort kids, (a,b) -> a.path < b.path
+        assert.same [v.basename for v in *kids], { 'child1', 'child2' }
+        done!
+
   it '.file_type is a string describing the file type', ->
     assert.equal 'directory', File('/bin').file_type
     assert.equal 'regular', File('/bin/ls').file_type
