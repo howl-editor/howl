@@ -138,27 +138,14 @@ class File extends PropertyObject
 
       enum = dispatch.wait handle
 
-      handle = dispatch.park 'next-files-async'
       files = {}
+      while true
+        info = enum\next_file!
+        unless info
+          enum\close!
+          return files
 
-      get_files = (status, ret, err_code) ->
-        if status
-          for info in *ret
-            append files, File(enum\get_child(info))
-
-          if #ret < 100
-            enum\close_async nil, (stat, r, e_code) ->
-              unless stat
-                log.error "Failed closing enumerator: #{ret} (#{err_code})"
-
-              dispatch.resume handle, files
-          else
-            enum\next_files_async 100, nil, get_files
-        else
-          dispatch.resume_with_error handle, "#{ret} (#{err_code})"
-
-      enum\next_files_async 100, nil, get_files
-      dispatch.wait handle
+        append files, File(enum\get_child(info), nil, type: info.filetype)
 
   open: (mode = 'r', func) =>
     fh = assert io.open @path, mode
