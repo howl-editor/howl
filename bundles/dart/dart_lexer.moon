@@ -3,7 +3,7 @@
 
 howl.util.lpeg_lexer ->
   c = capture
-  ident = (alpha + '_$')^1 * (alpha + digit + '_$')^0
+  ident = (alpha + S'_$')^1 * (alpha + digit + S'_$')^0
   ws = c 'whitespace', blank
 
   identifier = c 'identifier', ident
@@ -57,26 +57,28 @@ howl.util.lpeg_lexer ->
     }
     word { 'num', 'int', 'double', 'bool', 'dynamic', 'void', 'String' }
   }
-  type = c 'type', typename
-  generic_type = c 'type', sequence {
-    P'<'
-    typename
+
+  basic_type = c 'type', typename
+  generic_type = sequence {
+    c 'type', typename
+    c 'operator', '<'
+    V'type'
     ws^0
     sequence({
-      P','
-      blank^0
-      typename
-      blank^0
+      c 'operator', ','
+      ws^0
+      V'type'
+      ws^0
     })^0
-    P'>'
+    c 'operator', P'>'
   }
   named_param = c 'key', -B'.' * ident * ':'
 
   fdecl = sequence {
-      type + generic_type,
-      ws^1,
-      c('fdecl', ident - keyword),
-      ws^0,
+      V'type'
+      ws^1
+      c('fdecl', ident - keyword)
+      ws^0
       c('operator', '(')
   }
 
@@ -97,13 +99,14 @@ howl.util.lpeg_lexer ->
       classdef,
       keyword,
       fdecl,
+      V'type',
       special,
-      generic_type,
       operator,
       number,
-      type,
       identifier,
     }
+
+    type: generic_type + basic_type
 
     interpolation: sequence {
       c 'operator', '$'
@@ -111,7 +114,7 @@ howl.util.lpeg_lexer ->
         identifier
         sequence {
           c 'operator', '{'
-          (-P'}' * (V'all' + 1))^1
+          (-P'}' * (c('string', blank + eol) + V'all' + 1))^1
           c 'operator', '}'
         }
       }
