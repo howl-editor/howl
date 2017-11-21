@@ -40,8 +40,8 @@ class DefaultMode
         prev_line = line
 
     with editor.cursor
-      if .line != current_line.nr or .column < current_line.indentation
-        \move_to line: current_line.nr, column: current_line.indentation
+      if .line != current_line.nr or .column < (current_line.indentation + 1)
+        \move_to line: current_line.nr, column: current_line.indentation + 1
 
   comment: (editor) =>
     prefix, suffix = @_comment_pair!

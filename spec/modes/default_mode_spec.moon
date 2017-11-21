@@ -152,10 +152,10 @@ describe 'DefaultMode', ->
       assert.equals 'if\n  one\ntwo\n', buffer.text
 
     it 'moves the cursor to the beginning of indentation if it would be positioned before', ->
-      buffer.text = '  line\n\n'
+      buffer.text = '  line1\n line2\n'
       cursor.line = 2
       mode\indent editor
-      assert.equals '  line\n  \n', buffer.text
+      assert.equals '  line1\n  line2\n', buffer.text
       assert.equals 3, cursor.column
 
   describe 'comment(editor)', ->
