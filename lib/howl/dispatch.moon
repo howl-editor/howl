@@ -55,5 +55,5 @@ _resume = (handle, ...) ->
   launch: (f, ...) ->
     co = coroutine.create (...) -> f ...
     status, err = coroutine.resume co, ...
-    status, (status and coroutine.status(co) or err)
+    status, (status and coroutine.status(co) or err), co
 }

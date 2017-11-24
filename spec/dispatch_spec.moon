@@ -14,16 +14,18 @@ describe 'dispatch', ->
       assert.spy(f).was_called_with 1, nil, 'three'
 
     context 'when <f> starts correctly', ->
-      it 'returns true and the coroutine status', ->
-        status, co_status = dispatch.launch -> nil
+      it 'returns true, the coroutine status, and the coroutine', ->
+        status, co_status, co = dispatch.launch -> nil
         assert.is_true status
         assert.equals 'dead', co_status
+        assert.equals 'dead', coroutine.status(co)
 
     context 'when <f> errors upon start', ->
-      it 'returns false and the error message', ->
-        status, err = dispatch.launch -> error 'foo'
+      it 'returns false, the error message and the coroutine', ->
+        status, err, co = dispatch.launch -> error 'foo'
         assert.is_false status
         assert.equals 'foo', err
+        assert.equals 'dead', coroutine.status(co)
 
   describe 'wait()', ->
     it 'yields until resumed using resume() on the parked handle', ->

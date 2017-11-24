@@ -23,8 +23,9 @@ _See also_:
 
 Invokes `f` in a coroutine, with any additional arguments passed to `launch`. If
 the coroutine starts correctly, `true` is returned along with the coroutine's
-status (e.g. 'running', 'dead'). If an error is encountered upon launching the
-coroutine, `false` is returned along with the error message.
+status (e.g. 'running', 'dead'), and the actual coroutine object. If an error is
+encountered upon launching the coroutine, `false` is returned along with the
+error message and the actual coroutine object.
 
 ### park (description)
 
