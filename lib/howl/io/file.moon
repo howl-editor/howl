@@ -18,6 +18,7 @@ file_types = {
 }
 
 class File extends PropertyObject
+  @async: false
 
   tmpfile: ->
     file = File assert os.tmpname!
@@ -115,6 +116,10 @@ class File extends PropertyObject
       return if parent then File(parent) else nil
 
   @property children:
+    get: =>
+      File.async and @children_async or @children_sync
+
+  @property children_sync:
     get: =>
       files = {}
       enum = @gfile\enumerate_children 'standard::name,standard::type', GFile.QUERY_INFO_NONE

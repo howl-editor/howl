@@ -377,6 +377,7 @@ class Application extends PropertyObject
     unless @_loaded
       window\show_all! if window
       @_loaded = true
+      howl.io.File.async = true
       signal.emit 'app-ready'
       @_set_initial_status window
 
