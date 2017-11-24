@@ -25,7 +25,7 @@ attributes = (path, name, table) ->
 dir = (path) ->
   f = File path
   assert f.is_directory, "Not a directory: '#{path}'"
-  kids = [f.basename for f in *f.children]
+  kids = [c.basename for c in *f.children]
   i = 0
   setmetatable {}, {
     __call: ->
