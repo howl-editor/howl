@@ -296,7 +296,8 @@ class CommandLine extends PropertyObject
         @on_update!
       on_focus_lost: ->
         @close_popup!
-        @command_widget\focus! if @showing
+        if @showing and howl.activities.nr_visible == 0
+          @command_widget\focus!
 
     @command_widget.visible_rows = 1
     @box\pack_end @command_widget\to_gobject!, false, 0, 0
