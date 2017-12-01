@@ -83,10 +83,26 @@ pump_stream = (stream, handler, parking) ->
 
   stream\read_async nil, read_handler
 
+parse_lines = (text, include_partial = false) ->
+  lines = {}
+  start = 1
+  while true
+    pos = text\find('[\r\n]', start)
+    if not pos
+      rest = text\sub(start)
+      return lines, rest unless include_partial
+      append lines, rest if #rest > 0
+      return lines
+
+    append lines, text\sub(start, pos - 1)
+    start = pos + 1
+    if text\sub(start, start) == '\n' and text\sub(pos, pos) == '\r'
+      start += 1
+
 class Process
   running: {}
 
-  execute: (cmd, opts = {}) ->
+  open_pipe: (cmd, opts = {}) ->
     p_opts = {
       :cmd,
       working_directory: opts.working_directory,
@@ -100,7 +116,10 @@ class Process
     if p_opts.write_stdin
       p.stdin\write opts.stdin
       p.stdin\close!
+    p
 
+  execute: (cmd, opts = {}) ->
+    p = Process.open_pipe cmd, opts
     stdout, stderr = p\pump!
     stdout, stderr, p
 
@@ -159,6 +178,34 @@ class Process
     stdout = stdout and table.concat(stdout)
     stderr = stderr and table.concat(stderr)
     stdout, stderr
+
+  pump_lines: (on_stdout, on_stderr) =>
+    local stdout_rest, stderr_rest
+
+    dispatch_lines = (out, rest, handler) ->
+      return rest unless out
+      out = rest .. out if rest
+      lines, rest = parse_lines out
+      handler lines
+      rest
+
+    stdout_handler = on_stdout and (out) ->
+      stdout_rest = dispatch_lines out, stdout_rest, on_stdout
+
+    stderr_handler = on_stderr and (out) ->
+      stderr_rest = dispatch_lines out, stderr_rest, on_stderr
+
+    out, err = @pump stdout_handler, stderr_handler
+
+    if stdout_rest and #stdout_rest > 0
+      on_stdout { stdout_rest }
+
+    if stderr_rest and #stderr_rest > 0
+      on_stderr { stderr_rest }
+
+    out = out and parse_lines(out, true) or {}
+    err = err and parse_lines(err, true) or {}
+    out, err
 
   _handle_finish: (status) =>
     callbacks.unregister @_exit_handle
