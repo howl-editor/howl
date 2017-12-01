@@ -70,7 +70,7 @@ every_tick = ->
     co = coroutine.create (...) -> h.handler ...
     status, ret = coroutine.resume co, unpack(h.args)
     unless status
-      _G.log.error "Error invoking tick handler: '#{ret}'"
+      _G.log.error "Error invoking after_approximately handler: '#{ret}'"
 
   true
 
