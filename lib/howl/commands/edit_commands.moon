@@ -1,8 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, Buffer, command, interact, mode from howl
-import BufferPopup from howl.ui
+{:activities, :app, :Buffer, :command, :interact, :mode} = howl
+{:BufferPopup} = howl.ui
+{:Process} = howl.io
 
 command.register
   name: 'buffer-search-forward',
@@ -162,14 +163,13 @@ command.register
     return chunk, working_directory, cmd
 
   handler: (chunk, working_directory, cmd) ->
-    stdout, _, process = howl.io.Process.execute cmd,
-      :working_directory,
-      stdin: chunk.text
+    process = Process.open_pipe cmd, :working_directory, stdin: chunk.text
+    out, err = activities.run_process {title: 'Running filter'}, process
     if process.successful
-      chunk.text = stdout
+      chunk.text = out
       log.info "Replaced with output of '#{cmd}'"
     else
-      log.error "Failed to run #{cmd}"
+      log.error "Failed to run #{cmd}: #{err or 'Unknown'}"
 
 command.register
   name: 'editor-move-lines-up'

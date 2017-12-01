@@ -4,7 +4,7 @@ find = (file) ->
   while file != nil
     git_dir = file\join('.git')
     if git_dir.exists
-      return bundle_load('git') file, git_dir
+      return bundle_load('git') file
     file = file.parent
   nil
 

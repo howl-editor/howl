@@ -1,34 +1,58 @@
-import config from howl
-Process = howl.io.Process
-append = table.insert
+{:config, :activities} = howl
+{:Process} = howl.io
 
 class Git
-  new: (root, git_dir) =>
+  new: (root) =>
     @root = root
-    @git_dir = git_dir
     @name = 'Git'
 
   files: =>
-    output = @run "ls-files",
+    p = @_get_process "ls-files",
       "--exclude-standard",
       "--others",
       "--cached",
       "--directory"
 
-    git_files = {}
-    for path in output\gmatch '[^\n]+'
-      file = @root\join path
-      append git_files, file if file.exists and not file.is_directory
+    status = "$ #{p.command_line}"
+    activities.run {
+      title: "Reading Git entries from '#{@root}'",
+      status: -> status,
+    }, ->
+      out_lines, err_lines = p\pump_lines!
+      unless p.successful
+        error "(git in '#{@root}'): #{table.concat(err_lines, '\n')}"
 
-    git_files
+      status = "Loading files from Git entries"
+      return for i = 1, #out_lines
+        activities.yield! if i % 1000 == 0
+        line = out_lines[i]
+        continue if line\ends_with('/')
+        @root\join(line)
 
   diff: (file) =>
-    d = @run 'diff', file
-    not d.is_blank and d or nil
+    p = @_get_process 'diff', file
+    out, err = activities.run_process {
+      title: "Loading Git diff for '#{file}'"
+    }, p
+    unless p.successful
+      error "(git diff for '#{file}'): #{err or 'Failed to execute'}"
+
+    not out.is_blank and out or nil
 
   run: (...) =>
+    p = @_get_process ...
+    stdout, stderr = p\pump!
+    unless p.successful
+      error "(git in '#{@root}'): #{stderr or 'Failed to execute'}"
+
+    stdout
+
+  _get_process: (...) =>
     exec_path = config.git_path or 'git'
     argv = { exec_path, ... }
-    out, err, process = Process.execute argv, working_directory: @root
-    error "(git in '#{@root}'): #{err or 'Failed to execute'}" unless process.successful
-    out
+    Process {
+      cmd: argv,
+      working_directory: @root,
+      read_stdout: true,
+      read_stderr: true,
+    }

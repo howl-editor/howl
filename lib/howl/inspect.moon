@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :bindings, :command, :config, :inspection, :interact, :log, :signal, :timer} = howl
+{:activities, :app, :bindings, :command, :config, :inspection, :interact, :log, :signal, :timer} = howl
 {:ActionBuffer, :BufferPopup, :highlight} = howl.ui
 {:Process, :process_output} = howl.io
 {:pcall} = _G
@@ -189,7 +189,7 @@ inspect = (buffer, opts = {}) ->
 
   -- finish off processes
   for p in *processes
-    out, err = p.process\pump!
+    out, err = activities.run_process {title: 'Reading inspection results'}, p.process
     buf = out
     buf ..= "\n#{err}" unless err.is_blank
     inspections = parse_errors buf, p.inspector

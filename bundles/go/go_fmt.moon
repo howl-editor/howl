@@ -1,8 +1,8 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, config from howl
-import Process from howl.io
+{:activities, :app, :config} = howl
+{:Process} = howl.io
 
 append = table.insert
 
@@ -10,9 +10,11 @@ run_command = (contents) ->
   args = {}
   for arg in config.go_fmt_command\gmatch '%S+'
     append args, arg
-  args.stdin = contents
-  success, out, err, p = pcall Process.execute, args, stdin: contents
-  if success and p.successful and err == ""
+  success, ret = pcall Process.open_pipe, args, stdin: contents
+  return false, ret unless success
+  process = ret
+  out, err = activities.run_process {title: 'Go formatting'}, process
+  if process.successful and err.is_blank
     return true, out
 
   return false, err or out
@@ -37,7 +39,6 @@ calculate_new_pos = (pos, before, after) ->
   new_pos-1
 
 fmt = (buffer) ->
-  log.info "Running #{config.go_fmt_command}..."
   before = buffer.text
   buffer.read_only = true
   success, result = run_command before
@@ -45,7 +46,6 @@ fmt = (buffer) ->
   unless success
     log.error "#{config.go_fmt_command} error: #{result}"
     return
-  log.info "#{config.go_fmt_command} completed"
   return if result == before
 
   editor = app\editor_for_buffer buffer
