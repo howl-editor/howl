@@ -208,8 +208,11 @@ an error if unsuccesful.
 ### find (options = {})
 
 For a directory, returns all files within the directory or any sub directory of
-the directory. `options` allows for additional control of the operation, and can
-contain the following fields:
+the directory. In addition to the files, a boolean is returned indicated whether
+the result is partial or not (`true` indicating a partial result and `false` a
+complete result). The result will always be complete, unless one of the options
+causes a premature halt to the execution. `options` allows for additional
+control of the operation, and can contain the following fields:
 
 - `filter`: A callback that will recieve each file as its sole argument. To
 filter a file, i.e. exclude it from the results, the callback should return
@@ -217,6 +220,16 @@ true. The search is performed breadth first, so filtering a directory means that
 it won't be descended into at all.
 
 - `sort`: Causes the entries of all directories to be sorted before processing.
+
+- `timeout`: Provides a timeout in seconds for the find operation. If this is
+reached, execution is ended and a partial result is returned.
+
+- `on_enter`: If given, this function is invoked each time a new directory is
+entered (including the first one). The function is passed the directory to
+enter, as well as the found files so far. This function can also optionally
+cancel the execution, by return the special return value 'break'. If this is
+done, execution is ended and a partial result is returned.
+
 
 ### is_below (directory)
 
