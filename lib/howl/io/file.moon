@@ -6,6 +6,7 @@ GFileInfo = require 'ljglibs.gio.file_info'
 glib = require 'ljglibs.glib'
 dispatch = howl.dispatch
 import PropertyObject from howl.util.moon
+import platform from howl.sys
 append = table.insert
 
 file_types = {
@@ -21,12 +22,12 @@ class File extends PropertyObject
   @async: false
 
   tmpfile: ->
-    file = File assert os.tmpname!
-    file.touch if not file.exists
+    file = File platform.tmpname!
+    file\touch! if not file.exists
     file
 
   tmpdir: ->
-    with File os.tmpname!
+    with File platform.tmpname!
       \delete! if .exists
       \mkdir!
 
@@ -37,7 +38,7 @@ class File extends PropertyObject
     error err if not status
 
   is_absolute: (path) ->
-    (path\match('^/') or path\match('^%a:\\\\')) != nil
+    (path\match('^/') or path\match('^%a:\\')) != nil
 
   expand_path: (path) ->
     res = path\gsub "~#{File.separator}", File.home_dir.path .. File.separator
@@ -84,7 +85,7 @@ class File extends PropertyObject
   @property size: get: => @_info!.size
   @property exists: get: => @gfile.exists
   @property readable: get: => @exists and @_info('access')\get_attribute_boolean 'access::can-read'
-  @property etag: get: => @exists and @_info('etag').etag
+  @property etag: get: => @exists and @_info('etag').etag or nil
   @property modified_at: get: => @exists and @_info('time')\get_attribute_uint64 'time::modified'
   @property short_path: get: => @path\gsub "^#{File.home_dir.path}", '~'
 

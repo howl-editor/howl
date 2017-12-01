@@ -1,6 +1,13 @@
+src/deps/*
 src/deps/*/*
 src/*.o
 src/howl
+src/howl.exe
+src/howl.ico
+src/howl.png
+src/howl.res
+src/windist
+src/wininst
 *.bc
 *.bak
 site/build/

@@ -1,5 +1,7 @@
 import File from howl.io
 
+pathsep = File.separator
+
 describe 'File', ->
 
   describe 'tmpfile()', ->
@@ -34,33 +36,34 @@ describe 'File', ->
 
   describe 'expand_path(path)', ->
     it 'expands "~" into the full path of the home directory', ->
-      assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '~/foo.txt')
+      assert.equals "#{os.getenv('HOME')}#{pathsep}foo.txt",
+        File.expand_path("~#{pathsep}foo.txt")
 
   describe 'new(p, cwd)', ->
     it 'accepts a string as denothing a path', ->
-      File '/bin/ls'
+      File "#{pathsep}bin#{pathsep}ls"
 
     it 'accepts other files as well', ->
-      f = File '/bin/ls'
+      f = File "#{pathsep}bin#{pathsep}ls"
       f2 = File f
       assert.equal f, f2
 
     context 'when <cwd> is specified', ->
       it 'resolves a string <p> relative to <cwd>', ->
-        assert.equal '/bin/ls', File('ls', '/bin').path
+        assert.equal "#{pathsep}bin#{pathsep}ls", File('ls', '/bin').path
 
       it 'resolves an absolute string <p> as the absolute path', ->
-        assert.equal '/bin/ls', File('/bin/ls', '/home').path
+        assert.equal "#{pathsep}bin#{pathsep}ls", File("#{pathsep}bin#{pathsep}ls", '/home').path
 
       it 'accepts other Files as <cwd>', ->
-        assert.equal '/bin/ls', File('ls', File('/bin')).path
+        assert.equal "#{pathsep}bin#{pathsep}ls", File('ls', File('/bin')).path
 
   describe '.is_absolute', ->
     it 'returns true if the given path is absolute', ->
       assert.is_true File.is_absolute '/bin/ls'
       assert.is_true File.is_absolute 'c:\\\\bin\\ls'
 
-    it 'returns false if the given path is absolute', ->
+    it 'returns false if the given path is not absolute', ->
       assert.is_false File.is_absolute 'bin/ls'
       assert.is_false File.is_absolute 'bin\\ls'
 
@@ -73,14 +76,21 @@ describe 'File', ->
       assert.equal 'base.ext', File('/foo/base.ext').display_name
 
     it 'has a trailing separator for directories', ->
-      assert.equal 'bin/', File('/usr/bin').display_name
+      local dir, expected
+      if jit.os == 'Windows'
+        dir = File os.getenv 'SYSTEMROOT'
+        expected = "#{dir.basename}\\"
+      else
+        dir = File '/usr/bin'
+        expected = 'bin/'
+      assert.equal expected, dir.display_name
 
   it '.extension returns the extension of the path', ->
     assert.equal File('/foo/base.ext').extension, 'ext'
     assert.equal File('/foo/base.ex+').extension, 'ex+'
 
   it '.path returns the path of the file', ->
-    assert.equal '/foo/base.ext', File('/foo/base.ext').path
+    assert.equal "#{pathsep}foo#{pathsep}base.ext", File('/foo/base.ext').path
 
   it '.uri returns an URI representing the path', ->
     assert.equal File('/foo.txt').uri, 'file:///foo.txt'
@@ -91,7 +101,7 @@ describe 'File', ->
   describe '.short_path', ->
     it 'returns the path with the home directory replace by "~"', ->
       file = File(os.getenv('HOME')) / 'foo.txt'
-      assert.equal '~/foo.txt', file.short_path
+      assert.equal "~#{pathsep}foo.txt", file.short_path
 
   describe 'contents', ->
     it 'assigning a string writes the string to the file', ->
@@ -110,7 +120,7 @@ describe 'File', ->
         assert.equal file.contents, 'hello world'
 
   it '.parent return the parent of the file', ->
-    assert.equal File('/bin/ls').parent.path, '/bin'
+    assert.equal File('/bin/ls').parent.path, "#{pathsep}bin"
 
   it '.children returns a table of children', ->
     with_tmpdir (dir) ->
@@ -131,9 +141,14 @@ describe 'File', ->
         done!
 
   it '.file_type is a string describing the file type', ->
-    assert.equal 'directory', File('/bin').file_type
-    assert.equal 'regular', File('/bin/ls').file_type
-    assert.equal 'special', File('/dev/null').file_type
+    if jit.os == 'Windows'
+      sysroot = os.getenv 'SYSTEMROOT'
+      assert.equal 'directory', File(sysroot).file_type
+      assert.equal 'regular', File("#{sysroot}#{pathsep}explorer.exe").file_type
+    else
+      assert.equal 'directory', File('/bin').file_type
+      assert.equal 'regular', File('/bin/ls').file_type
+      assert.equal 'special', File('/dev/null').file_type
 
   it '.writeable is true if the file represents a entry that can be written to', ->
     with_tmpdir (dir) ->
@@ -212,16 +227,16 @@ describe 'File', ->
       assert.same { 'first', ' line' }, { file\read 5, '*l' }
 
   it 'join() returns a new file representing the specified child', ->
-    assert.equal File('/bin')\join('ls').path, '/bin/ls'
+    assert.equal File('/bin')\join('ls').path, "#{pathsep}bin#{pathsep}ls"
 
   it 'relative_to_parent() returns a path relative to the specified parent', ->
     parent = File '/bin'
-    file = File '/bin/ls'
+    file = File "#{pathsep}bin#{pathsep}ls"
     assert.equal 'ls', file\relative_to_parent(parent)
 
   it 'is_below(dir) returns true if the file is located beneath <dir>', ->
     parent = File '/bin'
-    assert.is_true File('/bin/ls')\is_below parent
+    assert.is_true File("#{pathsep}bin#{pathsep}ls")\is_below parent
     assert.is_true File('/bin/sub/ls')\is_below parent
     assert.is_false File('/usr/bin/ls')\is_below parent
 
@@ -323,10 +338,10 @@ describe 'File', ->
           normalized = [f\relative_to_parent dir for f in *files]
           assert.same {
             'child1',
-            'child1/sandwich.lua',
-            'child1/sub_child.txt',
-            'child1/sub_dir',
-            'child1/sub_dir/deep.lua',
+            "child1#{pathsep}sandwich.lua",
+            "child1#{pathsep}sub_child.txt",
+            "child1#{pathsep}sub_dir",
+            "child1#{pathsep}sub_dir#{pathsep}deep.lua",
             'child2'
           }, normalized
 
@@ -338,10 +353,10 @@ describe 'File', ->
           assert.same normalized, {
             'child2',
             'child1',
-            'child1/sandwich.lua',
-            'child1/sub_child.txt',
-            'child1/sub_dir',
-            'child1/sub_dir/deep.lua',
+            "child1#{pathsep}sandwich.lua",
+            "child1#{pathsep}sub_child.txt",
+            "child1#{pathsep}sub_dir",
+            "child1#{pathsep}sub_dir#{pathsep}deep.lua",
           }
 
     context 'when filter: is passed as an option', ->
@@ -371,13 +386,13 @@ describe 'File', ->
   describe 'meta methods', ->
     it '/ and .. joins the file with the specified argument', ->
       file = File('/bin')
-      assert.equal (file / 'ls').path, '/bin/ls'
-      assert.equal (file .. 'ls').path, '/bin/ls'
+      assert.equal (file / 'ls').path, "#{pathsep}bin#{pathsep}ls"
+      assert.equal (file .. 'ls').path, "#{pathsep}bin#{pathsep}ls"
 
     it 'tostring returns the result of File.tostring', ->
-      file = File '/bin/ls'
+      file = File "#{pathsep}bin#{pathsep}ls"
       assert.equal file\tostring!, tostring file
 
     it '== returns true if the files point to the same path', ->
-      assert.equal File('/bin/ls'), File('/bin/ls')
+      assert.equal File("#{pathsep}bin#{pathsep}ls"), File("#{pathsep}bin#{pathsep}ls")
 

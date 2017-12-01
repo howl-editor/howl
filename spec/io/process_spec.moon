@@ -2,40 +2,69 @@ Process = howl.io.Process
 File = howl.io.File
 glib = require 'ljglibs.glib'
 
+sh, echo = if jit.os == 'Windows'
+  "#{howl.sys.env.WD}sh.exe", "#{howl.sys.env.WD}echo.exe"
+else
+  '/bin/sh', '/bin/echo'
+
+fix_paths = (path) ->
+  if jit.os == 'Windows'
+    -- On MSYS, often the shell will output paths like:
+    -- /usr/bin/sh
+    -- but the specs use (and therefore expect) stuff like:
+    -- C:/msys64/usr/bin/sh.exe
+    -- This fixes up those paths to make the latter like the former.
+    path\gsub('\\', '/')\gsub('.*msys[^/]*/', '/')\gsub('%.exe$', '')
+  else
+    path
+
 describe 'Process', ->
 
   run = (...) ->
     with Process cmd: ...
       \wait!
 
+  procs = {}
+  collected_process = (...) ->
+    proc = Process ...
+    table.insert procs, proc
+    proc
+  collect = ->
+    for proc in *procs
+      proc\wait!
+
   describe 'Process(opts)', ->
     it 'raises an error if opts.cmd is missing or invalid', ->
       assert.raises 'cmd', -> Process {}
       assert.raises 'cmd', -> Process cmd: 2
-      assert.not_error -> Process cmd: 'id'
-      assert.not_error -> Process cmd: {'echo', 'foo'}
+      assert.not_error -> collected_process cmd: 'id'
+      assert.not_error -> collected_process cmd: {'echo', 'foo'}
 
     it 'returns a process object', ->
-      assert.equal 'Process', typeof Process cmd: 'true'
+      assert.equal 'Process', typeof collected_process cmd: 'true'
 
     it 'raises an error for an unknown command', ->
-      assert.raises 'howlblargh', -> Process cmd: {'howlblargh'}
+      errstring = if jit.os == 'Windows'
+        'No such file or directory'
+      else
+        'howlblargh'
+      assert.raises errstring, -> Process cmd: {'howlblargh'}
 
     it 'sets .argv to the parsed command line', ->
-      p = Process cmd: {'echo', 'foo'}
+      p = collected_process cmd: {'echo', 'foo'}
       assert.same {'echo', 'foo'}, p.argv
 
-      p = Process cmd: 'echo "foo bar"'
-      assert.same { '/bin/sh', '-c', 'echo "foo bar"'}, p.argv
+      p = collected_process cmd: 'echo "foo bar"'
+      assert.same { sh, '-c', 'echo "foo bar"'}, p.argv
 
     it 'allows specifying a different shell', ->
-      p = Process cmd: 'foo', shell: '/bin/echo'
-      assert.same { '/bin/echo', '-c', 'foo'}, p.argv
+      p = collected_process cmd: 'foo', shell: echo
+      assert.same { echo, '-c', 'foo'}, p.argv
 
   describe 'Process.execute(cmd, opts)', ->
     it 'executes the specified command and return <out, err, process>', (done) ->
       howl_async ->
-        out, err, p = Process.execute {'sh', '-c', 'cat; echo foo >&2'}, stdin: 'reverb'
+        out, err, p = Process.execute {sh, '-c', 'cat; echo foo >&2'}, stdin: 'reverb'
         assert.equal 'reverb', out
         assert.equal 'foo\n', err
         assert.equal 'Process', typeof(p)
@@ -45,12 +74,13 @@ describe 'Process', ->
       howl_async ->
         status, out = pcall Process.execute, 'echo $0'
         assert.is_true status
-        assert.equal '/bin/sh\n', out
+        expected = fix_paths sh
+        assert.equal "#{expected}\n", out
         done!
 
     it "allows specifying a different shell", (done) ->
       howl_async ->
-        status, out, _, process = pcall Process.execute, 'blargh', shell: '/bin/echo'
+        status, out, _, process = pcall Process.execute, 'blargh', shell: echo
         assert.is_true status
         assert.match out, 'blargh'
         assert.equal 'blargh', process.command_line
@@ -65,7 +95,11 @@ describe 'Process', ->
 
     it 'opts.env sets the process environment', (done) ->
       howl_async ->
-        out = Process.execute {'env'}, env: { foo: 'bar' }
+        cmd = if jit.os == 'Windows'
+          'env'
+        else
+          {'env'}
+        out = Process.execute cmd, env: { foo: 'bar' }
         assert.equal 'foo=bar', out.stripped
         done!
 
@@ -118,21 +152,24 @@ describe 'Process', ->
           done!
 
     context 'when handlers are not specified', ->
-      it 'collects and returns <out> and <err> output', ->
-        p = Process cmd: 'echo foo', read_stdout: true
-        stdout, stderr = p\pump!
-        assert.equals 'foo\n', stdout
-        assert.is_nil stderr
+      it 'collects and returns <out> and <err> output', (done) ->
+        howl_async ->
+          p = Process cmd: 'echo foo', read_stdout: true
+          stdout, stderr = p\pump!
+          assert.equals 'foo\n', stdout
+          assert.is_nil stderr
 
-        p = Process cmd: 'echo err >&2', read_stderr: true
-        stdout, stderr = p\pump!
-        assert.equals 'err\n', stderr
-        assert.is_nil stdout
+          p = Process cmd: 'echo err >&2', read_stderr: true
+          stdout, stderr = p\pump!
+          assert.equals 'err\n', stderr
+          assert.is_nil stdout
 
-        p = Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
-        stdout, stderr = p\pump!
-        assert.equals 'out\n', stdout
-        assert.equals 'err\n', stderr
+          p = Process cmd: 'echo out; echo err >&2', read_stdout: true, read_stderr: true
+          stdout, stderr = p\pump!
+          assert.equals 'out\n', stdout
+          assert.equals 'err\n', stderr
+
+          done!
 
   describe 'wait()', ->
     it 'waits until the process is finished', (done) ->
@@ -187,10 +224,13 @@ describe 'Process', ->
           done!
 
   describe '.exit_status', ->
-    it 'is nil for a running process', ->
-      p = Process cmd: { 'sh', '-c', "sleep 1; true" }
-      assert.is_nil p.exit_status
-      p\wait!
+    it 'is nil for a running process', (done) ->
+      settimeout 2
+      howl_async ->
+        p = Process cmd: { 'sh', '-c', "sleep 1; true" }
+        assert.is_nil p.exit_status
+        p\wait!
+        done!
 
     it 'is nil for a signalled process', (done) ->
       howl_async ->
@@ -215,18 +255,23 @@ describe 'Process', ->
 
   describe '.working_directory', ->
     context 'when provided during launch', ->
+      bindir = if jit.os == 'Windows'
+        howl.sys.env.SYSTEMROOT
+      else
+        '/bin'
+
       it 'is the same directory', ->
-        cwd = File '/bin'
-        p = Process(cmd: 'true', working_directory: cwd)
+        cwd = File bindir
+        p = collected_process(cmd: 'true', working_directory: cwd)
         assert.equal cwd, p.working_directory
 
       it 'is always a File instance', ->
-        p = Process(cmd: 'true', working_directory: '/bin')
-        assert.equal 'File', typeof  p.working_directory
+        p = collected_process(cmd: 'true', working_directory: bindir)
+        assert.equal 'File', typeof p.working_directory
 
     context 'when not provided', ->
       it 'is the current working directory', ->
-        p = Process(cmd: 'true')
+        p = collected_process(cmd: 'true')
         assert.equal File(glib.get_current_dir!), p.working_directory
 
   describe '.successful', ->
@@ -251,7 +296,7 @@ describe 'Process', ->
   describe '.stdout', ->
     it 'allows reading process output', (done) ->
       howl_async ->
-        p = Process cmd: {'echo', 'one\ntwo'}, read_stdout: true
+        p = collected_process cmd: {'echo', 'one\ntwo'}, read_stdout: true
         assert.equals 'one\ntwo\n', p.stdout\read!
         assert.is_nil p.stdout\read!
         done!
@@ -259,7 +304,7 @@ describe 'Process', ->
   describe '.stderr', ->
     it 'allows reading process error output', (done) ->
       howl_async ->
-        p = Process cmd: {'sh', '-c', 'echo foo >&2'}, read_stderr: true
+        p = collected_process cmd: {'sh', '-c', 'echo foo >&2'}, read_stderr: true
         assert.equals 'foo\n', p.stderr\read!
         done!
 
@@ -306,6 +351,7 @@ describe 'Process', ->
   describe 'Process.running', ->
     it 'is a table of currently running processes, keyed by pid', (done) ->
       howl_async ->
+        collect!
         assert.same {}, Process.running
         p = Process cmd: {'cat'}, write_stdin: true
         assert.same {[p.pid]: p}, Process.running

@@ -2,11 +2,17 @@
 /* License: MIT (see LICENSE.md at the top-level directory of the distribution) */
 
 #include "main.h"
+#include <lj_obj.h>
 #include <gio/gio.h>
 #include <string.h>
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
+
+#ifdef _WIN32
+#include <Windows.h>
+DWORD fr_private = FR_PRIVATE;
+#endif
 
 static void lua_run(int argc, char *argv[], const gchar *app_root, lua_State *L)
 {

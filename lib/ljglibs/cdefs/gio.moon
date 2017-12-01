@@ -111,6 +111,14 @@ ffi.cdef [[
   typedef struct {} GUnixOutputStream;
   GUnixOutputStream * g_unix_output_stream_new (gint fd, gboolean close_fd);
 
+  /* GWin32InputStream */
+  typedef struct {} GWin32InputStream;
+  GWin32InputStream * g_win32_input_stream_new (void* handle, gboolean close_handle);
+
+  /* GWin32OutputStream */
+  typedef struct {} GWin32OutputStream;
+  GWin32OutputStream * g_win32_output_stream_new (void* handle, gboolean close_handle);
+
   /* GFile and friends */
   typedef struct {} GFileInputStream;
   typedef struct {} GFileOutputStream;

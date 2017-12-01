@@ -27,7 +27,9 @@ ffi.cdef [[
   /* GObject */
   typedef struct {} GObject;
 
-  GObject g_object_new (GType object_type);
+  GObject g_object_new (GType object_type,
+                        const gchar* first_property_name,
+                        ...);
   gpointer g_object_ref (gpointer object);
   gpointer g_object_ref_sink (gpointer object);
   gboolean  g_object_is_floating (gpointer object);

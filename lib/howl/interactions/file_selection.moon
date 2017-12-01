@@ -45,13 +45,15 @@ class FileSelector
     parent or= File.home_dir
 
     path = @command_line\pop_spillover!
+    -- Make / work on Windows.
+    path = path\gsub '/', File.separator
 
     if path.is_empty
-      path = tostring(parent) .. '/'
+      path = tostring(parent) .. File.separator
     else
-      trailing = path\ends_with('/') and '/' or ''
+      trailing = path\ends_with(File.separator) and File.separator or ''
       path = tostring parent / path
-      if not path\ends_with '/'
+      if not path\ends_with File.separator
         path ..= trailing
 
     directory, unmatched = get_dir_and_leftover path
@@ -93,7 +95,12 @@ class FileSelector
   on_update: (text) =>
     return if @submitting
 
-    path = @directory.path .. '/' .. text
+    -- This allows one to use / as a directory separator, even on Windows.
+    text = text\gsub '/', File.separator
+    path = if File.is_absolute text
+      text
+    else
+      @directory.path .. File.separator .. text
     directory, text = get_dir_and_leftover path
 
     if directory != @directory

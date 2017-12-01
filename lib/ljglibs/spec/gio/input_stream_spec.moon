@@ -6,6 +6,8 @@ glib = require 'ljglibs.glib'
 
 with_tmpfile = (contents, f) ->
   p = os.tmpname!
+  if jit.os == 'Windows'
+    p = p\sub 2
   fh = io.open p, 'wb'
   fh\write contents
   fh\close!

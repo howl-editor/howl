@@ -30,6 +30,8 @@ how to install Howl from source.
 based system).
 - `C compiler`: Howl has a very small C core itself, and it embeds
 dependencies written in C.
+- If you're using Windows, you *need* to build Howl inside of
+[MSYS2](https://msys2.github.io/)'s MinGW32 shell.
 
 ### Build && install
 

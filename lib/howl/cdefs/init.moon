@@ -52,6 +52,9 @@ int sig_PWR;
 int sig_SYS;
 ]]
 
+if ffi.os == 'Windows'
+  require 'howl.cdefs.windows'
+
 return {
   const_char_p: ffi.typeof 'const char *'
   char_p: ffi.typeof 'char *'

@@ -1,6 +1,11 @@
 import bundle, config, VC from howl
 import File from howl.io
 
+echo = if jit.os == 'Windows'
+  "#{howl.sys.env.WD}echo.exe"
+else
+  '/bin/echo'
+
 describe 'Git bundle', ->
   setup -> bundle.load_by_name 'git'
   teardown -> bundle.unload 'git'
@@ -26,8 +31,7 @@ describe 'Git bundle', ->
           assert.equal instance.root, dir
 
     it 'returns nil if no git root was found', ->
-      File.with_tmpfile (file) ->
-        assert.is_nil git_vc.find file
+      assert.is_nil git_vc.find howl.io.File echo
 
   describe 'A Git instance', ->
     root = nil
@@ -106,7 +110,7 @@ describe 'Git bundle', ->
 
       it 'uses the executable in variable `git_path` if specified', (done) ->
         howl_async ->
-          config.git_path = '/bin/echo'
+          config.git_path = echo
           status, out = pcall git.run, git, 'using echo'
           config.git_path = nil
           assert status, out

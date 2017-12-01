@@ -20,6 +20,8 @@ Where options can be any of:
 ]=]
 
 local path_separator = jit.os == 'Windows' and '\\' or '/'
+local path_prefix = jit.os == 'Windows' and '\\\\.\\' or ''
+app_root = path_prefix .. app_root
 
 local function parse_args(arg_vector)
   local options = {
@@ -168,12 +170,14 @@ local function main()
   set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
   require 'howl.moonscript_support'
   table.insert(package.loaders, 2, bytecode_loader())
-  require 'howl.cdefs.fontconfig'
-  ffi.C.FcConfigAppFontAddDir(nil, table.concat({app_root, 'fonts'}, path_separator))
   require 'ljglibs.cdefs.glib'
 
   howl = auto_module('howl')
   require('howl.globals')
+
+  local font_dir = table.concat({app_root, 'fonts'}, path_separator)
+  require('howl.sys').platform.load_font_dir(font_dir)
+
   _G.log = require('howl.log')
   local args = parse_args(argv)
 

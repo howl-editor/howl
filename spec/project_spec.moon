@@ -1,5 +1,6 @@
 import Project, VC from howl
 import File from howl.io
+ffi = require 'ffi'
 
 describe 'Project', ->
   before_each ->
@@ -100,4 +101,11 @@ describe 'Project', ->
           hidden\touch!
           backup = dir / 'config~'
           backup\touch!
-          assert.same { regular.path }, [f.path for f in *Project(dir)\files!]
+
+          expected = { regular.path }
+          if ffi.os == 'Windows'
+            make_hidden hidden.path
+            -- glib on Windows has no notion of a "backup file"
+            table.insert expected, 1, backup.path
+
+          assert.same expected, [f.path for f in *Project(dir)\files!]

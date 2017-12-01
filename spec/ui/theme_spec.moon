@@ -2,9 +2,14 @@ import config, signal from howl
 import theme from howl.ui
 import File from howl.io
 
+ffi = require 'ffi'
 serpent = require 'serpent'
 
-font = name: 'Liberation Mono', size: 11, bold: true
+font_name = if ffi.os == 'Windows'
+  'Courier New'
+else
+  'Liberation Mono'
+font = name: font_name, size: 11, bold: true
 
 spec_theme = {
   window:

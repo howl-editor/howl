@@ -5,9 +5,9 @@ title: Installation
 # Installing Howl
 
 Howl is developed on Linux, but it builds on other \*NIX platforms as well such
-as FreeBSD and OpenBSD (with other \*BSDs presumably requiring only little
-work). It should be possible to port to OSX or Windows, should any brave soul be
-willing to put in the work.
+as FreeBSD and OpenBSD (with other \*BSDs presumably requiring only little work), along with
+Windows. It should be possible to port to OSX, should any brave soul be willing to
+put in the work.
 
 You can install Howl by building it from source, either from a release or by
 cloning the repository from Github.
@@ -25,6 +25,10 @@ _SHA1_: 219bac3f2a29026f9945b45ab82af82277cc23cd
 
 __Release notes:__
 [Howl 0.5 Released](/blog/2017/06/30/howl-0-5-released.html)
+
+## Building or installing Howl on Windows
+
+See [the Windows-specific documentation](/getit.windows.html).
 
 ## Building Howl from source
 

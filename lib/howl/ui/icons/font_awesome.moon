@@ -680,9 +680,15 @@ icon_text = {
   'youtube-square': '\239\133\166',
 }
 
+-- On Windows, when the font is loaded, it gets labeled as "FontAwesome".
+family = if jit.os == 'Windows'
+  'FontAwesome'
+else
+  'Font Awesome'
+
 for name, text in pairs icon_text
   howl.ui.icon.define 'font-awesome-'..name,
     font:
-      family: 'Font Awesome'
+      :family
       size: 'small'
     :text

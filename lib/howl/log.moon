@@ -37,6 +37,7 @@ dispatch = (level, message) ->
     command_line\notify essentials, level if command_line.showing
   elseif not _G.howl.app.args.spec
     _G.print message
+    _G.io.flush!
 
   while #entries > config.max_log_entries and #entries > 0
     table.remove entries, 1

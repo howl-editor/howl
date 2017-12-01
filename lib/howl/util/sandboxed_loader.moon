@@ -24,7 +24,7 @@ new = (dir, name, sandbox_options = {}) ->
     "#{name}_file": (rel_path) -> dir / rel_path
 
     "#{name}_load": (rel_path, ...) ->
-      rel_path = rel_path\gsub '%.', File.separator
+      rel_path = rel_path\gsub '[./]', File.separator
       error 'Cyclic dependency in ' .. dir / rel_path if loading[rel_path]
       return loaded[rel_path] if loaded[rel_path]
       loading[rel_path] = true

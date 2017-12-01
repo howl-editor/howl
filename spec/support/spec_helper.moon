@@ -7,6 +7,9 @@ import theme from howl.ui
 import dispatch, signal, config from howl
 _G.Spy = require 'howl.spec.spy'
 
+if jit.os == 'Windows' and not howl.sys.env.MSYSCON
+  error 'These specs must be run under MSYS2!'
+
 -- additional aliases
 export context = describe
 
@@ -92,7 +95,7 @@ howl_loop = setmetatable {
 export set_howl_loop = -> _G.setloop howl_loop
 
 export howl_async = (f) ->
-  _G.setloop howl_loop
+  set_howl_loop!
   co = coroutine.create busted.async(f)
   status, err = coroutine.resume co
   error err unless status
@@ -132,3 +135,36 @@ export collect_memory = ->
     used = collectgarbage('count')
     break if used >= mem
     mem = used
+
+export assert_memory_stays_within = (units, iterations, f) ->
+  val, unit = units\match '(%d+)(%S+)'
+  if not (val and unit) and (unit == '%' or unit == 'Kb')
+    error "Unknown unit specifier '#{units}'"
+
+  val = tonumber val
+  f!
+  collect_memory!
+  baseline = math.ceil(collectgarbage 'count')
+  total_used = 0
+
+  for i = 1, iterations
+    f!
+    collect_memory!
+    used = math.ceil(collectgarbage 'count')
+    total_used += used
+
+  avg_used = total_used / iterations
+  diff = avg_used - baseline
+  percentual = (diff / baseline) * 100
+  if diff > 0
+    if (unit == '%' and percentual > val) or (unit == 'Kb' and diff > val)
+      err = string.format "Memory increased on average from %dKb -> %dKb (diff = %dKb, %.2f%%)",
+        baseline, avg_used, diff, percentual
+      error err
+
+if jit.os == 'Windows'
+  require 'howl.cdefs.windows'
+  FILE_ATTRIBUTE_HIDDEN = 2
+  export make_hidden = (path) -> C.SetFileAttributesA(path, FILE_ATTRIBUTE_HIDDEN)
+else
+  export make_hidden = (path) -> nil

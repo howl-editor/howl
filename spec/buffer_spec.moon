@@ -1,6 +1,7 @@
 import Buffer, config from howl
 import File from howl.io
 import with_tmpfile from File
+ffi = require 'ffi'
 
 describe 'Buffer', ->
   buffer = (text) ->
@@ -44,11 +45,13 @@ describe 'Buffer', ->
     it 'is updated whenever the buffer is changed in some way', ->
       b = buffer 'time'
       cur = b.last_changed
+      ffi.C.g_usleep 2000
 
       b\insert 'foo', 1
       assert.is_true b.last_changed > cur
 
       cur = b.last_changed
+      ffi.C.g_usleep 2000
       b\delete 1, 3
       assert.is_true b.last_changed > cur
 
