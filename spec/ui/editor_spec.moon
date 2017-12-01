@@ -12,7 +12,7 @@ describe 'Editor', ->
   window = Gtk.OffscreenWindow!
   window\add editor\to_gobject!
   window\show_all!
-  pump_mainloop!
+  howl.app\pump_mainloop!
 
   before_each ->
     buffer = Buffer {}

@@ -8,6 +8,7 @@ import PropertyObject from howl.util.moon
 Gtk = require 'ljglibs.gtk'
 callbacks = require 'ljglibs.callbacks'
 {:get_monotonic_time} = require 'ljglibs.glib'
+{:C} = require('ffi')
 
 append = table.insert
 coro_create, coro_status = coroutine.create, coroutine.status
@@ -304,6 +305,13 @@ class Application extends PropertyObject
       }
 
     @settings\save_system 'session', session
+
+  pump_mainloop: (max_count = 100) =>
+    jit.off true, true
+    count = 0
+    ctx = C.g_main_context_default!
+    while count < max_count and C.g_main_context_iteration(ctx, false) != 0
+      count += 1
 
   _buffer_for_file: (file) =>
     for b in *@buffers

@@ -10,7 +10,7 @@ describe 'Cursor', ->
   window = Gtk.OffscreenWindow default_width: 800, default_height: 640
   window\add editor\to_gobject!
   window\show_all!
-  pump_mainloop!
+  howl.app\pump_mainloop!
 
   before_each ->
     cursor.pos = 1

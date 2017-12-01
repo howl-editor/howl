@@ -18,7 +18,7 @@ describe 'View', ->
     window = Gtk.OffscreenWindow default_width: 800, default_height: 640
     window\add view\to_gobject!
     window\show_all!
-    pump_mainloop!
+    howl.app\pump_mainloop!
 
   context 'visible line orientation properties', ->
     local nr_lines_in_screen
