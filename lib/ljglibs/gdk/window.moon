@@ -40,6 +40,7 @@ core.define 'GdkWindow', {
     }
 
     display: => ref_ptr C.gdk_window_get_display @
+    scale_factor: => tonumber C.gdk_window_get_scale_factor @
   }
 
   get_position: =>
