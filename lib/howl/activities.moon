@@ -1,7 +1,7 @@
 -- Copyright 2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:timer} = howl
+{:config, :timer} = howl
 {:Activity} = howl.ui
 {:get_monotonic_time} = require 'ljglibs.glib'
 append = table.insert
@@ -95,7 +95,7 @@ run = (def, f) ->
     elseif ms_since_last_show < 400
       0.3
     else
-      0.7
+      config.activities_popup_delay / 1000
     timer_handle = timer.after_approximately interval, update
     return_to_focus = howl.app.window.focus
 
