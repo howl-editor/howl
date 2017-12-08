@@ -2,7 +2,17 @@
 
 ## Unreleased (in master)
 
-- Fix background drawing for Wayland/Weston/CSD environments (borders outside
+- Added support for activities - potentially longer running activities that
+should run in a apparently blocking way to the user. Example: Loading files from
+larger directories will now be run as a user visible and user cancellable
+operation if it takes to long to complete.
+
+- Added a new commandline flag, `--run-async`, for running a particular file in
+a asynchronous Howl context.
+
+- Added support for shared, low precision after timers
+
+- Fixed background drawing for Wayland/Weston/CSD environments (borders outside
 of the window).
 
 - Requested that titlebar is hidden for newer versions of Gnome 3.
@@ -16,6 +26,11 @@ bound to `ctrl_<` and `ctrl_>` respectively.
 - Added two new commands, `editor-newline-above` and `editor-newline-below`,
 that insert a new line above/below the current line. Bound these commands to
 `ctrl_shift_return` and `ctrl_return`.
+
+### Github issues closed since 0.5
+
+- Issues as seen on
+[Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=closed%3A%3E%3D2017-06-30+is%3Aissue+is%3Aclosed+sort%3Acreated-asc+)
 
 ## 0.5.3 (2017-11-07)
 
