@@ -19,6 +19,7 @@ class SelectionList
       on_selection_change: @\_handle_change
       reverse: @opts.reverse
       never_shrink: true
+      explain: @opts.explain
 
     @list_widget.columns = @opts.columns
 

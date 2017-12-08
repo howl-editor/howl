@@ -185,7 +185,7 @@ describe 'file_selection', ->
           items2 = get_ui_list_widget_column(2)
 
         assert.same files, items
-        assert.same {'ab1', 'ab2/', 'ab2/xy', 'ef/gh/ab4'}, items2
+        assert.same {'ab1', 'ab2/', 'ef/gh/ab4', 'ab2/xy' }, items2
 
 
   describe 'interact.select_directory', ->

@@ -176,7 +176,7 @@ subtree_matcher = (files, directory, opts={}) ->
           name: tostring(name)
         }
 
-    return Matcher paths
+    return Matcher(paths, reverse: true)
 
   activities.run {
     title: "Loading files from '#{directory}'"

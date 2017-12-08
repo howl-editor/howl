@@ -6,6 +6,7 @@ import File from howl.io
 import Preview from howl.interactions.util
 import icon, markup, style, ListWidget from howl.ui
 import file_matcher, subtree_matcher, subtree_reader, get_dir_and_leftover from howl.util.paths
+{:Matcher} = howl.util
 
 append = table.insert
 separator = File.separator
@@ -199,11 +200,13 @@ interact.register
     return unless project
 
     matcher = project_matcher(project)
+    explain = (search, text) -> Matcher.explain search, text, reverse: true
 
     result = interact.select_location
       title: opts.title or project.root.short_path .. separator
       prompt: opts.prompt or ''
       :matcher
+      :explain
 
     if result
       return result.selection.file

@@ -113,7 +113,8 @@ class ListWidget extends PropertyObject
       return
 
     highlighter = self.highlighter or (t) ->
-      explain = type(@matcher) == 'table' and @matcher.explain or Matcher.explain
+      explain = @opts.explain
+      explain or= type(@matcher) == 'table' and @matcher.explain or Matcher.explain
       explain @highlight_matches_for, t
 
     segments = highlighter text
