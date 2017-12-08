@@ -114,7 +114,7 @@ View = {
     append @_handlers, @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
       @_scrolling_vertically = true
-      line = math.floor adjustment.value + 0.5
+      line = floor adjustment.value + 0.5
       @scroll_to line
       @_scrolling_vertically = false
 
@@ -230,7 +230,7 @@ View = {
       set: (offset) =>
         @_y_scroll_offset += offset
         if @_y_scroll_offset < -1 or @_y_scroll_offset > 1
-          @first_visible_line += math.floor(@_y_scroll_offset)
+          @first_visible_line += floor(@_y_scroll_offset)
           @_y_scroll_offset = 0
     }
 
