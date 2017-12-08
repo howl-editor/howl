@@ -221,9 +221,6 @@ it won't be descended into at all.
 
 - `sort`: Causes the entries of all directories to be sorted before processing.
 
-- `timeout`: Provides a timeout in seconds for the find operation. If this is
-reached, execution is ended and a partial result is returned.
-
 - `on_enter`: If given, this function is invoked each time a new directory is
 entered (including the first one). The function is passed the directory to
 enter, as well as the found files so far. This function can also optionally

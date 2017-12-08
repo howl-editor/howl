@@ -209,16 +209,9 @@ class File extends PropertyObject
     directories = {}
     dir = self
 
-    local deadline
-    if options.timeout
-      deadline = glib.get_monotonic_time! + (1000 * 1000 * options.timeout)
-
     on_enter = options.on_enter
 
     while dir
-      if deadline and glib.get_monotonic_time! >= deadline
-        return files, true
-
       if on_enter and 'break' == on_enter(dir, files)
         return files, true
 
