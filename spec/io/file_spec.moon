@@ -36,7 +36,7 @@ describe 'File', ->
     it 'expands "~" into the full path of the home directory', ->
       assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '~/foo.txt')
 
-  describe 'new(p, cwd)', ->
+  describe 'new(p, cwd, opts = {})', ->
     it 'accepts a string as denothing a path', ->
       File '/bin/ls'
 
@@ -54,6 +54,10 @@ describe 'File', ->
 
       it 'accepts other Files as <cwd>', ->
         assert.equal '/bin/ls', File('ls', File('/bin')).path
+
+    it "accepts an optional type specifying the file's type", ->
+      f = File '/notherenothere', nil, type: File.TYPE_DIRECTORY
+      assert.is_true f.is_directory
 
   describe '.is_absolute', ->
     it 'returns true if the given path is absolute', ->

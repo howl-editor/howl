@@ -18,6 +18,13 @@ file_types = {
 }
 
 class File extends PropertyObject
+  TYPE_DIRECTORY: GFileInfo.TYPE_DIRECTORY
+  TYPE_SYMBOLIC_LINK: GFileInfo.TYPE_SYMBOLIC_LINK
+  TYPE_SPECIAL: GFileInfo.TYPE_SPECIAL
+  TYPE_REGULAR: GFileInfo.TYPE_REGULAR
+  TYPE_MOUNTABLE: GFileInfo.TYPE_MOUNTABLE
+  TYPE_UNKNOWN: GFileInfo.TYPE_UNKNOWN
+
   @async: false
 
   tmpfile: ->
@@ -74,11 +81,11 @@ class File extends PropertyObject
 
   @property extension: get: => @basename\match('%.([^.]+)$')
   @property uri: get: => @gfile.uri
-  @property is_directory: get: => @exists and @_file_type == GFileInfo.TYPE_DIRECTORY
-  @property is_link: get: => @exists and @_file_type == GFileInfo.TYPE_SYMBOLIC_LINK
-  @property is_special: get: => @exists and @_file_type == GFileInfo.TYPE_SPECIAL
-  @property is_regular: get: => @exists and @_file_type == GFileInfo.TYPE_REGULAR
-  @property is_mountable: get: => @exists and @_file_type == GFileInfo.TYPE_MOUNTABLE
+  @property is_directory: get: => @_has_file_type GFileInfo.TYPE_DIRECTORY
+  @property is_link: get: => @_has_file_type GFileInfo.TYPE_SYMBOLIC_LINK
+  @property is_special: get: => @_has_file_type GFileInfo.TYPE_SPECIAL
+  @property is_regular: get: => @_has_file_type GFileInfo.TYPE_REGULAR
+  @property is_mountable: get: => @_has_file_type GFileInfo.TYPE_MOUNTABLE
   @property is_hidden: get: => @exists and @_info!.is_hidden
   @property is_backup: get: => @exists and @_info!.is_backup
   @property size: get: => @_info!.size
@@ -246,6 +253,12 @@ class File extends PropertyObject
   @property _file_type: get: =>
     @_ft or= @_info!.filetype
     @_ft
+
+  _has_file_type: (t) =>
+    return @_ft == t if @_ft != nil
+    return false unless @exists
+    @_ft = @_info!.filetype
+    @_ft == t
 
   @meta {
     __tostring: => @tostring!
