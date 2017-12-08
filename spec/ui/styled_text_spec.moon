@@ -22,6 +22,10 @@ describe 'StyledText', ->
     assert.equal 'foobar', st .. 'bar'
     assert.equal 'barfoo', 'bar' .. st
 
+  it 'can be instantiated using a string-style instead of a style table', ->
+    st = StyledText('foo', 'style')
+    assert.same {1, 'style', 4}, st.styles
+
   it 'can be concatenated with StyledText to produce StyledText', ->
     st1 = StyledText('foö', {1, 'string', 5})
     st2 = StyledText('1234', {1, 'number', 5})

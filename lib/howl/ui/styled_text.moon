@@ -147,4 +147,7 @@ for_table = (items, columns=nil) ->
 
 setmetatable { :for_table },
   __call: (text, styles) =>
+    if type(styles) == 'string'
+      styles = {1, styles, #text + 1}
+
     setmetatable {:text, :styles}, styled_text_mt

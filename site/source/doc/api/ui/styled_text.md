@@ -23,11 +23,14 @@ _See also_:
 
 ## Constructors
 
-### StyledText (text, styles)
+### StyledText (text, styles_or_style)
 
-Creates a new `StyledText` instance, holding the specified `text` and `styles`.
-Here `text` is a string containing the content and `styles` is a table described
-in [properties](#properties) below.
+Creates a new `StyledText` instance, holding the specified `text` and
+`styles_or_style`. Here `text` is a string containing the content and
+`styles_or_style` is either a string specifying a single style or a table as
+described in [properties](#properties) below. When `styles_or_style` is passed
+as a string a correct [styles](#styles) will automatically be generated for the
+StyledText object.
 
 ### StyledText.for_table (items, columns=nil)
 
