@@ -1,8 +1,8 @@
 glib = require 'ljglibs.glib'
-import activities, config from howl
-import File from howl.io
-import icon, markup from howl.ui
-import Matcher from howl.util
+{:activities, :config} = howl
+{:File} = howl.io
+{:icon, :StyledText} = howl.ui
+{:Matcher} = howl.util
 
 append = table.insert
 separator = File.separator
@@ -39,12 +39,12 @@ should_hide = (file) ->
 
 display_name = (file, is_directory, base_directory) ->
   if file == base_directory
-    return markup.howl "<directory>.#{separator}</>"
+    return StyledText(".#{separator}", 'directory')
   rel_path = file\relative_to_parent(base_directory)
   if is_directory
-    return markup.howl "<directory>#{rel_path .. separator}</>"
+    return StyledText(rel_path .. separator, 'directory')
   else
-    return markup.howl "<filename>#{rel_path}</>"
+    return StyledText(rel_path, 'filename')
 
 display_icon = (is_directory) ->
   is_directory and icon.get('directory', 'directory') or icon.get('file', 'filename')
@@ -95,8 +95,8 @@ file_matcher = (files, directory, allow_new=false) ->
 
     if should_hide file
       hidden_by_config[file.basename] = {
-        markup.howl("<comment>#{name}</>"),
-        markup.howl("<comment>[hidden]</>"),
+        StyledText(tostring(name), 'comment'),
+        StyledText('[hidden]', 'comment'),
         :file
         name: tostring(name)
         :is_directory,
@@ -143,7 +143,7 @@ file_matcher = (files, directory, allow_new=false) ->
 
     append matches, {
       text,
-      markup.howl '<keyword>[New]</>'
+      StyledText('[New]', 'keyword')
       file: directory / text
       name: text
       is_new: true
