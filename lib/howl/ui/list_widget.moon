@@ -28,6 +28,7 @@ class ListWidget extends PropertyObject
   new: (@matcher, opts={}) =>
     super!
     @opts = moon.copy opts
+    @partial = false
     @text_widget = TextWidget opts
 
     with @opts
@@ -132,7 +133,8 @@ class ListWidget extends PropertyObject
 
     status = '(no items)'
     if last_idx > 0
-      status = "showing #{@page_start_idx} to #{last_idx} out of #{#@_items}"
+      qualifier = @partial and '+' or ''
+      status = "showing #{@page_start_idx} to #{last_idx} out of #{#@_items}#{qualifier}"
       @text_widget.buffer\append '[..] ', 'comment'
 
     @text_widget.buffer\append status, 'comment'
@@ -280,7 +282,7 @@ class ListWidget extends PropertyObject
   hide: => @text_widget\hide!
 
   update: (match_text, preserve_position=false) =>
-    items = self.matcher match_text
+    items, @partial = self.matcher match_text
     current_idx = @selected_idx
 
     if @opts.reverse

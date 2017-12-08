@@ -83,30 +83,41 @@ class Matcher
     return [c for c in *@candidates] if not search or search.is_empty
 
     search = search.ulower
-    matches = @cache.matches[search] or {}
-    if #matches > 0 then return matches
+    matches = @cache.matches[search]
+    if matches then return matches
+    matches = {}
 
     lines = @cache.lines[search\usub 1, -2] or @lines
     matching_lines = {}
     matcher = create_matcher search, @options.reverse
+    partial = false
+
+    partial_limit = #@lines > 1100 and 1000 or 1100
 
     for line in *lines
       text = line.text
       continue if #text < #search
       type, match = matcher text, line.case_text
+
       if match
+        if #matches >= partial_limit
+          partial = true
+          break
+
         score = score_for match, text, type, @options.reverse, @base_score
         append matches, index: line.index, :score
         append matching_lines, line
-
-    @cache.lines[search] = matching_lines
 
     unless @options.preserve_order
       table.sort matches, (a ,b) -> a.score < b.score
 
     matching_candidates = [@candidates[match.index] for match in *matches]
-    @cache.matches[search] = matching_candidates
-    matching_candidates
+
+    unless partial
+      @cache.lines[search] = matching_lines
+      @cache.matches[search] = matching_candidates
+
+    matching_candidates, partial
 
   explain: (search, text, options = {}) ->
     how, match = create_matcher(search, options.reverse)(text.ulower, text)

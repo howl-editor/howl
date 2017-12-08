@@ -154,3 +154,26 @@ describe 'Matcher', ->
       c = {'xabx0', 'ax_bx1', 'xabx2', 'ax_bx3'}
       m = Matcher c, preserve_order: true
       assert.same c, m('ab')
+
+  describe 'for large data sets', ->
+    it 'returns a partial match when more than 1000 items match', ->
+      items = for i  = 1, 2000
+        "item-#{i}"
+
+      m = Matcher items
+      matches, partial = m('item')
+      assert.equals 1000, #matches
+      assert.is_true partial
+
+      matches, partial = m('item-123')
+      assert.is_true #matches < 1000
+      assert.is_false partial
+
+    it 'allows slightly more than 1000 when the alternative would be irritating', ->
+      items = for i  = 1, 1100
+        "item-#{i}"
+
+      m = Matcher items
+      matches, partial = m('item')
+      assert.equals 1100, #matches
+      assert.is_false partial
