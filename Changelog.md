@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Dart bundle enhancements: improved syntax highlighting
+
 - Added support for activities - potentially longer running activities that
 should run in a apparently blocking way to the user. Example: Loading files from
 larger directories will now be run as a user visible and user cancellable
