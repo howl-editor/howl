@@ -6,7 +6,9 @@
  end of comment */
 
 // import
-import 'package:subpackage/file.dart';
+import 'package:subpackage/file1.dart' show x hide z;
+import 'package:subpackage/file2.dart' as y;
+export 'package:subpackage/file3.dart';
 
 // basic function
 void main() {
@@ -31,7 +33,15 @@ void main() {
   this one has "double quotes" and double double ""
   line two
   """;
-  var raw_string = r'raw string' ;
+  var raw_string = r'raw string';
+
+  var interpolated_string = 'text $variable \$nointerpol ${expr+1}';
+  var multi_line_interpolated_string = """
+  text here
+    ${"nested strings".toUpperCase()}
+  text here
+  """;
+
 
   // modifiers const and final
   const pi = 3.14;
@@ -44,7 +54,7 @@ void main() {
     'key': 'value',   // string key
     'k2': 'value2',
     2: 'value3',      // numeric key
-  }
+  };
 
   // symbols
   var s = #symbola;
@@ -122,7 +132,7 @@ enum Color {
 class MySubClass extends SomeBaseClass implements Interface{
 
   // method
-  ReturnType methodname(int arg1) {
+  List<X.ReturnType> methodname(int arg1) {
     super.methodname();
     return new ReturnType(arg1);
   }
