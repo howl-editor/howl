@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Ensure scrolling works correctly for Gtk+ 3.4
+
 - Dart bundle enhancements: improved syntax highlighting
 
 - Added support for activities - potentially longer running activities that
