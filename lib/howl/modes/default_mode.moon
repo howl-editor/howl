@@ -5,6 +5,7 @@ import config, mode from howl
 import formatting from howl.editing
 import style from howl.ui
 append = table.insert
+{:huge, :max, :min} = math
 
 is_comment = (line, comment_prefix) ->
   line\umatch r"^\\s*#{r.escape comment_prefix}"
@@ -55,13 +56,18 @@ class DefaultMode
     tab_expansion = string.rep ' ', buffer.config.tab_width
 
     editor\transform_active_lines (lines) ->
-      min_indent = math.huge
-      min_indent = math.min(min_indent, l.indentation) for l in *lines when not l.is_blank
+      min_indent = huge
+      for l in *lines
+        unless l.is_blank
+          min_indent = min(min_indent, l.indentation)
 
       for line in *lines
         unless line.is_blank
           text = line\gsub '\t', tab_expansion
           new_text = text\usub(1, min_indent) .. prefix .. text\usub(min_indent + 1) .. suffix
+          if buffer.config.use_tabs
+            new_text = new_text\gsub(tab_expansion, '\t')
+
           line.text = new_text
 
     cursor.column = current_column + #prefix unless current_column == 1
@@ -87,7 +93,7 @@ class DefaultMode
           cursor_delta = middle_start - pfx_start if line == cur_line
 
     if cursor_delta
-      cursor.column = math.max 1, current_column - cursor_delta
+      cursor.column = max 1, current_column - cursor_delta
 
   toggle_comment: (editor) =>
     prefix, _ = @_comment_pair!
@@ -125,7 +131,7 @@ class DefaultMode
 
           if cur_line and cur_line\match '%a'
             level = cur_line.indentation / buf_indent
-            max_level = math.max level, max_level
+            max_level = max level, max_level
             line_levels[level] = 1 + (line_levels[level] or 0)
             append lines, { line: cur_line, :level }
 

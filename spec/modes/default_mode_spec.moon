@@ -197,6 +197,13 @@ describe 'DefaultMode', ->
     liñe 3
   ]], buffer.text
 
+      it 'honor leading tabs when use_tabs is true', ->
+        buffer.config.use_tabs = true
+        buffer.text = '\tline1\n'
+        cursor.pos = 1
+        mode\comment editor
+        assert.equal '<TAB>-- line1\n', buffer.text\gsub('\t', '<TAB>')
+
       it 'keeps the cursor position', ->
         editor.selection.cursor = lines[3].start_pos + 2
         mode\comment editor
@@ -266,6 +273,13 @@ describe 'DefaultMode', ->
     -- liñe 2
     --liñe 3
 ]], buffer.text
+
+      it 'honor leading tabs when use_tabs is true', ->
+        buffer.config.use_tabs = true
+        buffer.text = '\t-- line1\n'
+        cursor.pos = 1
+        mode\uncomment editor
+        assert.equal '<TAB>line1\n', buffer.text\gsub('\t', '<TAB>')
 
       it 'keeps the cursor position', ->
         editor.selection.cursor = lines[2].start_pos + 6

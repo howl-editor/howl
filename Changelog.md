@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Respect use_tabs option when commenting
+
 - Ensure scrolling works correctly for Gtk+ 3.4
 
 - Dart bundle enhancements: improved syntax highlighting
