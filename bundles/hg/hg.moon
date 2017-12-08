@@ -1,8 +1,9 @@
 -- support for the Mercurial (hg) SCM - see https://www.mercurial-scm.org/
 
 {:activities, :config} = howl
-{:Process} = howl.io
+{:File, :Process} = howl.io
 {:sort} = table
+TYPE_REGULAR = File.TYPE_REGULAR
 
 class Hg
   new: (root, hg_dir) =>
@@ -23,9 +24,11 @@ class Hg
 
       status = "Loading files from hg entries"
       sort out_lines
+      groot = @root.gfile
       return for i = 1, #out_lines
         activities.yield! if i % 1000 == 0
-        @root\join(out_lines[i])
+        gfile = groot\get_child(out_lines[i])
+        File gfile, nil, type: TYPE_REGULAR
 
   diff: (file) =>
     p = @_get_process 'diff', '--git', file

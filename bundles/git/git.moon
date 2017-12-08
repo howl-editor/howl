@@ -1,5 +1,6 @@
 {:config, :activities} = howl
-{:Process} = howl.io
+{:File, :Process} = howl.io
+TYPE_REGULAR = File.TYPE_REGULAR
 
 class Git
   new: (root) =>
@@ -23,11 +24,13 @@ class Git
         error "(git in '#{@root}'): #{table.concat(err_lines, '\n')}"
 
       status = "Loading files from Git entries"
+      groot = @root.gfile
       return for i = 1, #out_lines
         activities.yield! if i % 1000 == 0
         line = out_lines[i]
         continue if line\ends_with('/')
-        @root\join(line)
+        gfile = groot\get_child(line)
+        File gfile, nil, type: TYPE_REGULAR
 
   diff: (file) =>
     p = @_get_process 'diff', file
