@@ -53,7 +53,19 @@ create_matcher = (search, reverse) ->
   boundary_p = boundary_pattern search, reverse
   case_boundary_p = case_boundary_pattern search, reverse
 
+  {:find, :sub} = string
+
+  possible_match = (item) ->
+    pos = 1
+    for i = 1, #search
+      p = find item, sub(search, i, i), pos, true
+      return false unless p
+      pos = p + 1
+
+    true
+
   (text, case_text) ->
+    return nil unless possible_match(text)
     match = { boundary_p\match text }
     return 'boundary', match if #match > 0
     match = { case_boundary_p\match case_text }
