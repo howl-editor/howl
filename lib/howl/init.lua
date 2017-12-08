@@ -12,7 +12,8 @@ Where options can be any of:
   --reuse       Opens any named files in an existing instance of Howl, if present
   --compile     Compiles the given files to bytecode
   --lint        Lints the given files
-  --run         Loads and runs the specified file from within Howl
+  --run         Loads and runs the specified file from within a Howl context
+  --run-async   Loads and runs the specified file from within a async Howl context
   --no-profile  Starts Howl without loading any user profile (settings, etc)
   --spec        Runs the specified Howl spec file(s)
   -h, --help    This help
@@ -31,6 +32,7 @@ local function parse_args(arg_vector)
     ['--no-profile'] = 'no_profile',
     ['--spec'] = 'spec',
     ['--run'] = 'run',
+    ['--run-async'] = 'run_async',
     ['-v'] = 'version',
     ['--version'] = 'version'
   }
@@ -203,9 +205,20 @@ local function main()
       local support = assert(loadfile(app_root .. '/spec/support/spec_helper.moon'))
       support()
       busted()
-    elseif args.run then
+    elseif args.run or args.run_async then
       local chunk = assert(loadfile(args[2]))
-      chunk(table.unpack(args, 3))
+      if args.run then
+        chunk(table.unpack(args, 3))
+      else
+        local co = coroutine.create(chunk)
+        local status, err = coroutine.resume(co, table.unpack(args, 3))
+        if not status then
+          error(err)
+        end
+        while coroutine.status(co) ~= 'dead' do
+          howl.app:pump_mainloop()
+        end
+      end
     else
       howl.app:run()
     end

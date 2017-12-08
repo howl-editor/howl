@@ -61,8 +61,6 @@ core.define 'GtkWidget < GObject', {
 
     -- Added properties
     in_destruction: => C.gtk_widget_in_destruction(@) != 0
-
-    -- added properties
     screen: => ref_ptr C.gtk_widget_get_screen @
     style_context: => ref_ptr C.gtk_widget_get_style_context @
     pango_context: => C.gtk_widget_get_pango_context @

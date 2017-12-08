@@ -352,6 +352,38 @@ describe 'File', ->
 
           assert.same { 'child1', 'sandwich.lua' }, [f.basename for f in *files]
 
+    context 'when the on_enter parameter is given', ->
+      it 'is called once for each directory with the dir and files so far', ->
+        with_populated_dir (dir) ->
+          dirs = {}
+          total_files = 0
+          dir\find on_enter: (enter_dir, files) ->
+            dirs[#dirs + 1] = enter_dir
+            total_files = files
+
+          assert.equal 3, #dirs
+          assert.equal 6, #total_files
+          table.sort dirs
+          assert.same {
+            dir,
+            dir\join('child1'),
+            dir\join('child1')\join('sub_dir'),
+          }, dirs
+
+      context 'and it returns "break"', ->
+        it 'causes an early return', ->
+          with_populated_dir (dir) ->
+            files, cancelled = dir\find on_enter: (enter_dir, files) ->
+              if enter_dir.basename == 'child1'
+                return 'break'
+
+            assert.equal true, cancelled
+            table.sort files
+            assert.same {
+              dir\join('child1'),
+              dir\join('child2'),
+            }, files
+
   describe 'copy(dest)', ->
     it 'copies the given file', ->
       with_tmpdir (dir) ->

@@ -1,8 +1,8 @@
 -- support for the Mercurial (hg) SCM - see https://www.mercurial-scm.org/
 
-import config from howl
-Process = howl.io.Process
-append = table.insert
+{:activities, :config} = howl
+{:Process} = howl.io
+{:sort} = table
 
 class Hg
   new: (root, hg_dir) =>
@@ -11,23 +11,47 @@ class Hg
     @name = 'Hg'
 
   files: =>
-    output = @run 'status', '--no-status', '-acmu'
+    p = @_get_process 'status', '--no-status', '-acmu'
+    status = "$ #{p.command_line}"
+    activities.run {
+      title: "Reading Git entries from '#{@root}'",
+      status: -> status,
+    }, ->
+      out_lines, err_lines = p\pump_lines!
+      unless p.successful
+        error "(hg in '#{@root}'): #{table.concat(err_lines, '\n')}"
 
-    hg_files = {}
-    for path in output\gmatch '[^\n]+'
-      file = @root\join path
-      append hg_files, file if file.exists and not file.is_directory
-
-    table.sort hg_files
-    hg_files
+      status = "Loading files from hg entries"
+      sort out_lines
+      return for i = 1, #out_lines
+        activities.yield! if i % 1000 == 0
+        @root\join(out_lines[i])
 
   diff: (file) =>
-    d = @run 'diff', '--git', file
-    not d.is_blank and d or nil
+    p = @_get_process 'diff', '--git', file
+    out, err = activities.run_process {
+      title: "Loading Hg diff for '#{file}'"
+    }, p
+    unless p.successful
+      error "(hg diff for '#{file}'): #{err or 'Failed to execute'}"
+
+    not out.is_blank and out or nil
 
   run: (...) =>
+    p = @_get_process ...
+    stdout, stderr = p\pump!
+    unless p.successful
+      error "(hg in '#{@root}'): #{stderr or 'Failed to execute'}"
+
+    stdout
+
+  _get_process: (...) =>
     exec_path = config.hg_path or 'hg'
     argv = { exec_path, ... }
-    out, err, process = Process.execute argv, working_directory: @root
-    error "(hg in '#{@root}'): #{err or 'Failed to execute'}" unless process.successful
-    out
+    Process {
+      cmd: argv,
+      working_directory: @root,
+      read_stdout: true,
+      read_stderr: true,
+    }
+

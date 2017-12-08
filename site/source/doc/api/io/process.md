@@ -147,15 +147,15 @@ is a string.
 An error will be raised if the specified command could not be started. Otherwise
 a process object is returned for the started command.
 
-### execute(cmd, options = {})
+### open_pipe(cmd, options = {})
 
-Executes a process for `cmd` and returns the results in one go. `cmd` can be
-either a string, in which case it's executed using `/bin/sh`, or a table
-comprising the full command line invocation. `options`, a optional table of
-options, can contain the following optional fields:
+Creates a process for `cmd`, setup for piping (enabling reading of both stdout
+and stderr). `cmd` can be either a string, in which case it's executed using
+`/bin/sh`, or a table comprising the full command line invocation. `options`, a
+optional table of options, can contain the following optional fields:
 
 - `stdin`: When specified, the contents of this field will be written as the
-process' input.
+process' input before the process is returned.
 
 - `working_directory`: The path to set as the process' working directory.
 
@@ -166,6 +166,32 @@ environment.
 command. The specified shell will be invoked with the `-c` parameter, with the
 command parameters directly following. This parameter is only respected if `cmd`
 is a string.
+
+An error will be raised if the specified command could not be started, or if an
+IO error occurs. Otherwise the function returns the created process object,
+which can for instance be used together with [pump](#pump).
+
+Examples of valid invocations:
+
+```moonscript
+howl.io.Process.open_pipe 'echo "foo bar"'
+
+howl.io.Process.open_pipe {'sh', '-c', 'echo foo >&2' }
+
+howl.io.Process.open_pipe 'pwd', working_directory: '/bin'
+
+howl.io.Process.open_pipe 'env', env: { foo: 'bar' }
+
+howl.io.Process.open_pipe 'cat', stdin: 'give it back!'
+```
+
+### execute(cmd, options = {})
+
+Executes a process for `cmd` and returns the results in one go. This is
+basically a convenience wrapper that internally creates a new process using
+[open_pipe](#open_pipe) and reads its output using [pump](#pump). Both `cmd` and
+`options` are the same as for [pump](#pump) so consult that documentation for
+the available options.
 
 An error will be raised if the specified command could not be started, or if an
 IO error occurs. Otherwise the function returns three values: The standard
@@ -207,7 +233,7 @@ streams are closed the handlers will be invoked a final time with nil,
 signifying end-of-file.
 
 Any of the two handlers (`on_stdout` and `on_stderr`), or both, can be omitted.
-In this case any output from the related stream is collected and returned as a a
+In this case any output from the related stream is collected and returned as a
 return value from `pump`, with stdout being returned before stderr. For example,
 invoking `pump` without arguments for a process opened with the `read_stdout`
 and the `read_stderr` flags would collect both stdout and stderr and return
@@ -223,6 +249,38 @@ p\pump!
 p = howl.io.Process cmd: 'echo out; echo err >&2', read_stdout: true
 p\pump!
 -- => "out\n", nil
+
+```
+
+### pump_lines ([on_stdout, on_stderr])
+
+"Pumps" the process for any output, returning any output as individual lines.
+Similarly to [pump](#pump) the method reads any output from the process and
+returns once the process has exited. Also similarly you need to create the
+process with the corresponding `read_*` flags in order to read any output -
+`read_stdout` to capture stdout, and `read_stderr` to capture stderr.
+
+The `on_stdout` and `on_stderr` handlers, if specified, will be invoked as soon
+as any individual lines from the respective stream is available from the
+process, receiving as their sole argument the output as a table of lines.
+
+Any of the two handlers (`on_stdout` and `on_stderr`), or both, can be omitted.
+In this case any output from the related stream is collected and returned as a
+return value from `pump_lines`, with stdout being returned before stderr. For
+example, invoking `pump` without arguments for a process opened with the
+`read_stdout` and the `read_stderr` flags would collect both stdout and stderr
+and return (`stdout_lines`, `stderr_lines`) as the return values.
+
+Example:
+
+```moonscript
+p = howl.io.Process cmd: 'echo "one\ntwo|; echo err >&2', read_stdout: true, read_stderr: true
+p\pump!
+-- => {'one', 'two'}, {'err'}
+
+p = howl.io.Process cmd: 'echo "one\ntwo"; echo err >&2', read_stdout: true
+p\pump!
+-- => {'one', 'two'}, nil
 
 ```
 

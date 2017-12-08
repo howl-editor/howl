@@ -193,7 +193,6 @@
       'howl_main_ctx'
       'it',
       'moon',
-      'pump_mainloop',
       'set_howl_loop',
       'settimeout',
       'setup',

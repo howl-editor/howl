@@ -1,5 +1,5 @@
 glib = require 'ljglibs.glib'
-import config from howl
+import activities, config from howl
 import File from howl.io
 import icon, markup from howl.ui
 import Matcher from howl.util
@@ -154,33 +154,50 @@ file_matcher = (files, directory, allow_new=false) ->
     return matches
 
 subtree_matcher = (files, directory, opts={}) ->
-  paths = {}
+  loader = ->
+    paths = {}
 
-  for file in *files
-    continue if should_hide file
-    is_directory = file.is_directory
-    continue if opts.exclude_directories and is_directory
-    name = display_name(file, is_directory, directory)
-    if config.file_icons
-      append paths, {
-        display_icon(is_directory)
-        name
-        :file
-        name: tostring(name)
-      }
-    else
-      append paths, {
-        name
-        :file
-        name: tostring(name)
-      }
+    for file in *files
+      continue if should_hide file
+      is_directory = file.is_directory
+      continue if opts.exclude_directories and is_directory
+      name = display_name(file, is_directory, directory)
+      if config.file_icons
+        append paths, {
+          display_icon(is_directory)
+          name
+          :file
+          name: tostring(name)
+        }
+      else
+        append paths, {
+          name
+          :file
+          name: tostring(name)
+        }
 
-  return Matcher paths
+    return Matcher paths
+
+  activities.run {
+    title: "Loading files from '#{directory}'"
+    status: -> "Preparing #{#files} paths for selection.."
+    preempt: true
+  }, loader
 
 subtree_reader = (directory, opts={}) ->
-  directory\find
-    sort: true
-    timeout: opts.timeout
-    filter: (file) -> should_hide(file) or opts.filter and opts.filter(file)
+  files_found = 0
+  cancel = false
+
+  activities.run {
+    title: "Scanning '#{directory}'"
+    status: -> "Reading files.. (#{files_found} files read)"
+    cancel: -> cancel = true
+  }, ->
+    directory\find
+      sort: true
+      filter: (file) -> should_hide(file) or opts.filter and opts.filter(file)
+      on_enter: (dir, files) ->
+        files_found = #files
+        return 'break' if cancel
 
 return { :file_matcher, :get_cwd, :get_dir_and_leftover, :subtree_matcher, :subtree_reader }

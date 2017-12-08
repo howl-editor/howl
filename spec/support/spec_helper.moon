@@ -97,12 +97,6 @@ export howl_async = (f) ->
   status, err = coroutine.resume co
   error err unless status
 
-export pump_mainloop = ->
-  jit.off true, true
-  count = 0
-  while count < 100 and C.g_main_context_iteration(howl_main_ctx, false) != 0
-    count += 1
-
 export within_activity = (activity_function, on_show) ->
   command_line = howl.app.window.command_line
   command_line.orig_show = command_line.show

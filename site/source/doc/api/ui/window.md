@@ -13,8 +13,9 @@ examples of this.
 
 A window has, apart from the grid components described above, always two
 graphical elements associated with it; A [Status] instance used for displaying
-informational message to the user, and a [CommandLine] instance allowing for user
-input.
+informational message to the user, and a [CommandLine] instance allowing for
+user input. It can also optionally display arbitrary widgets at the bottom via
+the use of [push_widget].
 
 The currently focused window is accessible as
 [Application.window](../application.html#window).
@@ -83,6 +84,47 @@ reference to an [Editor]. Should you need to map a particular view to an
 
 ## Methods
 
+### add_view (view, placement = 'right_of', anchor = @focus_child)
+
+Adds `view` to the grid. If `view` is not a Gtk view, it's automatically cast
+using the view's `to_gobject`, if it's present. `placement` specifies where to
+place the view in the grid, relative to `anchor` which should be an existing
+view in the grid. Valid values for `placement` are:
+
+- `left_of`: Places the view left of `anchor`
+- `right_of`: Places the view right of `anchor`.
+- `above`: Places the view above `anchor`.
+- `below`:Places the view below `anchor`.
+
+### add_widget (widget)
+
+Adds the specified widget `widget` to the window's widget area (lower part).
+Call [remove_widget] to remove the widget later.
+
+### get_view (o)
+
+Gets the view information for the object `o`. The return value is a table with
+same fields as is documented in [views](#views). Returns `nil` if `o` is not in
+the window grid.
+
+### remember_focus ()
+
+Remember the currently focused view as the focussed view until the focus
+switches to another view in the grid. This means even when the focus switches to
+a view outside the grid, peroperties and methods that use the current view - for
+example, [`current_view`](#current_view) - will continue to use the remembered
+view.
+
+### remove_view (view = nil)
+
+Removes the specified `view`, or the currently focused view if not specified,
+from the grid.
+
+### remove_widget (widget)
+
+Removes the specified widget `widget` (which should have been previously added
+using [add_widget]) from the window's widget area.
+
 ### siblings (view, wraparound = false)
 
 Returns a a table of siblings for `view`, which should be a Gtk view. The
@@ -99,37 +141,8 @@ siblings will wrap around in a left-to-right, top-to-bottom order fashion.
 
 Returns the underlying Gtk window.
 
-### add_view (view, placement = 'right_of', anchor = @focus_child)
-
-Adds `view` to the grid. If `view` is not a Gtk view, it's automatically cast
-using the view's `to_gobject`, if it's present. `placement` specifies where to
-place the view in the grid, relative to `anchor` which should be an existing
-view in the grid. Valid values for `placement` are:
-
-- `left_of`: Places the view left of `anchor`
-- `right_of`: Places the view right of `anchor`.
-- `above`: Places the view above `anchor`.
-- `below`:Places the view below `anchor`.
-
-### remember_focus ()
-
-Remember the currently focussed view as the focussed view until the focus
-switches to another view in the grid. This means even when the focus switches to
-a view outside the grid, peroperties and methods that use the current view - for
-example, [`current_view`](#current_view) - will continue to use the remembered
-view.
-
-### remove_view (view = nil)
-
-Removes the specified `view`, or the currently focused view if not specified,
-from the grid.
-
-### get_view (o)
-
-Gets the view information for the object `o`. The return value is a table with
-same fields as is documented in [views](#views). Returns `nil` if `o` is not in
-the window grid.
-
 [CommandLine]: command_line.html
 [Editor]: editor.html
 [Status]: status.html
+[push_widget]: #push_widget
+[remove_widget]: #remove_widget

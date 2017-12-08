@@ -16,7 +16,7 @@ describe 'Cursor', ->
     window = Gtk.OffscreenWindow default_width: 800, default_height: 640
     window\add view\to_gobject!
     window\show_all!
-    pump_mainloop!
+    howl.app\pump_mainloop!
 
   describe '.style', ->
     it 'is "line" by default', ->

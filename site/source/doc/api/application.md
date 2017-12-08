@@ -108,6 +108,12 @@ active editor. Emits the `file-opened` signal if the file was opened
 successfully. If the file was successfully opened, returns the [Buffer] and the
 [Editor] holding the buffer. Otherwise `nil` is returned.
 
+### pump_mainloop(max_count = 100)
+
+Explicitly runs Howl's main loop, at most `max_count` number of iterations. The
+number of actual iterations might be lower than `max_count`, should there not
+exist any work to do.
+
 ### save_all ()
 
 Saves all modified buffers in one go.

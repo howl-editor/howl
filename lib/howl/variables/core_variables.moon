@@ -67,5 +67,12 @@ config.define {
   validate: (v) ->
     return false unless type(v) == 'number'
     v >= 500
+}
 
+config.define {
+  name: 'activities_popup_delay'
+  description: 'The delay before a popup is displayed for a running activity (ms)'
+  type_of: 'number'
+  default: 700
+  scope: 'global'
 }

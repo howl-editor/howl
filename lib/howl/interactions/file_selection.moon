@@ -61,11 +61,11 @@ class FileSelector
     @directory = directory
     local matcher
     if @show_subtree
-      items, timed_out = self.subtree_reader(directory, timeout: 3)
+      items, timed_out = self.subtree_reader(directory)
       matcher = subtree_matcher items, directory
       if timed_out
         @command_line.title = (@opts.title or 'File') .. ' (recursive, truncated)'
-        log.warn 'Too many files in recursive listing - truncated.'
+        log.warn 'File scan interrupted - truncated listing.'
       else
         @command_line.title = (@opts.title or 'File') .. ' (recursive)'
     else

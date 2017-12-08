@@ -32,6 +32,16 @@ describe 'Process', ->
       p = Process cmd: 'foo', shell: '/bin/echo'
       assert.same { '/bin/echo', '-c', 'foo'}, p.argv
 
+  describe 'Process.open_pipe(cmd, opts)', ->
+    it 'creates a process set up for piping', (done) ->
+      howl_async ->
+        p = Process.open_pipe {'sh', '-c', 'cat; echo foo >&2'}, stdin: 'reverb'
+        out, err = p\pump!
+        assert.equal 'reverb', out
+        assert.equal 'foo\n', err
+        assert.equal 'Process', typeof(p)
+        done!
+
   describe 'Process.execute(cmd, opts)', ->
     it 'executes the specified command and return <out, err, process>', (done) ->
       howl_async ->
@@ -133,6 +143,74 @@ describe 'Process', ->
         stdout, stderr = p\pump!
         assert.equals 'out\n', stdout
         assert.equals 'err\n', stderr
+
+  describe 'pump_lines(on_stdout, on_stderr)', ->
+    it 'invokes the handler for any stdout output before returning', (done) ->
+      howl_async ->
+        on_stdout = spy.new -> nil
+        p = Process cmd: 'echo "foo\nbar"', read_stdout: true
+        p\pump_lines on_stdout
+        assert.is_true p.exited
+        assert.spy(on_stdout).was_called_with {'foo', 'bar'}
+        done!
+
+    it 'invokes the handler for any stderr output before returning', (done) ->
+      howl_async ->
+        on_stderr = spy.new -> nil
+        p = Process cmd: 'echo "err1\nerr2" >&2', read_stderr: true
+        p\pump_lines nil, on_stderr
+        assert.is_true p.exited
+        assert.spy(on_stderr).was_called_with {'err1', 'err2'}
+        done!
+
+    it 'handles CRLFs', (done) ->
+      howl_async ->
+        on_stdout = spy.new -> nil
+        p = Process cmd: 'echo "one\r\ntwo"', read_stdout: true
+        p\pump_lines on_stdout
+        assert.spy(on_stdout).was_called_with {'one', 'two'}
+        done!
+
+    it 'returns empty lines as empty lines', (done) ->
+      howl_async ->
+        on_stdout = spy.new -> nil
+        p = Process cmd: 'echo "one\n\nthree"', read_stdout: true
+        p\pump_lines on_stdout
+        assert.spy(on_stdout).was_called_with {'one', '', 'three'}
+        done!
+
+    it 'assembles lines correctly for larger reads', (done) ->
+      howl_async ->
+        File.with_tmpfile (f) ->
+          lines = ["line #{i}" for i = 1, 4000]
+          f.contents = table.concat lines, '\n'
+          passed_lines = {}
+          on_stdout = (_lines) ->
+            for l in *_lines
+              table.insert passed_lines, l
+
+          p = Process cmd: "cat '#{f.path}'", read_stdout: true
+          p\pump_lines on_stdout
+          for i = 1, 4000
+            assert.equal lines[i], passed_lines[i]
+          done!
+
+    context 'when handlers are not specified', ->
+      it 'collects and returns <out> and <err> output as lines', ->
+        p = Process cmd: 'echo "one\ntwo"', read_stdout: true
+        stdout, stderr = p\pump_lines!
+        assert.same {'one', 'two'}, stdout
+        assert.equals 0, #stderr
+
+        p = Process cmd: 'echo "one\ntwo" >&2', read_stderr: true
+        stdout, stderr = p\pump_lines!
+        assert.same {'one', 'two'}, stderr
+        assert.equals 0, #stdout
+
+        p = Process cmd: 'echo "one\ntwo"; echo "three" >&2', read_stdout: true, read_stderr: true
+        stdout, stderr = p\pump_lines!
+        assert.same {'one', 'two'}, stdout
+        assert.same {'three'}, stderr
 
   describe 'wait()', ->
     it 'waits until the process is finished', (done) ->
