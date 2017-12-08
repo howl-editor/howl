@@ -44,6 +44,8 @@ editor_config_vars = {
 
 aullar_config_vars = {
   cursor_blink_interval: 'cursor_blink_interval'
+  scroll_speed_x: 'scroll_speed_x'
+  scroll_speed_y: 'scroll_speed_y'
   indent: 'view_indent'
   tab_width: 'view_tab_size'
   font_name: 'view_font_name'
@@ -1055,6 +1057,18 @@ with config
     name: 'cursor_blink_interval'
     description: 'The rate at which the cursor blinks (ms, 0 disables)'
     default: 500
+    type_of: 'number'
+
+  .define
+    name: 'scroll_speed_y'
+    description: 'A percentage value determining the vertical mouse scrolling speed'
+    default: 100
+    type_of: 'number'
+
+  .define
+    name: 'scroll_speed_x'
+    description: 'A percentage value determining the horizontal mouse scrolling speed'
+    default: 100
     type_of: 'number'
 
   .define

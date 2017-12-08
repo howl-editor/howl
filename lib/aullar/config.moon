@@ -94,6 +94,16 @@ define_options = ->
       default: 500
     },
 
+    scroll_speed_x: {
+      type: 'number',
+      default: 100
+    },
+
+    scroll_speed_y: {
+      type: 'number',
+      default: 100
+    }
+
     gutter_styling: {
       type: 'table',
       default:

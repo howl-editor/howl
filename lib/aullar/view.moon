@@ -44,6 +44,7 @@ View = {
     @_first_visible_line = 1
     @_last_visible_line = nil
     @_cur_mouse_cursor = text_cursor
+    @_y_scroll_offset = 0
     @config = config.local_proxy!
 
     @area = Gtk.DrawingArea!
@@ -54,6 +55,9 @@ View = {
 
     @gutter = Gutter @, config.gutter_styling
     @current_line_marker = CurrentLineMarker @
+
+    @scroll_speed_y = config.scroll_speed_y
+    @scroll_speed_x = config.scroll_speed_x
 
     @im_context = Gtk.ImContextSimple!
     with @im_context
@@ -74,7 +78,7 @@ View = {
 
     with @area
       .can_focus = true
-      \add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK, Gdk.BUTTON_RELEASE_MASK, Gdk.POINTER_MOTION_MASK, Gdk.SCROLL_MASK)
+      \add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK, Gdk.BUTTON_RELEASE_MASK, Gdk.POINTER_MOTION_MASK, Gdk.SCROLL_MASK, Gdk.SMOOTH_SCROLL_MASK)
       font_desc = Pango.FontDescription {
         family: @config.view_font_name,
         size: @config.view_font_size * Pango.SCALE
@@ -219,6 +223,15 @@ View = {
         @scroll_to first_visible
         -- we don't actually set @_last_visible_line here as it
         -- will be set by the actuall scrolling
+    }
+
+    y_scroll_offset: {
+      get: => @_y_scroll_offset
+      set: (offset) =>
+        @_y_scroll_offset += offset
+        if @_y_scroll_offset < -1 or @_y_scroll_offset > 1
+          @first_visible_line += math.floor(@_y_scroll_offset)
+          @_y_scroll_offset = 0
     }
 
     lines_showing: =>
@@ -806,21 +819,36 @@ View = {
       else
         @cursor\down extend: true
 
-  _on_scroll: (_, event) =>
-    event = ffi_cast('GdkEventScroll *', event)
-    if event.direction == Gdk.SCROLL_UP
-      @scroll_to @first_visible_line - 1
-    elseif event.direction == Gdk.SCROLL_DOWN
-      @scroll_to @first_visible_line + 1
-    elseif event.direction == Gdk.SCROLL_RIGHT
-      new_base_x = @base_x + 20
+  _scroll_x: (value) =>
+    value = value * (@scroll_speed_x / 100)
+
+    if value > 0
+      -- Scroll right.
+      new_base_x = @base_x + 20 * value
       adjustment = @horizontal_scrollbar.adjustment
       if adjustment
         new_base_x = min new_base_x, adjustment.upper - adjustment.page_size
       @base_x = new_base_x
+    elseif value < 0
+      -- Scroll left.
+      @base_x -= 20 * -value
 
+  _scroll_y: (value) =>
+    @y_scroll_offset += value * (@scroll_speed_y / 100)
+
+  _on_scroll: (_, event) =>
+    event = ffi_cast('GdkEventScroll *', event)
+    if event.direction == Gdk.SCROLL_UP
+      @_scroll_y -1
+    elseif event.direction == Gdk.SCROLL_DOWN
+      @_scroll_y 1
+    elseif event.direction == Gdk.SCROLL_RIGHT
+      @_scroll_x 1
     elseif event.direction == Gdk.SCROLL_LEFT
-      @base_x -= 20
+      @_scroll_x -1
+    elseif event.direction == Gdk.SCROLL_SMOOTH
+      @_scroll_y event.delta_y
+      @_scroll_x event.delta_x
 
   _on_size_allocate: (_, allocation) =>
     allocation = ffi_cast('GdkRectangle *', allocation)
@@ -859,6 +887,9 @@ View = {
 
     elseif option == 'cursor_blink_interval'
       @cursor.blink_interval = val
+
+    elseif option == 'scroll_speed_y' or option == 'scroll_speed_x'
+      @[option] = val
 
     elseif option == 'gutter_styling'
       @gutter\reconfigure val
