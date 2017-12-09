@@ -39,6 +39,12 @@ add_highlight = (type, buffer, line, opts) ->
 
   highlight.apply type, buffer, start_pos, end_pos - start_pos
 
+get_file = (item) ->
+  return item.file if item.file
+  unless item.directory
+    error "Location item need either .file or .directory and .path"
+  item.directory\join(item.path)
+
 interact.register
   name: 'select_location'
   description: 'Selection list for locations - a location consists of a file (or buffer) and line number'
@@ -52,7 +58,7 @@ interact.register
 
       opts.on_change = (sel, text, items) ->
         if sel
-          buffer = sel.buffer or preview\get_buffer sel.file
+          buffer = sel.buffer or preview\get_buffer get_file(sel)
           editor\preview buffer
 
           highlight.remove_all 'search', buffer
