@@ -29,24 +29,24 @@ describe 'breadcrumbs', ->
   describe 'drop(opts)', ->
 
     it 'accepts a file and a pos', ->
-      file = File('/tmp/foo')
-      breadcrumbs.drop :file, pos: 3
-      assert.same {:file, pos: 3}, breadcrumbs.previous
+      File.with_tmpfile (file) ->
+        breadcrumbs.drop :file, pos: 3
+        assert.same {:file, pos: 3}, breadcrumbs.previous
 
     it 'accepts a file path and a pos', ->
-      file = '/tmp/foo'
-      breadcrumbs.drop :file, pos: 3
-      assert.same {file: File(file), pos: 3}, breadcrumbs.previous
+      File.with_tmpfile (file) ->
+        breadcrumbs.drop :file, pos: 3
+        assert.same {file: File(file), pos: 3}, breadcrumbs.previous
 
     it 'accepts a buffer and a pos', ->
-      file = File('/tmp/foo')
-      file.contents = '123456789\nabcdefgh'
-      b = buffer ''
-      b.file = file
-      breadcrumbs.drop buffer: b, pos: 3
-      assert.equals b.file, breadcrumbs.previous.file
-      assert.equals 3, breadcrumbs.previous.pos
-      assert.not_nil breadcrumbs.previous.buffer_marker
+      File.with_tmpfile (file) ->
+        file.contents = '123456789\nabcdefgh'
+        b = buffer ''
+        b.file = file
+        breadcrumbs.drop buffer: b, pos: 3
+        assert.equals b.file, breadcrumbs.previous.file
+        assert.equals 3, breadcrumbs.previous.pos
+        assert.not_nil breadcrumbs.previous.buffer_marker
 
     context 'when a buffer is present', ->
       it 'sets a marker in the buffer pointing to the crumb', ->
