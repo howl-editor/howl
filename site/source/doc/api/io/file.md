@@ -227,6 +227,50 @@ enter, as well as the found files so far. This function can also optionally
 cancel the execution, by return the special return value 'break'. If this is
 done, execution is ended and a partial result is returned.
 
+### find_paths (options = {})
+
+For a directory, returns the relative paths of all files or sub directories
+within the directory. In contrast to [find](#find) this will return a table of
+strings, and not files. Compared to find this is also a much more performant
+operation if all you want is a list of directories or files. In order to get any
+detailed information about type, etc., you will have to instantiate File object,
+but the basic type of entry (directory or other) can be deduced by looking at
+end of any path - directories have a trailing separator. No guarantees are given
+with regards to the order of the returned entries.
+
+`options` allows for additional control of the operation, and can contain the
+following fields:
+
+- `exclude_directories` This will not return paths for any sub directories. The
+directories themselves will still be traversed however.
+
+Example:
+
+Given the following directory structure:
+
+```
+/tmp/foo
+  child1.lua
+  sub/
+    sub_child.txt
+  child2.lua
+
+```
+
+You can expect the following results (order is not defined however):
+
+```lua
+howl.io.File('/tmp/foo'):find_paths()
+-- =>
+{
+  'child1.lua',
+  'child2.moon',
+  'sub/'
+  'sub/sub_child.txt'
+}
+
+```
+
 
 ### is_below (directory)
 

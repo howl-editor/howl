@@ -235,6 +235,40 @@ class File extends PropertyObject
 
     files, false
 
+  find_paths: (opts = {}) =>
+    separator = File.separator
+    exclude_directories = opts.exclude_directories
+
+    scan_dir = (dir, base, list = {}) ->
+      handle = dispatch.park 'enumerate-children-async'
+
+      dir\enumerate_children_async 'standard::name,standard::type', nil, nil,  (status, ret, err_code) ->
+        if status
+          dispatch.resume handle, ret
+        else
+          dispatch.resume_with_error handle, "#{ret} (#{err_code})"
+
+      enum = dispatch.wait handle
+
+      while true
+        info = enum\next_file!
+        unless info
+          enum\close!
+          break
+
+        if info.filetype == GFileInfo.TYPE_DIRECTORY
+          f = enum\get_child info
+          path = "#{base}#{info.name}#{separator}"
+          append list, path unless exclude_directories
+          scan_dir f, path, list
+        elseif info.filetype == GFileInfo.TYPE_REGULAR
+          append list, "#{base}#{info.name}"
+
+    error "Can't invoke find on a non-directory", 1 if not @is_directory
+    paths = {}
+    scan_dir GFile(@path), '', paths
+    paths
+
   copy: (dest, flags) =>
     @gfile\copy File(dest).gfile, flags, nil, nil
 

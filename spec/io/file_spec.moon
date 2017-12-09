@@ -388,6 +388,47 @@ describe 'File', ->
               dir\join('child2'),
             }, files
 
+  describe 'find_paths(opts = {})', ->
+    with_populated_dir = (f) ->
+      with_tmpdir (dir) ->
+        dir\join('child1')\mkdir!
+        dir\join('child1/sub_dir')\mkdir!
+        dir\join('child1/sub_dir/deep.lua')\touch!
+        dir\join('child1/sub_child.txt')\touch!
+        dir\join('child1/sandwich.lua')\touch!
+        dir\join('child2')\touch!
+        f dir
+
+    it 'raises an error if the file is not a directory', ->
+      file = File '/no/does/not/exist'
+      assert.error -> file\find_paths!
+
+    context 'with no option specified', ->
+      it 'returns a list of all regular and directory sub paths', ->
+        with_populated_dir (dir) ->
+          paths = dir\find_paths!
+          table.sort paths
+          assert.same {
+            'child1/',
+            'child1/sandwich.lua',
+            'child1/sub_child.txt',
+            'child1/sub_dir/',
+            'child1/sub_dir/deep.lua',
+            'child2'
+          }, paths
+
+    context 'with the exclude_directories option specified', ->
+      it 'returns a list of all regular sub paths', ->
+        with_populated_dir (dir) ->
+          paths = dir\find_paths exclude_directories: true
+          table.sort paths
+          assert.same {
+            'child1/sandwich.lua',
+            'child1/sub_child.txt',
+            'child1/sub_dir/deep.lua',
+            'child2'
+          }, paths
+
   describe 'copy(dest)', ->
     it 'copies the given file', ->
       with_tmpdir (dir) ->
