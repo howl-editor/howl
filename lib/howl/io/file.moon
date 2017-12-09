@@ -4,7 +4,7 @@
 GFile = require 'ljglibs.gio.file'
 GFileInfo = require 'ljglibs.gio.file_info'
 glib = require 'ljglibs.glib'
-dispatch = howl.dispatch
+{:park, :resume, :resume_with_error, :wait} = howl.dispatch
 import PropertyObject from howl.util.moon
 append = table.insert
 
@@ -140,15 +140,15 @@ class File extends PropertyObject
 
   @property children_async:
     get: =>
-      handle = dispatch.park 'enumerate-children-async'
+      handle = park 'enumerate-children-async'
 
       @gfile\enumerate_children_async 'standard::name,standard::type', nil, nil,  (status, ret, err_code) ->
         if status
-          dispatch.resume handle, ret
+          resume handle, ret
         else
-          dispatch.resume_with_error handle, "#{ret} (#{err_code})"
+          resume_with_error handle, "#{ret} (#{err_code})"
 
-      enum = dispatch.wait handle
+      enum = wait handle
 
       files = {}
       while true
@@ -239,16 +239,23 @@ class File extends PropertyObject
     separator = File.separator
     exclude_directories = opts.exclude_directories
 
+    get_children = if File.async then
+      (dir) ->
+        handle = park 'enumerate-children-async'
+
+        dir\enumerate_children_async 'standard::name,standard::type', nil, nil,  (status, ret, err_code) ->
+          if status
+            resume handle, ret
+          else
+            resume_with_error handle, "#{ret} (#{err_code})"
+
+        wait handle
+    else
+      (dir) ->
+        dir\enumerate_children 'standard::name,standard::type', GFile.QUERY_INFO_NONE
+
     scan_dir = (dir, base, list = {}) ->
-      handle = dispatch.park 'enumerate-children-async'
-
-      dir\enumerate_children_async 'standard::name,standard::type', nil, nil,  (status, ret, err_code) ->
-        if status
-          dispatch.resume handle, ret
-        else
-          dispatch.resume_with_error handle, "#{ret} (#{err_code})"
-
-      enum = dispatch.wait handle
+      enum = get_children dir
 
       while true
         info = enum\next_file!
