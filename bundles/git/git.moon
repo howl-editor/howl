@@ -1,13 +1,12 @@
 {:config, :activities} = howl
-{:File, :Process} = howl.io
-TYPE_REGULAR = File.TYPE_REGULAR
+{:Process} = howl.io
 
 class Git
   new: (root) =>
     @root = root
     @name = 'Git'
 
-  files: =>
+  paths: =>
     p = @_get_process "ls-files",
       "--exclude-standard",
       "--others",
@@ -16,21 +15,14 @@ class Git
 
     status = "$ #{p.command_line}"
     activities.run {
-      title: "Reading Git entries from '#{@root}'",
+      title: "Reading Git paths from '#{@root}'",
       status: -> status,
     }, ->
       out_lines, err_lines = p\pump_lines!
       unless p.successful
         error "(git in '#{@root}'): #{table.concat(err_lines, '\n')}"
 
-      status = "Loading files from Git entries"
-      groot = @root.gfile
-      return for i = 1, #out_lines
-        activities.yield! if i % 1000 == 0
-        line = out_lines[i]
-        continue if line\ends_with('/')
-        gfile = groot\get_child(line)
-        File gfile, nil, type: TYPE_REGULAR
+      [l for l in *out_lines when not l\ends_with('/')]
 
   diff: (file) =>
     p = @_get_process 'diff', file

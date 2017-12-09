@@ -42,30 +42,28 @@ describe 'Git bundle', ->
 
     after_each -> root\delete_all!
 
-    describe 'files()', ->
-      assert_same_files = (list1, list2) ->
-        list1 = [f.path for f in *list1]
-        list2 = [f.path for f in *list2]
+    describe 'paths()', ->
+      assert_same_paths = (list1, list2) ->
         table.sort list1
         table.sort list2
         assert.same list1, list2
 
-      it 'returns a list of git files, including untracked', (done) ->
+      it 'returns a list of git paths, including untracked', (done) ->
         howl_async ->
-          assert_same_files git\files!, {}
+          assert_same_paths git\paths!, {}
           file = root / 'new.lua'
           file\touch!
-          assert_same_files git\files!, { file }
+          assert_same_paths git\paths!, { 'new.lua' }
           git\run 'add', file\relative_to_parent root
-          assert_same_files git\files!, { file }
+          assert_same_paths git\paths!, { 'new.lua' }
           git\run 'commit', '-q', '-m', 'new', file\relative_to_parent root
-          assert_same_files git\files!, { file }
+          assert_same_paths git\paths!, { 'new.lua' }
           file.contents = 'change'
-          assert_same_files git\files!, { file }
+          assert_same_paths git\paths!, { 'new.lua' }
 
           file2 = root / 'another.lua'
           file2\touch!
-          assert_same_files git\files!, { file2, file }
+          assert_same_paths git\paths!, { 'another.lua', 'new.lua' }
           done!
 
     describe 'diff([file])', ->

@@ -41,30 +41,28 @@ describe 'Hg bundle', ->
 
     after_each -> root\delete_all!
 
-    describe 'files()', ->
-      assert_same_files = (list1, list2) ->
-        list1 = [f.path for f in *list1]
-        list2 = [f.path for f in *list2]
+    describe 'paths()', ->
+      assert_same_paths = (list1, list2) ->
         table.sort list1
         table.sort list2
         assert.same list1, list2
 
-      it 'returns a list of hg files, including untracked', (done) ->
+      it 'returns a list of hg paths, including untracked', (done) ->
         howl_async ->
-          assert_same_files hg\files!, {}
+          assert_same_paths hg\paths!, {}
           file = root / 'new.lua'
           file\touch!
-          assert_same_files hg\files!, { file }
+          assert_same_paths hg\paths!, { 'new.lua' }
           hg\run 'add', file\relative_to_parent root
-          assert_same_files hg\files!, { file }
+          assert_same_paths hg\paths!, { 'new.lua' }
           hg\run 'commit', '-q', '-m', 'new', file\relative_to_parent root
-          assert_same_files hg\files!, { file }
+          assert_same_paths hg\paths!, { 'new.lua' }
           file.contents = 'change'
-          assert_same_files hg\files!, { file }
+          assert_same_paths hg\paths!, { 'new.lua' }
 
           file2 = root / 'another.lua'
           file2\touch!
-          assert_same_files hg\files!, { file2, file }
+          assert_same_paths hg\paths!, { 'another.lua', 'new.lua' }
           done!
 
     describe 'diff([file])', ->

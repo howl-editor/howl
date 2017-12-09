@@ -1,7 +1,30 @@
+{:activities} = howl
+{:File} = howl.io
+TYPE_REGULAR = File.TYPE_REGULAR
+
 validate_vc = (name, vc) ->
-  error '.files() missing from "' .. name .. '"', 3 if not vc.files
+  error '.paths() missing from "' .. name .. '"', 3 if not vc.paths
   error '.root missing from "' .. name .. '"', 3 if not vc.root
   error '.name missing from "' .. name .. '"', 3 if not vc.name
+
+files = (vc) ->
+  paths = vc\paths!
+  activities.run {
+    title: "Loading files from '#{vc.root}'",
+    status: -> "Loading files from #{#paths} #{vc.name} entries..",
+  }, ->
+    groot = vc.root.gfile
+    return for i = 1, #paths
+      activities.yield! if i % 1000 == 0
+      path = paths[i]
+      gfile = groot\get_child(path)
+      File gfile, nil, type: TYPE_REGULAR
+
+decorate_vc = (vc) ->
+  if not vc.files
+    vc = setmetatable({:files}, __index: vc)
+
+  vc
 
 class VC
   available: {}
@@ -21,7 +44,7 @@ class VC
       vc = handler.find file
       if vc
         validate_vc name, vc
-        return vc
+        return decorate_vc(vc)
 
     nil
 
