@@ -25,7 +25,7 @@ get = (name, icon_style = 'icon') ->
   while type(icon) == 'string'
     name = icon
     icon = icons[name]
-    error "Invalid icon '#{name}'" unless icon
+    error "Invalid icon '#{name}'", 2 unless icon
 
   icon_style = style_name(name) .. ':' .. icon_style
   text = icon.text

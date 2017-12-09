@@ -184,6 +184,24 @@ subtree_matcher = (files, directory, opts={}) ->
     preempt: true
   }, loader
 
+subtree_paths_matcher = (paths, directory) ->
+  loader = ->
+    with_icons = config.file_icons
+    items = for path in *paths
+      d_name = StyledText(path, 'filename')
+      if with_icons
+        { icon.get('file', 'filename'), d_name, :directory, :path }
+      else
+        { d_name, :directory, :path }
+
+    Matcher(items, reverse: true)
+
+  activities.run {
+    title: "Loading paths from '#{directory}'"
+    status: -> "Preparing #{#paths} paths for selection.."
+    preempt: true
+  }, loader
+
 subtree_reader = (directory, opts={}) ->
   files_found = 0
   cancel = false
@@ -200,4 +218,11 @@ subtree_reader = (directory, opts={}) ->
         files_found = #files
         return 'break' if cancel
 
-return { :file_matcher, :get_cwd, :get_dir_and_leftover, :subtree_matcher, :subtree_reader }
+{
+  :file_matcher,
+  :get_cwd,
+  :get_dir_and_leftover,
+  :subtree_matcher,
+  :subtree_paths_matcher,
+  :subtree_reader
+}

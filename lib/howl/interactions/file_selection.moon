@@ -5,7 +5,13 @@ import app, config, interact, log, Project from howl
 import File from howl.io
 import Preview from howl.interactions.util
 import icon, markup, style, ListWidget from howl.ui
-import file_matcher, subtree_matcher, subtree_reader, get_dir_and_leftover from howl.util.paths
+{
+  :file_matcher,
+  :subtree_matcher,
+  :subtree_paths_matcher,
+  :subtree_reader,
+  :get_dir_and_leftover
+} = howl.util.paths
 {:Matcher} = howl.util
 
 append = table.insert
@@ -16,9 +22,6 @@ style.define_default 'filename', 'string'
 icon.define_default 'directory', 'font-awesome-folder'
 icon.define_default 'file', 'font-awesome-file'
 icon.define_default 'file-new', 'font-awesome-plus-circle'
-
-project_matcher = (project) ->
-  subtree_matcher(project\files!, project.root, exclude_directories: true)
 
 get_project = ->
   if app.editor
@@ -196,10 +199,9 @@ interact.register
   description: 'Selection list for all files in project'
   handler: (opts={}) ->
     project = opts.project or get_project!
-
     return unless project
 
-    matcher = project_matcher(project)
+    matcher = subtree_paths_matcher(project\paths!, project.root)
     explain = (search, text) -> Matcher.explain search, text, reverse: true
 
     result = interact.select_location
@@ -209,4 +211,5 @@ interact.register
       :explain
 
     if result
-      return result.selection.file
+      sel = result.selection
+      return sel.file or sel.directory\join(sel.path)
