@@ -36,15 +36,15 @@ describe 'Project', ->
         assert.is_nil Project.for_file file
 
     context 'when there is VC found for the file', ->
-      vc = name: 'vc', root: 'foo_root', files: -> {}
-      before_each -> VC.register 'vc', find: -> vc
-      after_each -> VC.unregister 'vc'
+      vc = name: 'p-vc', root: 'foo_root', paths: -> {}, files: -> {}
+      before_each -> VC.register 'pvc', find: -> vc
+      after_each -> VC.unregister 'pvc'
 
       it 'returns a project instantiated with the vc and vc root', ->
         p = Project.for_file 'file'
         assert.not_nil p
-        assert.equal p.root, vc.root
-        assert.equal p.vc, vc
+        assert.equal vc.root, p.root
+        assert.equal 'p-vc', p.vc.name
 
       it 'adds the new root to .roots', ->
         Project.for_file 'file'
@@ -67,11 +67,11 @@ describe 'Project', ->
         with_tmpdir (dir) ->
           Project.add_root dir
           file = dir / 'test.moon'
-          vc = name: 'vc', root: dir, files: -> {}
-          VC.register 'vc', find: (f) -> return vc if f == file
+          vc = name: 'p2vc', root: dir, paths: -> {}
+          VC.register 'p2vc', find: (f) -> return vc if f == file
           p = Project.for_file file
-          VC.unregister 'vc'
-          assert.equal p.vc, vc
+          VC.unregister 'p2vc'
+          assert.equal 'p2vc', p.vc.name
 
     context 'when there is an open project containing the file', ->
       it 'returns the existing project', ->
@@ -85,12 +85,12 @@ describe 'Project', ->
           assert.equal p2, p
 
   describe 'for a given project instance', ->
-    describe '.files()', ->
-      it 'delegates to .vc.files() if it is available', ->
-        vc = files: -> 'files'
-        assert.equal vc.files!, Project('root', vc)\files!
+    describe 'paths()', ->
+      it 'delegates to .vc.paths() if it is available', ->
+        vc = paths: -> {'path'}
+        assert.same vc.paths!, Project('root', vc)\paths!
 
-      it 'falls back to a FS scan, skipping directories and hidden and backup files', ->
+      it 'falls back to a FS scan, skipping directories and backup files', ->
         with_tmpdir (dir) ->
           regular = dir / 'regular.lua'
           regular\touch!
@@ -100,4 +100,23 @@ describe 'Project', ->
           hidden\touch!
           backup = dir / 'config~'
           backup\touch!
-          assert.same { regular.path }, [f.path for f in *Project(dir)\files!]
+          paths = Project(dir)\paths!
+          table.sort paths
+          assert.same { '.config', 'regular.lua' }, paths
+
+    describe 'files()', ->
+      it 'delegates to .vc.files() if it is available', ->
+        vc = files: -> 'files'
+        assert.equal vc.files!, Project('root', vc)\files!
+
+      it 'falls back to a FS scan, skipping directories and backup files', ->
+        with_tmpdir (dir) ->
+          regular = dir / 'regular.lua'
+          regular\touch!
+          sub_dir = dir / 'sub_dir'
+          sub_dir\mkdir!
+          hidden = dir / '.config'
+          hidden\touch!
+          backup = dir / 'config~'
+          backup\touch!
+          assert.same { regular.path, hidden.path }, [f.path for f in *Project(dir)\files!]

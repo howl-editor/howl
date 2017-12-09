@@ -1,8 +1,10 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import config, VC, interact from howl
+{:activities, :config, :VC, :interact} = howl
+{:File} = howl.io
 
+TYPE_REGULAR = File.TYPE_REGULAR
 append = table.insert
 
 root_for = (file, roots) ->
@@ -61,7 +63,27 @@ class Project
     if @vc and @vc.files
       @vc\files!
     else
-      files = @root\find filter: (file) -> file.is_hidden or file.is_backup
-      [f for f in *files when not f.is_directory]
+      paths = @paths!
+      activities.run {
+        title: "Loading files from '#{@root}'",
+        status: -> "Loading files from #{#paths} paths..",
+      }, ->
+        groot = @root.gfile
+        return for i = 1, #paths
+          activities.yield! if i % 1000 == 0
+          path = paths[i]
+          gfile = groot\get_child(path)
+          File gfile, nil, type: TYPE_REGULAR
+
+  paths: =>
+    if @vc and @vc.paths
+      @vc\paths!
+    else
+      activities.run {
+        title: "Reading paths for '#{@root}'",
+        status: -> "Reading paths for '#{@root}'",
+      }, ->
+        paths = @root\find_paths exclude_directories: true
+        [p for p in *paths when not p\ends_with('~')]
 
 return Project
