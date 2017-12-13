@@ -1,7 +1,9 @@
 -- Copyright 2012-2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-append = table.insert
+{insert: append, :concat} = table
+max = math.max
+{:type, :tostring} = _G
 
 separator = ' \t-_:/'
 sep_p = "[#{separator}]+"
@@ -20,20 +22,20 @@ boundary_pattern = (search, reverse) ->
   parts = [r.escape(search[i]) for i = 1, search.ulen]
   leading = reverse and leading_greedy_p or leading_p
   p = leading .. parts[1] .. '()'
-  p ..= table.concat [boundary_part_p(parts[i]) for i = 2, #parts]
+  p ..= concat [boundary_part_p(parts[i]) for i = 2, #parts]
   r(p)
 
 case_boundary_pattern = (search, reverse) ->
   parts = [r.escape(search[i]) for i = 1, search.ulen]
   leading = reverse and leading_greedy_p or leading_p
   p = leading
-  p ..= table.concat [case_boundary_part_p(part) for part in *parts]
+  p ..= concat [case_boundary_part_p(part) for part in *parts]
   r(p)
 
-score_for = (match, text, type, reverse, base_score) ->
+score_for = (match, text, match_type, reverse, base_score) ->
   len = text.ulen
 
-  if type == 'exact'
+  if match_type == 'exact'
     if reverse
       return base_score + (len - match[2])
     else
@@ -74,48 +76,68 @@ create_matcher = (search, reverse) ->
     return 'exact', match if #match > 0
     nil
 
+load_entries = (candidates) ->
+  max_len = 0
+
+  entries = if type(candidates[1]) == 'table' and #candidates[1] > 0
+    for candidate in *candidates
+      text = concat [tostring(c) for c in *candidate], ' '
+      max_len = max max_len, #text
+      text: text.ulower, case_text: text, :candidate
+  else
+    for candidate in *candidates
+      text = tostring candidate
+      max_len = max max_len, #text
+      text: text.ulower, case_text: text, :candidate
+
+  entries.base_score = max_len * 3
+  entries
+
 class Matcher
 
   new: (@candidates, @options = {}) =>
-    @_load_candidates!
+    @cache = entries: {}, matches: {}
+    @entries = load_entries candidates
 
   __call: (search) =>
-    return [c for c in *@candidates] if not search or search.is_empty
+    return @candidates if not search or search.is_empty
 
     search = search.ulower
     matches = @cache.matches[search]
-    if matches then return matches
+    if matches then return matches.items, matches.partial
     matches = {}
 
-    lines = @cache.lines[search\usub 1, -2] or @lines
-    matching_lines = {}
+    prev_search_part = search\usub 1, -2
+    entries = @cache.entries[prev_search_part] or @entries
+    matching_entries = {}
     matcher = create_matcher search, @options.reverse
     partial = false
 
-    partial_limit = #@lines > 1100 and 1000 or 1100
+    partial_limit = #@entries > 1100 and 1000 or 1100
 
-    for line in *lines
-      text = line.text
+    for entry in *entries
+      text = entry.text
       continue if #text < #search
-      type, match = matcher text, line.case_text
+      match_type, match = matcher text, entry.case_text
 
       if match
         if #matches >= partial_limit
           partial = true
           break
 
-        score = score_for match, text, type, @options.reverse, @base_score
-        append matches, index: line.index, :score
-        append matching_lines, line
+        score = score_for match, text, match_type, @options.reverse, @entries.base_score
+        append matches, entry: entry, :score
+        append matching_entries, entry
 
     unless @options.preserve_order
       table.sort matches, (a ,b) -> a.score < b.score
 
-    matching_candidates = [@candidates[match.index] for match in *matches]
+    matching_candidates = [match.entry.candidate for match in *matches]
+
+    @cache.matches[search] = {items: matching_candidates, :partial}
 
     unless partial
-      @cache.lines[search] = matching_lines
-      @cache.matches[search] = matching_candidates
+      @cache.entries[search] = matching_entries
 
     matching_candidates, partial
 
@@ -146,23 +168,5 @@ class Matcher
 
     segments.how = how
     return segments
-
-  _load_candidates: =>
-    max = math.max
-
-    @cache = lines: {}, matches: {}
-    @lines = {}
-    max_len = 0
-
-    for i, candidate in ipairs @candidates do
-      text = if type(candidate) == 'table' and #candidate > 0
-        table.concat [tostring(c) for c in *candidate], ' '
-      else
-        tostring candidate
-
-      append @lines, index: i, text: text.ulower, case_text: text
-      max_len = max max_len, #text
-
-    @base_score = max_len * 3
 
 return Matcher
