@@ -48,6 +48,7 @@ describe 'Hg bundle', ->
         assert.same list1, list2
 
       it 'returns a list of hg paths, including untracked', (done) ->
+        settimeout 2
         howl_async ->
           assert_same_paths hg\paths!, {}
           file = root / 'new.lua'
