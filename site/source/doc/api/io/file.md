@@ -210,9 +210,9 @@ an error if unsuccesful.
 For a directory, returns all files within the directory or any sub directory of
 the directory. In addition to the files, a boolean is returned indicated whether
 the result is partial or not (`true` indicating a partial result and `false` a
-complete result). The result will always be complete, unless one of the options
-causes a premature halt to the execution. `options` allows for additional
-control of the operation, and can contain the following fields:
+complete result). The result will always be complete, unless the execution is
+prematurely halted by use of the `on_enter` option. `options` allows for
+additional control of the operation, and can contain the following fields:
 
 - `filter`: A callback that will recieve each file as its sole argument. To
 filter a file, i.e. exclude it from the results, the callback should return
@@ -230,13 +230,17 @@ done, execution is ended and a partial result is returned.
 ### find_paths (options = {})
 
 For a directory, returns the relative paths of all files or sub directories
-within the directory. In contrast to [find](#find) this will return a table of
-strings, and not files. Compared to find this is also a much more performant
-operation if all you want is a list of directories or files. In order to get any
-detailed information about type, etc., you will have to instantiate File object,
-but the basic type of entry (directory or other) can be deduced by looking at
-end of any path - directories have a trailing separator. No guarantees are given
-with regards to the order of the returned entries.
+within the directory. In addition to the paths, a boolean is returned indicated
+whether the result is partial or not (`true` indicating a partial result and
+`false` a complete result). The result will always be complete, unless the
+execution is prematurely halted by use of the `on_enter` option. In contrast to
+[find](#find) this will return a table of strings, and not files. Compared to
+find this is also a much more performant operation if all you want is a list of
+directories or files. In order to get any detailed information about type, etc.,
+you will have to instantiate File object, but the basic type of entry (directory
+or other) can be deduced by looking at end of any path - directories have a
+trailing separator. No guarantees are given with regards to the order of the
+returned entries.
 
 `options` allows for additional control of the operation, and can contain the
 following fields:
@@ -244,6 +248,21 @@ following fields:
 - `exclude_directories` This will not return paths for any sub directories. The
 directories themselves will still be traversed however.
 
+- `exclude_non_directories` This will not return paths for any non-directory
+path entries.
+
+- `filter`: A callback that will recieve each relative path as its sole
+argument. To filter a path, i.e. exclude it from the results, the callback
+should return true. Note that filtering a directory means that it won't be
+descended into at all.
+
+- `on_enter`: If given, this function is invoked each time a new directory is
+entered (including the first one). The function is passed the relative path of
+the directory to enter, as well as the found paths so far. This function can
+also optionally cancel the execution, by return the special return value
+'break'. If this is done, execution is ended and a partial result is returned.
+
+-
 Example:
 
 Given the following directory structure:

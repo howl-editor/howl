@@ -429,6 +429,55 @@ describe 'File', ->
             'child2'
           }, paths
 
+    context 'with the exclude_non_directories option specified', ->
+      it 'returns a list of all directory paths', ->
+        with_populated_dir (dir) ->
+          paths = dir\find_paths exclude_non_directories: true
+          table.sort paths
+          assert.same {
+            'child1/',
+            'child1/sub_dir/',
+          }, paths
+
+    context 'when filter: is passed as an option', ->
+      it 'excludes paths for which <filter(path)> returns true', ->
+        with_populated_dir (dir) ->
+          paths = dir\find_paths filter: (path) ->
+            not (path\ends_with('sandwich.lua') or path == 'child1/')
+
+          assert.same { 'child1/', 'child1/sandwich.lua' }, paths
+
+    context 'when the on_enter parameter is given', ->
+      it 'is called once for each directory with the dir and paths so far', ->
+        with_populated_dir (dir) ->
+          dirs = {}
+          total_files = 0
+          dir\find_paths on_enter: (enter_dir, files) ->
+            dirs[#dirs + 1] = enter_dir
+            total_files = files
+
+          assert.equal 3, #dirs
+          assert.equal 6, #total_files
+          table.sort dirs
+          assert.same {
+            './',
+            'child1/',
+            'child1/sub_dir/',
+          }, dirs
+
+      context 'and it returns "break"', ->
+        it 'causes an early return', ->
+          with_populated_dir (dir) ->
+            paths, cancelled = dir\find_paths on_enter: (enter_dir, files) ->
+              if enter_dir == 'child1/'
+                return 'break'
+
+            assert.equal true, cancelled
+            table.sort paths
+            assert.same {
+              'child2',
+            }, paths
+
   describe 'copy(dest)', ->
     it 'copies the given file', ->
       with_tmpdir (dir) ->

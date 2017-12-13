@@ -238,6 +238,7 @@ class File extends PropertyObject
   find_paths: (opts = {}) =>
     separator = File.separator
     exclude_directories = opts.exclude_directories
+    exclude_non_directories = opts.exclude_non_directories
 
     get_children = if File.async then
       (dir) ->
@@ -247,15 +248,20 @@ class File extends PropertyObject
           if status
             resume handle, ret
           else
-            resume_with_error handle, "#{ret} (#{err_code})"
+            resume handle, nil
 
         wait handle
     else
       (dir) ->
         dir\enumerate_children 'standard::name,standard::type', GFile.QUERY_INFO_NONE
 
+    filter = opts.filter
+    on_enter = opts.on_enter
+
     scan_dir = (dir, base, list = {}) ->
+
       enum = get_children dir
+      return unless enum
 
       while true
         info = enum\next_file!
@@ -266,15 +272,25 @@ class File extends PropertyObject
         if info.filetype == GFileInfo.TYPE_DIRECTORY
           f = enum\get_child info
           path = "#{base}#{info.name}#{separator}"
+          continue if filter and filter(path)
+          if on_enter and 'break' == on_enter(path, list)
+            return true
+
           append list, path unless exclude_directories
           scan_dir f, path, list
-        elseif info.filetype == GFileInfo.TYPE_REGULAR
-          append list, "#{base}#{info.name}"
+        else
+          path = "#{base}#{info.name}"
+          continue if filter and filter(path)
+          append list, path unless exclude_non_directories
 
     error "Can't invoke find on a non-directory", 1 if not @is_directory
     paths = {}
-    scan_dir GFile(@path), '', paths
-    paths
+
+    if on_enter and 'break' == on_enter(".#{separator}", paths)
+      return paths, true
+
+    partial = scan_dir GFile(@path), '', paths
+    paths, partial
 
   copy: (dest, flags) =>
     @gfile\copy File(dest).gfile, flags, nil, nil
