@@ -34,13 +34,3 @@ describe 'paths', ->
     context 'is given a non absolute path', ->
       it 'uses the home dir as the base path', ->
         assert.same {File.home_dir, 'unmatched-asdf98y23903943masgb sdf'}, {paths.get_dir_and_leftover 'unmatched-asdf98y23903943masgb sdf'}
-
-  describe 'subtree_reader', ->
-    it 'returns all files and directories in a subtree', ->
-      for dir in *{'a', 'b/c'}
-        (tmpdir / dir)\mkdir_p!
-      for file in *{'a/x', 'b/y', 'b/c/z'}
-        (tmpdir / file).contents = 'a'
-
-      files = paths.subtree_reader tmpdir
-      assert.same {'a', 'a/x', 'b', 'b/y', 'b/c', 'b/c/z'}, [file\relative_to_parent(tmpdir) for file in *files]

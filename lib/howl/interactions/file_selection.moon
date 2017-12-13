@@ -1,15 +1,13 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, config, interact, log, Project from howl
-import File from howl.io
-import Preview from howl.interactions.util
-import icon, markup, style, ListWidget from howl.ui
+{:activities, :app, :config, :interact, :log, :Project} = howl
+{:File} = howl.io
+{:Preview} = howl.interactions.util
+{:icon, :markup, :style, :ListWidget} = howl.ui
 {
   :file_matcher,
-  :subtree_matcher,
   :subtree_paths_matcher,
-  :subtree_reader,
   :get_dir_and_leftover
 } = howl.util.paths
 {:Matcher} = howl.util
@@ -29,10 +27,36 @@ get_project = ->
     if file
       return Project.for_file file
 
+get_file = (item) ->
+  return item.file if item.file
+  unless item.directory
+    error "Selection item need either .file or .directory and .path"
+  item.directory\join(item.path)
+
+read_subtree = (d, only_directories = false) ->
+  hidden_exts = {e, true for e in *howl.config.hidden_file_extensions}
+  paths_found = 0
+  cancel = false
+
+  filter = (path) ->
+    ext = path\match "%.(%w+)#{separator}-$"
+    ext and hidden_exts[ext]
+
+  on_enter = (p, paths) ->
+    paths_found = #paths
+    return 'break' if cancel
+
+  activities.run {
+    title: "Scanning '#{d}'"
+    status: -> "Reading entries (#{paths_found} paths collected).."
+    cancel: -> cancel = true
+  }, ->
+    d\find_paths :filter, :on_enter, exclude_non_directories: only_directories
+
 class FileSelector
   run: (@finish, @opts={}) =>
     @directory_reader = @opts.directory_reader or (d) -> d.children
-    @subtree_reader = @opts.subtree_reader or subtree_reader
+    @subtree_reader = @opts.subtree_reader or read_subtree
     @show_subtree = @opts.show_subtree
     @command_line = app.window.command_line
     @command_line.prompt = @opts.prompt or ''
@@ -65,9 +89,9 @@ class FileSelector
     @directory = directory
     local matcher
     if @show_subtree
-      items, timed_out = self.subtree_reader(directory)
-      matcher = subtree_matcher items, directory
-      if timed_out
+      paths, partial  = self.subtree_reader(directory)
+      matcher = subtree_paths_matcher paths, directory
+      if partial
         @command_line.title = (@opts.title or 'File') .. ' (recursive, truncated)'
         log.warn 'File scan interrupted - truncated listing.'
       else
@@ -88,7 +112,7 @@ class FileSelector
     return unless config.preview_files
     @preview or= Preview!
 
-    file = selection.file
+    file = get_file selection
     if file.exists
       app.editor\preview @preview\get_buffer file
     else
@@ -115,7 +139,7 @@ class FileSelector
 
   _open: =>
     app.editor\cancel_preview!
-    file = @list_widget.selection and @list_widget.selection.file
+    file = @list_widget.selection and get_file @list_widget.selection
     name = @list_widget.selection and @list_widget.selection.name
     if not @opts.allow_new and (not file or not file.exists)
       log.error "Invalid path: #{file}"
@@ -186,9 +210,7 @@ interact.register
         return dirs
 
       .subtree_reader = (directory) ->
-        dirs, timed_out = subtree_reader directory, filter: (file) -> not file.is_directory
-        append dirs, 1, directory
-        return dirs, timed_out
+        read_subtree directory, true
 
       .title or= 'Directory'
 
@@ -201,7 +223,7 @@ interact.register
     project = opts.project or get_project!
     return unless project
 
-    matcher = subtree_paths_matcher(project\paths!, project.root)
+    matcher = subtree_paths_matcher(project\paths!, project.root, only_files: true)
     explain = (search, text) -> Matcher.explain search, text, reverse: true
 
     result = interact.select_location

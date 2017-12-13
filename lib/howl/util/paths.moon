@@ -153,44 +153,23 @@ file_matcher = (files, directory, allow_new=false) ->
 
     return matches
 
-subtree_matcher = (files, directory, opts={}) ->
-  loader = ->
-    paths = {}
+subtree_paths_matcher = (paths, directory, opts = {}) ->
 
-    for file in *files
-      continue if should_hide file
-      is_directory = file.is_directory
-      continue if opts.exclude_directories and is_directory
-      name = display_name(file, is_directory, directory)
-      if config.file_icons
-        append paths, {
-          display_icon(is_directory)
-          name
-          :file
-          name: tostring(name)
-        }
-      else
-        append paths, {
-          name
-          :file
-          name: tostring(name)
-        }
-
-    return Matcher(paths, reverse: true)
-
-  activities.run {
-    title: "Loading files from '#{directory}'"
-    status: -> "Preparing #{#files} paths for selection.."
-    preempt: true
-  }, loader
-
-subtree_paths_matcher = (paths, directory) ->
   loader = ->
     with_icons = config.file_icons
-    items = for path in *paths
-      d_name = StyledText(path, 'filename')
+    dir_icon = icon.get('directory', 'directory')
+    file_icon = icon.get('file', 'filename')
+    has_directories = not opts.only_files
+
+    items = for i = 1, #paths
+      activities.yield! if i % 1000 == 0
+      path = paths[i]
+      is_directory = has_directories and path\ends_with(separator)
+      d_name = StyledText(path, is_directory and 'directory' or 'filename')
+
       if with_icons
-        { icon.get('file', 'filename'), d_name, :directory, :path }
+        used_icon = is_directory and dir_icon or file_icon
+        { used_icon, d_name, :directory, :path }
       else
         { d_name, :directory, :path }
 
@@ -199,30 +178,11 @@ subtree_paths_matcher = (paths, directory) ->
   activities.run {
     title: "Loading paths from '#{directory}'"
     status: -> "Preparing #{#paths} paths for selection.."
-    preempt: true
   }, loader
-
-subtree_reader = (directory, opts={}) ->
-  files_found = 0
-  cancel = false
-
-  activities.run {
-    title: "Scanning '#{directory}'"
-    status: -> "Reading files.. (#{files_found} files read)"
-    cancel: -> cancel = true
-  }, ->
-    directory\find
-      sort: true
-      filter: (file) -> should_hide(file) or opts.filter and opts.filter(file)
-      on_enter: (dir, files) ->
-        files_found = #files
-        return 'break' if cancel
 
 {
   :file_matcher,
   :get_cwd,
   :get_dir_and_leftover,
-  :subtree_matcher,
   :subtree_paths_matcher,
-  :subtree_reader
 }
