@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Performance improvements for recursive file selections (`project-open` and
+ordinary recursive `open` command): Between 30x and 32x faster.
+
 - Respect use_tabs option when commenting
 
 - Ensure scrolling works correctly for Gtk+ 3.4
