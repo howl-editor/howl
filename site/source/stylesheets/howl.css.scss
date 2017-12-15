@@ -194,6 +194,23 @@ code {
   }
 }
 
+table {
+  border: 1px solid darkgrey;
+  font-size: smaller;
+  margin-bottom: 1em;
+}
+
+td {
+  padding-left: 0.25em;
+  padding-right: 0.25em;
+}
+
+th {
+  padding-left: 0.25em;
+  padding-right: 0.25em;
+  border-bottom: 1px solid darkgrey;
+}
+
 .article {
   background: url("/images/blog/lightpaperfibers.png") repeat scroll 0 0 rgba(0, 0, 0, 0);
   border: 1px solid;
