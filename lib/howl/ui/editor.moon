@@ -401,16 +401,31 @@ class Editor extends PropertyObject
       return
 
     conf = @config_at_cursor
-    if conf.tab_indents and @current_context.prefix.is_blank
-      cur_line = @current_line
-      next_indent = cur_line.indentation + conf.indent
-      next_indent -= (next_indent % conf.indent)
-      cur_line.indentation = next_indent
-      @cursor.column = next_indent + 1
-    else if conf.use_tabs
+
+    if conf.use_tabs
       @view\insert '\t'
-    else
+      if conf.tab_indents
+        @cursor.column = @current_line\ufind('%S', @cursor.column)
+      return
+
+    if not conf.tab_indents
       @view\insert string.rep(' ', conf.indent)
+      return
+
+    -- Do space-based tab-stops alignment
+    cur_line = @current_line
+    cur_col = @cursor.column
+    tabstop_wd = conf.indent
+    next_non_ws = cur_line\ufind('%S', cur_col) or #cur_line + 1
+    delta = tabstop_wd - (next_non_ws - 1) % tabstop_wd
+    next_tabstop = next_non_ws + delta
+
+    if @current_context.prefix.is_blank
+      cur_line.indentation = next_tabstop - 1
+    else
+      @view\insert string.rep ' ', delta
+
+    @cursor.column = next_tabstop
 
   smart_back_tab: =>
     if not @selection.empty

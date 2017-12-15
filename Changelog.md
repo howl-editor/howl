@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Fix #327: `editor-smart-tab` to do aligned tab-stops in all positions.
+
 - Respect use_tabs option when commenting
 
 - Ensure scrolling works correctly for Gtk+ 3.4

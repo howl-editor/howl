@@ -420,13 +420,6 @@ describe 'Editor', ->
         editor\smart_tab!
         assert.equal buffer.text, 'h\tƏllo'
 
-      it 'inserts spaces to move to the next tab if use_tabs is false', ->
-        config.use_tabs = false
-        buffer.text = 'hƏllo'
-        cursor.pos = 1
-        editor\smart_tab!
-        assert.equal string.rep(' ', config.indent) .. 'hƏllo', buffer.text
-
       it 'inserts a tab to move to the next tab stop if use_tabs is true', ->
         config.use_tabs = true
         config.tab_width = config.indent
@@ -434,8 +427,25 @@ describe 'Editor', ->
         cursor.pos = 1
         editor\smart_tab!
         assert.equal '\thƏllo', buffer.text
+        assert.equal 2, cursor.pos
 
-      context 'when in whitespace and tab_indents is true', ->
+      it 'inserts a tab and move to the next non-ws if use_tabs and tab_indents is true', ->
+        config.use_tabs = true
+        config.tab_width = config.indent
+        buffer.text = '\thƏllo'
+        cursor.pos = 1
+        editor\smart_tab!
+        assert.equal '\t\thƏllo', buffer.text
+        assert.equal 3, cursor.pos
+
+      it 'inserts spaces to move to the next tab if use_tabs is false', ->
+        config.use_tabs = false
+        buffer.text = 'hƏllo'
+        cursor.pos = 1
+        editor\smart_tab!
+        assert.equal string.rep(' ', config.indent) .. 'hƏllo', buffer.text
+
+      context 'when in leading whitespace and tab_indents is true', ->
         before_each ->
           config.tab_indents = true
           config.use_tabs = false
@@ -448,7 +458,7 @@ describe 'Editor', ->
           editor\smart_tab!
           assert.equal buffer.text, string.rep(indent, 2) .. 'hƏllo'
 
-        it 'moves the cursor to the beginning of the text', ->
+        it 'indents and moves the cursor to the beginning of next non-whitespace', ->
           buffer.text = '  hƏllo'
           cursor.pos = 1
           editor\smart_tab!
@@ -460,6 +470,33 @@ describe 'Editor', ->
           editor\smart_tab!
           assert.equal 5, cursor.pos
           assert.equal '    hƏllo', buffer.text
+
+      context 'when past leading whitespace and tab_indents is true', ->
+        before_each ->
+          config.tab_indents = true
+          config.use_tabs = false
+          config.indent = 4
+
+        it 'aligns next non-ws to next indent-pos and moves cursor there', ->
+          buffer.text = '    hƏllo foo'
+          cursor.pos = 10
+          editor\smart_tab!
+          assert.equal '    hƏllo   foo', buffer.text
+          assert.equal 13, cursor.pos
+
+        it 'aligns eol to next indent-pos and moves cursor there', ->
+          buffer.text = ' hƏllo '
+          cursor.pos = 7
+          editor\smart_tab!
+          assert.equal ' hƏllo  ', buffer.text
+          assert.equal 9, cursor.pos
+
+        it 'aligns eol to next indent-pos and moves cursor there (2)', ->
+          buffer.text = ' hƏllo '
+          cursor.pos = 8
+          editor\smart_tab!
+          assert.equal ' hƏllo  ', buffer.text
+          assert.equal 9, cursor.pos
 
       context 'when a selection is active', ->
         it 'right-shifts the lines included in a selection if any', ->
