@@ -196,7 +196,7 @@ case, but to good effect:
 | Direct file scan | ~30K entries   | ~0.7 s  |
 | Git loading      | ~30K entries   | ~0.3 s  |
 
-### Wrap up and finishing notes..
+## Wrap up and finishing notes..
 
 In conclusion, recursive file listings were sped up by a factor of between _30x_
 and _32x_. If you're working on large projects this should be very welcome! If
