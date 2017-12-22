@@ -58,21 +58,24 @@ interact.register
 
       opts.on_change = (sel, text, items) ->
         if sel
-          buffer = sel.buffer or preview\get_buffer get_file(sel)
+          buffer = sel.buffer or preview\get_buffer(get_file(sel), sel.line_nr)
           editor\preview buffer
 
           highlight.remove_all 'search', buffer
           highlight.remove_all 'search_secondary', buffer
 
           if sel.line_nr
-            editor.line_at_center = sel.line_nr
+            if #buffer.lines < sel.line_nr
+              log.warn "Line #{sel.line_nr} not loaded in preview"
+            else
+              editor.line_at_center = sel.line_nr
 
-            if sel.highlights and #sel.highlights > 0
-              line = buffer.lines[sel.line_nr]
-              add_highlight 'search', buffer, line, sel.highlights[1]
+              if sel.highlights and #sel.highlights > 0
+                line = buffer.lines[sel.line_nr]
+                add_highlight 'search', buffer, line, sel.highlights[1]
 
-              for i = 2, #sel.highlights
-                add_highlight 'search_secondary', buffer, line, sel.highlights[i]
+                for i = 2, #sel.highlights
+                  add_highlight 'search_secondary', buffer, line, sel.highlights[i]
 
         if on_change
           on_change sel, text, items
