@@ -90,6 +90,10 @@ describe 'Matcher', ->
       assert.same { how: 'exact', {4, 3} }, Matcher.explain 'ƒlu', 'sñaƒlux'
       assert.same { how: 'boundary', {1, 1}, {4, 1}, {9, 2} }, Matcher.explain 'itʂo', 'iʂ that ʂo'
 
+    it 'explains case boundary matches correctly', ->
+      m = Matcher.explain 'cc', 'a CreditCard'
+      assert.same { how: 'boundary', {3, 1}, {9, 1}}, m
+
     it 'lower-cases the search and text just as for matching', ->
       assert.not_nil Matcher.explain 'FU', 'ʂnafu'
       assert.not_nil Matcher.explain 'fu', 'SNAFU'

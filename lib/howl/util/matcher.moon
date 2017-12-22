@@ -1,9 +1,13 @@
--- Copyright 2012-2016 The Howl Developers
+-- Copyright 2012-2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+ffi = require 'ffi'
+GRegex = require 'ljglibs.glib.regex'
 {insert: append, :concat} = table
 max = math.max
-{:type, :tostring} = _G
+{:type, :tostring, :tonumber} = _G
+{:escape_string} = GRegex
+{:C} = ffi
 
 separator = ' \t-_:/'
 sep_p = "[#{separator}]+"
@@ -12,25 +16,25 @@ leading_greedy_p = "(?:^|.*#{sep_p})"
 leading_p = "(?:^|.*?#{sep_p})"
 
 boundary_part_p = (p) ->
-  "(?:#{p}|#{non_sep_p}*#{sep_p}#{p})()"
+  "(?:(#{p})|#{non_sep_p}*#{sep_p}(#{p}))"
 
 case_boundary_part_p = (p) ->
   upper = p.uupper
-  "(?:#{p}|#{upper}|.+#{upper})()"
+  "(?:(#{p})|(#{upper})|.+(#{upper}))"
 
 boundary_pattern = (search, reverse) ->
-  parts = [r.escape(search[i]) for i = 1, search.ulen]
+  parts = [escape_string(search[i]) for i = 1, search.ulen]
   leading = reverse and leading_greedy_p or leading_p
-  p = leading .. parts[1] .. '()'
+  p = leading .. '(' .. parts[1] .. ')'
   p ..= concat [boundary_part_p(parts[i]) for i = 2, #parts]
-  r(p)
+  GRegex(p)
 
 case_boundary_pattern = (search, reverse) ->
-  parts = [r.escape(search[i]) for i = 1, search.ulen]
+  parts = [escape_string(search[i]) for i = 1, search.ulen]
   leading = reverse and leading_greedy_p or leading_p
   p = leading
   p ..= concat [case_boundary_part_p(part) for part in *parts]
-  r(p)
+  GRegex(p)
 
 score_for = (match, text, match_type, reverse, base_score) ->
   len = text.ulen
@@ -54,6 +58,10 @@ create_matcher = (search, reverse) ->
   search = search.ulower
   boundary_p = boundary_pattern search, reverse
   case_boundary_p = case_boundary_pattern search, reverse
+  mi = ffi.new('GMatchInfo *[1]')
+  start_pos = ffi.new 'gint[1]'
+  end_pos = ffi.new 'gint[1]'
+  empty = {}
 
   {:find, :sub} = string
 
@@ -66,29 +74,55 @@ create_matcher = (search, reverse) ->
 
     true
 
+  do_match = (p, text) ->
+    matched = C.g_regex_match(p, text, 0, mi) != 0
+    return empty unless matched
+    info = mi[0]
+    count = C.g_match_info_get_match_count(info)
+    return empty unless count > 0
+    match = {}
+
+    for i = 1, count - 1
+      C.g_match_info_fetch_pos(info, i, start_pos, end_pos)
+      s_pos = start_pos[0]
+      if s_pos != -1
+        append match, tonumber(s_pos) + 1
+
+    C.g_match_info_unref info
+    match
+
   (text, case_text) ->
     return nil unless possible_match(text)
-    match = { boundary_p\match text }
+
+    match = do_match boundary_p, text
     return 'boundary', match if #match > 0
-    match = { case_boundary_p\match case_text }
-    return 'boundary', match if #match > 0
-    match = { text\ufind search, 1, true }
+
+    if case_text
+      match = do_match case_boundary_p, case_text
+      return 'boundary', match if #match > 0
+
+    match = { text\find search, 1, true }
     return 'exact', match if #match > 0
     nil
 
 load_entries = (candidates) ->
   max_len = 0
+  t_candidates = type(candidates[1]) == 'table' and #candidates[1] > 0
 
-  entries = if type(candidates[1]) == 'table' and #candidates[1] > 0
+  entries = if t_candidates
     for candidate in *candidates
       text = concat [tostring(c) for c in *candidate], ' '
       max_len = max max_len, #text
-      text: text.ulower, case_text: text, :candidate
+      lower = text.ulower
+      case_text = text if text != lower
+      text: lower, :case_text, :candidate
   else
     for candidate in *candidates
       text = tostring candidate
       max_len = max max_len, #text
-      text: text.ulower, case_text: text, :candidate
+      lower = text.ulower
+      case_text = text if text != lower
+      text: lower, :case_text, :candidate
 
   entries.base_score = max_len * 3
   entries
@@ -145,12 +179,12 @@ class Matcher
     how, match = create_matcher(search, options.reverse)(text.ulower, text)
     return nil unless match
 
+    match = text\char_offset match
     segments = {}
     if how == 'exact'
       { start_pos, end_pos } = match
       append segments, {start_pos, end_pos - start_pos + 1}
     else -- boundary
-      match[i] -= 1 for i = 1, #match
       local segment_start, segment_end
       for pos in *match
         unless segment_start
@@ -160,11 +194,11 @@ class Matcher
         if pos == segment_end + 1
           segment_end = pos
         else
-          table.insert segments, {segment_start, segment_end - segment_start + 1}
+          append segments, {segment_start, segment_end - segment_start + 1}
           segment_start = pos
           segment_end = pos
       if segment_start
-        table.insert segments, {segment_start, segment_end - segment_start + 1}
+        append segments, {segment_start, segment_end - segment_start + 1}
 
     segments.how = how
     return segments

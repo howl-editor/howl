@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Performance and functionality improvements for the matcher, used in Howl
+selection lists, enabling fast matching across much larger data sets.
+
 - Performance improvements for recursive file selections (`project-open` and
 ordinary recursive `open` command): Between 30x and 32x faster.
 
