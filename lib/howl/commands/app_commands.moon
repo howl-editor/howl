@@ -421,7 +421,7 @@ command.register
 command.register
   name: 'project-build'
   description: 'Run the command in config.project_build_command from within the project directory'
-  handler: -> launch_cmd get_project_root!, config.project_build_command
+  handler: -> launch_cmd get_project_root!, (app.editor and app.editor.buffer.config or config).project_build_command
 
 command.register
   name: 'exec',
