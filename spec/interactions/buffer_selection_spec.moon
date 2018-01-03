@@ -12,7 +12,6 @@ require 'howl.interactions.buffer_selection'
 
 describe 'buffer_selection', ->
   local command_line, editor
-  config.autoclose_single_buffer = false
   buffers = {}
 
   before_each ->
@@ -22,6 +21,8 @@ describe 'buffer_selection', ->
       preview: (@buffer) => nil
     }
     command_line = app.window.command_line
+
+    config.autoclose_single_buffer = false
 
     for b in *app.buffers
       app\close_buffer b

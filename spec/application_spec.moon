@@ -4,11 +4,11 @@
 
 describe 'Application', ->
   local root_dir, application
-  config.autoclose_single_buffer = false
 
   before_each ->
     root_dir = File.tmpdir!
     application = Application root_dir, {}
+    config.autoclose_single_buffer = false
 
   after_each -> root_dir\delete_all!
 
