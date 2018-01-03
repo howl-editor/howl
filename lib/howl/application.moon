@@ -343,7 +343,7 @@ class Application extends PropertyObject
       count += 1
 
   _append_buffer: (buffer) =>
-    if #@_buffers == 1 and not @_buffers[1].file and not @_buffers[1].modified
+    if config.autoclose_single_buffer and #@_buffers == 1 and not @_buffers[1].file and not @_buffers[1].modified
       @_buffers[1] = buffer
     else
       append @_buffers, buffer
@@ -550,6 +550,13 @@ config.define
   description: 'The number of files to remember in the recently closed list'
   default: 1000
   type_of: 'number'
+  scope: 'global'
+
+config.define
+  name: 'autoclose_single_buffer'
+  description: 'When only one, empty buffer is open, automatically close it when another is created'
+  default: true
+  type_of: 'boolean'
   scope: 'global'
 
 signal.register 'file-opened',

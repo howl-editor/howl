@@ -12,6 +12,7 @@ close_buffers = ->
     app\close_buffer b, true
 
 describe 'janitor', ->
+  config.autoclose_single_buffer = false
   before_each -> close_buffers!
 
   after_each ->

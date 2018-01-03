@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, bindings, interact, Project from howl
+import app, bindings, config, interact, Project from howl
 import File from howl.io
 import Window from howl.ui
 
@@ -12,6 +12,7 @@ require 'howl.interactions.buffer_selection'
 
 describe 'buffer_selection', ->
   local command_line, editor
+  config.autoclose_single_buffer = false
   buffers = {}
 
   before_each ->

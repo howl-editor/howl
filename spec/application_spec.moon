@@ -1,9 +1,10 @@
 {:File} = howl.io
-{:Application, :Buffer, :mode} = howl
+{:Application, :Buffer, :config, :mode} = howl
 {:Editor, :highlight} = howl.ui
 
 describe 'Application', ->
   local root_dir, application
+  config.autoclose_single_buffer = false
 
   before_each ->
     root_dir = File.tmpdir!
