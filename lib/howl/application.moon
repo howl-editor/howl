@@ -139,14 +139,14 @@ class Application extends PropertyObject
   new_buffer: (buffer_mode) =>
     buffer_mode or= mode.by_name 'default'
     buffer = Buffer buffer_mode
-    append @_buffers, buffer
+    @_append_buffer buffer
     buffer
 
   add_buffer: (buffer, show = true) =>
     for b in *@buffers
       return if b == buffer
 
-    append @_buffers, buffer
+    @_append_buffer buffer
     if show and @editor
       breadcrumbs.drop!
       @editor.buffer = buffer
@@ -341,6 +341,12 @@ class Application extends PropertyObject
     ctx = C.g_main_context_default!
     while count < max_count and C.g_main_context_iteration(ctx, false) != 0
       count += 1
+
+  _append_buffer: (buffer) =>
+    if #@_buffers == 1 and not @_buffers[1].file and not @_buffers[1].modified
+      @_buffers[1] = buffer
+    else
+      append @_buffers, buffer
 
   _buffer_for_file: (file) =>
     for b in *@buffers
