@@ -50,7 +50,6 @@ get_preview_buffer = (file, line) ->
 
     s
 
-
   if ok
     size = file.size
     title = "#{title} (~#{math.floor(size / 1024)}KB)"
@@ -63,7 +62,7 @@ get_preview_buffer = (file, line) ->
   else
     title = "No Preview: #{title}"
 
-  new_buffer title, text, buffer_mode
+  new_buffer title, text or '', buffer_mode
 
 ->
   open_buffers = { b.file.path, b for b in *app.buffers when b.file }
