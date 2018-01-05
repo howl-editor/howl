@@ -2,6 +2,10 @@
 
 ## Unreleased (in master)
 
+- Added the `**popup_menu_accept_key` option, for controlling which key accepts
+the current option for a popup menu, such as the completion popup. Valid values
+are 'enter' (the default) or 'tab'.
+
 - Close completion popup when user activity warrants it (e.g. direction keys,
 clicking in another location using the mouse, etc.)
 

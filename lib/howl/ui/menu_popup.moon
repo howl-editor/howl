@@ -1,7 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import style, ListWidget, Popup from howl.ui
+{:style, :ListWidget, :Popup} = howl.ui
+{:config} = howl
 
 class MenuPopup extends Popup
   new: (@items, @callback) =>
@@ -49,7 +50,17 @@ class MenuPopup extends Popup
       unless event.character
         self\close!
 
-    return: => @choose!
+    tab: =>
+      if config.popup_menu_accept_key == 'tab'
+        @choose!
+      else
+        false
+
+    return: =>
+      if config.popup_menu_accept_key == 'enter'
+        @choose!
+      else
+        false
   }
 
 return MenuPopup

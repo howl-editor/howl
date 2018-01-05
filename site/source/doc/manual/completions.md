@@ -21,7 +21,8 @@ editors while editing text, and in the command line while entering commands. Whi
 the completions offered differs as one would expect, the way you interact with a
 completion list is the same:
 
-- You can press `enter` to accept the completion given. This will cause the
+- You can press `enter` (or alternatively `tab` if so configured) to accept the
+completion given. This will cause the
   currently selected completion to be inserted at the cursor. The completion will
   either be simply inserted at the cursor, or it will optionally replace the
   current word. This behaviour is controlled by the `hungry_completion`
@@ -59,10 +60,12 @@ is no coincidence - boundary matches are preferred over exact matches.
 
 *Finally, a note about a gotcha:*
 
-As long as a completion list is showing, `enter` will always select the active
-completion. This is typically what you want. However, at times you just want add
-a new line, or enter the text as written. To avoid selecting the completion,
-enter `escape` to close the completion list first.
+As long as a completion list is showing, the accept key (`enter` or `tab`) will
+always select the active completion. This is typically what you want. However,
+at times you just want add a new line or a tab. To avoid selecting the
+completion, enter `escape` to close the completion list first. If you want to
+keep the current word as is and continue with another one, just press `space`
+as you would normally do.
 
 ### Configuring completions
 
@@ -104,5 +107,10 @@ consulted for completions.
 
 For the in-buffer completer, this controls whether only open buffers with the
 same mode as the current one is consulted or not.
+
+- **popup_menu_accept_key**:
+
+Controls what key accepts the current option for popup menus, such as the
+completion list. Valid values are 'enter' (the default) and 'tab'.
 
 *Next*: [Working with files](files.html)

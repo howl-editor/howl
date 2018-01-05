@@ -76,3 +76,15 @@ config.define {
   default: 700
   scope: 'global'
 }
+
+config.define {
+  name: 'popup_menu_accept_key'
+  description: 'What key should be used for accepting the current option of a popup menu?'
+  default: 'enter'
+  scope: 'global'
+  options: {
+    { 'enter', 'Pressing <ENTER> accepts the current option' }
+    { 'tab', 'Pressing <TAB> accepts the current option' }
+  }
+
+}
