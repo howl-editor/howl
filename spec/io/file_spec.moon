@@ -468,15 +468,14 @@ describe 'File', ->
       context 'and it returns "break"', ->
         it 'causes an early return', ->
           with_populated_dir (dir) ->
-            paths, cancelled = dir\find_paths on_enter: (enter_dir, files) ->
+            local count
+            paths, cancelled = dir\find_paths on_enter: (enter_dir, cur_paths) ->
               if enter_dir == 'child1/'
+                count = #cur_paths
                 return 'break'
 
             assert.equal true, cancelled
-            table.sort paths
-            assert.same {
-              'child2',
-            }, paths
+            assert.equal count, #paths
 
   describe 'copy(dest)', ->
     it 'copies the given file', ->
