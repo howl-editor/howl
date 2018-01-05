@@ -6,6 +6,8 @@ import type, tonumber from _G
 import const_char_p from howl.cdefs
 import C from ffi
 
+{:unpack} = table
+
 do_match = (p, s, init) ->
   s = s\usub init unless init == 1
   return nil unless #s > 0
@@ -56,7 +58,7 @@ methods = {
     matches = {}
     start = count > 1 and 1 or 0
     get_captures match_info, ptr, matches, start, count, init - 1
-    return table.unpack matches
+    return unpack matches
 
   find: (s, init = 1) =>
     match_info, ptr, count = do_match @re, s, init
@@ -65,7 +67,7 @@ methods = {
     _, start_pos, end_pos = get_capture match_info, 0, ptr, true
     matches = { start_pos + init - 1, end_pos + init - 1 }
     get_captures match_info, ptr, matches, 1, count, init - 1
-    return table.unpack matches
+    return unpack matches
 
   gmatch: (s) =>
     ptr = const_char_p s
@@ -108,7 +110,7 @@ methods = {
           for i, value in ipairs match
             match[i] = pos_matches[value] if type(value) == 'number'
 
-        table.unpack match
+        unpack match
       else
         if has_position_captures and type(match) == 'number' then pos_matches[match] else match
 
