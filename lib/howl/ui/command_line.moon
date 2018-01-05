@@ -515,7 +515,7 @@ class CommandLine extends PropertyObject
           return true if bindings.dispatch event, 'commandline', { widget.keymap }, widget
 
     activity = @_activity
-    if activity.keymap
+    if activity and activity.keymap
       return true if bindings.dispatch event, 'commandline', { activity.keymap }, activity
 
     for i = @stack_depth, 1, -1
