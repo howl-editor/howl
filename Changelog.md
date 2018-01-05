@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Close completion popup when user activity warrants it (e.g. direction keys,
+clicking in another location using the mouse, etc.)
+
 - Performance and functionality improvements for the matcher, used in Howl
 selection lists, enabling fast matching across much larger data sets.
 

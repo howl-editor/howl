@@ -799,6 +799,9 @@ class Editor extends PropertyObject
   _on_pos_changed: =>
     @_update_position!
     @_brace_highlight!
+    if @popup and @popup.window.on_pos_changed
+      @popup.window\on_pos_changed @cursor
+
     signal.emit 'cursor-changed', editor: self, cursor: @cursor
 
   _get_matching_brace: (byte_pos, start_pos, end_pos) =>

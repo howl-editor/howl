@@ -1,8 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import MenuPopup, style from howl.ui
-import Completer from howl
+{:MenuPopup, :style} = howl.ui
+{:Completer} = howl
+{:abs} = math
 
 is_character = (event) ->
   event.text and event.text.ulen == 1 and event.text\umatch r'[\\pL_]'
@@ -35,6 +36,7 @@ class CompletionPopup extends MenuPopup
       return
 
     @_load_completions!
+    @_insert_pos = editor.cursor.pos
 
   on_delete_back: (editor, args) =>
     return unless @completer
@@ -42,8 +44,13 @@ class CompletionPopup extends MenuPopup
       @close!
       return
 
+  on_pos_changed: (cursor) =>
+    if abs(cursor.pos - @_insert_pos) > 1
+      @close!
+
   _init_completer: =>
-    @completer = Completer @editor.buffer, @editor.cursor.pos
+    @_insert_pos = @editor.cursor.pos
+    @completer = Completer @editor.buffer, @_insert_pos
     comp_style = style.at_pos(@editor.buffer, @completer.start_pos) or 'default'
     @list.columns = { { style: comp_style } }
 
