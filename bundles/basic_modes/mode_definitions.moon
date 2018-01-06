@@ -312,7 +312,7 @@ common_auto_pairs = {
     parent: 'curly_mode'
 
   scheme:
-    extensions: { 'sch', 'scm' }
+    extensions: { 'sch', 'scm', 'sld', 'sls', 'ss' }
     comment_syntax: ';'
     auto_pairs: {
       '(': ')'
