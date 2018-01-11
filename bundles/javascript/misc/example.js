@@ -28,6 +28,8 @@ false;
 // strings
 "hello!" && 'hi there!';
 "esc\"aped" && 'esc\'aped';
+`this is a multi-line template string,
+with a string ${variable} inlined.`;
 
 // Capitalized identifiers are treated as types
 new String('foo');
