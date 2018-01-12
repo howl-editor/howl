@@ -12,7 +12,8 @@ command.register
     if interact.forward_search!
       return true
     app.editor.searcher\cancel!
-  handler: -> app.editor.searcher\commit!
+  handler: (commit) ->
+    app.editor.searcher\commit! if commit
 
 command.register
   name: 'buffer-search-backward',
@@ -21,7 +22,8 @@ command.register
     if interact.backward_search!
       return true
     app.editor.searcher\cancel!
-  handler: -> app.editor.searcher\commit!
+  handler: (commit) ->
+    app.editor.searcher\commit! if commit
 
 command.register
   name: 'buffer-search-word-forward',
@@ -31,7 +33,8 @@ command.register
     if interact.forward_search_word!
       return true
     app.editor.searcher\cancel!
-  handler: -> app.editor.searcher\commit!
+  handler: (commit) ->
+    app.editor.searcher\commit! if commit
 
 command.register
   name: 'buffer-search-word-backward',
@@ -41,7 +44,8 @@ command.register
     if interact.backward_search_word!
       return true
     app.editor.searcher\cancel!
-  handler: -> app.editor.searcher\commit!
+  handler: (commit) ->
+    app.editor.searcher\commit! if commit
 
 command.register
   name: 'buffer-repeat-search',

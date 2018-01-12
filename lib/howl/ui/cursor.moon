@@ -7,7 +7,7 @@ aullar = require 'aullar'
 {:min} = math
 
 class Cursor extends PropertyObject
-  new: (@container, @selection) =>
+  new: (@container, @selection, @opts = {}) =>
     @view = container.view
     @cursor = @view.cursor if @view
     super!
@@ -250,8 +250,9 @@ for cmd in *commands
   if key_cmd
     Cursor.__base[name] = (extend_selection) =>
       opts = extend_selection and {extend: true} or {}
-      if drop_crumb
+      if drop_crumb and @opts.drop_crumbs and @view.has_focus
         breadcrumbs.drop!
+
       f @cursor, opts
 
   cmd_name = name\gsub '_', '-'

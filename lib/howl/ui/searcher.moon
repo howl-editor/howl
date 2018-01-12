@@ -104,21 +104,27 @@ class Searcher
       @backward_to @last_search, @last_type, false
 
   commit: =>
-    breadcrumbs.drop {
-      buffer: @buffer,
-      pos: @start_pos,
-      line_at_top: @start_line_at_top
-    }
-    @buffer = nil
-    @start_pos = nil
-    @active = false
+    if @active
+      if @start_pos != @editor.cursor.pos
+        breadcrumbs.drop {
+          buffer: @buffer,
+          pos: @start_pos,
+          line_at_top: @start_line_at_top
+        }
+
+      @_finish!
 
   cancel: =>
     @_clear_highlights!
 
     if @active
       @editor.cursor.pos = @start_pos
-      @commit!
+      @_finish!
+
+  _finish: =>
+    @buffer = nil
+    @start_pos = nil
+    @active = false
 
   _find_match: (search, init, direction, ensure_word) =>
     finder = nil

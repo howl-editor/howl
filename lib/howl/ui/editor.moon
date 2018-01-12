@@ -116,7 +116,7 @@ class Editor extends PropertyObject
     }
 
     @selection = Selection @view
-    @cursor = Cursor self, @selection
+    @cursor = Cursor self, @selection, drop_crumbs: true
     @searcher = Searcher self
     @completion_popup = CompletionPopup self
 

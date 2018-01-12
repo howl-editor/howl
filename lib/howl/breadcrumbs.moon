@@ -190,7 +190,11 @@ new_crumb = (opts = {}) ->
 
 current_edit_location_crumb = ->
   editor = _G.howl.app.editor
-  return nil unless editor and editor.cursor
+  return nil unless editor
+  return nil unless editor.cursor
+  return nil unless editor.view.has_focus
+  return nil if editor.buffer.data.is_preview
+
   new_crumb {
     buffer: editor.buffer,
     pos: editor.cursor.pos,
