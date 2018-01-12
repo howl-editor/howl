@@ -15,9 +15,12 @@ last_visibility = 0
 
 cancel = (activity) ->
   if activity.def.cancel
-    activity.widget.title.text ..= ' (Cancelling..)'
-    activity.widget.shortcuts.text = ''
+    if not activity.cancelled
+      activity.widget.title.text ..= ' (Cancelling..)'
+      activity.widget.shortcuts.text = ''
+
     activity.def.cancel!
+    activity.cancelled = true
   else
     activity.widget.text = 'This operation cannot be cancelled'
 
