@@ -74,23 +74,6 @@ describe 'breadcrumbs', ->
           assert.equals app.editor.buffer, crumb.buffer_marker.buffer
           assert.equals file, crumb.file
 
-    it 'avoids adding duplicate crumbs', ->
-      b = buffer '123456789'
-      breadcrumbs.drop buffer: b, pos: 3
-      breadcrumbs.drop buffer: b, pos: 3
-      assert.equals 1, #breadcrumbs.trail
-      markers = b.markers\find {}
-      assert.equals 1, #markers
-
-    it 'reduces unnecessary loops', ->
-      b = buffer '123456789'
-      breadcrumbs.drop buffer: b, pos: 3
-      breadcrumbs.drop buffer: b, pos: 6
-      breadcrumbs.drop buffer: b, pos: 3
-      breadcrumbs.drop buffer: b, pos: 6
-      assert.equals 2, #breadcrumbs.trail
-      assert.equals 3, breadcrumbs.location
-
     context 'when forward crumbs exists', ->
       it 'invalidates all such crumbs and buffer markers', ->
         b = buffer '123456789\nabcdefgh'
@@ -132,6 +115,24 @@ describe 'breadcrumbs', ->
         assert.equals 2, #breadcrumbs.trail
         assert.equals 3, breadcrumbs.location
         assert.same {2, 3}, [c.pos for c in *breadcrumbs.trail]
+
+  describe 'crumb cleaning', ->
+    it 'removes duplicate crumbs', ->
+      b = buffer '123456789'
+      breadcrumbs.drop buffer: b, pos: 3
+      breadcrumbs.drop buffer: b, pos: 3
+      assert.equals 1, #breadcrumbs.trail
+      markers = b.markers\find {}
+      assert.equals 1, #markers
+
+    it 'reduces unnecessary loops', ->
+      b = buffer '123456789'
+      breadcrumbs.drop buffer: b, pos: 3
+      breadcrumbs.drop buffer: b, pos: 6
+      breadcrumbs.drop buffer: b, pos: 3
+      breadcrumbs.drop buffer: b, pos: 6
+      assert.equals 2, #breadcrumbs.trail
+      assert.equals 3, breadcrumbs.location
 
   describe 'clear', ->
     it 'invalidates any existing crumbs (buffer markers and crumbs)', ->

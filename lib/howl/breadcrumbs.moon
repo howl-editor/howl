@@ -66,15 +66,36 @@ adjust_crumbs_for_closed_buffer = (buffer) ->
 
   location = max 1, location - lower_location_by
 
-adjust_crumbs_for_cycle = ->
-  return unless location > 4
-  last = crumbs[location - 1]
-  last_match = crumbs[location - 3]
-  return unless crumbs_are_equal last, last_match
-  previous = crumbs[location - 2]
-  previous_match = crumbs[location - 4]
-  return unless crumbs_are_equal previous, previous_match
-  location -= 2
+-- cleans up the crumbs trail, removing duplicates, loops, etc
+-- for performance reasons we stop as soon as we can, meaning the tail
+-- will be clean, but necessarily the entire trail
+prune_crumbs_tail = ->
+  remove_at = (i) ->
+    clear_crumb crumbs[i]
+    remove crumbs, i
+    location -= 1 if i < location
+
+  i = #crumbs
+  local next, second, third
+  while i > 0 and #crumbs > 0 and i >= location - 4
+    cur_crumb = crumbs[i]
+
+    -- 1: dup entries
+    if crumbs_are_equal cur_crumb, next
+      remove_at i
+    -- 2: loop cycles (1, 3, 1, 3)
+    elseif crumbs_are_equal(cur_crumb, second) and crumbs_are_equal(next, third)
+      remove_at i
+      remove_at i
+    -- 3:
+    elseif not navigable_crumb cur_crumb
+      remove_at i
+    else
+      third = second
+      second = next
+      next = cur_crumb
+
+    i -= 1
 
 prune_crumbs_according_to_limit = ->
   limit = config.breadcrumb_limit
@@ -201,6 +222,9 @@ current_edit_location_crumb = ->
     line_at_top: editor.line_at_top
   }
 
+---- Exported -----------------------------------------------------------------
+-------------------------------------------------------------------------------
+
 drop = (opts) ->
   crumb = if opts
     new_crumb opts
@@ -211,8 +235,7 @@ drop = (opts) ->
 
   if add_crumb crumb, location
     location = next_location!
-
-    adjust_crumbs_for_cycle!
+    prune_crumbs_tail!
     prune_crumbs_according_to_limit!
 
     -- clear any existing forward crumbs
@@ -220,28 +243,27 @@ drop = (opts) ->
       clear_crumb remove(crumbs)
 
 go_back = ->
-  while true
-    crumb = crumbs[location - 1]
-    break unless crumb
+  prune_crumbs_tail!
+  crumb = crumbs[location - 1]
+  if crumb
     location -= 1
-    if navigable_crumb crumb
-      current_crumb = current_edit_location_crumb!
+    current_crumb = current_edit_location_crumb!
+    if current_crumb
       add_crumb current_crumb, location + 1, true
-      goto_crumb crumb
-      break
+
+    goto_crumb crumb
 
 go_forward = ->
-  while true
-    crumb = crumbs[location + 1]
-    break unless crumb
+  prune_crumbs_tail!
+  crumb = crumbs[location + 1]
+  if crumb
     location += 1
-    if navigable_crumb crumb
-      current_crumb = current_edit_location_crumb!
+    current_crumb = current_edit_location_crumb!
+    if current_crumb
       if add_crumb(current_crumb, location, true)
         location += 1
 
-      goto_crumb crumb
-      break
+    goto_crumb crumb
 
 initialized = false
 
@@ -253,6 +275,7 @@ init = ->
   signal.connect 'buffer-closed', (params) ->
     adjust_location_for_inactive_buffer params.buffer
     adjust_crumbs_for_closed_buffer params.buffer
+    prune_crumbs_tail!
 
   initialized = true
 
