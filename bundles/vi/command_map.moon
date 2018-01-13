@@ -141,6 +141,18 @@ map = {
 
     Y: (editor) -> copy_lines editor
 
+    Z: ->
+      if state.quitting
+        state.reset!
+        command.save_and_quit!
+      else
+        state.quitting = true
+
+    Q: ->
+      if state.quitting
+        state.reset!
+        command.quit_without_save!
+
     '.': (editor) -> repeat_last editor
   }, __index: base_map.editor
 

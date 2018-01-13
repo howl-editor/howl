@@ -7,12 +7,12 @@ setfenv 1, _ENV
 
 export mode, map
 export active, executing = false, false
-export delete, change, yank, go
+export delete, change, yank, go, quitting
 export count, insert_edit
 
 local maps, last_op
 
-export has_modifier = -> delete or change or yank or go
+export has_modifier = -> delete or change or yank or go or quitting
 
 export reset = ->
   delete = false
@@ -20,6 +20,7 @@ export reset = ->
   yank = false
   count = nil
   go = nil
+  quitting = nil
   executing = false
   bindings.cancel_capture!
 
@@ -53,7 +54,7 @@ export change_mode = (editor, to, ...) ->
   true
 
 export apply = (editor, f) ->
-  state = :delete, :change, :yank, :count
+  state = :delete, :change, :yank, :quitting, :count
   state.has_modifier = delete or change or yank
 
   op = (editor) -> editor.buffer\as_one_undo ->
