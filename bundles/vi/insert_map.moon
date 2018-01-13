@@ -32,7 +32,10 @@ insert_map = {
     insert_pos = nil
     state.change_mode editor, 'command'
     editor.cursor.column = math.max 1, editor.cursor.column - 1
-  }
+
+  ctrl_i: (editor) -> editor\shift_right!
+  ctrl_d: (editor) -> editor\shift_left!
+}
 
 setmetatable insert_map, {
   __call: (_, editor) ->
