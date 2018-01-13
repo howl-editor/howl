@@ -34,6 +34,16 @@ clear = ->
 
   location = 1
 
+crumb_pos = (crumb) ->
+  marker = crumb.buffer_marker
+  buffer = marker and marker.buffer
+  if buffer
+    markers = buffer.markers\find(name: marker.name)
+    if #markers > 0
+      return markers[1].start_offset
+
+  crumb.pos
+
 navigable_crumb = (crumb) ->
   return true if crumb.file and crumb.file.exists
   crumb.buffer_marker and crumb.buffer_marker.buffer
@@ -69,7 +79,7 @@ adjust_crumbs_for_closed_buffer = (buffer) ->
 -- cleans up the crumbs trail, removing duplicates, loops, etc
 -- for performance reasons we stop as soon as we can, meaning the tail
 -- will be clean, but necessarily the entire trail
-prune_crumbs_tail = ->
+clean_crumbs_tail = ->
   remove_at = (i) ->
     clear_crumb crumbs[i]
     remove crumbs, i
@@ -79,6 +89,7 @@ prune_crumbs_tail = ->
   local next, second, third
   while i > 0 and #crumbs > 0 and i >= location - 4
     cur_crumb = crumbs[i]
+    cur_crumb.pos = crumb_pos cur_crumb
 
     -- 1: dup entries
     if crumbs_are_equal cur_crumb, next
@@ -143,12 +154,6 @@ goto_crumb = (crumb) ->
     return
 
   pos = crumb.pos
-
-  if marker and buffer
-    markers = buffer.markers\find(name: marker.name)
-    if #markers > 0
-      pos = markers[1].start_offset
-
   editor.cursor.pos = pos
 
   if crumb.line_at_top
@@ -235,7 +240,7 @@ drop = (opts) ->
 
   if add_crumb crumb, location
     location = next_location!
-    prune_crumbs_tail!
+    clean_crumbs_tail!
     prune_crumbs_according_to_limit!
 
     -- clear any existing forward crumbs
@@ -243,7 +248,7 @@ drop = (opts) ->
       clear_crumb remove(crumbs)
 
 go_back = ->
-  prune_crumbs_tail!
+  clean_crumbs_tail!
   crumb = crumbs[location - 1]
   if crumb
     location -= 1
@@ -254,7 +259,7 @@ go_back = ->
     goto_crumb crumb
 
 go_forward = ->
-  prune_crumbs_tail!
+  clean_crumbs_tail!
   crumb = crumbs[location + 1]
   if crumb
     location += 1
@@ -275,7 +280,7 @@ init = ->
   signal.connect 'buffer-closed', (params) ->
     adjust_location_for_inactive_buffer params.buffer
     adjust_crumbs_for_closed_buffer params.buffer
-    prune_crumbs_tail!
+    clean_crumbs_tail!
 
   initialized = true
 

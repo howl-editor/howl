@@ -28,7 +28,9 @@ location. This contains two fields:
 As can be seen above, a crumb has a file reference, or a buffer reference via
 the `buffer_marker` field, or both at the same time. In the case where a marker
 is available that should be used for determining the correct position, as `pos`
-could become stale due to subsequent edits.
+could be stale in those cases, due to later editing or modifications.
+[crumb_pos](#crumb_pos) can be used for correctly determining the up-to-date
+position of a given crumb.
 
 ---
 
@@ -64,6 +66,12 @@ The table of breadcrumbs.
 
 Clears all current breadcrumbs. After this [location] would be 1, and
 [trail] would have a size of 0.
+
+### crumb_pos (crumb)
+
+Returns the position of `crumb`. Note that this can potentially return `nil`, if
+the crumb in question have become stale, meaning that it referred to a buffer
+that has disappeared.
 
 ### drop (opts)
 
