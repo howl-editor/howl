@@ -311,16 +311,6 @@ common_auto_pairs = {
     auto_pairs: common_auto_pairs
     parent: 'curly_mode'
 
-  scheme:
-    extensions: { 'sch', 'scm' }
-    comment_syntax: ';'
-    auto_pairs: {
-      '(': ')'
-      '[': ']'
-      '{': '}'
-      '"': '"'
-    }
-
   smalltalk:
     extensions: { 'changes', 'st', 'sources' }
     comment_syntax: { '"', '"' }

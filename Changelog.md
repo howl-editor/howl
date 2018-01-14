@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Base scheme support on the newer lisp mode instead of old basic mode
+
 - Added the `**popup_menu_accept_key` option, for controlling which key accepts
 the current option for a popup menu, such as the completion popup. Valid values
 are 'enter' (the default) or 'tab'.
