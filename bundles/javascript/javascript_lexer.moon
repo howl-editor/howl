@@ -34,6 +34,7 @@ howl.util.lpeg_lexer ->
   str = any {
     span('"', '"', '\\')
     span("'", "'", '\\')
+    span('`', '`', '\\') 
   }
   string = c 'string', str
 
