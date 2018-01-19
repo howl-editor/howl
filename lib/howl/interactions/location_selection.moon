@@ -5,7 +5,7 @@
 {:Preview} = howl.interactions.util
 {:highlight} = howl.ui
 
-add_highlight = (type, buffer, line, opts) ->
+add_highlight = (type, buffer, line, opts = {}) ->
   {:start_pos, :end_pos} = opts
   local l_start_pos, l_b_start_offset
 
@@ -22,6 +22,9 @@ add_highlight = (type, buffer, line, opts) ->
     elseif opts.start_index
       l_b_start_offset or= line.byte_start_pos
       start_pos = buffer\char_offset l_b_start_offset + opts.start_index - 1
+    else
+      l_start_pos or= line.start_pos
+      start_pos = l_start_pos
 
   unless end_pos
     if opts.count
@@ -32,6 +35,8 @@ add_highlight = (type, buffer, line, opts) ->
     elseif opts.end_index
       l_b_start_offset or= line.byte_start_pos
       end_pos = buffer\char_offset l_b_start_offset + opts.end_index - 1
+    else
+      end_pos = line.end_pos
 
   unless start_pos and end_pos
     log.error "Invalid location highlight specified"
@@ -69,13 +74,15 @@ interact.register
               log.warn "Line #{sel.line_nr} not loaded in preview"
             else
               editor.line_at_center = sel.line_nr
+              line = buffer.lines[sel.line_nr]
 
               if sel.highlights and #sel.highlights > 0
-                line = buffer.lines[sel.line_nr]
                 add_highlight 'search', buffer, line, sel.highlights[1]
 
                 for i = 2, #sel.highlights
                   add_highlight 'search_secondary', buffer, line, sel.highlights[i]
+              else
+                add_highlight 'search', buffer, line
 
         if on_change
           on_change sel, text, items
