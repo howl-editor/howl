@@ -92,6 +92,13 @@ describe 'Regex', ->
       matches = [m for m in r'\\d+'\gmatch 'well hello there']
       assert.same {}, matches
 
+  describe 'test(s)', ->
+    it 'returns true if the regex matches <s>', ->
+      assert.is_true r('ri\\S+')\test 'red right hand'
+
+    it 'returns false if the regex does not match <s>', ->
+      assert.is_false r('foo')\test 'bar'
+
   it 'escape(s) returns a string with all special regular expression symbols escaped', ->
     assert.equal 'a\\.b\\*c', r.escape 'a.b*c'
 

@@ -114,6 +114,9 @@ methods = {
       else
         if has_position_captures and type(match) == 'number' then pos_matches[match] else match
 
+  test: (s) =>
+    @re\match s
+
 }
 
 mt = {
