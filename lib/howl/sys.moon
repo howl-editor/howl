@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 glib = require 'ljglibs.glib'
+{:File} = howl.io
 
 env = setmetatable {}, {
   __index: (variable) => glib.getenv variable
@@ -17,6 +18,8 @@ env = setmetatable {}, {
   }
 
 find_executable = (name) ->
+  return File(name).exists if File.is_absolute(name)
+
   path = env['PATH']
 
   for dir in path\gmatch "[^:]+"
