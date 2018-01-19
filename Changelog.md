@@ -149,8 +149,7 @@ content with the result of piping it to an external command.
 ### Bugs fixed
 
 - Issues as seen on
-[Github](https://github.com/howl-editor/howl/issues?utf8=✓&q=closed%3A2016-05-30..2017-06-05%20is%3Aissue%20is%3Aclosed
-sort%3Acreated-asc)
+[Github](https://github.com/howl-editor/howl/issues?utf8=✓&q=closed%3A2016-05-30..2017-06-05%20is%3Aissue%20is%3Aclosedsort%3Acreated-asc)
 
 ## 0.4.1 (2016-10-14)
 
