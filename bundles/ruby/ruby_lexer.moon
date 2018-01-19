@@ -196,7 +196,7 @@ howl.util.lpeg_lexer ->
       -B(':'),
       c('operator', '<<'),
       #complement(space),
-      c('constant', '-')^-1,
+      c('constant', S'-~')^-1,
       any(V'heredoc_sq', V'heredoc_dq', V'heredoc_bare'),
       V('heredoc_end')^0,
       Cg('', 'hd_del') -- cancel out any outside (stacked) heredocs

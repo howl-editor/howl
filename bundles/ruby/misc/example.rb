@@ -136,6 +136,12 @@ print <<-INDENT
   bare
   INDENT
 
+# from 2.3
+print <<~SQUIGGLY
+  trim
+  me
+  SQUIGGLY
+
 # stackable heredoc with interpolations in interpolations?
 # - yes of course.. sigh.. but let's just do some approximation
 print <<"foo", <<"bar"
