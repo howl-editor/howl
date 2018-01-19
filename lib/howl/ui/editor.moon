@@ -311,6 +311,7 @@ class Editor extends PropertyObject
   preview: (buffer) =>
     unless @_is_previewing
       @_pre_preview_buffer = @buffer
+      @_pre_preview_line_at_top = @line_at_top
 
     @_show_buffer buffer, preview: true
 
@@ -324,6 +325,7 @@ class Editor extends PropertyObject
     if @_is_previewing and @_pre_preview_buffer
       preview_buffer = @buffer
       @_show_buffer @_pre_preview_buffer
+      @line_at_top = @_pre_preview_line_at_top
       @_pre_preview_buffer = nil
 
       signal.emit 'preview-closed', {

@@ -119,11 +119,13 @@ class Searcher
 
     if @active
       @editor.cursor.pos = @start_pos
+      @editor.line_at_top = @start_line_at_top
       @_finish!
 
   _finish: =>
     @buffer = nil
     @start_pos = nil
+    @start_line_at_top = nil
     @active = false
 
   _find_match: (search, init, direction, ensure_word) =>
