@@ -132,10 +132,6 @@ map = {
       searcher\repeat_last!
       searcher.last_direction = d
 
-    tab: 'navigate-forward'
-    ctrl_i: 'navigate-forward'
-    ctrl_o: 'navigate-back'
-
     M: (editor) -> apply editor, (editor) ->
       editor.cursor.line = editor.line_at_center
 

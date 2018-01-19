@@ -154,6 +154,10 @@ map = {
         command.quit_without_save!
 
     '.': (editor) -> repeat_last editor
+
+    tab: 'navigate-forward'
+    ctrl_i: 'navigate-forward'
+    ctrl_o: 'navigate-back'
   }, __index: base_map.editor
 
   ':': -> command.run!
