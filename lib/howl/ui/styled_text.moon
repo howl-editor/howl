@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import style from howl.ui
-
+getmetatable = getmetatable
 append = table.insert
 
 local styled_text_mt
@@ -79,7 +79,14 @@ is_styled = (s) -> type(s) == 'table' and s.styles
 
 display_str = (col) ->
   return '' if col == nil
-  is_styled(col) and col or tostring(col)
+  t = type(col)
+  return col if t == 'string'
+  return col if is_styled(col)
+  mt = getmetatable(col)
+  if mt and mt.__tostyled
+    return mt.__tostyled(col)
+
+  tostring(col)
 
 for_table = (items, columns=nil) ->
   text_parts = {}
@@ -119,8 +126,8 @@ for_table = (items, columns=nil) ->
     write '\n'
 
   for item in *items
-    if typeof(item) != 'table'
-      item = { item }
+    item = { item } if typeof(item) != 'table'
+
     for i = 1, column_widths.num
       cell = display_str item[i]
       cell_style = columns and columns[i] and columns[i].style

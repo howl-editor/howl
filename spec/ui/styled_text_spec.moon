@@ -75,13 +75,24 @@ describe 'StyledText', ->
         assert.equal 'hëllo\nhëllo\n', tostring tbl
         assert.same {1, 'string', 7, 8, 'string', 14}, tbl.styles
 
+    it 'allows for items to be StyledText instances', ->
+      tbl = StyledText.for_table {'one', StyledText('two', {1, 'string', 4})}
+      assert.same {5, 'string', 8}, tbl.styles
+
+    it 'converts items to StyledText instances if <metatable>.__tostyled exists', ->
+      dyn_styled = setmetatable {}, {
+        __tostyled: -> StyledText('two', {1, 'string', 4})
+        __tostring: -> 'two'
+      }
+
+      tbl = StyledText.for_table {'one', dyn_styled}
+      assert.same {5, 'string', 8}, tbl.styles
 
     context 'when column style is provided', ->
       it 'applies column style to text and padding', ->
         tbl = StyledText.for_table { 'one', 'twooo' }, { {style: 'string'} }
         assert.same tbl.text, 'one  \ntwooo\n'
         assert.same tbl.styles, {1, 'string', 4, 4, 'string', 6, 7, 'string', 12}
-
 
       it 'preserves style for StyledText objects', ->
         tbl = StyledText.for_table {'one', StyledText('two', {1, 'string', 4}), 'three'}, {
