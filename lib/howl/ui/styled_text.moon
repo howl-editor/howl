@@ -104,7 +104,10 @@ for_table = (items, columns=nil) ->
         i += 1
         append styles, text.styles[i]
         i += 1
-        append styles, text.styles[i] + offset
+        if type(text.styles[i]) == 'number'
+          append styles, text.styles[i] + offset
+        else
+          append styles, text.styles[i]
         i += 1
     elseif text_style
       append styles, offset + 1

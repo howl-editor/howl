@@ -79,6 +79,11 @@ describe 'StyledText', ->
       tbl = StyledText.for_table {'one', StyledText('two', {1, 'string', 4})}
       assert.same {5, 'string', 8}, tbl.styles
 
+    it 'supports sub lexing in the styles', ->
+      sub = StyledText('two', {1, {1, 'string', 4}, 'my_sub|base'})
+      tbl = StyledText.for_table {sub}
+      assert.same sub.styles, tbl.styles
+
     it 'converts items to StyledText instances if <metatable>.__tostyled exists', ->
       dyn_styled = setmetatable {}, {
         __tostyled: -> StyledText('two', {1, 'string', 4})
