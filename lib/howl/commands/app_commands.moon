@@ -404,24 +404,24 @@ launch_cmd = (working_directory, cmd) ->
   editor.cursor\eof!
   buffer\pump!
 
-get_project_root = ->
+get_project = ->
   buffer = app.editor and app.editor.buffer
   file = buffer.file or buffer.directory
   error "No file associated with the current view" unless file
   project = Project.get_for_file file
   error "No project associated with #{file}" unless project
-  return project.root
+  return project
 
 command.register
   name: 'project-exec',
   description: 'Run an external command from within the project directory'
-  input: -> interact.get_external_command path: get_project_root!
+  input: -> interact.get_external_command path: get_project!.root
   handler: launch_cmd
 
 command.register
   name: 'project-build'
   description: 'Run the command in config.project_build_command from within the project directory'
-  handler: -> launch_cmd get_project_root!, (app.editor and app.editor.buffer.config or config).project_build_command
+  handler: -> launch_cmd get_project!.root, (app.editor and app.editor.buffer.config or config).project_build_command
 
 command.register
   name: 'exec',
@@ -446,6 +446,17 @@ config.define
 -- File search commands
 -----------------------------------------------------------------------
 
+config.define
+  name: 'file_search_hit_display'
+  description: 'How to display file search hits in the list'
+  default: 'rich'
+  type_of: 'string'
+  options: -> {
+    {'plain', 'Display as plain unicolor strings'},
+    {'highlighted', 'Highlight search terms in hits'} ,
+    {'rich', 'Show syntax highlighted snippets with highlighted terms'},
+  }
+
 get_current_word = ->
   editor = app.editor
   if editor.selection.empty
@@ -466,10 +477,15 @@ file_search_hit_mt = {
   __tostring: (item) -> item.text
 }
 
-file_search_hit_to_location = (match, search) ->
+file_search_hit_to_location = (match, search, display_as) ->
+  hit_display = if display_as == 'rich'
+    setmetatable {text: match.message, :match}, file_search_hit_mt
+  else
+    match.message
+
   loc = {
     howl.ui.markup.howl "<comment>#{match.path}</>:<number>#{match.line_nr}</>"
-    setmetatable {text: match.message, :match}, file_search_hit_mt
+    hit_display,
     file: match.file,
     line_nr: match.line_nr,
     column: match.column
@@ -487,7 +503,7 @@ file_search_hit_to_location = (match, search) ->
       { start_column: s, end_column: e + 1 }
     }
 
-  if s
+  if s and display_as != 'plain'
     loc.item_highlights = {
       highlight: 'search_secondary'
       nil,
@@ -513,13 +529,14 @@ command.register
       log.warn "No search query specified"
       return
 
-    project_root = get_project_root!
+    project = get_project!
     file_search = howl.file_search
-    matches = file_search.search project_root, search
-    matches = file_search.sort matches, project_root, search, app.editor.current_context
-    locations = [file_search_hit_to_location(m, search) for m in *matches]
+    matches = file_search.search project.root, search
+    matches = file_search.sort matches, project.root, search, app.editor.current_context
+    display_as = project.config.file_search_hit_display
+    locations = [file_search_hit_to_location(m, search, display_as) for m in *matches]
     selected = interact.select_location
-      title: "Matches for '#{search}' in #{project_root}"
+      title: "Matches for '#{search}' in #{project.root}"
       items: locations
       columns: {
         {}
