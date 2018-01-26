@@ -34,7 +34,8 @@ StyledText object.
 
 ### StyledText.for_table (items, columns=nil)
 
-Creates a new `StyledText` instance holding content laid out as a table.
+Creates and returns a new `StyledText` instance holding content laid out as a
+table.
 
 `items` is a table containing rows. Each row can either be a cell representing a
 single column, or a table of cells representing multiple columns. Each cell
@@ -52,6 +53,9 @@ definition is a table with two fields:
 - `style`: a style name specifying the default style for all cells in the
 column. This style is used for any cell in the column that is a string and not a
 `StyledText`.
+
+In addition to the `StyledText` instance returned, `for_table` also returns a
+table containing the starting positions of the styled tables columns.
 
 The following example generates a table with column headers and column styles:
 

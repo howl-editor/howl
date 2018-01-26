@@ -150,7 +150,11 @@ for_table = (items, columns=nil) ->
     write '\n'
 
   text = table.concat text_parts
-  return setmetatable {:text, :styles}, styled_text_mt
+  col_starts = {1, num: column_widths.num}
+  for i = 2, #column_widths
+    col_starts[i] = column_widths[i - 1] + col_starts[i - 1] + 1
+
+  setmetatable({:text, :styles}, styled_text_mt), col_starts
 
 setmetatable { :for_table },
   __call: (text, styles) =>

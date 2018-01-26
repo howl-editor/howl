@@ -143,3 +143,9 @@ describe 'StyledText', ->
           {'three', nil}
         }, { {}, {} }
 
+    it 'returns a table of column starting positions as the second return value', ->
+        st, cols = StyledText.for_table({
+          {'123', 'åäö', 'x'}
+        })
+        assert.equal '123 åäö x\n', tostring(st)
+        assert.same {1, 5, 9, num: 3}, cols
