@@ -5,6 +5,7 @@ import PropertyObject from howl.util.moon
 import highlight, style, TextWidget, StyledText from howl.ui
 import Matcher from howl.util
 {:max, :min, :floor} = math
+{:tostring} = _G
 
 append = table.insert
 
@@ -23,6 +24,24 @@ highlight.define_default 'list_selection', {
 }
 
 reversed = (list) -> [item for item in *list[#list, 1, -1]]
+
+get_highlight_range = (content, hl) ->
+  {:start_column, :end_column} = hl
+  unless start_column
+    if hl.start_index
+      start_column = tostring(content)\char_offset(hl.start_index)
+    else
+      return nil
+
+  unless end_column
+    if hl.end_index
+      end_column = tostring(content)\char_offset(hl.end_index)
+    elseif hl.count
+      end_column = start_column + hl.count
+    else
+      return nil
+
+  start_column, end_column
 
 class ListWidget extends PropertyObject
   new: (@matcher, opts={}) =>
@@ -93,7 +112,8 @@ class ListWidget extends PropertyObject
       for idx = @page_start_idx, min(last_idx, #@_items)
         append items, @_items[idx]
 
-      buffer\append StyledText.for_table items, @columns
+      styled_table, col_starts = StyledText.for_table items, @columns
+      buffer\append styled_table
 
       for _ = 1, last_idx - #@_items
         buffer\append @opts.filler_text..'\n', 'comment'
@@ -102,11 +122,30 @@ class ListWidget extends PropertyObject
       for lno = 1, #items
         line = buffer.lines[lno + header_offset]
         @_highlight_matches line.text, line.start_pos
+        @_highlight_segments line.start_pos, items[lno], col_starts
 
       @_write_status!
 
     @text_widget.view.first_visible_line = 1
     @text_widget\adjust_height!
+
+  _highlight_segments: (start_pos, item, columns) =>
+    return unless type(item) == 'table'
+    highlights = item.item_highlights
+    return unless highlights
+
+    ranges = {}
+    for col = 1, columns.num
+      hls = highlights[col]
+      continue unless hls
+      offset = start_pos + columns[col] - 1
+      for hl in *hls
+        start_col, end_col = get_highlight_range(item[col], hl)
+        if start_col
+          ranges[#ranges + 1] = { offset + start_col - 1, end_col - start_col }
+
+    hl_name = highlights.highlight or 'list_highlight'
+    highlight.apply hl_name, @text_widget.buffer, ranges
 
   _highlight_matches: (text, start_pos) =>
     if not @highlight_matches_for or @highlight_matches_for.is_empty

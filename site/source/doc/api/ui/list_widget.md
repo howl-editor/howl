@@ -36,8 +36,14 @@ Creates a new ListWidget.
 - `matcher` is a function that accepts a string and returns an table. Each
 element in this table represents one select-able option and can be either a
 string for a single column list, or a table for a multiple column list. When
-each item is a table, it contains a list of strings, one each for each column.
-Instead of a string, a [StyledText](styled_text.html) object can be used.
+each item is a table, it contains a list of items, one each for each column.
+Each item can be either a string, a [StyledText](styled_text.html) object, or
+something that can be converted to one of those two.
+
+It is also possible to request that particular segments of an item are
+highlighted for a particular item as it's displayed, by defining a
+`.item_highlights` table on the item itself (see the [Item
+highlights](#item-highlights) section at the end of this section).
 
   The `matcher` is called on widget initialization and whenever the
 [update()](#update) function is called. The `search_text` argument provided in
@@ -60,6 +66,25 @@ newly selected item as the only argument.
   - `reverse`: _[optional, default:false]_ When `true`, displays the items in
 reverse order, with the first item shown at the bottom and subsequent items
 above it.
+
+#### Item highlights
+
+Certain segments of an item can be highlighted as they are displayed, if a
+`item-highlights` table is specified for the item. Such a table should have one
+sub table for each list column for which highlights should be applied,
+containing one or more highlighting specifications indicating the start and end
+position of the highlight, relative to the item column.
+
+Start positions can be specified by using one of the below:
+
+  * `start_column`: The starting column of the highlight
+  * `start_index`: The starting byte-oriented column of the highlight
+
+  End positions can be specified by using one of the below:
+
+  * `end_column`: The ending column of the highlight
+  * `end_index`: The ending byte-oriented column of the highlight
+  * `count`: The end position is `count` characters away from the start position
 
 ## Properties
 
