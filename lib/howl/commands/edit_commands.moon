@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:activities, :app, :Buffer, :command, :interact, :mode} = howl
+{:activities, :app, :breadcrumbs, :Buffer, :command, :interact, :mode} = howl
 {:BufferPopup} = howl.ui
 {:Process} = howl.io
 
@@ -52,6 +52,22 @@ command.register
   description: 'Repeat the last search'
   handler: -> app.editor.searcher\repeat_last!
 
+do_replacement = (replacement) ->
+  editor = app.editor
+  buffer = editor.buffer
+  app.editor\with_position_restored ->
+    buffer\as_one_undo ->
+      buffer.text = replacement.text
+
+  status = "Replaced #{replacement.num_replaced} instances"
+
+  if editor.cursor.pos != replacement.cursor_pos
+    breadcrumbs.drop!
+    editor.cursor.pos = replacement.cursor_pos
+    editor.line_at_top = replacement.line_at_top
+
+  log.info status
+
 command.register
   name: 'buffer-replace'
   description: 'Replace text (within selection or globally)'
@@ -65,16 +81,7 @@ command.register
     log.info "Cancelled - buffer untouched"
 
   handler: (replacement) ->
-    if replacement.text
-      buffer = app.editor.buffer
-      app.editor\with_position_restored ->
-        buffer\as_one_undo ->
-          buffer.text = replacement.text
-      log.info "Replaced #{replacement.num_replaced} instances"
-    if replacement.cursor_pos
-      app.editor.cursor.pos = replacement.cursor_pos
-    if replacement.line_at_top
-      app.editor.line_at_top = replacement.line_at_top
+    do_replacement(replacement) if replacement.text
 
 command.register
   name: 'buffer-replace-regex',
@@ -90,16 +97,7 @@ command.register
     log.info "Cancelled - buffer untouched"
 
   handler: (replacement) ->
-    buffer = app.editor.buffer
-    if replacement.text
-      app.editor\with_position_restored ->
-        buffer\as_one_undo ->
-          buffer.text = replacement.text
-      log.info "Replaced #{replacement.num_replaced} instances"
-    if replacement.cursor_pos
-      app.editor.cursor.pos = replacement.cursor_pos
-    if replacement.line_at_top
-      app.editor.line_at_top = replacement.line_at_top
+    do_replacement(replacement) if replacement.text
 
 command.register
   name: 'editor-paste..',
