@@ -17,19 +17,34 @@ describe 'StyledText', ->
   it 'responds to the length operator (#)', ->
     assert.equal 7, #StyledText('my_text', {})
 
-  it 'can be concatenated with strings', ->
-    st = StyledText('foo', {})
-    assert.equal 'foobar', st .. 'bar'
-    assert.equal 'barfoo', 'bar' .. st
+  describe 'concatenation', ->
+    it 'can be concatenated with strings', ->
+      st = StyledText('foo', {})
+      assert.equal 'foobar', st .. 'bar'
+      assert.equal 'barfoo', 'bar' .. st
+
+    it 'can be concatenated with StyledText to produce StyledText', ->
+      st1 = StyledText('foö', {1, 'string', 5})
+      st2 = StyledText('1234', {1, 'number', 5})
+      assert.equal StyledText('foö1234', {1, 'string', 5, 5, 'number', 9}), st1 .. st2
+
+    it 'supports sub lexing when concatenating styles', ->
+      st1 = StyledText('one', {1, {1, 'first', 4}, 'my_sub|base'})
+      st2 = StyledText('two', {1, 'second', 4})
+
+      assert.equal StyledText('onetwo', {
+        1, {1, 'first', 4}, 'my_sub|base',
+        4, 'second', 7
+      }), st1 .. st2
+
+      assert.equal StyledText('twoone', {
+        1, 'second', 4
+        4, {1, 'first', 4}, 'my_sub|base',
+      }), st2 .. st1
 
   it 'can be instantiated using a string-style instead of a style table', ->
     st = StyledText('foo', 'style')
     assert.same {1, 'style', 4}, st.styles
-
-  it 'can be concatenated with StyledText to produce StyledText', ->
-    st1 = StyledText('foö', {1, 'string', 5})
-    st2 = StyledText('1234', {1, 'number', 5})
-    assert.equal StyledText('foö1234', {1, 'string', 5, 5, 'number', 9}), st1 .. st2
 
   it 'defers to the string meta table', ->
     st = StyledText('xåäö', {})

@@ -30,7 +30,10 @@ styled_text_mt = {
       i += 1
       append styles, op2.styles[i]
       i += 1
-      append styles, op2.styles[i] + offset
+      if type(op2.styles[i]) == 'number'
+        append styles, op2.styles[i] + offset
+      else -- sub lexing table
+        append styles, op2.styles[i]
       i += 1
 
     return setmetatable {:text, :styles}, styled_text_mt
@@ -42,7 +45,13 @@ styled_text_mt = {
     return false unless op1.text == op2.text
     st1, st2 = op1.styles, op2.styles
     for i = 1, #st1
-      return false unless st1[i] == st2[i]
+      unless st1[i] == st2[i]
+        el1, el2 = st1[i], st2[i]
+        if type(el1) == 'table' and type(el1) == 'table' and #el1 == #el1
+          for j = 1, #el1
+            return unless el1[j] == el2[j]
+        else
+          return false
 
     true
 
@@ -106,7 +115,7 @@ for_table = (items, columns=nil) ->
         i += 1
         if type(text.styles[i]) == 'number'
           append styles, text.styles[i] + offset
-        else
+        else -- sub lexing table
           append styles, text.styles[i]
         i += 1
     elseif text_style
