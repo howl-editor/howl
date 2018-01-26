@@ -532,6 +532,10 @@ command.register
     project = get_project!
     file_search = howl.file_search
     matches = file_search.search project.root, search
+    unless #matches > 0
+      log.error "No matches found for '#{search}'"
+      return
+
     matches = file_search.sort matches, project.root, search, app.editor.current_context
     display_as = project.config.file_search_hit_display
     locations = [file_search_hit_to_location(m, search, display_as) for m in *matches]

@@ -13,10 +13,13 @@ run_search_command = (process, directory, query) ->
     title: "Searching for '#{query}' in '#{directory}'"
   }, process
 
-  unless process.successful
+  unless process.exited_normally
     error "#{process.exit_status_string}: #{err}"
 
-  process_output.parse out, :directory
+  if process.successful
+    process_output.parse out, :directory
+  else
+    {}
 
 get_searcher_for = (directory) ->
   cfg = config.for_file directory

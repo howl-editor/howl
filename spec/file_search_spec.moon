@@ -100,6 +100,17 @@ describe 'file_search', ->
           }, res
           done!
 
+    context '(when a search process exits with an exit code of 1)', ->
+      it 'return zero matches', (done) ->
+        file_search.register_searcher searcher
+        config.file_searcher = 'test'
+
+        howl_async ->
+          searcher.handler = -> 'exit 1'
+          res = file_search.search tmp_dir, 'foo'
+          assert.same {}, res
+          done!
+
     context '(selecting the searcher)', ->
       it 'raises an error if the specified searcher is not available', ->
         searcher.is_available = -> false
