@@ -441,3 +441,96 @@ config.define
   description: 'The command to execute when project-build is run'
   default: 'make'
   type_of: 'string'
+
+-----------------------------------------------------------------------
+-- File search commands
+-----------------------------------------------------------------------
+
+get_current_word = ->
+  editor = app.editor
+  if editor.selection.empty
+    app.editor.current_context.word.text
+  else
+    editor.selection.text
+
+file_search_hit_mt = {
+  __tostyled: (item) ->
+    text = item.text
+    m = mode.for_file(item.match.file)
+    if m and m.lexer
+      styles = m.lexer(text)
+      return StyledText text, styles
+
+    text
+
+  __tostring: (item) -> item.text
+}
+
+file_search_hit_to_location = (match, search) ->
+  loc = {
+    howl.ui.markup.howl "<comment>#{match.path}</>:<number>#{match.line_nr}</>"
+    setmetatable {text: match.message, :match}, file_search_hit_mt
+    file: match.file,
+    line_nr: match.line_nr,
+    column: match.column
+  }
+  s, e = match.message\ufind(search, 1, true)
+  unless s
+    s, e = match.message\ufind((r(search)))
+
+  if loc.column
+    loc.highlights = {
+      { start_index: loc.column, end_index: loc.column + #search }
+    }
+  elseif s
+    loc.highlights = {
+      { start_column: s, end_column: e + 1 }
+    }
+
+  if s
+    loc.item_highlights = {
+      highlight: 'search_secondary'
+      nil,
+      {
+        {start_index: s, count: e - s + 1}
+      }
+    }
+
+  loc
+
+command.register
+  name: 'project-file-search',
+  description: 'Searches files in the the current project'
+  input: (...) ->
+    search = nil
+    unless app.window.command_line.showing
+      search = get_current_word!
+
+    if not search or search.is_empty
+      search = interact.read_text!
+
+    if not search or search.is_empty
+      log.warn "No search query specified"
+      return
+
+    project_root = get_project_root!
+    file_search = howl.file_search
+    matches = file_search.search project_root, search
+    matches = file_search.sort matches, project_root, search, app.editor.current_context
+    locations = [file_search_hit_to_location(m, search) for m in *matches]
+    selected = interact.select_location
+      title: "Matches for '#{search}' in #{project_root}"
+      items: locations
+      columns: {
+        {}
+        {style: 'string'}
+      }
+    selected and selected.selection
+
+  handler: (location) ->
+    return unless location
+
+    _, editor = app\open_file location.file
+    if editor
+      editor.line_at_center = location.line_nr
+      editor.cursor\move_to line: location.line_nr, column_index: location.column

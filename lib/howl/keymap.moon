@@ -46,6 +46,7 @@
     ctrl_d:            'editor-duplicate-current'
     ctrl_shift_e:      'cursor-goto-inspection'
     ctrl_f:            'buffer-search-forward'
+    ctrl_shift_f:      'project-file-search'
     ctrl_r:            'buffer-search-backward'
     ctrl_comma:        'buffer-search-word-backward'
     ctrl_period:       'buffer-search-word-forward'
