@@ -128,7 +128,7 @@ describe 'file_search', ->
       }, tmp_dir, 'foo'
       assert.same {'base', 'notbase'}, messages(sorted)
 
-    it "penalizes matches in test files", ->
+    it 'penalizes matches in test files', ->
       sorted = file_search.sort {
         match('spec', 'foo/zed_spec.moon')
         match('test', 'foo/zed_test.moon')
@@ -138,6 +138,16 @@ describe 'file_search', ->
         match('base', 'foo/zed.moon')
       }, tmp_dir, 'foo'
       assert.same 'base', messages(sorted)[1]
+
+    it 'groups matches by path for same-score matches', ->
+      sorted = file_search.sort {
+        match('foo', 'one.moon')
+        match('foo', 'two.moon')
+        match('bar', 'one.moon')
+        match('bar', 'two.moon')
+      }, tmp_dir, 'xxx'
+      assert.equal sorted[1].path, sorted[2].path
+      -- and it follows that 3 4 are equal
 
     context 'when context is provided', ->
       local buffer

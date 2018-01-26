@@ -127,7 +127,13 @@ sort = (matches, directory, term, context) ->
     scores[m.path] = score
 
   sorted = [m for m in *matches]
-  table.sort sorted, (a, b) -> scores[a.path] > scores[b.path]
+  table.sort sorted, (a, b) ->
+    score_a, score_b = scores[a.path], scores[b.path]
+    if score_a != score_b
+      score_a > score_b
+    else
+      a.path > b.path
+
   sorted
 
 register_searcher = (opts) ->
