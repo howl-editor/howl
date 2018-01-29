@@ -228,7 +228,7 @@ View = {
     y_scroll_offset: {
       get: => @_y_scroll_offset
       set: (offset) =>
-        @_y_scroll_offset += offset
+        @_y_scroll_offset = offset
         if @_y_scroll_offset < -1 or @_y_scroll_offset > 1
           @first_visible_line += floor(@_y_scroll_offset)
           @_y_scroll_offset = 0
