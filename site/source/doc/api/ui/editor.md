@@ -247,6 +247,26 @@ Does nothing if `str` could not be found in the remainder of the line.
 
 Grabs focus for the specified editor, i.e. causes the editor to be focused.
 
+### highlight (opts)
+
+`highlight` is a convenience method for quickly applying a highlight for a given
+span. `opts` specify the starting and ending positions for the highlight, and
+optionally what highlight to apply.
+
+The start position can be specified in `opts` by using one of the below:
+
+  * `start_pos`: The start position in the buffer
+  * `byte_start_pos`: The byte-oriented start position in the buffer
+
+End positions can be specified by using one of the below:
+
+  * `end_pos`: The end position in the buffer
+  * `byte_end_pos`: The byte-oriented position end in the buffer
+  * `count`: The end position is `count` characters away from the start position
+
+The highlight to use can optionally be specified by defining `opts.highlight`.
+If not present it will default to the ephemeral 'search' highlight.
+
 ### indent ()
 
 Indents the current line or selection, if possible, by forwarding the request to
