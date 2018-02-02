@@ -222,3 +222,21 @@ describe 'ustrings', ->
 
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
       assert.same {1, 2, 3, 4}, 'äåö'\char_offset { 1, 3, 5, 7 }
+
+  describe 'truncate(len, omission = "..")', ->
+    it 'truncates long string to at most <len> chars, with <omission> appended', ->
+      s = 'åäöñÅÄÖåäö'
+      assert.equal 'åäöñ..', s\truncate(6)
+      assert.equal 'åäöñ[..]', s\truncate(8, '[..]')
+      assert.equal 'åäö<Ə>', s\truncate(6, '<Ə>')
+
+    it 'does not truncate unless needed', ->
+      s = 'åäöåäö'
+      assert.equal 'åäöåäö', s\truncate(7)
+      assert.equal 'åäöåäö', s\truncate(6)
+
+    it 'skips the omission if the result would go beyond <len>', ->
+      s = 'åäö'
+      assert.equal 'åä', s\truncate(2, '[..]')
+      assert.equal '..', s\truncate(2, '..')
+      assert.equal 'å', s\truncate(1, '..')

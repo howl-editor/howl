@@ -139,6 +139,22 @@ found.
 
 Returns true if the string starts with `s`, and false otherwise.
 
+### truncate (s, len, omission = '..')
+
+Truncates the string to `len` characters if longer, indicating the truncation
+using the `omission`. Should the length of omission be longer than `len` the
+string is truncated without any omission.
+
+Examples:
+
+```lua
+str = 'åäöåäö'
+str:truncate(5) -- => 'åäö..'
+str:truncate(5, '[..]') -- => 'å[..]'
+str:truncate(6) -- => 'åäöåäö'
+str:truncate(2, '[..]') -- => 'åä'
+```
+
 ### ucompare (s)
 
 Returns negative, 0 or positive if the string is smaller, equal or greater than

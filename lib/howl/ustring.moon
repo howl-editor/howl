@@ -196,6 +196,17 @@ count = (s1, s2, is_pattern = false) ->
 
   c
 
+truncate = (s, len, omission = '..') ->
+  s_len = s.ulen
+  if s_len > len
+    if omission.ulen <= len
+      msg_length = len - omission.ulen
+      s = s\usub(1, msg_length) .. omission
+    else
+      s = s\usub(1, len)
+
+  s
+
 with string
   .usub = usub
   .umatch = umatch
@@ -210,6 +221,7 @@ with string
   .ends_with = ends_with
   .contains = contains
   .count = count
+  .truncate = truncate
 
 properties =
   ulen: => ulen @
