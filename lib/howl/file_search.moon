@@ -8,6 +8,8 @@
 file_sep = File.separator
 searchers = {}
 
+MAX_MESSAGE_LENGTH = 150
+
 run_search_command = (process, directory, query) ->
   out, err = activities.run_process {
     title: "Searching for '#{query}' in '#{directory}'"
@@ -17,7 +19,7 @@ run_search_command = (process, directory, query) ->
     error "#{process.exit_status_string}: #{err}"
 
   if process.successful
-    process_output.parse out, :directory
+    process_output.parse out, :directory, max_message_length: MAX_MESSAGE_LENGTH
   else
     {}
 
@@ -175,14 +177,14 @@ register_searcher {
     return true if sys.find_executable(cfg.ag_executable)
     false, "Executable 'ag' not found"
 
-  handler: (what, directory) ->
+  handler: (what, directory, opts) ->
     cfg = config.for_file directory
     Process.open_pipe {
       cfg.ag_executable,
       '--nocolor',
       '--column',
       '-C', '0',
-      '--nogroup'
+      '--nogroup',
       what
     }, working_directory: directory
 }
@@ -203,7 +205,7 @@ register_searcher {
     return true if sys.find_executable(cfg.rg_executable)
     false, "Executable 'rg' not found"
 
-  handler: (what, directory) ->
+  handler: (what, directory, opts = {}) ->
     cfg = config.for_file directory
     Process.open_pipe {
       cfg.rg_executable,
@@ -211,6 +213,7 @@ register_searcher {
       '--line-number',
       '--column',
       '--no-heading',
+      '--max-columns', opts.max_message_length or 150
       what
     }, working_directory: directory
 }

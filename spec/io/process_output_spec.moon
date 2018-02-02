@@ -11,6 +11,12 @@ describe 'process_output', ->
         { line_nr: 2, message: 'foo' }
       }, parse "2: foo"
 
+    context 'when opts.max_message_length is specified', ->
+      it 'shortens the messages as neccessary', ->
+      assert.same {
+        { line_nr: 1, message: '123åäö..' }
+      }, parse "1: 123åäö789", max_message_length: 8
+
     it 'parses out relevant tokens', ->
       assert.same {
         {
