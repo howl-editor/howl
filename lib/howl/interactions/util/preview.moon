@@ -41,7 +41,7 @@ get_preview_buffer = (file, line) ->
   ok, text = pcall -> file\open 'r', (fh) ->
     s = fh\read 8192
     return s unless s and line and line > nr_lines(s)
-    -- we're looking for a specic line, but didn't find it in the first 8kB
+    -- we're looking for a specific line, but didn't find it in the first 8kB
     -- let's try a little harder, but not too much since we don't want slow
     -- things down
     more = fh\read 16384

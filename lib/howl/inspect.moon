@@ -403,6 +403,9 @@ command.register
       :on_change
 
   handler: (res) ->
-    app.editor.cursor.pos = res.selection.offset
+    if res
+      app.editor.cursor.pos = res.selection.offset
+      hl = res.selection.highlights[1]
+      app.editor\highlight start_pos: hl.start_pos, end_pos: hl.end_pos
 
 :inspect, :criticize

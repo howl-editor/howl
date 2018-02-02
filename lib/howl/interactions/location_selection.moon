@@ -56,38 +56,44 @@ interact.register
   handler: (opts) ->
     opts = moon.copy opts
     editor = opts.editor or app.editor
+    preview = (howl.config.preview_files or opts.force_preview) and Preview!
+    local preview_buffer
 
-    if howl.config.preview_files or opts.force_preview
+    if preview
       on_change = opts.on_change
-      preview = Preview!
 
       opts.on_change = (sel, text, items) ->
         if sel
-          buffer = sel.buffer or preview\get_buffer(get_file(sel), sel.line_nr)
-          editor\preview buffer
+          preview_buffer = sel.buffer or preview\get_buffer(get_file(sel), sel.line_nr)
+          editor\preview preview_buffer
 
-          highlight.remove_all 'search', buffer
-          highlight.remove_all 'search_secondary', buffer
+          highlight.remove_all 'search', preview_buffer
+          highlight.remove_all 'search_secondary', preview_buffer
 
           if sel.line_nr
-            if #buffer.lines < sel.line_nr
+            if #preview_buffer.lines < sel.line_nr
               log.warn "Line #{sel.line_nr} not loaded in preview"
             else
               editor.line_at_center = sel.line_nr
-              line = buffer.lines[sel.line_nr]
+              line = preview_buffer.lines[sel.line_nr]
 
               if sel.highlights and #sel.highlights > 0
-                add_highlight 'search', buffer, line, sel.highlights[1]
+                add_highlight 'search', preview_buffer, line, sel.highlights[1]
 
                 for i = 2, #sel.highlights
-                  add_highlight 'search_secondary', buffer, line, sel.highlights[i]
+                  add_highlight 'search_secondary', preview_buffer, line, sel.highlights[i]
               else
-                add_highlight 'search', buffer, line
+                add_highlight 'search', preview_buffer, line
 
         if on_change
           on_change sel, text, items
 
     result = interact.select opts
+
+    if preview_buffer
+      highlight.remove_all 'search', preview_buffer
+      highlight.remove_all 'search_secondary', preview_buffer
+
     editor\cancel_preview!
 
     return result

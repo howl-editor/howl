@@ -555,3 +555,13 @@ command.register
     if editor
       editor.line_at_center = location.line_nr
       editor.cursor\move_to line: location.line_nr, column_index: location.column
+      hl = location.highlights[1]
+      if hl
+        cur_line = editor.current_line
+        if cur_line.nr == location.line_nr
+          l_byte_start_pos = cur_line.byte_start_pos
+
+          editor\highlight {
+            byte_start_pos: l_byte_start_pos + hl.start_index - 1
+            byte_end_pos: l_byte_start_pos + hl.end_index - 1
+          }
