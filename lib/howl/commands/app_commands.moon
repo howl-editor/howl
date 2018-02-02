@@ -531,7 +531,7 @@ command.register
 
     project = get_project!
     file_search = howl.file_search
-    matches = file_search.search project.root, search
+    matches, searcher = file_search.search project.root, search
     unless #matches > 0
       log.error "No matches found for '#{search}'"
       return
@@ -540,7 +540,7 @@ command.register
     display_as = project.config.file_search_hit_display
     locations = [file_search_hit_to_location(m, search, display_as) for m in *matches]
     selected = interact.select_location
-      title: "Matches for '#{search}' in #{project.root}"
+      title: "Matches for '#{search}' in #{project.root} (using #{searcher.name})"
       items: locations
       columns: {
         {}

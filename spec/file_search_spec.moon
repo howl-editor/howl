@@ -43,11 +43,11 @@ describe 'file_search', ->
         file_search.register_searcher name: 'test', description: 'desc'
 
   describe 'search(directory, term)', ->
-    context '(when the searcher returns matches directly)', ->
-      before_each ->
-        file_search.register_searcher searcher
-        config.file_searcher = 'test'
+    before_each ->
+      file_search.register_searcher searcher
+      config.file_searcher = 'test'
 
+    context '(when the searcher returns matches directly)', ->
       it 'returns matches from the specified searcher', ->
         matches = {
           { path: 'urk.txt', file: tmp_dir\join('urk'), line_nr: 1, message: 'foo'}
@@ -76,9 +76,6 @@ describe 'file_search', ->
 
     context '(when the searcher returns a process object)', ->
       it "returns matches from the process' output", (done) ->
-        file_search.register_searcher searcher
-        config.file_searcher = 'test'
-
         howl_async ->
           searcher.handler = -> Process.open_pipe 'echo "file.ext:10: foo"'
           res = file_search.search tmp_dir, 'foo'
@@ -89,9 +86,6 @@ describe 'file_search', ->
 
     context '(when the searcher returns a string)', ->
       it 'returns matches from running the string as a command', (done) ->
-        file_search.register_searcher searcher
-        config.file_searcher = 'test'
-
         howl_async ->
           searcher.handler = -> 'echo "file.ext:10: foo"'
           res = file_search.search tmp_dir, 'foo'
@@ -102,9 +96,6 @@ describe 'file_search', ->
 
     context '(when a search process exits with an exit code of 1)', ->
       it 'return zero matches', (done) ->
-        file_search.register_searcher searcher
-        config.file_searcher = 'test'
-
         howl_async ->
           searcher.handler = -> 'exit 1'
           res = file_search.search tmp_dir, 'foo'
@@ -114,9 +105,13 @@ describe 'file_search', ->
     context '(selecting the searcher)', ->
       it 'raises an error if the specified searcher is not available', ->
         searcher.is_available = -> false
-        file_search.register_searcher searcher
-        config.file_searcher = 'test'
         assert.raises 'unavailable', -> file_search.search tmp_dir, 'foo'
+
+    it 'returns matches and the used searcher', ->
+      matches = {}
+      searcher.handler = -> matches
+      _, used_searcher = file_search.search tmp_dir, 'foo'
+      assert.equal searcher, used_searcher
 
   describe 'sort(matches, context)', ->
     match = (message, path, line_nr = 1) ->

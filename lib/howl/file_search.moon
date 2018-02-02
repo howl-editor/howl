@@ -74,7 +74,7 @@ search = (directory, what, opts = {}) ->
   else
     prepare_direct_results searcher, directory, res
 
-  res
+  res, searcher
 
 sort = (matches, directory, term, context) ->
   standalone_p, basename_search_p = if r'^\\p{L}+$'
