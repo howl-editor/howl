@@ -83,7 +83,14 @@ class Project
         title: "Reading paths for '#{@root}'",
         status: -> "Reading paths for '#{@root}'",
       }, ->
-        paths = @root\find_paths exclude_directories: true
-        [p for p in *paths when not p\ends_with('~')]
+        ignore = howl.util.ignore_file.evaluator @root
+        hidden_exts = {ext, true for ext in *config.hidden_file_extensions}
+        filter = (p) ->
+          return true if p\ends_with('~')
+          ext = p\match '%.(%w+)/?$'
+          return true if hidden_exts[ext]
+          ignore p
+
+        @root\find_paths exclude_directories: true, :filter
 
 return Project
