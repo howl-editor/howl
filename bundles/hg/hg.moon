@@ -39,8 +39,7 @@ class Hg
     stdout
 
   _get_process: (...) =>
-    exec_path = config.hg_path or 'hg'
-    argv = { exec_path, ... }
+    argv = { config.hg_path, ... }
     Process {
       cmd: argv,
       working_directory: @root,

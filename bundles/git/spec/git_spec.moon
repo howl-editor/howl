@@ -8,9 +8,9 @@ describe 'Git bundle', ->
   it 'registers "git" with VC', ->
     assert.not_nil VC.available.git
 
-  it 'defines a "git_path" config variable, defaulting to nil', ->
+  it 'defines a "git_path" config variable, defaulting to "git"', ->
     assert.not_nil config.definitions.git_path
-    assert.nil config.git_path
+    assert.equal 'git', config.git_path
 
   describe 'Git VC find(file)', ->
     git_vc = nil
