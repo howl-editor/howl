@@ -292,4 +292,12 @@ ffi.cdef [[
 
   gint64 g_get_real_time (void);
 
+  typedef struct {} GMappedFile;
+  GMappedFile * g_mapped_file_new (const gchar *filename,
+                                   gboolean writable,
+                                   GError **error);
+  void g_mapped_file_unref (GMappedFile *file);
+  gsize g_mapped_file_get_length (GMappedFile *file);
+  gchar * g_mapped_file_get_contents (GMappedFile *file);
+
 ]]
