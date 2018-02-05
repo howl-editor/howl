@@ -186,6 +186,13 @@ ffi.cdef [[
                                            const gchar *string,
                                            GRegexMatchFlags match_options,
                                            GMatchInfo **match_info);
+  gboolean      g_regex_match_full        (const GRegex *regex,
+                                           const gchar *string,
+                                           gssize string_len,
+                                           gint start_position,
+                                           GRegexMatchFlags match_options,
+                                           GMatchInfo **match_info,
+                                           GError **error);
   gchar *       g_regex_escape_string     (const gchar *string, gint length);
 
   /* GList */
