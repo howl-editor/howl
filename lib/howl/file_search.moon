@@ -3,8 +3,10 @@
 
 {:activities, :config, :io, :sys} = howl
 {:File, :Process, :process_output} = io
+ffi = require 'ffi'
 
 {:max, :min} = math
+append = table.insert
 file_sep = File.separator
 searchers = {}
 
@@ -23,19 +25,23 @@ run_search_command = (process, directory, query) ->
   else
     {}
 
+load_searcher = (name, directory) ->
+  searcher = searchers[name]
+  error "Unknown searcher '#{name}'" unless searcher
+  if searcher.is_available
+    available, err = searcher.is_available(directory)
+    error "Searcher '#{name}' unavailable (#{err})" unless available
+  searcher
+
 get_searcher_for = (directory) ->
   cfg = config.for_file directory
   sel = cfg.file_searcher
   local searcher
 
   if sel != 'auto'
-    searcher = searchers[sel]
-    error "Unknown searcher '#{sel}'" unless searcher
-    if searcher.is_available
-      available, err = searcher.is_available(directory)
-      error "Searcher '#{sel}' unavailable (#{err})" unless available
+    searcher = load_searcher sel, directory
   else
-    candidates = {'rg', 'ag'}
+    candidates = {'rg', 'ag', 'native'}
     for candidate in *candidates
       s = searchers[candidate]
       if not s or (s.is_available and not s.is_available(directory))
@@ -63,8 +69,13 @@ prepare_direct_results = (searcher, directory, results) ->
     r.file = directory\join(r.path) unless r.file
 
 search = (directory, what, opts = {}) ->
-  searcher = get_searcher_for directory
-  res = searcher.handler what, directory
+  searcher = if type(opts.searcher) == 'string'
+    load_searcher(opts.searcher, directory)
+  else
+    opts.searcher
+
+  searcher or= get_searcher_for directory
+  res = searcher.handler directory, what
   t = typeof res
   if t == 'Process'
     res = run_search_command res, directory, what
@@ -160,8 +171,7 @@ config.define
     table.insert opts, 1, {'auto', 'Pick an available searcher automatically'}
     opts
 
--- the silver search
-
+-- the silver searcher
 config.define
   name: 'ag_executable'
   description: 'The silver searcher executable to use'
@@ -177,7 +187,7 @@ register_searcher {
     return true if sys.find_executable(cfg.ag_executable)
     false, "Executable 'ag' not found"
 
-  handler: (what, directory, opts) ->
+  handler: (directory, what, opts) ->
     cfg = config.for_file directory
     Process.open_pipe {
       cfg.ag_executable,
@@ -205,7 +215,7 @@ register_searcher {
     return true if sys.find_executable(cfg.rg_executable)
     false, "Executable 'rg' not found"
 
-  handler: (what, directory, opts = {}) ->
+  handler: (directory, what, opts = {}) ->
     cfg = config.for_file directory
     Process.open_pipe {
       cfg.rg_executable,
@@ -216,6 +226,117 @@ register_searcher {
       '--max-columns', opts.max_message_length or 150
       what
     }, working_directory: directory
+}
+
+-- native searcher
+native_paths = (dir) ->
+  activities.run {
+    title: "Reading paths for '#{dir}'",
+    status: -> "Reading paths for '#{dir}'",
+  }, ->
+    ignore = howl.util.ignore_file.evaluator dir
+    skip_exts = {ext, true for ext in *config.hidden_file_extensions}
+    -- skip additional known binary extensions
+    for ext in *{
+      'gz',
+      'tar',
+      'tgz',
+      'zip',
+      'png',
+      'jpg',
+      'jpeg',
+      'gif',
+      'ttf',
+      'woff'
+    }
+      skip_exts[ext] = true
+
+    filter = (p) ->
+      return true if p\ends_with('~')
+      ext = p\match '%.(%w+)/?$'
+      return true if skip_exts[ext]
+      ignore p
+
+    dir\find_paths exclude_directories: true, :filter
+
+native_append_matches = (path, positions, mf, matches) ->
+  contents = mf.contents
+  upper = #mf - 1
+
+  scan_to = (pos, start_pos, line) ->
+    i = start_pos
+    l_start_pos = start_pos
+    pos = min pos, upper
+    new_line = 0
+
+    while i <= upper
+      c = contents[i]
+      if c == 10
+        new_line = 1
+      elseif c == 13
+        new_line = 1
+        if (i + 1) < upper and contents[i + 1] == 10
+          new_line += 1
+
+      if new_line > 0
+        if pos <= i
+          return line, l_start_pos, i - 1
+
+        line += 1
+        i += new_line
+        l_start_pos = i
+        new_line = 0
+      else
+        i += 1
+
+    if pos <= i
+      return line, l_start_pos, i - 1
+
+    nil
+
+  start_pos = 0
+  line = 1
+  for p in *positions
+    line, l_start_pos, l_end_pos = scan_to p, start_pos, line
+    break unless line
+    start_pos = p + 1
+    append matches, {
+      :path
+      line_nr: line,
+      column: (p - l_start_pos) + 1,
+      message: ffi.string(contents + l_start_pos, max(l_end_pos - l_start_pos + 1, 0))
+    }
+
+
+register_searcher {
+  name: 'native'
+  description: 'Naive but native Howl searcher'
+  handler: (directory, what, opts = {}) ->
+    MappedFile = require 'ljglibs.glib.mapped_file'
+    GRegex = require 'ljglibs.glib.regex'
+
+    r = GRegex what.ulower, {'CASELESS', 'OPTIMIZE'}
+
+    paths = native_paths directory
+    dir_path = directory.path
+    matches = {}
+    for i = 1, #paths
+      activities.yield! if i % 500 == 0
+      p = paths[i]
+      status, mf = pcall MappedFile, "#{dir_path}/#{p}"
+      continue unless status
+      contents = mf.contents
+      info = r\match_with_info contents
+      match_positions = {}
+      if info
+        while info\matches!
+          start_pos = info\fetch_pos 0
+          append match_positions, start_pos
+          info\next!
+
+        native_append_matches p, match_positions, mf, matches
+
+    matches
 }
 
 {

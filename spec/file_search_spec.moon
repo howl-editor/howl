@@ -8,7 +8,7 @@ describe 'file_search', ->
   local searchers, tmp_dir, config, searcher
 
   setup ->
-    searchers = file_search.searchers
+    searchers = {name, def for name, def in pairs file_search.searchers}
     for name in pairs searchers
       file_search.unregister_searcher name
 
@@ -20,7 +20,7 @@ describe 'file_search', ->
       file_search.unregister_searcher name
 
     for _, def in pairs searchers
-      file_search.register def
+      file_search.register_searcher def
 
     tmp_dir\delete_all!
 
@@ -42,7 +42,7 @@ describe 'file_search', ->
       assert.raises "handler", ->
         file_search.register_searcher name: 'test', description: 'desc'
 
-  describe 'search(directory, term)', ->
+  describe 'search(directory, term, opts)', ->
     before_each ->
       file_search.register_searcher searcher
       config.file_searcher = 'test'
@@ -106,6 +106,29 @@ describe 'file_search', ->
       it 'raises an error if the specified searcher is not available', ->
         searcher.is_available = -> false
         assert.raises 'unavailable', -> file_search.search tmp_dir, 'foo'
+
+      it 'allows passing an explicit searcher using an explicit `searcher` table', ->
+        my_searcher = {
+          name: 'custom',
+          description: 'pass-directly',
+          handler: -> {
+            { line_nr: 1, file: tmp_dir\join('my'), path: 'my', message: 'custom' }
+          }
+        }
+        res = file_search.search tmp_dir, 'foo', searcher: my_searcher
+        assert.same my_searcher.handler!, res
+
+      it 'allows passing an explicit searcher using an explicit `searcher` string', ->
+        my_searcher = {
+          name: 'my_searcher',
+          description: 'pass-directly',
+          handler: -> {
+            { line_nr: 1, file: tmp_dir\join('my'), path: 'my', message: 'custom' }
+          }
+        }
+        file_search.register_searcher my_searcher
+        res = file_search.search tmp_dir, 'foo', searcher: 'my_searcher'
+        assert.same my_searcher.handler!, res
 
     it 'returns matches and the used searcher', ->
       matches = {}
@@ -191,3 +214,35 @@ describe 'file_search', ->
         }, tmp_dir, 'search', buffer\context_at(1)
 
         assert.same {'main', 'notsame', 'other'}, messages(sorted)
+
+  describe 'the native searcher', ->
+    it 'handles multiple matches in a file correctly', ->
+      hit = tmp_dir\join('hit.txt')
+      hit.contents = ([[
+food
+snafoo
+bafoon
+      ]]).stripped
+      res = file_search.search tmp_dir, 'foo', searcher: searchers.native
+      assert.same {
+        {path: 'hit.txt', file: hit, line_nr: 1, column: 1, message: 'food'},
+        {path: 'hit.txt', file: hit, line_nr: 2, column: 4, message: 'snafoo'},
+        {path: 'hit.txt', file: hit, line_nr: 3, column: 3, message: 'bafoon'},
+      }, res
+
+    it 'handles a match at the end of a file, preceeding an empty line', ->
+      hit = tmp_dir\join('hit.txt')
+      hit.contents = 'foo\n'
+      res = file_search.search tmp_dir, 'foo', searcher: searchers.native
+      assert.same {
+        {path: 'hit.txt', file: hit, line_nr: 1, column: 1, message: 'foo'},
+      }, res
+
+    it 'is case insensitive', ->
+      hit = tmp_dir\join('hit.txt')
+      hit.contents = 'foo\nFOO'
+      res = file_search.search tmp_dir, 'fOo', searcher: searchers.native
+      assert.same {
+        {path: 'hit.txt', file: hit, line_nr: 1, column: 1, message: 'foo'},
+        {path: 'hit.txt', file: hit, line_nr: 2, column: 1, message: 'FOO'},
+      }, res
