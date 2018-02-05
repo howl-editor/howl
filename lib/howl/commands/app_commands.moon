@@ -540,7 +540,7 @@ command.register
     display_as = project.config.file_search_hit_display
     locations = [file_search_hit_to_location(m, search, display_as) for m in *matches]
     selected = interact.select_location
-      title: "Matches for '#{search}' in #{project.root} (using #{searcher.name})"
+      title: "#{#matches} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
       items: locations
       columns: {
         {}
