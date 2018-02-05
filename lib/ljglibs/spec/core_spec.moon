@@ -127,8 +127,27 @@ describe 'core', ->
               }
             }
             assert.equal 123, box\properties_for(child_box).padding
+            children = box.children
+            assert.equal 1, #children
+            assert.equal child_box, children[1]
 
-          it 'treats a table parameter as a child with properties', ->
+        it 'does nothing if the type is specified as a no-container', ->
+          ffi.cdef 'typedef struct { int foo; } my_final_type;'
+          MyPropType = core.define 'my_final_type', {
+            properties: {
+              foo: {
+                get: => @foo
+                set: (v) => @.foo = v
+              }
+            },
+            meta: {
+              __is_container: false
+            }
+          }, (spec, ...) ->
+            ffi.new 'my_prop_type'
+
+          o = MyPropType { foo: 123 }
+          assert.not_equal 123, o.foo
 
     context '(signals)', ->
 
