@@ -90,14 +90,8 @@ core.define 'GRegex', {
     mi = ffi.new 'GMatchInfo *[1]'
     matched = C.g_regex_match(@, s, match_options, mi) != 0
     info = mi[0]
-    if info
-      if not matched
-        C.g_match_info_unref info
-        info = nil
-      else
-        info = ffi_gc info, C.g_match_info_unref
-
-    info
+    ffi_gc info, C.g_match_info_free
+    matched and info or nil
 
   match_full: (s, len, start_position, match_options = 0) =>
     len or= #s
@@ -130,14 +124,8 @@ core.define 'GRegex', {
       mi
     ) != 0
     info = mi[0]
-    if info
-      if not matched
-        C.g_match_info_unref info
-        info = nil
-      else
-        info = ffi_gc info, C.g_match_info_unref
-
-    info
+    ffi_gc info, C.g_match_info_free
+    matched and info or nil
 
   meta: {
     __tostring: => @pattern

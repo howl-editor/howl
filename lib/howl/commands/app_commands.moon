@@ -457,13 +457,6 @@ config.define
     {'rich', 'Show syntax highlighted snippets with highlighted terms'},
   }
 
-get_current_word = ->
-  editor = app.editor
-  if editor.selection.empty
-    app.editor.current_context.word.text
-  else
-    editor.selection.text
-
 file_search_hit_mt = {
   __tostyled: (item) ->
     text = item.text
@@ -518,9 +511,16 @@ command.register
   name: 'project-file-search',
   description: 'Searches files in the the current project'
   input: (...) ->
+    editor = app.editor
     search = nil
+    whole_word = false
+
     unless app.window.command_line.showing
-      search = get_current_word!
+      if editor.selection.empty
+        search = app.editor.current_context.word.text
+        whole_word = true unless search.is_empty
+      else
+        search = editor.selection.text
 
     if not search or search.is_empty
       search = interact.read_text!
@@ -531,21 +531,17 @@ command.register
 
     project = get_project!
     file_search = howl.file_search
-    matches, searcher = file_search.search project.root, search
+    matches, searcher = file_search.search project.root, search, :whole_word
     unless #matches > 0
       log.error "No matches found for '#{search}'"
       return
 
-    matches = file_search.sort matches, project.root, search, app.editor.current_context
+    matches = file_search.sort matches, project.root, search, editor.current_context
     display_as = project.config.file_search_hit_display
     locations = [file_search_hit_to_location(m, search, display_as) for m in *matches]
     selected = interact.select_location
       title: "#{#matches} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
       items: locations
-      columns: {
-        {}
-        {style: 'string'}
-      }
     selected and selected.selection
 
   handler: (location) ->

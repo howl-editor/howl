@@ -167,6 +167,7 @@ ffi.cdef [[
   gboolean  g_match_info_next            (GMatchInfo *match_info, GError **error);
   gchar *   g_match_info_fetch           (const GMatchInfo *match_info, gint match_num);
   void      g_match_info_unref           (GMatchInfo *match_info);
+  void      g_match_info_free            (GMatchInfo *match_info);
   gboolean  g_match_info_fetch_pos       (const GMatchInfo *match_info,
                                           gint match_num,
                                           gint *start_pos,

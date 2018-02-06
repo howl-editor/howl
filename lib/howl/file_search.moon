@@ -6,6 +6,7 @@
 ffi = require 'ffi'
 
 {:max, :min} = math
+{string: ffi_string} = ffi
 append = table.insert
 file_sep = File.separator
 searchers = {}
@@ -21,7 +22,10 @@ run_search_command = (process, directory, query) ->
     error "#{process.exit_status_string}: #{err}"
 
   if process.successful
-    process_output.parse out, :directory, max_message_length: MAX_MESSAGE_LENGTH
+    process_output.parse out, {
+      :directory,
+      max_message_length: MAX_MESSAGE_LENGTH
+    }
   else
     {}
 
@@ -75,7 +79,10 @@ search = (directory, what, opts = {}) ->
     opts.searcher
 
   searcher or= get_searcher_for directory
-  res = searcher.handler directory, what
+  res = searcher.handler directory, what, {
+    whole_word: opts.whole_word or false,
+    max_message_length: MAX_MESSAGE_LENGTH
+  }
   t = typeof res
   if t == 'Process'
     res = run_search_command res, directory, what
@@ -189,6 +196,9 @@ register_searcher {
 
   handler: (directory, what, opts) ->
     cfg = config.for_file directory
+    if opts.whole_word
+      what = "\\b#{what}\\b"
+
     Process.open_pipe {
       cfg.ag_executable,
       '--nocolor',
@@ -217,6 +227,9 @@ register_searcher {
 
   handler: (directory, what, opts = {}) ->
     cfg = config.for_file directory
+    if opts.whole_word
+      what = "\\b#{what}\\b"
+
     Process.open_pipe {
       cfg.rg_executable,
       '--color', 'never',
@@ -247,7 +260,9 @@ native_paths = (dir) ->
       'jpeg',
       'gif',
       'ttf',
-      'woff'
+      'woff',
+      'eot',
+      'otf'
     }
       skip_exts[ext] = true
 
@@ -259,7 +274,7 @@ native_paths = (dir) ->
 
     dir\find_paths exclude_directories: true, :filter
 
-native_append_matches = (path, positions, mf, matches) ->
+native_append_matches = (path, positions, mf, matches, max_message_length) ->
   contents = mf.contents
   upper = #mf - 1
 
@@ -297,16 +312,20 @@ native_append_matches = (path, positions, mf, matches) ->
   start_pos = 0
   line = 1
   for p in *positions
+    continue if p < start_pos -- we've reported on this line already
     line, l_start_pos, l_end_pos = scan_to p, start_pos, line
     break unless line
-    start_pos = p + 1
+    start_pos = l_end_pos
+    len = l_end_pos - l_start_pos + 1
+    if max_message_length
+      len = min max_message_length, len
+
     append matches, {
       :path
       line_nr: line,
       column: (p - l_start_pos) + 1,
-      message: ffi.string(contents + l_start_pos, max(l_end_pos - l_start_pos + 1, 0))
+      message: ffi.string(contents + l_start_pos, max(len, 0))
     }
-
 
 register_searcher {
   name: 'native'
@@ -314,8 +333,11 @@ register_searcher {
   handler: (directory, what, opts = {}) ->
     MappedFile = require 'ljglibs.glib.mapped_file'
     GRegex = require 'ljglibs.glib.regex'
+    p = what.ulower
+    if opts.whole_word
+      p = "\\b#{p}\\b"
 
-    r = GRegex what.ulower, {'CASELESS', 'OPTIMIZE'}
+    r = GRegex p, {'CASELESS', 'OPTIMIZE', 'RAW'}
 
     paths = native_paths directory
     dir_path = directory.path
@@ -326,7 +348,8 @@ register_searcher {
       status, mf = pcall MappedFile, "#{dir_path}/#{p}"
       continue unless status
       contents = mf.contents
-      info = r\match_with_info contents
+      continue if ffi_string(contents, min(150, #mf)).is_likely_binary
+      info = r\match_full_with_info contents, #mf, 0
       match_positions = {}
       if info
         while info\matches!
@@ -334,7 +357,7 @@ register_searcher {
           append match_positions, start_pos
           info\next!
 
-        native_append_matches p, match_positions, mf, matches
+        native_append_matches p, match_positions, mf, matches, opts.max_message_length
 
     matches
 }

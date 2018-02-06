@@ -216,6 +216,11 @@ describe 'file_search', ->
         assert.same {'main', 'notsame', 'other'}, messages(sorted)
 
   describe 'the native searcher', ->
+    local search
+
+    setup ->
+      search = searchers.native.handler
+
     it 'handles multiple matches in a file correctly', ->
       hit = tmp_dir\join('hit.txt')
       hit.contents = ([[
@@ -223,26 +228,74 @@ food
 snafoo
 bafoon
       ]]).stripped
-      res = file_search.search tmp_dir, 'foo', searcher: searchers.native
+      res = search tmp_dir, 'foo'
       assert.same {
-        {path: 'hit.txt', file: hit, line_nr: 1, column: 1, message: 'food'},
-        {path: 'hit.txt', file: hit, line_nr: 2, column: 4, message: 'snafoo'},
-        {path: 'hit.txt', file: hit, line_nr: 3, column: 3, message: 'bafoon'},
+        {path: 'hit.txt', line_nr: 1, column: 1, message: 'food'},
+        {path: 'hit.txt', line_nr: 2, column: 4, message: 'snafoo'},
+        {path: 'hit.txt', line_nr: 3, column: 3, message: 'bafoon'},
       }, res
 
     it 'handles a match at the end of a file, preceeding an empty line', ->
       hit = tmp_dir\join('hit.txt')
       hit.contents = 'foo\n'
-      res = file_search.search tmp_dir, 'foo', searcher: searchers.native
+      res = search tmp_dir, 'foo'
       assert.same {
-        {path: 'hit.txt', file: hit, line_nr: 1, column: 1, message: 'foo'},
+        {path: 'hit.txt', line_nr: 1, column: 1, message: 'foo'},
       }, res
 
     it 'is case insensitive', ->
       hit = tmp_dir\join('hit.txt')
       hit.contents = 'foo\nFOO'
-      res = file_search.search tmp_dir, 'fOo', searcher: searchers.native
+      res = search tmp_dir, 'fOo'
       assert.same {
-        {path: 'hit.txt', file: hit, line_nr: 1, column: 1, message: 'foo'},
-        {path: 'hit.txt', file: hit, line_nr: 2, column: 1, message: 'FOO'},
+        {path: 'hit.txt', line_nr: 1, column: 1, message: 'foo'},
+        {path: 'hit.txt', line_nr: 2, column: 1, message: 'FOO'},
       }, res
+
+    it 'only reports the first match for a given line', ->
+      hit = tmp_dir\join('hit.txt')
+      hit.contents = 'in barbary there is a bar\n'
+      res = search tmp_dir, 'bar'
+      assert.same {
+        {
+          path: 'hit.txt',
+          line_nr: 1,
+          column: 4,
+          message: 'in barbary there is a bar'
+        },
+      }, res
+
+    it 'limits messages to the given max_message_length option', ->
+      hit = tmp_dir\join('hit.txt')
+      hit.contents = string.rep 'x', 100
+      res = search tmp_dir, 'x', max_message_length: 50
+      assert.equals 50, #res[1].message
+
+    it 'handles binary files without issue', ->
+      ffi = require('ffi')
+      bin = tmp_dir\join('bin')
+      data = ffi.new 'char[1024]'
+      for i = 0, 1023
+        data[i] = math.random(255)
+      bin.contents = ffi.string(data, 1024)
+      res = search tmp_dir, 'notlikely'
+      -- the assertion here is not super important - we mostly want to
+      -- check that we didn't crash here (as for instance GRegex would
+      -- for binary content without the RAW flag)
+      assert.equals 0, #res
+
+    context 'when the whole_word option is set', ->
+      it 'only finds whole words', ->
+        hit = tmp_dir\join('hit.txt')
+        hit.contents = ([[
+bar
+fubar
+barred
+barbary
+in a bar
+        ]]).stripped
+        res = search tmp_dir, 'bar', whole_word: true
+        assert.same {
+          {path: 'hit.txt', line_nr: 1, column: 1, message: 'bar'},
+          {path: 'hit.txt', line_nr: 5, column: 6, message: 'in a bar'},
+        }, res
