@@ -82,6 +82,17 @@ True if the string is empty, that is contains zero bytes/characters.
 
 True if the string is "blank", that is contains only blank characters, if any.
 
+### is_valid_utf8
+
+True if the string contains valid UTF-8, and false otherwise.
+
+### is_likely_binary
+
+True if the string is likely to hold binary (i.e. non-text) data, and false
+otherwise. As the name implies this indicates whether the string is _likely_ to
+be binary data or not, but it's not possible to say for sure. In particular, the
+shorter the string the more uncertain the answer.
+
 ## Methods
 
 ### byte_offset (...)

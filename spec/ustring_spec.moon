@@ -34,17 +34,28 @@ describe 'ustrings', ->
     assert.equal '', ('  \t').stripped
     assert.equal '', ('').stripped
 
+  it '.is_valid_utf8 is true for valid utf8 strings only', ->
+    assert.is_true ('abc\194\128').is_valid_utf8
+    assert.is_true ('\127').is_valid_utf8
+    assert.is_false ('\128').is_valid_utf8
+    assert.is_false ('abc\194').is_valid_utf8
+
+  describe '.is_likely_binary', ->
+    it 'is true for binary strings', ->
+      assert.is_true ('\000\003xksj').is_likely_binary
+
+    it 'is false for ordinary ASCII', ->
+      assert.is_false ('abcDEFGHZ!"#¤%&//()"').is_likely_binary
+
+    it 'is false for ordinary UTF-8', ->
+      assert.is_false ('abc\194\128').is_likely_binary
+      assert.is_false ('åäöÅÄÖ').is_likely_binary
+
   it 'ucompare(s1, s2) returns negative, 0 or positive if s1 is smaller, equal or greater than s2', ->
     assert.is_true 'a'\ucompare('b') < 0
     assert.is_true 'a'\ucompare('ä') < 0
     assert.equal 0, 'a'\ucompare('a')
     assert.is_true 'ö'\ucompare('ä') > 0
-
-  it 'is_valid_utf8(s) return true for valid utf8 strings only', ->
-    assert.is_true ('abc\194\128').is_valid_utf8
-    assert.is_true ('\127').is_valid_utf8
-    assert.is_false ('\128').is_valid_utf8
-    assert.is_false ('abc\194').is_valid_utf8
 
   describe 'usub(i, [j])', ->
     s = 'aåäöx'
