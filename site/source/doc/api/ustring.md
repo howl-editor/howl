@@ -135,6 +135,21 @@ provided. Searches for plain strings only (no regex or patterns).  Returns byte
 offsets `start_pos`, `end_pos` for the closest match or `nil` when no match was
 found.
 
+### split (delimiter)
+
+Splits the string on `delimiter`, returning a table of the parts. `delimiter` is
+treated as a lua pattern.
+
+Examples:
+
+```lua
+('1'):split(',') -- => { '1' }
+('1,2'):split(',') -- => { '2' }
+('1,'):split(',') -- => { '1', '' }
+('1 , 2'):split(',') -- => { '1 ', ' 2' }
+('1 , 2'):split('%s*,%s*') -- => { '1', '2' }
+```
+
 ### starts_with (s)
 
 Returns true if the string starts with `s`, and false otherwise.
