@@ -5,6 +5,7 @@ howl.util.lpeg_lexer ->
   c = capture
   ident = (alpha + '_')^1 * (alpha + digit + '_')^0
   ws = c 'whitespace', S(' \t\r\n')
+  continuation_ws = c 'continue', S(' \t\r\n')
   combining_ws = c 'combiner', S(' \t\r\n')^1
 
   identifer = c 'identifer', ident
@@ -43,17 +44,23 @@ howl.util.lpeg_lexer ->
       c('keyword', word { 'enum', 'union' })
       combining_ws,
       c('type_def', ident)
-      ws^0
-      c('operator', '{')
+      continuation_ws^0
+      any {
+        P(-1),
+        c('operator', '{')
+      }
     }
     sequence {
       c('keyword', word { 'class', 'struct' })
       combining_ws,
       attribute_spec^0
       c('type_def', ident) * (c('operator', P'::') + c('type_def', ident))^0
-      ws^0
-      (((V'all' + P 1) - S':{}=;') + ws)^0
-      c('operator', S':{')
+      continuation_ws^0
+      any {
+        P(-1),
+        c('operator', S':{<'),
+        c('keyword', any({'virtual', 'final'}))
+      }
     }
   }
 
