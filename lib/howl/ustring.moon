@@ -196,6 +196,21 @@ count = (s1, s2, is_pattern = false) ->
 
   c
 
+split = (s, pattern) ->
+  return {} if s == ""
+  parts = {}
+  s_pos = 1
+  p, e_pos = s\find pattern
+  while p
+    append parts, s\sub(s_pos, p - 1)
+    p = e_pos + 1
+    s_pos = p
+    p, e_pos = s\find pattern, p
+
+  append parts, s\sub(s_pos)
+
+  parts
+
 with string
   .usub = usub
   .umatch = umatch
@@ -210,6 +225,7 @@ with string
   .ends_with = ends_with
   .contains = contains
   .count = count
+  .split = split
 
 properties =
   ulen: => ulen @

@@ -222,3 +222,13 @@ describe 'ustrings', ->
 
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
       assert.same {1, 2, 3, 4}, 'äåö'\char_offset { 1, 3, 5, 7 }
+
+  describe 'split(pattern)', ->
+    it 'splits the string by <pattern>', ->
+      assert.same { '1' }, ('1')\split(',')
+      assert.same { '1', '2', '3' }, ('1,2,3')\split(',')
+      assert.same { '1', '2', '' }, ('1,2,')\split(',')
+      assert.same { '', '' }, (',')\split(',')
+
+    it 'treats <pattern> as a lua pattern', ->
+      assert.same { 'x', 'y', 'z' }, ('x.y,z')\split('[.,]')
