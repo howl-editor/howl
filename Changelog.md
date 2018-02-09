@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added proper structure support for C/C++ mode
+
 - Base scheme support on the newer lisp mode instead of old basic mode
 
 - Added the `**popup_menu_accept_key` option, for controlling which key accepts

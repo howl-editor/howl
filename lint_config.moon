@@ -202,6 +202,7 @@
       'within_activity',
       'with_signal_handler',
       'with_tmpdir',
+      'trimmed_text'
    },
 
     sandboxed_loader_spec: {
