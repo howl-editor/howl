@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import dispatch, interact from howl
-import Matcher from howl.util
+import Matcher, safecall from howl.util
 import style, markup from howl.ui
 
 append = table.insert
@@ -212,9 +212,7 @@ command_input_reader = {
 
 launch_cmd = (cmd, args) ->
   dispatch.launch ->
-    ok, err = pcall -> cmd.handler table.unpack args
-    if not ok
-      log.error err
+    safecall nil, -> cmd.handler table.unpack args
 
 ensure_command_can_run = (cmd) ->
   unless howl.app.window

@@ -29,13 +29,16 @@ dispatch = (level, message) ->
   entry = :message, :level
   append entries, entry
   window = _G.howl.app.window
+  shown = false
   if window and window.visible
     status = window.status
     command_line = window.command_line
     essentials = essentials_of message
     status[level] status, essentials
     command_line\notify essentials, level if command_line.showing
-  elseif not _G.howl.app.args.spec
+    shown = true
+
+  if level == 'critical' or not shown
     _G.print message
 
   while #entries > config.max_log_entries and #entries > 0
@@ -50,6 +53,7 @@ info = (message) -> dispatch 'info', message
 warning = (message) -> dispatch 'warning', message
 warn = warning
 error = (message) -> last_error = dispatch 'error', message
+critical = (message) -> last_error = dispatch 'critical', message
 clear = ->
   entries = {}
   last_error = nil

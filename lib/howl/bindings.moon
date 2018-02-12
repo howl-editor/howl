@@ -212,9 +212,9 @@ export dispatch = (event, source, maps_to_search, ...) ->
     elseif htype == 'table'
       push handler, pop: true
     else
-      _G.log.error "Illegal handler: type #{htype}"
+      _G.log.critical "Illegal handler: type #{htype}"
 
-    _G.log.error ret unless status
+    _G.log.critical ret unless status
     return true if not status or (status and ret != false)
 
   false
