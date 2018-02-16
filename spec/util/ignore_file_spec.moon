@@ -121,12 +121,15 @@ describe 'ignore_file', ->
       }
 
     it 'is not confused by special characters in patterns', ->
-      assert_ignores [[
-          *.ext
-        ]], {
-        rejected: { 'foo.ext' }
-        allowed: { 'fooext' }
-      }
+      assert_ignores '*.ext', rejected: { 'foo.ext' }, allowed: { 'fooext' }
+      assert_ignores '*+', rejected: { 'foo+' }, allowed: { 'foo' }
+      assert_ignores '^*', rejected: { '^foo' }, allowed: { 'foo' }
+      assert_ignores '*$', rejected: { 'foo$' }, allowed: { 'foo' }
+      assert_ignores '(*', rejected: { '(foo' }, allowed: { 'foo' }
+      assert_ignores '*)', rejected: { 'foo)' }, allowed: { 'foo' }
+      assert_ignores '{*', rejected: { '{foo' }, allowed: { 'foo' }
+      assert_ignores '*}', rejected: { 'foo}' }, allowed: { 'foo' }
+      assert_ignores 'x{2}', rejected: { 'x{2}' }, allowed: { 'xx' }
 
     it 'handles escapes in the patterns', ->
       assert_ignores [[

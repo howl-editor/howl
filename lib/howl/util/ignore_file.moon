@@ -9,8 +9,10 @@ line_to_rule = (line) ->
     pattern = pattern\sub(2)
     status = false
 
-  -- escape pattern matching sensitive characters
-  pattern = pattern\gsub '[]\\.[]', (c) -> "\\#{c}"
+  -- escape pattern matching sensitive characters. we can't really use the
+  -- ordinary regex escape function here since we need to handle asterisks
+  -- ourselves below
+  pattern = pattern\gsub '[]\\.[+^$(){}]', (c) -> "\\#{c}"
 
   -- normalize ignore pattern escapes
   pattern = pattern\gsub '\\\\(.)', (c) -> c
@@ -45,7 +47,7 @@ line_to_rule = (line) ->
     else -- beginning or in sub dir
       pattern = "(^|/)#{pattern}"
 
-  pattern: r("#{pattern}/?$"), :status
+  pattern: r("#{pattern}/?$"), :status, :line
 
 load_rules = (file) ->
   content = file.contents
