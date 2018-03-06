@@ -74,3 +74,19 @@ function* g(c) { yield c; }
 var
   foo = 1,
   my_func = function() {};
+
+// aync await
+async function () {
+  await Promise.resolve(true);
+}
+
+// modules
+import foo from './foo';
+export default 'a';
+
+// class
+class Foo extends Bar {
+  constructor () {
+    super();
+  }
+}
