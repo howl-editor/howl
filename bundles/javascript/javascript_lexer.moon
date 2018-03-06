@@ -9,10 +9,11 @@ howl.util.lpeg_lexer ->
   identifer = c 'identifer', ident
 
   keyword = c 'keyword', word {
-    'break', 'case', 'catch', 'continue', 'const', 'debugger', 'default', 'delete',
-    'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof',
-    'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
-    'void', 'while', 'with', 'yield'
+    'async', 'await', 'break', 'case', 'catch', 'class', 'const', 'continue',
+    'debugger', 'default', 'delete', 'do', 'else', 'export', 'extends',
+    'finally', 'from', 'for', 'function', 'if', 'import', 'in', 'instanceof',
+    'let', 'new', 'of', 'return', 'super', 'switch', 'this', 'throw', 'try',
+    'typeof', 'var', 'void', 'while', 'with', 'yield'
   }
 
   operator = c 'operator', S'+-*/%=<>&^|!(){}[];'
