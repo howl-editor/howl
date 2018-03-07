@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Moving cursor left or right with a selection active now cancels the selection,
+leaving the cursor at the corresponding end.
+
 - Added proper structure support for C/C++ mode
 
 - Base scheme support on the newer lisp mode instead of old basic mode

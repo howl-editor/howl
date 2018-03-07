@@ -105,6 +105,26 @@ describe 'Cursor', ->
       cursor\forward!
       assert.equals 2, cursor.line
 
+    context 'when a selection is present', ->
+      it 'moves the cursor to the end of the selection and clears it', ->
+        buffer.text = '12345678'
+        cursor.pos = 2
+        selection\set 5, 2
+        assert.equals 2, cursor.pos
+        cursor\forward!
+        assert.equals 5, cursor.pos
+        assert.is_true selection.is_empty
+
+      it 'extends the selection if it is persistent', ->
+        buffer.text = '12345678'
+        cursor.pos = 1
+        selection.persistent = true
+        cursor\forward!
+        assert.equals 2, cursor.pos
+        assert.same {1, 2}, {selection\range!}
+        cursor\forward!
+        assert.same {1, 3}, {selection\range!}
+
   describe 'backward()', ->
     it 'moves the cursor one character backwards', ->
       buffer.text = 'åäö'
@@ -127,6 +147,26 @@ describe 'Cursor', ->
       assert.equals 1, cursor.line
       assert.equals 2, cursor.column
       assert.equals 2, cursor.pos
+
+    context 'when a selection is present', ->
+      it 'moves the cursor to the start of the selection and clears it', ->
+        buffer.text = '12345678'
+        cursor.pos = 5
+        selection\set 2, 5
+        assert.equals 5, cursor.pos
+        cursor\backward!
+        assert.equals 2, cursor.pos
+        assert.is_true selection.is_empty
+
+      it 'extends the selection if it is persistent', ->
+        buffer.text = '12345678'
+        cursor.pos = 6
+        selection.persistent = true
+        cursor\backward!
+        assert.equals 5, cursor.pos
+        assert.same {5, 6}, {selection\range!}
+        cursor\backward!
+        assert.same {4, 6}, {selection\range!}
 
   describe 'up()', ->
     it 'moves the cursor one line up', ->

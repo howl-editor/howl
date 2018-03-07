@@ -275,6 +275,12 @@ Cursor = {
     @move_to pos: @view.buffer.size + 1, extend: opts.extend
 
   forward: (opts = {}) =>
+    -- if an ordinary selection is active, move to the end and cancel it
+    unless @selection.is_empty or @selection.persistent or opts.extend
+      @move_to pos: max(@selection.end_pos, @selection.anchor)
+      @selection\clear!
+      return
+
     return if @_pos > @view.buffer.size
     layout = @display_line.layout
     line_start = @buffer_line.start_offset
@@ -292,6 +298,12 @@ Cursor = {
       @move_to pos: line_start + new_index, extend: opts.extend
 
   backward: (opts = {}) =>
+    -- if an ordinary selection is active, move to the start and cancel it
+    unless @selection.is_empty or @selection.persistent or opts.extend
+      @move_to pos: min(@selection.end_pos, @selection.anchor)
+      @selection\clear!
+      return
+
     return if @_pos == 1
     line_start = @buffer_line.start_offset
     z_col = (@_pos - line_start)
