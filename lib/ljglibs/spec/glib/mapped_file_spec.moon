@@ -31,7 +31,6 @@ describe 'MappedFile', ->
         assert f\close!
         mf = MappedFile path
         contents = mf.contents
-        print contents[0]
         assert.equals 0x31, contents[0]
         assert.equals 0x31 + 1, contents[1]
         assert.equals 0x31 + 2, contents[2]
