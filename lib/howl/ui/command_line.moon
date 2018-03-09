@@ -376,10 +376,10 @@ class CommandLine extends PropertyObject
       if not @current
         error 'Cannot set title - no running activity', 2
 
-      return if text == @current.command_line_title
-
       @current.command_line_title = text
+
       if text == nil or text.is_empty
+        @indic_title.label = ''
         @header\to_gobject!\hide!
       else
         @header\to_gobject!\show!
