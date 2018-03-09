@@ -111,7 +111,7 @@ export within_activity = (activity_function, on_show) ->
   command_line.show = command_line.orig_show
 
 export get_ui_list_widget_column = (column=1, widget_name='completion_list') ->
-  items = howl.app.window.command_line\get_widget(widget_name).items
+  items = howl.app.window.command_line\get_widget(widget_name).list.items
   items = [row[column] for row in *items]
   return [item.text or item for item in *items]
 

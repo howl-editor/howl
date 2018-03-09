@@ -1,10 +1,10 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, interact, sys from howl
-import File from howl.io
-import ListWidget, markup from howl.ui
-import file_matcher, get_cwd, get_dir_and_leftover from howl.util.paths
+{:app, :interact, :sys} = howl
+{:File} = howl.io
+{:List, :ListWidget, :markup} = howl.ui
+{:file_matcher, :get_cwd, :get_dir_and_leftover} = howl.util.paths
 append = table.insert
 
 _command_history = {}
@@ -42,6 +42,7 @@ class ExternalCommandEntry
   run: (@finish, @opts={}) =>
     @command_line = app.window.command_line
     @commands = nil
+    @list = nil
     @list_widget = nil
     @auto_show_list = true
 
@@ -72,15 +73,16 @@ class ExternalCommandEntry
     if @directory.parent
       @_chdir @directory.parent
 
-  _initialize_list_widget: =>
-    @list_widget = ListWidget nil, never_shrink: true
+  _initialize_list: =>
+    @list = List nil
+    @list.columns =  { {style: 'filename'} }
+    @list_widget = ListWidget @list, never_shrink: true
     @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
-    @list_widget.columns =  { {style: 'filename'} }
     @command_line\add_widget 'completion_list', @list_widget
 
   _auto_complete_file: (opts={}) =>
-    unless @list_widget
-      @_initialize_list_widget!
+    unless @list
+      @_initialize_list!
 
     unless @list_widget.showing
       @list_widget\show!
@@ -104,10 +106,10 @@ class ExternalCommandEntry
       return
 
     path, unmatched = get_dir_and_leftover @directory.path .. File.separator .. last_part
-    @list_widget.matcher = file_matcher self.directory_reader(path), path
-    @list_widget\update unmatched
-    @list_widget_path = path
-    @list_widget_unmatched = unmatched
+    @list.matcher = file_matcher self.directory_reader(path), path
+    @list\update unmatched
+    @list_path = path
+    @list_unmatched = unmatched
 
   _auto_complete_command: (text) =>
     @commands or= available_commands!
@@ -129,11 +131,11 @@ class ExternalCommandEntry
 
   _select_completion: =>
     @list_widget\hide!
-    return unless @list_widget.selection
+    return unless @list.selection
 
-    filename = @list_widget.selection.name
-    new_path = @list_widget_path / filename
-    @command_line.text = @command_line.text\sub(1, -#@list_widget_unmatched - 1)
+    filename = @list.selection.name
+    new_path = @list_path / filename
+    @command_line.text = @command_line.text\sub(1, -#@list_unmatched - 1)
     @command_line\write filename
     unless new_path.is_directory
       @command_line\write ' '
@@ -171,7 +173,7 @@ class ExternalCommandEntry
       text = @command_line.text
       cd_cmd = text\umatch '^%s*cd%s+'
 
-      if cd_cmd and (not @list_widget.selection or @list_widget.selection.name == './')
+      if cd_cmd and (not @list.selection or @list.selection.name == './')
           dir = @command_line.text\umatch '^%s*cd%s+(.+)'
           dir = File.expand_path dir
           path = @directory / dir

@@ -4,7 +4,7 @@
 {:activities, :app, :config, :interact, :log, :Project} = howl
 {:File} = howl.io
 {:Preview} = howl.interactions.util
-{:icon, :markup, :style, :ListWidget} = howl.ui
+{:icon, :markup, :style, :List, :ListWidget} = howl.ui
 {
   :file_matcher,
   :subtree_paths_matcher,
@@ -61,9 +61,8 @@ class FileSelector
     @command_line = app.window.command_line
     @command_line.prompt = @opts.prompt or ''
 
-    @list_widget = ListWidget nil,
-      never_shrink: true,
-      on_selection_change: @\_preview
+    @list = List nil, on_selection_change: @\_preview
+    @list_widget = ListWidget @list, never_shrink: true
     @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
 
     @command_line\add_widget 'completion_list', @list_widget
@@ -100,8 +99,8 @@ class FileSelector
       matcher = file_matcher self.directory_reader(directory), directory, @opts.allow_new
       @command_line.title = @opts.title or 'File'
 
-    @list_widget.matcher = matcher
-    @list_widget\update text
+    @list.matcher = matcher
+    @list\update text
 
     basename = directory.short_path
     basename ..= separator unless basename\ends_with separator
@@ -127,7 +126,7 @@ class FileSelector
     if directory != @directory
       @_chdir directory, text
     else
-      @list_widget\update text
+      @list\update text
 
   _submit: (path) =>
     @submitting = true
@@ -139,8 +138,9 @@ class FileSelector
 
   _open: =>
     app.editor\cancel_preview!
-    file = @list_widget.selection and get_file @list_widget.selection
-    name = @list_widget.selection and @list_widget.selection.name
+    sel = @list.selection
+    file = sel and get_file sel
+    name = sel and sel.name
     if not @opts.allow_new and (not file or not file.exists)
       log.error "Invalid path: #{file}"
       return
@@ -158,21 +158,21 @@ class FileSelector
 
     tab: =>
       count = 0
-      for item in *@list_widget.items
+      for item in *@list.items
         count += 1 unless item.is_new
       if count == 1
         -- open a unique completion
-        if @list_widget.selection and not @list_widget.selection.is_new
+        if @list.selection and not @list.selection.is_new
           @_open!
       else
-        @list_widget\select_next!
+        @list\select_next!
         -- if we land on the new entry, skip it by going forward again
-        @list_widget\select_next! if @list_widget.selection.is_new
+        @list\select_next! if @list.selection.is_new
 
     shift_tab: =>
-      @list_widget\select_prev!
+      @list\select_prev!
       -- if we land on the new entry, skip it by going backward again
-      @list_widget\select_prev! if @list_widget.selection.is_new
+      @list\select_prev! if @list.selection.is_new
 
     backspace: =>
       return false unless @command_line.text.is_empty
