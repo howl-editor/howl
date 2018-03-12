@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, config, mode from howl
+import app, command, config, mode, io from howl
 
 {:fmt} = bundle_load 'go_fmt'
 
@@ -25,6 +25,21 @@ register_commands = ->
         log.error 'Buffer is not a go mode buffer'
         return
       fmt buffer
+  command.register
+    name: 'go-doc',
+    description: 'Display documentation obtained with gogetdoc'
+    handler: ->
+      buffer = app.editor.buffer
+      buffer\save!
+      cmd_str = string.format "gogetdoc -pos %s:#%d", buffer.file, buffer\byte_offset(app.editor.cursor.pos) - 2
+      process = io.Process
+        cmd: cmd_str
+        read_stdout: true
+      ptxt = process.stdout\read_all!
+      if #ptxt ~= 0
+        buf = howl.Buffer mode.by_name 'default'
+        buf.text = ptxt
+        app.editor\show_popup howl.ui.BufferPopup buf, { position: 1 }
 
 register_mode!
 register_commands!
@@ -51,6 +66,7 @@ with config
 unload = ->
   mode.unregister 'go'
   command.unregister 'go-fmt'
+  command.unregister 'go-doc'
 
 return {
   info:
