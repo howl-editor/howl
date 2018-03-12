@@ -1,9 +1,15 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, config, mode, io from howl
+import app, command, config, mode, io, inspection from howl
 
 {:fmt} = bundle_load 'go_fmt'
+
+register_inspections = ->
+  inspection.register
+    name: 'golint'
+    factory: ->
+      bundle_load 'golint_inspector'
 
 register_mode = ->
   mode_reg =
@@ -43,6 +49,7 @@ register_commands = ->
 
 register_mode!
 register_commands!
+register_inspections!
 
 with config
   .define
@@ -62,11 +69,17 @@ with config
     description: 'Whether to use gocode completions in go mode'
     default: true
     type_of: 'boolean'
+  .define
+    name: 'go_lint'
+    description: 'Whether to use the golint inspector'
+    default: true
+    type_of: 'boolean'
 
 unload = ->
   mode.unregister 'go'
   command.unregister 'go-fmt'
   command.unregister 'go-doc'
+  inspection.unregister 'golint'
 
 return {
   info:
