@@ -10,6 +10,10 @@ register_inspections = ->
     name: 'golint'
     factory: ->
       bundle_load 'golint_inspector'
+  inspection.register
+    name: 'gotoolvet'
+    factory: ->
+      bundle_load 'gotoolvet_inspector'
 
 register_mode = ->
   mode_reg =
@@ -45,7 +49,7 @@ register_commands = ->
       if #ptxt ~= 0
         buf = howl.Buffer mode.by_name 'default'
         buf.text = ptxt
-        app.editor\show_popup howl.ui.BufferPopup buf, { position: 1 }
+        app.editor\show_popup howl.ui.BufferPopup buf
 
 register_mode!
 register_commands!
@@ -74,12 +78,18 @@ with config
     description: 'Whether to use the golint inspector'
     default: true
     type_of: 'boolean'
+  .define
+    name: 'go_tool_vet'
+    description: 'Whether to use the go tool vet inspector'
+    default: true
+    type_of: 'boolean'
 
 unload = ->
   mode.unregister 'go'
   command.unregister 'go-fmt'
   command.unregister 'go-doc'
   inspection.unregister 'golint'
+  inspection.unregister 'gotoolvet'
 
 return {
   info:

@@ -23,7 +23,7 @@ bundle_load 'go_completer'
     use_tabs: true
     tab_width: 4
     indent: 4
-    inspectors_on_save: { 'golint' }
+    inspectors_on_save: { 'golint', 'gotoolvet' }
 
   lexer: bundle_load('go_lexer')
 
