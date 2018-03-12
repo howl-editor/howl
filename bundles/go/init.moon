@@ -40,8 +40,10 @@ register_commands = ->
     description: 'Display documentation obtained with gogetdoc'
     handler: ->
       buffer = app.editor.buffer
-      buffer\save!
-      cmd_str = string.format "gogetdoc -pos %s:#%d", buffer.file, buffer\byte_offset(app.editor.cursor.pos) - 2
+      if buffer.modified
+        log.warn("go-doc operates on saved buffers")
+        return
+      cmd_str = string.format "gogetdoc -pos \"%s:#%d\"", buffer.file, buffer\byte_offset(app.editor.cursor.pos) - 2
       process = io.Process
         cmd: cmd_str
         read_stdout: true
