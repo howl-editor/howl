@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, config, mode, io, inspection from howl
+import app, command, config, mode, io, inspection, activities from howl
 
 {:fmt} = bundle_load 'go_fmt'
 
@@ -40,17 +40,24 @@ register_commands = ->
     description: 'Display documentation obtained with gogetdoc'
     handler: ->
       buffer = app.editor.buffer
-      if buffer.modified
-        log.warn("go-doc operates on saved buffers")
+      if buffer.mode.name != 'go'
+        log.error 'Buffer is not a go mode buffer'
         return
-      cmd_str = string.format "gogetdoc -pos \"%s:#%d\"", buffer.file, buffer\byte_offset(app.editor.cursor.pos) - 2
+      cmd_str = string.format "gogetdoc -pos %s:#%d -modified -linelength 999",
+        buffer.file,
+        buffer\byte_offset(app.editor.cursor.pos) - 2
       process = io.Process
         cmd: cmd_str
+        write_stdin: true
         read_stdout: true
-      ptxt = process.stdout\read_all!
-      if #ptxt ~= 0
+        read_stderr: true
+      archive = string.format("%s\n%d\n%s", buffer.file, buffer.size, buffer.text)
+      process.stdin\write archive
+      process.stdin\close!
+      stdout, _ = activities.run_process {title: 'Running gogetdoc'}, process
+      if #stdout ~= 0
         buf = howl.Buffer mode.by_name 'default'
-        buf.text = ptxt
+        buf.text = stdout
         app.editor\show_popup howl.ui.BufferPopup buf
 
 register_mode!
