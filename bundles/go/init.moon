@@ -8,12 +8,12 @@ import app, command, config, mode, io, inspection from howl
 register_inspections = ->
   inspection.register
     name: 'golint'
-    factory: ->
-      bundle_load 'golint_inspector'
+    factory: (buffer) ->
+      bundle_load('golint_inspector') buffer
   inspection.register
     name: 'gotoolvet'
-    factory: ->
-      bundle_load 'gotoolvet_inspector'
+    factory: (buffer) ->
+      bundle_load('gotoolvet_inspector') buffer
 
 register_mode = ->
   mode_reg =
@@ -73,16 +73,6 @@ with config
   .define
     name: 'go_complete'
     description: 'Whether to use gocode completions in go mode'
-    default: true
-    type_of: 'boolean'
-  .define
-    name: 'go_lint'
-    description: 'Whether to use the golint inspector'
-    default: true
-    type_of: 'boolean'
-  .define
-    name: 'go_tool_vet'
-    description: 'Whether to use the go tool vet inspector'
     default: true
     type_of: 'boolean'
 
