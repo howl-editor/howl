@@ -45,15 +45,13 @@ register_commands = ->
       cmd_str = string.format "gogetdoc -pos %s:#%d -modified -linelength 999",
         buffer.file,
         buffer\byte_offset(app.editor.cursor.pos) - 2
-      process = io.Process
-        cmd: cmd_str
-        write_stdin: true
-        read_stdout: true
-        read_stderr: true
-      archive = string.format("%s\n%d\n%s", buffer.file, buffer.size, buffer.text)
-      process.stdin\write archive
-      process.stdin\close!
-      stdout, _ = activities.run_process {title: 'Running gogetdoc'}, process
+      success, pco = pcall io.Process.open_pipe, cmd_str, {
+        stdin: string.format("%s\n%d\n%s", buffer.file, buffer.size, buffer.text)
+      }
+      if not success
+        log.error pco
+        return
+      stdout, _ = activities.run_process {title: 'running gogetdoc'}, pco
       if #stdout ~= 0
         buf = howl.Buffer mode.by_name 'default'
         buf.text = stdout
