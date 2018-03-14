@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added two inspectors and a command for documentation to the Go mode
+
 - Moving cursor left or right with a selection active now cancels the selection,
 leaving the cursor at the corresponding end.
 
