@@ -55,10 +55,11 @@ class ListWidget extends PropertyObject
     visible_rows = @text_widget.visible_rows
     shown_rows = @list.rows_shown
 
+    if @opts.never_shrink
+      @list.min_rows = shown_rows
+
     if shown_rows > visible_rows
       @text_widget.visible_rows = shown_rows
-      if @opts.never_shrink
-        @list.min_rows = shown_rows
     elseif shown_rows < visible_rows
       @text_widget.visible_rows = shown_rows
 
