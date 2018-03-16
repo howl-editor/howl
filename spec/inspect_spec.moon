@@ -115,6 +115,17 @@ describe 'inspect', ->
 
     context 'when an inspector command contains a <file> placeholder', ->
       it "is skipped if the buffer has no associated file", (done) ->
+        buffer.modified = false
+        idle_inspector = 'echo "foo:1: <file> urk"'
+        howl_async ->
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
+          assert.same {}, inspect.inspect(buffer)
+          done!
+
+      it "is skipped if the buffer is modified", (done) ->
+        file = File '/foo/bar'
+        buffer.file = file
+        buffer.modified = true
         idle_inspector = 'echo "foo:1: <file> urk"'
         howl_async ->
           buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
@@ -139,6 +150,7 @@ describe 'inspect', ->
         file = File '/foo/bar'
         buffer.file = file
         buffer.text = 'bar:1: mem'
+        buffer.modified = false
         idle_inspector = cmd: 'cat <file> -'
         howl_async ->
           buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}

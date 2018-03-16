@@ -22,7 +22,7 @@ update_inspections_display = (editor) ->
 
 resolve_inspector = (inspector, buffer) ->
   return inspector unless inspector.cmd\find '<file>', 1, true
-  return nil unless buffer.file
+  return nil if not buffer.file or buffer.modified
   copy = {k,v for k, v in pairs inspector}
   copy.cmd = copy.cmd\gsub '<file>', buffer.file.path
   copy.write_stdin = false
