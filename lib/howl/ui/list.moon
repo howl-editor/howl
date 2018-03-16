@@ -47,7 +47,8 @@ get_items = (matcher, search) ->
   unless matcher
     return {}, false
 
-  matcher search
+  items, partial = matcher(search)
+  items or {}, partial
 
 class List extends PropertyObject
   new: (@matcher, opts={}) =>
@@ -64,10 +65,10 @@ class List extends PropertyObject
     @_columns = { {} }
     @page_start_idx = 1
     @page_size = 1
-    @selected_idx = nil
     @column_widths = { 1 }
     @highlight_matches_for = nil
     @_items, @partial = get_items matcher, ''
+    @selected_idx = @has_items and (@opts.reverse and #@_items or 1) or nil
     @listeners = {}
 
   @property columns:
@@ -115,6 +116,9 @@ class List extends PropertyObject
       @_min_rows = val
 
   insert: (@buffer) =>
+    @draw!
+    if @selected_idx
+      @_scroll_to @selected_idx
 
   draw: =>
     unless @buffer
@@ -157,6 +161,9 @@ class List extends PropertyObject
 
       @rows_shown = max 1, display_size + filler_lines
 
+    if @selected_idx
+      @_highlight @selected_idx
+
     for listener in *@listeners
       pcall listener, @
 
@@ -175,6 +182,7 @@ class List extends PropertyObject
       idx = 1
     else
       idx = min #@_items, @selected_idx + @page_size
+
     @_jump_to_page_at @page_start_idx + @page_size
     @_select idx
 
@@ -195,13 +203,13 @@ class List extends PropertyObject
 
     @highlight_matches_for = match_text
 
-    idx = @opts.reverse and #@_items or 1
-    if preserve_position and current_idx
-      idx = min(current_idx, #@_items)
+    @selected_idx = @has_items and (@opts.reverse and #@_items or 1) or nil
 
-    @page_start_idx = 1
+    if preserve_position and current_idx and @selected_idx
+      @selected_idx = min(current_idx, #@_items)
+      @_scroll_to @selected_idx
+
     @draw!
-    @_select idx
 
   on_refresh: (listener) =>
     @listeners[#@listeners + 1] = listener
@@ -267,8 +275,9 @@ class List extends PropertyObject
 
     @selected_idx = idx
 
-    @_scroll_to idx
-    @_highlight idx
+    if @buffer
+      @_scroll_to idx
+      @_highlight idx
 
     changed = @selection != @previous_selection
     @previous_selection = @selection
@@ -287,11 +296,11 @@ class List extends PropertyObject
 
   _highlight: (idx) =>
     highlight.remove_all 'list_selection', @buffer
-    return if not idx
+    return unless idx
 
     offset = idx - @page_start_idx + 1
     if offset < 1 or offset > @page_size
-      error 'selected item is off page'
+      return
 
     offset += 1 if @has_header
 
