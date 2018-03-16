@@ -113,6 +113,18 @@ describe 'inspect', ->
            }, res
           done!
 
+      it 'allows for specifying the type of inspections via the `type` key', (done) ->
+        idle_inspector = cmd: 'echo "foo:1: some warning"', type: 'warning'
+        howl_async ->
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
+          res = inspect.inspect(buffer)
+          assert.same {
+            [1]: {
+              { message: 'some warning', type: 'warning' },
+            }
+           }, res
+          done!
+
     context 'when an inspector command contains a <file> placeholder', ->
       it "is skipped if the buffer has no associated file", (done) ->
         buffer.modified = false

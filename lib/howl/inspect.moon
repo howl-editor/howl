@@ -143,7 +143,7 @@ parse_errors = (out, inspector) ->
     if loc.tokens
       complaint.search = loc.tokens[1]
 
-    complaint.type = loc.message\umatch(r'^(warning|error)')
+    complaint.type = inspector.type or loc.message\umatch(r'^(warning|error)')
 
     append inspections, complaint
 
