@@ -1,4 +1,4 @@
- --Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -276,6 +276,7 @@ View = {
   scroll_to: (line) =>
     return if line < 1 or not @showing
     line = max(1, line)
+    line = min(line, @buffer.nr_lines)
     return if @first_visible_line == line
 
     @_first_visible_line = line
