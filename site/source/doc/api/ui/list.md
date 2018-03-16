@@ -110,8 +110,8 @@ each line to fill the extra space. Read/write.
 
 ### offset
 
-Indicates the "page" currently showing. Always 1 unless the list is constrained
-by [max_rows](#max_rows).
+The index of the first item currently shown. Always 1 unless the list is
+constrained by [max_rows](#max_rows).
 
 ### page_size
 

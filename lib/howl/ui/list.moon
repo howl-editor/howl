@@ -208,6 +208,8 @@ class List extends PropertyObject
     if preserve_position and current_idx and @selected_idx
       @selected_idx = min(current_idx, #@_items)
       @_scroll_to @selected_idx
+    else
+      @page_start_idx = 1
 
     @draw!
 
