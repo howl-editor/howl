@@ -40,6 +40,7 @@ class TextWidget extends PropertyObject
         @opts.on_changed and @opts.on_changed!
 
       on_focus_out: @opts.on_focus_lost
+      on_resized: @opts.on_resized
 
   @property width_cols:
     get: =>

@@ -7,10 +7,13 @@
 {:tostring} = _G
 
 class ListWidget extends PropertyObject
-  new: (@list, @opts = {}) =>
+  new: (@list, opts = {}) =>
     super!
+
     @partial = false
-    @text_widget = TextWidget opts
+    @opts = moon.copy opts
+    @opts.on_resized = -> list.selection = list.selection
+    @text_widget = TextWidget @opts
     @text_widget.visible_rows = 15
     list\insert @text_widget.buffer
     list.max_rows = @text_widget.visible_rows
