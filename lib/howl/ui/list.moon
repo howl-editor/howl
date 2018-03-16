@@ -202,16 +202,13 @@ class List extends PropertyObject
       @_items = reversed @_items
 
     @highlight_matches_for = match_text
+    idx = @opts.reverse and #@_items or 1
 
-    @selected_idx = @has_items and (@opts.reverse and #@_items or 1) or nil
-
-    if preserve_position and current_idx and @selected_idx
-      @selected_idx = min(current_idx, #@_items)
-      @_scroll_to @selected_idx
-    else
-      @page_start_idx = 1
+    if preserve_position and current_idx
+      idx = min(current_idx, #@_items)
 
     @draw!
+    @_select idx
 
   on_refresh: (listener) =>
     @listeners[#@listeners + 1] = listener
@@ -265,7 +262,7 @@ class List extends PropertyObject
     @buffer\append "#{status}\n", 'comment'
 
   _select: (idx) =>
-    if not @has_items
+    if not idx or idx < 1 or idx > #@_items
       @selected_idx = nil
       @_highlight nil
       return
