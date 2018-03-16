@@ -1067,13 +1067,13 @@ with config
   .define
     name: 'scroll_speed_y'
     description: 'A percentage value determining the vertical mouse scrolling speed'
-    default: 100
+    default: 250
     type_of: 'number'
 
   .define
     name: 'scroll_speed_x'
     description: 'A percentage value determining the horizontal mouse scrolling speed'
-    default: 100
+    default: 250
     type_of: 'number'
 
   .define

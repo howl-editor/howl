@@ -96,12 +96,12 @@ define_options = ->
 
     scroll_speed_x: {
       type: 'number',
-      default: 100
+      default: 250
     },
 
     scroll_speed_y: {
       type: 'number',
-      default: 100
+      default: 250
     }
 
     gutter_styling: {
