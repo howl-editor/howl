@@ -343,10 +343,13 @@ class Application extends PropertyObject
       count += 1
 
   _append_buffer: (buffer) =>
-    if config.autoclose_single_buffer and #@_buffers == 1 and not @_buffers[1].file and not @_buffers[1].modified
-      @_buffers[1] = buffer
-    else
-      append @_buffers, buffer
+    if config.autoclose_single_buffer and #@_buffers == 1
+      present = @_buffers[1]
+      if not present.file and not present.modified and present.length == 0
+        @_buffers[1] = buffer
+        return
+
+    append @_buffers, buffer
 
   _buffer_for_file: (file) =>
     for b in *@buffers
