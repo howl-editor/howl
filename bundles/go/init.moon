@@ -8,10 +8,10 @@ import app, command, config, mode, io, inspection, activities from howl
 register_inspections = ->
   inspection.register
     name: 'golint'
-    factory: -> { cmd: 'golint <file>' }
+    factory: -> { cmd: 'golint <file>', type: 'warning' }
   inspection.register
     name: 'gotoolvet'
-    factory: -> { cmd: 'go tool vet <file>' }
+    factory: -> { cmd: 'go tool vet <file>', type: 'error' }
 
 
 register_mode = ->
