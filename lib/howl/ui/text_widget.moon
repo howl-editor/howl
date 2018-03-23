@@ -54,7 +54,6 @@ class TextWidget extends PropertyObject
   @property visible_rows:
     get: => @_visible_rows
     set: (nr) =>
-      return if nr == @_visible_rows
       @_visible_rows = nr
       @adjust_height!
 

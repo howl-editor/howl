@@ -52,16 +52,12 @@ class ListWidget extends PropertyObject
       @text_widget.view.first_visible_line = 1
 
   _adjust_height: =>
-    visible_rows = @text_widget.visible_rows
     shown_rows = @list.rows_shown
 
     if @opts.never_shrink
       @list.min_rows = shown_rows
 
-    if shown_rows > visible_rows
-      @text_widget.visible_rows = shown_rows
-    elseif shown_rows < visible_rows
-      @text_widget.visible_rows = shown_rows
+    @text_widget.visible_rows = shown_rows
 
   _adjust_width: =>
     if @opts.auto_fit_width
