@@ -1085,7 +1085,7 @@ with config
   .define
     name: 'undo_limit'
     description: 'Per buffer limit of undo revisions to keep'
-    default: 100
+    default: 200
     type_of: 'number'
     scope: 'global'
 
