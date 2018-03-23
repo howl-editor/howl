@@ -28,6 +28,7 @@ get_project = ->
       return Project.for_file file
 
 get_file = (item) ->
+  return nil unless item
   return item.file if item.file
   unless item.directory
     error "Selection item need either .file or .directory and .path"
@@ -112,7 +113,7 @@ class FileSelector
     @preview or= Preview!
 
     file = get_file selection
-    if file.exists
+    if file and file.exists
       app.editor\preview @preview\get_buffer file
     else
       app.editor\cancel_preview!
