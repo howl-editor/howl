@@ -1,7 +1,7 @@
--- Copyright 2016 The Howl Developers
+-- Copyright 2016-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, config, mode, io, inspection, activities from howl
+{:app, :command, :config, :mode, :io, :inspection, :activities, :sys} = howl
 
 {:fmt} = bundle_load 'go_fmt'
 
@@ -34,6 +34,7 @@ register_commands = ->
         log.error 'Buffer is not a go mode buffer'
         return
       fmt buffer
+
   command.register
     name: 'go-doc',
     description: 'Display documentation obtained with gogetdoc'
@@ -42,20 +43,29 @@ register_commands = ->
       if buffer.mode.name != 'go'
         log.error 'Buffer is not a go mode buffer'
         return
-      cmd_str = string.format "gogetdoc -pos %s:#%d -modified -linelength 999",
+
+      cmd_path = config.gogetdoc_path
+      unless sys.find_executable cmd_path
+        log.warning "Command '#{cmd_path}' not found, please install for docs"
+        return
+
+      cmd_str = string.format "#{cmd_path} -pos %s:#%d -modified -linelength 999",
         buffer.file,
         buffer\byte_offset(app.editor.cursor.pos) - 2
       success, pco = pcall io.Process.open_pipe, cmd_str, {
         stdin: string.format("%s\n%d\n%s", buffer.file, buffer.size, buffer.text)
       }
-      if not success
-        log.error pco
+      unless success
+        log.error "Failed looking up docs: #{pco}"
         return
+
       stdout, _ = activities.run_process {title: 'running gogetdoc'}, pco
-      if #stdout ~= 0
+      unless stdout.is_empty
         buf = howl.Buffer mode.by_name 'default'
         buf.text = stdout
         app.editor\show_popup howl.ui.BufferPopup buf
+      else
+        log.info "No documentation available at current position"
 
 register_mode!
 register_commands!
@@ -79,6 +89,12 @@ with config
     description: 'Whether to use gocode completions in go mode'
     default: true
     type_of: 'boolean'
+
+  .define
+    name: 'gogetdoc_path',
+    description: 'Path to gogetdoc executable'
+    default: 'gogetdoc'
+    scope: 'global'
 
 unload = ->
   mode.unregister 'go'
