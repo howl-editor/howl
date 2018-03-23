@@ -348,6 +348,7 @@ register_searcher {
       status, mf = pcall MappedFile, "#{dir_path}/#{p}"
       continue unless status
       contents = mf.contents
+      continue unless contents
       continue if ffi_string(contents, min(150, #mf)).is_likely_binary
       info = r\match_full_with_info contents, #mf, 0
       match_positions = {}
