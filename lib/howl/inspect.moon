@@ -10,6 +10,8 @@ append = table.insert
 
 local popup, last_display_position
 
+unavailable_warnings = {}
+
 update_inspections_display = (editor) ->
   text = ''
   count = #editor.buffer.markers\find(name: 'inspection')
@@ -20,9 +22,14 @@ update_inspections_display = (editor) ->
 
   editor.indicator.inspections.text = text
 
-resolve_inspector = (inspector, buffer) ->
+resolve_inspector = (name, inspector, buffer) ->
   if inspector.is_available
-    unless inspector.is_available(buffer)
+    available, msg = inspector.is_available(buffer)
+    unless available
+      unless unavailable_warnings[name]
+        log.warning "Inspector '#{name}' unavailable: #{msg}"
+        unavailable_warnings[name] = true
+
       return nil
 
   return inspector unless inspector.cmd\find '<file>', 1, true
@@ -45,18 +52,16 @@ load_inspectors = (buffer, scope = 'idle') ->
       conf = inspection[inspector]
       if conf
         instance = conf.factory buffer
-        if callable(instance)
+        unless callable(instance)
+          if type(instance) == 'string'
+            instance = resolve_inspector inspector, {cmd: instance}, buffer
+          elseif type(instance) == 'table'
+            unless instance.cmd
+              error "Missing cmd key for inspector returned for '#{inspector}'"
+            instance = resolve_inspector inspector, instance, buffer
+
+        if instance
           append inspectors, instance
-        elseif type(instance) == 'string'
-          instance = resolve_inspector {cmd: instance}, buffer
-          if instance
-            append inspectors, instance
-        elseif type(instance) == 'table'
-          unless instance.cmd
-            error "Missing cmd key for inspector returned for '#{inspector}'"
-          instance = resolve_inspector instance, buffer
-          if instance
-            append inspectors, instance
 
       else
         log.warn "Invalid inspector '#{inspector}' specified for '#{buffer.title}'"

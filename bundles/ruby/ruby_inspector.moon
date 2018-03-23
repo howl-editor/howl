@@ -10,7 +10,7 @@ util = bundle_load 'util'
   {
     cmd: "#{ruby_cmd} -w -c"
 
-    is_available: -> ruby_cmd != nil
+    is_available: -> ruby_cmd != nil, "`ruby` command not found"
 
     post_parse: (inspections) ->
       for i in *inspections

@@ -11,14 +11,14 @@ register_inspections = ->
     factory: -> {
       cmd: 'golint <file>',
       type: 'warning',
-      is_available: -> sys.find_executable('golint')
+      is_available: -> sys.find_executable('golint'), "`golint` command not found"
     }
   inspection.register
     name: 'gotoolvet'
     factory: -> {
       cmd: 'go tool vet <file>',
       type: 'error',
-      is_available: -> sys.find_executable('go')
+      is_available: -> sys.find_executable('go'), "`go` command not found"
     }
 
 register_mode = ->
