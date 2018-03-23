@@ -21,6 +21,10 @@ update_inspections_display = (editor) ->
   editor.indicator.inspections.text = text
 
 resolve_inspector = (inspector, buffer) ->
+  if inspector.is_available
+    unless inspector.is_available(buffer)
+      return nil
+
   return inspector unless inspector.cmd\find '<file>', 1, true
   return nil if not buffer.file or buffer.modified
   copy = {k,v for k, v in pairs inspector}

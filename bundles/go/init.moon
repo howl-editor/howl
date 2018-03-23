@@ -1,18 +1,25 @@
 -- Copyright 2016-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :command, :config, :mode, :inspection} = howl
+{:app, :command, :config, :mode, :inspection, :sys} = howl
 
 {:fmt} = bundle_load 'go_fmt'
 
 register_inspections = ->
   inspection.register
     name: 'golint'
-    factory: -> { cmd: 'golint <file>', type: 'warning' }
+    factory: -> {
+      cmd: 'golint <file>',
+      type: 'warning',
+      is_available: -> sys.find_executable('golint')
+    }
   inspection.register
     name: 'gotoolvet'
-    factory: -> { cmd: 'go tool vet <file>', type: 'error' }
-
+    factory: -> {
+      cmd: 'go tool vet <file>',
+      type: 'error',
+      is_available: -> sys.find_executable('go')
+    }
 
 register_mode = ->
   mode_reg =

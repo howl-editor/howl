@@ -125,6 +125,17 @@ describe 'inspect', ->
            }, res
           done!
 
+      it 'skips unavailable inspectors', (done) ->
+        idle_inspector = {
+          cmd: 'echo "foo:1: some warning"',
+          is_available: -> false
+        }
+        howl_async ->
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
+          res = inspect.inspect(buffer)
+          assert.same {}, res
+          done!
+
     context 'when an inspector command contains a <file> placeholder', ->
       it "is skipped if the buffer has no associated file", (done) ->
         buffer.modified = false

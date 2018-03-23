@@ -10,6 +10,8 @@ util = bundle_load 'util'
   {
     cmd: "#{ruby_cmd} -w -c"
 
+    is_available: -> ruby_cmd != nil
+
     post_parse: (inspections) ->
       for i in *inspections
         unless i.search
