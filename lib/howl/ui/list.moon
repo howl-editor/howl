@@ -96,11 +96,14 @@ class List extends PropertyObject
   @property selection:
     get: => @selected_idx and @_items and @_items[@selected_idx]
     set: (val) =>
-      for idx, item in ipairs @_items
-        if item == val
-          @_select(idx)
-          return
-      error "cannot select - #{val} not found"
+      if val
+        for idx, item in ipairs @_items
+          if item == val
+            @_select(idx)
+            return
+        error "cannot select - #{val} not found"
+      else
+        @_select nil
 
   @property max_rows:
     get: => @_max_rows
@@ -263,19 +266,15 @@ class List extends PropertyObject
 
   _select: (idx) =>
     if not idx or idx < 1 or idx > #@_items
-      @selected_idx = nil
-      @_highlight nil
-      return
-
-    if idx < 1
-      idx = 1
+      idx = nil
     elseif idx > #@_items
       idx = #@_items
 
     @selected_idx = idx
 
     if @buffer
-      @_scroll_to idx
+      if idx
+        @_scroll_to idx
       @_highlight idx
 
     changed = @selection != @previous_selection
@@ -304,8 +303,9 @@ class List extends PropertyObject
     offset += 1 if @has_header
 
     lines = @buffer.lines
-    pos = lines[offset].start_pos
-    length = #lines[offset]
+    line = lines[offset]
+    pos = line.start_pos
+    length = #line
     highlight.apply 'list_selection', @buffer, pos, length
 
   _jump_to_page_at: (idx) =>
