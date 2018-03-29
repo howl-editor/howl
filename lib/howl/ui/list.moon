@@ -68,8 +68,8 @@ class List extends PropertyObject
     @column_widths = { 1 }
     @highlight_matches_for = nil
     @_items, @partial = get_items matcher, ''
-    @selected_idx = @has_items and (@opts.reverse and #@_items or 1) or nil
     @listeners = {}
+    @selected_idx = @has_items and (@opts.reverse and #@_items or 1) or nil
 
   @property columns:
     get: => @_columns
@@ -118,17 +118,46 @@ class List extends PropertyObject
     set: (val) =>
       @_min_rows = val
 
-  insert: (@buffer) =>
+  @property start_pos:
+    get: =>
+      return nil unless @_marker
+      marker = @buffer.markers\find(name: @_marker)[1]
+      if marker
+        marker.start_offset
+      else
+        nil
+
+  insert: (@buffer, pos = 1) =>
+    @remove!
+    @_marker = "list-#{@}"
+    @buffer.markers\add {{name: @_marker, start_offset: pos, end_offset: pos}}
     @draw!
     if @selected_idx
       @_scroll_to @selected_idx
+
+  remove: =>
+    if @_count
+      start_pos = @start_pos
+      if start_pos -- someone may possibly have replaced the entire buffer
+        end_pos = start_pos + @_count
+        @buffer\delete start_pos, end_pos
+        @buffer.markers\remove(name: @_marker)
+
+      @_marker = nil
+      @_count = nil
 
   draw: =>
     unless @buffer
       error "No buffer associated: call insert(buffer) first"
 
-    @buffer\change 1, @buffer.size, (buffer) ->
-      buffer.text = ''
+    start_pos = @start_pos
+    @buffer.markers\remove(name: @_marker)
+    count = @_count or 0
+    end_pos = start_pos + count
+
+    @buffer\change start_pos, end_pos, (buffer) ->
+      buffer\delete start_pos, end_pos - 1
+      pos = start_pos
       header_rows = (@has_header and 1 or 0)
       p_size = #@_items
       show_status = #@_items == 0
@@ -148,11 +177,11 @@ class List extends PropertyObject
         append items, @_items[idx]
 
       styled_table, col_starts = StyledText.for_table items, @columns
-      buffer\append styled_table
+      pos = buffer\insert styled_table, pos
       filler_lines = max 0, @min_rows - display_size
 
       for _ = 1, filler_lines
-        buffer\append @opts.filler_text..'\n', 'comment'
+        pos = buffer\insert @opts.filler_text..'\n', pos, 'comment'
 
       for lno = 1, #items
         line = buffer.lines[lno + header_rows]
@@ -160,9 +189,13 @@ class List extends PropertyObject
         @_highlight_segments line.start_pos, items[lno], col_starts
 
       if show_status
-        @_write_status!
+        pos = @_write_status pos
 
       @rows_shown = max 1, display_size + filler_lines
+      @_count = pos - start_pos
+      @buffer.markers\add {
+        { name: @_marker, start_offset: start_pos, end_offset: start_pos}
+      }
 
     if @selected_idx
       @_highlight @selected_idx
@@ -216,6 +249,15 @@ class List extends PropertyObject
   on_refresh: (listener) =>
     @listeners[#@listeners + 1] = listener
 
+  item_at: (pos) =>
+    start_pos = @start_pos
+    return nil unless start_pos
+
+    list_start_line = @buffer.lines\at_pos(start_pos)
+    pos_line = @buffer.lines\at_pos(pos)
+    item_index = (pos_line.nr - list_start_line.nr) + 1
+    @_items[item_index]
+
   _highlight_segments: (start_pos, item, columns) =>
     return unless type(item) == 'table'
     highlights = item.item_highlights
@@ -251,7 +293,7 @@ class List extends PropertyObject
 
       highlight.apply 'list_highlight', @buffer, ranges
 
-  _write_status: =>
+  _write_status: (pos) =>
     last_idx = @page_start_idx + @page_size - 1
     if #@_items < last_idx
       last_idx = #@_items
@@ -260,9 +302,9 @@ class List extends PropertyObject
     if last_idx > 0
       qualifier = @partial and '+' or ''
       status = "showing #{@page_start_idx} to #{last_idx} out of #{#@_items}#{qualifier}"
-      @buffer\append '[..] ', 'comment'
+      pos = @buffer\insert '[..] ', pos, 'comment'
 
-    @buffer\append "#{status}\n", 'comment'
+    @buffer\insert "#{status}\n", pos, 'comment'
 
   _select: (idx) =>
     if not idx or idx < 1 or idx > #@_items
@@ -277,8 +319,8 @@ class List extends PropertyObject
         @_scroll_to idx
       @_highlight idx
 
-    changed = @selection != @previous_selection
-    @previous_selection = @selection
+    changed = @selection != @_previous_selection
+    @_previous_selection = @selection
 
     if changed and @opts.on_selection_change
       @opts.on_selection_change @selection
@@ -304,9 +346,10 @@ class List extends PropertyObject
 
     lines = @buffer.lines
     line = lines[offset]
-    pos = line.start_pos
-    length = #line
-    highlight.apply 'list_selection', @buffer, pos, length
+    if line
+      pos = line.start_pos
+      length = #line
+      highlight.apply 'list_selection', @buffer, pos, length
 
   _jump_to_page_at: (idx) =>
     start_of_last_page = #@_items - @page_size + 1

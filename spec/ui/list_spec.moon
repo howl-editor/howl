@@ -314,6 +314,7 @@ three    four    ]] .. '\n', buf.text
 
     before_each ->
       items = { 'one', 'two', 'three' }
+      list\remove!
       list = List (-> items), reverse: true
       list\insert buf
       list\update!
@@ -335,3 +336,56 @@ three    four    ]] .. '\n', buf.text
       list\on_refresh listener2
       list\draw!
       assert.spy(listener2).was_called_with match.is_ref(list)
+
+  describe 'display management', ->
+    it 'is drawn at the given insert position', ->
+      items = {'item'}
+      buf.text = '123\n567'
+      list\insert buf, 5
+      list\update!
+      assert.equal '123\nitem\n567', buf.text
+      assert.equal 5, list.start_pos
+
+    it 'moves along with other edits in the buffer', ->
+      items = {'item'}
+      buf.text = '1\n7'
+      list\insert buf, 3
+      list\update!
+      assert.equal '1\nitem\n7', buf.text
+
+      buf\insert '23', 2
+      list\draw!
+      assert.equal '123\nitem\n7', buf.text
+      assert.equal 5, list.start_pos
+
+      buf\insert '56', 10
+      list\draw!
+      assert.equal '123\nitem\n567', buf.text
+      assert.equal 5, list.start_pos
+
+      buf\delete 1, 4
+      list\draw!
+      assert.equal 'item\n567', buf.text
+      assert.equal 1, list.start_pos
+
+      buf\insert 'X', 1
+      list\draw!
+      assert.equal 'Xitem\n567', buf.text
+      assert.equal 2, list.start_pos
+
+  describe 'item_at(pos)', ->
+    it 'returns the item at <pos> in the buffer', ->
+      items = {'item'}
+      buf.text = 'X\nY'
+      list\insert buf, 3
+      list\update!
+      assert.equal 'X\nitem\nY', buf.text
+      assert.is_nil list\item_at(1)
+      assert.is_nil list\item_at(2)
+      assert.equal 'item', list\item_at(3)
+      assert.equal 'item', list\item_at(7)
+      assert.is_nil list\item_at(8)
+
+      buf\insert '\n', 2
+      assert.is_nil list\item_at(3)
+      assert.equal 'item', list\item_at(4)
