@@ -154,6 +154,7 @@ class List extends PropertyObject
     @buffer.markers\remove(name: @_marker)
     count = @_count or 0
     end_pos = start_pos + count
+    start_line = @buffer.lines\at_pos(start_pos).nr
 
     @buffer\change start_pos, end_pos, (buffer) ->
       buffer\delete start_pos, end_pos - 1
@@ -184,7 +185,7 @@ class List extends PropertyObject
         pos = buffer\insert @opts.filler_text..'\n', pos, 'comment'
 
       for lno = 1, #items
-        line = buffer.lines[lno + header_rows]
+        line = buffer.lines[lno + header_rows + start_line - 1]
         @_highlight_matches line.text, line.start_pos
         @_highlight_segments line.start_pos, items[lno], col_starts
 
@@ -198,7 +199,7 @@ class List extends PropertyObject
       }
 
     if @selected_idx
-      @_highlight @selected_idx
+      @_highlight_selection @selected_idx
 
     for listener in *@listeners
       pcall listener, @
@@ -317,7 +318,7 @@ class List extends PropertyObject
     if @buffer
       if idx
         @_scroll_to idx
-      @_highlight idx
+      @_highlight_selection idx
 
     changed = @selection != @_previous_selection
     @_previous_selection = @selection
@@ -334,7 +335,7 @@ class List extends PropertyObject
     elseif @page_start_idx + @page_size - 1 < idx
       @_jump_to_page_at idx - @page_size + 1
 
-  _highlight: (idx) =>
+  _highlight_selection: (idx) =>
     highlight.remove_all 'list_selection', @buffer
     return unless idx
 
@@ -345,7 +346,8 @@ class List extends PropertyObject
     offset += 1 if @has_header
 
     lines = @buffer.lines
-    line = lines[offset]
+    start_line = @buffer.lines\at_pos(@start_pos).nr
+    line = lines[offset + start_line - 1]
     if line
       pos = line.start_pos
       length = #line

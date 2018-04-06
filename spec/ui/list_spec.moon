@@ -338,13 +338,27 @@ three    four    ]] .. '\n', buf.text
       assert.spy(listener2).was_called_with match.is_ref(list)
 
   describe 'display management', ->
-    it 'is drawn at the given insert position', ->
-      items = {'item'}
-      buf.text = '123\n567'
+    it 'is drawn correctly at the given insert position', ->
+      items = {'item1', 'item2'}
+      buf.text = 'one\nend'
       list\insert buf, 5
-      list\update!
-      assert.equal '123\nitem\n567', buf.text
-      assert.equal 5, list.start_pos
+      list\update 'it'
+      for i = 1, 2
+        assert.equal 'one\nitem1\nitem2\nend', buf.text
+        assert.equal 5, list.start_pos
+
+        -- highlights should be correct
+        for hl in *{5, 6, 11, 12}
+          assert.includes highlight.at_pos(buf, hl), 'list_highlight'
+
+        for hl in *{4, 7, 10, 13}
+          assert.not_includes highlight.at_pos(buf, hl), 'list_highlight'
+
+        -- selected item should be highlighted correctly
+        for hl in *{5, 9}
+          assert.includes highlight.at_pos(buf, hl), 'list_selection'
+        for hl in *{4, 10}
+          assert.not_includes highlight.at_pos(buf, hl), 'list_selection'
 
     it 'moves along with other edits in the buffer', ->
       items = {'item'}
