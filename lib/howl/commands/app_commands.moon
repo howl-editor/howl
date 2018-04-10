@@ -6,6 +6,21 @@ import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
 import Process from howl.io
 serpent = require 'serpent'
 
+get_project_root = ->
+  buffer = app.editor and app.editor.buffer
+  file = buffer.file or buffer.directory
+  error "No file associated with the current view" unless file
+  project = Project.get_for_file file
+  error "No project associated with #{file}" unless project
+  return project.root
+
+belongs_to_project = (buffer, project_root) ->
+  file = buffer.file or buffer.directory
+  return false unless file
+  project = Project.for_file file
+  return false unless project
+  return project.root == project_root
+
 command.register
   name: 'quit',
   description: 'Quit the application'
@@ -45,6 +60,20 @@ command.register
   name: 'switch-buffer',
   description: 'Switch to another buffer'
   input: interact.select_buffer
+  handler: (buf) ->
+    breadcrumbs.drop!
+    app.editor.buffer = buf
+
+command.register
+  name: 'project-switch-buffer',
+  description: 'Switch to another buffer in current project'
+  input: ->
+    project_root = get_project_root!
+    return unless project_root
+    project_buffers = [buf for buf in *app.buffers when belongs_to_project buf, project_root]
+    interact.select_buffer
+      buffers: project_buffers
+      title: "Buffers under #{project_root}"
   handler: (buf) ->
     breadcrumbs.drop!
     app.editor.buffer = buf
@@ -403,14 +432,6 @@ launch_cmd = (working_directory, cmd) ->
   editor = app\add_buffer buffer
   editor.cursor\eof!
   buffer\pump!
-
-get_project_root = ->
-  buffer = app.editor and app.editor.buffer
-  file = buffer.file or buffer.directory
-  error "No file associated with the current view" unless file
-  project = Project.get_for_file file
-  error "No project associated with #{file}" unless project
-  return project.root
 
 command.register
   name: 'project-exec',
