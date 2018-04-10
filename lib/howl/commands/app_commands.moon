@@ -70,9 +70,8 @@ command.register
   input: ->
     project_root = get_project_root!
     return unless project_root
-    project_buffers = [buf for buf in *app.buffers when belongs_to_project buf, project_root]
     interact.select_buffer
-      buffers: project_buffers
+      get_buffers: -> [buf for buf in *app.buffers when belongs_to_project buf, project_root]
       title: "Buffers under #{project_root}"
   handler: (buf) ->
     breadcrumbs.drop!

@@ -111,9 +111,11 @@ get_buffer_list = (buffers) ->
   else
     return [{title(buffer), buffer_status_text(buffer), buffer_dir(buffer), :buffer} for buffer in *buffers]
 
-buffer_matcher = (buffers) ->
-  matcher = Matcher get_buffer_list buffers
-  (text) -> return matcher(text)
+buffer_matcher = (get_buffers) ->
+  (text) ->
+    buffers = get_buffers!
+    matcher = Matcher get_buffer_list buffers
+    return matcher(text)
 
 interact.register
   name: 'select_buffer'
@@ -136,7 +138,7 @@ interact.register
     current_selection = nil
     with opts
       .title or= 'Buffers'
-      .matcher = buffer_matcher opts.buffers or app.buffers
+      .matcher = buffer_matcher opts.get_buffers or -> app.buffers
       .columns = columns
       .on_change = (selection, text, items) ->
         current_selection = selection
