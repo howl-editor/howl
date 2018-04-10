@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added `project-switch-buffer` command that displays open buffers within
+the current project.
+
 - Added two inspectors and a command for documentation to the Go mode
 
 - Moving cursor left or right with a selection active now cancels the selection,
