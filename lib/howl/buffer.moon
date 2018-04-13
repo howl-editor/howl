@@ -322,6 +322,47 @@ class Buffer extends PropertyObject
     return @config if mode_at == @mode
     return config.proxy @_config_scope, mode_at.config_layer
 
+  resolve_span: (span) =>
+    {:start_pos, :end_pos} = span
+    local line, l_start_pos, l_b_start_offset
+
+    -- resolve start pos as needed
+    unless start_pos
+      if span.byte_start_pos
+        start_pos = @char_offset span.byte_start_pos
+      elseif span.line_nr
+        line = @lines[span.line_nr]
+        start_pos = line.start_pos
+        l_start_pos = line.start_pos
+
+        if span.start_column
+          start_pos = l_start_pos + span.start_column - 1
+        elseif span.byte_start_column
+          l_b_start_offset = line.byte_start_pos
+          start_pos = @char_offset l_b_start_offset + span.byte_start_column - 1
+
+    -- resolve end pos as needed
+    unless end_pos
+      if span.byte_end_pos
+        end_pos = @char_offset span.byte_end_pos
+      elseif span.count
+        end_pos = start_pos + span.count
+      elseif span.line_nr
+        line or= @lines[span.line_nr]
+        end_pos = line.end_pos
+
+        if span.end_column
+          l_start_pos or= line.start_pos
+          end_pos = l_start_pos + span.end_column - 1
+        elseif span.byte_end_column
+          l_b_start_offset or= line.byte_start_pos
+          end_pos = @char_offset l_b_start_offset + span.byte_end_column - 1
+
+    unless start_pos and end_pos
+      error "Invalid span: Failed to determine both start and end", 2
+
+    return start_pos, end_pos
+
   add_view_ref: =>
     @viewers += 1
 

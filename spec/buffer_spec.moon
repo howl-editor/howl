@@ -727,6 +727,40 @@ describe 'Buffer', ->
       b\remove_view_ref!
       assert.equal 0, b.viewers
 
+  describe 'resolve_span(span)', ->
+    local buf
+
+    before_each ->
+      buf = buffer '123åäö789'
+
+    it 'accepts .start_pos and .end_pos', ->
+      assert.same {4, 7}, {buf\resolve_span start_pos: 4, end_pos: 7}
+
+    it 'accepts .byte_start_pos as the start specifier', ->
+      assert.same {5, 7}, {buf\resolve_span byte_start_pos: 6, end_pos: 7}
+
+    it 'accepts .byte_end_pos as the end specifier', ->
+      assert.same {4, 5}, {buf\resolve_span start_pos: 4, byte_end_pos: 6}
+
+    it 'accepts .count as the end specifier', ->
+      assert.same {4, 7}, {buf\resolve_span start_pos: 4, count: 3}
+
+    it "accepts a sole line_nr argument, returning the entire line's span", ->
+      assert.same {1, 10}, {buf\resolve_span line_nr: 1}
+
+    context 'with a .line_nr given', ->
+      it "accepts .start_column as the start specifier", ->
+        assert.same {5, 10}, {buf\resolve_span line_nr: 1, start_column: 5}
+
+      it "accepts .byte_start_column as the start specifier", ->
+        assert.same {5, 10}, {buf\resolve_span line_nr: 1, byte_start_column: 6}
+
+      it "accepts .end_column as the end specifier", ->
+        assert.same {1, 5}, {buf\resolve_span line_nr: 1, end_column: 5}
+
+      it "accepts .byte_end_column as the end specifier", ->
+        assert.same {1, 5}, {buf\resolve_span line_nr: 1, byte_end_column: 6}
+
   describe 'titles', ->
     it 'uses file basename as the default title', ->
       b = Buffer {}

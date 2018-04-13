@@ -247,6 +247,35 @@ Replaces all occurrences of `pattern` with `replacement`, and returns the number
 of replacements made. `pattern` can be either a Lua pattern, or a [regular
 expression].
 
+### resolve_span(span)
+
+Resolves the provided span, returning the starting and ending position within
+the buffer.
+
+The passed `span` can specify the positions in various ways (hence the
+usefulness of this function). Common for both the starting and ending position
+specifiers is that one has to provide a `.line_nr` reference in the span in
+order to use column specifiers.
+
+Start positions can be specified using one of the below:
+
+  * `start_pos`: An absolute position in the buffer
+  * `byte_start_pos`: An absolute byte-oriented position in the buffer
+  * `start_column`: The starting column of the segment relative to a line
+    (requires `.line_nr`)
+  * `byte_start_column`: The starting byte-oriented column of the segment
+    relative to a line (requires `.line_nr`)
+
+  End positions can be specified by using one of the below:
+
+  * `end_pos`: An absolute position in the buffer
+  * `byte_end_pos`: An absolute byte-oriented position in the buffer
+  * `end_column`: The ending column of the segment relative to a line
+    (requires `.line_nr`)
+  * `byte_end_column`: The ending byte-oriented column of the segment relative
+    to a line (requires `.line_nr`)
+  * `count`: The end position is `count` characters away from the start position
+
 ### rfind(search, init = @length)
 
 Reverse search: searches backwards for the text `search` in the buffer's text
