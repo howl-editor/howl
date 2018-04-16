@@ -65,6 +65,14 @@ describe 'buffer_selection', ->
         table.insert previews, editor.buffer.title
       assert.same {'a1-buffer', 'a2-buffer'}, previews
 
+    context 'when get_buffers is provided', ->
+      it 'calls get_buffers to get buffer list', ->
+        local buflist
+        get_buffers = -> {buffers[1], buffers[3]}
+        within_activity (-> interact.select_buffer :editor, :get_buffers), ->
+          buflist = get_ui_list_widget_column 2
+        assert.same {'a1-buffer', 'c-buffer'}, buflist
+
     context 'sending binding_for("buffer-close")', ->
       keymap = ctrl_w: 'buffer-close'
       before_each -> bindings.push keymap

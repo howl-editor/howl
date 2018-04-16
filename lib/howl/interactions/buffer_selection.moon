@@ -77,17 +77,17 @@ has_duplicates = (list) ->
     set[item] = true
   return false
 
-get_buffer_list = ->
+get_buffer_list = (buffers) ->
   basenames = {}
   enhanced_titles = {}
 
-  for buf in *app.buffers
+  for buf in *buffers
     continue unless buf.file and buf.file.basename == buf.title
     basenames[buf.file.basename] or= {}
     append basenames[buf.file.basename], buf
 
-  for _, buffers in pairs(basenames)
-    continue if #buffers == 1
+  for _, buffer_group in pairs(basenames)
+    continue if #buffer_group == 1
 
     options_list = {
       { project: true }
@@ -99,21 +99,23 @@ get_buffer_list = ->
 
     titles = nil
     for options in *options_list
-      titles = [make_title buffer, options for buffer in *buffers]
+      titles = [make_title buffer, options for buffer in *buffer_group]
       break if not has_duplicates titles
 
-    for i=1,#buffers
-      enhanced_titles[buffers[i]] = titles[i]
+    for i=1,#buffer_group
+      enhanced_titles[buffer_group[i]] = titles[i]
 
   title = (buffer) -> enhanced_titles[buffer] or buffer.title
   if config.buffer_icons
-    return [{buffer_status_icon(buffer), title(buffer), buffer_dir(buffer), :buffer} for buffer in *app.buffers]
+    return [{buffer_status_icon(buffer), title(buffer), buffer_dir(buffer), :buffer} for buffer in *buffers]
   else
-    return [{title(buffer), buffer_status_text(buffer), buffer_dir(buffer), :buffer} for buffer in *app.buffers]
+    return [{title(buffer), buffer_status_text(buffer), buffer_dir(buffer), :buffer} for buffer in *buffers]
 
-buffer_matcher = (text) ->
-  matcher = Matcher get_buffer_list!
-  return matcher(text)
+buffer_matcher = (get_buffers) ->
+  (text) ->
+    buffers = get_buffers!
+    matcher = Matcher get_buffer_list buffers
+    return matcher(text)
 
 interact.register
   name: 'select_buffer'
@@ -136,7 +138,7 @@ interact.register
     current_selection = nil
     with opts
       .title or= 'Buffers'
-      .matcher = buffer_matcher
+      .matcher = buffer_matcher opts.get_buffers or -> app.buffers
       .columns = columns
       .on_change = (selection, text, items) ->
         current_selection = selection
