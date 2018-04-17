@@ -543,6 +543,8 @@ class CommandLine extends PropertyObject
 
       ["cursor-right"]: => @command_widget.cursor\right!
 
+      ["editor-select-all"]: => @command_widget.selection\select @_prompt_end, @command_widget.text.ulen
+
       ["editor-delete-back"]: =>
         if @command_widget.cursor.pos <= @_prompt_end
           -- backspace attempted into prompt
