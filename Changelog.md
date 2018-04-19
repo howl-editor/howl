@@ -2,6 +2,9 @@
 
 ## Unreleased (in master)
 
+- Added support for custom user fonts (place them in <CONFIG-DIR>/fonts, e.g.
+~/.howl/fonts)
+
 - Added `project-switch-buffer` command that displays open buffers within
 the current project.
 

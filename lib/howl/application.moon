@@ -328,6 +328,10 @@ class Application extends PropertyObject
       @_load_core!
       if @settings.dir
         append bundle.dirs, @settings.dir\join 'bundles'
+        fonts_dir = @settings.dir\join('fonts')
+        if fonts_dir.exists
+          C.FcConfigAppFontAddDir(nil, fonts_dir.path)
+
       bundle.load_all!
 
       unless @args.no_profile
