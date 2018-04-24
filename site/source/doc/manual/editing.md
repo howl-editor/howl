@@ -179,6 +179,30 @@ Also shown in the above screenshot is the use of the `cursor-goto-inspection`
 command. This provides a list of all inspections available for the current
 buffer, and let's you easily navigate to them.
 
+### Code inspections for Python
+In order to enable Python syntax checking, you can use pep8 or pyflakes by 
+simply registering them as code inspectors and setting their behaviour in 
+`init.lua` or `init.moon` (in case of Moonscript based config) file.
+
+```lua
+howl.inspection.register({
+    name = 'pep8',
+    factory = function() return 'pep8 -' end
+})
+
+howl.inspection.register({
+    name = 'pyflakes',
+    factory = function() return 'pyflakes' end
+})
+
+return howl.mode.configure('python', {
+    inspectors_on_idle = {'pep8', 'pyflakes'}
+})
+
+```
+
+![Buffer inspections](/images/screenshots/monokai/python-inspect.png)
+
 ## Comments
 
 The `editor-toggle-comment` is bound to `ctrl_slash` by default, and let's you
