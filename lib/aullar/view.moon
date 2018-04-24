@@ -230,7 +230,7 @@ View = {
       set: (offset) =>
         @_y_scroll_offset = offset
         if @_y_scroll_offset < -1 or @_y_scroll_offset > 1
-          @first_visible_line += floor(@_y_scroll_offset)
+          @first_visible_line = max(@first_visible_line + floor(@_y_scroll_offset), 1)
           @_y_scroll_offset = 0
     }
 
