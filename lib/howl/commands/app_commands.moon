@@ -483,13 +483,14 @@ file_search_hit_to_location = (match, search, display_as) ->
     line_nr: match.line_nr,
     column: match.column
   }
-  s, e = match.message\ufind(search, 1, true)
+  search = search.ulower
+  s, e = match.message.ulower\ufind(search, 1, true)
   unless s
     s, e = match.message\ufind((r(search)))
 
   if loc.column
     loc.highlights = {
-      { start_index: loc.column, end_index: loc.column + #search }
+      { byte_start_column: loc.column, byte_end_column: loc.column + #search }
     }
   elseif s
     loc.highlights = {
@@ -498,7 +499,6 @@ file_search_hit_to_location = (match, search, display_as) ->
 
   if s and display_as != 'plain'
     loc.item_highlights = {
-      highlight: 'search_secondary'
       nil,
       {
         {start_index: s, count: e - s + 1}
@@ -539,25 +539,12 @@ command.register
     matches = file_search.sort matches, project.root, search, editor.current_context
     display_as = project.config.file_search_hit_display
     locations = [file_search_hit_to_location(m, search, display_as) for m in *matches]
+
     selected = interact.select_location
       title: "#{#matches} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
       items: locations
     selected and selected.selection
 
-  handler: (location) ->
-    return unless location
-
-    _, editor = app\open_file location.file
-    if editor
-      editor.line_at_center = location.line_nr
-      editor.cursor\move_to line: location.line_nr, column_index: location.column
-      hl = location.highlights[1]
-      if hl
-        cur_line = editor.current_line
-        if cur_line.nr == location.line_nr
-          l_byte_start_pos = cur_line.byte_start_pos
-
-          editor\highlight {
-            byte_start_pos: l_byte_start_pos + hl.start_index - 1
-            byte_end_pos: l_byte_start_pos + hl.end_index - 1
-          }
+  handler: (loc) ->
+    if loc
+      app\open loc
