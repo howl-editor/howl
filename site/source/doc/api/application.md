@@ -93,12 +93,43 @@ buffer.text = 'Show this text in the new buffer'
 howl.app\new_editor :buffer
 ```
 
-
 ### new_window (properties = {})
 
 Creates a new application [Window]. `properties` is table of window properties
 to set for the new window, such as title, height and width. The window is added
 to [.windows] before the return of the method. Returns the newly created window.
+
+### open (location [, editor])
+
+Opens the specified location. By default, unless `editor` is specified, the
+location is opened in the currently active editor. Location must have either
+`.file` or `.buffer` set, and might optionally include additional information
+related to the display of the location. The available keys are:
+
+- *buffer*: A buffer that should be opened in the editor. The buffer will be
+added into [.buffers](#buffers) unless it's already present.
+
+- *file*: A [file](io/file.html) that should be opened in the editor. If the
+file was previously not open a `file-opened` signal is emitted upon successfully
+opening the file.
+
+- *line_nr*: A specific line number that should be displayed for the file or
+buffer, where the cursor should be positioned.
+
+- *column*: A specific column where the cursor should be positioned. Can only be
+used in conjunction with `line_nr`.
+
+- *column_index*: A specific column index where the cursor should be positioned.
+Can only be used in conjunction with `line_nr`.
+
+- *highlights*: A list of highlights to apply after opening the location. This
+would typically be used to highlight a particular segment of the line, though it
+can be used to highlight arbitrary sections of the buffer. Can only be used in
+conjunction with `line_nr`. Each highlight is applied using
+[Editor.highlight(..)](ui/editor.html#highlight), and is resolved relative to
+`line_nr`.
+
+Returns the [Buffer] and the [Editor] holding the buffer.
 
 ### open_file (file, editor = _G.editor)
 

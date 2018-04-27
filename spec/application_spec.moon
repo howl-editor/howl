@@ -1,6 +1,6 @@
-import File from howl.io
-import Application, Buffer, mode from howl
-import Editor from howl.ui
+{:File} = howl.io
+{:Application, :Buffer, :mode} = howl
+{:Editor, :highlight} = howl.ui
 
 describe 'Application', ->
   local root_dir, application
@@ -49,41 +49,97 @@ describe 'Application', ->
       application\add_buffer buf
       assert.equals 1, #application.buffers
 
-  describe 'open_file(file, editor)', ->
-    editor = Editor Buffer {}
+  describe 'open(location, editor)', ->
+    local editor
+    before_each ->
+      editor = Editor Buffer {}
 
-    it 'opens the file in the specified editor if given', ->
-      File.with_tmpfile (file) ->
-        file.contents = 'well hello there'
-        application\open_file file, editor
-        assert.equal file.contents, editor.buffer.text
+    context 'when location.file is given', ->
 
-    it 'returns the newly created buffer', ->
-      File.with_tmpfile (file) ->
-        buffer = application\open_file file, editor
-        assert.equal buffer, editor.buffer
+      it 'opens the file in the specified editor if given', ->
+        File.with_tmpfile (file) ->
+          file.contents = 'well hello there'
+          application\open :file, editor
+          assert.equal file.contents, editor.buffer.text
 
-    it 'adds the buffer to @buffers', ->
-      File.with_tmpfile (file) ->
-        buffer = application\open_file file, editor
-        assert.same { buffer }, application.buffers
-
-    context 'when <file> is already open', ->
-      it 'switches to editor to the existing buffer instead of creating a new one', ->
-        with_tmpdir (dir) ->
-          a = dir / 'a.foo'
-          b = dir / 'b.foo'
-          buffer = application\open_file a, editor
-          application\open_file b, editor
-          application\open_file a, editor
-          assert.equal 2, #application.buffers
+      it 'returns the newly created buffer', ->
+        File.with_tmpfile (file) ->
+          buffer = application\open :file, editor
           assert.equal buffer, editor.buffer
 
-    it 'fires the file-opened signal', ->
-      with_signal_handler 'file-opened', nil, (handler) ->
+      it 'adds the buffer to @buffers', ->
         File.with_tmpfile (file) ->
-          application\open_file file, editor
-        assert.spy(handler).was_called!
+          buffer = application\open :file, editor
+          assert.same { buffer }, application.buffers
+
+      context 'when <file> is already open', ->
+        it 'switches to editor to the existing buffer instead of creating a new one', ->
+          with_tmpdir (dir) ->
+            a = dir / 'a.foo'
+            b = dir / 'b.foo'
+            buffer = application\open file: a, editor
+            application\open file: b, editor
+            application\open file: a, editor
+            assert.equal 2, #application.buffers
+            assert.equal buffer, editor.buffer
+
+      it 'fires the file-opened signal', ->
+        with_signal_handler 'file-opened', nil, (handler) ->
+          File.with_tmpfile (file) ->
+            application\open :file, editor
+          assert.spy(handler).was_called!
+
+    context 'when location.buffer is given', ->
+
+      it 'opens the file in the specified editor if given', ->
+        buffer = Buffer {}
+        buffer.text = 'my-buf'
+        application\open :buffer, editor
+        assert.equal 'my-buf', editor.buffer.text
+
+      it 'returns the buffer', ->
+        buffer = Buffer {}
+        buf2 = application\open :buffer, editor
+        assert.equal buffer, buf2
+
+      it 'adds the buffer to @buffers', ->
+        buffer = Buffer {}
+        application\open :buffer, editor
+        assert.same { buffer }, application.buffers
+
+    it '.line_nr specifies a line nr to go to', ->
+      buffer = Buffer {}
+      buffer.text = 'one\ntwo\nthree'
+      application\open {:buffer, line_nr: 2}, editor
+      assert.equal 2, editor.cursor.line
+
+    it '.column specifies a column to go to', ->
+      buffer = Buffer {}
+      buffer.text = 'one'
+      application\open {:buffer, line_nr: 1, column: 2}, editor
+      assert.equal 2, editor.cursor.column
+
+    it '.column_index specifies an offsetted column to go to', ->
+      buffer = Buffer {}
+      buffer.text = '1\tX'
+      application\open {:buffer, line_nr: 1, column_index: 3}, editor
+      assert.equal 3, editor.cursor.column_index
+      assert.not_equal 3, editor.cursor.column
+
+    it 'highlight any highlights', ->
+      buffer = Buffer {}
+      buffer.text = '123456789'
+      application\open {
+        :buffer, line_nr: 1, column: 3,
+        highlights: {
+          { start_pos: 2, end_pos: 3 },
+          { start_column: 5, end_column: 7, highlight: 'foo' }
+        }
+      }, editor
+      assert.same { 'search' }, highlight.at_pos(buffer, 2)
+      assert.same {}, highlight.at_pos(buffer, 3)
+      assert.same { 'foo' }, highlight.at_pos(buffer, 5)
+      assert.same { 'foo' }, highlight.at_pos(buffer, 6)
 
   it '.buffers are sorted by focus, visibility status and last_shown', ->
     view = {}
