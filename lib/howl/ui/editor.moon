@@ -597,24 +597,9 @@ class Editor extends PropertyObject
     pos = @_get_matching_brace(byte_offset(pos), byte_offset(start_pos), byte_offset(end_pos))
     return pos and @buffer\char_offset pos
 
-  highlight: (opts) =>
-    {:start_pos, :end_pos} = opts
-
-    unless start_pos
-      if opts.byte_start_pos
-        start_pos = @buffer\char_offset opts.byte_start_pos
-      else
-        error "highlight(): need either .start_pos or .start_index"
-
-    unless end_pos
-      if opts.byte_end_pos
-        end_pos = @buffer\char_offset opts.byte_end_pos
-      elseif opts.count
-        end_pos = start_pos + opts.count
-      else
-        error "highlight(): need either .end_pos, .end_index"
-
-    highlight = opts.highlight or 'search'
+  highlight: (hl, line_nr = nil) =>
+    start_pos, end_pos = @buffer\resolve_span hl, line_nr
+    highlight = hl.highlight or 'search'
     highlights.apply highlight, @buffer, start_pos, end_pos - start_pos
 
   -- private
