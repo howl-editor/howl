@@ -17,6 +17,10 @@ core.define 'GMappedFile', {
   new: (path, writable = false) ->
     ffi_gc catch_error(C.g_mapped_file_new, path, writable), C.g_mapped_file_unref
 
+  unref: =>
+    ffi_gc @, nil
+    C.g_mapped_file_unref @
+
   meta: {
     __len: => @.length
   }

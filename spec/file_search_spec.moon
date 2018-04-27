@@ -178,6 +178,14 @@ describe 'file_search', ->
       assert.equal sorted[1].path, sorted[2].path
       -- and it follows that 3 4 are equal
 
+    it 'always orders matches in the same file by line nr', ->
+      sorted = file_search.sort {
+        match('3', 'file.moon', 3)
+        match('1', 'file.moon', 1)
+        match('2', 'file.moon', 2)
+      }, tmp_dir, 'xxx'
+      assert.same {'1', '2', '3'}, messages(sorted)
+
     context 'when context is provided', ->
       local buffer
 
