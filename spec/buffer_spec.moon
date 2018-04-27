@@ -727,7 +727,7 @@ describe 'Buffer', ->
       b\remove_view_ref!
       assert.equal 0, b.viewers
 
-  describe 'resolve_span(span)', ->
+  describe 'resolve_span(span, line_nr = nil)', ->
     local buf
 
     before_each ->
@@ -760,6 +760,19 @@ describe 'Buffer', ->
 
       it "accepts .byte_end_column as the end specifier", ->
         assert.same {1, 5}, {buf\resolve_span line_nr: 1, byte_end_column: 6}
+
+    context 'with a line_nr parameter given', ->
+      it "accepts .start_column as the start specifier", ->
+        assert.same {5, 10}, {buf\resolve_span {start_column: 5}, 1}
+
+      it "accepts .byte_start_column as the start specifier", ->
+        assert.same {5, 10}, {buf\resolve_span {byte_start_column: 6}, 1}
+
+      it "accepts .end_column as the end specifier", ->
+        assert.same {1, 5}, {buf\resolve_span {end_column: 5}, 1}
+
+      it "accepts .byte_end_column as the end specifier", ->
+        assert.same {1, 5}, {buf\resolve_span {byte_end_column: 6}, 1}
 
   describe 'titles', ->
     it 'uses file basename as the default title', ->

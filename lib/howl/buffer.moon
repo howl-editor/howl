@@ -322,7 +322,7 @@ class Buffer extends PropertyObject
     return @config if mode_at == @mode
     return config.proxy @_config_scope, mode_at.config_layer
 
-  resolve_span: (span) =>
+  resolve_span: (span, line_nr = nil) =>
     {:start_pos, :end_pos} = span
     local line, l_start_pos, l_b_start_offset
 
@@ -330,8 +330,8 @@ class Buffer extends PropertyObject
     unless start_pos
       if span.byte_start_pos
         start_pos = @char_offset span.byte_start_pos
-      elseif span.line_nr
-        line = @lines[span.line_nr]
+      elseif line_nr or span.line_nr
+        line = @lines[line_nr or span.line_nr]
         start_pos = line.start_pos
         l_start_pos = line.start_pos
 
@@ -347,8 +347,8 @@ class Buffer extends PropertyObject
         end_pos = @char_offset span.byte_end_pos
       elseif span.count
         end_pos = start_pos + span.count
-      elseif span.line_nr
-        line or= @lines[span.line_nr]
+      elseif line_nr or span.line_nr
+        line or= @lines[line_nr or span.line_nr]
         end_pos = line.end_pos
 
         if span.end_column
