@@ -35,6 +35,16 @@ describe 'File', ->
   describe 'expand_path(path)', ->
     it 'expands "~" into the full path of the home directory', ->
       assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '~/foo.txt')
+      assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '/blah/~/foo.txt')
+
+    it 'handles multiple "~/" by replacing the deepest one', ->
+      assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '/a/b/~/c/~/foo.txt')
+
+    it 'does not expand "~" when part of another word', ->
+      assert.equals "/dir~/foo.txt", (File.expand_path '/dir~/foo.txt')
+
+    it 'does not expand trailing "~" without "/" suffix', ->
+      assert.equals "/dir/~", (File.expand_path '/dir/~')
 
   describe 'new(p, cwd, opts = {})', ->
     it 'accepts a string as denothing a path', ->
