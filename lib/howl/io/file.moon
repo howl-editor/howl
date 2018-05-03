@@ -47,8 +47,9 @@ class File extends PropertyObject
     (path\match('^/') or path\match('^%a:\\\\')) != nil
 
   expand_path: (path) ->
-    res = path\gsub "~#{File.separator}", File.home_dir.path .. File.separator
-    res
+    expanded_home = File.home_dir.path .. File.separator
+    res = path\gsub ".+#{File.separator}~#{File.separator}", expanded_home
+    res\gsub "^~#{File.separator}", expanded_home
 
   separator: jit.os == 'Windows' and '\\' or '/'
 
