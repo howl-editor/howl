@@ -104,8 +104,16 @@ describe 'File', ->
 
   describe '.short_path', ->
     it 'returns the path with the home directory replace by "~"', ->
+      assert.equal '~', File(os.getenv('HOME')).short_path
       file = File(os.getenv('HOME')) / 'foo.txt'
       assert.equal '~/foo.txt', file.short_path
+
+    it 'does not replace a directory the home directory is a prefix of directory', ->
+      home_path = File(os.getenv('HOME')).path .. '-suffix'
+      home = File(home_path)
+      file = home / 'foo.txt'
+      assert.equal home.path, home.short_path
+      assert.equal file.path, file.short_path
 
   describe 'contents', ->
     it 'assigning a string writes the string to the file', ->

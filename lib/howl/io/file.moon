@@ -94,7 +94,9 @@ class File extends PropertyObject
   @property readable: get: => @exists and @_info('access')\get_attribute_boolean 'access::can-read'
   @property etag: get: => @exists and @_info('etag').etag
   @property modified_at: get: => @exists and @_info('time')\get_attribute_uint64 'time::modified'
-  @property short_path: get: => @path\gsub "^#{File.home_dir.path}", '~'
+  @property short_path: get: =>
+    return "~" if @path == File.home_dir.path
+    @path\gsub "^#{File.home_dir.path}#{File.separator}", '~/'
 
   @property root_dir:
     get: =>
