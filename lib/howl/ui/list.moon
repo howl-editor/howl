@@ -28,14 +28,14 @@ reversed = (list) -> [item for item in *list[#list, 1, -1]]
 get_highlight_range = (content, hl) ->
   {:start_column, :end_column} = hl
   unless start_column
-    if hl.start_index
-      start_column = tostring(content)\char_offset(hl.start_index)
+    if hl.byte_start_column
+      start_column = tostring(content)\char_offset(hl.byte_start_column)
     else
       return nil
 
   unless end_column
-    if hl.end_index
-      end_column = tostring(content)\char_offset(hl.end_index)
+    if hl.byte_end_column
+      end_column = tostring(content)\char_offset(hl.byte_end_column)
     elseif hl.count
       end_column = start_column + hl.count
     else

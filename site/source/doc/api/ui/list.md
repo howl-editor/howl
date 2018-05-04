@@ -74,12 +74,12 @@ position of the highlight, relative to the item column.
 Start positions can be specified by using one of the below:
 
   * `start_column`: The starting column of the highlight
-  * `start_index`: The starting byte-oriented column of the highlight
+  * `byte_start_column`: The starting byte-oriented column of the highlight
 
   End positions can be specified by using one of the below:
 
   * `end_column`: The ending column of the highlight
-  * `end_index`: The ending byte-oriented column of the highlight
+  * `byte_end_column`: The ending byte-oriented column of the highlight
   * `count`: The end position is `count` characters away from the start position
 
 ## Properties
