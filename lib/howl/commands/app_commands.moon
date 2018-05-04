@@ -501,7 +501,7 @@ file_search_hit_to_location = (match, search, display_as) ->
     loc.item_highlights = {
       nil,
       {
-        {start_index: s, count: e - s + 1}
+        {byte_start_column: s, count: e - s + 1}
       }
     }
 

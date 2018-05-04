@@ -6,42 +6,7 @@
 {:highlight} = howl.ui
 
 add_highlight = (type, buffer, line, opts = {}) ->
-  {:start_pos, :end_pos} = opts
-  local l_start_pos, l_b_start_offset
-
-  if opts.byte_start_pos
-    start_pos = buffer\char_offset opts.byte_start_pos
-
-  if opts.byte_end_pos
-    end_pos = buffer\char_offset opts.byte_end_pos
-
-  unless start_pos
-    if opts.start_column
-      l_start_pos or= line.start_pos
-      start_pos = l_start_pos + opts.start_column - 1
-    elseif opts.start_index
-      l_b_start_offset or= line.byte_start_pos
-      start_pos = buffer\char_offset l_b_start_offset + opts.start_index - 1
-    else
-      l_start_pos or= line.start_pos
-      start_pos = l_start_pos
-
-  unless end_pos
-    if opts.count
-      end_pos = start_pos + opts.count
-    elseif opts.end_column
-      l_start_pos or= line.start_pos
-      end_pos = l_start_pos + opts.end_column - 1
-    elseif opts.end_index
-      l_b_start_offset or= line.byte_start_pos
-      end_pos = buffer\char_offset l_b_start_offset + opts.end_index - 1
-    else
-      end_pos = line.end_pos
-
-  unless start_pos and end_pos
-    log.error "Invalid location highlight specified"
-    return
-
+  start_pos, end_pos = buffer\resolve_span opts, line.nr
   highlight.apply type, buffer, start_pos, end_pos - start_pos
 
 get_file = (item) ->

@@ -368,26 +368,10 @@ which file or buffer is previewed in the editor when this item is selected:
 - `line_nr`: _[optional]_ The line number in `file` or `buffer`
 - `highlights`: _[optional]_ A table of highlights to apply to the previewed
 buffer line if possible. Requires that `line_nr` is given. Each highlight
-specifies a segment to highlight, by indicating the start and end position of
-the segment (see below).
-
-#### Highlights
-
-Start positions can be specified by using one of the below:
-
-  * `start_pos`: An absolute position in the buffer
-  * `byte_start_pos`: An absolute byte-oriented position in the buffer
-  * `start_column`: The starting column of the segment relative in the line
-  * `start_index`: The starting byte-oriented column of the segment relative in the line
-
-  End positions can be specified by using one of the below:
-
-  * `end_pos`: An absolute position in the buffer
-  * `byte_end_pos`: An absolute byte-oriented position in the buffer
-  * `end_column`: The ending column of the segment relative in the line
-  * `end_index`: The ending byte-oriented column of the segment relative in the
-line
-  * `count`: The end position is `count` characters away from the start position
+specifies a span to highlight. The highlight's span can be specified in several
+different fashions. It will be resolved using
+[Buffer.resolve_span(..)](buffer.html#resolve_span), so please have a look at
+`resolve_span`'s documentation to see the available options.
 
 ### yes_or_no (opts)
 
