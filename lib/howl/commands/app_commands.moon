@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, breadcrumbs, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
+import app, activities, breadcrumbs, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
 import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
 import Process from howl.io
 serpent = require 'serpent'
@@ -538,7 +538,21 @@ command.register
 
     matches = file_search.sort matches, project.root, search, editor.current_context
     display_as = project.config.file_search_hit_display
-    locations = [file_search_hit_to_location(m, search, display_as) for m in *matches]
+    status = "Loaded 0 out of #{#matches} locations.."
+    cancel = false
+    locations = activities.run {
+      title: "Loading #{#matches} locations..",
+      status: -> status
+      cancel: -> cancel = true
+    }, ->
+      return for i = 1, #matches
+        if i % 1000 == 0
+          break if cancel
+          status = "Loaded #{i} out of #{#matches}.."
+          activities.yield!
+
+        m = matches[i]
+        file_search_hit_to_location(m, search, display_as)
 
     selected = interact.select_location
       title: "#{#matches} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
