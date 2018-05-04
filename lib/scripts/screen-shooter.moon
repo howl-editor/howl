@@ -268,7 +268,6 @@ screenshots = {
       command.run 'set indent='
   }
 
-
   {
     name: 'command-line-help'
     with_overlays: true
@@ -281,6 +280,20 @@ screenshots = {
       dispatch.launch -> command.run 'switch-buffer'
       app.window.command_line\show_help!
   }
+
+  {
+    name: 'project-file-search'
+    wait_before: 3
+    wait_after: 1
+    ->
+      open_files { 'lib/howl/ustring.moon' }
+      pos = app.editor.buffer\find 'append'
+      line = app.editor.buffer.lines\at_pos pos
+      app.editor.cursor.pos = pos
+      app.editor.line_at_top = line.nr
+      command.run 'project-file-search'
+  }
+
 }
 
 take_snapshots = (theme_name, to_dir, only) ->

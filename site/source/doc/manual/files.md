@@ -153,5 +153,56 @@ This specifies the amount of time, in hours, that should have passed since you
 last viewed a buffer before it should be considered eligible for closing. The
 default is 24 hours.
 
+## Searching files
+
+In the next section, [Editing], you can read more about how to search for
+content within open buffers. Quite often one wants to search the contents of
+files however, to find a specific instance of a certain string such as an
+identifier. Howl has some built-in functionality for helping with this without
+having to explicitly use external tools, in the form of the
+`project-file-search` command (bound to `ctrl_shift_f` by default). As is
+implied by the name the command will perform a search within all the current
+project files for a given term. Whenever the cursor is positioned at something
+that can be interpreted as a token the search is automatically performed for
+that particular token. To search for a specific manually inputted search string
+you can either issue the command manually from the command line, or you can
+position the cursor in an empty space. In both cases search results are
+presented in a list:
+
+![project-file-search](/images/screenshots/monokai/project-file-search.png)
+
+The matches are always sorted according to your current editing position,
+presenting you with what is deemed the most relevant results on top. You can
+preview the matches by moving up and down in the list, and choose to visit a
+specific location by pressing `enter`.
+
+### File search configuration
+
+File searching, like everything else in Howl, can be customized. First, there's
+the `file_search_hit_display` configuration variable that determines how much
+bells and whistles should be used when presenting the search hits in the list.
+You can tweak this if you want a more spartan display of search hits.
+
+Secondly, the actual searching is performed by one of many possible searcher
+implementations. Howl ships with support for three different searchers, here
+listed in priority order:
+
+- [Ripgrep (rg)](https://github.com/BurntSushi/ripgrep), a new very fast
+searcher written in Rust. Requires `rg` to be found in the path, or the
+`rg_executable` configuration variable to point to a valid `rg` executable.
+
+- [The silver searcher (ag)](https://geoff.greer.fm/ag/), a very fast searcher
+originally written as an ack alternative. Requires `ag` to be found in the path,
+or the `ag_executable` configuration variable to point to a valid `ag`
+executable.
+
+- A native Howl searcher. This is slower than both of the previous alternatives,
+which are to be preferred, but has the advantage of always being available. It's
+actually quite fast as well, but both `rg` and `ag` are *very* fast.
+
+
 *Next*: [Editing](editing.html)
+
+
+[Editing]: editing.html
 
