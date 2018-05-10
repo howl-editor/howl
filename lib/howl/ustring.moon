@@ -197,14 +197,25 @@ count = (s1, s2, is_pattern = false) ->
 
   c
 
-truncate = (s, len, omission = '..') ->
+truncate = (s, len, opts = {}) ->
   s_len = s.ulen
   if s_len > len
-    if omission.ulen <= len
-      msg_length = len - omission.ulen
-      s = s\usub(1, msg_length) .. omission
+    if opts.omission_prefix
+      omission = opts.omission_prefix
+      o_ulen = omission.ulen
+      if o_ulen <= len
+        start = o_ulen + s.ulen - len + 1
+        s = omission .. s\usub(start, start + len)
+      else
+        start = s.ulen - len + 1
+        s = s\usub(start, start + len - 1)
     else
-      s = s\usub(1, len)
+      omission = opts.omission_suffix or '..'
+      if omission.ulen <= len
+        msg_length = len - omission.ulen
+        s = s\usub(1, msg_length) .. omission
+      else
+        s = s\usub(1, len)
 
   s
 

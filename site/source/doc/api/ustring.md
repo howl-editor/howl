@@ -150,20 +150,24 @@ found.
 
 Returns true if the string starts with `s`, and false otherwise.
 
-### truncate (s, len, omission = '..')
+### truncate (s, len, opts = {})
 
 Truncates the string to `len` characters if longer, indicating the truncation
-using the `omission`. Should the length of omission be longer than `len` the
-string is truncated without any omission.
+using the `omission` specified in either `opts.omission_suffix` or
+`opts.omission_prefix`. Should the length of omission be longer than `len` the
+string is truncated without any omission. The default is to use a omission
+suffix of '..', thus truncating the string at the end if necessary.
 
 Examples:
 
 ```lua
-str = 'åäöåäö'
-str:truncate(5) -- => 'åäö..'
-str:truncate(5, '[..]') -- => 'å[..]'
-str:truncate(6) -- => 'åäöåäö'
-str:truncate(2, '[..]') -- => 'åä'
+str = 'abåäöcd'
+str:truncate(5) -- => 'abå..'
+str:truncate(5, {omission_suffix = '[..]'}) -- => 'a[..]'
+str:truncate(7) -- => 'abåäöcd'
+str:truncate(3, {omission_suffix = '[..]'}) -- => 'abå'
+str:truncate(5, {omission_prefix = '[..]'}) -- => '[..]ö'
+str:truncate(5, {omission_suffix = '..'}) -- => 'abå..'
 ```
 
 ### ucompare (s)

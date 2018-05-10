@@ -234,20 +234,32 @@ describe 'ustrings', ->
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
       assert.same {1, 2, 3, 4}, 'äåö'\char_offset { 1, 3, 5, 7 }
 
-  describe 'truncate(len, omission = "..")', ->
-    it 'truncates long string to at most <len> chars, with <omission> appended', ->
+  describe 'truncate(len, opts = {})', ->
+    it 'truncates long strings to at most <len> chars', ->
       s = 'åäöñÅÄÖåäö'
+      -- truncated at the end (the default)
       assert.equal 'åäöñ..', s\truncate(6)
-      assert.equal 'åäöñ[..]', s\truncate(8, '[..]')
-      assert.equal 'åäö<Ə>', s\truncate(6, '<Ə>')
+      assert.equal 'åäöñ[..]', s\truncate(8, omission_suffix: '[..]')
+      assert.equal 'åäö<Ə>', s\truncate(6, omission_suffix: '<Ə>')
+
+      -- truncated at the start
+      assert.equal '..ÅÄÖåäö', s\truncate(8, omission_prefix: '..')
+      assert.equal '[..]Öåäö', s\truncate(8, omission_prefix: '[..]')
+      assert.equal '<Ə>ÄÖåäö', s\truncate(8, omission_prefix: '<Ə>')
 
     it 'does not truncate unless needed', ->
       s = 'åäöåäö'
       assert.equal 'åäöåäö', s\truncate(7)
       assert.equal 'åäöåäö', s\truncate(6)
+      assert.equal 'åäöåäö', s\truncate(7, omission_prefix: '..')
+      assert.equal 'åäöåäö', s\truncate(6, omission_prefix: '..')
 
     it 'skips the omission if the result would go beyond <len>', ->
       s = 'åäö'
-      assert.equal 'åä', s\truncate(2, '[..]')
-      assert.equal '..', s\truncate(2, '..')
-      assert.equal 'å', s\truncate(1, '..')
+      assert.equal 'åä', s\truncate(2, omission_suffix: '[..]')
+      assert.equal '..', s\truncate(2, omission_suffix: '..')
+      assert.equal 'å', s\truncate(1, omission_suffix: '..')
+
+      assert.equal 'äö', s\truncate(2, omission_prefix: '[..]')
+      assert.equal '..', s\truncate(2, omission_prefix: '..')
+      assert.equal 'ö', s\truncate(1, omission_prefix: '..')
