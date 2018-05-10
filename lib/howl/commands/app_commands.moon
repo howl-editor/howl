@@ -476,8 +476,9 @@ file_search_hit_to_location = (match, search, display_as) ->
   else
     match.message
 
+  path = match.path\truncate(50, omission_prefix: '..')
   loc = {
-    howl.ui.markup.howl "<comment>#{match.path}</>:<number>#{match.line_nr}</>"
+    howl.ui.markup.howl "<comment>#{path}</>:<number>#{match.line_nr}</>"
     hit_display,
     file: match.file,
     line_nr: match.line_nr,
