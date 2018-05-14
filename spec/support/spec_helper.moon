@@ -126,3 +126,13 @@ export collect_memory = ->
     used = collectgarbage('count')
     break if used >= mem
     mem = used
+
+export trimmed_text = (s) ->
+  return s if s.is_empty
+  s = s\gsub '^%s*\n', ''
+  lines = s\split('\n')
+  return lines[1].stripped unless #lines > 1
+  indentation = lines[1]\match '^%s+'
+  return s unless indentation
+  adj_lines = [l\gsub("^#{indentation}", '') for l in *lines]
+  table.concat adj_lines, '\n'

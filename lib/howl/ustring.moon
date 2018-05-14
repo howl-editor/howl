@@ -218,6 +218,21 @@ truncate = (s, len, opts = {}) ->
         s = s\usub(1, len)
 
   s
+  
+split = (s, pattern) ->
+  return {} if s == ""
+  parts = {}
+  s_pos = 1
+  p, e_pos = s\find pattern
+  while p
+    append parts, s\sub(s_pos, p - 1)
+    p = e_pos + 1
+    s_pos = p
+    p, e_pos = s\find pattern, p
+
+  append parts, s\sub(s_pos)
+
+  parts
 
 with string
   .usub = usub
@@ -234,6 +249,7 @@ with string
   .contains = contains
   .count = count
   .truncate = truncate
+  .split = split
 
 properties =
   ulen: => ulen @

@@ -42,8 +42,7 @@ int array[100];
 printf(__FILE__ ": %d: Hello "
            "world\n", __LINE__);
 
-struct s
-{
+struct Fancy {
     int   x;
     float y;
     char  *z;
@@ -72,7 +71,9 @@ for (int i=0; i< limit; i++){
 long abc = 'abcd';
 
 int printf (const char*, ...) {
+}
 
+void struct_use(struct Foo *apa) {
 }
 
 LJLIB_ASM(rawget)		LJLIB_REC(.)
@@ -98,11 +99,15 @@ static void printcapkind (int kind) {
   printf("%s", modes[kind]);
 }
 
+class A : B {}
+
 // C++ template specializations!
-struct Abc<1, 2> {};
+class Z<A,B> : B {}
+struct Abc<1, 2>  {};
 class [[a,b,c]] X::Y::Z {};
 class X::Y::Z<A, B> virtual final : B {};
 class [[a,b,c]] [[def]] X::Y::Z virtual : B {};
+class [[a,b,c]] [[def]] X::Y::Z final : B {};
 class X
 {};
 struct X<A, B> y;

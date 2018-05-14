@@ -170,8 +170,6 @@ local function main()
   set_package_path('lib', 'lib/ext', 'lib/ext/moonscript')
   require 'howl.moonscript_support'
   table.insert(package.loaders, 2, bytecode_loader())
-  require 'howl.cdefs.fontconfig'
-  ffi.C.FcConfigAppFontAddDir(nil, table.concat({app_root, 'fonts'}, path_separator))
   require 'ljglibs.cdefs.glib'
 
   howl = auto_module('howl')
@@ -189,6 +187,8 @@ local function main()
     print("Copyright 2012-2017 The Howl Developers\nLicense: MIT License")
     os.exit(0)
   else
+    require 'howl.cdefs.fontconfig'
+    ffi.C.FcConfigAppFontAddDir(nil, table.concat({app_root, 'fonts'}, path_separator))
     -- set up the the GC to be more aggressive, we have a lot
     -- of cdata that needs to be collected
     collectgarbage('setstepmul', 400)

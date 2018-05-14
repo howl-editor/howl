@@ -263,3 +263,14 @@ describe 'ustrings', ->
       assert.equal 'äö', s\truncate(2, omission_prefix: '[..]')
       assert.equal '..', s\truncate(2, omission_prefix: '..')
       assert.equal 'ö', s\truncate(1, omission_prefix: '..')
+
+  describe 'split(pattern)', ->
+    it 'splits the string by <pattern>', ->
+      assert.same { '1' }, ('1')\split(',')
+      assert.same { '1', '2', '3' }, ('1,2,3')\split(',')
+      assert.same { '1', '2', '' }, ('1,2,')\split(',')
+      assert.same { '', '' }, (',')\split(',')
+
+    it 'treats <pattern> as a lua pattern', ->
+      assert.same { 'x', 'y', 'z' }, ('x.y,z')\split('[.,]')
+

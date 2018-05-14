@@ -54,3 +54,10 @@ Copyright (c) 2011 Ethan Schoonover
 ### Monokai
 
 This theme is based upon the Monokai theme from the Textmate editor.
+
+### Dracula
+
+This theme is based upon the
+[https://github.com/dracula/dracula-theme](Dracula theme) designed by Zeno Rocha
+
+Copyright (C) 2016 Zeno Rocha

@@ -10,6 +10,8 @@ append = table.insert
 
 local popup, last_display_position
 
+unavailable_warnings = {}
+
 update_inspections_display = (editor) ->
   text = ''
   count = #editor.buffer.markers\find(name: 'inspection')
@@ -20,9 +22,18 @@ update_inspections_display = (editor) ->
 
   editor.indicator.inspections.text = text
 
-resolve_inspector = (inspector, buffer) ->
+resolve_inspector = (name, inspector, buffer) ->
+  if inspector.is_available
+    available, msg = inspector.is_available(buffer)
+    unless available
+      unless unavailable_warnings[name]
+        log.warning "Inspector '#{name}' unavailable: #{msg}"
+        unavailable_warnings[name] = true
+
+      return nil
+
   return inspector unless inspector.cmd\find '<file>', 1, true
-  return nil unless buffer.file
+  return nil if not buffer.file or buffer.modified
   copy = {k,v for k, v in pairs inspector}
   copy.cmd = copy.cmd\gsub '<file>', buffer.file.path
   copy.write_stdin = false
@@ -41,18 +52,16 @@ load_inspectors = (buffer, scope = 'idle') ->
       conf = inspection[inspector]
       if conf
         instance = conf.factory buffer
-        if callable(instance)
+        unless callable(instance)
+          if type(instance) == 'string'
+            instance = resolve_inspector inspector, {cmd: instance}, buffer
+          elseif type(instance) == 'table'
+            unless instance.cmd
+              error "Missing cmd key for inspector returned for '#{inspector}'"
+            instance = resolve_inspector inspector, instance, buffer
+
+        if instance
           append inspectors, instance
-        elseif type(instance) == 'string'
-          instance = resolve_inspector {cmd: instance}, buffer
-          if instance
-            append inspectors, instance
-        elseif type(instance) == 'table'
-          unless instance.cmd
-            error "Missing cmd key for inspector returned for '#{inspector}'"
-          instance = resolve_inspector instance, buffer
-          if instance
-            append inspectors, instance
 
       else
         log.warn "Invalid inspector '#{inspector}' specified for '#{buffer.title}'"
@@ -143,7 +152,7 @@ parse_errors = (out, inspector) ->
     if loc.tokens
       complaint.search = loc.tokens[1]
 
-    complaint.type = loc.message\umatch(r'^(warning|error)')
+    complaint.type = inspector.type or loc.message\umatch(r'^(warning|error)')
 
     append inspections, complaint
 
@@ -207,6 +216,7 @@ criticize = (buffer, criticisms, opts = {}) ->
 
 update_buffer = (buffer, editor, scope) ->
   return if buffer.read_only
+  return if buffer.data.is_preview
   data = buffer.data
   if data.last_inspect
     li = data.last_inspect

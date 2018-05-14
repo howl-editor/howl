@@ -111,7 +111,11 @@ command.register
   handler: ->
     ctx = app.editor.current_context
     m = app.editor.buffer\mode_at ctx.pos
-    if m.api and m.resolve_type
+    local doc_buf
+
+    if m.show_doc
+      doc_buf = m\show_doc app.editor, ctx
+    else if m.api and m.resolve_type
       node = m.api
       path, parts = m\resolve_type ctx
 
@@ -121,12 +125,13 @@ command.register
       node = node[ctx.word.text] if node
 
       if node and node.description
-        buf = Buffer mode.by_name('markdown')
-        buf.text = node.description
-        app.editor\show_popup BufferPopup buf, scrollable: true
-        return
+        doc_buf = Buffer mode.by_name('markdown')
+        doc_buf.text = node.description
 
-    log.info "No documentation found for '#{ctx.word}'"
+    if doc_buf
+      app.editor\show_popup BufferPopup doc_buf, scrollable: true
+    else
+     log.info "No documentation found for '#{ctx.word}'"
 
 command.register
   name: 'buffer-mode',

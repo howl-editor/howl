@@ -62,6 +62,25 @@ describe 'file_selection', ->
         prompt = command_line.prompt
       assert.same tostring(tmpdir) .. '/', prompt
 
+    it 'typing a trailing "/~/" jumps to the home directory', ->
+      prompts = {}
+      within_activity interact.select_file, ->
+        command_line\write tostring(tmpdir) .. '/'
+        table.insert prompts, command_line.prompt
+        command_line\write '~/'
+        table.insert prompts, command_line.prompt
+      assert.same {tostring(tmpdir) .. '/', '~/'}, prompts
+
+    context 'for directory names ending with ~', ->
+      before_each -> File.mkdir tmpdir / 'subdir~'
+
+      it 'typing subdir~/ switches to the directory', ->
+        prompts = {}
+        within_activity interact.select_file, ->
+          command_line\write tostring(tmpdir) .. '/subdir~/'
+          table.insert prompts, command_line.prompt
+        assert.same {tostring(tmpdir) .. '/subdir~/'}, prompts
+
     it 'typing "../" switches to the parent of the current directory', ->
       prompts = {}
       within_activity interact.select_file, ->

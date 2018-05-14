@@ -2,6 +2,19 @@
 
 ## Unreleased (in master)
 
+- Added support for custom user fonts (place them in <CONFIG-DIR>/fonts, e.g.
+~/.howl/fonts)
+
+- Added `project-switch-buffer` command that displays open buffers within
+the current project.
+
+- Added two inspectors and a command for documentation to the Go mode
+
+- Moving cursor left or right with a selection active now cancels the selection,
+leaving the cursor at the corresponding end.
+
+- Added proper structure support for C/C++ mode
+
 - Base scheme support on the newer lisp mode instead of old basic mode
 
 - Added the `**popup_menu_accept_key` option, for controlling which key accepts

@@ -1,9 +1,25 @@
--- Copyright 2016 The Howl Developers
+-- Copyright 2016-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, config, mode from howl
+{:app, :command, :config, :mode, :inspection, :sys} = howl
 
 {:fmt} = bundle_load 'go_fmt'
+
+register_inspections = ->
+  inspection.register
+    name: 'golint'
+    factory: -> {
+      cmd: 'golint <file>',
+      type: 'warning',
+      is_available: -> sys.find_executable('golint'), "`golint` command not found"
+    }
+  inspection.register
+    name: 'gotoolvet'
+    factory: -> {
+      cmd: 'go tool vet <file>',
+      type: 'error',
+      is_available: -> sys.find_executable('go'), "`go` command not found"
+    }
 
 register_mode = ->
   mode_reg =
@@ -28,6 +44,7 @@ register_commands = ->
 
 register_mode!
 register_commands!
+register_inspections!
 
 with config
   .define
@@ -48,13 +65,21 @@ with config
     default: true
     type_of: 'boolean'
 
+  .define
+    name: 'gogetdoc_path',
+    description: 'Path to gogetdoc executable'
+    default: 'gogetdoc'
+    scope: 'global'
+
 unload = ->
   mode.unregister 'go'
   command.unregister 'go-fmt'
+  inspection.unregister 'golint'
+  inspection.unregister 'gotoolvet'
 
 return {
   info:
-    author: 'Copyright 2016 The Howl Developers'
+    author: 'Copyright 2016-2018 The Howl Developers'
     description: 'Go language support'
     license: 'MIT'
   :unload

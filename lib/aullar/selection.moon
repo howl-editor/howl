@@ -23,6 +23,7 @@ Selection = {
   new: (@view) =>
     @_anchor = nil
     @_end_pos = nil
+    @persistent = false
 
   properties: {
     is_empty: => (@_anchor == nil) or (@_anchor == @_end_pos)

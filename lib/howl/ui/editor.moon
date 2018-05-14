@@ -1072,13 +1072,13 @@ with config
   .define
     name: 'scroll_speed_y'
     description: 'A percentage value determining the vertical mouse scrolling speed'
-    default: 100
+    default: 250
     type_of: 'number'
 
   .define
     name: 'scroll_speed_x'
     description: 'A percentage value determining the horizontal mouse scrolling speed'
-    default: 100
+    default: 250
     type_of: 'number'
 
   .define
@@ -1090,7 +1090,7 @@ with config
   .define
     name: 'undo_limit'
     description: 'Per buffer limit of undo revisions to keep'
-    default: 100
+    default: 200
     type_of: 'number'
     scope: 'global'
 

@@ -35,6 +35,16 @@ describe 'File', ->
   describe 'expand_path(path)', ->
     it 'expands "~" into the full path of the home directory', ->
       assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '~/foo.txt')
+      assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '/blah/~/foo.txt')
+
+    it 'handles multiple "~/" by replacing the deepest one', ->
+      assert.equals "#{os.getenv('HOME')}/foo.txt", (File.expand_path '/a/b/~/c/~/foo.txt')
+
+    it 'does not expand "~" when part of another word', ->
+      assert.equals "/dir~/foo.txt", (File.expand_path '/dir~/foo.txt')
+
+    it 'does not expand trailing "~" without "/" suffix', ->
+      assert.equals "/dir/~", (File.expand_path '/dir/~')
 
   describe 'new(p, cwd, opts = {})', ->
     it 'accepts a string as denothing a path', ->
@@ -94,8 +104,16 @@ describe 'File', ->
 
   describe '.short_path', ->
     it 'returns the path with the home directory replace by "~"', ->
+      assert.equal '~', File(os.getenv('HOME')).short_path
       file = File(os.getenv('HOME')) / 'foo.txt'
       assert.equal '~/foo.txt', file.short_path
+
+    it 'does not replace a directory the home directory is a prefix of directory', ->
+      home_path = File(os.getenv('HOME')).path .. '-suffix'
+      home = File(home_path)
+      file = home / 'foo.txt'
+      assert.equal home.path, home.short_path
+      assert.equal file.path, file.short_path
 
   describe 'contents', ->
     it 'assigning a string writes the string to the file', ->

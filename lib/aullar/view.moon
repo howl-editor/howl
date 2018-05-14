@@ -1,4 +1,4 @@
- --Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -228,9 +228,9 @@ View = {
     y_scroll_offset: {
       get: => @_y_scroll_offset
       set: (offset) =>
-        @_y_scroll_offset += offset
+        @_y_scroll_offset = offset
         if @_y_scroll_offset < -1 or @_y_scroll_offset > 1
-          @first_visible_line += floor(@_y_scroll_offset)
+          @first_visible_line = max(@first_visible_line + floor(@_y_scroll_offset), 1)
           @_y_scroll_offset = 0
     }
 
@@ -276,6 +276,7 @@ View = {
   scroll_to: (line) =>
     return if line < 1 or not @showing
     line = max(1, line)
+    line = min(line, @buffer.nr_lines)
     return if @first_visible_line == line
 
     @_first_visible_line = line

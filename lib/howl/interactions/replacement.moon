@@ -41,6 +41,7 @@ class Replacement
     @preview_buffer = app\new_buffer opts.editor.buffer.mode
     @preview_buffer.title = opts.preview_title or 'Preview Replacements'
     @preview_buffer.text = @text
+    @preview_buffer.data.is_preview = true
 
     -- @buffer always holds original text
     @buffer = howl.Buffer!
