@@ -40,6 +40,7 @@ class TextWidget extends PropertyObject
         @opts.on_changed and @opts.on_changed!
 
       on_focus_out: @opts.on_focus_lost
+      on_resized: @opts.on_resized
 
   @property width_cols:
     get: =>
@@ -53,7 +54,6 @@ class TextWidget extends PropertyObject
   @property visible_rows:
     get: => @_visible_rows
     set: (nr) =>
-      return if nr == @_visible_rows
       @_visible_rows = nr
       @adjust_height!
 

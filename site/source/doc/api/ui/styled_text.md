@@ -8,7 +8,7 @@ title: howl.ui.StyledText
 
 StyledText is a container that holds text as well as the text's associated
 styling. Its primarily used with [ActionBuffer]s for easily inserting styled
-contents. While you can construct StyledText instances manually, it's more
+contents. While you can construct StyledText instances manually, it's often more
 convenient to create these from markup, e.g. using [Howl
 markup](markup/howl.html).
 
@@ -34,11 +34,16 @@ StyledText object.
 
 ### StyledText.for_table (items, columns=nil)
 
-Creates a new `StyledText` instance holding content laid out as a table.
+Creates and returns a new `StyledText` instance holding content laid out as a
+table.
 
 `items` is a table containing rows. Each row can either be a cell representing a
-single column, or a table of cells representing multiple columns. Each cell is
-either a string or a `StyledText` object.
+single column, or a table of cells representing multiple columns. Each cell
+should be either a string or a `StyledText` object, or an object that can be
+converted to either one of them. If the object needs to be converted and the
+object's metatable contains a `__tostyled` meta method, that is invoked and the
+return value assumed to be a `StyledText` object. Otherwise the object is
+converted to a string using `tostring`.
 
 `columns` is an optional table containing header and style information for the
 columns. It is a table containing one or more column definitions. Each column
@@ -48,6 +53,9 @@ definition is a table with two fields:
 - `style`: a style name specifying the default style for all cells in the
 column. This style is used for any cell in the column that is a string and not a
 `StyledText`.
+
+In addition to the `StyledText` instance returned, `for_table` also returns a
+table containing the starting positions of the styled tables columns.
 
 The following example generates a table with column headers and column styles:
 

@@ -3,6 +3,7 @@
 
 import app, dispatch from howl
 import Window from howl.ui
+require 'howl.ui.icons.font_awesome'
 
 describe 'CommandLine', ->
   local command_line, run_as_handler

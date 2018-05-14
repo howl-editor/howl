@@ -10,7 +10,7 @@ describe 'Hg bundle', ->
 
   it 'defines a "hg_path" config variable, defaulting to nil', ->
     assert.not_nil config.definitions.hg_path
-    assert.nil config.hg_path
+    assert.equal 'hg', config.hg_path
 
   describe 'Hg VC find(file)', ->
     hg_vc = nil

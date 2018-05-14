@@ -1,7 +1,14 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import config from howl
+{:config} = howl
+
+config.define
+  name: 'hidden_file_extensions'
+  description: 'File extensions that determine which files should be hidden in file selection lists'
+  scope: 'global'
+  type_of: 'string_list'
+  default: {'a', 'bc', 'git', 'hg', 'o', 'pyc', 'so', 'svn', 'cvs'}
 
 config.define {
   name: 'complete'

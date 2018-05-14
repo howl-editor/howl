@@ -8,6 +8,7 @@ glib = require 'ljglibs.glib'
 import g_string, catch_error from glib
 
 C, ffi_string, ffi_gc = ffi.C, ffi.string, ffi.gc
+{:parse_flags} = core
 
 core.define 'GMatchInfo', {
   properties: {
@@ -79,27 +80,64 @@ core.define 'GRegex', {
   }
 
   match: (s, match_options = 0) =>
+    if match_options != 0
+      match_options = parse_flags 'G_REGEX_', match_options
     C.g_regex_match(@, s, match_options, nil) != 0
 
   match_with_info: (s, match_options = 0) =>
+    if match_options != 0
+      match_options = parse_flags 'G_REGEX_', match_options
     mi = ffi.new 'GMatchInfo *[1]'
     matched = C.g_regex_match(@, s, match_options, mi) != 0
     info = mi[0]
-    if info
-      if not matched
-        C.g_match_info_unref info
-        info = nil
-      else
-        info = ffi_gc info, C.g_match_info_unref
+    ffi_gc info, C.g_match_info_free
+    matched and info or nil
 
-    info
+  match_full: (s, len, start_position, match_options = 0) =>
+    len or= #s
+    start_position or= 1
+    if match_options != 0
+      match_options = parse_flags 'G_REGEX_', match_options
+    catch_error(
+      C.g_regex_match_full,
+      @,
+      s,
+      len,
+      start_position,
+      match_options,
+      nil
+    ) != 0
+
+  match_full_with_info: (s, len, start_position, match_options = 0) =>
+    len or= #s
+    start_position or= 1
+    if match_options != 0
+      match_options = parse_flags 'G_REGEX_', match_options
+    mi = ffi.new 'GMatchInfo *[1]'
+    matched = catch_error(
+      C.g_regex_match_full,
+      @,
+      s,
+      len,
+      start_position,
+      match_options,
+      mi
+    ) != 0
+    info = mi[0]
+    ffi_gc info, C.g_match_info_free
+    matched and info or nil
 
   meta: {
     __tostring: => @pattern
+    __is_container: false
   }
 
 }, (def, pattern, compile_options = 0, match_options = 0) ->
   err = ffi.new 'GError *[1]'
+  if compile_options != 0
+    compile_options = parse_flags 'G_REGEX_', compile_options
+  if match_options != 0
+    match_options = parse_flags 'G_REGEX_', match_options
   regex = C.g_regex_new pattern, compile_options, match_options, err
 
   if err[0] != nil

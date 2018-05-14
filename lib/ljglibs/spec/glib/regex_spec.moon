@@ -1,12 +1,16 @@
 GRegex = require 'ljglibs.glib.regex'
 
 describe 'GRegex', ->
-  context 'creation', ->
+  context 'GRegex(s, compile_options, match_options)', ->
     it 'raises an error if the pattern is invalid', ->
       assert.raises 'regular expression', -> GRegex '?\\'
 
     it 'returns a regex for a valid pattern', ->
       assert.is_not_nil GRegex 'foo()\\d+'
+
+    it 'accepts compile options', ->
+      r = GRegex 'foo', {'CASELESS'}
+      assert.is_true r\match('FOO')
 
   it '.pattern holds the regex used for construction', ->
     assert.equal 'foo(bar)', GRegex('foo(bar)').pattern
@@ -31,6 +35,21 @@ describe 'GRegex', ->
 
     it 'returns nil if the pattern does not match', ->
       info = GRegex('foo')\match_with_info 'bar'
+      assert.is_nil info
+
+  describe 'match_full(s, s_len, start_pos, match_options)', ->
+    it 'returns true if it matches given the specified range', ->
+      re = GRegex('foo')
+      assert.is_true re\match_full 'food', 4, 0
+      assert.is_false re\match_full 'food', 4, 1
+
+  describe 'match_full_with_info(s, match_options)', ->
+    it 'returns match info if it matches', ->
+      info = GRegex('ri\\S+')\match_full_with_info 'red right hand'
+      assert.is_not_nil info
+
+    it 'returns nil if the pattern does not match', ->
+      info = GRegex('foo')\match_full_with_info 'bar'
       assert.is_nil info
 
   describe 'a match info instance', ->

@@ -5,11 +5,11 @@ Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
 gobject_signal = require 'ljglibs.gobject.signal'
-import signal, bindings, config, command, clipboard, sys from howl
+{:signal, :bindings, :config, :command, :clipboard, :sys} = howl
 aullar_config = aullar.config
-import PropertyObject from howl.util.moon
-import Searcher, CompletionPopup from howl.ui
-import auto_pair from howl.editing
+{:PropertyObject} = howl.util.moon
+{highlight: highlights, :Searcher, :CompletionPopup} = howl.ui
+{:auto_pair} = howl.editing
 
 {
   :IndicatorBar,
@@ -596,6 +596,11 @@ class Editor extends PropertyObject
     byte_offset = @buffer\byte_offset
     pos = @_get_matching_brace(byte_offset(pos), byte_offset(start_pos), byte_offset(end_pos))
     return pos and @buffer\char_offset pos
+
+  highlight: (hl, line_nr = nil) =>
+    start_pos, end_pos = @buffer\resolve_span hl, line_nr
+    highlight = hl.highlight or 'search'
+    highlights.apply highlight, @buffer, start_pos, end_pos - start_pos
 
   -- private
   _show_buffer: (buffer, opts={}) =>

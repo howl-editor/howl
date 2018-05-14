@@ -191,7 +191,7 @@ Returns a [Chunk] for the given range.
 
 ### context_at(pos)
 
-Returns a [Context] for the specified position.
+Returns a [BufferContext] for the specified position.
 
 ### delete(start_pos, end_pos)
 
@@ -247,6 +247,35 @@ Replaces all occurrences of `pattern` with `replacement`, and returns the number
 of replacements made. `pattern` can be either a Lua pattern, or a [regular
 expression].
 
+### resolve_span(span [, line_nr])
+
+Resolves the provided span, returning the starting and ending position within
+the buffer.
+
+The passed `span` can specify the positions in various ways (hence the
+usefulness of this function). Common for both the starting and ending position
+specifiers is that one has to provide a line number in order to use column
+specifiers, either as a `.line_nr` reference in the span or as a argument.
+
+Start positions can be specified using one of the below:
+
+  * `start_pos`: An absolute position in the buffer
+  * `byte_start_pos`: An absolute byte-oriented position in the buffer
+  * `start_column`: The starting column of the segment relative to a line
+    (requires `.line_nr`)
+  * `byte_start_column`: The starting byte-oriented column of the segment
+    relative to a line (requires line number)
+
+  End positions can be specified by using one of the below:
+
+  * `end_pos`: An absolute position in the buffer
+  * `byte_end_pos`: An absolute byte-oriented position in the buffer
+  * `end_column`: The ending column of the segment relative to a line
+    (requires `.line_nr`)
+  * `byte_end_column`: The ending byte-oriented column of the segment relative
+    to a line (requires line number)
+  * `count`: The end position is `count` characters away from the start position
+
 ### rfind(search, init = @length)
 
 Reverse search: searches backwards for the text `search` in the buffer's text
@@ -293,7 +322,7 @@ Undo the last buffer modification.
 [Application]: application.html
 [Lines]: lines.html
 [Chunk]: chunk.html
-[Context]: context.html
+[BufferContext]: buffer_context.html
 [Editor]: ui/editor.html
 [config]: config.html
 [mode]: mode.html

@@ -1,6 +1,9 @@
 import config, VC from howl
 
 find = (file) ->
+  unless howl.sys.find_executable config.hg_path
+    return nil
+
   while file != nil
     hg_dir = file\join('.hg')
     if hg_dir.exists
@@ -9,7 +12,12 @@ find = (file) ->
   nil
 
 VC.register 'hg', :find
-config.define name: 'hg_path', description: 'Path to hg executable'
+config.define {
+  name: 'hg_path',
+  description: 'Path to hg executable',
+  default: 'hg',
+  scope: 'global'
+}
 
 info = {
   author: 'The Howl Developers',

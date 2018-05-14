@@ -87,10 +87,10 @@ setup_signals = (name, def, gtype, instance_cast) ->
 
         signal.connect cb_type, instance, info.signal_name, casting_handler, ...
 
-construct = (spec, constructor, ...) ->
+construct = (spec, no_container, constructor, ...) ->
   args = {...}
   last = args[#args]
-  if type(last) == 'table'
+  if type(last) == 'table' and not no_container
     inst = constructor spec, unpack(args, 1, #args - 1)
     inst[k] = v for k,v in pairs last when type(k) != 'number'
     for child in *last
@@ -137,7 +137,8 @@ construct = (spec, constructor, ...) ->
 
     mt = __index: base and base.def
     if constructor
-      mt.__call = (t, ...) -> construct t, constructor, ...
+      no_container = meta_t.__is_container == false
+      mt.__call = (t, ...) -> construct t, no_container, constructor, ...
 
     spec = setmetatable(spec, mt)
 

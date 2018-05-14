@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import style from howl.ui
-
+getmetatable = getmetatable
 append = table.insert
 
 local styled_text_mt
@@ -30,7 +30,10 @@ styled_text_mt = {
       i += 1
       append styles, op2.styles[i]
       i += 1
-      append styles, op2.styles[i] + offset
+      if type(op2.styles[i]) == 'number'
+        append styles, op2.styles[i] + offset
+      else -- sub lexing table
+        append styles, op2.styles[i]
       i += 1
 
     return setmetatable {:text, :styles}, styled_text_mt
@@ -42,7 +45,13 @@ styled_text_mt = {
     return false unless op1.text == op2.text
     st1, st2 = op1.styles, op2.styles
     for i = 1, #st1
-      return false unless st1[i] == st2[i]
+      unless st1[i] == st2[i]
+        el1, el2 = st1[i], st2[i]
+        if type(el1) == 'table' and type(el1) == 'table' and #el1 == #el1
+          for j = 1, #el1
+            return unless el1[j] == el2[j]
+        else
+          return false
 
     true
 
@@ -79,7 +88,14 @@ is_styled = (s) -> type(s) == 'table' and s.styles
 
 display_str = (col) ->
   return '' if col == nil
-  is_styled(col) and col or tostring(col)
+  t = type(col)
+  return col if t == 'string'
+  return col if is_styled(col)
+  mt = getmetatable(col)
+  if mt and mt.__tostyled
+    return mt.__tostyled(col)
+
+  tostring(col)
 
 for_table = (items, columns=nil) ->
   text_parts = {}
@@ -97,7 +113,10 @@ for_table = (items, columns=nil) ->
         i += 1
         append styles, text.styles[i]
         i += 1
-        append styles, text.styles[i] + offset
+        if type(text.styles[i]) == 'number'
+          append styles, text.styles[i] + offset
+        else -- sub lexing table
+          append styles, text.styles[i]
         i += 1
     elseif text_style
       append styles, offset + 1
@@ -119,8 +138,8 @@ for_table = (items, columns=nil) ->
     write '\n'
 
   for item in *items
-    if typeof(item) != 'table'
-      item = { item }
+    item = { item } if typeof(item) != 'table'
+
     for i = 1, column_widths.num
       cell = display_str item[i]
       cell_style = columns and columns[i] and columns[i].style
@@ -143,7 +162,11 @@ for_table = (items, columns=nil) ->
     write '\n'
 
   text = table.concat text_parts
-  return setmetatable {:text, :styles}, styled_text_mt
+  col_starts = {1, num: column_widths.num}
+  for i = 2, #column_widths
+    col_starts[i] = column_widths[i - 1] + col_starts[i - 1] + 1
+
+  setmetatable({:text, :styles}, styled_text_mt), col_starts
 
 setmetatable { :for_table },
   __call: (text, styles) =>

@@ -179,29 +179,58 @@ class Application extends PropertyObject
     signal.emit 'buffer-closed', :buffer
 
   open_file: (file, editor = @editor) =>
-    buffer = @_buffer_for_file file
+    @open :file, editor
+
+  open: (loc, editor) =>
+    return unless loc
+    unless loc.buffer or loc.file
+      error "Malformed loc: either .buffer or .file must be set", 2
+
+    file = loc.file
+    buffer = loc.buffer or @_buffer_for_file(file)
+
     if buffer
-      breadcrumbs.drop!
-      editor.buffer = buffer
-      return buffer, editor
-
-    buffer = @new_buffer mode.for_file file
-    status, err = pcall ->
-      buffer.file = file
-      breadcrumbs.drop!
-      if editor
-        editor.buffer = buffer
-      else
-        editor = @new_editor buffer
-
-    if not status
-      @close_buffer buffer
-      log.error "Failed to open #{file}: #{err}"
-      nil
+      @add_buffer buffer
     else
+      -- open the file specified
+      buffer = @new_buffer mode.for_file file
+      status, err = pcall -> buffer.file = file
+      if not status
+        @close_buffer buffer
+        error "Failed to open #{file}: #{err}"
+
       @_recently_closed = [file_info for file_info in *@_recently_closed when file_info.file != buffer.file]
       signal.emit 'file-opened', :file, :buffer
-      buffer, editor
+
+    -- all right, now we got a buffer, let's get an editor if needed
+    unless editor
+      editor = @editor_for_buffer(loc.buffer) or @editor
+      editor or= @new_editor buffer
+
+    -- buffer and editor in place, drop a crumb and show the location
+    breadcrumbs.drop {
+      buffer: editor.buffer,
+      pos: editor.cursor.pos,
+      line_at_top: editor.line_at_top
+    }
+
+    editor.buffer = buffer
+
+    if loc.line_nr
+      editor.line_at_center = loc.line_nr
+      opts = line: loc.line_nr
+      if loc.column
+        opts.column = loc.column
+      elseif loc.column_index
+        opts.column_index = loc.column_index
+
+      editor.cursor\move_to opts
+
+      if loc.highlights
+        for hl in *loc.highlights
+          editor\highlight hl, loc.line_nr
+
+    buffer, editor
 
   save_all: =>
     for b in *@buffers
@@ -483,6 +512,7 @@ class Application extends PropertyObject
     require 'howl.ui.icons.font_awesome'
     require 'howl.janitor'
     require 'howl.inspect'
+    require 'howl.file_search'
 
   _load_application_icon: =>
     dir = @root_dir

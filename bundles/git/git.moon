@@ -43,8 +43,7 @@ class Git
     stdout
 
   _get_process: (...) =>
-    exec_path = config.git_path or 'git'
-    argv = { exec_path, ... }
+    argv = { config.git_path, ... }
     Process {
       cmd: argv,
       working_directory: @root,

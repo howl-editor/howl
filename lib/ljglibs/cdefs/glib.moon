@@ -167,6 +167,7 @@ ffi.cdef [[
   gboolean  g_match_info_next            (GMatchInfo *match_info, GError **error);
   gchar *   g_match_info_fetch           (const GMatchInfo *match_info, gint match_num);
   void      g_match_info_unref           (GMatchInfo *match_info);
+  void      g_match_info_free            (GMatchInfo *match_info);
   gboolean  g_match_info_fetch_pos       (const GMatchInfo *match_info,
                                           gint match_num,
                                           gint *start_pos,
@@ -186,6 +187,13 @@ ffi.cdef [[
                                            const gchar *string,
                                            GRegexMatchFlags match_options,
                                            GMatchInfo **match_info);
+  gboolean      g_regex_match_full        (const GRegex *regex,
+                                           const gchar *string,
+                                           gssize string_len,
+                                           gint start_position,
+                                           GRegexMatchFlags match_options,
+                                           GMatchInfo **match_info,
+                                           GError **error);
   gchar *       g_regex_escape_string     (const gchar *string, gint length);
 
   /* GList */
@@ -284,5 +292,13 @@ ffi.cdef [[
   gint64 g_get_monotonic_time (void);
 
   gint64 g_get_real_time (void);
+
+  typedef struct {} GMappedFile;
+  GMappedFile * g_mapped_file_new (const gchar *filename,
+                                   gboolean writable,
+                                   GError **error);
+  void g_mapped_file_unref (GMappedFile *file);
+  gsize g_mapped_file_get_length (GMappedFile *file);
+  gchar * g_mapped_file_get_contents (GMappedFile *file);
 
 ]]

@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, breadcrumbs, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
+import app, activities, breadcrumbs, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
 import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
 import Process from howl.io
 serpent = require 'serpent'
@@ -432,16 +432,24 @@ launch_cmd = (working_directory, cmd) ->
   editor.cursor\eof!
   buffer\pump!
 
+get_project = ->
+  buffer = app.editor and app.editor.buffer
+  file = buffer.file or buffer.directory
+  error "No file associated with the current view" unless file
+  project = Project.get_for_file file
+  error "No project associated with #{file}" unless project
+  return project
+
 command.register
   name: 'project-exec',
   description: 'Run an external command from within the project directory'
-  input: -> interact.get_external_command path: get_project_root!
+  input: -> interact.get_external_command path: get_project!.root
   handler: launch_cmd
 
 command.register
   name: 'project-build'
   description: 'Run the command in config.project_build_command from within the project directory'
-  handler: -> launch_cmd get_project_root!, (app.editor and app.editor.buffer.config or config).project_build_command
+  handler: -> launch_cmd get_project!.root, (app.editor and app.editor.buffer.config or config).project_build_command
 
 command.register
   name: 'exec',
@@ -461,3 +469,125 @@ config.define
   description: 'The command to execute when project-build is run'
   default: 'make'
   type_of: 'string'
+
+-----------------------------------------------------------------------
+-- File search commands
+-----------------------------------------------------------------------
+
+config.define
+  name: 'file_search_hit_display'
+  description: 'How to display file search hits in the list'
+  default: 'rich'
+  type_of: 'string'
+  options: -> {
+    {'plain', 'Display as plain unicolor strings'},
+    {'highlighted', 'Highlight search terms in hits'} ,
+    {'rich', 'Show syntax highlighted snippets with highlighted terms'},
+  }
+
+file_search_hit_mt = {
+  __tostyled: (item) ->
+    text = item.text
+    m = mode.for_file(item.match.file)
+    if m and m.lexer
+      styles = m.lexer(text)
+      return StyledText text, styles
+
+    text
+
+  __tostring: (item) -> item.text
+}
+
+file_search_hit_to_location = (match, search, display_as) ->
+  hit_display = if display_as == 'rich'
+    setmetatable {text: match.message, :match}, file_search_hit_mt
+  else
+    match.message
+
+  path = match.path\truncate(50, omission_prefix: '..')
+  loc = {
+    howl.ui.markup.howl "<comment>#{path}</>:<number>#{match.line_nr}</>"
+    hit_display,
+    file: match.file,
+    line_nr: match.line_nr,
+    column: match.column
+  }
+  search = search.ulower
+  s, e = match.message.ulower\ufind(search, 1, true)
+  unless s
+    s, e = match.message\ufind((r(search)))
+
+  if loc.column
+    loc.highlights = {
+      { byte_start_column: loc.column, byte_end_column: loc.column + #search }
+    }
+  elseif s
+    loc.highlights = {
+      { start_column: s, end_column: e + 1 }
+    }
+
+  if s and display_as != 'plain'
+    loc.item_highlights = {
+      nil,
+      {
+        {byte_start_column: s, count: e - s + 1}
+      }
+    }
+
+  loc
+
+command.register
+  name: 'project-file-search',
+  description: 'Searches files in the the current project'
+  input: (...) ->
+    editor = app.editor
+    search = nil
+    whole_word = false
+
+    unless app.window.command_line.showing
+      if editor.selection.empty
+        search = app.editor.current_context.word.text
+        whole_word = true unless search.is_empty
+      else
+        search = editor.selection.text
+
+    if not search or search.is_empty
+      search = interact.read_text!
+
+    if not search or search.is_empty
+      log.warn "No search query specified"
+      return
+
+    project = get_project!
+    file_search = howl.file_search
+    matches, searcher = file_search.search project.root, search, :whole_word
+    unless #matches > 0
+      log.error "No matches found for '#{search}'"
+      return
+
+    matches = file_search.sort matches, project.root, search, editor.current_context
+    display_as = project.config.file_search_hit_display
+    status = "Loaded 0 out of #{#matches} locations.."
+    cancel = false
+    locations = activities.run {
+      title: "Loading #{#matches} locations..",
+      status: -> status
+      cancel: -> cancel = true
+    }, ->
+      return for i = 1, #matches
+        if i % 1000 == 0
+          break if cancel
+          status = "Loaded #{i} out of #{#matches}.."
+          activities.yield!
+
+        m = matches[i]
+        file_search_hit_to_location(m, search, display_as)
+
+    selected = interact.select_location
+      title: "#{#matches} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
+      items: locations
+    selected and selected.selection
+
+  handler: (loc) ->
+    if loc
+      app\open loc

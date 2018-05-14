@@ -356,17 +356,22 @@ If the user presses `escape`, `nil` is returned.
 
 ### select_location(opts)
 
-Very similar to [select](#select), lets the user select an item from a list of
-options. In addition, it displays a preview of the currently selected option in
-the editor. Each item in `items` (or returned by `matcher`) must also have the
-following fields:
+Very similar to [select](#select), but lets the user select a location from a
+list of location. In addition, it displays a preview of the currently selected
+option in the editor. Each item in `items` (or as returned by `matcher`) can
+have the following fields:
 
 - `file` or `buffer`: One of `file` or `buffer` must be provided. This specifies
 which file or buffer is previewed in the editor when this item is selected:
   - `file`: A [File] object.
   - `buffer`: A [Buffer] object.
-- `line_nr`: The line number in `file` or `buffer` that is centered during the
-preview.
+- `line_nr`: _[optional]_ The line number in `file` or `buffer`
+- `highlights`: _[optional]_ A table of highlights to apply to the previewed
+buffer line if possible. Requires that `line_nr` is given. Each highlight
+specifies a span to highlight. The highlight's span can be specified in several
+different fashions. It will be resolved using
+[Buffer.resolve_span(..)](buffer.html#resolve_span), so please have a look at
+`resolve_span`'s documentation to see the available options.
 
 ### yes_or_no (opts)
 

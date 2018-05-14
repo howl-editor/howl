@@ -1,5 +1,5 @@
-import Project, VC from howl
-import File from howl.io
+{:config, :Project, :VC} = howl
+{:File} = howl.io
 
 describe 'Project', ->
   before_each ->
@@ -90,7 +90,9 @@ describe 'Project', ->
         vc = paths: -> {'path'}
         assert.same vc.paths!, Project('root', vc)\paths!
 
-      it 'falls back to a FS scan, skipping directories and backup files', ->
+      it 'falls back to a FS scan, skipping directories, backup files and hidden exts', ->
+        orig_exts = config.hidden_file_extensions
+        config.hidden_file_extensions = {'foo'}
         with_tmpdir (dir) ->
           regular = dir / 'regular.lua'
           regular\touch!
@@ -100,7 +102,10 @@ describe 'Project', ->
           hidden\touch!
           backup = dir / 'config~'
           backup\touch!
+          hidden_ext = dir / 'bar.foo'
+          hidden_ext\touch!
           paths = Project(dir)\paths!
+          config.hidden_file_extensions = orig_exts
           table.sort paths
           assert.same { '.config', 'regular.lua' }, paths
 

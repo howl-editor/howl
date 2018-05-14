@@ -10,6 +10,7 @@ bit = require 'bit'
 
 import C from ffi
 append = table.insert
+{:min} = math
 
 transform_rets = (s, ...) ->
   vals = {...}
@@ -196,6 +197,28 @@ count = (s1, s2, is_pattern = false) ->
 
   c
 
+truncate = (s, len, opts = {}) ->
+  s_len = s.ulen
+  if s_len > len
+    if opts.omission_prefix
+      omission = opts.omission_prefix
+      o_ulen = omission.ulen
+      if o_ulen <= len
+        start = o_ulen + s.ulen - len + 1
+        s = omission .. s\usub(start, start + len)
+      else
+        start = s.ulen - len + 1
+        s = s\usub(start, start + len - 1)
+    else
+      omission = opts.omission_suffix or '..'
+      if omission.ulen <= len
+        msg_length = len - omission.ulen
+        s = s\usub(1, msg_length) .. omission
+      else
+        s = s\usub(1, len)
+
+  s
+  
 split = (s, pattern) ->
   return {} if s == ""
   parts = {}
@@ -225,6 +248,7 @@ with string
   .ends_with = ends_with
   .contains = contains
   .count = count
+  .truncate = truncate
   .split = split
 
 properties =
@@ -237,6 +261,17 @@ properties =
   is_blank: => @find('%S') == nil
   is_valid_utf8: => C.g_utf8_validate(ffi.cast('const char *', @), #@, nil) != 0
   stripped: => @match '%s*(.-)%s*$'
+
+  is_likely_binary: =>
+    s = ffi.cast 'const unsigned char *', @
+    non_print = 0
+    check = min(#@, 150)
+    for i = 0, check - 1
+      c = s[i]
+      if c < 9 or (c >= 14 and c < 32)
+        non_print += 1
+
+    non_print / check >= 0.1
 
 getmetatable('').__index = (k) =>
   return usub(@, k, k) if type(k) == 'number'

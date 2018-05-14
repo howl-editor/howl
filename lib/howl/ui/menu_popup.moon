@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:style, :ListWidget, :Popup} = howl.ui
+{:List, :ListWidget, :Popup} = howl.ui
 {:config} = howl
 
 class MenuPopup extends Popup
@@ -9,17 +9,16 @@ class MenuPopup extends Popup
     error('Missing argument #1: items', 3) if not @items
     error('Missing argument #2: callback', 3) if not @callback
 
-    @list = ListWidget (-> @items),
-      default_style: style.popup and 'popup'
-      top_border: 0
-      auto_fit_width: true
+    @list = List -> @items
+    @list_widget = ListWidget @list, auto_fit_width: true
+
     @highlight_matches_for = ''
-    super @list\to_gobject!
+    super @list_widget\to_gobject!
     with @child
       .margin_top = 2
       .margin_left = 2
 
-    @list\show!
+    @list_widget\show!
 
   refresh: =>
     @list\update @highlight_matches_for
@@ -32,7 +31,7 @@ class MenuPopup extends Popup
   resize: =>
     h_margin = @child.margin_left + @child.margin_right
     v_margin = @child.margin_top + @child.margin_bottom
-    super @list.width + h_margin, @list.height + v_margin
+    super @list_widget.width + h_margin, @list_widget.height + v_margin
 
   choose: =>
     if self.callback @list.selection
@@ -62,5 +61,3 @@ class MenuPopup extends Popup
       else
         false
   }
-
-return MenuPopup

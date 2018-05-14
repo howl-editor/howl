@@ -82,6 +82,17 @@ True if the string is empty, that is contains zero bytes/characters.
 
 True if the string is "blank", that is contains only blank characters, if any.
 
+### is_valid_utf8
+
+True if the string contains valid UTF-8, and false otherwise.
+
+### is_likely_binary
+
+True if the string is likely to hold binary (i.e. non-text) data, and false
+otherwise. As the name implies this indicates whether the string is _likely_ to
+be binary data or not, but it's not possible to say for sure. In particular, the
+shorter the string the more uncertain the answer.
+
 ## Methods
 
 ### byte_offset (...)
@@ -153,6 +164,26 @@ Examples:
 ### starts_with (s)
 
 Returns true if the string starts with `s`, and false otherwise.
+
+### truncate (s, len, opts = {})
+
+Truncates the string to `len` characters if longer, indicating the truncation
+using the `omission` specified in either `opts.omission_suffix` or
+`opts.omission_prefix`. Should the length of omission be longer than `len` the
+string is truncated without any omission. The default is to use a omission
+suffix of '..', thus truncating the string at the end if necessary.
+
+Examples:
+
+```lua
+str = 'abåäöcd'
+str:truncate(5) -- => 'abå..'
+str:truncate(5, {omission_suffix = '[..]'}) -- => 'a[..]'
+str:truncate(7) -- => 'abåäöcd'
+str:truncate(3, {omission_suffix = '[..]'}) -- => 'abå'
+str:truncate(5, {omission_prefix = '[..]'}) -- => '[..]ö'
+str:truncate(5, {omission_suffix = '..'}) -- => 'abå..'
+```
 
 ### ucompare (s)
 

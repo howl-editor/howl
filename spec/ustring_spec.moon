@@ -34,17 +34,28 @@ describe 'ustrings', ->
     assert.equal '', ('  \t').stripped
     assert.equal '', ('').stripped
 
+  it '.is_valid_utf8 is true for valid utf8 strings only', ->
+    assert.is_true ('abc\194\128').is_valid_utf8
+    assert.is_true ('\127').is_valid_utf8
+    assert.is_false ('\128').is_valid_utf8
+    assert.is_false ('abc\194').is_valid_utf8
+
+  describe '.is_likely_binary', ->
+    it 'is true for binary strings', ->
+      assert.is_true ('\000\003xksj').is_likely_binary
+
+    it 'is false for ordinary ASCII', ->
+      assert.is_false ('abcDEFGHZ!"#¤%&//()"').is_likely_binary
+
+    it 'is false for ordinary UTF-8', ->
+      assert.is_false ('abc\194\128').is_likely_binary
+      assert.is_false ('åäöÅÄÖ').is_likely_binary
+
   it 'ucompare(s1, s2) returns negative, 0 or positive if s1 is smaller, equal or greater than s2', ->
     assert.is_true 'a'\ucompare('b') < 0
     assert.is_true 'a'\ucompare('ä') < 0
     assert.equal 0, 'a'\ucompare('a')
     assert.is_true 'ö'\ucompare('ä') > 0
-
-  it 'is_valid_utf8(s) return true for valid utf8 strings only', ->
-    assert.is_true ('abc\194\128').is_valid_utf8
-    assert.is_true ('\127').is_valid_utf8
-    assert.is_false ('\128').is_valid_utf8
-    assert.is_false ('abc\194').is_valid_utf8
 
   describe 'usub(i, [j])', ->
     s = 'aåäöx'
@@ -223,6 +234,36 @@ describe 'ustrings', ->
     it 'when parameters is a table, it returns a table for all offsets within that table', ->
       assert.same {1, 2, 3, 4}, 'äåö'\char_offset { 1, 3, 5, 7 }
 
+  describe 'truncate(len, opts = {})', ->
+    it 'truncates long strings to at most <len> chars', ->
+      s = 'åäöñÅÄÖåäö'
+      -- truncated at the end (the default)
+      assert.equal 'åäöñ..', s\truncate(6)
+      assert.equal 'åäöñ[..]', s\truncate(8, omission_suffix: '[..]')
+      assert.equal 'åäö<Ə>', s\truncate(6, omission_suffix: '<Ə>')
+
+      -- truncated at the start
+      assert.equal '..ÅÄÖåäö', s\truncate(8, omission_prefix: '..')
+      assert.equal '[..]Öåäö', s\truncate(8, omission_prefix: '[..]')
+      assert.equal '<Ə>ÄÖåäö', s\truncate(8, omission_prefix: '<Ə>')
+
+    it 'does not truncate unless needed', ->
+      s = 'åäöåäö'
+      assert.equal 'åäöåäö', s\truncate(7)
+      assert.equal 'åäöåäö', s\truncate(6)
+      assert.equal 'åäöåäö', s\truncate(7, omission_prefix: '..')
+      assert.equal 'åäöåäö', s\truncate(6, omission_prefix: '..')
+
+    it 'skips the omission if the result would go beyond <len>', ->
+      s = 'åäö'
+      assert.equal 'åä', s\truncate(2, omission_suffix: '[..]')
+      assert.equal '..', s\truncate(2, omission_suffix: '..')
+      assert.equal 'å', s\truncate(1, omission_suffix: '..')
+
+      assert.equal 'äö', s\truncate(2, omission_prefix: '[..]')
+      assert.equal '..', s\truncate(2, omission_prefix: '..')
+      assert.equal 'ö', s\truncate(1, omission_prefix: '..')
+
   describe 'split(pattern)', ->
     it 'splits the string by <pattern>', ->
       assert.same { '1' }, ('1')\split(',')
@@ -232,3 +273,4 @@ describe 'ustrings', ->
 
     it 'treats <pattern> as a lua pattern', ->
       assert.same { 'x', 'y', 'z' }, ('x.y,z')\split('[.,]')
+

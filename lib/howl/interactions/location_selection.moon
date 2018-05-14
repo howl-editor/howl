@@ -6,42 +6,7 @@
 {:highlight} = howl.ui
 
 add_highlight = (type, buffer, line, opts = {}) ->
-  {:start_pos, :end_pos} = opts
-  local l_start_pos, l_b_start_offset
-
-  if opts.byte_start_pos
-    start_pos = buffer\char_offset opts.byte_start_pos
-
-  if opts.byte_end_pos
-    end_pos = buffer\char_offset opts.byte_end_pos
-
-  unless start_pos
-    if opts.start_column
-      l_start_pos or= line.start_pos
-      start_pos = l_start_pos + opts.start_column - 1
-    elseif opts.start_index
-      l_b_start_offset or= line.byte_start_pos
-      start_pos = buffer\char_offset l_b_start_offset + opts.start_index - 1
-    else
-      l_start_pos or= line.start_pos
-      start_pos = l_start_pos
-
-  unless end_pos
-    if opts.count
-      end_pos = start_pos + opts.count
-    elseif opts.end_column
-      l_start_pos or= line.start_pos
-      end_pos = l_start_pos + opts.end_column - 1
-    elseif opts.end_index
-      l_b_start_offset or= line.byte_start_pos
-      end_pos = buffer\char_offset l_b_start_offset + opts.end_index - 1
-    else
-      end_pos = line.end_pos
-
-  unless start_pos and end_pos
-    log.error "Invalid location highlight specified"
-    return
-
+  start_pos, end_pos = buffer\resolve_span opts, line.nr
   highlight.apply type, buffer, start_pos, end_pos - start_pos
 
 get_file = (item) ->
@@ -56,38 +21,44 @@ interact.register
   handler: (opts) ->
     opts = moon.copy opts
     editor = opts.editor or app.editor
+    preview = (howl.config.preview_files or opts.force_preview) and Preview!
+    local preview_buffer
 
-    if howl.config.preview_files or opts.force_preview
+    if preview
       on_change = opts.on_change
-      preview = Preview!
 
       opts.on_change = (sel, text, items) ->
         if sel
-          buffer = sel.buffer or preview\get_buffer(get_file(sel), sel.line_nr)
-          editor\preview buffer
+          preview_buffer = sel.buffer or preview\get_buffer(get_file(sel), sel.line_nr)
+          editor\preview preview_buffer
 
-          highlight.remove_all 'search', buffer
-          highlight.remove_all 'search_secondary', buffer
+          highlight.remove_all 'search', preview_buffer
+          highlight.remove_all 'search_secondary', preview_buffer
 
           if sel.line_nr
-            if #buffer.lines < sel.line_nr
+            if #preview_buffer.lines < sel.line_nr
               log.warn "Line #{sel.line_nr} not loaded in preview"
             else
               editor.line_at_center = sel.line_nr
-              line = buffer.lines[sel.line_nr]
+              line = preview_buffer.lines[sel.line_nr]
 
               if sel.highlights and #sel.highlights > 0
-                add_highlight 'search', buffer, line, sel.highlights[1]
+                add_highlight 'search', preview_buffer, line, sel.highlights[1]
 
                 for i = 2, #sel.highlights
-                  add_highlight 'search_secondary', buffer, line, sel.highlights[i]
+                  add_highlight 'search_secondary', preview_buffer, line, sel.highlights[i]
               else
-                add_highlight 'search', buffer, line
+                add_highlight 'search', preview_buffer, line
 
         if on_change
           on_change sel, text, items
 
     result = interact.select opts
+
+    if preview_buffer
+      highlight.remove_all 'search', preview_buffer
+      highlight.remove_all 'search_secondary', preview_buffer
+
     editor\cancel_preview!
 
     return result

@@ -247,6 +247,22 @@ Does nothing if `str` could not be found in the remainder of the line.
 
 Grabs focus for the specified editor, i.e. causes the editor to be focused.
 
+### highlight (hl [, line_nr])
+
+`highlight` is a convenience method for quickly applying a highlight for a given
+span. `hl` specify the span of the highlight, and optionally what highlight to
+apply.
+
+The highlight's span can be specified in several different fashions. It will be
+resolved using [Buffer.resolve_span(..)](../buffer.html#resolve_span), so please
+have a look at `resolve_span`'s documentation to see the available options. The
+optional `line_nr` parameter can be used to anchor the `hl` options to a
+specific line, and will be forwarded to
+[Buffer.resolve_span(..)](../buffer.html#resolve_span) as well.
+
+The highlight to use can optionally be specified by defining `hl.highlight`.
+If not present it will default to the ephemeral 'search' highlight.
+
 ### indent ()
 
 Indents the current line or selection, if possible, by forwarding the request to

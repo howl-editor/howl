@@ -21,6 +21,7 @@ class CommandLine extends PropertyObject
     @notification_widget = nil
     @header = nil
     @indic_title = nil
+    @indic_info = nil
     @showing = false
     @spillover = nil
     @running = {}
@@ -302,19 +303,37 @@ class CommandLine extends PropertyObject
     @command_widget.visible_rows = 1
     @box\pack_end @command_widget\to_gobject!, false, 0, 0
 
-    @help_buffer = ActionBuffer!
-
     @notification_widget = NotificationWidget!
     @box\pack_end @notification_widget\to_gobject!, false, 0, 0
 
     @header = IndicatorBar 'header'
     @indic_title = @header\add 'left', 'title'
+    @indic_info = @header\add 'right', 'info'
+
     @box.margin_left = 2
     @box.margin_top = 2
     c_box = ContentBox 'command_line', @box, {
       header: @header\to_gobject!
     }
     @bin\add c_box\to_gobject!
+
+  _update_info: =>
+    @_info_icon or= howl.ui.icon.get('font-awesome-info')
+    @_keyboard_icon or= howl.ui.icon.get('font-awesome-keyboard-o')
+    h_texts, h_keys = @_get_help!
+    text = ''
+
+    if #h_texts > 0
+      if #h_texts > 1 or h_texts[1].text\contains('\n')
+        text = @_info_icon.text
+
+    if #h_keys > 0
+      text ..= " #{@_keyboard_icon.text}"
+
+    unless text.is_empty
+      text ..= ': f1'
+
+    @indic_info.label = text
 
   @property width_cols:
     get: => @command_widget.width_cols
@@ -357,12 +376,15 @@ class CommandLine extends PropertyObject
       if not @current
         error 'Cannot set title - no running activity', 2
 
-      @current.command_line_title = text if @current
+      @current.command_line_title = text
+
       if text == nil or text.is_empty
+        @indic_title.label = ''
         @header\to_gobject!\hide!
       else
         @header\to_gobject!\show!
         @indic_title.label = tostring text
+        @_update_info!
 
   @property prompt:
     get: => @current and @command_widget.text\usub @_left_stop, @_prompt_end - 1
@@ -390,29 +412,8 @@ class CommandLine extends PropertyObject
       @clear!
       @write text
 
-  refresh_help: =>
-    buffer = @help_buffer
-    buffer.text = ''
-
-    help_texts, help_keys = @get_help!
-    for def in *help_texts
-      if def.heading
-        buffer\append markup.howl "<h1>#{def.heading}</>\n"
-      if def.text
-        buffer\append def.text
-        buffer\append '\n'
-      buffer\append '\n' if #help_keys > 0
-
-    if #help_keys > 0
-      buffer\append markup.howl "<h1>Keys</>\n"
-      keys = {}
-      for def in *help_keys
-        append keys, {markup.howl("<keystroke>#{def.key}</>"), def.action}
-      buffer\append howl.ui.StyledText.for_table keys
-
   show_help: =>
-    @refresh_help!
-    popup = BufferPopup @help_buffer
+    popup = BufferPopup @_build_help_buffer!
     @show_popup popup
 
   close_popup: =>
@@ -487,7 +488,6 @@ class CommandLine extends PropertyObject
       @_updating = false
       if not ok
         error err
-      @refresh_help!
 
   enforce_left_pos: =>
     -- don't allow cursor to go left into prompt
@@ -603,39 +603,6 @@ class CommandLine extends PropertyObject
       elseif def.text or def.heading
         @_help.text = def
 
-    @refresh_help!
-
-  get_help: =>
-    help_keys = {}
-    help_texts = {}
-
-    resolve_keys = (def) ->
-      return def unless def.key_for
-      keys = howl.bindings.keystrokes_for def.key_for, 'editor'
-      if keys and keys[1]
-        def = moon.copy def
-        def.key = keys[1]
-        return def
-
-    for frame in *@running
-      for _, def in pairs(frame.command_line_help.keys)
-        def = resolve_keys def
-        append(help_keys, def) if def
-      if frame.command_line_help.text
-        append help_texts, frame.command_line_help.text
-
-    if @_activity.help
-      help = @_activity.help
-      help = help(@_activity) if type(help) == 'function'
-      for def in *help
-        if def.key or def.key_for
-          def = resolve_keys def
-          append(help_keys, def) if def
-        elseif def.text
-          append help_texts, def
-
-    return help_texts, help_keys
-
   show: =>
     return if @showing
     @last_focused = @window.focus if not @last_focused
@@ -665,6 +632,56 @@ class CommandLine extends PropertyObject
   refresh: =>
     for frame in *@running
       frame.activity\refresh! if frame.activity.refresh
+
+  _get_help: =>
+    help_keys = {}
+    help_texts = {}
+
+    for frame in *@running
+      for _, def in pairs(frame.command_line_help.keys)
+        append(help_keys, def)
+      if frame.command_line_help.text
+        append help_texts, frame.command_line_help.text
+
+    if @_activity.help
+      help = @_activity.help
+      help = help(@_activity) if type(help) == 'function'
+      for def in *help
+        if def.key or def.key_for
+          append(help_keys, def)
+        elseif def.text
+          append help_texts, def
+
+    help_texts, help_keys
+
+  _build_help_buffer: =>
+    buffer = ActionBuffer!
+    buffer.text = ''
+
+    help_texts, help_keys = @_get_help!
+    for def in *help_texts
+      if def.heading
+        buffer\append markup.howl "<h1>#{def.heading}</>\n\n"
+      if def.text
+        buffer\append def.text
+        buffer\append '\n'
+      buffer\append '\n' if #help_keys > 0
+
+    if #help_keys > 0
+      buffer\append markup.howl "<h1>Keys</>\n"
+      keys = {}
+      for def in *help_keys
+        key = def.key
+        if def.key_for
+          resolved = howl.bindings.keystrokes_for def.key_for, 'editor'
+          key = resolved[1]
+
+        if key
+          append keys, {markup.howl("<keystroke>#{key}</>"), def.action}
+
+      buffer\append howl.ui.StyledText.for_table keys
+
+    buffer
 
 style.define_default 'prompt', 'keyword'
 style.define_default 'keystroke', 'special'

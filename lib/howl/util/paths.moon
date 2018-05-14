@@ -8,13 +8,6 @@ append = table.insert
 separator = File.separator
 
 howl.config.define
-  name: 'hidden_file_extensions'
-  description: 'File extensions that determine which files should be hidden in file selection lists'
-  scope: 'global'
-  type_of: 'string_list'
-  default: {'a', 'bc', 'git', 'hg', 'o', 'pyc', 'so'}
-
-howl.config.define
   name: 'file_icons'
   description: 'Whether file and directory icons are displayed'
   scope: 'global'

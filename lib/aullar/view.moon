@@ -874,6 +874,7 @@ View = {
 
     @buffer\ensure_styled_to line: @last_visible_line + 1
     @_sync_scrollbars!
+    notify @, 'on_resized'
 
   _on_config_changed: (option, val, old_val) =>
     if option == 'view_font_name' or option == 'view_font_size'

@@ -225,10 +225,9 @@ Buffer = {
     @_ensure_writable!
     if @_change_sink
       if @_change_sink\can_reenter offset, count
-        changer @
+        return changer @
       else
         error "Out of range recursive change (#{offset}, #{count}) <> (#{@_change_sink.start_offset}, #{@_change_sink.roof})"
-      return
 
     prev_text = @sub offset, offset + count - 1
     @_change_sink = change_sink offset, count

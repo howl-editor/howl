@@ -18,6 +18,9 @@ parse = (output, opts = {}) ->
 
     continue unless nr
 
+    if opts.max_message_length
+      message = message\truncate(opts.max_message_length)
+
     local file
     path = line\match '^([^:]+):%d+'
     path = nil if path and path\match('^%d+$')

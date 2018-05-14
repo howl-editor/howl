@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, interact, timer from howl
-import ListWidget from howl.ui
-import Matcher from howl.util
+{:app, :interact, :timer} = howl
+{:List, :ListWidget} = howl.ui
+{:Matcher} = howl.util
 
 class SelectionList
   run: (@finish, @opts) =>
@@ -15,14 +15,12 @@ class SelectionList
     @command_line.title = @opts.title
 
     matcher = @opts.matcher or Matcher @opts.items
-    @list_widget = ListWidget matcher,
+    @list = List matcher,
       on_selection_change: @\_handle_change
       reverse: @opts.reverse
-      never_shrink: true
       explain: @opts.explain
-
-    @list_widget.columns = @opts.columns
-
+    @list.columns = @opts.columns
+    @list_widget = ListWidget @list, never_shrink: true
     @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
 
     @showing_list = false
@@ -46,13 +44,13 @@ class SelectionList
       spillover = @command_line\pop_spillover!
       @command_line\write spillover
       if @opts.selection
-        @list_widget\update spillover
-        @list_widget.selection = @opts.selection
+        @list\update spillover
+        @list.selection = @opts.selection
         timer.asap -> @_handle_change!
       else
         @on_update spillover
 
-  refresh: => @list_widget\update @command_line.text, true
+  refresh: => @list\update @command_line.text, true
 
   show_list: =>
     @command_line\add_widget 'completion_list', @list_widget
@@ -67,18 +65,18 @@ class SelectionList
       return
 
     @_change_triggered = false
-    @list_widget\update text
+    @list\update text
     @_handle_change! unless @_change_triggered
 
   _handle_change: =>
     @_change_triggered = true
     if @opts.on_change
-      @opts.on_change @list_widget.selection, @command_line.text, @list_widget.items
+      @opts.on_change @list.selection, @command_line.text, @list.items
 
   submit: =>
-    if @list_widget.selection
+    if @list.selection
       self.finish
-        selection: @list_widget.selection
+        selection: @list.selection
         text: @command_line.text
     elseif @opts.allow_new_value
       self.finish text: @command_line.text
