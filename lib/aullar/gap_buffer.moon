@@ -37,13 +37,17 @@ define_class {
     elseif offset + size <= @gap_start -- pre gap ptr
       @array + offset
     else -- ephemeral copy pointer
-      arr = self.new_arr(size + 1)
-      pregap_size = @gap_start - offset
-      postgap_size = size - pregap_size
-      ffi_copy arr, @array + offset, pregap_size * @type_size
-      ffi_copy arr + pregap_size, @array + @gap_end, postgap_size * @type_size
-      arr[size] = 0
-      arr
+      if size == @size
+        @compact!
+        @get_ptr offset, size
+      else
+        arr = self.new_arr(size + 1)
+        pregap_size = @gap_start - offset
+        postgap_size = size - pregap_size
+        ffi_copy arr, @array + offset, pregap_size * @type_size
+        ffi_copy arr + pregap_size, @array + @gap_end, postgap_size * @type_size
+        arr[size] = 0
+        arr
 
   move_gap_to: (offset) =>
     if offset < 0 or offset > @size
