@@ -2,3 +2,4 @@ site/source/versions
 site/**/*.html
 site/**/*.erb
 src/deps/
+*.min.js
