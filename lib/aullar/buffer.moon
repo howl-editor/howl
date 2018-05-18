@@ -13,6 +13,7 @@ Revisions = require 'aullar.revisions'
 require 'ljglibs.cdefs.glib'
 
 char_arr = ffi.typeof 'char [?]'
+const_char_p = ffi.typeof 'const char *'
 
 scan_line = (base, offset, end_offset) ->
   start_offset = offset
@@ -135,7 +136,7 @@ Buffer = {
           @text_buffer\set text, size
           @styling\reset size + 1
         else
-          @text_buffer = GapBuffer 'char', size, initial: text
+          @text_buffer = GapBuffer 'unsigned char', size, initial: text
           @styling = Styling size + 1, @_style_listener
 
         @markers\remove!
@@ -301,7 +302,7 @@ Buffer = {
     nil
 
   get_ptr: (offset, size) =>
-    @text_buffer\get_ptr offset - 1, size
+    const_char_p @text_buffer\get_ptr(offset - 1, size)
 
   sub: (start_index, end_index) =>
     return '' if start_index > @size
