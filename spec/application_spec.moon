@@ -26,6 +26,12 @@ describe 'Application', ->
       buffer = application\new_buffer!
       assert.same { buffer }, application.buffers
 
+    it 'closes a single untitled buffer if present', ->
+      config.autoclose_single_buffer = true
+      application\new_buffer!
+      buffer = application\new_buffer!
+      assert.same { buffer }, application.buffers
+
   describe 'add_buffer(buffer, show)', ->
     it 'adds the buffer to .buffers', ->
       buf = Buffer {}
