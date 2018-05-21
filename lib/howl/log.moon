@@ -3,7 +3,7 @@
 
 _G = _G
 import table from _G
-import config from howl
+import config, signal from howl
 
 append = table.insert
 
@@ -13,8 +13,32 @@ config.define
   default: 1000
   type_of: 'number'
 
+signal.register 'log-entry-appended',
+  description: 'Called when a new entry is appended to the log'
+  parameters:
+    essentials: 'The log message essentials'
+    level: 'The log level (one of info, warning, error, traceback)'
+    message: 'The log message'
+
+signal.register 'log-trimmed',
+  description: 'Called when the log is trimmed to the given size'
+  parameters:
+    size: 'The new number of entries in the log'
+
 log = {}
 setfenv 1, log
+
+emitting = false
+
+safe_emit = (name, options) ->
+  if emitting
+    -- safe_emit called into signal.emit, which tried to log an error. Back out now
+    -- to avoid a stack overflow.
+    return
+
+  emitting = true
+  signal.emit name, options
+  emitting = false
 
 export entries = {}
 
@@ -26,20 +50,16 @@ essentials_of = (s) ->
   essentials or first_line
 
 dispatch = (level, message) ->
-  entry = :message, :level
+  essentials = essentials_of message
+  entry = :essentials, :message, :level
   append entries, entry
-  window = _G.howl.app.window
-  if window and window.visible
-    status = window.status
-    command_line = window.command_line
-    essentials = essentials_of message
-    status[level] status, essentials
-    command_line\notify essentials, level if command_line.showing
-  elseif not _G.howl.app.args.spec
-    _G.print message
+  safe_emit 'log-entry-appended', entry
 
-  while #entries > config.max_log_entries and #entries > 0
-    table.remove entries, 1
+  if #entries > config.max_log_entries
+    to_remove = #entries - config.max_log_entries
+    for i=1,to_remove
+      table.remove entries, i
+    safe_emit 'log-trimmed', size: #entries
 
   entry
 
@@ -50,8 +70,10 @@ info = (message) -> dispatch 'info', message
 warning = (message) -> dispatch 'warning', message
 warn = warning
 error = (message) -> last_error = dispatch 'error', message
+traceback = (message) -> dispatch 'traceback', message
 clear = ->
   entries = {}
   last_error = nil
+  signal.emit 'log-trimmed', size: 0
 
 return log

@@ -17,6 +17,7 @@ class Status
   info: (text) => @_set 'info', text
   warning: (text) => @_set 'warning', text
   error: (text) => @_set 'error', text
+  traceback: (text) => @_set 'error', text
 
   to_gobject: => @label
 

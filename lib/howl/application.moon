@@ -102,6 +102,21 @@ class Application extends PropertyObject
       on_error: _G.log.error
     }
 
+    signal.connect 'log-entry-appended', (entry) ->
+      level = entry.level
+      message = entry.message
+      return if level == 'traceback'
+
+      if @window and @window.visible
+        essentials = entry.essentials
+
+        status = @window.status
+        command_line = @window.command_line
+        status[level] status, essentials
+        command_line\notify essentials, level if command_line.showing
+      elseif not @args.spec
+        print message
+
     super!
 
   @property idle: get: =>
