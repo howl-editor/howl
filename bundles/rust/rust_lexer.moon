@@ -88,10 +88,10 @@ howl.util.lpeg_lexer ->
     all: any {
       keyword,
       extension,
-      type_library,
-      type,
       comment,
       string,
+      type_library,
+      type,
       attribute,
       number,
       operator,
