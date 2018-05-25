@@ -207,6 +207,19 @@ from the end, where -1 means the last character of the buffer.
 
 See also: [rfind()](#rfind)
 
+### get_ptr(start_pos, end_pos)
+
+This returns a FFI `const char *` pointer for the given (inclusive) span of the
+buffer, as well as a byte count for the span. This can be used to get read-only
+access to a buffer's content in the most efficient way. As should be clear this
+is a very low level interface, which should only be used with great care. The
+returned pointer is only valid until the next internal buffer modification.
+Since invisible context switches can happen a a normal part of using Howl's APIs
+you need to be real sure that the code processing the pointer does not
+inadvertently cause these. You need to process this pointer directly and be done
+with it. As with the FFI in general there is no hand holding - misuse this and
+you can cause segmentation faults or otherwise hard to diagnose bugs.
+
 ### insert(text, pos)
 
 Inserts `text` at the position given by `pos`, and returns the position right

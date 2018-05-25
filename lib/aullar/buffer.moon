@@ -302,7 +302,12 @@ Buffer = {
     nil
 
   get_ptr: (offset, size) =>
-    const_char_p @text_buffer\get_ptr(offset - 1, size)
+    ptr, compacted = @text_buffer\get_ptr(offset - 1, size)
+    if compacted
+      @offsets\invalidate_from 0
+      @_invalidate_lines_from_offset 0
+
+    const_char_p(ptr)
 
   sub: (start_index, end_index) =>
     return '' if start_index > @size

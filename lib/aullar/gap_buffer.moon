@@ -33,13 +33,13 @@ define_class {
       error "GapBuffer.get_ptr(): Illegal range: offset=#{offset}, size=#{size} for buffer of size #{@size}", 2
 
     if offset >= @gap_start -- post gap ptr
-      @array + @gap_size + offset
+      @array + @gap_size + offset, false
     elseif offset + size <= @gap_start -- pre gap ptr
-      @array + offset
+      @array + offset, false
     else -- ephemeral copy pointer
       if size == @size
         @compact!
-        @get_ptr offset, size
+        @get_ptr(offset, size), true
       else
         arr = self.new_arr(size + 1)
         pregap_size = @gap_start - offset
@@ -47,7 +47,7 @@ define_class {
         ffi_copy arr, @array + offset, pregap_size * @type_size
         ffi_copy arr + pregap_size, @array + @gap_end, postgap_size * @type_size
         arr[size] = 0
-        arr
+        arr, false
 
   move_gap_to: (offset) =>
     if offset < 0 or offset > @size
