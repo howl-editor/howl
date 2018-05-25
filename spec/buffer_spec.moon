@@ -794,13 +794,15 @@ describe 'Buffer', ->
       assert_returns '123', 3, b\get_ptr(1, 3)
       assert_returns '1', 1, b\get_ptr(1, 1)
 
+    it 'returns a zero pointer for an empty range', ->
+      b = buffer ''
+      assert_returns '', 0, b\get_ptr(1, 0)
+
     it 'raises errors for illegal span values', ->
       b = buffer '123'
       assert.raises 'Illegal', -> b\get_ptr -1, 2
       assert.raises 'Illegal', -> b\get_ptr 1, 4
       assert.raises 'Illegal', -> b\get_ptr 3, 4
-      assert.raises 'Illegal', -> b\get_ptr 4, 3
-      assert.raises 'Illegal', -> b\get_ptr 1, 0
 
     it 'returns a read-only pointer', ->
       b = buffer '123'

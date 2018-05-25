@@ -302,6 +302,7 @@ Buffer = {
     nil
 
   get_ptr: (offset, size) =>
+    return const_char_p(char_arr(1)) if size == 0
     ptr, compacted = @text_buffer\get_ptr(offset - 1, size)
     if compacted
       @offsets\invalidate_from 0
