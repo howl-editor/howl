@@ -5,9 +5,7 @@
   lexer: bundle_load('python_lexer')
 
   comment_syntax: '#'
-
-  default_config:
-    word_pattern: r'\\b[\\pL_][\\pL\\pN_]+\\b'
+  word_pattern: r'\\b[\\pL_][\\pL\\pN_]+\\b'
 
   indentation: {
     more_after: {

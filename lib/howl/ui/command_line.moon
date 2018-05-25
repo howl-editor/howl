@@ -532,7 +532,6 @@ class CommandLine extends PropertyObject
     escape: =>
       return false unless @close_popup!
 
-
   default_keymap:
     binding_for:
       ["cursor-home"]: => @command_widget.cursor.pos = @_prompt_end

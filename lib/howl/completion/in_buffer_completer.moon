@@ -39,7 +39,7 @@ load = (buffer, conf) ->
     b_tokens = data.tokens
     if not b_tokens or should_update data
       b_tokens = {}
-      p = GRegex r(conf.word_pattern).pattern
+      p = GRegex b.mode.word_pattern.pattern
       ptr = b\get_ptr 1, b.length
       match_info = p\match_with_info ptr
       if match_info
@@ -83,7 +83,7 @@ near_tokens = (context, conf) ->
   cur_byte_pos = buffer\byte_offset context.pos
   close_byte_pos = buffer\byte_offset chunk.start_pos
   cur_pos = cur_byte_pos - close_byte_pos
-  pattern = r conf.word_pattern
+  pattern = buffer.mode.word_pattern
   match_info = pattern.re\match_with_info chunk_text
   if match_info
     while match_info\matches!

@@ -1,4 +1,4 @@
--- Copyright 2012-2017 The Howl Developers
+-- Copyright 2012-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:app, :interact} = howl

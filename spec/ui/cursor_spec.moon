@@ -3,7 +3,7 @@ import Editor from howl.ui
 Gtk = require 'ljglibs.gtk'
 
 describe 'Cursor', ->
-  buffer = Buffer {}
+  buffer = Buffer howl.mode.by_name 'default'
   editor = Editor buffer
   cursor = editor.cursor
   selection = editor.selection

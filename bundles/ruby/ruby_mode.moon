@@ -36,9 +36,9 @@ continuation_indent = (line, indent_level) ->
   lexer: bundle_load('ruby_lexer')
 
   comment_syntax: '#'
+  word_pattern: r'\\b\\w[\\w\\d_]+[?!=]?\\b'
 
   default_config:
-    word_pattern: r'\\b\\w[\\w\\d_]+[?!=]?\\b'
     inspectors_on_idle: { 'ruby' }
 
   indentation: {
