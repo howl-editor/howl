@@ -15,7 +15,7 @@ describe 'Editor', ->
   howl.app\pump_mainloop!
 
   before_each ->
-    buffer = Buffer {}
+    buffer = Buffer howl.mode.by_name 'default'
     buffer.config.indent = 2
     lines = buffer.lines
     editor.buffer = buffer
