@@ -85,7 +85,7 @@ eat.food.
 *
 oo
 ]]
-      buffer.config.word_pattern = '[^/%s.]+'
+      buffer.config.word_pattern = r'[^/\\s.]+'
       assert.same { '*foo*' }, complete_at lines[3].end_pos
 
     context '(multiple buffers)', ->
