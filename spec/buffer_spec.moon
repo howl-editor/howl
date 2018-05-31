@@ -1,6 +1,8 @@
-import Buffer, config from howl
-import File from howl.io
-import with_tmpfile from File
+{:Buffer, :config} = howl
+{:File} = howl.io
+{:with_tmpfile} = File
+
+ffi = require 'ffi'
 
 describe 'Buffer', ->
   buffer = (text) ->
@@ -773,6 +775,39 @@ describe 'Buffer', ->
 
       it "accepts .byte_end_column as the end specifier", ->
         assert.same {1, 5}, {buf\resolve_span {byte_end_column: 6}, 1}
+
+  describe 'get_ptr(start_pos, end_pos)', ->
+    assert_returns = (s, count, ...) ->
+      r_ptr, r_count = ...
+      assert.equals count, r_count
+      assert.equals s, ffi.string(r_ptr, r_count)
+
+    it 'returns a pointer to a char buffer for the span, and a byte count', ->
+      b = buffer '123456789'
+      assert_returns '3456', 4, b\get_ptr(3, 6)
+
+      b = buffer '1åäö8'
+      assert_returns 'äö', 4, b\get_ptr(3, 4)
+
+    it 'handles boundary conditions', ->
+      b = buffer '123'
+      assert_returns '123', 3, b\get_ptr(1, 3)
+      assert_returns '1', 1, b\get_ptr(1, 1)
+
+    it 'returns a zero pointer for an empty range', ->
+      b = buffer ''
+      assert_returns '', 0, b\get_ptr(1, 0)
+
+    it 'raises errors for illegal span values', ->
+      b = buffer '123'
+      assert.raises 'Illegal', -> b\get_ptr -1, 2
+      assert.raises 'Illegal', -> b\get_ptr 1, 4
+      assert.raises 'Illegal', -> b\get_ptr 3, 4
+
+    it 'returns a read-only pointer', ->
+      b = buffer '123'
+      ptr = b\get_ptr 1, 1
+      assert.raises 'constant', -> ptr[0] = 88
 
   describe 'titles', ->
     it 'uses file basename as the default title', ->

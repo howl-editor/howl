@@ -338,6 +338,16 @@ describe 'Buffer', ->
       assert.raises 'Illegal', -> b\get_ptr 1, 4
       assert.raises 'Illegal', -> b\get_ptr 3, 2
 
+    it 'returns a read-only pointer', ->
+      b = Buffer '123'
+      ptr = b\get_ptr 1, 1
+      assert.raises 'constant', -> ptr[0] = 88
+
+    it 'returns a "empty" pointer when size is zero', ->
+      b = Buffer ''
+      ptr = b\get_ptr 1, 0
+      assert.equals 0, ptr[0]
+
   describe 'sub(start_index [, end_index])', ->
     it 'returns a string for the given inclusive range', ->
       b = Buffer '123456789'

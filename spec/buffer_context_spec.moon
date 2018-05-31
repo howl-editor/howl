@@ -7,7 +7,7 @@ describe 'BufferContext', ->
   local b
 
   before_each ->
-    b = Buffer!
+    b = Buffer howl.mode.by_name 'default'
     b.text = '"HƏllo", said Mr.Bačon'
 
   context_at = (pos) -> BufferContext b, pos
@@ -27,18 +27,14 @@ describe 'BufferContext', ->
       b.text = 'first'
       assert.equal 'first', context_at(1).word.text
 
-    it "the word boundaries are determined using the variable word_pattern", ->
-      b.config.word_pattern = '[Əl]+'
+    it "the word boundaries are determined using the mode variable word_pattern", ->
+      b.mode = word_pattern: r'[Əl]+'
       assert.equal 'Əll', context_at(3).word.text
 
-      b.config.word_pattern = '["Ə%w]+'
+      b.mode = word_pattern: r'["Ə\\w]+'
       assert.equal '"HƏllo"', context_at(3).word.text
       assert.equal '"HƏllo"', context_at(8).word.text -- after "
       assert.equal '', context_at(9).word.text -- after ','
-
-    it "the word_pattern can be a regex", ->
-      b.config.word_pattern = r'\\pL+'
-      assert.equal 'HƏllo', context_at(3).word.text
 
   it ".word_prefix holds the words's text up until pos", ->
     assert.equal '', context_at(2).word_prefix

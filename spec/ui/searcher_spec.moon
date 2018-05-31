@@ -8,7 +8,7 @@ describe 'Searcher', ->
   cursor = editor.cursor
 
   before_each ->
-    buffer = Buffer {}
+    buffer = Buffer howl.mode.by_name 'default'
     editor.buffer = buffer
 
   after_each -> searcher\cancel!

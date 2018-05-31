@@ -99,7 +99,7 @@ extend = function(...)
     ...
   }
   if #tbls < 2 then
-    return 
+    return
   end
   for i = 1, #tbls - 1 do
     local a = tbls[i]

@@ -17,7 +17,7 @@ And third linƏ
 
 describe 'VI', ->
   local buffer, lines
-  editor = Editor Buffer {}
+  editor = Editor Buffer!
   cursor = editor.cursor
   selection = editor.selection
   window = Gtk.OffscreenWindow default_width: 800, default_height: 640
@@ -26,7 +26,7 @@ describe 'VI', ->
 
   before_each ->
     howl.app.window = window: Window!
-    buffer = Buffer {}
+    buffer = Buffer howl.mode.by_name 'default'
     buffer.text = text
     lines = buffer.lines
     editor.buffer = buffer

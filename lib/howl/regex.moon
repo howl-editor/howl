@@ -131,6 +131,7 @@ mt = {
 is_instance = (v) -> getmetatable(v) == mt
 
 r = (pattern, compile_options, match_options) ->
+  return pattern if is_instance pattern
   comp_flags = 0
 
   if compile_options
@@ -143,7 +144,6 @@ r = (pattern, compile_options, match_options) ->
     for flag in *match_options
       match_flags = bit.bor(match_flags, flag)
 
-  return pattern if is_instance pattern
   re = GRegex pattern, comp_flags, match_flags
   setmetatable {:re}, mt
 

@@ -32,8 +32,7 @@ class LispMode
 
   comment_syntax: ';'
 
-  default_config:
-    word_pattern: '[^][%s/.(){}"\']+'
+  word_pattern: r'[^][\\s/.(){}"\']+'
 
   auto_pairs: {
     '(': ')'

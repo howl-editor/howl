@@ -3,9 +3,13 @@ append = table.insert
 match = require 'luassert.match'
 
 describe 'Completer', ->
-  buffer = nil
+  local buffer, mode
+
   before_each ->
-    buffer = Buffer {}
+    mode =
+      completers: {}
+      word_pattern: r'\\w+'
+    buffer = Buffer mode
 
   describe '.complete(pos [, limit])', ->
 
@@ -28,21 +32,18 @@ describe 'Completer', ->
       assert.spy(factory).was.called
 
     it 'returns completions for completers in buffer and mode', ->
-      mode = completers: { -> complete: -> { 'mode' } }
-      buffer.mode = mode
+      mode.completers = { -> complete: -> { 'mode' } }
       append buffer.completers,  -> complete: -> { 'buffer' }
       completions = Completer(buffer, 1)\complete 1
       assert.same completions, { 'buffer', 'mode' }
 
     it 'returns completions for mode even if buffer has no completers', ->
-      mode = completers: { -> complete: -> { 'mode' } }
-      buffer.mode = mode
+      mode.completers = { -> complete: -> { 'mode' } }
       assert.same Completer(buffer, 1)\complete(1), { 'mode' }
 
     it 'returns the search string after the completions', ->
-      mode = completers: { -> complete: -> { 'prefix' } }
+      mode.completers = { -> complete: -> { 'prefix' } }
       buffer.text = 'pre'
-      buffer.mode = mode
       append buffer.completers,  -> complete: -> { 'buffer' }
       _, search = Completer(buffer, 4)\complete 4
       assert.same search, 'pre'
@@ -77,7 +78,9 @@ describe 'Completer', ->
 
     it 'gives a final boost to case-matching completions, all else equal', ->
       buffer.text = 'he'
-      append buffer.completers, -> complete: -> { 'Hello', 'hello' }
+      buffer.mode =
+        completers: { -> complete: -> { 'Hello', 'hello' } }
+        word_pattern: r'\\w+'
       completions = Completer(buffer, 3)\complete 3
       assert.same { 'hello', 'Hello' }, completions
 
@@ -154,14 +157,19 @@ describe 'Completer', ->
 
     context "(interacting with mode's .on_completion_accepted)", ->
       it "invokes it with (mode, completion, context) if present", ->
-        mode = on_completion_accepted: spy.new -> nil
+        mode =
+          on_completion_accepted: spy.new -> nil
+          word_pattern: r'\\w+'
+
         buffer.mode = mode
         buffer.text = 'hello there'
         Completer(buffer, 4)\accept 'help', 4
         assert.spy(mode.on_completion_accepted).was_called_with match.is_ref(mode), 'help', buffer\context_at(5)
 
       it "uses it's return value as the position returned if it's a number", ->
-        mode = on_completion_accepted: -> 6
+        mode =
+          on_completion_accepted: -> 6
+          word_pattern: r'\\w+'
         buffer.mode = mode
         buffer.text = 'hello there'
         assert.equal 6, Completer(buffer, 4)\accept 'help', 4

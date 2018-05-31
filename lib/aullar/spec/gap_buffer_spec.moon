@@ -233,17 +233,16 @@ describe 'GapBuffer', ->
       assert.equals 3, ptr[2]
 
     it 'always returns pointers that are zero terminated at the boundaries', ->
-      for _ = 1,20
-        b = buffer '0123456789', 10
-        b\move_gap_to 5
-        pre_gap_ptr = b\get_ptr(0, 4)
-        assert.equals 0, pre_gap_ptr[5]
+      b = buffer '0123456789', 10
+      b\move_gap_to 5
+      pre_gap_ptr = b\get_ptr(0, 4)
+      assert.equals 0, pre_gap_ptr[5]
 
-        cross_gap_ptr = b\get_ptr(4, 2)
-        assert.equals 0, cross_gap_ptr[2]
+      cross_gap_ptr = b\get_ptr(4, 2)
+      assert.equals 0, cross_gap_ptr[2]
 
-        post_gap_ptr = b\get_ptr(5, 1)
-        assert.equals 0, post_gap_ptr[5]
+      post_gap_ptr = b\get_ptr(5, 1)
+      assert.equals 0, post_gap_ptr[5]
 
   describe 'insert(offset, data, size)', ->
     context 'when <data> is provided', ->

@@ -1,13 +1,15 @@
--- Copyright 2012-2014-2015 The Howl Developers
+-- Copyright 2012-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Matcher = require 'howl.util.matcher'
-import config, signal, app from howl
+GRegex = require 'ljglibs.glib.regex'
+{:config, :signal, :app} = howl
+{:abs, :min, :max} = math
 os = os
 append = table.insert
 
 RESCAN_STALE_AFTER = 60
-MAX_TOKEN_LENGTH = 60
+MAX_TOKEN_SIZE = 100
 
 signal.connect 'buffer-modified', (args) ->
     data = args.buffer.data.inbuffer_completer
@@ -36,7 +38,16 @@ load = (buffer, conf) ->
     data = b.data.inbuffer_completer or {}
     b_tokens = data.tokens
     if not b_tokens or should_update data
-      b_tokens = { token, true for token in b.text\ugmatch conf.word_pattern when token.ulen <= MAX_TOKEN_LENGTH }
+      b_tokens = {}
+      p = GRegex b.mode.word_pattern.pattern
+      ptr = b\get_ptr 1, b.length
+      match_info = p\match_with_info ptr
+      if match_info
+        while match_info\matches!
+          token = match_info\fetch(0)
+          b_tokens[token] = true if #token <= MAX_TOKEN_SIZE
+          match_info\next!
+
       data.tokens = b_tokens
       data.updated_at = os.time!
       b.data.inbuffer_completer = data
@@ -46,34 +57,45 @@ load = (buffer, conf) ->
   [token for token, _ in pairs tokens]
 
 close_chunk = (context) ->
-  lines = context.buffer.lines
-  line = context.line
-  start_line = lines[math.max 1, line.nr - 10]
-  end_line = lines[math.min #lines, line.nr + 10]
-  context.buffer\chunk start_line.start_pos, end_line.end_pos
+  SIZE = 3000
+  buffer = context.buffer
+  pos = context.pos
+  start_pos = max 1, pos - (SIZE / 2)
+  end_pos = min buffer.length, pos + (SIZE / 2)
 
-near_tokens = (context) ->
+  if end_pos - start_pos < SIZE
+    start_pos = max 1, start_pos - (SIZE / 2)
+    end_pos = min buffer.length, pos + (SIZE / 2)
+
+  buffer\chunk start_pos, end_pos
+
+near_tokens = (context, conf) ->
   part = context.word_prefix
   cur_word = context.word.text
   chunk = close_chunk context
-  line_pos = context.pos - chunk.start_pos
 
   tokens = {}
   start_pos = 1
   chunk_text = chunk.text
   buffer = context.buffer
 
-  while start_pos < #chunk_text
-    pattern = buffer\config_at(start_pos).word_pattern
-    start_pos, end_pos = chunk_text\ufind pattern, start_pos
-    break unless start_pos
-    token = chunk_text\usub start_pos, end_pos
-    if token != part and token != cur_word and token.ulen < MAX_TOKEN_LENGTH
-      rank = math.abs line_pos - start_pos
-      info = tokens[token]
-      rank = math.min info.rank, rank if info
-      tokens[token] = pos: start_pos, :rank, text: token
-    start_pos = end_pos + 1
+  -- determine the current context's byte position within the close chunk
+  cur_byte_pos = buffer\byte_offset context.pos
+  close_byte_pos = buffer\byte_offset chunk.start_pos
+  cur_pos = cur_byte_pos - close_byte_pos
+  pattern = buffer.mode.word_pattern
+  match_info = pattern.re\match_with_info chunk_text
+  if match_info
+    while match_info\matches!
+      token = match_info\fetch(0)
+      if token != part and token != cur_word and #token <= MAX_TOKEN_SIZE
+        start_pos = match_info\fetch_pos(0)
+        rank = abs cur_pos - start_pos
+        info = tokens[token]
+        rank = min info.rank, rank if info
+        tokens[token] = :rank, text: token
+
+      match_info\next!
 
   data = buffer.data.inbuffer_completer
   if data and data.tokens
@@ -84,7 +106,7 @@ near_tokens = (context) ->
 class InBufferCompleter
   new: (buffer, context) =>
     config = buffer\config_at context.pos
-    @near_tokens = near_tokens context
+    @near_tokens = near_tokens context, config
     @matcher = Matcher load buffer, config
     @limit = config.completion_max_shown
 

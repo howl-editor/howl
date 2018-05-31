@@ -6,7 +6,7 @@ C = ffi.C
 
 describe 'offsets', ->
 
-  gap_b = (data) -> GapBuffer 'char', #data, initial: data
+  gap_b = (data) -> GapBuffer 'unsigned char', #data, initial: data
 
   glib_byte_offset = (ptr, char_offset) ->
     next_ptr = C.g_utf8_offset_to_pointer ptr, char_offset

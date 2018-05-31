@@ -21,12 +21,6 @@ config.define {
   }
 }
 
-config.define {
-  name: 'word_pattern'
-  description: 'A pattern determining what constitutes a "word" in a buffer'
-  default: r'\\b[\\pL_][\\pL\\d_]*\\b'
-}
-
 config.define
   name: 'auto_format'
   description: 'Whether to automatically format code when possible'

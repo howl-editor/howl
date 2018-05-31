@@ -1,11 +1,16 @@
-import Buffer, app, completion  from howl
+{:Buffer, :app, :completion, :mode} = howl
+require 'howl.modes.default_mode'
 
 require 'howl.completion.in_buffer_completer'
 require 'howl.variables.core_variables'
 
 describe 'InBufferCompleter', ->
   setup ->
+    mode.register name: 'test_mode', create: -> {}
     close_all_buffers!
+
+  teardown ->
+    mode.unregister 'test_mode'
 
   describe 'complete()', ->
     local buffer, lines
@@ -17,7 +22,7 @@ describe 'InBufferCompleter', ->
       completer\complete context
 
     before_each ->
-      buffer = Buffer {}
+      buffer = Buffer mode.by_name 'default'
       lines = buffer.lines
 
     it 'returns completions for local matches in the buffer', ->
@@ -78,14 +83,14 @@ h
 ]]
       assert.same { 'häst', 'hellö' }, complete_at lines[3].end_pos
 
-    it 'detects existing words using the word_pattern variable', ->
+    it 'detects existing words using the word_pattern mode variable', ->
       buffer.text = [[
 *foo*/-bar
 eat.food.
 *
 oo
 ]]
-      buffer.config.word_pattern = '[^/%s.]+'
+      buffer.mode = word_pattern: r'\\*\\w+\\*'
       assert.same { '*foo*' }, complete_at lines[3].end_pos
 
     context '(multiple buffers)', ->
@@ -125,7 +130,7 @@ oo
 
       it 'skips buffers with a different mode if <config.inbuffer_completion_same_mode_only> is true', ->
         buffer.config.inbuffer_completion_same_mode_only = true
-        buffer2.mode = {}
+        buffer2.mode = mode.by_name 'test_mode'
         buffer.text = 'fry\nf'
         comps = complete_at buffer.lines[2].end_pos
         assert.same { 'fry', 'fabulous' }, comps

@@ -7,6 +7,7 @@ import File from howl.io
 aullar = require 'aullar'
 
 ffi = require 'ffi'
+ffi_string, ffi_new = ffi.string, ffi.new
 
 append = table.insert
 min = math.min
@@ -265,7 +266,21 @@ class Buffer extends PropertyObject
     byte_end_pos = min @byte_offset(end_pos + 1), @_buffer.size + 1
     byte_size = byte_end_pos - byte_start_pos
     return '' if byte_size <= 0
-    ffi.string @_buffer\get_ptr(byte_start_pos, byte_size), byte_size
+    ffi_string @_buffer\get_ptr(byte_start_pos, byte_size), byte_size
+
+  get_ptr: (start_pos, end_pos) =>
+    if end_pos < start_pos
+      return ffi_new('const char[1]', 0), 0
+
+    len = @length
+    if not start_pos or start_pos < 1 or start_pos > len or
+      not end_pos or end_pos < 1 or end_pos > len
+      error "Buffer.get_ptr(): Illegal span: (#{start_pos}, #{end_pos} for buffer with length #{len}", 2
+
+    byte_start_pos = @byte_offset(start_pos)
+    byte_end_pos = min @byte_offset(end_pos + 1), @_buffer.size + 1
+    count = byte_end_pos - byte_start_pos
+    @_buffer\get_ptr(byte_start_pos, count), count
 
   find: (search, init = 1) =>
     if init < 0

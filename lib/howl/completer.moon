@@ -12,7 +12,11 @@ load_completers = (buffer, context, mode = {}) ->
       for f in *factories
         if type(f) == 'string'
           completer = completion[f]
-          f = completer and completer.factory
+          unless completer
+            log.warn "unknown completer '#{f}' set for #{buffer} not found"
+            continue
+
+          f = completer.factory
 
         error "`nil` completer set for #{buffer}" if not f
         completer = f(buffer, context)
