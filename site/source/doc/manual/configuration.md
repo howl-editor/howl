@@ -259,10 +259,15 @@ programmatically from within your startup file. As an example, to enter
 VI mode automatically upon startup:
 
 ```moon
-howl.command.vi_on!
+howl.signal.connect 'app-ready', ->
+  howl.command.vi_on!
 ```
 
+While it's possible in some cases to run commands directly in the init file, we
+run this when the `app-ready` signal fires since the application needs to be
+ready before activating the VI mode.
+
 Consult the documentation for the [command module](../api/command.html) for more
-information.
+information on commands.
 
 *Next*: [Using Howl completions](completions.html)
