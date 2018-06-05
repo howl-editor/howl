@@ -14,6 +14,9 @@ howl.util.lpeg_lexer ->
   comment = c 'comment', any {line_comment, block_comment}
 
 
+  hex_digit = R'09' + R'af' + R'AF' + '_'
+
+
   -- Strings.
   dq_str = span  '"', '"', '\\'
   raw_str_start = P'r'^0 * Cg(P'#'^0, 'lvl') * '"'
@@ -26,13 +29,17 @@ howl.util.lpeg_lexer ->
 
 
   -- Numbers.
-  binary = P'0b'^-1 * S'01_'^1
+  binary = P'0b' * S'01_'^1
+  oct = P'0o' * S'01234567_'^1
+  hex = P'0x' * hex_digit^1
+  decimal = (digit + '_')^1
+  floats = float * (S'eE' * S'+-'^-1 * decimal)^-1
   number = c 'number', any {
     binary,
-    hexadecimal,
-    octal,
-    (digit + '_')^1 -- decimal integer
-    float
+    hex,
+    oct,
+    decimal,
+    floats
   }
 
 
