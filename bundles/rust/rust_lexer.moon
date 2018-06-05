@@ -23,8 +23,11 @@ howl.util.lpeg_lexer ->
   raw_str_end = '"' * match_back 'lvl'
   raw_str = raw_str_start * scan_to raw_str_end
   -- Character.
-  anychar = alpha + digit + '_' + space
-  char = P"'" * (('\\' * anychar) + anychar) * P"'"
+  cont = R'\128\191'
+  utf8 = R'\0\127' + R'\194\223' * cont + R'\224\239' * cont * cont + R'\240\244' * cont * cont * cont
+  ascii_esc = '\\' * S'trn\'"\\0'
+  unicode_esc = ('\\u{' * hex_digit^1 * '}')
+  char = P"'" * (unicode_esc + ascii_esc + utf8) * P"'"
   string  = c 'string', any {dq_str, raw_str, char}
 
 
