@@ -46,7 +46,7 @@ howl.util.lpeg_lexer ->
     'move',       'mut',        "offsetof", 'override', 'priv',
     'proc',       'pub',        'pure',     'ref',      'return',
     'Self',       'self',       'sizeof',   'static',   'struct',
-    'super',      'trait',      'true',     'type',     'typeof',
+    'super',      'trait',      'true',     'typeof',   'type',
     'unsafe',     'unsized',    'use',      'virtual',  'where',
     'while',      'yield'
   }
