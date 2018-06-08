@@ -195,7 +195,8 @@ command.register
     buffer\as_one_undo ->
       editor\with_selection_preserved ->
         buffer.lines\delete nr, nr
-        buffer.lines\insert last, text
+        editor\with_position_restored ->
+          buffer.lines\insert last, text
 
 command.register
   name: 'editor-move-lines-down'
@@ -227,7 +228,7 @@ command.register
       start_pos = editor.cursor.pos
       end_pos = start_pos + 1
 
-    return unless end_pos < #buffer
+    return unless end_pos <= #buffer
 
     buffer\as_one_undo ->
       editor\with_selection_preserved ->
