@@ -14,25 +14,35 @@ howl.util.lpeg_lexer ->
   comment = c 'comment', any {line_comment, block_comment}
 
 
+  hex_digit = R'09' + R'af' + R'AF' + '_'
+
+
   -- Strings.
   dq_str = span  '"', '"', '\\'
   raw_str_start = P'r'^0 * Cg(P'#'^0, 'lvl') * '"'
   raw_str_end = '"' * match_back 'lvl'
   raw_str = raw_str_start * scan_to raw_str_end
   -- Character.
-  anychar = alpha + digit + '_' + space
-  char = P"'" * (('\\' * anychar) + anychar) * P"'"
+  cont = R'\128\191'
+  utf8 = R'\0\127' + R'\194\223' * cont + R'\224\239' * cont * cont + R'\240\244' * cont * cont * cont
+  ascii_esc = '\\' * S'trn\'"\\0'
+  unicode_esc = ('\\u{' * hex_digit^1 * '}')
+  char = P"'" * (unicode_esc + ascii_esc + utf8) * P"'"
   string  = c 'string', any {dq_str, raw_str, char}
 
 
   -- Numbers.
-  binary = P'0b'^-1 * S'01_'^1
+  binary = P'0b' * S'01_'^1
+  oct = P'0o' * S'01234567_'^1
+  hex = P'0x' * hex_digit^1
+  decimal = (digit + '_')^1
+  floats = float * (S'eE' * S'+-'^-1 * decimal)^-1
   number = c 'number', any {
     binary,
-    hexadecimal,
-    octal,
-    (digit + '_')^1 -- decimal integer
-    float
+    hex,
+    oct,
+    decimal,
+    floats
   }
 
 
@@ -46,7 +56,7 @@ howl.util.lpeg_lexer ->
     'move',       'mut',        "offsetof", 'override', 'priv',
     'proc',       'pub',        'pure',     'ref',      'return',
     'Self',       'self',       'sizeof',   'static',   'struct',
-    'super',      'trait',      'true',     'type',     'typeof',
+    'super',      'trait',      'true',     'typeof',   'type',
     'unsafe',     'unsized',    'use',      'virtual',  'where',
     'while',      'yield'
   }
@@ -88,10 +98,10 @@ howl.util.lpeg_lexer ->
     all: any {
       keyword,
       extension,
-      type_library,
-      type,
       comment,
       string,
+      type_library,
+      type,
       attribute,
       number,
       operator,
