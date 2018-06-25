@@ -1,19 +1,21 @@
-import app, Buffer, command from howl
-import Window from howl.ui
+{:app, :Buffer, :command} = howl
+{:Window} = howl.ui
 
-howl.commands.edit_commands
+require 'howl.commands.edit_commands'
 
 describe 'edit_commands', ->
-  local buffer
-  app.window = Window!
-  app.editor = app\new_editor!
-  cursor = app.editor.cursor
+  setup ->
+    app.window = Window!
+    app.editor = app\new_editor!
+
+  local buffer, cursor
 
   before_each ->
     buffer = Buffer howl.mode.by_name 'default'
     buffer.config.indent = 2
     buffer.text = 'abc\ndef\nghi'
     app.editor.buffer = buffer
+    cursor = app.editor.cursor
 
   after_each ->
     app\close_buffer buffer, true
