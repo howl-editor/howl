@@ -9,11 +9,17 @@ describe 'Buffer', ->
     with Buffer {}
       .text = text
 
-  it '.text allows setting and retrieving the buffer text', ->
-    b = Buffer {}
-    assert.equal b.text, ''
-    b.text = 'Ipsum'
-    assert.equal 'Ipsum', b.text
+  describe '.text', ->
+    it '.text allows setting and retrieving the buffer text', ->
+      b = Buffer {}
+      assert.equal b.text, ''
+      b.text = 'Ipsum'
+      assert.equal 'Ipsum', b.text
+
+    it 'transforms incorrect input', ->
+      b = Buffer {}
+      b.text = '|\x80|'
+      assert.equal '|�|', b.text
 
   it '.size returns the size of the buffer text, in bytes', ->
     assert.equal buffer('hello').size, 5
@@ -94,6 +100,13 @@ describe 'Buffer', ->
           with_tmpfile (file) ->
             b.file = file
             assert.equal b.config.buf_var, 'orig_value'
+
+        it 'transforms and flags incorrect UTF-8 as input', ->
+          with_tmpfile (file) ->
+            file.contents = '|\x80|'
+            b.file = file
+            assert.equal b.text, '|�|'
+            assert.is_true b.modified
 
       it 'overwrites any existing buffer text even if the buffer is modified', ->
         b.text = 'foo'
@@ -253,6 +266,11 @@ describe 'Buffer', ->
       b = buffer ''
       assert.equal 6, b\insert 'Bačon', 1
 
+    it 'transforms incorrect input', ->
+      b = buffer ''
+      assert.equal 4, b\insert '|\x80|', 1
+      assert.equal '|�|', b.text
+
   describe 'append(text)', ->
     it 'appends the specified text', ->
       b = buffer 'hello'
@@ -263,11 +281,21 @@ describe 'Buffer', ->
       b = buffer ''
       assert.equal 6, b\append 'Bačon'
 
+    it 'transforms incorrect input', ->
+      b = buffer ''
+      assert.equal 4, b\append '|\x80|'
+      assert.equal '|�|', b.text
+
   describe 'replace(pattern, replacement)', ->
     it 'replaces all occurences of pattern with replacement', ->
       b = buffer 'hello\nuñi©ode\nworld\n'
       b\replace '[lo]', ''
       assert.equal 'he\nuñi©de\nwrd\n', b.text
+
+    it 'transforms incorrect replacements', ->
+      b = buffer 'XX'
+      b\replace 'X', '\x80'
+      assert.equal '��', b.text
 
     context 'when pattern contains a leading grouping', ->
       it 'replaces only the match within pattern with replacement', ->
