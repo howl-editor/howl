@@ -12,30 +12,30 @@ describe 'command', ->
 
   before_each ->
     app.window = Window!
-    cmd = name: 'foo', description: 'desc', handler: spy.new -> 'foo-result'
+    cmd = name: 'test-foo', description: 'desc', handler: spy.new -> 'foo-result'
 
   after_each ->
     app.window = nil
-    command.unregister name for name in *command.names!
+    command.unregister name for name in *command.names! when name\find 'test-'
 
   describe '.register(command)', ->
     it 'raises an error if any of the mandatory fields are missing', ->
       assert.raises 'name', -> command.register {}
-      assert.raises 'description', -> command.register name: 'foo'
-      assert.raises 'handler', -> command.register name: 'foo', description: 'do'
-      assert.raises 'factory', -> command.register name: 'foo', description: 'do'
+      assert.raises 'description', -> command.register name: 'test-foo'
+      assert.raises 'handler', -> command.register name: 'test-foo', description: 'do'
+      assert.raises 'factory', -> command.register name: 'test-foo', description: 'do'
 
   it '.names() returns a list of all command names', ->
     command.register cmd
-    assert.includes command.names!, 'foo'
+    assert.includes command.names!, 'test-foo'
 
   it '.get(name) returns the command with the specified name', ->
     command.register cmd
-    assert.equal command.get('foo').handler, cmd.handler
+    assert.equal command.get('test-foo').handler, cmd.handler
 
   it 'calling .<name>(args) invokes command, passing arguments', ->
     command.register cmd
-    command.foo('arg1', 'arg2')
+    command.test_foo('arg1', 'arg2')
     assert.spy(cmd.handler).was_called 1
     assert.spy(cmd.handler).was_called_with 'arg1', 'arg2'
 
@@ -45,39 +45,41 @@ describe 'command', ->
 
     it 'allows for multiple names for the same command', ->
       command.register cmd
-      command.alias 'foo', 'bar'
-      assert.equal 'foo', command.get('bar').alias_for
+      command.alias 'test-foo', 'bar'
+      assert.equal 'test-foo', command.get('bar').alias_for
       assert.includes command.names!, 'bar'
 
   it '.unregister(command) removes the command and any aliases', ->
     command.register cmd
-    command.alias 'foo', 'bar'
-    command.unregister 'foo'
+    command.alias 'test-foo', 'bar'
+    command.unregister 'test-foo'
 
-    assert.is_nil command.foo
+    assert.is_nil command.test_foo
     assert.is_nil command.bar
-    assert.same command.names!, {}
+    assert.not_includes command.names!, 'test-foo'
+    assert.not_includes command.names!, 'bar'
 
   context 'when command name is a non-lua identifier', ->
-    before_each -> cmd.name = 'foo-cmd:bar'
+    before_each -> cmd.name = 'test-foo:bar'
 
     it 'register() adds accessible aliases', ->
       command.register cmd
-      assert.not_nil command.foo_cmd_bar
+      assert.not_nil command.test_foo_bar
 
     it 'the accessible alias is not part of names()', ->
       command.register cmd
-      assert.same command.names!, { 'foo-cmd:bar' }
+      assert.includes command.names!, 'test-foo:bar'
+      assert.not_includes command.names!, 'test_foo_bar'
 
     it 'calling .<accessible_name>(args) invokes command, passing arguments', ->
       command.register cmd
-      dispatch.launch -> command.foo_cmd_bar('arg1', 'arg2')
+      dispatch.launch -> command.test_foo_bar('arg1', 'arg2')
       assert.spy(cmd.handler).was_called 1
       assert.spy(cmd.handler).was_called_with 'arg1', 'arg2'
 
     it 'unregister() removes the accessible name as well', ->
       command.register cmd
-      command.unregister 'foo-cmd:bar'
+      command.unregister 'test-foo:bar'
       assert.is_nil command.foo_cmd_bar
 
   describe '.run(cmd_string)', ->
@@ -96,7 +98,7 @@ describe 'command', ->
         context 'and the command specifies an input function', ->
           before_each ->
             cmd =
-              name: 'with-input'
+              name: 'test-input'
               description: 'test'
               input: spy.new -> 'input-result1', 'input-result2'
               handler: spy.new ->
@@ -114,7 +116,7 @@ describe 'command', ->
 
           it 'does not call handler if input function returns nil', ->
             cmd = {
-              name: 'cancelled-input'
+              name: 'test-cancelled-input'
               description: 'test'
               input: ->
               handler: spy.new ->
@@ -126,29 +128,29 @@ describe 'command', ->
           it 'sets spillover to any text arguments before invoking the input', ->
             local spillover
             command.register
-              name: 'with-input'
+              name: 'test-input'
               description: 'test'
               input: -> spillover = app.window.command_line\pop_spillover!
               handler: ->
-            run 'with-input hello cmd'
+            run 'test-input hello cmd'
             assert.equal 'hello cmd', spillover
 
           it 'displays the ":<cmd_string> " in the command line during input', ->
             local prompt
             cmd = {
-              name: 'getp'
+              name: 'test-getp'
               description: 'desc'
               input: -> prompt = app.window.command_line.command_widget.text
               handler: ->
             }
             command.register cmd
-            run 'getp'
+            run 'test-getp'
             assert.equals ':'..cmd.name..' ', prompt
 
         context 'and the command does not specify an input function', ->
           it 'calls the command handler, passing through extra args', ->
             cmd = {
-              name: 'without-input'
+              name: 'test-without-input'
               description: 'test'
               handler: spy.new ->
             }
