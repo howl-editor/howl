@@ -60,6 +60,7 @@ ffi.cdef [[
   gint    g_utf8_collate(const gchar *str1, const gchar *str2);
   gchar * g_utf8_substring(const gchar *str, glong start_pos, glong end_pos);
   gboolean g_utf8_validate (const gchar *str, gssize max_len, const gchar **end);
+  gchar * g_utf8_make_valid (const gchar *str, gssize len);
   gint    g_unichar_to_utf8(gunichar c, gchar *outbuf);
   gchar * g_strndup(const gchar *str, gssize n);
 

@@ -1,9 +1,10 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import BufferContext, BufferLines, BufferMarkers, Chunk, config, mode, signal, sys from howl
-import PropertyObject from howl.util.moon
-import File from howl.io
+{:BufferContext, :BufferLines, :BufferMarkers, :Chunk, :config, :mode, :signal, :sys} = howl
+{:PropertyObject} = howl.util.moon
+{:File} = howl.io
+{:utf8} = howl.util
 aullar = require 'aullar'
 
 ffi = require 'ffi'
@@ -48,9 +49,17 @@ class Buffer extends PropertyObject
     get: => @_file
     set: (file) =>
       @_associate_with_file file
+      modified = false
 
       if file.exists
-        @text = file.contents
+        contents = file.contents
+        contents, changed = utf8.clean_string(contents)
+
+        if changed > 0
+          log.info "cleaned up '#{file}', now #{#contents} bytes"
+          modified = true
+
+        @_buffer.text = contents
         @sync_etag = file.etag
 
         -- update EOL from loaded file if possible
@@ -64,7 +73,7 @@ class Buffer extends PropertyObject
         @sync_etag = nil
 
       @can_undo = false
-      @_modified = false
+      @_modified = modified
       @sync_revision_id = @_buffer\get_revision_id true
 
   @property mode:
@@ -89,7 +98,7 @@ class Buffer extends PropertyObject
   @property text:
     get: => @_buffer.text
     set: (text) =>
-      @_buffer.text = text
+      @_buffer.text = utf8.clean_string(text)
 
   @property modified:
     get: => @_modified
@@ -153,10 +162,12 @@ class Buffer extends PropertyObject
 
   insert: (text, pos) =>
     b_pos = @byte_offset pos
+    text = utf8.clean_string(text)
     @_buffer\insert b_pos, text
     pos + text.ulen
 
   append: (text) =>
+    text = utf8.clean_string(text)
     @_buffer\insert @_buffer.size + 1, text
     @length + 1
 
@@ -165,7 +176,7 @@ class Buffer extends PropertyObject
     pos = 1
     text = @text
 
-    while pos < @length
+    while pos <= @length
       start_pos, end_pos, match = text\ufind pattern, pos
       break unless start_pos
 
@@ -183,6 +194,7 @@ class Buffer extends PropertyObject
 
     offset = matches[1]
     count = matches[#matches] - offset + 1
+    replacement = utf8.clean_string(replacement)
 
     @_buffer\change offset, count, ->
       for i = #matches, 1, -2
