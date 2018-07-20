@@ -360,6 +360,8 @@ class Application extends PropertyObject
         fonts_dir = @settings.dir\join('fonts')
         if fonts_dir.exists
           C.FcConfigAppFontAddDir(nil, fonts_dir.path)
+      if howl.sys.info.flatpak
+        append bundle.dirs, File '/app/bundles'
 
       bundle.load_all!
 

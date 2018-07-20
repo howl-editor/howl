@@ -2,13 +2,14 @@ serpent = require 'serpent'
 
 import File from howl.io
 import SandboxedLoader from howl.util
-{:env} = howl.sys
+import sys from howl
 
 default_dir = ->
-  howl_dir = env.HOWL_DIR
+  return File(sys.env.XDG_DATA_HOME) if sys.info.flatpak
+  howl_dir = sys.env.HOWL_DIR
   return File(howl_dir) if howl_dir
-  home = env.HOME
-  xdg_config_home = env.XDG_CONFIG_HOME
+  home = sys.env.HOME
+  xdg_config_home = sys.env.XDG_CONFIG_HOME
 
   -- if none of these are set, we won't be able to find config
   unless home or xdg_config_home
