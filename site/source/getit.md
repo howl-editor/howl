@@ -46,16 +46,22 @@ dependencies).
 - `C compiler`: Howl has a very small C core itself, and it embedds a few
 dependencies built in C.
 
-### Building
+If you're running Linux and have [Flatpak](https://flatpak.org/), all you need is
+flatpak-builder.
+
+### Downloading the sources
 
 Download and unpack a Howl release, or get the source from
 [Github](https://github.com/howl-editor/howl), either by cloning the repository
-or by download a Zip-file of the desired branch/tag.. Compile Howl by issuing
-`make` from the `src` directory (`gmake` for \*BSD). When building directly from
-a source checkout, in-app dependencies will automatically be downloaded for you
-using `wget`. Once it's built, you can if you want run it directly as is from
-the `src` directory, like so: `$ ./howl`. To install it properly however, so
-that it integrates into your desktop, you'll want to run the `make install`
+or by download a Zip-file of the desired branch/tag.
+
+### Building
+
+Compile Howl by issuing `make` from the `src` directory (`gmake` for \*BSD).
+When building directly from a source checkout, in-app dependencies will automatically
+be downloaded for you using `wget`. Once it's built, you can if you want run it
+directly as is from the `src` directory, like so: `$ ./howl`. To install it properly
+however, so that it integrates into your desktop, you'll want to run the `make install`
 command.
 
 *Example session:*
@@ -88,6 +94,17 @@ make PREFIX=~/.local install
 *NB: If you install to a non-standard location, your desktop environment might
 not pick up on the fact that Howl is installed, and the application icon will
 look ugly as the result.*
+
+### Building using Flatpak
+
+Change into the Howl source directory (which contains `io.howl.Editor.yaml`) and run:
+
+```
+flatpak-builder --force-clean --install root io.howl.Editor.yaml
+```
+
+This will build Howl via `flatpak-builder` and install it once the build is completed.
+Just re-run this again after a `git pull` to get the latest changes.
 
 ### Tracking the latest from Github
 
