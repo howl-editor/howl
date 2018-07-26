@@ -23,7 +23,13 @@ const
   EmptySeq = @[]
   Integers = @[123, 0xFA03BB3, 123'i32, 456'u64]
   Floats = @[1.23, 1.56e300, 1.48e-300]
-  Strings = @["hello", "world", "abc", "def"]
+  Strings = @["hello", "world", r"a""b", """def""", """"ghi""""]
+  FormatStrings = @[
+    fmt"string part {expression}"" {another expression:argument} and more string",
+    fmt""""triple quoted {expression} with extra quotes"""",
+    &""""another triple quoted {expression:another+argument} with extra quotes"""",
+    &"a {normal} \" style string",
+  ]
 
 when defined(some_compile_time_symbol):
   echo "something at compile time"
