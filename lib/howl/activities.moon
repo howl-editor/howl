@@ -184,10 +184,13 @@ run_process = (def, p) ->
         err_output[#err_output + 1] = out
 
   run p_def, ->
+    output_handler = if p.stdout then on_output else nil
+    error_handler = if p.stderr then on_error else nil
+
     if def.read_lines
-      p\pump_lines on_output, on_error
+      p\pump_lines output_handler, error_handler
     else
-      p\pump on_output, on_error
+      p\pump output_handler, error_handler
 
   unless def.read_lines
     output = table.concat output
