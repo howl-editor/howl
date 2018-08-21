@@ -187,7 +187,7 @@ A few notes on the above example:
 - There's no need to `require` any class/module/etc. that comes with Howl.
   They're all available upon access. You can still require them
   explicitly if you want to however.
-  One exception to this is the module `howl` however. Requiring it will to an
+  One exception to this is the module `howl` however. Requiring it will lead to an
   error preventing the editor to start.
 
 - We use [mode.configure](../api/mode.html#configure) for specifying the mode
