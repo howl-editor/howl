@@ -52,7 +52,7 @@ launch = (argv, p_opts) ->
   append flags, 'STDERR_TO_DEV_NULL' unless p_opts.read_stderr
   working_directory = p_opts.working_directory and tostring p_opts.working_directory
 
-  if howl.sys.info.flatpak
+  if howl.sys.info.is_flatpak
     table.insert argv, 1, 'flatpak-spawn'
     table.insert argv, 2, '--host'
 

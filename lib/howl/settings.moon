@@ -5,7 +5,7 @@ import SandboxedLoader from howl.util
 import sys from howl
 
 default_dir = ->
-  return File(sys.env.XDG_DATA_HOME) if sys.info.flatpak
+  return File(sys.env.XDG_DATA_HOME) if sys.info.is_flatpak
   howl_dir = sys.env.HOWL_DIR
   return File(howl_dir) if howl_dir
   home = sys.env.HOME
