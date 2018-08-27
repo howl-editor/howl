@@ -1,4 +1,4 @@
--- Copyright 2017 The Howl Developers
+-- Copyright 2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 append = table.insert
@@ -24,7 +24,7 @@ json = bundle_load 'json'
           line: span.line_start,
           type: item.message.level,
           search: span.text.text,
-          message: span.label,
+          message: span.label or item.message.message,
           start_col: span.column_start,
           end_col: span.column_end,
           byte_start_col: span.byte_start,
