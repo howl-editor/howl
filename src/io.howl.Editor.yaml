@@ -42,28 +42,27 @@ modules:
         strip-components: 0
         dest: 'src/deps'
       - type: file
-        path: 'lint_config.moon'
-        dest-filename: 'lint_config.moon'
+        path: '../lint_config.moon'
       - type: dir
-        path: 'bin'
+        path: '../bin'
         dest: 'bin'
       - type: dir
-        path: 'bundles'
+        path: '../bundles'
         dest: 'bundles'
       - type: dir
-        path: 'fonts'
+        path: '../fonts'
         dest: 'fonts'
       - type: dir
-        path: 'lib'
+        path: '../lib'
         dest: 'lib'
       - type: dir
-        path: 'share'
+        path: '../share'
         dest: 'share'
       - type: dir
-        path: 'spec'
+        path: '../spec'
         dest: 'spec'
       - type: dir
-        path: 'src'
+        path: '../src'
         dest: 'src'
     cleanup:
       - '/share/howl/lib/scripts'
