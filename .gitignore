@@ -1,3 +1,4 @@
+.flatpak-builder/
 src/deps/*/*
 src/*.o
 src/howl

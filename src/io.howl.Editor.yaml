@@ -1,0 +1,68 @@
+app-id: io.howl.Editor
+runtime: org.gnome.Platform
+runtime-version: 3.28
+sdk: org.gnome.Sdk
+command: howl
+rename-appdata-file: howl
+rename-desktop-file: howl.desktop
+rename-icon: howl
+copy-icon: true
+finish-args:
+  - '--share=ipc'
+  - '--share=network'
+  - '--socket=x11'
+  - '--socket=wayland'
+  - '--filesystem=host'
+  - '--own-name=io.howl.*'
+  - '--talk-name=org.freedesktop.Flatpak'
+add-extensions:
+  io.howl.Editor.Bundle:
+    version: '1'
+    directory: bundles
+    merge-dirs: share/howl/bundles
+    subdirectories: true
+    no-autodownload: true
+    autodelete: true
+modules:
+  - name: howl
+    buildsystem: simple
+    build-commands:
+      - 'make -C src install PREFIX=$FLATPAK_DEST'
+    post-install:
+      - 'install -d /app/bundles'
+    sources:
+      - type: archive
+        url: 'http://luajit.org/download/LuaJIT-2.1.0-beta3.tar.gz'
+        sha256: '1ad2e34b111c802f9d0cdf019e986909123237a28c746b21295b63c9e785d9c3'
+        strip-components: 0
+        dest: 'src/deps'
+      - type: archive
+        url: 'http://nordman.org/mirror/lpeg/lpeg-0.10.2.tar.gz'
+        sha256: 'd1a7698e4bcd0ac305633774062d22b27300a41673c3d733ea9993244a64ea6f'
+        strip-components: 0
+        dest: 'src/deps'
+      - type: file
+        path: '../lint_config.moon'
+      - type: dir
+        path: '../bin'
+        dest: 'bin'
+      - type: dir
+        path: '../bundles'
+        dest: 'bundles'
+      - type: dir
+        path: '../fonts'
+        dest: 'fonts'
+      - type: dir
+        path: '../lib'
+        dest: 'lib'
+      - type: dir
+        path: '../share'
+        dest: 'share'
+      - type: dir
+        path: '../spec'
+        dest: 'spec'
+      - type: dir
+        path: '../src'
+        dest: 'src'
+    cleanup:
+      - '/share/howl/lib/scripts'

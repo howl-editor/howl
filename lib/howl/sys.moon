@@ -36,5 +36,6 @@ time = -> glib.get_real_time! / 1000000
   :time,
   info: {
     os: jit.os\lower!
+    is_flatpak: File('/.flatpak-info').exists
   }
 }
