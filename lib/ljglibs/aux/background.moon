@@ -166,7 +166,7 @@ class Background
 
     if color
       @_fill_with_color cr, color, @opts.alpha
-    elseif image
+    if image
       @_fill_with_image cr, image
 
     if gradient
@@ -184,11 +184,17 @@ class Background
     if image.repeat == 'stretch'
       pb = Pixbuf.new_from_file_at_scale tostring(image.path), @width, @height, false
       Gdk.cairo.set_source_pixbuf cr, pb, 0, 0
-      cr\fill_preserve!
     else
       pb = Pixbuf.new_from_file tostring(image.path)
       Gdk.cairo.set_source_pixbuf cr, pb, 0, 0
       cr.source.extend = cairo.EXTEND_REPEAT
+
+    if image.alpha
+      cr\save!
+      cr\clip_preserve!
+      cr\paint_with_alpha image.alpha
+      cr\restore!
+    else
       cr\fill_preserve!
 
   _fill_with_gradient: (cr, gradient) =>
