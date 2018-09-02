@@ -3,7 +3,7 @@
 
 mode_reg =
   name: 'nim'
-  extensions: 'nim'
+  extensions: { 'nim', 'nims', 'nimble' }
   create: bundle_load('nim_mode')
 
 howl.mode.register mode_reg

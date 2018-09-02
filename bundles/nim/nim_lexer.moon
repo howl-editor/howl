@@ -132,10 +132,56 @@ howl.util.lpeg_lexer ->
   number += c('number', number_with_point) * (exponent_suffix^-1) * (float_size_suffix^-1)
   number += (integer * integer_size_suffix^-1)
   number *= #-(alpha + digit + S'_') -- no alphanum should be attached to the number
-  string = span('"', '"', '\\')
-  tq_string = span('"""', '"""', '\\')
+
+  string = c 'string', span('"', '"', '\\')
+  tq_string = c 'string', span('"""', '"""' * -P'"')
+
+  raw_string = sequence {
+    c 'special', S'rR'
+    -- match either two double quotes (which is an escaped quote) or any non-quote character
+    c 'string', P'"' * (P'""' + complement'"')^0 * P'"'
+  }
 
   char = c 'char', B(-digit) * span('\'', '\'', '\\')
+
+  -- Nim's format strings are a bit complicated... They come in three forms:
+  -- fmt"string" -> raw string: no backslash escapes, "" is an escaped quote
+  -- (fmt|&)"""string""" -> triple quote string: no backslash escapes, multiple end quotes
+  -- &"string" -> standard string (backslash escapes allowed)
+
+  nim_fmt_string_chunk = (name, close_p, escape_p) ->
+    close_p = P(close_p)
+    escape_p = P(escape_p) if escape_p
+
+    stop = close_p + '{'
+    stop = escape_p + stop if escape_p
+
+    choices = any {
+      c 'string', close_p
+      P(-1)
+      sequence {
+        any {
+          c 'string', '{{'
+          V'fmt_string_interpolation'
+          c 'string', P(1)
+        }
+        V"#{name}_fmt_string_chunk"
+      }
+    }
+
+    if escape_p
+      escape = sequence {
+        c 'string', escape_p
+        V"#{name}_fmt_string_chunk"
+      }
+
+      choices = escape + choices
+
+    sequence {
+      c 'string', scan_until stop
+      choices
+    }
+
 
   P {
     'all'
@@ -160,6 +206,42 @@ howl.util.lpeg_lexer ->
     }
 
     string: any {
-      capture 'string', any { tq_string, string }
+      V'tq_fmt_string'
+      V'raw_fmt_string'
+      V'and_fmt_string'
+      raw_string
+      tq_string
+      string
     }
+
+    fmt_string_interpolation: sequence {
+      c 'operator', '{'
+      ((V'all' + space + P(1)) - S'}:')^0
+      c 'special', (P':' * complement'}'^0)^-1
+      c 'operator', '}'
+    }
+
+    raw_fmt_string: sequence {
+      c 'special', P'fmt'
+      c 'string', P'"'
+      V'raw_fmt_string_chunk'
+    }
+
+    raw_fmt_string_chunk: nim_fmt_string_chunk 'raw', '"', '""'
+
+    tq_fmt_string: sequence {
+      c 'special', any { 'fmt', '&' }
+      c 'string', P'"""'
+      V'tq_fmt_string_chunk'
+    }
+
+    tq_fmt_string_chunk: nim_fmt_string_chunk 'tq', '"""' * -P'"'
+
+    and_fmt_string: sequence {
+      c 'special', '&'
+      c 'string', P'"'
+      V'and_fmt_string_chunk'
+    }
+
+    and_fmt_string_chunk: nim_fmt_string_chunk 'and', '"', '\\' * P(1)
   }
