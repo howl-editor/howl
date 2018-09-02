@@ -252,8 +252,10 @@ need_text_object = (flair) ->
 
       if flair.min_width
         flair_min_width = flair.min_width
-        flair_min_width = width_of_space if flair_min_width == 'letter'
-        width = max(flair_min_width - base_x, width)
+        if flair_min_width == 'letter'
+          width = max(width_of_space, width)
+        else
+          width = max(flair_min_width - base_x, width)
 
       -- why draw a zero-width flair?
       return if width <= 0
