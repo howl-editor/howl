@@ -21,10 +21,6 @@ class Cursor extends PropertyObject
 
     set: (style) =>
       @cursor.style = style
-      if style == 'block'
-        @selection.includes_cursor = true
-      elseif style == 'line'
-        @selection.includes_cursor = false
 
   @property pos:
     get: => @view.buffer\char_offset @cursor.pos

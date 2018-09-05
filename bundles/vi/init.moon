@@ -10,7 +10,11 @@ maps = {
 }
 
 signal_handlers = {
-  'editor-focused': (args) -> state.change_mode args.editor, state.mode if state.active
+  'editor-focused': (args) ->
+    if state.active
+      state.change_mode args.editor, state.mode
+      args.editor.selection.includes_cursor = true
+
   'editor-defocused': (args) -> args.editor.indicator.vi.label = '' if state.active
   'after-buffer-switch': (args) -> state.change_mode args.editor, 'command' if state.active
 
@@ -33,7 +37,12 @@ vi_commands = {
   {
     name: 'vi-on',
     description: 'Switches VI mode on'
-    handler: -> state.activate(app.editor) unless state.active
+    handler: ->
+      unless state.active
+        state.activate(app.editor)
+
+        for editor in *howl.app.editors
+          editor.selection.includes_cursor = true
   }
 
   {
@@ -48,6 +57,7 @@ vi_commands = {
             .indicator.vi.label = ''
             .cursor.style = 'line'
             .cursor.blink_interval = config.cursor_blink_interval
+            .selection.includes_cursor = false
   }
 
   {
