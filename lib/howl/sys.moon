@@ -2,7 +2,9 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 glib = require 'ljglibs.glib'
-{:File} = howl.io
+{:File, :Process} = howl.io
+
+is_flatpak = File('/.flatpak-info').exists
 
 env = setmetatable {}, {
   __index: (variable) => glib.getenv variable
@@ -20,22 +22,27 @@ env = setmetatable {}, {
 find_executable = (name) ->
   return File(name).exists if File.is_absolute(name)
 
-  path = env['PATH']
+  if is_flatpak
+    stdout, stderr = Process.execute {'which', name}
+    if #stderr == 0
+      return stdout.stripped
+  else
+    path = env.PATH
 
-  for dir in path\gmatch "[^:]+"
-    exe = howl.io.File(dir) / name
-    if exe.exists and not exe.is_directory
-      return exe.path
+    for dir in path\gmatch "[^:]+"
+      exe = howl.io.File(dir) / name
+      if exe.exists and not exe.is_directory
+        return exe.path
 
 
 time = -> glib.get_real_time! / 1000000
 
 {
-  :env,
+  :env
   :find_executable
-  :time,
+  :time
   info: {
     os: jit.os\lower!
-    is_flatpak: File('/.flatpak-info').exists
+    :is_flatpak
   }
 }
