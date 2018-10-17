@@ -250,7 +250,7 @@ Grabs focus for the specified editor, i.e. causes the editor to be focused.
 ### highlight (hl [, line_nr])
 
 `highlight` is a convenience method for quickly applying a highlight for a given
-span. `hl` specify the span of the highlight, and optionally what highlight to
+span. `hl` specifies the span of the highlight, and optionally what highlight to
 apply.
 
 The highlight's span can be specified in several different fashions. It will be

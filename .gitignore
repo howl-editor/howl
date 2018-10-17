@@ -6,3 +6,4 @@ src/howl
 *.bak
 site/build/
 site/source/doc/spec/
+site/.bundle/
