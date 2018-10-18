@@ -262,6 +262,16 @@ common_auto_pairs = {
     auto_pairs: common_auto_pairs
     parent: 'curly_mode'
 
+  pony:
+    extensions: 'pony'
+    comment_syntax: '//'
+    auto_pairs: {
+      '(': ')'
+      '[': ']'
+      '{': '}'
+      '"': '"'
+    }
+
   postscript:
     extensions: { 'ps', 'eps' }
     comment_syntax: '%'
