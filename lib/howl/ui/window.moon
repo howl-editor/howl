@@ -8,7 +8,7 @@ gobject_signal = require 'ljglibs.gobject.signal'
 Background = require 'ljglibs.aux.background'
 {:PropertyObject} = howl.util.moon
 {:Activity, :CommandLine, :Status, :theme} = howl.ui
-{:signal} = howl
+{:config, :signal} = howl
 
 append = table.insert
 ffi_cast = ffi.cast
@@ -23,6 +23,8 @@ placements = {
   above: 'POS_TOP'
   below: 'POS_BOTTOM'
 }
+
+GTK_SUPPORTS_HIDDEN_TITLEBAR = Gtk.get_major_version! >= 3 and Gtk.get_minor_version! >= 4
 
 class Window extends PropertyObject
   new: (properties = {}) =>
@@ -49,8 +51,11 @@ class Window extends PropertyObject
     @win = Gtk.Window Gtk.Window.TOPLEVEL
     @win[k] = v for k,v in pairs properties
 
-    if Gtk.get_major_version! >= 3 and Gtk.get_minor_version! >= 4
-      @win.hide_titlebar_when_maximized = true
+    if GTK_SUPPORTS_HIDDEN_TITLEBAR
+      @win.hide_titlebar_when_maximized = config.hide_titlebar_when_maximized
+
+      config.watch 'hide_titlebar_when_maximized', (_, value) ->
+        @win.hide_titlebar_when_maximized = value
 
     append @_handlers, @bg_box\on_size_allocate self\_on_bg_size_allocate
     append @_handlers, @bg_box\on_draw self\_on_bg_draw
@@ -313,6 +318,14 @@ class Window extends PropertyObject
 
   _on_screen_changed: =>
     @_set_alpha!
+
+if GTK_SUPPORTS_HIDDEN_TITLEBAR
+  config.define
+    name: 'hide_titlebar_when_maximized'
+    description: 'Whether to hide the titlebar when maximized'
+    scope: 'global'
+    type_of: 'boolean'
+    default: true
 
 -- Signals
 signal.register 'window-focused',
