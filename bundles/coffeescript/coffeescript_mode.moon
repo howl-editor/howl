@@ -63,7 +63,7 @@ class CoffeeScriptMode
       return prev.indentation if prev and prev\match '^%s*%.'
       return prev.indentation + indent_level
 
-    @parent.indent_for self, line, indent_level
+    super line, indent_level
 
   structure: (editor) =>
     lines = {}
