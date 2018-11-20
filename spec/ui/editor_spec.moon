@@ -357,6 +357,19 @@ describe 'Editor', ->
     assert.equal 1, cursor.pos
 
   context 'buffer switching', ->
+    it 'restores the position from buffer.properties.position if present', ->
+      buf1 = Buffer {}
+      buf1.text = 'a whole different whale'
+      buf1.properties.position = pos: 10
+      editor.buffer = buf1
+      assert.equal 10, cursor.pos
+
+      buf2 = Buffer {}
+      buf2.text = '123\n567'
+      buf2.properties.position = line: 2, column: 2
+      editor.buffer = buf2
+      assert.equal 6, cursor.pos
+
     it 'remembers the position for different buffers', ->
       buffer.text = 'hƏllo\n    world!'
       cursor.pos = 8

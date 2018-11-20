@@ -608,8 +608,10 @@ class Editor extends PropertyObject
     @remove_popup!
 
     if @_buf
-      @_buf.properties.position = @cursor.pos
-      @_buf.properties.line_at_top = @line_at_top
+      @_buf.properties.position = {
+        pos: @cursor.pos,
+        line_at_top: @line_at_top
+      }
       @_buf\remove_view_ref @view
       unless @_is_previewing
         @_buf.last_shown = sys.time!
@@ -632,14 +634,24 @@ class Editor extends PropertyObject
     @_set_config_settings!
     buffer\add_view_ref!
 
-    if buffer.properties.line_at_top
-      @line_at_top = buffer.properties.line_at_top
-
+    old_pos = @cursor.pos
+    local line_at_top
     pos = buffer.properties.position or 1
-    pos = max 1, min pos, #buffer + 1
-    if @cursor.pos != pos
+
+    if type(pos) == 'number'
+      pos = max 1, min(pos, #buffer + 1)
+      line_at_top = buffer.properties.line_at_top
       @cursor.pos = pos
     else
+      line_at_top = pos.line_at_top
+      @cursor\move_to pos
+
+    if line_at_top
+      @line_at_top = line_at_top
+    else
+      @line_at_center = @cursor.line
+
+    if @cursor.pos != old_pos
       @_on_pos_changed!
 
   refresh_variable: (name) =>
