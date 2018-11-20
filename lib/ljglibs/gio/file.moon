@@ -144,6 +144,6 @@ core.define 'GFile', {
   append_to: => gc_ptr catch_error(C.g_file_append_to, @, 0, nil)
 
   meta: {
-    __tostring: (f) -> f.path
+    __tostring: (f) -> f.path or f.uri
   }
 }, (def, p) -> def.new_for_path p

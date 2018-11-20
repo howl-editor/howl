@@ -108,5 +108,6 @@ dispatch = (data, ...) ->
   bool5: cb_cast 'GBCallback5', (a1, a2, a3, a4, data) -> dispatch data, a1, a2, a3, a4
   bool6: cb_cast 'GBCallback6', (a1, a2, a3, a4, a5, data) -> dispatch data, a1, a2, a3, a4, a5
   bool7: cb_cast 'GBCallback7', (a1, a2, a3, a4, a5, a6, data) -> dispatch data, a1, a2, a3, a4, a5, a6
+  int3:  cb_cast 'GICallback3', (a1, a2, data) -> dispatch data, a1, a2
   source_func: ffi_cast 'GSourceFunc', (data) -> dispatch data
 }

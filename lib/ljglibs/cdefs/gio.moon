@@ -273,6 +273,13 @@ ffi.cdef [[
                                         GCancellable *cancellable,
                                         GError **error);
 
+  /* GApplicationCommandLine */
+  typedef struct {} GApplicationCommandLine;
+
+  gchar ** g_application_command_line_get_arguments(
+    GApplicationCommandLine *cmdline,
+    int *argc);
+
   /* GApplication */
   typedef struct {} GApplication;
 
@@ -304,6 +311,12 @@ ffi.cdef [[
                                    GError **error);
 
   int g_application_run (GApplication *application, int argc, char **argv);
+  void g_application_activate (GApplication *application);
+  void g_application_open (GApplication *application,
+                           GFile **files,
+                           gint n_files,
+                           const gchar *hint);
+
   void g_application_release (GApplication *application);
   void g_application_quit (GApplication *application);
 

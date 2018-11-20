@@ -6,9 +6,11 @@ import Buffer, Settings, mode, breadcrumbs, bundle, bindings, keymap, signal, in
 import File, Process from howl.io
 import PropertyObject from howl.util.moon
 Gtk = require 'ljglibs.gtk'
+GFile = require 'ljglibs.gio.file'
 callbacks = require 'ljglibs.callbacks'
 {:get_monotonic_time} = require 'ljglibs.glib'
 {:C} = require('ffi')
+bit = require 'bit'
 
 append = table.insert
 coro_create, coro_status = coroutine.create, coroutine.status
@@ -54,6 +56,32 @@ sort_buffers = (buffers, current_buffer=nil) ->
       ls_b = b.last_shown or 0
       return ls_a > ls_b if ls_a != ls_b
     a.title < b.title
+
+parse_path_args = (paths) ->
+  files = {}
+  hints = {}
+
+  for path in *paths
+    local file
+    line, col = 1, 1
+
+    e_path, s_line, s_col = path\match '^(.+):(%d+):(%d+)$'
+    if e_path
+      file = GFile e_path
+      line = tonumber s_line
+      col = s_col
+    else
+      e_path, s_line = path\match '^(.+):(%d+)$'
+      if e_path
+        file = GFile e_path
+        line = tonumber s_line
+      else
+        file = GFile path
+
+    files[#files + 1] = file
+    hints[#hints + 1] = "#{line}:#{col}"
+
+  files, hints
 
 class Application extends PropertyObject
   title: 'Howl'
@@ -268,17 +296,36 @@ class Application extends PropertyObject
     jit.off true, true
     args = @args
     app_base = 'io.howl.Editor'
-    @g_app = Gtk.Application app_base, Gtk.Application.HANDLES_OPEN
+    flags = bit.bor(
+      Gtk.Application.HANDLES_OPEN,
+      Gtk.Application.HANDLES_COMMAND_LINE
+    )
+    @g_app = Gtk.Application app_base, flags
     @g_app\register!
 
     -- by default we'll not open files in the same instance,
     -- but this can be toggled via the --reuse command line parameter
     if @g_app.is_remote and not @args.reuse
-      @g_app = Gtk.Application "#{app_base}-#{os.time!}", Gtk.Application.HANDLES_OPEN
+      @g_app = Gtk.Application "#{app_base}-#{os.time!}", bit.bor(
+        flags,
+        Gtk.Application.NON_UNIQUE
+      )
       @g_app\register!
 
-    @g_app\on_activate -> @_load!
-    @g_app\on_open (_, files) -> @_load [File(path) for path in *files]
+    @g_app\on_activate ->
+      @_load!
+
+    @g_app\on_open (_, files, hint) ->
+      hints = [h for h in hint\gmatch '[^,]+']
+      @_load files, hints
+
+    @g_app\on_command_line (app, command_line) ->
+      paths = [v for v in *command_line.arguments[2, ] when not v\match('^-')]
+      files, hints = parse_path_args paths
+      if #files > 0
+        app\open files, table.concat(hints, ',')
+      else
+        app\activate!
 
     signal.connect 'window-focused', self\synchronize
     signal.connect 'editor-destroyed', (s_args) ->
@@ -348,7 +395,7 @@ class Application extends PropertyObject
 
     nil
 
-  _load: (files = {}) =>
+  _load: (files = {}, hints = {}) =>
     local window
 
     -- bootstrap if we're booting up
@@ -382,9 +429,10 @@ class Application extends PropertyObject
 
     -- load files from command line
     loaded_buffers = {}
-    for path in *files
-      file = File path
+    for i = 1, #files
+      file = File files[i]
       buffer = @_buffer_for_file file
+
       unless buffer
         buffer = @new_buffer mode.for_file file
         status, ret = pcall -> buffer.file = file
@@ -394,6 +442,12 @@ class Application extends PropertyObject
           log.error "Failed to open file '#{file}': #{ret}"
 
       if buffer
+        hint = hints[i]
+        if hint
+          nums =  [tonumber(v) for v in hint\gmatch('%d+')]
+          {line, column} = nums
+          buffer.properties.position = :line, :column
+
         append loaded_buffers, buffer
 
     -- files we've loaded via a --reuse invocation should be shown
