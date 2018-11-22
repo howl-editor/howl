@@ -177,12 +177,11 @@ Cursor = {
     else
       error("Illegal argument #1 to Cursor.move_to (pos: #{opts.pos}, line: #{opts.line}, column: #{opts.column})", 2)
 
-    return if pos == @_pos and not opts.force
-
     extend_selection = opts.extend or @selection.persistent
-
     if not extend_selection and not @selection.is_empty
       @selection\clear!
+
+    return if pos == @_pos and not opts.force
 
     old_line = @buffer_line
     unless old_line -- old pos/line is gone
