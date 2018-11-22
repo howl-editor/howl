@@ -593,8 +593,8 @@ describe 'Editor', ->
       context 'with a selection', ->
         it 'deletes the selection', ->
           buffer.text = ' 2\n 5'
-          selection\set 1, 5
           cursor.pos = 5
+          selection\set 1, 5
           editor\delete_back!
           assert.equal buffer.text, '5'
 
@@ -608,8 +608,8 @@ describe 'Editor', ->
       context 'with a selection', ->
         it 'deletes the selection', ->
           buffer.text = ' 2\n 5'
-          selection\set 1, 5
           cursor.pos = 5
+          selection\set 1, 5
           editor\delete_back_word!
           assert.equal buffer.text, '5'
 
