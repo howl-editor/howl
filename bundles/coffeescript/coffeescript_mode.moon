@@ -10,9 +10,8 @@ find_previous_starter = (line) ->
 
   prev
 
-class CoffeeScriptMode
-  new: (lexer) =>
-    @lexer = bundle_load lexer
+(lexer) -> {
+  lexer: bundle_load(lexer)
 
   comment_syntax: '#'
 
@@ -94,4 +93,5 @@ class CoffeeScriptMode
           prev_line = nil
           break
 
-    #lines > 0 and lines or self.parent.structure @, editor
+    #lines > 0 and lines or super(editor)
+}
