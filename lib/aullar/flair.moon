@@ -138,6 +138,15 @@ draw_ops = {
       cr\move_to x + 0.5, y
       cr\rel_line_to 0, height
       cr\stroke!
+
+  strike_through: (flair, x, y, width, height, cr) ->
+    set_source_from_color cr, 'foreground', flair
+    set_line_type_from_flair cr, flair
+
+    cr\move_to x, y + (height / 2)
+    cr\rel_line_to width, 0
+    cr\stroke!
+
 }
 
 build = (params) ->
@@ -188,6 +197,7 @@ need_text_object = (flair) ->
   UNDERLINE: 'underline'
   WAVY_UNDERLINE: 'wavy_underline'
   PIPE: 'pipe'
+  STRIKE_TROUGH: 'strike_through'
 
   :build
   :define
