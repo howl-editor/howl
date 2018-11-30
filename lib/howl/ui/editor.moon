@@ -822,6 +822,9 @@ class Editor extends PropertyObject
       @popup.window\on_pos_changed @cursor
 
     signal.emit 'cursor-changed', editor: self, cursor: @cursor
+    mode = @mode_at_cursor
+    if mode.on_cursor_changed
+      mode\on_cursor_changed @, @cursor
 
   _get_matching_brace: (byte_pos, start_pos, end_pos) =>
     buffer = @view.buffer
