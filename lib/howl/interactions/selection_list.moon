@@ -20,7 +20,7 @@ class SelectionList
       reverse: @opts.reverse
       explain: @opts.explain
     @list.columns = @opts.columns
-    @list_widget = ListWidget @list, never_shrink: true
+    @list_widget = ListWidget @list, never_shrink: true, on_resized: @\_handle_change
     @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
 
     @showing_list = false
