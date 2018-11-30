@@ -12,9 +12,6 @@ new_buffer = (title, text, buffer_mode = {}) ->
   buffer.data.is_preview = true
   buffer
 
-eol_p = r'(?:\n|\r\n\r)'
-eol_p
-
 nr_lines = (text) ->
   count = 0
   start = 1
@@ -64,8 +61,10 @@ get_preview_buffer = (file, line) ->
 
   new_buffer title, text or '', buffer_mode
 
-->
-  open_buffers = { b.file.path, b for b in *app.buffers when b.file }
+(opts = {}) ->
+  open_buffers = opts.only_previews and {} or
+    { b.file.path, b for b in *app.buffers when b.file }
+
   {
     get_buffer: (file, line) =>
       buf = open_buffers[file.path]
