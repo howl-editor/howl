@@ -190,11 +190,11 @@ A few notes on the above example:
   One exception to this is the module `howl` however. Requiring it will lead to an
   error preventing the editor to start.
 
-- We use [mode.configure](../api/mode.html#configure) for specifying the mode
-  variable rather than setting it using the config object of an existing mode
-  instance. This is because we don't want to load the mode unnecessarily just
-  to set a variable. Using configure() instead means that it will be set once
-  the mode is loaded (or straight away should the mode already be loaded).
+- We use mode.configure for specifying the mode variable rather than setting it
+  using the config object of an existing mode instance. This is because we don't
+  want to load the mode unnecessarily just to set a variable. Using configure()
+  instead means that it will be set once the mode is loaded (or straight away
+  should the mode already be loaded).
 
 - We use [config.for_file](../api/config.html#for_file) to add access a config
   *proxy* object that sets and gets variables for the file scope.
