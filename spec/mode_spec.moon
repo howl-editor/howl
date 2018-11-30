@@ -1,5 +1,6 @@
-import mode, config from howl
-import File from howl.io
+{:Buffer, :mode, :config} = howl
+{:File} = howl.io
+{:Editor} = howl.ui
 
 describe 'mode', ->
   after_each ->
@@ -174,6 +175,18 @@ describe 'mode', ->
         second = mode.by_name('second')
         second\foo '1', 2
         assert.same {second, '1', 2}, args
+
+      it 'works when deriving from the default mode implicitly', ->
+        mode.register name: 'implicit', create: -> {
+          comment_syntax: '--'
+          comment: (editor) => super editor
+        }
+        buf = Buffer {}
+        buf.text = 'line 1\nline2'
+        editor = Editor buf
+
+        mode.by_name('implicit')\comment editor
+        assert.equal '-- line 1\nline2', buf.text
 
     it 'an error is raised if the mode indicated by parent does not exist', ->
       assert.has_error ->
