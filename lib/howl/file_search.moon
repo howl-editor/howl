@@ -13,9 +13,9 @@ searchers = {}
 
 MAX_MESSAGE_LENGTH = 150
 
-run_search_command = (process, directory, query) ->
+run_search_command = (process, directory, query, searcher) ->
   out, err = activities.run_process {
-    title: "Searching for '#{query}' in '#{directory}'"
+    title: "Searching for '#{query}' in '#{directory}' (using #{searcher.name})"
   }, process
 
   unless process.exited_normally
@@ -85,10 +85,10 @@ search = (directory, what, opts = {}) ->
   }
   t = typeof res
   if t == 'Process'
-    res = run_search_command res, directory, what
+    res = run_search_command res, directory, what, searcher
   elseif t == 'string'
     p = Process.open_pipe res, working_directory: directory
-    res = run_search_command p, directory, what
+    res = run_search_command p, directory, what, searcher
   else
     prepare_direct_results searcher, directory, res
 
