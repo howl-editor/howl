@@ -536,6 +536,34 @@ file_search_hit_to_location = (match, search, display_as) ->
 
   loc
 
+do_search = (search, whole_word) ->
+  project = get_project!
+  file_search = howl.file_search
+  matches, searcher = file_search.search project.root, search, :whole_word
+  unless #matches > 0
+    log.error "No matches found for '#{search}'"
+    return matches
+
+  matches = file_search.sort matches, project.root, search, app.editor.current_context
+  display_as = project.config.file_search_hit_display
+  status = "Loaded 0 out of #{#matches} locations.."
+  cancel = false
+  locations = activities.run {
+    title: "Loading #{#matches} locations..",
+    status: -> status
+    cancel: -> cancel = true
+  }, ->
+    return for i = 1, #matches
+      if i % 1000 == 0
+        break if cancel
+        status = "Loaded #{i} out of #{#matches}.."
+        activities.yield!
+
+      m = matches[i]
+      file_search_hit_to_location(m, search, display_as)
+
+  locations, searcher, project
+
 command.register
   name: 'project-file-search',
   description: 'Searches files in the the current project'
@@ -558,36 +586,52 @@ command.register
       log.warn "No search query specified"
       return
 
-    project = get_project!
-    file_search = howl.file_search
-    matches, searcher = file_search.search project.root, search, :whole_word
-    unless #matches > 0
-      log.error "No matches found for '#{search}'"
-      return
-
-    matches = file_search.sort matches, project.root, search, editor.current_context
-    display_as = project.config.file_search_hit_display
-    status = "Loaded 0 out of #{#matches} locations.."
-    cancel = false
-    locations = activities.run {
-      title: "Loading #{#matches} locations..",
-      status: -> status
-      cancel: -> cancel = true
-    }, ->
-      return for i = 1, #matches
-        if i % 1000 == 0
-          break if cancel
-          status = "Loaded #{i} out of #{#matches}.."
-          activities.yield!
-
-        m = matches[i]
-        file_search_hit_to_location(m, search, display_as)
-
-    selected = interact.select_location
-      title: "#{#matches} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
-      items: locations
-    selected and selected.selection
+    locations, searcher, project = do_search search, whole_word
+    if #locations > 0
+      selected = interact.select_location
+        title: "#{#locations} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
+        items: locations
+      selected and selected.selection
 
   handler: (loc) ->
     if loc
       app\open loc
+
+command.register
+  name: 'project-file-search-list',
+  description: 'Searches files in the the current project, listing results in a buffer'
+  input: (...) ->
+    editor = app.editor
+    search = nil
+    whole_word = false
+
+    unless app.window.command_line.showing
+      if editor.selection.empty
+        search = app.editor.current_context.word.text
+        whole_word = true unless search.is_empty
+      else
+        search = editor.selection.text
+
+    if not search or search.is_empty
+      search = interact.read_text!
+
+    if not search or search.is_empty
+      log.warn "No search query specified"
+      return
+
+    locations, searcher, project = do_search search , whole_word
+
+    if #locations > 0
+      matcher = howl.util.Matcher locations
+      list = howl.ui.List matcher
+      list_buf = howl.ui.ListBuffer list, {
+        title: "#{#locations} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
+        on_submit: (location) ->
+          app\open location
+      }
+      list_buf.directory = project.root
+      app\add_buffer list_buf
+
+    nil
+
+  handler: (loc) ->

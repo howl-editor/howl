@@ -18,11 +18,6 @@ highlight.define_default 'list_selection', {
   outline_alpha: 100
 }
 
-highlight.define_default 'list_selection', {
-  type: highlight.UNDERLINE
-  text_color: '#000000'
-}
-
 reversed = (list) -> [item for item in *list[#list, 1, -1]]
 
 get_highlight_range = (content, hl) ->
