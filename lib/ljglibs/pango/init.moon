@@ -11,10 +11,16 @@ core.auto_loading 'pango', {
     'ALIGN_CENTER',
     'ALIGN_RIGHT',
 
+    -- PangoEllipsizeMode
+    'ELLIPSIZE_NONE',
+    'ELLIPSIZE_START',
+    'ELLIPSIZE_MIDDLE',
+    'ELLIPSIZE_END',
+
     -- PangoStyle
     'STYLE_NORMAL',
     'STYLE_OBLIQUE',
-    'STYLE_ITALIC'
+    'STYLE_ITALIC',
 
     -- PangoVariant
     'VARIANT_NORMAL',
