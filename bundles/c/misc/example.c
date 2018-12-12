@@ -39,6 +39,9 @@ const char *p = "my_string";
 char[] c_a = { 'c', '\'', '\324', '\xef', '\"', '\n', '\\' };
 int array[100];
 
+// raw strings
+char[] r_s = R"(can have embedded "quotes" )";
+
 printf(__FILE__ ": %d: Hello "
            "world\n", __LINE__);
 

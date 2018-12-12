@@ -95,6 +95,7 @@ howl.util.lpeg_lexer ->
   }
 
   string = c 'string', span('"', '"', '\\')
+  raw_string = c('keyword', P'R') * c('string', span('"(', ')"'))
 
   preproc = c 'preproc', '#' * complement(space)^1
 
@@ -115,6 +116,7 @@ howl.util.lpeg_lexer ->
       include_stmt,
       preproc,
       comment,
+      raw_string,
       string,
       unfinished,
       classdef,
