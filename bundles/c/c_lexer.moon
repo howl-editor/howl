@@ -95,7 +95,12 @@ howl.util.lpeg_lexer ->
   }
 
   string = c 'string', span('"', '"', '\\')
-  raw_string = c('keyword', P'R') * c('string', span('"(', ')"'))
+  raw_str_start = sequence {
+    c('special', 'R'),
+    c('string', '"' * Cg(scan_until('('), 'delim') * '(')
+  }
+  raw_str_tail = c 'string', scan_to ')' * match_back('delim') * '"'
+  raw_string = raw_str_start * raw_str_tail
 
   preproc = c 'preproc', '#' * complement(space)^1
 

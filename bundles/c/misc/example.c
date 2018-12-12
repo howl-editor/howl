@@ -1,6 +1,6 @@
 /*
 ** Syntax examples taken mostly from http://en.wikipedia.org/wiki/C_syntax
-** My library.
+match_back('delim') c('string', ')"')** My library.
 ** Copyright (C) year foo.
 */
 
@@ -41,6 +41,7 @@ int array[100];
 
 // raw strings
 char[] r_s = R"(can have embedded "quotes" )";
+char[] r_s2 = R"delim(using 'delim' as delimiter)delim";
 
 printf(__FILE__ ": %d: Hello "
            "world\n", __LINE__);
