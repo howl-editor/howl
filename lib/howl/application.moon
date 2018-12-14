@@ -258,6 +258,9 @@ class Application extends PropertyObject
         for hl in *loc.highlights
           editor\highlight hl, loc.line_nr
 
+    -- drop another breadcrumb at the new location
+    breadcrumbs.drop!
+
     buffer, editor
 
   save_all: =>

@@ -112,6 +112,11 @@ class Searcher
           line_at_top: @start_line_at_top
         }
 
+      breadcrumbs.drop {
+        buffer: @buffer,
+        pos: @editor.cursor.pos,
+        line_at_top: @editor.line_at_top
+      }
       @_finish!
 
   cancel: =>
