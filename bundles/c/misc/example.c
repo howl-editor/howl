@@ -1,6 +1,6 @@
 /*
 ** Syntax examples taken mostly from http://en.wikipedia.org/wiki/C_syntax
-match_back('delim') c('string', ')"')** My library.
+** My library.
 ** Copyright (C) year foo.
 */
 
