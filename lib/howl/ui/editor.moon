@@ -170,6 +170,12 @@ class Editor extends PropertyObject
     get: => @view.config.view_edge_column
     set: (v) => @view.config.view_edge_column = v
 
+  @property last_edit_pos:
+    get: =>
+      pos = @view.last_edit_pos
+      return nil unless pos
+      @buffer\char_offset pos
+
   @property line_padding:
     get: => @view.config.view_line_padding
     set: (v) => @view.config.view_line_padding = v
