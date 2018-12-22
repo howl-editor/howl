@@ -1,7 +1,7 @@
 -- Copyright 2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:signal, :config} = howl
+{:signal, :config, :sys, :timer} = howl
 {:File} = howl.io
 {:PropertyTable} = howl.util
 {:remove, :insert} = table
@@ -329,6 +329,25 @@ config.define
   scope: 'global'
   type_of: 'positive-number'
   default: 10
+
+-- track last edit with a breadcrumb
+last_update = sys.time!
+on_idle = ->
+  editor = howl.app.editor
+  return unless editor
+  if editor.buffer.last_changed > last_update
+    last_update = editor.buffer.last_changed
+    last_edit_pos = editor.last_edit_pos
+    if last_edit_pos
+      drop {
+        buffer: editor.buffer,
+        pos: last_edit_pos,
+        line_at_top: editor.line_at_top
+      }
+
+  timer.on_idle 1, on_idle
+
+timer.on_idle 1, on_idle
 
 PropertyTable {
   :init
