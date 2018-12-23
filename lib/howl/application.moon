@@ -559,7 +559,7 @@ class Application extends PropertyObject
     require 'howl.interactions.mode_selection'
     require 'howl.interactions.replacement'
     require 'howl.interactions.search'
-    require 'howl.interactions.selection_list'
+    require 'howl.interactions.select'
     require 'howl.interactions.signal_selection'
     require 'howl.interactions.text_entry'
     require 'howl.interactions.variable_assignment'

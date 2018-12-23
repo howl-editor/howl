@@ -5,7 +5,7 @@
 {:List, :ListWidget} = howl.ui
 {:Matcher} = howl.util
 
-class SelectionList
+class Select
   run: (@finish, @opts) =>
     @command_line = app.window.command_line
     if not (@opts.matcher or @opts.items) or (@opts.matcher and @opts.items)
@@ -105,4 +105,4 @@ class SelectionList
 interact.register
   name: 'select'
   description: 'Get selection made by user from a list of items'
-  factory: SelectionList
+  factory: Select

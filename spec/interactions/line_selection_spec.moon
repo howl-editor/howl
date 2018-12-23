@@ -6,7 +6,7 @@ import Editor, Window from howl.ui
 
 append = table.insert
 
-require 'howl.interactions.selection_list'
+require 'howl.interactions.select'
 require 'howl.interactions.location_selection'
 require 'howl.interactions.line_selection'
 

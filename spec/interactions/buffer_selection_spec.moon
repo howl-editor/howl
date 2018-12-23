@@ -6,7 +6,7 @@ import File from howl.io
 import Window from howl.ui
 
 require 'howl.ui.icons.font_awesome'
-require 'howl.interactions.selection_list'
+require 'howl.interactions.select'
 require 'howl.interactions.location_selection'
 require 'howl.interactions.buffer_selection'
 
