@@ -76,15 +76,24 @@ adjust_crumbs_for_closed_buffer = (buffer) ->
 
   location = max 1, location - lower_location_by
 
+remove_at = (i) ->
+  clear_crumb crumbs[i]
+  remove crumbs, i
+  location -= 1 if i < location
+
+clean = ->
+  i = 1
+  while i < #crumbs
+    crumb = crumbs[i]
+    if not navigable_crumb(crumb)
+      remove_at i
+    else
+      i += 1
+
 -- cleans up the crumbs trail, removing duplicates, loops, etc
 -- for performance reasons we stop as soon as we can, meaning the tail
 -- will be clean, but necessarily the entire trail
 clean_crumbs_tail = ->
-  remove_at = (i) ->
-    clear_crumb crumbs[i]
-    remove crumbs, i
-    location -= 1 if i < location
-
   i = #crumbs
   local next, second, third
   while i > 0 and #crumbs > 0 and i >= location - 4
@@ -153,7 +162,7 @@ goto_crumb = (crumb) ->
   else
     return
 
-  pos = crumb.pos
+  pos = crumb_pos crumb
   editor.cursor.pos = pos
 
   if crumb.line_at_top
@@ -351,10 +360,23 @@ timer.on_idle 1, on_idle
 
 PropertyTable {
   :init
-  trail: crumbs
-  location: get: -> location
+  trail: get: ->
+    clean!
+    crumbs
+
+  location:
+    get: -> location
+    set: (_, i) ->
+      clean!
+      if i <= 0 or i > #crumbs
+        error "Illegal location #{i}"
+
+      goto_crumb crumbs[i]
+      location = i
+
   previous: get: -> crumbs[location - 1]
   next: get: -> crumbs[location + 1]
+  :crumb_pos
   :clear
   :go_back
   :go_forward

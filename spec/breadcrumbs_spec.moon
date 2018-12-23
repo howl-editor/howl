@@ -383,6 +383,48 @@ describe 'breadcrumbs', ->
         breadcrumbs.go_forward!
         assert.equals 7, cursor.pos
 
+  describe 'location', ->
+    it 'points to the current crumb position', ->
+      b = editor.buffer
+      b.text = string.rep('1234567890', 2)
+      assert.equals 1, breadcrumbs.location
+      breadcrumbs.drop buffer: b, pos: 1
+      assert.equals 2, breadcrumbs.location
+      breadcrumbs.drop buffer: b, pos: 4
+      assert.equals 3, breadcrumbs.location
+
+    it 'can be assigned to move to a specific location', ->
+      b = editor.buffer
+      b.text = string.rep('1234567890', 2)
+      breadcrumbs.drop buffer: b, pos: 1
+      breadcrumbs.drop buffer: b, pos: 4
+      breadcrumbs.drop buffer: b, pos: 8
+      breadcrumbs.location = 2
+      assert.equals 2, breadcrumbs.location
+      assert.equals 4, cursor.pos
+
+  describe '.trail', ->
+    it 'contains a list of breadcrumbs', ->
+      b = buffer '123456789'
+      File.with_tmpfile (file) ->
+        breadcrumbs.drop buffer: b, pos: 3
+        breadcrumbs.drop :file, pos: 6
+        crumbs = breadcrumbs.trail
+        assert.equals 3, crumbs[1].pos
+        assert.equals b, crumbs[1].buffer_marker.buffer
+        assert.same {:file, pos: 6}, crumbs[2]
+
+    it 'is automatically cleaned', ->
+      b1 = buffer '123456789'
+      b2 = buffer '123456789'
+      breadcrumbs.drop buffer: b1, pos: 3
+      breadcrumbs.drop buffer: b2, pos: 6
+      b1 = nil
+      collectgarbage!
+      crumbs = breadcrumbs.trail
+      assert.equals 1, #crumbs
+      assert.equals 6, crumbs[1].pos
+
   context 'when a buffer is closed', ->
     it 'removes any crumbs missing a file reference', ->
       b1 = buffer '123456789'
