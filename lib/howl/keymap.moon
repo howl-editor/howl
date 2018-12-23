@@ -88,6 +88,7 @@
 
     'ctrl_<':          'navigate-back'
     'ctrl_>':          'navigate-forward'
+    'alt_<':           'navigate-go-to'
 
     ctrl_shift_left:   'cursor-word-left-extend'
     ctrl_shift_right:  'cursor-word-right-extend'
@@ -155,6 +156,7 @@
         meta_insert:       'editor-copy'
         meta_return:       'editor-newline-below'
         meta_shift_return: 'editor-newline-above'
+        'meta_<':          'navigate-go-to'
 
         ctrl_tab:          'view-right-wraparound'
         ctrl_shift_tab:    'view-left-wraparound'

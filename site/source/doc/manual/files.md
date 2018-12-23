@@ -83,14 +83,26 @@ can fit on your screen, and need ways of viewing different buffers.
 ### Navigating back and forth
 
 As you open buffers, perform edits and move around, Howl tries to keep track of
-your previous locations. This can be used to quickly move back and forth in your
-editing history, by using the `navigate-back` and `navigate-forward` commands
-(the commands are bound to `ctrl_<` and `ctrl_>` by default).
+your previous locations, using its "breadcrumbs" module. This can be used to
+quickly move back and forth in your editing history, by using the
+`navigate-back` and `navigate-forward` commands (the commands are bound to
+`ctrl_<` and `ctrl_>` by default). The `navigate-go-to` command (bound to
+`alt_<` by default), lets you select a particular location from all of the
+available saved locations.
 
 Note that the navigation is very useful not only as a tool for switching
 buffers, but for keeping track of previous locations even within the same file.
 This can be a useful time saver, as it's quite common to jump around alot in the
 same file as you search or jump to definitions, etc.
+
+#### Related configuration options
+
+- `breadcrumb_limit`: The maxium number of locations to save. When this limit is
+reached new locations will cause the oldest locations to be forgotten.
+
+- `breadcrumb_tolerance`: It's typically not useful to keep consecutive
+locations saved if they're very close to each other. The breadcrumbs module
+merges saved locations if their distance is less than this value.
 
 ### Switching between open buffers
 

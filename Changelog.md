@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+- Added `navigate-go-to` command, for going back to a specific previous location.
+
 - Added support for specifying line and column when opening files, e.g.
 
 ```shell

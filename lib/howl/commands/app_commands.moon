@@ -326,6 +326,52 @@ command.register
     else
       log.info "No next location recorded"
 
+command.register
+  name: 'navigate-go-to'
+  description: 'Goes to a specific location in the history'
+  input: ->
+    to_item = (crumb, i) ->
+      {:buffer_marker, :file} = crumb
+      buffer = buffer_marker and buffer_marker.buffer
+      project = file and Project.for_file(file)
+      where = if project
+        file\relative_to_parent(project.root)
+      elseif file
+          file.path
+      else
+        buffer.title
+
+      pos = breadcrumbs.crumb_pos crumb
+      {
+        i,
+        project and project.root.basename or ''
+        "#{where}@#{pos}"
+        :buffer, :file, :pos
+      }
+
+    crumbs = breadcrumbs.trail
+    items = [to_item(b, i) for i, b in ipairs crumbs]
+
+    if #items == 0
+      log.warn "No locations available for navigation"
+      return nil
+
+    selected = interact.select_location
+      title: "Navigate back to.."
+      :items
+      selection: items[breadcrumbs.location] or items[breadcrumbs.location - 1]
+      columns: {
+        { header: 'Position', style: 'number' },
+        { header: 'Project', style: 'key' },
+        { header: 'Path', style: 'string' }
+      }
+
+    selected and selected.selection
+
+  handler: (loc) ->
+    return unless loc
+    breadcrumbs.location = loc[1]
+
 -----------------------------------------------------------------------
 -- Howl eval commands
 -----------------------------------------------------------------------
