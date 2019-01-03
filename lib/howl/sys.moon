@@ -23,8 +23,8 @@ find_executable = (name) ->
   return File(name).exists if File.is_absolute(name)
 
   if is_flatpak
-    stdout, stderr = Process.execute {'which', name}
-    if #stderr == 0
+    stdout, _, p = Process.execute {'which', name}
+    if p.successful
       return stdout.stripped
   else
     path = env.PATH
