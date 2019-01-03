@@ -24,7 +24,7 @@ placements = {
   below: 'POS_BOTTOM'
 }
 
-GTK_SUPPORTS_HIDDEN_TITLEBAR = Gtk.get_major_version! >= 3 and Gtk.get_minor_version! >= 4
+GTK_SUPPORTS_HIDDEN_TITLEBAR = not Gtk.check_version(3, 4)
 
 class Window extends PropertyObject
   new: (properties = {}) =>
