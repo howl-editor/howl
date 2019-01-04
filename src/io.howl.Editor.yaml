@@ -1,9 +1,9 @@
 app-id: io.howl.Editor
 runtime: org.gnome.Platform
-runtime-version: 3.28
+runtime-version: 3.30
 sdk: org.gnome.Sdk
 command: howl
-rename-appdata-file: howl
+rename-appdata-file: howl.appdata.xml
 rename-desktop-file: howl.desktop
 rename-icon: howl
 copy-icon: true
