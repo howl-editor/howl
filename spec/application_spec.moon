@@ -1,5 +1,5 @@
 {:File} = howl.io
-{:Application, :Buffer, :mode} = howl
+{:Application, :Buffer, :config, :mode} = howl
 {:Editor, :highlight} = howl.ui
 
 describe 'Application', ->
@@ -8,6 +8,7 @@ describe 'Application', ->
   before_each ->
     root_dir = File.tmpdir!
     application = Application root_dir, {}
+    config.autoclose_single_buffer = false
 
   after_each -> root_dir\delete_all!
 
@@ -22,6 +23,12 @@ describe 'Application', ->
       assert.equal 'default', buffer.mode.name
 
     it 'registers the new buffer in .buffers', ->
+      buffer = application\new_buffer!
+      assert.same { buffer }, application.buffers
+
+    it 'closes a single untitled buffer if present', ->
+      config.autoclose_single_buffer = true
+      application\new_buffer!
       buffer = application\new_buffer!
       assert.same { buffer }, application.buffers
 

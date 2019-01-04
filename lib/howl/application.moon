@@ -167,14 +167,14 @@ class Application extends PropertyObject
   new_buffer: (buffer_mode) =>
     buffer_mode or= mode.by_name 'default'
     buffer = Buffer buffer_mode
-    append @_buffers, buffer
+    @_append_buffer buffer
     buffer
 
   add_buffer: (buffer, show = true) =>
     for b in *@buffers
       return if b == buffer
 
-    append @_buffers, buffer
+    @_append_buffer buffer
     if show and @editor
       breadcrumbs.drop!
       @editor.buffer = buffer
@@ -392,6 +392,15 @@ class Application extends PropertyObject
     while count < max_count and C.g_main_context_iteration(ctx, false) != 0
       count += 1
 
+  _append_buffer: (buffer) =>
+    if config.autoclose_single_buffer and #@_buffers == 1
+      present = @_buffers[1]
+      if not present.file and not present.modified and present.length == 0
+        @_buffers[1] = buffer
+        return
+
+    append @_buffers, buffer
+
   _buffer_for_file: (file) =>
     for b in *@buffers
       return b if b.file == file
@@ -603,6 +612,13 @@ config.define
   description: 'The number of files to remember in the recently closed list'
   default: 1000
   type_of: 'number'
+  scope: 'global'
+
+config.define
+  name: 'autoclose_single_buffer'
+  description: 'When only one, empty buffer is open, automatically close it when another is created'
+  default: true
+  type_of: 'boolean'
   scope: 'global'
 
 signal.register 'file-opened',
