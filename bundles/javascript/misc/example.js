@@ -29,7 +29,17 @@ false;
 "hello!" && 'hi there!';
 "esc\"aped" && 'esc\'aped';
 `this is a multi-line template string,
-with a string ${variable} inlined.`;
+with a string ${variable} inlined and ${nesting `in ${here}`}.`;
+
+// template string
+
+`template string
+and it spans multiple lines
+with escapes \` \${this isn't highlighted}`
+
+html`tagged template ${interpolation
+
+across lines} and outside again ${and inside!}`
 
 // Capitalized identifiers are treated as types
 new String('foo');
@@ -41,10 +51,12 @@ arr[1] = 'foo';
 // hashes
 dog = {
   color: "brown",
-  "size": "large"
+  "size": "large",
+  delete: 123,
 };
 dog["color"]; // results in "brown"
 dog.color;    // also results in "brown"
+dog.delete;   // not a keyword
 
 // regular expressions
 /ab{3}c/;
