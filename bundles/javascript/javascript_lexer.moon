@@ -8,15 +8,15 @@ howl.util.lpeg_lexer ->
 
   identifer = c 'identifer', ident
 
-  keyword = c 'keyword', word {
+  keyword = c 'keyword', -B'.' * word {
     'async', 'await', 'break', 'case', 'catch', 'class', 'const', 'continue',
     'debugger', 'default', 'delete', 'do', 'else', 'export', 'extends',
     'finally', 'from', 'for', 'function', 'if', 'import', 'in', 'instanceof',
-    'let', 'new', 'of', 'return', 'super', 'switch', 'this', 'throw', 'try',
+    'let', 'new', 'of', 'return', 'super', 'switch', 'throw', 'try',
     'typeof', 'var', 'void', 'while', 'with', 'yield'
   }
 
-  operator = c 'operator', S'+-*/%=<>&^|!(){}[];'
+  operator = c 'operator', S'+-*/%=<>&^|!(){}[].,;'
 
   comment = c 'comment', any {
     P'//' * scan_until eol,
@@ -30,12 +30,11 @@ howl.util.lpeg_lexer ->
     word('Nan', 'Infinity')
   }
 
-  special = c 'special', word('undefined', 'null', 'true', 'false')
+  special = c 'special', word {'undefined', 'null', 'true', 'false'}
 
   str = any {
     span('"', '"', '\\')
     span("'", "'", '\\')
-    span('`', '`', '\\') 
   }
   string = c 'string', str
 
@@ -48,12 +47,14 @@ howl.util.lpeg_lexer ->
       scan_to(any('/', eol), '\\'),
       B('/'),
     }),
-    c('operator', S'gim'^1)^0,
+    c('operator', S'gimuy'^1)^0,
     #sequence {
       blank^0,
       any(S',;.)', P(-1))
     }
   }
+
+  classdef = c('keyword', 'class') * ws * c('type_def', ident)
 
   fdecl = any {
     c('keyword', 'function') * (ws^0 * c 'operator', '*')^0 * ws^1 * c('fdecl', ident),
@@ -70,16 +71,55 @@ howl.util.lpeg_lexer ->
     }
   }
 
-  any {
-    comment,
-    key,
-    string,
-    regex,
-    fdecl,
-    keyword,
-    special,
-    operator,
-    number,
-    type,
-    identifer,
+  member = sequence {
+    c 'member', word { 'this' }
+    (c('operator', P'.') * c('member', ident))^0
+  }
+
+  P {
+    'all'
+
+    all: any {
+      comment,
+      key,
+      V'template',
+      string,
+      regex,
+      classdef,
+      fdecl,
+      member,
+      keyword,
+      special,
+      operator,
+      number,
+      type,
+      identifer,
+    }
+
+    template: sequence {
+      c 'special', ident^-1
+      c 'string', '`'
+      V'template_chunk'
+    }
+
+    template_chunk: sequence {
+      c 'string', scan_until (P'`' + '${'), '\\'
+      any {
+        c 'string', '`'
+        P(-1)
+        sequence {
+          any {
+            V'template_interpolation'
+            c 'string', P 1
+          }
+          V'template_chunk'
+        }
+      }
+    }
+
+    template_interpolation: sequence {
+      c 'operator', '${'
+      ((c('string', space + eol) + V'all' + P 1) - '}')^0
+      c 'operator', '}'
+    }
   }
