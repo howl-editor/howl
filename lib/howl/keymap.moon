@@ -114,6 +114,7 @@
 
   f11:              'window-toggle-fullscreen'
   alt_x:            'run'
+  alt_j:            'open-journal'
 
   shift_alt_left:  'view-left-or-create'
   shift_alt_right: 'view-right-or-create'

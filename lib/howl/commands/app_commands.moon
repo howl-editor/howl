@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import app, activities, breadcrumbs, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
-import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
+import ActionBuffer, JournalBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
 import Process from howl.io
 serpent = require 'serpent'
 
@@ -371,6 +371,13 @@ command.register
   handler: (loc) ->
     return unless loc
     breadcrumbs.location = loc[1]
+
+command.register
+  name: 'open-journal'
+  description: 'Opens the Howl log journal'
+  handler: ->
+    app\add_buffer JournalBuffer!
+    app.editor.cursor\eof!
 
 -----------------------------------------------------------------------
 -- Howl eval commands

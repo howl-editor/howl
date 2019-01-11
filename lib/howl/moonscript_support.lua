@@ -23,7 +23,7 @@ end
 local function error_rewriter(err)
   if type(err) ~= 'string' then return err end
   if not err:match('%.moon') then return err end
-  local moon_file = err:match('^%[string "([^"]+%.moon)"%]')
+  local moon_file = err:match('^%[string "([^"]+%.moon)"%]') or err:match('^([^%s]+%.moon)')
   if not moon_file then return err end
 
   -- if the file hasn't been compiled yet we do it first for error rewriting to work
@@ -34,6 +34,10 @@ local function error_rewriter(err)
   local trace = debug.traceback("", 2)
   trace = trace:match('%s*(.+)%s*$')
   local rewritten = moonscript.errors.rewrite_traceback(trace, err)
+  if howl.sys.env.HOWL_PRINT_TRACEBACKS then
+    print(rewritten)
+  end
+  howl.log.traceback(rewritten)
   return rewritten or err
 end
 
