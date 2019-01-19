@@ -16,7 +16,7 @@ howl.util.lpeg_lexer ->
     'typeof', 'var', 'void', 'while', 'with', 'yield'
   }
 
-  operator = c 'operator', S'+-*/%=<>&^|!(){}[].,;'
+  operator = c 'operator', S'+-*/%=<>&^|!(){}[].,?:;'
 
   comment = c 'comment', any {
     P'//' * scan_until eol,
