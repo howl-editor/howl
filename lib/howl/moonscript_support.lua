@@ -37,7 +37,6 @@ local function error_rewriter(err)
   if howl.sys.env.HOWL_PRINT_TRACEBACKS then
     print(rewritten)
   end
-  howl.log.traceback(rewritten)
   return rewritten or err
 end
 

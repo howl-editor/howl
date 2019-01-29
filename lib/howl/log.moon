@@ -17,7 +17,7 @@ signal.register 'log-entry-appended',
   description: 'Called when a new entry is appended to the log'
   parameters:
     essentials: 'The log message essentials'
-    level: 'The log level (one of info, warning, error, traceback)'
+    level: 'The log level (one of info, warning, error)'
     message: 'The log message'
 
 signal.register 'log-trimmed',
@@ -70,7 +70,6 @@ info = (message) -> dispatch 'info', message
 warning = (message) -> dispatch 'warning', message
 warn = warning
 error = (message) -> last_error = dispatch 'error', message
-traceback = (message) -> dispatch 'traceback', message
 clear = ->
   entries = {}
   last_error = nil
