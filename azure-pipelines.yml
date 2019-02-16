@@ -1,21 +1,17 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - master
 
 pool:
   vmImage: 'Ubuntu-16.04'
 
-container: 'fedora:29'
+container: 'registry.gitlab.gnome.org/gnome/gnome-runtime-images/gnome:3.30'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- displayName: 'Build the Flatpak'
+  script: |
+    flatpak-builder --repo repo build src/io.howl.Editor.yaml
+    flatpak build-bundle repo howl.flatpak io.howl.Editor
+- tasks: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'howl.flatpak'
+    targetPath: 'howl.flatpak'
