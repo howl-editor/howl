@@ -4,11 +4,13 @@ trigger:
 pool:
   vmImage: 'Ubuntu-16.04'
 
-container: 'registry.gitlab.gnome.org/gnome/gnome-runtime-images/gnome:3.30'
+container:
+  image: 'registry.gitlab.gnome.org/gnome/gnome-runtime-images/gnome:3.30'
+  options: --privileged
 
 steps:
   - script: |
-      flatpak-builder --repo repo build src/io.howl.Editor.yaml
+      flatpak-builder --disable-rofiles-fuse --repo repo build src/io.howl.Editor.yaml
       flatpak build-bundle repo howl.flatpak io.howl.Editor
     displayName: 'Build the Flatpak'
   - task: PublishPipelineArtifact@0
