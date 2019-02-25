@@ -6,7 +6,6 @@ import Buffer, Settings, mode, breadcrumbs, bundle, bindings, keymap, signal, in
 import File, Process from howl.io
 import PropertyObject from howl.util.moon
 Gtk = require 'ljglibs.gtk'
-GFile = require 'ljglibs.gio.file'
 callbacks = require 'ljglibs.callbacks'
 {:get_monotonic_time} = require 'ljglibs.glib'
 {:C} = require('ffi')
