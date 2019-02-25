@@ -130,7 +130,7 @@ adjust_location_for_inactive_buffer = (buffer) ->
 
   buf_at_location = (loc) ->
     c = crumbs[loc]
-    c.buffer_marker and c.buffer_marker.buffer
+    c and c.buffer_marker and c.buffer_marker.buffer
 
   crumb_buf = buf_at_location location - 1
 
