@@ -57,7 +57,7 @@ sort_buffers = (buffers, current_buffer=nil) ->
       return ls_a > ls_b if ls_a != ls_b
     a.title < b.title
 
-parse_path_args = (paths) ->
+parse_path_args = (paths, cwd=nil) ->
   files = {}
   hints = {}
 
@@ -67,18 +67,18 @@ parse_path_args = (paths) ->
 
     e_path, s_line, s_col = path\match '^(.+):(%d+):(%d+)$'
     if e_path
-      file = GFile e_path
+      file = e_path
       line = tonumber s_line
       col = s_col
     else
       e_path, s_line = path\match '^(.+):(%d+)$'
       if e_path
-        file = GFile e_path
+        file = e_path
         line = tonumber s_line
       else
-        file = GFile path
+        file = path
 
-    files[#files + 1] = file
+    files[#files + 1] = File(file, cwd).gfile
     hints[#hints + 1] = "#{line}:#{col}"
 
   files, hints
@@ -339,7 +339,7 @@ class Application extends PropertyObject
 
     @g_app\on_command_line (app, command_line) ->
       paths = [v for v in *command_line.arguments[2, ] when not v\match('^-')]
-      files, hints = parse_path_args paths
+      files, hints = parse_path_args paths, command_line.cwd
       if #files > 0
         app\open files, table.concat(hints, ',')
       else

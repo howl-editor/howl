@@ -21,5 +21,8 @@ core.define 'GApplicationCommandLine < GObject', {
 
       C.g_strfreev arr
       args
+
+    cwd: =>
+      ffi.string C.g_application_command_line_get_cwd @
   }
 }
