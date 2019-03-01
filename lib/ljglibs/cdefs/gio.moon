@@ -280,7 +280,7 @@ ffi.cdef [[
     GApplicationCommandLine *cmdline,
     int *argc);
 
-  gchar * g_application_command_line_get_cwd (GApplicationCommandLine *cmdline);
+  const gchar * g_application_command_line_get_cwd (GApplicationCommandLine *cmdline);
 
   /* GApplication */
   typedef struct {} GApplication;
