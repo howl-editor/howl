@@ -83,10 +83,13 @@ ffi.cdef [[
   typedef gboolean (*GBCallback6) (gpointer, gpointer, gpointer, gpointer, gpointer, gpointer);
   typedef gboolean (*GBCallback7) (gpointer, gpointer, gpointer, gpointer, gpointer, gpointer, gpointer);
 
+  typedef int (*GICallback3) (gpointer, gpointer, gpointer);
+
   typedef gboolean (*GCallback1) (gpointer);
   typedef gboolean (*GCallback2) (gpointer, gpointer);
   typedef gboolean (*GCallback3) (gpointer, gpointer, gpointer);
   typedef gboolean (*GCallback4) (gpointer, gpointer, gpointer, gpointer);
+
 
   /* main loop */
   typedef GCallback1 GSourceFunc;

@@ -68,6 +68,13 @@ ffi.cdef [[
     PANGO_ALIGN_RIGHT
   } PangoAlignment;
 
+  typedef enum {
+    PANGO_ELLIPSIZE_NONE,
+    PANGO_ELLIPSIZE_START,
+    PANGO_ELLIPSIZE_MIDDLE,
+    PANGO_ELLIPSIZE_END
+  } PangoEllipsizeMode;
+
   /* PangoColor */
   typedef struct {
     guint16 red;

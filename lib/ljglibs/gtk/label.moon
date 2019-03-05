@@ -19,6 +19,7 @@ core.define 'GtkLabel < GtkMisc', {
   properties: {
     angle: 'gdouble'
     cursor_position: 'gint'
+    ellipsize: 'PangoEllipsizeMode'
     justify: 'GtkJustification'
     label: 'gchar*'
     lines: 'gint'

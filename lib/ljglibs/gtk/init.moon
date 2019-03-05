@@ -63,4 +63,11 @@ core.auto_loading 'gtk', {
   get_major_version: -> tonumber C.gtk_get_major_version!
   get_minor_version: -> tonumber C.gtk_get_minor_version!
   get_micro_version: -> tonumber C.gtk_get_micro_version!
+
+  check_version: (major, minor = 0, micro = 0) ->
+    result = C.gtk_check_version major, minor, micro
+    if result != ffi.NULL
+      ffi.string result
+    else
+      nil
 }

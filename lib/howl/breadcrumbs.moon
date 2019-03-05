@@ -1,11 +1,11 @@
 -- Copyright 2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:signal, :config} = howl
+{:signal, :config, :sys, :timer} = howl
 {:File} = howl.io
 {:PropertyTable} = howl.util
 {:remove, :insert} = table
-{:min, :max} = math
+{:abs, :min, :max} = math
 
 crumbs = {}
 location = 1
@@ -48,9 +48,9 @@ navigable_crumb = (crumb) ->
   return true if crumb.file and crumb.file.exists
   crumb.buffer_marker and crumb.buffer_marker.buffer
 
-crumbs_are_equal = (c1, c2) ->
+crumbs_are_near = (c1, c2, distance = config.breadcrumb_tolerance) ->
   return false unless c1 and c2
-  return false unless c1.pos == c2.pos
+  return false unless abs(c1.pos - c2.pos) <= distance
   return true if (c1.file and c2.file) and c1.file == c2.file
 
   c1_buffer = c1.buffer_marker and c1.buffer_marker.buffer
@@ -76,15 +76,24 @@ adjust_crumbs_for_closed_buffer = (buffer) ->
 
   location = max 1, location - lower_location_by
 
+remove_at = (i) ->
+  clear_crumb crumbs[i]
+  remove crumbs, i
+  location -= 1 if i < location
+
+clean = ->
+  i = 1
+  while i < #crumbs
+    crumb = crumbs[i]
+    if not navigable_crumb(crumb)
+      remove_at i
+    else
+      i += 1
+
 -- cleans up the crumbs trail, removing duplicates, loops, etc
 -- for performance reasons we stop as soon as we can, meaning the tail
 -- will be clean, but necessarily the entire trail
 clean_crumbs_tail = ->
-  remove_at = (i) ->
-    clear_crumb crumbs[i]
-    remove crumbs, i
-    location -= 1 if i < location
-
   i = #crumbs
   local next, second, third
   while i > 0 and #crumbs > 0 and i >= location - 4
@@ -92,10 +101,10 @@ clean_crumbs_tail = ->
     cur_crumb.pos = crumb_pos cur_crumb
 
     -- 1: dup entries
-    if crumbs_are_equal cur_crumb, next
+    if crumbs_are_near cur_crumb, next
       remove_at i
     -- 2: loop cycles (1, 3, 1, 3)
-    elseif crumbs_are_equal(cur_crumb, second) and crumbs_are_equal(next, third)
+    elseif crumbs_are_near(cur_crumb, second) and crumbs_are_near(next, third)
       remove_at i
       remove_at i
     -- 3:
@@ -121,7 +130,7 @@ adjust_location_for_inactive_buffer = (buffer) ->
 
   buf_at_location = (loc) ->
     c = crumbs[loc]
-    c.buffer_marker and c.buffer_marker.buffer
+    c and c.buffer_marker and c.buffer_marker.buffer
 
   crumb_buf = buf_at_location location - 1
 
@@ -153,7 +162,7 @@ goto_crumb = (crumb) ->
   else
     return
 
-  pos = crumb.pos
+  pos = crumb_pos crumb
   editor.cursor.pos = pos
 
   if crumb.line_at_top
@@ -162,13 +171,30 @@ goto_crumb = (crumb) ->
     -- but due to potential edits we need to ensure we're actually visible
     editor\ensure_visible pos
 
+replace_crumb = (index, new_crumb) ->
+  prev_crumb = crumbs[index]
+  clear_crumb prev_crumb
+  crumbs[index] = new_crumb
+  if new_crumb.buffer_marker
+    new_crumb.buffer_marker.buffer.markers\add {
+      {
+        name: new_crumb.buffer_marker.name,
+        start_offset: new_crumb.pos,
+        end_offset: new_crumb.pos
+      }
+    }
+
 add_crumb = (crumb, at, insert_crumb = false) ->
   prev_crumb = crumbs[at - 1]
-  return false if prev_crumb and crumbs_are_equal crumb, prev_crumb
+  if prev_crumb and crumbs_are_near crumb, prev_crumb
+    replace_crumb at - 1, crumb
+    return false
 
   next_crumb_pos = insert_crumb and at or at + 1
   next_crumb = crumbs[next_crumb_pos]
-  return false if next_crumb and crumbs_are_equal crumb, next_crumb
+  if next_crumb and crumbs_are_near crumb, next_crumb
+    replace_crumb next_crumb_pos, crumb
+    return false
 
   if crumb.buffer_marker
     crumb.buffer_marker.buffer.markers\add {
@@ -249,21 +275,36 @@ drop = (opts) ->
 
 go_back = ->
   clean_crumbs_tail!
-  crumb = crumbs[location - 1]
+  current_crumb = current_edit_location_crumb!
+  idx = 1
+  crumb = crumbs[location - idx]
+  while crumb and crumbs_are_near(crumb, current_crumb)
+    idx += 1
+    crumb = crumbs[location - idx]
+
+  crumb or= crumbs[location - 1]
+
   if crumb
-    location -= 1
-    current_crumb = current_edit_location_crumb!
+    location -= idx
     if current_crumb
-      add_crumb current_crumb, location + 1, true
+      add_crumb current_crumb, location + idx, true
 
     goto_crumb crumb
 
 go_forward = ->
   clean_crumbs_tail!
-  crumb = crumbs[location + 1]
+  current_crumb = current_edit_location_crumb!
+  idx = 1
+  crumb = crumbs[location + idx]
+
+  while crumb and crumbs_are_near(crumb, current_crumb)
+    idx += 1
+    crumb = crumbs[location + idx]
+
+  crumb or= crumbs[location + 1]
+
   if crumb
-    location += 1
-    current_crumb = current_edit_location_crumb!
+    location += idx
     if current_crumb
       if add_crumb(current_crumb, location, true)
         location += 1
@@ -288,15 +329,54 @@ config.define
   name: 'breadcrumb_limit'
   description: 'The maximum number of breadcrumbs to keep'
   scope: 'global'
-  type_of: 'number'
+  type_of: 'positive-number'
   default: 200
+
+config.define
+  name: 'breadcrumb_tolerance'
+  description: 'Distance in positions for which breadcrumbs are merged or skipped over'
+  scope: 'global'
+  type_of: 'positive-number'
+  default: 10
+
+-- track last edit with a breadcrumb
+last_update = sys.time!
+on_idle = ->
+  editor = howl.app.editor
+  return unless editor
+  if editor.buffer.last_changed > last_update
+    last_update = editor.buffer.last_changed
+    last_edit_pos = editor.last_edit_pos
+    if last_edit_pos
+      drop {
+        buffer: editor.buffer,
+        pos: last_edit_pos,
+        line_at_top: editor.line_at_top
+      }
+
+  timer.on_idle 1, on_idle
+
+timer.on_idle 1, on_idle
 
 PropertyTable {
   :init
-  trail: crumbs
-  location: get: -> location
+  trail: get: ->
+    clean!
+    crumbs
+
+  location:
+    get: -> location
+    set: (_, i) ->
+      clean!
+      if i <= 0 or i > #crumbs
+        error "Illegal location #{i}"
+
+      goto_crumb crumbs[i]
+      location = i
+
   previous: get: -> crumbs[location - 1]
   next: get: -> crumbs[location + 1]
+  :crumb_pos
   :clear
   :go_back
   :go_forward

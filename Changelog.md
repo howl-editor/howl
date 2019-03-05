@@ -2,6 +2,18 @@
 
 ## Unreleased (in master)
 
+- Added `navigate-go-to` command, for going back to a specific previous location.
+
+- Added support for specifying line and column when opening files, e.g.
+
+```shell
+$ howl my-file:10
+
+$ howl my-file:10:2
+```
+
+Works both when opening a file locally or remotely using `--reuse`.
+
 - Added support for custom user fonts (place them in <CONFIG-DIR>/fonts, e.g.
 ~/.howl/fonts)
 

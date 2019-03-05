@@ -1,6 +1,7 @@
 mode_reg =
   name: 'javascript'
-  extensions: { 'js', 'jsfl' }
+  extensions: { 'js', 'jsfl', 'jsm', 'es' }
+  shebangs: {'[/ ]node$', '[/ ]nodejs$', '[/ ]gjs$'}
   create: -> bundle_load('javascript_mode')
   parent: 'curly_mode'
 

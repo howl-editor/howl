@@ -39,6 +39,10 @@ const char *p = "my_string";
 char[] c_a = { 'c', '\'', '\324', '\xef', '\"', '\n', '\\' };
 int array[100];
 
+// raw strings
+char[] r_s = R"(can have embedded "quotes" )";
+char[] r_s2 = R"delim(using 'delim' as delimiter)delim";
+
 printf(__FILE__ ": %d: Hello "
            "world\n", __LINE__);
 

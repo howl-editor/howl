@@ -83,14 +83,26 @@ can fit on your screen, and need ways of viewing different buffers.
 ### Navigating back and forth
 
 As you open buffers, perform edits and move around, Howl tries to keep track of
-your previous locations. This can be used to quickly move back and forth in your
-editing history, by using the `navigate-back` and `navigate-forward` commands
-(the commands are bound to `ctrl_<` and `ctrl_>` by default).
+your previous locations, using its "breadcrumbs" module. This can be used to
+quickly move back and forth in your editing history, by using the
+`navigate-back` and `navigate-forward` commands (the commands are bound to
+`ctrl_<` and `ctrl_>` by default). The `navigate-go-to` command (bound to
+`alt_<` by default), lets you select a particular location from all of the
+available saved locations.
 
 Note that the navigation is very useful not only as a tool for switching
 buffers, but for keeping track of previous locations even within the same file.
 This can be a useful time saver, as it's quite common to jump around alot in the
 same file as you search or jump to definitions, etc.
+
+#### Related configuration options
+
+- `breadcrumb_limit`: The maxium number of locations to save. When this limit is
+reached new locations will cause the oldest locations to be forgotten.
+
+- `breadcrumb_tolerance`: It's typically not useful to keep consecutive
+locations saved if they're very close to each other. The breadcrumbs module
+merges saved locations if their distance is less than this value.
 
 ### Switching between open buffers
 
@@ -159,17 +171,49 @@ In the next section, [Editing], you can read more about how to search for
 content within open buffers. Quite often one wants to search the contents of
 files however, to find a specific instance of a certain string such as an
 identifier. Howl has some built-in functionality for helping with this without
-having to explicitly use external tools, in the form of the
-`project-file-search` command (bound to `ctrl_shift_f` by default). As is
-implied by the name the command will perform a search within all the current
-project files for a given term. Whenever the cursor is positioned at something
-that can be interpreted as a token the search is automatically performed for
-that particular token. To search for a specific manually inputted search string
-you can either issue the command manually from the command line, or you can
-position the cursor in an empty space. In both cases search results are
-presented in a list:
+having to explicitly use external tools in the form of two search commands
+catering to two different use cases, `project-file-search` and
+`project-file-search-list`.
+
+Both commands work the same when it comes to how you perform a search. They will
+both perform a search within all the current project files for a given term.
+Whenever the cursor is positioned at something that can be interpreted as a
+token the search is automatically performed for that particular token,
+considering only whole-word matches. To search for a specific manually inputted
+search string you can either issue the command manually from the command line,
+or you can position the cursor in an empty space.
+
+The matches are always sorted according to your current editing position,
+presenting you with what is deemed the most relevant results on top. You can
+preview the matches by moving up and down in the list, and choose to visit a
+specific location by pressing `enter`.
+
+### Quick search and navigation (project-file-search)
+
+The `project-file-search` command (bound to `ctrl_shift_f` by default) will
+perform a search within all the current project files, and will present the
+results in a list:
 
 ![project-file-search](/images/screenshots/monokai/project-file-search.png)
+
+You can preview the matches by moving up and down in the list, and choose to
+navigate to a specific location by pressing `enter`.
+
+### Search and processing (project-file-search-list)
+
+The `project-file-search-list` command (bound to `ctrl_shift_g` by default) will
+perform a search within all the current project files, and will present the
+results in a buffer for further processing. This is useful for scenarios where
+you need to process one or more of the found occurences, such as refactoring.
+
+You can navigate the buffer as you would do a normal buffer, and you can
+navigate to a specific occurence by pressing `enter`. Any visited items are
+marked visually in order to help you keep track of what items you have
+processed. You can also manually mark results as processed or not processed by
+pressing `space` on a specific occurence. You can turn on automatic previews for
+the search results by pressing `p`, and turn them off using `escape`.
+
+![project-file-search-list](/images/screenshots/monokai/project-file-search-list.png)
 
 The matches are always sorted according to your current editing position,
 presenting you with what is deemed the most relevant results on top. You can

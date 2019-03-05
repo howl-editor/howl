@@ -12,7 +12,6 @@ class ListWidget extends PropertyObject
 
     @partial = false
     @opts = moon.copy opts
-    @opts.on_resized = -> list.selection = list.selection
     @text_widget = TextWidget @opts
     @text_widget.visible_rows = 15
     list\insert @text_widget.buffer

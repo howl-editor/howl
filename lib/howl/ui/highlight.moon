@@ -10,6 +10,7 @@ export UNDERLINE = flair.UNDERLINE
 export WAVY_UNDERLINE = flair.WAVY_UNDERLINE
 export RECTANGLE = flair.RECTANGLE
 export ROUNDED_RECTANGLE = flair.ROUNDED_RECTANGLE
+export STRIKE_TROUGH = flair.STRIKE_TROUGH
 
 setmetatable {
   CUSTOM: flair.CUSTOM
@@ -18,6 +19,7 @@ setmetatable {
   WAVY_UNDERLINE: flair.WAVY_UNDERLINE
   RECTANGLE: flair.RECTANGLE
   ROUNDED_RECTANGLE: flair.ROUNDED_RECTANGLE
+  STRIKE_TROUGH: flair.STRIKE_TROUGH
 
   define: (name, definition) ->
     flair.define name, definition

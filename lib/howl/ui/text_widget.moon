@@ -65,6 +65,10 @@ class TextWidget extends PropertyObject
     get: => @buffer.text
     set: (text) => @buffer.text = text
 
+  @property can_focus:
+    get: => @view_gobject.can_focus
+    set: (v) => @view_gobject.can_focus = v
+
   adjust_width_to_fit: =>
     width = @view\block_dimensions 1, @visible_rows
     default_char_width = @view\text_dimensions('M').width

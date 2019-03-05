@@ -47,6 +47,7 @@
     ctrl_shift_e:      'cursor-goto-inspection'
     ctrl_f:            'buffer-search-forward'
     ctrl_shift_f:      'project-file-search'
+    ctrl_shift_g:      'project-file-search-list'
     ctrl_r:            'buffer-search-backward'
     ctrl_comma:        'buffer-search-word-backward'
     ctrl_period:       'buffer-search-word-forward'
@@ -87,6 +88,7 @@
 
     'ctrl_<':          'navigate-back'
     'ctrl_>':          'navigate-forward'
+    'alt_<':           'navigate-go-to'
 
     ctrl_shift_left:   'cursor-word-left-extend'
     ctrl_shift_right:  'cursor-word-right-extend'
@@ -112,6 +114,7 @@
 
   f11:              'window-toggle-fullscreen'
   alt_x:            'run'
+  alt_j:            'open-journal'
 
   shift_alt_left:  'view-left-or-create'
   shift_alt_right: 'view-right-or-create'
@@ -154,6 +157,7 @@
         meta_insert:       'editor-copy'
         meta_return:       'editor-newline-below'
         meta_shift_return: 'editor-newline-above'
+        'meta_<':          'navigate-go-to'
 
         ctrl_tab:          'view-right-wraparound'
         ctrl_shift_tab:    'view-left-wraparound'

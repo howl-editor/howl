@@ -6,7 +6,7 @@ import Window from howl.ui
 match = require 'luassert.match'
 
 require 'howl.interactions.search'
-require 'howl.interactions.selection_list'
+require 'howl.interactions.select'
 
 describe 'search', ->
   local command_line, searcher

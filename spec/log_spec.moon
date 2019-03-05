@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, config from howl
+import app, config, signal from howl
 match = require 'luassert.match'
 
 describe 'log', ->
@@ -44,6 +44,7 @@ describe 'log', ->
       log.error 'my error'
       assert.equal #log.entries, 1
       assert.same log.entries[1], {
+        essentials: 'my error'
         message: 'my error'
         level: 'error'
       }
@@ -66,6 +67,7 @@ describe 'log', ->
 
       assert.equal #log.entries, 1
       assert.same log.entries[1], {
+        essentials: 'my error 10'
         message: 'my error 10'
         level: 'error'
       }
@@ -74,3 +76,35 @@ describe 'log', ->
       log.error 'my error'
       log.clear!
       assert.equal #log.entries, 0
+
+    context 'when a message is logged', ->
+      local append, trim
+
+      log.clear!
+
+      before_each ->
+        append = spy.new -> true
+        trim = spy.new -> true
+        signal.connect 'log-entry-appended', append
+        signal.connect 'log-trimmed', trim
+
+      after_each ->
+        signal.disconnect 'log-entry-appended', append
+        signal.disconnect 'log-trimmed', trim
+        log.clear!
+        append = nil
+        trim = nil
+
+      it 'emits append signals', ->
+        log.info 'test'
+
+        assert.spy(append).was.called_with
+          essentials: 'test'
+          level: 'info'
+          message: 'test'
+
+      it 'emits trim signals', ->
+        log.info 'info'
+        log.clear!
+        assert.spy(trim).was.called_with
+          size: 0

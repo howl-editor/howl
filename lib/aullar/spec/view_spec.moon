@@ -213,6 +213,55 @@ describe 'View', ->
       buffer\redo!
       assert.equals 4, cursor.pos
 
+  context '.last_edit_pos', ->
+    it 'is nil by default', ->
+      assert.is_nil view.last_edit_pos
+
+    it 'is updated when text is inserted at the cursor', ->
+      buffer.text = '123456'
+      cursor.pos = 4
+      view\insert 'x'
+      assert.equals 5, view.last_edit_pos
+
+    it 'is updated when deleting back', ->
+      buffer.text = '123456'
+      cursor.pos = 4
+      view\delete_back!
+      assert.equals 3, view.last_edit_pos
+
+    it 'is reset when buffers are changed', ->
+      view\insert 'x'
+      assert.equals 2, view.last_edit_pos
+      view.buffer = Buffer!
+      assert.is_nil view.last_edit_pos
+
+    it 'is not updated by cursor movements', ->
+      view.buffer = Buffer '123456'
+      assert.is_nil view.last_edit_pos
+      cursor.pos = 4
+      assert.is_nil view.last_edit_pos
+
+    context '(for other modifications)', ->
+      it 'is updated when the view is focused', ->
+        buf = Buffer '123456'
+        view.buffer = buf
+        assert.is_nil view.last_edit_pos
+        cursor.pos = 1
+        buf\insert 1, 'x'
+        assert.equals 2, view.last_edit_pos
+        buf\delete 1, 1
+        assert.equals 1, view.last_edit_pos
+
+      it 'is not updated for unfocused views', ->
+        buf = Buffer '123456'
+        v = View buf
+        assert.is_nil v.last_edit_pos
+        cursor.pos = 1
+        buf\insert 1, 'x'
+        assert.is_nil view.last_edit_pos
+        buf\delete 1, 1
+        assert.is_nil view.last_edit_pos
+
   context 'resource management', ->
 
     it 'references are collected properly', ->

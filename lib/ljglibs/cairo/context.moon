@@ -99,6 +99,7 @@ core.define 'cairo_t', {
   stroke_preserve: => C.cairo_stroke_preserve @
   fill: => C.cairo_fill @
   fill_preserve: => C.cairo_fill_preserve @
+  paint_with_alpha: (alpha) => C.cairo_paint_with_alpha @, alpha
   line_to: (x, y) => C.cairo_line_to @, x, y
   rel_line_to: (dx, dy) => C.cairo_rel_line_to @, dx, dy
   move_to: (x, y) => C.cairo_move_to @, x, y

@@ -102,6 +102,11 @@ howl.bindings.push {
 
 ```
 
+### last_edit_pos
+
+The positition of the last edit for the buffer, if any, or `nil` otherwise. The
+positition is reset whenever a new buffer is shown in the editor.
+
 ### line_at_bottom
 
 Holds the line number of the line visible at the bottom of the editor window.

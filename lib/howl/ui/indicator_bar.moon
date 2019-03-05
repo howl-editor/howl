@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
+Pango = require 'ljglibs.pango'
 
 class IndicatorBar
   new: (cls) =>
@@ -33,7 +34,7 @@ class IndicatorBar
   to_gobject: => @box
 
   _create_indicator: (id, widget) ->
-    widget or= Gtk.Label single_line_mode: true
+    widget or= Gtk.Label single_line_mode: true, ellipsize: Pango.ELLIPSIZE_MIDDLE
     with widget.style_context
       \add_class 'indic_default'
       \add_class 'indic_' .. id

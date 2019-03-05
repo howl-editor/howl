@@ -1,5 +1,6 @@
-import mode, config from howl
-import File from howl.io
+{:Buffer, :mode, :config} = howl
+{:File} = howl.io
+{:Editor} = howl.ui
 
 describe 'mode', ->
   after_each ->
@@ -111,13 +112,81 @@ describe 'mode', ->
       mode.register name: 'sub', parent: 'base', create: -> {}
       config.define name: 'delegated_mode_var', description: 'some var', default: 'def value'
 
-    it 'the instantiated mode has .parent set to the instantiated parent', ->
-      assert.equal mode.by_name('base'), mode.by_name('sub').parent
-
     it 'a mode extending another mode automatically delegates to that mode', ->
        assert.equal 'foo', mode.by_name('sub').foo
        mode.by_name('base').config.delegated_mode_var = 123
        assert.equal 123, mode.by_name('sub').config.delegated_mode_var
+
+    it '.parent is set to the mode parent', ->
+      mode.register name: 'subsub', parent: 'sub', create: -> {}
+      sub_mode = mode.by_name('sub')
+      subsub_mode = mode.by_name('subsub')
+      assert.equal 'base', sub_mode.parent.name
+      assert.equal 'sub', subsub_mode.parent.name
+
+    it 'overridden functions and variables other then parent are respected', ->
+      mode.register name: 'first', create: -> {
+        mode_var1: 'first1'
+        mode_var2: 'first2'
+
+        one: => "#{@mode_var1} #{@two!}"
+        two: => @mode_var2
+      }
+
+      mode.register name: 'second', parent: 'first', create: -> {
+        mode_var1: 'second1'
+
+        two: => "#{@mode_var2}X"
+      }
+
+      second_mode = mode.by_name('second')
+      assert.equal "second1 first2X", second_mode\one!
+
+    describe 'super(...)', ->
+      it 'super methods can be invoked using `super`', ->
+        mode.register name: 'first', create: -> { foo: => "1" }
+        mode.register name: 'second', parent: 'first', create: -> {
+          foo: => super! .. '2'
+        }
+        mode.register name: 'third', parent: 'second', create: -> {
+          foo: => super! .. '3'
+          other: => 'other'
+        }
+
+        third_mode = mode.by_name('third')
+        assert.equal '123', third_mode\foo!
+
+      it 'raises an error if no parent has the specified method', ->
+        mode.register name: 'wrong', create: -> {
+          foo: => super!
+        }
+        assert.raises "No parent 'foo'", ->
+          mode.by_name('wrong')\foo!
+
+      it 'invokes the super method with the correct parameters', ->
+        local args
+        mode.register name: 'first', create: -> {
+          foo: (...) -> args = {...}
+        }
+        mode.register name: 'second', parent: 'first', create: -> {
+          foo: (...) => super ...
+        }
+
+        second = mode.by_name('second')
+        second\foo '1', 2
+        assert.same {second, '1', 2}, args
+
+      it 'works when deriving from the default mode implicitly', ->
+        mode.register name: 'implicit', create: -> {
+          comment_syntax: '--'
+          comment: (editor) => super editor
+        }
+        buf = Buffer {}
+        buf.text = 'line 1\nline2'
+        editor = Editor buf
+
+        mode.by_name('implicit')\comment editor
+        assert.equal '-- line 1\nline2', buf.text
 
     it 'an error is raised if the mode indicated by parent does not exist', ->
       assert.has_error ->
@@ -126,7 +195,7 @@ describe 'mode', ->
 
     it 'parent defaults to "default" unless given', ->
       mode.register name: 'orphan', create: -> {}
-      assert.equal mode.by_name('default'), mode.by_name('orphan').parent
+      assert.equal 'default', mode.by_name('orphan').parent.name
 
   describe '.unregister(name)', ->
     it 'removes the mode specified by <name>', ->

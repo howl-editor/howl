@@ -82,5 +82,5 @@ continuation_indent = (line, indent_level) ->
         cont_indent -= indent_level
       return math.max 0, cont_indent
 
-    return @parent.indent_for self, line, indent_level
+    super line, indent_level
 }
