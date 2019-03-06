@@ -428,7 +428,7 @@ class Application extends PropertyObject
     unless @_loaded
       @settings = Settings!
       @_load_core!
-      if @settings.dir
+      if @settings.dir and not @args.no_profile
         append bundle.dirs, @settings.dir\join 'bundles'
         fonts_dir = @settings.dir\join('fonts')
         if fonts_dir.exists
