@@ -36,8 +36,8 @@ unload = ->
 
 return {
   info:
-    author: 'Alejandro Baez https://keybase.io/baez',
-    description: 'Rust language support',
-    license: 'MIT',
+    author: 'Oliver Jan Krylow https://bugabinga.net'
+    description: 'Rust language support'
+    license: 'MIT'
   :unload
 }
