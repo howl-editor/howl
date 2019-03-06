@@ -622,8 +622,8 @@ class CommandLine extends PropertyObject
 
   hide: =>
     if @showing
-      @bin\hide!
       @showing = false
+      @bin\hide!
       @window.status\show!
       @last_focused\grab_focus! if @last_focused
       @last_focused = nil

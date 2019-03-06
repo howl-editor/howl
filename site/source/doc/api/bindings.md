@@ -12,7 +12,7 @@ a key press, and we say that a key is bound to a certain action whenever that ac
 will trigger as a result of the key being pressed.
 
 The way this works in Howl is that bindings keeps track of an arbitrary number
-of "keymaps" that are searched whenever a key is pressed. A keymap is simple a
+of "keymaps" that are searched whenever a key is pressed. A keymap is simply a
 Lua table with keys matching key translations. The keymaps are stacked, and they
 will all be searched for a matching action whenever a key is pressed. Typically
 processing stops whenever the first action has been triggered, but it's possible

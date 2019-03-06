@@ -208,6 +208,21 @@ And hƏre's line twʘ
       cursor\move_to line: 1, column_index: 3
       assert.equal 3, cursor.pos
 
+    it 'adjust out-of bound values', ->
+      buffer.text = '123\n56789\n'
+
+      cursor\move_to line: 100
+      assert.equal 3, cursor.line
+
+      cursor\move_to line: 0
+      assert.equal 1, cursor.line
+
+      cursor\move_to column: 10
+      assert.equal 4, cursor.column
+
+      cursor\move_to column: 0
+      assert.equal 1, cursor.column
+
   it 'down() moves the cursor one line down, respecting the current column', ->
     buffer.text = 'hello\nmy\nworld'
     cursor.pos = 4

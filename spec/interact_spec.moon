@@ -105,7 +105,7 @@ describe 'interact', ->
         finish1 = captured_finish
         finish1!
 
-        assert.has_error finish1, 'Cannot finish - no running activities'
+        assert.error_matches finish1, 'Cannot finish - no running activities', nil, true
 
       it 'allows cancelling outer interactions, when nested interactions present', ->
         local captured_finish

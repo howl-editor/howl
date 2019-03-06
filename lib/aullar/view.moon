@@ -263,6 +263,7 @@ View = {
         @_buffer = buffer
         buffer\add_listener @_buffer_listener
 
+        @last_edit_pos = nil
         @_first_visible_line = 1
         @_base_x = 0
         @_reset_display!
@@ -713,6 +714,8 @@ View = {
         .cursor_after = @cursor.pos
         .selection_anchor = sel_anchor
         .selection_end_pos = sel_end
+
+      @last_edit_pos = @cursor.pos
 
     -- check whether we should scroll up to fit the contents into the view
     -- we ensure this if the line count was changed, we're showing the last

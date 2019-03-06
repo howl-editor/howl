@@ -1,7 +1,7 @@
 -- Copyright 2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, dispatch from howl
+import app, bindings, command, dispatch from howl
 import theme from howl.ui
 import File from howl.io
 import get_cwd from howl.util.paths
@@ -30,6 +30,16 @@ wait_for = (seconds) ->
 
 wait_a_bit = ->
   wait_for 0.2
+
+press = (...) ->
+  editor = app.editor
+  buffer = editor.buffer
+  mode = editor.mode_at_cursor
+  maps = { buffer.keymap, mode and mode.keymap }
+
+  for key in *{...}
+    event = {key_name: key, character: key, key_code: 123}
+    bindings.process event, 'editor', maps, editor
 
 snapshot = (name, dir, opts) ->
   parking = dispatch.park 'shot'
@@ -292,6 +302,27 @@ screenshots = {
       app.editor.cursor.pos = pos
       app.editor.line_at_top = line.nr
       command.run 'project-file-search'
+  }
+
+  {
+    name: 'project-file-search-list'
+    wait_before: 3
+    wait_after: 1
+    with_overlays: true
+    ->
+      open_files { 'lib/howl/ustring.moon' }
+      editor = app.editor
+      cursor = editor.cursor
+      pos = editor.buffer\find 'append'
+      line = editor.buffer.lines\at_pos pos
+      cursor.pos = pos
+      editor.line_at_top = line.nr
+      command.run 'project-file-search-list'
+      press 'space'
+      cursor\down!
+      press 'space'
+      cursor\down!
+      press 'p'
   }
 
 }

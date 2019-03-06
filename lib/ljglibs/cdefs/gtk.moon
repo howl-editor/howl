@@ -482,4 +482,8 @@ ffi.cdef [[
   guint gtk_get_major_version (void);
   guint gtk_get_minor_version (void);
   guint gtk_get_micro_version (void);
+
+  const gchar * gtk_check_version (guint required_major,
+                                   guint required_minor,
+                                   guint required_micro);
 ]]

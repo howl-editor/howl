@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import app, activities, breadcrumbs, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
-import ActionBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
+import ActionBuffer, JournalBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
 import Process from howl.io
 serpent = require 'serpent'
 
@@ -326,6 +326,59 @@ command.register
     else
       log.info "No next location recorded"
 
+command.register
+  name: 'navigate-go-to'
+  description: 'Goes to a specific location in the history'
+  input: ->
+    to_item = (crumb, i) ->
+      {:buffer_marker, :file} = crumb
+      buffer = buffer_marker and buffer_marker.buffer
+      project = file and Project.for_file(file)
+      where = if project
+        file\relative_to_parent(project.root)
+      elseif file
+          file.path
+      else
+        buffer.title
+
+      pos = breadcrumbs.crumb_pos crumb
+      {
+        i,
+        project and project.root.basename or ''
+        "#{where}@#{pos}"
+        :buffer, :file, :pos
+      }
+
+    crumbs = breadcrumbs.trail
+    items = [to_item(b, i) for i, b in ipairs crumbs]
+
+    if #items == 0
+      log.warn "No locations available for navigation"
+      return nil
+
+    selected = interact.select_location
+      title: "Navigate back to.."
+      :items
+      selection: items[breadcrumbs.location] or items[breadcrumbs.location - 1]
+      columns: {
+        { header: 'Position', style: 'number' },
+        { header: 'Project', style: 'key' },
+        { header: 'Path', style: 'string' }
+      }
+
+    selected and selected.selection
+
+  handler: (loc) ->
+    return unless loc
+    breadcrumbs.location = loc[1]
+
+command.register
+  name: 'open-journal'
+  description: 'Opens the Howl log journal'
+  handler: ->
+    app\add_buffer JournalBuffer!
+    app.editor.cursor\eof!
+
 -----------------------------------------------------------------------
 -- Howl eval commands
 -----------------------------------------------------------------------
@@ -536,6 +589,34 @@ file_search_hit_to_location = (match, search, display_as) ->
 
   loc
 
+do_search = (search, whole_word) ->
+  project = get_project!
+  file_search = howl.file_search
+  matches, searcher = file_search.search project.root, search, :whole_word
+  unless #matches > 0
+    log.error "No matches found for '#{search}'"
+    return matches
+
+  matches = file_search.sort matches, project.root, search, app.editor.current_context
+  display_as = project.config.file_search_hit_display
+  status = "Loaded 0 out of #{#matches} locations.."
+  cancel = false
+  locations = activities.run {
+    title: "Loading #{#matches} locations..",
+    status: -> status
+    cancel: -> cancel = true
+  }, ->
+    return for i = 1, #matches
+      if i % 1000 == 0
+        break if cancel
+        status = "Loaded #{i} out of #{#matches}.."
+        activities.yield!
+
+      m = matches[i]
+      file_search_hit_to_location(m, search, display_as)
+
+  locations, searcher, project
+
 command.register
   name: 'project-file-search',
   description: 'Searches files in the the current project'
@@ -558,36 +639,52 @@ command.register
       log.warn "No search query specified"
       return
 
-    project = get_project!
-    file_search = howl.file_search
-    matches, searcher = file_search.search project.root, search, :whole_word
-    unless #matches > 0
-      log.error "No matches found for '#{search}'"
-      return
-
-    matches = file_search.sort matches, project.root, search, editor.current_context
-    display_as = project.config.file_search_hit_display
-    status = "Loaded 0 out of #{#matches} locations.."
-    cancel = false
-    locations = activities.run {
-      title: "Loading #{#matches} locations..",
-      status: -> status
-      cancel: -> cancel = true
-    }, ->
-      return for i = 1, #matches
-        if i % 1000 == 0
-          break if cancel
-          status = "Loaded #{i} out of #{#matches}.."
-          activities.yield!
-
-        m = matches[i]
-        file_search_hit_to_location(m, search, display_as)
-
-    selected = interact.select_location
-      title: "#{#matches} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
-      items: locations
-    selected and selected.selection
+    locations, searcher, project = do_search search, whole_word
+    if #locations > 0
+      selected = interact.select_location
+        title: "#{#locations} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
+        items: locations
+      selected and selected.selection
 
   handler: (loc) ->
     if loc
       app\open loc
+
+command.register
+  name: 'project-file-search-list',
+  description: 'Searches files in the the current project, listing results in a buffer'
+  input: (...) ->
+    editor = app.editor
+    search = nil
+    whole_word = false
+
+    unless app.window.command_line.showing
+      if editor.selection.empty
+        search = app.editor.current_context.word.text
+        whole_word = true unless search.is_empty
+      else
+        search = editor.selection.text
+
+    if not search or search.is_empty
+      search = interact.read_text!
+
+    if not search or search.is_empty
+      log.warn "No search query specified"
+      return
+
+    locations, searcher, project = do_search search , whole_word
+
+    if #locations > 0
+      matcher = howl.util.Matcher locations
+      list = howl.ui.List matcher
+      list_buf = howl.ui.ListBuffer list, {
+        title: "#{#locations} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
+        on_submit: (location) ->
+          app\open location
+      }
+      list_buf.directory = project.root
+      app\add_buffer list_buf
+
+    nil
+
+  handler: (loc) ->

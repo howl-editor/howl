@@ -35,6 +35,14 @@ Application = core.define 'GApplication < GObject', {
   }
 
   register: => catch_error(C.g_application_register, @, nil) != 0
+  activate: => C.g_application_activate @
+  open: (files, hint = '') =>
+    file_arr = ffi.new 'GFile *[?]', #files
+    for i = 0, #files - 1
+      file_arr[i] = files[i + 1]
+
+    C.g_application_open @, file_arr, #files, hint
+
   release: => C.g_application_release @
   quit: => C.g_application_quit @
 
@@ -43,6 +51,7 @@ Application = core.define 'GApplication < GObject', {
     for i = 0, #args - 1
       arg = args[i + 1]
       argv[i] = ffi.new 'char [?]', #arg + 1, arg
+
     C.g_application_run @, #args, argv
 
   on_open: (handler, ...) =>
@@ -54,6 +63,15 @@ Application = core.define 'GApplication < GObject', {
         gfiles[#gfiles + 1] = gc_ptr object.ref files[i - 1]
 
       handler app, gfiles, ffi_string hint
+
+  on_command_line: (handler, ...) =>
+    require 'ljglibs.gio.application_command_line'
+    signal.connect 'int3', @, 'command-line', (app, command_line) ->
+      exit_code = handler(
+        ffi_cast('GApplication *', app),
+        ffi_cast('GApplicationCommandLine *', command_line)
+      )
+      exit_code or 0
 
 },  (t, application_id, flags = t.FLAGS_NONE) ->
   gc_ptr(C.g_application_new application_id, flags)

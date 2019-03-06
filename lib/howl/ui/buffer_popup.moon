@@ -31,13 +31,13 @@ keymap = {
 
 class BufferPopup extends Popup
 
-  new: (buffer, opts = {}) =>
+  new: (buffer, @opts = {}) =>
     error('Missing argument #1: buffer', 3) if not buffer
-    @buffer = buffer
+    @_buffer = buffer
     @default_style = style.popup and style.popup.background and 'popup' or 'default'
     @view = View buffer._buffer
     with @view.config
-      .view_show_line_numbers = false
+      .view_show_line_numbers = opts.show_line_numbers or false
       .view_show_cursor = false
       .view_show_h_scrollbar = false
       .view_show_v_scrollbar = false
@@ -48,16 +48,28 @@ class BufferPopup extends Popup
 
     super @bin, @_get_dimensions!
 
+  @property buffer:
+    get: => @_buffer
+    set: (b) =>
+      @_buffer = b
+      @view.buffer = b
+
   resize: =>
     dimensions = @_get_dimensions!
     super dimensions.width, dimensions.height
 
   _get_dimensions: =>
-    nr_lines = #@buffer.lines
-    if nr_lines > 1 and @buffer.lines[nr_lines].is_blank
-      nr_lines -= 1
+    first_line = @view.first_visible_line
+    local nr_lines
+    if @opts.show_lines
+      nr_lines = math.min @opts.show_lines, #@_buffer.lines
+    else
+      nr_lines = #@_buffer.lines
+      -- don't show the last line if empty
+      if nr_lines > 1 and @_buffer.lines[nr_lines].is_blank
+        nr_lines -= 1
 
-    width, height = @view\block_dimensions 1, nr_lines
+    width, height = @view\block_dimensions first_line, first_line + nr_lines - 1
     margin = max @view.margin, 3
     width += margin * 2
     height += margin * 2

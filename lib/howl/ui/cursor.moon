@@ -4,7 +4,7 @@
 {:command, :breadcrumbs} = howl
 {:PropertyObject} = howl.util.moon
 aullar = require 'aullar'
-{:min} = math
+{:max, :min} = math
 
 class Cursor extends PropertyObject
   new: (@container, @selection, @opts = {}) =>
@@ -21,10 +21,6 @@ class Cursor extends PropertyObject
 
     set: (style) =>
       @cursor.style = style
-      if style == 'block'
-        @selection.includes_cursor = true
-      elseif style == 'line'
-        @selection.includes_cursor = false
 
   @property pos:
     get: => @view.buffer\char_offset @cursor.pos
@@ -71,12 +67,11 @@ class Cursor extends PropertyObject
       @cursor\move_to pos: @container.buffer\byte_offset(opts.pos), extend: opts.extend
     else
       lines = @container.buffer.lines
-      line = opts.line or @line
-      error "Invalid line #{line}" if line > #lines
+      line = max(1, min(opts.line or @line, #lines))
       b_line = lines[line]
       col_index = opts.column_index
       unless col_index
-        col_index = opts.column and b_line\real_column(opts.column) or 1
+        col_index = opts.column and b_line\real_column(max(opts.column, 1)) or 1
 
       b_col_index = b_line\byte_offset(col_index) or b_line.size
       @cursor\move_to :line, column: b_col_index, extend: opts.extend

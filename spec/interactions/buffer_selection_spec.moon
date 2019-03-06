@@ -1,12 +1,12 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, bindings, interact, Project from howl
+import app, bindings, config, interact, Project from howl
 import File from howl.io
 import Window from howl.ui
 
 require 'howl.ui.icons.font_awesome'
-require 'howl.interactions.selection_list'
+require 'howl.interactions.select'
 require 'howl.interactions.location_selection'
 require 'howl.interactions.buffer_selection'
 
@@ -21,6 +21,8 @@ describe 'buffer_selection', ->
       preview: (@buffer) => nil
     }
     command_line = app.window.command_line
+
+    config.autoclose_single_buffer = false
 
     for b in *app.buffers
       app\close_buffer b

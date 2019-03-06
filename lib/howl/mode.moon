@@ -16,7 +16,7 @@ instance_for_mode = (m) ->
   return live[m] if live[m]
 
   error "Unknown mode specified as parent: '#{m.parent}'", 3 if m.parent and not modes[m.parent]
-  parent = if m.name != 'default' then by_name m.parent or 'default'
+  parent = if m.name != 'default' then by_name(m.parent or 'default')
   target = m.create m.name
 
   config_layer = layer_for m.name
@@ -29,13 +29,31 @@ instance_for_mode = (m) ->
   if mode_vars
     config.set_default(k, v, config_layer) for k,v in pairs mode_vars
 
+  local instance
   instance = setmetatable {
     name: m.name
     config: mode_config
     :config_layer
     :parent
   }, {
-    __index: (_, k) -> target[k] or parent and parent[k]
+    __index: (self, k) ->
+
+      v = target[k]
+      if v
+        if type(v) == 'function'
+          env = getfenv(v)
+          new_env = setmetatable {
+            super: (...) ->
+              up = parent[k]
+              error "No parent '#{k}' available", 2 unless up
+              up instance, ...
+          }, __index: env
+          setfenv v, new_env
+          self[k] = v
+
+        return v
+
+      parent and parent[k]
   }
   live[m] = instance
   instance

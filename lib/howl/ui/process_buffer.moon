@@ -14,7 +14,7 @@ command_activity = (process) ->
   }
 
 resolve_location = (base_directory, line) ->
-  _, _, file, line = line\ufind r'([^\\s:]+):(\\d+)'
+  _, _, file, line = line\ufind r'([^\\s:]+):\\[?(\\d+)'
   if file
     file = File(file, base_directory)
     return { :file , line: tonumber line } if file.exists

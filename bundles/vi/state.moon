@@ -103,6 +103,7 @@ export init = (keymaps) ->
 export activate = (editor) ->
   unless active
     change_mode editor, 'command'
+    editor.selection.includes_cursor = true
     active = true
 
 export deactivate = ->

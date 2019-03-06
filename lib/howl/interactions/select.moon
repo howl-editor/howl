@@ -5,7 +5,7 @@
 {:List, :ListWidget} = howl.ui
 {:Matcher} = howl.util
 
-class SelectionList
+class Select
   run: (@finish, @opts) =>
     @command_line = app.window.command_line
     if not (@opts.matcher or @opts.items) or (@opts.matcher and @opts.items)
@@ -20,7 +20,7 @@ class SelectionList
       reverse: @opts.reverse
       explain: @opts.explain
     @list.columns = @opts.columns
-    @list_widget = ListWidget @list, never_shrink: true
+    @list_widget = ListWidget @list, never_shrink: true, on_resized: @\_handle_change
     @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
 
     @showing_list = false
@@ -105,4 +105,4 @@ class SelectionList
 interact.register
   name: 'select'
   description: 'Get selection made by user from a list of items'
-  factory: SelectionList
+  factory: Select

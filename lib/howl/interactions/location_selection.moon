@@ -29,18 +29,22 @@ interact.register
 
       opts.on_change = (sel, text, items) ->
         if sel
-          preview_buffer = sel.buffer or preview\get_buffer(get_file(sel), sel.line_nr)
+          {:line_nr, :pos} = sel
+
+          preview_buffer = sel.buffer or preview\get_buffer(get_file(sel), line_nr)
           editor\preview preview_buffer
 
           highlight.remove_all 'search', preview_buffer
           highlight.remove_all 'search_secondary', preview_buffer
 
-          if sel.line_nr
-            if #preview_buffer.lines < sel.line_nr
-              log.warn "Line #{sel.line_nr} not loaded in preview"
-            else
-              editor.line_at_center = sel.line_nr
-              line = preview_buffer.lines[sel.line_nr]
+          if not line_nr and pos
+            line = preview_buffer.lines\at_pos(pos)
+            line_nr = line.nr if line
+
+          if line_nr or pos
+            if line_nr and #preview_buffer.lines >= line_nr
+              editor.line_at_center = line_nr
+              line = preview_buffer.lines[line_nr]
 
               if sel.highlights and #sel.highlights > 0
                 add_highlight 'search', preview_buffer, line, sel.highlights[1]
@@ -49,6 +53,10 @@ interact.register
                   add_highlight 'search_secondary', preview_buffer, line, sel.highlights[i]
               else
                 add_highlight 'search', preview_buffer, line
+            elseif line_nr
+              log.warn "Line #{line_nr} not loaded in preview"
+            else
+              log.warn "Position #{pos} not loaded in preview"
 
         if on_change
           on_change sel, text, items

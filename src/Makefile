@@ -5,8 +5,10 @@ GTK = gtk+-3.0
 GTK_CFLAGS = $(shell pkg-config --cflags $(GTK))
 GTK_LIBS = $(shell pkg-config --libs $(GTK) gmodule-2.0 gio-unix-2.0)
 
+# If you change the versions and checksums, make sure to also update io.howl.Editor.yaml.
+
 LUAJIT_VER = LuaJIT-2.1.0-beta3
-LUAJIT_CHECKSUM = eae40bc29d06ee5e3078f9444fcea39b
+LUAJIT_CHECKSUM = 1ad2e34b111c802f9d0cdf019e986909123237a28c746b21295b63c9e785d9c3
 LUAJIT = deps/${LUAJIT_VER}
 LUAJIT_SRC_DIR = $(realpath $(LUAJIT)/src)
 LUAJIT_CFLAGS = -I$(LUAJIT_SRC_DIR)
@@ -14,7 +16,7 @@ LUAJIT_ARCHIVE = $(LUAJIT)/src/libluajit.a
 LUAJIT_URL = http://luajit.org/download/$(LUAJIT_VER).tar.gz
 
 LPEG_VER = lpeg-0.10.2
-LPEG_CHECKSUM = 1402433f02e37ddadff04a3d4118b026
+LPEG_CHECKSUM = d1a7698e4bcd0ac305633774062d22b27300a41673c3d733ea9993244a64ea6f
 LPEG = deps/$(LPEG_VER)
 LPEG_OBJECT = $(LPEG)/lpeg.o
 LPEG_URL = http://nordman.org/mirror/lpeg/$(LPEG_VER).tar.gz
@@ -23,10 +25,10 @@ CFLAGS = -Wall -O2 -g $(LUAJIT_CFLAGS) $(GTK_CFLAGS) -DHOWL_PREFIX=$(PREFIX)
 ARCHIVES = $(LUAJIT_ARCHIVE)
 LIBS = -lm -ldl ${GTK_LIBS}
 ifeq ($(UNAME_S),FreeBSD)
-    LIBS = -lm ${GTK_LIBS}
+	LIBS = -lm ${GTK_LIBS}
 endif
 ifeq ($(UNAME_S),OpenBSD)
-    LIBS = -lm ${GTK_LIBS}
+	LIBS = -lm ${GTK_LIBS}
 endif
 ifeq ($(UNAME_S),Darwin)
 	LD_FLAGS = -Wl,-export_dynamic -pagezero_size 10000 -image_base 100000000
@@ -63,8 +65,8 @@ deps-purge:
 	rm -rf $(LUAJIT) $(LPEG)
 
 deps-clean:
-	@rm $(LPEG_OBJECT) || true
-	@cd $(LUAJIT) && $(MAKE) clean
+	@rm -f $(LPEG_OBJECT) || true
+	@[ -d $(LUAJIT) ] && cd $(LUAJIT) && $(MAKE) clean || true
 
 clean:
 	-rm -f ${OBJECTS}
