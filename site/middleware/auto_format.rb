@@ -12,7 +12,7 @@ class AutoFormat
     return [status, headers, response] unless status == 200 and content.include? '<html>'
     classes = classes content
     want_toc = (classes.include?(:doc) && !classes.include?(:doc_spec)) ||
-      (classes.include?(:versions) && !env['REQUEST_PATH'].include?('/spec/'))
+      (classes.include?(:versions) && !env['PATH_INFO'].include?('/spec/'))
     content = generate_toc(content) if want_toc
     content = separate_arglists(content) if classes & [:doc_api, :doc_spec]
     headers["Content-Length"] = content.bytesize.to_s
