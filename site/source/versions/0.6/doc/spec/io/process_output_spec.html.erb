@@ -1,0 +1,99 @@
+---
+title: Spec - howl.io.process_output
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.io.process_output">howl.io.process_output</h1>
+<div class="spec-group spec-group-2">
+
+<h2 id="parse(output,-opts-=-{})">parse(output, opts = {})</h2>
+
+<h4 id="parses-out-line-numbers-and-messages">parses out line numbers and messages</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">parse</span><span class="w"> </span><span class="s2">"2: foo"</span></code></pre>
+
+
+<h4 id="parses-out-relevant-tokens">parses out relevant tokens</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+    </span><span class="ss">message:</span><span class="w"> </span><span class="s2">"unused: `foo`, 'bar', ‘zed’"</span><span class="p">,</span><span class="w">
+    </span><span class="ss">tokens:</span><span class="w"> </span><span class="p">{</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">parse</span><span class="w"> </span><span class="s2">"3: unused: `foo`, 'bar', ‘zed’"</span></code></pre>
+
+
+<h4 id="parses-out-columns-where-available">parses out columns where available</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">parse</span><span class="w"> </span><span class="s2">"2:12: foo"</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-opts.max_message_length-is-specified)">(when opts.max_message_length is specified)</h3>
+
+<h4 id="shortens-the-messages-as-neccessary">shortens the messages as neccessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span><span class="p">{</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'123åäö..'</span><span class="w"> </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w"> </span><span class="n">parse</span><span class="w"> </span><span class="s2">"1: 123åäö789"</span><span class="p">,</span><span class="w"> </span><span class="ss">max_message_length:</span><span class="w"> </span><span class="mi">8</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(file-references)">(file references)</h3>
+
+<h4 id="parses-out-and-resolves-file-references-according-to-the-directory-option">parses out and resolves file references according to the directory option</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'zed.moon'</span><span class="p">),</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'zed.moon'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'msg'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">parse</span><span class="w"> </span><span class="s2">"zed.moon:3: msg"</span><span class="p">,</span><span class="w"> </span><span class="ss">directory:</span><span class="w"> </span><span class="n">dir</span></code></pre>
+
+
+<h4 id="defaults-to-the-current-working-directory-if-the-directory-option-is-missing">defaults to the current working directory if the directory option is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">glib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">require</span><span class="w"> </span><span class="s1">'ljglibs.glib'</span><span class="w">
+</span><span class="n">cwd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="n">glib</span><span class="p">.</span><span class="n">get_current_dir</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">cwd</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'zed.moon'</span><span class="p">),</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'zed.moon'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'msg'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">parse</span><span class="w"> </span><span class="s2">"zed.moon:3: msg"</span></code></pre>
+
+
+<h4 id="leaves-absolute-paths-alone">leaves absolute paths alone</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="ss">file:</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/tmp/zed.moon'</span><span class="p">),</span><span class="w">
+    </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'/tmp/zed.moon'</span><span class="p">,</span><span class="w">
+    </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+    </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'msg'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">parse</span><span class="w"> </span><span class="s2">"/tmp/zed.moon:3: msg"</span></code></pre>
+
+
+<h4 id="leaves-&quot;-&quot;-paths-alone">leaves &quot;-&quot; paths alone</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'-'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'msg'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">parse</span><span class="w"> </span><span class="s2">"-:3: msg"</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(formats)">(formats)</h3>
+
+<h4 id="handles-sparse-line-and-column-information">handles sparse line and column information</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">parse</span><span class="w"> </span><span class="s2">"3:2:foo"</span></code></pre>
+
+</div>
+</div>
+</div>

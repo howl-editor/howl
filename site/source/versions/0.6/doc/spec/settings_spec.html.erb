@@ -1,0 +1,187 @@
+---
+title: Spec - howl.Settings
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.settings">howl.Settings</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">tmpdir</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Settings</span><span class="w"> </span><span class="n">tmpdir</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">rm_r</span><span class="o">!</span></code></pre>
+
+
+<h4 id=".dir-is-set-to-the-settings-directory-if-available">.dir is set to the settings directory if available</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">tmpdir</span><span class="p">,</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">).</span><span class="n">dir</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'sub'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">)).</span><span class="n">dir</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="new(dir)">new(dir)</h2>
+
+<h4 id="creates-&lt;dir&gt;-if-does-not-exist,-and-its-parent-exists">creates &lt;dir&gt; if does not exist, and its parent exists</h4>
+
+<pre class="highlight moonscript"><code><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="nc">Settings</span><span class="w"> </span><span class="n">target</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">target</span><span class="p">.</span><span class="n">exists</span><span class="w">
+
+</span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub'</span><span class="p">)</span><span class="w">
+</span><span class="nc">Settings</span><span class="w"> </span><span class="n">target</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">target</span><span class="p">.</span><span class="n">exists</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;dir&gt;-is-not-provided)">(when &lt;dir&gt; is not provided)</h3>
+
+<pre class="highlight moonscript"><code><span class="nc">REAL_HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">env</span><span class="p">.</span><span class="n">HOME</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">env</span><span class="p">.</span><span class="n">HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">REAL_HOME</span></code></pre>
+
+
+<h4 id="uses-&quot;$howl_dir&quot;-when-specified">uses &quot;$HOWL_DIR&quot; when specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">env</span><span class="p">.</span><span class="n">HOWL_DIR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="p">.</span><span class="n">path</span><span class="w">
+</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nc">Settings</span><span class="w">
+</span><span class="n">env</span><span class="p">.</span><span class="n">HOWL_DIR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">tmpdir</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">.</span><span class="n">dir</span></code></pre>
+
+
+<h4 id="defaults-to-&quot;$home/.howl&quot;">defaults to &quot;$HOME/.howl&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">env</span><span class="p">.</span><span class="n">HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="p">.</span><span class="n">path</span><span class="w">
+</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nc">Settings</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.howl'</span><span class="p">),</span><span class="w"> </span><span class="n">settings</span><span class="p">.</span><span class="n">dir</span></code></pre>
+
+
+<h4 id="uses-&quot;$home/.config/howl&quot;-if-one-exists">uses &quot;$HOME/.config/howl&quot; if one exists</h4>
+
+<pre class="highlight moonscript"><code><span class="n">xdg_config_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.config'</span><span class="p">)</span><span class="w">
+</span><span class="n">howl_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xdg_config_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'howl'</span><span class="p">)</span><span class="w">
+</span><span class="n">howl_dir</span><span class="o">\</span><span class="n">mkdir_p</span><span class="o">!</span><span class="w">
+</span><span class="n">env</span><span class="p">.</span><span class="n">HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="p">.</span><span class="n">path</span><span class="w">
+</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nc">Settings</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">howl_dir</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">.</span><span class="n">dir</span></code></pre>
+
+
+<h4 id="uses-&quot;$xdg_config_home&quot;-when-specified">uses &quot;$XDG_CONFIG_HOME&quot; when specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">xdg_config_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'xdgconfdirname'</span><span class="p">)</span><span class="w">
+</span><span class="n">howl_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xdg_config_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'howl'</span><span class="p">)</span><span class="w">
+</span><span class="n">howl_dir</span><span class="o">\</span><span class="n">mkdir_p</span><span class="o">!</span><span class="w">
+</span><span class="n">env</span><span class="p">.</span><span class="n">HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="p">.</span><span class="n">path</span><span class="w">
+</span><span class="n">env</span><span class="p">.</span><span class="n">XDG_CONFIG_HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xdg_config_dir</span><span class="p">.</span><span class="n">path</span><span class="w">
+</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nc">Settings</span><span class="w">
+</span><span class="n">env</span><span class="p">.</span><span class="n">XDG_CONFIG_HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">howl_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'system'</span><span class="p">).</span><span class="n">exists</span></code></pre>
+
+
+<h4 id="uses-~/.howl-instead-of-~/.config/howl-if-both-exists">uses ~/.howl instead of ~/.config/howl if both exists</h4>
+
+<pre class="highlight moonscript"><code><span class="n">xdg_config_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.config'</span><span class="p">)</span><span class="w">
+</span><span class="n">conf_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xdg_config_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'howl'</span><span class="p">)</span><span class="w">
+</span><span class="n">conf_dir</span><span class="o">\</span><span class="n">mkdir_p</span><span class="o">!</span><span class="w">
+</span><span class="n">dot_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.howl'</span><span class="p">)</span><span class="w">
+</span><span class="n">dot_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+</span><span class="n">env</span><span class="p">.</span><span class="n">HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="p">.</span><span class="n">path</span><span class="w">
+</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nc">Settings</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">dot_dir</span><span class="p">,</span><span class="w"> </span><span class="n">settings</span><span class="p">.</span><span class="n">dir</span></code></pre>
+
+
+<h4 id="raises-an-error-if-no-config-directory-can-be-found">raises an error if no config directory can be found</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s2">"directory"</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">env</span><span class="p">.</span><span class="n">HOME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="nc">Settings</span><span class="o">!</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="load_user()">load_user()</h2>
+
+<h4 id="evaluates-one-of-{init.lua,-init.moon}-if-found,-in-that-order">evaluates one of {init.lua, init.moon} if found, in that order</h4>
+
+<pre class="highlight moonscript"><code><span class="n">init_moon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.moon'</span><span class="p">)</span><span class="w">
+</span><span class="n">init_moon</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'_G.__init_moon = true'</span><span class="w">
+
+</span><span class="n">settings</span><span class="o">\</span><span class="n">load_user</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">__init_moon</span><span class="w">
+
+</span><span class="n">_G</span><span class="p">.</span><span class="n">__init_moon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">init_lua</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">)</span><span class="w">
+</span><span class="n">init_lua</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'_G.__init_lua = true'</span><span class="w">
+
+</span><span class="n">settings</span><span class="o">\</span><span class="n">load_user</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">__init_lua</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">__init_moon</span></code></pre>
+
+
+<h4 id="does-nothing-if-the-directory-is-not-set">does nothing if the directory is not set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">has</span><span class="p">.</span><span class="n">no_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'sub'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">))</span><span class="o">\</span><span class="n">load_user</span><span class="o">!</span></code></pre>
+
+
+<h4 id="raises-an-error-if-there-is-a-problem-loading-the-init-file">raises an error if there is a problem loading the init file</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.moon'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'UGH!'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'UGH'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="o">\</span><span class="n">load_user</span><span class="o">!</span></code></pre>
+
+
+<h4 id="exposes-a-user_load-helper-for-loading-additional-files">exposes a user_load helper for loading additional files</h4>
+
+<pre class="highlight moonscript"><code><span class="n">init_lua</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">)</span><span class="w">
+</span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'more.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return "more"'</span><span class="w">
+</span><span class="n">sub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'ext'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub.lua'</span><span class="p">)</span><span class="w">
+</span><span class="n">sub</span><span class="p">.</span><span class="n">parent</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+</span><span class="n">sub</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return "sub"'</span><span class="w">
+</span><span class="n">init_lua</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+  _G.__loaded = user_load("more")
+  _G.__loaded_sub = user_load("ext/sub")
+]]</span><span class="w">
+
+</span><span class="n">settings</span><span class="o">\</span><span class="n">load_user</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s2">"more"</span><span class="p">,</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">__loaded</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s2">"sub"</span><span class="p">,</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">__loaded_sub</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="load_system(name)">load_system(name)</h2>
+
+<h4 id="returns-the-loaded-contents-of-a-file-named-system/&lt;name&gt;.lua">returns the loaded contents of a file named system/&lt;name&gt;.lua</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sysdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'system'</span><span class="w">
+ </span><span class="n">sysdir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'foo.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return { a = "bar" }'</span><span class="w">
+ </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="ss">a:</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">},</span><span class="w"> </span><span class="n">settings</span><span class="o">\</span><span class="n">load_system</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+
+<h4 id="returns-nil-if-the-the-file-does-not-exist">returns nil if the the file does not exist</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">settings</span><span class="o">\</span><span class="n">load_system</span><span class="w"> </span><span class="s1">'no_such_file'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="save_system(name,-table)">save_system(name, table)</h2>
+
+<h4 id="saves-the-table-to-a-loadeable-file-system/&lt;name&gt;.lua">saves the table to a loadeable file system/&lt;name&gt;.lua</h4>
+
+<pre class="highlight moonscript"><code><span class="n">settings</span><span class="o">\</span><span class="n">save_system</span><span class="w"> </span><span class="s1">'saved'</span><span class="p">,</span><span class="w"> </span><span class="ss">a:</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'system/saved.lua'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="ss">a:</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">},</span><span class="w"> </span><span class="nb">loadfile</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">!</span></code></pre>
+
+</div>
+</div>

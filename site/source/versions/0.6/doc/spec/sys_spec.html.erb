@@ -1,0 +1,54 @@
+---
+title: Spec - howl.sys
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.sys">howl.sys</h1>
+<div class="spec-group spec-group-2">
+
+<h2 id=".env">.env</h2>
+
+<pre class="highlight moonscript"><code><span class="n">env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sys</span><span class="p">.</span><span class="n">env</span></code></pre>
+
+
+<h4 id="allows-reading-environment-variables-using-plain-indexing">allows reading environment variables using plain indexing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="n">env</span><span class="p">.</span><span class="n">HOME</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="n">env</span><span class="p">[</span><span class="s1">'HOME'</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="nb">os.getenv</span><span class="p">(</span><span class="s1">'HOME'</span><span class="p">),</span><span class="w"> </span><span class="n">env</span><span class="p">.</span><span class="n">HOME</span></code></pre>
+
+
+<h4 id="allows-setting-variables-via-assignment">allows setting variables via assignment</h4>
+
+<pre class="highlight moonscript"><code><span class="n">env</span><span class="p">.</span><span class="n">MY_VAR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'myval'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'myval'</span><span class="p">,</span><span class="w"> </span><span class="n">env</span><span class="p">.</span><span class="n">MY_VAR</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'myval'</span><span class="p">,</span><span class="w"> </span><span class="nb">os.getenv</span><span class="p">(</span><span class="s1">'MY_VAR'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="allows-unsetting-variables-using-a-nil-assignment">allows unsetting variables using a nil assignment</h4>
+
+<pre class="highlight moonscript"><code><span class="n">env</span><span class="p">.</span><span class="n">MY_VAR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'myval'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'myval'</span><span class="p">,</span><span class="w"> </span><span class="nb">os.getenv</span><span class="p">(</span><span class="s1">'MY_VAR'</span><span class="p">)</span><span class="w">
+</span><span class="n">env</span><span class="p">.</span><span class="n">MY_VAR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">env</span><span class="p">.</span><span class="n">MY_VAR</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="nb">os.getenv</span><span class="p">(</span><span class="s1">'MY_VAR'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="allows-iterating-over-the-env-using-pairs">allows iterating over the env using pairs</h4>
+
+<pre class="highlight moonscript"><code><span class="n">env</span><span class="p">.</span><span class="n">MY_VAR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'yowser!'</span><span class="w">
+</span><span class="n">as_table</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">env</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'yowser!'</span><span class="p">,</span><span class="w"> </span><span class="n">as_table</span><span class="p">.</span><span class="n">MY_VAR</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".info">.info</h2>
+
+<h4 id=".os-is-the-lower-case-os-name">.os is the lower case OS name</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="n">jit</span><span class="p">.</span><span class="n">os</span><span class="o">\</span><span class="n">lower</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="n">sys</span><span class="p">.</span><span class="n">info</span><span class="p">.</span><span class="n">os</span></code></pre>
+
+</div>
+</div>

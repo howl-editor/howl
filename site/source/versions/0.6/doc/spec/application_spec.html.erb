@@ -1,0 +1,295 @@
+---
+title: Spec - howl.Application
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.application">howl.Application</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">root_dir</span><span class="p">,</span><span class="w"> </span><span class="n">application</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">root_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">application</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Application</span><span class="w"> </span><span class="n">root_dir</span><span class="p">,</span><span class="w"> </span><span class="p">{}</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">root_dir</span><span class="o">\</span><span class="n">delete_all</span><span class="o">!</span></code></pre>
+
+
+<h4 id=".buffers-are-sorted-by-focus,-visibility-status-and-last_shown">.buffers are sorted by focus, visibility status and last_shown</h4>
+
+<pre class="highlight moonscript"><code><span class="n">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">hidden_buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">hidden_buffer</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hidden'</span><span class="w">
+
+</span><span class="n">last_shown_buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">last_shown_buffer</span><span class="o">\</span><span class="n">add_view_ref</span><span class="w"> </span><span class="n">view</span><span class="w">
+</span><span class="n">last_shown_buffer</span><span class="o">\</span><span class="n">remove_view_ref</span><span class="w"> </span><span class="n">view</span><span class="w">
+</span><span class="n">last_shown_buffer</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'last_shown'</span><span class="w">
+</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="n">last_shown_buffer</span><span class="w">
+
+</span><span class="n">visible_buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">visible_buffer</span><span class="w">
+</span><span class="n">visible_buffer</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'visible'</span><span class="w">
+
+</span><span class="n">visible_focus_buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">visible_focus_buffer</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'visible-focus'</span><span class="w">
+</span><span class="n">application</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">buffer:</span><span class="w"> </span><span class="n">visible_focus_buffer</span><span class="w">
+
+</span><span class="n">buffers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">b</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">application</span><span class="p">.</span><span class="n">buffers</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'visible-focus'</span><span class="p">,</span><span class="w"> </span><span class="s1">'visible'</span><span class="p">,</span><span class="w"> </span><span class="s1">'last_shown'</span><span class="p">,</span><span class="w"> </span><span class="s1">'hidden'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">buffers</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="new_buffer(mode)">new_buffer(mode)</h2>
+
+<h4 id="creates-a-new-buffer-with-mode">creates a new buffer with mode</h4>
+
+<pre class="highlight moonscript"><code><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'default'</span><span class="w">
+</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">new_buffer</span><span class="w"> </span><span class="n">m</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span></code></pre>
+
+
+<h4 id="uses-the-default-mode-if-no-mode-is-specifed">uses the default mode if no mode is specifed</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'default'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">name</span></code></pre>
+
+
+<h4 id="registers-the-new-buffer-in-.buffers">registers the new buffer in .buffers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">application</span><span class="p">.</span><span class="n">buffers</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="add_buffer(buffer,-show)">add_buffer(buffer, show)</h2>
+
+<h4 id="adds-the-buffer-to-.buffers">adds the buffer to .buffers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">add_buffer</span><span class="w"> </span><span class="n">buf</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="n">buf</span><span class="p">},</span><span class="w"> </span><span class="n">application</span><span class="p">.</span><span class="n">buffers</span></code></pre>
+
+
+<h4 id="shows-the-buffer-in-the-current-editor">shows the buffer in the current editor</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">application</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">add_buffer</span><span class="w"> </span><span class="n">buf</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">application</span><span class="p">.</span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span></code></pre>
+
+
+<h4 id="does-not-shows-the-buffer-in-the-current-editor-if-&lt;show&gt;-is-false">does not shows the buffer in the current editor if &lt;show&gt; is false</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">application</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">add_buffer</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_equals</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">application</span><span class="p">.</span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span></code></pre>
+
+
+<h4 id="prevents-the-same-buffer-from-being-added-twice">prevents the same buffer from being added twice</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">add_buffer</span><span class="w"> </span><span class="n">buf</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">add_buffer</span><span class="w"> </span><span class="n">buf</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">application</span><span class="p">.</span><span class="n">buffers</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="open(location,-editor)">open(location, editor)</h2>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span></code></pre>
+
+
+<h4 id=".line_nr-specifies-a-line-nr-to-go-to">.line_nr specifies a line nr to go to</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one\ntwo\nthree'</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="p">{</span><span class="ss">:buffer</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">2</span><span class="p">},</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id=".column-specifies-a-column-to-go-to">.column specifies a column to go to</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one'</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="p">{</span><span class="ss">:buffer</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">2</span><span class="p">},</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span></code></pre>
+
+
+<h4 id=".column_index-specifies-an-offsetted-column-to-go-to">.column_index specifies an offsetted column to go to</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'1\tX'</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="p">{</span><span class="ss">:buffer</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">column_index:</span><span class="w"> </span><span class="mi">3</span><span class="p">},</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="p">.</span><span class="n">column_index</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span></code></pre>
+
+
+<h4 id="highlight-any-highlights">highlight any highlights</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'123456789'</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">:buffer</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+  </span><span class="ss">highlights:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">start_pos:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_pos:</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">start_column:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="ss">end_column:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="ss">highlight:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'search'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-location.file-is-given)">(when location.file is given)</h3>
+
+<h4 id="opens-the-file-in-the-specified-editor-if-given">opens the file in the specified editor if given</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'well hello there'</span><span class="w">
+  </span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">:file</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="returns-the-newly-created-buffer">returns the newly created buffer</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">:file</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span></code></pre>
+
+
+<h4 id="adds-the-buffer-to-@buffers">adds the buffer to @buffers</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">:file</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">application</span><span class="p">.</span><span class="n">buffers</span></code></pre>
+
+
+<h4 id="fires-the-file-opened-signal">fires the file-opened signal</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_signal_handler</span><span class="w"> </span><span class="s1">'file-opened'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">handler</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">:file</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-&lt;file&gt;-is-already-open)">(..  when &lt;file&gt; is already open)</h3>
+
+<h4 id="switches-to-editor-to-the-existing-buffer-instead-of-creating-a-new-one">switches to editor to the existing buffer instead of creating a new one</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'a.foo'</span><span class="w">
+  </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'b.foo'</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+  </span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+  </span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">application</span><span class="p">.</span><span class="n">buffers</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-location.buffer-is-given)">(when location.buffer is given)</h3>
+
+<h4 id="opens-the-file-in-the-specified-editor-if-given">opens the file in the specified editor if given</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'my-buf'</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">:buffer</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'my-buf'</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="returns-the-buffer">returns the buffer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buf2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">:buffer</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">buf2</span></code></pre>
+
+
+<h4 id="adds-the-buffer-to-@buffers">adds the buffer to @buffers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="ss">:buffer</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">buffer</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">application</span><span class="p">.</span><span class="n">buffers</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".recently_closed">.recently_closed</h2>
+
+<pre class="highlight moonscript"><code><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span></code></pre>
+
+
+<h4 id="contains-recently-closed-files">contains recently closed files</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">open_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">)</span><span class="w">
+  </span><span class="n">application</span><span class="o">\</span><span class="n">close_buffer</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="n">file</span><span class="p">.</span><span class="n">path</span><span class="p">},</span><span class="w"> </span><span class="p">[</span><span class="n">f</span><span class="p">.</span><span class="n">file</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">application</span><span class="p">.</span><span class="n">recently_closed</span><span class="p">]</span></code></pre>
+
+
+<h4 id="does-not-show-open-files">does not show open files</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">open_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">)</span><span class="w">
+  </span><span class="n">application</span><span class="o">\</span><span class="n">close_buffer</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">application</span><span class="o">\</span><span class="n">open_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="p">[</span><span class="n">f</span><span class="p">.</span><span class="n">file</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">application</span><span class="p">.</span><span class="n">recently_closed</span><span class="p">]</span></code></pre>
+
+
+<h4 id="limits-number-of-saved-files-to-config.recently_closed_limit">limits number of saved files to config.recently_closed_limit</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">recently_closed_limit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file1</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file2</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file1</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+  </span><span class="n">file2</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+  </span><span class="n">buffer1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">open_file</span><span class="p">(</span><span class="n">file1</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">)</span><span class="w">
+  </span><span class="n">buffer2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">open_file</span><span class="p">(</span><span class="n">file2</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">)</span><span class="w">
+  </span><span class="n">application</span><span class="o">\</span><span class="n">close_buffer</span><span class="w"> </span><span class="n">buffer1</span><span class="w">
+  </span><span class="n">application</span><span class="o">\</span><span class="n">close_buffer</span><span class="w"> </span><span class="n">buffer2</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="n">file2</span><span class="p">.</span><span class="n">path</span><span class="p">},</span><span class="w"> </span><span class="p">[</span><span class="n">f</span><span class="p">.</span><span class="n">file</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">application</span><span class="p">.</span><span class="n">recently_closed</span><span class="p">]</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="synchronize()">synchronize()</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-a-buffer's-file-has-changed-on-disk)">(when a buffer's file has changed on disk)</h3>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">b</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">reload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">application</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">b</span><span class="p">.</span><span class="n">reload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reload</span><span class="w">
+  </span><span class="nb">rawset</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="s1">'modified_on_disk'</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span></code></pre>
+
+
+<h4 id="the-buffer-is-reloaded-automatically-if-it-is-not-modified">the buffer is reloaded automatically if it is not modified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">application</span><span class="o">\</span><span class="n">synchronize</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">reload</span><span class="p">).</span><span class="n">was_called</span><span class="o">!</span></code></pre>
+
+
+<h4 id="the-buffer-is-not-reloaded-automatically-if-it-is-modified">the buffer is not reloaded automatically if it is modified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">b</span><span class="p">.</span><span class="n">modified</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">application</span><span class="o">\</span><span class="n">synchronize</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">reload</span><span class="p">).</span><span class="n">was_not_called</span><span class="o">!</span></code></pre>
+
+</div>
+</div>
+</div>

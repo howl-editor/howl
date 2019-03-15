@@ -1,0 +1,53 @@
+---
+title: Spec - howl.util.PropertyTable
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.util.propertytable">howl.util.PropertyTable</h1>
+
+<h4 id="returns-a-table-with-the-properties-in-the-passed-table">returns a table with the properties in the passed table</h4>
+
+<pre class="highlight moonscript"><code><span class="n">pt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">PropertyTable</span><span class="w"> </span><span class="ss">foo:</span><span class="w">
+  </span><span class="ss">get:</span><span class="w"> </span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">value</span><span class="w">
+  </span><span class="ss">set:</span><span class="w"> </span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">pt</span><span class="p">.</span><span class="n">foo</span><span class="w">
+</span><span class="n">pt</span><span class="p">.</span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">pt</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello'</span></code></pre>
+
+
+<h4 id="non-property-key-accesses-return-nil-by-default">non-property key accesses return nil by default</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="nc">PropertyTable</span><span class="p">({}).</span><span class="n">foo</span></code></pre>
+
+
+<h4 id="non-properties-can-be-accessed-in-the-normal-fashion">non properties can be accessed in the normal fashion</h4>
+
+<pre class="highlight moonscript"><code><span class="n">pt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">PropertyTable</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">foo:</span><span class="w">
+    </span><span class="ss">get:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+  </span><span class="ss">bar:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+  </span><span class="ss">frob:</span><span class="w"> </span><span class="s1">'frob'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">pt</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">pt</span><span class="p">.</span><span class="n">frob</span><span class="p">,</span><span class="w"> </span><span class="s1">'frob'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">pt</span><span class="p">.</span><span class="n">bar</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+
+</span><span class="n">pt</span><span class="p">.</span><span class="n">frob</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'froz'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">pt</span><span class="p">.</span><span class="n">frob</span><span class="p">,</span><span class="w"> </span><span class="s1">'froz'</span></code></pre>
+
+
+<h4 id="writing-to-a-non-property-key-sets-the-value">writing to a non-property key sets the value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">PropertyTable</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">t</span><span class="p">.</span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span></code></pre>
+
+
+<h4 id="writing-to-a-read-only-property-raises-an-error">writing to a read-only property raises an error</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">PropertyTable</span><span class="p">(</span><span class="ss">foo:</span><span class="w"> </span><span class="ss">get:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">).</span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'frob'</span></code></pre>
+
+</div>

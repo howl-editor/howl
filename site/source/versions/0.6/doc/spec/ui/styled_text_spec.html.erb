@@ -1,0 +1,251 @@
+---
+title: Spec - howl.ui.StyledText
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.ui.styledtext">howl.ui.StyledText</h1>
+
+<h4 id="has-a-type-of-styledtext">has a type of StyledText</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'StyledText'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{})</span></code></pre>
+
+
+<h4 id="responds-to-tostring-correctly">responds to tostring correctly</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'my_text'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'my_text'</span><span class="p">,</span><span class="w"> </span><span class="p">{})</span></code></pre>
+
+
+<h4 id="responds-to-the-length-operator-(#)">responds to the length operator (#)</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'my_text'</span><span class="p">,</span><span class="w"> </span><span class="p">{})</span></code></pre>
+
+
+<h4 id="can-be-instantiated-using-a-string-style-instead-of-a-style-table">can be instantiated using a string-style instead of a style table</h4>
+
+<pre class="highlight moonscript"><code><span class="n">st</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'style'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'style'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">},</span><span class="w"> </span><span class="n">st</span><span class="p">.</span><span class="n">styles</span></code></pre>
+
+
+<h4 id="defers-to-the-string-meta-table">defers to the string meta table</h4>
+
+<pre class="highlight moonscript"><code><span class="n">st</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'xåäö'</span><span class="p">,</span><span class="w"> </span><span class="p">{})</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'x'</span><span class="p">,</span><span class="w"> </span><span class="n">st</span><span class="o">\</span><span class="n">sub</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'å'</span><span class="p">,</span><span class="w"> </span><span class="n">st</span><span class="o">\</span><span class="n">usub</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">st</span><span class="p">.</span><span class="n">ulen</span></code></pre>
+
+
+<h4 id="is-equal-to-other-styledtext-instances-with-the-same-values">is equal to other StyledText instances with the same values</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{}),</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{})</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'number'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">}),</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'number'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">})</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_equal</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'fo1'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'number'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">}),</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'number'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">})</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_equal</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'number'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">}),</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'number'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">})</span></code></pre>
+
+
+<h4 id="serializable-by-serpent-into-a-table">serializable by serpent into a table</h4>
+
+<pre class="highlight moonscript"><code><span class="n">st</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="w"> </span><span class="s1">'text'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w">
+</span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">copy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">load</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">dump</span><span class="p">(</span><span class="n">st</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'text'</span><span class="p">,</span><span class="w"> </span><span class="n">copy</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">},</span><span class="w"> </span><span class="n">copy</span><span class="p">.</span><span class="n">styles</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="concatenation">concatenation</h2>
+
+<h4 id="can-be-concatenated-with-strings">can be concatenated with strings</h4>
+
+<pre class="highlight moonscript"><code><span class="n">st</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{})</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foobar'</span><span class="p">,</span><span class="w"> </span><span class="n">st</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'barfoo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="n">st</span></code></pre>
+
+
+<h4 id="can-be-concatenated-with-styledtext-to-produce-styledtext">can be concatenated with StyledText to produce StyledText</h4>
+
+<pre class="highlight moonscript"><code><span class="n">st1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foö'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">})</span><span class="w">
+</span><span class="n">st2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'1234'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'number'</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">})</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'foö1234'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="s1">'number'</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="p">}),</span><span class="w"> </span><span class="n">st1</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="n">st2</span></code></pre>
+
+
+<h4 id="supports-sub-lexing-when-concatenating-styles">supports sub lexing when concatenating styles</h4>
+
+<pre class="highlight moonscript"><code><span class="n">st1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">},</span><span class="w"> </span><span class="s1">'my_sub|base'</span><span class="p">})</span><span class="w">
+</span><span class="n">st2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'second'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">})</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'onetwo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">},</span><span class="w"> </span><span class="s1">'my_sub|base'</span><span class="p">,</span><span class="w">
+  </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="s1">'second'</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w">
+</span><span class="p">}),</span><span class="w"> </span><span class="n">st1</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="n">st2</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'twoone'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'second'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+  </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">},</span><span class="w"> </span><span class="s1">'my_sub|base'</span><span class="p">,</span><span class="w">
+</span><span class="p">}),</span><span class="w"> </span><span class="n">st2</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="n">st1</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(for_table)">(for_table)</h3>
+
+<h4 id="returns-a-table-containing-rows-padded-and-newline-terminated">returns a table containing rows padded and newline terminated</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one  \ntwo  \nthree\n'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span></code></pre>
+
+
+<h4 id="converts-numbers-to-string">converts numbers to string</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">33</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tbl</span><span class="p">),</span><span class="w"> </span><span class="s1">'33'</span></code></pre>
+
+
+<h4 id="allows-for-items-to-be-styledtext-instances">allows for items to be StyledText instances</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">})}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">},</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">styles</span></code></pre>
+
+
+<h4 id="supports-sub-lexing-in-the-styles">supports sub lexing in the styles</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">},</span><span class="w"> </span><span class="s1">'my_sub|base'</span><span class="p">})</span><span class="w">
+</span><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="n">sub</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">sub</span><span class="p">.</span><span class="n">styles</span><span class="p">,</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">styles</span></code></pre>
+
+
+<h4 id="converts-items-to-styledtext-instances-if-&lt;metatable&gt;.__tostyled-exists">converts items to StyledText instances if &lt;metatable&gt;.__tostyled exists</h4>
+
+<pre class="highlight moonscript"><code><span class="n">dyn_styled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">setmetatable</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">__tostyled:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">})</span><span class="w">
+  </span><span class="ss">__tostring:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'two'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="n">dyn_styled</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">},</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">styles</span></code></pre>
+
+
+<h4 id="returns-a-table-of-column-starting-positions-as-the-second-return-value">returns a table of column starting positions as the second return value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">st</span><span class="p">,</span><span class="w"> </span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="p">({</span><span class="w">
+    </span><span class="p">{</span><span class="s1">'123'</span><span class="p">,</span><span class="w"> </span><span class="s1">'åäö'</span><span class="p">,</span><span class="w"> </span><span class="s1">'x'</span><span class="p">}</span><span class="w">
+  </span><span class="p">})</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'123 åäö x\n'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">st</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="p">,</span><span class="w"> </span><span class="ss">num:</span><span class="w"> </span><span class="mi">3</span><span class="p">},</span><span class="w"> </span><span class="n">cols</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--when-items-contain-chunks)">(..  when items contain chunks)</h3>
+
+<h4 id="pads-chunks-correctly">pads chunks correctly</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">' twë '</span><span class="w">
+</span><span class="n">chunk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="o">\</span><span class="n">chunk</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="s1">'onë'</span><span class="p">,</span><span class="w"> </span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'onë  \ntwë  \nthree\n'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="n">tbl</span></code></pre>
+
+
+<h4 id="preserves-chunks-styles">preserves chunks styles</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">howl</span><span class="p">.</span><span class="n">ui</span><span class="p">.</span><span class="nc">ActionBuffer</span><span class="o">!</span><span class="w">
+</span><span class="n">buf</span><span class="o">\</span><span class="n">append</span><span class="w"> </span><span class="s1">'hëllo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="w">
+</span><span class="n">chunk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="o">\</span><span class="n">chunk</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+
+</span><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="n">chunk</span><span class="p">,</span><span class="w"> </span><span class="n">chunk</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'hëllo\nhëllo\n'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="n">tbl</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="p">},</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">styles</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--when-column-style-is-provided)">(..  when column style is provided)</h3>
+
+<h4 id="applies-column-style-to-text-and-padding">applies column style to text and padding</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twooo'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">style:</span><span class="w"> </span><span class="s1">'string'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'one  \ntwooo\n'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">styles</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">}</span></code></pre>
+
+
+<h4 id="preserves-style-for-styledtext-objects">preserves style for StyledText objects</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">(</span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">}),</span><span class="w"> </span><span class="s1">'three'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">style:</span><span class="w"> </span><span class="s1">'comment'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">styles</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'comment'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="s1">'comment'</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="s1">'comment'</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="mi">13</span><span class="p">,</span><span class="w"> </span><span class="s1">'comment'</span><span class="p">,</span><span class="w"> </span><span class="mi">18</span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--when-column-min_width-is-provided)">(..  when column min_width is provided)</h3>
+
+<h4 id="pads-small-cells-to-respect-min_width">pads small cells to respect min_width</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">min_width:</span><span class="w"> </span><span class="mi">10</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'one       \ntwo       \n'</span></code></pre>
+
+
+<h4 id="expands-column-width-beyond-min_width-if-necessary">expands column width beyond min_width if necessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twothreefour'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">min_width:</span><span class="w"> </span><span class="mi">4</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'one         \ntwothreefour\n'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--when-column-align:&quot;right&quot;-is-specified)">(..  when column align:&quot;right&quot; is specified)</h3>
+
+<h4 id="right-aligns-the-text-in-the-column-with-one-extra-space-to-the-right">right aligns the text in the column with one extra space to the right</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="s1">'o'</span><span class="p">,</span><span class="w"> </span><span class="s1">'x'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'x'</span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">align:</span><span class="w"> </span><span class="s1">'right'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'  o x\ntwo x\n'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--when-a-header-is-provided)">(..  when a header is provided)</h3>
+
+<h4 id="includes-header-row">includes header row</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Header\none   \n'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Header'</span><span class="p">}}</span></code></pre>
+
+
+<h4 id="pads-header">pads header</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Heád      \nfirst item\n'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'first item'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Heád'</span><span class="p">}}</span></code></pre>
+
+
+<h4 id="styles-headers-with-header_list,-including-padding">styles headers with header_list, including padding</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tbl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one-long-column'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Head'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tbl</span><span class="p">.</span><span class="n">styles</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'list_header'</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--when-multiple-columns-are-provided)">(..  when multiple columns are provided)</h3>
+
+<h4 id="returns-a-table-containing-multi-columns-rows">returns a table containing multi columns rows</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'oná   first \ntwo   second\nthree third \n'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="s1">'oná'</span><span class="p">,</span><span class="w"> </span><span class="s1">'first'</span><span class="p">}</span><span class="w">
+  </span><span class="p">{</span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'second'</span><span class="p">}</span><span class="w">
+  </span><span class="p">{</span><span class="s1">'three'</span><span class="p">,</span><span class="w"> </span><span class="s1">'third'</span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="columns-can-each-have-a-header">columns can each have a header</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Head1 Head2\none   two  \n'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Head1'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Head2'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="displays-nothing-for-nil-items">displays nothing for nil items</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one   a  \n      two\nthree    \n'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="nc">StyledText</span><span class="p">.</span><span class="n">for_table</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a'</span><span class="p">}</span><span class="w">
+  </span><span class="p">{</span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">}</span><span class="w">
+  </span><span class="p">{</span><span class="s1">'three'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+</div>
+</div>
+</div>

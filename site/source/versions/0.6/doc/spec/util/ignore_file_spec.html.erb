@@ -1,0 +1,270 @@
+---
+title: Spec - howl.util.ignore_file
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.util.ignore_file">howl.util.ignore_file</h1>
+
+<pre class="highlight moonscript"><code><span class="n">assert_matches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">ignore</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">reject</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">rejected</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="p">{})</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">ignore</span><span class="p">(</span><span class="n">reject</span><span class="p">),</span><span class="w"> </span><span class="s2">"'</span><span class="si">#{</span><span class="n">reject</span><span class="si">}</span><span class="s2">' should have been rejected, was not"</span><span class="w">
+
+  </span><span class="k">for</span><span class="w"> </span><span class="n">allow</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">allowed</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="p">{})</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">ignore</span><span class="p">(</span><span class="n">allow</span><span class="p">),</span><span class="w"> </span><span class="s2">"'</span><span class="si">#{</span><span class="n">allow</span><span class="si">}</span><span class="s2">' should have been allowed, was not"</span><span class="w">
+
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">f</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">content</span><span class="w">
+    </span><span class="n">ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ignore_file</span><span class="w"> </span><span class="n">f</span><span class="w">
+    </span><span class="n">assert_matches</span><span class="w"> </span><span class="n">ignore</span><span class="p">,</span><span class="w"> </span><span class="n">t</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="matching">matching</h2>
+
+<h4 id="handles-plain-specifications">handles plain specifications</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/foo/'</span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'food'</span><span class="p">,</span><span class="w"> </span><span class="s1">'snafoo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/food'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/snafoo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'bar/zed'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'bar/zed'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar/zed/'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'bar/zedi'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="handles-one-level-shell-glob-patterns">handles one level shell glob patterns</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="sh">[[
+    prefix*
+    *end
+    a*z
+    *.o
+  ]]</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'prefixed'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'prefix'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'bend'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'end'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'akz'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'subdir/withend'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'src/main.o'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'prefi'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'ended'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'baz'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'azX'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'*'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="s1">'all'</span><span class="p">,</span><span class="w"> </span><span class="s1">'whatever.ext'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/some'</span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="handles-trailing-separator-directory-specifications">handles trailing-separator directory specifications</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="sh">[[
+    dir/
+    sub/dir/
+  ]]</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'dir/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/dir/'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'dir'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="handles-single-sub-dir-globs">handles single sub dir globs</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="sh">[[
+    sub/*.o
+  ]]</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'sub/foo.o'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'sub/x/foo.o'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="handles-double-sub-dir-globs">handles double sub dir globs</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="sh">[[
+  **/foo
+  **/zed/bar
+]]</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'foo'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'sub/foo'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'zed/bar'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'sub/zed/bar'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'sub1/sub2/zed/bar'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'sub/food'</span><span class="p">,</span><span class="w"> </span><span class="s1">'prezed/bar'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'foo/**'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo/bar'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/bar/zed'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo/'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'a/**/b'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'a/b'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a/x/b'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a/x/y/b'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'b'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ab'</span><span class="p">,</span><span class="w"> </span><span class="s1">'aa/b'</span><span class="p">,</span><span class="w"> </span><span class="s1">'aa/x/b'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/a/b'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a/ab'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="handles-specifications-with-leading-slashes">handles specifications with leading slashes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'/foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'food'</span><span class="p">,</span><span class="w"> </span><span class="s1">'snafoo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/foo/'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'/sub/foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'sub/foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/foo/'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'/**/foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub/sub2/foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'food'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="ignores-invalid-sequential-asterisks">ignores invalid sequential asterisks</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'***'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'***'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'**'</span><span class="p">,</span><span class="w"> </span><span class="s1">'****'</span><span class="p">,</span><span class="w"> </span><span class="s1">'xxx'</span><span class="p">,</span><span class="w"> </span><span class="s1">'xxxyyy'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="is-not-confused-by-special-characters-in-patterns">is not confused by special characters in patterns</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'*.ext'</span><span class="p">,</span><span class="w"> </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo.ext'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'fooext'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'*+'</span><span class="p">,</span><span class="w"> </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo+'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'^*'</span><span class="p">,</span><span class="w"> </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'^foo'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'*$'</span><span class="p">,</span><span class="w"> </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo$'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'(*'</span><span class="p">,</span><span class="w"> </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'(foo'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'*)'</span><span class="p">,</span><span class="w"> </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo)'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'{*'</span><span class="p">,</span><span class="w"> </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'{foo'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'*}'</span><span class="p">,</span><span class="w"> </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo}'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert_ignores</span><span class="w"> </span><span class="s1">'x{2}'</span><span class="p">,</span><span class="w"> </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'x{2}'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'xx'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="handles-escapes-in-the-patterns">handles escapes in the patterns</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="sh">[[
+    \#hash
+    \ space
+    \!important
+  ]]</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'#hash'</span><span class="p">,</span><span class="w"> </span><span class="s1">' space'</span><span class="p">,</span><span class="w"> </span><span class="s1">'!important'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'hash'</span><span class="p">,</span><span class="w"> </span><span class="s1">'space'</span><span class="p">,</span><span class="w"> </span><span class="s1">'important'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="handles-negations-and-match-order-in-the-ignore-patterns">handles negations and match order in the ignore patterns</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_ignores</span><span class="w"> </span><span class="sh">[[
+    *
+    !foo
+  ]]</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'food'</span><span class="p">,</span><span class="w"> </span><span class="s1">' snafoo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'whatever'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="ignore-file-handling">ignore file handling</h2>
+
+<h4 id="loads-top-level-and-parent-ignore-files-automatically">loads top-level and parent ignore files automatically</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">parent_ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.ignore'</span><span class="p">)</span><span class="w">
+  </span><span class="n">parent_ignore</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+
+  </span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'root'</span><span class="p">)</span><span class="w">
+  </span><span class="n">root</span><span class="o">\</span><span class="n">mkdir_p</span><span class="o">!</span><span class="w">
+  </span><span class="n">root_ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.ignore'</span><span class="p">)</span><span class="w">
+  </span><span class="n">root_ignore</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+
+  </span><span class="n">ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ignore_file</span><span class="p">.</span><span class="n">evaluator</span><span class="w"> </span><span class="n">root</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">ignore</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">ignore</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+
+<h4 id="defaults-to-loading-&quot;.ignore&quot;-and-&quot;.gitignore&quot;,-prefering-&quot;.ignore&quot;">defaults to loading &quot;.ignore&quot; and &quot;.gitignore&quot;, prefering &quot;.ignore&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.ignore'</span><span class="p">)</span><span class="w">
+  </span><span class="n">ignore</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    foo
+    !bar
+  ]]</span><span class="w">
+
+  </span><span class="n">gitignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.gitignore'</span><span class="p">)</span><span class="w">
+  </span><span class="n">gitignore</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    bar
+    zed
+  ]]</span><span class="w">
+
+  </span><span class="n">assert_matches</span><span class="w"> </span><span class="n">ignore_file</span><span class="p">.</span><span class="n">evaluator</span><span class="p">(</span><span class="n">dir</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'zed'</span><span class="w"> </span><span class="p">}</span><span class="w">
+    </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'bar'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span></code></pre>
+
+
+<h4 id="allows-specifying-ignore-files-with-the-.ignore_files-option">allows specifying ignore files with the .ignore_files option</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.ignore'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'!foo'</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.gitignore'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+  </span><span class="n">ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ignore_file</span><span class="p">.</span><span class="n">evaluator</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="ss">ignore_files:</span><span class="w"> </span><span class="p">{</span><span class="s1">'.gitignore'</span><span class="p">}</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">ignore</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+
+<h4 id="matches-patterns-relative-to-the-ignore-file">matches patterns relative to the ignore file</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">parent</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parent</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'root'</span><span class="p">)</span><span class="w">
+  </span><span class="n">sub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'sub'</span><span class="p">)</span><span class="w">
+  </span><span class="n">deep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sub</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'deep'</span><span class="p">)</span><span class="w">
+  </span><span class="n">deep</span><span class="o">\</span><span class="n">mkdir_p</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">parent</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.ignore'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    root/foo
+    *.o
+  ]]</span><span class="w">
+  </span><span class="n">root</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.ignore'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+  </span><span class="n">sub</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.ignore'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    below
+    deep/frob
+  ]]</span><span class="w">
+  </span><span class="n">deep</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'.ignore'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    zed*
+    !my.o
+  ]]</span><span class="w">
+
+  </span><span class="n">assert_matches</span><span class="w"> </span><span class="n">ignore_file</span><span class="p">.</span><span class="n">evaluator</span><span class="p">(</span><span class="n">root</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">rejected:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="c1">-- parent file</span><span class="w">
+      </span><span class="s1">'obj.o'</span><span class="w"> </span><span class="c1">-- parent file</span><span class="w">
+      </span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="c1">-- root file</span><span class="w">
+      </span><span class="s1">'sub/below'</span><span class="p">,</span><span class="w"> </span><span class="c1">--sub file</span><span class="w">
+      </span><span class="s1">'sub/deep/frob'</span><span class="p">,</span><span class="w"> </span><span class="c1">-- sub file</span><span class="w">
+      </span><span class="s1">'sub/deep/zeddy'</span><span class="p">,</span><span class="w"> </span><span class="c1">-- deep file</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="ss">allowed:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s1">'whatever'</span><span class="p">,</span><span class="w">
+      </span><span class="s1">'root/foo'</span><span class="p">,</span><span class="w">
+      </span><span class="s1">'below'</span><span class="p">,</span><span class="w">
+      </span><span class="s1">'root/below'</span><span class="p">,</span><span class="w">
+      </span><span class="s1">'sub/deep/my.o'</span><span class="w"> </span><span class="c1">-- whitelisted by deep file</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span></code></pre>
+
+</div>
+</div>

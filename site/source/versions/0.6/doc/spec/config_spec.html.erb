@@ -1,0 +1,846 @@
+---
+title: Spec - howl.config
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.config">howl.config</h1>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">reset</span><span class="o">!</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span></code></pre>
+
+
+<h4 id="reset-clears-all-set-values,-but-keeps-the-definitions">reset clears all set values, but keeps the definitions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'var2'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'set'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set_default</span><span class="w"> </span><span class="s1">'var2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'set-default'</span><span class="w">
+
+</span><span class="n">config</span><span class="p">.</span><span class="n">reset</span><span class="o">!</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_nil</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">definitions</span><span class="p">[</span><span class="s1">'var'</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var2'</span></code></pre>
+
+
+<h4 id="global-variables-can-be-set-and-get-directly-on-config">global variables can be set and get directly on config</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'direct'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">default:</span><span class="w"> </span><span class="mi">123</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">direct</span><span class="p">,</span><span class="w"> </span><span class="mi">123</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">direct</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">direct</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'direct'</span><span class="p">),</span><span class="w"> </span><span class="s1">'bar'</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="define(options)">define(options)</h2>
+
+<h4 id="raises-an-error-if-name-is-missing">raises an error if name is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'name'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="p">{}</span></code></pre>
+
+
+<h4 id="raises-an-error-if-the-description-option-is-missing">raises an error if the description option is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'description'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".definitions">.definitions</h2>
+
+<h4 id="is-a-table-of-the-current-definitions,-keyed-by-name">is a table of the current definitions, keyed by name</h4>
+
+<pre class="highlight moonscript"><code><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'foo variable'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="n">var</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">.</span><span class="n">definitions</span><span class="p">),</span><span class="w"> </span><span class="s1">'table'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">var</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">definitions</span><span class="p">.</span><span class="n">foo</span></code></pre>
+
+
+<h4 id="writing-directly-to-it-raises-an-error">writing directly to it raises an error</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">has_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">definitions</span><span class="p">.</span><span class="n">frob</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'crazy'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="set(name,-value)">set(name, value)</h2>
+
+<h4 id="sets-&lt;name&gt;-globally-to-&lt;value&gt;">sets &lt;name&gt; globally to &lt;value&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'foo variable'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="n">var</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span></code></pre>
+
+
+<h4 id="an-error-is-raised-if-&lt;name&gt;-is-not-defined">an error is raised if &lt;name&gt; is not defined</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'Undefined'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'que'</span><span class="p">,</span><span class="w"> </span><span class="s1">'si'</span></code></pre>
+
+
+<h4 id="setting-a-value-of-nil-clears-the-value">setting a value of nil clears the value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'foo variable'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="n">var</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">foo</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="get(name,-scope,-layer)">get(name, scope, layer)</h2>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test variable'</span></code></pre>
+
+
+<h4 id="returns-the-global-value-of-&lt;name&gt;">returns the global value of &lt;name&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'var'</span><span class="p">),</span><span class="w"> </span><span class="s1">'hello'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(scopes)">(scopes)</h3>
+
+<h4 id="get()-returns-value-set-for-specific-scope">get() returns value set for specific scope</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'global-value'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope-value'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'scope-value'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span></code></pre>
+
+
+<h4 id="get()-looks-up-the-value-set()-in-parent-scopes-if-necessary">get() looks up the value set() in parent scopes if necessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'global-value'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'top-value'</span><span class="p">,</span><span class="w"> </span><span class="s1">'root'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope-value'</span><span class="p">,</span><span class="w"> </span><span class="s1">'root/scope1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'scope-value'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'root/scope1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'top-value'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'root/scope2'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'global-value'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope3'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(layers)">(layers)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test variable'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer2'</span></code></pre>
+
+
+<h4 id="set()-errors-for-undefined-layer">set() errors for undefined layer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'Unknown'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="s1">'no-such-layer'</span></code></pre>
+
+
+<h4 id="get()-looks-up-specified-layer-before-default">get() looks up specified layer before default</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1-value'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'default-value'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'layer1-value'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'default-value'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span></code></pre>
+
+
+<h4 id="layers-are-looked-up-at-each-scope">layers are looked up at each scope</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1-top'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2-top'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'default-top'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1-scope'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'layer1-scope'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'layer2-top'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-a-default-is-provided-in-the-definition)">(when a default is provided in the definition)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'with_default'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">default:</span><span class="w"> </span><span class="mi">123</span></code></pre>
+
+
+<h4 id="the-default-value-is-returned-if-no-value-has-been-set">the default value is returned if no value has been set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'with_default'</span><span class="p">),</span><span class="w"> </span><span class="mi">123</span></code></pre>
+
+
+<h4 id="if-a-value-has-been-set-it-takes-precedence">if a value has been set it takes precedence</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'with_default'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'with_default'</span><span class="p">),</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-a-default-has-been-set-by-set_default)">(when a default has been set by set_default)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test variable'</span><span class="p">,</span><span class="w"> </span><span class="ss">default:</span><span class="w"> </span><span class="s1">'def-default'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer2'</span></code></pre>
+
+
+<h4 id="set_default-value-takes-precedence-over-definition-default">set_default value takes precedence over definition default</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set_default</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'set-default'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'set-default'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'def-default'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span></code></pre>
+
+
+<h4 id="set_default-for-a-layer-takes-precedence-over-global-config-value">set_default for a layer takes precedence over global config value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set_default</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'set-default'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'global-value'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'set-default'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'global-value'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span></code></pre>
+
+
+<h4 id="set_default-value-is-not-persisted">set_default value is not persisted</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set_default</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'set-default'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">save_config</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">load_config</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'set-default'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'def-default'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'var'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-a-validate-function-is-provided)">(when a validate function is provided)</h3>
+
+<h4 id="is-called-with-the-value-to-be-set-whenever-the-variable-is-set">is called with the value to be set whenever the variable is set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">validate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">:validate</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="s1">'my_value'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">validate</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'my_value'</span></code></pre>
+
+
+<h4 id="an-error-is-raised-if-the-function-returns-false-for-to-be-set-value">an error is raised if the function returns false for to-be set value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">validate:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">validate:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">no_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">validate:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">no_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+
+<h4 id="an-error-is-not-raised-if-the-function-returns-truish-for-to-be-set-value">an error is not raised if the function returns truish for to-be set value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">validate:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'validated'</span><span class="p">),</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">validate:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo2'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'validated'</span><span class="p">),</span><span class="w"> </span><span class="s1">'foo2'</span></code></pre>
+
+
+<h4 id="the-function-is-not-called-when-clearing-a-value-by-setting-it-to-nil">the function is not called when clearing a value by setting it to nil</h4>
+
+<pre class="highlight moonscript"><code><span class="n">validate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">:validate</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'validated'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">validate</span><span class="p">.</span><span class="n">called</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-a-convert-function-is-provided)">(when a convert function is provided)</h3>
+
+<h4 id="is-called-with-the-value-to-be-set-and-the-return-value-is-used-instead">is called with the value to be set and the return value is used instead</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'converted'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">convert:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'wanted'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'converted'</span><span class="p">,</span><span class="w"> </span><span class="s1">'requested'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">converted</span><span class="p">,</span><span class="w"> </span><span class="s1">'wanted'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-options-is-provided)">(when options is provided)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w">
+    </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'with_options'</span><span class="w">
+    </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+    </span><span class="ss">options:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="an-error-is-raised-if-the-to-be-set-value-is-not-a-valid-option">an error is raised if the to-be set value is not a valid option</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'option'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'with_options'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span></code></pre>
+
+
+<h4 id="an-error-is-not-raised-if-the-to-be-set-value-is-a-valid-option">an error is not raised if the to-be set value is a valid option</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'with_options'</span><span class="p">,</span><span class="w"> </span><span class="s1">'one'</span></code></pre>
+
+
+<h4 id="options-can-be-a-function-returning-a-table">options can be a function returning a table</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'with_options_func'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">options:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="w"> </span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'option'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'with_options_func'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'with_options_func'</span><span class="p">,</span><span class="w"> </span><span class="s1">'one'</span></code></pre>
+
+
+<h4 id="options-can-be-a-table-of-tables-containg-values-and-descriptions">options can be a table of tables containg values and descriptions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'description for one'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'description for two'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'with_options_desc'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">:options</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'option'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'with_options_desc'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'with_options_desc'</span><span class="p">,</span><span class="w"> </span><span class="s1">'one'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-scope-is-provided)">(when scope is provided)</h3>
+
+<h4 id="raises-an-error-if-it-is-not-&quot;local&quot;-or-&quot;global&quot;">raises an error if it is not &quot;local&quot; or &quot;global&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'scope'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'bla'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">scope:</span><span class="w"> </span><span class="s1">'blarg'</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--with-local-scope-for-a-variable)">(..  with local scope for a variable)</h3>
+
+<h4 id="an-error-is-raised-when-trying-to-set-the-global-value-of-the-variable">an error is raised when trying to set the global value of the variable</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'local'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">scope:</span><span class="w"> </span><span class="s1">'local'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'local'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-type_of-is-provided)">(when type_of is provided)</h3>
+
+<h4 id="raises-an-error-if-the-type-is-not-recognized">raises an error if the type is not recognized</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'type'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'bla'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">type_of:</span><span class="w"> </span><span class="s1">'blarg'</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--and-is-&quot;boolean&quot;)">(..  and is &quot;boolean&quot;)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'bool'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">type_of:</span><span class="w"> </span><span class="s1">'boolean'</span><span class="w">
+  </span><span class="n">def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">definitions</span><span class="p">.</span><span class="n">bool</span></code></pre>
+
+
+<h4 id="options-are-{true,-false}">options are {true, false}</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">options</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="convert-handles-boolean-types-and-&quot;true&quot;-and-&quot;false&quot;">convert handles boolean types and &quot;true&quot; and &quot;false&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="kc">true</span><span class="p">),</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="kc">false</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">'true'</span><span class="p">),</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">'false'</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">'blargh'</span><span class="p">),</span><span class="w"> </span><span class="s1">'blargh'</span></code></pre>
+
+
+<h4 id="converts-to-boolean-upon-assignment">converts to boolean upon assignment</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">bool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'false'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">bool</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--and-is-&quot;number&quot;)">(..  and is &quot;number&quot;)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'number'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">type_of:</span><span class="w"> </span><span class="s1">'number'</span><span class="w">
+  </span><span class="n">def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">definitions</span><span class="p">.</span><span class="n">number</span></code></pre>
+
+
+<h4 id="convert-handles-numbers-and-string-numbers">convert handles numbers and string numbers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">'1'</span><span class="p">),</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">'0.5'</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">'blargh'</span><span class="p">),</span><span class="w"> </span><span class="s1">'blargh'</span></code></pre>
+
+
+<h4 id="validate-returns-true-for-numbers-only">validate returns true for numbers only</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">validate</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">validate</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">validate</span><span class="w"> </span><span class="s1">'1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">validate</span><span class="w"> </span><span class="s1">'blargh'</span></code></pre>
+
+
+<h4 id="converts-to-number-upon-assignment">converts to number upon assignment</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">number</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">number</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--and-is-&quot;string_list&quot;)">(..  and is &quot;string_list&quot;)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'string_list'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">type_of:</span><span class="w"> </span><span class="s1">'string_list'</span><span class="w">
+  </span><span class="n">def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">definitions</span><span class="p">.</span><span class="n">string_list</span></code></pre>
+
+
+<h4 id="validate-returns-true-for-table-values">validate returns true for table values</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">validate</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">validate</span><span class="w"> </span><span class="s1">'1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">validate</span><span class="w"> </span><span class="mi">23</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h4 id="convert">convert</h4>
+
+<h4 id="leaves-string-tables-alone">leaves string tables alone</h4>
+
+<pre class="highlight moonscript"><code><span class="n">orig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'hi'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">orig</span><span class="p">,</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="w"> </span><span class="n">orig</span></code></pre>
+
+
+<h4 id="converts-values-in-other-tables-as-necessary">converts values in other tables as necessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">orig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'2'</span><span class="p">,</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="w"> </span><span class="n">orig</span></code></pre>
+
+
+<h4 id="converts-simple-values-into-a-table">converts simple values into a table</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'1'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="w"> </span><span class="s1">'1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'1'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="w"> </span><span class="mi">1</span></code></pre>
+
+
+<h4 id="converts-a-blank-string-into-an-empty-table">converts a blank string into an empty table</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="w"> </span><span class="s1">''</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="w"> </span><span class="s1">'  '</span></code></pre>
+
+
+<h4 id="converts-a-comma-separated-string-into-a-list-of-values">converts a comma separated string into a list of values</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'2'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="w"> </span><span class="s1">'1,2'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'2'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">def</span><span class="p">.</span><span class="n">convert</span><span class="w"> </span><span class="s1">' 1 ,   2 '</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(watching)">(watching)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'trigger'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'watchable'</span></code></pre>
+
+
+<h4 id="watch(name,-function)-register-a-watcher-for-&lt;name&gt;">watch(name, function) register a watcher for &lt;name&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">not_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">watch</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span></code></pre>
+
+
+<h4 id="set-invokes-watchers-with-&lt;name&gt;,-&lt;value&gt;-and-false">set invokes watchers with &lt;name&gt;, &lt;value&gt; and false</h4>
+
+<pre class="highlight moonscript"><code><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">watch</span><span class="w"> </span><span class="s1">'trigger'</span><span class="p">,</span><span class="w"> </span><span class="n">callback</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'trigger'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">callback</span><span class="p">.</span><span class="n">called_with</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'trigger'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value'</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="define(..)-invokes-watchers-with-&lt;name&gt;,-&lt;default-value&gt;-and-false">define(..) invokes watchers with &lt;name&gt;, &lt;default-value&gt; and false</h4>
+
+<pre class="highlight moonscript"><code><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">watch</span><span class="w"> </span><span class="s1">'undefined'</span><span class="p">,</span><span class="w"> </span><span class="n">callback</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'undefined'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'springs into life'</span><span class="p">,</span><span class="w"> </span><span class="ss">default:</span><span class="w"> </span><span class="mi">123</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">callback</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'undefined'</span><span class="p">,</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(..--when-a-callback-raises-an-error)">(..  when a callback raises an error)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">watch</span><span class="w"> </span><span class="s1">'trigger'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="s1">'oh noes'</span></code></pre>
+
+
+<h4 id="other-callbacks-are-still-invoked">other callbacks are still invoked</h4>
+
+<pre class="highlight moonscript"><code><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">watch</span><span class="w"> </span><span class="s1">'trigger'</span><span class="p">,</span><span class="w"> </span><span class="n">callback</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'trigger'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">callback</span><span class="p">.</span><span class="n">called</span></code></pre>
+
+
+<h4 id="an-error-is-logged">an error is logged</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'trigger'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">log</span><span class="p">.</span><span class="n">last_error</span><span class="p">.</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="s1">'watcher'</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="proxy">proxy</h2>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w">
+  </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'my_var'</span><span class="w">
+  </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'base'</span><span class="w">
+  </span><span class="ss">type_of:</span><span class="w"> </span><span class="s1">'number'</span><span class="w">
+
+</span><span class="kd">local</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_outer</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">123</span><span class="w">
+  </span><span class="n">proxy_inner</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">proxy</span><span class="w"> </span><span class="s1">'/outer/inner'</span><span class="w">
+  </span><span class="n">proxy_outer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">proxy</span><span class="w"> </span><span class="s1">'/outer'</span></code></pre>
+
+
+<h4 id="returns-a-table-with-access-to-all-previously-defined-variables">returns a table with access to all previously defined variables</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_outer</span><span class="p">.</span><span class="n">my_var</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span></code></pre>
+
+
+<h4 id="changing-a-variable-changes-it-locally-only">changing a variable changes it locally only</h4>
+
+<pre class="highlight moonscript"><code><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">321</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">321</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_outer</span><span class="p">.</span><span class="n">my_var</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">my_var</span></code></pre>
+
+
+<h4 id="assignments-are-still-validated-and-converted-as-usual">assignments are still validated and converted as usual</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">has_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'not a number'</span><span class="w">
+</span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'111'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">111</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span></code></pre>
+
+
+<h4 id="an-error-is-raised-if-trying-to-set-a-variable-with-global-scope">an error is raised if trying to set a variable with global scope</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'global'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'global'</span><span class="p">,</span><span class="w"> </span><span class="ss">scope:</span><span class="w"> </span><span class="s1">'global'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">has_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">global</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'illegal'</span></code></pre>
+
+
+<h4 id="an-error-is-raised-if-the-variable-is-not-defined">an error is raised if the variable is not defined</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'Undefined'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">que</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'si'</span></code></pre>
+
+
+<h4 id="setting-a-value-to-nil-clears-the-value">setting a value to nil clears the value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">666</span><span class="w">
+</span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span></code></pre>
+
+
+<h4 id="setting-a-variable-via-a-proxy-invokes-watchers-with-&lt;name&gt;,-&lt;value&gt;-and-true">setting a variable via a proxy invokes watchers with &lt;name&gt;, &lt;value&gt; and true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">watch</span><span class="w"> </span><span class="s1">'my_var'</span><span class="p">,</span><span class="w"> </span><span class="n">callback</span><span class="w">
+</span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">333</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">callback</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'my_var'</span><span class="p">,</span><span class="w"> </span><span class="mi">333</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(chaining)">(chaining)</h3>
+
+<h4 id="resolution-automatically-walks-up-scope-hierarchy">resolution automatically walks up scope hierarchy</h4>
+
+<pre class="highlight moonscript"><code><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">proxy_outer</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_outer</span><span class="p">.</span><span class="n">my_var</span><span class="w">
+
+</span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w">
+
+</span><span class="n">proxy_outer</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-layers-are-specified)">(..  when layers are specified)</h3>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">proxy_inner_layered</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_outer_layered</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner_mixed</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner_sub</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer:one'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer:sub'</span><span class="p">,</span><span class="w"> </span><span class="ss">parent:</span><span class="w"> </span><span class="s1">'layer:one'</span><span class="w">
+  </span><span class="n">proxy_inner_layered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">proxy</span><span class="w"> </span><span class="s1">'/outer/inner'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer:one'</span><span class="w">
+  </span><span class="n">proxy_outer_layered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">proxy</span><span class="w"> </span><span class="s1">'/outer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer:one'</span><span class="w">
+  </span><span class="n">proxy_inner_mixed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">proxy</span><span class="w"> </span><span class="s1">'/outer/inner'</span><span class="p">,</span><span class="w"> </span><span class="s1">'default'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer:one'</span><span class="w">
+  </span><span class="n">proxy_inner_sub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">proxy</span><span class="w"> </span><span class="s1">'/outer/inner'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer:sub'</span></code></pre>
+
+
+<h4 id="layer-is-checked-before-default-values-at-each-scope">layer is checked before default values at each scope</h4>
+
+<pre class="highlight moonscript"><code><span class="n">proxy_inner_layered</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">proxy_outer_layered</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">proxy_outer</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner_layered</span><span class="p">.</span><span class="n">my_var</span><span class="w">
+
+</span><span class="n">proxy_inner_layered</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner_layered</span><span class="p">.</span><span class="n">my_var</span><span class="w">
+
+</span><span class="n">proxy_inner</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner_layered</span><span class="p">.</span><span class="n">my_var</span></code></pre>
+
+
+<h4 id="read-for-a-layer-auto-delegates-up-to-parent-layer">read for a layer auto delegates up to parent layer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">proxy_inner_layered</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner_sub</span><span class="p">.</span><span class="n">my_var</span></code></pre>
+
+
+<h4 id="read-layer-can-be-different-from-write-layer">read layer can be different from write layer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">proxy_inner_layered</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">proxy_inner_mixed</span><span class="p">.</span><span class="n">my_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_inner_mixed</span><span class="p">.</span><span class="n">my_var</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(replace())">(replace())</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'description'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'description'</span></code></pre>
+
+
+<h4 id="clobbers-new-scope-and-deep-copies-all-values-from-scope-to-new-scope">clobbers new scope and deep copies all values from scope to new scope</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'here'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'here'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+
+</span><span class="n">config</span><span class="p">.</span><span class="n">replace</span><span class="w"> </span><span class="s1">'here'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'value1'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'value2'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+
+
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value1-new'</span><span class="p">,</span><span class="w"> </span><span class="s1">'here'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'value1'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(merge())">(merge())</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'description'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'description'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name3'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'description'</span></code></pre>
+
+
+<h4 id="deep-copies-values-from-scope-to-new-scope,-preserves-other-values-in-old-scope">deep copies values from scope to new scope, preserves other values in old scope</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'here'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'here'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there-value1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name3'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there-value3'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'there-value1'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+
+</span><span class="n">config</span><span class="p">.</span><span class="n">merge</span><span class="w"> </span><span class="s1">'here'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'value1'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'value2'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'there-value3'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name3'</span><span class="p">,</span><span class="w"> </span><span class="s1">'there'</span><span class="p">,</span><span class="w"> </span><span class="s1">'layer2'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(delete())">(delete())</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'description'</span></code></pre>
+
+
+<h4 id="deletes-all-values-at-specified-scope">deletes all values at specified scope</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'val1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'top-val'</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">delete</span><span class="w"> </span><span class="s1">'scope1'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'top-val'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span></code></pre>
+
+
+<h4 id="errors-when-trying-to-delete-global-scope">errors when trying to delete global scope</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'global'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">delete</span><span class="w"> </span><span class="s1">''</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(persistence)">(persistence)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'description'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'description'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer1'</span></code></pre>
+
+
+<h4 id="save_config()-saves-and-load_config()-loads-the-saved-config">save_config() saves and load_config() loads the saved config</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value2'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">save_config</span><span class="w"> </span><span class="n">dir</span><span class="w">
+
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="w">
+
+  </span><span class="n">config</span><span class="p">.</span><span class="n">load_config</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'value1'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'value2'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name2'</span></code></pre>
+
+
+<h4 id="non-global-scopes-are-not-persisted">non global scopes are not persisted</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">save_config</span><span class="w"> </span><span class="n">dir</span><span class="w">
+
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span><span class="w">
+
+  </span><span class="n">config</span><span class="p">.</span><span class="n">load_config</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span></code></pre>
+
+
+<h4 id="does-not-save-values-if-persist_config-is-false">does not save values if persist_config is false</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value2'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'persist_config'</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">save_config</span><span class="w"> </span><span class="n">dir</span><span class="w">
+
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="w">
+
+  </span><span class="n">config</span><span class="p">.</span><span class="n">load_config</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'scope1'</span></code></pre>
+
+
+<h4 id="saves-persist_config-value">saves persist_config value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'persist_config'</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">save_config</span><span class="w"> </span><span class="n">dir</span><span class="w">
+
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="w">
+
+  </span><span class="n">config</span><span class="p">.</span><span class="n">load_config</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'persist_config'</span></code></pre>
+
+
+<h4 id="does-not-save-buffer-scopes">does not save buffer scopes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value1-global'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value2-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'buffer/123'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">save_config</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">load_config</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'value1-global'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'buffer/123'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(for_file)">(for_file)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">''</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name2'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">''</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name3'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">''</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer1'</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define_layer</span><span class="w"> </span><span class="s1">'layer2'</span></code></pre>
+
+
+<h4 id="returns-a-proxy-that-inherits-from-global">returns a proxy that inherits from global</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">set</span><span class="w"> </span><span class="s1">'name1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'value1'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'value1'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'abc'</span><span class="p">).</span><span class="n">name1</span></code></pre>
+
+
+<h4 id="returns-the-same-config-for-same-file-path">returns the same config for same file path</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">fileconfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'abc'</span><span class="p">)</span><span class="w">
+  </span><span class="n">fileconfig</span><span class="p">.</span><span class="n">name1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'file-value1'</span><span class="w">
+  </span><span class="n">fileconfig2</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/abc'</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'file-value1'</span><span class="p">,</span><span class="w"> </span><span class="n">fileconfig2</span><span class="p">.</span><span class="n">name1</span></code></pre>
+
+
+<h4 id="constructs-scopes-that-inherit-from-ancestor-file-scopes">constructs scopes that inherit from ancestor file scopes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">with</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w">
+    </span><span class="p">.</span><span class="n">name1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'dir-value1'</span><span class="w">
+    </span><span class="p">.</span><span class="n">name2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'dir-value2'</span><span class="w">
+  </span><span class="k">with</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'abc'</span><span class="p">)</span><span class="w">
+    </span><span class="p">.</span><span class="n">name1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'file-value1'</span><span class="w">
+    </span><span class="p">.</span><span class="n">name3</span><span class="o">=</span><span class="w"> </span><span class="s1">'file-value3'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'file-value1'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'abc'</span><span class="p">).</span><span class="n">name1</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'dir-value2'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'abc'</span><span class="p">).</span><span class="n">name2</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="p">).</span><span class="n">name33</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">name3</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(for_layer)">(for_layer)</h3>
+
+<h4 id="creates-another-proxy-for-specified-layer-at-same-scope">creates another proxy for specified layer at same scope</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">with</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="p">).</span><span class="n">for_layer</span><span class="p">(</span><span class="s1">'layer1'</span><span class="p">)</span><span class="w">
+    </span><span class="p">.</span><span class="n">name1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'dir-layer1-value1'</span><span class="w">
+  </span><span class="k">with</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w">
+    </span><span class="p">.</span><span class="n">name1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'dir-value1'</span><span class="w">
+
+  </span><span class="k">with</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="o">..</span><span class="s1">'abc'</span><span class="p">).</span><span class="n">for_layer</span><span class="p">(</span><span class="s1">'layer1'</span><span class="p">)</span><span class="w">
+    </span><span class="p">.</span><span class="n">name1</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="s1">'file-layer1-value1'</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'file-layer1-value1'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="o">..</span><span class="s1">'abc'</span><span class="p">).</span><span class="n">for_layer</span><span class="p">(</span><span class="s1">'layer1'</span><span class="p">).</span><span class="n">name1</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'dir-value1'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">dir</span><span class="o">..</span><span class="s1">'abc'</span><span class="p">).</span><span class="n">name1</span></code></pre>
+
+</div>
+</div>

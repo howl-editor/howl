@@ -1,0 +1,126 @@
+---
+title: Spec - howl.dispatch
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.dispatch">howl.dispatch</h1>
+<div class="spec-group spec-group-2">
+
+<h2 id="launch(f,-...)">launch(f, ...)</h2>
+
+<h4 id="invokes-&lt;f&gt;-in-a-coroutine-with-the-specified-arguments">invokes &lt;f&gt; in a coroutine with the specified arguments</h4>
+
+<pre class="highlight moonscript"><code><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">is_main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">coroutine.running</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">is_main</span><span class="w">
+
+</span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">f</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;f&gt;-starts-correctly)">(when &lt;f&gt; starts correctly)</h3>
+
+<h4 id="returns-true,-the-coroutine-status,-and-the-coroutine">returns true, the coroutine status, and the coroutine</h4>
+
+<pre class="highlight moonscript"><code><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">co_status</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'dead'</span><span class="p">,</span><span class="w"> </span><span class="n">co_status</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'dead'</span><span class="p">,</span><span class="w"> </span><span class="nb">coroutine.status</span><span class="p">(</span><span class="n">co</span><span class="p">)</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;f&gt;-errors-upon-start)">(when &lt;f&gt; errors upon start)</h3>
+
+<h4 id="returns-false,-the-error-message-and-the-coroutine">returns false, the error message and the coroutine</h4>
+
+<pre class="highlight moonscript"><code><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="p">,</span><span class="w"> </span><span class="n">co</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">status</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'dead'</span><span class="p">,</span><span class="w"> </span><span class="nb">coroutine.status</span><span class="p">(</span><span class="n">co</span><span class="p">)</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="wait()">wait()</h2>
+
+<h4 id="yields-until-resumed-using-resume()-on-the-parked-handle">yields until resumed using resume() on the parked handle</h4>
+
+<pre class="highlight moonscript"><code><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">park</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+</span><span class="n">done</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+
+</span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dispatch</span><span class="p">.</span><span class="n">wait</span><span class="w"> </span><span class="n">handle</span><span class="w">
+  </span><span class="n">done</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">done</span><span class="w">
+</span><span class="n">dispatch</span><span class="p">.</span><span class="n">resume</span><span class="w"> </span><span class="n">handle</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">done</span></code></pre>
+
+
+<h4 id="returns-any-parameters-passed-to-resume()">returns any parameters passed to resume()</h4>
+
+<pre class="highlight moonscript"><code><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">park</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+</span><span class="kd">local</span><span class="w"> </span><span class="n">res</span><span class="w">
+
+</span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">wait</span><span class="w"> </span><span class="n">handle</span><span class="w"> </span><span class="p">}</span><span class="w">
+
+</span><span class="n">dispatch</span><span class="p">.</span><span class="n">resume</span><span class="w"> </span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+
+<h4 id="raises-an-error-when-resumed-with-resume_with_error()">raises an error when resumed with resume_with_error()</h4>
+
+<pre class="highlight moonscript"><code><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">park</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+</span><span class="kd">local</span><span class="w"> </span><span class="n">err</span><span class="w">
+
+</span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">wait</span><span class="p">,</span><span class="w"> </span><span class="n">handle</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">status</span><span class="w">
+
+</span><span class="n">dispatch</span><span class="p">.</span><span class="n">resume_with_error</span><span class="w"> </span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="s1">'blargh!'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">err</span><span class="p">,</span><span class="w"> </span><span class="s1">'blargh!'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="resume()">resume()</h2>
+
+<h4 id="propagates-any-error-occurring-during-resuming">propagates any error occurring during resuming</h4>
+
+<pre class="highlight moonscript"><code><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">park</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+
+</span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dispatch</span><span class="p">.</span><span class="n">wait</span><span class="w"> </span><span class="n">handle</span><span class="w">
+  </span><span class="nb">error</span><span class="w"> </span><span class="s1">'boom'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'boom'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">resume</span><span class="w"> </span><span class="n">handle</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-nothing-is-yet-waiting-on-the-parking)">(when nothing is yet waiting on the parking)</h3>
+
+<h4 id="------it-'blocks-until-released-by-a-wait',-(done)--&gt;
+">      it 'blocks until released by a wait', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">park</span><span class="w"> </span><span class="s1">'out-of-order'</span><span class="w">
+  </span><span class="n">launched</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">resume</span><span class="w"> </span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="s1">'resume-now!'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">launched</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s2">"suspended"</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="w">
+
+  </span><span class="n">launched</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'resume-now!'</span><span class="p">,</span><span class="w"> </span><span class="n">dispatch</span><span class="p">.</span><span class="n">wait</span><span class="w"> </span><span class="n">handle</span><span class="w">
+    </span><span class="n">done</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">launched</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s2">"dead"</span><span class="p">,</span><span class="w"> </span><span class="n">status</span></code></pre>
+
+</div>
+</div>
+</div>

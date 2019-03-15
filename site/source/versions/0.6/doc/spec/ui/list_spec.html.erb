@@ -1,0 +1,542 @@
+---
+title: Spec - howl.ui.List
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.ui.list">howl.ui.List</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">items</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">ActionBuffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">List</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">items</span><span class="w">
+  </span><span class="n">list</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="n">buf</span><span class="w">
+
+</span><span class="n">list_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="o">#</span><span class="p">[</span><span class="n">l</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">.</span><span class="n">lines</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">l</span><span class="p">.</span><span class="n">is_blank</span><span class="p">]</span></code></pre>
+
+
+<h4 id="shows-single-column-items,-each-on-one-line">shows single column items, each on one line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one  \ntwo  \nthree\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="allows-items-to-be-chunks">allows items to be Chunks</h4>
+
+<pre class="highlight moonscript"><code><span class="n">source_buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">source_buf</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'source'</span><span class="w">
+</span><span class="n">chunk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">source_buf</span><span class="o">\</span><span class="n">chunk</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="w">
+</span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">chunk</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'source\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id=".rows_shown-is-the-number-of-rows-drawn-for-the-list">.rows_shown is the number of rows drawn for the list</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one\ntwo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">rows_shown</span></code></pre>
+
+
+<h4 id="shows-multi-column-items-each-on-one-line,-in-separate-columns">shows multi column items each on one line, in separate columns</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="s1">'item one'</span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="s1">'second'</span><span class="p">,</span><span class="w"> </span><span class="s1">'item two'</span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+first  item one
+second item two
+]]</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="shows-&quot;(no-items)&quot;-for-an-empty-list">shows &quot;(no items)&quot; for an empty list</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'(no items)\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">rows_shown</span></code></pre>
+
+
+<h4 id="shows-headers,-if-given,-above-the-items">shows headers, if given, above the items</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="s1">'item one'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Header 1'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Header 2'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+Header 1 Header 2
+first    item one
+]]</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">rows_shown</span></code></pre>
+
+
+<h4 id="all-properties-can-be-changed-after-initial-assignment">all properties can be changed after initial assignment</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'one\ntwo\n'</span><span class="w">
+</span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'three'</span><span class="p">,</span><span class="w"> </span><span class="s1">'four'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'three\nfour \n'</span><span class="w">
+
+</span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'three'</span><span class="p">,</span><span class="w"> </span><span class="s1">'four'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Header 1'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Header 2'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+Header 1 Header 2
+three    four    ]]</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h3 id="(matcher-integration)">(matcher integration)</h3>
+
+<h4 id="shows-matching-items-only,-when-update(match_text)-called">shows matching items only, when update(match_text) called</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Matcher</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twö'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="w"> </span><span class="s1">'o'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="highlights-matching-parts-of-text-with-list_highlight">highlights matching parts of text with list_highlight</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Matcher</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twö'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="w"> </span><span class="s1">'ne'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_highlight'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_highlight'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_highlight'</span></code></pre>
+
+
+<h4 id="handles-higlighting-of-multibyte-chars">handles higlighting of multibyte chars</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Matcher</span><span class="w"> </span><span class="p">{</span><span class="s1">'åne'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twö'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="w"> </span><span class="s1">'ån'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'åne\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_highlight'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_highlight'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_highlight'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-.max_rows-is-set)">(when .max_rows is set)</h3>
+
+<h4 id="shows-only-up-to-max_rows-rows">shows only up to max_rows rows</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">list_size</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'one'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">rows_shown</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">page_size</span><span class="w">
+
+</span><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">math.huge</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one  \ntwo  \nthree\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">rows_shown</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">page_size</span></code></pre>
+
+
+<h4 id="errors-if-height-is-insufficient-to-show-at-least-one-item">errors if height is insufficient to show at least one item</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'insufficient height'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span></code></pre>
+
+
+<h4 id="it-takes-headers-into-account-when-set">it takes headers into account when set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">header:</span><span class="s1">'Takes up one line'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'one'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">rows_shown</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">page_size</span></code></pre>
+
+
+<h4 id="displays-info-about-the-currently-shown-items">displays info about the currently shown items</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'showing 1 to 1 out of 3'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-.min_rows-is-set)">(when .min_rows is set)</h3>
+
+<h4 id="is-ignored-when-the-list-is-bigger-than-the-value">is ignored when the list is bigger than the value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">min_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">list_size</span><span class="o">!</span></code></pre>
+
+
+<h4 id="adds-lines-to-ensure-the-given-value">adds lines to ensure the given value</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">min_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'~\n~\n(no items)\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">rows_shown</span><span class="w">
+
+</span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">min_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one\n~\n~\n~\n~\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">rows_shown</span></code></pre>
+
+
+<h4 id="sets-.filler_text-for-each-filler-line-if-specified">sets .filler_text for each filler line if specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">opts</span><span class="p">.</span><span class="n">filler_text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'##'</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">min_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one\n##\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-items-are-not-strings)">(when items are not strings)</h3>
+
+<h4 id="automatically-converts-items-to-strings-using-tostring-before-displaying">automatically converts items to strings using tostring before displaying</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'1\n2\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="the-selection-is-still-the-raw-item">the selection is still the raw item</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">57</span><span class="p">,</span><span class="w"> </span><span class="mi">59</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="p">,</span><span class="w"> </span><span class="mi">57</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="styling">styling</h2>
+
+<h4 id="headers-are-styled-using-the-list_header-style">headers are styled using the list_header style</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Header 1'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">header_style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">style</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'list_header'</span><span class="p">,</span><span class="w"> </span><span class="n">header_style</span></code></pre>
+
+
+<h4 id="columns-are-styled-using-the-styles-specified-in-.columns[i].style">columns are styled using the styles specified in .columns[i].style</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="s1">'second'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">style:</span><span class="w"> </span><span class="s1">'keyword'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">style:</span><span class="w"> </span><span class="s1">'identifier'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'keyword'</span><span class="p">,</span><span class="w"> </span><span class="n">style</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'identifier'</span><span class="p">,</span><span class="w"> </span><span class="n">style</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(selection)">(selection)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span></code></pre>
+
+
+<h4 id="selects-the-first-item-by-default">selects the first item by default</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span></code></pre>
+
+
+<h4 id=".selection-is-nil-for-an-empty-list">.selection is nil for an empty list</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span></code></pre>
+
+
+<h4 id="highlights-the-selected-item-with-list_selection">highlights the selected item with list_selection</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'list_selection'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">start_pos</span><span class="p">)</span></code></pre>
+
+
+<h4 id="adjusts-highlight-when-headers-present">adjusts highlight when headers present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">columns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">header:</span><span class="w"> </span><span class="s1">'Head'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'list_selection'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">start_pos</span><span class="p">)</span></code></pre>
+
+
+<h4 id="pads-lines-if-neccessary-to-achieve-a-uniform-selection-highlight">pads lines if neccessary to achieve a uniform selection highlight</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">buf</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">buf</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id=".selection-=-&lt;item&gt;">.selection = &lt;item&gt;</h3>
+
+<h4 id="causes-&lt;item&gt;-to-be-selected">causes &lt;item&gt; to be selected</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'two'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span></code></pre>
+
+
+<h4 id="raises-an-error-if-&lt;item&gt;-can-not-be-found">raises an error if &lt;item&gt; can not be found</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'not found'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'five'</span></code></pre>
+
+
+<h4 id="highlights-the-new-selection-and-clears-any-old-highlight">highlights the new selection and clears any old highlight</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'list_selection'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'two'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'list_selection'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">start_pos</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span></code></pre>
+
+
+<h4 id="scrolls-the-list-if-needed">scrolls the list if needed</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="select_next()">select_next()</h3>
+
+<h4 id="selects-the-next-item">selects the next item</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="o">\</span><span class="n">select_next</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span></code></pre>
+
+
+<h4 id="selects-the-first-item-if-at-the-end-of-the-list">selects the first item if at the end of the list</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">select_next</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span></code></pre>
+
+
+<h4 id="scrolls-to-the-item-if-neccessary">scrolls to the item if neccessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">select_next</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="select_prev()">select_prev()</h3>
+
+<h4 id="selects-the-previous-item">selects the previous item</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">select_prev</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span></code></pre>
+
+
+<h4 id="selects-the-last-item-if-at-the-start-of-the-list">selects the last item if at the start of the list</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="o">\</span><span class="n">select_prev</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span></code></pre>
+
+
+<h4 id="scrolls-to-the-item-if-neccessary">scrolls to the item if neccessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">select_prev</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="next_page()">next_page()</h2>
+
+<h4 id="scrolls-to-the-next-page">scrolls to the next page</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">next_page</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">offset</span></code></pre>
+
+
+<h4 id="scrolls-to-the-first-page-if-at-the-end-of-the-list">scrolls to the first page if at the end of the list</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">next_page</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">offset</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="prev_page()">prev_page()</h2>
+
+<h4 id="scrolls-to-the-previous-page">scrolls to the previous page</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">prev_page</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">offset</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span></code></pre>
+
+
+<h4 id="scrolls-to-the-last-page-if-at-the-start-of-the-list">scrolls to the last page if at the start of the list</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="p">.</span><span class="n">max_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">prev_page</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">offset</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-reverse-is-true)">(when reverse is true)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">list</span><span class="o">\</span><span class="n">remove</span><span class="o">!</span><span class="w">
+  </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">List</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">items</span><span class="p">),</span><span class="w"> </span><span class="ss">reverse:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">list</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="n">buf</span><span class="w">
+  </span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span></code></pre>
+
+
+<h4 id="shows-the-items-in-reverse-order">shows the items in reverse order</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'three\ntwo  \none  \n'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="selects-the-last-item-by-default">selects the last item by default</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">selection</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="on_refresh(listener)">on_refresh(listener)</h2>
+
+<h4 id="causes-&lt;listener&gt;-to-be-called-whenever-the-list-is-redrawn">causes &lt;listener&gt; to be called whenever the list is redrawn</h4>
+
+<pre class="highlight moonscript"><code><span class="n">listener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">on_refresh</span><span class="w"> </span><span class="n">listener</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">listener</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">list</span><span class="p">)</span><span class="w">
+
+</span><span class="n">listener2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">on_refresh</span><span class="w"> </span><span class="n">listener2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">draw</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">listener2</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">list</span><span class="p">)</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="display-management">display management</h2>
+
+<h4 id="is-drawn-correctly-at-the-given-insert-position">is drawn correctly at the given insert position</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'item1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'item2'</span><span class="p">}</span><span class="w">
+</span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one\nend'</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="w"> </span><span class="s1">'it'</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'one\nitem1\nitem2\nend'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">start_pos</span><span class="w">
+
+  </span><span class="k">for</span><span class="w"> </span><span class="n">hl</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">11</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">}</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">hl</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_highlight'</span><span class="w">
+
+  </span><span class="k">for</span><span class="w"> </span><span class="n">hl</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">13</span><span class="p">}</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">hl</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_highlight'</span><span class="w">
+
+  </span><span class="k">for</span><span class="w"> </span><span class="n">hl</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="p">}</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">hl</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_selection'</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">hl</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">}</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">hl</span><span class="p">),</span><span class="w"> </span><span class="s1">'list_selection'</span></code></pre>
+
+
+<h4 id="moves-along-with-other-edits-in-the-buffer">moves along with other edits in the buffer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'item'</span><span class="p">}</span><span class="w">
+</span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'1\n7'</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'1\nitem\n7'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">buf</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="s1">'23'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">draw</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'123\nitem\n7'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">start_pos</span><span class="w">
+
+</span><span class="n">buf</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="s1">'56'</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">draw</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'123\nitem\n567'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">start_pos</span><span class="w">
+
+</span><span class="n">buf</span><span class="o">\</span><span class="n">delete</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">draw</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'item\n567'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">start_pos</span><span class="w">
+
+</span><span class="n">buf</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="s1">'X'</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">draw</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Xitem\n567'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">start_pos</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="item_at(pos)">item_at(pos)</h2>
+
+<h4 id="returns-the-item-at-&lt;pos&gt;-in-the-buffer">returns the item at &lt;pos&gt; in the buffer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'item'</span><span class="p">}</span><span class="w">
+</span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'X\nY'</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'X\nitem\nY'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">list</span><span class="o">\</span><span class="n">item_at</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">list</span><span class="o">\</span><span class="n">item_at</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'item'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="o">\</span><span class="n">item_at</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'item'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="o">\</span><span class="n">item_at</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">list</span><span class="o">\</span><span class="n">item_at</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="w">
+
+</span><span class="n">buf</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="s1">'\n'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">list</span><span class="o">\</span><span class="n">item_at</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'item'</span><span class="p">,</span><span class="w"> </span><span class="n">list</span><span class="o">\</span><span class="n">item_at</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span></code></pre>
+
+</div>
+</div>

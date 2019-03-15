@@ -1,0 +1,151 @@
+---
+title: Spec - howl.util.moon.PropertyObject
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.util.moon.propertyobject">howl.util.moon.PropertyObject</h1>
+
+<h4 id="allows-specifying-a-getter-and-setter-using-get-and-set">allows specifying a getter and setter using get and set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+</span><span class="k">class</span><span class="w"> </span><span class="nc">Test</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="vi">@property</span><span class="w"> </span><span class="ss">foo:</span><span class="w">
+    </span><span class="ss">get:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">value</span><span class="w">
+    </span><span class="ss">set:</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="w">
+
+</span><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Test</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+</span><span class="n">o</span><span class="p">.</span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'world'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'world'</span></code></pre>
+
+
+<h4 id="assigning-a-property-with-only-a-getter-raises-a-read-only-error">assigning a property with only a getter raises a read-only error</h4>
+
+<pre class="highlight moonscript"><code><span class="k">class</span><span class="w"> </span><span class="nc">Test</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="vi">@property</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="ss">get:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+
+</span><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Test</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'read%-only'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">o</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+
+<h4 id="two-objects-of-the-same-class-have-the-same-metatable">two objects of the same class have the same metatable</h4>
+
+<pre class="highlight moonscript"><code><span class="k">class</span><span class="w"> </span><span class="nc">Test</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="vi">@property</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="ss">get:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nb">getmetatable</span><span class="p">(</span><span class="nc">Test</span><span class="o">!</span><span class="p">),</span><span class="w"> </span><span class="nb">getmetatable</span><span class="p">(</span><span class="nc">Test</span><span class="o">!</span><span class="p">)</span></code></pre>
+
+
+<h4 id="two-objects-of-different-classes-have-different-metatables">two objects of different classes have different metatables</h4>
+
+<pre class="highlight moonscript"><code><span class="k">class</span><span class="w"> </span><span class="nc">Test1</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="vi">@property</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="ss">get:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+
+</span><span class="k">class</span><span class="w"> </span><span class="nc">Test2</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="vi">@property</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="ss">get:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nb">getmetatable</span><span class="p">(</span><span class="nc">Test1</span><span class="o">!</span><span class="p">),</span><span class="w"> </span><span class="nb">getmetatable</span><span class="p">(</span><span class="nc">Test2</span><span class="o">!</span><span class="p">)</span></code></pre>
+
+
+<h4 id="meta-methods-are-defined-via-the-@meta-function">meta methods are defined via the @meta function</h4>
+
+<pre class="highlight moonscript"><code><span class="k">class</span><span class="w"> </span><span class="nc">Test</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="vi">@meta</span><span class="w"> </span><span class="ss">__add:</span><span class="w"> </span><span class="p">(</span><span class="n">o1</span><span class="p">,</span><span class="w"> </span><span class="n">o2</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">o2</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nc">Test</span><span class="o">!</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="inheritance">inheritance</h2>
+
+<h4 id="properties-defined-in-any-part-of-the-chain-works">properties defined in any part of the chain works</h4>
+
+<pre class="highlight moonscript"><code><span class="k">class</span><span class="w"> </span><span class="nc">Parent</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="ss">new:</span><span class="w"> </span><span class="p">(</span><span class="n">foo</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w">
+    </span><span class="k">super</span><span class="o">!</span><span class="w">
+    </span><span class="vi">@_foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">foo</span><span class="w">
+
+  </span><span class="vi">@property</span><span class="w"> </span><span class="ss">foo:</span><span class="w">
+    </span><span class="ss">get:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="vi">@_foo</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'wrong'</span><span class="w">
+    </span><span class="ss">set:</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="vi">@_foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="vi">@foo</span><span class="w">
+
+</span><span class="k">class</span><span class="w"> </span><span class="nc">SubClass</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">Parent</span><span class="w">
+  </span><span class="ss">new:</span><span class="w"> </span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">super</span><span class="w"> </span><span class="n">text</span><span class="w">
+
+  </span><span class="vi">@property</span><span class="w"> </span><span class="ss">bar:</span><span class="w">
+    </span><span class="ss">get:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="vi">@_bar</span><span class="w">
+    </span><span class="ss">set:</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="vi">@_bar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="w">
+
+</span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Parent</span><span class="w"> </span><span class="s1">'parent'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">parent</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'parent'</span><span class="w">
+</span><span class="n">parent</span><span class="p">.</span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello '</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">parent</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello parent'</span><span class="w">
+
+</span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">SubClass</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">s</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">s</span><span class="p">.</span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">s</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'helloeditor'</span><span class="w">
+</span><span class="n">s</span><span class="p">.</span><span class="n">bar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'world'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">s</span><span class="p">.</span><span class="n">bar</span><span class="p">,</span><span class="w"> </span><span class="s1">'world'</span></code></pre>
+
+
+<h4 id="overriding-methods-work">overriding methods work</h4>
+
+<pre class="highlight moonscript"><code><span class="k">class</span><span class="w"> </span><span class="nc">Parent</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="ss">foo:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s1">'parent'</span><span class="w">
+
+</span><span class="k">class</span><span class="w"> </span><span class="nc">SubClass</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">Parent</span><span class="w">
+  </span><span class="ss">foo:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s1">'sub'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">SubClass</span><span class="o">!\</span><span class="n">foo</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub'</span></code></pre>
+
+
+<h4 id="write-to-read-only-properties-are-detected">write to read-only properties are detected</h4>
+
+<pre class="highlight moonscript"><code><span class="k">class</span><span class="w"> </span><span class="nc">Parent</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="vi">@property</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="ss">get:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w">
+
+</span><span class="k">class</span><span class="w"> </span><span class="nc">SubClass</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">Parent</span><span class="w">
+  </span><span class="kc">true</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'read%-only'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">SubClass</span><span class="o">!</span><span class="p">.</span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar'</span></code></pre>
+
+
+<h4 id="meta-methods-defined-in-any-part-of-the-chain-works">meta methods defined in any part of the chain works</h4>
+
+<pre class="highlight moonscript"><code><span class="k">class</span><span class="w"> </span><span class="nc">Parent</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="vi">@meta</span><span class="w"> </span><span class="ss">__add:</span><span class="w"> </span><span class="p">(</span><span class="n">o1</span><span class="p">,</span><span class="w"> </span><span class="n">o2</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">o2</span><span class="w">
+
+</span><span class="k">class</span><span class="w"> </span><span class="nc">SubClass</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">Parent</span><span class="w">
+  </span><span class="vi">@meta</span><span class="w"> </span><span class="ss">__div:</span><span class="w"> </span><span class="p">(</span><span class="n">o1</span><span class="p">,</span><span class="w"> </span><span class="n">o2</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'div'</span><span class="w">
+
+</span><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">SubClass</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'div'</span><span class="p">,</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="delegation">delegation</h2>
+
+<h4 id="allows-delegating-to-a-default-object-passed-in-the-constructor">allows delegating to a default object passed in the constructor</h4>
+
+<pre class="highlight moonscript"><code><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+  </span><span class="ss">func:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'return'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">class</span><span class="w"> </span><span class="nc">Delegating</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nc">PropertyObject</span><span class="w">
+  </span><span class="ss">new:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">super</span><span class="w"> </span><span class="n">target</span><span class="w">
+  </span><span class="vi">@property</span><span class="w"> </span><span class="ss">frob:</span><span class="w"> </span><span class="ss">get:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s1">'nic'</span><span class="w">
+
+</span><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Delegating</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'nic'</span><span class="p">,</span><span class="w">  </span><span class="n">o</span><span class="p">.</span><span class="n">frob</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">,</span><span class="w">  </span><span class="n">o</span><span class="p">.</span><span class="n">foo</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'return'</span><span class="p">,</span><span class="w">  </span><span class="n">o</span><span class="o">\</span><span class="n">func</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">target</span><span class="p">.</span><span class="n">func</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="w"> </span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></code></pre>
+
+</div>
+</div>

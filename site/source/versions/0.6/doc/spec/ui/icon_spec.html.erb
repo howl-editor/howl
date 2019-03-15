@@ -1,0 +1,57 @@
+---
+title: Spec - howl.ui.icon
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.ui.icon">howl.ui.icon</h1>
+<div class="spec-group spec-group-2">
+
+<h2 id=".define(name,-definition)-and-.get(name,-style)">.define(name, definition) and .get(name, style)</h2>
+
+<pre class="highlight moonscript"><code><span class="n">icon</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'hello-icon'</span><span class="p">,</span><span class="w">
+  </span><span class="ss">text:</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+  </span><span class="ss">font:</span><span class="w"> </span><span class="ss">family:</span><span class="w"> </span><span class="s1">'Icon Font'</span></code></pre>
+
+
+<h4 id="define-custom-icons-rendered-as-styledtext">define custom icons rendered as StyledText</h4>
+
+<pre class="highlight moonscript"><code><span class="n">styled_text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">icon</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'hello-icon'</span><span class="p">,</span><span class="w"> </span><span class="s1">'somestyle'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">styled_text</span><span class="p">.</span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+</span><span class="n">icon_base_style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">styled_text</span><span class="p">.</span><span class="n">styles</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">\</span><span class="n">match</span><span class="w"> </span><span class="s1">'[^:]+'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">style</span><span class="p">[</span><span class="n">icon_base_style</span><span class="p">].</span><span class="n">font</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="ss">family:</span><span class="w"> </span><span class="s1">'Icon Font'</span><span class="p">}</span></code></pre>
+
+
+<h4 id="allow-aliasing-other-icons">allow aliasing other icons</h4>
+
+<pre class="highlight moonscript"><code><span class="n">icon</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'alias'</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello-icon'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="n">icon</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'alias'</span><span class="p">),</span><span class="w"> </span><span class="n">icon</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'hello-icon'</span><span class="p">)</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".define_default(name,-definition)">.define_default(name, definition)</h2>
+
+<h4 id="only-defines-name-if-not-already-defined">only defines name if not already defined</h4>
+
+<pre class="highlight moonscript"><code><span class="n">icon</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'a-icon'</span><span class="p">,</span><span class="w">
+  </span><span class="ss">text:</span><span class="w"> </span><span class="s1">'a'</span><span class="w">
+  </span><span class="ss">font:</span><span class="w"> </span><span class="ss">family:</span><span class="w"> </span><span class="s1">'Icon Font'</span><span class="w">
+
+</span><span class="n">icon</span><span class="p">.</span><span class="n">define_default</span><span class="w"> </span><span class="s1">'a-icon'</span><span class="w">
+  </span><span class="ss">text:</span><span class="w"> </span><span class="s1">'a-default'</span><span class="w">
+  </span><span class="ss">font:</span><span class="w"> </span><span class="ss">family:</span><span class="w"> </span><span class="s1">'Icon Font'</span><span class="w">
+
+</span><span class="n">icon</span><span class="p">.</span><span class="n">define_default</span><span class="w"> </span><span class="s1">'b-icon'</span><span class="w">
+  </span><span class="ss">text:</span><span class="w"> </span><span class="s1">'b-default-1'</span><span class="w">
+  </span><span class="ss">font:</span><span class="w"> </span><span class="ss">family:</span><span class="w"> </span><span class="s1">'Icon Font'</span><span class="w">
+
+</span><span class="n">icon</span><span class="p">.</span><span class="n">define_default</span><span class="w"> </span><span class="s1">'b-icon'</span><span class="w">
+  </span><span class="ss">text:</span><span class="w"> </span><span class="s1">'b-default-2'</span><span class="w">
+  </span><span class="ss">font:</span><span class="w"> </span><span class="ss">family:</span><span class="w"> </span><span class="s1">'Icon Font'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="n">icon</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'a-icon'</span><span class="p">).</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'b-default-1'</span><span class="p">,</span><span class="w"> </span><span class="n">icon</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'b-icon'</span><span class="p">).</span><span class="n">text</span></code></pre>
+
+</div>
+</div>

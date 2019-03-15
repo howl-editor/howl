@@ -1,0 +1,353 @@
+---
+title: Spec - howl.bundle
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.bundle">howl.bundle</h1>
+
+<pre class="highlight moonscript"><code><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+
+</span><span class="n">with_bundle_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">b_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">name</span><span class="w">
+    </span><span class="n">b_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+    </span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">b_dir</span><span class="w">
+    </span><span class="nb">error</span><span class="p">(</span><span class="n">err</span><span class="p">)</span><span class="w"> </span><span class="k">unless</span><span class="w"> </span><span class="n">status</span><span class="w">
+    </span><span class="n">mod_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="o">\</span><span class="n">lower</span><span class="o">!\</span><span class="n">gsub</span><span class="w"> </span><span class="s1">'[%s%p]+'</span><span class="p">,</span><span class="w"> </span><span class="s1">'_'</span><span class="w">
+    </span><span class="nb">pcall</span><span class="p">(</span><span class="n">bundle</span><span class="p">.</span><span class="n">unload</span><span class="p">,</span><span class="w"> </span><span class="n">mod_name</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">[</span><span class="n">mod_name</span><span class="p">]</span><span class="w">
+
+</span><span class="n">bundle_init</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">spec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="w">
+  </span><span class="n">ret</span><span class="w"> </span><span class="o">..=</span><span class="w"> </span><span class="s2">"</span><span class="si">#{</span><span class="n">spec</span><span class="p">.</span><span class="n">code</span><span class="si">}</span><span class="s2">\n"</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">spec</span><span class="p">.</span><span class="n">code</span><span class="w">
+  </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">author:</span><span class="w"> </span><span class="s1">'bundle_spec'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'spec_bundle'</span><span class="p">,</span><span class="w"> </span><span class="ss">license:</span><span class="w"> </span><span class="s1">'MIT'</span><span class="w">
+  </span><span class="n">mod</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">info</span><span class="w">
+  </span><span class="n">ret</span><span class="w"> </span><span class="o">..=</span><span class="w"> </span><span class="s1">'return { info = {'</span><span class="w">
+  </span><span class="n">ret</span><span class="w"> </span><span class="o">..=</span><span class="w"> </span><span class="nb">table.concat</span><span class="w"> </span><span class="p">[</span><span class="n">k</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'="'</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'"'</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">mod</span><span class="p">],</span><span class="w"> </span><span class="s1">','</span><span class="w">
+  </span><span class="n">ret</span><span class="w"> </span><span class="o">..=</span><span class="w"> </span><span class="s1">'}, '</span><span class="w">
+
+  </span><span class="k">if</span><span class="w"> </span><span class="n">spec</span><span class="p">.</span><span class="n">other_returns</span><span class="w">
+    </span><span class="n">ret</span><span class="w"> </span><span class="o">..=</span><span class="w"> </span><span class="nb">table.concat</span><span class="w"> </span><span class="p">[</span><span class="n">k</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'="'</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'"'</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">spec</span><span class="p">.</span><span class="n">other_returns</span><span class="p">],</span><span class="w"> </span><span class="s1">','</span><span class="w">
+
+  </span><span class="k">if</span><span class="w"> </span><span class="n">spec</span><span class="p">.</span><span class="n">unload</span><span class="w">
+    </span><span class="n">ret</span><span class="w"> </span><span class="o">..=</span><span class="w"> </span><span class="s2">"unload = </span><span class="si">#{</span><span class="n">spec</span><span class="p">.</span><span class="n">unload</span><span class="si">}</span><span class="s2"> }"</span><span class="w">
+  </span><span class="k">else</span><span class="w">
+    </span><span class="n">ret</span><span class="w"> </span><span class="o">..=</span><span class="w"> </span><span class="s1">'unload = function() end }'</span><span class="w">
+
+
+  </span><span class="n">ret</span></code></pre>
+
+
+<h4 id=".unloaded-holds-the-adjusted-names-of-any-unloaded-bundles">.unloaded holds the adjusted names of any unloaded bundles</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">dir</span><span class="p">}</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">{</span><span class="s1">'foo-bar'</span><span class="p">,</span><span class="w"> </span><span class="s1">'frob_nic'</span><span class="p">}</span><span class="w">
+    </span><span class="n">b_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">name</span><span class="w">
+    </span><span class="n">b_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+    </span><span class="n">b_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="ss">:name</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo_bar'</span><span class="p">,</span><span class="w"> </span><span class="s1">'frob_nic'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">unloaded</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_by_name</span><span class="w"> </span><span class="s1">'foo_bar'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'frob_nic'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">unloaded</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">unload</span><span class="w"> </span><span class="s1">'foo_bar'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo_bar'</span><span class="p">,</span><span class="w"> </span><span class="s1">'frob_nic'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">unloaded</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="load_from_dir(dir)">load_from_dir(dir)</h2>
+
+<h4 id="raises-an-error-if-dir-is-not-a-directory">raises an error if dir is not a directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'directory'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/not-a-directory'</span></code></pre>
+
+
+<h4 id="raises-an-error-if-the-bundle-init-file-is-missing-or-incomplete">raises an error if the bundle init file is missing or incomplete</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'find file'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">init</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'init.lua'</span><span class="w">
+  </span><span class="n">init</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'Incorrect bundle'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">init</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return {}'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'info missing'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">init</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return { info = {} }'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'missing info field'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span></code></pre>
+
+
+<h4 id="assigns-the-returned-bundle-table-to-bundles-using-the-dir-basename">assigns the returned bundle table to bundles using the dir basename</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">author:</span><span class="w"> </span><span class="s1">'bundle_spec'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'spec_bundle'</span><span class="p">,</span><span class="w"> </span><span class="ss">license:</span><span class="w"> </span><span class="s1">'MIT'</span><span class="w">
+</span><span class="n">with_bundle_dir</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="n">mod</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">foo</span><span class="p">.</span><span class="n">info</span><span class="p">,</span><span class="w"> </span><span class="n">mod</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_equal</span><span class="w"> </span><span class="s1">'function'</span><span class="p">,</span><span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">foo</span><span class="p">.</span><span class="n">unload</span></code></pre>
+
+
+<h4 id="massages-the-assigned-module-name-to-fit-with-naming-standards-if-necessary">massages the assigned module name to fit with naming standards if necessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_bundle_dir</span><span class="w"> </span><span class="s1">'Test-hello 2'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="o">!</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">test_hello_2</span></code></pre>
+
+
+<h4 id="does-nothing-if-the-bundle-is-already-loaded">does nothing if the bundle is already loaded</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_bundle_dir</span><span class="w"> </span><span class="s1">'two_times'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="o">!</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span></code></pre>
+
+
+<h4 id="raises-an-error-upon-implicit-global-writes">raises an error upon implicit global writes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    file = bundle_file('bundle_aux.lua')
+    return {
+      info = {
+        author = 'spec',
+        description = 'desc',
+        license = 'MIT',
+      },
+      file = file
+    }
+  ]]</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'implicit global'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(exposed-bundle-helpers)">(exposed bundle helpers)</h3>
+
+<h4 id="bundle_file-provides-access-to-bundle-files">bundle_file provides access to bundle files</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_bundle_dir</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    local file = bundle_file('bundle_aux.lua')
+    return {
+      info = {
+        author = 'spec',
+        description = 'desc',
+        license = 'MIT',
+      },
+      unload = function() end,
+      file = file
+    }
+  ]]</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">test</span><span class="p">.</span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'bundle_aux.lua'</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h4 id="provide_module(name,-prefix-=-nil)">provide_module(name, prefix = nil)</h4>
+
+<h4 id="makes-a-sub-directory-available-for-loading-globally-with-require">makes a sub directory available for loading globally with require</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_bundle_dir</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'testmod'</span><span class="p">)</span><span class="w">
+  </span><span class="n">mod</span><span class="o">\</span><span class="n">mkdir_p</span><span class="o">!</span><span class="w">
+  </span><span class="n">mod</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.moon'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{root: true}'</span><span class="w">
+  </span><span class="n">mod</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'other.moon'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{other: true}'</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">code:</span><span class="w"> </span><span class="s1">'provide_module("testmod")'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="ss">root:</span><span class="w"> </span><span class="kc">true</span><span class="p">},</span><span class="w"> </span><span class="nb">require</span><span class="w"> </span><span class="s1">'testmod'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="ss">other:</span><span class="w"> </span><span class="kc">true</span><span class="p">},</span><span class="w"> </span><span class="nb">require</span><span class="w"> </span><span class="s1">'testmod.other'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h4 id="require_bundle">require_bundle</h4>
+
+<h4 id="ensures-the-required-bundle-is-loaded-before-the-dependent-one">ensures the required bundle is loaded before the dependent one</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">dir</span><span class="p">}</span><span class="w">
+  </span><span class="n">first_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'first'</span><span class="p">)</span><span class="w">
+  </span><span class="n">first_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">second_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'second'</span><span class="p">)</span><span class="w">
+  </span><span class="n">second_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">third_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'third'</span><span class="p">)</span><span class="w">
+  </span><span class="n">third_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">first_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="o">!</span><span class="w">
+  </span><span class="n">third_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">second_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">code:</span><span class="w"> </span><span class="s1">'require_bundle("third")\nrequire_bundle("first")'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">second_dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_nil</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">first</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_nil</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">third</span></code></pre>
+
+
+<h4 id="detects-cyclic-dependencies">detects cyclic dependencies</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">dir</span><span class="p">}</span><span class="w">
+  </span><span class="n">first_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'first'</span><span class="p">)</span><span class="w">
+  </span><span class="n">first_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">second_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'second'</span><span class="p">)</span><span class="w">
+  </span><span class="n">second_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">first_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">code:</span><span class="w"> </span><span class="s1">'require_bundle("second")'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="n">second_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">code:</span><span class="w"> </span><span class="s1">'require_bundle("first")'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'Cyclic dependency'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">second_dir</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="load_all()">load_all()</h2>
+
+<h4 id="loads-all-found-bundles-in-all-directories-in-bundle.dirs">loads all found bundles in all directories in bundle.dirs</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">dir</span><span class="p">}</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">{</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">}</span><span class="w">
+    </span><span class="n">b_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">name</span><span class="w">
+    </span><span class="n">b_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+    </span><span class="n">b_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="ss">:name</span><span class="w">
+
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_all</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">foo</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">bar</span></code></pre>
+
+
+<h4 id="skips-any-hidden-entries">skips any hidden entries</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">dir</span><span class="p">}</span><span class="w">
+  </span><span class="n">b_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'.hidden'</span><span class="w">
+  </span><span class="n">b_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">b_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'hidden'</span><span class="w">
+
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_all</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">[</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">_</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">],</span><span class="w"> </span><span class="p">{}</span></code></pre>
+
+
+<h4 id="raises-an-error-if-bundle-names-conflict">raises an error if bundle names conflict</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">{</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">}</span><span class="w">
+    </span><span class="n">b_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'my_bundle'</span><span class="w">
+    </span><span class="n">b_dir</span><span class="o">\</span><span class="n">mkdir_p</span><span class="o">!</span><span class="w">
+    </span><span class="n">b_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="ss">:name</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">),</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'bar'</span><span class="p">)}</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'conflict'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_all</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="load_by_name(name)">load_by_name(name)</h2>
+
+<h4 id="loads-the-bundle-with-the-specified-name,-if-not-already-loaded">loads the bundle with the specified name, if not already loaded</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">dir</span><span class="p">}</span><span class="w">
+  </span><span class="n">b_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'named'</span><span class="w">
+  </span><span class="n">b_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">b_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'named'</span><span class="w">
+
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_by_name</span><span class="w"> </span><span class="s1">'named'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">named</span><span class="w">
+
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_by_name</span><span class="w"> </span><span class="s1">'named'</span></code></pre>
+
+
+<h4 id="raises-an-error-if-the-bundle-could-not-be-found">raises an error if the bundle could not be found</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'not found'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_by_name</span><span class="w"> </span><span class="s1">'oh_bundle_where_art_thouh'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="unload(name)">unload(name)</h2>
+
+<h4 id="raises-an-error-if-no-bundle-with-the-given-name-exists">raises an error if no bundle with the given name exists</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'not found'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">unload</span><span class="w"> </span><span class="s1">'serenity'</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(for-an-existing-bundle)">(for an existing bundle)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'bunny'</span></code></pre>
+
+
+<h4 id="calls-the-bundle-unload-function-and-removes-the-bundle-from-_g.bundles">calls the bundle unload function and removes the bundle from _G.bundles</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_bundle_dir</span><span class="w"> </span><span class="s1">'bunny'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="n">mod</span><span class="p">,</span><span class="w"> </span><span class="ss">unload:</span><span class="w"> </span><span class="s1">'function() _G.bunny_bundle_unload = true end'</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">unload</span><span class="w"> </span><span class="s1">'bunny'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bunny_bundle_unload</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">bunny</span></code></pre>
+
+
+<h4 id="returns-early-with-an-error-if-the-unload-function-raises-an-error">returns early with an error if the unload function raises an error</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_bundle_dir</span><span class="w"> </span><span class="s1">'bad_seed'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="n">mod</span><span class="p">,</span><span class="w"> </span><span class="ss">unload:</span><span class="w"> </span><span class="s1">'function() error("barf!") end'</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'barf!'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">unload</span><span class="w"> </span><span class="s1">'bad_seed'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_nil</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">bundles</span><span class="p">.</span><span class="n">bad_seed</span></code></pre>
+
+
+<h4 id="transforms-the-given-name-to-match-the-module-name">transforms the given name to match the module name</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_bundle_dir</span><span class="w"> </span><span class="s1">'dash-love'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'dash-love'</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">no_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">unload</span><span class="w"> </span><span class="s1">'dash-love'</span></code></pre>
+
+
+<h4 id="removes-any-references-to-provided-modules">removes any references to provided modules</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_bundle_dir</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'testmod'</span><span class="p">)</span><span class="w">
+  </span><span class="n">mod</span><span class="o">\</span><span class="n">mkdir_p</span><span class="o">!</span><span class="w">
+  </span><span class="n">mod</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.moon'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{root: true}'</span><span class="w">
+  </span><span class="n">mod</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'other.moon'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{other: true}'</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bundle_init</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">code:</span><span class="w"> </span><span class="s1">'provide_module("testmod")'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">load_from_dir</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="ss">root:</span><span class="w"> </span><span class="kc">true</span><span class="p">},</span><span class="w"> </span><span class="nb">require</span><span class="w"> </span><span class="s1">'testmod'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="ss">other:</span><span class="w"> </span><span class="kc">true</span><span class="p">},</span><span class="w"> </span><span class="nb">require</span><span class="w"> </span><span class="s1">'testmod.other'</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">unload</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nb">require</span><span class="p">,</span><span class="w"> </span><span class="s1">'testmod'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nb">require</span><span class="p">,</span><span class="w"> </span><span class="s1">'testmod.other'</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="from_file(file)">from_file(file)</h2>
+
+<h4 id="returns-the-adjusted-name-of-the-containing-bundle-if-any">returns the adjusted name of the containing bundle if any</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">bundle</span><span class="p">.</span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">dir</span><span class="p">}</span><span class="w">
+  </span><span class="n">b_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'my-bundle'</span><span class="w">
+  </span><span class="n">init</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'my_bundle'</span><span class="p">,</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">init</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">from_file</span><span class="p">(</span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">))</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">bundle</span><span class="p">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'directly_under_root'</span><span class="p">))</span></code></pre>
+
+</div>
+</div>

@@ -1,0 +1,127 @@
+---
+title: Spec - howl.BufferContext
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.buffercontext">howl.BufferContext</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">b</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="n">howl</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'default'</span><span class="w">
+  </span><span class="n">b</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'"HƏllo", said Mr.Bačon'</span><span class="w">
+
+</span><span class="n">context_at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">BufferContext</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">pos</span></code></pre>
+
+
+<h4 id=".word_prefix-holds-the-words's-text-up-until-pos">.word_prefix holds the words's text up until pos</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">word_prefix</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'HƏ'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">4</span><span class="p">).</span><span class="n">word_prefix</span></code></pre>
+
+
+<h4 id=".word_suffix-holds-the-words's-text-after-and-including-pos">.word_suffix holds the words's text after and including pos</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'HƏllo'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">word_suffix</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'llo'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">4</span><span class="p">).</span><span class="n">word_suffix</span></code></pre>
+
+
+<h4 id=".prefix-holds-the-line's-text-up-until-pos">.prefix holds the line's text up until pos</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">prefix</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'"HƏllo", said Mr.Bačon'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="o">#</span><span class="n">b</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">).</span><span class="n">prefix</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'"H'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">prefix</span></code></pre>
+
+
+<h4 id=".suffix-holds-the-line's-text-after-and-including-pos">.suffix holds the line's text after and including pos</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="o">#</span><span class="n">b</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">).</span><span class="n">suffix</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'"HƏllo", said Mr.Bačon'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">suffix</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Mr.Bačon'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">15</span><span class="p">).</span><span class="n">suffix</span></code></pre>
+
+
+<h4 id=".next_char-holds-the-current-character-or-the-empty-string-if-none">.next_char holds the current character or the empty string if none</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Ə'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">next_char</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="o">#</span><span class="n">b</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">).</span><span class="n">next_char</span></code></pre>
+
+
+<h4 id=".prev_char-holds-the-previous-character-or-the-empty-string-if-none">.prev_char holds the previous character or the empty string if none</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Ə'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">4</span><span class="p">).</span><span class="n">prev_char</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">prev_char</span></code></pre>
+
+
+<h4 id=".line-holds-the-current-line-object">.line holds the current line object</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">line</span></code></pre>
+
+
+<h4 id=".style-holds-the-style-at-point,-if-any">.style holds the style at point, if any</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">ActionBuffer</span><span class="o">!</span><span class="w">
+</span><span class="n">buf</span><span class="o">\</span><span class="n">append</span><span class="w"> </span><span class="s1">'['</span><span class="p">,</span><span class="w"> </span><span class="s1">'operator'</span><span class="w">
+</span><span class="n">buf</span><span class="o">\</span><span class="n">append</span><span class="w"> </span><span class="s1">'"foo"'</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="w">
+</span><span class="n">buf</span><span class="o">\</span><span class="n">append</span><span class="w"> </span><span class="s1">' normal'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'operator'</span><span class="p">,</span><span class="w"> </span><span class="nc">BufferContext</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">).</span><span class="n">style</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="nc">BufferContext</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">).</span><span class="n">style</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="nc">BufferContext</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">).</span><span class="n">style</span></code></pre>
+
+
+<h4 id="contexts-are-equal-for-the-same-buffer-and-pos">contexts are equal for the same buffer and pos</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_equal</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id=".word">.word</h2>
+
+<h4 id="holds-the-current-word">holds the current word</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'HƏllo'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'HƏllo'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">4</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'HƏllo'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">6</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">8</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">9</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'said'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">14</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Mr'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">16</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Bačon'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">19</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">b</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'first'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="the-word-boundaries-are-determined-using-the-mode-variable-word_pattern">the word boundaries are determined using the mode variable word_pattern</h4>
+
+<pre class="highlight moonscript"><code><span class="n">b</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">word_pattern:</span><span class="w"> </span><span class="n">r</span><span class="s1">'[Əl]+'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Əll'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">b</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">word_pattern:</span><span class="w"> </span><span class="n">r</span><span class="s1">'["Ə\\w]+'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'"HƏllo"'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'"HƏllo"'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">8</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="c1">-- after "</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">9</span><span class="p">).</span><span class="n">word</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="c1">-- after ','</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".token">.token</h2>
+
+<h4 id="is-the-grouping-of-similar-characters">is the grouping of similar characters</h4>
+
+<pre class="highlight moonscript"><code><span class="n">b</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'@!?45xx __'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'@!?'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">token</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'@!?'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">token</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'45xx'</span><span class="p">,</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">4</span><span class="p">).</span><span class="n">token</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="is-empty-when-looking-at-a-blank">is empty when looking at a blank</h4>
+
+<pre class="highlight moonscript"><code><span class="n">b</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">' 2 '</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">token</span><span class="p">.</span><span class="n">empty</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">context_at</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">token</span><span class="p">.</span><span class="n">empty</span></code></pre>
+
+</div>
+</div>

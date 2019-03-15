@@ -1,0 +1,51 @@
+---
+title: Spec - howl.interactions.search
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.interactions.search">howl.interactions.search</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">command_line</span><span class="p">,</span><span class="w"> </span><span class="n">searcher</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Window</span><span class="o">!</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="o">\</span><span class="n">realize</span><span class="o">!</span><span class="w">
+  </span><span class="n">command_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="w">
+
+  </span><span class="n">searcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">:searcher</span></code></pre>
+
+
+<h4 id="registers-interactions">registers interactions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">forward_search</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">backward_search</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">forward_search_word</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">backward_search_word</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="interact.forward_search">interact.forward_search</h2>
+
+<h4 id="searches-forward-for-typed-text">searches forward for typed text</h4>
+
+<pre class="highlight moonscript"><code><span class="n">searcher</span><span class="p">.</span><span class="n">forward_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">forward_search</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'tw'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">searcher</span><span class="p">.</span><span class="n">forward_to</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">searcher</span><span class="p">),</span><span class="w"> </span><span class="s1">'tw'</span><span class="p">,</span><span class="w"> </span><span class="s1">'plain'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="interact.forward_search_word">interact.forward_search_word</h2>
+
+<h4 id="searches-forward-for-typed-word">searches forward for typed word</h4>
+
+<pre class="highlight moonscript"><code><span class="n">searcher</span><span class="p">.</span><span class="n">forward_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">forward_search_word</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'tw'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">searcher</span><span class="p">.</span><span class="n">forward_to</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">searcher</span><span class="p">),</span><span class="w"> </span><span class="s1">'tw'</span><span class="p">,</span><span class="w"> </span><span class="s1">'word'</span></code></pre>
+
+</div>
+</div>

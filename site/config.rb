@@ -21,6 +21,7 @@ end
 page "index.html", :layout => :base_layout
 page "blog/*", :layout => :blog_layout
 page "doc/manual/*", :layout => :manual_layout
+page "versions/*", :layout => :manual_layout
 
 activate :s3_sync do |s3_sync|
   auth_file = File.expand_path('~/.howl-auth')
@@ -73,7 +74,7 @@ helpers do
       path = path.join part
       resource = sitemap.find_resource_by_path(path.to_s) || sitemap.find_resource_by_path("#{path}/index.html")
       title = resource && (resource.metadata[:locals][:page_title] || resource.metadata[:page]['title'])
-      title ||= part =~ /([^.]+)/ && $1.capitalize
+      title ||= part =~ /([^.]+(?:\.\d+))/ && $1.capitalize
       components << component.new(path.relative_path_from(base), title, !!resource)
     end
 

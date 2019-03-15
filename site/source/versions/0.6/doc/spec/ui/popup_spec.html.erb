@@ -1,0 +1,25 @@
+---
+title: Spec - howl.ui.Popup
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.ui.popup">howl.ui.Popup</h1>
+<div class="spec-group spec-group-2">
+
+<h3 id="(resource-management)">(resource management)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gtk</span><span class="p">.</span><span class="nc">Box</span><span class="w"> </span><span class="nc">Gtk</span><span class="p">.</span><span class="nc">ORIENTATION_VERTICAL</span><span class="p">,</span><span class="w"> </span><span class="p">{}</span></code></pre>
+
+
+<h4 id="widgets-are-collected-as-they-should">widgets are collected as they should</h4>
+
+<pre class="highlight moonscript"><code><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Popup</span><span class="w"> </span><span class="n">child</span><span class="w">
+</span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">setmetatable</span><span class="w"> </span><span class="p">{</span><span class="n">o</span><span class="p">},</span><span class="w"> </span><span class="ss">__mode:</span><span class="w"> </span><span class="s1">'v'</span><span class="w">
+</span><span class="n">o</span><span class="o">\</span><span class="n">destroy</span><span class="o">!</span><span class="w">
+</span><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="nb">collectgarbage</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></code></pre>
+
+</div>
+</div>

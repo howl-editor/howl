@@ -1,0 +1,324 @@
+---
+title: Spec - howl.mode
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.mode">howl.mode</h1>
+
+<pre class="highlight moonscript"><code><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">[</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">mode</span><span class="p">.</span><span class="n">names</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s1">'default'</span><span class="w"> </span><span class="p">]</span><span class="w">
+    </span><span class="n">mode</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="n">name</span></code></pre>
+
+
+<h4 id="mode-instances-are-memoized">mode instances are memoized</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'same'</span><span class="p">,</span><span class="w"> </span><span class="ss">extensions:</span><span class="w"> </span><span class="s1">'again'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'same'</span><span class="p">),</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'once.again'</span></code></pre>
+
+
+<h4 id="mode-instances-automatically-have-their-.name-set">mode instances automatically have their .name set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'named'</span><span class="p">,</span><span class="w"> </span><span class="ss">extensions:</span><span class="w"> </span><span class="s1">'again'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'named'</span><span class="p">).</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s1">'named'</span></code></pre>
+
+
+<h4 id=".names-contains-all-registered-mode-names-and-their-aliases">.names contains all registered mode names and their aliases</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'needle'</span><span class="p">,</span><span class="w"> </span><span class="ss">aliases:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">names</span><span class="p">,</span><span class="w"> </span><span class="s1">'needle'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">names</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id=".register(spec)">.register(spec)</h2>
+
+<h4 id="raises-an-error-if-any-of-the-mandatory-inputs-are-missing">raises an error if any of the mandatory inputs are missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'name'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'create'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".by_name(name)">.by_name(name)</h2>
+
+<h4 id="returns-a-mode-instance-for-&lt;name&gt;,-or-nil-if-not-existing">returns a mode instance for &lt;name&gt;, or nil if not existing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'blargh'</span><span class="w">
+
+</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'shish'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_nil</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'shish'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="allows-looking-up-modes-by-any-aliases">allows looking up modes by any aliases</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'my_mode'</span><span class="w">
+
+</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'shish'</span><span class="p">,</span><span class="w"> </span><span class="ss">aliases:</span><span class="w"> </span><span class="p">{</span><span class="s1">'my_mode'</span><span class="p">},</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_nil</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'my_mode'</span><span class="p">)</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="for_extension(extension)">for_extension(extension)</h2>
+
+<h4 id="returns-a-mode-registered-for-&lt;extension&gt;,-if-any">returns a mode registered for &lt;extension&gt;, if any</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'ext'</span><span class="p">,</span><span class="w"> </span><span class="ss">extensions:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'ext'</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">for_extension</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">).</span><span class="n">name</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".for_file(file)">.for_file(file)</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-file-extension-is-registered-with-a-mode)">(when the file extension is registered with a mode)</h3>
+
+<h4 id="returns-an-instance-of-that-mode">returns an instance of that mode</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'ext'</span><span class="p">,</span><span class="w"> </span><span class="ss">extensions:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'test.foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'ext'</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">file</span><span class="p">).</span><span class="n">name</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-file-paths-matches-a-mode-pattern)">(when the file paths matches a mode pattern)</h3>
+
+<h4 id="returns-an-instance-of-that-mode">returns an instance of that mode</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'pattern'</span><span class="p">,</span><span class="w"> </span><span class="ss">patterns:</span><span class="w"> </span><span class="s1">'match%w+$'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'matchme'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'pattern'</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">file</span><span class="p">).</span><span class="n">name</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-file-header-matches-a-mode-shebang)">(when the file header matches a mode shebang)</h3>
+
+<h4 id="returns-an-instance-of-that-mode">returns an instance of that mode</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'shebang'</span><span class="p">,</span><span class="w"> </span><span class="ss">shebangs:</span><span class="w"> </span><span class="s1">'lua$'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'#! /usr/bin/lua\nother line\nand other\n'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'shebang'</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">file</span><span class="p">).</span><span class="n">name</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-no-matching-mode-can-be-found)">(when no matching mode can be found)</h3>
+
+<h4 id="returns-an-instance-of-the-mode-&quot;default&quot;">returns an instance of the mode &quot;default&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'test.blargh'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'default'</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="n">file</span><span class="p">).</span><span class="n">name</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(mode-creation)">(mode creation)</h3>
+
+<h4 id="modes-are-created-by-calling-the-modes-create-function,-passing-the-name">modes are created by calling the modes create function, passing the name</h4>
+
+<pre class="highlight moonscript"><code><span class="n">create</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'callme'</span><span class="p">,</span><span class="w"> </span><span class="ss">:create</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'callme'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">create</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'callme'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="mode-configuration-variables">mode configuration variables</h2>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'mode_var'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'some var'</span><span class="p">,</span><span class="w"> </span><span class="ss">default:</span><span class="w"> </span><span class="s1">'def value'</span></code></pre>
+
+
+<h4 id="mode-instances-automatically-have-their-.config-set">mode instances automatically have their .config set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'config'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">mode_config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'config'</span><span class="p">).</span><span class="n">config</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_nil</span><span class="w"> </span><span class="n">mode_config</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'def value'</span><span class="p">,</span><span class="w"> </span><span class="n">mode_config</span><span class="p">.</span><span class="n">mode_var</span><span class="w">
+</span><span class="n">mode_config</span><span class="p">.</span><span class="n">mode_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">123</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="n">mode_config</span><span class="p">.</span><span class="n">mode_var</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'def value'</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">mode_var</span></code></pre>
+
+
+<h4 id="the-.config-is-pre-seeded-with-variables-from-.default_config-of-the-mode-(if-any)">the .config is pre-seeded with variables from .default_config of the mode (if any)</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'pre_config'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">default_config:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">mode_var:</span><span class="w"> </span><span class="mi">543</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">543</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'pre_config'</span><span class="p">).</span><span class="n">config</span><span class="p">.</span><span class="n">mode_var</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="configure(mode_name,-variables)">configure(mode_name, variables)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'user_configured'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span></code></pre>
+
+
+<h4 id="allows-setting-mode-specific-variables-automatically-upon-creation">allows setting mode specific variables automatically upon creation</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">configure</span><span class="w"> </span><span class="s1">'user_configured'</span><span class="p">,</span><span class="w"> </span><span class="ss">mode_var:</span><span class="w"> </span><span class="s1">'from_user'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'from_user'</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'user_configured'</span><span class="p">).</span><span class="n">config</span><span class="p">.</span><span class="n">mode_var</span></code></pre>
+
+
+<h4 id="automatically-sets-the-config-variables-for-any-already-instantiated-mode">automatically sets the config variables for any already instantiated mode</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode_config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'user_configured'</span><span class="p">).</span><span class="n">config</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">configure</span><span class="w"> </span><span class="s1">'user_configured'</span><span class="p">,</span><span class="w"> </span><span class="ss">mode_var:</span><span class="w"> </span><span class="s1">'after_the_fact'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'after_the_fact'</span><span class="p">,</span><span class="w"> </span><span class="n">mode_config</span><span class="p">.</span><span class="n">mode_var</span></code></pre>
+
+
+<h4 id="overrides-any-default-mode-configuration-set">overrides any default mode configuration set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'mode_with_config'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">default_config:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">mode_var:</span><span class="w"> </span><span class="s1">'mode set'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">configure</span><span class="w"> </span><span class="s1">'mode_with_config'</span><span class="p">,</span><span class="w"> </span><span class="ss">mode_var:</span><span class="w"> </span><span class="s1">'user set'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'user set'</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'mode_with_config'</span><span class="p">).</span><span class="n">config</span><span class="p">.</span><span class="n">mode_var</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="mode-inheritance">mode inheritance</h2>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'base'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">base</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'sub'</span><span class="p">,</span><span class="w"> </span><span class="ss">parent:</span><span class="w"> </span><span class="s1">'base'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'delegated_mode_var'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'some var'</span><span class="p">,</span><span class="w"> </span><span class="ss">default:</span><span class="w"> </span><span class="s1">'def value'</span></code></pre>
+
+
+<h4 id="a-mode-extending-another-mode-automatically-delegates-to-that-mode">a mode extending another mode automatically delegates to that mode</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'sub'</span><span class="p">).</span><span class="n">foo</span><span class="w">
+ </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'base'</span><span class="p">).</span><span class="n">config</span><span class="p">.</span><span class="n">delegated_mode_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">123</span><span class="w">
+ </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'sub'</span><span class="p">).</span><span class="n">config</span><span class="p">.</span><span class="n">delegated_mode_var</span></code></pre>
+
+
+<h4 id=".parent-is-set-to-the-mode-parent">.parent is set to the mode parent</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'subsub'</span><span class="p">,</span><span class="w"> </span><span class="ss">parent:</span><span class="w"> </span><span class="s1">'sub'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">sub_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'sub'</span><span class="p">)</span><span class="w">
+</span><span class="n">subsub_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'subsub'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'base'</span><span class="p">,</span><span class="w"> </span><span class="n">sub_mode</span><span class="p">.</span><span class="n">parent</span><span class="p">.</span><span class="n">name</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'sub'</span><span class="p">,</span><span class="w"> </span><span class="n">subsub_mode</span><span class="p">.</span><span class="n">parent</span><span class="p">.</span><span class="n">name</span></code></pre>
+
+
+<h4 id="overridden-functions-and-variables-other-then-parent-are-respected">overridden functions and variables other then parent are respected</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">mode_var1:</span><span class="w"> </span><span class="s1">'first1'</span><span class="w">
+  </span><span class="ss">mode_var2:</span><span class="w"> </span><span class="s1">'first2'</span><span class="w">
+
+  </span><span class="ss">one:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s2">"</span><span class="si">#{</span><span class="vi">@mode_var1</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="vi">@two</span><span class="o">!</span><span class="si">}</span><span class="s2">"</span><span class="w">
+  </span><span class="ss">two:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="vi">@mode_var2</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'second'</span><span class="p">,</span><span class="w"> </span><span class="ss">parent:</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">mode_var1:</span><span class="w"> </span><span class="s1">'second1'</span><span class="w">
+
+  </span><span class="ss">two:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s2">"</span><span class="si">#{</span><span class="vi">@mode_var2</span><span class="si">}</span><span class="s2">X"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">second_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'second'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s2">"second1 first2X"</span><span class="p">,</span><span class="w"> </span><span class="n">second_mode</span><span class="o">\</span><span class="n">one</span><span class="o">!</span></code></pre>
+
+
+<h4 id="an-error-is-raised-if-the-mode-indicated-by-parent-does-not-exist">an error is raised if the mode indicated by parent does not exist</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">has_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'wrong'</span><span class="p">,</span><span class="w"> </span><span class="ss">parent:</span><span class="w"> </span><span class="s1">'keyser_soze'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'wrong'</span></code></pre>
+
+
+<h4 id="parent-defaults-to-&quot;default&quot;-unless-given">parent defaults to &quot;default&quot; unless given</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'orphan'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'default'</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'orphan'</span><span class="p">).</span><span class="n">parent</span><span class="p">.</span><span class="n">name</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="super(...)">super(...)</h3>
+
+<h4 id="super-methods-can-be-invoked-using-`super`">super methods can be invoked using `super`</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s2">"1"</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'second'</span><span class="p">,</span><span class="w"> </span><span class="ss">parent:</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">foo:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">super</span><span class="o">!</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'2'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'third'</span><span class="p">,</span><span class="w"> </span><span class="ss">parent:</span><span class="w"> </span><span class="s1">'second'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">foo:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">super</span><span class="o">!</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'3'</span><span class="w">
+  </span><span class="ss">other:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s1">'other'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">third_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'third'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'123'</span><span class="p">,</span><span class="w"> </span><span class="n">third_mode</span><span class="o">\</span><span class="n">foo</span><span class="o">!</span></code></pre>
+
+
+<h4 id="raises-an-error-if-no-parent-has-the-specified-method">raises an error if no parent has the specified method</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'wrong'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">foo:</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">super</span><span class="o">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s2">"No parent 'foo'"</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'wrong'</span><span class="p">)</span><span class="o">\</span><span class="n">foo</span><span class="o">!</span></code></pre>
+
+
+<h4 id="invokes-the-super-method-with-the-correct-parameters">invokes the super method with the correct parameters</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">args</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">foo:</span><span class="w"> </span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="o">...</span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'second'</span><span class="p">,</span><span class="w"> </span><span class="ss">parent:</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">foo:</span><span class="w"> </span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">super</span><span class="w"> </span><span class="o">...</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">second</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'second'</span><span class="p">)</span><span class="w">
+</span><span class="n">second</span><span class="o">\</span><span class="n">foo</span><span class="w"> </span><span class="s1">'1'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="n">second</span><span class="p">,</span><span class="w"> </span><span class="s1">'1'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">},</span><span class="w"> </span><span class="n">args</span></code></pre>
+
+
+<h4 id="works-when-deriving-from-the-default-mode-implicitly">works when deriving from the default mode implicitly</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'implicit'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">comment_syntax:</span><span class="w"> </span><span class="s1">'--'</span><span class="w">
+  </span><span class="ss">comment:</span><span class="w"> </span><span class="p">(</span><span class="n">editor</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">super</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">buf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buf</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'line 1\nline2'</span><span class="w">
+</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="n">buf</span><span class="w">
+
+</span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'implicit'</span><span class="p">)</span><span class="o">\</span><span class="n">comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'-- line 1\nline2'</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".unregister(name)">.unregister(name)</h2>
+
+<h4 id="removes-the-mode-specified-by-&lt;name&gt;">removes the mode specified by &lt;name&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'mode'</span><span class="p">,</span><span class="w"> </span><span class="ss">aliases:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">extensions:</span><span class="w"> </span><span class="s1">'zen'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'mode'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'mode'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="nc">File</span><span class="p">(</span><span class="s1">'test.zen'</span><span class="p">)),</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'default'</span></code></pre>
+
+
+<h4 id="removes-any-memoized-instance">removes any memoized instance</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'memo'</span><span class="p">,</span><span class="w"> </span><span class="ss">extensions:</span><span class="w"> </span><span class="s1">'memo'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'memo'</span><span class="w">
+</span><span class="n">live</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'memo'</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'memo'</span><span class="p">,</span><span class="w"> </span><span class="ss">extensions:</span><span class="w"> </span><span class="s1">'memo'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_equal</span><span class="w"> </span><span class="n">live</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'memo'</span><span class="p">)</span></code></pre>
+
+</div>
+</div>

@@ -1,0 +1,127 @@
+---
+title: Spec - howl.util.SandboxedLoader
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.util.sandboxedloader">howl.util.SandboxedLoader</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">loader</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">loader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">SandboxedLoader</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{}</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">rm_r</span><span class="o">!</span></code></pre>
+
+
+<h4 id="returns-a-sandbox">returns a Sandbox</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'Sandbox'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="w"> </span><span class="n">loader</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h3 id="(exposed-sandbox-helpers)">(exposed sandbox helpers)</h3>
+<div class="spec-group spec-group-3">
+
+<h3 id="&lt;name&gt;_file(rel_path)">&lt;name&gt;_file(rel_path)</h3>
+
+<h4 id="returns-a-file-object-for-the-given-file">returns a File object for the given file</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'file.lua'</span><span class="p">),</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_file</span><span class="w"> </span><span class="s1">'file.lua'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="&lt;name&gt;_load(rel_basename)">&lt;name&gt;_load(rel_basename)</h3>
+
+<h4 id="loads-relative-bytecode,-lua-and-moonscript-files">loads relative bytecode, lua and moonscript files</h4>
+
+<pre class="highlight moonscript"><code><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'aux_lua.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'_G.loaded_lua = true'</span><span class="w">
+</span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'aux_moon.moon'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'_G.loaded_moon = true'</span><span class="w">
+</span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'aux_bc.bc'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">string.dump</span><span class="w"> </span><span class="n">loadstring</span><span class="p">(</span><span class="s1">'_G.loaded_bc = true'</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'aux_lua'</span><span class="w">
+  </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'aux_moon'</span><span class="w">
+  </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'aux_bc'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">loaded_lua</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">loaded_moon</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">loaded_bc</span></code></pre>
+
+
+<h4 id="prefers-bytecode-to-lua-to-moonscript">prefers bytecode to Lua to Moonscript</h4>
+
+<pre class="highlight moonscript"><code><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'one.bc'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">string.dump</span><span class="w"> </span><span class="n">loadstring</span><span class="p">(</span><span class="s1">'return "bytecode"'</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'one.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return "lua"'</span><span class="w">
+
+</span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'two.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return "lua"'</span><span class="w">
+</span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'two.moon'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return "moon"'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'bytecode'</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'one'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'lua'</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'two'</span></code></pre>
+
+
+<h4 id="only-loads-each-file-once">only loads each file once</h4>
+
+<pre class="highlight moonscript"><code><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'aux.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+  _G.load_count = _G.load_count or 0
+  _G.load_count = _G.load_count + 1
+  return _G.load_count
+]]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'aux'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'aux'</span></code></pre>
+
+
+<h4 id="signals-an-error-upon-cyclic-dependencies">signals an error upon cyclic dependencies</h4>
+
+<pre class="highlight moonscript"><code><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'aux.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo_load("aux2")'</span><span class="w">
+</span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'aux2.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo_load("aux")'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'Cyclic dependency'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'aux'</span></code></pre>
+
+
+<h4 id="allows-passing-parameters-to-the-loaded-file">allows passing parameters to the loaded file</h4>
+
+<pre class="highlight moonscript"><code><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'aux.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return ...'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'aux'</span><span class="p">,</span><span class="w"> </span><span class="mi">123</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(loading-files-from-sub-directories)">(loading files from sub directories)</h3>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">sub_dir</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">sub_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'subdir'</span><span class="p">)</span><span class="w">
+  </span><span class="n">sub_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span></code></pre>
+
+
+<h4 id="supports-both-slashes-and-dots-in-the-path">supports both slashes and dots in the path</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sub_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'sub.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return "sub"'</span><span class="w">
+</span><span class="n">sub_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'sub2.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return "sub2"'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'sub'</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'subdir/sub'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'sub2'</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'subdir.sub2'</span></code></pre>
+
+
+<h4 id="loads-the-file-once-regardless-of-whether-dots-or-slashes-are-used">loads the file once regardless of whether dots or slashes are used</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sub_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'sub.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+  _G.load_count = _G.load_count + 1
+  return _G.load_count
+]]</span><span class="w">
+</span><span class="n">_G</span><span class="p">.</span><span class="n">load_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'subdir/sub'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'subdir.sub'</span></code></pre>
+
+
+<h4 id="loads-an-implicit-init-file-for-bare-directory-references">loads an implicit init file for bare directory references</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sub_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'init.lua'</span><span class="p">).</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'return "lua"'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'lua'</span><span class="p">,</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">foo_load</span><span class="w"> </span><span class="s1">'subdir'</span></code></pre>
+
+</div>
+</div>
+</div>
+</div>

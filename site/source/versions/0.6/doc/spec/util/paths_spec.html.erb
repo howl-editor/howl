@@ -1,0 +1,63 @@
+---
+title: Spec - howl.util.paths
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.util.paths">howl.util.paths</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">tmpdir</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpdir</span><span class="o">!</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">rm_r</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="get_dir_and_leftover">get_dir_and_leftover</h2>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">mkdir</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'subdir'</span></code></pre>
+
+
+<h4 id="returns-the-home-dir-for-empty-input">returns the home dir for empty input</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="nc">File</span><span class="p">.</span><span class="n">home_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">paths</span><span class="p">.</span><span class="n">get_dir_and_leftover</span><span class="w"> </span><span class="s1">''</span><span class="p">}</span></code></pre>
+
+
+<h4 id="returns-the-root-directory-for-&quot;/&quot;">returns the root directory for &quot;/&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="nc">File</span><span class="p">.</span><span class="n">home_dir</span><span class="p">.</span><span class="n">root_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">paths</span><span class="p">.</span><span class="n">get_dir_and_leftover</span><span class="w"> </span><span class="s1">'/'</span><span class="p">}</span></code></pre>
+
+
+<h4 id="returns-the-matched-path-and-unmatched-parts-of-a-path">returns the matched path and unmatched parts of a path</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="n">tmpdir</span><span class="p">,</span><span class="w"> </span><span class="s1">'unmatched'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">paths</span><span class="p">.</span><span class="n">get_dir_and_leftover</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'unmatched'</span><span class="p">)}</span></code></pre>
+
+
+<h4 id="when-given-a-directory-path-ending-in-&quot;/&quot;,-matches-the-given-directory">when given a directory path ending in &quot;/&quot;, matches the given directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'subdir'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">paths</span><span class="p">.</span><span class="n">get_dir_and_leftover</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="o">..</span><span class="s1">'/subdir/'</span><span class="p">}</span></code></pre>
+
+
+<h4 id="when-given-a-directory-path-not-ending-in-&quot;/&quot;,-matches-the-parent-directory">when given a directory path not ending in &quot;/&quot;, matches the parent directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="n">tmpdir</span><span class="p">,</span><span class="w"> </span><span class="s1">'subdir'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">paths</span><span class="p">.</span><span class="n">get_dir_and_leftover</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="o">..</span><span class="s1">'/subdir'</span><span class="p">}</span></code></pre>
+
+
+<h4 id="unmatched-part-can-contain-slashes">unmatched part can contain slashes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="n">tmpdir</span><span class="p">,</span><span class="w"> </span><span class="s1">'unmatched/no/such/file'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">paths</span><span class="p">.</span><span class="n">get_dir_and_leftover</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'unmatched/no/such/file'</span><span class="p">)}</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(is-given-a-non-absolute-path)">(is given a non absolute path)</h3>
+
+<h4 id="uses-the-home-dir-as-the-base-path">uses the home dir as the base path</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="nc">File</span><span class="p">.</span><span class="n">home_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'unmatched-asdf98y23903943masgb sdf'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">paths</span><span class="p">.</span><span class="n">get_dir_and_leftover</span><span class="w"> </span><span class="s1">'unmatched-asdf98y23903943masgb sdf'</span><span class="p">}</span></code></pre>
+
+</div>
+</div>
+</div>

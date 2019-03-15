@@ -1,0 +1,131 @@
+---
+title: Spec - howl.Clipboard
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.clipboard">howl.Clipboard</h1>
+
+<pre class="highlight moonscript"><code><span class="n">system_cb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">GtkClipboard</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="nc">Atom</span><span class="p">.</span><span class="nc">SELECTION_CLIPBOARD</span><span class="p">)</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">  </span><span class="n">clipboard</span><span class="p">.</span><span class="n">clear</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="push(item,-opts-=-{})">push(item, opts = {})</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;item&gt;-is-a-string)">(when &lt;item&gt; is a string)</h3>
+
+<h4 id="adds-a-clip-item-containing-text-to-the-clipboard">adds a clip item containing text to the clipboard</h4>
+
+<pre class="highlight moonscript"><code><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="s1">'hello!'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'hello!'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;item&gt;-is-a-table)">(when &lt;item&gt; is a table)</h3>
+
+<h4 id="adds-the-clip-item-as-is-to-the-clipboard">adds the clip item as is to the clipboard</h4>
+
+<pre class="highlight moonscript"><code><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="ss">text:</span><span class="w"> </span><span class="s1">'hello!'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'hello!'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="raises-an-error-if-&lt;item&gt;-has-no-.text-field">raises an error if &lt;item&gt; has no .text field</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'text'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="p">{}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-opts-contains-a-&quot;.to&quot;-field)">(when opts contains a &quot;.to&quot; field)</h3>
+
+<h4 id="pushes-the-item-to-the-specified-target">pushes the item to the specified target</h4>
+
+<pre class="highlight moonscript"><code><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="s1">'hello!'</span><span class="p">,</span><span class="w"> </span><span class="ss">to:</span><span class="w"> </span><span class="s1">'a'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'hello!'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">registers</span><span class="p">.</span><span class="n">a</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-no-&quot;.to&quot;-field-is-specified-in-opts)">(when no &quot;.to&quot; field is specified in opts)</h3>
+
+<h4 id="ensures-the-number-of-clips-does-not-exceed-config.clipboard_max_items">ensures the number of clips does not exceed config.clipboard_max_items</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">clipboard_max_items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="w">
+  </span><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="s2">"clip </span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">clipboard</span><span class="p">.</span><span class="n">clips</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'clip 6'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">clips</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'clip 2'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">clips</span><span class="p">[</span><span class="mi">5</span><span class="p">].</span><span class="n">text</span></code></pre>
+
+
+<h4 id="copies-the-clip-to-the-system-clipboard-as-well">copies the clip to the system clipboard as well</h4>
+
+<pre class="highlight moonscript"><code><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="s1">'global!'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'global!'</span><span class="p">,</span><span class="w"> </span><span class="n">system_cb</span><span class="o">\</span><span class="n">wait_for_text</span><span class="o">!</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="clear()">clear()</h2>
+
+<h4 id="clears-all-clips">clears all clips</h4>
+
+<pre class="highlight moonscript"><code><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="s1">'hello!'</span><span class="w">
+</span><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="s1">'to register!'</span><span class="p">,</span><span class="w"> </span><span class="ss">to:</span><span class="w"> </span><span class="s1">'a'</span><span class="w">
+</span><span class="n">clipboard</span><span class="p">.</span><span class="n">clear</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">registers</span><span class="p">.</span><span class="n">a</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="synchronize()">synchronize()</h2>
+
+<h4 id="adds-the-clip-from-the-system-clipboard-if-it-differs-from-.current">adds the clip from the system clipboard if it differs from .current</h4>
+
+<pre class="highlight moonscript"><code><span class="n">system_cb</span><span class="o">\</span><span class="n">set_text</span><span class="w"> </span><span class="s1">'pushed'</span><span class="w">
+</span><span class="n">clipboard</span><span class="p">.</span><span class="n">synchronize</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'pushed'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="does-nothing-if-the-texts-are-the-same">does nothing if the texts are the same</h4>
+
+<pre class="highlight moonscript"><code><span class="n">clipboard</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="s1">'pushed'</span><span class="w">
+</span><span class="n">system_cb</span><span class="o">\</span><span class="n">set_text</span><span class="w"> </span><span class="s1">'pushed'</span><span class="w">
+</span><span class="n">clipboard</span><span class="p">.</span><span class="n">synchronize</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'pushed'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">clipboard</span><span class="p">.</span><span class="n">clips</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".primary">.primary</h2>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">primary_cb</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">primary_cb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">GtkClipboard</span><span class="p">.</span><span class="n">get</span><span class="w"> </span><span class="nc">Atom</span><span class="p">.</span><span class="nc">SELECTION_PRIMARY</span></code></pre>
+
+
+<h4 id="allows-getting-and-setting-the-primary-clipboard">allows getting and setting the primary clipboard</h4>
+
+<pre class="highlight moonscript"><code><span class="n">clipboard</span><span class="p">.</span><span class="n">primary</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'spec'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'spec'</span><span class="p">,</span><span class="w"> </span><span class="n">primary_cb</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">primary_cb</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'lower'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'lower'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">primary</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="allows-setting-a-provider-function-instead-of-the-direct-text">allows setting a provider function instead of the direct text</h4>
+
+<pre class="highlight moonscript"><code><span class="n">clipboard</span><span class="p">.</span><span class="n">primary</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'async'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'async'</span><span class="p">,</span><span class="w"> </span><span class="n">primary_cb</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>

@@ -1,0 +1,794 @@
+---
+title: Spec - howl.io.File
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.io.file">howl.io.File</h1>
+
+<h4 id=".basename-returns-the-basename-of-the-path">.basename returns the basename of the path</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'base.ext'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/foo/base.ext'</span><span class="p">).</span><span class="n">basename</span></code></pre>
+
+
+<h4 id=".extension-returns-the-extension-of-the-path">.extension returns the extension of the path</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/foo/base.ext'</span><span class="p">).</span><span class="n">extension</span><span class="p">,</span><span class="w"> </span><span class="s1">'ext'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/foo/base.ex+'</span><span class="p">).</span><span class="n">extension</span><span class="p">,</span><span class="w"> </span><span class="s1">'ex+'</span></code></pre>
+
+
+<h4 id=".path-returns-the-path-of-the-file">.path returns the path of the file</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'/foo/base.ext'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/foo/base.ext'</span><span class="p">).</span><span class="n">path</span></code></pre>
+
+
+<h4 id=".uri-returns-an-uri-representing-the-path">.uri returns an URI representing the path</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/foo.txt'</span><span class="p">).</span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="s1">'file:///foo.txt'</span></code></pre>
+
+
+<h4 id=".exists-returns-true-if-the-path-exists">.exists returns true if the path exists</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span></code></pre>
+
+
+<h4 id=".parent-return-the-parent-of-the-file">.parent return the parent of the file</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">).</span><span class="n">parent</span><span class="p">.</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s1">'/bin'</span></code></pre>
+
+
+<h4 id=".children-returns-a-table-of-children">.children returns a table of children</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1'</span><span class="p">)</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child2'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">kids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="p">.</span><span class="n">children</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">kids</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">path</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">[</span><span class="n">v</span><span class="p">.</span><span class="n">basename</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">kids</span><span class="p">],</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'child1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'child2'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="--it-'.children_async-returns-a-table-of-children',-(done)--&gt;
+">  it '.children_async returns a table of children', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1'</span><span class="p">)</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child2'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+    </span><span class="n">kids</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="p">.</span><span class="n">children_async</span><span class="w">
+    </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">kids</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">path</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">[</span><span class="n">v</span><span class="p">.</span><span class="n">basename</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">kids</span><span class="p">],</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'child1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'child2'</span><span class="w"> </span><span class="p">}</span><span class="w">
+    </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id=".file_type-is-a-string-describing-the-file-type">.file_type is a string describing the file type</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'directory'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin'</span><span class="p">).</span><span class="n">file_type</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'regular'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">).</span><span class="n">file_type</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'special'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/dev/null'</span><span class="p">).</span><span class="n">file_type</span></code></pre>
+
+
+<h4 id=".writeable-is-true-if-the-file-represents-a-entry-that-can-be-written-to">.writeable is true if the file represents a entry that can be written to</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">dir</span><span class="p">.</span><span class="n">writeable</span><span class="w">
+  </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'file.txt'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">writeable</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">writeable</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/no/such/directory/orfile.txt'</span><span class="p">).</span><span class="n">writeable</span></code></pre>
+
+
+<h4 id=".readable-is-true-if-the-file-represents-a-entry-that-can-be-read">.readable is true if the file represents a entry that can be read</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">dir</span><span class="p">.</span><span class="n">readable</span><span class="w">
+  </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'file.txt'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">readable</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">readable</span></code></pre>
+
+
+<h4 id=".etag-is-a-string-that-can-be-used-to-check-for-modification">.etag is a string that can be used to check for modification</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">etag</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nb">type</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="n">etag</span><span class="p">),</span><span class="w"> </span><span class="s1">'string'</span></code></pre>
+
+
+<h4 id=".modified_at-is-a-the-unix-time-when-the-file-was-last-modified">.modified_at is a the unix time when the file was last modified</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">modified_at</span></code></pre>
+
+
+<h4 id="read(..)-is-a-short-hand-for-doing-a-read(..)-on-the-lua-file-handle">read(..) is a short hand for doing a read(..) on the Lua file handle</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'first line\n'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="s1">' line'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">read</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="s1">'*l'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="join()-returns-a-new-file-representing-the-specified-child">join() returns a new file representing the specified child</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin'</span><span class="p">)</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'ls'</span><span class="p">).</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s1">'/bin/ls'</span></code></pre>
+
+
+<h4 id="relative_to_parent()-returns-a-path-relative-to-the-specified-parent">relative_to_parent() returns a path relative to the specified parent</h4>
+
+<pre class="highlight moonscript"><code><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/bin'</span><span class="w">
+</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/bin/ls'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'ls'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">relative_to_parent</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span></code></pre>
+
+
+<h4 id="is_below(dir)-returns-true-if-the-file-is-located-beneath-&lt;dir&gt;">is_below(dir) returns true if the file is located beneath &lt;dir&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/bin'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">)</span><span class="o">\</span><span class="n">is_below</span><span class="w"> </span><span class="n">parent</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin/sub/ls'</span><span class="p">)</span><span class="o">\</span><span class="n">is_below</span><span class="w"> </span><span class="n">parent</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/usr/bin/ls'</span><span class="p">)</span><span class="o">\</span><span class="n">is_below</span><span class="w"> </span><span class="n">parent</span></code></pre>
+
+
+<h4 id="rm-and-unlink-is-an-alias-for-delete">rm and unlink is an alias for delete</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">rm</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">delete</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">unlink</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">delete</span></code></pre>
+
+
+<h4 id="rm_r-is-an-alias-for-delete_all">rm_r is an alias for delete_all</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">rm_r</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">delete_all</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="tmpfile()">tmpfile()</h2>
+
+<h4 id="returns-a-file-instance-pointing-to-an-existing-file">returns a file instance pointing to an existing file</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpfile</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span><span class="w">
+</span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="with_tmpfile(f)">with_tmpfile(f)</h2>
+
+<h4 id="invokes-&lt;f&gt;-with-the-file">invokes &lt;f&gt; with the file</h4>
+
+<pre class="highlight moonscript"><code><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'File'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w">
+
+</span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="n">f</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">f</span><span class="p">).</span><span class="n">was_called</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></code></pre>
+
+
+<h4 id="removes-the-temporary-file-even-if-&lt;f&gt;-raises-an-error">removes the temporary file even if &lt;f&gt; raises an error</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">tmpfile</span><span class="w">
+</span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">tmpfile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="nb">error</span><span class="w"> </span><span class="s1">'noo'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'noo'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="n">f</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">tmpfile</span><span class="p">.</span><span class="n">exists</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="tmpdir()">tmpdir()</h2>
+
+<h4 id="returns-a-file-instance-pointing-to-an-existing-directory">returns a file instance pointing to an existing directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpdir</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">is_directory</span><span class="w">
+</span><span class="n">file</span><span class="o">\</span><span class="n">delete_all</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="expand_path(path)">expand_path(path)</h2>
+
+<h4 id="expands-&quot;~&quot;-into-the-full-path-of-the-home-directory">expands &quot;~&quot; into the full path of the home directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s2">"</span><span class="si">#{</span><span class="nb">os.getenv</span><span class="p">(</span><span class="err">'</span><span class="nc">HOME</span><span class="err">'</span><span class="p">)</span><span class="si">}</span><span class="s2">/foo.txt"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nc">File</span><span class="p">.</span><span class="n">expand_path</span><span class="w"> </span><span class="s1">'~/foo.txt'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s2">"</span><span class="si">#{</span><span class="nb">os.getenv</span><span class="p">(</span><span class="err">'</span><span class="nc">HOME</span><span class="err">'</span><span class="p">)</span><span class="si">}</span><span class="s2">/foo.txt"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nc">File</span><span class="p">.</span><span class="n">expand_path</span><span class="w"> </span><span class="s1">'/blah/~/foo.txt'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="handles-multiple-&quot;~/&quot;-by-replacing-the-deepest-one">handles multiple &quot;~/&quot; by replacing the deepest one</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s2">"</span><span class="si">#{</span><span class="nb">os.getenv</span><span class="p">(</span><span class="err">'</span><span class="nc">HOME</span><span class="err">'</span><span class="p">)</span><span class="si">}</span><span class="s2">/foo.txt"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nc">File</span><span class="p">.</span><span class="n">expand_path</span><span class="w"> </span><span class="s1">'/a/b/~/c/~/foo.txt'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="does-not-expand-&quot;~&quot;-when-part-of-another-word">does not expand &quot;~&quot; when part of another word</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s2">"/dir~/foo.txt"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nc">File</span><span class="p">.</span><span class="n">expand_path</span><span class="w"> </span><span class="s1">'/dir~/foo.txt'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="does-not-expand-trailing-&quot;~&quot;-without-&quot;/&quot;-suffix">does not expand trailing &quot;~&quot; without &quot;/&quot; suffix</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s2">"/dir/~"</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nc">File</span><span class="p">.</span><span class="n">expand_path</span><span class="w"> </span><span class="s1">'/dir/~'</span><span class="p">)</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="new(p,-cwd,-opts-=-{})">new(p, cwd, opts = {})</h2>
+
+<h4 id="accepts-a-string-as-denothing-a-path">accepts a string as denothing a path</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="w"> </span><span class="s1">'/bin/ls'</span></code></pre>
+
+
+<h4 id="accepts-other-files-as-well">accepts other files as well</h4>
+
+<pre class="highlight moonscript"><code><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/bin/ls'</span><span class="w">
+</span><span class="n">f2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="n">f</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">f2</span></code></pre>
+
+
+<h4 id="accepts-an-optional-type-specifying-the-file's-type">accepts an optional type specifying the file's type</h4>
+
+<pre class="highlight moonscript"><code><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/notherenothere'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="nc">TYPE_DIRECTORY</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">is_directory</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;cwd&gt;-is-specified)">(when &lt;cwd&gt; is specified)</h3>
+
+<h4 id="resolves-a-string-&lt;p&gt;-relative-to-&lt;cwd&gt;">resolves a string &lt;p&gt; relative to &lt;cwd&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'/bin/ls'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'ls'</span><span class="p">,</span><span class="w"> </span><span class="s1">'/bin'</span><span class="p">).</span><span class="n">path</span></code></pre>
+
+
+<h4 id="resolves-an-absolute-string-&lt;p&gt;-as-the-absolute-path">resolves an absolute string &lt;p&gt; as the absolute path</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'/bin/ls'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">,</span><span class="w"> </span><span class="s1">'/home'</span><span class="p">).</span><span class="n">path</span></code></pre>
+
+
+<h4 id="accepts-other-files-as-&lt;cwd&gt;">accepts other Files as &lt;cwd&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'/bin/ls'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'ls'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin'</span><span class="p">)).</span><span class="n">path</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".is_absolute">.is_absolute</h2>
+
+<h4 id="returns-true-if-the-given-path-is-absolute">returns true if the given path is absolute</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">is_absolute</span><span class="w"> </span><span class="s1">'/bin/ls'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">is_absolute</span><span class="w"> </span><span class="s1">'c:\\\\bin\\ls'</span></code></pre>
+
+
+<h4 id="returns-false-if-the-given-path-is-absolute">returns false if the given path is absolute</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">is_absolute</span><span class="w"> </span><span class="s1">'bin/ls'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">is_absolute</span><span class="w"> </span><span class="s1">'bin\\ls'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".display_name">.display_name</h2>
+
+<h4 id="is-the-same-as-the-basename-for-files">is the same as the basename for files</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'base.ext'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/foo/base.ext'</span><span class="p">).</span><span class="n">display_name</span></code></pre>
+
+
+<h4 id="has-a-trailing-separator-for-directories">has a trailing separator for directories</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'bin/'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/usr/bin'</span><span class="p">).</span><span class="n">display_name</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".short_path">.short_path</h2>
+
+<h4 id="returns-the-path-with-the-home-directory-replace-by-&quot;~&quot;">returns the path with the home directory replace by &quot;~&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'~'</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="nb">os.getenv</span><span class="p">(</span><span class="s1">'HOME'</span><span class="p">)).</span><span class="n">short_path</span><span class="w">
+</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="nb">os.getenv</span><span class="p">(</span><span class="s1">'HOME'</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'foo.txt'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'~/foo.txt'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">short_path</span></code></pre>
+
+
+<h4 id="does-not-replace-a-directory-the-home-directory-is-a-prefix-of-directory">does not replace a directory the home directory is a prefix of directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">home_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="nb">os.getenv</span><span class="p">(</span><span class="s1">'HOME'</span><span class="p">)).</span><span class="n">path</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'-suffix'</span><span class="w">
+</span><span class="n">home</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="n">home_path</span><span class="p">)</span><span class="w">
+</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">home</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'foo.txt'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">home</span><span class="p">.</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">home</span><span class="p">.</span><span class="n">short_path</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">short_path</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="contents">contents</h2>
+
+<h4 id="assigning-a-string-writes-the-string-to-the-file">assigning a string writes the string to the file</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello world'</span><span class="w">
+  </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">io.open</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">path</span><span class="w">
+  </span><span class="n">read_back</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">f</span><span class="o">\</span><span class="n">read</span><span class="w"> </span><span class="s1">'*all'</span><span class="w">
+  </span><span class="n">f</span><span class="o">\</span><span class="n">close</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">read_back</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello world'</span></code></pre>
+
+
+<h4 id="returns-the-contents-of-the-file">returns the contents of the file</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">io.open</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s1">'wb'</span><span class="w">
+  </span><span class="n">f</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'hello world'</span><span class="w">
+  </span><span class="n">f</span><span class="o">\</span><span class="n">close</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello world'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="open([mode,-function])">open([mode, function])</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;function&gt;-is-nil)">(when &lt;function&gt; is nil)</h3>
+
+<h4 id="returns-a-lua-file-handle">returns a Lua file handle</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'first line\nsecond line\n'</span><span class="w">
+  </span><span class="n">fh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">open</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'first line'</span><span class="p">,</span><span class="w"> </span><span class="n">fh</span><span class="o">\</span><span class="n">read</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'second line\n'</span><span class="p">,</span><span class="w"> </span><span class="n">fh</span><span class="o">\</span><span class="n">read</span><span class="w"> </span><span class="s1">'*L'</span><span class="w">
+  </span><span class="n">fh</span><span class="o">\</span><span class="n">close</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;function&gt;-is-provided)">(when &lt;function&gt; is provided)</h3>
+
+<h4 id="it-is-invoked-with-the-file-handle">it is invoked with the file handle</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'first line\nsecond line\n'</span><span class="w">
+  </span><span class="kd">local</span><span class="w"> </span><span class="n">first_line</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="s1">'r'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">fh</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">first_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fh</span><span class="o">\</span><span class="n">read</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'first line'</span><span class="p">,</span><span class="w"> </span><span class="n">first_line</span></code></pre>
+
+
+<h4 id="returns-the-returns-values-of-the-function">returns the returns values of the function</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'callback'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="s1">'last'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="s1">'r'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'callback'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="s1">'last'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="closes-the-file-automatically-after-invoking-&lt;function&gt;">closes the file automatically after invoking &lt;function&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="kd">local</span><span class="w"> </span><span class="n">handle</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="s1">'r'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">fh</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fh</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">has_errors</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">handle</span><span class="o">\</span><span class="n">read</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-&lt;function&gt;-raises-an-error)">(..  when &lt;function&gt; raises an error)</h3>
+
+<h4 id="propagates-that-error">propagates that error</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'kaboom'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="s1">'r'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="s1">'kaboom'</span></code></pre>
+
+
+<h4 id="still-closes-the-file">still closes the file</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="kd">local</span><span class="w"> </span><span class="n">handle</span><span class="w">
+  </span><span class="nb">pcall</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">open</span><span class="w"> </span><span class="s1">'r'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">fh</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fh</span><span class="w">
+    </span><span class="nb">error</span><span class="w"> </span><span class="s1">'kaboom'</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">has_errors</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">handle</span><span class="o">\</span><span class="n">read</span><span class="o">!</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="mkdir()">mkdir()</h2>
+
+<h4 id="creates-a-directory-for-the-path-specified-by-the-file">creates a directory for the path specified by the file</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">is_directory</span></code></pre>
+
+
+<h4 id="raises-an-error-if-the-directory-could-not-be-created">raises an error if the directory could not be created</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">has_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/aksdjskjdgudfkj'</span><span class="p">)</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="mkdir_p()">mkdir_p()</h2>
+
+<h4 id="creates-a-directory-for-the-path-specified-by-the-file,-including-parents">creates a directory for the path specified by the file, including parents</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span><span class="w">
+  </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">join</span><span class="w"> </span><span class="s1">'sub/foo'</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">mkdir_p</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">is_directory</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="delete()">delete()</h2>
+
+<h4 id="deletes-the-target-file">deletes the target file</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span></code></pre>
+
+
+<h4 id="raise-an-error-if-the-file-does-not-exist">raise an error if the file does not exist</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpfile</span><span class="o">!</span><span class="w">
+</span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="delete_all()">delete_all()</h2>
+
+<h4 id="raise-an-error-if-the-file-does-not-exist">raise an error if the file does not exist</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(for-a-regular-file)">(for a regular file)</h3>
+
+<h4 id="deletes-the-target-file">deletes the target file</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">delete_all</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(for-a-directory)">(for a directory)</h3>
+
+<h4 id="deletes-the-directory-and-all-sub-entries">deletes the directory and all sub entries</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1'</span><span class="p">)</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1/sub_child'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child2'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">delete_all</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">dir</span><span class="p">.</span><span class="n">exists</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="touch()">touch()</h2>
+
+<h4 id="creates-the-file-if-does-not-exist">creates the file if does not exist</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span><span class="w">
+  </span><span class="n">file</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span></code></pre>
+
+
+<h4 id="raises-an-error-if-the-file-could-not-be-created">raises an error if the file could not be created</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/no/does/not/exist'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="tostring()">tostring()</h2>
+
+<h4 id="returns-a-string-containing-the-path">returns a string containing the path</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">to_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="nb">tostring</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'string'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="w"> </span><span class="n">to_s</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">to_s</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">path</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="find()">find()</h2>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1'</span><span class="p">)</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1/sub_dir'</span><span class="p">)</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1/sub_dir/deep.lua'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1/sub_child.txt'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1/sandwich.lua'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child2'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+    </span><span class="n">f</span><span class="w"> </span><span class="n">dir</span></code></pre>
+
+
+<h4 id="raises-an-error-if-the-file-is-not-a-directory">raises an error if the file is not a directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/no/does/not/exist'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">find</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(with-no-parameters-given)">(with no parameters given)</h3>
+
+<h4 id="returns-a-list-of-all-sub-entries">returns a list of all sub entries</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">find</span><span class="o">!</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">files</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">path</span><span class="w">
+  </span><span class="n">normalized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">f</span><span class="o">\</span><span class="n">relative_to_parent</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">files</span><span class="p">]</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'child1'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sandwich.lua'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_child.txt'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_dir'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_dir/deep.lua'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child2'</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">normalized</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-sort-parameter-is-given)">(when the sort parameter is given)</h3>
+
+<h4 id="returns-a-list-of-all-sub-entries-in-a-pleasing-order">returns a list of all sub entries in a pleasing order</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">find</span><span class="w"> </span><span class="ss">sort:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">normalized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">f</span><span class="o">\</span><span class="n">relative_to_parent</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">files</span><span class="p">]</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">normalized</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'child2'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sandwich.lua'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_child.txt'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_dir'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_dir/deep.lua'</span><span class="p">,</span><span class="w">
+  </span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-filter:-is-passed-as-an-option)">(when filter: is passed as an option)</h3>
+
+<h4 id="excludes-files-for-which-&lt;filter(file)&gt;-returns-true">excludes files for which &lt;filter(file)&gt; returns true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">find</span><span class="w"> </span><span class="ss">filter:</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">file</span><span class="p">.</span><span class="n">basename</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s1">'sandwich.lua'</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">basename</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s1">'child1'</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'child1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sandwich.lua'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">[</span><span class="n">f</span><span class="p">.</span><span class="n">basename</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">files</span><span class="p">]</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-on_enter-parameter-is-given)">(when the on_enter parameter is given)</h3>
+
+<h4 id="is-called-once-for-each-directory-with-the-dir-and-files-so-far">is called once for each directory with the dir and files so far</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">total_files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">find</span><span class="w"> </span><span class="ss">on_enter:</span><span class="w"> </span><span class="p">(</span><span class="n">enter_dir</span><span class="p">,</span><span class="w"> </span><span class="n">files</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">dirs</span><span class="p">[</span><span class="o">#</span><span class="n">dirs</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">enter_dir</span><span class="w">
+    </span><span class="n">total_files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">files</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">dirs</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">total_files</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">dirs</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">dir</span><span class="p">,</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1'</span><span class="p">),</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1'</span><span class="p">)</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'sub_dir'</span><span class="p">),</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">dirs</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-it-returns-&quot;break&quot;)">(..  and it returns &quot;break&quot;)</h3>
+
+<h4 id="causes-an-early-return">causes an early return</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">files</span><span class="p">,</span><span class="w"> </span><span class="n">cancelled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">find</span><span class="w"> </span><span class="ss">on_enter:</span><span class="w"> </span><span class="p">(</span><span class="n">enter_dir</span><span class="p">,</span><span class="w"> </span><span class="n">files</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="k">if</span><span class="w"> </span><span class="n">enter_dir</span><span class="p">.</span><span class="n">basename</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'child1'</span><span class="w">
+      </span><span class="k">return</span><span class="w"> </span><span class="s1">'break'</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">cancelled</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">files</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1'</span><span class="p">),</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child2'</span><span class="p">),</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">files</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="find_paths(opts-=-{})">find_paths(opts = {})</h2>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1'</span><span class="p">)</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1/sub_dir'</span><span class="p">)</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1/sub_dir/deep.lua'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1/sub_child.txt'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child1/sandwich.lua'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+    </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'child2'</span><span class="p">)</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+    </span><span class="n">f</span><span class="w"> </span><span class="n">dir</span></code></pre>
+
+
+<h4 id="raises-an-error-if-the-file-is-not-a-directory">raises an error if the file is not a directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/no/does/not/exist'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="n">find_paths</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(with-no-option-specified)">(with no option specified)</h3>
+
+<h4 id="returns-a-list-of-all-regular-and-directory-sub-paths">returns a list of all regular and directory sub paths</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">find_paths</span><span class="o">!</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">paths</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'child1/'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sandwich.lua'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_child.txt'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_dir/'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_dir/deep.lua'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child2'</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">paths</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(with-the-exclude_directories-option-specified)">(with the exclude_directories option specified)</h3>
+
+<h4 id="returns-a-list-of-all-regular-sub-paths">returns a list of all regular sub paths</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">find_paths</span><span class="w"> </span><span class="ss">exclude_directories:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">paths</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'child1/sandwich.lua'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_child.txt'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_dir/deep.lua'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child2'</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">paths</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(with-the-exclude_non_directories-option-specified)">(with the exclude_non_directories option specified)</h3>
+
+<h4 id="returns-a-list-of-all-directory-paths">returns a list of all directory paths</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">find_paths</span><span class="w"> </span><span class="ss">exclude_non_directories:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">paths</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'child1/'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_dir/'</span><span class="p">,</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">paths</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-filter:-is-passed-as-an-option)">(when filter: is passed as an option)</h3>
+
+<h4 id="excludes-paths-for-which-&lt;filter(path)&gt;-returns-true">excludes paths for which &lt;filter(path)&gt; returns true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">find_paths</span><span class="w"> </span><span class="ss">filter:</span><span class="w"> </span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="ow">not</span><span class="w"> </span><span class="p">(</span><span class="n">path</span><span class="o">\</span><span class="n">ends_with</span><span class="p">(</span><span class="s1">'sandwich.lua'</span><span class="p">)</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'child1/'</span><span class="p">)</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'child1/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'child1/sandwich.lua'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">paths</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-on_enter-parameter-is-given)">(when the on_enter parameter is given)</h3>
+
+<h4 id="is-called-once-for-each-directory-with-the-dir-and-paths-so-far">is called once for each directory with the dir and paths so far</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">dirs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">total_files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+  </span><span class="n">dir</span><span class="o">\</span><span class="n">find_paths</span><span class="w"> </span><span class="ss">on_enter:</span><span class="w"> </span><span class="p">(</span><span class="n">enter_dir</span><span class="p">,</span><span class="w"> </span><span class="n">files</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">dirs</span><span class="p">[</span><span class="o">#</span><span class="n">dirs</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">enter_dir</span><span class="w">
+    </span><span class="n">total_files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">files</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">dirs</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">total_files</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">dirs</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'./'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/'</span><span class="p">,</span><span class="w">
+    </span><span class="s1">'child1/sub_dir/'</span><span class="p">,</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">dirs</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-it-returns-&quot;break&quot;)">(..  and it returns &quot;break&quot;)</h3>
+
+<h4 id="causes-an-early-return">causes an early return</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_populated_dir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="kd">local</span><span class="w"> </span><span class="n">count</span><span class="w">
+  </span><span class="n">paths</span><span class="p">,</span><span class="w"> </span><span class="n">cancelled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">find_paths</span><span class="w"> </span><span class="ss">on_enter:</span><span class="w"> </span><span class="p">(</span><span class="n">enter_dir</span><span class="p">,</span><span class="w"> </span><span class="n">cur_paths</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="k">if</span><span class="w"> </span><span class="n">enter_dir</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'child1/'</span><span class="w">
+      </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">#</span><span class="n">cur_paths</span><span class="w">
+      </span><span class="k">return</span><span class="w"> </span><span class="s1">'break'</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">cancelled</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">count</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">paths</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="copy(dest)">copy(dest)</h2>
+
+<h4 id="copies-the-given-file">copies the given file</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">/</span><span class="s1">'a.txt'</span><span class="w">
+  </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="o">/</span><span class="s1">'b.txt'</span><span class="w">
+  </span><span class="n">a</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+  </span><span class="n">a</span><span class="o">\</span><span class="n">copy</span><span class="w"> </span><span class="n">b</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">contents</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+
+  </span><span class="n">a</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello 2'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">has_errors</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">a</span><span class="o">\</span><span class="n">copy</span><span class="w"> </span><span class="n">b</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">contents</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello'</span><span class="w">
+
+  </span><span class="n">a</span><span class="o">\</span><span class="n">copy</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s1">'COPY_OVERWRITE'</span><span class="p">}</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">contents</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello 2'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="meta-methods">meta methods</h2>
+
+<h4 id="/-and-..-joins-the-file-with-the-specified-argument">/ and .. joins the file with the specified argument</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'ls'</span><span class="p">).</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s1">'/bin/ls'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'ls'</span><span class="p">).</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="s1">'/bin/ls'</span></code></pre>
+
+
+<h4 id="tostring-returns-the-result-of-file.tostring">tostring returns the result of File.tostring</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/bin/ls'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">file</span><span class="o">\</span><span class="nb">tostring</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="w"> </span><span class="n">file</span></code></pre>
+
+
+<h4 id="==-returns-true-if-the-files-point-to-the-same-path">== returns true if the files point to the same path</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">),</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'/bin/ls'</span><span class="p">)</span></code></pre>
+
+</div>
+</div>

@@ -1,0 +1,653 @@
+---
+title: Spec - howl.io.Process
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.io.process">howl.io.Process</h1>
+
+<pre class="highlight moonscript"><code><span class="n">run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">with</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="o">...</span><span class="w">
+    </span><span class="o">\</span><span class="n">wait</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="process(opts)">Process(opts)</h2>
+
+<h4 id="raises-an-error-if-opts.cmd-is-missing-or-invalid">raises an error if opts.cmd is missing or invalid</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'cmd'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'cmd'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'id'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="s1">'echo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">}</span></code></pre>
+
+
+<h4 id="returns-a-process-object">returns a process object</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Process'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'true'</span></code></pre>
+
+
+<h4 id="raises-an-error-for-an-unknown-command">raises an error for an unknown command</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'howlblargh'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="s1">'howlblargh'</span><span class="p">}</span></code></pre>
+
+
+<h4 id="sets-.argv-to-the-parsed-command-line">sets .argv to the parsed command line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="s1">'echo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'echo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">},</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">argv</span><span class="w">
+
+</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "foo bar"'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'/bin/sh'</span><span class="p">,</span><span class="w"> </span><span class="s1">'-c'</span><span class="p">,</span><span class="w"> </span><span class="s1">'echo "foo bar"'</span><span class="p">},</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">argv</span></code></pre>
+
+
+<h4 id="allows-specifying-a-different-shell">allows specifying a different shell</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">shell:</span><span class="w"> </span><span class="s1">'/bin/echo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'/bin/echo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'-c'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">},</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">argv</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="process.open_pipe(cmd,-opts)">Process.open_pipe(cmd, opts)</h2>
+
+<h4 id="----it-'creates-a-process-set-up-for-piping',-(done)--&gt;
+">    it 'creates a process set up for piping', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">open_pipe</span><span class="w"> </span><span class="p">{</span><span class="s1">'sh'</span><span class="p">,</span><span class="w"> </span><span class="s1">'-c'</span><span class="p">,</span><span class="w"> </span><span class="s1">'cat; echo foo &gt;&amp;2'</span><span class="p">},</span><span class="w"> </span><span class="ss">stdin:</span><span class="w"> </span><span class="s1">'reverb'</span><span class="w">
+  </span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">\</span><span class="n">pump</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'reverb'</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Process'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="process.execute(cmd,-opts)">Process.execute(cmd, opts)</h2>
+
+<h4 id="----it-'executes-the-specified-command-and-return-&lt;out,-err,-process&gt;',-(done)--&gt;
+">    it 'executes the specified command and return &lt;out, err, process&gt;', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">execute</span><span class="w"> </span><span class="p">{</span><span class="s1">'sh'</span><span class="p">,</span><span class="w"> </span><span class="s1">'-c'</span><span class="p">,</span><span class="w"> </span><span class="s1">'cat; echo foo &gt;&amp;2'</span><span class="p">},</span><span class="w"> </span><span class="ss">stdin:</span><span class="w"> </span><span class="s1">'reverb'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'reverb'</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Process'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-&quot;executes-string-commands-using-/bin/sh-by-default&quot;,-(done)--&gt;
+">    it &quot;executes string commands using /bin/sh by default&quot;, (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">execute</span><span class="p">,</span><span class="w"> </span><span class="s1">'echo $0'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'/bin/sh\n'</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-&quot;allows-specifying-a-different-shell&quot;,-(done)--&gt;
+">    it &quot;allows specifying a different shell&quot;, (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">execute</span><span class="p">,</span><span class="w"> </span><span class="s1">'blargh'</span><span class="p">,</span><span class="w"> </span><span class="ss">shell:</span><span class="w"> </span><span class="s1">'/bin/echo'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="s1">'blargh'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'blargh'</span><span class="p">,</span><span class="w"> </span><span class="n">process</span><span class="p">.</span><span class="n">command_line</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'opts.working_directory-sets-the-working-working-directory',-(done)--&gt;
+">    it 'opts.working_directory sets the working working directory', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">execute</span><span class="w"> </span><span class="s1">'pwd'</span><span class="p">,</span><span class="w"> </span><span class="ss">working_directory:</span><span class="w"> </span><span class="n">dir</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">dir</span><span class="p">.</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="p">.</span><span class="n">stripped</span><span class="w">
+    </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'opts.env-sets-the-process-environment',-(done)--&gt;
+">    it 'opts.env sets the process environment', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">execute</span><span class="w"> </span><span class="p">{</span><span class="s1">'env'</span><span class="p">},</span><span class="w"> </span><span class="ss">env:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'bar'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foo=bar'</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="p">.</span><span class="n">stripped</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'works-with-large-process-outputs',-(done)--&gt;
+">    it 'works with large process outputs', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">file_contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">string.rep</span><span class="w"> </span><span class="s2">"xxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyy zzzzzzzzzzzzzzzzzzz\n"</span><span class="p">,</span><span class="w"> </span><span class="mi">5000</span><span class="w">
+    </span><span class="n">f</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_contents</span><span class="w">
+    </span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">execute</span><span class="p">,</span><span class="w"> </span><span class="s2">"cat </span><span class="si">#{</span><span class="n">f</span><span class="p">.</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">file_contents</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="w">
+    </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="pump(on_stdout,-on_stderr)">pump(on_stdout, on_stderr)</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-&lt;on_stdout&gt;-handler-is-provided)">(when the &lt;on_stdout&gt; handler is provided)</h3>
+
+<h4 id="------it-'invokes-the-handler-for-any-stdout-output-before-returning',-(done)--&gt;
+">      it 'invokes the handler for any stdout output before returning', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">on_stdout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">pump</span><span class="w"> </span><span class="n">on_stdout</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exited</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stdout</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'foo\n'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stdout</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-&lt;on_stderr&gt;-handler-is-provided)">(when the &lt;on_stderr&gt; handler is provided)</h3>
+
+<h4 id="------it-'invokes-the-handler-for-any-stderr-output-before-returning',-(done)--&gt;
+">      it 'invokes the handler for any stderr output before returning', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">on_stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo err &gt;&amp;2'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stderr:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">pump</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">on_stderr</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exited</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stderr</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'err\n'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stderr</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-both-handlers-are-provided)">(when both handlers are provided)</h3>
+
+<h4 id="------it-'invokes-both-handlers-for-any-output-before-returning',-(done)--&gt;
+">      it 'invokes both handlers for any output before returning', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">on_stdout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">on_stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo out; echo err &gt;&amp;2'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stderr:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">pump</span><span class="w"> </span><span class="n">on_stdout</span><span class="p">,</span><span class="w"> </span><span class="n">on_stderr</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exited</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stdout</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'out\n'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stdout</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stderr</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'err\n'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stderr</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-handlers-are-not-specified)">(when handlers are not specified)</h3>
+
+<h4 id="collects-and-returns-&lt;out&gt;-and-&lt;err&gt;-output">collects and returns &lt;out&gt; and &lt;err&gt; output</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">\</span><span class="n">pump</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'foo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">stderr</span><span class="w">
+
+</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo err &gt;&amp;2'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stderr:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">\</span><span class="n">pump</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'err\n'</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">stdout</span><span class="w">
+
+</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo out; echo err &gt;&amp;2'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stderr:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">\</span><span class="n">pump</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'out\n'</span><span class="p">,</span><span class="w"> </span><span class="n">stdout</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'err\n'</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="pump_lines(on_stdout,-on_stderr)">pump_lines(on_stdout, on_stderr)</h2>
+
+<h4 id="----it-'invokes-the-handler-for-any-stdout-output-before-returning',-(done)--&gt;
+">    it 'invokes the handler for any stdout output before returning', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">on_stdout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "foo\nbar"'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">pump_lines</span><span class="w"> </span><span class="n">on_stdout</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exited</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stdout</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="p">{</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">}</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'invokes-the-handler-for-any-stderr-output-before-returning',-(done)--&gt;
+">    it 'invokes the handler for any stderr output before returning', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">on_stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "err1\nerr2" &gt;&amp;2'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stderr:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">pump_lines</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="n">on_stderr</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exited</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stderr</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="p">{</span><span class="s1">'err1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'err2'</span><span class="p">}</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'handles-crlfs',-(done)--&gt;
+">    it 'handles CRLFs', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">on_stdout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "one\r\ntwo"'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">pump_lines</span><span class="w"> </span><span class="n">on_stdout</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stdout</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">}</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'returns-empty-lines-as-empty-lines',-(done)--&gt;
+">    it 'returns empty lines as empty lines', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">on_stdout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "one\n\nthree"'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">pump_lines</span><span class="w"> </span><span class="n">on_stdout</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">on_stdout</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'assembles-lines-correctly-for-larger-reads',-(done)--&gt;
+">    it 'assembles lines correctly for larger reads', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"line </span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4000</span><span class="p">]</span><span class="w">
+    </span><span class="n">f</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">table.concat</span><span class="w"> </span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="s1">'\n'</span><span class="w">
+    </span><span class="n">passed_lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+    </span><span class="n">on_stdout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">_lines</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+      </span><span class="k">for</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">_lines</span><span class="w">
+        </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">passed_lines</span><span class="p">,</span><span class="w"> </span><span class="n">l</span><span class="w">
+
+    </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s2">"cat '</span><span class="si">#{</span><span class="n">f</span><span class="p">.</span><span class="n">path</span><span class="si">}</span><span class="s2">'"</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="n">p</span><span class="o">\</span><span class="n">pump_lines</span><span class="w"> </span><span class="n">on_stdout</span><span class="w">
+    </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4000</span><span class="w">
+      </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">passed_lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w">
+    </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-handlers-are-not-specified)">(when handlers are not specified)</h3>
+
+<h4 id="collects-and-returns-&lt;out&gt;-and-&lt;err&gt;-output-as-lines">collects and returns &lt;out&gt; and &lt;err&gt; output as lines</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "one\ntwo"'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">\</span><span class="n">pump_lines</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">},</span><span class="w"> </span><span class="n">stdout</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">stderr</span><span class="w">
+
+</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "one\ntwo" &gt;&amp;2'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stderr:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">\</span><span class="n">pump_lines</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">},</span><span class="w"> </span><span class="n">stderr</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">stdout</span><span class="w">
+
+</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "one\ntwo"; echo "three" &gt;&amp;2'</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stderr:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">stdout</span><span class="p">,</span><span class="w"> </span><span class="n">stderr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">\</span><span class="n">pump_lines</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">},</span><span class="w"> </span><span class="n">stdout</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'three'</span><span class="p">},</span><span class="w"> </span><span class="n">stderr</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="wait()">wait()</h2>
+
+<h4 id="----it-'waits-until-the-process-is-finished',-(done)--&gt;
+">    it 'waits until the process is finished', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">settimeout</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">file</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span><span class="w">
+    </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'sh'</span><span class="p">,</span><span class="w"> </span><span class="s1">'-c'</span><span class="p">,</span><span class="w"> </span><span class="s2">"sleep 1; touch '</span><span class="si">#{</span><span class="n">file</span><span class="p">.</span><span class="n">path</span><span class="si">}</span><span class="s2">'"</span><span class="w"> </span><span class="p">}</span><span class="w">
+    </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">exists</span><span class="w">
+    </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(signal-handling)">(signal handling)</h3>
+<div class="spec-group spec-group-3">
+
+<h3 id="send_signal(signal)-and-.signalled">send_signal(signal) and .signalled</h3>
+
+<h4 id="------it-'sends-the-specified-signal-to-the-process',-(done)--&gt;
+">      it 'sends the specified signal to the process', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'cat'</span><span class="p">,</span><span class="w"> </span><span class="ss">write_stdin:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">send_signal</span><span class="w"> </span><span class="mi">9</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">signalled</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-'.signalled-is-false-for-a-non-signaled-process',-(done)--&gt;
+">      it '.signalled is false for a non-signaled process', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'id'</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">signalled</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-'.signal-holds-the-signal-used-for-terminating-the-process',-(done)--&gt;
+">      it '.signal holds the signal used for terminating the process', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'cat'</span><span class="p">,</span><span class="w"> </span><span class="ss">write_stdin:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">send_signal</span><span class="w"> </span><span class="mi">9</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">9</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">signal</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-'.signal_name-holds-the-name-of-the-signal-used-for-terminating-the-process',-(done)--&gt;
+">      it '.signal_name holds the name of the signal used for terminating the process', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'cat'</span><span class="p">,</span><span class="w"> </span><span class="ss">write_stdin:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">send_signal</span><span class="w"> </span><span class="mi">9</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'KILL'</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">signal_name</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-'signals-can-be-referred-to-by-name-as-well',-(done)--&gt;
+">      it 'signals can be referred to by name as well', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'cat'</span><span class="p">,</span><span class="w"> </span><span class="ss">write_stdin:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">send_signal</span><span class="w"> </span><span class="s1">'KILL'</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">9</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">signal</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".exit_status">.exit_status</h2>
+
+<h4 id="is-nil-for-a-running-process">is nil for a running process</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'sh'</span><span class="p">,</span><span class="w"> </span><span class="s1">'-c'</span><span class="p">,</span><span class="w"> </span><span class="s2">"sleep 1; true"</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exit_status</span><span class="w">
+</span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'is-nil-for-a-signalled-process',-(done)--&gt;
+">    it 'is nil for a signalled process', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'cat'</span><span class="p">,</span><span class="w"> </span><span class="ss">write_stdin:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">send_signal</span><span class="w"> </span><span class="mi">9</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exit_status</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'is-set-to-the-exit-status-for-a-normally-exited-process',-(done)--&gt;
+">    it 'is set to the exit status for a normally exited process', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="s1">'echo foo'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exit_status</span><span class="w">
+
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="p">{</span><span class="s1">'sh'</span><span class="p">,</span><span class="w"> </span><span class="s1">'-c'</span><span class="p">,</span><span class="w"> </span><span class="s1">'exit 1'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exit_status</span><span class="w">
+
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="p">{</span><span class="s1">'sh'</span><span class="p">,</span><span class="w"> </span><span class="s1">'-c'</span><span class="p">,</span><span class="w"> </span><span class="s1">'exit 2'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exit_status</span><span class="w">
+
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".working_directory">.working_directory</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-provided-during-launch)">(when provided during launch)</h3>
+
+<h4 id="is-the-same-directory">is the same directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">cwd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/bin'</span><span class="w">
+</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="p">(</span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'true'</span><span class="p">,</span><span class="w"> </span><span class="ss">working_directory:</span><span class="w"> </span><span class="n">cwd</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">cwd</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">working_directory</span></code></pre>
+
+
+<h4 id="is-always-a-file-instance">is always a File instance</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="p">(</span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'true'</span><span class="p">,</span><span class="w"> </span><span class="ss">working_directory:</span><span class="w"> </span><span class="s1">'/bin'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'File'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="w">  </span><span class="n">p</span><span class="p">.</span><span class="n">working_directory</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-not-provided)">(when not provided)</h3>
+
+<h4 id="is-the-current-working-directory">is the current working directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="p">(</span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'true'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="n">glib</span><span class="p">.</span><span class="n">get_current_dir</span><span class="o">!</span><span class="p">),</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">working_directory</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".successful">.successful</h2>
+
+<h4 id="----it-'is-true-if-the-process-exited-cleanly-with-a-zero-exit-code',-(done)--&gt;
+">    it 'is true if the process exited cleanly with a zero exit code', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">run</span><span class="p">(</span><span class="s1">'id'</span><span class="p">).</span><span class="n">successful</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'is-false-if-the-process-exited-with-a-non-zero-exit-code',-(done)--&gt;
+">    it 'is false if the process exited with a non-zero exit code', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">run</span><span class="p">(</span><span class="s1">'false'</span><span class="p">).</span><span class="n">successful</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'is-false-if-the-process-exited-due-to-a-signal',-(done)--&gt;
+">    it 'is false if the process exited due to a signal', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'cat'</span><span class="p">,</span><span class="w"> </span><span class="ss">write_stdin:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">send_signal</span><span class="w"> </span><span class="mi">9</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">successful</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".stdout">.stdout</h2>
+
+<h4 id="----it-'allows-reading-process-output',-(done)--&gt;
+">    it 'allows reading process output', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="s1">'echo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'one\ntwo'</span><span class="p">},</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one\ntwo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">stdout</span><span class="o">\</span><span class="n">read</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">stdout</span><span class="o">\</span><span class="n">read</span><span class="o">!</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".stderr">.stderr</h2>
+
+<h4 id="----it-'allows-reading-process-error-output',-(done)--&gt;
+">    it 'allows reading process error output', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="s1">'sh'</span><span class="p">,</span><span class="w"> </span><span class="s1">'-c'</span><span class="p">,</span><span class="w"> </span><span class="s1">'echo foo &gt;&amp;2'</span><span class="p">},</span><span class="w"> </span><span class="ss">read_stderr:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'foo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">stderr</span><span class="o">\</span><span class="n">read</span><span class="o">!</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".stdin">.stdin</h2>
+
+<h4 id="----it-'allows-writing-to-the-process-input',-(done)--&gt;
+">    it 'allows writing to the process input', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="s1">'cat'</span><span class="p">},</span><span class="w"> </span><span class="ss">write_stdin:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="k">with</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">stdin</span><span class="w">
+    </span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'round-trip'</span><span class="w">
+    </span><span class="o">\</span><span class="n">close</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'round-trip'</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">stdout</span><span class="o">\</span><span class="n">read</span><span class="o">!</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".command_line">.command_line</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-command-is-specified-as-a-string)">(when the command is specified as a string)</h3>
+
+<h4 id="------it-'is-the-same',-(done)--&gt;
+">      it 'is the same', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'echo command "bar"'</span><span class="p">,</span><span class="w"> </span><span class="n">run</span><span class="p">(</span><span class="s1">'echo command "bar"'</span><span class="p">).</span><span class="n">command_line</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-command-is-specified-as-a-table)">(when the command is specified as a table)</h3>
+
+<h4 id="------it-'is-a-created-shell-command-line',-(done)--&gt;
+">      it 'is a created shell command line', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s2">"echo command 'bar zed'"</span><span class="p">,</span><span class="w"> </span><span class="n">run</span><span class="p">({</span><span class="s1">'echo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'command'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar zed'</span><span class="p">}).</span><span class="n">command_line</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".exit_status_string">.exit_status_string</h2>
+
+<h4 id="----it-'provides-the-exit-code-for-a-normally-terminated-process',-(done)--&gt;
+">    it 'provides the exit code for a normally terminated process', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'exited normally with code 0'</span><span class="p">,</span><span class="w"> </span><span class="n">run</span><span class="p">(</span><span class="s1">'id'</span><span class="p">).</span><span class="n">exit_status_string</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'exited normally with code 1'</span><span class="p">,</span><span class="w"> </span><span class="n">run</span><span class="p">(</span><span class="s1">'exit 1'</span><span class="p">).</span><span class="n">exit_status_string</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'provides-the-signal-name-for-a-killed-process',-(done)--&gt;
+">    it 'provides the signal name for a killed process', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="s1">'cat'</span><span class="p">},</span><span class="w"> </span><span class="ss">write_stdin:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">send_signal</span><span class="w"> </span><span class="s1">'KILL'</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'killed by signal 9 (KILL)'</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">exit_status_string</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="process.running">Process.running</h2>
+
+<h4 id="----it-'is-a-table-of-currently-running-processes,-keyed-by-pid',-(done)--&gt;
+">    it 'is a table of currently running processes, keyed by pid', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">running</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="s1">'cat'</span><span class="p">},</span><span class="w"> </span><span class="ss">write_stdin:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{[</span><span class="n">p</span><span class="p">.</span><span class="n">pid</span><span class="p">]:</span><span class="w"> </span><span class="n">p</span><span class="p">},</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">running</span><span class="w">
+  </span><span class="n">p</span><span class="p">.</span><span class="n">stdin</span><span class="o">\</span><span class="n">close</span><span class="o">!</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">running</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(resource-management)">(resource management)</h3>
+
+<h4 id="----it-'processes-are-collected-correctly',-(done)--&gt;
+">    it 'processes are collected correctly', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Process</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="p">{</span><span class="s1">'echo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'one\ntwo'</span><span class="p">},</span><span class="w"> </span><span class="ss">read_stdout:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one\ntwo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">stdout</span><span class="o">\</span><span class="n">read</span><span class="o">!</span><span class="w">
+  </span><span class="n">p</span><span class="o">\</span><span class="n">wait</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">stdout</span><span class="o">\</span><span class="n">read</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">setmetatable</span><span class="w"> </span><span class="p">{</span><span class="n">p</span><span class="p">},</span><span class="w"> </span><span class="ss">__mode:</span><span class="w"> </span><span class="s1">'v'</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">collect_memory</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+</div>

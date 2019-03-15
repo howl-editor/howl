@@ -1,0 +1,48 @@
+---
+title: Spec - howl.ui.ListWidget
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.ui.listwidget">howl.ui.ListWidget</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="n">widget</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">List</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">list</span><span class="p">.</span><span class="n">max_rows_visible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="w">
+  </span><span class="n">widget</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">ListWidget</span><span class="w"> </span><span class="n">list</span><span class="w">
+  </span><span class="n">widget</span><span class="o">\</span><span class="n">show</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-`never_shrink:`-is-not-provided)">(when `never_shrink:` is not provided)</h3>
+
+<h4 id="shrinks-the-height-while-matching">shrinks the height while matching</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Matcher</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twö'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">}</span><span class="w">
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="o">!</span><span class="w">
+</span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">widget</span><span class="p">.</span><span class="n">height</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">height</span><span class="w">
+
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="w"> </span><span class="s1">'o'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">widget</span><span class="p">.</span><span class="n">height</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-`never_shrink:-true`-is-provided)">(when `never_shrink: true` is provided)</h3>
+
+<h4 id="does-not-shrink-the-height-while-matching">does not shrink the height while matching</h4>
+
+<pre class="highlight moonscript"><code><span class="n">list</span><span class="p">.</span><span class="n">matcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Matcher</span><span class="p">({</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twö'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">})</span><span class="w">
+</span><span class="n">widget</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">ListWidget</span><span class="w"> </span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="ss">never_shrink:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">widget</span><span class="o">\</span><span class="n">show</span><span class="o">!</span><span class="w">
+</span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">widget</span><span class="p">.</span><span class="n">height</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">height</span><span class="w">
+
+</span><span class="n">list</span><span class="o">\</span><span class="n">update</span><span class="w"> </span><span class="s1">'o'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">height</span><span class="p">,</span><span class="w"> </span><span class="n">widget</span><span class="p">.</span><span class="n">height</span></code></pre>
+
+</div>
+</div>

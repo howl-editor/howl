@@ -1,0 +1,55 @@
+---
+title: Howl Documentation (0.6)
+---
+%h1 Howl Documentation: 0.6 Release
+
+.row
+  .col-lg-6
+    %h2#user-manual User manual
+
+    = hdr_link 1, 'Getting started', 'manual/getting-started.html'
+    = hdr_link 2, 'Configuring Howl', 'manual/configuration.html'
+    = hdr_link 3, 'Using Howl completions', 'manual/completions.html'
+    = hdr_link 4, 'Working with files & buffers', 'manual/files.html'
+    = hdr_link 5, 'Editing', 'manual/editing.html'
+    = hdr_link 6, 'Using multiple views', 'manual/views.html'
+    = hdr_link 7, 'Running external commands', 'manual/running_commands.html'
+    = hdr_link 8, "What's next?", 'manual/next.html'
+
+  .col-lg-6
+    %h2#dev-manual Developer manual
+
+    = hdr_link 1, 'Howl development - the basics', 'manual/dev-howl.html'
+
+%h2#api-reference API reference
+
+.row
+  - sliced_for_columns(3, howl_api_docs(0.6)) do |col|
+    .col-lg-4
+      - col.each do |slice|
+        %h3
+          %small Module:
+          = slice[:package]
+        - slice[:docs].each do |doc|
+          %h4
+            = link_to doc.data[:title], doc.url
+
+%h4 (.. WIP)
+
+%h2#howl-specs Howl specs (tests)
+%p
+  Below are the Howl specs in HTML format. While the specs are certainly not
+  complete, they are provided here in the hope that they may be useful for
+  better understanding the API, as well as providing some code examples.
+  Bundle specs are currently not included in the below list.
+
+.row
+  - sliced_for_columns(3, howl_specs(0.6)) do |col|
+    .col-lg-4
+      - col.each do |slice|
+        %h3
+          %small Module:
+          = slice[:package]
+        - slice[:docs].each do |doc|
+          %h4
+            = link_to doc.data[:title], doc.url

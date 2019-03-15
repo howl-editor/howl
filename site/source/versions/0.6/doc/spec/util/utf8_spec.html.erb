@@ -1,0 +1,150 @@
+---
+title: Spec - howl.util.utf8
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.util.utf8">howl.util.utf8</h1>
+<div class="spec-group spec-group-2">
+
+<h2 id="clean(s)">clean(s)</h2>
+
+<pre class="highlight moonscript"><code><span class="n">glib_make_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">C</span><span class="p">.</span><span class="n">g_utf8_make_valid</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">s</span><span class="p">)</span><span class="w">
+  </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="p">.</span><span class="n">string</span><span class="w"> </span><span class="n">ptr</span><span class="w">
+  </span><span class="nc">C</span><span class="p">.</span><span class="n">g_free</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="w">
+  </span><span class="n">s</span><span class="w">
+
+</span><span class="n">utf8_clean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">clean</span><span class="w"> </span><span class="n">s</span><span class="w">
+  </span><span class="n">ffi</span><span class="p">.</span><span class="n">string</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="w">
+
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">rs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">utf8_clean</span><span class="w"> </span><span class="n">s</span><span class="w">
+  </span><span class="k">unless</span><span class="w"> </span><span class="n">rs</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">expected</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">to_hex_string</span><span class="p">(</span><span class="n">expected</span><span class="p">),</span><span class="w"> </span><span class="n">to_hex_string</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span></code></pre>
+
+
+<h4 id="returns-a-clean-string-as-is">returns a clean string as is</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'123456789'</span><span class="p">,</span><span class="w"> </span><span class="s1">'123456789'</span><span class="w">
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s2">"åäöƏ⏱🌨"</span><span class="p">,</span><span class="w"> </span><span class="s2">"åäöƏ⏱🌨"</span></code></pre>
+
+
+<h4 id="cleans-up-incorrect-dual-sequences">cleans up incorrect dual sequences</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\xc3\x24|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|�$|'</span><span class="w">
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\xc3\x24\xc3\x61|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|�$�a|'</span><span class="w">
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\xc3\x24X\xc3\x61|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|�$X�a|'</span></code></pre>
+
+
+<h4 id="cleans-up-incorrect-three-byte-sequences">cleans up incorrect three-byte sequences</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\xe1\x24|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|�$|'</span><span class="w">
+
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\xe1\x80\x24|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|��$|'</span></code></pre>
+
+
+<h4 id="cleans-up-incorrect-four-byte-sequences">cleans up incorrect four-byte sequences</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\xf0\x24|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|�$|'</span><span class="w">
+
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\xf0\x80\x24|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|��$|'</span><span class="w">
+
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\xf0\x80\x80\x24|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|���$|'</span></code></pre>
+
+
+<h4 id="cleans-up-stray-continuation-bytes">cleans up stray continuation bytes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\x80|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|�|'</span><span class="w">
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\x80\x80|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|��|'</span><span class="w">
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'\x80|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'�|'</span><span class="w">
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'|\x80'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|�'</span><span class="w">
+</span><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'\xc2\xa9\xa9'</span><span class="p">,</span><span class="w"> </span><span class="s1">'©�'</span></code></pre>
+
+
+<h4 id="cleans-up-illegal-bytes">cleans up illegal bytes</h4>
+
+<pre class="highlight moonscript"><code><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">192</span><span class="p">,</span><span class="w"> </span><span class="mi">193</span><span class="w">
+   </span><span class="n">assert_clean</span><span class="w"> </span><span class="s2">"|</span><span class="si">#{</span><span class="nb">string.char</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="si">}</span><span class="s2">|"</span><span class="p">,</span><span class="w"> </span><span class="s1">'|�|'</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">245</span><span class="p">,</span><span class="w"> </span><span class="mi">255</span><span class="w">
+   </span><span class="n">assert_clean</span><span class="w"> </span><span class="s2">"|</span><span class="si">#{</span><span class="nb">string.char</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="si">}</span><span class="s2">|"</span><span class="p">,</span><span class="w"> </span><span class="s1">'|�|'</span></code></pre>
+
+
+<h4 id="cleans-up-broken-utf8-at-the-end">cleans up broken utf8 at the end</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'\x8d\xc7\xe0'</span><span class="p">,</span><span class="w"> </span><span class="s1">'���'</span></code></pre>
+
+
+<h4 id="handles-sequence-starts-within-sequences">handles sequence starts within sequences</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'\xc7\xe0\x60\x28\x8c'</span><span class="p">,</span><span class="w"> </span><span class="s1">'��`(�'</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="handles-illegal-values-in-sequences">handles illegal values in sequences</h3>
+
+<pre class="highlight moonscript"><code><span class="n">assert_clean</span><span class="w"> </span><span class="s1">'\xc4\xf7\x61\xb9'</span><span class="p">,</span><span class="w"> </span><span class="s1">'��a�'</span><span class="w">
+
+    </span><span class="k">if</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_monotonic_time</span><span class="o">!</span><span class="w">
+  </span><span class="n">f</span><span class="o">!</span><span class="w">
+  </span><span class="n">done</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_monotonic_time</span><span class="o">!</span><span class="w">
+  </span><span class="n">elapsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">done</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000000</span><span class="w">
+  </span><span class="nb">print</span><span class="w"> </span><span class="s2">"'</span><span class="si">#{</span><span class="n">title</span><span class="si">}</span><span class="s2">': </span><span class="si">#{</span><span class="n">elapsed</span><span class="si">}</span><span class="s2"> elapsed"</span></code></pre>
+
+
+<h4 id="performance">performance</h4>
+
+<pre class="highlight moonscript"><code><span class="n">valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">string.rep</span><span class="w"> </span><span class="s1">'abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ'</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w">
+  </span><span class="nc">C</span><span class="p">.</span><span class="n">g_utf8_validate</span><span class="w"> </span><span class="n">valid</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">valid</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+
+</span><span class="n">time</span><span class="w"> </span><span class="s1">'g_utf8_validate'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+    </span><span class="nc">C</span><span class="p">.</span><span class="n">g_utf8_validate</span><span class="w"> </span><span class="n">valid</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">valid</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w">
+  </span><span class="n">is_valid</span><span class="w"> </span><span class="n">valid</span><span class="w">
+
+</span><span class="n">time</span><span class="w"> </span><span class="s1">'own is_valid'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+    </span><span class="n">is_valid</span><span class="w"> </span><span class="n">valid</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w">
+  </span><span class="n">glib_make_valid</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span><span class="w">
+
+</span><span class="n">time</span><span class="w"> </span><span class="s1">'g_utf8_make_valid CLEAN'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+    </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">C</span><span class="p">.</span><span class="n">g_utf8_make_valid</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">valid</span><span class="p">)</span><span class="w">
+    </span><span class="nc">C</span><span class="p">.</span><span class="n">g_free</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w">
+  </span><span class="n">clean</span><span class="w"> </span><span class="n">valid</span><span class="w">
+
+</span><span class="n">time</span><span class="w"> </span><span class="s1">'own clean CLEAN'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+    </span><span class="n">clean</span><span class="w"> </span><span class="n">valid</span><span class="w">
+
+</span><span class="n">broken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">string.rep</span><span class="w"> </span><span class="s1">'ab⏱🌨\xc3\x24hiåäömn\xe1\x80\x24opq\xf0\x24'</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w">
+  </span><span class="n">glib_make_valid</span><span class="p">(</span><span class="n">broken</span><span class="p">)</span><span class="w">
+
+</span><span class="n">time</span><span class="w"> </span><span class="s1">'g_utf8_make_valid BROKEN'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+    </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">C</span><span class="p">.</span><span class="n">g_utf8_make_valid</span><span class="p">(</span><span class="n">broken</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">broken</span><span class="p">)</span><span class="w">
+    </span><span class="nc">C</span><span class="p">.</span><span class="n">g_free</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w">
+  </span><span class="n">clean</span><span class="w"> </span><span class="n">broken</span><span class="w">
+
+</span><span class="n">time</span><span class="w"> </span><span class="s1">'own clean BROKEN'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+    </span><span class="n">clean</span><span class="w"> </span><span class="n">broken</span></code></pre>
+
+</div>
+</div>
+</div>

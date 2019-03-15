@@ -1,0 +1,210 @@
+---
+title: Spec - howl.BufferMarkers
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.buffermarkers">howl.BufferMarkers</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">markers</span><span class="w">
+
+</span><span class="n">names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">ms</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">m</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">ms</span><span class="p">]</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">n</span><span class="w">
+  </span><span class="n">n</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">markers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="add(markers)">add(markers)</h2>
+
+<h4 id="raises-an-error-if-&lt;.name&gt;-is-missing">raises an error if &lt;.name&gt; is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'name'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="raises-an-error-if-&lt;.start_offset&gt;-is-missing">raises an error if &lt;.start_offset&gt; is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'12'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'start_offset'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="raises-an-error-if-&lt;.end_offset&gt;-is-missing">raises an error if &lt;.end_offset&gt; is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'12'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'end_offset'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="raises-an-error-if-&lt;.start_offset&gt;-is-out-of-bounds">raises an error if &lt;.start_offset&gt; is out of bounds</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'12'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'offset'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">4</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'offset'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="raises-an-error-if-&lt;.end_offset&gt;-is-out-of-bounds">raises an error if &lt;.end_offset&gt; is out of bounds</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'12'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'offset'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">4</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'offset'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">0</span><span class="p">}</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="adds-the-specified-marker-for-the-designated-span">adds the specified marker for the designated span</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäöx'</span><span class="w">
+</span><span class="n">mks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">4</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="n">mks</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">at</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">mks</span><span class="p">,</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">at</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">mks</span><span class="p">,</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">at</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">at</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span></code></pre>
+
+
+<h4 id="allows-specifying-bytes-offsets-using-byte_{start,end}_offset">allows specifying bytes offsets using byte_{start,end}_offset</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäöx'</span><span class="w">
+</span><span class="n">mks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">byte_start_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">byte_end_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">adjusted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="n">mks</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">at</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">adjusted</span><span class="p">,</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">at</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">at</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="for_range(start_offset,-end_offset)">for_range(start_offset, end_offset)</h2>
+
+<h4 id="returns-all-markers-that-intersects-with-the-specified-span">returns all markers that intersects with the specified span</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö€ᛖ'</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test2'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">6</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'test1'</span><span class="p">},</span><span class="w"> </span><span class="n">names</span><span class="p">(</span><span class="n">markers</span><span class="o">\</span><span class="n">for_range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">))</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'test2'</span><span class="p">},</span><span class="w"> </span><span class="n">names</span><span class="p">(</span><span class="n">markers</span><span class="o">\</span><span class="n">for_range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">))</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'test2'</span><span class="p">},</span><span class="w"> </span><span class="n">names</span><span class="p">(</span><span class="n">markers</span><span class="o">\</span><span class="n">for_range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">))</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'test2'</span><span class="p">},</span><span class="w"> </span><span class="n">names</span><span class="p">(</span><span class="n">markers</span><span class="o">\</span><span class="n">for_range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">))</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'test2'</span><span class="p">},</span><span class="w"> </span><span class="n">names</span><span class="p">(</span><span class="n">markers</span><span class="o">\</span><span class="n">for_range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">))</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'test2'</span><span class="p">},</span><span class="w"> </span><span class="n">names</span><span class="p">(</span><span class="n">markers</span><span class="o">\</span><span class="n">for_range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">))</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="find(selector)">find(selector)</h2>
+
+<h4 id="finds-all-markers-matching-the-selector">finds all markers matching the selector</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö€ᛖ'</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test2'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">find</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test2'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">find</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test2'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">find</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'bar'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="remove(selector)">remove(selector)</h2>
+
+<h4 id="removes-all-markers-matching-the-selector">removes all markers matching the selector</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö€ᛖ'</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test2'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'frob'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">remove</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'frob'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'test1'</span><span class="p">},</span><span class="w"> </span><span class="n">names</span><span class="p">(</span><span class="n">markers</span><span class="o">\</span><span class="n">for_range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">))</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">remove</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">for_range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="remove_for_range(start_offset,-end_offset,-selector)">remove_for_range(start_offset, end_offset, selector)</h2>
+
+<h4 id="removes-all-markers-within-the-range">removes all markers within the range</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö€ᛖ'</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test2'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">6</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+
+</span><span class="n">markers</span><span class="o">\</span><span class="n">remove_for_range</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">at</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+
+</span><span class="n">markers</span><span class="o">\</span><span class="n">remove_for_range</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">markers</span><span class="o">\</span><span class="n">at</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="when-&lt;selector&gt;-is-specified">when &lt;selector&gt; is specified</h3>
+
+<h4 id="only-removes-markers-matching-the-selector">only removes markers matching the selector</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö€ᛖ'</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test2'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'frob'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+
+</span><span class="n">markers</span><span class="o">\</span><span class="n">remove_for_range</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="s1">'frob'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'test1'</span><span class="p">},</span><span class="w"> </span><span class="n">names</span><span class="p">(</span><span class="n">markers</span><span class="o">\</span><span class="n">for_range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">))</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="upon-buffer-modifications">upon buffer modifications</h2>
+
+<h4 id="markers-move-with-inserts">markers move with inserts</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö€ᛖ'</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="s1">'∀'</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">markers</span><span class="p">.</span><span class="n">all</span></code></pre>
+
+
+<h4 id="markers-expand-with-inserts">markers expand with inserts</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö€ᛖ'</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">4</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="o">\</span><span class="n">insert</span><span class="w"> </span><span class="s1">'∀'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">markers</span><span class="p">.</span><span class="n">all</span></code></pre>
+
+
+<h4 id="markers-move-with-deletes">markers move with deletes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö€ᛖ'</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="o">\</span><span class="n">delete</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">markers</span><span class="p">.</span><span class="n">all</span></code></pre>
+
+
+<h4 id="markers-shrink-with-deletes">markers shrink with deletes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö€ᛖ'</span><span class="w">
+</span><span class="n">markers</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="o">\</span><span class="n">delete</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test1'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">markers</span><span class="p">.</span><span class="n">all</span></code></pre>
+
+</div>
+</div>

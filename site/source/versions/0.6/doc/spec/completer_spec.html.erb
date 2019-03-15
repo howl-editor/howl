@@ -1,0 +1,239 @@
+---
+title: Spec - howl.Completer
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.completer">howl.Completer</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w">
+    </span><span class="ss">completers:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+    </span><span class="ss">word_pattern:</span><span class="w"> </span><span class="n">r</span><span class="s1">'\\w+'</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="n">mode</span></code></pre>
+
+
+<h4 id=".start_pos-holds-the-start-position-for-completing">.start_pos holds the start position for completing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'oh cruel word'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="p">).</span><span class="n">start_pos</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id=".complete(pos-[,-limit])">.complete(pos [, limit])</h2>
+
+<h4 id="instantiates-completers-once-with-(buffer,-context)">instantiates completers once with (buffer, context)</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'mr.cat'</span><span class="w">
+</span><span class="n">factory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="n">factory</span><span class="w">
+</span><span class="n">completer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span><span class="w">
+</span><span class="n">completer</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">6</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">factory</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="w"> </span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">buffer</span><span class="p">),</span><span class="w"> </span><span class="n">buffer</span><span class="o">\</span><span class="n">context_at</span><span class="w"> </span><span class="mi">6</span><span class="w">
+</span><span class="n">completer</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">6</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">factory</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></code></pre>
+
+
+<h4 id="lookups-completers-in-completion-when-they-are-specified-as-strings">lookups completers in completion when they are specified as strings</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'yowser'</span><span class="w">
+</span><span class="n">factory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">completion</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'comp-name'</span><span class="p">,</span><span class="w"> </span><span class="ss">:factory</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="s1">'comp-name'</span><span class="w">
+</span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">factory</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called</span></code></pre>
+
+
+<h4 id="returns-completions-for-completers-in-buffer-and-mode">returns completions for completers in buffer and mode</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">completers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'mode'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w">  </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'buffer'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">completions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">completions</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'mode'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="returns-completions-for-mode-even-if-buffer-has-no-completers">returns completions for mode even if buffer has no completers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">completers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'mode'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'mode'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="returns-the-search-string-after-the-completions">returns the search string after the completions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">completers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'prefix'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'pre'</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w">  </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'buffer'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">search</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">search</span><span class="p">,</span><span class="w"> </span><span class="s1">'pre'</span></code></pre>
+
+
+<h4 id="allows-completions-to-be-tables">allows completions to be tables</h4>
+
+<pre class="highlight moonscript"><code><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="s1">'second'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="s1">'third'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fourth'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="s1">'second'</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="s1">'third'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fourth'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="calls-&lt;completer.complete()&gt;-with-(completer,-context)">calls &lt;completer.complete()&gt; with (completer, context)</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'mr.cat'</span><span class="w">
+</span><span class="n">comp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">comp</span><span class="w">
+</span><span class="n">completer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span><span class="w">
+
+</span><span class="n">completer</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">6</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">comp</span><span class="p">.</span><span class="n">complete</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="w"> </span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">comp</span><span class="p">),</span><span class="w"> </span><span class="n">buffer</span><span class="o">\</span><span class="n">context_at</span><span class="w"> </span><span class="mi">6</span><span class="w">
+
+</span><span class="n">completer</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">7</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">comp</span><span class="p">.</span><span class="n">complete</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="w"> </span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">comp</span><span class="p">),</span><span class="w"> </span><span class="n">buffer</span><span class="o">\</span><span class="n">context_at</span><span class="w"> </span><span class="mi">7</span></code></pre>
+
+
+<h4 id="returns-completions-from-just-one-completer-if-completions.authoritive-is-set">returns completions from just one completer if completions.authoritive is set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="ss">authoritive:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'two'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">completions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">completions</span></code></pre>
+
+
+<h4 id="merges-duplicate-completions-from-different-completers">merges duplicate completions from different completers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'yes'</span><span class="p">}</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'yes'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">completions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'yes'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">completions</span></code></pre>
+
+
+<h4 id="gives-a-final-boost-to-case-matching-completions,-all-else-equal">gives a final boost to case-matching completions, all else equal</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'he'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w">
+  </span><span class="ss">completers:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'Hello'</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="ss">word_pattern:</span><span class="w"> </span><span class="n">r</span><span class="s1">'\\w+'</span><span class="w">
+</span><span class="n">completions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'hello'</span><span class="p">,</span><span class="w"> </span><span class="s1">'Hello'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">completions</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'He'</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'hello'</span><span class="p">,</span><span class="w"> </span><span class="s1">'Hello'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">completions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'Hello'</span><span class="p">,</span><span class="w"> </span><span class="s1">'hello'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">completions</span></code></pre>
+
+
+<h4 id="takes-sub-modes-into-account">takes sub modes into account</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">completers:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'mode1'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode1</span><span class="w">
+</span><span class="n">mode2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">completers:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'mode2'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">mode2_reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'completer_test'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">mode2</span><span class="w">
+</span><span class="n">howl</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">mode2_reg</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">' m'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">_buffer</span><span class="p">.</span><span class="n">styling</span><span class="o">\</span><span class="n">apply</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'whitespace'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+  </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'s1'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'completer_test|s1'</span><span class="p">,</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">completions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'mode2'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">completions</span><span class="w">
+
+</span><span class="n">howl</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'completer_test'</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(limiting-completions)">(limiting completions)</h3>
+
+<h4 id="returns-at-most-`completion_max_shown`-completions">returns at most `completion_max_shown` completions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">completions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"cand-</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="mi">15</span><span class="p">]</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">completions</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">completion_max_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">actual</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">actual</span></code></pre>
+
+
+<h4 id="returns-at-most-&lt;limit&gt;-completions-if-specified">returns at most &lt;limit&gt; completions if specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">completions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"cand-</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="mi">15</span><span class="p">]</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">completers</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">complete:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">completions</span><span class="w">
+</span><span class="n">actual</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">actual</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="accept(completion)">accept(completion)</h2>
+
+<h4 id="returns-the-position-after-the-accepted-completion">returns the position after the accepted completion</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello there'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="o">\</span><span class="n">accept</span><span class="w"> </span><span class="s1">'hƏlp'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-hungry_completion-is-true)">(when hungry_completion is true)</h3>
+
+<h4 id="replaces-the-current-word-with-&lt;completion&gt;">replaces the current word with &lt;completion&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello there'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">hungry_completion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">completer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w">
+</span><span class="n">completer</span><span class="o">\</span><span class="n">accept</span><span class="w"> </span><span class="s1">'hey'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'hey there'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-hungry_completion-is-false)">(when hungry_completion is false)</h3>
+
+<h4 id="inserts-&lt;completion&gt;-at-the-start-position">inserts &lt;completion&gt; at the start position</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello there'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">hungry_completion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">completer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w">
+</span><span class="n">completer</span><span class="o">\</span><span class="n">accept</span><span class="w"> </span><span class="s1">'over'</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'hello overthere'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-completions-are-tables)">(when completions are tables)</h3>
+
+<h4 id="inserts-table.completion-text-if-present,-else-table[1]">inserts table.completion text if present, else table[1]</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello '</span><span class="w">
+</span><span class="n">completer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w">
+</span><span class="n">completer</span><span class="o">\</span><span class="n">accept</span><span class="w"> </span><span class="p">{</span><span class="s1">'first'</span><span class="p">,</span><span class="w"> </span><span class="s1">'second'</span><span class="p">,</span><span class="w"> </span><span class="ss">completion:</span><span class="w"> </span><span class="s1">'real'</span><span class="p">},</span><span class="w"> </span><span class="mi">7</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'hello real'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">completer</span><span class="o">\</span><span class="n">accept</span><span class="w"> </span><span class="p">{</span><span class="s1">'third'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fourth'</span><span class="p">},</span><span class="w"> </span><span class="mi">7</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'hello thirdreal'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(interacting-with-mode's-.on_completion_accepted)">(interacting with mode's .on_completion_accepted)</h3>
+
+<h4 id="invokes-it-with-(mode,-completion,-context)-if-present">invokes it with (mode, completion, context) if present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w">
+  </span><span class="ss">on_completion_accepted:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="ss">word_pattern:</span><span class="w"> </span><span class="n">r</span><span class="s1">'\\w+'</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello there'</span><span class="w">
+</span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="o">\</span><span class="n">accept</span><span class="w"> </span><span class="s1">'help'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">mode</span><span class="p">.</span><span class="n">on_completion_accepted</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">mode</span><span class="p">),</span><span class="w"> </span><span class="s1">'help'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="o">\</span><span class="n">context_at</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></code></pre>
+
+
+<h4 id="uses-it's-return-value-as-the-position-returned-if-it's-a-number">uses it's return value as the position returned if it's a number</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w">
+  </span><span class="ss">on_completion_accepted:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="mi">6</span><span class="w">
+  </span><span class="ss">word_pattern:</span><span class="w"> </span><span class="n">r</span><span class="s1">'\\w+'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hello there'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="nc">Completer</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="o">\</span><span class="n">accept</span><span class="w"> </span><span class="s1">'help'</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span></code></pre>
+
+</div>
+</div>
+</div>

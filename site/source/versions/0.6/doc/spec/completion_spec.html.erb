@@ -1,0 +1,43 @@
+---
+title: Spec - howl.completion
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.completion">howl.completion</h1>
+
+<pre class="highlight moonscript"><code><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">completion</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+
+<h4 id=".&lt;name&gt;-allows-direct-indexing-of-completions">.&lt;name&gt; allows direct indexing of completions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">factory:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">completion</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">c</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">completion</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="n">c</span></code></pre>
+
+
+<h4 id=".unregister(name)-unregisters-the-specified-completion">.unregister(name) unregisters the specified completion</h4>
+
+<pre class="highlight moonscript"><code><span class="n">completion</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">factory:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">completion</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">completion</span><span class="p">.</span><span class="n">foo</span></code></pre>
+
+
+<h4 id=".list-contains-all-registered-completions">.list contains all registered completions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">factory:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">completion</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">c</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">completion</span><span class="p">.</span><span class="n">list</span><span class="p">,</span><span class="w"> </span><span class="n">c</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id=".register(options)">.register(options)</h2>
+
+<h4 id="raises-an-error-if-any-of-the-mandatory-fields-are-missing">raises an error if any of the mandatory fields are missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'name'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">completion</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'factory'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">completion</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+</div>
+</div>

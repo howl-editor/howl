@@ -1,0 +1,188 @@
+---
+title: Spec - howl.editing.formatting
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.editing.formatting">howl.editing.formatting</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">indent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="n">buffer</span><span class="w">
+  </span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="ensure_block(editor,-block_start_p,-block_end_p,-end_s)">ensure_block(editor, block_start_p, block_end_p, end_s)</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-block_start_p-does-not-match)">(when block_start_p does not match)</h3>
+
+<h4 id="does-nothing-and-returns-false">does nothing and returns false</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n}'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n}'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-block_start_p-matches)">(when block_start_p matches)</h3>
+
+<h4 id="formats-an-existing-block-as-necessary">formats an existing block as necessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n}'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n  \n}'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="completes-an-existing-block-as-necessary">completes an existing block as necessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n  \n}\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="is-not-fooled-by-subsequent-blocks">is not fooled by subsequent blocks</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n\n{\n}'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n  \n}\n{\n}'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="leaves-an-already-ok-indented-block-alone">leaves an already ok indented block alone</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n  \n}\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{%s*$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n  \n}\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="leaves-an-already-ok-non-indented-block-alone">leaves an already ok non-indented block alone</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n\nfoo\n}\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{%s*$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n\nfoo\n}\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="leaves-blocks-with-content-in-them-alone">leaves blocks with content in them alone</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n  \n  foo\n}\n'</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span><span class="w">
+  </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">line</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n  \n  foo\n}\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="handles-nested-blocks">handles nested blocks</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n  {\n\n}\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n  {\n    \n  }\n}\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-block_start_p-equals-block_end_p)">(..  when block_start_p equals block_end_p)</h3>
+
+<h4 id="formats-an-existing-block-as-necessary">formats an existing block as necessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'|\n|'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'|$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'|\n  \n|'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="completes-an-existing-block-as-necessary">completes an existing block as necessary</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'|\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'|$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'|\n  \n|\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="leaves-an-already-ok-indented-block-alone">leaves an already ok indented block alone</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'|\n  \n|\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'|$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'|\n  \n|\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="leaves-an-already-ok-non-indented-block-alone">leaves an already ok non-indented block alone</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'|\n\nfoo\n|\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'|$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'|\n\nfoo\n|\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="recognizes-a-previous-block-if-it-is-all-non-blank-lines">recognizes a previous block if it is all non-blank lines</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'|\nfoo\n|\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'|$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="p">,</span><span class="w"> </span><span class="s1">'|'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'|\nfoo\n|\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="is-not-fooled-by-earlier-block-ends-on-the-same-line">is not fooled by earlier block ends on the same line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n} {\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'^%s*}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n} {\n  \n}\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--indentation-&-cursor)">(..  indentation & cursor)</h3>
+
+<h4 id="indents-the-new-line-using-the-&quot;indent&quot;-config-variable-by-default">indents the new line using the &quot;indent&quot; config variable by default</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">indent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n    \n}\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="indents-the-new-line-using-the-editor">indents the new line using the editor</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">indent:</span><span class="w"> </span><span class="p">(</span><span class="n">ed</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ed</span><span class="p">.</span><span class="n">current_line</span><span class="p">.</span><span class="n">indentation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n     \n}\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="positions-the-cursor-after-the-indentation-of-the-new-line">positions the cursor after the indentation of the new line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">formatting</span><span class="p">.</span><span class="n">ensure_block</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="s1">'{$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span></code></pre>
+
+</div>
+</div>
+</div>
+</div>

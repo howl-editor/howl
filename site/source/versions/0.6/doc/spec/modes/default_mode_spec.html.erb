@@ -1,0 +1,677 @@
+---
+title: Spec - howl.modes.DefaultMode
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.modes.defaultmode">howl.modes.DefaultMode</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">mode</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="n">indentation</span><span class="w">
+</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">selection</span><span class="w">
+
+</span><span class="n">indent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">selection</span><span class="o">\</span><span class="n">select_all</span><span class="o">!</span><span class="w">
+  </span><span class="n">mode</span><span class="o">\</span><span class="n">indent</span><span class="w"> </span><span class="n">editor</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">DefaultMode</span><span class="o">!</span><span class="w">
+  </span><span class="n">indentation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">indentation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">indentation</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">indent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="w">
+  </span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id=".indent()">.indent()</h2>
+
+<h4 id="does-not-try-to-indent-lines-within-comments-or-strings">does not try to indent lines within comments or strings</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'{'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">indentation</span><span class="p">.</span><span class="n">less_for</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'}'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">ActionBuffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\nfoo\n  }\n'</span><span class="w">
+  </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="w">
+  </span><span class="n">buffer</span><span class="o">\</span><span class="n">style</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">start_pos</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">end_pos</span><span class="p">,</span><span class="w"> </span><span class="s1">'comment'</span><span class="w">
+  </span><span class="n">buffer</span><span class="o">\</span><span class="n">style</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">start_pos</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">4</span><span class="p">].</span><span class="n">end_pos</span><span class="p">,</span><span class="w"> </span><span class="s1">'string'</span><span class="w">
+  </span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="w">
+  </span><span class="n">indent</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\nfoo\n  }\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="uses-the-same-indent-as-for-the-previous-line-if-it-is-a-comment">uses the same indent as for the previous line if it is a comment</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'{'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">comment_syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'#'</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"  # I'm commenting thank you very much {\n# and still are\n"</span><span class="w">
+  </span><span class="n">indent</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">indentation</span></code></pre>
+
+
+<h4 id="adjust-any-illegal-indentation-(not-divisable-by-indent)">adjust any illegal indentation (not divisable by indent)</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  line\n two\n'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'  line\n  two\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="works-on-the-current-line-if-no-selection-is-specified">works on the current line if no selection is specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'if'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'if\none\ntwo\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">indent</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'if\n  one\ntwo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="moves-the-cursor-to-the-beginning-of-indentation-if-it-would-be-positioned-before">moves the cursor to the beginning of indentation if it would be positioned before</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  line1\n line2\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">indent</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'  line1\n  line2\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.indentation.more_after-patterns-is-set)">(when .indentation.more_after patterns is set)</h3>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-the-previous-line-matches-one-of-the-patterns)">(..  and the previous line matches one of the patterns)</h3>
+
+<h4 id="indents-lines-below-matching-lines-with-the-currently-set-indent">indents lines below matching lines with the currently set indent</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="s1">'if'</span><span class="p">,</span><span class="w"> </span><span class="s1">'then'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'if\nbar\nthen\nfoo\n'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'if\n  bar\nthen\n  foo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+<div class="spec-group spec-group-5">
+
+<h3 id="(..--when-.authoritive-is-not-false)">(..  when .authoritive is not false)</h3>
+
+<h4 id="adjusts-lines-with-unwarranted-greater-indents-to-match-the-previous-line">adjusts lines with unwarranted greater indents to match the previous line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'if'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'line\n  wat?\n'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'line\nwat?\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-5">
+
+<h3 id="(..--when-.authoritive-is-false)">(..  when .authoritive is false)</h3>
+
+<h4 id="does-not-adjust-lines-with-unwarranted-greater-indents-to-match-the-previous-line">does not adjust lines with unwarranted greater indents to match the previous line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'if'</span><span class="p">,</span><span class="w"> </span><span class="ss">authoritive:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'line\n  wat?\n'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'line\n  wat?\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.indentation.less_for-is-set)">(when .indentation.less_for is set)</h3>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-the-current-line-matches-one-of-the-patterns)">(..  and the current line matches one of the patterns)</h3>
+
+<h4 id="dedents-the-line-one-level-below-the-previous-line-if-it-exists">dedents the line one level below the previous line if it exists</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">less_for</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="s1">'else'</span><span class="p">,</span><span class="w"> </span><span class="s1">'}'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'    bar\n    else\n  foo\n  }\n'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'    bar\n  else\n  foo\n}\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+<div class="spec-group spec-group-5">
+
+<h3 id="(..--when-.authoritive-is-not-false)">(..  when .authoritive is not false)</h3>
+
+<h4 id="adjusts-lines-with-unwarranted-smaller-indents-to-match-the-previous-line">adjusts lines with unwarranted smaller indents to match the previous line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">less_for</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'else'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  line\nwat?\n'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'  line\n  wat?\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-5">
+
+<h3 id="(..--when-.authoritive-is-false)">(..  when .authoritive is false)</h3>
+
+<h4 id="does-not-adjust-lines-with-unwarranted-smaller-indents-to-match-the-previous-line">does not adjust lines with unwarranted smaller indents to match the previous line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">less_for</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'else'</span><span class="p">,</span><span class="w"> </span><span class="ss">authoritive:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  line\nwat?\n'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'  line\nwat?\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.indentation.more_for-is-set)">(when .indentation.more_for is set)</h3>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-the-current-line-matches-one-of-the-patterns)">(..  and the current line matches one of the patterns)</h3>
+
+<h4 id="indents-the-line-one-level-right-of-the-previous-line-if-it-exists">indents the line one level right of the previous line if it exists</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_for</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'^.'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar\n.foo\n'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'bar\n  .foo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.indentation.same_after-patterns-is-set)">(when .indentation.same_after patterns is set)</h3>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-the-previous-line-matches-one-of-the-patterns)">(..  and the previous line matches one of the patterns)</h3>
+
+<h4 id="indents-lines-below-matching-lines-to-have-the-same-indent-as-the-previous-line">indents lines below matching lines to have the same indent as the previous line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">same_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">',$'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  foo,\nbar'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'  foo,\n  bar'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-more-than-one-of-.less_for,-.more_after-or-.same_after-are-set)">(when more than one of .less_for, .more_after or .same_after are set)</h3>
+
+<h4 id="they-are-weighed-together">they are weighed together</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'{'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">indentation</span><span class="p">.</span><span class="n">less_for</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'}'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">indentation</span><span class="p">.</span><span class="n">same_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">',$'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  {\n  }'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'  {\n  }'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  {\n  foo,}'</span><span class="w">
+</span><span class="n">indent</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'  {\n  foo,}'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-a-line-is-blank)">(when a line is blank)</h3>
+
+<h4 id="does-not-indent-unless-it-is-the-current-line">does not indent unless it is the current line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'{'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">indentation</span><span class="p">.</span><span class="n">less_for</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'}'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n\n}'</span><span class="w">
+  </span><span class="n">indent</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n\n}'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-it-is-the-current-line)">(..  and it is the current line)</h3>
+
+<h4 id="indents-according-to-patterns">indents according to patterns</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'{'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">indentation</span><span class="p">.</span><span class="n">less_for</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'}'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'{\n\n}'</span><span class="w">
+  </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">mode</span><span class="o">\</span><span class="n">indent</span><span class="w"> </span><span class="n">editor</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'{\n  \n}'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="sets-the-same-indent-as-for-the-previous-line-if-nothing-else-is-specified">sets the same indent as for the previous line if nothing else is specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  line\n\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">indent</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'  line\n  \n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="comment(editor)">comment(editor)</h2>
+
+<pre class="highlight moonscript"><code><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+  liñe 1
+
+liñe 2
+liñe 3
+  ]]</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">text</span><span class="w">
+  </span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">4</span><span class="p">].</span><span class="n">start_pos</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.comment_syntax-is-not-set)">(when .comment_syntax is not set)</h3>
+
+<h4 id="does-nothing">does nothing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="o">\</span><span class="n">comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.comment_syntax-is-set-to-a-string)">(when .comment_syntax is set to a string)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">comment_syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'--'</span></code></pre>
+
+
+<h4 id="prefixes-the-selected-lines-with-the-prefix-and-a-space,-at-the-minimum-indentation-level">prefixes the selected lines with the prefix and a space, at the minimum indentation level</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="o">\</span><span class="n">comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+
+    liñe 3
+  ]]</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="comments-the-current-line-if-nothing-is-selected">comments the current line if nothing is selected</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">remove</span><span class="o">!</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+
+    liñe 2
+    liñe 3
+  ]]</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="honor-leading-tabs-when-use_tabs-is-true">honor leading tabs when use_tabs is true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">use_tabs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'\tline1\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'&lt;TAB&gt;-- line1\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="o">\</span><span class="n">gsub</span><span class="p">(</span><span class="s1">'\t'</span><span class="p">,</span><span class="w"> </span><span class="s1">'&lt;TAB&gt;'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="keeps-the-cursor-position">keeps the cursor position</h4>
+
+<pre class="highlight moonscript"><code><span class="n">editor</span><span class="p">.</span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">start_pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.comment_syntax-is-set-to-a-pair)">(when .comment_syntax is set to a pair)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">comment_syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'/*'</span><span class="p">,</span><span class="w"> </span><span class="s1">'*/'</span><span class="p">}</span></code></pre>
+
+
+<h4 id="wraps-each-selected-line-with-the-pair,-at-the-minimum-indentation-level">wraps each selected line with the pair, at the minimum indentation level</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="o">\</span><span class="n">comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+  /* liñe 1 */
+
+  /*   liñe 2 */
+    liñe 3
+  ]]</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="comments-the-current-line-if-nothing-is-selected">comments the current line if nothing is selected</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">remove</span><span class="o">!</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+  /* liñe 1 */
+
+    liñe 2
+    liñe 3
+  ]]</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="keeps-the-cursor-position">keeps the cursor position</h4>
+
+<pre class="highlight moonscript"><code><span class="n">editor</span><span class="p">.</span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">start_pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="uncomment(editor)">uncomment(editor)</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.comment_syntax-is-not-set)">(when .comment_syntax is not set)</h3>
+
+<h4 id="does-nothing">does nothing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo\nbar\n'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">start_pos</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foo\nbar\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.comment_syntax-is-set-to-a-string)">(when .comment_syntax is set to a string)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">comment_syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'--'</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+]]</span><span class="w">
+  </span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">start_pos</span></code></pre>
+
+
+<h4 id="removes-the-first-instance-of-the-comment-prefix-and-optional-space-from-each-line">removes the first instance of the comment prefix and optional space from each line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+   liñe 1
+]]</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="uncomments-the-current-line-if-nothing-is-selected">uncomments the current line if nothing is selected</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">remove</span><span class="o">!</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+]]</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="honor-leading-tabs-when-use_tabs-is-true">honor leading tabs when use_tabs is true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">use_tabs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'\t-- line1\n'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'&lt;TAB&gt;line1\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="o">\</span><span class="n">gsub</span><span class="p">(</span><span class="s1">'\t'</span><span class="p">,</span><span class="w"> </span><span class="s1">'&lt;TAB&gt;'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="keeps-the-cursor-position">keeps the cursor position</h4>
+
+<pre class="highlight moonscript"><code><span class="n">editor</span><span class="p">.</span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">start_pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">6</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span></code></pre>
+
+
+<h4 id="does-nothing-for-lines-that-are-not-commented">does nothing for lines that are not commented</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"line\n"</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s2">"line\n"</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.comment_syntax-is-set-to-a-pair)">(when .comment_syntax is set to a pair)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">comment_syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'/*'</span><span class="p">,</span><span class="w"> </span><span class="s1">'*/'</span><span class="p">}</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+  /*  liñe 1 */
+    /* liñe 2 */
+    /*liñe 3*/
+]]</span><span class="w">
+  </span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">start_pos</span></code></pre>
+
+
+<h4 id="removes-the-first-instance-of-the-comment-prefix-and-optional-space-from-each-line">removes the first instance of the comment prefix and optional space from each line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+   liñe 1
+    liñe 2
+    /*liñe 3*/
+]]</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="uncomments-the-current-line-if-nothing-is-selected">uncomments the current line if nothing is selected</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">remove</span><span class="o">!</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="sh">[[
+  /*  liñe 1 */
+    liñe 2
+    /*liñe 3*/
+]]</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="keeps-the-cursor-position">keeps the cursor position</h4>
+
+<pre class="highlight moonscript"><code><span class="n">editor</span><span class="p">.</span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">start_pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">6</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span></code></pre>
+
+
+<h4 id="does-nothing-for-lines-that-are-not-commented">does nothing for lines that are not commented</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"line\n"</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">uncomment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s2">"line\n"</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="toggle_comment(editor)">toggle_comment(editor)</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-mode-does-not-provide-.comment_syntax)">(when mode does not provide .comment_syntax)</h3>
+
+<h4 id="does-nothing">does nothing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'-- foo'</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">toggle_comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'-- foo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-mode-provides-.comment_syntax)">(when mode provides .comment_syntax)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">comment_syntax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'--'</span></code></pre>
+
+
+<h4 id="uncomments-if-all-non-empty-selected-lines-start-with-the-comment-prefix">uncomments if all non-empty selected lines start with the comment prefix</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  -- foo\n\n  -- foo2'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">select_all</span><span class="o">!</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">toggle_comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'  foo\n\n  foo2'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="comments-if-first-selected-line-does-not-start-with-the-comment-prefix">comments if first selected line does not start with the comment prefix</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo\n-- foo2'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">select_all</span><span class="o">!</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">toggle_comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'-- foo\n-- -- foo2'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="comments-if-any-one-selected-line-does-not-start-with-the-comment-prefix">comments if any one selected line does not start with the comment prefix</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'-- foo\nfoo2'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">select_all</span><span class="o">!</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">toggle_comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'-- -- foo\n-- foo2'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="comments-if-no-selected-line-starts-with-the-comment-prefix">comments if no selected line starts with the comment prefix</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo\nfoo2'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">select_all</span><span class="o">!</span><span class="w">
+</span><span class="n">mode</span><span class="o">\</span><span class="n">toggle_comment</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'-- foo\n-- foo2'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="auto-formatting-after-newline">auto-formatting after newline</h2>
+
+<h4 id="indents-the-new-line-automatically-given-the-indent-patterns">indents the new line automatically given the indent patterns</h4>
+
+<pre class="highlight moonscript"><code><span class="n">indentation</span><span class="p">.</span><span class="n">more_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'if'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'if'</span><span class="w">
+</span><span class="n">cursor</span><span class="o">\</span><span class="n">eof</span><span class="o">!</span><span class="w">
+</span><span class="n">editor</span><span class="o">\</span><span class="n">newline</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'if\n  '</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'other'</span><span class="w">
+</span><span class="n">cursor</span><span class="o">\</span><span class="n">eof</span><span class="o">!</span><span class="w">
+</span><span class="n">editor</span><span class="o">\</span><span class="n">newline</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'other\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="structure()">structure()</h2>
+
+<pre class="highlight moonscript"><code><span class="n">assert_lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">expected</span><span class="p">,</span><span class="w"> </span><span class="n">actual</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">[</span><span class="n">l</span><span class="p">.</span><span class="n">nr</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">expected</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="n">l</span><span class="p">.</span><span class="n">nr</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">actual</span><span class="p">]</span></code></pre>
+
+
+<h4 id="returns-a-simple-indentation-based-structure">returns a simple indentation-based structure</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+  header1
+    sub1
+      foo
+      bar
+      zed
+      froz
+  header2
+    sub2
+]]</span><span class="w">
+</span><span class="n">assert_lines</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">
+  </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w">
+  </span><span class="n">lines</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">structure</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+
+<h4 id="the-config-variable-indentation_structure_threshold-determines-when-it-stops">the config variable indentation_structure_threshold determines when it stops</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+  header1
+    sub1
+      froz
+  header2
+    sub2
+]]</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">indentation_structure_threshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert_lines</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">structure</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+
+<h4 id="disregards-blank-lines">disregards blank lines</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'\n  sub\n'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">structure</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(if-a-structure-line-is-all-non-alpha)">(if a structure line is all non-alpha)</h3>
+
+<h4 id="tries-to-use-the-previous-line-if-that-contains-alpha-characters">tries to use the previous line if that contains alpha characters</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+  int func(int arg)
+  {
+    froz();
+  }
+]]</span><span class="w">
+</span><span class="n">assert_lines</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">structure</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+
+<h4 id="skips-the-line-altogether-if-the-previous-line-does-not-contain-alpha-characters">skips the line altogether if the previous line does not contain alpha characters</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+
+  {
+    froz();
+  }
+]]</span><span class="w">
+</span><span class="n">assert_lines</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">structure</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="patterns_match(text,-patterns)">patterns_match(text, patterns)</h2>
+
+<h4 id="returns-a-boolean-indicating-whether-&lt;text&gt;-matches-any-of-the-specified-patterns">returns a boolean indicating whether &lt;text&gt; matches any of the specified patterns</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">patterns_match</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">patterns_match</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'bar'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="accepts-both-lua-patterns-and-regexes">accepts both Lua patterns and regexes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">patterns_match</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'fo+'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">patterns_match</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">r</span><span class="s1">'\\pLo*'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="a-specifed-pattern-can-be-table-containing-both-a-positiv-and-a-negative-match">a specifed pattern can be table containing both a positiv and a negative match</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">patterns_match</span><span class="w"> </span><span class="s1">'foo zed'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">mode</span><span class="o">\</span><span class="n">patterns_match</span><span class="w"> </span><span class="s1">'foo bar'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="when-a-newline-is-added">when a newline is added</h2>
+
+<h4 id="sets-the-indentation-for-the-new-line-to-the-indentation-of-the-previous-non-blank-line">sets the indentation for the new line to the indentation of the previous non-blank line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  34\n\n78'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="w">
+</span><span class="n">editor</span><span class="o">\</span><span class="n">newline</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">current_line</span><span class="p">.</span><span class="n">indentation</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-.code_blocks.multiline-is-present)">(when .code_blocks.multiline is present)</h3>
+
+<h4 id="the-code-blocks-are-automatically-enforced">the code blocks are automatically enforced</h4>
+
+<pre class="highlight moonscript"><code><span class="n">mode</span><span class="p">.</span><span class="n">code_blocks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">multiline:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="s1">'%sdo$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'^%s*end'</span><span class="p">,</span><span class="w"> </span><span class="s1">'end'</span><span class="w"> </span><span class="p">},</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo do'</span><span class="w">
+</span><span class="n">cursor</span><span class="o">\</span><span class="n">eof</span><span class="o">!</span><span class="w">
+</span><span class="n">editor</span><span class="o">\</span><span class="n">newline</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'foo do\n\nend\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">line</span></code></pre>
+
+
+<h4 id="is-ignored-if-the-configuration-variable-&quot;auto_format&quot;-is-false">is ignored if the configuration variable &quot;auto_format&quot; is false</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">auto_format</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">mode</span><span class="p">.</span><span class="n">code_blocks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">multiline:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="s1">'%sdo$'</span><span class="p">,</span><span class="w"> </span><span class="s1">'^%s*end'</span><span class="p">,</span><span class="w"> </span><span class="s1">'end'</span><span class="w"> </span><span class="p">},</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo do'</span><span class="w">
+</span><span class="n">cursor</span><span class="o">\</span><span class="n">eof</span><span class="o">!</span><span class="w">
+</span><span class="n">editor</span><span class="o">\</span><span class="n">newline</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'foo do\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+</div>

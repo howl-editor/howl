@@ -1,0 +1,93 @@
+---
+title: Spec - howl.io.InputStream
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.io.inputstream">howl.io.InputStream</h1>
+
+<pre class="highlight moonscript"><code><span class="n">with_stream_for</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">contents</span><span class="p">,</span><span class="w"> </span><span class="n">cb</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+      </span><span class="n">f</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contents</span><span class="w">
+      </span><span class="n">cb</span><span class="w"> </span><span class="nc">InputStream</span><span class="w"> </span><span class="nc">GFile</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">path</span><span class="p">)</span><span class="o">\</span><span class="n">read</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="read(num)">read(num)</h2>
+
+<h4 id="----it-'reads-up-to-&lt;num&gt;-bytes-from-the-stream',-(done)--&gt;
+">    it 'reads up to &lt;num&gt; bytes from the stream', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_stream_for</span><span class="w"> </span><span class="s1">'foobar'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">stream</span><span class="o">\</span><span class="n">read</span><span class="w"> </span><span class="mi">3</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="n">stream</span><span class="o">\</span><span class="n">read</span><span class="w"> </span><span class="mi">10</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">stream</span><span class="o">\</span><span class="n">read</span><span class="w"> </span><span class="mi">10</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="read_async(num,-handler)">read_async(num, handler)</h2>
+
+<h4 id="----it-'invokes-&lt;handler&gt;-with-the-status-and-up-to-&lt;num&gt;-bytes-read-from-the-stream',-(done)--&gt;
+">    it 'invokes &lt;handler&gt; with the status and up to &lt;num&gt; bytes read from the stream', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_stream_for</span><span class="w"> </span><span class="s1">'foobar'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foobar'</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="w">
+    </span><span class="n">done</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">stream</span><span class="o">\</span><span class="n">read_async</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="n">handler</span></code></pre>
+
+
+<h4 id="----it-'invokes-&lt;handler&gt;-with-true-and-nil-upon-eof',-(done)--&gt;
+">    it 'invokes &lt;handler&gt; with true and nil upon EOF', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_stream_for</span><span class="w"> </span><span class="s1">'foobar'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">status</span><span class="w">
+    </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">read</span><span class="w">
+    </span><span class="n">done</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">stream</span><span class="o">\</span><span class="n">read</span><span class="w"> </span><span class="mi">10</span><span class="w">
+  </span><span class="n">stream</span><span class="o">\</span><span class="n">read_async</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="n">handler</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="read_all()">read_all()</h2>
+
+<h4 id="----it-'reads-all-the-streams-content-in-one-go',-(done)--&gt;
+">    it 'reads all the streams content in one go', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">content</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">string.rep</span><span class="w"> </span><span class="s1">'This is my line of text. Rinse, wash and repeat'</span><span class="p">,</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span><span class="w"> </span><span class="s1">'\n'</span><span class="w">
+</span><span class="n">with_stream_for</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">read</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stream</span><span class="o">\</span><span class="n">read_all</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="o">#</span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">read</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">stream</span><span class="o">\</span><span class="n">read</span><span class="w"> </span><span class="mi">10</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="close">close</h2>
+
+<h4 id="----it-'closes-the-stream',-(done)--&gt;
+">    it 'closes the stream', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_stream_for</span><span class="w"> </span><span class="s1">'foobar'</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">stream</span><span class="p">.</span><span class="n">is_closed</span><span class="w">
+  </span><span class="n">stream</span><span class="o">\</span><span class="n">close</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">stream</span><span class="p">.</span><span class="n">is_closed</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+</div>

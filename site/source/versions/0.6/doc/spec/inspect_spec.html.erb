@@ -1,0 +1,448 @@
+---
+title: Spec - howl.inspect
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.inspect">howl.inspect</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">idle_inspector</span><span class="p">,</span><span class="w"> </span><span class="n">save_inspector</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'inspect-mode'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">save_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">inspection</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-idle-inspector'</span><span class="p">,</span><span class="w"> </span><span class="ss">factory:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">idle_inspector</span><span class="w">
+  </span><span class="n">inspection</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-save-inspector'</span><span class="p">,</span><span class="w"> </span><span class="ss">factory:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">save_inspector</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="p">(</span><span class="s1">'inspect-mode'</span><span class="p">)</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'inspect-mode'</span><span class="w">
+  </span><span class="n">inspection</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'test-idle-inspector'</span><span class="w">
+  </span><span class="n">inspection</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'test-save-inspector'</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="inspect(buffer,-scope)">inspect(buffer, scope)</h2>
+
+<h4 id="runs-inspectors-specified-for-the-buffer">runs inspectors specified for the buffer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">idle_inspector</span><span class="p">).</span><span class="n">was_called_with</span><span class="p">(</span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">buffer</span><span class="p">))</span></code></pre>
+
+
+<h4 id="runs-inspectors-specified-for-the-mode">runs inspectors specified for the mode</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">idle_inspector</span><span class="p">).</span><span class="n">was_called_with</span><span class="p">(</span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">buffer</span><span class="p">))</span></code></pre>
+
+
+<h4 id="merges-inspection-results-into-one-scathing-result">merges inspection results into one scathing result</h4>
+
+<pre class="highlight moonscript"><code><span class="n">inspection</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'inspector1'</span><span class="p">,</span><span class="w"> </span><span class="ss">factory:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">line:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+
+</span><span class="n">inspection</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'inspector2'</span><span class="p">,</span><span class="w"> </span><span class="ss">factory:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">line:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo_mode'</span><span class="w"> </span><span class="p">}</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">line:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="s1">'warning'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'bar'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'inspector1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'inspector2'</span><span class="p">}</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo_mode'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="s1">'warning'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'bar'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">},</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(inspector-types)">(inspector types)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">with</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="w">
+    </span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+    </span><span class="p">.</span><span class="n">inspectors_on_save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-save-inspector'</span><span class="p">}</span></code></pre>
+
+
+<h4 id="runs-both-idle-and-save-inspectors-by-default">runs both idle and save inspectors by default</h4>
+
+<pre class="highlight moonscript"><code><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">idle_inspector</span><span class="p">).</span><span class="n">was_called_with</span><span class="p">(</span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">buffer</span><span class="p">))</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">save_inspector</span><span class="p">).</span><span class="n">was_called_with</span><span class="p">(</span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">buffer</span><span class="p">))</span></code></pre>
+
+
+<h4 id="runs-only-idle-inspectors-if-specified">runs only idle inspectors if specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="ss">scope:</span><span class="w"> </span><span class="s1">'idle'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">idle_inspector</span><span class="p">).</span><span class="n">was_called_with</span><span class="p">(</span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">buffer</span><span class="p">))</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">save_inspector</span><span class="p">).</span><span class="n">was_not_called</span><span class="o">!</span></code></pre>
+
+
+<h4 id="runs-only-save-inspectors-if-specified">runs only save inspectors if specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="ss">scope:</span><span class="w"> </span><span class="s1">'save'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">save_inspector</span><span class="p">).</span><span class="n">was_called_with</span><span class="p">(</span><span class="n">match</span><span class="p">.</span><span class="n">is_ref</span><span class="p">(</span><span class="n">buffer</span><span class="p">))</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">idle_inspector</span><span class="p">).</span><span class="n">was_not_called</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-returned-inspector-is-a-string)">(when the returned inspector is a string)</h3>
+
+<h4 id="------it-'is-run-as-an-external-command,-translating-default-output-parsing',-(done)--&gt;
+">      it 'is run as an external command, translating default output parsing', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'echo "foo:1: warning: foo\nline 2: wrong val \\`foo\\`"'</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="p">{</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'warning: foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="s1">'warning'</span><span class="w"> </span><span class="p">},</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="p">{</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'wrong val `foo`'</span><span class="p">,</span><span class="w"> </span><span class="ss">search:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+   </span><span class="p">},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-returned-inspector-is-a-table)">(when the returned inspector is a table)</h3>
+
+<h4 id="------it-'uses-the-`cmd`-key-as-the-external-command-to-run',-(done)--&gt;
+">      it 'uses the `cmd` key as the external command to run', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "foo:1: some warning"'</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="p">{</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'some warning'</span><span class="w"> </span><span class="p">},</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+   </span><span class="p">},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-'allows-for-custom-parsing-via-the-`parse`-key',-(done)--&gt;
+">      it 'allows for custom parsing via the `parse` key', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "output"'</span><span class="w">
+  </span><span class="ss">parse:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">line:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">idle_inspector</span><span class="p">.</span><span class="n">parse</span><span class="p">).</span><span class="n">was_called_with</span><span class="p">(</span><span class="s1">'output\n'</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="p">{</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">},</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+   </span><span class="p">},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-'allows-for-custom-post-processing-via-the-`post_parse`-key',-(done)--&gt;
+">      it 'allows for custom post processing via the `post_parse` key', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "foo:1: some warning"'</span><span class="w">
+  </span><span class="ss">post_parse:</span><span class="w"> </span><span class="p">(</span><span class="n">inspections</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">inspections</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">search</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'zed'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="p">{</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'some warning'</span><span class="p">,</span><span class="w"> </span><span class="ss">search:</span><span class="w"> </span><span class="s1">'zed'</span><span class="w"> </span><span class="p">},</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+   </span><span class="p">},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-'allows-for-specifying-the-type-of-inspections-via-the-`type`-key',-(done)--&gt;
+">      it 'allows for specifying the type of inspections via the `type` key', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "foo:1: some warning"'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="s1">'warning'</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="p">{</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'some warning'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="s1">'warning'</span><span class="w"> </span><span class="p">},</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+   </span><span class="p">},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-'skips-unavailable-inspectors',-(done)--&gt;
+">      it 'skips unavailable inspectors', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "foo:1: some warning"'</span><span class="p">,</span><span class="w">
+  </span><span class="ss">is_available:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-an-inspector-command-contains-a-&lt;file&gt;-placeholder)">(when an inspector command contains a &lt;file&gt; placeholder)</h3>
+
+<h4 id="------it-&quot;is-skipped-if-the-buffer-has-no-associated-file&quot;,-(done)--&gt;
+">      it &quot;is skipped if the buffer has no associated file&quot;, (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">modified</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'echo "foo:1: &lt;file&gt; urk"'</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-&quot;is-skipped-if-the-buffer-is-modified&quot;,-(done)--&gt;
+">      it &quot;is skipped if the buffer is modified&quot;, (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/foo/bar'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">modified</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'echo "foo:1: &lt;file&gt; urk"'</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-&quot;is-expanded-with-the-buffer's-file's-path&quot;,-(done)--&gt;
+">      it &quot;is expanded with the buffer's file's path&quot;, (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/foo/bar'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file</span><span class="w">
+</span><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'echo "foo:1: &lt;file&gt;"'</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="p">{</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'/foo/bar'</span><span class="w"> </span><span class="p">},</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="------it-'is-not-passed-the-buffer-content-on-stdin',-(done)--&gt;
+">      it 'is not passed the buffer content on stdin', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/foo/bar'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar:1: mem'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">modified</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">idle_inspector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">cmd:</span><span class="w"> </span><span class="s1">'cat &lt;file&gt; -'</span><span class="w">
+</span><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inspectors_on_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'test-idle-inspector'</span><span class="p">}</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inspect</span><span class="p">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="criticize(buffer,-criticism,-opts)">criticize(buffer, criticism, opts)</h2>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'linƏ 1\nline 2\nline 3'</span></code></pre>
+
+
+<h4 id="applies-inspect-markers-to-the-buffer-corresponding-to-criticisms">applies inspect markers to the buffer corresponding to criticisms</h4>
+
+<pre class="highlight moonscript"><code><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+ </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+    </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'inspection'</span><span class="p">,</span><span class="w">
+    </span><span class="ss">flair:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w">
+    </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w">
+    </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span><span class="w">
+    </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'inspection'</span><span class="p">,</span><span class="w">
+    </span><span class="ss">flair:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w">
+    </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span></code></pre>
+
+
+<h4 id="leaves-previous-inspection-markers-alone-by-default">leaves previous inspection markers alone by default</h4>
+
+<pre class="highlight moonscript"><code><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span></code></pre>
+
+
+<h4 id="clears-previous-inspection-markers-when-opts.clear-is-set">clears previous inspection markers when opts.clear is set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="ss">clear:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">start_offset</span></code></pre>
+
+
+<h4 id="starts-the-visual-marker-at-the-start-of-text-for-line-inspections">starts the visual marker at the start of text for line inspections</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'  34567\n'</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">start_offset</span></code></pre>
+
+
+<h4 id="starts-the-visual-marker-at-the-unicode-pos-given-by-.start_col-if-present">starts the visual marker at the unicode pos given by .start_col if present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö\n'</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_col:</span><span class="w"> </span><span class="mi">2</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">start_offset</span></code></pre>
+
+
+<h4 id="ends-the-visual-marker-at-the-unicode-pos-given-by-.end_col-if-present">ends the visual marker at the unicode pos given by .end_col if present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö\n'</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">,</span><span class="w"> </span><span class="ss">end_col:</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">end_offset</span></code></pre>
+
+
+<h4 id="starts-the-visual-marker-at-the-byte-offset-given-by-.byte_start_col-if-present">starts the visual marker at the byte offset given by .byte_start_col if present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö\n'</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">,</span><span class="w"> </span><span class="ss">byte_start_col:</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">start_offset</span></code></pre>
+
+
+<h4 id="ends-the-visual-marker-at-the-byte-offset-given-by-.byte_end_col-if-present">ends the visual marker at the byte offset given by .byte_end_col if present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'åäö\n'</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">,</span><span class="w"> </span><span class="ss">byte_end_col:</span><span class="w"> </span><span class="mi">3</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">end_offset</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="when-a-.search-field-is-present">when a .search field is present</h3>
+
+<h4 id="is-used-for-selecting-a-part-of-the-line-to-highlight">is used for selecting a part of the line to highlight</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'1 345 7\n'</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">,</span><span class="w"> </span><span class="ss">search:</span><span class="w"> </span><span class="s1">'345'</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">marker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">marker</span><span class="p">.</span><span class="n">start_offset</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="n">marker</span><span class="p">.</span><span class="n">end_offset</span></code></pre>
+
+
+<h4 id="marks-the-whole-line-if-the-search-fails">marks the whole line if the search fails</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'1234567\n'</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">,</span><span class="w"> </span><span class="ss">search:</span><span class="w"> </span><span class="s1">'XX'</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">marker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">marker</span><span class="p">.</span><span class="n">start_offset</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="n">marker</span><span class="p">.</span><span class="n">end_offset</span></code></pre>
+
+
+<h4 id="marks-the-whole-line-if-the-search-has-multiple-matches-">marks the whole line if the search has multiple matches </h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo foo\n'</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">,</span><span class="w"> </span><span class="ss">search:</span><span class="w"> </span><span class="s1">'oo'</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">marker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">marker</span><span class="p">.</span><span class="n">start_offset</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="n">marker</span><span class="p">.</span><span class="n">end_offset</span></code></pre>
+
+
+<h4 id="is-not-confused-by-other-substring-matches">is not confused by other substring matches</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">' res = refresh!\n'</span><span class="w">
+</span><span class="n">inspect</span><span class="p">.</span><span class="n">criticize</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">type:</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'zed'</span><span class="p">,</span><span class="w"> </span><span class="ss">search:</span><span class="w"> </span><span class="s1">'res'</span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">marker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">marker</span><span class="p">.</span><span class="n">start_offset</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">marker</span><span class="p">.</span><span class="n">end_offset</span></code></pre>
+
+</div>
+</div>
+</div>

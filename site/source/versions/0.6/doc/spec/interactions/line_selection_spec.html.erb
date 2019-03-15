@@ -1,0 +1,83 @@
+---
+title: Spec - howl.interactions.select_line
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.interactions.select_line">howl.interactions.select_line</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">command_line</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Window</span><span class="o">!</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="o">\</span><span class="n">realize</span><span class="o">!</span><span class="w">
+  </span><span class="n">command_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="w">
+
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one\ntwo\nthree'</span><span class="w">
+  </span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="n">buffer</span></code></pre>
+
+
+<h4 id="registers-interactions">registers interactions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_line</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="interact.select_line">interact.select_line</h2>
+
+<h4 id="shows-opt.lines-in-the-completion-list-by-default">shows opt.lines in the completion list by default</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">lines</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_line</span><span class="p">(</span><span class="ss">:editor</span><span class="p">,</span><span class="w"> </span><span class="ss">lines:</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">)),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">},</span><span class="w"> </span><span class="n">lines</span></code></pre>
+
+
+<h4 id="filters-lines-to-match-text-entered">filters lines to match text entered</h4>
+
+<pre class="highlight moonscript"><code><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_line</span><span class="p">(</span><span class="ss">:editor</span><span class="p">,</span><span class="w"> </span><span class="ss">lines:</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">)),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">append</span><span class="w"> </span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'o'</span><span class="w">
+  </span><span class="n">append</span><span class="w"> </span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'n'</span><span class="w">
+  </span><span class="n">append</span><span class="w"> </span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">clear</span><span class="o">!</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">''</span><span class="w">
+  </span><span class="n">append</span><span class="w"> </span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">},</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">},</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">},</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'three'</span><span class="p">},</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span></code></pre>
+
+
+<h4 id="handles-spillover-text,-when-present">handles spillover text, when present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command_line</span><span class="o">\</span><span class="n">write_spillover</span><span class="w"> </span><span class="s1">'one'</span><span class="w">
+</span><span class="kd">local</span><span class="w"> </span><span class="n">text</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_line</span><span class="p">(</span><span class="ss">:editor</span><span class="p">,</span><span class="w"> </span><span class="ss">lines:</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">)),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'one'</span><span class="p">},</span><span class="w"> </span><span class="n">lines</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="n">text</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-`find`-function-is-provided)">(when `find` function is provided)</h3>
+
+<h4 id="uses-the-find-function-to-find-matching-lines">uses the find function to find matching lines</h4>
+
+<pre class="highlight moonscript"><code><span class="n">find</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">query</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">return</span><span class="w"> </span><span class="p">{{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">}}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'two'</span><span class="w">
+</span><span class="kd">local</span><span class="w"> </span><span class="n">lines</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_line</span><span class="p">(</span><span class="ss">:editor</span><span class="p">,</span><span class="w"> </span><span class="ss">lines:</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="ss">:find</span><span class="p">)),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'abc'</span><span class="w">
+  </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'two'</span><span class="p">},</span><span class="w"> </span><span class="n">lines</span></code></pre>
+
+</div>
+</div>
+</div>

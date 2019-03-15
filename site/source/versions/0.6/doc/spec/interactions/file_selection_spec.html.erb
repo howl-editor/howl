@@ -1,0 +1,297 @@
+---
+title: Spec - howl.interactions.file_selection
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.interactions.file_selection">howl.interactions.file_selection</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">tmpdir</span><span class="p">,</span><span class="w"> </span><span class="n">command_line</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">buf</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span><span class="w">
+    </span><span class="n">app</span><span class="o">\</span><span class="n">close_buffer</span><span class="w"> </span><span class="n">buf</span><span class="w">
+
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Window</span><span class="o">!</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="o">\</span><span class="n">realize</span><span class="o">!</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_editor</span><span class="o">!</span><span class="w">
+  </span><span class="n">command_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="w">
+  </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpdir</span><span class="o">!</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">tmpdir</span><span class="o">\</span><span class="n">rm_r</span><span class="o">!</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">buf</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span><span class="w">
+    </span><span class="n">app</span><span class="o">\</span><span class="n">close_buffer</span><span class="w"> </span><span class="n">buf</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="o">\</span><span class="n">destroy</span><span class="o">!</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span></code></pre>
+
+
+<h4 id="registers-interactions">registers interactions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file_in_project</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_directory</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="interact.select_file">interact.select_file</h2>
+
+<h4 id="opens-the-home-directory-by-default">opens the home directory by default</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">prompt</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'~/'</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span></code></pre>
+
+
+<h4 id="typing-a-path-opens-the-closest-parent">typing a path opens the closest parent</h4>
+
+<pre class="highlight moonscript"><code><span class="n">prompts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w">
+  </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">prompts</span><span class="p">,</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">.</span><span class="n">parent</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="p">},</span><span class="w"> </span><span class="n">prompts</span></code></pre>
+
+
+<h4 id="typing-&quot;/&quot;-after-a-directory-name-opens-the-directory">typing &quot;/&quot; after a directory name opens the directory</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">prompt</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+  </span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span></code></pre>
+
+
+<h4 id="typing-a-trailing-&quot;/~/&quot;-jumps-to-the-home-directory">typing a trailing &quot;/~/&quot; jumps to the home directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">prompts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+  </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">prompts</span><span class="p">,</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'~/'</span><span class="w">
+  </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">prompts</span><span class="p">,</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'~/'</span><span class="p">},</span><span class="w"> </span><span class="n">prompts</span></code></pre>
+
+
+<h4 id="typing-&quot;../&quot;-switches-to-the-parent-of-the-current-directory">typing &quot;../&quot; switches to the parent of the current directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">prompts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+  </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">prompts</span><span class="p">,</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'../'</span><span class="w">
+  </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">prompts</span><span class="p">,</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">.</span><span class="n">parent</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="p">},</span><span class="w"> </span><span class="n">prompts</span></code></pre>
+
+
+<h4 id="typing-&quot;/&quot;-without-any-preceeding-text-changes-to-home-directory">typing &quot;/&quot; without any preceeding text changes to home directory</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">prompt</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+  </span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'/'</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span></code></pre>
+
+
+<h4 id="shows-files-matching-entered-text-in-the-current-directory">shows files matching entered text in the current directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'ab1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ab2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bc1'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">files</span><span class="w">
+  </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">f</span><span class="w">
+  </span><span class="n">f</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'a'</span><span class="w">
+
+</span><span class="kd">local</span><span class="w"> </span><span class="n">items</span><span class="p">,</span><span class="w"> </span><span class="n">items2</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+  </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'ab'</span><span class="w">
+  </span><span class="n">items2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">files</span><span class="p">,</span><span class="w"> </span><span class="n">items</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'ab1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ab2'</span><span class="p">},</span><span class="w"> </span><span class="n">items2</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-a-buffer-associated-with-a-file-is-open)">(when a buffer associated with a file is open)</h3>
+
+<h4 id="opens-the-directory-of-the-current-buffer,-if-any">opens the directory of the current buffer, if any</h4>
+
+<pre class="highlight moonscript"><code><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">open_file</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'f'</span><span class="w">
+</span><span class="kd">local</span><span class="w"> </span><span class="n">prompt</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="o">..</span><span class="s1">'/'</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(for-directory-names-ending-with-~)">(for directory names ending with ~)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">mkdir</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'subdir~'</span></code></pre>
+
+
+<h4 id="typing-subdir~/-switches-to-the-directory">typing subdir~/ switches to the directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">prompts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/subdir~/'</span><span class="w">
+  </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">prompts</span><span class="p">,</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/subdir~/'</span><span class="p">},</span><span class="w"> </span><span class="n">prompts</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(spillover)">(spillover)</h3>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-spillover-is-not-an-absolute-path)">(..  when spillover is not an absolute path)</h3>
+
+<h4 id="opens-the-home-directory-and-matches-the-spillover-text">opens the home directory and matches the spillover text</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">prompt</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="w">
+</span><span class="n">command_line</span><span class="o">\</span><span class="n">write_spillover</span><span class="w"> </span><span class="s1">'matchthis'</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'~/'</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'matchthis'</span><span class="p">,</span><span class="w"> </span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-spillover-is-an-absolute-path)">(..  when spillover is an absolute path)</h3>
+
+<h4 id="opens-the-closest-valid-directory">opens the closest valid directory</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">prompt</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="w">
+</span><span class="n">command_line</span><span class="o">\</span><span class="n">write_spillover</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'matchthis'</span><span class="p">)</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="o">..</span><span class="s1">'/'</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'matchthis'</span><span class="p">,</span><span class="w"> </span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-spillover-is-a-directory-path-that-exists)">(..  when spillover is a directory path that exists)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">File</span><span class="p">.</span><span class="n">mkdir</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'subdir'</span></code></pre>
+
+
+<h4 id="opens-the-directory-when-specified-with-a-trailing-&quot;/&quot;">opens the directory when specified with a trailing &quot;/&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">prompt</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="w">
+</span><span class="n">command_line</span><span class="o">\</span><span class="n">write_spillover</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'subdir'</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'subdir'</span><span class="p">)</span><span class="o">..</span><span class="s1">'/'</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">text</span></code></pre>
+
+
+<h4 id="opens-the-parent-when-specified-without-any-trailing-&quot;/&quot;">opens the parent when specified without any trailing &quot;/&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">prompt</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="w">
+</span><span class="n">command_line</span><span class="o">\</span><span class="n">write_spillover</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'subdir'</span><span class="p">)</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span><span class="w">
+  </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">command_line</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="o">..</span><span class="s1">'/'</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'subdir'</span><span class="p">,</span><span class="w"> </span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-config.hidden_file_extensions-is-set)">(when config.hidden_file_extensions is set)</h3>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">files</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">reset</span><span class="o">!</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">hidden_file_extensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'a'</span><span class="p">}</span><span class="w">
+  </span><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'x.a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'x.b'</span><span class="p">,</span><span class="w"> </span><span class="s1">'x.c'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">files</span><span class="w">
+    </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">f</span><span class="w">
+    </span><span class="n">f</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'x'</span></code></pre>
+
+
+<h4 id="does-not-show-hidden-files-in-list">does not show hidden files in list</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">items</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+  </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'x.b'</span><span class="p">,</span><span class="w"> </span><span class="s1">'x.c'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">items</span></code></pre>
+
+
+<h4 id="shows-a-hidden-file-after-its-exact-name-is-entered">shows a hidden file after its exact name is entered</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">items</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'x.a'</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">clear</span><span class="o">!</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">''</span><span class="w">
+  </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'x.b'</span><span class="p">,</span><span class="w"> </span><span class="s1">'x.c'</span><span class="p">,</span><span class="w"> </span><span class="s1">'x.a'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">items</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(in-subtree-mode)">(in subtree mode)</h3>
+
+<h4 id="shows-files-and-directories-in-the-subtree">shows files and directories in the subtree</h4>
+
+<pre class="highlight moonscript"><code><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'ab1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ab2/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ab2/xy'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ef/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ef/gh/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ef/gh/ab4'</span><span class="p">}</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">files</span><span class="w">
+  </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">name</span><span class="w">
+  </span><span class="k">if</span><span class="w"> </span><span class="n">name</span><span class="o">\</span><span class="n">ends_with</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+    </span><span class="n">f</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="k">else</span><span class="w">
+    </span><span class="n">f</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'a'</span><span class="w">
+
+</span><span class="n">command_line</span><span class="o">\</span><span class="n">write_spillover</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+
+</span><span class="kd">local</span><span class="w"> </span><span class="n">items</span><span class="p">,</span><span class="w"> </span><span class="n">items2</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_file</span><span class="p">(</span><span class="ss">show_subtree:</span><span class="w"> </span><span class="kc">true</span><span class="p">)),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'ab'</span><span class="w">
+  </span><span class="n">items2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">items</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">items2</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">files</span><span class="p">,</span><span class="w"> </span><span class="n">items</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'ab1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ab2/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ab2/xy'</span><span class="p">,</span><span class="s1">'ef/gh/ab4'</span><span class="p">},</span><span class="w"> </span><span class="n">items2</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="interact.select_directory">interact.select_directory</h2>
+
+<h4 id="shows-only-sub-directories-including-&quot;./&quot;,-but-no-files">shows only sub directories including &quot;./&quot;, but no files</h4>
+
+<pre class="highlight moonscript"><code><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'ab1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ab2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bc1'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">directories</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'dir1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'dir2'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">files</span><span class="w">
+  </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">f</span><span class="w">
+  </span><span class="n">f</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'a'</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">directories</span><span class="w">
+  </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmpdir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">d</span><span class="w">
+  </span><span class="n">f</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+
+</span><span class="kd">local</span><span class="w"> </span><span class="n">items</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_directory</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">)</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'/'</span><span class="w">
+  </span><span class="n">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'./'</span><span class="p">,</span><span class="w"> </span><span class="s1">'dir1/'</span><span class="p">,</span><span class="w"> </span><span class="s1">'dir2/'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">items</span></code></pre>
+
+</div>
+</div>

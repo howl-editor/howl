@@ -1,0 +1,169 @@
+---
+title: Spec - howl.completion.InBufferCompleter
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.completion.inbuffercompleter">howl.completion.InBufferCompleter</h1>
+
+<pre class="highlight moonscript"><code><span class="n">setup</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test_mode'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="n">close_all_buffers</span><span class="o">!</span><span class="w">
+
+</span><span class="n">teardown</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'test_mode'</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="complete()">complete()</h2>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="w">
+</span><span class="n">factory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">completion</span><span class="p">.</span><span class="n">in_buffer</span><span class="p">.</span><span class="n">factory</span><span class="w">
+
+</span><span class="n">complete_at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="o">\</span><span class="n">context_at</span><span class="w"> </span><span class="n">pos</span><span class="w">
+  </span><span class="n">completer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factory</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="w">
+  </span><span class="n">completer</span><span class="o">\</span><span class="n">complete</span><span class="w"> </span><span class="n">context</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'default'</span><span class="w">
+  </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span></code></pre>
+
+
+<h4 id="returns-completions-for-local-matches-in-the-buffer">returns completions for local matches in the buffer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+Hello there
+  some symbol (foo) {
+    if yike {
+say_it = 'blarg'
+s
+    }
+  }
+
+  other sion (arg) {
+    saphire = 'that too'
+  }
+]]</span><span class="w">
+</span><span class="n">comps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">5</span><span class="p">].</span><span class="n">end_pos</span><span class="w">
+</span><span class="nb">table.sort</span><span class="w"> </span><span class="n">comps</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'saphire'</span><span class="p">,</span><span class="w"> </span><span class="s1">'say_it'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sion'</span><span class="p">,</span><span class="w"> </span><span class="s1">'some'</span><span class="p">,</span><span class="w"> </span><span class="s1">'symbol'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">comps</span></code></pre>
+
+
+<h4 id="does-not-include-the-token-being-completed-itself">does not include the token being completed itself</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+text
+te
+noice
+test
+]]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'text'</span><span class="p">,</span><span class="w"> </span><span class="s1">'test'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">end_pos</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'test'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="mi">3</span></code></pre>
+
+
+<h4 id="favours-matches-close-to-the-current-position">favours matches close to the current position</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+two
+twitter
+tw
+other
+and other
+twice
+twitter
+]]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'twitter'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twice'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">end_pos</span></code></pre>
+
+
+<h4 id="offers-&quot;smart&quot;-completions-after-the-local-ones">offers &quot;smart&quot; completions after the local ones</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+two
+twitter
+_fatwa
+tw
+the_water
+]]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'twitter'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="p">,</span><span class="w"> </span><span class="s1">'the_water'</span><span class="p">,</span><span class="w"> </span><span class="s1">'_fatwa'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">4</span><span class="p">].</span><span class="n">end_pos</span></code></pre>
+
+
+<h4 id="works-with-unicode">works with unicode</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+hellö
+häst
+h
+]]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'häst'</span><span class="p">,</span><span class="w"> </span><span class="s1">'hellö'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">end_pos</span></code></pre>
+
+
+<h4 id="detects-existing-words-using-the-word_pattern-mode-variable">detects existing words using the word_pattern mode variable</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+*foo*/-bar
+eat.food.
+*
+oo
+]]</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">word_pattern:</span><span class="w"> </span><span class="n">r</span><span class="s1">'\\*\\w+\\*'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'*foo*'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">end_pos</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(multiple-buffers)">(multiple buffers)</h3>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer2</span><span class="p">,</span><span class="w"> </span><span class="n">buffer3</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">close_all_buffers</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">buffer2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w">
+  </span><span class="n">buffer2</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo\n'</span><span class="w">
+  </span><span class="n">app</span><span class="o">\</span><span class="n">add_buffer</span><span class="w"> </span><span class="n">buffer2</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="n">buffer2</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">123</span><span class="w">
+
+  </span><span class="n">buffer3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w">
+  </span><span class="n">buffer3</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'fabulous\n'</span><span class="w">
+  </span><span class="n">buffer3</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">12</span><span class="w">
+  </span><span class="n">app</span><span class="o">\</span><span class="n">add_buffer</span><span class="w"> </span><span class="n">buffer3</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">app</span><span class="o">\</span><span class="n">close_buffer</span><span class="w"> </span><span class="n">buffer2</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">app</span><span class="o">\</span><span class="n">close_buffer</span><span class="w"> </span><span class="n">buffer3</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span></code></pre>
+
+
+<h4 id="searches-up-to-&lt;config.inbuffer_completion_max_buffers&gt;-other-buffers">searches up to &lt;config.inbuffer_completion_max_buffers&gt; other buffers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'fry\nf'</span><span class="w">
+</span><span class="n">comps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">end_pos</span><span class="w">
+</span><span class="nb">table.sort</span><span class="w"> </span><span class="n">comps</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'fabulous'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fry'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">comps</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inbuffer_completion_max_buffers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">comps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">end_pos</span><span class="w">
+</span><span class="nb">table.sort</span><span class="w"> </span><span class="n">comps</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fry'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">comps</span></code></pre>
+
+
+<h4 id="prefers-closer-matches">prefers closer matches</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'fry\nf'</span><span class="w">
+</span><span class="n">comps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">end_pos</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'fry'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fabulous'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">comps</span></code></pre>
+
+
+<h4 id="skips-buffers-with-a-different-mode-if-&lt;config.inbuffer_completion_same_mode_only&gt;-is-true">skips buffers with a different mode if &lt;config.inbuffer_completion_same_mode_only&gt; is true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inbuffer_completion_same_mode_only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">buffer2</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">.</span><span class="n">by_name</span><span class="w"> </span><span class="s1">'test_mode'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'fry\nf'</span><span class="w">
+</span><span class="n">comps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">end_pos</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'fry'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fabulous'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">comps</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">inbuffer_completion_same_mode_only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">comps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">complete_at</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">end_pos</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'fry'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'fabulous'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">comps</span></code></pre>
+
+</div>
+</div>
+</div>

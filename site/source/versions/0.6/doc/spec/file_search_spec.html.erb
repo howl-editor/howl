@@ -1,0 +1,401 @@
+---
+title: Spec - howl.file_search
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.file_search">howl.file_search</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">searchers</span><span class="p">,</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">searcher</span><span class="w">
+
+</span><span class="n">setup</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">searchers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">def</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">def</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">searchers</span><span class="p">}</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">searchers</span><span class="w">
+    </span><span class="n">file_search</span><span class="p">.</span><span class="n">unregister_searcher</span><span class="w"> </span><span class="n">name</span><span class="w">
+
+  </span><span class="n">tmp_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">howl</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="n">tmp_dir</span><span class="w">
+
+</span><span class="n">teardown</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">searchers</span><span class="w">
+    </span><span class="n">file_search</span><span class="p">.</span><span class="n">unregister_searcher</span><span class="w"> </span><span class="n">name</span><span class="w">
+
+  </span><span class="k">for</span><span class="w"> </span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">def</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">searchers</span><span class="w">
+    </span><span class="n">file_search</span><span class="p">.</span><span class="n">register_searcher</span><span class="w"> </span><span class="n">def</span><span class="w">
+
+  </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">delete_all</span><span class="o">!</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">searcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+    </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+    </span><span class="ss">handler:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="p">}</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="register_searcher(def)">register_searcher(def)</h2>
+
+<h4 id="raises-an-error-for-missing-attributes">raises an error for missing attributes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s2">"name"</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file_search</span><span class="p">.</span><span class="n">register_searcher</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'desc'</span><span class="p">,</span><span class="w"> </span><span class="ss">handler:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s2">"description"</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file_search</span><span class="p">.</span><span class="n">register_searcher</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'name'</span><span class="p">,</span><span class="w"> </span><span class="ss">handler:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s2">"handler"</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file_search</span><span class="p">.</span><span class="n">register_searcher</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'desc'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="search(directory,-term,-opts)">search(directory, term, opts)</h2>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file_search</span><span class="p">.</span><span class="n">register_searcher</span><span class="w"> </span><span class="n">searcher</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">file_searcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'test'</span></code></pre>
+
+
+<h4 id="returns-matches-and-the-used-searcher">returns matches and the used searcher</h4>
+
+<pre class="highlight moonscript"><code><span class="n">matches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">searcher</span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">matches</span><span class="w">
+</span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">used_searcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">searcher</span><span class="p">,</span><span class="w"> </span><span class="n">used_searcher</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-searcher-returns-matches-directly)">(when the searcher returns matches directly)</h3>
+
+<h4 id="returns-matches-from-the-specified-searcher">returns matches from the specified searcher</h4>
+
+<pre class="highlight moonscript"><code><span class="n">matches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'urk.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'urk'</span><span class="p">),</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">searcher</span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">matches</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">matches</span><span class="p">,</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+
+<h4 id="raises-an-error-if-the-searcher-omits-required-match-fields">raises an error if the searcher omits required match fields</h4>
+
+<pre class="highlight moonscript"><code><span class="n">matches</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">searcher</span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">matches</span><span class="w">
+
+</span><span class="n">matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'path'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+
+</span><span class="n">matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'urk.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'line_nr'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+
+</span><span class="n">matches</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'urk.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'message'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+
+<h4 id="sets-.file-from-path-if-not-provided">sets .file from path if not provided</h4>
+
+<pre class="highlight moonscript"><code><span class="n">searcher</span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'urk.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'urk.txt'</span><span class="p">),</span><span class="w"> </span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">file</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-searcher-returns-a-process-object)">(when the searcher returns a process object)</h3>
+
+<h4 id="------it-&quot;returns-matches-from-the-process'-output&quot;,-(done)--&gt;
+">      it &quot;returns matches from the process' output&quot;, (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">searcher</span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">Process</span><span class="p">.</span><span class="n">open_pipe</span><span class="w"> </span><span class="s1">'echo "file.ext:10: foo"'</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'file.ext'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'file.ext'</span><span class="p">)}</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-searcher-returns-a-string)">(when the searcher returns a string)</h3>
+
+<h4 id="------it-'returns-matches-from-running-the-string-as-a-command',-(done)--&gt;
+">      it 'returns matches from running the string as a command', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">searcher</span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'echo "file.ext:10: foo"'</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'file.ext'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'file.ext'</span><span class="p">)}</span><span class="w">
+  </span><span class="p">},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-a-search-process-exits-with-an-exit-code-of-1)">(when a search process exits with an exit code of 1)</h3>
+
+<h4 id="------it-'return-zero-matches',-(done)--&gt;
+">      it 'return zero matches', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">howl_async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">searcher</span><span class="p">.</span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'exit 1'</span><span class="w">
+  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">res</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(selecting-the-searcher)">(selecting the searcher)</h3>
+
+<h4 id="raises-an-error-if-the-specified-searcher-is-not-available">raises an error if the specified searcher is not available</h4>
+
+<pre class="highlight moonscript"><code><span class="n">searcher</span><span class="p">.</span><span class="n">is_available</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'unavailable'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+
+<h4 id="allows-passing-an-explicit-searcher-using-an-explicit-`searcher`-table">allows passing an explicit searcher using an explicit `searcher` table</h4>
+
+<pre class="highlight moonscript"><code><span class="n">my_searcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'custom'</span><span class="p">,</span><span class="w">
+  </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'pass-directly'</span><span class="p">,</span><span class="w">
+  </span><span class="ss">handler:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'my'</span><span class="p">),</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'my'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'custom'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">searcher:</span><span class="w"> </span><span class="n">my_searcher</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">my_searcher</span><span class="p">.</span><span class="n">handler</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+
+<h4 id="allows-passing-an-explicit-searcher-using-an-explicit-`searcher`-string">allows passing an explicit searcher using an explicit `searcher` string</h4>
+
+<pre class="highlight moonscript"><code><span class="n">my_searcher</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'my_searcher'</span><span class="p">,</span><span class="w">
+  </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'pass-directly'</span><span class="p">,</span><span class="w">
+  </span><span class="ss">handler:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">{</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'my'</span><span class="p">),</span><span class="w"> </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'my'</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'custom'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">file_search</span><span class="p">.</span><span class="n">register_searcher</span><span class="w"> </span><span class="n">my_searcher</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">searcher:</span><span class="w"> </span><span class="s1">'my_searcher'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">my_searcher</span><span class="p">.</span><span class="n">handler</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="sort(matches,-context)">sort(matches, context)</h2>
+
+<pre class="highlight moonscript"><code><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">line_nr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="p">{</span><span class="ss">:message</span><span class="p">,</span><span class="w"> </span><span class="ss">:path</span><span class="p">,</span><span class="w"> </span><span class="ss">:line_nr</span><span class="p">,</span><span class="w"> </span><span class="ss">file:</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">)}</span><span class="w">
+
+</span><span class="n">messages</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">matches</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">m</span><span class="p">.</span><span class="n">message</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">matches</span><span class="p">]</span></code></pre>
+
+
+<h4 id="prefers-standalone-matches-to-substring-matches">prefers standalone matches to substring matches</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">sort</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'a fool'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub1'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'bar foo zed'</span><span class="p">,</span><span class="w"> </span><span class="s1">'alone'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'food for thought'</span><span class="p">,</span><span class="w"> </span><span class="s1">'sub2'</span><span class="p">)</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'alone'</span><span class="p">,</span><span class="w"> </span><span class="n">sorted</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">path</span></code></pre>
+
+
+<h4 id="prefers-matches-where-the-term-is-included-in-the-match's-base-name">prefers matches where the term is included in the match's base name</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">sort</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'notbase'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/zed.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'base'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar/foo.moon'</span><span class="p">)</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'base'</span><span class="p">,</span><span class="w"> </span><span class="s1">'notbase'</span><span class="p">},</span><span class="w"> </span><span class="n">messages</span><span class="p">(</span><span class="n">sorted</span><span class="p">)</span></code></pre>
+
+
+<h4 id="penalizes-matches-in-test-files">penalizes matches in test files</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">sort</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'spec'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/zed_spec.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/zed_test.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'specd'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/zed-spec.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'testd'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/zed-test.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'testp'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/test_test.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'base'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo/zed.moon'</span><span class="p">)</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="s1">'base'</span><span class="p">,</span><span class="w"> </span><span class="n">messages</span><span class="p">(</span><span class="n">sorted</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></code></pre>
+
+
+<h4 id="groups-matches-by-path-for-same-score-matches">groups matches by path for same-score matches</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">sort</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'one.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="s1">'one.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two.moon'</span><span class="p">)</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'xxx'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">sorted</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">sorted</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">path</span></code></pre>
+
+
+<h4 id="always-orders-matches-in-the-same-file-by-line-nr">always orders matches in the same file by line nr</h4>
+
+<pre class="highlight moonscript"><code><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">sort</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'3'</span><span class="p">,</span><span class="w"> </span><span class="s1">'file.moon'</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'file.moon'</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'file.moon'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'xxx'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'3'</span><span class="p">},</span><span class="w"> </span><span class="n">messages</span><span class="p">(</span><span class="n">sorted</span><span class="p">)</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-context-is-provided)">(when context is provided)</h3>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">howl</span><span class="p">.</span><span class="n">Buffer</span><span class="o">!</span></code></pre>
+
+
+<h4 id="prefers-matches-close-to-the-current-context-directory">prefers matches close to the current context directory</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="w"> </span><span class="s1">'first/second/file.txt'</span><span class="w">
+</span><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">sort</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'twoup'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twoup.txt'</span><span class="p">)</span><span class="w"> </span><span class="c1">-- distance 3</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'samedir'</span><span class="p">,</span><span class="w"> </span><span class="s1">'first/second/samedir.txt'</span><span class="p">)</span><span class="w"> </span><span class="c1">-- distance 1</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'same'</span><span class="p">,</span><span class="w"> </span><span class="s1">'first/second/file.txt'</span><span class="p">)</span><span class="w"> </span><span class="c1">-- distance 0</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'oneup'</span><span class="p">,</span><span class="w"> </span><span class="s1">'first/oneup.txt'</span><span class="p">)</span><span class="w"> </span><span class="c1">-- distance 2</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'diffroot'</span><span class="p">,</span><span class="w"> </span><span class="s1">'other/otro/annan.txt'</span><span class="p">)</span><span class="w"> </span><span class="c1">--distance 5</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="o">\</span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'same'</span><span class="p">,</span><span class="w"> </span><span class="s1">'samedir'</span><span class="p">,</span><span class="w"> </span><span class="s1">'oneup'</span><span class="p">,</span><span class="w"> </span><span class="s1">'twoup'</span><span class="p">,</span><span class="w"> </span><span class="s1">'diffroot'</span><span class="p">},</span><span class="w"> </span><span class="n">messages</span><span class="p">(</span><span class="n">sorted</span><span class="p">)</span></code></pre>
+
+
+<h4 id="prefers-matches-in-files-sharing-the-same-name-cluster">prefers matches in files sharing the same name cluster</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="w"> </span><span class="s1">'foo.moon'</span><span class="w">
+</span><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">sort</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'notsame'</span><span class="p">,</span><span class="w"> </span><span class="s1">'food.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'spec'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo_spec.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'other'</span><span class="p">,</span><span class="w"> </span><span class="s1">'angry/fools.moon'</span><span class="p">)</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="o">\</span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'spec'</span><span class="p">,</span><span class="w"> </span><span class="s1">'notsame'</span><span class="p">,</span><span class="w"> </span><span class="s1">'other'</span><span class="p">},</span><span class="w"> </span><span class="n">messages</span><span class="p">(</span><span class="n">sorted</span><span class="p">)</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="w"> </span><span class="s1">'foo_spec.moon'</span><span class="w">
+</span><span class="n">sorted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">file_search</span><span class="p">.</span><span class="n">sort</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'notsame'</span><span class="p">,</span><span class="w"> </span><span class="s1">'food.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo.moon'</span><span class="p">)</span><span class="w">
+  </span><span class="n">match</span><span class="p">(</span><span class="s1">'other'</span><span class="p">,</span><span class="w"> </span><span class="s1">'angry/fools.moon'</span><span class="p">)</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'search'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="o">\</span><span class="n">context_at</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'main'</span><span class="p">,</span><span class="w"> </span><span class="s1">'notsame'</span><span class="p">,</span><span class="w"> </span><span class="s1">'other'</span><span class="p">},</span><span class="w"> </span><span class="n">messages</span><span class="p">(</span><span class="n">sorted</span><span class="p">)</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="the-native-searcher">the native searcher</h2>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">search</span><span class="w">
+
+</span><span class="n">setup</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">search</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">searchers</span><span class="p">.</span><span class="n">native</span><span class="p">.</span><span class="n">handler</span></code></pre>
+
+
+<h4 id="handles-multiple-matches-in-a-file-correctly">handles multiple matches in a file correctly</h4>
+
+<pre class="highlight moonscript"><code><span class="n">hit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'hit.txt'</span><span class="p">)</span><span class="w">
+</span><span class="n">hit</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="sh">[[
+food
+snafoo
+bafoon
+]]</span><span class="p">).</span><span class="n">stripped</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="ss">path:</span><span class="w"> </span><span class="s1">'hit.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'food'</span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="ss">path:</span><span class="w"> </span><span class="s1">'hit.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'snafoo'</span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="ss">path:</span><span class="w"> </span><span class="s1">'hit.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'bafoon'</span><span class="p">},</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+
+<h4 id="handles-a-match-at-the-end-of-a-file,-preceeding-an-empty-line">handles a match at the end of a file, preceeding an empty line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">hit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'hit.txt'</span><span class="p">)</span><span class="w">
+</span><span class="n">hit</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo\n'</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="ss">path:</span><span class="w"> </span><span class="s1">'hit.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">},</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+
+<h4 id="is-case-insensitive">is case insensitive</h4>
+
+<pre class="highlight moonscript"><code><span class="n">hit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'hit.txt'</span><span class="p">)</span><span class="w">
+</span><span class="n">hit</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo\nFOO'</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'fOo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="ss">path:</span><span class="w"> </span><span class="s1">'hit.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="ss">path:</span><span class="w"> </span><span class="s1">'hit.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'FOO'</span><span class="p">},</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+
+<h4 id="only-reports-the-first-match-for-a-given-line">only reports the first match for a given line</h4>
+
+<pre class="highlight moonscript"><code><span class="n">hit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'hit.txt'</span><span class="p">)</span><span class="w">
+</span><span class="n">hit</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'in barbary there is a bar\n'</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="ss">path:</span><span class="w"> </span><span class="s1">'hit.txt'</span><span class="p">,</span><span class="w">
+    </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="ss">column:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w">
+    </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'in barbary there is a bar'</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+
+<h4 id="limits-messages-to-the-given-max_message_length-option">limits messages to the given max_message_length option</h4>
+
+<pre class="highlight moonscript"><code><span class="n">hit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'hit.txt'</span><span class="p">)</span><span class="w">
+</span><span class="n">hit</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">string.rep</span><span class="w"> </span><span class="s1">'x'</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'x'</span><span class="p">,</span><span class="w"> </span><span class="ss">max_message_length:</span><span class="w"> </span><span class="mi">50</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">message</span></code></pre>
+
+
+<h4 id="handles-binary-files-without-issue">handles binary files without issue</h4>
+
+<pre class="highlight moonscript"><code><span class="n">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">require</span><span class="p">(</span><span class="s1">'ffi'</span><span class="p">)</span><span class="w">
+</span><span class="n">bin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'bin'</span><span class="p">)</span><span class="w">
+</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="s1">'char[1024]'</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1023</span><span class="w">
+  </span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">math.random</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w">
+</span><span class="n">bin</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="p">.</span><span class="n">string</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="mi">1024</span><span class="p">)</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'notlikely'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">res</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-whole_word-option-is-set)">(when the whole_word option is set)</h3>
+
+<h4 id="only-finds-whole-words">only finds whole words</h4>
+
+<pre class="highlight moonscript"><code><span class="n">hit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp_dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'hit.txt'</span><span class="p">)</span><span class="w">
+</span><span class="n">hit</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="sh">[[
+bar
+fubar
+barred
+barbary
+in a bar
+]]</span><span class="p">).</span><span class="n">stripped</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">search</span><span class="w"> </span><span class="n">tmp_dir</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">,</span><span class="w"> </span><span class="ss">whole_word:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="ss">path:</span><span class="w"> </span><span class="s1">'hit.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'bar'</span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="ss">path:</span><span class="w"> </span><span class="s1">'hit.txt'</span><span class="p">,</span><span class="w"> </span><span class="ss">line_nr:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="ss">column:</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="ss">message:</span><span class="w"> </span><span class="s1">'in a bar'</span><span class="p">},</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">res</span></code></pre>
+
+</div>
+</div>
+</div>

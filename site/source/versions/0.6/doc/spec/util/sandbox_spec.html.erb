@@ -1,0 +1,62 @@
+---
+title: Spec - howl.util.Sandbox
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.util.sandbox">howl.util.Sandbox</h1>
+
+<h4 id="allows-running-a-function-with-a-specified-environment">allows running a function with a specified environment</h4>
+
+<pre class="highlight moonscript"><code><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="w"> </span><span class="ss">env:</span><span class="w"> </span><span class="p">{</span><span class="ss">from_env:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'bar!'</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'bar!'</span><span class="p">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">from_env</span><span class="o">!</span></code></pre>
+
+
+<h4 id="allows-passing-parameters-to-the-function">allows passing parameters to the function</h4>
+
+<pre class="highlight moonscript"><code><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="o">!</span><span class="w">
+</span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="o">...</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'bar!'</span><span class="p">,</span><span class="w"> </span><span class="n">box</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar!'</span><span class="p">)</span></code></pre>
+
+
+<h4 id=".put-allows-modifiying-the-environment">.put allows modifiying the environment</h4>
+
+<pre class="highlight moonscript"><code><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="o">!</span><span class="w">
+</span><span class="n">box</span><span class="o">\</span><span class="n">put</span><span class="w"> </span><span class="ss">from_env:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'bar!'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'bar!'</span><span class="p">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">from_env</span><span class="o">!</span></code></pre>
+
+
+<h4 id="allows-global-access-by-default">allows global access by default</h4>
+
+<pre class="highlight moonscript"><code><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">table</span></code></pre>
+
+
+<h4 id="disallows-global-access-if-options.no_globals-is-set">disallows global access if options.no_globals is set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="w"> </span><span class="ss">no_globals:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">table</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-options.no_implicit_globals-is-set)">(when options.no_implicit_globals is set)</h3>
+
+<h4 id="raises-an-error-upon-implicit-global-writes">raises an error upon implicit global writes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="w"> </span><span class="ss">no_implicit_globals:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">renegade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kd">export</span><span class="w"> </span><span class="n">frob</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar!'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'implicit global'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">box</span><span class="w"> </span><span class="n">renegade</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-options.no_implicit_globals-is-not-set)">(when options.no_implicit_globals is not set)</h3>
+
+<h4 id="collects-exports-into-.exports">collects exports into .exports</h4>
+
+<pre class="highlight moonscript"><code><span class="n">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Sandbox</span><span class="o">!</span><span class="w">
+</span><span class="n">box</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kd">export</span><span class="w"> </span><span class="n">foo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">box</span><span class="p">.</span><span class="n">exports</span><span class="p">.</span><span class="n">foo</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span></code></pre>
+
+</div>
+</div>

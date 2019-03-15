@@ -1,0 +1,431 @@
+---
+title: Spec - howl.ui.Selection
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.ui.selection">howl.ui.Selection</h1>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="n">buffer</span><span class="w">
+</span><span class="n">selection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">selection</span><span class="w">
+</span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+</span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gtk</span><span class="p">.</span><span class="nc">OffscreenWindow</span><span class="o">!</span><span class="w">
+</span><span class="n">window</span><span class="o">\</span><span class="n">add</span><span class="w"> </span><span class="n">editor</span><span class="o">\</span><span class="n">to_gobject</span><span class="o">!</span><span class="w">
+</span><span class="n">window</span><span class="o">\</span><span class="n">show_all</span><span class="o">!</span><span class="w">
+</span><span class="n">howl</span><span class="p">.</span><span class="n">app</span><span class="o">\</span><span class="n">pump_mainloop</span><span class="o">!</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">editor</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">selection</span><span class="o">\</span><span class="n">clear</span><span class="o">!</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt\nLiñe 1 ʘf tƏxt'</span></code></pre>
+
+
+<h4 id=".empty-returns-whether-any-selection-exists">.empty returns whether any selection exists</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">empty</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">empty</span></code></pre>
+
+
+<h4 id="range()-returns-the-[start,-stop)-range-of-the-selection-in-ascending-order">range() returns the [start, stop) range of the selection in ascending order</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">selection</span><span class="o">\</span><span class="n">range</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">selection</span><span class="o">\</span><span class="n">range</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="set(anchor,-pos)">set(anchor, pos)</h2>
+
+<h4 id="sets-the-anchor-and-cursor-at-the-same-time">sets the anchor and cursor at the same time</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Liñe'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="moves-the-editor-cursor-to-&lt;pos&gt;">moves the editor cursor to &lt;pos&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'12345'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="select(anchor,-pos)">select(anchor, pos)</h2>
+
+<h4 id="adjusts-the-selection-to-include-the-specified-range">adjusts the selection to include the specified range</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="nb">select</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Liñe'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="nb">select</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'iñe'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="moves-the-editor-cursor-to-&lt;pos&gt;">moves the editor cursor to &lt;pos&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'12345'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="nb">select</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="select_all()">select_all()</h2>
+
+<h4 id="adjusts-the-selection-to-include-the-entire-buffer">adjusts the selection to include the entire buffer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">select_all</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="p">.</span><span class="n">ulen</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span></code></pre>
+
+
+<h4 id="does-not-change-the-scroll-position">does not change the scroll position</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">editor</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">first_visible_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">select_all</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">view</span><span class="p">.</span><span class="n">first_visible_line</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".anchor">.anchor</h2>
+
+<h4 id="is-nil-if-nothing-is-selected">is nil if nothing is selected</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span></code></pre>
+
+
+<h4 id="returns-the-start-position-of-the-selection-with-a-selection-active">returns the start position of the selection with a selection active</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span></code></pre>
+
+
+<h4 id="setting-it-to-&lt;pos&gt;-sets-the-selection-to-the-text-range-[pos..&lt;cursor&gt;)">setting it to &lt;pos&gt; sets the selection to the text range [pos..&lt;cursor&gt;)</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Liñ'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".cursor">.cursor</h2>
+
+<h4 id="returns-nil-if-nothing-is-selected">returns nil if nothing is selected</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span></code></pre>
+
+
+<h4 id="returns-the-end-position-of-the-selection-with-a-selection-active">returns the end position of the selection with a selection active</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+
+</span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'ñe'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".persistent">.persistent</h2>
+
+<h4 id="causes-the-selection-to-be-extended-with-movement-when-true">causes the selection to be extended with movement when true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'line1\nline2'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">selection</span><span class="p">.</span><span class="n">persistent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">cursor</span><span class="o">\</span><span class="n">down</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'line1\n'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="remove">remove</h2>
+
+<h4 id="removes-the-selection">removes the selection</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">remove</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">empty</span></code></pre>
+
+
+<h4 id="does-not-remove-the-selected-text">does not remove the selected text</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foobar'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">remove</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'foobar'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="cut">cut</h2>
+
+<h4 id="removes-the-selected-text">removes the selected text</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">cut</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">' 1 ʘf tƏxt'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="removes-the-selection">removes the selection</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">cut</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">empty</span></code></pre>
+
+
+<h4 id="clears-the-persistent-flag">clears the persistent flag</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="p">.</span><span class="n">persistent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">cut</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">persistent</span></code></pre>
+
+
+<h4 id="pushes-the-selection-to-the-clipboard,-with-any-options-as-specified">pushes the selection to the clipboard, with any options as specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">cut</span><span class="o">!</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'L'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">cut</span><span class="w"> </span><span class="ss">whole_lines:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">whole_lines</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">cut</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="ss">to:</span><span class="w"> </span><span class="s1">'abc'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'ñe'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">registers</span><span class="p">.</span><span class="n">abc</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="signals-&quot;selection-cut&quot;">signals &quot;selection-cut&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_signal_handler</span><span class="w"> </span><span class="s1">'selection-cut'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">handler</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+  </span><span class="n">selection</span><span class="o">\</span><span class="n">cut</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="copy(clip_options-=-nil,-clipboard_options-=-nil)">copy(clip_options = nil, clipboard_options = nil)</h2>
+
+<h4 id="keeps-the-selection">keeps the selection</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">copy</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">empty</span></code></pre>
+
+
+<h4 id="keeps-the-persistent-flag">keeps the persistent flag</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="p">.</span><span class="n">persistent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">copy</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">persistent</span></code></pre>
+
+
+<h4 id="pushes-the-selection-to-the-clipboard,-with-any-options-as-specified">pushes the selection to the clipboard, with any options as specified</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">copy</span><span class="o">!</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Liñe'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">copy</span><span class="w"> </span><span class="ss">whole_lines:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">whole_lines</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">copy</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="ss">to:</span><span class="w"> </span><span class="s1">'abc'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Liñ'</span><span class="p">,</span><span class="w"> </span><span class="n">clipboard</span><span class="p">.</span><span class="n">registers</span><span class="p">.</span><span class="n">abc</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="signals-&quot;selection-copied&quot;">signals &quot;selection-copied&quot;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_signal_handler</span><span class="w"> </span><span class="s1">'selection-copied'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">handler</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+  </span><span class="n">selection</span><span class="o">\</span><span class="n">copy</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".text">.text</h2>
+
+<h4 id="returns-nil-if-nothing-is-selected">returns nil if nothing is selected</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="returns-the-currently-selected-text-when-the-selection-is-not-empty">returns the currently selected text when the selection is not empty</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Li'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id=".text-=-&lt;text&gt;">.text = &lt;text&gt;</h3>
+
+<h4 id="replaces-the-selection-with-&lt;text&gt;-and-removes-the-selection">replaces the selection with &lt;text&gt; and removes the selection</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">selection</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Shi'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Shiñe 1 ʘf tƏxt'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">empty</span></code></pre>
+
+
+<h4 id="raises-an-error-if-the-selection-is-empty">raises an error if the selection is empty</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'empty'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Yowser!'</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="when-.includes_cursor-is-set-to-true">when .includes_cursor is set to true</h2>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">includes_cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">includes_cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span></code></pre>
+
+
+<h4 id="select(anchor,-pos)-adjusts-pos-if-needed-to-only-point-at-the-end-of-selection">select(anchor, pos) adjusts pos if needed to only point at the end of selection</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Liñe 1 ʘf tƏxt'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="nb">select</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Liñe'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="nb">select</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'iñe'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="nb">select</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">anchor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'L'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id=".text-includes-the-current-character">.text includes the current character</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Liñ'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id=".text-=-&lt;text&gt;-replaces-the-current-character-as-well">.text = &lt;text&gt; replaces the current character as well</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">selection</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Shi'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Shiñe 1 ʘf tƏxt'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">text</span></code></pre>
+
+
+<h4 id="cut()-removes-the-current-character-as-well">cut() removes the current character as well</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">cut</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'1 ʘf tƏxt'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">text</span></code></pre>
+
+
+<h4 id="copy()-copies-the-current-character-as-well">copy() copies the current character as well</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="n">copy</span><span class="o">!</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">column</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">editor</span><span class="o">\</span><span class="n">paste</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'LiñeLiñe 1 ʘf tƏxt'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">text</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-selection-ends-at-a-end-of-line-character)">(when the selection ends at a end-of-line character)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'liñe1\nline2'</span><span class="w">
+  </span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span></code></pre>
+
+
+<h4 id="the-end-of-line-character-is-not-included-in-the-selection">the end-of-line character is not included in the selection</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'liñe1'</span><span class="p">,</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="range()">range()</h3>
+
+<h4 id="is-{nil,-nil}-for-an-empty-selection">is {nil, nil} for an empty selection</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">selection</span><span class="o">\</span><span class="n">range</span><span class="o">!</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="includes-the-cursor-position-if-needed">includes the cursor position if needed</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">selection</span><span class="o">\</span><span class="n">range</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">selection</span><span class="o">\</span><span class="n">range</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span></code></pre>
+
+
+<h4 id="does-not-include-an-position-after-eof-however">does not include an position after eof however</h4>
+
+<pre class="highlight moonscript"><code><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="o">#</span><span class="n">buffer</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">buffer</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">selection</span><span class="o">\</span><span class="n">range</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="o">#</span><span class="n">buffer</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="o">#</span><span class="n">buffer</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">stop</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id=".empty">.empty</h3>
+
+<h4 id="is-true-if-the-selection-is-really-removed">is true if the selection is really removed</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">empty</span></code></pre>
+
+
+<h4 id="is-only-empty-at-eof-if-a-selection-is-set">is only empty at EOF if a selection is set</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'123'</span><span class="w">
+</span><span class="n">selection</span><span class="o">\</span><span class="nb">select</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">empty</span><span class="w">
+
+</span><span class="n">selection</span><span class="o">\</span><span class="nb">select</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">selection</span><span class="p">.</span><span class="n">empty</span></code></pre>
+
+</div>
+</div>
+</div>

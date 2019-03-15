@@ -1,0 +1,185 @@
+---
+title: Spec - howl.Project
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.project">howl.Project</h1>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">roots</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">roots</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">open</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span></code></pre>
+
+
+<h4 id=".roots-contains-all-known-roots">.roots contains all known roots</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">roots</span><span class="w">
+</span><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">add_root</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="n">dir</span><span class="p">},</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">roots</span></code></pre>
+
+
+<h4 id=".add_root-adds-the-given-root-if-not-already-present">.add_root adds the given root if not already present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">add_root</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">add_root</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="nc">Project</span><span class="p">.</span><span class="n">roots</span></code></pre>
+
+
+<h4 id=".remove_root-removes-the-given-root">.remove_root removes the given root</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">add_root</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">remove_root</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="nc">Project</span><span class="p">.</span><span class="n">roots</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id=".for_file(file)">.for_file(file)</h2>
+
+<h4 id="raises-an-error-if-file-is-nil">raises an error if file is nil</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'file'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="kc">nil</span></code></pre>
+
+
+<h4 id="returns-nil-by-default">returns nil by default</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="n">file</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-there-is-vc-found-for-the-file)">(when there is VC found for the file)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">vc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'p-vc'</span><span class="p">,</span><span class="w"> </span><span class="ss">root:</span><span class="w"> </span><span class="s1">'foo_root'</span><span class="p">,</span><span class="w"> </span><span class="ss">paths:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="ss">files:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'pvc'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">vc</span><span class="w">
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'pvc'</span></code></pre>
+
+
+<h4 id="returns-a-project-instantiated-with-the-vc-and-vc-root">returns a project instantiated with the vc and vc root</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="s1">'file'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">p</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">vc</span><span class="p">.</span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">root</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'p-vc'</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">vc</span><span class="p">.</span><span class="n">name</span></code></pre>
+
+
+<h4 id="adds-the-new-root-to-.roots">adds the new root to .roots</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">Project</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="s1">'file'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">roots</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">vc</span><span class="p">.</span><span class="n">root</span><span class="p">}</span></code></pre>
+
+
+<h4 id="adds-a-new-entry-for-the-root-and-project-to-.open">adds a new entry for the root and project to .open</h4>
+
+<pre class="highlight moonscript"><code><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="s1">'file'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">open</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="n">vc</span><span class="p">.</span><span class="n">root</span><span class="p">]:</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-there-is-a-known-root-containing-the-file)">(when there is a known root containing the file)</h3>
+
+<h4 id="returns-a-new-project-for-the-root">returns a new project for the root</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">add_root</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'test.moon'</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">p</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="n">dir</span></code></pre>
+
+
+<h4 id="automatically-sets-the-matching-vc-if-possible">automatically sets the matching VC if possible</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">add_root</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'test.moon'</span><span class="w">
+  </span><span class="n">vc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'p2vc'</span><span class="p">,</span><span class="w"> </span><span class="ss">root:</span><span class="w"> </span><span class="n">dir</span><span class="p">,</span><span class="w"> </span><span class="ss">paths:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'p2vc'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">vc</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="nc">VC</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'p2vc'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'p2vc'</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">vc</span><span class="p">.</span><span class="n">name</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-there-is-an-open-project-containing-the-file)">(when there is an open project containing the file)</h3>
+
+<h4 id="returns-the-existing-project">returns the existing project</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">add_root</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'test.moon'</span><span class="w">
+  </span><span class="n">file2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'test2.moon'</span><span class="w">
+  </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">p2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Project</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="n">file2</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">p</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">p2</span><span class="p">,</span><span class="w"> </span><span class="n">p</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="for-a-given-project-instance">for a given project instance</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="paths()">paths()</h3>
+
+<h4 id="delegates-to-.vc.paths()-if-it-is-available">delegates to .vc.paths() if it is available</h4>
+
+<pre class="highlight moonscript"><code><span class="n">vc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">paths:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="s1">'path'</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">vc</span><span class="p">.</span><span class="n">paths</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="nc">Project</span><span class="p">(</span><span class="s1">'root'</span><span class="p">,</span><span class="w"> </span><span class="n">vc</span><span class="p">)</span><span class="o">\</span><span class="n">paths</span><span class="o">!</span></code></pre>
+
+
+<h4 id="falls-back-to-a-fs-scan,-skipping-directories,-backup-files-and-hidden-exts">falls back to a FS scan, skipping directories, backup files and hidden exts</h4>
+
+<pre class="highlight moonscript"><code><span class="n">orig_exts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">hidden_file_extensions</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">hidden_file_extensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'foo'</span><span class="p">}</span><span class="w">
+</span><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">regular</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'regular.lua'</span><span class="w">
+  </span><span class="n">regular</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">sub_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'sub_dir'</span><span class="w">
+  </span><span class="n">sub_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">hidden</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'.config'</span><span class="w">
+  </span><span class="n">hidden</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">backup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'config~'</span><span class="w">
+  </span><span class="n">backup</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">hidden_ext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'bar.foo'</span><span class="w">
+  </span><span class="n">hidden_ext</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Project</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="o">\</span><span class="n">paths</span><span class="o">!</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">hidden_file_extensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">orig_exts</span><span class="w">
+  </span><span class="nb">table.sort</span><span class="w"> </span><span class="n">paths</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'.config'</span><span class="p">,</span><span class="w"> </span><span class="s1">'regular.lua'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">paths</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="files()">files()</h3>
+
+<h4 id="delegates-to-.vc.files()-if-it-is-available">delegates to .vc.files() if it is available</h4>
+
+<pre class="highlight moonscript"><code><span class="n">vc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">files:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'files'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">vc</span><span class="p">.</span><span class="n">files</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="nc">Project</span><span class="p">(</span><span class="s1">'root'</span><span class="p">,</span><span class="w"> </span><span class="n">vc</span><span class="p">)</span><span class="o">\</span><span class="n">files</span><span class="o">!</span></code></pre>
+
+
+<h4 id="falls-back-to-a-fs-scan,-skipping-directories-and-backup-files">falls back to a FS scan, skipping directories and backup files</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">regular</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'regular.lua'</span><span class="w">
+  </span><span class="n">regular</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">sub_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'sub_dir'</span><span class="w">
+  </span><span class="n">sub_dir</span><span class="o">\</span><span class="n">mkdir</span><span class="o">!</span><span class="w">
+  </span><span class="n">hidden</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'.config'</span><span class="w">
+  </span><span class="n">hidden</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">backup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="s1">'config~'</span><span class="w">
+  </span><span class="n">backup</span><span class="o">\</span><span class="n">touch</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">regular</span><span class="p">.</span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">hidden</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">[</span><span class="n">f</span><span class="p">.</span><span class="n">path</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="nc">Project</span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="o">\</span><span class="n">files</span><span class="o">!</span><span class="p">]</span></code></pre>
+
+</div>
+</div>
+</div>

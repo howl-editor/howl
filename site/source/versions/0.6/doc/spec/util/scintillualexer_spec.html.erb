@@ -1,0 +1,78 @@
+---
+title: Spec - howl.util.ScintilluaLexer
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.util.scintillualexer">howl.util.ScintilluaLexer</h1>
+
+<h4 id="calling-it-lexes-text-using-the-specified-scintillua-lexer">calling it lexes text using the specified Scintillua lexer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tmpfile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">.</span><span class="n">tmpfile</span><span class="o">!</span><span class="w">
+</span><span class="n">tmpfile</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+  local l = lexer
+  local token, word_match = l.token, l.word_match
+  local ws = token(l.WHITESPACE, l.space^1)
+  local keyword = token(l.KEYWORD, word_match {
+    'awesome',
+    'stuff',
+  })
+  local M = { _NAME = 'spec' }
+  M._rules = {
+    { 'whitespace', ws },
+    { 'keyword', keyword },
+  }
+  return M
+]]</span><span class="w">
+</span><span class="n">lexer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">ScintilluaLexer</span><span class="w"> </span><span class="s1">'spec'</span><span class="p">,</span><span class="w"> </span><span class="n">tmpfile</span><span class="w">
+</span><span class="n">tmpfile</span><span class="o">\</span><span class="n">delete</span><span class="o">!</span><span class="w">
+</span><span class="n">lexed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lexer</span><span class="w"> </span><span class="s1">'awesome stuff'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'keyword'</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w">
+  </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="s1">'whitespace'</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="p">,</span><span class="w">
+  </span><span class="mi">9</span><span class="p">,</span><span class="w"> </span><span class="s1">'keyword'</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">lexed</span></code></pre>
+
+
+<h4 id="provides-the-usual-pre-defined-scintillua-styles-in-the-lexer">provides the usual pre-defined Scintillua styles in the lexer</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    local new_tag = lexer.style_tag .. {}
+    assert(lexer.style_class ~= nil)
+    return {
+      _NAME = 'futile_styling_attempt',
+      _rules = { { 'any', lexer.any } }
+    }
+  ]]</span><span class="w">
+  </span><span class="nc">ScintilluaLexer</span><span class="w"> </span><span class="s1">'style_craze'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="scintillua's-lexer.load()">Scintillua's lexer.load()</h2>
+
+<h4 id="can-load-other-scintillua-lexers-from-registered-modes">can load other Scintillua lexers from registered modes</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    return {
+      _NAME = 'embedded',
+      _rules = { { 'any', lexer.any } }
+    }
+  ]]</span><span class="w">
+  </span><span class="n">lexer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">ScintilluaLexer</span><span class="w"> </span><span class="s1">'embedded'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'embedded'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:lexer</span><span class="w">
+
+</span><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sh">[[
+    local embedded = lexer.load('embedded')
+    assert(embedded._RULES ~= nil, 'Failed to load sub lexer')
+    return {
+      _NAME = 'driver',
+      _rules = { { 'any', lexer.any } }
+    }
+  ]]</span><span class="w">
+  </span><span class="nc">ScintilluaLexer</span><span class="w"> </span><span class="s1">'driver'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span></code></pre>
+
+</div>
+</div>

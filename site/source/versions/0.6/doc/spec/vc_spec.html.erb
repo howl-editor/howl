@@ -1,0 +1,134 @@
+---
+title: Spec - howl.VC
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.vc">howl.VC</h1>
+
+<pre class="highlight moonscript"><code><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">available</span></code></pre>
+
+
+<h4 id=".available-is-a-table-of-all-available-vcs">.available is a table of all available vcs</h4>
+
+<pre class="highlight moonscript"><code><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">handler</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">available</span><span class="p">,</span><span class="w"> </span><span class="ss">foo:</span><span class="w"> </span><span class="n">handler</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id=".register(name,-handler)">.register(name, handler)</h2>
+
+<h4 id="raises-an-error-if-name-is-missing">raises an error if name is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'name'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="kc">nil</span></code></pre>
+
+
+<h4 id="raises-an-error-if-handler-is-missing-or-incomplete">raises an error if handler is missing or incomplete</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'handler'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'.find'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="p">{}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".unregister(name)">.unregister(name)</h2>
+
+<h4 id="raises-an-error-if-name-is-missing">raises an error if name is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'name'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="kc">nil</span></code></pre>
+
+
+<h4 id="removes-the-specified-vc-from-.available">removes the specified vc from .available</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="nc">VC</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">available</span><span class="p">.</span><span class="n">foo</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="for_file(file)">for_file(file)</h2>
+
+<h4 id="returns-the-first-non-nil-find()-result-from-handlers">returns the first non-nil find()-result from handlers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">vc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">root:</span><span class="w"> </span><span class="s1">'vc-test'</span><span class="p">,</span><span class="w">
+  </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'vc'</span><span class="p">,</span><span class="w">
+  </span><span class="ss">paths:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{},</span><span class="w">
+  </span><span class="ss">files:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'no'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'yes'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">vc</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">vc</span><span class="p">,</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="s1">'file'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="returns-nil-if-no-handler-returns-non-nil">returns nil if no handler returns non-nil</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="s1">'file'</span><span class="p">)</span><span class="w">
+</span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="s1">'file'</span><span class="p">)</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(validating-the-loaded-vc)">(validating the loaded vc)</h3>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">vc</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">vc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+  </span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'vc'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">vc</span></code></pre>
+
+
+<h4 id="raises-an-error-if-vc.paths()-is-missing">raises an error if vc.paths() is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'paths'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="s1">'file'</span></code></pre>
+
+
+<h4 id="raises-an-error-if-vc.root-is-missing">raises an error if vc.root is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">vc</span><span class="p">.</span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">vc</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'vc'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'root'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="s1">'file'</span></code></pre>
+
+
+<h4 id="raises-an-error-if-vc.name-is-missing">raises an error if vc.name is missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">vc</span><span class="p">.</span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">vc</span><span class="p">.</span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="p">(</span><span class="s1">'root'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'name'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">for_file</span><span class="w"> </span><span class="s1">'file'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(decorating-the-loaded-vc)">(decorating the loaded vc)</h3>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">vc</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">vc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+  </span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'vc'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">vc</span></code></pre>
+
+
+<h4 id="injects-a-generic-files()-method-based-on-paths-if-needed">injects a generic files() method based on paths if needed</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">vc</span><span class="p">.</span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">vc</span><span class="p">.</span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'with_path'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">vc</span><span class="w">
+  </span><span class="n">inst</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="s1">'vc'</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'one'</span><span class="p">),</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'two'</span><span class="p">)</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">inst</span><span class="o">\</span><span class="n">files</span><span class="o">!</span></code></pre>
+
+
+<h4 id="leaves-an-existing-files()-method-alone">leaves an existing files() method alone</h4>
+
+<pre class="highlight moonscript"><code><span class="n">with_tmpdir</span><span class="w"> </span><span class="p">(</span><span class="n">dir</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">vc</span><span class="p">.</span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dir</span><span class="w">
+  </span><span class="n">vc</span><span class="p">.</span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="s1">'two'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">vc</span><span class="p">.</span><span class="n">files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">dir</span><span class="o">\</span><span class="n">join</span><span class="p">(</span><span class="s1">'three'</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="nc">VC</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'with_files'</span><span class="p">,</span><span class="w"> </span><span class="ss">find:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">vc</span><span class="w">
+  </span><span class="n">inst</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">VC</span><span class="p">.</span><span class="n">for_file</span><span class="p">(</span><span class="s1">'vc'</span><span class="p">)</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">vc</span><span class="o">\</span><span class="n">files</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="n">inst</span><span class="o">\</span><span class="n">files</span><span class="o">!</span></code></pre>
+
+</div>
+</div>
+</div>

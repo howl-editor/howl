@@ -1,0 +1,140 @@
+---
+title: Spec - howl.ui.theme
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.ui.theme">howl.ui.theme</h1>
+
+<h4 id="assigning-directly-to-.current-raises-an-error">assigning directly to .current raises an error</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">dump</span><span class="w"> </span><span class="n">spec_theme</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">has_errors</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">.</span><span class="n">current</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo'</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="register(name,-file)">register(name, file)</h2>
+
+<h4 id="adds-name-to-.all">adds name to .all</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+</span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'test'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">all</span><span class="p">.</span><span class="n">test</span><span class="p">,</span><span class="w"> </span><span class="n">file</span></code></pre>
+
+
+<h4 id="raises-an-error-if-name-is-omitted">raises an error if name is omitted</h4>
+
+<pre class="highlight moonscript"><code><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="p">(</span><span class="n">status</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="s1">'name'</span></code></pre>
+
+
+<h4 id="raises-an-error-if-file-is-omitted">raises an error if file is omitted</h4>
+
+<pre class="highlight moonscript"><code><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="p">,</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="p">(</span><span class="n">status</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="s1">'file'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="unregister(name)">unregister(name)</h2>
+
+<h4 id="removes-the-theme-from-all">removes the theme from all</h4>
+
+<pre class="highlight moonscript"><code><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'tmp'</span><span class="w">
+</span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'tmp'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+</span><span class="n">theme</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'tmp'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">all</span><span class="p">.</span><span class="n">tmp</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="assigning-a-new-theme-to-config.theme">assigning a new theme to config.theme</h2>
+
+<h4 id="logs-an-error-if-there's-an-error-loading-the-theme">logs an error if there's an error loading the theme</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"error('cantload')"</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'error'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'error'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">log</span><span class="p">.</span><span class="n">last_error</span><span class="p">.</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="s1">'cantload'</span></code></pre>
+
+
+<h4 id="assigns-the-loaded-theme-to-.current-and-sets-.name">assigns the loaded theme to .current and sets .name</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">dump</span><span class="w"> </span><span class="n">spec_theme</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+  </span><span class="n">expected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">theme_copy</span><span class="o">!</span><span class="w">
+  </span><span class="n">expected</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">current</span><span class="p">,</span><span class="w"> </span><span class="n">expected</span></code></pre>
+
+
+<h4 id="emits-a-theme-changed-event-with-the-newly-set-theme">emits a theme-changed event with the newly set theme</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">dump</span><span class="w"> </span><span class="n">spec_theme</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'alert'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="n">signal</span><span class="p">.</span><span class="n">connect</span><span class="w"> </span><span class="s1">'theme-changed'</span><span class="p">,</span><span class="w"> </span><span class="n">handler</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'alert'</span><span class="w">
+  </span><span class="n">signal</span><span class="p">.</span><span class="n">disconnect</span><span class="w"> </span><span class="s1">'theme-changed'</span><span class="p">,</span><span class="w"> </span><span class="n">handler</span><span class="w">
+  </span><span class="n">expected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">theme_copy</span><span class="o">!</span><span class="w">
+  </span><span class="n">expected</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'alert'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="ss">theme:</span><span class="w"> </span><span class="n">expected</span></code></pre>
+
+
+<h4 id="does-not-propagate-global-assignments-to-the-global-environment">does not propagate global assignments to the global environment</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'spec_global = "noo!"\n'</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">dump</span><span class="w"> </span><span class="n">spec_theme</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">_G</span><span class="p">.</span><span class="n">spec_global</span></code></pre>
+
+
+<h4 id="allows-the-use-of-named-colors">allows the use of named colors</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">theme_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">dump</span><span class="w"> </span><span class="n">spec_theme</span><span class="w">
+  </span><span class="n">theme_string</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">theme_string</span><span class="o">\</span><span class="n">gsub</span><span class="w"> </span><span class="s1">'"#777777"'</span><span class="p">,</span><span class="w"> </span><span class="s1">'violet'</span><span class="w"> </span><span class="c1">-- footer.color</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">theme_string</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'colors'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'colors'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">editor</span><span class="p">.</span><span class="n">footer</span><span class="p">.</span><span class="n">color</span><span class="p">,</span><span class="w"> </span><span class="s1">'#ee82ee'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="life-cycle-management">life cycle management</h2>
+
+<h4 id="automatically-applies-a-theme-upon-registration-if-that-theme-is-already-set-as-current">automatically applies a theme upon registration if that theme is already set as current</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">the_theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">theme_copy</span><span class="o">!</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">dump</span><span class="w"> </span><span class="n">the_theme</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'reloadme'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'reloadme'</span><span class="w">
+
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'reloadme'</span><span class="w">
+  </span><span class="n">the_theme</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">background</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'#112233'</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">dump</span><span class="w"> </span><span class="n">the_theme</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'reloadme'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'#112233'</span><span class="p">,</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">background</span></code></pre>
+
+
+<h4 id="keeps-the-loaded-in-memory-theme-when-the-current-is-unregistered">keeps the loaded in-memory theme when the current is unregistered</h4>
+
+<pre class="highlight moonscript"><code><span class="nc">File</span><span class="p">.</span><span class="n">with_tmpfile</span><span class="w"> </span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">file</span><span class="p">.</span><span class="n">contents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">serpent</span><span class="p">.</span><span class="n">dump</span><span class="w"> </span><span class="n">spec_theme</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="s1">'keepme'</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">theme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'keepme'</span><span class="w">
+  </span><span class="n">theme</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'keepme'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'keepme'</span><span class="p">,</span><span class="w"> </span><span class="n">theme</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">name</span></code></pre>
+
+</div>
+</div>

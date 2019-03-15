@@ -1,0 +1,104 @@
+---
+title: Spec - howl.ui.highlight
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.ui.highlight">howl.ui.highlight</h1>
+
+<h4 id=".at_pos(buffer,-pos)-returns-a-list-of-the-active-highlights-at-pos">.at_pos(buffer, pos) returns a list of the active highlights at pos</h4>
+
+<pre class="highlight moonscript"><code><span class="n">highlight</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'highlight_bar'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">UNDERLINE</span><span class="p">,</span><span class="w"> </span><span class="ss">color:</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'highlight_foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">UNDERLINE</span><span class="p">,</span><span class="w"> </span><span class="ss">color:</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hƏllo'</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">apply</span><span class="w"> </span><span class="s1">'highlight_bar'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'highlight_bar'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id=".define(name,-definition)">.define(name, definition)</h2>
+
+<h4 id="defines-a-highlight-and-an-underlying-flair">defines a highlight and an underlying flair</h4>
+
+<pre class="highlight moonscript"><code><span class="n">highlight</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'custom'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">UNDERLINE</span><span class="p">,</span><span class="w"> </span><span class="ss">foreground:</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">custom</span><span class="p">.</span><span class="n">foreground</span><span class="p">,</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">flair</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'custom'</span><span class="p">).</span><span class="n">foreground</span><span class="p">,</span><span class="w"> </span><span class="s1">'#334455'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="define_default(name,-definition)">define_default(name, definition)</h2>
+
+<h4 id="defines-the-highlight-only-if-it-is-not-already-defined">defines the highlight only if it is not already defined</h4>
+
+<pre class="highlight moonscript"><code><span class="n">highlight</span><span class="p">.</span><span class="n">define_default</span><span class="w"> </span><span class="s1">'new_one'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">UNDERLINE</span><span class="p">,</span><span class="w"> </span><span class="ss">color:</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">new_one</span><span class="p">.</span><span class="n">color</span><span class="p">,</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">define_default</span><span class="w"> </span><span class="s1">'new_one'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">UNDERLINE</span><span class="p">,</span><span class="w"> </span><span class="ss">color:</span><span class="w"> </span><span class="s1">'#101010'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">new_one</span><span class="p">.</span><span class="n">color</span><span class="p">,</span><span class="w"> </span><span class="s1">'#334455'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".apply(name,-buffer,-&lt;table-or-range&gt;)">.apply(name, buffer, &lt;table-or-range&gt;)</h2>
+
+<h4 id="sets-a-highlight-marker-for-the-buffer">sets a highlight marker for the buffer</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hƏllo'</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'custom'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">UNDERLINE</span><span class="p">,</span><span class="w"> </span><span class="ss">color:</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">apply</span><span class="w"> </span><span class="s1">'custom'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'highlight'</span><span class="p">,</span><span class="w"> </span><span class="ss">flair:</span><span class="w"> </span><span class="s1">'custom'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span></code></pre>
+
+
+<h4 id="accepts-a-table-ranges">accepts a table ranges</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'123456'</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'custom'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">UNDERLINE</span><span class="p">,</span><span class="w"> </span><span class="ss">color:</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">apply</span><span class="w"> </span><span class="s1">'custom'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'highlight'</span><span class="p">,</span><span class="w"> </span><span class="ss">flair:</span><span class="w"> </span><span class="s1">'custom'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'highlight'</span><span class="p">,</span><span class="w"> </span><span class="ss">flair:</span><span class="w"> </span><span class="s1">'custom'</span><span class="p">,</span><span class="w"> </span><span class="ss">start_offset:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="ss">end_offset:</span><span class="w"> </span><span class="mi">6</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">},</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">markers</span><span class="p">.</span><span class="n">all</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".remove_all(name,-buffer)">.remove_all(name, buffer)</h2>
+
+<h4 id="removes-all-highlights-with-&lt;name&gt;-in-&lt;buffer&gt;">removes all highlights with &lt;name&gt; in &lt;buffer&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">highlight</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">UNDERLINE</span><span class="p">,</span><span class="w"> </span><span class="ss">color:</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'ʘne twʘ'</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">apply</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">apply</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">remove_all</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".remove_in_range(name,-buffer,-start_pos,-end_pos)">.remove_in_range(name, buffer, start_pos, end_pos)</h2>
+
+<h4 id="removes-all-highlights-with-&lt;name&gt;-in-&lt;buffer&gt;-in-the-range-specified-(inclusive)">removes all highlights with &lt;name&gt; in &lt;buffer&gt; in the range specified (inclusive)</h4>
+
+<pre class="highlight moonscript"><code><span class="n">highlight</span><span class="p">.</span><span class="n">define</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">type:</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">UNDERLINE</span><span class="p">,</span><span class="w"> </span><span class="ss">color:</span><span class="w"> </span><span class="s1">'#334455'</span><span class="w">
+</span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'ʘne twʘ'</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">apply</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">apply</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">highlight</span><span class="p">.</span><span class="n">remove_in_range</span><span class="w"> </span><span class="s1">'foo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'foo'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">highlight</span><span class="p">.</span><span class="n">at_pos</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">),</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+</div>
+</div>

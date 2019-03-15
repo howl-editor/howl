@@ -1,0 +1,581 @@
+---
+title: Spec - howl.bindings
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.bindings">howl.bindings</h1>
+
+<pre class="highlight moonscript"><code><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">while</span><span class="w"> </span><span class="o">#</span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w">
+    </span><span class="n">bindings</span><span class="p">.</span><span class="n">pop</span><span class="o">!</span><span class="w">
+
+  </span><span class="n">bindings</span><span class="p">.</span><span class="n">cancel_capture</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="push(map,-options-=-{})">push(map, options = {})</h2>
+
+<h4 id="pushes-&lt;map&gt;-to-the-keymap-stack-at-.keymaps">pushes &lt;map&gt; to the keymap stack at .keymaps</h4>
+
+<pre class="highlight moonscript"><code><span class="n">map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">map</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="n">map</span><span class="p">,</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="p">[</span><span class="o">#</span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="p">]</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="pop()">pop()</h2>
+
+<h4 id="pops-the-top-most-keymap-of-the-stack-at-.keymaps">pops the top-most keymap of the stack at .keymaps</h4>
+
+<pre class="highlight moonscript"><code><span class="n">stack_before</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">moon</span><span class="p">.</span><span class="n">copy</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">pop</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">stack_before</span><span class="p">,</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="remove(map)">remove(map)</h2>
+
+<h4 id="removes-the-specified-map-from-the-keymap-stack">removes the specified map from the keymap stack</h4>
+
+<pre class="highlight moonscript"><code><span class="n">stack</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">moon</span><span class="p">.</span><span class="n">copy</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="w">
+</span><span class="n">m1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">m2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">m1</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">m2</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">remove</span><span class="w"> </span><span class="n">m1</span><span class="w">
+</span><span class="n">append</span><span class="w"> </span><span class="n">stack</span><span class="p">,</span><span class="w"> </span><span class="n">m2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">stack</span><span class="p">,</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="translate_key(event)">translate_key(event)</h2>
+
+<h4 id="adds-special-case-translations-for-certain-common-keys">adds special case translations for certain common keys</h4>
+
+<pre class="highlight moonscript"><code><span class="n">for_keynames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">kp_up:</span><span class="w"> </span><span class="s1">'up'</span><span class="w">
+  </span><span class="ss">kp_down:</span><span class="w"> </span><span class="s1">'down'</span><span class="w">
+  </span><span class="ss">kp_left:</span><span class="w"> </span><span class="s1">'left'</span><span class="w">
+  </span><span class="ss">kp_right:</span><span class="w"> </span><span class="s1">'right'</span><span class="w">
+  </span><span class="ss">kp_page_up:</span><span class="w"> </span><span class="s1">'page_up'</span><span class="w">
+  </span><span class="ss">kp_page_down:</span><span class="w"> </span><span class="s1">'page_down'</span><span class="w">
+  </span><span class="ss">iso_left_tab:</span><span class="w"> </span><span class="s1">'tab'</span><span class="w"> </span><span class="c1">-- shifts are automatically prepended</span><span class="w">
+  </span><span class="ss">return:</span><span class="w"> </span><span class="s1">'enter'</span><span class="w">
+  </span><span class="ss">altL:</span><span class="w"> </span><span class="s1">'alt'</span><span class="w">
+  </span><span class="ss">altR:</span><span class="w"> </span><span class="s1">'alt'</span><span class="w">
+  </span><span class="ss">shiftL:</span><span class="w"> </span><span class="s1">'shift'</span><span class="w">
+  </span><span class="ss">shiftR:</span><span class="w"> </span><span class="s1">'shift'</span><span class="w">
+  </span><span class="ss">ctrlL:</span><span class="w"> </span><span class="s1">'ctrl'</span><span class="w">
+  </span><span class="ss">ctrlR:</span><span class="w"> </span><span class="s1">'ctrl'</span><span class="w">
+ </span><span class="p">}</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">alternative</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">for_keynames</span><span class="w">
+  </span><span class="n">translations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="n">name</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">translations</span><span class="p">,</span><span class="w"> </span><span class="n">alternative</span></code></pre>
+
+
+<h4 id="substitutes-certain-key-names-to-prevent-ambiguity">substitutes certain key names to prevent ambiguity</h4>
+
+<pre class="highlight moonscript"><code><span class="n">for_keynames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">alt_l:</span><span class="w"> </span><span class="s1">'altL'</span><span class="w">
+  </span><span class="ss">alt_r:</span><span class="w"> </span><span class="s1">'altR'</span><span class="w">
+  </span><span class="ss">shift_l:</span><span class="w"> </span><span class="s1">'shiftL'</span><span class="w">
+  </span><span class="ss">shift_r:</span><span class="w"> </span><span class="s1">'shiftR'</span><span class="w">
+  </span><span class="ss">control_l:</span><span class="w"> </span><span class="s1">'ctrlL'</span><span class="w">
+  </span><span class="ss">control_r:</span><span class="w"> </span><span class="s1">'ctrlR'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">substitution</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">for_keynames</span><span class="w">
+  </span><span class="n">translations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="n">name</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">translations</span><span class="p">,</span><span class="w"> </span><span class="n">substitution</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">translations</span><span class="p">,</span><span class="w"> </span><span class="n">name</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(for-ordinary-characters)">(for ordinary characters)</h3>
+
+<h4 id="returns-a-table-with-the-character,-key-name-and-key-code-string">returns a table with the character, key name and key code string</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tr</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'65'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="skips-the-translation-for-key-name-if-it-is-the-same-as-for-character">skips the translation for key name if it is the same as for character</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tr</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'65'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-character-is-missing)">(when character is missing)</h3>
+
+<h4 id="returns-a-table-with-key-name-and-key-code-string">returns a table with key name and key code string</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'down'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">123</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tr</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'down'</span><span class="p">,</span><span class="w"> </span><span class="s1">'123'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-only-the-code-is-available)">(when only the code is available)</h3>
+
+<h4 id="returns-a-table-with-the-key-code-string">returns a table with the key code string</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">123</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tr</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'123'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(with-modifiers)">(with modifiers)</h3>
+
+<h4 id="prepends-a-modifier-string-representation-to-all-translations-for-ctrl,-meta-and-alt">prepends a modifier string representation to all translations for ctrl, meta and alt</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w">
+  </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w">
+  </span><span class="ss">control:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="ss">alt:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="ss">meta:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">mods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'ctrl_meta_alt_'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tr</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">mods</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="n">mods</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="n">mods</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">'123'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="emits-the-shift-modifier-if-the-character-is-known">emits the shift modifier if the character is known</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w">
+  </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w">
+  </span><span class="ss">control:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="ss">shift:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">tr</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'ctrl_A'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ctrl_shift_a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ctrl_shift_123'</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-lock-is-on)">(when lock is on)</h3>
+
+<h4 id="downcases-the-character-for-translations">downcases the character for translations</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w">
+  </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="ss">lock:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'123'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">tr</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-shift-is-held)">(..  and shift is held)</h3>
+
+<h4 id="upcases-the-character-for-translations">upcases the character for translations</h4>
+
+<pre class="highlight moonscript"><code><span class="n">tr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">translate_key</span><span class="w">
+  </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span><span class="w"> </span><span class="ss">lock:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="ss">shift:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="s1">'shift_a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'shift_123'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">tr</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="process(event,-source,-extra_keymaps,-..)">process(event, source, extra_keymaps, ..)</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-firing-the-key-press-signal)">(when firing the key-press signal)</h3>
+
+<h4 id="passes-the-event,-translations,-source-and-parameters">passes the event, translations, source and parameters</h4>
+
+<pre class="highlight moonscript"><code><span class="n">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w">
+
+</span><span class="n">with_signal_handler</span><span class="w"> </span><span class="s1">'key-press'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">handler</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nb">pcall</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="p">,</span><span class="w"> </span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="s1">'yowser'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">handler</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">:event</span><span class="w">
+    </span><span class="ss">source:</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+    </span><span class="ss">translations:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'65'</span><span class="w"> </span><span class="p">}</span><span class="w">
+    </span><span class="ss">parameters:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'yowser'</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span></code></pre>
+
+
+<h4 id="returns-early-with-true-if-some-handler-says-to-abort">returns early with true if some handler says to abort</h4>
+
+<pre class="highlight moonscript"><code><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">with_signal_handler</span><span class="w"> </span><span class="s1">'key-press'</span><span class="p">,</span><span class="w"> </span><span class="n">signal</span><span class="p">.</span><span class="n">abort</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">handler</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">handler</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">keymap</span><span class="p">.</span><span class="n">A</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">not_called</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">ret</span></code></pre>
+
+
+<h4 id="continues-processing-keymaps-unless-aborted">continues processing keymaps unless aborted</h4>
+
+<pre class="highlight moonscript"><code><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">with_signal_handler</span><span class="w"> </span><span class="s1">'key-press'</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">handler</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nb">pcall</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">keymap</span><span class="p">.</span><span class="n">A</span><span class="p">).</span><span class="n">was_called</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-looking-up-handlers)">(when looking up handlers)</h3>
+
+<h4 id="tries-each-translated-key-and-.on_unhandled-in-order-for-a-keymap,-and-optional-source-specific-map">tries each translated key and .on_unhandled in order for a keymap, and optional source specific map</h4>
+
+<pre class="highlight moonscript"><code><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'my_source'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'my_source'</span><span class="p">,</span><span class="w"> </span><span class="s1">'binding_for'</span><span class="p">,</span><span class="w"> </span><span class="s1">'for_os'</span><span class="p">,</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'65'</span><span class="p">,</span><span class="w"> </span><span class="s1">'on_unhandled'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">keymap</span><span class="p">.</span><span class="n">reads</span></code></pre>
+
+
+<h4 id="prefers-source-specific-bindings-over-generic-ones">prefers source specific bindings over generic ones</h4>
+
+<pre class="highlight moonscript"><code><span class="n">specific_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">general_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="ss">my_source:</span><span class="w"> </span><span class="n">specific_map</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'my_source'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">general_map</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">specific_map</span><span class="p">.</span><span class="n">A</span><span class="p">).</span><span class="n">was_called</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">general_map</span><span class="p">.</span><span class="n">A</span><span class="p">).</span><span class="n">was_not_called</span><span class="o">!</span></code></pre>
+
+
+<h4 id="prefers-os-specific-bindings-over-generic-ones">prefers OS specific bindings over generic ones</h4>
+
+<pre class="highlight moonscript"><code><span class="n">specific_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">general_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="ss">for_os:</span><span class="w">
+    </span><span class="p">[</span><span class="n">sys</span><span class="p">.</span><span class="n">info</span><span class="p">.</span><span class="n">os</span><span class="p">]:</span><span class="w"> </span><span class="n">specific_map</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'my_source'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">general_map</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">specific_map</span><span class="p">.</span><span class="n">A</span><span class="p">).</span><span class="n">was_called</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">general_map</span><span class="p">.</span><span class="n">A</span><span class="p">).</span><span class="n">was_not_called</span><span class="o">!</span></code></pre>
+
+
+<h4 id="supports-source-specific-bindings-in-os-bindings">supports source specific bindings in OS bindings</h4>
+
+<pre class="highlight moonscript"><code><span class="n">specific_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">general_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">for_os:</span><span class="w">
+    </span><span class="p">[</span><span class="n">sys</span><span class="p">.</span><span class="n">info</span><span class="p">.</span><span class="n">os</span><span class="p">]:</span><span class="w">
+      </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+      </span><span class="ss">my_source:</span><span class="w"> </span><span class="n">specific_map</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'my_source'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">general_map</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">specific_map</span><span class="p">.</span><span class="n">A</span><span class="p">).</span><span class="n">was_called</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">general_map</span><span class="p">.</span><span class="n">for_os</span><span class="p">[</span><span class="n">sys</span><span class="p">.</span><span class="n">info</span><span class="p">.</span><span class="n">os</span><span class="p">].</span><span class="nc">A</span><span class="p">).</span><span class="n">was_not_called</span><span class="o">!</span></code></pre>
+
+
+<h4 id="searches-all-extra-keymaps-and-the-bindings-in-the-stack">searches all extra keymaps and the bindings in the stack</h4>
+
+<pre class="highlight moonscript"><code><span class="n">key_args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w">
+</span><span class="n">extra_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">
+</span><span class="n">stack_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Spy</span><span class="o">!</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">stack_map</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="n">key_args</span><span class="p">,</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">extra_map</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">stack_map</span><span class="p">.</span><span class="n">reads</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="n">stack_map</span><span class="p">.</span><span class="n">reads</span><span class="p">,</span><span class="w"> </span><span class="n">extra_map</span><span class="p">.</span><span class="n">reads</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-.on_unhandled-is-defined-and-keys-are-not-found-in-a-keymap)">(..  when .on_unhandled is defined and keys are not found in a keymap)</h3>
+
+<h4 id="is-called-with-the-event,-source,-translations-and-extra-parameters">is called with the event, source, translations and extra parameters</h4>
+
+<pre class="highlight moonscript"><code><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">on_unhandled:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="n">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">keymap</span><span class="p">},</span><span class="w"> </span><span class="s1">'hello!'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">keymap</span><span class="p">.</span><span class="n">on_unhandled</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'65'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'hello!'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="any-return-is-used-as-the-handler">any return is used as the handler</h4>
+
+<pre class="highlight moonscript"><code><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">on_unhandled:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">handler</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">handler</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-.binding_for-is-defined-and-keys-are-not-found-in-a-keymap)">(..  when .binding_for is defined and keys are not found in a keymap)</h3>
+
+<h4 id="is-looked-up-by-keys-bound-to-the-commands-in-.binding_for">is looked up by keys bound to the commands in .binding_for</h4>
+
+<pre class="highlight moonscript"><code><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="ss">a:</span><span class="w"> </span><span class="s1">'my-command'</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="ss">binding_for:</span><span class="w"> </span><span class="p">[</span><span class="s1">'my-command'</span><span class="p">]:</span><span class="w"> </span><span class="n">handler</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="ss">character:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">97</span><span class="p">},</span><span class="w"> </span><span class="s1">''</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">handler</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-a-keymap-was-pushed-with-options.block-set-to-true)">(..  when a keymap was pushed with options.block set to true)</h3>
+
+<h4 id="looks-no-further-down-the-stack-than-that-keymap">looks no further down the stack than that keymap</h4>
+
+<pre class="highlight moonscript"><code><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">blocking</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">base</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">blocking</span><span class="p">,</span><span class="w"> </span><span class="ss">block:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">base</span><span class="p">.</span><span class="n">k</span><span class="p">).</span><span class="n">was_not_called</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-a-keymap-was-pushed-with-options.pop-set-to-true)">(..  when a keymap was pushed with options.pop set to true)</h3>
+
+<h4 id="is-automatically-popped-after-the-next-dispatch">is automatically popped after the next dispatch</h4>
+
+<pre class="highlight moonscript"><code><span class="n">pop_me</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">pop_me</span><span class="p">,</span><span class="w"> </span><span class="ss">pop:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">pop_me</span><span class="p">.</span><span class="n">k</span><span class="p">).</span><span class="n">was_called</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="p">,</span><span class="w"> </span><span class="n">pop_me</span></code></pre>
+
+
+<h4 id="is-popped-regardless-of-whether-it-contained-a-matching-binding-or-not">is popped regardless of whether it contained a matching binding or not</h4>
+
+<pre class="highlight moonscript"><code><span class="n">pop_me</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">pop_me</span><span class="p">,</span><span class="w"> </span><span class="ss">pop:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="p">,</span><span class="w"> </span><span class="n">pop_me</span></code></pre>
+
+
+<h4 id="is-always-blocking">is always blocking</h4>
+
+<pre class="highlight moonscript"><code><span class="n">base</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">pop_me</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">base</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">pop_me</span><span class="p">,</span><span class="w"> </span><span class="ss">pop:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">pop_me</span><span class="p">.</span><span class="n">k</span><span class="p">).</span><span class="n">was_called</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">base</span><span class="p">.</span><span class="n">k</span><span class="p">).</span><span class="n">was_not_called</span><span class="o">!</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-invoking-handlers)">(when invoking handlers)</h3>
+
+<h4 id="invokes-handlers-in-their-own-coroutines">invokes handlers in their own coroutines</h4>
+
+<pre class="highlight moonscript"><code><span class="n">coros</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">coro_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">co</span><span class="p">,</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">coroutine.running</span><span class="o">!</span><span class="w">
+  </span><span class="n">coros</span><span class="p">[</span><span class="n">co</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="k">unless</span><span class="w"> </span><span class="n">main</span><span class="w">
+
+</span><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">coro_register</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="w">
+  </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="p">[</span><span class="n">v</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">_</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">coros</span><span class="p">]</span></code></pre>
+
+
+<h4 id="returns-false-if-no-handlers-are-found">returns false if no handlers are found</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span></code></pre>
+
+
+<h4 id="invokes-handlers-in-extra-keymaps-before-the-default-keymap">invokes handlers in extra keymaps before the default keymap</h4>
+
+<pre class="highlight moonscript"><code><span class="n">bindings</span><span class="p">.</span><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">extra_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">extra_map</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">extra_map</span><span class="p">.</span><span class="n">k</span><span class="p">).</span><span class="n">was_called</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">bindings</span><span class="p">.</span><span class="n">keymap</span><span class="p">.</span><span class="n">k</span><span class="p">).</span><span class="n">was_not_called</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-the-handler-is-callable)">(..  when the handler is callable)</h3>
+
+<h4 id="passes-along-any-extra-arguments">passes along any extra arguments</h4>
+
+<pre class="highlight moonscript"><code><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'reference'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">keymap</span><span class="p">.</span><span class="n">k</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="p">(</span><span class="s1">'reference'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="returns-early-with-true-unless-a-handler-explicitly-returns-false">returns early with true unless a handler explicitly returns false</h4>
+
+<pre class="highlight moonscript"><code><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="n">second</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'space'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">second</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">second</span><span class="p">.</span><span class="n">k</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">not_called</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-5">
+
+<h3 id="(..--when-the-handler-raises-an-error)">(..  when the handler raises an error)</h3>
+
+<h4 id="returns-true">returns true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="s1">'BOOM!'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'mybad'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span></code></pre>
+
+
+<h4 id="logs-an-error-to-the-log">logs an error to the log</h4>
+
+<pre class="highlight moonscript"><code><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="s1">'a to the k log'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'mybad'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="o">#</span><span class="n">log</span><span class="p">.</span><span class="n">entries</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">log</span><span class="p">.</span><span class="n">entries</span><span class="p">[</span><span class="o">#</span><span class="n">log</span><span class="p">.</span><span class="n">entries</span><span class="p">].</span><span class="n">message</span><span class="p">,</span><span class="w"> </span><span class="s1">'a to the k log'</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-the-handler-is-a-string)">(..  when the handler is a string)</h3>
+
+<h4 id="runs-the-command-with-command.run()-and-returns-true">runs the command with command.run() and returns true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">cmd_run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">on</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="s1">'run'</span><span class="p">)</span><span class="w">
+</span><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="s1">'spy'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">run</span><span class="o">\</span><span class="n">revert</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd_run</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="w"> </span><span class="s1">'spy'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-the-handler-is-a-non-callable-table)">(..  when the handler is a non-callable table)</h3>
+
+<h4 id="pushes-the-table-as-a-new-keymap-and-returns-true">pushes the table as a new keymap and returns true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">nr_bindings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">#</span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="w">
+</span><span class="n">submap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">submap</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">nr_bindings</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">submap</span><span class="p">,</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="p">[</span><span class="o">#</span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="p">]</span></code></pre>
+
+
+<h4 id="pushes-the-table-with-the-pop-option">pushes the table with the pop option</h4>
+
+<pre class="highlight moonscript"><code><span class="n">submap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">k:</span><span class="w"> </span><span class="n">submap</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'k'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="p">,</span><span class="w"> </span><span class="n">submap</span></code></pre>
+
+</div>
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="capture(function)">capture(function)</h2>
+
+<h4 id="causes-&lt;function&gt;-to-be-called-exclusively-with-event,-source,-translations-and-any-extra-parameters">causes &lt;function&gt; to be called exclusively with event, source, translations and any extra parameters</h4>
+
+<pre class="highlight moonscript"><code><span class="n">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w">
+</span><span class="n">thief</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">capture</span><span class="w"> </span><span class="n">thief</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">'source'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">keymap</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'catch-me!'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">keymap</span><span class="p">.</span><span class="n">A</span><span class="p">).</span><span class="n">was_not</span><span class="p">.</span><span class="n">called</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">thief</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called_with</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">'source'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a'</span><span class="p">,</span><span class="w"> </span><span class="s1">'65'</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'catch-me!'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="&lt;function&gt;-continues-to-capture-events-as-long-as-it-returns-false">&lt;function&gt; continues to capture events as long as it returns false</h4>
+
+<pre class="highlight moonscript"><code><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w">
+</span><span class="n">thief</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ret</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">capture</span><span class="w"> </span><span class="n">thief</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">thief</span><span class="p">).</span><span class="n">was</span><span class="p">.</span><span class="n">called</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="cancel_capture()">cancel_capture()</h2>
+
+<h4 id="cancels-any-currently-set-capture">cancels any currently set capture</h4>
+
+<pre class="highlight moonscript"><code><span class="n">thief</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">bindings</span><span class="p">.</span><span class="n">capture</span><span class="w"> </span><span class="n">thief</span><span class="w">
+  </span><span class="n">bindings</span><span class="p">.</span><span class="n">cancel_capture</span><span class="o">!</span><span class="w">
+  </span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">thief</span><span class="p">).</span><span class="n">was_not</span><span class="p">.</span><span class="n">called</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".is_capturing">.is_capturing</h2>
+
+<h4 id="is-true-when-a-capture-is-active-and-false-otherwise">is true when a capture is active and false otherwise</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">is_capturing</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">capture</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">is_capturing</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="ss">character:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'A'</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'editor'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">is_capturing</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="keystrokes_for(handler,-source)">keystrokes_for(handler, source)</h2>
+
+<h4 id="returns-all-the-key-bindings-that-maps-to-&lt;handler&gt;">returns all the key bindings that maps to &lt;handler&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="ss">ctrl_y:</span><span class="w"> </span><span class="s1">'my-command'</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="ss">ctrl_x:</span><span class="w"> </span><span class="s1">'my-command'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'ctrl_x'</span><span class="p">,</span><span class="w"> </span><span class="s1">'ctrl_y'</span><span class="p">},</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keystrokes_for</span><span class="w"> </span><span class="s1">'my-command'</span></code></pre>
+
+
+<h4 id="returns-an-empty-table-if-no-binding-was-found">returns an empty table if no binding was found</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keystrokes_for</span><span class="w"> </span><span class="s1">'my-command'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="action_for(translation)">action_for(translation)</h2>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">saved_keymaps</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">saved_keymaps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="w">
+  </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">bindings</span><span class="p">.</span><span class="n">keymaps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">saved_keymaps</span></code></pre>
+
+
+<h4 id="returns-the-command-bound-to-translation">returns the command bound to translation</h4>
+
+<pre class="highlight moonscript"><code><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="ss">ctrl_x:</span><span class="w"> </span><span class="s1">'my-old-command'</span><span class="w">
+</span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="ss">ctrl_x:</span><span class="w"> </span><span class="s1">'my-new-command'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'my-new-command'</span><span class="p">,</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">action_for</span><span class="w"> </span><span class="s1">'ctrl_x'</span></code></pre>
+
+
+<h4 id="prefers-source-specific-bindings-over-generic-ones">prefers source specific bindings over generic ones</h4>
+
+<pre class="highlight moonscript"><code><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">ctrl_x:</span><span class="w"> </span><span class="s1">'my-old-command'</span><span class="w">
+  </span><span class="ss">my_source:</span><span class="w">
+    </span><span class="ss">ctrl_x:</span><span class="w"> </span><span class="s1">'my-source-command'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'my-source-command'</span><span class="p">,</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">action_for</span><span class="p">(</span><span class="s1">'ctrl_x'</span><span class="p">,</span><span class="w"> </span><span class="s1">'my_source'</span><span class="p">)</span></code></pre>
+
+
+<h4 id="prefers-os-specific-bindings-over-generic-ones">prefers OS specific bindings over generic ones</h4>
+
+<pre class="highlight moonscript"><code><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">ctrl_x:</span><span class="w"> </span><span class="s1">'my-old-command'</span><span class="w">
+  </span><span class="ss">for_os:</span><span class="w">
+    </span><span class="p">[</span><span class="n">sys</span><span class="p">.</span><span class="n">info</span><span class="p">.</span><span class="n">os</span><span class="p">]:</span><span class="w">
+      </span><span class="ss">ctrl_x:</span><span class="w"> </span><span class="s1">'my-os-command'</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'my-os-command'</span><span class="p">,</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">action_for</span><span class="w"> </span><span class="s1">'ctrl_x'</span></code></pre>
+
+
+<h4 id="returns-nil-if-no-command-was-found">returns nil if no command was found</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">action_for</span><span class="w"> </span><span class="s1">'ctrl_x'</span></code></pre>
+
+</div>
+</div>

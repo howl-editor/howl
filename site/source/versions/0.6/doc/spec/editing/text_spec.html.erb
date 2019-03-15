@@ -1,0 +1,209 @@
+---
+title: Spec - howl.editing.text
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.editing.text">howl.editing.text</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">lines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">lines</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="paragraph_at(line)">paragraph_at(line)</h2>
+
+<pre class="highlight moonscript"><code><span class="n">at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">nr</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="p">[</span><span class="n">l</span><span class="p">.</span><span class="n">nr</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">text</span><span class="p">.</span><span class="n">paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="n">nr</span><span class="p">]]</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one\n\nthree\nfour\n\n\nseven'</span></code></pre>
+
+
+<h4 id="returns-a-list-of-lines-composing-the-current-paragraph">returns a list of lines composing the current paragraph</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">7</span></code></pre>
+
+
+<h4 id="considers-lines-starting-with-blanks-to-be-paragraph-delimiters">considers lines starting with blanks to be paragraph delimiters</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'trailing\n  indented start\ncontinued and ended here.\n  new para'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">2</span></code></pre>
+
+
+<h4 id="calls-and-respects-the-mode's-.is_paragraph_break()-if-present">calls and respects the mode's .is_paragraph_break() if present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">is_paragraph_break:</span><span class="w"> </span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">line</span><span class="o">\</span><span class="n">match</span><span class="w"> </span><span class="s1">'^-'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'before\n- new para\n  continued\n- next'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">2</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-starting-at-an-empty-line)">(when starting at an empty line)</h3>
+
+<h4 id="returns-the-previous-paragraph-if-present">returns the previous paragraph if present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">5</span></code></pre>
+
+
+<h4 id="returns-the-following-paragraph-if-present">returns the following paragraph if present</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">7</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">6</span></code></pre>
+
+
+<h4 id="returns-an-empty-list-if-no-paragraph-is-found">returns an empty list if no paragraph is found</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one\n\n\n\nfive'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">at</span><span class="w"> </span><span class="mi">3</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="can_reflow(line,-limit)">can_reflow(line, limit)</h2>
+
+<h4 id="returns-true-if-the-line-is-longer-than-limit">returns true if the line is longer than limit</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'too long'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">6</span></code></pre>
+
+
+<h4 id="returns-true-if-the-line-can-be-combined-with-the-previous-one">returns true if the line can be combined with the previous one</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'itty\nbitty'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span></code></pre>
+
+
+<h4 id="returns-true-if-the-line-can-be-combined-with-the-following-one">returns true if the line can be combined with the following one</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'itty\nbitty'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'itty bitty\nshort\nlong by itself'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span></code></pre>
+
+
+<h4 id="returns-false-if-the-line-can-not-be-combined-with-the-previous-one">returns false if the line can not be combined with the previous one</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'itty\nbitty'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="mi">9</span></code></pre>
+
+
+<h4 id="returns-false-if-the-line-can-not-be-combined-with-the-following-one">returns false if the line can not be combined with the following one</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'itty\nbitty'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">9</span></code></pre>
+
+
+<h4 id="returns-false-if-the-line-is-one,-unbreakable,-word">returns false if the line is one, unbreakable, word</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'imjustgoingtoramble\none'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span></code></pre>
+
+
+<h4 id="returns-true-if-the-line-is-more-than-one-word,-the-first-being-unbreakable">returns true if the line is more than one word, the first being unbreakable</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'imjustgoingtoramble stopme\none'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span></code></pre>
+
+
+<h4 id="returns-false-if-an-adjacent-short-line-is-blank">returns false if an adjacent short line is blank</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'itty\n'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'\nitty\n'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-buffer's-mode-provides-line_is_reflowable-method)">(when the buffer's mode provides line_is_reflowable method)</h3>
+
+<h4 id="respects-a-negative-answer-from-that">respects a negative answer from that</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'hum ho hi hi'</span><span class="w">
+</span><span class="n">line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">line_is_reflowable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">line_is_reflowable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">can_reflow</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="reflow_paragraph_at(line,-limit)">reflow_paragraph_at(line, limit)</h2>
+
+<h4 id="splits-lines-to-enforce-at-most-&lt;limit&gt;-columns">splits lines to enforce at most &lt;limit&gt; columns</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one two three four\n'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">reflow_paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one two\nthree four\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="splits-lines-as-close-to-&lt;limit&gt;-as-possible,-given-non-breaking-words">splits lines as close to &lt;limit&gt; as possible, given non-breaking words</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'onetwo three four\n'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">reflow_paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'onetwo\nthree\nfour\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="combines-lines-as-necessary-to-match-&lt;limit&gt;">combines lines as necessary to match &lt;limit&gt;</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one\ntwo\nthree\nfour\n'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">reflow_paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one two\nthree four\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="returns-an-unbreakable-line-as-is-if-it-can-not-reflow">returns an unbreakable line as is if it can not reflow</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'onetwo\n'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">reflow_paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'onetwo\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="does-not-require-there-to-be-any-newline-at-the-end-of-the-paragraph">does not require there to be any newline at the end of the paragraph</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one two'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">reflow_paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one\ntwo'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="includes-all-the-paragraph-text-in-the-reflowed-text-(boundary-condition)">includes all the paragraph text in the reflowed text (boundary condition)</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one t'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">reflow_paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">4</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one\nt'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="converts-an-overflowing-space-to-an-eol">converts an overflowing space to an eol</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one \n'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">reflow_paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one\n\n'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="does-not-modify-the-buffer-unless-there-is-a-change">does not modify the buffer unless there is a change</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one two\n'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">modified</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">reflow_paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">10</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">modified</span></code></pre>
+
+
+<h4 id="does-not-reflow-lines-if-the-mode-says-no">does not reflow lines if the mode says no</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'one\ntwo\nthree'</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">line_is_reflowable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">line</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">line</span><span class="o">\</span><span class="n">find</span><span class="w"> </span><span class="s1">'three'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">text</span><span class="p">.</span><span class="n">reflow_paragraph_at</span><span class="w"> </span><span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="mi">20</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'one two\nthree'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>

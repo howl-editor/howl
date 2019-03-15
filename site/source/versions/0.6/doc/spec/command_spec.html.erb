@@ -1,0 +1,289 @@
+---
+title: Spec - howl.command
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.command">howl.command</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">coroutine.wrap</span><span class="w"> </span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">run</span><span class="w"> </span><span class="o">...</span><span class="w">
+  </span><span class="n">f</span><span class="w"> </span><span class="o">...</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Window</span><span class="o">!</span><span class="w">
+  </span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'desc'</span><span class="p">,</span><span class="w"> </span><span class="ss">handler:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'foo-result'</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="n">command</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">command</span><span class="p">.</span><span class="n">names</span><span class="o">!</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="n">name</span><span class="o">\</span><span class="n">find</span><span class="w"> </span><span class="s1">'test-'</span></code></pre>
+
+
+<h4 id=".names()-returns-a-list-of-all-command-names">.names() returns a list of all command names</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">names</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="s1">'test-foo'</span></code></pre>
+
+
+<h4 id=".get(name)-returns-the-command-with-the-specified-name">.get(name) returns the command with the specified name</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'test-foo'</span><span class="p">).</span><span class="n">handler</span><span class="p">,</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span></code></pre>
+
+
+<h4 id="calling-.&lt;name&gt;(args)-invokes-command,-passing-arguments">calling .&lt;name&gt;(args) invokes command, passing arguments</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">test_foo</span><span class="p">(</span><span class="s1">'arg1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg2'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'arg1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg2'</span></code></pre>
+
+
+<h4 id=".unregister(command)-removes-the-command-and-any-aliases">.unregister(command) removes the command and any aliases</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">alias</span><span class="w"> </span><span class="s1">'test-foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'test-foo'</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">test_foo</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">bar</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">names</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="s1">'test-foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">names</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id=".register(command)">.register(command)</h2>
+
+<h4 id="raises-an-error-if-any-of-the-mandatory-fields-are-missing">raises an error if any of the mandatory fields are missing</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'name'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'description'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-foo'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'handler'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'do'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'factory'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-foo'</span><span class="p">,</span><span class="w"> </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'do'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".alias(target,-name)">.alias(target, name)</h2>
+
+<h4 id="raises-an-error-if-target-does-not-exist">raises an error if target does not exist</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">raises</span><span class="w"> </span><span class="s1">'exist'</span><span class="p">,</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">alias</span><span class="w"> </span><span class="s1">'nothing'</span><span class="p">,</span><span class="w"> </span><span class="s1">'something'</span></code></pre>
+
+
+<h4 id="allows-for-multiple-names-for-the-same-command">allows for multiple names for the same command</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">alias</span><span class="w"> </span><span class="s1">'test-foo'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'test-foo'</span><span class="p">,</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'bar'</span><span class="p">).</span><span class="n">alias_for</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">names</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="s1">'bar'</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h3 id="(when-command-name-is-a-non-lua-identifier)">(when command name is a non-lua identifier)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'test-foo:bar'</span></code></pre>
+
+
+<h4 id="register()-adds-accessible-aliases">register() adds accessible aliases</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">test_foo_bar</span></code></pre>
+
+
+<h4 id="the-accessible-alias-is-not-part-of-names()">the accessible alias is not part of names()</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">includes</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">names</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="s1">'test-foo:bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_includes</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">names</span><span class="o">!</span><span class="p">,</span><span class="w"> </span><span class="s1">'test_foo_bar'</span></code></pre>
+
+
+<h4 id="calling-.&lt;accessible_name&gt;(args)-invokes-command,-passing-arguments">calling .&lt;accessible_name&gt;(args) invokes command, passing arguments</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">dispatch</span><span class="p">.</span><span class="n">launch</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">test_foo_bar</span><span class="p">(</span><span class="s1">'arg1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg2'</span><span class="p">)</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'arg1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg2'</span></code></pre>
+
+
+<h4 id="unregister()-removes-the-accessible-name-as-well">unregister() removes the accessible name as well</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'test-foo:bar'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_nil</span><span class="w"> </span><span class="n">command</span><span class="p">.</span><span class="n">foo_cmd_bar</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id=".run(cmd_string)">.run(cmd_string)</h2>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;cmd_string&gt;-is-empty-or-missing)">(when &lt;cmd_string&gt; is empty or missing)</h3>
+
+<h4 id="displays-the-commandline-with-a-&quot;:&quot;-prompt">displays the commandline with a &quot;:&quot; prompt</h4>
+
+<pre class="highlight moonscript"><code><span class="n">run</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">':'</span><span class="p">,</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="p">.</span><span class="n">prompt</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-&lt;cmd_string&gt;-is-given)">(when &lt;cmd_string&gt; is given)</h3>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-it-matches-a-command)">(..  and it matches a command)</h3>
+
+<h4 id="that-command-is-invoked">that command is invoked</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">run</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="w"> </span><span class="mi">1</span></code></pre>
+
+<div class="spec-group spec-group-5">
+
+<h3 id="(..--and-the-command-specifies-an-input-function)">(..  and the command specifies an input function)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w">
+    </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-input'</span><span class="w">
+    </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+    </span><span class="ss">input:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="s1">'input-result1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'input-result2'</span><span class="w">
+    </span><span class="ss">handler:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span></code></pre>
+
+
+<h4 id="calls-the-command-input-function,-passing-through-extra-args">calls the command input function, passing through extra args</h4>
+
+<pre class="highlight moonscript"><code><span class="n">run</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg2'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">input</span><span class="p">).</span><span class="n">was_called</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">input</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'arg1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg2'</span></code></pre>
+
+
+<h4 id="passes-the-result-of-the-input-function-into-the-handler">passes the result of the input function into the handler</h4>
+
+<pre class="highlight moonscript"><code><span class="n">run</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'input-result1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'input-result2'</span></code></pre>
+
+
+<h4 id="does-not-call-handler-if-input-function-returns-nil">does not call handler if input function returns nil</h4>
+
+<pre class="highlight moonscript"><code><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-cancelled-input'</span><span class="w">
+  </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+  </span><span class="ss">input:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="ss">handler:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">run</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="w"> </span><span class="mi">0</span></code></pre>
+
+
+<h4 id="sets-spillover-to-any-text-arguments-before-invoking-the-input">sets spillover to any text arguments before invoking the input</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">spillover</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w">
+  </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-input'</span><span class="w">
+  </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+  </span><span class="ss">input:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">spillover</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="o">\</span><span class="n">pop_spillover</span><span class="o">!</span><span class="w">
+  </span><span class="ss">handler:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="n">run</span><span class="w"> </span><span class="s1">'test-input hello cmd'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'hello cmd'</span><span class="p">,</span><span class="w"> </span><span class="n">spillover</span></code></pre>
+
+
+<h4 id="displays-the-&quot;:&lt;cmd_string&gt;-&quot;-in-the-command-line-during-input">displays the &quot;:&lt;cmd_string&gt; &quot; in the command line during input</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">prompt</span><span class="w">
+</span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-getp'</span><span class="w">
+  </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'desc'</span><span class="w">
+  </span><span class="ss">input:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="p">.</span><span class="n">command_widget</span><span class="p">.</span><span class="n">text</span><span class="w">
+  </span><span class="ss">handler:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">run</span><span class="w"> </span><span class="s1">'test-getp'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">':'</span><span class="o">..</span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="o">..</span><span class="s1">' '</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-5">
+
+<h3 id="(..--and-the-command-does-not-specify-an-input-function)">(..  and the command does not specify an input function)</h3>
+
+<h4 id="calls-the-command-handler,-passing-through-extra-args">calls the command handler, passing through extra args</h4>
+
+<pre class="highlight moonscript"><code><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'test-without-input'</span><span class="w">
+  </span><span class="ss">description:</span><span class="w"> </span><span class="s1">'test'</span><span class="w">
+  </span><span class="ss">handler:</span><span class="w"> </span><span class="n">spy</span><span class="p">.</span><span class="n">new</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">run</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg2'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called_with</span><span class="w"> </span><span class="s1">'arg1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'arg2'</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-it-matches-an-alias)">(..  and it matches an alias)</h3>
+
+<h4 id="the-aliased-command-is-invoked">the aliased command is invoked</h4>
+
+<pre class="highlight moonscript"><code><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span><span class="w">
+</span><span class="n">command</span><span class="p">.</span><span class="n">alias</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s1">'aliascmd'</span><span class="w">
+</span><span class="n">run</span><span class="w"> </span><span class="s1">'aliascmd'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">spy</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">handler</span><span class="p">).</span><span class="n">was_called</span><span class="w"> </span><span class="mi">1</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-it-contains-&lt;non-interactive-command&gt;space&lt;args&gt;)">(..  and it contains &lt;non-interactive-command&gt;space&lt;args&gt;)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">log</span><span class="p">.</span><span class="n">clear</span><span class="o">!</span><span class="w">
+  </span><span class="n">command</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">cmd</span></code></pre>
+
+
+<h4 id="logs-an-error">logs an error</h4>
+
+<pre class="highlight moonscript"><code><span class="n">run</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">' args'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">log</span><span class="p">.</span><span class="n">last_error</span></code></pre>
+
+
+<h4 id="the-command-line-contains-the-command-name">the command line contains the command name</h4>
+
+<pre class="highlight moonscript"><code><span class="n">run</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s1">' args'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="n">cmd</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--and-it-contains-&lt;invalid-command&gt;space&lt;args&gt;)">(..  and it contains &lt;invalid-command&gt;space&lt;args&gt;)</h3>
+
+<h4 id="logs-an-error">logs an error</h4>
+
+<pre class="highlight moonscript"><code><span class="n">run</span><span class="w"> </span><span class="s1">'no-such-command hello cmd'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">log</span><span class="p">.</span><span class="n">last_error</span></code></pre>
+
+
+<h4 id="the-command-line-contains-the-passed-text">the command line contains the passed text</h4>
+
+<pre class="highlight moonscript"><code><span class="n">run</span><span class="w"> </span><span class="s1">'no-such-command hello cmd'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'no-such-command hello cmd'</span><span class="p">,</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-it-specifies-a-unknown-command)">(..  when it specifies a unknown command)</h3>
+
+<h4 id="displays-the-&lt;cmd_string&gt;-in-the-commandline-text">displays the &lt;cmd_string&gt; in the commandline text</h4>
+
+<pre class="highlight moonscript"><code><span class="n">run</span><span class="w"> </span><span class="s1">'what-the-heck now'</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="s1">'what-the-heck now'</span><span class="p">,</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+</div>
+</div>

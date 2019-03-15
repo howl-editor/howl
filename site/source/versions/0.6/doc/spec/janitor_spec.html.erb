@@ -1,0 +1,106 @@
+---
+title: Spec - howl.janitor
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.janitor">howl.janitor</h1>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">close_buffers</span><span class="o">!</span><span class="w">
+
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_min_buffers_open</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cleanup_min_buffers_open</span><span class="w">
+  </span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_close_buffers_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cleanup_close_buffers_after</span><span class="w">
+  </span><span class="n">close_buffers</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="clean_up_buffers">clean_up_buffers</h2>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">now</span><span class="p">,</span><span class="w"> </span><span class="n">one_hour_ago</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">now</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">time</span><span class="o">!</span><span class="w">
+  </span><span class="n">one_hour_ago</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="mi">60</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">60</span><span class="p">)</span></code></pre>
+
+
+<h4 id="never-closes-modified-buffers">never closes modified buffers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">cleanup_min_buffers_open</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_close_buffers_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">b</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">one_hour_ago</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">60</span><span class="w">
+</span><span class="n">b</span><span class="p">.</span><span class="n">modified</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">janitor</span><span class="p">.</span><span class="n">clean_up_buffers</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span></code></pre>
+
+
+<h4 id="does-not-leave-less-than-&lt;cleanup_min_buffers_open&gt;-buffers">does not leave less than &lt;cleanup_min_buffers_open&gt; buffers</h4>
+
+<pre class="highlight moonscript"><code><span class="n">config</span><span class="p">.</span><span class="n">cleanup_min_buffers_open</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_close_buffers_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="n">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">b</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">one_hour_ago</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">60</span><span class="w">
+
+</span><span class="n">janitor</span><span class="p">.</span><span class="n">clean_up_buffers</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span></code></pre>
+
+
+<h4 id="closes-buffers-who-has-not-been-shown-recently-enough">closes buffers who has not been shown recently enough</h4>
+
+<pre class="highlight moonscript"><code><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">b</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'keep'</span><span class="w">
+  </span><span class="n">b</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">one_hour_ago</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">60</span><span class="p">)</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">b</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">one_hour_ago</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="mi">60</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w">
+
+</span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_min_buffers_open</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_close_buffers_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">janitor</span><span class="p">.</span><span class="n">clean_up_buffers</span><span class="o">!</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span><span class="w">
+
+</span><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">match</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="s1">'keep'</span></code></pre>
+
+
+<h4 id="neves-closes-buffers-viewed-more-recently-than-the-limit">neves closes buffers viewed more recently than the limit</h4>
+
+<pre class="highlight moonscript"><code><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w">
+  </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">b</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'keep'</span><span class="w">
+  </span><span class="n">b</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">one_hour_ago</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">60</span><span class="p">)</span><span class="w">
+
+</span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_min_buffers_open</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_close_buffers_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">janitor</span><span class="p">.</span><span class="n">clean_up_buffers</span><span class="o">!</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equals</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span></code></pre>
+
+
+<h4 id="closes-buffers-in-a-least-recently-shown-order">closes buffers in a least-recently-shown order</h4>
+
+<pre class="highlight moonscript"><code><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">b</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'two-hour-old'</span><span class="w">
+</span><span class="n">b</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">one_hour_ago</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">60</span><span class="w">
+
+</span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">b</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'15-min-old'</span><span class="w">
+</span><span class="n">b</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">15</span><span class="w">
+
+</span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+</span><span class="n">b</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'over-one-hour-old'</span><span class="w">
+</span><span class="n">b</span><span class="p">.</span><span class="n">last_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">one_hour_ago</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">60</span><span class="w">
+
+</span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_min_buffers_open</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">config</span><span class="p">.</span><span class="n">cleanup_close_buffers_after</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">janitor</span><span class="p">.</span><span class="n">clean_up_buffers</span><span class="o">!</span><span class="w">
+
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'15-min-old'</span><span class="p">},</span><span class="w"> </span><span class="p">[</span><span class="n">_b</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">_b</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span><span class="p">]</span></code></pre>
+
+</div>
+</div>

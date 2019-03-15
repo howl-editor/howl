@@ -1,0 +1,207 @@
+---
+title: Spec - howl.editing.auto_pair
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.editing.auto_pair">howl.editing.auto_pair</h1>
+<div class="spec-group spec-group-2">
+
+<h2 id="handle(event,-editor)">handle(event, editor)</h2>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buffer</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="w">
+
+</span><span class="n">event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">character</span><span class="p">,</span><span class="w"> </span><span class="n">key_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">character</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:character</span><span class="p">,</span><span class="w"> </span><span class="ss">:key_name</span><span class="p">,</span><span class="w"> </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Buffer</span><span class="o">!</span><span class="w">
+  </span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Editor</span><span class="w"> </span><span class="n">buffer</span><span class="w">
+  </span><span class="n">cursor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">cursor</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span></code></pre>
+
+
+<h4 id="returns-non-true-when-the-character-does-not-match-a-known-pair">returns non-true when the character does not match a known pair</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_not_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'x'</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+
+<h4 id="skips-processing-if-the-auto_pair-config-variable-is-false">skips processing if the auto_pair config variable is false</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">auto_pairs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="s1">'('</span><span class="p">]:</span><span class="w"> </span><span class="s1">')'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">config</span><span class="p">.</span><span class="n">auto_pair</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'('</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="skips-processing-if-the-buffer-is-read-only">skips processing if the buffer is read only</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">auto_pairs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="s1">'('</span><span class="p">]:</span><span class="w"> </span><span class="s1">')'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">read_only</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'('</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="takes-sub-modes-into-account">takes sub modes into account</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">auto_pairs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="s1">'('</span><span class="p">]:</span><span class="w"> </span><span class="s1">')'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">mode2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">auto_pairs:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="s1">'['</span><span class="p">]:</span><span class="w"> </span><span class="s1">']'</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="n">mode2_reg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">name:</span><span class="w"> </span><span class="s1">'auto_pair_test'</span><span class="p">,</span><span class="w"> </span><span class="ss">create:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">mode2</span><span class="w">
+</span><span class="n">howl</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">register</span><span class="w"> </span><span class="n">mode2_reg</span><span class="w">
+
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'('</span><span class="w">
+</span><span class="n">buffer</span><span class="p">.</span><span class="n">_buffer</span><span class="p">.</span><span class="n">styling</span><span class="o">\</span><span class="n">apply</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s1">'s1'</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="s1">'auto_pair_test|s1'</span><span class="p">,</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'['</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+
+</span><span class="n">howl</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">unregister</span><span class="w"> </span><span class="s1">'auto_pair_test'</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-the-character-matches-a-known-pair-from-buffer.mode.auto_pairs)">(when the character matches a known pair from buffer.mode.auto_pairs)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">auto_pairs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'('</span><span class="p">:</span><span class="w"> </span><span class="s1">')'</span><span class="w">
+    </span><span class="s1">'['</span><span class="p">:</span><span class="w"> </span><span class="s1">']'</span><span class="w">
+    </span><span class="s1">'"'</span><span class="p">:</span><span class="w"> </span><span class="s1">'"'</span><span class="w">
+  </span><span class="p">}</span></code></pre>
+
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--when-there-is-an-active-selection)">(..  when there is an active selection)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">' foo '</span><span class="w">
+  </span><span class="n">editor</span><span class="p">.</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span></code></pre>
+
+
+<h4 id="surrounds-the-selection-with-the-pair-as-one-undo-operation">surrounds the selection with the pair as one undo operation</h4>
+
+<pre class="highlight moonscript"><code><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'('</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">' (foo) '</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">buffer</span><span class="o">\</span><span class="n">undo</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">' foo '</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="returns-true">returns true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'('</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-4">
+
+<h3 id="(..--with-no-selection-active)">(..  with no selection active)</h3>
+
+<h4 id="returns-true">returns true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'('</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+
+<h4 id="inserts-the-pair-in-the-buffer,-as-one-undo-operation">inserts the pair in the buffer, as one undo operation</h4>
+
+<pre class="highlight moonscript"><code><span class="k">for</span><span class="w"> </span><span class="n">start_c</span><span class="p">,</span><span class="w"> </span><span class="n">end_c</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="nb">pairs</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">auto_pairs</span><span class="w">
+  </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="n">start_c</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s2">"</span><span class="si">#{</span><span class="n">start_c</span><span class="si">}#{</span><span class="n">end_c</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+  </span><span class="n">buffer</span><span class="o">\</span><span class="n">undo</span><span class="o">!</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="positions-the-cursor-within-the-pair">positions the cursor within the pair</h4>
+
+<pre class="highlight moonscript"><code><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'['</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span></code></pre>
+
+
+<h4 id="does-not-trigger-for-a-same-character-pair-if-the-current-balance-is-uneven">does not trigger for a same character pair if the current balance is uneven</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'"foo'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'"'</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+
+<h4 id="does-not-trigger-when-the-next-character-is-a-word-character">does not trigger when the next character is a word character</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'foo'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'('</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+</div>
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(overtyping-companion-characters)">(overtyping companion characters)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">auto_pairs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s1">'('</span><span class="p">:</span><span class="w"> </span><span class="s1">')'</span><span class="w">
+    </span><span class="s1">'"'</span><span class="p">:</span><span class="w"> </span><span class="s1">'"'</span><span class="w">
+  </span><span class="p">}</span></code></pre>
+
+
+<h4 id="overtypes-any-companion-characters-if-the-current-pair-balance-is-even">overtypes any companion characters if the current pair-balance is even</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'()'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">')'</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'()'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span></code></pre>
+
+
+<h4 id="overtypes-any-companion-characters-for-even-pair-balance-when-the-start-characters-and-end-character-is-the-same">overtypes any companion characters for even pair-balance when the start characters and end character is the same</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'""'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'"'</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'""'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span></code></pre>
+
+
+<h4 id="does-not-overtype-if-the-current-pair-balance-is-non-even">does not overtype if the current pair-balance is non-even</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'(foo'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">')'</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+
+<h4 id="does-not-overtype-if-the-current-character-is-different">does not overtype if the current character is different</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'(foo)'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">')'</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(deleting-back-inside-a-pair)">(deleting back inside a pair)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">mode</span><span class="p">.</span><span class="n">auto_pairs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s1">'('</span><span class="p">]:</span><span class="w"> </span><span class="s1">')'</span></code></pre>
+
+
+<h4 id="returns-true">returns true</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'()'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'\8'</span><span class="p">,</span><span class="w"> </span><span class="s1">'backspace'</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span></code></pre>
+
+
+<h4 id="deletes-both-characters-as-one-undo">deletes both characters as one undo</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'()'</span><span class="w">
+</span><span class="n">cursor</span><span class="p">.</span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'\8'</span><span class="p">,</span><span class="w"> </span><span class="s1">'backspace'</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">''</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w">
+</span><span class="n">buffer</span><span class="o">\</span><span class="n">undo</span><span class="o">!</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'()'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+
+<h4 id="does-nothing-if-a-selection-is-active">does nothing if a selection is active</h4>
+
+<pre class="highlight moonscript"><code><span class="n">buffer</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'x()'</span><span class="w">
+</span><span class="n">editor</span><span class="p">.</span><span class="n">selection</span><span class="o">\</span><span class="n">set</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_not_true</span><span class="w"> </span><span class="n">auto_pair</span><span class="p">.</span><span class="n">handle</span><span class="w"> </span><span class="n">event</span><span class="p">(</span><span class="s1">'\8'</span><span class="p">,</span><span class="w"> </span><span class="s1">'backspace'</span><span class="p">),</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'x()'</span><span class="p">,</span><span class="w"> </span><span class="n">buffer</span><span class="p">.</span><span class="n">text</span></code></pre>
+
+</div>
+</div>
+</div>

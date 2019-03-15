@@ -1,0 +1,152 @@
+---
+title: Spec - howl.interactions.buffer_selection
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.interactions.buffer_selection">howl.interactions.buffer_selection</h1>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">command_line</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="w">
+</span><span class="n">buffers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Window</span><span class="o">!</span><span class="w">
+  </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="o">\</span><span class="n">realize</span><span class="o">!</span><span class="w">
+  </span><span class="n">editor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="ss">preview:</span><span class="w"> </span><span class="p">(</span><span class="vi">@buffer</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="kc">nil</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="n">command_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">command_line</span><span class="w">
+
+  </span><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span><span class="w">
+    </span><span class="n">app</span><span class="o">\</span><span class="n">close_buffer</span><span class="w"> </span><span class="n">b</span><span class="w">
+
+  </span><span class="k">for</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="p">{</span><span class="s1">'a1-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'b-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'c-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a2-buffer'</span><span class="p">}</span><span class="w">
+    </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+    </span><span class="n">b</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">title</span><span class="w">
+    </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">buffers</span><span class="p">,</span><span class="w"> </span><span class="n">b</span></code></pre>
+
+
+<h4 id="registers-interactions">registers interactions</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">not_nil</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_buffer</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="interact.select_buffer">interact.select_buffer</h2>
+
+<h4 id="displays-a-list-of-active-buffers">displays a list of active buffers</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buflist</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_buffer</span><span class="w"> </span><span class="ss">:editor</span><span class="p">),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buflist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'a1-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a2-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'b-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'c-buffer'</span><span class="p">},</span><span class="w"> </span><span class="n">buflist</span></code></pre>
+
+
+<h4 id="filters-the-buffer-list-based-on-entered-text">filters the buffer list based on entered text</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buflist</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_buffer</span><span class="w"> </span><span class="ss">:editor</span><span class="p">),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'a-b'</span><span class="w">
+  </span><span class="n">buflist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'a1-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a2-buffer'</span><span class="p">},</span><span class="w"> </span><span class="n">buflist</span></code></pre>
+
+
+<h4 id="previews-currently-selected-buffer-in-the-editor">previews currently selected buffer in the editor</h4>
+
+<pre class="highlight moonscript"><code><span class="n">previews</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span><span class="w">
+</span><span class="n">down_event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">65364</span><span class="w">
+  </span><span class="ss">key_name:</span><span class="w"> </span><span class="s1">'down'</span><span class="w">
+  </span><span class="ss">alt:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="ss">control:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="ss">meta:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="ss">shift:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="ss">super:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_buffer</span><span class="w"> </span><span class="ss">:editor</span><span class="p">),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">previews</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span><span class="p">.</span><span class="n">title</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">handle_keypress</span><span class="w"> </span><span class="n">down_event</span><span class="w">
+  </span><span class="nb">table.insert</span><span class="w"> </span><span class="n">previews</span><span class="p">,</span><span class="w"> </span><span class="n">editor</span><span class="p">.</span><span class="n">buffer</span><span class="p">.</span><span class="n">title</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'a1-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'a2-buffer'</span><span class="p">},</span><span class="w"> </span><span class="n">previews</span></code></pre>
+
+<div class="spec-group spec-group-3">
+
+<h3 id="(when-get_buffers-is-provided)">(when get_buffers is provided)</h3>
+
+<h4 id="calls-get_buffers-to-get-buffer-list">calls get_buffers to get buffer list</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buflist</span><span class="w">
+</span><span class="n">get_buffers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="n">buffers</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">buffers</span><span class="p">[</span><span class="mi">3</span><span class="p">]}</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_buffer</span><span class="w"> </span><span class="ss">:editor</span><span class="p">,</span><span class="w"> </span><span class="ss">:get_buffers</span><span class="p">),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buflist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'a1-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'c-buffer'</span><span class="p">},</span><span class="w"> </span><span class="n">buflist</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(sending-binding_for(&quot;buffer-close&quot;))">(sending binding_for(&quot;buffer-close&quot;))</h3>
+
+<pre class="highlight moonscript"><code><span class="n">keymap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ss">ctrl_w:</span><span class="w"> </span><span class="s1">'buffer-close'</span><span class="w">
+</span><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">push</span><span class="w"> </span><span class="n">keymap</span><span class="w">
+</span><span class="n">after_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">bindings</span><span class="p">.</span><span class="n">remove</span><span class="w"> </span><span class="n">keymap</span><span class="w">
+
+</span><span class="n">close_event</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="ss">alt:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="ss">character:</span><span class="w"> </span><span class="s2">"w"</span><span class="p">,</span><span class="w">
+  </span><span class="ss">control:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+  </span><span class="ss">key_code:</span><span class="w"> </span><span class="mi">119</span><span class="p">,</span><span class="w">
+  </span><span class="ss">key_name:</span><span class="w"> </span><span class="s2">"w"</span><span class="p">,</span><span class="w">
+  </span><span class="ss">meta:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="ss">shift:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="ss">super:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="p">}</span></code></pre>
+
+
+<h4 id="closes-selected-buffer">closes selected buffer</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buflist</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_buffer</span><span class="w"> </span><span class="ss">:editor</span><span class="p">),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">handle_keypress</span><span class="w"> </span><span class="n">close_event</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">handle_keypress</span><span class="w"> </span><span class="n">close_event</span><span class="w">
+  </span><span class="n">buflist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'b-buffer'</span><span class="p">,</span><span class="w"> </span><span class="s1">'c-buffer'</span><span class="p">},</span><span class="w"> </span><span class="n">buflist</span></code></pre>
+
+
+<h4 id="preserves-filter">preserves filter</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buflist</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_buffer</span><span class="w"> </span><span class="ss">:editor</span><span class="p">),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">write</span><span class="w"> </span><span class="s1">'a-b'</span><span class="w">
+  </span><span class="n">command_line</span><span class="o">\</span><span class="n">handle_keypress</span><span class="w"> </span><span class="n">close_event</span><span class="w">
+  </span><span class="n">buflist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'a2-buffer'</span><span class="p">},</span><span class="w"> </span><span class="n">buflist</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-3">
+
+<h3 id="(duplicate-filenames)">(duplicate filenames)</h3>
+
+<pre class="highlight moonscript"><code><span class="n">before_each</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">app</span><span class="p">.</span><span class="n">buffers</span><span class="w">
+    </span><span class="n">app</span><span class="o">\</span><span class="n">close_buffer</span><span class="w"> </span><span class="n">b</span><span class="w">
+
+  </span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s1">'/project1/some/file1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'/project2/some/file1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'/project2/path1/file2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'/project2/path2/file2'</span><span class="p">}</span><span class="w">
+  </span><span class="k">for</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="o">*</span><span class="n">paths</span><span class="w">
+    </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="o">\</span><span class="n">new_buffer</span><span class="o">!</span><span class="w">
+    </span><span class="n">b</span><span class="p">.</span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="n">path</span><span class="w">
+
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">add_root</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/project1'</span><span class="w">
+  </span><span class="nc">Project</span><span class="p">.</span><span class="n">add_root</span><span class="w"> </span><span class="nc">File</span><span class="w"> </span><span class="s1">'/project2'</span></code></pre>
+
+
+<h4 id="uniquifies-title-by-using-project-name-and-parent-directory-prefix">uniquifies title by using project name and parent directory prefix</h4>
+
+<pre class="highlight moonscript"><code><span class="kd">local</span><span class="w"> </span><span class="n">buflist</span><span class="w">
+</span><span class="n">within_activity</span><span class="w"> </span><span class="p">(</span><span class="o">-&gt;</span><span class="w"> </span><span class="n">interact</span><span class="p">.</span><span class="n">select_buffer</span><span class="w"> </span><span class="ss">:editor</span><span class="p">),</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">buflist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_ui_list_widget_column</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="s1">'file1 [project1]'</span><span class="p">,</span><span class="w"> </span><span class="s1">'file1 [project2]'</span><span class="p">,</span><span class="w"> </span><span class="s1">'path1/file2'</span><span class="p">,</span><span class="w"> </span><span class="s1">'path2/file2'</span><span class="p">},</span><span class="w"> </span><span class="n">buflist</span></code></pre>
+
+</div>
+</div>
+</div>

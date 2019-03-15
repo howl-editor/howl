@@ -1,0 +1,109 @@
+---
+title: Spec - howl.timer
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.timer">howl.timer</h1>
+
+<pre class="highlight moonscript"><code><span class="n">setup</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">set_howl_loop</span><span class="o">!</span></code></pre>
+
+<div class="spec-group spec-group-2">
+
+<h2 id="asap(f,-...)">asap(f, ...)</h2>
+
+<h4 id="----it-'invokes-&lt;f&gt;-once-as-part-of-the-next-main-loop-iteration',-(done)--&gt;
+">    it 'invokes &lt;f&gt; once as part of the next main loop iteration', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">timer</span><span class="p">.</span><span class="n">asap</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'passes-along-any-additional-arguments-as-is',-(done)--&gt;
+">    it 'passes along any additional arguments as is', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">callback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">same</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">...</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span><span class="w">
+
+</span><span class="n">timer</span><span class="p">.</span><span class="n">asap</span><span class="w"> </span><span class="n">callback</span><span class="p">,</span><span class="w"> </span><span class="s1">'one'</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="after_exactly(seconds,-f,-...)">after_exactly(seconds, f, ...)</h2>
+
+<h4 id="----it-'invokes-&lt;f&gt;-once-after-approximately-&lt;seconds&gt;',-(done)--&gt;
+">    it 'invokes &lt;f&gt; once after approximately &lt;seconds&gt;', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_monotonic_time</span><span class="o">!</span><span class="w">
+</span><span class="n">timer</span><span class="p">.</span><span class="n">after_exactly</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">elapsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">get_monotonic_time</span><span class="o">!</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_near</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="n">elapsed</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="after_approximately(seconds,-f,-...)">after_approximately(seconds, f, ...)</h2>
+
+<h4 id="----it-'invokes-&lt;f&gt;-once-after-approximately-&lt;seconds&gt;',-(done)--&gt;
+">    it 'invokes &lt;f&gt; once after approximately &lt;seconds&gt;', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">settimeout</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_monotonic_time</span><span class="o">!</span><span class="w">
+</span><span class="n">timer</span><span class="p">.</span><span class="n">after_approximately</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">elapsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">get_monotonic_time</span><span class="o">!</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_near</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="n">elapsed</span><span class="p">,</span><span class="w"> </span><span class="mi">250</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+<div class="spec-group spec-group-2">
+
+<h2 id="cancel(handle)">cancel(handle)</h2>
+
+<h4 id="----it-'cancels-an-asap-timer',-(done)--&gt;
+">    it 'cancels an asap timer', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">invoked</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">timer</span><span class="p">.</span><span class="n">asap</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">invoked</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">timer</span><span class="p">.</span><span class="n">cancel</span><span class="w"> </span><span class="n">handle</span><span class="w">
+
+</span><span class="n">timer</span><span class="p">.</span><span class="n">after</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">05</span><span class="p">,</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">invoked</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'cancels-an-after_exactly-timer',-(done)--&gt;
+">    it 'cancels an after_exactly timer', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">invoked</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">timer</span><span class="p">.</span><span class="n">after_exactly</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">05</span><span class="p">,</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">invoked</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">timer</span><span class="p">.</span><span class="n">cancel</span><span class="w"> </span><span class="n">handle</span><span class="w">
+
+</span><span class="n">timer</span><span class="p">.</span><span class="n">after</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">invoked</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+
+<h4 id="----it-'cancels-an-after_approximately-timer',-(done)--&gt;
+">    it 'cancels an after_approximately timer', (done) -&gt;
+</h4>
+
+<pre class="highlight moonscript"><code><span class="n">settimeout</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="n">invoked</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">timer</span><span class="p">.</span><span class="n">after_approximately</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">invoked</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">timer</span><span class="p">.</span><span class="n">cancel</span><span class="w"> </span><span class="n">handle</span><span class="w">
+
+</span><span class="n">timer</span><span class="p">.</span><span class="n">after</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">async</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="n">assert</span><span class="p">.</span><span class="n">is_false</span><span class="w"> </span><span class="n">invoked</span><span class="w">
+  </span><span class="n">done</span><span class="o">!</span></code></pre>
+
+</div>
+</div>

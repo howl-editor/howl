@@ -1,10 +1,18 @@
 module SitemapHelpers
-  def howl_specs
-    grouped(sitemap.where(:tags.include => 'spec').all)
+  def howl_specs(version = nil)
+    if version.present?
+      prefix = "/versions/#{version}/doc/spec"
+      grouped(sitemap.resources.select { |r| r.url.start_with? prefix })
+    else
+     grouped(sitemap.where(:tags.include => 'spec').all)
+    end
   end
 
-  def howl_api_docs
-    grouped(sitemap.resources.select { |r| r.url.start_with? '/doc/api' })
+  def howl_api_docs(version = nil)
+    prefix = version.present? ?
+      "/versions/#{version}/doc/api" : '/doc/api'
+
+    grouped(sitemap.resources.select { |r| r.url.start_with? prefix })
   end
 
   def howl_screenshots
@@ -47,7 +55,9 @@ module SitemapHelpers
 
   def grouped(docs)
     docs.sort_by(&:url).group_by do |doc|
-      File.dirname(doc.url).tr('/', '.').gsub(/.doc.\w+/, 'howl')
+      File.dirname(doc.url).tr('/', '.').
+        gsub(/\.versions\.\d+\.\d+/, '').
+        gsub(/\.doc\.\w+/, 'howl')
     end
   end
 end

@@ -1,0 +1,28 @@
+---
+title: Spec - howl.Globals
+tags: spec
+---
+<div class="spec-group spec-group-1">
+
+<h1 id="howl.globals">howl.Globals</h1>
+
+<h4 id="callable-&lt;foo&gt;-returns-true-if-foo-can-be-invoked-as-a-function">callable &lt;foo&gt; returns true if foo can be invoked as a function</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">callable</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">setmetatable</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="ss">__call:</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">is_true</span><span class="w"> </span><span class="n">callable</span><span class="w"> </span><span class="n">t</span></code></pre>
+
+
+<h4 id="typeof(v)-is-like-type(),-but-handles-regexes-and-moonscript-classes">typeof(v) is like type(), but handles regexes and moonscript classes</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'regex'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="w"> </span><span class="n">r</span><span class="s1">'foo'</span><span class="w">
+
+</span><span class="k">class</span><span class="w"> </span><span class="nc">Bar</span><span class="w">
+</span><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="s1">'Bar'</span><span class="p">,</span><span class="w"> </span><span class="n">typeof</span><span class="w"> </span><span class="nc">Bar</span><span class="o">!</span></code></pre>
+
+
+<h4 id="r-is-a-short-alias-for-regex">r is a short alias for regex</h4>
+
+<pre class="highlight moonscript"><code><span class="n">assert</span><span class="p">.</span><span class="n">equal</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="nb">require</span><span class="w"> </span><span class="s1">'howl.regex'</span></code></pre>
+
+</div>
