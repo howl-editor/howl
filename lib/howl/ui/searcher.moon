@@ -69,6 +69,9 @@ class Searcher
       @editor.cursor.pos = end_pos
       @editor.cursor.pos = start_pos
       @_highlight_matches search, start_pos, ensure_word
+      next_line = @buffer.lines\at_pos(start_pos).next
+      if next_line
+        @editor\ensure_visible next_line.start_pos
     else
       if ensure_word
         log.error "No word matches found for '#{search}'"
