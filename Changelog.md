@@ -4,6 +4,15 @@
 
 - Added `navigate-go-to` command, for going back to a specific previous location.
 
+- Added support for a "journal" buffer showing the Howl log, available via
+`open-journal`.
+
+- Ensure loaded buffers contain valid UTF-8 at all times
+
+- C: Support for lexing raw strings
+
+- Rust: Improved lexing
+
 - Added support for specifying line and column when opening files, e.g.
 
 ```shell
@@ -36,6 +45,13 @@ are 'enter' (the default) or 'tab'.
 - Close completion popup when user activity warrants it (e.g. direction keys,
 clicking in another location using the mouse, etc.)
 
+- Added new built-in theme: Dracula
+
+- Added integrated and fast project file search functionality via two new
+commands: `project-file-search` and `project-file-search-list`
+
+- Javascript: Support for ES6 templates and new keywords and operators
+
 - Performance and functionality improvements for the matcher, used in Howl
 selection lists, enabling fast matching across much larger data sets.
 
@@ -58,6 +74,11 @@ a asynchronous Howl context.
 
 - Added support for shared, low precision after timers
 
+- Added options for controlling scrolling speed
+
+- Add support for smooth scrolling events (needed for Wayland with two-finger
+scrolling)
+
 - Fixed background drawing for Wayland/Weston/CSD environments (borders outside
 of the window).
 
@@ -69,9 +90,13 @@ bound to `ctrl_<` and `ctrl_>` respectively.
 
 - Improved key translation for keys when caps lock is on.
 
+- Better Python lexing
+
 - Added two new commands, `editor-newline-above` and `editor-newline-below`,
 that insert a new line above/below the current line. Bound these commands to
 `ctrl_shift_return` and `ctrl_return`.
+
+- Auto detect line endings when opening a file if possible
 
 ### Github issues closed since 0.5
 
