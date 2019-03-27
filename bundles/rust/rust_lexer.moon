@@ -50,15 +50,30 @@ howl.util.lpeg_lexer ->
   keyword = c 'keyword', word {
     'abstract',   'alignof',    'as',       'become',   'box',
     'break',      'const',      'continue', 'crate',    'do',
-    'else',       'enum',       'extern',   'false',    'final',
-    'fn',         'for',        'if',       'impl',     'in',
-    'let',        'loop',       'macro',    'match',    'mod',
-    'move',       'mut',        "offsetof", 'override', 'priv',
-    'proc',       'pub',        'pure',     'ref',      'return',
-    'Self',       'self',       'sizeof',   'static',   'struct',
-    'super',      'trait',      'true',     'typeof',   'type',
+    'else',       'enum',       'extern',   'final',    'fn',
+    'for',        'if',         'impl',     'in',       'let',
+    'loop',       'macro',      'match',    'mod',      'move',
+    'mut',        'offsetof',   'override', 'priv',     'proc',
+    'pub',        'pure',       'ref',      'return',   'sizeof',
+    'static',     'struct',     'trait',    'typeof',   'type',
     'unsafe',     'unsized',    'use',      'virtual',  'where',
     'while',      'yield'
+  }
+  -- Special words
+  special = c 'special', word { 'true', 'false', 'self', 'super' }
+
+
+  -- Class/module declarations & type aliases
+  struct_def = sequence {
+    c 'keyword', word { 'mod', 'struct', 'enum', 'trait', 'type' }
+    c 'whitespace', space^1
+    c 'type_def', ident
+  }
+  -- Function declarations
+  fdecl = sequence {
+    c 'keyword', 'fn'
+    c 'whitespace', space^1
+    c 'fdecl', ident
   }
 
 
@@ -74,7 +89,6 @@ howl.util.lpeg_lexer ->
   lifetime = "'" * ident
   type = c 'type', any {lifetime, primitive}
   type_library = c 'constant', library
-
 
   -- Identifiers.
   identifier = c 'identifier', ident
@@ -96,6 +110,9 @@ howl.util.lpeg_lexer ->
     'all'
 
     all: any {
+      struct_def,
+      fdecl,
+      special,
       keyword,
       extension,
       comment,
