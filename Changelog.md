@@ -2,6 +2,8 @@
 
 ## Unreleased (in master)
 
+## 0.6 (2019-04-05)
+
 - Added `navigate-go-to` command, for going back to a specific previous location.
 
 - Added support for a "journal" buffer showing the Howl log, available via
@@ -101,7 +103,7 @@ that insert a new line above/below the current line. Bound these commands to
 ### Github issues closed since 0.5
 
 - Issues as seen on
-[Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=closed%3A%3E%3D2017-06-30+is%3Aissue+is%3Aclosed+sort%3Acreated-asc+)
+[Github](https://github.com/howl-editor/howl/issues?utf8=%E2%9C%93&q=closed%3A2016-06-06..2019-04-05+is%3Aissue+is%3Aclosedsort%3Acreated-desc)
 
 ## 0.5.3 (2017-11-07)
 

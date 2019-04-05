@@ -66,8 +66,9 @@ still asynchronous, appear blocking to the user. Activities are user visible
 when running for too long, and can be cancellable if supported. At the time
 though (and still today), the new search itself wasn't anywhere near ready, but
 there were other candidates for using the new module. Unsurprisingly, the
-recursive file listing was one such example, where use of module could also help
-solve a known and irritating issue. Thus some time was spent in converting the
+recursive file listing was one such example, where use of the module could also
+help solve a known and irritating issue. Thus some time was spent in converting
+the
 [File.find](/doc/api/io/file.html#find) to be asynchronous in supported
 contexts, and converting the recursive file listing code to use the new
 activities module. And voila! Below you can see this in effect, as we switch to
@@ -171,7 +172,7 @@ noticeable for the Git case.
 
 Abstractions, such as Howls [File], are great and allows code to be written in a
 clear and straightforward fashion. You do however pay a price for using them -
-the simplicity offered often comes at the expensive of performance. In the
+the simplicity offered often comes at the expense of performance. In the
 original discussion it was mentioned that an external command line file selector
 had no performance issues for the directory in question. This is not surprising
 since a small, focused, utility more easily can afford to do away with all kinds
