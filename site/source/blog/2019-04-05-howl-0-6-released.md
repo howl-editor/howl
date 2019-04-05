@@ -3,7 +3,8 @@ title: Howl 0.6 released!
 location: Stockholm, Sweden
 ---
 
-We are very happy to announce the release of [Howl](http://howl.io/) 0.6!
+We are very happy to announce the release of [Howl](http://howl.io/) 0.6,
+available for download [here](/getit.html)!
 
 It's been some time since the last release, but good things come to those who
 wait :) Highlights of this release are mentioned below and the full changelog
