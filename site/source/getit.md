@@ -14,17 +14,17 @@ cloning the repository from Github.
 
 ## Latest release
 
-The latest release of Howl is 0.5.3. It was released at 2017-11-07, and is
+The latest release of Howl is 0.6. It was released at 2019-04-05, and is
 available for download from:
 
-[https://github.com/howl-editor/howl/releases/download/0.5.3/howl-0.5.3.tgz](https://github.com/howl-editor/howl/releases/download/0.5.3/howl-0.5.3.tgz)
+[https://github.com/howl-editor/howl/releases/download/0.6/howl-0.6.tgz](https://github.com/howl-editor/howl/releases/download/0.6/howl-0.6.tgz)
 
-_MD5_: 449950d26e56c0ddafe70a6e2cff6bc0
+_MD5_: a47e8cc7c1f07de150b3320247f0daa5
 
-_SHA1_: 219bac3f2a29026f9945b45ab82af82277cc23cd
+_SHA1_: 912142d37ce20b3d87d9fb5ba548faec924d8856
 
 __Release notes:__
-[Howl 0.5 Released](/blog/2017/06/30/howl-0-5-released.html)
+[Howl 0.6 Released](/blog/2019/04/05/howl-0-6-released.html)
 
 ## Building Howl from source
 
@@ -117,6 +117,14 @@ forget to make again though_, as this would cause stale byte code to be loaded
 and confusion to arise.
 
 ## Older releases
+
+### Howl 0.5.3 released 2017-11-07
+
+[Download](https://github.com/howl-editor/howl/releases/download/0.5.3/howl-0.5.3.tgz)
+
+_MD5_: 449950d26e56c0ddafe70a6e2cff6bc0
+
+_SHA1_: 219bac3f2a29026f9945b45ab82af82277cc23cd
 
 ### Howl 0.5.2 released 2017-10-06
 
