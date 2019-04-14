@@ -22,7 +22,7 @@ jobs:
 
   - job: FlatpakRepoDeploy
     dependsOn: FlatpakBuild
-    condition: eq(variables('Build.Reason'), 'Schedule')
+    condition: eq(variables['Build.Reason'], 'Schedule')
     container:
       image: 'google/cloud-sdk'
 
