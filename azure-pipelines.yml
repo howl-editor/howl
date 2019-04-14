@@ -32,6 +32,7 @@ jobs:
     steps:
       - task: DownloadPipelineArtifact@0
         inputs:
+          artifactName: 'Flatpak bundle'
           targetPath: $(System.DefaultWorkingDirectory)
       - task: DownloadSecureFile@1
         inputs:
