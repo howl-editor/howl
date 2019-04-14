@@ -1,14 +1,14 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'Ubuntu-16.04'
-
 jobs:
   - job: FlatpakBuild
     container:
       image: 'registry.gitlab.gnome.org/gnome/gnome-runtime-images/gnome:3.30'
       options: --privileged
+
+    pool:
+      vmImage: 'Ubuntu-16.04'
 
     steps:
       - script: |
@@ -25,6 +25,9 @@ jobs:
     condition: eq(variables('Build.Reason'), 'Schedule')
     container:
       image: 'google/cloud-sdk'
+
+    pool:
+      vmImage: 'Ubuntu-16.04'
 
     steps:
       - task: DownloadPipelineArtifact@0
