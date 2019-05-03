@@ -64,7 +64,12 @@ class List extends PropertyObject
     @highlight_matches_for = nil
     @_items, @partial = get_items matcher, ''
     @listeners = {}
-    @selected_idx = @has_items and (@opts.reverse and #@_items or 1) or nil
+    @reverse = @opts.reverse
+    @selected_idx = @has_items and (@reverse and #@_items or 1) or nil
+
+  @property reverse:
+    get: => @_reverse
+    set: (val) => @_reverse = val
 
   @property columns:
     get: => @_columns
@@ -112,6 +117,11 @@ class List extends PropertyObject
     get: => @_min_rows
     set: (val) =>
       @_min_rows = val
+
+  @property max_cols:
+    get: => @_max_cols
+    set: (val) =>
+      @_max_cols = val
 
   @property start_pos:
     get: =>
@@ -172,7 +182,7 @@ class List extends PropertyObject
       for idx = @page_start_idx, min(last_idx, #@_items)
         append items, @_items[idx]
 
-      styled_table, col_starts = StyledText.for_table items, @columns
+      styled_table, col_starts = StyledText.for_table items, @columns, max_width: @max_cols
       pos = buffer\insert styled_table, pos
       filler_lines = max 0, @min_rows - display_size
 
@@ -230,11 +240,11 @@ class List extends PropertyObject
     @_items, @partial = get_items @matcher, match_text
     current_idx = @selected_idx
 
-    if @opts.reverse
+    if @reverse
       @_items = reversed @_items
 
     @highlight_matches_for = match_text
-    idx = @opts.reverse and #@_items or 1
+    idx = @reverse and #@_items or 1
 
     if preserve_position and current_idx
       idx = min(current_idx, #@_items)
@@ -258,7 +268,6 @@ class List extends PropertyObject
     return unless type(item) == 'table'
     highlights = item.item_highlights
     return unless highlights
-
     ranges = {}
     for col = 1, columns.num
       hls = highlights[col]

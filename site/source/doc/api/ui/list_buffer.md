@@ -29,7 +29,7 @@ modified or changed, instead ListBuffer uses an internal copy.
 
 - `explain`: _[optional]_ A callable object used for providing highlighting
 information. The object is invoked with the search text and the full text of the
-list item's line. It should return a list of highlight segments. eEach segment is
+list item's line. It should return a list of highlight segments. Each segment is
 expected to itself be a list of two numbers: The first number should indicate
 the start position of the highlight, and the second number the number of
 characters to highlight.

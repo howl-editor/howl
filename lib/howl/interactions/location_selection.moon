@@ -1,72 +1,65 @@
 -- Copyright 2012-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :interact} = howl
+{:interact} = howl
 {:Preview} = howl.interactions.util
-{:highlight} = howl.ui
 
-add_highlight = (type, buffer, line, opts = {}) ->
-  start_pos, end_pos = buffer\resolve_span opts, line.nr
-  highlight.apply type, buffer, start_pos, end_pos - start_pos
-
-get_file = (item) ->
-  return item.file if item.file
-  unless item.directory
-    error "Location item need either .file or .directory and .path"
-  item.directory\join(item.path)
+local LocationExplorer, LocationItem
 
 interact.register
   name: 'select_location'
-  description: 'Selection list for locations - a location consists of a file (or buffer) and line number'
-  handler: (opts) ->
-    opts = moon.copy opts
-    editor = opts.editor or app.editor
-    preview = (howl.config.preview_files or opts.force_preview) and Preview!
-    local preview_buffer
+  description: 'Selection list for locations which specify positions or chunks within files'
+  handler: (opts={}) ->
+    interact.explore
+      title: opts.title
+      prompt: opts.prompt
+      text: opts.text
+      path: {LocationExplorer opts.items, opts.selection, opts.columns}
+      transform_result: (location_item) -> location_item.location
 
-    if preview
-      on_change = opts.on_change
+class LocationExplorer
+  new: (@locations, @selected_item, @columns) =>
+    error 'locations required' unless @locations
+    @previewer = Preview!
 
-      opts.on_change = (sel, text, items) ->
-        if sel
-          {:line_nr, :pos} = sel
+  display_path: => ''
 
-          preview_buffer = sel.buffer or preview\get_buffer(get_file(sel), line_nr)
-          editor\preview preview_buffer
+  display_columns: => @columns
 
-          highlight.remove_all 'search', preview_buffer
-          highlight.remove_all 'search_secondary', preview_buffer
+  display_items: =>
+    [LocationItem(location, @previewer) for location in *@locations], @selected_item
 
-          if not line_nr and pos
-            line = preview_buffer.lines\at_pos(pos)
-            line_nr = line.nr if line
+class LocationItem
+  new: (@location, @previewer) =>
+    unless @location.buffer or @location.file or @location.chunk
+      error 'location.buffer or location.file or location.chunk required'
 
-          if line_nr or pos
-            if line_nr and #preview_buffer.lines >= line_nr
-              editor.line_at_center = line_nr
-              line = preview_buffer.lines[line_nr]
+  get_chunk: =>
+    -- return a chunk that corresponds to this location
+    line_nr = @location.line_nr or 1
+    if @location.buffer
+      if @location.pos
+        pos = @location.pos
+        return @location.buffer\chunk pos, pos
+      else
+        line = @location.buffer.lines[line_nr]
+        if line
+          return line.chunk
+    elseif @location.file
+      -- if we have a file we get the chunk from the preview buffer
+      buffer = self.previewer\get_buffer @location.file, line_nr or 1
+      line = buffer.lines[line_nr]
+      if line
+        return line.chunk
+    elseif @location.chunk
+      return @location.chunk
 
-              if sel.highlights and #sel.highlights > 0
-                add_highlight 'search', preview_buffer, line, sel.highlights[1]
+  display_row: => @location
 
-                for i = 2, #sel.highlights
-                  add_highlight 'search_secondary', preview_buffer, line, sel.highlights[i]
-              else
-                add_highlight 'search', preview_buffer, line
-            elseif line_nr
-              log.warn "Line #{line_nr} not loaded in preview"
-            else
-              log.warn "Position #{pos} not loaded in preview"
-
-        if on_change
-          on_change sel, text, items
-
-    result = interact.select opts
-
-    if preview_buffer
-      highlight.remove_all 'search', preview_buffer
-      highlight.remove_all 'search_secondary', preview_buffer
-
-    editor\cancel_preview!
-
-    return result
+  preview: =>
+    unless @chunk
+      @chunk = @get_chunk!
+    if @chunk
+      return chunk: @chunk, popup: @location.popup
+    else
+      return text: 'Preview not available'

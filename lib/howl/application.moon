@@ -110,9 +110,10 @@ class Application extends PropertyObject
         essentials = entry.essentials
 
         status = @window.status
-        command_line = @window.command_line
         status[level] status, essentials
-        command_line\notify essentials, level if command_line.showing
+        command_line = @window.command_panel.active_command_line
+        if command_line
+          command_line\notify essentials, level if command_line.showing
       elseif not @args.spec
         print message
 
@@ -198,11 +199,12 @@ class Application extends PropertyObject
     unless force
       local prompt
       if buffer.modified
-        prompt = "Buffer is modified, close anyway? "
+        prompt = "Buffer '#{buffer.title}' is modified, close anyway? "
       elseif buffer.activity and buffer.activity\is_running!
         prompt = "Buffer has a running activity (#{buffer.activity.name}), close anyway? "
 
       if prompt
+        @editor.buffer = buffer
         return unless interact.yes_or_no :prompt
 
     @_buffers = [b for b in *@_buffers when b != buffer]
@@ -365,7 +367,7 @@ class Application extends PropertyObject
         process\send_signal 'KILL'
 
       for win in * moon.copy @windows
-        win.command_line\abort_all!
+        win.command_panel\cancel!
         win\destroy!
 
       howl.clipboard.store!
@@ -569,18 +571,20 @@ class Application extends PropertyObject
     require 'howl.modes'
 
   _load_core: =>
+    require 'howl.ui.icons.font_awesome'
     require 'howl.completion.in_buffer_completer'
     require 'howl.completion.api_completer'
     require 'howl.interactions.basic'
     require 'howl.interactions.buffer_selection'
+    require 'howl.interactions.buffer_search'
     require 'howl.interactions.bundle_selection'
     require 'howl.interactions.clipboard'
     require 'howl.interactions.external_command'
+    require 'howl.interactions.explorer'
     require 'howl.interactions.file_selection'
     require 'howl.interactions.line_selection'
     require 'howl.interactions.location_selection'
     require 'howl.interactions.mode_selection'
-    require 'howl.interactions.replacement'
     require 'howl.interactions.search'
     require 'howl.interactions.select'
     require 'howl.interactions.signal_selection'
@@ -591,7 +595,6 @@ class Application extends PropertyObject
     require 'howl.commands.ui_commands'
     require 'howl.commands.edit_commands'
     require 'howl.editing'
-    require 'howl.ui.icons.font_awesome'
     require 'howl.janitor'
     require 'howl.inspect'
     require 'howl.file_search'

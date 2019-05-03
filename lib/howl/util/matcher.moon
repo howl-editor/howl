@@ -20,7 +20,7 @@ boundary_part_p = (p) ->
 
 case_boundary_part_p = (p) ->
   upper = p.uupper
-  "(?:(#{p})|(#{upper})|.+(#{upper}))"
+  "(?:(#{p})|.*?(#{upper}))"
 
 boundary_pattern = (search, reverse) ->
   parts = [escape_string(search[i]) for i = 1, search.ulen]
@@ -91,7 +91,21 @@ create_matcher = (search, reverse) ->
     C.g_match_info_unref info
     match
 
+  last_char = search\usub(search.ulen, search.ulen).ulower
+
+  trim = (text, case_text) ->
+    -- trim end of text and case_text to segment that might possibly match
+    last_pos = text\rfind last_char
+    if last_pos
+      last_pos += last_char.ulen
+      case_text = case_text\sub(1, last_pos) if case_text
+      return text\sub(1, last_pos), case_text
+
   (text, case_text) ->
+    -- triming the end speeds up regex matching
+    text, case_text = trim text, case_text
+    return nil unless text
+
     return nil unless possible_match(text)
 
     match = do_match boundary_p, text
@@ -138,7 +152,7 @@ class Matcher
 
     search = search.ulower
     matches = @cache.matches[search]
-    if matches then return matches.items, matches.partial
+    if matches then return matches.items, partial: matches.partial, positions: matches.positions
     matches = {}
 
     prev_search_part = search\usub 1, -2
@@ -153,14 +167,13 @@ class Matcher
       text = entry.text
       continue if #text < #search
       match_type, match = matcher text, entry.case_text
-
       if match
         if #matches >= partial_limit
           partial = true
           break
 
         score = score_for match, text, match_type, @options.reverse, @entries.base_score
-        append matches, entry: entry, :score
+        append matches, entry: entry, :score, how: match_type, positions: text\char_offset match
         append matching_entries, entry
 
     unless @options.preserve_order
@@ -168,12 +181,16 @@ class Matcher
 
     matching_candidates = [match.entry.candidate for match in *matches]
 
-    @cache.matches[search] = {items: matching_candidates, :partial}
+    -- each position is a table {start_pos, end_pos} or {pos1, pos2, pos3, ...}
+    -- indicating what part of the candidate matched
+    positions = [match.positions for match in *matches]
+
+    @cache.matches[search] = {items: matching_candidates, :partial, :positions}
 
     unless partial
       @cache.entries[search] = matching_entries
 
-    matching_candidates, partial
+    matching_candidates, :partial, :positions
 
   explain: (search, text, options = {}) ->
     how, match = create_matcher(search, options.reverse)(text.ulower, text)
@@ -202,5 +219,7 @@ class Matcher
 
     segments.how = how
     return segments
+
+  :create_matcher
 
 return Matcher

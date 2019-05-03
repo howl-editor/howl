@@ -18,7 +18,7 @@ interact.register
     selected = interact.select opts
 
     if selected
-      return selected.selection[1]
+      return selected[1]
 
 interact.register
   name: 'select_unloaded_bundle'
@@ -29,6 +29,4 @@ interact.register
       .title or= 'Unloaded bundles'
       .items = bundle.unloaded
 
-    selected = interact.select opts
-
-    return selected and selected.selection
+    interact.select opts

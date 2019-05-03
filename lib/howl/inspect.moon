@@ -240,18 +240,22 @@ update_buffer = (buffer, editor, scope) ->
   if editor
     update_inspections_display editor
 
+popup_text = (inspections) ->
+  items = {}
+
+  prefix = #inspections > 1 and '- ' or ''
+  for i = 1, #inspections
+    append items, "#{prefix}<#{inspections[i].type}>#{inspections[i].message}</>"
+
+  return howl.ui.markup.howl table.concat items, '\n'
+
 show_popup = (editor, inspections, pos) ->
   popup or= BufferPopup ActionBuffer!
   buf = popup.buffer
 
   buf\as_one_undo ->
     buf.text = ''
-
-    prefix = #inspections > 1 and '- ' or ''
-    for i = 1, #inspections
-      buf\append "#{prefix}#{inspections[i].message}", inspections[i].type
-      unless i == #inspections
-        buf\append "\n"
+    buf\append popup_text inspections
 
   with popup.view
     .cursor.line = 1
@@ -362,7 +366,7 @@ command.register
 command.register
   name: 'cursor-goto-inspection'
   description: 'Goes to a specific inspection in the current buffer'
-  input: ->
+  input: (opts) ->
     editor = app.editor
     buffer = editor.buffer
     inspections = buffer.markers\find(name: 'inspection')
@@ -370,52 +374,32 @@ command.register
       log.info "No inspections for the current buffer"
       return nil
 
-    last_line = 0
     items = {}
-    pbuf = howl.ui.ActionBuffer!
-    popup = howl.ui.BufferPopup pbuf
 
+    last_lnr = 0
     for i in *inspections
+      chunk = buffer\chunk i.start_offset, i.end_offset
       l = buffer.lines\at_pos i.start_offset
-      item = items[#items]
-      if l.nr != last_line
-        item = {
-          tostring(l.nr),
-          l.chunk,
-          :buffer,
-          line_nr: l.nr,
-          inspections: {},
-          highlights: {},
-          offset: i.start_offset
-        }
-
-      append item.inspections, {
-        message: i.message,
-        type: i.flair,
+      append items, {
+        if l.nr == last_lnr then '·' else tostring(l.nr),
+        l.chunk,
+        :chunk,
+        popup: popup_text {{message: i.message, type: i.flair}}
       }
-      append item.highlights, {
-        start_pos: i.start_offset,
-        end_pos: i.end_offset
-      }
-      if l.nr != last_line
-        append items, item
-      last_line = l.nr
-
-    on_change = (selection) ->
-      show_popup editor, selection.inspections, selection.offset
+      last_lnr = l.nr
 
     return interact.select_location
+      prompt: opts.prompt
       title: "Inspections in #{buffer.title}"
       editor: editor
-      items: items,
-      force_preview: true
+      items: items
       selection: items[1]
-      :on_change
+      columns: {{style: 'comment'}, {}}
 
   handler: (res) ->
     if res
-      app.editor.cursor.pos = res.selection.offset
-      hl = res.selection.highlights[1]
-      app.editor\highlight start_pos: hl.start_pos, end_pos: hl.end_pos
+      chunk = res.chunk
+      app.editor.cursor.pos = chunk.start_pos
+      app.editor\highlight start_pos: chunk.start_pos, end_pos: chunk.end_pos
 
 :inspect, :criticize

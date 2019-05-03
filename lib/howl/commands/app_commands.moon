@@ -4,6 +4,7 @@
 import app, activities, breadcrumbs, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
 import ActionBuffer, JournalBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
 import Process from howl.io
+
 serpent = require 'serpent'
 
 get_project_root = ->
@@ -20,6 +21,10 @@ belongs_to_project = (buffer, project_root) ->
   project = Project.for_file file
   return false unless project
   return project.root == project_root
+
+get_buffer_dir = (buffer) ->
+  return unless buffer
+  buffer.file and buffer.file.parent or buffer.directory
 
 command.register
   name: 'quit',
@@ -59,7 +64,11 @@ command.register
 command.register
   name: 'switch-buffer',
   description: 'Switch to another buffer'
-  input: interact.select_buffer
+  input: (opts) ->
+    interact.select_buffer
+      prompt: opts.prompt
+      text: opts.text
+      help: opts.help
   handler: (buf) ->
     breadcrumbs.drop!
     app.editor.buffer = buf
@@ -67,12 +76,15 @@ command.register
 command.register
   name: 'project-switch-buffer',
   description: 'Switch to another buffer in current project'
-  input: ->
+  input: (opts) ->
     project_root = get_project_root!
     return unless project_root
     interact.select_buffer
       get_buffers: -> [buf for buf in *app.buffers when belongs_to_project buf, project_root]
       title: "Buffers under #{project_root}"
+      prompt: opts.prompt
+      text: opts.text
+      help: opts.help
   handler: (buf) ->
     breadcrumbs.drop!
     app.editor.buffer = buf
@@ -105,12 +117,13 @@ command.register
 command.register
   name: 'set',
   description: 'Set a configuration variable'
-  input: interact.get_variable_assignment
-  handler: (variable_assignment) ->
-    target = variable_assignment.target
-    target[variable_assignment.var] = variable_assignment.value
-
-    _G.log.info ('"%s" is now set to "%s" for %s')\format variable_assignment.var, variable_assignment.value, variable_assignment.scope_name
+  input: (opts) ->
+    interact.get_variable_assignment
+      prompt: opts.prompt
+      text: opts.text
+      help: opts.help
+  handler: (result) -> result.config_value\commit!
+  get_input_text: (result) -> result.text
 
 command.register
   name: 'describe-key',
@@ -209,87 +222,113 @@ command.register
 
     log.warn 'Could not find any currently active bundle to reload'
 
+matcher_find = (entry, matcher, start) ->
+  -- entry is result of parse_line and matcher is result of parse_query
+  how, positions = matcher entry.text, entry.case_text
+  if how
+    -- return start, end for the matched segment within the line
+    return positions[1], positions[#positions]
+
 command.register
   name: 'buffer-grep'
-  description: 'Show buffer lines containing boundary and exact matches in real time'
-  input: ->
-    command_line = app.window.command_line
-    command_line\add_keymap
-        binding_for: ['buffer-grep']: -> command_line\switch_to 'buffer-grep-regex'
-    command_line\add_help
-      key_for: 'buffer-grep'
-      action: 'Switch to regular expression search'
-
+  description: 'Show buffer lines containing fuzzy matches in real time'
+  input: (opts) ->
     buffer = app.editor.buffer
-    return interact.select_line
-      title: "Buffer grep in #{buffer.title}"
+    opts.help\add_keys
+      ['buffer-grep']: 'Switch to <command>buffer-grep-regex</>'
+    return interact.buffer_search
+      title: "Matches in #{buffer.title}"
+      once_per_line: true
+      limit: 1000
+      parse_query: (query) -> howl.util.Matcher.create_matcher query
+      parse_line: (line) -> {:line, case_text: line.text, text: line.text.ulower}
+      find: matcher_find
+      prompt: opts.prompt
+      text: opts.text
+      help: opts.help
       editor: app.editor
-      lines: buffer.lines
+      buffer: buffer
+      selected_line: app.editor.current_line
+      cancel_for_keymap:
+        binding_for:
+          ['buffer-grep']: (args) -> howl.command.run 'buffer-grep-regex ' .. args.text
 
-  handler: (selection) ->
+  handler: (result) ->
+    return unless result
     breadcrumbs.drop!
-    app.editor.cursor\move_to line: selection.line.nr, column: selection.column
+    app.editor.cursor\move_to pos: result.chunk.start_pos
+
+command.register
+  name: 'buffer-grep-regex'
+  description: 'Show buffer lines containing regex matches in real time'
+  input: (opts) ->
+    buffer = app.editor.buffer
+    opts.help\add_keys
+      ['buffer-grep']: 'Switch to <command>buffer-grep-exact</>'
+      ['buffer-replace']: 'Switch to <command>buffer-replace-regex</>'
+    return interact.buffer_search
+      title: "Regex matches in #{buffer.title}"
+      once_per_line: true
+      limit: 1000
+      parse_query: (query) ->
+        status, query = pcall -> r query
+        return query if status
+        error 'Invalid regular expression', 0
+      parse_line: (line) -> line.text
+      find: (text, regex, start) -> regex\find text, start
+      prompt: opts.prompt
+      text: opts.text
+      help: opts.help
+      editor: app.editor
+      buffer: buffer
+      selected_line: app.editor.current_line
+      cancel_for_keymap:
+        binding_for:
+          ['buffer-grep']: (args) -> howl.command.run 'buffer-grep-exact ' .. args.text
+          ['buffer-replace']: (args) -> howl.command.run 'buffer-replace-regex /' .. args.text
+
+  handler: (result) ->
+    return unless result
+    breadcrumbs.drop!
+    app.editor.cursor\move_to pos: result.chunk.start_pos
 
 command.register
   name: 'buffer-grep-exact'
   description: 'Show buffer lines containing exact matches in real time'
-  input: ->
-    command_line = app.window.command_line
-    command_line\add_keymap
-        binding_for: ['buffer-grep']: -> command_line\switch_to 'buffer-grep'
-    command_line\add_help
-      key_for: 'buffer-grep'
-      action: 'Switch to default search'
-
+  input: (opts)->
     buffer = app.editor.buffer
-    return interact.select_line
-      title: "Buffer grep exact in #{buffer.title}"
+    opts.help\add_keys
+      ['buffer-grep']: 'Switch to <command>buffer-grep</>'
+      ['buffer-replace']: 'Switch to <command>buffer-replace</>'
+    return interact.buffer_search
+      title: "Exact matches in #{buffer.title}"
+      once_per_line: true
+      limit: 1000
+      parse_line: (line) -> line.text
+      find: (text, query, start) -> text\ufind query, start, true
+      prompt: opts.prompt
+      text: opts.text
+      help: opts.help
       editor: app.editor
-      lines: buffer.lines
-      find: (query, text) ->
-        start_pos, end_pos = text\ufind query, 1, true
-        if start_pos
-          return {{start_pos, end_pos - start_pos + 1}}
+      buffer: buffer
+      selected_line: app.editor.current_line
+      cancel_for_keymap:
+        binding_for:
+          ['buffer-grep']: (args) -> howl.command.run 'buffer-grep ' .. args.text
+          ['buffer-replace']: (args) -> howl.command.run 'buffer-replace /' .. args.text
 
-  handler: (selection) ->
+  handler: (result) ->
+    return unless result
     breadcrumbs.drop!
-    app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
-
-command.register
-  name: 'buffer-grep-regex'
-  description: 'Show buffer lines containing regular expression matches in real time'
-  input: ->
-    command_line = app.window.command_line
-    command_line\add_keymap
-        binding_for: ['buffer-grep']: -> command_line\switch_to 'buffer-grep-exact'
-    command_line\add_help
-      key_for: 'buffer-grep'
-      action: 'Switch to exact search'
-
-    buffer = app.editor.buffer
-    return interact.select_line
-      title: "Buffer grep regex in #{buffer.title}"
-      editor: app.editor
-      lines: buffer.lines
-      find: (query, text) ->
-        ok, rex = pcall -> r(query)
-        return unless ok
-
-        start_pos, end_pos = rex\find text
-        if start_pos
-          return {{start_pos, end_pos - start_pos + 1}}
-  handler: (selection) ->
-    breadcrumbs.drop!
-    app.editor.cursor\move_to line: selection.line.nr, column:  selection.column
+    app.editor.cursor\move_to pos: result.chunk.start_pos
 
 command.register
   name: 'buffer-structure'
   description: 'Show the structure for the current buffer'
-  input: ->
+  input: (opts) ->
     buffer = app.editor.buffer
     lines = buffer.mode\structure app.editor
     cursor_lnr = app.editor.cursor.line
-
     local selected_line
     for line in *lines
       if line.nr <= cursor_lnr
@@ -297,14 +336,24 @@ command.register
       if line.nr >= cursor_lnr
         break
 
-    return interact.select_line
+    return interact.buffer_search
       title: "Structure for #{buffer.title}"
+      once_per_line: true
+      editor: app.editor
+      buffer: buffer
+      parse_query: (query) -> howl.util.Matcher.create_matcher query
+      parse_line: (line) -> {:line, case_text: line.text, text: line.text.ulower}
+      find: matcher_find
+      prompt: opts.prompt
+      text: opts.text
+      help: opts.help
       :lines
       :selected_line
 
-  handler: (selection) ->
+  handler: (result) ->
+    return unless result
     breadcrumbs.drop!
-    app.editor.cursor\move_to line: selection.line.nr, column: selection.column
+    app.editor.cursor\move_to pos: result.chunk.start_pos
 
 command.register
   name: 'navigate-back'
@@ -329,7 +378,7 @@ command.register
 command.register
   name: 'navigate-go-to'
   description: 'Goes to a specific location in the history'
-  input: ->
+  input: (opts) ->
     to_item = (crumb, i) ->
       {:buffer_marker, :file} = crumb
       buffer = buffer_marker and buffer_marker.buffer
@@ -356,8 +405,10 @@ command.register
       log.warn "No locations available for navigation"
       return nil
 
-    selected = interact.select_location
+    interact.select_location
       title: "Navigate back to.."
+      prompt: opts.prompt
+      text: opts.text
       :items
       selection: items[breadcrumbs.location] or items[breadcrumbs.location - 1]
       columns: {
@@ -365,8 +416,6 @@ command.register
         { header: 'Project', style: 'key' },
         { header: 'Path', style: 'string' }
       }
-
-    selected and selected.selection
 
   handler: (loc) ->
     return unless loc
@@ -496,8 +545,9 @@ get_project = ->
 command.register
   name: 'project-exec',
   description: 'Run an external command from within the project directory'
-  input: -> interact.get_external_command path: get_project!.root
-  handler: launch_cmd
+  input: (opts) -> interact.get_external_command path: get_project_root!, prompt: opts.prompt
+  handler: (args) -> launch_cmd args.working_directory, args.cmd
+  get_input_text: (args) -> args.cmd
 
 command.register
   name: 'project-build'
@@ -507,8 +557,11 @@ command.register
 command.register
   name: 'exec',
   description: 'Run an external command'
-  input: (path=nil) -> interact.get_external_command :path
-  handler: launch_cmd
+  input: (opts) -> interact.get_external_command
+    path: get_buffer_dir howl.app.editor.buffer
+    text: opts.text
+  handler: (args) -> launch_cmd args.working_directory, args.cmd
+  get_input_text: (args) -> args.cmd
 
 command.register
   name: 'save-config'
@@ -620,12 +673,15 @@ do_search = (search, whole_word) ->
 command.register
   name: 'project-file-search',
   description: 'Searches files in the the current project'
-  input: (...) ->
+  input: (opts) ->
     editor = app.editor
     search = nil
     whole_word = false
 
-    unless app.window.command_line.showing
+    if opts.text and not opts.text.is_empty
+      search = opts.text
+
+    unless search or app.window.command_panel.is_active
       if editor.selection.empty
         search = app.editor.current_context.word.text
         whole_word = true unless search.is_empty
@@ -633,7 +689,7 @@ command.register
         search = editor.selection.text
 
     if not search or search.is_empty
-      search = interact.read_text!
+      search = interact.read_text prompt: opts.prompt
 
     if not search or search.is_empty
       log.warn "No search query specified"
@@ -641,10 +697,9 @@ command.register
 
     locations, searcher, project = do_search search, whole_word
     if #locations > 0
-      selected = interact.select_location
+      interact.select_location
         title: "#{#locations} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
         items: locations
-      selected and selected.selection
 
   handler: (loc) ->
     if loc
@@ -653,12 +708,15 @@ command.register
 command.register
   name: 'project-file-search-list',
   description: 'Searches files in the the current project, listing results in a buffer'
-  input: (...) ->
+  input: (opts) ->
     editor = app.editor
     search = nil
     whole_word = false
 
-    unless app.window.command_line.showing
+    if opts.text and not opts.text.is_empty
+      search = opts.text
+
+    unless app.window.command_panel.is_active
       if editor.selection.empty
         search = app.editor.current_context.word.text
         whole_word = true unless search.is_empty
@@ -666,7 +724,7 @@ command.register
         search = editor.selection.text
 
     if not search or search.is_empty
-      search = interact.read_text!
+      search = interact.read_text prompt: opts.prompt
 
     if not search or search.is_empty
       log.warn "No search query specified"

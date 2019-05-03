@@ -63,15 +63,18 @@ styled_text_mt = {
       return (_, ...) -> v @text, ...
 }
 
+
 compute_column_widths = (columns, items) ->
   widths = { num: 1 }
 
+  -- compute column widths as larger of header width or specified min_width
   if columns
     for i = 1, #columns
       header = columns[i].header or ''
       widths[i] = math.max widths[i] or 1, header and tostring(header).ulen or 0, columns[i].min_width or 0
       widths.num = math.max widths.num, i
 
+  -- grow widths to fit any items that are larger
   for item in *items
     if typeof(item) != 'table'
       item = { item }
@@ -97,14 +100,49 @@ display_str = (col) ->
 
   tostring(col)
 
-for_table = (items, columns=nil) ->
+trim = (text, max_width) ->
+  return text if tostring(text).ulen <= max_width
+  max_width = max_width
+  trimmed_text = tostring(text)\usub(1, max_width)
+
+  if is_styled(text)
+    -- need to trim the styles in addition to trimming the text
+    trimmed_styles = {}
+    styles = text.styles
+
+    for s_idx = 1, #styles, 3
+      styles_start = styles[s_idx]
+      styles_end = styles[s_idx + 2]
+
+      if styles_start > max_width
+        break
+
+      if styles_end <= max_width
+        -- this style is within the trim, copy.
+        append trimmed_styles, styles_start
+        append trimmed_styles, styles[s_idx + 1]
+        append trimmed_styles, styles_end
+        continue
+      if styles_start <= max_width
+        -- this style is running over, trim end.
+        append trimmed_styles, styles_start
+        append trimmed_styles, styles[s_idx + 1]
+        append trimmed_styles, max_width
+        break
+    return setmetatable {text: trimmed_text, styles: trimmed_styles}, styled_text_mt
+  else
+    return trimmed_text
+
+for_table = (items, columns=nil, opts={}) ->
   text_parts = {}
+  row_parts = {}
   styles = {}
   offset = 0
+  max_width = opts.max_width
 
   write = (text, text_style = nil) ->
     return unless #text > 0
-    append text_parts, tostring text
+    append row_parts, tostring text
 
     if text.styles
       i = 1
@@ -125,18 +163,47 @@ for_table = (items, columns=nil) ->
 
     offset += #(tostring text)
 
+  write_cell = (cell, left_pad_width, right_pad_width, cell_style) ->
+    write padding(left_pad_width), cell_style
+    write cell, cell_style
+    write padding(right_pad_width), cell_style
+
+  finish_row = ->
+    append text_parts, table.concat row_parts
+    row_parts = {}
+    append text_parts, '\n'
+    offset += 1
+
   column_widths = compute_column_widths columns, items
 
+  -- determine if we need to trim to max_width
+  trim_column = {}  -- contains at most 1 item, key: column index, value: width
+  if max_width
+    remaining = max_width
+    for i = 1, column_widths.num
+      if i < column_widths.num
+        -- non-last column - ensure we have enough space for margin(1) and suffix '[..]' (4) in case next col overflows
+        if column_widths[i] + 5 <= remaining
+          remaining -= column_widths[i] + 1
+          continue
+      else
+        -- last column - only need enough space for text
+        if column_widths[i] <= remaining
+          break
+      trim_column[i] = remaining
+
+  -- show headers
   if columns and 0 < #[column.header for column in *columns when column.header]
     for i = 1, #columns
       header = columns[i].header
       continue unless header
       pad_width = column_widths[i] - header.ulen
       pad_width += 1 if i < #columns
-      write header..padding(pad_width), 'list_header'
+      write_cell header .. padding(pad_width), 0, 0, 'list_header'
 
-    write '\n'
+    finish_row!
 
+  -- show rows
   for item in *items
     item = { item } if typeof(item) != 'table'
 
@@ -144,22 +211,34 @@ for_table = (items, columns=nil) ->
       cell = display_str item[i]
       cell_style = columns and columns[i] and columns[i].style
       right_align = columns and columns[i] and columns[i].align == 'right'
+      right_margin = if i < column_widths.num then 1 else 0  -- space between columns
 
-      left_pad_width = 0
-      right_pad_width = 0
-      pad_width = column_widths[i] - tostring(cell).ulen
-      if right_align
-        left_pad_width = pad_width
+      if trim_column[i]
+        width = trim_column[i]
+        if tostring(cell).ulen + right_margin > trim_column[i]
+          -- trim this cell as its too long
+          cell = trim cell, width - 4  -- leave space for '[..]'
+          write_cell cell, 0, 0, cell_style
+          write_cell '[..]', 0, 0, 'comment'
+        else
+          -- no need to trim
+          write_cell cell, 0, width - cell.ulen, cell_style
+        -- always break since the trim_column is the last one
+        break
       else
-        right_pad_width = pad_width
+        left_pad_width = 0
+        right_pad_width = 0
+        pad_width = column_widths[i] - tostring(cell).ulen
+        if right_align
+          left_pad_width = pad_width
+        else
+          right_pad_width = pad_width
 
-      right_pad_width += 1 if i < column_widths.num
+        right_pad_width += right_margin
 
-      write padding(left_pad_width), cell_style
-      write cell, cell_style
-      write padding(right_pad_width), cell_style
+        write_cell cell, left_pad_width, right_pad_width, cell_style
 
-    write '\n'
+    finish_row!
 
   text = table.concat text_parts
   col_starts = {1, num: column_widths.num}

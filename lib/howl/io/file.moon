@@ -261,8 +261,8 @@ class File extends PropertyObject
     filter = opts.filter
     on_enter = opts.on_enter
 
-    scan_dir = (dir, base, list = {}) ->
-
+    scan_dir = (dir, base, list = {}, depth=1) ->
+      return if opts.max_depth and depth > opts.max_depth
       enum = get_children dir
       return unless enum
 
@@ -280,7 +280,7 @@ class File extends PropertyObject
             return true
 
           append list, path unless exclude_directories
-          scan_dir f, path, list
+          scan_dir f, path, list, depth + 1
         else
           path = "#{base}#{info.name}"
           continue if filter and filter(path)

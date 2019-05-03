@@ -76,7 +76,7 @@ return {
       color: deep_dark_blue
     border:
       color: dark_blue_off
-      width: 0.5
+      width: 1.5
   }
 
   editor: delegate_to content_box, {

@@ -72,7 +72,7 @@ run = ->
     timer_handle = timer.on_idle 30, run
 
   window = howl.app.window
-  if window and #window.command_line.running == 0
+  if window and not window.command_panel.is_active
     clean_up_buffers!
 
     howl.app\save_session!

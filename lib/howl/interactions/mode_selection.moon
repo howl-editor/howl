@@ -14,10 +14,13 @@ interact.register
     mode_names = mode.names
     table.sort mode_names
 
-    selected = interact.select
+    selected_mode = interact.select
       title: opts.title or 'Mode'
+      prompt: opts.prompt
+      text: opts.text
       items: mode_names
+      columns: {{style: 'string'}}
       :selection
 
-    return unless selected
-    return mode.by_name selected.selection
+    return unless selected_mode
+    return mode.by_name selected_mode

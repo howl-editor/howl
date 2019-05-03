@@ -28,6 +28,16 @@ class ListWidget extends PropertyObject
       @list.max_rows = floor(height / default_line_height)
       @list\draw!
 
+  @property max_width_request:
+    set: (width) =>
+      local default_char_width
+      if width
+        default_char_width = @text_widget.view\text_dimensions('W').width
+        @list.max_cols = floor(width / default_char_width)
+      else
+        @list.max_cols = nil
+      @list\draw!
+
   keymap:
     binding_for:
       ['cursor-up']: => @list\select_prev!

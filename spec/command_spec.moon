@@ -86,78 +86,76 @@ describe 'command', ->
     context 'when <cmd_string> is empty or missing', ->
       it 'displays the commandline with a ":" prompt', ->
         run!
-        assert.equals ':', app.window.command_line.prompt
+        assert.equals ':', app.window.command_panel.active_command_line.prompt
 
     context 'when <cmd_string> is given', ->
-      context 'and it matches a command', ->
+      context 'and it matches a command with no input', ->
         it 'that command is invoked', ->
           command.register cmd
           run cmd.name
           assert.spy(cmd.handler).was_called 1
 
-        context 'and the command specifies an input function', ->
-          before_each ->
-            cmd =
-              name: 'test-input'
-              description: 'test'
-              input: spy.new -> 'input-result1', 'input-result2'
-              handler: spy.new ->
-            command.register cmd
+      context 'and the command specifies an input function', ->
+        before_each ->
+          cmd =
+            name: 'test-input'
+            description: 'test'
+            input: spy.new -> 'input-result1', 'input-result2'
+            handler: spy.new ->
+          command.register cmd
 
-          it 'calls the command input function, passing through extra args', ->
-            run cmd.name, 'arg1', 'arg2'
-            assert.spy(cmd.input).was_called 1
-            assert.spy(cmd.input).was_called_with 'arg1', 'arg2'
+        it 'calls the command input function', ->
+          run cmd.name, 'arg1', 'arg2'
+          assert.spy(cmd.input).was_called 1
 
-          it 'passes the result of the input function into the handler', ->
-            run cmd.name
-            assert.spy(cmd.handler).was_called 1
-            assert.spy(cmd.handler).was_called_with 'input-result1', 'input-result2'
+        it 'passes the result of the input function into the handler', ->
+          run cmd.name
+          assert.spy(cmd.handler).was_called 1
+          assert.spy(cmd.handler).was_called_with 'input-result1', 'input-result2'
 
-          it 'does not call handler if input function returns nil', ->
-            cmd = {
-              name: 'test-cancelled-input'
-              description: 'test'
-              input: ->
-              handler: spy.new ->
-            }
-            command.register cmd
-            run cmd.name
-            assert.spy(cmd.handler).was_called 0
+        it 'does not call handler if input function returns nil', ->
+          cmd = {
+            name: 'test-cancelled-input'
+            description: 'test'
+            input: ->
+            handler: spy.new ->
+          }
+          command.register cmd
+          run cmd.name
+          assert.spy(cmd.handler).was_called 0
 
-          it 'sets spillover to any text arguments before invoking the input', ->
-            local spillover
-            command.register
-              name: 'test-input'
-              description: 'test'
-              input: -> spillover = app.window.command_line\pop_spillover!
-              handler: ->
-            run 'test-input hello cmd'
-            assert.equal 'hello cmd', spillover
+        it 'passes any text as opts.text when invoking the input function', ->
+          local text
+          command.register
+            name: 'test-input'
+            description: 'test'
+            input: (opts)-> text = opts.text
+            handler: ->
+          run 'test-input hello cmd'
+          assert.equal 'hello cmd', text
 
-          it 'displays the ":<cmd_string> " in the command line during input', ->
-            local prompt
-            cmd = {
-              name: 'test-getp'
-              description: 'desc'
-              input: -> prompt = app.window.command_line.command_widget.text
-              handler: ->
-            }
-            command.register cmd
-            run 'test-getp'
-            assert.equals ':'..cmd.name..' ', prompt
+        it 'passes ":<cmd_string> " as opts.prompt when invoking the input function', ->
+          local prompt
+          cmd = {
+            name: 'test-getp'
+            description: 'desc'
+            input: (opts) -> prompt = opts.prompt
+            handler: ->
+          }
+          command.register cmd
+          run 'test-getp'
+          assert.equals ':'..cmd.name..' ', prompt
 
-        context 'and the command does not specify an input function', ->
-          it 'calls the command handler, passing through extra args', ->
-            cmd = {
-              name: 'test-without-input'
-              description: 'test'
-              handler: spy.new ->
-            }
-            command.register cmd
-            run cmd.name, 'arg1', 'arg2'
-            assert.spy(cmd.handler).was_called 1
-            assert.spy(cmd.handler).was_called_with 'arg1', 'arg2'
+      context 'and the command does not specify an input function', ->
+        it 'calls the command handler', ->
+          cmd = {
+            name: 'test-without-input'
+            description: 'test'
+            handler: spy.new ->
+          }
+          command.register cmd
+          run cmd.name
+          assert.spy(cmd.handler).was_called 1
 
       context 'and it matches an alias', ->
         it 'the aliased command is invoked', ->
@@ -175,10 +173,6 @@ describe 'command', ->
           run cmd.name .. ' args'
           assert.not_nil log.last_error
 
-        it 'the command line contains the command name', ->
-          run cmd.name .. ' args'
-          assert.equals cmd.name, app.window.command_line.text
-
       context 'and it contains <invalid-command>space<args>', ->
         it 'logs an error', ->
           run 'no-such-command hello cmd'
@@ -186,10 +180,4 @@ describe 'command', ->
 
         it 'the command line contains the passed text', ->
           run 'no-such-command hello cmd'
-          assert.equals 'no-such-command hello cmd', app.window.command_line.text
-
-      context 'when it specifies a unknown command', ->
-        it 'displays the <cmd_string> in the commandline text', ->
-          run 'what-the-heck now'
-          assert.equals 'what-the-heck now', app.window.command_line.text
-
+          assert.equals 'no-such-command hello cmd', howl.app.window.command_panel.active_command_line.text

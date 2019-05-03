@@ -3,11 +3,33 @@
 import Settings from howl
 append = table.insert
 
+-- Holds configuration values in a nested table structure.
+-- Top level key is the scope name, second level key is the variable name,
+-- third level key is the layer. E.g.
+-- scopes['file/home/user/a']['indent']['mode:moonscript'] = 4
+--
+-- The scope is a string that represents a node in a tree structure. It uses
+-- a slash based syntax like filesystem paths. Scopes for files
+-- use the 'file/' prefix followed by actual filesystem path.
+-- The layer is one of layer_defs (below). All modes automatically
+-- add a layer named "mode:{mode_name}" (e.g. 'mode:moonscript').
+--
+-- Note that *all* configuration values (except defaults) are stored in this
+-- table while the app is running. The defaults are stored in the configuration
+-- definitions (`defs` below).
 local scopes
+
+-- registry of all layers - the default layer has no parents
 layer_defs = {'default': {}}
+
+-- registry of all configuration variable definitions
 defs = {}
+
+-- map of variable name to list of watching functions
 watchers = {}
 
+-- A list of scopes for which configuration is saved to the filesystem.
+-- Currently only values set for global scope (empty string) values are saved.
 saved_scopes = {''}
 
 predefined_types =
@@ -65,6 +87,7 @@ get_def = (name) ->
   def
 
 validate = (def, value) ->
+  -- Check if value is valid for a variable definition
   return if value == nil
 
   def_valid = def.validate and def.validate(value)
@@ -88,12 +111,23 @@ convert = (def, value) ->
     return new_value if new_value != nil
   value
 
+-- A read-only view of current configuration variable definitions.
 definitions = setmetatable {},
   __index: (_, k) -> defs[k]
   __newindex: -> error 'Attempt to write to read-only table `.definitions`'
   __pairs: -> pairs defs
 
 define = (var = {}) ->
+  -- Define a new configuration variable.
+  -- The definition table includes
+  --   name: String name for this variable (no spaces)
+  --   description: Free form text description
+  --   scope: (optional) 'global' or 'local'
+  --   type_of: (optional) One of the predefined_types key above
+  --   options: (optional) List of valid values, or function that returns such
+  --            a list. When provided, only a value from this list may be set
+  --            this variable.
+  --   default: (optional) Default value for this variable
   for field in *{'name', 'description'}
     error '`' .. field .. '` missing', 2 if not var[field]
 
@@ -111,6 +145,9 @@ define = (var = {}) ->
   broadcast var.name, var.default, false
 
 define_layer = (name, def={}) ->
+  -- Register a new layer identified by string name.
+  -- Once registered, the layer is available system wide and any
+  -- configuration variable can be set for this layer.
   error 'defaults not allowed' if def.defaults
   layer_defs[name] = moon.copy(def)
   layer_defs[name].defaults = {}
@@ -129,6 +166,7 @@ define
   scope: 'global'
 
 load_config = (force=false, dir=nil) ->
+  -- Load the configuration from the filesystem.
   return if scopes and not force
   settings = Settings dir
   scopes = settings\load_system('config') or {}
@@ -136,10 +174,11 @@ load_config = (force=false, dir=nil) ->
 local get
 
 save_config = (dir=nil) ->
+  -- Save the current configuration to the filesystem.
   return unless scopes
   settings = Settings dir
   scopes_copy = {}
-  for scope, values in *saved_scopes
+  for scope in *saved_scopes
     values = scopes[scope]
     continue unless values
     persisted_values = nil
@@ -155,6 +194,8 @@ save_config = (dir=nil) ->
   settings\save_system('config', scopes_copy)
 
 set = (name, value, scope='', layer='default') ->
+  -- Set the value of a configuration variabled named `name` to `value`
+  -- for the specified scope and layer.
   load_config! unless scopes
 
   def = get_def name
@@ -175,11 +216,15 @@ set = (name, value, scope='', layer='default') ->
   unless scopes[scope][name]
     scopes[scope][name] = {}
 
+  -- store the value in the scope table
   scopes[scope][name][layer] = value
 
   broadcast name, value, (scope != '' or layer != 'default')
 
 set_default = (name, value, layer='default') ->
+  -- Set a default value for a configuration variable for a layer.
+  -- This is in addition to the default provided in define(). The main
+  -- purpose is to set default values for specific layers.
   def = get_def name
   error "Unknown layer '#{layer}'" if not layer_defs[layer]
   value = convert def, value
@@ -194,29 +239,38 @@ get_default = (name, layer='default') ->
     return layer_defs[layer].defaults[name]
 
 parent = (scope) ->
+  -- Given a scope string, return it's parent scope string
   pos = scope\rfind('/')
   return '' unless pos
   return scope\sub(1, pos - 1)
 
 local _get
 _get = (name, scope, layers) ->
+  -- Internal logic for getting the value of a configuration variable
+  -- To get a value we need the variable name, a scope and a *list* of layers
+  -- to search.
   values = scopes[scope] and scopes[scope][name]
   values = {} if values == nil
 
   if scope == ''
+    -- top level, this is the global scope
     for _layer in *layers
       value = values[_layer]
       return value if value != nil
+      -- for each layer, also check layer defaults
       value = get_default name, _layer
       return value if value != nil
   else
+    -- a non-global scope - just check the layers but not the layer defaults
     for _layer in *layers
       value = values[_layer]
       return value if value != nil
 
   if scope != ''
+    -- if we didn't find any value at this scope, check the parent recursively
     return _get(name, parent(scope), layers)
 
+  -- finally, if no value was found, check the defined default
   def = defs[name]
   return def.default if def
 
@@ -234,6 +288,7 @@ get = (name, scope='', layer='default') ->
   _get name, scope, layers
 
 reset = ->
+  -- Clear all configuration values and layer defaults
   scopes = {}
   for _, layer_def in pairs layer_defs
     layer_def.defaults = {}
@@ -245,17 +300,24 @@ watch = (name, callback) ->
     watchers[name] = list
   append list, callback
 
+
+-- Proxy config objects are used to provide a convinient API to get and set
+-- values *at a specific scope and layer*. E.g. these are used in
+-- `buffer.config.indent = 4` to set a value at a specific scope associated with
+-- the buffer.
+
 proxy_mt = {
-  __index: (proxy, key) -> get(key, proxy._scope, proxy._read_layer)
-  __newindex: (proxy, key, value) -> set(key, value, proxy._scope, proxy._write_layer)
+  __index: (proxy, key) -> get(key, proxy.scope, proxy._read_layer)
+  __newindex: (proxy, key, value) -> set(key, value, proxy.scope, proxy._write_layer)
 }
 
 local proxy
 proxy = (scope, write_layer='default', read_layer=write_layer) ->
   _proxy = {
-    clear: => scopes[@_scope] = {}
+    clear: => scopes[@scope] = {}
     for_layer: (layer) -> proxy scope, layer
-    _scope: scope
+    scope: scope
+    layer: write_layer
     _write_layer: write_layer
     _read_layer: read_layer
   }
@@ -265,7 +327,7 @@ scope_for_file = (file) -> 'file'..file
 
 for_file = (file) -> proxy scope_for_file file
 
-for_layer = (layer) -> proxy '', layer
+for_layer = (layer) -> proxy '', layer  -- global scope
 
 merge = (scope, target_scope) ->
   if scopes[scope]
@@ -305,8 +367,10 @@ config = {
   :replace
   :merge
   :delete
+  :validate
 }
 
+-- Allow getting and setting config values directly on this module.
 return setmetatable config, {
   __index: (t, k) -> rawget(config, k) or get k
   __newindex: (t, k, v) ->

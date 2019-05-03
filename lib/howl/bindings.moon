@@ -3,7 +3,7 @@
 
 _G = _G
 import table, coroutine, pairs from _G
-import pcall, callable, setmetatable, typeof from _G
+import pcall, callable, setmetatable, typeof, tostring from _G
 import signal, command, sys from howl
 append = table.insert
 
@@ -218,6 +218,12 @@ export dispatch = (event, source, maps_to_search, ...) ->
     return true if not status or (status and ret != false)
 
   false
+
+export can_dispatch = (event, source, maps_to_search) ->
+  event = substitute_keyname event
+  translations = translate_key event
+  handlers = find_handlers event, source, translations, maps_to_search
+  return #handlers > 0
 
 export process = (event, source, extra_keymaps = {},  ...) ->
   event = substitute_keyname event

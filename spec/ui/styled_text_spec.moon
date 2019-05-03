@@ -129,6 +129,20 @@ describe 'StyledText', ->
         tbl = StyledText.for_table { 'one', 'twothreefour' }, { {min_width: 4} }
         assert.same tbl.text, 'one         \ntwothreefour\n'
 
+    context 'when max_width is provided', ->
+      it 'does not trim when row fits', ->
+        tbl = StyledText.for_table { 'one', 'two', 'three'}, {}, max_width: 5
+        assert.same 'one  \ntwo  \nthree\n', tbl.text
+
+      it 'trims row and appends [..] to indicate trim', ->
+        tbl = StyledText.for_table { 'one one', 'two two', 'three three'}, {}, max_width: 7
+        assert.same 'one one\ntwo two\nthr[..]\n', tbl.text
+
+      it 'preserves and trims styling for trimmed cells, uses comment style for [..]', ->
+        tbl = StyledText.for_table { StyledText('one one one one', {1, 'string', 15}), 'two', 'three'}, {}, max_width: 5
+        assert.same tbl.text, 'o[..]\ntwo  \nthree\n'
+        assert.same tbl.styles, {1, 'string', 1, 2, 'comment', 6}
+
     context 'when column align:"right" is specified', ->
       it 'right aligns the text in the column with one extra space to the right', ->
         tbl = StyledText.for_table { {'o', 'x'}, {'two', 'x'} }, { {align: 'right'} }

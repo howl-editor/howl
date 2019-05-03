@@ -6,18 +6,20 @@ import Editor, Window from howl.ui
 
 append = table.insert
 
+require 'howl.interactions.explorer'
 require 'howl.interactions.select'
 require 'howl.interactions.location_selection'
 require 'howl.interactions.line_selection'
 
+list_items = (command_line, col=1) ->
+  [tostring(item[col]) for item in *command_line\get_widget('explore_list').list.items]
+
 describe 'select_line', ->
-  local command_line, buffer, editor
+  local buffer, editor
 
   before_each ->
     app.window = Window!
     app.window\realize!
-    command_line = app.window.command_line
-
     buffer = Buffer!
     buffer.text = 'one\ntwo\nthree'
     editor = Editor buffer
@@ -28,43 +30,23 @@ describe 'select_line', ->
   describe 'interact.select_line', ->
     it 'shows opt.lines in the completion list by default', ->
       local lines
-      within_activity (-> interact.select_line(:editor, lines: buffer.lines)), ->
-        lines = get_ui_list_widget_column 2
+      within_command_line (-> interact.select_line(:editor, lines: buffer.lines)), (command_line) ->
+        lines = list_items command_line, 2
       assert.same {'one', 'two', 'three'}, lines
 
     it 'filters lines to match text entered', ->
       lines = {}
-      within_activity (-> interact.select_line(:editor, lines: buffer.lines)), ->
-        append lines, get_ui_list_widget_column 2
+      within_command_line (-> interact.select_line(:editor, lines: buffer.lines)), (command_line) ->
+        append lines, list_items command_line, 2
         command_line\write 'o'
-        append lines, get_ui_list_widget_column 2
+        append lines, list_items command_line, 2
         command_line\write 'n'
-        append lines, get_ui_list_widget_column 2
+        append lines, list_items command_line, 2
         command_line\clear!
         command_line\write ''
-        append lines, get_ui_list_widget_column 2
+        append lines, list_items command_line, 2
 
       assert.same {'one', 'two', 'three'}, lines[1]
       assert.same {'one', 'two'}, lines[2]
       assert.same {'one'}, lines[3]
       assert.same {'one', 'two', 'three'}, lines[4]
-
-    it 'handles spillover text, when present', ->
-      command_line\write_spillover 'one'
-      local text, lines
-      within_activity (-> interact.select_line(:editor, lines: buffer.lines)), ->
-        lines = get_ui_list_widget_column 2
-        text = command_line.text
-
-      assert.same {'one'}, lines
-      assert.same 'one', text
-
-    context 'when `find` function is provided', ->
-      it 'uses the find function to find matching lines', ->
-        find = (query, text) ->
-          return {{1,3}} if text == 'two'
-        local lines
-        within_activity (-> interact.select_line(:editor, lines: buffer.lines, :find)), ->
-          command_line\write 'abc'
-          lines = get_ui_list_widget_column 2
-        assert.same {'two'}, lines

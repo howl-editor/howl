@@ -23,4 +23,4 @@ interact.register
     selected = interact.select opts
 
     if selected
-      return selected.selection.name
+      return selected.name

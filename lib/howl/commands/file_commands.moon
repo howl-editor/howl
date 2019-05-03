@@ -36,13 +36,22 @@ auto_mkdir = (directory) ->
 command.register
   name: 'open',
   description: 'Open a file'
-  input: -> interact.select_file allow_new: true
+  input: (opts) ->
+    buffer = app.editor.buffer
+    path = opts.text
+    if not path or path.is_empty
+      path = buffer and buffer.file and buffer.file.parent.path
+      path or= buffer and buffer.directory and buffer.directory.path
+      path or= File.home_dir.path
+
+    interact.select_file :path, allow_new: true, prompt: opts.prompt, help: opts.help
+
   handler: (file) -> app\open_file file
 
 command.register
   name: 'open-recent',
   description: 'Open a recently visited file'
-  input: ->
+  input: (opts) ->
     recent_files = {}
     for buf in *app.buffers
       continue unless buf.file
@@ -57,26 +66,29 @@ command.register
         file_info.file.parent.short_path
         file: file_info.file
       }
-    selected = interact.select_location
+    location = interact.select_location
       items: recent_files
       columns: { {style: 'filename'}, {style: 'comment'} }
       title: 'Recent files'
-    return selected and selected.selection.file
+      prompt: ':open-recent '
+      text: opts.text
 
-  handler: app\open_file
+    return location and location.file
+
+  handler: (f) -> app\open_file(f) if f
 
 command.alias 'open', 'e'
 
 command.register
   name: 'project-open',
   description: 'Open a file in the current project'
-  input: ->
+  input: (opts)->
     buffer = app.editor and app.editor.buffer
     file = buffer and (buffer.file or buffer.directory)
     if file
       project = Project.get_for_file file
       if project
-        return interact.select_file_in_project :project
+        return interact.select_file_in_project :project, prompt: opts.prompt, help: opts.help
     else
       log.warn "No file or directory associated with the current view"
       return
@@ -113,8 +125,9 @@ command.alias 'save', 'w'
 command.register
   name: 'save-as',
   description: 'Save the current buffer to a given file'
-  input: ->
-    file = interact.select_file allow_new: true
+  input: (opts) ->
+    parent = app.editor.buffer.file and app.editor.buffer.file.parent
+    file = interact.select_file prompt: ':save-as ', text: opts.text, allow_new: true, path: parent and parent.path
     return unless file
 
     if file.exists
