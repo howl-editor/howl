@@ -2,15 +2,20 @@ import interact from howl
 
 -- construct a search function suitable for SearchView from a general find(text, query, start) function
 -- when called the search function returns an iterator of chunks
-find_iterator = (buffer, start_pos, end_pos, find, parse_query, parse_line, once_per_line) ->
-  local lines
-  parsed_lines = {}  -- cached results of calling parse_line
-  if start_pos
+find_iterator = (opts) ->
+  {:buffer, :lines, :find, :parse_query, :parse_line, :once_per_line} = opts
+  local start_pos, end_pos
+  if opts.chunk
+    start_pos = opts.chunk and opts.chunk.start_pos or 1
+    end_pos = opts.chunk and opts.chunk.end_pos or opts.buffer.length
     lines = buffer.lines\for_text_range start_pos, end_pos
   else
     start_pos = 1
     end_pos = buffer.length
-    lines = buffer.lines
+
+  lines or= buffer.lines
+
+  parsed_lines = {}  -- cached results of calling parse_line
 
   -- the search function
   (query) ->
@@ -62,17 +67,7 @@ interact.register
     if opts.chunk and opts.lines
       error 'both chunk and lines cannot be specified'
 
-    -- compute start_pos, end_pos from either chunk or lines
-    local start_pos, end_pos
-    if opts.chunk
-      start_pos = opts.chunk and opts.chunk.start_pos or 1
-      end_pos = opts.chunk and opts.chunk.end_pos or opts.buffer.length
-    elseif opts.lines
-      lines = opts.lines
-      start_pos = lines[1].start_pos
-      end_pos = lines[#lines].end_pos
-
-    search = find_iterator(opts.buffer, start_pos, end_pos, opts.find, opts.parse_query, opts.parse_line, opts.once_per_line)
+    search = find_iterator(opts)
 
     search_view = howl.ui.SearchView
       editor: opts.editor or howl.app.editor
