@@ -4,6 +4,7 @@
 {:activities, :config} = howl
 {:StyledText, :icon, :markup, :style} = howl.ui
 {:File} = howl.io
+{:PropertyObject} = howl.util.moon
 
 append = table.insert
 separator = howl.io.File.separator
@@ -25,7 +26,8 @@ icon.define_default 'file-new', 'font-awesome-plus-circle'
 is_path_directory = (path) -> path[#path] == separator
 path_demoted = (path) -> path[1] == '.' and path != current_dir_specifier  -- rename
 
-hidden_exts = if howl.config.hidden_file_extensions then {e, true for e in *howl.config.hidden_file_extensions}
+hidden_exts = if howl.config.hidden_file_extensions
+  {e, true for e in *howl.config.hidden_file_extensions}
 
 path_hidden = (path) ->
   ext = path\match "%.(%w+)#{separator}-$"
@@ -45,7 +47,11 @@ read_subtree = (d, opts={}) ->
     status: -> "Reading entries (#{paths_found} paths collected).."
     cancel: -> cancel = true
   }, ->
-    d\find_paths filter: path_hidden, :on_enter, exclude_non_directories: opts.directories_only, max_depth: opts.max_depth
+    d\find_paths
+      filter: path_hidden
+      :on_enter
+      exclude_non_directories: opts.directories_only
+      max_depth: opts.max_depth
 
 path_rank = (path) ->
   rank = 0
@@ -157,7 +163,7 @@ class NewFile
   preview: => text: markup.howl "<comment>Create new file at #{@file.path}</>"
 
 
-class DirectoryExplorer
+class DirectoryExplorer extends PropertyObject
   for_path: (path, opts={}) ->
     -- returns a list of Explorer objects for path and any unmatched text
     path = File.expand_path path
@@ -181,6 +187,11 @@ class DirectoryExplorer
 
     path_items = {}
     target_path = file.path
+    opts = moon.copy opts
+    -- some opts are shared among all explorers in the path
+    opts.shared = {}
+    opts.shared.show_subtree = opts.show_subtree
+
     while file
       append path_items, 1, DirectoryExplorer file, opts
       file = file.parent
@@ -191,8 +202,8 @@ class DirectoryExplorer
     return path_items, path\sub #target_path + 2
 
   new: (@file=File.root_dir, opts={}) =>
+    super!
     @lister =  opts.lister or directory_lister
-    @show_subtree = opts.show_subtree
     if opts.files_only and opts.directories_only
       error 'invalid to specify both files_only and directories_only'
     @files_only = opts.files_only
@@ -200,15 +211,20 @@ class DirectoryExplorer
     @allow_new = opts.allow_new
     @root = opts.root
     @name = @file.basename
+    @shared_opts = opts.shared or {}
 
   _copy_opts: => {
     lister: @lister
-    show_subtree: @show_subtree
     files_only: @files_only
     directories_only: @directories_only
     allow_new: @allow_new
     root: @root
+    shared: @shared_opts
   }
+
+  @property show_subtree:
+    get: => @shared_opts.show_subtree
+    set: (value) => @shared_opts.show_subtree = value
 
   display_title: =>
     if @show_subtree

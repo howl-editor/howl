@@ -107,7 +107,7 @@ class BufferExplorer
         -- We save the next or previous position in @jump_to_buffer which is
         -- used to preserve the position of the selection in the list of buffers.
         -- Otherwise a redraw would just select the first item.
-        for idx, buf in ipairs moon.copy @buffers
+        for idx, buf in ipairs @buffers
           if selected_item.buffer == buf
             @jump_to_buffer = @buffers[idx + 1] or @buffers[idx]
             break

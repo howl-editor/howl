@@ -82,8 +82,7 @@ command.register
             app.editor.selection\select selection.start_pos, selection.end_pos
           howl.command.run 'buffer-replace-regex ' .. args.text
 
-    return replacement if replacement
-    return nil
+    replacement
 
   handler: (replacement) ->
     do_replacement(replacement) if replacement
@@ -133,8 +132,7 @@ command.register
               app.editor.selection\select selection.start_pos, selection.end_pos
             howl.command.run 'buffer-replace ' .. args.text
 
-    return replacement if replacement
-    return nil
+    replacement
 
   handler: (replacement) ->
     do_replacement(replacement) if replacement

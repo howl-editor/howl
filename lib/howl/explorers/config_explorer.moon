@@ -6,74 +6,32 @@
 
 append = table.insert
 
-local ConfigVar, configuration_values, ConfigValue, get_vars, get_help, get_options_for, stringify
+get_help = ->
+  help = howl.ui.HelpContext!
+  help\add_section
+    heading: 'Steps'
+    text: '1. Select a variable
+2. Select the scope and layer for the variable
+3. Select or type a value and press <keystroke>enter</>'
+  help
 
-class ConfigVar
-  -- lists values at different scopes for a single configuration variable
-  new: (@def, @buffer) =>
-    @scopes = configuration_values @def, @buffer
-  display_row: => {@def.name, @def.description}
-  display_title: => "Select scope for #{@def.name}"
-  preview: =>
-    preview_text = markup.howl "<h1>#{@def.name}</>\n\n"
-    preview_text ..= StyledText @def.description, 'comment'
-    s = @def.tostring or tostring
-    preview_text ..= markup.howl "\n\n<keyword>Current value:</>"
-    preview_text ..= markup.howl("\n<key>global</> ") .. StyledText s(config[@def.name]), 'string'
-    if not @def.scope == 'global'
-      preview_text ..= markup.howl("\n<key>buffer</> ") .. StyledText s(@buffer.config[@def.name]), 'string'
-    {text: preview_text, title: "About: #{@def.name}"}
-  display_items: => @scopes
-  display_columns: => {
-    { style: 'key' }
-    { style: 'string' }
-    { style: 'comment' }
-  }
-  display_path: => @def.name .. '@'
-  parse: (text) =>
-    -- parses something like '@global=' into 'global', ''
-    scope, remaining_text = text\match '([%w]+)=(.*)'
-    return unless scope
-    for scope_option in *@scopes
-      scope_alias = scope_option.scope_alias
-      if scope_alias == scope
-        return jump_to: scope_option, text:remaining_text
-  get_help: => get_help!
+stringify = (value, to_s) ->
+  return to_s(value) if type(value) != 'table'
+  [stringify o, to_s for o in *value]
 
+get_options_for = (def) ->
+  local options
+  if def.options
+    options = def.options
+    options = options! if callable options
 
-configuration_values = (def, buffer) ->
-  options = get_options_for def
-  items = {}
-  -- always include the global scope
-  append items, ConfigValue(def, config, 'global', '')
-  return items if def.scope == 'global' or not buffer
-
-  -- always include the global scope with current mode layer
-  mode_layer = buffer.mode.config_layer
-  layer_config = config.proxy '', mode_layer
-  mode_name = buffer.mode.name
-  append items, ConfigValue(
-    def, layer_config, "global[#{mode_layer}]",
-    "For all buffers with mode #{mode_name}")
-
-  if buffer.file
-    -- include project scopes, when within a project
-    project = howl.Project.for_file buffer.file
-    if project
-      append items, ConfigValue(
-        def, project.config, 'project',
-        "For all files under #{project.root.short_path}")
-
-      project_layer_config = project.config.for_layer(mode_layer)
-      append items, ConfigValue(
-        def, project_layer_config, "project[#{mode_layer}]",
-        "For all files under #{project.root.short_path} with mode #{mode_name}", options)
-
-  append items, ConfigValue(
-    def, buffer.config, 'buffer',
-    "For #{buffer.title} only")
-
-  return items
+    table.sort options, (a, b) ->
+      to_s = tostring or def.tostring
+      a_str = stringify a, to_s
+      b_str = stringify b, to_s
+      return a_str < b_str if type(a_str) != 'table'
+      return a_str[1] < b_str[1]
+  options
 
 class ConfigValue
   -- represents value at a specific scope and layer for a configuration value
@@ -153,38 +111,76 @@ class ConfigValue
           preview_text ..= StyledText "Invalid value '#{new_value}' (#{@def.type_of} expected)", 'error'
     return {title: "About: #{@def.name}", text: preview_text}
 
+configuration_values = (def, buffer) ->
+  options = get_options_for def
+  items = {}
+  -- always include the global scope
+  append items, ConfigValue(def, config, 'global', '')
+  return items if def.scope == 'global' or not buffer
+
+  -- always include the global scope with current mode layer
+  mode_layer = buffer.mode.config_layer
+  layer_config = config.proxy '', mode_layer
+  mode_name = buffer.mode.name
+  append items, ConfigValue(
+    def, layer_config, "global[#{mode_layer}]",
+    "For all buffers with mode #{mode_name}")
+
+  if buffer.file
+    -- include project scopes, when within a project
+    project = howl.Project.for_file buffer.file
+    if project
+      append items, ConfigValue(
+        def, project.config, 'project',
+        "For all files under #{project.root.short_path}")
+
+      project_layer_config = project.config.for_layer(mode_layer)
+      append items, ConfigValue(
+        def, project_layer_config, "project[#{mode_layer}]",
+        "For all files under #{project.root.short_path} with mode #{mode_name}", options)
+
+  append items, ConfigValue(
+    def, buffer.config, 'buffer',
+    "For #{buffer.title} only")
+
+  return items
+
+class ConfigVar
+  -- lists values at different scopes for a single configuration variable
+  new: (@def, @buffer) =>
+    @scopes = configuration_values @def, @buffer
+  display_row: => {@def.name, @def.description}
+  display_title: => "Select scope for #{@def.name}"
+  preview: =>
+    preview_text = markup.howl "<h1>#{@def.name}</>\n\n"
+    preview_text ..= StyledText @def.description, 'comment'
+    s = @def.tostring or tostring
+    preview_text ..= markup.howl "\n\n<keyword>Current value:</>"
+    preview_text ..= markup.howl("\n<key>global</> ") .. StyledText s(config[@def.name]), 'string'
+    if not @def.scope == 'global'
+      preview_text ..= markup.howl("\n<key>buffer</> ") .. StyledText s(@buffer.config[@def.name]), 'string'
+    {text: preview_text, title: "About: #{@def.name}"}
+  display_items: => @scopes
+  display_columns: => {
+    { style: 'key' }
+    { style: 'string' }
+    { style: 'comment' }
+  }
+  display_path: => @def.name .. '@'
+  parse: (text) =>
+    -- parses something like '@global=' into 'global', ''
+    scope, remaining_text = text\match '([%w]+)=(.*)'
+    return unless scope
+    for scope_option in *@scopes
+      scope_alias = scope_option.scope_alias
+      if scope_alias == scope
+        return jump_to: scope_option, text:remaining_text
+  get_help: => get_help!
+
 get_vars = ->
   defs = [def for _, def in pairs config.definitions]
   table.sort defs, (a, b) -> a.name < b.name
   return defs
-
-get_help = ->
-  help = howl.ui.HelpContext!
-  help\add_section
-    heading: 'Steps'
-    text: '1. Select a variable
-2. Select the scope and layer for the variable
-3. Select or type a value and press <keystroke>enter</>'
-  help
-
-get_options_for = (def) ->
-  local options
-  if def.options
-    options = def.options
-    options = options! if callable options
-
-    table.sort options, (a, b) ->
-      to_s = tostring or def.tostring
-      a_str = stringify a, to_s
-      b_str = stringify b, to_s
-      return a_str < b_str if type(a_str) != 'table'
-      return a_str[1] < b_str[1]
-  options
-
-stringify = (value, to_s) ->
-  return to_s(value) if type(value) != 'table'
-  [stringify o, to_s for o in *value]
-
 
 class ConfigExplorer
   -- lists all configuration variables available

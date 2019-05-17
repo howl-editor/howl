@@ -112,8 +112,8 @@ class Application extends PropertyObject
         status = @window.status
         status[level] status, essentials
         command_line = @window.command_panel.active_command_line
-        if command_line
-          command_line\notify essentials, level if command_line.showing
+        if command_line and command_line.is_open
+          command_line\notify essentials, level
       elseif not @args.spec
         print message
 

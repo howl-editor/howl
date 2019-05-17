@@ -99,7 +99,7 @@ record_history = (cmd_name, input_text) ->
   item = {:styled_text, :text}
 
   -- don't duplicate repeated commands
-  history = [history[i] for i=1,#history when history.text != item.text]
+  history = [h_item for h_item in *history when h_item.text != item.text]
   append history, 1, item
 
   -- prune
