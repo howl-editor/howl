@@ -384,7 +384,7 @@ class CommandPanel extends PropertyObject
 
   notify: (message, level) =>
     return unless @is_active
-    with @command_lines[#@command_lines].notification
+    with @active_command_line.notification
       \notify level, message
       \show!
 
