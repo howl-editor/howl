@@ -5,7 +5,10 @@ require 'howl.ui.icons.font_awesome'  -- icons required by DirectoryExplorer
 describe 'DirectoryExplorer', ->
   local tmp_root, subdir1, subdir2
 
-  items = (explorer) -> [row.path for row in *explorer\display_items!]
+  items = (explorer) ->
+    names = [row.path for row in *explorer\display_items!]
+    table.sort names, (a, b) -> a < b
+    names
 
   before_each ->
     tmp_root = File.tmpdir!
@@ -49,13 +52,13 @@ describe 'DirectoryExplorer', ->
   context 'listing', ->
     it 'lists all files and directories including current directory', ->
       e = DirectoryExplorer tmp_root
-      assert.same {'./', 'subdir1/', 'subdir2/', 'file1', 'file2'}, items e
+      assert.same {'./', 'file1', 'file2', 'subdir1/', 'subdir2/'}, items e
 
     context 'files_only = true', ->
       it 'shows files and directories but not current directory', ->
         -- This is to let user pick a file from a different directory
         e = DirectoryExplorer tmp_root, files_only: true
-        assert.same {'subdir1/', 'subdir2/', 'file1', 'file2'}, items e
+        assert.same {'file1', 'file2', 'subdir1/', 'subdir2/'}, items e
 
     context 'directories_only = true', ->
       it 'shows directories including current directory', ->
