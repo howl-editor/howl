@@ -38,7 +38,7 @@ jobs:
         inputs:
           secureFile: gc-account.json
       - script: |
-          env | grep -i temp
+          apt install flatpak ostree
           gcloud auth activate-service-account --key-file $DOWNLOADSECUREFILE_SECUREFILEPATH
           gsutil -m cp -r gs://howl-dl/repo .
           ostree init --repo=repo --mode=archive
