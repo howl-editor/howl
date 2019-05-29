@@ -250,15 +250,15 @@ class BufferSearcher
 
     -- return matches with matched highlights
     for match in *@search_matches
-      line = @search_buffer.lines\at_pos match.start_pos
-
-      start_column = match.start_pos - line.start_pos + 1
-      end_column = math.min(match.end_pos, line.end_pos) - line.start_pos + 2
-      item_highlights = {
-        {},
-        {{:start_column, :end_column}},
-        highlight: if self.replace and not match.exclude then 'replace_strikeout' else 'search_secondary'
-      }
+      local line, marker, highlight
+      if @replacements
+        marker = @replacements[match.id]
+        line = @replacement_buffer.lines\at_pos marker.start_pos
+        highlight = if marker.deleted then 'replace_strikeout' else 'search_secondary'
+      else
+        line = @search_buffer.lines\at_pos match.start_pos
+        marker = match
+        highlight = 'search_secondary'
 
       -- show a continuation marker instead of line number for duplicated lines
       local display_lnr
@@ -268,12 +268,20 @@ class BufferSearcher
         display_lnr = line.nr
         last_lnr = line.nr
 
+      start_column = marker.start_pos - line.start_pos + 1
+      end_column = math.min(marker.end_pos, line.end_pos) - line.start_pos + 2
+      item_highlights = {
+        {},
+        {{:start_column, :end_column}},
+        :highlight
+      }
+
       last_match = {
         display_lnr,
         line.chunk,
         :line,
         buffer: if @replacements then @replacement_buffer else @search_buffer
-        marker: if @replacements then @replacements[match.id] else match
+        :marker
         :item_highlights
       }
       append rows, last_match
