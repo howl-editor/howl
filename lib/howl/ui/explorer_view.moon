@@ -329,9 +329,12 @@ class ListItemView
     if @item.display_columns
       @explorer_view.list.columns = @item\display_columns!
     @list_initial_selection = @update_list_matcher subitems, opts
-    @explorer_view\redraw_text text
     @explorer_view\redraw_title title
     @explorer_view\redraw_prompt if @item.display_path then @item\display_path! else nil
+    -- redrawing text should always be last since this may trigger
+    -- entering a new level and we don't want to update the prompt or title
+    -- after that
+    @explorer_view\redraw_text text
 
   handle_text: (text) =>
     if @item.parse  -- quick selection of an item without pressing enter

@@ -278,6 +278,22 @@ describe 'ExplorerView', ->
           -- only matches items with 'a'
           assert.same {'aa', 'ca'}, list_widget_items!
 
+        it 'sets the prompt, title and text ', ->
+          parse = spy.new (_, text) ->
+            return unless text == 'two'
+            {
+              jump_to: {
+                display_items: -> {'a', 'b', 'c'}
+                display_path: -> 'newpath>'
+                display_title: -> 'New Title'
+              }
+              text: 'new-text'
+            }
+          explorer_view\on_text_changed 'two'
+          assert.same 'newpath>', tostring command_line.prompt
+          assert.same 'New Title', tostring command_line.title
+          assert.same 'new-text', tostring command_line.text
+
       context 'and the response contains jump_to_absolute', ->
         it 'jumps to the returned path of explorer objects, replacing current state', ->
           parse = spy.new (_, text) ->

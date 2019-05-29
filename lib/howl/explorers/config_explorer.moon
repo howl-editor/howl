@@ -145,6 +145,8 @@ configuration_values = (def, buffer) ->
 
   return items
 
+local ConfigExplorer
+
 class ConfigVar
   -- lists values at different scopes for a single configuration variable
   new: (@def, @buffer) =>
@@ -157,7 +159,7 @@ class ConfigVar
     s = @def.tostring or tostring
     preview_text ..= markup.howl "\n\n<keyword>Current value:</>"
     preview_text ..= markup.howl("\n<key>global</> ") .. StyledText s(config[@def.name]), 'string'
-    if not @def.scope == 'global'
+    if @def.scope != 'global'
       preview_text ..= markup.howl("\n<key>buffer</> ") .. StyledText s(@buffer.config[@def.name]), 'string'
     {text: preview_text, title: "About: #{@def.name}"}
   display_items: => @scopes
@@ -168,13 +170,22 @@ class ConfigVar
   }
   display_path: => @def.name .. '@'
   parse: (text) =>
-    -- parses something like '@global=' into 'global', ''
+    -- parses something like 'global=' into 'global', ''
     scope, remaining_text = text\match '([%w]+)=(.*)'
-    return unless scope
-    for scope_option in *@scopes
-      scope_alias = scope_option.scope_alias
-      if scope_alias == scope
-        return jump_to: scope_option, text:remaining_text
+
+    -- jump to ConfigValue if scope text matches exactly
+    if scope
+      for scope_option in *@scopes
+        scope_alias = scope_option.scope_alias
+        if scope_alias == scope
+          return jump_to: scope_option, text:remaining_text
+
+    -- jump to ConfigValue if we only have one scope, e.g. 'global'
+    if text.is_empty and #@scopes == 1
+      -- jump_to_absolute means there is no ConfigVar explorer for this case
+      -- pressing backspace goes back to a top level ConfigExplorer
+      return jump_to_absolute: {ConfigExplorer(@buffer), @scopes[1]}
+
   get_help: => get_help!
 
 get_vars = ->
@@ -191,6 +202,7 @@ class ConfigExplorer
   }
   display_items: =>
     [ConfigVar(def, @buffer) for def in *get_vars!]
+
   parse: (text) =>
     -- check if text contains '@' and parse 'var_name@scope'
     name, remaining_text = text\match '([%w_]+)@(.*)'
@@ -202,12 +214,6 @@ class ConfigExplorer
     return unless name
     def = config.definitions[name]
     return unless def
-
-    if def.scope == 'global' and remaining_text == ''
-      -- for global only var, we want to auto-select the global scope
-      -- no point showing the user a list of scopes with only one option (global)
-      -- passing in 'global=' will be handled by ConfigVar.parse
-      return jump_to: ConfigVar(def, @buffer), text: 'global='
 
     return jump_to: ConfigVar(def, @buffer), text: remaining_text
 
