@@ -24,7 +24,7 @@ jobs:
     dependsOn: FlatpakBuild
     # condition: eq(variables['Build.Reason'], 'Schedule')
     container:
-      image: 'google/cloud-sdk'
+      image: 'quay.io/refi64/gcloud-flatpak'
 
     pool:
       vmImage: 'Ubuntu-16.04'
@@ -38,7 +38,6 @@ jobs:
         inputs:
           secureFile: gc-account.json
       - script: |
-          sudo apt install flatpak ostree
           gcloud auth activate-service-account --key-file $DOWNLOADSECUREFILE_SECUREFILEPATH
           gsutil -m cp -r gs://howl-dl/repo .
           ostree init --repo=repo --mode=archive
