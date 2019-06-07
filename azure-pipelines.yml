@@ -22,7 +22,7 @@ jobs:
 
   - job: FlatpakRepoDeploy
     dependsOn: FlatpakBuild
-    # condition: eq(variables['Build.Reason'], 'Schedule')
+    condition: eq(variables['Build.Reason'], 'Schedule')
     container:
       image: 'quay.io/refi64/gcloud-flatpak'
 
@@ -43,6 +43,6 @@ jobs:
           ostree init --repo=repo --mode=archive
           flatpak build-import-bundle repo howl.flatpak
           flatpak build-sign repo
-          flatpak build-update-repo --generate-static-deltas repo
+          flatpak build-update-repo --generate-static-deltas --prune --prune-depth=2 repo
           gsutil -m cp -r repo gs://howl-dl/
         displayName: 'Push to Google Cloud Storage'
