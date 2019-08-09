@@ -20,7 +20,11 @@ if [ -z "$tmp" ]; then
 fi
 
 echo "Downloading $file.."
-wget -O $tmp $file || exit 1
+if which curl >/dev/null 2>&1; then
+  curl -Lo $tmp $file || exit 1
+else
+  wget -O $tmp $file || exit 1
+fi
 
 file_checksum=$($sha256 $tmp | awk '{print $1}')
 
