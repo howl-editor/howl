@@ -52,6 +52,11 @@ find_iterator = (opts) ->
             search_start = 1
           else
             search_start = match_end + 1
+            -- some matches (e.g. regex '^') match empty spans
+            if search_start == match_start
+              inc_line!
+              line = get_line!
+              search_start = 1
           return buffer\chunk(line_start + match_start - 1, line_start + match_end - 1), match_info
         else
           inc_line!
