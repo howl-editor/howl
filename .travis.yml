@@ -7,9 +7,8 @@ addons:
       - libgtk-3-dev
       - at-spi2-core
 
-before_install:
-  - export DISPLAY=":99.0"
-  - sh -e /etc/init.d/xvfb start
+services:
+  - xvfb
 
 script:
   - make -C src -j 4
