@@ -192,7 +192,7 @@ not be automatically deleted.
 
 Invokes `callback` with a File instance pointing to an existing temporary file.
 The temporary file will be automatically deleted upon the return of `callback`,
-if it exists.
+if it exists. Returns the values returned by `callback`.
 
 ## Methods
 
