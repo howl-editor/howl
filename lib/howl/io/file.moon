@@ -39,9 +39,12 @@ class File extends PropertyObject
 
   with_tmpfile: (f) ->
     file = File.tmpfile!
-    status, err = pcall f, file
+    result = { pcall f, file }
     file\delete_all! if file.exists
-    error err if not status
+    if result[1]
+      error result[2]
+    else
+      table.unpack result, 2
 
   is_absolute: (path) ->
     (path\match('^/') or path\match('^%a:\\\\')) != nil
