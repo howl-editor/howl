@@ -50,7 +50,7 @@ unregister = (name) ->
   accessible_names[sane_name] = nil if sane_name != name
 
 alias = (target, name, opts = {}) ->
-  error 'Target ' .. target .. 'does not exist' if not commands[target]
+  error 'Target ' .. target .. ' does not exist' if not commands[target]
   def = moon.copy opts
   def.alias_for = target
   commands[name] = def
