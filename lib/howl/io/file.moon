@@ -42,9 +42,9 @@ class File extends PropertyObject
     result = { pcall f, file }
     file\delete_all! if file.exists
     if result[1]
-      error result[2]
-    else
       table.unpack result, 2
+    else
+      error result[2]
 
   is_absolute: (path) ->
     (path\match('^/') or path\match('^%a:\\\\')) != nil
