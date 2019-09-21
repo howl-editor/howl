@@ -329,14 +329,14 @@ config.define
   name: 'breadcrumb_limit'
   description: 'The maximum number of breadcrumbs to keep'
   scope: 'global'
-  type_of: 'positive-number'
+  type_of: 'positive_number'
   default: 200
 
 config.define
   name: 'breadcrumb_tolerance'
   description: 'Distance in positions for which breadcrumbs are merged or skipped over'
   scope: 'global'
-  type_of: 'positive-number'
+  type_of: 'positive_number'
   default: 10
 
 -- track last edit with a breadcrumb

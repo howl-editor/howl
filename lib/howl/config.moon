@@ -25,7 +25,7 @@ predefined_types =
     validate: (value) -> type(value) == 'number'
   },
 
-  'positive-number': {
+  positive_number: {
     convert: (value) -> tonumber(value) or tonumber(tostring(value)) or value
     validate: (value) -> type(value) == 'number' and value >= 0
   },
