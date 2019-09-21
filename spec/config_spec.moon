@@ -260,6 +260,31 @@ describe 'config', ->
         config.number = '1'
         assert.equal config.number, 1
 
+    context 'and is "positive_number"', ->
+      def = nil
+      before_each ->
+        config.define name: 'positive_number', description: 'foo', type_of: 'positive_number'
+        def = config.definitions.positive_number
+
+      it 'convert handles numbers and string numbers', ->
+        assert.equal def.convert(1), 1
+        assert.equal def.convert('1'), 1
+        assert.equal def.convert(0.5), 0.5
+        assert.equal def.convert('0.5'), 0.5
+        assert.equal def.convert('blargh'), 'blargh'
+
+      it 'validate returns true for positive numbers only', ->
+        assert.is_true def.validate 1
+        assert.is_true def.validate 1.2
+        assert.is_false def.validate -1
+        assert.is_false def.validate -1.2
+        assert.is_false def.validate '1'
+        assert.is_false def.validate 'blargh'
+
+      it 'converts to number upon assignment', ->
+        config.number = '1'
+        assert.equal config.number, 1
+
     context 'and is "string_list"', ->
       def = nil
       before_each ->
