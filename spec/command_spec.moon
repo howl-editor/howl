@@ -23,7 +23,6 @@ describe 'command', ->
       assert.raises 'name', -> command.register {}
       assert.raises 'description', -> command.register name: 'test-foo'
       assert.raises 'handler', -> command.register name: 'test-foo', description: 'do'
-      assert.raises 'factory', -> command.register name: 'test-foo', description: 'do'
 
   it '.names() returns a list of all command names', ->
     command.register cmd

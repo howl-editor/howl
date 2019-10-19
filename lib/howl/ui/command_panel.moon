@@ -2,6 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
+require 'howl.ui.icons.font_awesome'
 import bindings, dispatch from howl
 import PropertyObject from howl.util.moon
 import NotificationWidget, BufferPopup, TextWidget, IndicatorBar, ContentBox, HelpContext, style from howl.ui
