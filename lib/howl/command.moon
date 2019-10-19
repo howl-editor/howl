@@ -28,8 +28,8 @@ register = (cmd_def) ->
   for field in *{'name', 'description'}
     error 'Missing field for command: "' .. field .. '"' if not cmd_def[field]
 
-  if not (cmd_def.factory or cmd_def.handler) or (cmd_def.factory and cmd_def.handler)
-    error 'One of "factory" or "handler" required'
+  if not cmd_def.handler
+    error 'Command "handler" required'
 
   cmd_def = moon.copy cmd_def
   commands[cmd_def.name] = cmd_def
