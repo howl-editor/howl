@@ -47,13 +47,53 @@ While any function can serve as the `input`, inputs often use [interactions].
 Using interactions allows easy re-use of common user interaction patterns such
 as asking the user a yes/no question or getting the user to select a directory.
 
+The `input` is passed a single argument that is a table containing the following
+fields:
+
+* `prompt`: The text prompt to be displayed. Often of the form `:command-name`
+* `text`: Any text value already entered by the user. This may be non blank
+  if a command is selected form the history, for instance.
+* `help`: A [HelpContext](ui/help_context.md) object that contains help
+  information for this command.
+
+These fields are often passed through to an [interaction] invoked inside the
+input function. The interaction typically displays the prompt and handles the
+text as well has help fields.
+
+## Invocation
+
 Commands can be invoked via code by calling `howl.command.run` or calling the
 command name directly as a field of command module, for example
 `howl.command.save!`, which invokes the "save" command. Command names that
 contain special characters such as hyphens and spaces can be invoked by an
 *accessible* name, in which all special characters are replaced with
 underscores. For example, the "buffer-reload" command can be invoked via
-`howl.command.buffer_reload!`
+`howl.command.buffer_reload!`.
+
+When called via the `run` function, e.g. `howl.command.run('open')` the input
+function is invoked if present and the behavior is identical to invoking the
+command from the [command line](../manual/running_commands.md). When called
+directly as a function, e.g. `howl.command.open(howl.io.File('/tmp/somefile))`,
+the input function is not invoked and the command must be passed a value
+accepted by the handler.
+
+Here are some examples of invoking commands in various ways:
+
+
+```moonscript
+howl.command.save!  -- invoke "save"
+
+howl.command.buffer_reload!  -- invokes "buffer-reload"
+
+-- The following invokes the "open" command, but does not prompt the user for
+-- a file to open. It just opens /path/to/myfile
+howl.command.open howl.io.File('/path/to/some_file')
+
+-- The following invokes the "open" command and prompts the user for a file
+-- to open under /path/to/dir
+howl.command.run 'open /path/to/dir'
+
+```
 
 ---
 
@@ -92,7 +132,9 @@ Registers a new command. `def` is a table containing the following fields:
 handler receives arguments returned by the `input` field, if provided.
 - `input`: _[optional]_ A function that is invoked to read user input. If
 present, this function is invoked before the handler, and all return values are
-passed to the handler as arguments.
+passed to the handler as arguments. This function is called with a single
+argument that is a table containing three fields: `prompt`, `text` and `help`
+described above.
 
 ### run (cmd_string = nil)
 
@@ -123,29 +165,6 @@ howl.command.run "open"
 
 Unregisters the command with name `name`, along with any aliases pointing to
 the command.
-
-## Direct command call
-
-Indexing the command module itself using any command name returns a function
-that can be used to invoke the command. When invoked this way, arguments may be
-provided to the function that are passed through directly to the handler. The
-`input` function is not run for interactive commands invoked this way.
-
-Commands that have special characters such as hyphens or spaces in their name
-can be indexed by using an *accessible* command name, in which all special
-characters of the original command name are replaced with underscores.
-
-Here are some examples of invoking commands via the direct call:
-
-```moonscript
-howl.command.save!  -- invoke "save"
-
-howl.command.buffer_reload!  -- invokes "buffer-reload"
-
--- The following invokes the "open" command, but does not prompt the user for
--- a file to open. It just opens /path/to/myfile
-howl.command.open howl.io.File('/path/to/some_file')
-```
 
 [interaction]: interact.html
 [interactions]: interact.html

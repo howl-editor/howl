@@ -2,6 +2,11 @@
 
 ## Unreleased (in master)
 
+- Major rewrite of the command line and interaction modules. The new system
+internals are describe here:
+https://github.com/howl-editor/howl/wiki/The-Command-Interaction-Refactor. The
+changes are backwards incompatible.
+
 ## 0.6 (2019-04-05)
 
 - Added `navigate-go-to` command, for going back to a specific previous location.
