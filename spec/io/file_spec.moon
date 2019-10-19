@@ -25,6 +25,13 @@ describe 'File', ->
       assert.raises 'noo', -> File.with_tmpfile f
       assert.is_false tmpfile.exists
 
+    it 'returns the return values of <f>', ->
+      f = (file) -> "abc", b: 1
+
+      str, tab = File.with_tmpfile f
+      assert.equals "abc", str
+      assert.same {b: 1}, tab
+
   describe 'tmpdir()', ->
     it 'returns a file instance pointing to an existing directory', ->
       file = File.tmpdir!

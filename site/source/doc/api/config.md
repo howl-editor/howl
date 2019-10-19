@@ -163,6 +163,7 @@ into a native representation.
 
   - boolean
   - number
+  - positive_number
   - string
   - string_list
 

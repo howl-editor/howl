@@ -178,7 +178,7 @@ howl.util.lpeg_lexer ->
       blank^0,
       any {
         digit,
-        #alpha * -any('or', 'and', 'unless')
+        #alpha * -any('or', 'and', 'unless', 'if', 'then')
       }
     }
     regex: V'regex_start' * V('regex_chunk') * V'regex_modifiers' * V'regex_continuation'

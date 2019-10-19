@@ -421,38 +421,47 @@ View = {
       if width > 0 and height > 0
         @area\queue_draw_area start_x, min_y, width, height
 
-  position_from_coordinates: (x, y) =>
+  position_from_coordinates: (x, y, opts = {}) =>
     return nil unless @showing
     cur_y = @margin
+    return nil unless y >= cur_y
+
+    matched_line = nil
 
     for line_nr = @_first_visible_line, @last_visible_line + 1
       d_line = @display_lines[line_nr]
-      return nil unless d_line
+      break unless d_line
       end_y = cur_y + d_line.height
       if (y >= cur_y and y <= end_y)
-        line = @_buffer\get_line(line_nr)
-        pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
-        line_y = max(0, min(y - cur_y, d_line.text_height - 1)) * Pango.SCALE
-        inside, index = d_line.layout\xy_to_index pango_x, line_y
-        if not inside
-          -- left of the area, point it to first char in line
-          return line.start_offset if x < @edit_area_x
-
-          -- right of the area, point to end
-          if d_line.is_wrapped
-            v_line = d_line.lines\at_pixel_y(y - cur_y)
-            return line.start_offset + v_line.line_end - 1
-          else
-            return line.start_offset + line.size
-        else
-          -- are we aiming for the next grapheme?
-          rect = d_line.layout\index_to_pos index
-          if pango_x - rect.x > rect.width * 0.7
-            index = d_line.layout\move_cursor_visually true, index, 0, 1
-
-          return line.start_offset + index
+        matched_line = d_line
+        break
+      elseif opts.fuzzy
+        matched_line = d_line
 
       cur_y = end_y
+
+    if matched_line
+      line = @_buffer\get_line(matched_line.nr)
+      pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
+      line_y = max(0, min(y - cur_y, matched_line.text_height - 1)) * Pango.SCALE
+      inside, index = matched_line.layout\xy_to_index pango_x, line_y
+      if not inside
+        -- left of the area, point it to first char in line
+        return line.start_offset if x < @edit_area_x
+
+        -- right of the area, point to end
+        if matched_line.is_wrapped
+          v_line = matched_line.lines\at_pixel_y(y - cur_y)
+          return line.start_offset + v_line.line_end - 1
+        else
+          return line.start_offset + line.size
+      else
+        -- are we aiming for the next grapheme?
+        rect = matched_line.layout\index_to_pos index
+        if pango_x - rect.x > rect.width * 0.7
+          index = matched_line.layout\move_cursor_visually true, index, 0, 1
+
+        return line.start_offset + index
 
     nil
 
@@ -778,7 +787,7 @@ View = {
 
     extend = bit.band(event.state, Gdk.SHIFT_MASK) != 0
 
-    pos = @position_from_coordinates(event.x, event.y)
+    pos = @position_from_coordinates(event.x, event.y, fuzzy: true)
     if pos
       @selection.persistent = false
 
@@ -809,7 +818,7 @@ View = {
 
       return
 
-    pos = @position_from_coordinates(event.x, event.y)
+    pos = @position_from_coordinates(event.x, event.y, fuzzy: true)
     if pos
       @cursor\move_to :pos, extend: true
     elseif event.y < @margin

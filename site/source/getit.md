@@ -32,8 +32,8 @@ __Release notes:__
 
 Howl requires the following build dependencies:
 
-- `wget`: For auto-downloading build dependencies (only needed when building
-from a code checkout, as the release tarball contains pre-downloaded
+- `curl` or `wget`: For auto-downloading build dependencies (only needed when
+building from a code checkout, as the release tarball contains pre-downloaded
 dependencies).
 
 - `GTK+`: Version >= 3, with development files.

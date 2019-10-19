@@ -55,7 +55,7 @@ describe 'View', ->
       view.margin = 0
       dim = view\text_dimensions 'M'
 
-    describe 'position_from_coordinates(x, y)', ->
+    describe 'position_from_coordinates(x, y, opts = {})', ->
       it 'returns the matching buffer position', ->
         buffer.text = '1234\n6789'
         line_height = view.display_lines[1].height
@@ -87,6 +87,16 @@ describe 'View', ->
         assert.equals 3, view\position_from_coordinates(view.edit_area_x + dim.width * 2, 0)
         line_height = view.display_lines[1].height
         assert.equals 3, view\position_from_coordinates(view.edit_area_x + dim.width * 2, line_height - 1)
+
+      context 'when opts.fuzzy is set', ->
+        it 'returns the closest position in the last line', ->
+          buffer.text = '1234\n6789'
+          line_height = view.display_lines[1].height
+          assert.equals 8, view\position_from_coordinates(
+            view.edit_area_x + (dim.width * 2) + 1,
+            (line_height * 2) + 1,
+            fuzzy: true
+          )
 
     describe 'coordinates_from_position(pos)', ->
       it 'returns the bounding rectangle for the character at pos', ->
