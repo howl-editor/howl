@@ -128,6 +128,10 @@ describe 'CommandPanel', ->
         assert.is_true command_line.is_hidden
         assert.is_false command_line2.is_hidden
 
+        -- both command_lines are still considered open
+        assert.is_true command_line.is_open
+        assert.is_true command_line2.is_open
+
       it 'changing the text invokes the on_text_changed on the inner command_line', ->
         def.on_text_changed = spy.new ->
         def2.on_text_changed = spy.new ->

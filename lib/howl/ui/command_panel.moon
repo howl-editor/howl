@@ -12,7 +12,7 @@ append = table.insert
 style.define_default 'prompt', 'keyword'
 
 class CommandLine extends PropertyObject
-  new: (@window, @on_open) =>
+  new: (@window) =>
     super!
     @def = {}
 
@@ -268,13 +268,11 @@ class CommandLine extends PropertyObject
     @bin\show_all!
     @notification\hide!
     @title = @title
-    @command_widget\focus!
 
     @is_open = true
     @is_hidden = false
 
-    if @on_open
-      @on_open!
+    @command_widget\focus!
 
   hide: =>
     @bin\hide!
@@ -356,21 +354,24 @@ class CommandPanel extends PropertyObject
       @last_focused = @window.focus if not @last_focused
       @window\remember_focus!
 
-    command_line = CommandLine @window, ->
-      -- adjust currently displayed widgets after command line is actually open
-      -- to remove display jitter
-      if current_command_line
-        -- hide currently active command line
-        -- this should also hide all related widgets because they're in the same bin
-        current_command_line\hide!
-      else
-        @window.status\hide!
-        @bin\show!
+    if current_command_line
+      -- hide currently active command line
+      -- this should also hide all related widgets because they're in the same bin
+      -- *important*: this should always happen before we run the new command
+      -- line otherwise both command_lines will fight for the focus (see
+      -- on_focus_lost)
+      current_command_line\hide!
+    else
+      @window.status\hide!
+      @bin\show!
 
+    -- create the new command line and run it
+    command_line = CommandLine @window
     @_push command_line
     result = table.pack command_line\run def, opts
     @_remove command_line
 
+    -- after the run, revert to previous state
     if current_command_line
       -- re display the previous command line
       current_command_line\unhide!
