@@ -82,24 +82,8 @@ describe 'Matcher', ->
     assert.same { 'nih/says/knights' }, m('sk')
     assert.same {}, m('nk')
 
-  describe 'explain(search, text)', ->
-    it 'sets .how to the type of match', ->
-      assert.equal 'exact', Matcher.explain('fu', 'snafu').how
-
-    it 'returns a list of {start_position, length} segments indicating where <search> matched', ->
-      assert.same { how: 'exact', {4, 3} }, Matcher.explain 'ƒlu', 'sñaƒlux'
-      assert.same { how: 'boundary', {1, 1}, {4, 1}, {9, 2} }, Matcher.explain 'itʂo', 'iʂ that ʂo'
-
-    it 'explains case boundary matches correctly', ->
-      m = Matcher.explain 'cc', 'a CreditCard'
-      assert.same { how: 'boundary', {3, 1}, {9, 1}}, m
-
-    it 'lower-cases the search and text just as for matching', ->
-      assert.not_nil Matcher.explain 'FU', 'ʂnafu'
-      assert.not_nil Matcher.explain 'fu', 'SNAFU'
-
-    it 'accepts ustring both for <search> and <text>', ->
-      assert.not_nil Matcher.explain 'FU', 'snafu'
+  it 'accepts ustring both for <search> and <text>', ->
+    assert.not_nil Matcher.explain 'FU', 'snafu'
 
   it 'boundary matches are as tight as possible', ->
     assert.same { how: 'boundary', {1, 1}, {6, 2} }, Matcher.explain 'hth', 'hail the howl'
@@ -165,19 +149,19 @@ describe 'Matcher', ->
         "item-#{i}"
 
       m = Matcher items
-      matches, partial = m('item')
+      matches, opts = m('item')
       assert.equals 1000, #matches
-      assert.is_true partial
+      assert.is_true opts.partial
 
-      matches, partial = m('item-123')
+      matches, opts = m('item-123')
       assert.is_true #matches < 1000
-      assert.is_false partial
+      assert.is_false opts.partial
 
     it 'allows slightly more than 1000 when the alternative would be irritating', ->
       items = for i  = 1, 1100
         "item-#{i}"
 
       m = Matcher items
-      matches, partial = m('item')
+      matches, opts = m('item')
       assert.equals 1100, #matches
-      assert.is_false partial
+      assert.is_false opts.partial

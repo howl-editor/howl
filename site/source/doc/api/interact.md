@@ -7,11 +7,13 @@ title: howl.interact
 ## Overview
 
 The howl.interact module acts as the central registry of interactions in Howl
-and lets you register new interactions as well as invoke interactions. An
-interaction is a piece of functionality that is invoked as a function call and
-it retrieves some information from the user. Interactions use the command line,
-and optionally additional widgets, to get information from the user. For
-example, consider this call to the `read_text` interaction:
+and lets you register new interactions as well as invoke interactions.
+
+An interaction is a piece of functionality that is invoked as a function call
+and executes a user interaction such as asking the user for some text input or
+displaying a list of choices and letting the user pick one. Interactions use the
+command line, and optionally additional widgets, to get information from the
+user. For example, consider this call to the `read_text` interaction:
 
 ```moonscript
 name = howl.interact.read_text prompt: 'Enter your name:'
@@ -29,25 +31,43 @@ the user choose an item from a list of options - see [Built-in
 interactions](#built-in-interactions) below for details.
 
 An interaction is implemented as simple table that provides the name of the
-interaction, a description, and either a handler or a factory field. Simple
-interactions that just customize other interactions can be implemented easily
-with just a *handler* function. More complex interactions that need greater
-control on the command line behavior are implemented as *factory* based
-interactions. Details for both handler and factory based interactions are in
-[register](#register) below.
+interaction, a description, and a handler function. Handler functions are
+*blocking* - i.e. the function does not return until the result of the
+interaction is available.
 
-Interactions are run by the [command line], which maintains a stack of running
-interactions. While one or more interactions are running, the command line API
-can be used to display prompts in the command line, read and update the command
-line text, as well as attach helper widgets above the command line (for example,
-a [ListWidget] may show a completion list).
+Here is an example interaction definition:
+
+```moonscript
+howl.interact.register
+  name: 'choose-color'
+  description: 'Choose a primary color'
+  handler: -> howl.interact.select items: {'red', 'blue', 'green'}
+```
+
+The above handler displays a selection list containing three items and lets the
+user select one. Note that it invokes another interaction: `interact.select`.
+Many [built-in interactions](#builtin) are provided in Howl and can be reused as
+shown above to create new interactions.
+
+Instead of calling another interaction, the handler function can also use the
+ `howl.app.window.command_panel` object directly. This object provides a
+[CommandPanel] API which is used to display the command line at the bottom of
+the window, set prompts, set the title, read user entered text, show other
+widgets such as a selection menu and so on. It is lower level than reusing a
+built-in interaction, but provides more control. See the [CommandPanel] details
+for more information.
+
+When creating new interactions, the recommendation is to reuse [existing
+interactions](#builtin) as much as possible rather than use the `CommandPanel`
+directly. For cases where any existing interaction doesn't suffice, the
+`CommandPanel` (or any other UI mechanism) can be used.
 
 ---
 
 _See also:_
 
-- The [CommandLine](ui/command_line.html) module for details about the command
-line API
+- The [CommandPanel] API for details about the command
+panel and command line API
 - The [command](command.html) module for more information about commands in Howl
 
 ## Functions
@@ -60,110 +80,25 @@ the `interact` module itself, using the interaction name.
 
 - `name`: _[required]_ The name of the interaction.
 - `description`: _[required]_ A short description of the interaction.
-- `handler` or `factory`: _[required]_ One of `handler` or `factory` must be
-specified, but not both.
-
-The `handler` function implements the interaction and returns the result of the
-interaction. Here is an example definition of a handler:
-
-```moonscript
-  handler: -> howl.interact.select items: {'red', 'blue', 'green'}
-```
-
-The above handler displays a selection list containing three items and lets the
-user select one. Note that it reuses the `select` interaction. Handler functions
-are *blocking* - i.e. the function does not return until the result of the
-interaction is available.
+- `handler`: _[required]_ implements the interaction and returns the result of the
+interaction. See above for some example handlers.
 
 The handler function may accept arguments. Any arguments passed when calling the
 interaction are passed through to the handler function.
-
-Interactions can also be implemented as *factory* based interactions. The
-`factory` field is a function that returns an interaction instance table. This
-table describes how various events should be handled and has the following
-fields:
-
-- `run`: _[required]_ A function that is called when the interaction is invoked.
-This function is called with a `finish` callback function as the first argument,
-followed by all arguments that were passed in the interaction call. The command
-line is displayed and holds the cursor while the interaction is active. The
-interaction must call `finish` whenever the result of the interaction is ready
-and it must pass the result as the argument to `finish`. The interaction is
-active until `finish` is called, so it is important to call `finish` at some
-point.
-- `on_update`: _[optional]_ A function that is called every time the text in the
-command line is updated. The interaction instance table and the new text are
-passed as two arguments to the function.
-
-  If the [command line] API is used to update the command line text from within
-the `run` or the `on_update` function then `on_update` is not called. However,
-if the command line text is updated when the user types some text, or from
-within a keymap function, `on_update` is called.
-
-- `keymap`: _[optional]_ A [keymap](bindings.html) that is used while the
-interaction is active. This table specifies a mapping from keystroke names to
-functions. When a key matching the keystroke name is pressed, the function is
-invoked and the interaction instance table is passed as the first argument.
-
-- `help`: _[optional]_ A table containing one or more help entries, which
-specify the help text for bound keystrokes. The format of help entries is the
-same as used by [`add_help`](ui/command_line.html#add_help).
-
-Here is an example implementation of an interaction using a factory:
-
-```moonscript
-  factory: -> {
-    run: (@finish) =>
-      @command_line = howl.app.window.command_line
-      @command_line.prompt = 'Text:'
-
-    on_update: (text) =>
-      log.info text
-
-    keymap:
-      enter: => self.finish @command_line.text
-      escape: => self.finish!
-      binding_for:
-        ['view-close']: => self.finish!
-
-    help: {
-      {
-        key_for: 'view-close'
-        action: 'Cancel this'
-      }
-      {
-        heading: 'Syntax'
-        title: 'Use [some specific syntax]'
-      }
-    }
-  }
-```
-
-The above example displays 'Text:' as the command line prompt and lets the user
-enter any text in the command line. Whenever the text is updated by the user,
-the interaction shows it in an info message. When the user presses `enter`, the
-interaction finishes, returning the text entered by the user. If the user
-presses `escape`, the interaction finishes, returning `nil`.
-
-Note the special key called `binding_for` in the keymap. This demonstrates how a
-keystroke can be specified [indirectly](bindings.html#indirect-bindings) instead
-of by hard-coding. In the above example, the "view-close" key within
-"binding-for" refers to the keystroke currently bound to the "view-close"
-command. This means if the user presses the keystroke that is bound to the
-"view-close" command - which is `ctrl_shift_w` by default - the associated
-function will be invoked, closing the command line and returning `nil`. If the
-user has changed the key binding for the "view-close" command, that keystroke
-will be bound to the function above instead.
-
-Also note that help text has been specified for the keystroke bound to the
-`view-close` command. For the default binding, this will display a message like
-'ctrl_shift_w Cancel this' in the command help.
 
 ### unregister (name)
 
 Unregister an interaction with the name `name`.
 
-## Built-in interactions<a name="builtin"></a>
+## Built-in interactions <a name="builtin"></a>
+
+Howl provides a number of predefined interactions out of the box. These are
+described in the following sections. All interactions are invoked with a single
+`opts` argument which is a table containing fields specific to the interaction.
+The optional `help` field is common to all interactions and contains a
+[HelpContext].
+
+## User text input
 
 ### read_text (opts)
 
@@ -181,6 +116,8 @@ name = howl.interact.read_text title:'Name', prompt:'Enter name:'
 log.info 'Hello '..name if name
 ```
 
+## Simple choice selection
+
 ### select (opts)
 
 Displays a list of options to the user and lets the user select one by using the
@@ -191,32 +128,16 @@ filtered to show only those items that match the entered text.
 Allows customization such as multiple columns, column headers, styling, user
 provided selection etc. These are described below.
 
-If the user presses `enter`, returns a table containing two fields - `selection`
-and `text`, where:
-
-- `selection` is the item selected by the user (or `nil` if `allow_new_value`
-was specified and the user specified option was selected - see `allow_new_value`
-below).
-- `text` is the command line text at the time `enter` was pressed.
-
-If the user presses `escape`, `nil` is returned.
+If the user presses `enter`, returns the selected item. If the user presses
+`escape`, `nil` is returned.
 
 `opts` is a table that specifies:
 
-- `items` or `matcher`: _[required]_ One of `items` or `matcher` must be
-specified, but not both.
-
-  - `items` is a table containing a list of *items*, where each item represents
+- `items`: a table containing a list of *items*, where each item represents
 one select-able option and can be either a string for a single column list, or a
 table for a multiple column list. When each item is a table, it contains a list
 of strings, one each for each column. Instead of a string, a
 [StyledText](ui/styled_text.html) object can be used as well.
-
-  - `matcher` is a function that accepts a string and returns a table of items
-similar to `items`. When called with the empty string, `matcher` should return a
-list of all options. As the user types text into the command line, the `matcher`
-function is called repeatedly and passed the typed text - it should return a
-filtered list of items matching the given text.
 - `prompt`: _[optional]_ The prompt displayed in the command line.
 - `title`: _[optional]_ The title displayed in the command line title bar.
 - `columns`: _[optional]_ A table containing the header text and style for each
@@ -232,52 +153,41 @@ where:
   - `items` is the current (possibly filtered) list of items
 - `selection`: _[optional]_ The item that is initially selected by default. This
 must be an item in the `items` list.
-- `hide_until_tab`: _[optional, default: false]_ When set to `true`, the list of
-items is initially hidden and only displayed when the user presses `tab`.
-- `allow_new_value`: _[optional, default: false]_ When set to `true`, allows the
-user to choose an option that is user specified and not available in the list of
-available items. The user does this by typing some text that does not exactly
-match any available option. This causes an additional option containing the
-user's text to be automatically added to the list of options. The user can then
-select this new option (identifiable because it shows 'New' next to it) and
-press `enter`.
 - `reverse`: _[optional, default: false]_ When set to `true`, the list is displayed reversed,
 i.e. the first item is displayed at the bottom and subsequent items above it.
 
 Examples:
 
-The following example displays a list of three items with a column header. It
-also lets the user specify a color that is not in the given list.
+The following example displays a list of three items with a column header.
 
 ```moonscript
 color = howl.interact.select
   items: {'red', 'blue', 'green'}
   columns: {{header: 'Color'}}
-  allow_new_value: true
 if color
-  if color.selection
-    log.info 'You selected:'..color.selection
-  else
-    log.info 'You selected a new color:'..color.text
+  log.info 'You selected:'..color
 ```
 
 The following example displays a two column list. It also shows how string
-fields can be used in the items table. Unlike numerically indexed fields, string
-fields are not displayed, but they can be used to associate additional data with
-each item.
+fields can be used in the items table (`cmd: 'run'` below). Unlike numerically
+indexed fields, string fields are not displayed, but they can be used to
+associate additional data with each item.
 
 ```moonscript
-action = howl.interact.select
+selection = howl.interact.select
   items: {
     {'Run', 'Run this file', cmd: 'run'},
     {'Compile', 'Compile this file', cmd: 'compile'},
   }
-if action
-  if action.selection.cmd == 'run'
+if selection
+  if selection.cmd == 'run'
     log.info 'running...'
   else
     log.info 'compiling...'
 ```
+
+More advanced selection options including hierarchical menus are provided by
+the `explore` interaction described below.
 
 ### select_buffer (opts)
 
@@ -289,6 +199,74 @@ containing:
 
 Returns the [Buffer](buffer.html) selected by the user, or `nil` if the user
 presses `escape`.
+
+
+### select_location(opts)
+
+Very similar to [select](#select), but lets the user select a location from a
+list of location. In addition, it displays a preview of the currently selected
+option in the editor. Each item in `items` can have the following fields:
+
+- `file`, `buffer` or `chunk`: One of `file`, `buffer` or `chunk` must be
+provided. This specifies which file or buffer is previewed in the editor when
+this item is selected:
+  - `file`: A [File] object.
+  - `buffer`: A [Buffer] object.
+  - `chunk`: A [Chunk] object.
+
+When a file or buffer is provided, the position within it is specified by
+the following fields:
+- `line_nr`: _[optional]_ The line number in `file` or `buffer`
+- `start_column`: _[optional]_ The starting column within the line
+- `end_column`: _[optional]_ The ending column within the line
+- `pos`: _[optional]_ The character offset from the start of the buffer
+
+One of either `line` or `pos` may be specified, but not both. The `start_column`
+and `end_column` may only be specified if `line_nr` is specified.
+
+When a chunk is provided, none of `line_nr`, `start_column`, `end_column` or
+`pos` is applicable since the chunk identifies the buffer as well as a span
+within it.
+
+### yes_or_no (opts)
+
+Lets the user select either 'Yes' or 'No' as an answer to a question. Returns
+`true` if the user selects 'Yes', `false` if the user selects 'No' and `nil` if
+the user presses `escape`. `opts` is table containing:
+
+- `prompt`: _[optional]_ The prompt displayed in the command line. Default is no prompt.
+- `title`: _[optional]_ The title displayed in the command line title bar. Default is no title.
+
+## File and directory selection
+
+### select_file (opts)
+
+Lets the user select a file. Displays files in the completion list and allows
+the user to navigate the file system using the completion list or typing a path
+in the command line.
+
+`opts` is a table containing:
+
+- `title`: _[optional]_ The title displayed in the command line title bar.
+Default is 'File'.
+- `allow_new`: _[optional, default: false]_ When `true`, allows the user to
+choose a nonexistent path by typing it in the command line and pressing enter.
+- `show_subtree`: _[optional, default: false]_ When `true` the file browser
+shows all files in the directory tree (including files in all subdirectories).
+
+Returns the [File] selected by the user, or `nil` if the user presses `escape`.
+Note that if `allow_new` was specified, the returned file object may refer to a
+nonexistent path.
+
+### select_file_in_project (opts)
+
+Lets the user select a file from a completion list containing all files in the
+current project. `opts` is a table containing:
+
+- `title`: _[optional]_ The title displayed in the command line title bar.
+Default is the project path.
+
+Returns the [File] selected by the user, or `nil` if the user presses `escape`.
 
 ### select_directory (opts)
 
@@ -306,84 +284,213 @@ Returns the [File] selected by the user, or `nil` if the user presses `escape`.
 Note that if `allow_new` was specified, the returned file object may refer to a
 nonexistent path.
 
-### select_file (opts)
+## Rich multilevel exploration
 
-Lets the user select a file. Displays files in the completion list and allows
-the user to navigate the file system using the completion list or typing a path
-in the command line.
+### explore (opts)<a name="explore"></a>
 
-`opts` is a table containing:
+Allows the user to navigate a multilevel tree of items. A flat list of items at
+a single level are displayed at a time and the user can go up or down the tree.
+This is an advanced interaction with many options. The basic idea behind using
+this interaction is that you specify items organized in a tree structure and the
+interaction provides a powerful UI that allows the user to navigate the tree.
 
-- `title`: _[optional]_ The title displayed in the command line title bar.
-Default is 'File'.
-- `allow_new`: _[optional, default: false]_ When `true`, allows the user to
-choose a nonexistent path by typing it in the command line and pressing enter.
-- `directory_reader`: _[optional]_ A callback function that is used for getting
-the list of files in any directory. The function should accept one argument - a
-[File] object for a directory - and should return a list of [File] objects for
-the contents of the given directory.
+Here is an example that shows a flat list of items.
 
-Returns the [File] selected by the user, or `nil` if the user presses `escape`.
-Note that if `allow_new` was specified, the returned file object may refer to a
-nonexistent path.
+```moonscript
+root = {
+  display_items: -> {'road', 'air', 'sea'}
+}
+howl.interact.explore
+  path: {root}
+  prompt: 'Choose travel:'
+```
 
-### select_file_in_project (opts)
+The `root` object above is a single node that contains three child nodes. The
+root object implements what is called the *explorer API* and it called an
+*explorer object*. The `display_items` function returns the list of items under
+this object. In this case, a list of strings is returned, which indicates that
+these items do not have more sub-items under them.
 
-Lets the user select a file from a completion list containing all files in the
-current project. `opts` is a table containing:
+The `path` specifies the object to start exploring at. Since we want to start at
+the root, we specify `{root}`. When the above interaction is executed, the three
+items under root are displayed to the user. The user can select one of those
+three objects by using the `up` and `down` keys or even by typing text to filter
+the list. When the user presses `enter`, the interaction is completed and
+selected item is returned.
 
-- `title`: _[optional]_ The title displayed in the command line title bar.
-Default is the project path.
+To add a nested level of items, `display_items` may return explorer objects
+instead of strings:
 
-Returns the [File] selected by the user, or `nil` if the user presses `escape`.
+```moonscript
+root = {
+  display_items: -> {
+    {
+      display_items: -> {'car', 'bus', 'train'}
+      display_row: -> {'road'}
+    }
+    {
+      display_items: -> {'helicopter', 'airplane'}
+      display_row: -> {'air'}
+    }
+    {
+      display_items: -> {'submarine', 'ship'}
+      display_row: -> {'sea'}
+    }
+  }
+}
+howl.interact.explore
+  path: {root}
+  prompt: 'Choose travel:'
+```
 
-### select_line(opts)
+Above, each item under the root is itself an explorer object. Note that the
+displayed text is now provided by the `display_row` method of each explorer.
+When this interaction is run, the top level list containing `road`, `air` and
+`sea` is displayed. When the user presses `enter`, the nested list of items for
+the selected item is displayed. The user can then press `backspace` they are
+returned to the top level choice again. This allows a simple selection for a
+nested list of any depth.
 
-Lets the user select a line from a list of source lines. `opts` is a table
-similar to the table accepted by [select](#select), with the following
-differences:
+#### Focussed and Selected objects
 
-- `items`, `matcher` and `on_change` cannot be specified.
-- `lines` must be provided and should be a list of [Line] objects.
+While this interaction is active, there is one explorer object that is
+considered to be *in focus*. The child objects of this *focussed object* are
+displayed above the command line. The arrow keys allow *selecting* one of the
+child objects - that is considered the *selected* object. When you press
+`enter`, the selected object becomes the new focussed object. (assuming it is an
+explorer and not a string) and then its children are displayed.
 
-If the user presses `enter`, returns a table containing:
+#### Explorer API
 
-- `line`: the [Line] object selected by the user.
-- `text`: the command line text at the time `enter` was pressed.
-- `column`: the first position within line that matches the user entered text.
+Various customizations for explorers are possible. These are specified as the
+following optional fields on the explorer object:
 
-If the user presses `escape`, `nil` is returned.
+* `display_path` (function): Returns a string that gets displayed in the
+prompt whenever this object is in focus.
 
-### select_location(opts)
+* `display_title` (function): Returns a string that gets displayed as the command line title
+whenever this is in focus.
 
-Very similar to [select](#select), but lets the user select a location from a
-list of location. In addition, it displays a preview of the currently selected
-option in the editor. Each item in `items` (or as returned by `matcher`) can
-have the following fields:
+* `display_columns` (function): Similar to the `columns` in `interact.select`
+above. Provides column header and styling whenever this object is in focus. Note
+that this applies to the result of `display_items` and not `display_row` on this
+object.
 
-- `file` or `buffer`: One of `file` or `buffer` must be provided. This specifies
-which file or buffer is previewed in the editor when this item is selected:
-  - `file`: A [File] object.
-  - `buffer`: A [Buffer] object.
-- `line_nr`: _[optional]_ The line number in `file` or `buffer`
-- `highlights`: _[optional]_ A table of highlights to apply to the previewed
-buffer line if possible. Requires that `line_nr` is given. Each highlight
-specifies a span to highlight. The highlight's span can be specified in several
-different fashions. It will be resolved using
-[Buffer.resolve_span(..)](buffer.html#resolve_span), so please have a look at
-`resolve_span`'s documentation to see the available options.
+* `display_row` (function): Returns a table containg strings to be displayed in
+the selectable list. The strings represent multiple columns of a single row.
+Note that this function is called when this object's parent object is in focus.
 
-### yes_or_no (opts)
+* `parse` (function): Called on every change to the text as the user is typing.
+This can trigger auto-selection of a child object when the text matches some
+pattern. For instance, in the directory explorer if you type 'subdir/', the
+subdir explorer (if it exists) is immediately selected - you don't have to type
+`enter`. This function can return one of the following:
 
-Lets the user select either 'Yes' or 'No' as an answer to a question. Returns
-`true` if the user selects 'Yes', `false` if the user selects 'No' and `nil` if
-the user presses `escape`. `opts` is table containing:
+  * `nil`: No effect.
 
-- `prompt`: _[optional]_ The prompt displayed in the command line. Default is no prompt.
-- `title`: _[optional]_ The title displayed in the command line title bar. Default is no title.
+  * `{jump_to: target}`: Here `target` must be a child of the focussed object.
+  It will be immediately focussed.
+
+  * `{jump_to_absolute: path}`: Here `path` is a table `{root, node1, node2}`
+  which specifies the new object that should be focussed somewhere completely
+  different in the tree.
+
+* `preview` (function): Returns a table describing what should be previewed
+
+
+## Search and replace
+
+### buffer_search
+
+Presents the user with an interactive search for a buffer and returns the
+selected text. Optionally can also be used for search and *replace*.
+
+Here is an example that shows how to invoke this interaction for simple search
+the current buffer:
+
+```moonscript
+buf = howl.app.editor.buffer
+howl.interact.buffer_search
+  buffer: buf
+  find: (line, query, start) -> line.text\find query, start
+  replace: (_, _, _, replacement) -> replacement
+```
+
+When run, the interaction displays a preview of all lines in `buffer`. As the
+user types, the `find` function is invoked to find lines that match the user's
+search query. The list of matching lines is displayed and the user can use the
+`up` and `down` keys to select a match. When the user presses `enter`, the
+`buffer_search` function returns the selected match.
+
+In this example, `find` uses the `string.find` method to do search within the
+line. The `find` function is called with three arguments - `find(line, query,
+start)` - defined as below:
+
+* `line`: A [Line] object to find within.
+* `query`: The search text entered by the user.
+* `start`: An index within the line to start the search from.
+
+The find function must either return `nil` for no match, or return two values
+`match_start`, `match_end` containing the starting end ending position of the
+match found in the line. It can optionally return a third value `match_info`
+(only used for replacements described later).
+
+When the user selects a match and the `buffer_search` is done, it returns a
+table with the following fields:
+
+* `chunk`: A [Chunk] in the buffer containing the selected match.
+* `input_text`: The text typed by the user.
+
+To invoke this interaction, Only `buffer` and `find` fields are essential, but a
+large number of additional fields can be used for customization:
+
+* `prompt`: The prompt displayed in the command line.
+* `title`: The command line title.
+* `lines`: A list of lines to search within. This can be any subset of lines
+  from the buffer.
+* `chunk`: A [Chunk] in the buffer to search within. Only one of `lines` or
+  `chunk` may be provided.
+* `once_per_line`: If `true` only searches for the first match in every line.
+* `parse_line(line)`: This is an optimization feature. `parse_line` must be a
+  function that accepts a [Line] and returns a table. This is called only once
+  for each line at the beginning of the interaction. The returned value is used
+  instead of the line when calling `find()`. This makes it possible to
+  preprocess each line exactly once.
+* `parse_query(query)`: This function is called once before applying any query
+  on all lines. The `query` is the search text typed by the user.  The result of
+  this function is then passed as `query` into the `find` function.
+
+In addition to search, this interaction can also be used for *search and
+replace*. This major change in behavior is activated by providing a `replace`
+field in the `buffer_search` call. This field must be a function accepting four
+parameters - `replace(chunk, match_info, query, replacement)`. When doing search
+and replace, the text typed by the user is of the form `/query/replacement`. The
+query is used as input to the `find` function (similar to search behavior) which
+returns the found matches. *For each match*, the `replace` function is invoked
+with the following arguments:
+
+* `chunk`: A chunk containing the matching text.
+* `match_info`: The `match_info` returned by `find`, if any.
+* `query`: The typed query text.
+* `replacement`: The typed replacement text.
+
+The `replace` function must return the replacement text for the `chunk`. The
+user can use the `up` and `down` keys within the list of matches. They can press
+`alt_enter` to disable the replacement for the currently selected match. When the user presses `enter` a table with the following fields is returned:
+
+* `input_text`: The text typed by the user (e.g. "/query/replacement").
+* `replacement_count`: The number of matches replaced.
+* `replacement_text`: Text with the replacements applied.
+* `replacement_start_pos`: The starting position in the buffer for `replacement_text`.
+* replacement_end_pos: The ending position in the buffer for `replacement_text`.
+
+It is then the callers responsibility to apply the replacement_text on the
+buffer if desired.
 
 [Buffer]: buffer.html
-[command line]: ui/command_line.html
+[CommandPanel]: ui/command_panel.html
 [File]: io/file.html
 [Line]: ../spec/buffer_lines_spec.html#line-objects
+[Chunk]: chunk.md
 [ListWidget]: ui/list_widget.html
+[HelpContext]: ui/help_context.html

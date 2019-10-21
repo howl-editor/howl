@@ -349,6 +349,9 @@ class Buffer extends PropertyObject
     return @config if mode_at == @mode
     return config.proxy @_config_scope, mode_at.config_layer
 
+  chunk_for_span: (span, line_nr = nil) =>
+    @\chunk @resolve_span span, line_nr
+
   resolve_span: (span, line_nr = nil) =>
     {:start_pos, :end_pos} = span
     local line, l_start_pos, l_b_start_offset

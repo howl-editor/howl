@@ -116,11 +116,13 @@ replace all instances of 'showing' with 'visible', you would invoke
 
 ![Buffer replace](/images/screenshots/monokai/buffer-replace.png)
 
-As you type, the displayed preview buffer is updated to show the effect of your
-replacement. You can use the `up` and `down` arrow keys to jump between
-different matches in the preview buffer. You can press `alt_enter` to toggle
-whether or not the currently focussed match should be replaced with the target -
-this lets you selectively preserve some matches from being replaced.
+As you type, the displayed preview buffer in the upper panel  is updated to show
+the effect of your replacement. The lower panel shows all the matches in the
+current buffer. You can hide the lower panel by pressing `ctrl_s`. You can use
+the `up` and `down` arrow keys to jump between different matches in the preview
+buffer. You can press `alt_enter` to toggle whether or not the currently
+focussed match should be replaced with the target - this lets you selectively
+preserve some matches from being replaced.
 
 Once you are happy with the replacements as displayed in the preview buffer, you
 can press `enter` to commit the replacements - this updates the original buffer.

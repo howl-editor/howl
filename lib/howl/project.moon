@@ -40,7 +40,8 @@ class Project
     if not project
       directory = interact.select_directory
           title: '(Please specify the project root): '
-          prompt: '\n'
+          prompt: 'Project root: '
+          path: file.path
       if directory
         Project.add_root directory
         project = Project.for_file file

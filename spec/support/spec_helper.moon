@@ -4,7 +4,8 @@ C = require('ffi').C
 
 import File from howl.io
 import theme from howl.ui
-import dispatch, signal, config from howl
+import Window from howl.ui
+import signal, config from howl
 _G.Spy = require 'howl.spec.spy'
 
 -- additional aliases
@@ -97,24 +98,6 @@ export howl_async = (f) ->
   status, err = coroutine.resume co
   error err unless status
 
-export within_activity = (activity_function, on_show) ->
-  command_line = howl.app.window.command_line
-  command_line.orig_show = command_line.show
-  command_line.show = spy.new =>
-    @orig_show!
-    on_show!
-
-  ok, error = dispatch.launch activity_function
-  if not ok
-    print error
-
-  command_line.show = command_line.orig_show
-
-export get_ui_list_widget_column = (column=1, widget_name='completion_list') ->
-  items = howl.app.window.command_line\get_widget(widget_name).list.items
-  items = [row[column] for row in *items]
-  return [item.text or item for item in *items]
-
 export close_all_buffers = ->
   for b in *howl.app.buffers
     howl.app\close_buffer b, true
@@ -136,3 +119,15 @@ export trimmed_text = (s) ->
   return s unless indentation
   adj_lines = [l\gsub("^#{indentation}", '') for l in *lines]
   table.concat adj_lines, '\n'
+
+export within_command_line = (interaction, f) ->
+  -- invoke interaction function and call f with topmost command_line
+  with howl.app
+    unless .window
+      .window = Window!
+      .window\realize!
+  command_panel = howl.app.window.command_panel
+  wrapped = coroutine.wrap interaction
+  wrapped!  -- this invokes the interaction and activates the command line
+  command_line = command_panel.command_lines[#command_panel.command_lines]
+  f command_line

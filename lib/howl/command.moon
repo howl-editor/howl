@@ -1,8 +1,7 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import dispatch, interact from howl
-import Matcher from howl.util
 import style, markup from howl.ui
 
 append = table.insert
@@ -13,6 +12,7 @@ commands = {}
 accessible_names = {}
 
 resolve_command = (name) ->
+  -- return a command definition for a command name or an alias
   def = commands[name]
   def = commands[def.alias_for] if def and def.alias_for -- alias
   def
@@ -28,8 +28,8 @@ register = (cmd_def) ->
   for field in *{'name', 'description'}
     error 'Missing field for command: "' .. field .. '"' if not cmd_def[field]
 
-  if not (cmd_def.factory or cmd_def.handler) or (cmd_def.factory and cmd_def.handler)
-    error 'One of "factory" or "handler" required'
+  if not cmd_def.handler
+    error 'Command "handler" required'
 
   cmd_def = moon.copy cmd_def
   commands[cmd_def.name] = cmd_def
@@ -81,134 +81,49 @@ get_command_items = ->
       desc = "(Alias for #{def.alias_for})"
       desc = "[deprecated] #{desc}" if def.deprecated
     binding = bindings[name] or ''
-    append items, { name, binding, desc }
+    append items, { name, binding, desc, cmd_text: name }
 
   return items
 
-get_command_help = (cmd_name) ->
-  cmd = resolve_command cmd_name
-  return unless cmd
+history = {}  -- array of {styled_text:, text:} objects
 
-  heading = "Command '#{cmd_name}'"
-  if cmd != commands[cmd_name]
-    heading ..= ", alias for '#{cmd.name}'"
+record_history = (cmd_name, input_text) ->
+  local styled_text, text
+  if input_text and not input_text.is_empty
+    styled_text = markup.howl("<command_name>:#{cmd_name}</> #{input_text}")
+    text = "#{cmd_name} #{input_text}"
+  else
+    styled_text = markup.howl("<command_name>:#{cmd_name}</>")
+    text = cmd_name
 
-  keys = howl.bindings.keystrokes_for cmd_name
-  if #keys == 0
-    keys = howl.bindings.keystrokes_for cmd_name, 'editor'
-  if #keys > 0
-    heading ..= " (#{keys[1]})"
-  return {
-    :heading
-    text: cmd.description
-  }
+  item = {:styled_text, :text}
 
-class CommandInput
-  run: (@finish, cmd_string='', @cmd_args) =>
-    @command_line = howl.app.window.command_line
-    @command_line.prompt = ':'
-    @command_line.title = 'Command'
-    @command_line.text = cmd_string
+  -- don't duplicate repeated commands
+  history = [h_item for h_item in *history when h_item.text != item.text]
+  append history, 1, item
 
-    if resolve_command cmd_string
-      @on_update cmd_string .. ' '
-    else
-      @on_update cmd_string
+  -- prune
+  if #history > 1000
+    history = [history[i] for i=1,1000]
 
-  on_update: (cmd_string) =>
-    return unless cmd_string\find ' '
+get_input_text = (cmd, input) ->
+  -- convert the input object to input_text - a text representation of input used in the history
+  -- this is done either via cmd.get_input_text function if present
+  -- or using some simple heuristics
+  if cmd.get_input_text
+    return cmd.get_input_text input
 
-    cmd, cmd_name, text = parse_cmd cmd_string
+  if typeof(input) == 'File'
+    return input.short_path
+  if type(input) == 'table' and input.input_text
+    return input.input_text
+  return tostring input
 
-    if not cmd
-      @command_line.text = cmd_string
-      log.error "No such command '#{cmd_string}'"
-      return
+get_command_history = -> [{item.styled_text, text: item.text} for item in *history]
 
-    if not cmd.input
-      @command_line.text = cmd_name
-      log.error "Command '#{cmd_name}' takes no input, press <enter> to run."
-      return
-
-    @command_line\write_spillover text
-    @read_command_input cmd, cmd_name
-
-  read_command_input: (cmd, cmd_name) =>
-    @command_line\clear!
-    @command_line.prompt = markup.howl "<prompt>:</><command_name>#{cmd_name}</> "
-    help = {get_command_help cmd_name}
-    @command_line\add_help(help) if help
-
-    unless cmd.input
-      @command_line\record_history!
-      self.finish cmd, {}
-      return
-
-    input_reader =
-      name: cmd.name
-      handler: cmd.input
-
-    results = table.pack howl.app.window.command_line\run input_reader, unpack @cmd_args
-
-    if results.n > 0
-      self.finish cmd, results
-    else
-      self.finish!
-
-  command_completion: =>
-    text = @command_line.text
-    @command_line\clear!
-    cmd_name = interact.select_command
-      :text
-      title: 'Command'
-
-    if cmd_name
-      cmd = resolve_command(cmd_name)
-      @read_command_input cmd, cmd_name
-
-  run_historical: =>
-    text = @command_line.text
-    @command_line\clear!
-    @command_line\write_spillover text
-    cmd_string = interact.select_historical_command!
-    if cmd_string
-      @command_line\write cmd_string.stripped
-
-  keymap:
-    tab: => @command_completion!
-    up: => @run_historical!
-    ctrl_r: => @run_historical!
-    escape: => self.finish!
-    enter: =>
-      if @command_line.text
-        cmd = resolve_command(@command_line.text)
-        if not cmd
-          log.error "No such command '#{@command_line.text}'"
-          return
-        @read_command_input cmd, @command_line.text
-
-  help: {
-    {
-      heading: "Command 'run'"
-      text: 'Run a command'
-    }
-    {
-      text: markup.howl 'Type a command name and press <keystroke>enter</> to run.'
-    }
-    {
-      key: 'tab'
-      action: 'Show command list'
-    }
-    {
-      key: 'up'
-      action: 'Show command history'
-    }
-  }
-
-command_input_reader = {
-  name: 'command-input-reader'
-  factory: CommandInput
-}
+ensure_command_can_run = (cmd) ->
+  unless howl.app.window
+    error "Cannot run command '#{cmd}', application not initialized. Try using the 'app-ready' signal.", 3
 
 launch_cmd = (cmd, args) ->
   dispatch.launch ->
@@ -216,74 +131,120 @@ launch_cmd = (cmd, args) ->
     if not ok
       log.error err
 
-ensure_command_can_run = (cmd) ->
-  unless howl.app.window
-    error "Cannot run command '#{cmd}', application not initialized. Try using the 'app-ready' signal.", 3
+run = (cmd_text=nil) ->
+  -- run a command string, either immediately, or after asking for input if necessary
+  capture_history = true
 
-run = (cmd_string=nil, ...) ->
-  ensure_command_can_run cmd_string
-  local args
-  cmd = resolve_command cmd_string
+  ensure_command_can_run cmd_text
+  cmd_text or= ''
 
-  if not cmd or cmd.input
-    cmd, args = howl.app.window.command_line\run command_input_reader, cmd_string, table.pack ...
-    return unless cmd
-  else
-    args = table.pack ...
+  cmd, cmd_name, rest = parse_cmd cmd_text
+  unless cmd
+    cmd, cmd_name, rest = resolve_command(cmd_text), cmd_text, ''
 
   if cmd
-    launch_cmd cmd, args
+    -- don't capture history for automatically selected commands that are run immediately
+    capture_history = false
+
+  -- if we couldn't resolve a command,
+  -- or we resolved a command that doesn't take input, but we have extra command text
+  -- then require command selection
+  if not cmd or (not rest.is_empty and not cmd.input)
+    cmd, cmd_name, rest = howl.interact.select_command text: cmd_text, prompt: ':'
+
+  return unless cmd
+
+  rest or= ''
+
+  help = howl.ui.HelpContext!
+  help\add_section heading: "Command '#{cmd.name}'", text: cmd.description
+
+  -- the command definition may or may not have an input function
+  if cmd.input
+    -- invoke the input function to get input data and then invoke the handler
+    inputs = table.pack cmd.input
+      prompt: ':'..cmd_name..' '
+      text: rest
+      :help
+    return if inputs[1] == nil -- input was cancelled
+
+    -- record history
+    input_text = get_input_text cmd, inputs[1]
+    if input_text
+      record_history cmd_name, input_text
+
+    -- invoke handler
+    cmd.handler table.unpack inputs
+
+  else
+    -- no input function, invoke the handler directly
+    if capture_history
+      record_history cmd_name, ''
+    cmd.handler!
+
+class CommandConsole
+  new: =>
+    @commands = get_command_items!
+
+    -- compute column styles (including min_width) used for completion list
+    name_width = 0
+    shortcut_width = 0
+    for item in *@commands
+      name_width = math.max(name_width, item[1].ulen)
+      shortcut_width = math.max(shortcut_width, item[2].ulen)
+    @completion_columns = {{style: 'string', min_width: name_width}, {style: 'keyword', min_width: shortcut_width}, {style: 'comment'}}
+
+  display_prompt: => ":"
+
+  display_title: => "Command"
+
+  complete: (text) =>
+    word, spaces = text\match '^(%S+)(%s*)'
+    if not spaces or spaces.is_empty
+      return name: 'command', completions: @commands, match_text: word, columns: @completion_columns
+
+  select: (text, item, completion_opts) =>
+    @run item.cmd_text
+
+  parse: (text) =>
+    _, spaces = text\match '^(%S+)(%s*)'
+    if spaces and not spaces.is_empty
+      @run text
+  run: (text) =>
+    cmd_name, space, rest = text\match '^(%S+)(%s?)(.*)'
+
+    cmd = resolve_command cmd_name
+    if cmd
+      if not space.is_empty and not cmd.input
+        msg = "Command '#{cmd_name}' accepts no input - press <enter> to run.", 0
+        return text: cmd_name, error: msg
+      return result: {:cmd_name, :rest, :cmd}
+    else
+      error "No such command: #{cmd_name}"
+
+  get_history: => get_command_history!
 
 interact.register
   name: 'select_command'
   description: 'Selection list for all commands'
-  evade_history: true
   handler: (opts={}) ->
-    opts = moon.copy opts
-    command_items = get_command_items!
-    name_width = 0
-    shortcut_width = 0
-    for item in *command_items
-      name_width = math.max(name_width, item[1].ulen)
-      shortcut_width = math.max(shortcut_width, item[2].ulen)
-    with opts
-      .items = command_items
-      .headers = { 'Command', 'Key binding', 'Description' }
-      .columns = {
-        { style: 'string', min_width: name_width }
-        { style: 'keyword', min_width: shortcut_width }
-        { style: 'comment' }
-      }
-    result = interact.select opts
+    help = howl.ui.HelpContext!
+    with help
+      \add_section
+        heading: "Command 'run'"
+        text: 'Run a command'
+      \add_section
+        heading: 'Usage'
+        text: 'Type a command name and press <keystroke>enter</> to run.'
+      \add_keys
+        tab: 'Show command list'
+        up: 'Show command history'
 
-    if result
-      return result.selection[1]
+    result = howl.app.window.command_panel\run howl.ui.ConsoleView(CommandConsole!), text: opts.text, :help
+    return unless result
+    result.cmd, result.cmd_name, result.rest
 
-get_command_history = ->
-  howl.app.window.command_line\get_history 'command-input-reader'
-
-interact.register
-  name: 'select_historical_command'
-  description: 'Selection list for previously run commands'
-  evade_history: true
-  handler: ->
-    line_items = {}
-    for idx, item in ipairs get_command_history!
-      append line_items, {idx, item, command: tostring(item)}
-
-    result = interact.select
-      matcher: Matcher line_items, preserve_order: true
-      reverse: true
-      title: 'Command History'
-      allow_new_value: true
-
-    if result
-      if result.selection
-        return result.selection.command\sub 2
-      else
-        return result.text
-
-return setmetatable {:register, :unregister, :alias, :run, :names, :get}, {
+return setmetatable {:register, :unregister, :alias, :run, :names, :get, :record_history}, {
   __index: (key) =>
     command = commands[key] or accessible_names[key]
     return unless command

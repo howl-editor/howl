@@ -1,31 +1,23 @@
--- Copyright 2012-2015 The Howl Developers
--- License: MIT (see LICENSE.md at the top-level directory of the distribution)
+--- Copyright 2012-2018 The Howl Developers
+--- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :interact, :sys} = howl
+{:app, :dispatch, :interact, :sys} = howl
+{:StyledText} = howl.ui
 {:File} = howl.io
-{:List, :ListWidget, :markup} = howl.ui
-{:file_matcher, :get_cwd, :get_dir_and_leftover} = howl.util.paths
-append = table.insert
-
-_command_history = {}
+{:file_list, :get_dir_and_leftover} = howl.util.paths
 
 available_commands = ->
   commands = {}
-  for path in sys.env.PATH\gmatch '[^:]+'
-    dir = File path
-    if dir.exists
-      append commands, child.basename for child in *dir.children
+  -- load commands in a separate coroutine using async becuase this can take a while sometimes
+  dispatch.launch ->
+    for path in sys.env.PATH\gmatch '[^:]+'
+      dir = File path
+      if dir.exists
+        for child in *dir.children_async
+          -- show command name in the first column and parent_dir in the second
+          table.insert commands, {child.basename, child.parent.short_path}
 
   return commands
-
-text_parts = (text) ->
-  parts = [p for p in text\gmatch '%S+']
-  append parts, '' if text\ends_with ' '
-  parts
-
-last_text_part = (text) ->
-  parts = text_parts text
-  parts[#parts]
 
 looks_like_path = (text) ->
   return unless text
@@ -38,183 +30,119 @@ looks_like_path = (text) ->
     if text\umatch p
       return true
 
-class ExternalCommandEntry
-  run: (@finish, @opts={}) =>
-    @command_line = app.window.command_line
-    @commands = nil
-    @list = nil
-    @list_widget = nil
-    @auto_show_list = true
+files_under = (path) ->
+  file_list path.children, path
 
-    directory = File @opts.path if @opts.path
-    directory or= get_cwd!
-    error "No such directory: #{directory}" unless directory.is_directory
+directories_under = (path) ->
+  dirs = [child for child in *path.children when child.is_directory]
+  rows = file_list dirs, path
+  if path.parent
+    table.insert rows, 1, {StyledText('../', 'directory'), file: path.parent}
+  table.insert rows, 1, {StyledText('./', 'directory'), file: path}
+  return rows
 
-    @command_line\clear_all!
-    @command_line\disable_auto_record_history!
-    @command_line.title = @opts.title or 'Command'
-    @_chdir directory
-
-  on_update: (text) =>
-    if @list_widget and @list_widget.showing
-      @_update_auto_complete!
-    elseif @auto_show_list
-      if text\umatch '^%s*cd%s+'
-        @_auto_complete_file directories_only: true
-      elseif looks_like_path last_text_part @command_line.text
-        @_auto_complete_file!
-
-  _chdir: (directory) =>
-    @directory = directory
-    trailing = directory.path == File.separator and '' or File.separator
-    @command_line.prompt = markup.howl "<operator>[</><directory>#{@directory.short_path}#{trailing}</><operator>] $</> "
-
-  _updir: =>
-    if @directory.parent
-      @_chdir @directory.parent
-
-  _initialize_list: =>
-    @list = List nil
-    @list.columns =  { {style: 'filename'} }
-    @list_widget = ListWidget @list, never_shrink: true
-    @list_widget.max_height_request = math.floor app.window.allocated_height * 0.5
-    @command_line\add_widget 'completion_list', @list_widget
-
-  _auto_complete_file: (opts={}) =>
-    unless @list
-      @_initialize_list!
-
-    unless @list_widget.showing
-      @list_widget\show!
-
-    if opts.directories_only
-      @directory_reader = (dir) ->
-        dirs = [c for c in *dir.children when c.is_directory]
-        append dirs, 1, dir\join '.'
-        dirs
+normalized_relative_path = (from_path, to_path) ->
+  relative = ''
+  parent = from_path
+  while parent
+    if to_path\is_below parent
+      return relative .. to_path\relative_to_parent parent
     else
-      @directory_reader = (dir) -> dir.children
+      parent = parent.parent
+      relative ..= '../'
 
-    @_update_auto_complete!
+class ExternalCommandConsole
+  new: (@dir) =>
+    error 'no dir specified for external command' unless @dir
+    @dir = File(@dir) if type(@dir) == 'string'
+    @available_commands = available_commands!
 
-  _update_auto_complete: =>
-    return unless @list_widget and @list_widget.showing
-    last_part = last_text_part @command_line.text
+  display_prompt: => "[#{@dir.short_path}] $ "
+  display_title: => "Command"
 
-    unless last_part
-      @list_widget\hide!
-      return
+  complete: (text) =>
+    -- parse into an array of {word:, trailing_spaces:} objects
+    words = @_parse text
+    if #words == 0 or (#words == 1 and words[1].word != 'cd' and not looks_like_path words[1].word)
+      -- trying to auto complete a command
+      match_text = if words[1] then words[1].word else ''
+      return {
+        name: 'command'
+        completions: @available_commands
+        :match_text
+        columns: {{style: 'string'}, {style: 'comment'}}
+      }
 
-    path, unmatched = get_dir_and_leftover @directory.path .. File.separator .. last_part
-    @list.matcher = file_matcher self.directory_reader(path), path
-    @list\update unmatched
-    @list_path = path
-    @list_unmatched = unmatched
+    elseif words[1].word == 'cd' and not words[1].trailing_spaces.is_empty
+      path = if words[2] then words[2].word else ''
+      matched_dir, match_text = @_parse_path path
+      return name: 'cd', completions: directories_under(matched_dir), :match_text, auto_show: true
 
-  _auto_complete_command: (text) =>
-    @commands or= available_commands!
+    elseif looks_like_path words[#words].word
+      path = words[#words].word
+      matched_dir, match_text = @_parse_path path
+      return name: 'filepath', completions: files_under(matched_dir), :match_text, auto_show: true
 
-    if @list_widget
-      @list_widget\hide!
+  back: =>
+    if @dir.parent
+      @dir = @dir.parent
 
-    selected = interact.select
-      items: @commands
-      title: 'Commands'
-      columns: { { style: 'string' } }
-      submit_on_space: true
-      cancel_on_backspace: true
-      :text
+  _parse: (text) =>
+    [:word, :trailing_spaces for word, trailing_spaces in text\gmatch '([^%s]+)([%s]*)']
 
-    if selected
-      @command_line\write selected.selection
-      @command_line\write ' '
-
-  _select_completion: =>
-    @list_widget\hide!
-    return unless @list.selection
-
-    filename = @list.selection.name
-    new_path = @list_path / filename
-    @command_line.text = @command_line.text\sub(1, -#@list_unmatched - 1)
-    @command_line\write filename
-    unless new_path.is_directory
-      @command_line\write ' '
-      @list_widget\hide!
-
-  _submit: =>
-    unless @command_line.text == _command_history[1]
-      append _command_history, 1, @command_line.text
-    -- remove prompt so correct history is catpured
-    @command_line.prompt = ''
-    @command_line\record_history!
-    self.finish @directory.path, @command_line.text
-
-  _select_from_history: =>
-    text = @command_line.text
-    @command_line.text = ''
-
-    result = interact.select
-      items: _command_history
-      title: 'Previous commands'
-      reverse: true
-      :text
-      allow_new_value: true
-
-    if result
-      @command_line.text = result.selection or result.text
+  _parse_path: (path) =>
+    local matched_dir, match_text
+    if path.is_blank or path == '.' or path == '..'
+      matched_dir = @dir
+      match_text = path
+    elseif path\ends_with File.separator
+      matched_dir = @dir / path
+      return unless matched_dir.exists and matched_dir.is_directory
+      match_text = ''
     else
-      @command_line.text = text
+      matched_dir, match_text = get_dir_and_leftover tostring(@dir / path)
+    return matched_dir, match_text
 
-  keymap:
-    enter: =>
-      unless @list_widget and @list_widget.showing
-        return @_submit!
+  _join: (words) =>
+    parts = {}
+    for w in *words
+      table.insert parts, w.word
+      table.insert parts, w.trailing_spaces
+    return table.join parts
 
-      text = @command_line.text
-      cd_cmd = text\umatch '^%s*cd%s+'
+  select: (text, item, completion_opts) =>
+    unless item
+      return @run text
 
-      if cd_cmd and (not @list.selection or @list.selection.name == './')
-          dir = @command_line.text\umatch '^%s*cd%s+(.+)'
-          dir = File.expand_path dir
-          path = @directory / dir
-          if path.exists and path.is_directory
-            @_chdir path
-            @list_widget\hide!
-            @command_line.text = ''
-          return
-
-      @_select_completion!
-
-    escape: =>
-      if @list_widget and @list_widget.showing
-        @list_widget\hide!
-        @auto_show_list = false
+    if completion_opts.name == 'cd'
+      if tostring(item[1]) == './'
+        @dir = item.file
+        return text: ''
       else
-        self.finish!
+        relpath = normalized_relative_path @dir, item.file
+        return text: "cd #{relpath}/"
 
-    tab: =>
-      @auto_show_list = true
-      if looks_like_path last_text_part @command_line.text
-        @_auto_complete_file!
+    if completion_opts.name == 'command'
+      -- commands are {commmand, parent_dir} tables
+      return text: item[1] .. ' '
+
+  run: (text) =>
+    words = @_parse text
+
+    if words[1].word == 'cd' and words[2]
+      new_dir = @dir / words[2].word
+      if new_dir.is_directory
+        @dir = new_dir
+        return text: ''
       else
-        space, cmd = @command_line.text\umatch '^(%s*)(%S*)$'
-        if @command_line.text.is_empty or cmd
-          @command_line.text = space if space
-          @_auto_complete_command cmd
-        else
-          @_auto_complete_file!
+        error 'No directory ' .. new_dir
 
-    backspace: =>
-      if @command_line.text.is_empty
-        @_updir!
-      else
-        return false
+    return result: {working_directory: @dir, cmd: text}
 
-    up: =>
-      return false if @list_widget and @list_widget.showing
-      @_select_from_history!
 
 interact.register
-  name: 'get_external_command',
-  description: 'Returns a directory and a command to run within the directory',
-  factory: ExternalCommandEntry
+  name: 'get_external_command'
+  description: ''
+  handler: (opts={}) ->
+    console_view = howl.ui.ConsoleView ExternalCommandConsole opts.path or howl.io.File.home_dir
+    app.window.command_panel\run console_view, text: opts.text

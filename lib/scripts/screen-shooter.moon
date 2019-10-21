@@ -37,9 +37,13 @@ press = (...) ->
   mode = editor.mode_at_cursor
   maps = { buffer.keymap, mode and mode.keymap }
 
+  command_line = app.window.command_panel.active_command_line
   for key in *{...}
     event = {key_name: key, character: key, key_code: 123}
-    bindings.process event, 'editor', maps, editor
+    if command_line
+      command_line\handle_keypress event
+    else
+      bindings.process event, 'editor', maps, editor
 
 snapshot = (name, dir, opts) ->
   parking = dispatch.park 'shot'
@@ -51,7 +55,7 @@ snapshot = (name, dir, opts) ->
     thumbnail\save dir\join("#{name}_tn.png").path, 'png', {}
 
     wait_for (opts.wait_after) or 0.5
-    app.window.command_line\abort_all!
+    app.window.command_panel\cancel!
     dispatch.resume parking
 
   opts.run!
@@ -135,10 +139,6 @@ screenshots = {
     name: 'buffer-replace'
     ->
       open_files { 'lib/howl/application.moon' }
-      with app.editor.searcher
-        \forward_to 'showing'
-        \commit!
-      app.editor.line_at_top = math.max(app.editor.cursor.line - 2, 1)
       command.run 'buffer-replace /showing/'
   }
 
@@ -235,7 +235,7 @@ screenshots = {
     ->
       open_files { 'lib/howl/keymap.moon' }
       app.editor.line_at_top = 10
-      command.run 'exec ./'
+      command.run 'exec ls ./'
   }
 
   {
@@ -255,15 +255,16 @@ screenshots = {
     wait_after: 1
     ->
       open_files { 'lib/howl/application.moon' }
-      command.exec project_dir, 'while true; do echo "foo"; sleep 1; done'
-      command.exec source_project, './bin/howl-spec'
+      command.exec working_directory: project_dir, cmd: 'while true; do echo "foo"; sleep 1; done'
+      command.exec working_directory: source_project, cmd: './bin/howl-spec'
       command.run 'switch-buffer'
   }
 
   {
     name: 'commands'
     ->
-      howl.interact.select_command title: 'Command', prompt: ':'
+      dispatch.launch -> command.run ''
+      press 'tab'
   }
 
   {
@@ -275,7 +276,7 @@ screenshots = {
   {
     name: 'configuration-help'
     ->
-      command.run 'set indent='
+      command.run 'set indent@global=4'
   }
 
   {
@@ -288,7 +289,7 @@ screenshots = {
         'lib/howl/command.moon'
       }
       dispatch.launch -> command.run 'switch-buffer'
-      app.window.command_line\show_help!
+      app.window.command_panel.active_command_line\show_help!
   }
 
   {
@@ -384,6 +385,8 @@ oops_shadow('mymod')
 
 run = (theme_name, only) ->
   print "- Generating screenshots in '#{image_dir}' (tmp dir '#{out_dir}').."
+  if only
+    print "- Only generating #{only}"
   image_dir\mkdir_p! unless image_dir.is_directory
 
   print "- Setting up test project.."

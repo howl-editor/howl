@@ -189,6 +189,11 @@ an error if `byte_offset` is out of bounds.
 
 Returns a [Chunk] for the given range.
 
+### chunk_for_span(span [, line_nr])
+
+Returns a [Chunk] for the given `span` and optional `line_nr`. The span is
+resolved using [resolve_span](#resolve_span).
+
 ### context_at(pos)
 
 Returns a [BufferContext] for the specified position.

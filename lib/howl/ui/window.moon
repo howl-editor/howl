@@ -7,7 +7,8 @@ ffi = require 'ffi'
 gobject_signal = require 'ljglibs.gobject.signal'
 Background = require 'ljglibs.aux.background'
 {:PropertyObject} = howl.util.moon
-{:Activity, :CommandLine, :Status, :theme} = howl.ui
+{:Activity, :CommandPanel, :Status, :theme} = howl.ui
+{:signal} = howl
 {:config, :signal} = howl
 
 append = table.insert
@@ -30,7 +31,7 @@ class Window extends PropertyObject
   new: (properties = {}) =>
     @_handlers = {}
     @status = Status!
-    @command_line = CommandLine self
+    @command_panel = CommandPanel self
     @background = Background "window_bg", 0, 0
     @grid = Gtk.Grid
       column_homogeneous: true
@@ -40,7 +41,7 @@ class Window extends PropertyObject
     @widgets = Gtk.Box Gtk.ORIENTATION_VERTICAL
     @box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
       { expand: true, @grid },
-      @command_line\to_gobject!
+      @command_panel\to_gobject!
       @widgets,
       @status\to_gobject!,
     }

@@ -1,15 +1,12 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, clipboard, interact from howl
+import clipboard, interact from howl
 
-clip_completions = (max_columns) ->
+clip_completions = ->
   completions = {}
   for i, clip in ipairs clipboard.clips
     text = clip.text\gsub '\n', '..↩'
-    if text.ulen > max_columns
-      text = text\usub(1, max_columns - 4) .. '[..]'
-
     table.insert completions, { tostring(i), text.stripped, :clip }
 
   return completions
@@ -20,7 +17,7 @@ interact.register
   handler: (opts={}) ->
     opts = moon.copy opts
 
-    items = clip_completions app.window.command_line.width_cols - 9
+    items = clip_completions!
 
     if #items == 0
       log.info '(Clipboard is empty)'
@@ -33,8 +30,9 @@ interact.register
         { header: 'Position', style: 'number' },
         { header: 'Content', style: 'string' }
       }
+      .auto_trim = true
 
     selected = interact.select opts
 
     if selected
-      return selected.selection.clip
+      return selected.clip

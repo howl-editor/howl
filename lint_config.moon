@@ -199,7 +199,7 @@
       'spy',
       'Spy',
       'teardown',
-      'within_activity',
+      'within_command_line',
       'with_signal_handler',
       'with_tmpdir',
       'trimmed_text'

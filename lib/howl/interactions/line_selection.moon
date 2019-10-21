@@ -101,7 +101,7 @@ interact.register
     else
       matcher = Matcher line_items, preserve_order: true
 
-    opts.matcher = matcher
+    opts.items = line_items
     opts.on_change = line_match_highlighter(editor, matcher.explain)
     opts.force_preview = true
     opts.columns = {
@@ -126,3 +126,5 @@ interact.register
       highlight.remove_all 'search', editor.buffer
       highlight.remove_all 'search_secondary', editor.buffer
       return
+
+-- howl.interact.select_line lines: howl.app.editor.buffer.lines

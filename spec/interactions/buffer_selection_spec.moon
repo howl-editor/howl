@@ -6,21 +6,25 @@ import File from howl.io
 import Window from howl.ui
 
 require 'howl.ui.icons.font_awesome'
+require 'howl.interactions.explorer'
 require 'howl.interactions.select'
 require 'howl.interactions.location_selection'
 require 'howl.interactions.buffer_selection'
 
+list_items = (command_line, col=1) ->
+  [tostring(item[col]) for item in *command_line\get_widget('explore_list').list.items]
+
 describe 'buffer_selection', ->
-  local command_line, editor
+  local editor, preview_title
   buffers = {}
 
   before_each ->
     app.window = Window!
     app.window\realize!
+    preview_title = '<no-preview-buffer>'
     editor = {
-      preview: (@buffer) => nil
+      preview: (buffer) => preview_title = buffer.title
     }
-    command_line = app.window.command_line
 
     config.autoclose_single_buffer = false
 
@@ -38,15 +42,15 @@ describe 'buffer_selection', ->
   describe 'interact.select_buffer', ->
     it 'displays a list of active buffers', ->
       local buflist
-      within_activity (-> interact.select_buffer :editor), ->
-        buflist = get_ui_list_widget_column 2
+      within_command_line (-> interact.select_buffer :editor), (command_line) ->
+        buflist = list_items command_line, 2
       assert.same {'a1-buffer', 'a2-buffer', 'b-buffer', 'c-buffer'}, buflist
 
     it 'filters the buffer list based on entered text', ->
       local buflist
-      within_activity (-> interact.select_buffer :editor), ->
+      within_command_line  (-> interact.select_buffer :editor), (command_line) ->
         command_line\write 'a-b'
-        buflist = get_ui_list_widget_column 2
+        buflist = list_items command_line, 2
       assert.same {'a1-buffer', 'a2-buffer'}, buflist
 
     it 'previews currently selected buffer in the editor', ->
@@ -61,19 +65,11 @@ describe 'buffer_selection', ->
         super: false
       }
 
-      within_activity (-> interact.select_buffer :editor), ->
-        table.insert previews, editor.buffer.title
+      within_command_line  (-> interact.select_buffer :editor), (command_line) ->
+        table.insert previews, preview_title
         command_line\handle_keypress down_event
-        table.insert previews, editor.buffer.title
+        table.insert previews, preview_title
       assert.same {'a1-buffer', 'a2-buffer'}, previews
-
-    context 'when get_buffers is provided', ->
-      it 'calls get_buffers to get buffer list', ->
-        local buflist
-        get_buffers = -> {buffers[1], buffers[3]}
-        within_activity (-> interact.select_buffer :editor, :get_buffers), ->
-          buflist = get_ui_list_widget_column 2
-        assert.same {'a1-buffer', 'c-buffer'}, buflist
 
     context 'sending binding_for("buffer-close")', ->
       keymap = ctrl_w: 'buffer-close'
@@ -93,18 +89,18 @@ describe 'buffer_selection', ->
 
       it 'closes selected buffer', ->
         local buflist
-        within_activity (-> interact.select_buffer :editor), ->
+        within_command_line  (-> interact.select_buffer :editor), (command_line) ->
           command_line\handle_keypress close_event
           command_line\handle_keypress close_event
-          buflist = get_ui_list_widget_column 2
+          buflist = list_items command_line, 2
         assert.same {'b-buffer', 'c-buffer'}, buflist
 
       it 'preserves filter', ->
         local buflist
-        within_activity (-> interact.select_buffer :editor), ->
+        within_command_line  (-> interact.select_buffer :editor), (command_line) ->
           command_line\write 'a-b'
           command_line\handle_keypress close_event
-          buflist = get_ui_list_widget_column 2
+          buflist = list_items command_line, 2
         assert.same {'a2-buffer'}, buflist
 
     context 'duplicate filenames', ->
@@ -122,6 +118,6 @@ describe 'buffer_selection', ->
 
       it 'uniquifies title by using project name and parent directory prefix', ->
         local buflist
-        within_activity (-> interact.select_buffer :editor), ->
-          buflist = get_ui_list_widget_column 2
+        within_command_line  (-> interact.select_buffer :editor), (command_line) ->
+          buflist = list_items command_line, 2
         assert.same {'file1 [project1]', 'file1 [project2]', 'path1/file2', 'path2/file2'}, buflist
