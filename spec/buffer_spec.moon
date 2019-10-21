@@ -804,6 +804,17 @@ describe 'Buffer', ->
       it "accepts .byte_end_column as the end specifier", ->
         assert.same {1, 5}, {buf\resolve_span {byte_end_column: 6}, 1}
 
+  describe 'chunk_for_span(span, line_nr)', ->
+    local buf
+
+    before_each ->
+      buf = buffer '123åäö789'
+
+    it 'similar to resolve_span but returns a Chunk', ->
+      chunk = buf\chunk_for_span start_pos: 4, end_pos: 7
+      assert.same chunk.buffer, buf
+      assert.same 'åäö7', chunk.text
+
   describe 'get_ptr(start_pos, end_pos)', ->
     assert_returns = (s, count, ...) ->
       r_ptr, r_count = ...

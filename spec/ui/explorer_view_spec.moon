@@ -54,6 +54,7 @@ describe 'ExplorerView', ->
       explorer_view = ExplorerView path: {explorer}
       explorer_view\init command_line, max_height: 100
       explorer_view\on_text_changed ''
+      explorer_view\on_text_changed ''
 
     it 'displays a flat list of strings', ->
       rebuild {'one', 'two', 'three'}

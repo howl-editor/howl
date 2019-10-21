@@ -205,20 +205,28 @@ presses `escape`.
 
 Very similar to [select](#select), but lets the user select a location from a
 list of location. In addition, it displays a preview of the currently selected
-option in the editor. Each item in `items` (or as returned by `matcher`) can
-have the following fields:
+option in the editor. Each item in `items` can have the following fields:
 
-- `file` or `buffer`: One of `file` or `buffer` must be provided. This specifies
-which file or buffer is previewed in the editor when this item is selected:
+- `file`, `buffer` or `chunk`: One of `file`, `buffer` or `chunk` must be
+provided. This specifies which file or buffer is previewed in the editor when
+this item is selected:
   - `file`: A [File] object.
   - `buffer`: A [Buffer] object.
+  - `chunk`: A [Chunk] object.
+
+When a file or buffer is provided, the position within it is specified by
+the following fields:
 - `line_nr`: _[optional]_ The line number in `file` or `buffer`
-- `highlights`: _[optional]_ A table of highlights to apply to the previewed
-buffer line if possible. Requires that `line_nr` is given. Each highlight
-specifies a span to highlight. The highlight's span can be specified in several
-different fashions. It will be resolved using
-[Buffer.resolve_span(..)](buffer.html#resolve_span), so please have a look at
-`resolve_span`'s documentation to see the available options.
+- `start_column`: _[optional]_ The starting column within the line
+- `end_column`: _[optional]_ The ending column within the line
+- `pos`: _[optional]_ The character offset from the start of the buffer
+
+One of either `line` or `pos` may be specified, but not both. The `start_column`
+and `end_column` may only be specified if `line_nr` is specified.
+
+When a chunk is provided, none of `line_nr`, `start_column`, `end_column` or
+`pos` is applicable since the chunk identifies the buffer as well as a span
+within it.
 
 ### yes_or_no (opts)
 
@@ -483,6 +491,6 @@ buffer if desired.
 [CommandPanel]: ui/command_panel.html
 [File]: io/file.html
 [Line]: ../spec/buffer_lines_spec.html#line-objects
-[Chunk]: ../spec/buffer_lines_spec.html#line-objects
+[Chunk]: chunk.md
 [ListWidget]: ui/list_widget.html
 [HelpContext]: ui/help_context.html

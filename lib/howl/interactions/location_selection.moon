@@ -18,7 +18,7 @@ interact.register
       transform_result: (location_item) -> location_item.location
 
 class LocationExplorer
-  new: (@locations, @selected_item, @columns) =>
+  new: (@locations, @selected_location, @columns) =>
     error 'locations required' unless @locations
     @previewer = Preview!
 
@@ -27,7 +27,11 @@ class LocationExplorer
   display_columns: => @columns
 
   display_items: =>
-    [LocationItem(location, @previewer) for location in *@locations], @selected_item
+    items = [LocationItem(location, @previewer) for location in *@locations]
+    local selected_item
+    if @selected_location
+      selected_item = ([item for item in *items when item.location == @selected_location])[1]
+    return items, :selected_item
 
 class LocationItem
   new: (@location, @previewer) =>
@@ -36,29 +40,53 @@ class LocationItem
 
   get_chunk: =>
     -- return a chunk that corresponds to this location
+    return @location.chunk if @location.chunk
+
+    local buffer
+    preview_msg = ''
     line_nr = @location.line_nr or 1
+
     if @location.buffer
-      if @location.pos
-        pos = @location.pos
-        return @location.buffer\chunk pos, pos
-      else
-        line = @location.buffer.lines[line_nr]
-        if line
-          return line.chunk
+      buffer = @location.buffer
     elseif @location.file
       -- if we have a file we get the chunk from the preview buffer
       buffer = self.previewer\get_buffer @location.file, line_nr or 1
+      preview_msg = ' in preview'
+
+    if @location.pos
+      pos = @location.pos
+      if pos <= buffer.length
+        return buffer\chunk pos, pos
+      else
+        @warning = "Position #{pos} not loaded#{preview_msg}"
+    else
       line = buffer.lines[line_nr]
       if line
-        return line.chunk
-    elseif @location.chunk
-      return @location.chunk
+        -- either return the whole line or a segment (when start_column is provided)
+        if @location.start_column or @location.byte_start_column
+          span = {
+            start_column: @location.start_column
+            end_column: @location.end_column or @location.start_column
+            byte_start_column: @location.byte_start_column
+            byte_end_column: @location.byte_end_column or @location.byte_start_column
+          }
+          return buffer\chunk_for_span span, line_nr
+        else
+          return line.chunk
+      else
+        @warning = "Line #{line_nr} not loaded#{preview_msg}"
+
+    -- if we weren't able to load a chunk, return the last line
+    line = buffer.lines[#buffer.lines]
+    return line.chunk
 
   display_row: => @location
 
   preview: =>
     unless @chunk
       @chunk = @get_chunk!
+    if @warning
+      log.warn @warning
     if @chunk
       return chunk: @chunk, popup: @location.popup
     else

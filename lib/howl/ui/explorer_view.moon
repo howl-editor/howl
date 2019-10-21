@@ -78,6 +78,7 @@ class ExplorerView
     -- this view creates a list widget and a list, but delegates handing to the item view object
     @list = List nil,
       on_selection_change: (selection) ->
+        @command_line.notification\clear!
         level = @levels[#@levels]
         level.view\handle_selection_change selection
     @list_widget = ListWidget @list, never_shrink: true
@@ -328,6 +329,7 @@ class ListItemView
 
     if @item.display_columns
       @explorer_view.list.columns = @item\display_columns!
+
     @list_initial_selection = @update_list_matcher subitems, opts
     @explorer_view\redraw_title title
     @explorer_view\redraw_prompt if @item.display_path then @item\display_path! else nil
@@ -374,7 +376,8 @@ class ListItemView
       display_item = get_display_item item
 
       append display_items, display_item
-      if opts.selected_item == item
+      if not selection and opts.selected_item == item
+        -- if a selected_item was provided, save the corresponding display item
         selection = display_item
 
     matcher = Matcher display_items, preserve_order: opts.preserve_order
@@ -398,9 +401,8 @@ class ListItemView
   update_list: (text) =>
     @explorer_view.list\update text
     @explorer_view.list_widget\show!
-    if @list_initial_selection
+    if text.is_empty and @list_initial_selection
       @explorer_view.list.selection = @list_initial_selection
-      @list_initial_selection = nil
 
   handle_selection_change: (selection) =>
     item = get_explorer_for_selection @item, selection

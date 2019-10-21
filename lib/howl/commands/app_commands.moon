@@ -624,13 +624,11 @@ file_search_hit_to_location = (match, search, display_as) ->
     s, e = match.message\ufind((r(search)))
 
   if loc.column
-    loc.highlights = {
-      { byte_start_column: loc.column, byte_end_column: loc.column + #search }
-    }
+    loc.byte_start_column = loc.column
+    loc.byte_end_column = loc.column + #search
   elseif s
-    loc.highlights = {
-      { start_column: s, end_column: e + 1 }
-    }
+    loc.start_column = s
+    loc.end_column = e + 1
 
   if s and display_as != 'plain'
     loc.item_highlights = {
