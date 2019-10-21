@@ -121,6 +121,8 @@ command.register
           ref_idx = tonumber(ref\sub(2))
           if ref_idx > 0
             return captures[ref_idx] or ''
+          elseif ref_idx == 0
+            return chunk.text
           return ''
         return result
 
