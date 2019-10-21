@@ -2,10 +2,28 @@
 
 ## Unreleased (in master)
 
-- Major rewrite of the command line and interaction modules. The new system
-internals are describe here:
+- The `set` command behavior has been enhanced and it now shows a preview of the
+config values being modified.
+
+- The `buffer-replace` and `buffer-replace-regex` commands show a summary list
+(similar to `buffer-grep`) of the matches being replaced.
+
+- The summary list in `buffer-grep` and `buffer-replace` commands can now
+toggled visible or collapsed using `ctrl_s`.
+
+- When browsing a directory in the `open` command, `ctrl_r` now refreshes the
+directory list.
+
+- A bug with the command line text overflow has been fixed. The command line now
+grows vertically and wraps text if it is too long.
+
+### API changes
+
+- A major rewrite of the command line and interaction modules has been
+implemented. The new system internals are describe here:
 https://github.com/howl-editor/howl/wiki/The-Command-Interaction-Refactor. The
-changes are backwards incompatible.
+changes are backwards incompatible. An upgrade guide is available at
+doc/upgrading.md.
 
 ## 0.6 (2019-04-05)
 
