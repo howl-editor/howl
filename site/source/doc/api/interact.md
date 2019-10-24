@@ -133,7 +133,7 @@ If the user presses `enter`, returns the selected item. If the user presses
 
 `opts` is a table that specifies:
 
-- `items`: a table containing a list of *items*, where each item represents
+- `items`: _[required]_ a table containing a list of *items*, where each item represents
 one select-able option and can be either a string for a single column list, or a
 table for a multiple column list. When each item is a table, it contains a list
 of strings, one each for each column. Instead of a string, a

@@ -60,7 +60,7 @@ class TextReader
 howl.app.window.command_panel\run TextReader(prompt: 'Name:', title: 'Please enter your name')
 ```
 
-The `command_panel.run` method is passes a table
+The `command_panel.run` method is passed a table
 containing a *command line definition*. The definition is executed by the
 command panel. In this example, the following steps occur after `run` is called:
 
