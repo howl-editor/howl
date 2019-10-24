@@ -1,11 +1,8 @@
 module SitemapHelpers
   def howl_specs(version = nil)
-    if version.present?
-      prefix = "/versions/#{version}/doc/spec"
-      grouped(sitemap.resources.select { |r| r.url.start_with? prefix })
-    else
-     grouped(sitemap.where(:tags.include => 'spec').all)
-    end
+    prefix = version.present? ?
+      "/versions/#{version}/doc/spec" : '/doc/spec'
+    grouped(sitemap.resources.select { |r| r.url.start_with? prefix })
   end
 
   def howl_api_docs(version = nil)
