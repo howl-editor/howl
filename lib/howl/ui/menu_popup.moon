@@ -46,6 +46,12 @@ class MenuPopup extends Popup
     page_up: => @list\prev_page!
 
     on_unhandled: (event, source, translations, self) ->
+      -- if a bare modifier, don't close popup
+      modifiers = {ctrl: true, alt: true, shift: true}
+      for translation in *translations
+        return if modifiers[translation]
+
+      -- any other not character such as home or escape closes the popup
       unless event.character
         self\close!
 
