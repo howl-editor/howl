@@ -31,7 +31,7 @@ $(function() {
     screenshotTitle.text(ctx.cur.title);
 
     if (ctx.next) {
-      nextButton.html('Next: ' + ctx.next.title);
+      nextButton.html(ctx.next.title + ' 🡺');
       nextButton.data('title', ctx.next.title);
       nextButton.show();
     }
@@ -39,7 +39,7 @@ $(function() {
       nextButton.hide();
     }
     if (ctx.prev) {
-      prevButton.html('Previous: ' + ctx.prev.title);
+      prevButton.html('🡸 ' + ctx.prev.title);
       prevButton.data('title', ctx.prev.title);
       prevButton.show();
     }
@@ -69,4 +69,19 @@ $(function() {
 
   nextButton.on('click', handleButtonClick);
   prevButton.on('click', handleButtonClick);
+
+  // keypress navigation
+
+  const RIGHT_ARROW_KEY = 39;
+  const LEFT_ARROW_KEY = 37;
+  const SPACE_KEY = 32;
+
+  document.onkeyup = function(e) {
+    if (e.which == RIGHT_ARROW_KEY || e.which == SPACE_KEY) {
+      nextButton.click();
+    }
+    else if (e.which == LEFT_ARROW_KEY) {
+      prevButton.click();
+    }
+  };
 })
