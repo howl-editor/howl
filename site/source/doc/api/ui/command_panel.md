@@ -42,6 +42,7 @@ howl.app.window.command_panel:run(TextReader)
 ```
 
 The same example rewritten in Moonscript is below:
+
 ```moonscript
 class TextReader
   new: (opts={}) =>
