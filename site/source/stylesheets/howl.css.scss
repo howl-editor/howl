@@ -1,15 +1,16 @@
-$border_radius: 3px;
+$border_radius: 5px;
 
 @mixin badge($text, $bcolor, $color) {
   content: $text;
   background-color: $bcolor;
   color: $color;
-
-  border-radius: 7px;
+  opacity: 0.9;
+  border-radius: 12px;
   margin: 0 0.5em 0.1em 0;
-  padding: 0.1em 0.3em 0.1em 0.3em;
+  padding: 0.2em 0.5em;
   border: 1px solid cadetblue;
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: bold;
   vertical-align: middle;
   display: inline-block;
 }
@@ -32,6 +33,7 @@ $border_radius: 3px;
   content: $text;
   float: right;
   border-bottom-left-radius: 7px;
+  border-top-right-radius: 3px;
   background-color: white;
   color: darkslategray;
   padding: 0 0.5em 0 0.5em;
@@ -183,9 +185,9 @@ ol.breadcrumb {
 
 code {
   background-color: aliceblue;
-  color: darkblue;
-  border: 1px solid skyblue;
-  padding: 1px 2px 0 2px;
+  color: #333;
+  padding: 1px 4px 0 4px;
+  border-radius: 3px;
 }
 
 .blog_entries {
@@ -260,9 +262,7 @@ img {
 pre.highlight {
   margin-top: 1em;
   margin-bottom: 1em;
-  border: 1px dotted cadetblue;
-  border-bottom: 2px solid lightgray;
-  border-right: 2px solid lightgray;
+  border: 1px solid lightgray;
   background-color: aliceblue;
 
   .c1 { color: seagreen; }
@@ -297,19 +297,25 @@ pre.highlight {
 }
 
 h3 {
-  background-color: aliceblue;
-  border: 1px solid cadetblue;
   font-size: 18px;
   padding: 10px;
-  border-radius: $border_radius;
+  padding-left: 0;
   margin: 1em 0 1em 0;
   vertical-align: middle;
+  font-weight: bold;
+}
+
+.hdr-idx {
+  display: inline-block;
+  vertical-align: baseline;
+  margin-right: 0.5em;
+  color: #999;
+  font-size: 14px;
 }
 
 h4 {
   margin-top: 1em;
   font-size: 16px;
-  font-style: italic;
   border-radius: $border_radius;
 }
 
@@ -324,16 +330,18 @@ body.doc, body.versions {
 
   .toc {
     margin-top: 2em;
+    margin-bottom: 2em;
     border-radius: $border_radius;
     margin-left: auto;
     margin-right: auto;
     display: inline-block;
     min-width: 50%;
-    box-shadow: 0px 0px 6px -1px #666;
+    box-shadow: 0px 0px 3px 0px #666;
 
     .toc-title {
-      background-color: #b8dfea;
+      background-color: #f5f5f5;
       color: darkslategray;
+      font-weight: bold;
       font-size: 18px;
       padding: 0.5em;
       vertical-align: middle;
@@ -369,11 +377,16 @@ body.doc, body.versions {
       min-width: 12%;
       max-height: 90%;
     }
+
   }
 
-  @media (max-width: 1644px) {
+  @media (max-width: 1899px) {
     .toc {
       margin-bottom: 1em;
+
+      .toc-title {
+        display: none;
+      }
     }
   }
 
@@ -383,9 +396,8 @@ body.doc, body.versions {
 
   /* header: properties / methods / functions */
   h2 {
-    padding: 0.5em;
-    border-bottom-left-radius: $border_radius;
-    border-bottom: 1px solid black;
+    padding: 0.5em 0.5em 0.25em 0;
+    border-bottom: 1px solid slategray;
     margin: 0.5em 0 0.5em 0;
   }
 
