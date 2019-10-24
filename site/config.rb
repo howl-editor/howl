@@ -60,7 +60,7 @@ use BlogAdjustments
 
 helpers do
   def hdr_link(idx, title, path)
-    "<h4>#{idx} <a href=\"#{path}\">#{title}</a></h4>"
+    "<h4><span class=\"hdr-idx\">#{idx}</span> <a href=\"#{path}\">#{title}</a></h4>"
   end
 
   def breadcrumbs
@@ -75,7 +75,7 @@ helpers do
       resource = sitemap.find_resource_by_path(path.to_s) || sitemap.find_resource_by_path("#{path}/index.html")
       title = resource && (resource.metadata[:locals][:page_title] || resource.metadata[:page]['title'])
       title ||= part =~ /([^.]+(?:\.\d+))/ && $1.capitalize
-      components << component.new(path.relative_path_from(base), title, !!resource)
+      components << component.new(path.relative_path_from(base), (title or part), !!resource)
     end
 
     return '' if components.empty?
