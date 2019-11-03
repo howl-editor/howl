@@ -33,6 +33,12 @@ insert_map = {
     state.change_mode editor, 'command'
     editor.cursor.column = math.max 1, editor.cursor.column - 1
 
+  'ctrl_[': (editor) ->
+    state.insert_edit = get_edit editor
+    insert_pos = nil
+    state.change_mode editor, 'command'
+    editor.cursor.column = math.max 1, editor.cursor.column - 1
+
   ctrl_i: (editor) -> editor\shift_right!
   ctrl_d: (editor) -> editor\shift_left!
 }
