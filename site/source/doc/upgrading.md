@@ -144,7 +144,7 @@ object creates its own edit widget. There is no risk of one activitiy
 accidentally stepping over another.
 * There is still a `CommandLine` object but it is created internally by the
 `CommandPanel` and passed to the *command line definition*.
-* There is no concept of *. The redesign does not require this concept.
+* There is no concept of *spillover text*. The redesign does not require this concept.
 * There is no `add_help` method, instead there is a new [HelpContext] available
 for use across Howl.
 
