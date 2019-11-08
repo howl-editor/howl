@@ -33,8 +33,8 @@ insert_map = {
       blink_interval: -> config.cursor_blink_interval
   }
 
-  escape: (editor) -> exit_insert_mode editor
-  'ctrl_[': (editor) -> exit_insert_mode editor
+  escape: exit_insert_mode
+  'ctrl_[': exit_insert_mode
   ctrl_i: (editor) -> editor\shift_right!
   ctrl_d: (editor) -> editor\shift_left!
 }
