@@ -11,7 +11,7 @@ ffi = require 'ffi'
 
 config.define {
   name: 'clipboard_max_items',
-  description: 'The maximum number of anynomous clips to keep in the clipboard',
+  description: 'The maximum number of anonymous clips to keep in the clipboard',
   type_of: 'number',
   default: 50,
   scope: 'global'

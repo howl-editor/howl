@@ -8,7 +8,7 @@ title: howl.clipboard
 
 The clipboard module keeps track of copied text in Howl, and handles
 synchronization with the system clipboard and primary selection. It provides two
-ways of remembering clipboard items: As a list of anynomous clips that is
+ways of remembering clipboard items: As a list of anonymous clips that is
 automatically updated with each copy/delete/cut operation, and within named
 registers.
 
@@ -40,7 +40,7 @@ new item and removing older items as necessary.
 
 ### current
 
-The most recent anynomous clipboard item available on the clipboard.
+The most recent anonymous clipboard item available on the clipboard.
 
 ### primary
 
