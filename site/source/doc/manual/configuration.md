@@ -6,12 +6,22 @@ title: Configuring Howl
 
 ## Init files
 
-Howl looks for a startup file in the Howl _user directory_: `~/.howl`. It
-searches for either `~/.howl/init.lua` or `~/.howl/init.moon`. Which one
-to pick depends on your preference with regards to language - `init.moon`
-for [Moonscript](http://moonscript.org) and `init.lua` for
-[Lua](http://www.lua.org). Should a startup file be found, it is loaded
-after Howl is initialized, which includes loading all available bundles.
+Howl looks for a startup file in one of these locations:
+
+- `~/.howl/`
+- `$XDG_CONFIG_HOME/howl/`, usually `~/.config/howl/` (see [XDG specification])
+
+[XDG specification]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-0.6.html
+
+Inside this _user directory_, it searches for either:
+
+- `init.moon`, written in [Moonscript](http://moonscript.org)
+- `init.lua`, written in [Lua](http://www.lua.org)
+
+Which flavor to pick depends on your preference with regards to these languages.
+
+Should a startup file be found, it is loaded after Howl is initialized
+which includes loading all available bundles.
 Howl does not have any special configuration format for use with the
 startup file, instead it's just plain Lua or Moonscript.
 
