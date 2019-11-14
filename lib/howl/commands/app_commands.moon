@@ -456,7 +456,7 @@ do_howl_eval = (load_f, mode_name, transform_f) ->
 
 command.register
   name: 'howl-lua-eval'
-  description: 'Eval the current line or selection as Lua'
+  description: 'Eval the current line or selection as Lua and copy result to clipboard'
   handler: ->
     do_howl_eval load, 'lua', (text) ->
       unless text\match 'return%s'
@@ -468,7 +468,7 @@ command.register
 
 command.register
   name: 'howl-moon-eval'
-  description: 'Eval the current line or selection as Moonscript'
+  description: 'Eval the current line or selection as Moonscript and copy result to clipboard'
   handler: ->
     moonscript = require('moonscript')
     transform = (text) ->
