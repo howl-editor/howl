@@ -18,12 +18,12 @@ per_page: 5
         = article.title
 
       = article.summary
-      .read-more= link_to '➥ Read more..', article
+      .read-more= link_to '➥ Read more..', article, :find_resource => true
 
   - if paginate && num_pages > 1
     %ul.pager
       - if prev_page
-        %li= link_to 'Previous page', prev_page
+        %li= link_to 'Previous page', prev_page, :find_resource => true
 
       - if next_page
-        %li= link_to 'Next page', next_page
+        %li= link_to 'Next page', next_page, :find_resource => true
