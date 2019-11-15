@@ -427,6 +427,7 @@ class Application extends PropertyObject
     -- bootstrap if we're booting up
     unless @_loaded
       @settings = Settings!
+      config.load_config!
       @_load_core!
       if @settings.dir and not @args.no_profile
         append bundle.dirs, @settings.dir\join 'bundles'
@@ -501,6 +502,7 @@ class Application extends PropertyObject
       window\show_all! if window
       @_loaded = true
       howl.io.File.async = true
+      config.broadcast_config!
       signal.emit 'app-ready'
       @_set_initial_status window
 

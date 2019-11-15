@@ -193,6 +193,15 @@ save_config = (dir=nil) ->
 
   settings\save_system('config', scopes_copy)
 
+broadcast_config = ->
+  -- broadcasts all values stores in scopes - useful after load_config
+  return unless scopes
+  -- scopes is a deeply nested table containing: scopes[scope][name][layer] = value
+  for scope, scope_item in pairs scopes
+    for name, name_item in pairs scope_item
+      for layer, value in pairs name_item
+        broadcast name, value, (scope != '' or layer != 'default')
+
 set = (name, value, scope='', layer='default') ->
   -- Set the value of a configuration variabled named `name` to `value`
   -- for the specified scope and layer.
@@ -353,6 +362,7 @@ config = {
   :definitions
   :load_config
   :save_config
+  :broadcast_config
   :define
   :define_layer
   :set
