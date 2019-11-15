@@ -78,16 +78,17 @@ _G.my_explicit_global = 2
 
 Things that are meant to be configurable in Howl are exposed as "configuration
 variables". Configuration variables can be set either interactively from within
-Howl, using the `set` command, or programmatically from code. To get an overview
-of currently available variables, type `set` and press `space` at the command
-line to view a list:
+Howl, using the `set` command, or programmatically from code. The `set` command
+shows a list of avaliable variables. Press `alt_x` to invoke the command line,
+then type `set` and press the spacebar:
 
 ![Configuration](/images/screenshots/monokai/configuration.png)
 
-For example, to change the current theme interactively you can open up the
-prompt, and type `set theme`. Pressing enter to choose the theme variable would
-then present you with a list of available themes - after choosing one you can
-press enter again to switch to the specified theme. See the sections below,
+Here you can select a configuration variable by typing and selecting from the
+list. For example, to change the current theme interactively you can select
+`theme` and press enter. This then  presents you with a list of available themes
+- after choosing one you can press enter again to switch to the specified theme.
+See the sections below,
 [Setting variables upon startup](#setting-variables-upon-startup) and
 [Automatic persistence](#automatic-persistence), for information on how to
 change a setting so that it persists across restarts.
@@ -97,10 +98,11 @@ change a setting so that it persists across restarts.
 The value for each configuration variable can be set at multiple levels, called
 *scopes*, and at multiple *layers* for each scope. The scope is the path for
 which the configuration value applies. For instance, a configuration value set
-at the *global* scope applies to all buffers. A configuration value at a
-*file* scope applies to a specific file only, overriding any global value for
-the same variable. A folder scope (similar to file scope, but referencing a
-folder) applies a value to all files under a specific folder.
+at the *global* scope applies across all of Howl and includes all buffers. A
+configuration value at a *file* scope applies to a specific file only,
+overriding any global value for the same variable. A folder scope (similar to
+file scope, but referencing a folder) applies a value to all files under a
+specific folder.
 
 Scopes work well when the same configuration value applies to all types of files
 within a scope. To use different values depending on the
@@ -200,7 +202,7 @@ A few notes on the above example:
   One exception to this is the module `howl` however. Requiring it will lead to an
   error preventing the editor to start.
 
-- We use mode.configure for specifying the mode variable rather than setting it
+- We use `mode.configure` for specifying the mode variable rather than setting it
   using the config object of an existing mode instance. This is because we don't
   want to load the mode unnecessarily just to set a variable. Using configure()
   instead means that it will be set once the mode is loaded (or straight away
@@ -212,11 +214,12 @@ A few notes on the above example:
 ### Automatic persistence
 
 Howl does not automatically save any configuration variables updated via the
-command line or the API. One way to save your settings is to manually update the
-`init.moon` file as described in the previous section. Another way is to use the
- `save_config_on_exit` configuration variable which enables automatic
-persistence of global configuration variables.
-
+command line or the API. One way to save the modified configuration is to run
+the `save-config` command. This saves the modified variables in
+`~/.howl/system/config.lua` from where they are automatically reloaded on
+startup. To automatically save all modified variables every time you close Howl,
+you can use the `save_config_on_exit` configuration variable. If set to true,
+any changes made to the config using `set` will automatically be saved on exit.
 A simple way to enable automatic persistence is to add the following line to
 your `init.moon`:
 
@@ -224,15 +227,14 @@ your `init.moon`:
 config.save_config_on_exit = true
 ```
 
-Once `save_config_on_exit` is set to `true`, the current state of global
-configuration variables is automatically saved on exit and reloaded on startup.
-Note that automatic persistence applies to global variables and mode
-configuration only - configuration at other scopes such as files and buffer is
-not currently persisted.
+*Note*: The `save_config_on_exit` configuration and `save-config` command only
+save the settings for global scope. Any file or buffer level configuration is
+not currently saved.
 
-Automatically persisted variables are stored in the file
-`~/.howl/system/config.lua`. Any variables set via `init.moon` override the
-variables automatically loaded from `config.lua`.
+Another way to persist your settings is to manually update the `init.moon` file
+as described in the [previous section](#setting-variables-upon-startup). Any
+variables set via `init.moon` override the variables automatically loaded from
+`config.lua`.
 
 ## Key bindings
 
