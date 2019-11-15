@@ -3,7 +3,7 @@
 
 Gtk = require 'ljglibs.gtk'
 require 'howl.ui.icons.font_awesome'
-import bindings, dispatch from howl
+import bindings, config, dispatch from howl
 import PropertyObject from howl.util.moon
 import NotificationWidget, BufferPopup, TextWidget, IndicatorBar, ContentBox, HelpContext, style from howl.ui
 
@@ -51,6 +51,9 @@ class CommandLine extends PropertyObject
           @command_widget\focus!
 
     @command_widget.visible_rows = 1
+    -- reset blink interval since each view has its own
+    @command_widget.view.config.cursor_blink_interval = config.cursor_blink_interval
+
     @box\pack_end @command_widget\to_gobject!, false, 0, 0
 
     @notification = NotificationWidget!
