@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2019 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 local ffi = require('ffi')
@@ -184,7 +184,7 @@ local function main()
   elseif args.version then
     -- Change version here
     print("howl version 0.6-dev\n")
-    print("Copyright 2012-2017 The Howl Developers\nLicense: MIT License")
+    print("Copyright 2012-2019 The Howl Developers\nLicense: MIT License")
     os.exit(0)
   else
     require 'howl.cdefs.fontconfig'
