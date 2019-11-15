@@ -82,7 +82,7 @@
     alt_q:             'editor-reflow-paragraph'
 
     ctrl_left:         'cursor-word-left'
-    ctrl_right:        'cursor-word-right'
+    ctrl_right:        'cursor-word-right-end'
     ctrl_up:           'editor-scroll-up'
     ctrl_down:         'editor-scroll-down'
 
@@ -91,7 +91,7 @@
     'alt_<':           'navigate-go-to'
 
     ctrl_shift_left:   'cursor-word-left-extend'
-    ctrl_shift_right:  'cursor-word-right-extend'
+    ctrl_shift_right:  'cursor-word-right-end-extend'
     ctrl_shift_up:     'editor-scroll-up'
     ctrl_shift_down:   'editor-scroll-down'
 
