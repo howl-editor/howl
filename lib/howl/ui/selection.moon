@@ -132,19 +132,19 @@ class Selection extends PropertyObject
 with signal
   .register 'selection-changed',
     description: [[
-Emitted whenever a selection has been changed.
+Signaled right after a selection has been changed.
 
 This could be the result of a copy, cut or an explicit request to remove
 or create a selection.
 ]]
 
   .register 'selection-removed',
-    description: 'Emitted whenever a selection has been removed.'
+    description: 'Signaled right after a selection has been removed.'
 
   .register 'selection-copied',
-    description: 'Emitted whenever a selection has been copied.'
+    description: 'Signaled right after a selection has been copied.'
 
   .register 'selection-cut',
-    description: 'Emitted whenever a selection has been cut.'
+    description: 'Signaled right after a selection has been cut.'
 
 return Selection

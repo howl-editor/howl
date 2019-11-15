@@ -223,7 +223,7 @@ config.watch 'font_size', (name, value) ->
   apply_theme! if current_theme
 
 signal.register 'theme-changed',
-  description: 'Signaled after a theme has been applied'
+  description: 'Signaled right after a theme has been applied'
   parameters:
     theme: 'The theme that has been set'
 
