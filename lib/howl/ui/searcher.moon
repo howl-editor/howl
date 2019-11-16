@@ -88,7 +88,7 @@ class Searcher
     @commit!
 
   next: =>
-    if @last_search
+    if @last_search and not @last_search.is_empty
       if @last_type == 'word'
         log.info "Next match for word '#{@last_search}'"
       else
@@ -96,7 +96,7 @@ class Searcher
       @forward_to @last_search, @last_type, false
 
   previous: =>
-    if @last_search
+    if @last_search and not @last_search.is_empty
       if @last_type == 'word'
         log.info "Previous match for word '#{@last_search}'"
       else
