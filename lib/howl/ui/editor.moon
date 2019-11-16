@@ -1213,18 +1213,18 @@ signal.register 'editor-defocused',
     editor: 'The editor that lost focus'
 
 signal.register 'editor-destroyed',
-  description: 'Signaled as an editor is destroyed'
+  description: 'Signaled right after an editor was destroyed'
   parameters:
     editor: 'The editor that is being destroyed'
 
 signal.register 'insert-at-cursor',
-  description: 'Signaled when text has been inserted into an editor at the cursor position'
+  description: 'Signaled right after text has been inserted into an editor at the cursor position'
   parameters:
     editor: 'The editor for which the text was inserted'
     text: 'The inserted text'
 
 signal.register 'cursor-changed',
-  description: 'Signaled when the cursor position has changed'
+  description: 'Signaled right after the cursor position has changed'
   parameters:
     editor: 'The editor for which the text was inserted'
     cursor: 'The cursor object'

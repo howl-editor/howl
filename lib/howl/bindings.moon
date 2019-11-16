@@ -8,7 +8,7 @@ import signal, command, sys from howl
 append = table.insert
 
 signal.register 'key-press',
-  description: [[Signaled whenever a key is pressed.
+  description: [[Signaled right after a key is pressed.
 
 If any handler returns true, the key press is considered to be handled, and any subsequent
 processing is skipped.

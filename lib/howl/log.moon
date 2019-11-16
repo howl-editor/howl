@@ -14,14 +14,14 @@ config.define
   type_of: 'number'
 
 signal.register 'log-entry-appended',
-  description: 'Called when a new entry is appended to the log'
+  description: 'Signaled right after a new entry is appended to the log'
   parameters:
     essentials: 'The log message essentials'
     level: 'The log level (one of info, warning, error)'
     message: 'The log message'
 
 signal.register 'log-trimmed',
-  description: 'Called when the log is trimmed to the given size'
+  description: 'Signaled right after the log is trimmed to the given size'
   parameters:
     size: 'The new number of entries in the log'
 
