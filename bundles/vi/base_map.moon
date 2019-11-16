@@ -146,6 +146,9 @@ map = {
 
     '}': (editor) -> apply editor, (editor) ->
       editor.cursor\para_down!
+
+    '%': (editor) -> apply editor, (editor) ->
+      editor.cursor\goto_matching_brace!
    }
 
   on_unhandled: (event, source, translations) ->
