@@ -29,7 +29,7 @@ register = (cmd_def) ->
     error 'Missing field for command: "' .. field .. '"' if not cmd_def[field]
 
   if not cmd_def.handler
-    error 'Command "handler" required'
+    error 'Command "handler" required for ' .. cmd_def.name
 
   cmd_def = moon.copy cmd_def
   commands[cmd_def.name] = cmd_def
