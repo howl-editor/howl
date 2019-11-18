@@ -329,26 +329,25 @@ command.register
     buffer = app.editor.buffer
     lines = buffer.mode\structure app.editor
     cursor_lnr = app.editor.cursor.line
-    local selected_line
-    for line in *lines
-      if line.nr <= cursor_lnr
-        selected_line = line
-      if line.nr >= cursor_lnr
-        break
 
-    return interact.buffer_search
+    -- convert lines to locations used by select_location
+    local selected_location
+    locations = {}
+    for line in *lines
+      chunk = line.chunk
+      location = {line.nr, chunk, :chunk}
+      if line.nr <= cursor_lnr
+        selected_location = location
+      table.insert locations, location
+
+    return interact.select_location
       title: "Structure for #{buffer.title}"
-      once_per_line: true
-      editor: app.editor
-      buffer: buffer
-      parse_query: (query) -> howl.util.Matcher.create_matcher query
-      parse_line: (line) -> {:line, case_text: line.text, text: line.text.ulower}
-      find: matcher_find
-      prompt: opts.prompt
       text: opts.text
       help: opts.help
-      :lines
-      :selected_line
+      items: locations
+      selection: selected_location
+      columns: {{style: 'comment'}, {}}
+      preserve_order: true
 
   handler: (result) ->
     return unless result

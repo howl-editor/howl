@@ -14,11 +14,12 @@ interact.register
       title: opts.title
       prompt: opts.prompt
       text: opts.text
-      path: {LocationExplorer opts.items, opts.selection, opts.columns}
+      path: {LocationExplorer opts.items, opts.selection, opts.columns, opts.preserve_order}
       transform_result: (location_item) -> location_item.location
+      help: opts.help
 
 class LocationExplorer
-  new: (@locations, @selected_location, @columns) =>
+  new: (@locations, @selected_location, @columns, @preserve_order) =>
     error 'locations required' unless @locations
     @previewer = Preview!
 
@@ -31,7 +32,7 @@ class LocationExplorer
     local selected_item
     if @selected_location
       selected_item = ([item for item in *items when item.location == @selected_location])[1]
-    return items, :selected_item
+    return items, :selected_item, preserve_order: @preserve_order
 
 class LocationItem
   new: (@location, @previewer) =>
