@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:List, :ListWidget, :Popup} = howl.ui
-{:config} = howl
+{:bindings, :config} = howl
 
 class MenuPopup extends Popup
   new: (@items, @callback) =>
@@ -46,6 +46,9 @@ class MenuPopup extends Popup
     page_up: => @list\prev_page!
 
     on_unhandled: (event, source, translations, self) ->
+      -- if a bare modifier such as just 'ctrl', don't close popup
+      return if bindings.is_modifier translations
+      -- any other not character such as home or escape closes the popup
       unless event.character
         self\close!
 

@@ -52,6 +52,8 @@ alternate_names = {
   metaR: 'meta'
   superL: 'super'
   superR: 'super'
+  hyperL: 'hyper'
+  hyperR: 'hyper'
  }
 
 substituted_names = {
@@ -67,6 +69,20 @@ substituted_names = {
   super_r: 'superR'
   kp_prior: 'kp_page_up'
   kp_next: 'kp_page_down'
+  hyper_l: 'hyperL'
+  hyper_r: 'hyperR'
+}
+
+modifier_keys = {
+  'alt',
+  'shift',
+  'ctrl',
+  'meta',
+  'super',
+  'hyper',
+  'iso_level3_shift',
+  'iso_level5_shift',
+
 }
 
 substitute_keyname = (event) ->
@@ -190,6 +206,14 @@ export translate_key = (event) ->
   append translations, modifiers .. event.key_code
 
   translations
+
+export is_modifier = (translations) ->
+  for translation in *translations
+    for modifier in *modifier_keys
+      if translation == modifier
+        return true
+  return false
+
 
 export dispatch = (event, source, maps_to_search, ...) ->
   event = substitute_keyname event
