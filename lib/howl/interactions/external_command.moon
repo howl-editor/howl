@@ -31,6 +31,7 @@ looks_like_path = (text) ->
       return true
 
 files_under = (path) ->
+  return {} unless path
   file_list path.children, path
 
 directories_under = (path) ->
