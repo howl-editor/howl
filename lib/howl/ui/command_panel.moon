@@ -90,7 +90,7 @@ class CommandLine extends PropertyObject
       @command_widget\delete 1, @_prompt_end
       @command_widget\insert prompt, 1, 'prompt'
       @_prompt = prompt
-      @_cursor_to_end!
+      @_enforce_left_pos!
 
   @property _prompt_end:
     get: => if @_prompt then @_prompt.ulen else 0

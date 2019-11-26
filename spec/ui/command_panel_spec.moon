@@ -97,6 +97,20 @@ describe 'CommandPanel', ->
       command_line.text = ''
       assert.same '[bye]', text_widget.text
 
+    it 'setting .prompt preserves cursor position inside text', ->
+      command_line.prompt = 'prompt>'
+      command_line.text = 'hello'
+      text_widget.cursor.pos = #command_line.prompt + 1
+      start = text_widget.cursor.pos
+      -- inserting 4 characters in the prompt moves cursor by identical amount
+      command_line.prompt = 'new-prompt>'
+      assert.same start + 4, text_widget.cursor.pos
+      -- clearning the prompt moves cursor all the way back
+      command_line.prompt = ''
+      assert.same 1, text_widget.cursor.pos
+
+
+
     it 'add_widget calls to_gobject and show on the added widget', ->
       widget = {
         to_gobject: spy.new -> Gtk.Box!
