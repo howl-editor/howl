@@ -153,6 +153,7 @@ class ConsoleView
   _hide_list: => @list_widget\hide!
 
   _handle_response: (r) =>
+    return unless r
     if r.text
       @command_line.text = r.text
       @_refresh!
