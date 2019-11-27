@@ -43,6 +43,7 @@ class ConsoleView
       local status, response
       if @list_widget.showing
         status, response = pcall -> @console\select @command_line.text, @list.selection, @completion_opts
+        @completion_opts = nil
       else
         status, response = pcall -> @console\run @command_line.text
 

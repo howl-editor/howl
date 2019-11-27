@@ -80,9 +80,12 @@ class ExternalCommandConsole
       return name: 'cd', completions: directories_under(matched_dir), :match_text, auto_show: true
 
     elseif looks_like_path words[#words].word
+      -- try to complete the last word
       path = words[#words].word
       matched_dir, match_text = @_parse_path path
-      return name: 'filepath', completions: files_under(matched_dir), :match_text, auto_show: true
+      words[#words] = nil
+      prefix = table.concat ["#{w.word}#{w.trailing_spaces}" for w in *words]
+      return name: 'filepath', :prefix, completions: files_under(matched_dir), :match_text
 
   back: =>
     if @dir.parent
@@ -92,6 +95,9 @@ class ExternalCommandConsole
     [:word, :trailing_spaces for word, trailing_spaces in text\gmatch '([^%s]+)([%s]*)']
 
   _parse_path: (path) =>
+    if path\starts_with '~' .. File.separator
+      path = tostring(File.home_dir) .. path\sub 2
+
     local matched_dir, match_text
     if path.is_blank or path == '.' or path == '..'
       matched_dir = @dir
@@ -126,6 +132,10 @@ class ExternalCommandConsole
     if completion_opts.name == 'command'
       -- commands are {commmand, parent_dir} tables
       return text: item[1] .. ' '
+
+    if completion_opts.name == 'filepath'
+      relpath = normalized_relative_path @dir, item.file
+      return text: completion_opts.prefix .. relpath
 
   run: (text) =>
     words = @_parse text
