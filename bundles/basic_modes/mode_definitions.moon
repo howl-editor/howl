@@ -50,6 +50,12 @@ common_auto_pairs = {
       '"': '"'
     }
 
+  cabal:
+    extensions: 'cabal'
+    patterns: { 'cabal.config$', 'cabal.project$', 'cabal.project.local$', 'cabal.project.freeze$' }
+    comment_syntax: '--'
+    auto_pairs: common_auto_pairs
+
   caml:
     extensions: { 'caml', 'ml', 'mli', 'mll', 'mly' }
     comment_syntax: { '(*', '*)' }
