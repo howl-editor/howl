@@ -112,7 +112,7 @@ sort = (matches, directory, term, context) ->
       file = context.buffer.file
       if file
         rel_path = file\relative_to_parent directory
-        path_split rel_path
+        path_split rel_path if rel_path
 
     name_cluster_p = if rel_path
       base = rel_path\umatch r'(.+?)(?:[_-](spec|test))?\\.\\w+$'
