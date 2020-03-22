@@ -671,7 +671,14 @@ do_search = (directory, search, whole_word) ->
   locations, searcher
 
 ask_for_search_directory = (search_term) ->
-  start_dir = get_buffer_dir(app.editor.buffer)
+  buffer = app.editor.buffer
+  project = Project.for_file(buffer.file or buffer.directory)
+
+  start_dir = if project
+    project.root
+  else
+    get_buffer_dir(buffer)
+
   if not start_dir
     start_dir = howl.io.File(howl.sys.env.HOME)
 
