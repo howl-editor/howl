@@ -672,7 +672,8 @@ do_search = (directory, search, whole_word) ->
 
 ask_for_search_directory = (search_term) ->
   buffer = app.editor.buffer
-  project = Project.for_file(buffer.file or buffer.directory)
+  file = buffer.file or buffer.directory
+  project = Project.for_file(file) if file
 
   start_dir = if project
     project.root
