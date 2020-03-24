@@ -647,10 +647,7 @@ do_search = (directory, search, whole_word) ->
     return matches
 
   matches = file_search.sort matches, directory, search, app.editor.current_context
-
-  project = Project.for_file directory
-  conf = if project then project.config else config.for_file(directory)
-  display_as = conf.file_search_hit_display
+  display_as = config.for_file(directory).file_search_hit_display
 
   status = "Loaded 0 out of #{#matches} locations.."
   cancel = false
@@ -670,34 +667,29 @@ do_search = (directory, search, whole_word) ->
 
   locations, searcher
 
-ask_for_search_directory = (search_term) ->
+ask_for_search_directory = (search_query) ->
   buffer = app.editor.buffer
   file = buffer.file or buffer.directory
   project = Project.for_file(file) if file
+
+  opts =
+    title: if search_query
+      "(Please specify a directory to search for '#{search_query}'): "
+    else
+      "(Please specify a directory to search): "
+    prompt: "Directory: "
 
   start_dir = if project
     project.root
   else
     get_buffer_dir(buffer)
 
-  if not start_dir
-    start_dir = howl.io.File(howl.sys.env.HOME)
+  if start_dir
+    opts.path = start_dir.path
 
-  title = if search_term
-    "(Please specify a directory to search for '#{search_term}'): "
-  else
-    "(Please specify a directory to search): "
+  interact.select_directory opts
 
-  directory = interact.select_directory
-    title: title
-    prompt: "Directory: "
-    path: start_dir.path
-
-  directory
-
--- Common input handler for search commands displaying results
--- in a pop-up panel. E.g. project-file-search and folder-search
-search_input = (opts, get_directory) ->
+get_search_query = (opts) ->
   editor = app.editor
 
   search = nil
@@ -708,7 +700,7 @@ search_input = (opts, get_directory) ->
 
   unless search or app.window.command_panel.is_active
     if editor.selection.empty
-      search = app.editor.current_context.word.text
+      search = editor.current_context.word.text
       whole_word = true unless search.is_empty
     else
       search = editor.selection.text
@@ -716,11 +708,18 @@ search_input = (opts, get_directory) ->
   if not search or search.is_empty
     search = interact.read_text prompt: opts.prompt
 
+  search, whole_word
+
+-- Common input handler for search commands displaying results
+-- in a pop-up panel. E.g. project-file-search and folder-search
+search_input = (opts) ->
+  search, whole_word = get_search_query opts
+
   if not search or search.is_empty
     log.warn "No search query specified"
     return
 
-  directory = get_directory search
+  directory = opts.directory or ask_for_search_directory search
   if not directory
     log.warn "No directory selected"
     return
@@ -734,30 +733,14 @@ search_input = (opts, get_directory) ->
 
 -- Common input handler for search commands displaying results
 -- in a buffer. E.g. project-file-search-list and folder-search-list
-search_input_list = (opts, get_directory) ->
-  editor = app.editor
-
-  search = nil
-  whole_word = false
-
-  if opts.text and not opts.text.is_empty
-    search = opts.text
-
-  unless app.window.command_panel.is_active
-    if editor.selection.empty
-      search = app.editor.current_context.word.text
-      whole_word = true unless search.is_empty
-    else
-      search = editor.selection.text
-
-  if not search or search.is_empty
-    search = interact.read_text prompt: opts.prompt
+search_input_list = (opts) ->
+  search, whole_word = get_search_query opts
 
   if not search or search.is_empty
     log.warn "No search query specified"
     return
 
-  directory = get_directory search
+  directory = opts.directory or ask_for_search_directory search
   if not directory
     log.warn "No directory selected"
     return
@@ -781,7 +764,8 @@ command.register
   name: 'project-file-search',
   description: 'Searches files in the the current project'
   input: (opts) ->
-    search_input opts, get_project_root
+    opts.directory = get_project_root!
+    search_input opts
   handler: (loc) ->
     if loc
       app\open loc
@@ -790,14 +774,14 @@ command.register
   name: 'project-file-search-list',
   description: 'Searches files in the the current project, listing results in a buffer'
   input: (opts) ->
-    search_input_list opts, get_project_root
+    opts.directory = get_project_root!
+    search_input_list opts
   handler: (loc) ->
 
 command.register
   name: 'folder-search',
   description: 'Searches files in the specified directory'
-  input: (opts) ->
-    search_input opts, ask_for_search_directory
+  input: search_input
   handler: (loc) ->
     if loc
       app\open loc
@@ -805,7 +789,6 @@ command.register
 command.register
   name: 'folder-search-list',
   description: 'Searches files in the specified directory, listing results in a buffer'
-  input: (opts) ->
-    search_input_list opts, ask_for_search_directory
+  input: search_input_list
   handler: (loc) ->
 
