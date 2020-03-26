@@ -590,6 +590,16 @@ config.define
     {'rich', 'Show syntax highlighted snippets with highlighted terms'},
   }
 
+config.define
+  name: 'folder_search_start_dir'
+  description: 'Start directory for the selector in folder-search commands'
+  default: 'buffer'
+  type_of: 'string'
+  options: -> {
+    {'buffer', 'Start at the directory associated with the current buffer'},
+    {'project', 'Start at the project root directory'}
+  }
+
 file_search_hit_mt = {
   __tostyled: (item) ->
     text = item.text
@@ -667,22 +677,19 @@ do_search = (directory, search, whole_word) ->
 
   locations, searcher
 
-ask_for_search_directory = (search_query) ->
+get_search_directory = (search_query) ->
   buffer = app.editor.buffer
   file = buffer.file or buffer.directory
   project = Project.for_file(file) if file
 
   opts =
-    title: if search_query
-      "(Please specify a directory to search for '#{search_query}'): "
-    else
-      "(Please specify a directory to search): "
+    title: "(Please specify a directory to search for '#{search_query}'): "
     prompt: "Directory: "
 
-  start_dir = if project
-    project.root
-  else
-    get_buffer_dir(buffer)
+  start_dir = get_buffer_dir(buffer)
+
+  if project and config.for_file(file).folder_search_start_dir == "project"
+    start_dir = project.root
 
   if start_dir
     opts.path = start_dir.path
@@ -719,7 +726,7 @@ search_input = (opts) ->
     log.warn "No search query specified"
     return
 
-  directory = opts.directory or ask_for_search_directory search
+  directory = opts.directory or get_search_directory search
   if not directory
     log.warn "No directory selected"
     return
@@ -740,7 +747,7 @@ search_input_list = (opts) ->
     log.warn "No search query specified"
     return
 
-  directory = opts.directory or ask_for_search_directory search
+  directory = opts.directory or get_search_directory search
   if not directory
     log.warn "No directory selected"
     return
