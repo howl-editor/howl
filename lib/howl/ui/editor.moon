@@ -614,11 +614,10 @@ class Editor extends PropertyObject
     @remove_popup!
 
     if @_buf
-      if @_buf != buffer
-        @_buf.properties.position = {
-          pos: @cursor.pos,
-          line_at_top: @line_at_top
-        }
+      @_buf.properties.position = {
+        pos: @cursor.pos,
+        line_at_top: @line_at_top
+      }
       @_buf\remove_view_ref @view
       unless @_is_previewing
         @_buf.last_shown = sys.time!
