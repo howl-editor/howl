@@ -6,7 +6,7 @@ title: Working with files
 
 ## Opening files
 
-Howl provides a text-oriented interface, and so you want see any traditional
+Howl provides a text-oriented interface, and so you won't see any traditional
 graphical open file dialogs. Instead you'll open files from the command line,
 using commands. First off, the `open` command lets you navigate the file system
 and select a file to open. It's bound to `ctrl_o` in the default keymap, and is
