@@ -6,7 +6,7 @@ title: Working with files
 
 ## Opening files
 
-Howl provides a text-oriented interface, and so you want see any traditional
+Howl provides a text-oriented interface, and so you won't see any traditional
 graphical open file dialogs. Instead you'll open files from the command line,
 using commands. First off, the `open` command lets you navigate the file system
 and select a file to open. It's bound to `ctrl_o` in the default keymap, and is
@@ -126,8 +126,8 @@ quickly switching between to related files in the same view.
 So what do you do if you just want to create a new buffer, that will eventually
 get saved to a new file? Well, there is a `new-buffer` command available for
 this, which will create a new buffer without an associated file, that you can
-later save to a named file. This is not bound to any key by default however, and
-the reason for that is that it's not considered that useful. Most of the time
+later save to a named file. This is bound to `ctrl_n` by default,
+even though it's not considered that useful. Most of the time
 when you want to create a new file, you already know what the file should be
 named. And as is the case with some other editors, such as Emacs or Vim, it is
 not a requirement for a file to actually exists in order to successfully open
