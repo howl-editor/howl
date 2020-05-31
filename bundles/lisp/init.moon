@@ -11,6 +11,7 @@ mode_reg =
     'sld', -- scheme: R7RS Library Source
     'sls', -- scheme: R6RS Library Source
     'ss', -- scheme: 'Scheme Source' as used in some implementations (e.g. Chez)
+    'fnl', -- fennel
   }
   create: -> bundle_load('lisp_mode')!
 
