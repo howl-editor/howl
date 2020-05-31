@@ -682,21 +682,24 @@ get_search_directory = (search_query) ->
   file = buffer.file or buffer.directory
   project = Project.for_file(file) if file
 
+  title = if search_query and not search_query.is_empty
+    "Choose a folder to search for \"#{search_query}\": "
+  else
+    "Choose a folder to search: "
+
   opts =
-    title: "(Please specify a directory to search for '#{search_query}'): "
-    prompt: "Directory: "
+    title: title
+    prompt: "Folder: "
 
   start_dir = get_buffer_dir(buffer)
-
   if project and config.for_file(file).folder_search_start_dir == "project"
     start_dir = project.root
-
   if start_dir
     opts.path = start_dir.path
 
   interact.select_directory opts
 
-get_search_query = (opts) ->
+get_search_query = (opts, show_prompt) ->
   editor = app.editor
 
   search = nil
@@ -712,23 +715,35 @@ get_search_query = (opts) ->
     else
       search = editor.selection.text
 
-  if not search or search.is_empty
+  if show_prompt and (not search or search.is_empty)
     search = interact.read_text prompt: opts.prompt
 
   search, whole_word
 
+get_search_params = (opts) ->
+  search, whole_word = get_search_query opts, false
+
+  directory = opts.directory
+  if not directory -- For folder-search and folder-search-list commands
+    directory = get_search_directory search
+    opts.prompt = "Search #{directory.short_path} for: " if directory
+
+  if directory and (not search or search.is_empty)
+    search, whole_word = get_search_query opts, true
+
+  directory, search, whole_word
+
 -- Common input handler for search commands displaying results
 -- in a pop-up panel. E.g. project-file-search and folder-search
 search_input = (opts) ->
-  search, whole_word = get_search_query opts
+  directory, search, whole_word = get_search_params opts
+
+  if not directory
+    log.warn "No folder selected"
+    return
 
   if not search or search.is_empty
     log.warn "No search query specified"
-    return
-
-  directory = opts.directory or get_search_directory search
-  if not directory
-    log.warn "No directory selected"
     return
 
   locations, searcher = do_search directory, search, whole_word
@@ -741,15 +756,14 @@ search_input = (opts) ->
 -- Common input handler for search commands displaying results
 -- in a buffer. E.g. project-file-search-list and folder-search-list
 search_input_list = (opts) ->
-  search, whole_word = get_search_query opts
+  directory, search, whole_word = get_search_params opts
+
+  if not directory
+    log.warn "No folder selected"
+    return
 
   if not search or search.is_empty
     log.warn "No search query specified"
-    return
-
-  directory = opts.directory or get_search_directory search
-  if not directory
-    log.warn "No directory selected"
     return
 
   locations, searcher = do_search directory, search, whole_word
