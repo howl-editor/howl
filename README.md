@@ -52,6 +52,6 @@ not be an option, I'll gladly accept patches through other means as well.
 
 If you have any bug reports or feature requests, please submit them to the
 [Github issue tracker](https://github.com/howl-editor/howl/issues). As with
-patches, I'll be happy to recieve these through other means as well.
+patches, I'll be happy to receive these through other means as well.
 
 You can also contact me directly at \<nino at nordman.org\>.
