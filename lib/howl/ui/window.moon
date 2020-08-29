@@ -330,9 +330,9 @@ if GTK_SUPPORTS_HIDDEN_TITLEBAR
 
 -- Signals
 signal.register 'window-focused',
-  description: 'Signaled right after a window has recieved focus'
+  description: 'Signaled right after a window has received focus'
   parameters:
-    window: 'The window that recieved focus'
+    window: 'The window that received focus'
 
 signal.register 'window-defocused',
   description: 'Signaled right after a window has lost focus'

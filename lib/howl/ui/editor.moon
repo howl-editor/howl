@@ -1031,7 +1031,7 @@ with config
 
   .define
     name: 'line_wrapping'
-    description: 'Controls how lines are wrapped if neccessary'
+    description: 'Controls how lines are wrapped if necessary'
     default: 'word'
     options: {
       { 'none', 'Lines are not wrapped' }
@@ -1199,13 +1199,13 @@ signal.register 'preview-closed',
   description: 'Signaled right after a preview buffer has been removed for an editor'
   parameters:
     editor: 'The editor for which the preview was opened'
-    current_buffer: 'The orignal buffer that was restored for the editor'
+    current_buffer: 'The original buffer that was restored for the editor'
     preview_buffer: 'The preview buffer that was previously open in the editor'
 
 signal.register 'editor-focused',
-  description: 'Signaled right after an editor has recieved focus'
+  description: 'Signaled right after an editor has received focus'
   parameters:
-    editor: 'The editor that recieved focus'
+    editor: 'The editor that received focus'
 
 signal.register 'editor-defocused',
   description: 'Signaled right after an editor has lost focus'
