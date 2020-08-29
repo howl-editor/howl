@@ -590,16 +590,6 @@ config.define
     {'rich', 'Show syntax highlighted snippets with highlighted terms'},
   }
 
-config.define
-  name: 'folder_search_start_dir'
-  description: 'Start directory for the selector in folder-search commands'
-  default: 'buffer'
-  type_of: 'string'
-  options: -> {
-    {'buffer', 'Start at the directory associated with the current buffer'},
-    {'project', 'Start at the project root directory'}
-  }
-
 file_search_hit_mt = {
   __tostyled: (item) ->
     text = item.text
@@ -678,10 +668,6 @@ do_search = (directory, search, whole_word) ->
   locations, searcher
 
 get_search_directory = (search_query) ->
-  buffer = app.editor.buffer
-  file = buffer.file or buffer.directory
-  project = Project.for_file(file) if file
-
   title = if search_query and not search_query.is_empty
     "Choose a folder to search for \"#{search_query}\": "
   else
@@ -691,9 +677,7 @@ get_search_directory = (search_query) ->
     title: title
     prompt: "Folder: "
 
-  start_dir = get_buffer_dir(buffer)
-  if project and config.for_file(file).folder_search_start_dir == "project"
-    start_dir = project.root
+  start_dir = get_buffer_dir(app.editor.buffer)
   if start_dir
     opts.path = start_dir.path
 
