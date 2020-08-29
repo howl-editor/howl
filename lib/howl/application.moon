@@ -480,7 +480,12 @@ class Application extends PropertyObject
     -- files we've loaded via a --reuse invocation should be shown
     if #loaded_buffers > 0 and @_loaded
       for i = 1, math.min(#@editors, #loaded_buffers)
-        @editors[i].buffer = loaded_buffers[i]
+        b = loaded_buffers[i]
+        pos = b.properties.position
+        with @editors[i]
+          .buffer = b
+          .cursor\move_to pos
+          .line_at_center = .cursor.line
 
     -- all loaded files should be considered as having been viewed just now
     now = howl.sys.time!
@@ -500,6 +505,7 @@ class Application extends PropertyObject
 
     unless @_loaded
       window\show_all! if window
+      @editor.line_at_center = @editor.cursor.line
       @_loaded = true
       howl.io.File.async = true
       config.broadcast_config!
