@@ -639,16 +639,16 @@ file_search_hit_to_location = (match, search, display_as) ->
 
   loc
 
-do_search = (search, whole_word) ->
-  project = get_project!
+do_search = (directory, search, whole_word) ->
   file_search = howl.file_search
-  matches, searcher = file_search.search project.root, search, :whole_word
+  matches, searcher = file_search.search directory, search, :whole_word
   unless #matches > 0
     log.error "No matches found for '#{search}'"
     return matches
 
-  matches = file_search.sort matches, project.root, search, app.editor.current_context
-  display_as = project.config.file_search_hit_display
+  matches = file_search.sort matches, directory, search, app.editor.current_context
+  display_as = config.for_file(directory).file_search_hit_display
+
   status = "Loaded 0 out of #{#matches} locations.."
   cancel = false
   locations = activities.run {
@@ -665,39 +665,112 @@ do_search = (search, whole_word) ->
       m = matches[i]
       file_search_hit_to_location(m, search, display_as)
 
-  locations, searcher, project
+  locations, searcher
+
+get_search_directory = (search_query) ->
+  title = if search_query and not search_query.is_empty
+    "Choose a folder to search for \"#{search_query}\": "
+  else
+    "Choose a folder to search: "
+
+  opts =
+    title: title
+    prompt: "Folder: "
+
+  start_dir = get_buffer_dir(app.editor.buffer)
+  if start_dir
+    opts.path = start_dir.path
+
+  interact.select_directory opts
+
+get_search_query = (opts, show_prompt) ->
+  editor = app.editor
+
+  search = nil
+  whole_word = false
+
+  if opts.text and not opts.text.is_empty
+    search = opts.text
+
+  unless search or app.window.command_panel.is_active
+    if editor.selection.empty
+      search = editor.current_context.word.text
+      whole_word = true unless search.is_empty
+    else
+      search = editor.selection.text
+
+  if show_prompt and (not search or search.is_empty)
+    search = interact.read_text prompt: opts.prompt
+
+  search, whole_word
+
+get_search_params = (opts) ->
+  search, whole_word = get_search_query opts, false
+
+  directory = opts.directory
+  if not directory -- For folder-search and folder-search-list commands
+    directory = get_search_directory search
+    opts.prompt = "Search #{directory.short_path} for: " if directory
+
+  if directory and (not search or search.is_empty)
+    search, whole_word = get_search_query opts, true
+
+  directory, search, whole_word
+
+-- Common input handler for search commands displaying results
+-- in a pop-up panel. E.g. project-file-search and folder-search
+search_input = (opts) ->
+  directory, search, whole_word = get_search_params opts
+
+  if not directory
+    log.warn "No folder selected"
+    return
+
+  if not search or search.is_empty
+    log.warn "No search query specified"
+    return
+
+  locations, searcher = do_search directory, search, whole_word
+
+  if #locations > 0
+    interact.select_location
+      title: "#{#locations} matches for '#{search}' in #{directory.short_path} (using #{searcher.name} searcher)"
+      items: locations
+
+-- Common input handler for search commands displaying results
+-- in a buffer. E.g. project-file-search-list and folder-search-list
+search_input_list = (opts) ->
+  directory, search, whole_word = get_search_params opts
+
+  if not directory
+    log.warn "No folder selected"
+    return
+
+  if not search or search.is_empty
+    log.warn "No search query specified"
+    return
+
+  locations, searcher = do_search directory, search, whole_word
+
+  if #locations > 0
+    matcher = howl.util.Matcher locations
+    list = howl.ui.List matcher
+    list_buf = howl.ui.ListBuffer list, {
+      title: "#{#locations} matches for '#{search}' in #{directory.short_path} (using #{searcher.name} searcher)"
+      on_submit: (location) ->
+        app\open location
+    }
+    list_buf.directory = directory
+    app\add_buffer list_buf
+
+  nil
 
 command.register
   name: 'project-file-search',
   description: 'Searches files in the the current project'
   input: (opts) ->
-    editor = app.editor
-    search = nil
-    whole_word = false
-
-    if opts.text and not opts.text.is_empty
-      search = opts.text
-
-    unless search or app.window.command_panel.is_active
-      if editor.selection.empty
-        search = app.editor.current_context.word.text
-        whole_word = true unless search.is_empty
-      else
-        search = editor.selection.text
-
-    if not search or search.is_empty
-      search = interact.read_text prompt: opts.prompt
-
-    if not search or search.is_empty
-      log.warn "No search query specified"
-      return
-
-    locations, searcher, project = do_search search, whole_word
-    if #locations > 0
-      interact.select_location
-        title: "#{#locations} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
-        items: locations
-
+    opts.directory = get_project_root!
+    search_input opts
   handler: (loc) ->
     if loc
       app\open loc
@@ -706,40 +779,21 @@ command.register
   name: 'project-file-search-list',
   description: 'Searches files in the the current project, listing results in a buffer'
   input: (opts) ->
-    editor = app.editor
-    search = nil
-    whole_word = false
-
-    if opts.text and not opts.text.is_empty
-      search = opts.text
-
-    unless app.window.command_panel.is_active
-      if editor.selection.empty
-        search = app.editor.current_context.word.text
-        whole_word = true unless search.is_empty
-      else
-        search = editor.selection.text
-
-    if not search or search.is_empty
-      search = interact.read_text prompt: opts.prompt
-
-    if not search or search.is_empty
-      log.warn "No search query specified"
-      return
-
-    locations, searcher, project = do_search search , whole_word
-
-    if #locations > 0
-      matcher = howl.util.Matcher locations
-      list = howl.ui.List matcher
-      list_buf = howl.ui.ListBuffer list, {
-        title: "#{#locations} matches for '#{search}' in #{project.root.short_path} (using #{searcher.name} searcher)"
-        on_submit: (location) ->
-          app\open location
-      }
-      list_buf.directory = project.root
-      app\add_buffer list_buf
-
-    nil
-
+    opts.directory = get_project_root!
+    search_input_list opts
   handler: (loc) ->
+
+command.register
+  name: 'folder-search',
+  description: 'Searches files in the specified directory'
+  input: search_input
+  handler: (loc) ->
+    if loc
+      app\open loc
+
+command.register
+  name: 'folder-search-list',
+  description: 'Searches files in the specified directory, listing results in a buffer'
+  input: search_input_list
+  handler: (loc) ->
+
