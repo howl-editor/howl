@@ -95,6 +95,21 @@ describe 'BufferMarkers', ->
       markers\remove!
       assert.same {}, markers\for_range(1, 7)
 
+    it 'can be used to remove markers returned by find', ->
+      buffer.text = 'åäö€ᛖ'
+      markers\add { {name: 'test1', start_offset: 3, end_offset: 4, foo: 'bar'} }
+      for marker in *markers\find name: 'test1'
+        markers\remove marker
+      assert.same {}, markers\find!
+
+    it 'can remove markers via start and end offset values', ->
+      buffer.text = 'åäö€ᛖ'
+      markers\add { {name: 'test1', start_offset: 1, end_offset: 3, foo: 'bar'} }
+      markers\add { {name: 'test2', start_offset: 4, end_offset: 5, foo: 'bar'} }
+      markers\remove start_offset: 1
+      markers\remove end_offset: 5
+      assert.same {}, markers\find!
+
   describe 'remove_for_range(start_offset, end_offset, selector)', ->
     it 'removes all markers within the range', ->
       buffer.text = 'åäö€ᛖ'

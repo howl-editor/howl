@@ -29,6 +29,18 @@ adjust_marker_offsets = (marker, b) ->
 
   marker
 
+adjust_selector = (selector, b) ->
+  -- update start/end offsets to be byte offsets
+  return unless selector
+  selector = moon.copy selector
+  for f in *{ 'start_offset', 'end_offset' }
+    v = selector[f]
+    continue unless v
+    continue if v < 1 or v > b.length + 1
+    selector[f] = b\byte_offset v
+
+  selector
+
 class BufferMarkers extends PropertyObject
   new: (@a_buffer) =>
     super!
@@ -55,7 +67,7 @@ class BufferMarkers extends PropertyObject
     [translate(m, @a_buffer) for m in *ms]
 
   remove: (selector) =>
-    @markers\remove selector
+    @markers\remove adjust_selector selector, @a_buffer
 
   remove_for_range: (start_offset, end_offset, selector) =>
     start_offset = @a_buffer\byte_offset start_offset
@@ -64,5 +76,5 @@ class BufferMarkers extends PropertyObject
     @markers\remove_for_range start_offset, end_offset, selector
 
   find: (selector) =>
-    ms = @markers\find selector
+    ms = @markers\find adjust_selector selector, @a_buffer
     [translate(m, @a_buffer) for m in *ms]
