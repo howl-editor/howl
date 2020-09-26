@@ -10,7 +10,7 @@ howl.util.lpeg_lexer ->
     'of', 'then', 'type', 'where', '_', 'as', 'qualified', 'hiding'
   }
 
-  constructor = c 'type', upper^1 * (alpha + digit + S"._'#")^0
+  constructor = c 'type', upper^1 * (alpha + digit + S"_'#")^0
 
   comment = c 'comment', any {
     span('--', eol),
@@ -23,7 +23,7 @@ howl.util.lpeg_lexer ->
   escaped_char = P"'" * (P"\\" * (alpha + digit + P"\\")^1) * P"'"
   char = c 'string', any { normal_char, escaped_char }
 
-  operator = c 'operator', S('+-*/%=<>~&^|!(){}[]#;:,.$?\\')
+  operator = c 'operator', S('+-*/%=<>~&^|!(){}[]#@;:,.$?\\')
 
   hexadecimal =  P'0' * S'xX' * xdigit^1
   octal = P'0' * S'oO'^-1 * R'07'^1
@@ -32,7 +32,7 @@ howl.util.lpeg_lexer ->
   integer = digit^1
   number = c 'number', any { hexadecimal, octal, binary, float, integer }
 
-  delimiter = any { space, S'/.,(){}[]^#' }
+  delimiter = any { space, S'/.,(){}[]^#@' }
   identifier = c 'identifier', complement(delimiter)^1
 
   any {
