@@ -15,7 +15,8 @@ aullar_config = aullar.config
   :IndicatorBar,
   :Cursor,
   :Selection,
-  :ContentBox
+  :ContentBox,
+  :buffer_icon
 } = howl.ui
 {:max, :min} = math
 append = table.insert
@@ -60,15 +61,26 @@ apply_variable = (name) ->
   for e in *editors!
     e\refresh_variable name
 
+
+make_title = (buffer) ->
+  icon = buffer_icon.buffer_status_icon buffer
+  icon .. ' ' .. buffer.title
+
+refresh_title = (buffer) ->
+  for e in *editors!
+    if buffer == e.buffer
+      e.indicator.title.label = make_title buffer
+
 signal.connect 'buffer-saved', (args) ->
   for e in *editors!
     e\remove_popup! if e.buffer == args.buffer
+  refresh_title args.buffer
 
 signal.connect 'buffer-title-set', (args) ->
-  buffer = args.buffer
-  for e in *editors!
-    if buffer == e.buffer
-      e.indicator.title.label = buffer.title
+  refresh_title args.buffer
+
+signal.connect 'buffer-modified', (args) ->
+  refresh_title args.buffer
 
 signal.connect 'buffer-mode-set', (args) ->
   buffer = args.buffer
@@ -624,7 +636,7 @@ class Editor extends PropertyObject
 
     @_is_previewing = opts.preview
     @_buf = buffer
-    @indicator.title.label = buffer.title
+    @indicator.title.label = make_title buffer
 
     if buffer.activity and buffer.activity.is_running!
       with @indicator.activity
