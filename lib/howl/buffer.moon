@@ -253,6 +253,8 @@ class Buffer extends PropertyObject
   undo: =>
     @_buffer\undo!
     @_modified = @_buffer\get_revision_id! != @sync_revision_id
+    signal.emit 'buffer-modified', buffer: self
+
 
   redo: =>
     @_buffer\redo!
