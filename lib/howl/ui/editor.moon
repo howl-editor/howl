@@ -61,10 +61,12 @@ apply_variable = (name) ->
   for e in *editors!
     e\refresh_variable name
 
-
 make_title = (buffer) ->
-  icon = buffer_icon.buffer_status_icon buffer
-  icon .. ' ' .. buffer.title
+  if config.buffer_icons
+    icon = buffer_icon.buffer_status_icon buffer
+    icon .. ' ' .. buffer.title
+  else
+    buffer.title
 
 refresh_title = (buffer) ->
   for e in *editors!

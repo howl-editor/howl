@@ -17,6 +17,8 @@ directory list.
 - A bug with the command line text overflow has been fixed. The command line now
 grows vertically and wraps text if it is too long.
 
+- Added buffer status indicators in titlebar as a quick indicator of when the buffer is modified. These are only shown if config.buffer_icons is true.
+
 ### API changes
 
 - A major rewrite of the command line and interaction modules has been
