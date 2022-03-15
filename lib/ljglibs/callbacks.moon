@@ -12,7 +12,9 @@ unrefed_handlers = setmetatable {}, __mode: 'v'
 unrefed_args = setmetatable {}, __mode: 'k'
 options = {
   dispatch_in_coroutine: false
-  on_error: error
+  on_error: (e) ->
+    print "callbacks err: #{e}"
+    error e
 }
 
 cb_cast = (cb_type, handler) -> ffi_cast('GCallback', ffi_cast(cb_type, handler))
@@ -57,6 +59,7 @@ do_dispatch = (data, ...) ->
 
 dispatch = (data, ...) ->
   status, ret = pcall do_dispatch, data, ...
+
   unless status
     options.on_error "callbacks: error in dispatch: '#{ret}'"
     return false
@@ -91,7 +94,7 @@ dispatch = (data, ...) ->
   cast_arg: (arg) -> ffi.cast('gpointer', arg)
 
   configure: (opts) ->
-    options = moon.copy opts
+    -- options = moon.copy opts
 
   -- different callbacks
   void1: cb_cast 'GVCallback1', (data) -> dispatch data

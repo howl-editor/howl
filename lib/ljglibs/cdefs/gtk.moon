@@ -60,16 +60,42 @@ ffi.cdef [[
     GTK_ALIGN_BASELINE,
   } GtkAlign;
 
+  /* Forward declarations, more definintions below */
+  typedef struct {} GtkIMContext;
+
+
   /* GtkCssProvider */
   typedef struct {} GtkStyleProvider;
   typedef struct {} GtkCssProvider;
 
   GtkCssProvider * gtk_css_provider_new (void);
 
-  gboolean gtk_css_provider_load_from_data (GtkCssProvider *css_provider,
-                                            const gchar *data,
-                                            gssize length,
-                                            GError **error);
+  void gtk_css_provider_load_from_data (
+    GtkCssProvider* css_provider,
+    const char* data,
+    gssize length
+  );
+
+  void gtk_css_provider_load_from_path (
+    GtkCssProvider* css_provider,
+    const char* path
+  );
+
+  char * gtk_css_provider_to_string (GtkCssProvider *provider);
+
+  typedef struct {
+    gsize bytes;
+    gsize chars;
+    gsize lines;
+    gsize line_bytes;
+    gsize line_chars;
+  } GtkCssLocation;
+
+  /* GtkCssSection */
+  typedef struct {} GtkCssSection;
+  char* gtk_css_section_to_string(const GtkCssSection* section);
+  const GtkCssLocation* gtk_css_section_get_start_location (const GtkCssSection* section);
+  const GtkCssLocation* gtk_css_section_get_end_location (const GtkCssSection* section);
 
   /* GtkStyleContext */
   typedef struct {} GtkStyleContext;
@@ -81,9 +107,46 @@ ffi.cdef [[
   void gtk_style_context_get_background_color (GtkStyleContext *context,
                                                GtkStateFlags state,
                                                GdkRGBA *color);
-  void gtk_style_context_add_provider_for_screen (GdkScreen *screen,
+  void gtk_style_context_add_provider (
+    GtkStyleContext* context,
+    GtkStyleProvider* provider,
+    guint priority
+  );
+
+  void gtk_style_context_add_provider_for_display (GdkDisplay *display,
                                                   GtkStyleProvider *provider,
                                                   guint priority);
+
+  char* gtk_style_context_to_string (
+    GtkStyleContext* context,
+    /* GtkStyleContextPrintFlags flags */
+    int flags
+  );
+
+  /* Controllers */
+  typedef struct {} GtkEventController;
+
+    /* Key controller */
+  typedef struct {} GtkEventControllerKey;
+  GtkEventControllerKey * gtk_event_controller_key_new(void);
+  void gtk_event_controller_key_set_im_context(
+    GtkEventControllerKey* controller,
+    GtkIMContext* im_context
+  );
+
+    /* Focus controller */
+  typedef struct {} GtkEventControllerFocus;
+  GtkEventControllerFocus * gtk_event_controller_focus_new(void);
+
+    /* Gesture controller */
+  typedef struct {} GtkGesture;
+  typedef struct {} GtkGestureSingle;
+  typedef struct {} GtkGestureClick;
+  GtkGestureClick* gtk_gesture_click_new(void);
+
+  /* Motion controller */
+  typedef struct {} GtkEventControllerMotion;
+  GtkEventControllerMotion *gtk_event_controller_motion_new (void);
 
   /* GtkWidget */
   typedef struct {} GtkWidget;
@@ -92,24 +155,15 @@ ffi.cdef [[
   const gchar * gtk_widget_get_name (GtkWidget *widget);
   void gtk_widget_realize (GtkWidget *widget);
   void gtk_widget_show (GtkWidget *widget);
-  void gtk_widget_show_all (GtkWidget *widget);
   void gtk_widget_hide (GtkWidget *widget);
   GtkStyleContext * gtk_widget_get_style_context (GtkWidget *widget);
-  void gtk_widget_override_background_color (GtkWidget *widget,
-                                             GtkStateFlags state,
-                                             const GdkRGBA *color);
-  void gtk_widget_override_font (GtkWidget *widget,
-                          const PangoFontDescription *font_desc);
-  GdkWindow * gtk_widget_get_window (GtkWidget *widget);
-  GdkScreen * gtk_widget_get_screen (GtkWidget *widget);
+  GdkDisplay* gtk_widget_get_display (GtkWidget* widget);
   void gtk_widget_grab_focus (GtkWidget *widget);
-  void gtk_widget_destroy (GtkWidget *widget);
   int gtk_widget_get_allocated_width (GtkWidget *widget);
   int gtk_widget_get_allocated_height (GtkWidget *widget);
   void gtk_widget_set_size_request (GtkWidget *widget,
                                     gint width,
                                     gint height);
-  GtkWidget * gtk_widget_get_toplevel (GtkWidget *widget);
   gboolean gtk_widget_translate_coordinates (GtkWidget *src_widget,
                                              GtkWidget *dest_widget,
                                              gint src_x,
@@ -119,7 +173,8 @@ ffi.cdef [[
 
   PangoContext * gtk_widget_create_pango_context (GtkWidget *widget);
   PangoContext * gtk_widget_get_pango_context (GtkWidget *widget);
-  void gtk_widget_add_events (GtkWidget *widget, gint events);
+  void gtk_widget_add_controller (GtkWidget* widget,
+                                  GtkEventController* controller);
 
   void gtk_widget_queue_allocate (GtkWidget *widget);
   void gtk_widget_queue_draw (GtkWidget *widget);
@@ -129,13 +184,14 @@ ffi.cdef [[
                                    gint y,
                                    gint width,
                                    gint height);
+  GtkWidget * gtk_widget_get_first_child      (GtkWidget *widget);
+  GtkWidget * gtk_widget_get_last_child       (GtkWidget *widget);
+  GtkWidget * gtk_widget_get_next_sibling     (GtkWidget *widget);
+  GtkWidget * gtk_widget_get_prev_sibling     (GtkWidget *widget);
+  void gtk_widget_set_css_classes (GtkWidget* widget, const char** classes);
+  char** gtk_widget_get_css_classes(GtkWidget* widget);
 
-  GdkVisual * gtk_widget_get_visual(GtkWidget *widget);
-  void gtk_widget_set_visual(GtkWidget *widget, GdkVisual *visual);
 
-  /* GtkBin */
-  typedef struct {} GtkBin;
-  GtkWidget * gtk_bin_get_child (GtkBin *bin);
 
   /* GtkGrid */
   typedef struct {} GtkGrid;
@@ -162,24 +218,14 @@ ffi.cdef [[
   void gtk_grid_insert_next_to (GtkGrid *grid,
                                 GtkWidget *sibling,
                                 GtkPositionType side);
+  void gtk_grid_query_child (GtkGrid* grid,
+                             GtkWidget* child,
+                             int* column,
+                             int* row,
+                             int* width,
+                             int* height
+                            );
 
-   /* GtkContainer */
-  typedef struct {} GtkContainer;
-
-  void gtk_container_add (GtkContainer *container, GtkWidget *widget);
-  void gtk_container_remove (GtkContainer *container, GtkWidget *widget);
-  GtkWidget * gtk_container_get_focus_child (GtkContainer *container);
-  void gtk_container_set_focus_child (GtkContainer *container, GtkWidget *child);
-  GList * gtk_container_get_children (GtkContainer *container);
-  void gtk_container_child_get (GtkContainer *container,
-                                GtkWidget *child,
-                                const gchar *first_prop_name,
-                                ...);
-
-  void gtk_container_child_set (GtkContainer *container,
-                                GtkWidget *child,
-                                const gchar *first_prop_name,
-                                ...);
 
   /* GtkAlignment */
   typedef struct {} GtkAlignment;
@@ -210,35 +256,17 @@ ffi.cdef [[
   /* GtkBox */
   typedef struct {} GtkBox;
   GtkBox * gtk_box_new (GtkOrientation orientation, gint spacing);
-  void gtk_box_pack_start (GtkBox *box,
-                           GtkWidget *child,
-                           gboolean expand,
-                           gboolean fill,
-                           guint padding);
-
-  void gtk_box_pack_end (GtkBox *box,
-                         GtkWidget *child,
-                         gboolean expand,
-                         gboolean fill,
-                         guint padding);
-
-  /* GtkEventBox */
-  typedef struct {} GtkEventBox;
-  GtkEventBox * gtk_event_box_new (void);
+  void gtk_box_append (GtkBox *box, GtkWidget *child);
+  void gtk_box_prepend (GtkBox *box, GtkWidget *child);
 
   /* GtkWindow */
-  typedef enum {
-    GTK_WINDOW_TOPLEVEL,
-    GTK_WINDOW_POPUP
-  } GtkWindowType;
-
   typedef struct {} GtkWindow;
 
-  GtkWindow * gtk_window_new  (GtkWindowType type);
+  GtkWindow * gtk_window_new ();
+  void gtk_window_destroy (GtkWindow* window);
 
   const gchar * gtk_window_get_title (GtkWindow *window);
   void gtk_window_set_title (GtkWindow *window, const gchar *title);
-  GtkWindowType gtk_window_get_window_type (GtkWindow *window);
 
   void gtk_window_set_default_size (GtkWindow *window,
                                     gint width,
@@ -324,32 +352,6 @@ ffi.cdef [[
                                         const gchar *str,
                                         gint len);
 
-  typedef struct {} GtkClipboard;
-  typedef GVCallback3 GtkClipboardTextReceivedFunc;
-  typedef GVCallback4 GtkClipboardGetFunc;
-  typedef GVCallback2 GtkClipboardClearFunc;
-
-  GtkClipboard * gtk_clipboard_get (GdkAtom selection);
-  gchar * gtk_clipboard_wait_for_text (GtkClipboard *clipboard);
-  void gtk_clipboard_request_text (GtkClipboard *clipboard,
-                                   GtkClipboardTextReceivedFunc callback,
-                                   gpointer user_data);
-  void gtk_clipboard_clear (GtkClipboard *clipboard);
-  void gtk_clipboard_set_text (GtkClipboard *clipboard,
-                               const gchar *text,
-                               gint len);
-  void gtk_clipboard_store (GtkClipboard *clipboard);
-  void gtk_clipboard_set_can_store (GtkClipboard *clipboard,
-                                    const GtkTargetEntry *targets,
-                                    gint n_targets);
-
-  gboolean gtk_clipboard_set_with_data (GtkClipboard *clipboard,
-                                        const GtkTargetEntry *targets,
-                                        guint n_targets,
-                                        GtkClipboardGetFunc get_func,
-                                        GtkClipboardClearFunc clear_func,
-                                        gpointer user_data);
-
   /* GtkSpinner */
   typedef struct {} GtkSpinner;
   GtkSpinner * gtk_spinner_new (void);
@@ -358,7 +360,27 @@ ffi.cdef [[
 
   /* GtkDrawingArea */
   typedef struct {} GtkDrawingArea;
+
+  typedef void (*GAsyncReadyCallback) (GObject *source_object,
+                                       GAsyncResult *res,
+                                       gpointer user_data);
+
+  typedef void (*GtkDrawingAreaDrawFunc) (
+    GtkDrawingArea* drawing_area,
+    cairo_t* cr,
+    int width,
+    int height,
+    gpointer user_data
+  );
+
   GtkDrawingArea * gtk_drawing_area_new (void);
+  void gtk_drawing_area_set_draw_func (
+    GtkDrawingArea* self,
+    GtkDrawingAreaDrawFunc draw_func,
+    gpointer user_data,
+    GDestroyNotify destroy
+  );
+
 
   /* GtkAdjustment */
   typedef struct {} GtkAdjustment;
@@ -445,9 +467,8 @@ ffi.cdef [[
   GtkSettings * gtk_settings_get_for_screen (GdkScreen *screen);
 
   /* GtkIMContext */
-  typedef struct {} GtkIMContext;
-  void     gtk_im_context_set_client_window   (GtkIMContext       *context,
-                           GdkWindow          *window);
+  void     gtk_im_context_set_client_widget   (GtkIMContext       *context,
+                           GtkWidget          *widget);
   void     gtk_im_context_get_preedit_string  (GtkIMContext       *context,
                            gchar             **str,
                            PangoAttrList     **attrs,
@@ -478,6 +499,7 @@ ffi.cdef [[
   /* Misc */
   gboolean gtk_cairo_should_draw_window (cairo_t *cr,
                                          GdkWindow *window);
+
 
   guint gtk_get_major_version (void);
   guint gtk_get_minor_version (void);

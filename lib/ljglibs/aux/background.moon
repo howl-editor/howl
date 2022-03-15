@@ -66,6 +66,7 @@ class Background
 
     draw_height = min @height, clip.y2 - clip.y1
     draw_width = min @width, clip.x2 - clip.x1
+    print "background draw: #{draw_width} x #{draw_height}"
 
     with cr
       \save!

@@ -3,6 +3,7 @@
 
 ffi = require 'ffi'
 require 'ljglibs.cdefs.glib'
+require 'ljglibs.cdefs.gobject'
 
 ffi.cdef [[
   typedef void GCancellable;

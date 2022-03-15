@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -19,7 +19,7 @@ CurrentLineMarker = require 'aullar.current_line_marker'
 config = require 'aullar.config'
 
 {:define_class} = require 'aullar.util'
-{:parse_key_event} = require 'ljglibs.util'
+{:construct_key_event} = require 'ljglibs.util'
 {:max, :min, :floor} = math
 append = table.insert
 
@@ -33,7 +33,7 @@ notify = (view, event, ...) ->
 
   false
 
-text_cursor = Gdk.Cursor.new(Gdk.XTERM)
+text_cursor = Gdk.Cursor.new_from_name('text')
 
 View = {
   new: (buffer = Buffer('')) =>
@@ -47,7 +47,21 @@ View = {
     @_y_scroll_offset = 0
     @config = config.local_proxy!
 
-    @area = Gtk.DrawingArea!
+    @area = Gtk.DrawingArea {hexpand: true, vexpand: true}
+    @key_controller = Gtk.EventControllerKey!
+    @focus_controller = Gtk.EventControllerFocus!
+    @gesture_controller = Gtk.GestureClick!
+    @motion_controller = Gtk.EventControllerMotion!
+    print "key_controller: #{@key_controller}"
+    print "focus_controller: #{@focus_controller}"
+    print "motion_controller: #{@motion_controller}"
+    print "gesture_controller: #{@gesture_controller}"
+
+    @area\add_controller @key_controller
+    @area\add_controller @focus_controller
+    @area\add_controller @gesture_controller
+    @area\add_controller @motion_controller
+
     @selection = Selection @
     @cursor = Cursor @, @selection
     @cursor.show_when_inactive = @config.view_show_inactive_cursor
@@ -61,6 +75,7 @@ View = {
 
     @im_context = Gtk.ImContextSimple!
     with @im_context
+      .client_widget = @area
       append @_handlers, \on_commit (ctx, s) ->
         @insert s, allow_coalescing: true
 
@@ -76,25 +91,37 @@ View = {
         @in_preedit = false
         notify @, 'on_preedit_end'
 
+    @key_controller\set_im_context @im_context
+
     with @area
       .can_focus = true
-      \add_events bit.bor(Gdk.KEY_PRESS_MASK, Gdk.BUTTON_PRESS_MASK, Gdk.BUTTON_RELEASE_MASK, Gdk.POINTER_MOTION_MASK, Gdk.SCROLL_MASK, Gdk.SMOOTH_SCROLL_MASK)
-      font_desc = Pango.FontDescription {
-        family: @config.view_font_name,
-        size: @config.view_font_size * Pango.SCALE
-      }
-      \override_font font_desc
+      .focusable = true
+      -- GTK4
+      -- font_desc = Pango.FontDescription {
+      --   family: @config.view_font_name,
+      --   size: @config.view_font_size * Pango.SCALE
+      -- }
+      -- \override_font font_desc
       .style_context\add_class 'transparent_bg'
+      \set_draw_func self\_draw
 
-      append @_handlers, \on_key_press_event self\_on_key_press
-      append @_handlers, \on_button_press_event self\_on_button_press
-      append @_handlers, \on_button_release_event self\_on_button_release
-      append @_handlers, \on_motion_notify_event self\_on_motion_event
-      append @_handlers, \on_scroll_event self\_on_scroll
-      append @_handlers, \on_draw self\_draw
-      append @_handlers, \on_screen_changed self\_on_screen_changed
-      append @_handlers, \on_focus_in_event self\_on_focus_in
-      append @_handlers, \on_focus_out_event self\_on_focus_out
+
+      -- append @_handlers, \on_scroll_event self\_on_scroll
+      -- append @_handlers, \on_screen_changed self\_on_screen_changed
+
+    with @key_controller
+      append @_handlers, \on_key_pressed self\_on_key_pressed
+
+    with @focus_controller
+      append @_handlers, \on_enter self\_on_focus_in
+      append @_handlers, \on_leave self\_on_focus_out
+
+    with @gesture_controller
+      append @_handlers, \on_pressed self\_on_button_press
+      append @_handlers, \on_released self\_on_button_release
+
+    with @motion_controller
+      append @_handlers, \on_motion self\_on_motion_event
 
     @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_HORIZONTAL
     append @_handlers, @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
@@ -102,14 +129,14 @@ View = {
       @base_x = floor adjustment.value
       @area\queue_draw!
 
-    @horizontal_scrollbar_alignment = Gtk.Alignment {
-      left_padding: @gutter_width,
-      @horizontal_scrollbar
-    }
-    @horizontal_scrollbar_alignment.no_show_all = not config.view_show_h_scrollbar
+    -- @horizontal_scrollbar_alignment = Gtk.Alignment {
+    --   left_padding: @gutter_width,
+    --   @horizontal_scrollbar
+    -- }
+    -- @horizontal_scrollbar_alignment.no_show_all = not config.view_show_h_scrollbar
 
     @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
-    @vertical_scrollbar.no_show_all = not config.view_show_v_scrollbar
+    -- @vertical_scrollbar.no_show_all = not config.view_show_v_scrollbar
 
     append @_handlers, @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
@@ -119,18 +146,18 @@ View = {
       @_scrolling_vertically = false
 
     @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
-      {
-        expand: true,
-        Gtk.Box(Gtk.ORIENTATION_VERTICAL, {
-          { expand: true, @area },
-          @horizontal_scrollbar_alignment
-        })
-      },
+      Gtk.Box(Gtk.ORIENTATION_VERTICAL, {
+        vexpand: true, hexpand: true
+        @area,
+        @horizontal_scrollbar
+      }),
       @vertical_scrollbar
     }
 
     append @_handlers, @bin\on_destroy self\_on_destroy
-    append @_handlers, @bin\on_size_allocate self\_on_size_allocate
+    append @_handlers, @area\on_resize self\_on_resize
+    append @_handlers, @area\on_realize =>
+      print "realize"
 
     @_buffer_listener = {
       on_inserted: (_, b, args) -> self\_on_buffer_modified b, args, 'inserted'
@@ -152,12 +179,12 @@ View = {
     @config\add_listener self\_on_config_changed
 
   destroy: =>
-    @bin\destroy!
+    -- @bin\destroy!
 
   properties: {
 
     showing: => @height != nil
-    has_focus: => @area.is_focus
+    has_focus: => @focus_controller.contains_focus
     gutter_width: =>  @config.view_show_line_numbers and @gutter.width or 0
 
     first_visible_line: {
@@ -255,12 +282,15 @@ View = {
     buffer: {
       get: => @_buffer
       set: (buffer) =>
+        -- for line in buffer\lines(1)
+        --   print line.text
         if @_buffer
           @_buffer\remove_listener(@_buffer_listener)
           @cursor.pos = 1
           @selection\clear!
 
         @_buffer = buffer
+        print "set buffer to #{buffer}"
         buffer\add_listener @_buffer_listener
 
         @last_edit_pos = nil
@@ -272,7 +302,9 @@ View = {
     }
   }
 
-  grab_focus: => @area\grab_focus!
+  grab_focus: =>
+    print "view grab_focus"
+    @area\grab_focus!
 
   scroll_to: (line) =>
     return if line < 1 or not @showing
@@ -354,6 +386,7 @@ View = {
       @_buffer\delete start_pos, @selection.size, opts
 
   to_gobject: => @bin
+  -- to_gobject: => @area
 
   refresh_display: (opts = { from_line: 1 }) =>
     return unless @width
@@ -419,7 +452,8 @@ View = {
       width = @width - start_x
       height = (max_y - min_y)
       if width > 0 and height > 0
-        @area\queue_draw_area start_x, min_y, width, height
+        -- @area\queue_draw_area start_x, min_y, width, height
+        @area\queue_draw!
 
   position_from_coordinates: (x, y, opts = {}) =>
     return nil unless @showing
@@ -521,9 +555,12 @@ View = {
     for line_nr = from_line, to_line
       @display_lines[line_nr] = nil
 
-  _draw: (_, cr) =>
+  _draw: (cr, width, height) =>
+    print "_draw: #{width}x#{height}, first_visible_line: #{@first_visible_line}"
+    print "draw buffer: #{@_buffer}"
     p_ctx = @area.pango_context
     clip = cr.clip_extents
+    moon.p clip
     conf = @config
     line_draw_opts = config: conf, buffer: @_buffer
     draw_gutter = conf.view_show_line_numbers and clip.x1 < @gutter_width
@@ -538,7 +575,7 @@ View = {
     lines = {}
     start_y = nil
 
-    for line in @_buffer\lines @_first_visible_line
+    for line in @_buffer\lines(@_first_visible_line)
       d_line = @display_lines[line.nr]
 
       if y + d_line.height > clip.y1
@@ -593,7 +630,7 @@ View = {
     tab_size = @config.view_tab_size
     @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
-    @horizontal_scrollbar_alignment.left_padding = @gutter_width
+    -- @horizontal_scrollbar_alignment.left_padding = @gutter_width
     @gutter\sync_dimensions @buffer, force: true
 
   _on_destroy: =>
@@ -752,11 +789,13 @@ View = {
     @cursor.pos = pos
 
   _on_focus_in: =>
+    print "on focus_in"
     @im_context\focus_in!
     @cursor.active = true
     notify @, 'on_focus_in'
 
   _on_focus_out: =>
+    print "on focus_out"
     @im_context\focus_out!
     @cursor.active = false
     notify @, 'on_focus_out'
@@ -764,18 +803,23 @@ View = {
   _on_screen_changed: =>
     @_reset_display!
 
-  _on_key_press: (_, e) =>
-    if @in_preedit
-      @im_context\filter_keypress(e)
-      return true
+  _on_key_pressed: (_, keyval, keycode, state) =>
+    print 'on_key_press'
+    -- GTK4: needed or handled by the key controller?
+    -- if @in_preedit
+    --   @im_context\filter_keypress(e)
+    --   return true
 
-    event = parse_key_event e
-    unless notify @, 'on_key_press', event
-      @im_context\filter_keypress e
+    event = construct_key_event keyval, state
+    -- unless notify @, 'on_key_press', event
+    --   @im_context\filter_keypress e
+
+    moon.p event
 
     true
 
   _on_button_press: (_, event) =>
+    print "on_button_press"
     @area\grab_focus! unless @area.has_focus
 
     event = ffi_cast('GdkEventButton *', event)
@@ -804,7 +848,9 @@ View = {
     return if event.button != 1
     @_selection_active = false
 
-  _on_motion_event: (_, event) =>
+  _on_motion_event: (_, x, y) =>
+    print "on_motion_event: #{x} x #{y}"
+    return if true
     event = ffi_cast('GdkEventMotion *', event)
     return true if notify @, 'on_motion_event', event
     unless @_selection_active
@@ -863,20 +909,22 @@ View = {
       @_scroll_y event.delta_y
       @_scroll_x event.delta_x
 
-  _on_size_allocate: (_, allocation) =>
-    allocation = ffi_cast('GdkRectangle *', allocation)
-    resized = (not @height or @height != allocation.height) or
-      (not @width or @width != allocation.width)
+  _on_resize: (_, width, height) =>
+    width, height = tonumber(width), tonumber(height)
+    print "on_resize: #{width}x#{height}"
+    resized = (not @height or @height != height) or
+      (not @width or @width != width)
     return unless resized
 
-    gdk_window = @area.window
-    @im_context.client_window = gdk_window
-    if gdk_window != nil
-      gdk_window.cursor = @_cur_mouse_cursor
+    -- GTK4: gone
+    -- gdk_window = @area.window
+    -- if gdk_window != nil
+      -- gdk_window.cursor = @_cur_mouse_cursor
 
-    getting_taller = @height and allocation.height > @height
-    @width = allocation.width
-    @height = allocation.height
+    getting_taller = @height and height > @height
+    @width = width
+    @height = height
+    print "assigned height = #{height}"
     @_reset_display!
 
     if getting_taller and @last_visible_line == @buffer.nr_lines
@@ -914,9 +962,10 @@ View = {
       @vertical_scrollbar.no_show_all = true
 
     elseif option == 'view_show_h_scrollbar'
-      @horizontal_scrollbar_alignment.visible = val
-      @horizontal_scrollbar_alignment.no_show_all = true
-      @horizontal_scrollbar_alignment.left_padding = @gutter_width
+      @horizontal_scrollbar.visible = val
+      -- @horizontal_scrollbar_alignment.visible = val
+      -- @horizontal_scrollbar_alignment.no_show_all = true
+      -- @horizontal_scrollbar_alignment.left_padding = @gutter_width
 
     elseif option\match('^view_')
       @_reset_display!

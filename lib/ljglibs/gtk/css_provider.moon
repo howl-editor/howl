@@ -5,15 +5,25 @@ ffi = require 'ffi'
 jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
-glib = require 'ljglibs.glib'
-import catch_error from glib
+require 'ljglibs.gtk.css_section'
 
 C = ffi.C
 
 jit.off true, true
 
 core.define 'GtkCssProvider', {
-  load_from_data: (data) =>
-    catch_error(C.gtk_css_provider_load_from_data, @, data, #data) != 0
+  new: -> C.gtk_css_provider_new!
 
-}, -> C.gtk_css_provider_new!
+  load_from_data: (data) =>
+    C.gtk_css_provider_load_from_data(@, data, #data)
+
+  load_from_path: (path) =>
+    C.gtk_css_provider_load_from_path(@, path)
+
+  to_string: =>
+    ptr = C.gtk_css_provider_to_string(@)
+    s = ffi.string ptr
+    C.g_free ptr
+    s
+
+}, (spec) -> spec.new!

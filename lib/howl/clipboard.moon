@@ -1,13 +1,12 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2021 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Atom = require 'ljglibs.gdk.atom'
-GtkClipboard = require 'ljglibs.gtk.clipboard'
-TargetEntry = require 'ljglibs.gtk.target_entry'
+-- Atom = require 'ljglibs.gdk.atom'
+GdkDisplay = require 'ljglibs.gdk.display'
 {:PropertyTable} = howl.util
 ffi = require 'ffi'
 
-{:config} = howl
+{:config, :dispatch} = howl
 
 config.define {
   name: 'clipboard_max_items',
@@ -19,22 +18,31 @@ config.define {
 
 clips = {}
 registers = {}
-system_clipboard = GtkClipboard.get(Atom.SELECTION_CLIPBOARD)
-system_primary = GtkClipboard.get(Atom.SELECTION_PRIMARY)
+display = GdkDisplay.get_default!
+system_clipboard = display.clipboard
+system_primary = display.primary_clipboard
 sync_counter = ffi.new 'uint64_t'
 
-UTF8_TARGET = TargetEntry('UTF8_STRING')
-
 primary = PropertyTable {
-  clear: -> system_primary\clear!
+  clear: -> system_primary\set_text ''
   text:
     set: (v) =>
       if callable(v)
-        system_primary\set UTF8_TARGET, 1, v
+        error "NYI"
+        -- system_primary\set UTF8_TARGET, 1, v
       else
         system_primary.text = v
 
-    get: => system_primary.text
+    get: =>
+      print "doing the call"
+
+      handle = dispatch.park 'primary-clipboard-get'
+      system_primary\read_text_async (res) ->
+        text = system_primary\read_text_finish res
+        print "primary cb: #{text}"
+        dispatch.resume handle, text
+
+      dispatch.wait handle
 }
 
 local Clipboard
@@ -48,24 +56,28 @@ Clipboard = {
     else
       table.insert clips, 1, item
       clips[config.clipboard_max_items + 1] = nil
-      system_clipboard.text = item.text
-      system_clipboard\set_can_store nil, 0
+      system_clipboard\set_text item.text
+      -- system_clipboard\set_can_store nil, 0
       sync_counter += 1
 
   store: ->
-    system_clipboard\store!
+    print "GTK4: not supported"
+    --   system_clipboard\store!
 
   clear: ->
     clips = {}
     registers = {}
 
-  synchronize: ->
+  synchronize: (done) ->
     sync_id = sync_counter
-    system_clipboard\request_text (_, text) ->
+    system_clipboard\read_text_async (res) ->
+      text = system_clipboard\read_text_finish res
       if sync_id == sync_counter and text
         cur = clips[1]
         if not cur or cur.text != text
           Clipboard.push text
+
+      done! if done
 
   current: get: ->
     clips[1]

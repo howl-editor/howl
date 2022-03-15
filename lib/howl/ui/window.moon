@@ -1,11 +1,10 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 ffi = require 'ffi'
 gobject_signal = require 'ljglibs.gobject.signal'
-Background = require 'ljglibs.aux.background'
 {:PropertyObject} = howl.util.moon
 {:Activity, :CommandPanel, :Status, :theme} = howl.ui
 {:signal} = howl
@@ -32,42 +31,46 @@ class Window extends PropertyObject
     @_handlers = {}
     @status = Status!
     @command_panel = CommandPanel self
-    @background = Background "window_bg", 0, 0
     @grid = Gtk.Grid
       column_homogeneous: true
       row_homogeneous: true
+      valign: Gtk.ALIGN_FILL
+      vexpand: true
 
-    @activity = Activity!
+    -- GTK4 SEGV
+    -- @activity = Activity!
+
     @widgets = Gtk.Box Gtk.ORIENTATION_VERTICAL
     @box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
-      { expand: true, @grid },
+      @grid,
       @command_panel\to_gobject!
       @widgets,
       @status\to_gobject!,
     }
-    @bg_box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
-      { expand: true, @box }
-    }
 
-    @win = Gtk.Window Gtk.Window.TOPLEVEL
+    @win = Gtk.Window!
+    @win.style_context\add_class 'main-window'
+
     @win[k] = v for k,v in pairs properties
 
-    if GTK_SUPPORTS_HIDDEN_TITLEBAR
-      @win.hide_titlebar_when_maximized = config.hide_titlebar_when_maximized
+    -- if GTK_SUPPORTS_HIDDEN_TITLEBAR
+    --   @win.hide_titlebar_when_maximized = config.hide_titlebar_when_maximized
 
-      config.watch 'hide_titlebar_when_maximized', (_, value) ->
-        @win.hide_titlebar_when_maximized = value
+    --   config.watch 'hide_titlebar_when_maximized', (_, value) ->
+    --     @win.hide_titlebar_when_maximized = value
 
-    append @_handlers, @bg_box\on_size_allocate self\_on_bg_size_allocate
-    append @_handlers, @bg_box\on_draw self\_on_bg_draw
-    append @_handlers, @win\on_focus_in_event self\_on_focus
-    append @_handlers, @win\on_focus_out_event self\_on_focus_lost
-    append @_handlers, @win\on_destroy self\_on_destroy
-    append @_handlers, @win\on_screen_changed self\_on_screen_changed
-    @win.app_paintable = true
-    @_set_alpha!
+    -- append @_handlers, @win\on_focus_in_event self\_on_focus
+    -- append @_handlers, @win\on_focus_out_event self\_on_focus_lost
+    -- append @_handlers, @win\on_destroy self\_on_destroy
+    -- append @_handlers, @win\on_screen_changed self\_on_screen_changed
+    -- @win.app_paintable = true
+    -- @_set_alpha!
 
-    @win\add @bg_box
+    @win.child = @box
+
+    -- aullar = require 'aullar'
+    -- @view = aullar.View!
+    -- @win.child = @view\to_gobject!
 
     @_theme_changed = self\_on_theme_changed
     signal.connect 'theme-changed', @_theme_changed
@@ -79,10 +82,10 @@ class Window extends PropertyObject
     views = {}
 
     for c in *@grid.children
-      props = @grid\properties_for c
+      props = @grid\query_child c
       append views, {
-        x: props.left_attach + 1
-        y: props.top_attach + 1
+        x: props.column + 1
+        y: props.row + 1
         width: props.width
         height: props.height
         view: c
@@ -123,7 +126,7 @@ class Window extends PropertyObject
         @win\unmaximize!
 
   add_widget: (widget) =>
-    @widgets\pack_end widget, true, true, 0
+    @widgets\append widget
 
   remove_widget: (widget) =>
     @widgets\remove widget
@@ -172,7 +175,7 @@ class Window extends PropertyObject
   add_view: (view, placement = 'right_of', anchor) =>
     gobject = to_gobject view
     @_place gobject, placement, anchor
-    gobject\show_all!
+    gobject\show!
     @_reflow!
     @get_view gobject
 
@@ -257,14 +260,12 @@ class Window extends PropertyObject
   _place: (gobject, placement, anchor) =>
     where = placements[placement]
     error "Unknown placement '#{placement}' specified", 2 unless where
+    sibling = to_gobject(anchor) or @focus_child
 
-    anchor = to_gobject(anchor) or @focus_child
-    unless anchor
-      @grid\add gobject
-      return
+    if sibling
+      @_insert_column sibling, placement if placement == 'left_of' or placement == 'right_of'
 
-    @_insert_column anchor, placement if placement == 'left_of' or placement == 'right_of'
-    @grid\attach_next_to gobject, anchor, Gtk[where], 1, 1
+    @grid\attach_next_to gobject, sibling, Gtk[where], 1, 1
 
   _on_theme_changed: (opts) =>
     def = {}
@@ -282,12 +283,7 @@ class Window extends PropertyObject
       .row_spacing = inner_padding
       .column_spacing = inner_padding
 
-    @background\reconfigure def
     @win\queue_draw!
-
-  _on_bg_size_allocate: (_, alloc) =>
-    alloc = ffi_cast('GdkRectangle *', alloc)
-    @background\resize alloc.width, alloc.height
 
   _on_destroy: =>
     -- disconnect signal handlers
@@ -295,12 +291,6 @@ class Window extends PropertyObject
       gobject_signal.disconnect h
 
     signal.disconnect 'theme-changed', @_theme_changed
-
-  _on_bg_draw: (_, cr) =>
-    cr\save!
-    @background\draw cr
-    cr\restore!
-    false
 
   _on_focus: =>
     howl.app.window = self

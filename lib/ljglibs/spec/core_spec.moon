@@ -1,7 +1,7 @@
 ffi = require 'ffi'
 core = require 'ljglibs.core'
 Gtk = require 'ljglibs.gtk'
-import OffscreenWindow, Window, Box from Gtk
+import Box from Gtk
 
 describe 'core', ->
   describe 'define(name, spec, constructor)', ->
@@ -121,15 +121,9 @@ describe 'core', ->
           it 'adds them as children', ->
             child_box = Box!
             box = Box {
-              {
-                padding: 123,
-                child_box
-              }
+              child_box
             }
-            assert.equal 123, box\properties_for(child_box).padding
-            children = box.children
-            assert.equal 1, #children
-            assert.equal child_box, children[1]
+            assert.equal child_box, box.last_child
 
         it 'does nothing if the type is specified as a no-container', ->
           ffi.cdef 'typedef struct { int foo; } my_final_type;'
@@ -149,21 +143,24 @@ describe 'core', ->
           o = MyPropType { foo: 123 }
           assert.not_equal 123, o.foo
 
-    context '(signals)', ->
+    -- GTK4, no offscreen window available..
+    -- context '(signals)', ->
 
-      it 'sets up signal hook functions automatically based on the gtype', ->
-        win = OffscreenWindow!
-        show_handler = spy.new ->
-        win\on_show show_handler, nil, 123
-        win\show!
-        assert.spy(show_handler).was_called_with win, nil, 123
+    --   it 'sets up signal hook functions automatically based on the gtype', ->
+    --     box = Box!
+    --     show_handler = spy.new ->
+    --     box\on_show show_handler, nil, 123
+    --     box\show!
+    --     moon.p show_handler
+    --     assert.spy(show_handler).was_called_with box, nil, 123
 
-      it 'casts arguments of known types', ->
-        win = OffscreenWindow!
-        show_handler = (signal_win) ->
-          assert.equal Window.show, signal_win.show
-        win\on_show show_handler
-        win\show!
+    --   it 'casts arguments of known types', (done) ->
+    --     box = Box!
+    --     show_handler = async (signal_box) ->
+    --       assert.equal Box.show, signal_box.show
+    --       done!
+    --     box\on_show show_handler
+    --     box\show!
 
   describe 'bit_flags(def, prefix, value)', ->
     it 'offers a convinient way of accessing bit flags using string constants', ->

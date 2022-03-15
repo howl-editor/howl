@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gdk = require 'ljglibs.gdk'
@@ -144,8 +144,8 @@ class Editor extends PropertyObject
     @bin.can_focus = true
 
     @_handlers = {}
-    append @_handlers, @bin\on_destroy self\_on_destroy
-    append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
+    -- append @_handlers, @bin\on_destroy self\_on_destroy
+    -- append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
 
     @buffer = buffer
     @_is_previewing = false
@@ -154,6 +154,7 @@ class Editor extends PropertyObject
     append _editors, self
 
   to_gobject: => @bin
+  -- to_gobject: => Gtk.Box!
 
   @property buffer:
     get: => @_buf
@@ -223,10 +224,6 @@ class Editor extends PropertyObject
     get: => @view.config.view_show_v_scrollbar
     set: (flag) =>
       @view.config.view_show_v_scrollbar = flag
-
-  -- @property overtype:
-  --   get: => @sci\get_overtype!
-  --   set: (flag) => @sci\set_overtype flag
 
   @property lines_on_screen:
     get: => @view.lines_showing

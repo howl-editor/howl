@@ -66,6 +66,7 @@ set_constants = (def) ->
       def[full] = C[full]
 
 setup_signals = (name, def, gtype, instance_cast) ->
+  focus = name == 'GtkEventControllerFocus'
   ids = signal.list_ids gtype
   for id in *ids
     info = signal.query id, gtype
@@ -81,7 +82,7 @@ setup_signals = (name, def, gtype, instance_cast) ->
           args = pack ...
           args[1] = instance_cast args[1]
           for i = 2, info.n_params + 1
-            args[i] = types.cast info.param_types[i], args[i]
+            args[i] = types.cast info.param_types[i - 1], args[i]
 
           handler unpack(args, 1, args.n)
 
@@ -92,18 +93,13 @@ construct = (spec, no_container, constructor, ...) ->
   last = args[#args]
   if type(last) == 'table' and not no_container
     inst = constructor spec, unpack(args, 1, #args - 1)
+    -- assign any eventual properties
     inst[k] = v for k,v in pairs last when type(k) != 'number'
-    for child in *last
-      properties = nil
-      if type(child) == 'table'
-        properties = child
-        child = child[1]
 
+    -- add any children
+    for child in *last
       inst\add child
 
-      if properties
-        props = inst\properties_for(child)
-        props[k] = v for k, v in pairs properties when type(k) != 'number'
     inst
   else
     constructor spec, ...

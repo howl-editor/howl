@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Window, Editor, theme from howl.ui
@@ -39,7 +39,8 @@ dispatcher = (f, description, ...) ->
     if coro_status(co) == 'dead'
       return ret
   else
-    error ret
+    print "main dispatch err: #{ret}"
+    error ret, 2
 
   false
 
@@ -140,9 +141,9 @@ class Application extends PropertyObject
     props = title: @title
     props[k] = v for k, v in pairs(properties)
     window = Window props
-    window\set_default_size 800, 640
+    window\set_default_size 1024, 768
 
-    window\on_delete_event ->
+    window\on_close_request ->
       if #@windows == 1
         modified = [b for b in *@_buffers when b.modified]
         if #modified > 0
@@ -368,7 +369,7 @@ class Application extends PropertyObject
         win.command_panel\cancel!
         win\destroy!
 
-      howl.clipboard.store!
+      -- howl.clipboard.store!
 
   save_session: =>
     return if @args.no_profile or #@args > 1
@@ -504,7 +505,7 @@ class Application extends PropertyObject
       signal.emit 'file-opened', file: b.file, buffer: b
 
     unless @_loaded
-      window\show_all! if window
+      window\show! if window
       @editor.line_at_center = @editor.cursor.line
       @_loaded = true
       howl.io.File.async = true
@@ -606,17 +607,18 @@ class Application extends PropertyObject
     require 'howl.file_search'
 
   _load_application_icon: =>
-    dir = @root_dir
-    while dir
-      icon = dir\join('share/icons/hicolor/scalable/apps/howl.svg')
-      if icon.exists
-        status, err = pcall Gtk.Window.set_default_icon_from_file, icon.path
-        log.error "Failed to load application icon: #{err}" unless status
-        return
+    -- GTK4: remove?
+    -- dir = @root_dir
+    -- while dir
+    --   icon = dir\join('share/icons/hicolor/scalable/apps/howl.svg')
+    --   if icon.exists
+    --     status, err = pcall Gtk.Window.set_default_icon_from_file, icon.path
+    --     log.error "Failed to load application icon: #{err}" unless status
+    --     return
 
-      dir = dir.parent
+    --   dir = dir.parent
 
-    log.warn "Failed to find application icon"
+    -- log.warn "Failed to find application icon"
 
   _add_recently_closed: (buffer) =>
     @_recently_closed = [file_info for file_info in *@_recently_closed when file_info.file != buffer.file]

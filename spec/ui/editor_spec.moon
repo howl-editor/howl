@@ -9,9 +9,9 @@ describe 'Editor', ->
   editor = Editor Buffer {}
   cursor = editor.cursor
   selection = editor.selection
-  window = Gtk.OffscreenWindow!
+  window = Gtk.Window!
   window\add editor\to_gobject!
-  window\show_all!
+  window\show!
   howl.app\pump_mainloop!
 
   before_each ->

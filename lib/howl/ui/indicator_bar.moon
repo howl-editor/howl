@@ -17,9 +17,9 @@ class IndicatorBar
     pack = nil
     switch position
       when 'left'
-        pack = @box\pack_start
+        pack = @box\prepend
       when 'right'
-        pack = @box\pack_end
+        pack = @box\append
       else error 'Illegal indicator position "' .. position .. '"', 2
 
     indicator = self._create_indicator id, widget

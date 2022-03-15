@@ -8,7 +8,7 @@ describe 'Object', ->
 
   context '(constructing)', ->
     it 'can be created using an existing gtype', ->
-      type = Type.from_name 'GtkEventBox'
+      type = Type.from_name 'GtkBox'
       o = Object type
       assert.is_not_nil o
 

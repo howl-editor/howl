@@ -9,7 +9,8 @@ describe 'Cursor', ->
   selection = editor.selection
   window = Gtk.OffscreenWindow default_width: 800, default_height: 640
   window\add editor\to_gobject!
-  window\show_all!
+  -- GTK4
+  -- window\show_all!
   howl.app\pump_mainloop!
 
   before_each ->

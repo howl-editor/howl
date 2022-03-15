@@ -89,7 +89,7 @@ class TextWidget extends PropertyObject
     @text = @opts.text if @opts.text
     @showing = true
     @adjust_height!
-    @to_gobject!\show_all!
+    @to_gobject!\show!
 
   hide: =>
     @to_gobject!\hide!

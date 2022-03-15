@@ -29,9 +29,9 @@ class Popup extends PropertyObject
     @window.app_paintable = true
     @_set_alpha!
 
-    append @_handlers, @window\on_screen_changed self\_on_screen_changed
+    -- append @_handlers, @window\on_screen_changed self\_on_screen_changed
     append @_handlers, @window\on_destroy self\_on_destroy
-    @window\add @box\to_gobject!
+    @window.child = @box\to_gobject!
     @showing = false
     super!
 
@@ -49,7 +49,7 @@ class Popup extends PropertyObject
     else
       @center!
 
-    @window\show_all!
+    @window\show!
 
   close: =>
     @window\hide!
@@ -76,13 +76,15 @@ class Popup extends PropertyObject
       @window.default_height = height
       return
 
-    screen = @widget.screen
 
-    if @x + width > (screen.width - @comfort_zone)
-      width = screen.width - @x - @comfort_zone
+    -- GTK4
+    -- screen = @widget.screen
 
-    if @y + height > (screen.height - @comfort_zone)
-      height = screen.height - @y - @comfort_zone
+    -- if @x + width > (screen.width - @comfort_zone)
+    --   width = screen.width - @x - @comfort_zone
+
+    -- if @y + height > (screen.height - @comfort_zone)
+    --   height = screen.height - @y - @comfort_zone
 
     @width, @height = width, height
     @window\set_size_request width, height
@@ -96,7 +98,7 @@ class Popup extends PropertyObject
     -- now, if we were to center ourselves on the widgets toplevel,
     -- with our current width and height..
 
-    screen = @widget.screen
+    -- screen = @widget.screen
     toplevel = @widget.toplevel
     w_x, w_y = toplevel.window\get_position!
     w_width, w_height = toplevel.allocated_width, toplevel.allocated_height
@@ -105,29 +107,31 @@ class Popup extends PropertyObject
     x = win_h_center - (width / 2)
     y = win_v_center - (height / 2)
 
+    -- GTK4
     -- are we outside of the comfort zone horizontally?
-    if x < @comfort_zone or x + width > (screen.width - @comfort_zone)
-      -- pull in the stomach
-      min_outside_h = math.min(w_x, screen.width - (w_x + w_width))
-      width = (w_width + min_outside_h) - @comfort_zone
-      x = win_h_center - (width / 2)
+    -- if x < @comfort_zone or x + width > (screen.width - @comfort_zone)
+    --   -- pull in the stomach
+    --   min_outside_h = math.min(w_x, screen.width - (w_x + w_width))
+    --   width = (w_width + min_outside_h) - @comfort_zone
+    --   x = win_h_center - (width / 2)
 
-    -- are we outside of the comfort zone vertically?
-    if y < @comfort_zone or y + height > (screen.height - @comfort_zone)
-      -- hunch down
-      min_outside_v = math.min(w_y, screen.height - (w_y + w_height))
-      height = (w_height + min_outside_v) - @comfort_zone
-      y = win_v_center - (height / 2)
+    -- -- are we outside of the comfort zone vertically?
+    -- if y < @comfort_zone or y + height > (screen.height - @comfort_zone)
+    --   -- hunch down
+    --   min_outside_v = math.min(w_y, screen.height - (w_y + w_height))
+    --   height = (w_height + min_outside_v) - @comfort_zone
+    --   y = win_v_center - (height / 2)
 
     -- now it's all good
     @resize width, height
     @window\move x, y
 
   _set_alpha: =>
-    screen = @window.screen
-    if screen.is_composited
-      visual = screen.rgba_visual
-      @window.visual = visual if visual
+    -- GTK4
+    -- screen = @window.screen
+    -- if screen.is_composited
+    --   visual = screen.rgba_visual
+    --   @window.visual = visual if visual
 
   _on_screen_changed: =>
     @_set_alpha!

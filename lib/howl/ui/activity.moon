@@ -61,7 +61,7 @@ class Activity extends PropertyObject
     get: => @to_gobject!.visible
     set: (v) =>
       if v
-        @to_gobject!\show_all!
+        @to_gobject!\show!
       else
         @to_gobject!.visible = false
 

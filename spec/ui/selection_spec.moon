@@ -10,7 +10,8 @@ describe 'Selection', ->
   cursor = editor.cursor
   window = Gtk.OffscreenWindow!
   window\add editor\to_gobject!
-  window\show_all!
+  -- GTK4
+  -- window\show_all!
   howl.app\pump_mainloop!
 
   before_each ->

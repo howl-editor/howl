@@ -1,4 +1,4 @@
--- Copyright 2014-2017 The Howl Developers
+-- Copyright 2014-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -6,9 +6,11 @@ bit = require 'bit'
 Gdk = require 'ljglibs.gdk'
 require 'ljglibs.cdefs.glib'
 
-C, ffi_cast, ffi_string = ffi.C, ffi.cast, ffi.string
+C, ffi_string, ffi_cast = ffi.C, ffi.string, ffi.cast
 band = bit.band
 gchar_arr = ffi.typeof 'gchar [?]'
+guint_t = ffi.typeof 'guint'
+modifier_t = ffi.typeof 'GdkModifierType'
 
 explain_key_code = (code, event) ->
   effective_code = code == 10 and Gdk.KEY_Return or code
@@ -28,17 +30,17 @@ explain_key_code = (code, event) ->
   event.key_code = code
 
 {
-  parse_key_event: (key_event) ->
-    key_event = ffi_cast('GdkEventKey *', key_event)
+  construct_key_event: (keyval, state) ->
+    keyval = ffi_cast guint_t, keyval
+    state = ffi_cast modifier_t, state
     event = {
-      shift: band(key_event.state, C.GDK_SHIFT_MASK) != 0,
-      control: band(key_event.state, C.GDK_CONTROL_MASK) != 0,
-      alt: band(key_event.state, C.GDK_MOD1_MASK) != 0,
-      super: band(key_event.state, C.GDK_SUPER_MASK) != 0,
-      meta: band(key_event.state, C.GDK_META_MASK) != 0,
-      lock: band(key_event.state, C.GDK_LOCK_MASK) != 0,
+      shift: band(state, C.GDK_SHIFT_MASK) != 0,
+      control: band(state, C.GDK_CONTROL_MASK) != 0,
+      alt: band(state, C.GDK_MOD1_MASK) != 0,
+      super: band(state, C.GDK_SUPER_MASK) != 0,
+      meta: band(state, C.GDK_META_MASK) != 0,
+      lock: band(state, C.GDK_LOCK_MASK) != 0,
     }
-    explain_key_code key_event.keyval, event
+    explain_key_code keyval, event
     event
-
 }

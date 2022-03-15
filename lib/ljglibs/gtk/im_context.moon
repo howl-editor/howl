@@ -9,22 +9,24 @@ require 'ljglibs.gobject.object'
 gobject = require 'ljglibs.gobject'
 
 signal = gobject.signal
-C, ffi_string, ffi_new, ffi_gc = ffi.C, ffi.string, ffi.new, ffi.gc
+C, ffi_string, ffi_new, ffi_gc, ffi_cast = ffi.C, ffi.string, ffi.new, ffi.gc, ffi.cast
 pack, unpack = table.pack, table.unpack
 
 jit.off true, true
 
+widget_t = ffi.typeof 'GtkWidget *'
+
 core.define 'GtkIMContext < GObject', {
   properties: {
-    client_window:
-      set: (win) => @set_client_window win
+    client_widget:
+      set: (widget) => @set_client_widget ffi_cast(widget_t, widget)
 
     use_preedit:
       set: (v) => @set_use_preedit v
   }
 
-  set_client_window: (window) =>
-    C.gtk_im_context_set_client_window @, window
+  set_client_widget: (widget) =>
+    C.gtk_im_context_set_client_widget @, widget
 
   get_preedit_string: =>
     s_ptr_ptr = ffi_new 'gchar *[1]'

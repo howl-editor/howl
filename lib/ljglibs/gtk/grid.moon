@@ -6,16 +6,17 @@ jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
-require 'ljglibs.gtk.container'
+require 'ljglibs.gtk.widget'
 
 gc_ptr, ref_ptr = gobject.gc_ptr, gobject.ref_ptr
 C, ffi_cast = ffi.C, ffi.cast
 widget_t = ffi.typeof 'GtkWidget *'
+int_ptr_t = ffi.typeof 'int[1]'
 to_w = (o) -> ffi_cast widget_t, o
 
 jit.off true, true
 
-core.define 'GtkGrid < GtkContainer', {
+core.define 'GtkGrid < GtkWidget', {
   properties: {
     column_homogeneous: 'gboolean'
     row_homogeneous: 'gboolean'
@@ -45,5 +46,18 @@ core.define 'GtkGrid < GtkContainer', {
   remove_row: (position) => C.gtk_grid_remove_row @, position
   remove_column: (position) => C.gtk_grid_remove_column @, position
   insert_next_to: (sibling, side) => C.gtk_grid_insert_next_to @, to_w(sibling), side
+  query_child: (child) =>
+    col = int_ptr_t!
+    row = int_ptr_t!
+    w = int_ptr_t!
+    h = int_ptr_t!
+    C.gtk_grid_query_child @, child, col, row, w, h
+    {
+      column: tonumber(col[0]),
+      row: tonumber(col[0])
+      width: tonumber(w[0])
+      height: tonumber(h[0])
+    }
+
 
 }, (spec, ...) -> spec.new ...

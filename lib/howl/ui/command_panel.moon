@@ -54,10 +54,10 @@ class CommandLine extends PropertyObject
     -- reset blink interval since each view has its own
     @command_widget.view.config.cursor_blink_interval = config.cursor_blink_interval
 
-    @box\pack_end @command_widget\to_gobject!, false, 0, 0
+    @box\append @command_widget\to_gobject!
 
     @notification = NotificationWidget!
-    @box\pack_end @notification\to_gobject!, false, 0, 0
+    @box\append @notification\to_gobject!
 
     @header = IndicatorBar 'header'
     @indic_title = @header\add 'left', 'title'
@@ -199,9 +199,9 @@ class CommandLine extends PropertyObject
 
     local pack
     if pos == 'bottom'
-        pack = @box\pack_end
+        pack = @box\append
     elseif pos == 'top'
-        pack = @box\pack_start
+        pack = @box\prepend
     else
         error "Invalid pos #{pos}"
     pack widget\to_gobject!, false, 0, 0
@@ -268,7 +268,8 @@ class CommandLine extends PropertyObject
   open: =>
     return if @is_open
 
-    @bin\show_all!
+    -- GTK4
+    -- @bin\show_all!
     @notification\hide!
     @title = @title
 
@@ -339,7 +340,7 @@ class CommandPanel extends PropertyObject
   @property active_command_line: get: => @command_lines[#@command_lines]
 
   _push: (command_line) =>
-    @bin\pack_end command_line\to_gobject!, false, 0, 0
+    @bin\append command_line\to_gobject!
     append @command_lines, command_line
 
   _remove: (command_line) =>

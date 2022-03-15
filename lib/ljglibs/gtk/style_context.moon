@@ -18,8 +18,11 @@ core.define 'GtkStyleContext', {
 
   new: -> gc_ptr C.gtk_style_context_new!
 
-  add_provider_for_screen: (screen, provider, priority) ->
-    C.gtk_style_context_add_provider_for_screen screen, cast(provider_p, provider), priority
+  add_provider: (provider, priority) =>
+    C.gtk_style_context_add_provider @, cast(provider_p, provider), priority
+
+  add_provider_for_display: (display, provider, priority) ->
+    C.gtk_style_context_add_provider_for_display display, cast(provider_p, provider), priority
 
   add_class: (cls) => C.gtk_style_context_add_class @, cls
   remove_class: (cls) => C.gtk_style_context_remove_class @, cls
@@ -27,5 +30,11 @@ core.define 'GtkStyleContext', {
     rgba = ffi.new 'GdkRGBA'
     C.gtk_style_context_get_background_color @, state, rgba
     rgba
+
+  to_string: =>
+    ptr = C.gtk_style_context_to_string(@, 2)
+    s = ffi.string ptr
+    C.g_free ptr
+    s
 
 }, (spec) -> spec.new!

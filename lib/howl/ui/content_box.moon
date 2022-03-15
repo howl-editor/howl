@@ -1,20 +1,18 @@
--- Copyright 2015-2016 The Howl Developers
+-- Copyright 2015-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
 gobject_signal = require 'ljglibs.gobject.signal'
 Background = require 'ljglibs.aux.background'
-ffi = require 'ffi'
 
 {:signal} = howl
 {:theme} = howl.ui
 {:PropertyObject} = howl.util.moon
 append = table.insert
-ffi_cast = ffi.cast
 {:max} = math
 
 allocations_differ = (a1, a2) ->
-  a1.x != a2.x or a1.y != a2.y or a1.width != a2.width or a1.height != a2.height
+  a1.width != a2.width or a1.height != a2.height
 
 get_bg_conf = (theme_conf = {}, additional) ->
   bg_conf = {}
@@ -46,33 +44,36 @@ class ContentBox extends PropertyObject
       @footer = @_create_bar opts.footer, opts.footer_background, @main, "footer"
 
     main_widget = Gtk.Box Gtk.ORIENTATION_VERTICAL
+    main_widget.css_classes = {"cb_#{name}"}
+    moon.p main_widget.css_classes
 
     if @header
-      main_widget\pack_start @header.widget, false, false, 0
+      main_widget\append @header.widget
 
-    main_widget\pack_start content_widget, true, true, 0
+    main_widget\append content_widget
 
     if @footer
-      main_widget\pack_start @footer.widget, false, false, 0
+      main_widget\append @footer.widget
 
     @main.widget = main_widget
-    @e_box = Gtk.EventBox {
+    @e_box = Gtk.DrawingArea {
       hexpand: true,
-      vexpand: false,
-      main_widget
+      vexpand: false
     }
-    @e_box.app_paintable = true
+    @e_box.child = main_widget
+    -- @e_box.app_paintable = true
     @e_box.visible_window = false
 
-    append @_handlers, @e_box\on_size_allocate self\_on_size_allocate
+    append @_handlers, @e_box\on_resize self\_on_resize
     append @_handlers, @e_box\on_destroy self\_on_destroy
-    append @_handlers, @e_box\on_draw self\_draw
+    @e_box\set_draw_func self\_draw
 
     @_theme_changed = self\_on_theme_changed
     signal.connect 'theme-changed', @_theme_changed
     @_on_theme_changed theme: theme.current
 
-  to_gobject: => @e_box
+  -- to_gobject: => @e_box
+  to_gobject: => @main.widget
 
   _prepare_background: (bg, cr) =>
     if @header and @header.background and @header.widget.visible
@@ -86,13 +87,15 @@ class ContentBox extends PropertyObject
       @footer.background\draw cr, preserve: true
       cr\restore!
 
-  _draw: (_, cr) =>
+  _draw: (cr, width, height) =>
+    print "content_box draw"
     cr\save!
     clip = cr.clip_extents
+    moon.p clip
     bg = @main.background
     bg\draw cr, should_clip: true, :clip
     cr\translate bg.padding_left, bg.padding_top
-    gobject_signal.emit_by_name @main.widget, 'draw', cr
+    -- gobject_signal.emit_by_name @main.widget, 'draw', cr
     cr\restore!
     true
 
@@ -136,34 +139,32 @@ class ContentBox extends PropertyObject
   _create_bar: (widget, background_configuration, parent, name) =>
     bg = Background "#{@name}_#{name}", 0, 0
     bar = :name, :widget, background: bg
-    append @_handlers, bar.widget\on_size_allocate self\_on_bar_size_allocate, bar
+    -- append @_handlers, bar.widget\on_resize self\_on_bar_resize, bar
     bar
 
-  _on_size_allocate: (_, allocation) =>
-    allocation = ffi_cast('GdkRectangle *', allocation)
-    @_height = allocation.height
+  _on_resize: (_, width, height) =>
+    width, height = tonumber(width), tonumber(height)
+    allocation = :width, :height
+    @_height = height
 
     return if @_allocation and not allocations_differ(@_allocation, allocation)
 
-    with allocation
-      @_allocation = x: .x, y: .y, width: .width, height: .height
+    @_allocation = width: width, height: height
 
-    @main.background\resize allocation.width, allocation.height
+    @main.background\resize width, height
 
     w_adjustment = @main.background.padding_left + @main.background.padding_right
 
     if @header and @header.background
-      @header.background\resize allocation.width - w_adjustment, nil
+      @header.background\resize width - w_adjustment, nil
 
     if @footer and @footer.background
-      @footer.background\resize allocation.width - w_adjustment, nil
+      @footer.background\resize width - w_adjustment, nil
 
-  _on_bar_size_allocate: (_, allocation, bar) =>
-    allocation = ffi_cast('GdkRectangle *', allocation)
-    -- return if bar.allocation and not allocations_differ(bar.allocation, allocation)
+  _on_bar_resize: (_, width, height, bar) =>
+    width, height = tonumber(width), tonumber(height)
 
     w = bar.widget
     height_adjust = w.margin_top + w.margin_bottom
-    bar.background\resize nil, allocation.height + height_adjust
-    with allocation
-      bar.allocation = x: .x, y: .y, width: .width, height: .height
+    bar.background\resize nil, height + height_adjust
+    bar.allocation = width: width, height: height

@@ -6,6 +6,7 @@ Gdk = require 'ljglibs.gdk'
 require 'ljglibs.gtk.widget'
 flair = require 'aullar.flair'
 RGBA = Gdk.RGBA
+{string: ffi_string, :cast} = require('ffi')
 
 import config, signal from howl
 import style, colors, highlight from howl.ui
@@ -13,9 +14,22 @@ import PropertyTable, SandboxedLoader from howl.util
 aullar_config = require 'aullar.config'
 append = table.insert
 
+local loading_css
+
 css_provider = Gtk.CssProvider!
-screen = Gdk.Screen\get_default!
-Gtk.StyleContext.add_provider_for_screen screen, css_provider, 600
+css_provider\on_parsing_error (provider, section, err)->
+  err = cast 'GError *', err
+  section = cast 'GtkCssSection *', section
+  err_s = ffi_string err.message
+  at = tonumber section.start_location.bytes
+  leading = loading_css\sub math.max(at - 50, 0), at
+  trailing = loading_css\sub at + 1, at + 50
+  context = leading .. '<ERROR>' .. trailing
+  error "Theme error: #{err_s} at\n\"#{context}\""
+
+display = Gdk.Display\get_default!
+print "default display: #{display}"
+Gtk.StyleContext.add_provider_for_display display, css_provider, 7000
 
 css_template = [[
 .transparent_bg {
@@ -52,6 +66,18 @@ scrollbar slider {
   ${status_font}
   color: ${status_color};
 }
+
+.cb_editor {
+  /*background-color: red;*/
+  margin: 1em;
+  border: 1px solid red;
+  border-radius: 5px;
+}
+
+.main-window.background {
+  background-image: url("file:///home/nilnor/code/howl-gtk4/bundles/howl-themes/steinom/footer_lodyas.png");
+}
+
 ]]
 
 status_template = [[
@@ -127,6 +153,7 @@ status_css = (status) ->
   css
 
 theme_css = (theme, file) ->
+  -- moon.p theme
   status = theme.window.status
   editor = theme.editor
   hdr = editor.header
@@ -160,8 +187,10 @@ load_theme = (file) ->
 
 apply_theme = ->
   css = theme_css current_theme, current_theme_file
-  status = css_provider\load_from_data css
-  error 'Error applying theme "' .. current_theme.name .. '"' if not status
+  loading_css = css
+  css_provider\load_from_data css
+  loading_css = nil
+
   style.set_for_theme current_theme
   highlight.set_for_theme current_theme
   flair.define name, def for name, def in pairs(current_theme.flairs or {})
@@ -229,6 +258,8 @@ signal.register 'theme-changed',
 
 return PropertyTable {
   current: get: -> current_theme
+
+  :css_provider
 
   all: theme_files
 

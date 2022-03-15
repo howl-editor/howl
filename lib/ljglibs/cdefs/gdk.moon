@@ -3,6 +3,8 @@
 
 require 'ljglibs.cdefs.glib'
 require 'ljglibs.cdefs.cairo'
+require 'ljglibs.cdefs.gio'
+
 ffi = require 'ffi'
 
 ffi.cdef [[
@@ -242,13 +244,53 @@ ffi.cdef [[
     GDK_CURSOR_IS_PIXMAP    = -1
   } GdkCursorType;
 
-  GdkCursor * gdk_cursor_new (GdkCursorType cursor_type);
+  GdkCursor * gdk_cursor_new_from_name (const char* name, GdkCursor* fallback);
+
+  /* clipboard */
+  typedef struct {} GdkClipboard;
+  /* typedef GVCallback3 GdkClipboardTextReceivedFunc; */
+  /* typedef GVCallback4 GdkClipboardGetFunc; */
+  /* typedef GVCallback2 GdkClipboardClearFunc; */
+
+  /* GdkClipboard * gdk_clipboard_get (GdkAtom selection); */
+  /* gchar * gdk_clipboard_wait_for_text (GdkClipboard *clipboard); */
+  /* void gdk_clipboard_request_text (GdkClipboard *clipboard, */
+  /*                                  GdkClipboardTextReceivedFunc callback, */
+  /*                                  gpointer user_data); */
+
+  void gdk_clipboard_read_text_async(GdkClipboard* clipboard,
+                                     GCancellable* cancellable,
+                                     GAsyncReadyCallback callback,
+                                     gpointer user_data);
+
+  char* gdk_clipboard_read_text_finish(GdkClipboard* clipboard,
+                                       GAsyncResult* result,
+                                       GError** error);
+
+  void gdk_clipboard_set_text (GdkClipboard *clipboard,
+                               const gchar *text,
+                               gint len);
+
+  /* void gdk_clipboard_store (GdkClipboard *clipboard); */
+  /* void gdk_clipboard_set_can_store (GdkClipboard *clipboard, */
+  /*                                   const GdkTargetEntry *targets, */
+  /*                                   gint n_targets); */
+
+  /* gboolean gdk_clipboard_set_with_data (GdkClipboard *clipboard, */
+  /*                                       const GdkTargetEntry *targets, */
+  /*                                       guint n_targets, */
+  /*                                       GdkClipboardGetFunc get_func, */
+  /*                                       GdkClipboardClearFunc clear_func, */
+  /*                                       gpointer user_data); */
+
 
   /* display */
   typedef struct {} GdkDisplay;
   void gdk_display_sync (GdkDisplay *display);
   gboolean gdk_display_has_pending (GdkDisplay *display);
   GdkDisplay * gdk_display_get_default (void);
+  GdkClipboard* gdk_display_get_clipboard (GdkDisplay* display);
+  GdkClipboard* gdk_display_get_primary_clipboard(GdkDisplay* display);
 
   /* GdkWindow */
   typedef struct {} GdkWindow;
@@ -293,6 +335,8 @@ ffi.cdef [[
   GdkVisual * gdk_screen_get_rgba_visual(GdkScreen *screen);
   gboolean gdk_screen_is_composited(GdkScreen *screen);
   GdkDisplay * gdk_screen_get_display(GdkScreen *screen);
+
+
 
   /* GdkDevice */
   typedef struct {} GdkDevice;
