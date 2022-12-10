@@ -1,4 +1,3 @@
-Gtk = require 'ljglibs.gtk'
 match = require 'luassert.match'
 
 {:Buffer, :config, :clipboard, :sys} = howl
@@ -9,10 +8,6 @@ describe 'Editor', ->
   editor = Editor Buffer {}
   cursor = editor.cursor
   selection = editor.selection
-  window = Gtk.Window!
-  window\add editor\to_gobject!
-  window\show!
-  howl.app\pump_mainloop!
 
   before_each ->
     buffer = Buffer howl.mode.by_name 'default'
@@ -831,32 +826,6 @@ describe 'Editor', ->
         editor\paste!
         assert.equals 'hello\nhello\nwörld', buffer.text
 
-  context 'resource management', ->
-    it 'editors are collected as they should', ->
-      e = Editor Buffer {}
-      editors = setmetatable {e}, __mode: 'v'
-      e\to_gobject!\destroy!
-      e = nil
-      collect_memory!
-      assert.is_true editors[1] == nil
-
-    it 'releases resources after buffer switching', ->
-      b1 = Buffer {}
-      b2 = Buffer {}
-      e = Editor b1
-      buffers = setmetatable { b1, b2 }, __mode: 'v'
-      editors = setmetatable { e }, __mode: 'v'
-      e.buffer = b2
-      e.buffer = b1
-      e\to_gobject!\destroy!
-      e = nil
-      b1 = nil
-      b2 = nil
-      collectgarbage!
-      assert.is_nil editors[1]
-      assert.is_nil buffers[1]
-      assert.is_nil buffers[2]
-
   context 'get_matching_brace', ->
     it 'finds position of matching opending/closing brace', ->
       editor.buffer.mode.auto_pairs = {'[': ']'}
@@ -923,3 +892,41 @@ describe 'Editor', ->
 
       howl.mode.unregister 'test_mode1'
       howl.mode.unregister 'test_mode2'
+
+  context 'resource management', ->
+    it 'editors are collected as they should', ->
+      e = Editor Buffer {}
+      editors = setmetatable {e}, __mode: 'v'
+      io.stderr\write "spec unref\n"
+
+      e\to_gobject!\unref!
+      io.stderr\write "spec unref done\n"
+      e = nil
+      collect_memory!
+      assert.is_true editors[1] == nil
+
+    it 'releases previous buffer after buffer switching', ->
+      b1 = Buffer {}
+      b2 = Buffer {}
+      e = Editor b1
+      buffers = setmetatable { b1 }, __mode: 'v'
+      editors = setmetatable { e }, __mode: 'v'
+      e.buffer = b2
+      e\to_gobject!\unref!
+      e = nil
+      b1 = nil
+      collectgarbage!
+      assert.is_true editors[1] == nil
+      assert.is_true buffers[1] == nil
+
+    it 'releases a buffer when destroyed', ->
+      b1 = Buffer {}
+      e = Editor b1
+      buffers = setmetatable { b1 }, __mode: 'v'
+      editors = setmetatable { e }, __mode: 'v'
+      e\to_gobject!\unref!
+      e = nil
+      b1 = nil
+      collectgarbage!
+      assert.is_true editors[1] == nil
+      assert.is_true buffers[1] == nil

@@ -12,10 +12,8 @@ class Selection extends PropertyObject
   new: (@_view) =>
     @_sel = _view.selection
     @includes_cursor = false
-    @_sel.listener = on_selection_changed: self\_on_selection_changed
+    @_sel.listener = on_selection_changed: @\_on_selection_changed
 
-    self = @
-    @selection_getter = -> self.text
     super!
 
   @property _buffer: get: => @_view.buffer
@@ -106,7 +104,7 @@ class Selection extends PropertyObject
   _on_selection_changed: =>
     signal.emit 'selection-changed'
     unless @empty
-      clipboard.primary.text = @selection_getter
+      clipboard.primary.text = @text
 
   _copy_to_clipboard: (clip_options = {}, clipboard_options) =>
     clip = moon.copy clip_options

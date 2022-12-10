@@ -14,4 +14,4 @@ describe 'Popup', ->
       o\destroy!
       o = nil
       collectgarbage!
-      assert.is_nil list[1]
+      assert.is_true list[1] == nil, 'Popup still lives'

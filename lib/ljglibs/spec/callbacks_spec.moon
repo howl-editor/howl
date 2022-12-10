@@ -138,3 +138,8 @@ describe 'callbacks', ->
       handle = callbacks.register handler, 'test handler'
       dispatch handle, 123
       assert.spy(dispatcher).was_called(1)
+
+  describe 'callback creation', ->
+    it 'automatically creates callbacks as needed', ->
+      assert.is_not_nil callbacks['void(gpointer)']
+      -- assert.is_not_nil ffi.C.hcb_void_gpointer

@@ -2,8 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
-bit = require 'bit'
-ffi_cast = ffi.cast
+{string: ffi_string, cast: ffi_cast} = ffi
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
@@ -48,14 +47,26 @@ View = {
     @config = config.local_proxy!
 
     @area = Gtk.DrawingArea {hexpand: true, vexpand: true}
+    @area.style_context\add_class 'htextview'
     @key_controller = Gtk.EventControllerKey!
+
     @focus_controller = Gtk.EventControllerFocus!
     @gesture_controller = Gtk.GestureClick!
+    @gesture_controller.button = 0
+    print "button: #{@gesture_controller.button}"
+    print "phase: #{@gesture_controller.propagation_phase}"
+
     @motion_controller = Gtk.EventControllerMotion!
-    print "key_controller: #{@key_controller}"
-    print "focus_controller: #{@focus_controller}"
-    print "motion_controller: #{@motion_controller}"
-    print "gesture_controller: #{@gesture_controller}"
+    with @motion_controller
+      .propagation_phase = Gtk.PHASE_BUBBLE
+      print "set to #{Gtk.PHASE_BUBBLE}, propagation_phase: #{.propagation_phase}"
+      -- \on_enter -> print 'on_enter'
+      -- \on_leave -> print 'on_leave'
+      -- append @_handlers, \on_motion (_c, x, y) -> print "on_motion: #{tonumber x} #{tonumber y}"
+
+      -- append @_handlers, \on_motion self\_on_motion_event
+      -- ffi.cdef 'void connect_motion(gpointer controller);'
+      -- ffi.C.connect_motion(@motion_controller)
 
     @area\add_controller @key_controller
     @area\add_controller @focus_controller
@@ -77,7 +88,7 @@ View = {
     with @im_context
       .client_widget = @area
       append @_handlers, \on_commit (ctx, s) ->
-        @insert s, allow_coalescing: true
+        @insert ffi_string(s), allow_coalescing: true
 
       append @_handlers, \on_preedit_start ->
         @in_preedit = true
@@ -91,23 +102,15 @@ View = {
         @in_preedit = false
         notify @, 'on_preedit_end'
 
-    @key_controller\set_im_context @im_context
-
     with @area
       .can_focus = true
       .focusable = true
-      -- GTK4
-      -- font_desc = Pango.FontDescription {
-      --   family: @config.view_font_name,
-      --   size: @config.view_font_size * Pango.SCALE
-      -- }
-      -- \override_font font_desc
-      .style_context\add_class 'transparent_bg'
-      \set_draw_func self\_draw
 
 
       -- append @_handlers, \on_scroll_event self\_on_scroll
       -- append @_handlers, \on_screen_changed self\_on_screen_changed
+
+    @_draw_handler = @area\set_draw_func self\_draw
 
     with @key_controller
       append @_handlers, \on_key_pressed self\_on_key_pressed
@@ -119,9 +122,6 @@ View = {
     with @gesture_controller
       append @_handlers, \on_pressed self\_on_button_press
       append @_handlers, \on_released self\_on_button_release
-
-    with @motion_controller
-      append @_handlers, \on_motion self\_on_motion_event
 
     @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_HORIZONTAL
     append @_handlers, @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
@@ -136,7 +136,7 @@ View = {
     -- @horizontal_scrollbar_alignment.no_show_all = not config.view_show_h_scrollbar
 
     @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
-    -- @vertical_scrollbar.no_show_all = not config.view_show_v_scrollbar
+    @vertical_scrollbar.no_show_all = not config.view_show_v_scrollbar
 
     append @_handlers, @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
@@ -179,7 +179,8 @@ View = {
     @config\add_listener self\_on_config_changed
 
   destroy: =>
-    -- @bin\destroy!
+    @bin\clear_object!
+    @bin = nil
 
   properties: {
 
@@ -282,15 +283,12 @@ View = {
     buffer: {
       get: => @_buffer
       set: (buffer) =>
-        -- for line in buffer\lines(1)
-        --   print line.text
         if @_buffer
           @_buffer\remove_listener(@_buffer_listener)
           @cursor.pos = 1
           @selection\clear!
 
         @_buffer = buffer
-        print "set buffer to #{buffer}"
         buffer\add_listener @_buffer_listener
 
         @last_edit_pos = nil
@@ -386,7 +384,6 @@ View = {
       @_buffer\delete start_pos, @selection.size, opts
 
   to_gobject: => @bin
-  -- to_gobject: => @area
 
   refresh_display: (opts = { from_line: 1 }) =>
     return unless @width
@@ -452,7 +449,6 @@ View = {
       width = @width - start_x
       height = (max_y - min_y)
       if width > 0 and height > 0
-        -- @area\queue_draw_area start_x, min_y, width, height
         @area\queue_draw!
 
   position_from_coordinates: (x, y, opts = {}) =>
@@ -479,6 +475,7 @@ View = {
       pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
       line_y = max(0, min(y - cur_y, matched_line.text_height - 1)) * Pango.SCALE
       inside, index = matched_line.layout\xy_to_index pango_x, line_y
+      print "inside: #{inside}, index: #{index}, line: #{line.text}"
       if not inside
         -- left of the area, point it to first char in line
         return line.start_offset if x < @edit_area_x
@@ -520,7 +517,7 @@ View = {
           x: x + (rect.x / Pango.SCALE) - @base_x
           x2: x + ((rect.x + rect.width) / Pango.SCALE) - @base_x
           y: y + (rect.y / Pango.SCALE)
-          y2: bottom
+          y2: max(bottom, y + d_line.height)
         }
 
       y += d_line.height
@@ -634,6 +631,8 @@ View = {
     @gutter\sync_dimensions @buffer, force: true
 
   _on_destroy: =>
+    print "view on_destroy"
+    @area\unset_draw_func @_draw_handler
     @listener = nil
     @selection = nil
     @cursor\destroy!
@@ -804,62 +803,60 @@ View = {
     @_reset_display!
 
   _on_key_pressed: (_, keyval, keycode, state) =>
-    print 'on_key_press'
-    -- GTK4: needed or handled by the key controller?
-    -- if @in_preedit
-    --   @im_context\filter_keypress(e)
-    --   return true
+    e = @key_controller\get_current_event!
+    if @in_preedit
+      @im_context\filter_keypress(e)
+      return true
 
     event = construct_key_event keyval, state
-    -- unless notify @, 'on_key_press', event
-    --   @im_context\filter_keypress e
-
-    moon.p event
+    unless notify @, 'on_key_press', event
+      @im_context\filter_keypress(e)
 
     true
 
   _on_button_press: (_, event) =>
     print "on_button_press"
-    @area\grab_focus! unless @area.has_focus
+    -- @area\grab_focus! unless @area.has_focus
 
-    event = ffi_cast('GdkEventButton *', event)
+    -- event = ffi_cast('GdkEventButton *', event)
 
-    return false if event.x <= @gutter_width
-    return true if notify @, 'on_button_press', event
+    -- return false if event.x <= @gutter_width
+    -- return true if notify @, 'on_button_press', event
 
-    return false if event.button != 1 or event.type != Gdk.BUTTON_PRESS
+    -- return false if event.button != 1 or event.type != Gdk.BUTTON_PRESS
 
-    extend = bit.band(event.state, Gdk.SHIFT_MASK) != 0
+    -- extend = bit.band(event.state, Gdk.SHIFT_MASK) != 0
 
-    pos = @position_from_coordinates(event.x, event.y, fuzzy: true)
-    if pos
-      @selection.persistent = false
+    -- pos = @position_from_coordinates(event.x, event.y, fuzzy: true)
+    -- if pos
+    --   @selection.persistent = false
 
-      if pos != @cursor.pos
-        @cursor\move_to :pos, :extend
-      else
-        @selection\clear!
+    --   if pos != @cursor.pos
+    --     @cursor\move_to :pos, :extend
+    --   else
+    --     @selection\clear!
 
-      @_selection_active = true
+    --   @_selection_active = true
 
   _on_button_release: (_, event) =>
-    event = ffi_cast('GdkEventButton *', event)
-    return true if notify @, 'on_button_release', event
-    return if event.button != 1
-    @_selection_active = false
+    print "on_button_release"
+    -- event = ffi_cast('GdkEventButton *', event)
+    -- return true if notify @, 'on_button_release', event
+    -- return if event.button != 1
+    -- @_selection_active = false
 
   _on_motion_event: (_, x, y) =>
-    print "on_motion_event: #{x} x #{y}"
+    -- print "on_motion_event: #{x} x #{y}"
     return if true
     event = ffi_cast('GdkEventMotion *', event)
     return true if notify @, 'on_motion_event', event
     unless @_selection_active
       if @_cur_mouse_cursor != text_cursor
         if event.x > @gutter_width
-          @area.window.cursor = text_cursor
+          @area.cursor = text_cursor
           @_cur_mouse_cursor = text_cursor
       elseif event.x <= @gutter_width
-        @area.window.cursor = nil
+        @area.cursor = nil
         @_cur_mouse_cursor = nil
 
       return
@@ -920,6 +917,8 @@ View = {
     -- gdk_window = @area.window
     -- if gdk_window != nil
       -- gdk_window.cursor = @_cur_mouse_cursor
+    print "set cursor: #{@_cur_mouse_cursor}"
+    @area.cursor = @_cur_mouse_cursor
 
     getting_taller = @height and height > @height
     @width = width

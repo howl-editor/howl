@@ -2,7 +2,7 @@ Display = require 'ljglibs.gdk.display'
 
 display = Display.get_default!
 system_cb = display.clipboard
--- primary_cb = display.primary_clipboard
+primary_cb = display.primary_clipboard
 
 {:clipboard, :config} = howl
 
@@ -70,16 +70,10 @@ describe 'Clipboard', ->
         assert.equals 1, #clipboard.clips
         done!
 
-  -- GTK4: primary seems to be going to hell
-  -- describe '.primary', ->
+  describe '.primary', ->
 
-  --   it 'allows getting and setting the primary clipboard', (done) ->
-  --     clipboard.primary.text = 'spec'
-  --     primary_cb\read_text_async async (res) ->
-  --       print "in cb"
-  --       assert.equals 'spec', primary_cb\read_text_finish res
-  --       done!
-
-    -- it 'allows setting a provider function instead of the direct text', ->
-    --   clipboard.primary.text = -> 'async'
-    --   assert.equals 'async', primary_cb.text
+    it 'allows getting and setting the primary clipboard', (done) ->
+      clipboard.primary.text = 'spec'
+      primary_cb\read_text_async async (res) ->
+        assert.equals 'spec', primary_cb\read_text_finish res
+        done!

@@ -1,11 +1,17 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
 ffi_cast = ffi.cast
 {:unpack, :pack, :insert} = table
+{match: string_match, gsub: string_gsub} = string
 
-ref_id_cnt = 0
+-- ffi.cdef "
+-- typedef void (*hcb_void_gpointer_gpointer) (gpointer, gpointer);
+-- typedef gboolean (*hcb_gboolean_gpointer_gpointer) (gpointer, gpointer);
+-- "
+
+ref_id_cnt = 123
 weak_handler_id_cnt = 0
 handles = {}
 unrefed_handlers = setmetatable {}, __mode: 'v'
@@ -54,6 +60,8 @@ do_dispatch = (data, ...) ->
       options.on_error "callbacks: error in '#{handle.description}' handler: '#{ret}'"
     else
       unregister handle
+  else
+    print "Unknown handle id: #{ref_id}"
 
   false
 
@@ -66,7 +74,34 @@ dispatch = (data, ...) ->
 
   ret
 
-{
+create_callback = (t, orig_signature) ->
+  signature = string_gsub orig_signature, '%s+', ''
+  -- print "Create callback: #{signature}"
+  ret, arg_list = string_match signature, '^([^(]+)%(([^)]+)%)$'
+  simple_args = string_gsub(arg_list, '%s*%*', '')
+  simple_args = string_gsub(simple_args, ',', '_')
+  def_name = "hcb_#{ret}_#{simple_args}"
+  -- print "create_callback. ret: #{ret}, arg_list: #{arg_list}"
+  cdef = "typedef #{ret} (*#{def_name})(#{arg_list});"
+  -- print cdef
+  ffi.cdef cdef
+
+  cb = cb_cast(
+    def_name,
+    (...) ->
+      args = pack ...
+      user_data = args[args.n]
+      moon.p{user_data, unpack(args, 1, args.n - 1)}
+      dispatch user_data, unpack(args, 1, args.n - 1)
+  )
+  rawset t, signature, cb
+  if signature != orig_signature
+    rawset t, orig_signature, cb
+
+  cb
+
+callbacks = {
+  :dispatch
 
   register: (handler, description, ...) ->
     ref_id_cnt += 1
@@ -94,10 +129,21 @@ dispatch = (data, ...) ->
   cast_arg: (arg) -> ffi.cast('gpointer', arg)
 
   configure: (opts) ->
-    -- options = moon.copy opts
+    options = moon.copy opts
 
-  -- different callbacks
-  void1: cb_cast 'GVCallback1', (data) -> dispatch data
+  -- predefined callbacks
+  -- hcb_void_gpointer_gpointer: cb_cast(
+  --   'hs_void_gpointer_gpointer',
+  --   (ptr, data) ->  dispatch data, ptr
+  -- ),
+
+  -- 'hcb_gboolean_gpointer_gpointer': cb_cast(
+  --   'hs_gboolean_gpointer_gpointer',
+  --   (instance, data) ->  callbacks.dispatch data, instance
+  -- )
+
+
+  -- void1: cb_cast 'GVCallback1', (data) -> dispatch data
   void2: cb_cast 'GVCallback2', (a1, data) -> dispatch data, a1
   void3: cb_cast 'GVCallback3', (a1, a2, data) -> dispatch data, a1, a2
   void4: cb_cast 'GVCallback4', (a1, a2, a3, data) -> dispatch data, a1, a2, a3
@@ -114,3 +160,6 @@ dispatch = (data, ...) ->
   int3:  cb_cast 'GICallback3', (a1, a2, data) -> dispatch data, a1, a2
   source_func: ffi_cast 'GSourceFunc', (data) -> dispatch data
 }
+setmetatable callbacks, __index: create_callback
+
+callbacks

@@ -144,8 +144,8 @@ class Editor extends PropertyObject
     @bin.can_focus = true
 
     @_handlers = {}
-    -- append @_handlers, @bin\on_destroy self\_on_destroy
-    -- append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
+    append @_handlers, @bin\on_destroy self\_on_destroy
+    -- -- append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
 
     @buffer = buffer
     @_is_previewing = false
@@ -154,7 +154,6 @@ class Editor extends PropertyObject
     append _editors, self
 
   to_gobject: => @bin
-  -- to_gobject: => Gtk.Box!
 
   @property buffer:
     get: => @_buf
@@ -758,16 +757,20 @@ class Editor extends PropertyObject
       line.end_pos
 
   _on_destroy: =>
+    print "editor on destroy"
     for h in *@_handlers
       gobject_signal.disconnect h
 
     @buffer\remove_view_ref!
     @completion_popup\destroy!
     @view\destroy!
+    @view = nil
     @buffer.last_shown = sys.time! unless @_is_previewing
+    @_buf = nil
     signal.emit 'editor-destroyed', editor: self
 
   _on_key_press: (view, event) =>
+    print "editor keypress"
     @remove_popup! if event.key_name == 'escape'
 
     if @popup

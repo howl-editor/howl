@@ -1,10 +1,11 @@
 gobject = require 'ljglibs.gobject'
 Gtk = require 'ljglibs.gtk'
-ffi = require 'ffi'
 import Object, Type from gobject
 
 describe 'Object', ->
-  setup -> ffi.C.gtk_event_box_new!
+  setup ->
+    -- force init
+    Gtk.Box Gtk.ORIENTATION_VERTICAL, 7
 
   context '(constructing)', ->
     it 'can be created using an existing gtype', ->

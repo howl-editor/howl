@@ -131,3 +131,14 @@ export within_command_line = (interaction, f) ->
   wrapped!  -- this invokes the interaction and activates the command line
   command_line = command_panel.command_lines[#command_panel.command_lines]
   f command_line
+
+export test_window = (child) ->
+  Gtk = require 'ljglibs.gtk'
+  window = Gtk.Window default_width: 840, default_height: 640
+  window.title = 'howl-test'
+  window.style_context\add_class 'test-window'
+  window.child = child
+  window\show!
+  while window.allocated_height <= 0
+    howl.app\pump_mainloop!
+  window

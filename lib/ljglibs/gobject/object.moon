@@ -6,7 +6,15 @@ types = require 'ljglibs.types'
 C, ffi_cast, ffi_new = ffi.C, ffi.cast, ffi.new
 lua_value = types.lua_value
 
+ffi.cdef "
+GType howl_gobject_type_from_instance(gpointer instance)
+"
+
 core.define 'GObject', {
+  properties: {
+    gtype: => C.howl_gobject_type_from_instance(@)
+  }
+
   new: (type) ->
     error 'Undefined gtype passed in', 2 if type == 0 or type == nil
     C.g_object_new type
@@ -25,6 +33,12 @@ core.define 'GObject', {
     return nil if o == nil
     C.g_object_unref o
     nil
+
+  clear_object: (o) ->
+    arr = ffi_new 'GObject *[1]'
+    arr[0] = o
+    C.g_clear_object arr
+    print "o: #{o}"
 
   get_typed: (k, type) =>
     ret = ffi_new "#{type}[1]"

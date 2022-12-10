@@ -55,6 +55,12 @@ core.auto_loading 'gtk', {
     'TARGET_SAME_WIDGET',
     'TARGET_OTHER_APP',
     'TARGET_OTHER_WIDGET',
+
+    -- GtkPropagationPhase;
+    'PHASE_NONE',
+    'PHASE_CAPTURE',
+    'PHASE_BUBBLE',
+    'PHASE_TARGET'
   }
 
   cairo_should_draw_window: (cr, window) ->

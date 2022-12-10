@@ -18,7 +18,7 @@ core.define 'GBytes', {
   }
 
   ref: (bytes) -> C.g_bytes_ref bytes
-  unref: (bytes) -> C.g_bytes_ref bytes
+  unref: (bytes) -> C.g_bytes_unref bytes
   gc_ptr: (bytes) ->
     return nil if bytes == nil
     ffi_gc(bytes, C.g_bytes_unref)

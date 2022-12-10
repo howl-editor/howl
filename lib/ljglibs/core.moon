@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 signal = require 'ljglibs.gobject.signal'
@@ -14,7 +14,8 @@ defs = {}
 snake_case = (s) ->
   s = s\gsub '%l%u', (match) ->
     match\gsub '%u', (upper) -> '_' .. upper\lower!
-  s = s\gsub '^%u%u%l', (pfx) -> pfx\sub(1,1)\lower! .. '_' .. pfx\sub(2)
+  s = s\gsub '%u%u+%l', (match) ->
+    match\match('%u')\lower! .. '_' .. match\sub(#match - 1)
   s\lower!
 
 auto_require = (module, name) ->
@@ -66,27 +67,31 @@ set_constants = (def) ->
       def[full] = C[full]
 
 setup_signals = (name, def, gtype, instance_cast) ->
-  focus = name == 'GtkEventControllerFocus'
   ids = signal.list_ids gtype
   for id in *ids
     info = signal.query id, gtype
+
     name = 'on_' .. info.signal_name\gsub '-', '_'
     unless def[name]
-      ret_type = info.return_type == types.base_types.gboolean and 'bool' or 'void'
-      cb_type = "#{ret_type}#{info.n_params + 2}"
       def[name] = (instance, handler, ...) ->
         unless handler
           error "`nil` handler passed as handler for '#{name}'"
 
+        cb_handle = nil
+
         casting_handler = (...) ->
+          print "handler for #{info.signal_name}"
           args = pack ...
           args[1] = instance_cast args[1]
+
           for i = 2, info.n_params + 1
             args[i] = types.cast info.param_types[i - 1], args[i]
 
           handler unpack(args, 1, args.n)
 
-        signal.connect cb_type, instance, info.signal_name, casting_handler, ...
+        cb_handle = signal.connect_by_info instance, info, casting_handler, ...
+        -- cb_handle = signal.connect_by_info instance, info, handler, ...
+        cb_handle
 
 construct = (spec, no_container, constructor, ...) ->
   args = {...}
@@ -114,9 +119,16 @@ construct = (spec, no_container, constructor, ...) ->
         error "Unknown base '#{base_name}' specified for '#{name}'"
 
     gtype = force_type_init name
+    -- gtype = Type.from_name(name)
     ctype = ffi.typeof "#{name} *"
+
+    if gtype
+      Type.ensure(gtype)
+      types.register_cast name, gtype, ctype if gtype
+    else
+      print "core: #{name} = #{gtype}"
+    -- print "core: #{name} = #{gtype}, #{other_type}"
     cast = (o) -> ffi_cast(ctype, o)
-    types.register_cast name, gtype, ctype if gtype
 
     meta_t = spec.meta or {}
     meta_t.__index = (o, k) -> dispatch spec, base, o, k

@@ -15,6 +15,7 @@ C, ffi_string = ffi.C, ffi.string
     gtype = C.g_type_from_name name
     gtype != 0 and gtype or nil
 
+  parent: (gtype) -> C.g_type_parent(gtype)
   class_ref: (gtype) -> C.g_type_class_ref gtype
   class_unref: (type_class) -> C.g_type_class_unref type_class
   is_a: (gtype, is_a_type) -> C.g_type_is_a(gtype, is_a_type ) != 0
@@ -25,4 +26,5 @@ C, ffi_string = ffi.C, ffi.string
     C.g_type_query gtype, query_type
     query_type
 
+  ensure: (gtype) -> C.g_type_ensure gtype
 }

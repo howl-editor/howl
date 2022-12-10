@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
@@ -7,15 +7,11 @@ gobject_signal = require 'ljglibs.gobject.signal'
 {:PropertyObject} = howl.util.moon
 {:ContentBox} = howl.ui
 
-append = table.insert
-
 class Popup extends PropertyObject
   comfort_zone: 10
 
   new: (@child, properties = {}) =>
     error('Missing argument #1: child', 3) if not child
-
-    @_handlers = {}
 
     @box = ContentBox 'popup', child, {
       header: properties.header,
@@ -25,12 +21,7 @@ class Popup extends PropertyObject
     properties.default_height = 150 if not properties.default_height
     properties.default_width = 150 if not properties.default_width
     @window = Window Window.POPUP, properties
-
     @window.app_paintable = true
-    @_set_alpha!
-
-    -- append @_handlers, @window\on_screen_changed self\_on_screen_changed
-    append @_handlers, @window\on_destroy self\_on_destroy
     @window.child = @box\to_gobject!
     @showing = false
     super!
@@ -126,17 +117,8 @@ class Popup extends PropertyObject
     @resize width, height
     @window\move x, y
 
-  _set_alpha: =>
-    -- GTK4
-    -- screen = @window.screen
-    -- if screen.is_composited
-    --   visual = screen.rgba_visual
-    --   @window.visual = visual if visual
-
-  _on_screen_changed: =>
-    @_set_alpha!
-
   _on_destroy: =>
+    print "popup on destroy"
     -- disconnect signal handlers
     for h in *@_handlers
       gobject_signal.disconnect h

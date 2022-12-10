@@ -1,4 +1,3 @@
-Gtk = require 'ljglibs.gtk'
 {:Buffer, :clipboard} =  howl
 {:Editor} = howl.ui
 
@@ -8,11 +7,7 @@ describe 'Selection', ->
   editor = Editor buffer
   selection = editor.selection
   cursor = editor.cursor
-  window = Gtk.OffscreenWindow!
-  window\add editor\to_gobject!
-  -- GTK4
-  -- window\show_all!
-  howl.app\pump_mainloop!
+  test_window editor\to_gobject!
 
   before_each ->
     editor.view.selection\clear!

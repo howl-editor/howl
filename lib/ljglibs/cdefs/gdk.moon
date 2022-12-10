@@ -8,6 +8,8 @@ require 'ljglibs.cdefs.gio'
 ffi = require 'ffi'
 
 ffi.cdef [[
+  typedef struct {} GdkEvent;
+
   /* events */
   typedef enum {
     GDK_NOTHING           = -1,
@@ -248,15 +250,6 @@ ffi.cdef [[
 
   /* clipboard */
   typedef struct {} GdkClipboard;
-  /* typedef GVCallback3 GdkClipboardTextReceivedFunc; */
-  /* typedef GVCallback4 GdkClipboardGetFunc; */
-  /* typedef GVCallback2 GdkClipboardClearFunc; */
-
-  /* GdkClipboard * gdk_clipboard_get (GdkAtom selection); */
-  /* gchar * gdk_clipboard_wait_for_text (GdkClipboard *clipboard); */
-  /* void gdk_clipboard_request_text (GdkClipboard *clipboard, */
-  /*                                  GdkClipboardTextReceivedFunc callback, */
-  /*                                  gpointer user_data); */
 
   void gdk_clipboard_read_text_async(GdkClipboard* clipboard,
                                      GCancellable* cancellable,
@@ -270,19 +263,6 @@ ffi.cdef [[
   void gdk_clipboard_set_text (GdkClipboard *clipboard,
                                const gchar *text,
                                gint len);
-
-  /* void gdk_clipboard_store (GdkClipboard *clipboard); */
-  /* void gdk_clipboard_set_can_store (GdkClipboard *clipboard, */
-  /*                                   const GdkTargetEntry *targets, */
-  /*                                   gint n_targets); */
-
-  /* gboolean gdk_clipboard_set_with_data (GdkClipboard *clipboard, */
-  /*                                       const GdkTargetEntry *targets, */
-  /*                                       guint n_targets, */
-  /*                                       GdkClipboardGetFunc get_func, */
-  /*                                       GdkClipboardClearFunc clear_func, */
-  /*                                       gpointer user_data); */
-
 
   /* display */
   typedef struct {} GdkDisplay;
@@ -340,20 +320,6 @@ ffi.cdef [[
 
   /* GdkDevice */
   typedef struct {} GdkDevice;
-
-  typedef struct {
-    GdkEventType type;
-    GdkWindow *window;
-    gint8 send_event;
-    guint32 time;
-    guint state;
-    guint keyval;
-    gint length;
-    gchar *string;
-    guint16 hardware_keycode;
-    guint8 group;
-    guint is_modifier : 1;
-  } GdkEventKey;
 
   typedef struct {
     GdkEventType type;
@@ -452,4 +418,6 @@ ffi.cdef [[
                                     const GdkPixbuf *pixbuf,
                                     gdouble pixbuf_x,
                                     gdouble pixbuf_y);
+
+  typedef struct {} GdkEventSequence;
 ]]

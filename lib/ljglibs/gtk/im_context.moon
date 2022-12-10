@@ -51,40 +51,40 @@ core.define 'GtkIMContext < GObject', {
     C.gtk_im_context_set_use_preedit @, v
 
   -- Alas, no introspection support for these signal
-  on_commit: (handler, ...) =>
-    this = @
-    args = pack(...)
-    signal.connect 'bool3', @, 'commit', (ctx, str) ->
-      handler this, ffi_string(str), unpack(args, args.n)
+  -- on_commit: (handler, ...) =>
+  --   this = @
+  --   args = pack(...)
+  --   signal.connect 'bool3', @, 'commit', (ctx, str) ->
+  --     handler this, ffi_string(str), unpack(args, args.n)
 
-  on_preedit_start: (handler, ...) =>
-    this = @
-    args = pack(...)
-    signal.connect 'void2', @, 'preedit-start', (ctx) ->
-      handler this, unpack(args, args.n)
+  -- on_preedit_start: (handler, ...) =>
+  --   this = @
+  --   args = pack(...)
+  --   signal.connect 'void2', @, 'preedit-start', (ctx) ->
+  --     handler this, unpack(args, args.n)
 
-  on_preedit_changed: (handler, ...) =>
-    this = @
-    args = pack(...)
-    signal.connect 'void2', @, 'preedit-changed', (ctx) ->
-      handler this, unpack(args, args.n)
+  -- on_preedit_changed: (handler, ...) =>
+  --   this = @
+  --   args = pack(...)
+  --   signal.connect 'void2', @, 'preedit-changed', (ctx) ->
+  --     handler this, unpack(args, args.n)
 
-  on_preedit_end: (handler, ...) =>
-    this = @
-    args = pack(...)
-    signal.connect 'void2', @, 'preedit-end', (ctx) ->
-      handler this, unpack(args, args.n)
+  -- on_preedit_end: (handler, ...) =>
+  --   this = @
+  --   args = pack(...)
+  --   signal.connect 'void2', @, 'preedit-end', (ctx) ->
+  --     handler this, unpack(args, args.n)
 
-  on_retrieve_surrounding: (handler, ...) =>
-    this = @
-    args = pack(...)
-    signal.connect 'bool2', @, 'retrieve-surrounding', (ctx) ->
-      handler this, unpack(args, args.n)
+  -- on_retrieve_surrounding: (handler, ...) =>
+  --   this = @
+  --   args = pack(...)
+  --   signal.connect 'bool2', @, 'retrieve-surrounding', (ctx) ->
+  --     handler this, unpack(args, args.n)
 
-  on_delete_surrounding: (handler, ...) =>
-    this = @
-    args = pack(...)
-    signal.connect 'bool4', @, 'delete-surrounding', (ctx, offset, n_chars) ->
-      handler this, tonumber(offset), tonumber(n_chars), unpack(args, args.n)
+  -- on_delete_surrounding: (handler, ...) =>
+  --   this = @
+  --   args = pack(...)
+  --   signal.connect 'bool4', @, 'delete-surrounding', (ctx, offset, n_chars) ->
+  --     handler this, tonumber(offset), tonumber(n_chars), unpack(args, args.n)
 
 }

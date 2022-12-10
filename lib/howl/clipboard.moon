@@ -31,15 +31,12 @@ primary = PropertyTable {
         error "NYI"
         -- system_primary\set UTF8_TARGET, 1, v
       else
-        system_primary.text = v
+        system_primary\set_text v
 
     get: =>
-      print "doing the call"
-
       handle = dispatch.park 'primary-clipboard-get'
       system_primary\read_text_async (res) ->
         text = system_primary\read_text_finish res
-        print "primary cb: #{text}"
         dispatch.resume handle, text
 
       dispatch.wait handle

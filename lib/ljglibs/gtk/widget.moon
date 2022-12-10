@@ -27,7 +27,7 @@ core.define 'GtkWidget < GObject', {
     can_focus: 'gboolean'
     can_target: 'gboolean'
     -- NYI: css_classes: 'string[]'
-    cursor: 'GdkCursor'
+    cursor: 'GdkCursor *'
     focus_on_click: 'gboolean'
     focusable: 'gboolean'
     halign: 'GtkAlign'
@@ -143,11 +143,7 @@ core.define 'GtkWidget < GObject', {
     C.gtk_widget_queue_draw_area @, x, y, width, height
 
   on_draw: (handler, ...) =>
-    error "no draw signal"
-    this = @
-    args = pack(...)
-    signal.connect 'bool3', @, 'draw', (widget, cr) ->
-      handler this, cairo_t(cr), unpack(args, args.n)
+    error "GTK4: no draw signal"
 
   add: (child) =>
     error "GTK4 deprecation: no add for container widget"

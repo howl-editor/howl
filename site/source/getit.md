@@ -36,12 +36,12 @@ Howl requires the following build dependencies:
 building from a code checkout, as the release tarball contains pre-downloaded
 dependencies).
 
-- `GTK+`: Version >= 3, with development files.
+- `GTK+`: Version >= 4, with development files.
 
   For example:
 
-  * On Debian-based based systems you would need the `libgtk-3-dev` package.
-  * For Fedora you would need the `gtk3-devel` package.
+  * On Debian-based based systems you would need the `libgtk-4-dev` package.
+  * For Fedora you would need the `gtk4-devel` package.
 
 - `C compiler`: Howl has a very small C core itself, and it embedds a few
 dependencies built in C.

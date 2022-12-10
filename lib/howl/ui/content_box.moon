@@ -45,7 +45,6 @@ class ContentBox extends PropertyObject
 
     main_widget = Gtk.Box Gtk.ORIENTATION_VERTICAL
     main_widget.css_classes = {"cb_#{name}"}
-    moon.p main_widget.css_classes
 
     if @header
       main_widget\append @header.widget
@@ -60,13 +59,14 @@ class ContentBox extends PropertyObject
       hexpand: true,
       vexpand: false
     }
-    @e_box.child = main_widget
+    -- @e_box.child = main_widget
     -- @e_box.app_paintable = true
-    @e_box.visible_window = false
+    -- @e_box.visible_window = false
 
-    append @_handlers, @e_box\on_resize self\_on_resize
-    append @_handlers, @e_box\on_destroy self\_on_destroy
-    @e_box\set_draw_func self\_draw
+    -- append @_handlers, @e_box\on_resize self\_on_resize
+    -- append @_handlers, @e_box\on_destroy self\_on_destroy
+    append @_handlers, main_widget\on_destroy self\_on_destroy
+    -- @e_box\set_draw_func self\_draw
 
     @_theme_changed = self\_on_theme_changed
     signal.connect 'theme-changed', @_theme_changed
@@ -89,14 +89,14 @@ class ContentBox extends PropertyObject
 
   _draw: (cr, width, height) =>
     print "content_box draw"
-    cr\save!
-    clip = cr.clip_extents
-    moon.p clip
-    bg = @main.background
-    bg\draw cr, should_clip: true, :clip
-    cr\translate bg.padding_left, bg.padding_top
-    -- gobject_signal.emit_by_name @main.widget, 'draw', cr
-    cr\restore!
+    -- cr\save!
+    -- clip = cr.clip_extents
+    -- moon.p clip
+    -- bg = @main.background
+    -- bg\draw cr, should_clip: true, :clip
+    -- cr\translate bg.padding_left, bg.padding_top
+    -- -- gobject_signal.emit_by_name @main.widget, 'draw', cr
+    -- cr\restore!
     true
 
   _on_theme_changed: (opts) =>

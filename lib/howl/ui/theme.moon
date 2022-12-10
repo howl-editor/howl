@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
@@ -76,6 +76,15 @@ scrollbar slider {
 
 .main-window.background {
   background-image: url("file:///home/nilnor/code/howl-gtk4/bundles/howl-themes/steinom/footer_lodyas.png");
+}
+
+.htextview {
+  font-size: ${font_size}px;
+  font-family: ${font};
+}
+
+.test-window {
+  background: transparent;
 }
 
 ]]
@@ -174,6 +183,9 @@ theme_css = (theme, file) ->
     footer_font: parse_font footer.font
     scrollbar_slider_color: sb_slider_color
     scrollbar_background_color: sb_bg_color
+    font_size: config.font_size
+    font: "#{config.font},monospace"
+
   css = interpolate css_template, values
   css ..= indicators_css indicators
   css ..= status_css status

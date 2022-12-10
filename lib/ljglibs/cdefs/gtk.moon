@@ -60,6 +60,14 @@ ffi.cdef [[
     GTK_ALIGN_BASELINE,
   } GtkAlign;
 
+  typedef enum
+  {
+    GTK_PHASE_NONE,
+    GTK_PHASE_CAPTURE,
+    GTK_PHASE_BUBBLE,
+    GTK_PHASE_TARGET
+  } GtkPropagationPhase;
+
   /* Forward declarations, more definintions below */
   typedef struct {} GtkIMContext;
 
@@ -125,6 +133,8 @@ ffi.cdef [[
 
   /* Controllers */
   typedef struct {} GtkEventController;
+
+  GdkEvent * gtk_event_controller_get_current_event(GtkEventController* controller);
 
     /* Key controller */
   typedef struct {} GtkEventControllerKey;
@@ -474,7 +484,7 @@ ffi.cdef [[
                            PangoAttrList     **attrs,
                            gint               *cursor_pos);
   gboolean gtk_im_context_filter_keypress     (GtkIMContext       *context,
-                           GdkEventKey        *event);
+                           GdkEvent           *event);
   void     gtk_im_context_focus_in            (GtkIMContext       *context);
   void     gtk_im_context_focus_out           (GtkIMContext       *context);
   void     gtk_im_context_reset               (GtkIMContext       *context);

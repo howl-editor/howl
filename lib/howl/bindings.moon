@@ -203,7 +203,7 @@ export translate_key = (event) ->
       append translations, modifiers .. a
   elseif alternate
     append translations, modifiers .. alternate
-  append translations, modifiers .. event.key_code
+  append translations, modifiers .. tostring(event.key_code)
 
   translations
 

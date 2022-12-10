@@ -202,7 +202,8 @@
       'within_command_line',
       'with_signal_handler',
       'with_tmpdir',
-      'trimmed_text'
+      'trimmed_text',
+      'test_window'
    },
 
     sandboxed_loader_spec: {

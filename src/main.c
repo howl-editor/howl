@@ -81,6 +81,11 @@ static lua_State *open_lua_state(const gchar *app_root)
   return l;
 }
 
+#include <glib-object.h>
+GType howl_gobject_type_from_instance(gpointer instance) {
+  return G_TYPE_FROM_INSTANCE(instance);
+}
+
 int main(int argc, char *argv[])
 {
   if (argc >= 2 && strcmp(argv[1], "--compile") == 0) {
