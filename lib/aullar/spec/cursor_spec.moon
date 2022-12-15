@@ -1,9 +1,8 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 View = require 'aullar.view'
 Buffer = require 'aullar.buffer'
-Gtk = require 'ljglibs.gtk'
 
 describe 'Cursor', ->
   local view, buffer, cursor, selection
@@ -13,11 +12,7 @@ describe 'Cursor', ->
     view = View buffer
     cursor = view.cursor
     selection = view.selection
-    window = Gtk.OffscreenWindow default_width: 800, default_height: 640
-    window\add view\to_gobject!
-    -- GTK4
-    -- window\show_all!
-    howl.app\pump_mainloop!
+    test_window view\to_gobject!
 
   describe '.style', ->
     it 'is "line" by default', ->

@@ -3,15 +3,13 @@
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
-ffi = require 'ffi'
 gobject_signal = require 'ljglibs.gobject.signal'
 {:PropertyObject} = howl.util.moon
 {:Activity, :CommandPanel, :Status, :theme} = howl.ui
 {:signal} = howl
-{:config, :signal} = howl
+{:signal} = howl
 
 append = table.insert
-ffi_cast = ffi.cast
 
 to_gobject = (o) ->
   status, gobject = pcall -> o\to_gobject!
@@ -24,8 +22,6 @@ placements = {
   below: 'POS_BOTTOM'
 }
 
-GTK_SUPPORTS_HIDDEN_TITLEBAR = not Gtk.check_version(3, 4)
-
 class Window extends PropertyObject
   new: (properties = {}) =>
     @_handlers = {}
@@ -37,8 +33,10 @@ class Window extends PropertyObject
       valign: Gtk.ALIGN_FILL
       vexpand: true
 
-    -- GTK4 SEGV
-    -- @activity = Activity!
+    @grid.can_focus = true
+
+    -- GTK4 SEGV?
+    @activity = Activity!
 
     @widgets = Gtk.Box Gtk.ORIENTATION_VERTICAL
     @box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
@@ -53,24 +51,13 @@ class Window extends PropertyObject
 
     @win[k] = v for k,v in pairs properties
 
-    -- if GTK_SUPPORTS_HIDDEN_TITLEBAR
-    --   @win.hide_titlebar_when_maximized = config.hide_titlebar_when_maximized
-
-    --   config.watch 'hide_titlebar_when_maximized', (_, value) ->
-    --     @win.hide_titlebar_when_maximized = value
-
     -- append @_handlers, @win\on_focus_in_event self\_on_focus
     -- append @_handlers, @win\on_focus_out_event self\_on_focus_lost
     -- append @_handlers, @win\on_destroy self\_on_destroy
     -- append @_handlers, @win\on_screen_changed self\_on_screen_changed
-    -- @win.app_paintable = true
     -- @_set_alpha!
 
     @win.child = @box
-
-    -- aullar = require 'aullar'
-    -- @view = aullar.View!
-    -- @win.child = @view\to_gobject!
 
     @_theme_changed = self\_on_theme_changed
     signal.connect 'theme-changed', @_theme_changed
@@ -187,7 +174,7 @@ class Window extends PropertyObject
     siblings = @siblings gobject
     focus_target = siblings.right or siblings.left
     focus_target or= @siblings(gobject, true).left
-    gobject\destroy!
+    @grid\remove gobject
     @_reflow!
     focus_target\grab_focus! if focus_target
 
@@ -241,21 +228,29 @@ class Window extends PropertyObject
       col_size = math.floor max_columns / #row
       extra = max_columns % #row
       for i = 0, #row - 1
-        width = col_size
-        width += extra if i == #row - 1
+        w_width = col_size
+        w_width += extra if i == #row - 1
+        w_row = y - 1
+        w_col = i * col_size
         widget = row[i + 1]
-
-        with @grid\properties_for(widget)
-          .left_attach = i * col_size
-          .top_attach = y - 1
-          .width = width
+        props = @grid\query_child(widget)
+        if props.row != w_row or props.column != w_col or props.width != w_width
+          @grid\remove widget
+          @grid\attach widget, w_col, w_row, w_width, 1
 
   _insert_column: (anchor, where) =>
-    rel_column = @grid\properties_for(anchor).left_attach
+    rel_column = @grid\query_child(anchor).column
     if where == 'left_of'
       @grid\insert_column rel_column
     else
       @grid\insert_column rel_column + 1
+
+  _insert_row: (anchor, where) =>
+    rel_row = @grid\query_child(anchor).row
+    if where == 'above'
+      @grid\insert_row rel_row
+    else
+      @grid\insert_row rel_row + 1
 
   _place: (gobject, placement, anchor) =>
     where = placements[placement]
@@ -263,7 +258,10 @@ class Window extends PropertyObject
     sibling = to_gobject(anchor) or @focus_child
 
     if sibling
-      @_insert_column sibling, placement if placement == 'left_of' or placement == 'right_of'
+      if placement == 'left_of' or placement == 'right_of'
+        @_insert_column sibling, placement
+      else
+        @_insert_row sibling, placement
 
     @grid\attach_next_to gobject, sibling, Gtk[where], 1, 1
 
@@ -309,14 +307,6 @@ class Window extends PropertyObject
 
   _on_screen_changed: =>
     @_set_alpha!
-
-if GTK_SUPPORTS_HIDDEN_TITLEBAR
-  config.define
-    name: 'hide_titlebar_when_maximized'
-    description: 'Whether to hide the titlebar when maximized'
-    scope: 'global'
-    type_of: 'boolean'
-    default: true
 
 -- Signals
 signal.register 'window-focused',

@@ -53,13 +53,10 @@ View = {
     @focus_controller = Gtk.EventControllerFocus!
     @gesture_controller = Gtk.GestureClick!
     @gesture_controller.button = 0
-    print "button: #{@gesture_controller.button}"
-    print "phase: #{@gesture_controller.propagation_phase}"
 
     @motion_controller = Gtk.EventControllerMotion!
     with @motion_controller
       .propagation_phase = Gtk.PHASE_BUBBLE
-      print "set to #{Gtk.PHASE_BUBBLE}, propagation_phase: #{.propagation_phase}"
       -- \on_enter -> print 'on_enter'
       -- \on_leave -> print 'on_leave'
       -- append @_handlers, \on_motion (_c, x, y) -> print "on_motion: #{tonumber x} #{tonumber y}"

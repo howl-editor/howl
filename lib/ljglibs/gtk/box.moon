@@ -35,4 +35,7 @@ core.define 'GtkBox < GtkWidget', {
   prepend: (child) =>
     C.gtk_box_prepend @, to_w(child)
 
+  remove: (child) =>
+    C.gtk_box_remove @, to_w(child)
+
 }, (spec, ...) -> spec.new ...

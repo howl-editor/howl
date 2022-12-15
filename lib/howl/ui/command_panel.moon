@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
@@ -71,7 +71,6 @@ class CommandLine extends PropertyObject
     @bin\add c_box\to_gobject!
 
   _destroy_box: =>
-    @box\destroy!
     @box = nil
 
   @property title:
@@ -212,7 +211,7 @@ class CommandLine extends PropertyObject
   remove_widget: (name) =>
     widget = @_widgets[name]
     return unless widget
-    widget\to_gobject!\destroy!
+    -- widget\to_gobject!\unref!
     @_widgets[name] = nil
 
   get_widget: (name) => @_widgets[name]

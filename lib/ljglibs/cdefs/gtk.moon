@@ -198,6 +198,9 @@ ffi.cdef [[
   GtkWidget * gtk_widget_get_last_child       (GtkWidget *widget);
   GtkWidget * gtk_widget_get_next_sibling     (GtkWidget *widget);
   GtkWidget * gtk_widget_get_prev_sibling     (GtkWidget *widget);
+
+  GtkWidget * gtk_widget_get_focus_child (GtkWidget* widget);
+
   void gtk_widget_set_css_classes (GtkWidget* widget, const char** classes);
   char** gtk_widget_get_css_classes(GtkWidget* widget);
 
@@ -228,6 +231,8 @@ ffi.cdef [[
   void gtk_grid_insert_next_to (GtkGrid *grid,
                                 GtkWidget *sibling,
                                 GtkPositionType side);
+  void gtk_grid_remove (GtkGrid* grid, GtkWidget* child);
+
   void gtk_grid_query_child (GtkGrid* grid,
                              GtkWidget* child,
                              int* column,
@@ -268,6 +273,7 @@ ffi.cdef [[
   GtkBox * gtk_box_new (GtkOrientation orientation, gint spacing);
   void gtk_box_append (GtkBox *box, GtkWidget *child);
   void gtk_box_prepend (GtkBox *box, GtkWidget *child);
+  void gtk_box_remove (GtkBox* box, GtkWidget* child);
 
   /* GtkWindow */
   typedef struct {} GtkWindow;

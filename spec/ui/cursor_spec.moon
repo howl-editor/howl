@@ -1,17 +1,12 @@
 import Buffer from howl
 import Editor from howl.ui
-Gtk = require 'ljglibs.gtk'
 
 describe 'Cursor', ->
   buffer = Buffer howl.mode.by_name 'default'
   editor = Editor buffer
   cursor = editor.cursor
   selection = editor.selection
-  window = Gtk.OffscreenWindow default_width: 800, default_height: 640
-  window\add editor\to_gobject!
-  -- GTK4
-  -- window\show_all!
-  howl.app\pump_mainloop!
+  test_window editor\to_gobject!
 
   before_each ->
     cursor.pos = 1

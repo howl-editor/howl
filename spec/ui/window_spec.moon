@@ -8,6 +8,9 @@ describe 'Window', ->
     win = Window!
     win\realize!
 
+  after_each ->
+    win\destroy!
+
   describe 'add_view(view [, placement, anchor])', ->
     it 'adds the specified view', ->
       win\add_view Gtk.Label!
@@ -85,7 +88,7 @@ describe 'Window', ->
       win\add_view right
       middle\grab_focus!
       win\remove_view middle
-      assert.is_true right.is_focus
+      assert.equals win.focus_child, right
 
     it 'set focus on its earlier sibling if no later sibling exists', ->
       left = Gtk.Entry!
@@ -96,7 +99,7 @@ describe 'Window', ->
       win\add_view right
       right\grab_focus!
       win\remove_view right
-      assert.is_true middle.is_focus
+      assert.equals win.focus_child, middle
 
   describe '.views', ->
     it 'is a table of view tables, containing x, y and the view itself', ->

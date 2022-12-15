@@ -89,6 +89,7 @@ core.define 'GtkWidget < GObject', {
     last_child: => @get_last_child!
     next_sibling: => @get_next_sibling!
     prev_sibling: => @get_prev_sibling!
+    focus_child: => @get_focus_child!
 
     children: =>
       r = {}
@@ -118,6 +119,10 @@ core.define 'GtkWidget < GObject', {
 
   get_prev_sibling: =>
     w = C.gtk_widget_get_prev_sibling @
+    w != nil and w or nil
+
+  get_focus_child: =>
+    w = C.gtk_widget_get_focus_child @
     w != nil and w or nil
 
   translate_coordinates: (dest_widget, src_x, src_y) =>

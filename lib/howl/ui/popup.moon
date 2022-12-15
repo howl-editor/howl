@@ -21,7 +21,6 @@ class Popup extends PropertyObject
     properties.default_height = 150 if not properties.default_height
     properties.default_width = 150 if not properties.default_width
     @window = Window Window.POPUP, properties
-    @window.app_paintable = true
     @window.child = @box\to_gobject!
     @showing = false
     super!
