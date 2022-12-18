@@ -79,7 +79,7 @@ scrollbar slider {
 }
 
 .htextview {
-  font-size: ${font_size}px;
+  font-size: ${font_size}pt;
   font-family: ${font};
 }
 
@@ -162,7 +162,6 @@ status_css = (status) ->
   css
 
 theme_css = (theme, file) ->
-  -- moon.p theme
   status = theme.window.status
   editor = theme.editor
   hdr = editor.header
@@ -256,11 +255,11 @@ config.watch 'theme', (_, name) ->
   set_theme name
 
 config.watch 'font', (name, value) ->
-  aullar_config.view_font_name = value
+  -- aullar_config.view_font_name = value
   apply_theme! if current_theme
 
 config.watch 'font_size', (name, value) ->
-  aullar_config.view_font_size = value
+  -- aullar_config.view_font_size = value
   apply_theme! if current_theme
 
 signal.register 'theme-changed',

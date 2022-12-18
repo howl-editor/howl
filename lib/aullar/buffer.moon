@@ -668,5 +668,5 @@ Buffer = {
 }
 
 define_class Buffer, {
-  -- __tostring: (b) -> b\tostring!
+  __tostring: (b) -> b\tostring!
 }

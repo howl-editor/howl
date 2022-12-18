@@ -19,5 +19,6 @@ core.define 'GdkRGBA', {
   }
 }, (t, spec) ->
   rgba = RGBA!
-  rgba\parse spec if spec
+  if spec
+    error "Invalid color '#{spec}'" unless rgba\parse spec
   rgba

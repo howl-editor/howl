@@ -150,10 +150,10 @@ ffi.cdef [[
 
   /* GdkRGBA */
   typedef struct {
-    gdouble red;
-    gdouble green;
-    gdouble blue;
-    gdouble alpha;
+    float red;
+    float green;
+    float blue;
+    float alpha;
   } GdkRGBA;
 
   gboolean gdk_rgba_parse (GdkRGBA *rgba, const gchar *spec);

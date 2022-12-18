@@ -17,6 +17,7 @@ class CommandLine extends PropertyObject
     @def = {}
 
     @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL
+    @bin.vexpand = false
     @box = nil
     @command_widget = nil
     @header = nil

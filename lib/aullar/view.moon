@@ -131,9 +131,10 @@ View = {
     --   @horizontal_scrollbar
     -- }
     -- @horizontal_scrollbar_alignment.no_show_all = not config.view_show_h_scrollbar
+    @horizontal_scrollbar.visible = config.view_show_h_scrollbar
 
     @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
-    @vertical_scrollbar.no_show_all = not config.view_show_v_scrollbar
+    @vertical_scrollbar.visible = config.view_show_v_scrollbar
 
     append @_handlers, @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
@@ -550,11 +551,8 @@ View = {
       @display_lines[line_nr] = nil
 
   _draw: (cr, width, height) =>
-    print "_draw: #{width}x#{height}, first_visible_line: #{@first_visible_line}"
-    print "draw buffer: #{@_buffer}"
     p_ctx = @area.pango_context
     clip = cr.clip_extents
-    moon.p clip
     conf = @config
     line_draw_opts = config: conf, buffer: @_buffer
     draw_gutter = conf.view_show_line_numbers and clip.x1 < @gutter_width
@@ -933,14 +931,7 @@ View = {
     notify @, 'on_resized'
 
   _on_config_changed: (option, val, old_val) =>
-    if option == 'view_font_name' or option == 'view_font_size'
-      @area\override_font Pango.FontDescription {
-        family: @config.view_font_name,
-        size: @config.view_font_size * Pango.SCALE
-      }
-      @_reset_display!
-
-    elseif option == 'view_show_inactive_cursor'
+    if option == 'view_show_inactive_cursor'
       @cursor.show_when_inactive = val
 
     elseif option == 'cursor_blink_interval'

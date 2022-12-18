@@ -389,9 +389,7 @@ Cursor = {
       @move_to pos: @buffer_line.start_offset + @buffer_line.size, extend: opts.extend
 
   draw: (x, base_y, cr, display_line) =>
-    print "cursor draw"
     return unless @_showing and (@active or @show_when_inactive)
-    print "actually drawing cursor"
     start_offset = @column
     end_offset, new_trailing = display_line.layout\move_cursor_visually true, start_offset - 1, 0, 1
     end_offset += 1

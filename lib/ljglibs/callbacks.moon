@@ -81,9 +81,7 @@ create_callback = (t, orig_signature) ->
   simple_args = string_gsub(arg_list, '%s*%*', '')
   simple_args = string_gsub(simple_args, ',', '_')
   def_name = "hcb_#{ret}_#{simple_args}"
-  -- print "create_callback. ret: #{ret}, arg_list: #{arg_list}"
   cdef = "typedef #{ret} (*#{def_name})(#{arg_list});"
-  -- print cdef
   ffi.cdef cdef
 
   cb = cb_cast(
@@ -91,7 +89,6 @@ create_callback = (t, orig_signature) ->
     (...) ->
       args = pack ...
       user_data = args[args.n]
-      moon.p{user_data, unpack(args, 1, args.n - 1)}
       dispatch user_data, unpack(args, 1, args.n - 1)
   )
   rawset t, signature, cb

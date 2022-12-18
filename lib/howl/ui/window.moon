@@ -35,7 +35,6 @@ class Window extends PropertyObject
 
     @grid.can_focus = true
 
-    -- GTK4 SEGV?
     @activity = Activity!
 
     @widgets = Gtk.Box Gtk.ORIENTATION_VERTICAL

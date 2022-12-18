@@ -80,7 +80,6 @@ setup_signals = (name, def, gtype, instance_cast) ->
         cb_handle = nil
 
         casting_handler = (...) ->
-          print "handler for #{info.signal_name}"
           args = pack ...
           args[1] = instance_cast args[1]
 
@@ -90,7 +89,6 @@ setup_signals = (name, def, gtype, instance_cast) ->
           handler unpack(args, 1, args.n)
 
         cb_handle = signal.connect_by_info instance, info, casting_handler, ...
-        -- cb_handle = signal.connect_by_info instance, info, handler, ...
         cb_handle
 
 construct = (spec, no_container, constructor, ...) ->
@@ -125,8 +123,6 @@ construct = (spec, no_container, constructor, ...) ->
     if gtype
       Type.ensure(gtype)
       types.register_cast name, gtype, ctype if gtype
-    else
-      print "core: #{name} = #{gtype}"
     -- print "core: #{name} = #{gtype}, #{other_type}"
     cast = (o) -> ffi_cast(ctype, o)
 

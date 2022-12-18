@@ -1,7 +1,6 @@
 -- Copyright 2014-2021 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
--- Atom = require 'ljglibs.gdk.atom'
 GdkDisplay = require 'ljglibs.gdk.display'
 {:PropertyTable} = howl.util
 ffi = require 'ffi'

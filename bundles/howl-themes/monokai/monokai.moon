@@ -192,10 +192,10 @@ return {
       height: 'text'
 
     block_cursor:
-      type: flair.ROUNDED_RECTANGLE,
+      type: flair.ROUNDED_RECTANGLE
       background: foreground
       text_color: background
-      height: 'text',
+      height: 'text'
       min_width: 'letter'
 
     selection:
