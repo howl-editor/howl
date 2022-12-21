@@ -47,7 +47,7 @@ View = {
     @config = config.local_proxy!
 
     @area = Gtk.DrawingArea {hexpand: true, vexpand: true}
-    @area.style_context\add_class 'htextview'
+    @area.css_classes = {'htextview'}
     @key_controller = Gtk.EventControllerKey!
 
     @focus_controller = Gtk.EventControllerFocus!

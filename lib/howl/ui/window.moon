@@ -46,7 +46,7 @@ class Window extends PropertyObject
     }
 
     @win = Gtk.Window!
-    @win.style_context\add_class 'main-window'
+    @win.css_classes = {'main-window'}
 
     @win[k] = v for k,v in pairs properties
 

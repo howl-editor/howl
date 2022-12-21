@@ -136,7 +136,7 @@ export test_window = (child) ->
   Gtk = require 'ljglibs.gtk'
   window = Gtk.Window default_width: 840, default_height: 640
   window.title = 'howl-test'
-  window.style_context\add_class 'test-window'
+  window.css_classes = {'test-window'}
   window.child = child
   window\show!
   while window.allocated_height <= 0

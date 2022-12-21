@@ -77,7 +77,6 @@ class TextWidget extends PropertyObject
   adjust_height: =>
     default_row_height = @view\text_dimensions('M').height
     _, height = @view\block_dimensions 1, @visible_rows
-    print "visible_rows: #{@visible_rows}, height: #{height}"
     @_set_height max(height, default_row_height)
 
   to_gobject: => @view_gobject
@@ -104,7 +103,6 @@ class TextWidget extends PropertyObject
 
   _set_height: (height) =>
     return if @_height == height
-    print "_set_height(#{height})"
     @_height = height
     @view_gobject.height_request = height
 

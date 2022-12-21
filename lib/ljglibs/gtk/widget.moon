@@ -12,11 +12,10 @@ core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 
 C, ffi_cast, ffi_string = ffi.C, ffi.cast, ffi.string
-ref_ptr, gc_ptr, signal = gobject.ref_ptr, gobject.gc_ptr, gobject.signal
+gc_ptr = gobject.gc_ptr
 widget_t = ffi.typeof 'GtkWidget *'
-cairo_t = ffi.typeof 'cairo_t *'
 controller_t = ffi.typeof 'GtkEventController *'
-{:pack, :unpack, insert: append} = table
+{insert: append} = table
 
 to_w = (o) -> ffi_cast widget_t, o
 
@@ -26,7 +25,7 @@ core.define 'GtkWidget < GObject', {
   properties: {
     can_focus: 'gboolean'
     can_target: 'gboolean'
-    -- NYI: css_classes: 'string[]'
+    css_name: 'gchar*'
     cursor: 'GdkCursor *'
     focus_on_click: 'gboolean'
     focusable: 'gboolean'
@@ -79,8 +78,6 @@ core.define 'GtkWidget < GObject', {
     }
 
     -- Added properties
-    in_destruction: => C.gtk_widget_in_destruction(@) != 0
-    style_context: => ref_ptr C.gtk_widget_get_style_context @
     pango_context: => C.gtk_widget_get_pango_context @
     allocated_width: => C.gtk_widget_get_allocated_width @
     allocated_height: => C.gtk_widget_get_allocated_height @

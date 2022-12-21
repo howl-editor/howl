@@ -74,7 +74,7 @@ scrollbar slider {
   border-radius: 5px;
 }
 
-.main-window.background {
+.main-window {
   background-image: url("file:///home/nilnor/code/howl-gtk4/bundles/howl-themes/steinom/footer_lodyas.png");
 }
 
@@ -111,13 +111,6 @@ parse_color = (spec, alpha = 1) ->
 
 parse_font = (font = {}) ->
   font_size_unit = 'pt'
-
-  if Gtk.get_major_version! == 3
-    if Gtk.get_minor_version! < 10
-      font_size_unit = ''
-    elseif Gtk.get_minor_version! < 22
-      font_size_unit = 'px'
-
   size = config.font_size
   decls = {
     "font-family: #{config.font};"
@@ -255,11 +248,9 @@ config.watch 'theme', (_, name) ->
   set_theme name
 
 config.watch 'font', (name, value) ->
-  -- aullar_config.view_font_name = value
   apply_theme! if current_theme
 
 config.watch 'font_size', (name, value) ->
-  -- aullar_config.view_font_size = value
   apply_theme! if current_theme
 
 signal.register 'theme-changed',

@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
@@ -10,7 +10,7 @@ class Status
       xalign: 0
       wrap: true
     }
-    @label.style_context\add_class 'status'
+    @label.css_classes = {'status'}
     @level = nil
     signal.connect 'key-press', self\clear
 
@@ -24,7 +24,7 @@ class Status
   clear: =>
     if @text
       if @level
-        @label.style_context\remove_class 'status_' .. @level
+        @_remove_css_class 'status_' .. @level
 
       @label.label = ''
       @level = nil
@@ -32,17 +32,21 @@ class Status
 
   hide: =>
     @label.visible = false
+
   show: =>
     @label.visible = true
 
   _set: (level, text) =>
     if @level and level != @level
-        @label.style_context\remove_class 'status_' .. @level if @level
+        @_remove_css_class 'status_' .. @level
 
-    @label.style_context\add_class 'status_' .. level
-
+    @label.css_classes = {'status', 'status_' .. level}
     @label.label = text
     @text = text
     @level = level
+
+  _remove_css_class: (cls) =>
+      classes = [c for c in *@label.css_classes when c != cls]
+      @label.css_classes = classes
 
 return Status

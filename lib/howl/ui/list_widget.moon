@@ -66,7 +66,6 @@ class ListWidget extends PropertyObject
     if @opts.never_shrink
       @list.min_rows = shown_rows
 
-    print "set text_widget.visible_rows to #{shown_rows}"
     @text_widget.visible_rows = shown_rows
 
   _adjust_width: =>

@@ -71,7 +71,6 @@ ffi.cdef [[
   /* Forward declarations, more definintions below */
   typedef struct {} GtkIMContext;
 
-
   /* GtkCssProvider */
   typedef struct {} GtkStyleProvider;
   typedef struct {} GtkCssProvider;
@@ -106,30 +105,9 @@ ffi.cdef [[
   const GtkCssLocation* gtk_css_section_get_end_location (const GtkCssSection* section);
 
   /* GtkStyleContext */
-  typedef struct {} GtkStyleContext;
-
-  GtkStyleContext * gtk_style_context_new (void);
-  void gtk_style_context_add_class (GtkStyleContext *context,
-                                    const gchar *class_name);
-  void gtk_style_context_remove_class (GtkStyleContext *context, const gchar *class_name);
-  void gtk_style_context_get_background_color (GtkStyleContext *context,
-                                               GtkStateFlags state,
-                                               GdkRGBA *color);
-  void gtk_style_context_add_provider (
-    GtkStyleContext* context,
-    GtkStyleProvider* provider,
-    guint priority
-  );
-
   void gtk_style_context_add_provider_for_display (GdkDisplay *display,
                                                   GtkStyleProvider *provider,
                                                   guint priority);
-
-  char* gtk_style_context_to_string (
-    GtkStyleContext* context,
-    /* GtkStyleContextPrintFlags flags */
-    int flags
-  );
 
   /* Controllers */
   typedef struct {} GtkEventController;
@@ -166,7 +144,6 @@ ffi.cdef [[
   void gtk_widget_realize (GtkWidget *widget);
   void gtk_widget_show (GtkWidget *widget);
   void gtk_widget_hide (GtkWidget *widget);
-  GtkStyleContext * gtk_widget_get_style_context (GtkWidget *widget);
   GdkDisplay* gtk_widget_get_display (GtkWidget* widget);
   void gtk_widget_grab_focus (GtkWidget *widget);
   int gtk_widget_get_allocated_width (GtkWidget *widget);

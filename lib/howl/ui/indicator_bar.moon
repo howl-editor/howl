@@ -35,11 +35,7 @@ class IndicatorBar
 
   _create_indicator: (id, widget) ->
     widget or= Gtk.Label single_line_mode: true, ellipsize: Pango.ELLIPSIZE_MIDDLE
-    with widget.style_context
-      \add_class 'indic_default'
-      \add_class 'indic_' .. id
-
-    widget\show!
+    widget.css_classes = { 'indic_default', 'indic_' .. id }
     widget
 
 return IndicatorBar
