@@ -17,6 +17,11 @@ cairo_t = ffi.typeof 'cairo_t *'
 jit.off true, true
 
 core.define 'GtkDrawingArea < GtkWidget', {
+  properties: {
+    content_width: 'int'
+    content_height: 'int'
+  }
+
   new: -> gc_ptr C.gtk_drawing_area_new!
 
   unset_draw_func: (handler) =>

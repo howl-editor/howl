@@ -20,6 +20,7 @@ set_source_from_color = (cr, name, opts) ->
   alpha = opts["#{name}_alpha"]
 
   if color
+    alpha = color.alpha unless color\is_opaque!
     if alpha
       cr\set_source_rgba color.red, color.green, color.blue, alpha
     else

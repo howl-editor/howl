@@ -46,15 +46,13 @@ class Window extends PropertyObject
     }
 
     @win = Gtk.Window!
-    @win.css_classes = {'main-window'}
+    @win\add_css_class 'main-window'
 
     @win[k] = v for k,v in pairs properties
 
     -- append @_handlers, @win\on_focus_in_event self\_on_focus
     -- append @_handlers, @win\on_focus_out_event self\_on_focus_lost
     -- append @_handlers, @win\on_destroy self\_on_destroy
-    -- append @_handlers, @win\on_screen_changed self\_on_screen_changed
-    -- @_set_alpha!
 
     @win.child = @box
 
@@ -297,15 +295,6 @@ class Window extends PropertyObject
   _on_focus_lost: =>
     signal.emit 'window-defocused', window: self
     false
-
-  _set_alpha: =>
-    screen = @win.screen
-    if screen.is_composited
-      visual = screen.rgba_visual
-      @win.visual = visual if visual
-
-  _on_screen_changed: =>
-    @_set_alpha!
 
 -- Signals
 signal.register 'window-focused',

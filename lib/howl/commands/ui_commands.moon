@@ -31,12 +31,14 @@ command.register
     buf\append "\n\n"
     def_s = serpent.block def, comment: false
     lua_mode = mode.by_name 'lua'
+    moon.p def_s
 
     if lua_mode
       styles = lua_mode.lexer(def_s)
       def_s = StyledText def_s, styles
 
     buf\append def_s
+    buf\append "my long TEST damnit"
     editor\show_popup BufferPopup buf
 
 command.register

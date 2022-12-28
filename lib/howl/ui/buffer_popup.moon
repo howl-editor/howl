@@ -74,6 +74,7 @@ class BufferPopup extends Popup
     width += margin * 2
     height += margin * 2
 
+    moon.p width: ceil(width), height: ceil(height)
     return width: ceil(width), height: ceil(height)
 
 return BufferPopup

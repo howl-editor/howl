@@ -127,8 +127,9 @@ ensure_command_can_run = (cmd) ->
 
 launch_cmd = (cmd, args) ->
   dispatch.launch ->
-    ok, err = pcall -> cmd.handler table.unpack args
+    ok, err = pcall cmd.handler, table.unpack args
     if not ok
+      print "command err: #{err}"
       log.error err
 
 run = (cmd_text=nil) ->

@@ -68,6 +68,16 @@ ffi.cdef [[
     GTK_PHASE_TARGET
   } GtkPropagationPhase;
 
+  typedef enum
+  {
+    GTK_OVERFLOW_VISIBLE,
+    GTK_OVERFLOW_HIDDEN
+  } GtkOverflow;
+
+  typedef GdkRectangle GtkAllocation;
+
+
+
   /* Forward declarations, more definintions below */
   typedef struct {} GtkIMContext;
 
@@ -146,17 +156,21 @@ ffi.cdef [[
   void gtk_widget_hide (GtkWidget *widget);
   GdkDisplay* gtk_widget_get_display (GtkWidget* widget);
   void gtk_widget_grab_focus (GtkWidget *widget);
+  void gtk_widget_get_allocation (GtkWidget* widget, GtkAllocation* allocation);
   int gtk_widget_get_allocated_width (GtkWidget *widget);
   int gtk_widget_get_allocated_height (GtkWidget *widget);
   void gtk_widget_set_size_request (GtkWidget *widget,
                                     gint width,
                                     gint height);
-  gboolean gtk_widget_translate_coordinates (GtkWidget *src_widget,
-                                             GtkWidget *dest_widget,
-                                             gint src_x,
-                                             gint src_y,
-                                             gint *dest_x,
-                                             gint *dest_y);
+
+  gboolean gtk_widget_translate_coordinates(
+    GtkWidget* src_widget,
+    GtkWidget* dest_widget,
+    double src_x,
+    double src_y,
+    double* dest_x,
+    double* dest_y
+  );
 
   PangoContext * gtk_widget_create_pango_context (GtkWidget *widget);
   PangoContext * gtk_widget_get_pango_context (GtkWidget *widget);
@@ -175,12 +189,14 @@ ffi.cdef [[
   GtkWidget * gtk_widget_get_last_child       (GtkWidget *widget);
   GtkWidget * gtk_widget_get_next_sibling     (GtkWidget *widget);
   GtkWidget * gtk_widget_get_prev_sibling     (GtkWidget *widget);
-
+  GtkWidget * gtk_widget_get_ancestor(GtkWidget* widget, GType widget_type);
+  void gtk_widget_set_parent (GtkWidget* widget, GtkWidget* parent);
   GtkWidget * gtk_widget_get_focus_child (GtkWidget* widget);
 
   void gtk_widget_set_css_classes (GtkWidget* widget, const char** classes);
   char** gtk_widget_get_css_classes(GtkWidget* widget);
-
+  void gtk_widget_add_css_class(GtkWidget* widget, const char* css_class);
+  void gtk_widget_remove_css_class(GtkWidget* widget, const char* css_class);
 
 
   /* GtkGrid */
@@ -267,7 +283,6 @@ ffi.cdef [[
 
   void gtk_window_get_size (GtkWindow *window, gint *width, gint *height);
   void gtk_window_resize (GtkWindow *window, gint width, gint height);
-  void gtk_window_move (GtkWindow *window, gint x, gint y);
   GtkWidget * gtk_window_get_focus (GtkWindow *window);
   void gtk_window_set_focus (GtkWindow *window, GtkWidget *focus);
 
@@ -278,10 +293,6 @@ ffi.cdef [[
   void gtk_window_maximize (GtkWindow *window);
   void gtk_window_unmaximize (GtkWindow *window);
 
-  /* GtkOffscreenWindow */
-  typedef struct {} GtkOffscreenWindow;
-  GtkOffscreenWindow * gtk_offscreen_window_new (void);
-
   /* GtkApplication */
   typedef struct {} GtkApplication;
   GtkApplication * gtk_application_new (const gchar *application_id,
@@ -289,21 +300,18 @@ ffi.cdef [[
   void gtk_application_add_window (GtkApplication *application, GtkWindow *window);
   void gtk_application_remove_window (GtkApplication *application, GtkWindow *window);
 
-  /* GtkMisc */
-  typedef struct {} GtkMisc;
-
   /* GtkLabel */
   typedef struct {} GtkLabel;
 
   GtkLabel * gtk_label_new (const gchar *str);
   const gchar * gtk_label_get_text (GtkLabel *label);
   void gtk_label_set_text (GtkLabel *label, const gchar *str);
+  PangoLayout* gtk_label_get_layout (GtkLabel* self);
+
 
   /* GtkEntry */
   typedef struct {} GtkEntry;
   GtkEntry * gtk_entry_new (void);
-
-  /*** Clipboard & selections ***/
 
   /* GtkTargetEntry */
   typedef struct {} GtkTargetEntry;
@@ -488,6 +496,22 @@ ffi.cdef [[
 
   typedef struct {} GtkIMContextSimple;
   GtkIMContextSimple * gtk_im_context_simple_new (void);
+
+  /* GtkPopover */
+  typedef struct {} GtkPopover;
+
+  GtkPopover* gtk_popover_new (void);
+  void gtk_popover_popup (GtkPopover* popover);
+  void gtk_popover_popdown (GtkPopover* popover);
+  gboolean gtk_popover_get_pointing_to (GtkPopover* popover, GdkRectangle* rect);
+  void gtk_popover_set_pointing_to (GtkPopover* popover, const GdkRectangle* rect);
+
+  /* GtkListBox */
+  typedef struct {} GtkListBox;
+
+  GtkListBox* gtk_list_box_new (void);
+  void gtk_list_box_append (GtkListBox* box, GtkWidget* child);
+  void gtk_list_box_remove (GtkListBox* box, GtkWidget* child);
 
   /* Misc */
   gboolean gtk_cairo_should_draw_window (cairo_t *cr,

@@ -268,7 +268,6 @@ return {
     info: color: lightblue
     constant: color: yellow
     string: color: green
-
     regex:
       color: green
       background: embedded_bg

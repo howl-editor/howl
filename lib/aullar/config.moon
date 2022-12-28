@@ -104,12 +104,9 @@ define_options = ->
       default: 250
     }
 
-    gutter_styling: {
-      type: 'table',
-      default:
-        color: '#008000'
-        background:
-          color: '#ff69b4'
+    gutter_color: {
+      type: 'string',
+      default: 'blue'
     },
 
     undo_limit: {

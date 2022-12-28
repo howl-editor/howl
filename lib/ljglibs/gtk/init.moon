@@ -61,6 +61,10 @@ core.auto_loading 'gtk', {
     'PHASE_CAPTURE',
     'PHASE_BUBBLE',
     'PHASE_TARGET'
+
+    -- GtkOverflow
+    'OVERFLOW_VISIBLE',
+    'OVERFLOW_HIDDEN',
   }
 
   cairo_should_draw_window: (cr, window) ->

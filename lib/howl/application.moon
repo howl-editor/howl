@@ -39,7 +39,6 @@ dispatcher = (f, description, ...) ->
     if coro_status(co) == 'dead'
       return ret
   else
-    print "main dispatch err: #{ret}"
     error ret, 2
 
   false
@@ -99,7 +98,8 @@ class Application extends PropertyObject
 
     callbacks.configure {
       :dispatcher,
-      on_error: _G.log.error
+      on_error: (e) ->
+        _G.log.error e
     }
 
     signal.connect 'log-entry-appended', (entry) ->

@@ -42,7 +42,7 @@ core.define 'GtkWidget < GObject', {
     margin_top: 'gint'
     name: 'gchar*'
     opacity: 'gdouble'
-    -- NYI: overflow
+    overflow: 'GtkOverflow'
     parent: 'GtkWidget*'
     receives_default: 'gboolean'
     -- NYI: root
@@ -72,13 +72,13 @@ core.define 'GtkWidget < GObject', {
         a = ffi.new "const char *[?]", #classes + 1
         for i, c in ipairs classes
           a[i - 1] = c
-          print ffi.string(a[i - 1])
         a[#classes] = nil
         C.gtk_widget_set_css_classes @, a
     }
 
     -- Added properties
     pango_context: => C.gtk_widget_get_pango_context @
+    allocation: => @get_allocation!
     allocated_width: => C.gtk_widget_get_allocated_width @
     allocated_height: => C.gtk_widget_get_allocated_height @
 
@@ -122,8 +122,18 @@ core.define 'GtkWidget < GObject', {
     w = C.gtk_widget_get_focus_child @
     w != nil and w or nil
 
+  get_allocation: =>
+    alloc = ffi.new('GtkAllocation')
+    C.gtk_widget_get_allocation @, alloc
+    {
+      x: alloc.x,
+      y: alloc.y,
+      width: alloc.width,
+      height: alloc.height,
+    }
+
   translate_coordinates: (dest_widget, src_x, src_y) =>
-    ret = ffi.new 'gint [2]'
+    ret = ffi.new 'double [2]'
     status = C.gtk_widget_translate_coordinates @, to_w(dest_widget), src_x, src_y, ret, ret + 1
     error "Failed to translate coordinates" if status == 0
     ret[0], ret[1]
@@ -134,6 +144,18 @@ core.define 'GtkWidget < GObject', {
 
   add_controller: (controller) =>
     C.gtk_widget_add_controller @, ffi_cast(controller_t,  controller)
+
+  add_css_class: (cls) =>
+    C.gtk_widget_add_css_class @, cls
+
+  remove_css_class: (cls) =>
+    C.gtk_widget_remove_css_class @, cls
+
+  get_ancestor: (type) =>
+    C.gtk_widget_get_ancestor @, type
+
+  set_parent: (p) =>
+    C.gtk_widget_set_parent @, to_w(p)
 
   queue_allocate: => C.gtk_widget_queue_allocate @
 

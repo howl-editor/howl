@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
-Window = Gtk.Window
+Popover = Gtk.Popover
 gobject_signal = require 'ljglibs.gobject.signal'
 {:PropertyObject} = howl.util.moon
 {:ContentBox} = howl.ui
@@ -12,53 +12,98 @@ class Popup extends PropertyObject
 
   new: (@child, properties = {}) =>
     error('Missing argument #1: child', 3) if not child
-
     @box = ContentBox 'popup', child, {
       header: properties.header,
       footer: properties.footer
     }
 
-    properties.default_height = 150 if not properties.default_height
-    properties.default_width = 150 if not properties.default_width
-    @window = Window Window.POPUP, properties
-    @window.child = @box\to_gobject!
+    props = {
+      autohide: false
+      has_arrow: false
+      width_request: properties.width or 150
+      height_request: properties.height or 150
+      child: @box\to_gobject!
+    }
+    @popover = Popover props
+    @popover.child = @box\to_gobject!
+    @popover\on_show ->
+      print 'on popup show!'
+      moon.p @popover.allocation
+
+    @popover\on_realize ->
+      print 'on popup realize!'
+      moon.p @popover.allocation
+     --   print "w: #{@window.allocated_width}, h: #{@window.allocated_height}"
+    @popover\on_hide ->
+      print 'on popup hide!'
+
     @showing = false
     super!
 
   show: (widget, options = position: 'center') =>
     error('Missing argument #1: widget', 2) if not widget
-    @window.transient_for = widget.toplevel
-    @window.destroy_with_parent = true
-    @window\realize!
-    @widget = widget
-    @showing = true
+    print "show start"
+    status, err = pcall ->
+      @popover\set_parent widget
+      -- @popover\realize!
 
-    if options.x
-      @window.window_position = Gtk.WIN_POS_NONE
-      @move_to options.x, options.y
-    else
-      @center!
+      -- @toplevel = widget\get_ancestor(wType)
+      -- print "toplevel: #{@toplevel}"
+      -- @window.transient_for = @toplevel
+      -- @window.modal = true
+      -- @window.destroy_with_parent = true
+      print "x"
+      -- @window\realize!
+      @widget = widget
+      @showing = true
 
-    @window\show!
+      -- print "y"
+      -- moon.p options
+      if options.x
+      --   -- @window.window_position = Gtk.WIN_POS_NONE
+        status, ret = pcall @move_to, @, options.x, options.y
+        print "status: #{status}: #{ret}"
+      -- else
+      --   status, ret = pcall @center, @
+      --   print "status: #{status}: #{ret}"
+
+      print "doing show!"
+      -- @window.visible = true
+      -- @window\show!
+      @popover\popup!
+      print "show!"
+
+    unless status
+      moon.p err
 
   close: =>
-    @window\hide!
+    print "popup close!"
+    -- @window\hide!
+    @popover\popdown!
     @showing = false
     @widget = nil
 
   destroy: =>
-    @window\destroy!
+    @close!
+    -- @popover\unref!
+    print "popup destroy!"
+    -- @window\destroy!
 
   move_to: (x, y) =>
     error('Attempt to move a closed popup', 2) if not @showing
-    w_x, w_y = @widget.toplevel.window\get_position!
-    t_x, t_y = @widget\translate_coordinates(@widget.toplevel, x, y)
-    x = w_x + t_x
-    y = w_y + t_y
 
-    @x, @y = x, y
-    @window\move x, y
-    @resize @window.allocated_width, @window.allocated_height
+    -- alloc = @toplevel.allocation
+    -- moon.p alloc
+    -- w_x, w_y = alloc.x, alloc.y
+    -- -- w_x, w_y = @toplevel\get_position!
+    -- t_x, t_y = @widget\translate_coordinates(@toplevel, x, y)
+    -- x = w_x + t_x
+    -- y = w_y + t_y
+
+    -- @x, @y = x, y
+    -- -- @window\move x, y
+    -- @resize @window.allocated_width, @window.allocated_height
+    @popover.pointing_to = {:x, :y, width: 1, height: 1}
 
   resize: (width, height) =>
     if not @showing
@@ -89,9 +134,8 @@ class Popup extends PropertyObject
     -- with our current width and height..
 
     -- screen = @widget.screen
-    toplevel = @widget.toplevel
-    w_x, w_y = toplevel.window\get_position!
-    w_width, w_height = toplevel.allocated_width, toplevel.allocated_height
+    w_x, w_y = @toplevel\get_position!
+    w_width, w_height = @toplevel.allocated_width, @toplevel.allocated_height
     win_h_center = w_x + (w_width / 2)
     win_v_center = w_y + (w_height / 2)
     x = win_h_center - (width / 2)

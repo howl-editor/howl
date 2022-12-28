@@ -44,7 +44,7 @@ class ContentBox extends PropertyObject
       @footer = @_create_bar opts.footer, opts.footer_background, @main, "footer"
 
     main_widget = Gtk.Box Gtk.ORIENTATION_VERTICAL
-    main_widget.css_classes = {"cb_#{name}"}
+    main_widget.css_classes = {'content-box', "content-box-#{name}"}
 
     if @header
       main_widget\append @header.widget
@@ -66,7 +66,7 @@ class ContentBox extends PropertyObject
     -- append @_handlers, @e_box\on_resize self\_on_resize
     -- append @_handlers, @e_box\on_destroy self\_on_destroy
     append @_handlers, main_widget\on_destroy self\_on_destroy
-    -- @e_box\set_draw_func self\_draw
+    @e_box\set_draw_func self\_draw
 
     @_theme_changed = self\_on_theme_changed
     signal.connect 'theme-changed', @_theme_changed

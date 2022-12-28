@@ -38,7 +38,7 @@ View = {
   new: (buffer = Buffer('')) =>
     @_handlers = {}
 
-    @margin = 3
+    @margin = 0
     @_base_x = 0
     @_first_visible_line = 1
     @_last_visible_line = nil
@@ -47,7 +47,7 @@ View = {
     @config = config.local_proxy!
 
     @area = Gtk.DrawingArea {hexpand: true, vexpand: true}
-    @area.css_classes = {'htextview'}
+    @area\add_css_class 'htextview'
     @key_controller = Gtk.EventControllerKey!
 
     @focus_controller = Gtk.EventControllerFocus!
@@ -75,7 +75,8 @@ View = {
     @cursor.show_when_inactive = @config.view_show_inactive_cursor
     @cursor.blink_interval = @config.cursor_blink_interval
 
-    @gutter = Gutter @, config.gutter_styling
+    @gutter = Gutter @, config
+    @gutter.visible = config.view_show_line_numbers
     @current_line_marker = CurrentLineMarker @
 
     @scroll_speed_y = config.scroll_speed_y
@@ -132,6 +133,7 @@ View = {
     -- }
     -- @horizontal_scrollbar_alignment.no_show_all = not config.view_show_h_scrollbar
     @horizontal_scrollbar.visible = config.view_show_h_scrollbar
+    print "@horizontal_scrollbar.visible = #{config.view_show_h_scrollbar}"
 
     @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
     @vertical_scrollbar.visible = config.view_show_v_scrollbar
@@ -144,6 +146,7 @@ View = {
       @_scrolling_vertically = false
 
     @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
+      @gutter\to_gobject!,
       Gtk.Box(Gtk.ORIENTATION_VERTICAL, {
         vexpand: true, hexpand: true
         @area,
@@ -273,7 +276,7 @@ View = {
         @_sync_scrollbars horizontal: true
     }
 
-    edit_area_x: => @gutter_width + @margin
+    edit_area_x: => @margin
     edit_area_width: =>
       return 0 unless @width
       @width - @edit_area_x
@@ -318,6 +321,8 @@ View = {
       -- make sure we don't accidentally scroll to much here,
       -- leaving visual area unclaimed
       @last_visible_line = @last_visible_line
+
+    @gutter\sync!
 
   _sync_scrollbars: (opts = { horizontal: true, vertical: true })=>
     @_updating_scrolling = true
@@ -551,14 +556,9 @@ View = {
       @display_lines[line_nr] = nil
 
   _draw: (cr, width, height) =>
-    p_ctx = @area.pango_context
     clip = cr.clip_extents
     conf = @config
     line_draw_opts = config: conf, buffer: @_buffer
-    draw_gutter = conf.view_show_line_numbers and clip.x1 < @gutter_width
-
-    if draw_gutter
-      @gutter\start_draw cr, p_ctx, clip
 
     edit_area_x, y = @edit_area_x, @margin
     cr\move_to edit_area_x, y
@@ -580,11 +580,13 @@ View = {
 
     current_line = @cursor.line
     y = start_y
+    print "start_y: #{start_y}"
     cursor_col = @cursor.column
 
     for line_info in *lines
       {:display_line, :line} = line_info
       line_draw_opts.line = line
+      print "view draw line #{line.nr} at #{y}"
 
       if line.nr == current_line and conf.view_highlight_current_line
         @current_line_marker\draw_before edit_area_x, y, display_line, cr, clip, cursor_col
@@ -597,9 +599,6 @@ View = {
       if @selection\affects_line line
         @selection\draw_overlay edit_area_x, y, cr, display_line, line
 
-      if draw_gutter
-        @gutter\draw_for_line line.nr, 0, y, display_line
-
       if line.nr == current_line
         if conf.view_highlight_current_line
           @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip, cursor_col
@@ -610,10 +609,8 @@ View = {
       y += display_line.height
       cr\move_to edit_area_x, y
 
-    if draw_gutter
-      @gutter\end_draw!
-
   _reset_display: =>
+    print "_reset_display"
     @_last_visible_line = nil
     p_ctx = @area.pango_context
     tm = @text_dimensions(' ')
@@ -622,8 +619,8 @@ View = {
     tab_size = @config.view_tab_size
     @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
-    -- @horizontal_scrollbar_alignment.left_padding = @gutter_width
     @gutter\sync_dimensions @buffer, force: true
+    @gutter\sync @
 
   _on_destroy: =>
     print "view on_destroy"
@@ -731,8 +728,10 @@ View = {
         -- invalid - they need to be invalidated but not visually refreshed
         @_invalidate_display args.invalidate_offset, args.offset - 1
 
-      if lines_changed and not @gutter\sync_dimensions buffer
-        @area\queue_draw!
+      @gutter\sync! if lines_changed
+      @gutter\sync_dimensions!
+      -- if lines_changed and not @gutter\sync_dimensions buffer
+      --   @area\queue_draw!
 
     -- adjust cursor to correctly reflect the change
     changes = { { :type, offset: args.offset, size: args.size } }
@@ -811,7 +810,7 @@ View = {
 
   _on_button_press: (_, event) =>
     print "on_button_press"
-    -- @area\grab_focus! unless @area.has_focus
+    @area\grab_focus! unless @area.has_focus
 
     -- event = ffi_cast('GdkEventButton *', event)
 
@@ -847,10 +846,9 @@ View = {
     return true if notify @, 'on_motion_event', event
     unless @_selection_active
       if @_cur_mouse_cursor != text_cursor
-        if event.x > @gutter_width
-          @area.cursor = text_cursor
-          @_cur_mouse_cursor = text_cursor
-      elseif event.x <= @gutter_width
+        @area.cursor = text_cursor
+        @_cur_mouse_cursor = text_cursor
+      else
         @area.cursor = nil
         @_cur_mouse_cursor = nil
 
@@ -940,19 +938,20 @@ View = {
     elseif option == 'scroll_speed_y' or option == 'scroll_speed_x'
       @[option] = val
 
-    elseif option == 'gutter_styling'
-      @gutter\reconfigure val
-      @_reset_display!
+    elseif option == 'gutter_color'
+      @gutter\reconfigure @config
+      -- @_reset_display!
 
     elseif option == 'view_show_v_scrollbar'
       @vertical_scrollbar.visible = val
-      @vertical_scrollbar.no_show_all = true
 
     elseif option == 'view_show_h_scrollbar'
       @horizontal_scrollbar.visible = val
-      -- @horizontal_scrollbar_alignment.visible = val
-      -- @horizontal_scrollbar_alignment.no_show_all = true
+      print "set horizontal_scrollbar.visible to #{val}"
       -- @horizontal_scrollbar_alignment.left_padding = @gutter_width
+
+    elseif option == 'view_show_line_numbers'
+      @gutter.visible = val
 
     elseif option\match('^view_')
       @_reset_display!

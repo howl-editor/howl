@@ -56,7 +56,6 @@ core.define 'GtkWindow < GtkWidget', {
 
   set_default_size: (width, height) => C.gtk_window_set_default_size @, width, height
   resize: (width, height) => C.gtk_window_resize @, width, height
-  move: (x, y) => C.gtk_window_move @, x, y
   fullscreen: => C.gtk_window_fullscreen @
   unfullscreen: => C.gtk_window_unfullscreen @
   maximize: => C.gtk_window_maximize @

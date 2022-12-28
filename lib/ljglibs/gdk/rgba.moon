@@ -14,6 +14,9 @@ core.define 'GdkRGBA', {
   parse: (spec) =>
     C.gdk_rgba_parse(@, spec) != 0
 
+  is_opaque: =>
+    C.gdk_rgba_is_opaque(@) != 0
+
   meta: {
     __tostring: => g_string C.gdk_rgba_to_string(@)
   }

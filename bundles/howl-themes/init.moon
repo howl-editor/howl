@@ -4,7 +4,7 @@
 theme = howl.ui.theme
 
 themes = {
-  'Steinom': bundle_file('steinom/steinom.moon')
+  'Steinom': bundle_file('steinom/steinom.css')
   'Tomorrow Night Blue': bundle_file('tomorrow_night_blue/tm_night_blue.moon')
   'Solarized Light': bundle_file('solarized_light/solarized_light.moon')
   'Monokai': bundle_file('monokai/monokai.moon')

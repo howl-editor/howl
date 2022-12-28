@@ -1,0 +1,344 @@
+/*
+  Copyright 2016 - 2022 The Howl Developers
+  License: MIT (see LICENSE.md at the top-level directory of the distribution)
+*/
+
+:root {
+  --base: #222222;
+  --orange: #bf954f;
+  --aqua: #85E0DC;
+  --purple: #886CD6;
+  --yellow: #CED0AD;
+  --green: #6Ac081;
+  --darkblue: #567DB3;
+  --lightblue: #81A7C9;
+  --red: #D67C73;
+  --foreground: #dddddd;
+  --embedded_bg: #dddddd16;
+  --comment: grey;
+
+  --border-flair: #808080;
+  --border-radius: 15px;
+}
+
+
+/****************************** UI elements ***********************************/
+
+window {
+  background-image: theme-url('footer_lodyas.png');
+}
+
+window .status {
+  font-weight: bold;
+  font-style: italic;
+  color: grey;
+}
+
+window .status.info { color: var(--lightblue); }
+window .status.warning { color: var(--orange); }
+window .status.error { color: var(--red); }
+
+scrollbar {
+  color: slategrey;
+}
+
+popover {
+  background-color: alpha(#555555, 0.95);
+  border: 1px solid grey;
+}
+
+popover contents {
+  background: red;
+}
+
+.content-box {
+  border: 2px solid alpha(slategrey, 0.3);
+  border-radius: 15px;
+}
+
+.gutter {
+  color: gray;
+  background: linear-gradient(to bottom,
+    alpha(black, 0.1),
+    alpha(var(--base), 0.1),
+    alpha(var(--border-flair), 0.1),
+    alpha(black, 0.1)
+  );
+}
+
+.content-box .header {
+  color: var(--foreground);
+  /* margin-left: 10px; */
+  background-image: theme-url('escheresque_ste.png');
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
+}
+
+.content-box .footer {
+  color: slategrey;
+  background: linear-gradient(to right,
+    alpha(black, 0.2),
+    alpha(var(--base), 0.2),
+    alpha(var(--border-flair), 0.2),
+    alpha(var(--base), 0.2),
+    alpha(black, 0.2)
+  );
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+}
+
+.indicator {
+  color: slategrey;
+}
+
+.indicator.title {
+  font-weight: bold;
+  color: var(--lightblue);
+}
+
+.indicator.inspections {
+  font-style: italic;
+  color: var(--orange);
+}
+
+.indicator.vi {
+  font-weight: bold;
+}
+
+/********************************* Flairs *************************************/
+flair.indentation-guide {
+  shape: pipe;
+  border-color: alpha(var(--comment), 0.5);
+  width: 1;
+}
+
+flair.indentation-guide-1 {
+  shape: pipe;
+  border-color: alpha(var(--lightblue), 0.5);
+  width: 1;
+}
+
+flair.indentation-guide-2 {
+  shape: pipe;
+  border-color: alpha(var(--green), 0.5);
+  width: 1;
+}
+
+flair.indentation-guide-3 {
+  shape: pipe;
+  border-color: alpha(var(--green), 0.3);
+  width: 1;
+}
+
+flair.indentation-guide-4 {
+  shape: pipe;
+  border-color: alpha(var(--green), 0.3);
+  width: 0.5;
+}
+
+flair.edge-line {
+  shape: pipe;
+  border-color: alpha(slategrey, 0.2);
+  width: 1.5;
+}
+
+flair.search {
+  shape: rounded-rectangle;
+  border-color: cyan;
+  color: white;
+  background-color: alpha(cyan, 0.5);
+}
+
+flair.search-secondary {
+  shape: rounded-rectangle;
+  border-color: cyan;
+  color: white;
+  background-color: alpha(lightgrey, 0.3);
+}
+
+flair.replace-strikeout {
+  shape: rounded-rectangle;
+  border-color: lightgrey;
+  color: red;
+  background-color: alpha(var(--red), 0.3);
+}
+
+flair.brace-highlight {
+  shape: rectangle;
+  color: var(--foreground);
+  background-color: #0064b1;
+  height: text;
+}
+
+flair.brace-highlight-secondary {
+  shape: rectangle;
+  color: var(--foreground);
+  border-color: #0064b1;
+  background-color: #0064b1;
+  width: 1;
+  height: text;
+}
+
+flair.list-selection {
+  shape: rounded-rectangle;
+  background-color: alpha(slategrey, 0.4);
+}
+
+flair.list-highlight {
+  shape: underline;
+  background-color: alpha(slategrey, 0.4);
+  border-color: lightgrey;
+  color: white;
+}
+
+flair.cursor {
+  shape: pipe;
+  border-color: var(--foreground);
+  background-color: var(--foreground);
+  width: 2;
+  height: text;
+}
+
+flair.block-cursor {
+  shape: rounded_rectangle;
+  color: var(--base);
+  background-color: var(--foreground);
+  height: text;
+}
+
+flair.selection {
+  shape: rounded_rectangle;
+  color: var(--base);
+  background-color: alpha(var(--darkblue), 0.3);
+  height: text;
+}
+
+/********************************* Styles *************************************/
+
+style.default { color: var(--foreground); }
+style.red     { color: var(--red); }
+style.green   { color: var(--green); }
+style.yellow  { color: var(--yellow); }
+style.blue    { color: var(--lightblue); }
+style.magenta { color: var(--purple); }
+style.cyan    { color: var(--aqua); }
+style.variable { color: var(--yellow); }
+style.definition { color: var(--yellow); }
+style.char { color: var(--green); }
+style.number { color: var(--orange); }
+style.operator { color: #85E0DC; }
+style.preproc { color: var(--darkblue); }
+
+style.tag { color: var(--purple); }
+style.type { color: var(--red); }
+style.member { color: var(--yellow); }
+style.info { color: var(--lightblue); }
+style.constant { color: var(--yellow); }
+style.string { color: var(--green); }
+
+style.comment {
+  font-style: italic;
+  color: var(--comment);
+}
+
+style.label {
+  font-style: italic;
+  color: var(--orange);
+}
+
+style.key {
+  font-weight: bold;
+  color: var(--lightblue);
+}
+
+style.fdecl {
+  font-weight: bold;
+  color: var(--lightblue);
+}
+
+style.keyword {
+  font-weight: bold;
+  color: var(--lightblue);
+}
+
+style.class {
+  font-weight: bold;
+  color: var(--yellow);
+}
+
+style.type-def {
+  font-weight: bold;
+  font-size: large;
+  font-family: 'Purisa';
+  color: var(--yellow);
+}
+
+style.function {
+  font-weight: bold;
+  color: lightgrey;
+}
+
+style.special {
+  font-weight: bold;
+  color: var(--darkblue);
+}
+
+style.regex {
+  color: var(--green);
+  background-color: var(--embedded_bg);
+}
+
+style.embedded {
+  color: var(--foreground);
+  background-color: alpha(var(--lightblue), 0.2);
+}
+
+style.error {
+  color: var(--red);
+  font-style: italic;
+  font-weight: bold;
+}
+
+style.warning {
+  color: var(--orange);
+  font-style: italic;
+}
+
+style.h1 {
+  color: white;
+  font-size: large;
+  font-weight: bold;
+  font-family: 'Purisa,Latin Modern Sans';
+  background-color: alpha(var(--lightblue), 0.4);
+}
+
+style.h2 {
+  color: var(--yellow);
+  font-weight: bold;
+}
+
+style.h3 {
+  color: var(--lightblue);
+  font-weight: bold;
+}
+
+style.emphasis {
+  font-style: italic;
+  font-weight: bold;
+}
+
+style.strong {
+  font-style: italic;
+}
+
+style.table {
+  color: var(--lightblue);
+  background-color: alpha(var(--embedded_bg), 0.2);
+  font-decoration: underline;
+}
+
+style.link-label { color: var(--aqua); }
+style.link-url { color: var(--comment); }
+style.addition { color: var(--green); }
+style.deletion { color: var(--red); }
+style.change { color: var(--yellow); }

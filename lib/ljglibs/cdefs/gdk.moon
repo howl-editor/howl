@@ -1,4 +1,4 @@
--- Copyright 2013-2014-2015 The Howl Developers
+-- Copyright 2013-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 require 'ljglibs.cdefs.glib'
@@ -145,7 +145,13 @@ ffi.cdef [[
   gchar * gdk_keyval_name(guint keyval);
   guint32 gdk_keyval_to_unicode(guint keyval);
 
-  typedef cairo_rectangle_int_t         GdkRectangle;
+  typedef struct  {
+    int x;
+    int y;
+    int width;
+    int height;
+  } GdkRectangle;
+
   typedef struct {} GdkVisual;
 
   /* GdkRGBA */
@@ -158,6 +164,8 @@ ffi.cdef [[
 
   gboolean gdk_rgba_parse (GdkRGBA *rgba, const gchar *spec);
   gchar * gdk_rgba_to_string (const GdkRGBA *rgba);
+  gboolean gdk_rgba_is_opaque (const GdkRGBA* rgba);
+
 
   /* GdkCursor */
   typedef struct {} GdkCursor;

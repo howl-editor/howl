@@ -20,10 +20,7 @@ describe 'VI', ->
   editor = Editor Buffer!
   cursor = editor.cursor
   selection = editor.selection
-  window = Gtk.OffscreenWindow default_width: 800, default_height: 640
-  window\add editor\to_gobject!
-  -- GTK4
-  -- window\show_all!
+  test_window editor\to_gobject!
 
   before_each ->
     howl.app.window = window: Window!

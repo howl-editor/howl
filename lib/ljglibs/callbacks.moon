@@ -69,6 +69,7 @@ dispatch = (data, ...) ->
   status, ret = pcall do_dispatch, data, ...
 
   unless status
+    print "callbacks err: #{ret}"
     options.on_error "callbacks: error in dispatch: '#{ret}'"
     return false
 

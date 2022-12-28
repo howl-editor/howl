@@ -10,7 +10,7 @@ class Status
       xalign: 0
       wrap: true
     }
-    @label.css_classes = {'status'}
+    @label\add_css_class 'status'
     @level = nil
     signal.connect 'key-press', self\clear
 
@@ -24,7 +24,7 @@ class Status
   clear: =>
     if @text
       if @level
-        @_remove_css_class 'status_' .. @level
+        @label\remove_css_class 'status_' .. @level
 
       @label.label = ''
       @level = nil
@@ -38,15 +38,11 @@ class Status
 
   _set: (level, text) =>
     if @level and level != @level
-        @_remove_css_class 'status_' .. @level
+      @label\remove_css_class 'status_' .. @level
 
-    @label.css_classes = {'status', 'status_' .. level}
+    @label\add_css_class 'status_' .. level
     @label.label = text
     @text = text
     @level = level
-
-  _remove_css_class: (cls) =>
-      classes = [c for c in *@label.css_classes when c != cls]
-      @label.css_classes = classes
 
 return Status

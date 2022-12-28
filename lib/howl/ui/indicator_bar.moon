@@ -9,8 +9,9 @@ class IndicatorBar
     error('Missing argument #1 (id)', 2) if not cls
     @box = Gtk.Box {
       height_request: 20
-      spacing: 10
+      -- spacing: 10
     }
+    @box.css_classes = {'indicator-bar', cls}
     @indics = {}
 
   add: (position, id, widget) =>
@@ -35,7 +36,7 @@ class IndicatorBar
 
   _create_indicator: (id, widget) ->
     widget or= Gtk.Label single_line_mode: true, ellipsize: Pango.ELLIPSIZE_MIDDLE
-    widget.css_classes = { 'indic_default', 'indic_' .. id }
+    widget.css_classes = { 'indicator', id }
     widget
 
 return IndicatorBar
