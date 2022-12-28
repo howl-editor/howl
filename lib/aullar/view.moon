@@ -7,6 +7,7 @@ ffi = require 'ffi'
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 Pango = require 'ljglibs.pango'
+cairo = require 'ljglibs.cairo'
 signal = require 'ljglibs.gobject.signal'
 require 'ljglibs.cairo.context'
 DisplayLines = require 'aullar.display_lines'
@@ -108,7 +109,7 @@ View = {
       -- append @_handlers, \on_scroll_event self\_on_scroll
       -- append @_handlers, \on_screen_changed self\_on_screen_changed
 
-    @_draw_handler = @area\set_draw_func self\_draw
+    @_draw_handler = @area\set_draw_func self\_on_draw
 
     with @key_controller
       append @_handlers, \on_key_pressed self\_on_key_pressed
@@ -125,7 +126,8 @@ View = {
     append @_handlers, @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
       @base_x = floor adjustment.value
-      @area\queue_draw!
+      @_draw!
+      -- @area\queue_draw!
 
     -- @horizontal_scrollbar_alignment = Gtk.Alignment {
     --   left_padding: @gutter_width,
@@ -272,8 +274,9 @@ View = {
         x = floor max(0, x)
         return if x == @_base_x
         @_base_x = x
-        @area\queue_draw!
         @_sync_scrollbars horizontal: true
+        @_draw!
+        -- @area\queue_draw!
     }
 
     edit_area_x: => @margin
@@ -296,8 +299,9 @@ View = {
         @_first_visible_line = 1
         @_base_x = 0
         @_reset_display!
-        @area\queue_draw!
+        -- @area\queue_draw!
         buffer\ensure_styled_to line: @last_visible_line + 1
+        @_draw!
     }
   }
 
@@ -315,7 +319,6 @@ View = {
     @_last_visible_line = nil
     @_sync_scrollbars!
     @buffer\ensure_styled_to line: @last_visible_line + 1
-    @area\queue_draw!
 
     if line != 1 and @last_visible_line == @buffer.nr_lines
       -- make sure we don't accidentally scroll to much here,
@@ -323,6 +326,8 @@ View = {
       @last_visible_line = @last_visible_line
 
     @gutter\sync!
+    -- @area\queue_draw!
+    @_draw!
 
   _sync_scrollbars: (opts = { horizontal: true, vertical: true })=>
     @_updating_scrolling = true
@@ -452,7 +457,10 @@ View = {
       width = @width - start_x
       height = (max_y - min_y)
       if width > 0 and height > 0
-        @area\queue_draw!
+        -- @area\queue_draw!
+
+        @_draw y1: min_y, y2: max_y
+        -- @area\queue_draw_area start_x, min_y, width, height
 
   position_from_coordinates: (x, y, opts = {}) =>
     return nil unless @showing
@@ -555,8 +563,58 @@ View = {
     for line_nr = from_line, to_line
       @display_lines[line_nr] = nil
 
-  _draw: (cr, width, height) =>
-    clip = cr.clip_extents
+  _on_draw: (cr, width, height) =>
+
+    if not @_cairo_ctx
+      print "create new cairo ctx"
+
+      @_surface = cairo.Surface.create_similar(
+        cr.target,
+        cairo.CONTENT_COLOR_ALPHA,
+        width,
+        height
+      )
+      @_cairo_ctx = cairo.Context @_surface
+      @_do_draw cr.clip_extents
+    elseif @_redraw_rect
+      @_do_draw @_redraw_rect
+
+
+    with cr
+      .operator = cairo.OPERATOR_SOURCE
+      \set_source_surface @_surface, 0, 0
+      \rectangle 0, 0, width, height
+      \fill!
+
+    @_redraw_rect = nil
+
+  _draw: (clip) =>
+    return unless @_cairo_ctx
+
+    if @_redraw_rect
+      if clip
+        @_redraw_rect.y1 = min(@_redraw_rect.y1, clip.y1)
+        @_redraw_rect.yr = max(@_redraw_rect.y2, clip.y2)
+      else
+        @_redraw_rect = {y1: 0, y2: @height}
+    else
+      @_redraw_rect = clip or {y1: 0, y2: @height}
+
+    @area\queue_draw!
+
+  _do_draw: (clip) =>
+    return unless @_cairo_ctx
+    clip or= {y1: 0, y2: @height}
+    cr = cairo.Context @_surface
+    draw_height = clip.y2 - clip.y1
+
+    -- clear damaged region
+    cr.operator = cairo.OPERATOR_CLEAR
+    cr\rectangle 0, clip.y1, @width, draw_height
+    cr\fill!
+
+    cr.operator = cairo.OPERATOR_OVER
+
     conf = @config
     line_draw_opts = config: conf, buffer: @_buffer
 
@@ -580,7 +638,6 @@ View = {
 
     current_line = @cursor.line
     y = start_y
-    print "start_y: #{start_y}"
     cursor_col = @cursor.column
 
     for line_info in *lines
@@ -589,7 +646,7 @@ View = {
       print "view draw line #{line.nr} at #{y}"
 
       if line.nr == current_line and conf.view_highlight_current_line
-        @current_line_marker\draw_before edit_area_x, y, display_line, cr, clip, cursor_col
+        @current_line_marker\draw_before edit_area_x, y, display_line, cr, cursor_col
 
       if @selection\affects_line line
         @selection\draw edit_area_x, y, cr, display_line, line
@@ -601,7 +658,7 @@ View = {
 
       if line.nr == current_line
         if conf.view_highlight_current_line
-          @current_line_marker\draw_after edit_area_x, y, display_line, cr, clip, cursor_col
+          @current_line_marker\draw_after edit_area_x, y, display_line, cr, cursor_col
 
         if conf.view_show_cursor
           @cursor\draw edit_area_x, y, cr, display_line
@@ -905,6 +962,9 @@ View = {
     resized = (not @height or @height != height) or
       (not @width or @width != width)
     return unless resized
+
+    @_surface = nil
+    @_cairo_ctx = nil
 
     -- GTK4: gone
     -- gdk_window = @area.window

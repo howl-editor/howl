@@ -11,7 +11,6 @@ pango_cairo = Pango.cairo
 define_class {
   new: (@view, config) =>
     @number_chars = 0
-    @width = 0
     @first_line = 0
     @last_line = 0
     @area = Gtk.DrawingArea {vexpand: true, css_classes: {'gutter'}}
@@ -29,7 +28,7 @@ define_class {
   sync: =>
     return unless @area.visible
     view_first = @view.first_visible_line
-    view_last = @view.last_visible_line
+    view_last = @view.last_visible_line + 1
     if view_first != @first_line or view_last != @last_line
       @first_line = view_first
       @last_line = view_last
@@ -45,8 +44,7 @@ define_class {
     lines_text = tostring(buffer.nr_lines)
     num_chars = #lines_text
     return if @number_chars == num_chars
-    @_text_width = @view\text_dimensions(lines_text).width
-    @width = @_text_width
+    @_text_width = @view\text_dimensions(lines_text).width + 2
     @area.content_width = @_text_width
     @number_chars = num_chars
 
@@ -55,9 +53,6 @@ define_class {
 
     p_ctx = @area.pango_context
     d_lines = @view.display_lines
-
-    view_first = @view.first_visible_line
-    view_last = @view.last_visible_line
 
     c = @foreground
     cr\set_source_rgba c.red, c.green, c.blue, c.alpha
@@ -68,12 +63,13 @@ define_class {
 
     y = 0
 
-    for line_nr = view_first, view_last
+    for line_nr = @first_line, @last_line
       d_line = d_lines[line_nr]
       layout.text = tostring line_nr
 
       _, text_height = layout\get_pixel_size!
       line_height = d_line.height
+      total_height = line_height
 
       if d_line.is_wrapped
         layout_line = d_line.layout\get_line_readonly 0
@@ -82,44 +78,5 @@ define_class {
 
       cr\move_to 0, y + (line_height - text_height) / 2
       pango_cairo.show_layout cr, layout
-      -- cr\restore!
-      y += line_height
-
-
-
-  start_draw: (@cairo_context, pango_context, @clip) =>
-    @layout = nil
-    -- return if @clip.x1 >= @width
-    -- @_draw_background!
-    -- @layout = Layout pango_context
-    -- @layout.width = (@_text_width - 5) * Pango.SCALE
-    -- @layout.alignment = Pango.ALIGN_RIGHT
-
-  draw_for_line: (line_nr, x, y, display_line) =>
-    return unless @layout
-
-    cr = @cairo_context
-    color = @_foreground
-    cr\save!
-    cr\set_source_rgba color.red, color.green, color.blue, @_foreground_alpha
-    @layout.text = tostring line_nr
-    _, text_height = @layout\get_pixel_size!
-    line_height = display_line.height
-
-    if display_line.is_wrapped
-      layout_line = display_line.layout\get_line_readonly 0
-      _, log_rect = layout_line\get_pixel_extents!
-      line_height = log_rect.height
-
-    cr\move_to x + @background.padding_left, y + (line_height - text_height) / 2
-    pango_cairo.show_layout cr, @layout
-    cr\restore!
-
-  end_draw: =>
-    @cairo_context, @clip, @layout = nil, nil, nil
-
-  _draw_background: =>
-    @cairo_context\save!
-    @background\draw @cairo_context
-    @cairo_context\restore!
+      y += total_height
 }

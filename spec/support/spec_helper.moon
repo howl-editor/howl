@@ -139,6 +139,6 @@ export test_window = (child) ->
   window.css_classes = {'test-window'}
   window.child = child
   window\show!
-  while window.allocated_height <= 0
+  while child.allocated_height <= 0
     howl.app\pump_mainloop!
   window

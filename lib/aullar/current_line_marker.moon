@@ -19,7 +19,7 @@ flair.define 'current-line-overlay', {
 CurrentLineMarker = {
   new: (@view) =>
 
-  draw_before: (x, y, display_line, cr, clip, col) =>
+  draw_before: (x, y, display_line, cr, col) =>
     @_offset = 1
     @_height = display_line.height
     current_flair = flair.get 'current-line'
@@ -32,7 +32,7 @@ CurrentLineMarker = {
     current_flair.height = @_height
     flair.draw current_flair, display_line, @_offset, @_offset, x, y, cr
 
-  draw_after: (x, y, display_line, cr, clip, col) =>
+  draw_after: (x, y, display_line, cr, col) =>
     block = display_line.block
     overlay_flair = flair.get 'current-line-overlay'
 

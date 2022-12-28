@@ -197,6 +197,7 @@ flair.cursor {
   background-color: var(--foreground);
   width: 2;
   height: text;
+  minimum-width: letter;
 }
 
 flair.block-cursor {
@@ -204,6 +205,8 @@ flair.block-cursor {
   color: var(--base);
   background-color: var(--foreground);
   height: text;
+  minimum-width: letter;
+
 }
 
 flair.selection {

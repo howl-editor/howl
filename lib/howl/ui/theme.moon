@@ -162,6 +162,8 @@ extract_css_flairs = (css) ->
     flair_def.text_color = css_color vars.color
     flair_def.background = css_color vars.background_color
     flair_def.height = vars.height
+    if vars.minimum_width
+      flair_def.min_width = tonumber(vars.minimum_width) or vars.minimum_width or flair_def.min_width
 
     flairs[name] = flair_def
     ''
@@ -173,7 +175,6 @@ extract_css_custom = (css) ->
   for decls in css\gmatch '%.gutter%s*{([^}]+)}'
     moon.p decls
     color = decls\match('%s+color%s*:%s*([^;]+);')
-    print "color: #{color}"
     values.gutter_color = css_color(color) if color
 
   values, css
