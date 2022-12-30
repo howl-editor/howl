@@ -380,7 +380,7 @@ ffi.cdef [[
                                 int width,
                                 int	height);
 
-
+  cairo_status_t cairo_surface_status (cairo_surface_t *surface);
 
   void cairo_surface_destroy (cairo_surface_t *surface);
 

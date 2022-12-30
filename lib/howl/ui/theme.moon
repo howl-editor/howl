@@ -159,11 +159,14 @@ extract_css_flairs = (css) ->
     if vars.width
       flair_def.line_width = tonumber((vars.width\gsub('px', '')))
 
-    flair_def.text_color = css_color vars.color
-    flair_def.background = css_color vars.background_color
-    flair_def.height = vars.height
+    flair_def.text_color = css_color(vars.color) or flair_def.text_color
+    flair_def.background = css_color(vars.background_color) or flair_def.background
+    flair_def.height = vars.height or flair_def.height
     if vars.minimum_width
       flair_def.min_width = tonumber(vars.minimum_width) or vars.minimum_width or flair_def.min_width
+
+    if vars.border_radius
+      flair_def.corner_radius = tonumber(vars.border_radius)
 
     flairs[name] = flair_def
     ''

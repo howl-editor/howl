@@ -7,7 +7,7 @@ require 'ljglibs.cairo.context'
 
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
-{:min, :max, :floor, :pi} = math
+{:min, :max, :pi, :ceil} = math
 copy = moon.copy
 
 flairs = {}
@@ -78,12 +78,19 @@ draw_ops = {
       radius = min(width, height) / 3
 
     quadrant = pi / 2
-    right, bottom, left, top = 0, quadrant - 0.5, quadrant * 2, (quadrant * 3) + 0.5
+    right, bottom, left, top = 0, quadrant, quadrant * 2, (quadrant * 3)
+    lw = ceil flair._line_width
+
     cr\move_to x, y + radius
-    cr\arc x + radius, y + radius, radius, left, top
-    cr\arc x + width - radius, y + radius, radius, top, right
-    cr\arc x + width - radius, y + height - radius, radius, right, bottom
-    cr\arc x + radius, y + height - radius, radius, bottom, left
+
+    -- top left
+    cr\arc x + radius + lw, y + radius + lw, radius, left, top
+    -- top right
+    cr\arc x + width - radius - lw, y + radius + lw, radius, top, right
+    -- bottom right
+    cr\arc x + width - radius - lw, y + height - radius - lw, radius, right, bottom
+    -- bottom left
+    cr\arc x + radius + lw, y + height - radius - lw, radius, bottom, left
     cr\close_path!
 
     set_source_from_color cr, 'background', flair
@@ -162,6 +169,7 @@ build = (params) ->
 
 define = (name, opts) ->
   flair = build opts
+  flair.name = name
   flairs[name] = flair
 
 get_text_object = (display_line, start_offset, end_offset, flair) ->
@@ -171,7 +179,6 @@ get_text_object = (display_line, start_offset, end_offset, flair) ->
   t_ptr = dline_layout\get_text!
   layout\set_text t_ptr + start_offset - 1, text_size
   layout.tabs = dline_layout.tabs
-
 
   -- need to set the correct attributes when we have a different text color
   -- or need to determine the height of the text object correctly
@@ -226,7 +233,6 @@ need_text_object = (flair) ->
     flair
 
   draw: (flair, display_line, start_offset, end_offset, x, y, cr) ->
-
     get_defined_width = (at_x, f, clip) ->
       return f.width if type(f.width) == 'number'
       if f.width == 'full'
@@ -246,13 +252,12 @@ need_text_object = (flair) ->
 
       off_line = start_offset > line.line_end or end_offset < line.line_start
       if off_line or end_offset == line.line_start and (start_offset != end_offset)
-        line_y_offset += line.height
+        line_y_offset += line.extents.height
         continue -- flair not within this layout line
 
       f_start_offset = max start_offset, line.line_start
       f_end_offset = min line.line_end, end_offset
       start_rect = layout\index_to_pos f_start_offset - 1
-      flair_y = y + start_rect.y / SCALE
       text_start_x = x + max((start_rect.x / SCALE), 0) - base_x
       start_x = max(text_start_x, view.edit_area_x)
 
@@ -265,7 +270,8 @@ need_text_object = (flair) ->
       if flair.min_width
         flair_min_width = flair.min_width
         if flair_min_width == 'letter'
-          width = max(width_of_space, width)
+          if width <= 0
+            width = max(width_of_space, width)
         else
           width = max(flair_min_width - base_x, width)
 
@@ -281,17 +287,18 @@ need_text_object = (flair) ->
       -- height calculations
       height = type(flair.height) == 'number' and flair.height or line.height
 
+      flair_y = if nr == 1
+         y + line_y_offset
+      else
+        y + start_rect.y / SCALE
+
       if (flair.height == 'text' or flair.text_color) and height > text_object.height
-        flair_y += display_line.y_offset
+        flair_y = y + (start_rect.y / SCALE) + display_line.y_offset
         height = text_object.height
-        l_baseline = line.baseline - line_y_offset
-        bl_diff = floor (l_baseline - (text_object.layout.baseline / SCALE))
-
-        if bl_diff > 0
-          flair_y += bl_diff
-
 
       cr\save!
+      if flair.debug
+        print "draw(#{start_x}, #{flair_y}, #{width}, #{height})"
       flair.draw flair, start_x, flair_y, width, height, cr
       cr\restore!
 

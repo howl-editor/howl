@@ -7,8 +7,9 @@ import signal from howl
 class Status
   new: =>
     @label = Gtk.Label {
-      xalign: 0
-      wrap: true
+      wrap: true,
+      hexpand: true,
+      halign: Gtk.ALIGN_START
     }
     @label\add_css_class 'status'
     @level = nil

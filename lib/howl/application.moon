@@ -99,6 +99,7 @@ class Application extends PropertyObject
     callbacks.configure {
       :dispatcher,
       on_error: (e) ->
+        print "add err: #{e}"
         _G.log.error e
     }
 

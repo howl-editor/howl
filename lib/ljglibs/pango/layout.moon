@@ -28,6 +28,11 @@ core.define 'PangoLayoutLine', {
     arr = ffi_new 'int[2]'
     outside = C.pango_layout_line_x_to_index @, x_pos, arr, arr + 1
     outside == 1, tonumber(arr[0]), tonumber(arr[1])
+
+  get_height: =>
+    res = ffi_new 'int[1]'
+    C.pango_layout_line_get_height @, res
+    tonumber res[0]
 }
 
 core.define 'PangoLayoutIter', {

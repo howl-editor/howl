@@ -301,7 +301,8 @@ DisplayLine = define_class {
             :line_end,
             :extents,
             baseline: iter.baseline / SCALE
-            height: extents.height + @y_offset * 2
+            height: layout_line\get_height! / SCALE
+
           }
           nr += 1
           break unless iter\next_line!

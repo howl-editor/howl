@@ -201,7 +201,7 @@ flair.cursor {
 }
 
 flair.block-cursor {
-  shape: rounded_rectangle;
+  shape: rounded-rectangle;
   color: var(--base);
   background-color: var(--foreground);
   height: text;

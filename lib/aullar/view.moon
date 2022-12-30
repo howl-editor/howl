@@ -4,6 +4,8 @@
 ffi = require 'ffi'
 {string: ffi_string, cast: ffi_cast} = ffi
 
+sys = require 'howl.sys'
+
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 Pango = require 'ljglibs.pango'
@@ -460,7 +462,6 @@ View = {
         -- @area\queue_draw!
 
         @_draw y1: min_y, y2: max_y
-        -- @area\queue_draw_area start_x, min_y, width, height
 
   position_from_coordinates: (x, y, opts = {}) =>
     return nil unless @showing
@@ -486,7 +487,6 @@ View = {
       pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
       line_y = max(0, min(y - cur_y, matched_line.text_height - 1)) * Pango.SCALE
       inside, index = matched_line.layout\xy_to_index pango_x, line_y
-      print "inside: #{inside}, index: #{index}, line: #{line.text}"
       if not inside
         -- left of the area, point it to first char in line
         return line.start_offset if x < @edit_area_x
@@ -564,10 +564,7 @@ View = {
       @display_lines[line_nr] = nil
 
   _on_draw: (cr, width, height) =>
-
     if not @_cairo_ctx
-      print "create new cairo ctx"
-
       @_surface = cairo.Surface.create_similar(
         cr.target,
         cairo.CONTENT_COLOR_ALPHA,
@@ -578,7 +575,6 @@ View = {
       @_do_draw cr.clip_extents
     elseif @_redraw_rect
       @_do_draw @_redraw_rect
-
 
     with cr
       .operator = cairo.OPERATOR_SOURCE
@@ -594,7 +590,7 @@ View = {
     if @_redraw_rect
       if clip
         @_redraw_rect.y1 = min(@_redraw_rect.y1, clip.y1)
-        @_redraw_rect.yr = max(@_redraw_rect.y2, clip.y2)
+        @_redraw_rect.y2 = max(@_redraw_rect.y2, clip.y2)
       else
         @_redraw_rect = {y1: 0, y2: @height}
     else
@@ -604,8 +600,8 @@ View = {
 
   _do_draw: (clip) =>
     return unless @_cairo_ctx
+    cr = @_cairo_ctx
     clip or= {y1: 0, y2: @height}
-    cr = cairo.Context @_surface
     draw_height = clip.y2 - clip.y1
 
     -- clear damaged region
@@ -643,7 +639,8 @@ View = {
     for line_info in *lines
       {:display_line, :line} = line_info
       line_draw_opts.line = line
-      print "view draw line #{line.nr} at #{y}"
+      if @debug
+        print "view draw line #{line.nr} at #{y}"
 
       if line.nr == current_line and conf.view_highlight_current_line
         @current_line_marker\draw_before edit_area_x, y, display_line, cr, cursor_col
@@ -678,6 +675,7 @@ View = {
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
     @gutter\sync_dimensions @buffer, force: true
     @gutter\sync @
+    @refresh_display from_line: 1, invalidate: true
 
   _on_destroy: =>
     print "view on_destroy"
@@ -786,7 +784,7 @@ View = {
         @_invalidate_display args.invalidate_offset, args.offset - 1
 
       @gutter\sync! if lines_changed
-      @gutter\sync_dimensions!
+      @gutter\sync_dimensions @_buffer
       -- if lines_changed and not @gutter\sync_dimensions buffer
       --   @area\queue_draw!
 
@@ -898,7 +896,6 @@ View = {
 
   _on_motion_event: (_, x, y) =>
     -- print "on_motion_event: #{x} x #{y}"
-    return if true
     event = ffi_cast('GdkEventMotion *', event)
     return true if notify @, 'on_motion_event', event
     unless @_selection_active
@@ -963,8 +960,12 @@ View = {
       (not @width or @width != width)
     return unless resized
 
-    @_surface = nil
+    -- For resizes we always recreate our cached surface.
+    -- Attempts at keeping cached surfaces with larger sizes only caused
+    -- massive performance issues, presumably due to inadvertent scaling
+    -- or something
     @_cairo_ctx = nil
+    @_surface = nil
 
     -- GTK4: gone
     -- gdk_window = @area.window

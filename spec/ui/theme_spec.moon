@@ -199,6 +199,11 @@ describe 'theme', ->
         'flair.foo { shape: pipe; background-color: red; }'
       ).foo.background
 
+    it 'translates border-radius as corner_radius ', ->
+      assert.equal 2, load_css(
+        'flair.foo { shape: rounded-rectangle; border-radius: 2; }'
+      ).foo.corner_radius
+
   context 'custom value extractions', ->
     load_css = (css) ->
       File.with_tmpfile (file) ->

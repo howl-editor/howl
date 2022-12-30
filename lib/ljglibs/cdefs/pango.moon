@@ -375,6 +375,9 @@ ffi.cdef [[
                                          int *index_,
                                          int *trailing);
 
+  void pango_layout_line_get_height (PangoLayoutLine* line, int* height);
+
+
   /* PangoLayoutIter */
   PangoLayoutIter * pango_layout_get_iter (PangoLayout *layout);
   void pango_layout_iter_free (PangoLayoutIter *iter);

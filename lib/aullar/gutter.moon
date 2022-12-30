@@ -49,7 +49,7 @@ define_class {
     @number_chars = num_chars
 
   _draw: (cr, width, height) =>
-    return if not @view.showing
+    return if not @view.showing or not @area.visible
 
     p_ctx = @area.pango_context
     d_lines = @view.display_lines
@@ -65,6 +65,7 @@ define_class {
 
     for line_nr = @first_line, @last_line
       d_line = d_lines[line_nr]
+      break unless d_line
       layout.text = tostring line_nr
 
       _, text_height = layout\get_pixel_size!

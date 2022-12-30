@@ -278,6 +278,7 @@ class Window extends PropertyObject
       .row_spacing = inner_padding
       .column_spacing = inner_padding
 
+    print "_on_theme_changed: queue draw"
     @win\queue_draw!
 
   _on_destroy: =>
