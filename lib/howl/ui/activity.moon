@@ -35,7 +35,7 @@ class Activity extends PropertyObject
       header: @header\to_gobject!
     }
     with @text_widget.view\to_gobject!
-      .margin_left = 10
+      .margin_start = 10
       .margin_top = 5
       .margin_bottom = 5
 

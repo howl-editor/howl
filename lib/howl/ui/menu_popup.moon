@@ -10,17 +10,21 @@ class MenuPopup extends Popup
     error('Missing argument #2: callback', 3) if not @callback
 
     @list = List -> @items
+    print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    print 'MENU POPUP'
+    print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     @list_widget = ListWidget @list, auto_fit_width: true
 
     @highlight_matches_for = ''
     super @list_widget\to_gobject!
-    with @child
-      .margin_top = 2
-      .margin_left = 2
+    -- with @child
+    --   .margin_top = 2
+    --   .margin_start = 2
 
     @list_widget\show!
 
   refresh: =>
+    print "menu refresh"
     @list\update @highlight_matches_for
 
   show: (...) =>
@@ -29,8 +33,9 @@ class MenuPopup extends Popup
     @resize!
 
   resize: =>
-    h_margin = @child.margin_left + @child.margin_right
+    h_margin = @child.margin_start + @child.margin_end
     v_margin = @child.margin_top + @child.margin_bottom
+    print "menu resize: #{@list_widget.width} x #{@list_widget.height}"
     super @list_widget.width + h_margin, @list_widget.height + v_margin
 
   choose: =>

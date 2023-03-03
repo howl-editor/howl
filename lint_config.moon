@@ -203,7 +203,8 @@
       'with_signal_handler',
       'with_tmpdir',
       'trimmed_text',
-      'test_window'
+      'test_window',
+      'pending'
    },
 
     sandboxed_loader_spec: {

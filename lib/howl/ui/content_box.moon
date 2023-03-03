@@ -100,34 +100,34 @@ class ContentBox extends PropertyObject
     true
 
   _on_theme_changed: (opts) =>
-    def = opts.theme[@name] or opts.theme.content_box or {}
-    bg_conf = get_bg_conf def, prepare: self\_prepare_background
+    -- def = opts.theme[@name] or opts.theme.content_box or {}
+    -- bg_conf = get_bg_conf def, prepare: self\_prepare_background
 
-    main_bg = @main.background
-    main_bg\reconfigure bg_conf
+    -- main_bg = @main.background
+    -- main_bg\reconfigure bg_conf
 
-    with @main.widget
-      .margin_top = main_bg.padding_top
-      .margin_right = main_bg.padding_right
-      .margin_bottom = main_bg.padding_bottom
-      .margin_left = main_bg.padding_left
+    -- with @main.widget
+    --   .margin_top = main_bg.padding_top
+    --   .margin_right = main_bg.padding_right
+    --   .margin_bottom = main_bg.padding_bottom
+    --   .margin_left = main_bg.padding_left
 
-    corner_padding = main_bg.border_radius
+    -- corner_padding = main_bg.border_radius
 
-    reconfigure_bar = (bar) ->
-      bg = bar.background
-      bar_conf = def[bar.name] or {}
-      bar_bg_conf = get_bg_conf bar_conf
-      bg\reconfigure bar_bg_conf
-      bar_padding = bar_conf.padding or 0
-      with bar.widget
-        .margin_top = bg.padding_top + max(bar_conf.padding_top or 0, bar_padding)
-        .margin_right = max(bg.padding_right, corner_padding, main_bg.padding_right) + max(bar_conf.padding_right or 0, bar_padding)
-        .margin_bottom = bg.padding_bottom + max(bar_conf.padding_bottom or 0, bar_padding)
-        .margin_left = max(bg.padding_left, corner_padding, main_bg.padding_left) + max(bar_conf.padding_left or 0, bar_padding)
+    -- reconfigure_bar = (bar) ->
+    --   bg = bar.background
+    --   bar_conf = def[bar.name] or {}
+    --   bar_bg_conf = get_bg_conf bar_conf
+    --   bg\reconfigure bar_bg_conf
+    --   bar_padding = bar_conf.padding or 0
+    --   with bar.widget
+    --     .margin_top = bg.padding_top + max(bar_conf.padding_top or 0, bar_padding)
+    --     .margin_right = max(bg.padding_right, corner_padding, main_bg.padding_right) + max(bar_conf.padding_right or 0, bar_padding)
+    --     .margin_bottom = bg.padding_bottom + max(bar_conf.padding_bottom or 0, bar_padding)
+    --     .margin_left = max(bg.padding_left, corner_padding, main_bg.padding_left) + max(bar_conf.padding_left or 0, bar_padding)
 
-    reconfigure_bar @header if @header
-    reconfigure_bar @footer if @footer
+    -- reconfigure_bar @header if @header
+    -- reconfigure_bar @footer if @footer
 
   _on_destroy: =>
     -- disconnect signal handlers

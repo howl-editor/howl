@@ -55,10 +55,14 @@ class ListWidget extends PropertyObject
   hide: => @text_widget\hide!
 
   _on_refresh: =>
+    print "ListWidget on_refresh, showing: #{@text_widget.showing}"
+    print @text_widget.text
     if @text_widget.showing
       @_adjust_height!
       @_adjust_width!
       @text_widget.view.first_visible_line = 1
+
+    print "after: #{@width} x #{@height}"
 
   _adjust_height: =>
     shown_rows = @list.rows_shown

@@ -70,10 +70,11 @@ class BufferPopup extends Popup
         nr_lines -= 1
 
     width, height = @view\block_dimensions first_line, first_line + nr_lines - 1
-    margin = max @view.margin, 3
+    margin = 3
     width += margin * 2
     height += margin * 2
 
+    print "buffer popup _get_dimensions"
     moon.p width: ceil(width), height: ceil(height)
     return width: ceil(width), height: ceil(height)
 

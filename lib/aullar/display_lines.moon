@@ -219,6 +219,14 @@ LinesMt = {
 DisplayLine = define_class {
   new: (@display_lines, @view, buffer, @pango_context, line, width) =>
     @layout = Layout pango_context
+
+    -- XXX
+    font_desc = Pango.FontDescription {
+      family: 'Liberation Mono',
+      size: 12 * Pango.SCALE
+    }
+    @layout.font_description = font_desc
+
     @layout\set_text line.ptr, line.size
     @layout.tabs = display_lines.tab_array
     @nr = line.nr
@@ -253,6 +261,7 @@ DisplayLine = define_class {
     @text_height = height
     @height = height + @y_offset * 2
     @width = width
+    print "DL: width #{width} for '#{line.text}'"
     if config.view_show_cursor
       @width += view.cursor.width
     @is_wrapped = @layout.is_wrapped
@@ -334,6 +343,8 @@ DisplayLine = define_class {
       flair.draw bg_flair, @, bg_range.start_offset, bg_range.end_offset, x, y, cr
 
     if base_x > 0
+      print "base_x: #{base_x}"
+      moon.p clip
       cr\save!
       cr\rectangle x, y, clip.x2 - x, clip.y2
       cr\clip!

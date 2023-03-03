@@ -15,7 +15,6 @@ class TextWidget extends PropertyObject
     @buffer = ActionBuffer!
     @buffer.title = 'TextWidget'
     @view = View @buffer._buffer
-    @view.margin = 0
     with @view.config
       .view_show_inactive_cursor = false
       .view_line_padding = config.line_padding

@@ -1,51 +1,52 @@
--- Copyright 2012-2022 The Howl Developers
+-- Copyright 2012-2023 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
 Popover = Gtk.Popover
 gobject_signal = require 'ljglibs.gobject.signal'
 {:PropertyObject} = howl.util.moon
-{:ContentBox} = howl.ui
+{:floor} = math
 
 class Popup extends PropertyObject
   comfort_zone: 10
 
-  new: (@child, properties = {}) =>
+  new: (@child, props = {}) =>
     error('Missing argument #1: child', 3) if not child
-    @box = ContentBox 'popup', child, {
-      header: properties.header,
-      footer: properties.footer
-    }
-
-    props = {
-      autohide: false
-      has_arrow: false
-      width_request: properties.width or 150
-      height_request: properties.height or 150
-      child: @box\to_gobject!
-    }
+    props = {k, v for k, v in pairs props}
+    props.autohide = false
+    props.has_arrow = false
+    props.child = @child
+    props.width_request = props.width or 150
+    props.height_request = props.height or 150
     @popover = Popover props
-    @popover.child = @box\to_gobject!
-    @popover\on_show ->
-      print 'on popup show!'
-      moon.p @popover.allocation
 
-    @popover\on_realize ->
-      print 'on popup realize!'
-      moon.p @popover.allocation
-     --   print "w: #{@window.allocated_width}, h: #{@window.allocated_height}"
-    @popover\on_hide ->
-      print 'on popup hide!'
+    -- @popover.child = @box\to_gobject!
+    -- @popover\on_show ->
+    --   print 'on popup show!'
+    --   moon.p @popover.allocation
+    --   print "allocated_height: #{@popover.allocated_height}"
+    --   print "popup on_show, width request: #{@popover.width_request}"
+
+    -- @popover\on_realize ->
+    --   print 'on popup realize!'
+    --   moon.p @popover.allocation
+    --  --   print "w: #{@window.allocated_width}, h: #{@window.allocated_height}"
+    -- @popover\on_hide ->
+    --   print 'on popup hide!'
 
     @showing = false
     super!
 
-  show: (widget, options = position: 'center') =>
+  show: (widget, options = {position: 'center'}) =>
     error('Missing argument #1: widget', 2) if not widget
-    print "show start"
+
     status, err = pcall ->
-      @popover\set_parent widget
-      -- @popover\realize!
+      if @popover.parent != widget
+        @popover\set_parent widget
+        print "reset parent"
+
+      -- @popover\present!
+      -- print 'present'
 
       -- @toplevel = widget\get_ancestor(wType)
       -- print "toplevel: #{@toplevel}"
@@ -61,24 +62,19 @@ class Popup extends PropertyObject
       -- moon.p options
       if options.x
       --   -- @window.window_position = Gtk.WIN_POS_NONE
-        status, ret = pcall @move_to, @, options.x, options.y
-        print "status: #{status}: #{ret}"
-      -- else
-      --   status, ret = pcall @center, @
-      --   print "status: #{status}: #{ret}"
+        @move_to options.x, options.y
 
-      print "doing show!"
+      io.stderr\write "doing show!\n"
       -- @window.visible = true
       -- @window\show!
       @popover\popup!
-      print "show!"
+      print "popup show!"
 
     unless status
       moon.p err
 
   close: =>
     print "popup close!"
-    -- @window\hide!
     @popover\popdown!
     @showing = false
     @widget = nil
@@ -103,12 +99,30 @@ class Popup extends PropertyObject
     -- @x, @y = x, y
     -- -- @window\move x, y
     -- @resize @window.allocated_width, @window.allocated_height
-    @popover.pointing_to = {:x, :y, width: 1, height: 1}
+    @popover.position = Gtk.POS_BOTTOM
+    @pointing_to = {:x, :y, width: 1, height: 1}
+    -- @popover.pointing_to = {:x, :y, width: 1, height: 1}
+    @popover.pointing_to = @pointing_to
+    print "set pointing_to"
+    moon.p @popover.pointing_to
+    print "move_to: width_request: #{@popover.width_request}"
+    -- print "allocated_width: #{@popover.allocated_width}"
+    -- print "set set_offset width to #{floor(@popover.width_request / 2)}"
+    @_set_offset @popover.width_request
+
+  _set_offset: (width, height) =>
+    x_off = floor width / 2
+    actual = '?'
+    -- if @pointing_to
+    --   actual = @pointing_to.x - x_off
+    print "set x_offset: #{x_off}, actual: #{actual}"
+
+    @popover\set_offset x_off, 0
 
   resize: (width, height) =>
     if not @showing
-      @window.default_width = width
-      @window.default_height = height
+      @popover.width_request = width
+      @popover.height_request = height
       return
 
 
@@ -121,15 +135,29 @@ class Popup extends PropertyObject
     -- if @y + height > (screen.height - @comfort_zone)
     --   height = screen.height - @y - @comfort_zone
 
+    -- if @showing
+      -- @popover\popdown!
+    width, height = floor(width), floor(height)
     @width, @height = width, height
-    @window\set_size_request width, height
-    @window\resize width, height
+    -- print "set set_offset with to #{floor(width / 2)}"
+    -- @popover\set_offset floor(width / 2), 0
+    @_set_offset width
+    print "popup resize: set size request to #{width} x #{height}"
+    @popover\set_size_request width, height
+    -- @child\set_size_request width, height
+    -- if @pointing_to
+    --   print "resize: set pointing_to"
+    --   @popover.pointing_to = @pointing_to
+    -- if @showing
+      -- @popover\popup!
+    -- @window\resize width, height
 
   center: =>
     error('Attempt to center a closed popup', 2) if not @showing
     height = @height
     width = @width
 
+    error "popup center NYI"
     -- now, if we were to center ourselves on the widgets toplevel,
     -- with our current width and height..
 

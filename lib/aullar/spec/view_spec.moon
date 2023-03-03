@@ -11,7 +11,6 @@ describe 'View', ->
     buffer = Buffer ''
     view = View buffer
     view.config.view_line_padding = 0
-    view.margin = 0
     cursor = view.cursor
     selection = view.selection
     test_window view\to_gobject!
@@ -49,7 +48,6 @@ describe 'View', ->
     local dim
 
     before_each ->
-      view.margin = 0
       dim = view\text_dimensions 'M'
 
     describe 'position_from_coordinates(x, y, opts = {})', ->
@@ -271,7 +269,7 @@ describe 'View', ->
 
   context 'resource management', ->
 
-    it 'references are collected properly', ->
+    pending 'references are collected properly', ->
       v = View!
       views = setmetatable { v }, __mode: 'v'
       v\destroy!

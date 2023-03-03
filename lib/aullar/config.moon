@@ -124,6 +124,8 @@ notify_listeners = (listeners, k, new_v, old_v) ->
 
 get_value = (k, values, defs) ->
   v = values[k]
+  if k == 'view_font_size'
+    print "get_value: #{v}"
   return v if v
   def = defs[k]
   error("Invalid option '#{k}'", 3) unless def
@@ -139,6 +141,9 @@ set_value = (t, k, v, values, defs, listeners) ->
   old_v = t[k]
   values[k] = v
   new_v = t[k]
+
+  if k == 'view_font_size'
+    print "set aullar font size to #{v}"
 
   if new_v != old_v
     notify_listeners listeners, k, new_v, old_v

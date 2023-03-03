@@ -256,14 +256,14 @@ Cursor = {
     char_width = rect.width / SCALE
     if char_width == 0
       char_width = @view.width_of_space
-    x_pos = (col_pos - @view.base_x) + @view.edit_area_x + @width
+    x_pos = (col_pos - @view.base_x) + @width
 
     vscroll = @view.vertical_scrollbar
     vscroll_width = vscroll.visible and @view.vertical_scrollbar.allocated_width or 0
     if @view.width and (x_pos + char_width + vscroll_width) > @view.width -- scroll to the right
       @view.base_x = (col_pos - @view.edit_area_width) +
         char_width + @width + vscroll_width
-    elseif x_pos < @view.edit_area_x -- scroll to the left
+    elseif x_pos < 0 -- scroll to the left
       @view.base_x = col_pos
 
     -- alert listener if set

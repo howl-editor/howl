@@ -49,5 +49,7 @@ core.define 'GtkPopover < GtkWidget', {
   new: -> gc_ptr C.gtk_popover_new!
   popup: => C.gtk_popover_popup @
   popdown: => C.gtk_popover_popdown @
+  set_offset: (x, y) => C.gtk_popover_set_offset @, x, y
+  present: => C.gtk_popover_present @
 
 }, (spec, ...) -> spec.new ...

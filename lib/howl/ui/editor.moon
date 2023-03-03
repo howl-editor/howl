@@ -55,9 +55,11 @@ aullar_config_vars = {
 }
 
 apply_global_variable = (name, value) ->
+  name = aullar_config_vars[name] or name
   aullar_config[name] = value
 
-apply_variable = (name) ->
+apply_variable = (name, _v, is_local) ->
+  print "apply #{name}, is_local: #{is_local}"
   for e in *editors!
     e\refresh_variable name
 
@@ -673,6 +675,7 @@ class Editor extends PropertyObject
   refresh_variable: (name) =>
     value = @buffer.config[name]
     if aullar_config_vars[name]
+      print "set aullar_config_vars #{name} to #{value}"
       if @view.config[aullar_config_vars[name]] != value
         @view.config[aullar_config_vars[name]] = value
     elseif editor_config_vars[name]
@@ -924,6 +927,7 @@ class Editor extends PropertyObject
 
     x = coordinates.x
     y = coordinates.y2 + 2
+    print "coordinates: #{x}, #{y} for pos #{pos}"
     x, y
 
   _on_focus: (args) =>
@@ -1136,7 +1140,8 @@ with config
     .watch watched_property, apply_variable
 
   for global_var in *{
-    'undo_limit'
+    'undo_limit',
+    'font_size'
   }
     .watch global_var, apply_global_variable
 

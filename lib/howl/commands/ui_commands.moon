@@ -38,7 +38,6 @@ command.register
       def_s = StyledText def_s, styles
 
     buf\append def_s
-    buf\append "my long TEST damnit"
     editor\show_popup BufferPopup buf
 
 command.register

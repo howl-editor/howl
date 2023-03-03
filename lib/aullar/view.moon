@@ -1,10 +1,8 @@
--- Copyright 2014-2022 The Howl Developers
+-- Copyright 2014-2023 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
 {string: ffi_string, cast: ffi_cast} = ffi
-
-sys = require 'howl.sys'
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
@@ -41,7 +39,6 @@ View = {
   new: (buffer = Buffer('')) =>
     @_handlers = {}
 
-    @margin = 0
     @_base_x = 0
     @_first_visible_line = 1
     @_last_visible_line = nil
@@ -161,8 +158,11 @@ View = {
 
     append @_handlers, @bin\on_destroy self\_on_destroy
     append @_handlers, @area\on_resize self\_on_resize
-    append @_handlers, @area\on_realize =>
-      print "realize"
+    -- append @_handlers, @bin\on_realize =>
+    --   print "realize: #{@edit_area_x}"
+
+    append @_handlers, @bin\on_show =>
+      print "view show"
 
     @_buffer_listener = {
       on_inserted: (_, b, args) -> self\_on_buffer_modified b, args, 'inserted'
@@ -201,7 +201,7 @@ View = {
     middle_visible_line: {
       get: =>
         return 0 unless @height
-        y = @margin
+        y = 0
         middle = @height / 2
 
         for line = @_first_visible_line, @_last_visible_line
@@ -217,7 +217,7 @@ View = {
         for nr = line, 1, -1
           d_line = @display_lines[nr]
           y -= d_line.height
-          if y <= @margin or nr == 1
+          if y <= 0 or nr == 1
             @first_visible_line = nr
             break
     }
@@ -228,7 +228,7 @@ View = {
           return 0 unless @height
           @_last_visible_line = 1
 
-          y = @margin
+          y = 0
           for line in @_buffer\lines @_first_visible_line
             d_line = @display_lines[line.nr]
             break if y + d_line.height > @height
@@ -244,7 +244,7 @@ View = {
         return unless @showing
 
         last_line_height = @display_lines[line].height
-        available = @height - @margin - last_line_height
+        available = @height - last_line_height
         first_visible = line
 
         while first_visible > 1
@@ -281,10 +281,15 @@ View = {
         -- @area\queue_draw!
     }
 
-    edit_area_x: => @margin
+    edit_area_x: =>
+      area_x, area_y = @area\translate_coordinates @bin, 0, 0
+      print "edit_area_x: #{area_x}, #{area_y}"
+      area_x
+
     edit_area_width: =>
-      return 0 unless @width
-      @width - @edit_area_x
+      @width or 0
+      -- return 0 unless @width
+      -- @width - @edit_area_x
 
     buffer: {
       get: => @_buffer
@@ -334,13 +339,13 @@ View = {
   _sync_scrollbars: (opts = { horizontal: true, vertical: true })=>
     @_updating_scrolling = true
 
-    if opts.vertical
+    if opts.vertical and @config.view_show_v_scrollbar
       page_size = @lines_showing - 1
       adjustment = @vertical_scrollbar.adjustment
       if adjustment
         adjustment\configure @first_visible_line, 1, @buffer.nr_lines, 1, page_size, page_size
 
-    if opts.horizontal
+    if opts.horizontal and @config.view_show_h_scrollbar
       max_width = 0
       for i = @first_visible_line, @last_visible_line
         max_width = max max_width, @display_lines[i].width
@@ -353,7 +358,7 @@ View = {
         adjustment = @horizontal_scrollbar.adjustment
         if adjustment
           width = @edit_area_width
-          upper = max_width - (@margin / 2)
+          upper = max_width
 
           if @_scrolling_vertically
             -- we're scrolling vertically so maintain our x,
@@ -362,6 +367,7 @@ View = {
           else
             adjustment\configure @base_x, 1, upper, 10, width, width
 
+          print "showing horizontal_scrollbar"
           @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
@@ -399,7 +405,7 @@ View = {
     return unless @width
     d_lines = @display_lines
     min_y, max_y = nil, nil
-    y = @margin
+    y = 0
     last_valid = 0
     from_line = opts.from_line
     to_line = opts.to_line
@@ -454,18 +460,11 @@ View = {
         d_lines[line_nr] = nil
 
     if min_y
-      start_x = max 0, @edit_area_x - 1
-      start_x = 0 if opts.gutter or start_x == 1
-      width = @width - start_x
-      height = (max_y - min_y)
-      if width > 0 and height > 0
-        -- @area\queue_draw!
-
-        @_draw y1: min_y, y2: max_y
+      @_draw y1: min_y, y2: max_y, x1: 0, x2: @width
 
   position_from_coordinates: (x, y, opts = {}) =>
     return nil unless @showing
-    cur_y = @margin
+    cur_y = 0
     return nil unless y >= cur_y
 
     matched_line = nil
@@ -512,7 +511,7 @@ View = {
     line = @buffer\get_line_at_offset pos
     return nil unless line
     return nil if line.nr < @_first_visible_line
-    y = @margin
+    y = 0
     x = @edit_area_x
 
     for line_nr = @_first_visible_line, @buffer.nr_lines
@@ -520,6 +519,7 @@ View = {
 
       if d_line.nr == line.nr or (d_line.nr > line.nr and not line.has_eol)
         -- it's somewhere within this line..
+        print "within line #{line.nr}, x: #{x}"
         layout = d_line.layout
         index = pos - line.start_offset -- <-- at this byte index
         rect =  layout\index_to_pos index
@@ -548,6 +548,7 @@ View = {
     for nr = start_line, end_line
       d_line = @display_lines[nr]
       break unless d_line
+      -- print "width #{d_line.width} for '#{d_line.text}'"
       width = max width, d_line.width
       height += d_line.height
 
@@ -592,16 +593,16 @@ View = {
         @_redraw_rect.y1 = min(@_redraw_rect.y1, clip.y1)
         @_redraw_rect.y2 = max(@_redraw_rect.y2, clip.y2)
       else
-        @_redraw_rect = {y1: 0, y2: @height}
+        @_redraw_rect = {y1: 0, y2: @height, x1: 0, x2: @width}
     else
-      @_redraw_rect = clip or {y1: 0, y2: @height}
+      @_redraw_rect = clip or {y1: 0, y2: @height, x1: 0, x2: @width}
 
     @area\queue_draw!
 
   _do_draw: (clip) =>
     return unless @_cairo_ctx
     cr = @_cairo_ctx
-    clip or= {y1: 0, y2: @height}
+    clip or= {y1: 0, y2: @height, x1: 0, x2: @width}
     draw_height = clip.y2 - clip.y1
 
     -- clear damaged region
@@ -614,8 +615,10 @@ View = {
     conf = @config
     line_draw_opts = config: conf, buffer: @_buffer
 
-    edit_area_x, y = @edit_area_x, @margin
-    cr\move_to edit_area_x, y
+    -- edit_area_x, y = @edit_area_x, @margin
+    -- cr\move_to edit_area_x, y
+    y = 0
+    cr\move_to 0, y
     cr\set_source_rgb 0, 0, 0
 
     lines = {}
@@ -643,25 +646,25 @@ View = {
         print "view draw line #{line.nr} at #{y}"
 
       if line.nr == current_line and conf.view_highlight_current_line
-        @current_line_marker\draw_before edit_area_x, y, display_line, cr, cursor_col
+        @current_line_marker\draw_before 0, y, display_line, cr, cursor_col
 
       if @selection\affects_line line
-        @selection\draw edit_area_x, y, cr, display_line, line
+        @selection\draw 0, y, cr, display_line, line
 
-      display_line\draw edit_area_x, y, cr, clip, line_draw_opts
+      display_line\draw 0, y, cr, clip, line_draw_opts
 
       if @selection\affects_line line
-        @selection\draw_overlay edit_area_x, y, cr, display_line, line
+        @selection\draw_overlay 0, y, cr, display_line, line
 
       if line.nr == current_line
         if conf.view_highlight_current_line
-          @current_line_marker\draw_after edit_area_x, y, display_line, cr, cursor_col
+          @current_line_marker\draw_after 0, y, display_line, cr, cursor_col
 
         if conf.view_show_cursor
-          @cursor\draw edit_area_x, y, cr, display_line
+          @cursor\draw 0, y, cr, display_line
 
       y += display_line.height
-      cr\move_to edit_area_x, y
+      cr\move_to 0, y
 
   _reset_display: =>
     print "_reset_display"
@@ -837,13 +840,13 @@ View = {
     @cursor.pos = pos
 
   _on_focus_in: =>
-    print "on focus_in"
+    print "view on focus_in"
     @im_context\focus_in!
     @cursor.active = true
     notify @, 'on_focus_in'
 
   _on_focus_out: =>
-    print "on focus_out"
+    print "view on focus_out"
     @im_context\focus_out!
     @cursor.active = false
     notify @, 'on_focus_out'
@@ -864,7 +867,7 @@ View = {
     true
 
   _on_button_press: (_, event) =>
-    print "on_button_press"
+    print "view on_button_press"
     @area\grab_focus! unless @area.has_focus
 
     -- event = ffi_cast('GdkEventButton *', event)
@@ -888,7 +891,7 @@ View = {
     --   @_selection_active = true
 
   _on_button_release: (_, event) =>
-    print "on_button_release"
+    print "view on_button_release"
     -- event = ffi_cast('GdkEventButton *', event)
     -- return true if notify @, 'on_button_release', event
     -- return if event.button != 1
@@ -911,7 +914,7 @@ View = {
     pos = @position_from_coordinates(event.x, event.y, fuzzy: true)
     if pos
       @cursor\move_to :pos, extend: true
-    elseif event.y < @margin
+    elseif event.y < 0
       if @first_visible_line == 1
         @cursor\move_to pos:1, extend: true
       else
@@ -955,7 +958,7 @@ View = {
 
   _on_resize: (_, width, height) =>
     width, height = tonumber(width), tonumber(height)
-    print "on_resize: #{width}x#{height}"
+    -- print "view on_resize: #{width}x#{height}: x: #{@edit_area_x}"
     resized = (not @height or @height != height) or
       (not @width or @width != width)
     return unless resized
@@ -971,13 +974,13 @@ View = {
     -- gdk_window = @area.window
     -- if gdk_window != nil
       -- gdk_window.cursor = @_cur_mouse_cursor
-    print "set cursor: #{@_cur_mouse_cursor}"
+    print "view set cursor: #{@_cur_mouse_cursor}"
     @area.cursor = @_cur_mouse_cursor
 
     getting_taller = @height and height > @height
     @width = width
     @height = height
-    print "assigned height = #{height}"
+    -- print "assigned height = #{height}"
     @_reset_display!
 
     if getting_taller and @last_visible_line == @buffer.nr_lines
@@ -1008,6 +1011,7 @@ View = {
 
     elseif option == 'view_show_h_scrollbar'
       @horizontal_scrollbar.visible = val
+      @horizontal_scrollbar\hide!
       print "set horizontal_scrollbar.visible to #{val}"
       -- @horizontal_scrollbar_alignment.left_padding = @gutter_width
 

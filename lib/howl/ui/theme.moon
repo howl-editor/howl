@@ -32,9 +32,21 @@ Gtk.StyleContext.add_provider_for_display display, css_provider, 7000
 
 base_css = [[
 window {
-  padding: 0.4em;
+  /*padding: 0.4em;*/
   font-size: ${font_size}pt;
   font-family: ${font};
+}
+
+popover {
+  padding: 0px;
+  background-color: #00000000;
+  border-radius: 0;
+  font-size: ${font_size}pt;
+  font-family: ${font};
+}
+
+popover arrow {
+  background: red;
 }
 
 scrollbar {
@@ -176,7 +188,6 @@ extract_css_flairs = (css) ->
 extract_css_custom = (css) ->
   values = {}
   for decls in css\gmatch '%.gutter%s*{([^}]+)}'
-    moon.p decls
     color = decls\match('%s+color%s*:%s*([^;]+);')
     values.gutter_color = css_color(color) if color
 

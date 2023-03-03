@@ -64,7 +64,7 @@ class CommandLine extends PropertyObject
     @indic_title = @header\add 'left', 'title'
     @indic_info = @header\add 'right', 'info'
 
-    @box.margin_left = 2
+    @box.margin_start = 2
     @box.margin_top = 2
     c_box = ContentBox 'command_line', @box, {
       header: @header\to_gobject!

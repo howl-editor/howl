@@ -505,6 +505,8 @@ ffi.cdef [[
   void gtk_popover_popdown (GtkPopover* popover);
   gboolean gtk_popover_get_pointing_to (GtkPopover* popover, GdkRectangle* rect);
   void gtk_popover_set_pointing_to (GtkPopover* popover, const GdkRectangle* rect);
+  void gtk_popover_set_offset (GtkPopover* popover, int x_offset, int y_offset);
+  void gtk_popover_present (GtkPopover* popover);
 
   /* GtkListBox */
   typedef struct {} GtkListBox;
