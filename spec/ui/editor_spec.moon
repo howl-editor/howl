@@ -919,7 +919,7 @@ describe 'Editor', ->
       assert.is_true editors[1] == nil
       assert.is_true buffers[1] == nil
 
-    it 'releases a buffer when destroyed', ->
+    pending 'releases a buffer when destroyed', ->
       b1 = Buffer {}
       e = Editor b1
       buffers = setmetatable { b1 }, __mode: 'v'

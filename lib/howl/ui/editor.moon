@@ -555,9 +555,12 @@ class Editor extends PropertyObject
 
   show_popup: (popup, options = {}) =>
     @remove_popup!
-    x, y = @_get_popup_coordinates options.position
+    if options.position != 'center'
+      x, y = @_get_popup_coordinates options.position
+      popup\show @view\to_gobject!, :x, :y
+    else
+      popup\show @view\to_gobject!, options
 
-    popup\show @view\to_gobject!, :x, :y
     @popup = window: popup, :options
 
   remove_popup: =>
@@ -918,7 +921,7 @@ class Editor extends PropertyObject
     pos = @cursor.line .. ':' .. @cursor.column
     @indicator.position.label = pos
 
-  _get_popup_coordinates: (pos=@cursor.pos) =>
+  _get_popup_coordinates: (pos = @cursor.pos) =>
     pos = @buffer\byte_offset pos
     coordinates = @view\coordinates_from_position pos
     unless coordinates

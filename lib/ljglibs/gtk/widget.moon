@@ -102,6 +102,11 @@ core.define 'GtkWidget < GObject', {
   hide: => C.gtk_widget_hide @
   grab_focus: => C.gtk_widget_grab_focus @
 
+  get_display: => C.gtk_widget_get_display @
+  get_native: =>
+    require 'ljglibs.gtk.native'
+    C.gtk_widget_get_native @
+
   get_first_child: =>
     c = C.gtk_widget_get_first_child @
     c != nil and c or nil

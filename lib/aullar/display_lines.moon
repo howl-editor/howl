@@ -261,7 +261,6 @@ DisplayLine = define_class {
     @text_height = height
     @height = height + @y_offset * 2
     @width = width
-    print "DL: width #{width} for '#{line.text}'"
     if config.view_show_cursor
       @width += view.cursor.width
     @is_wrapped = @layout.is_wrapped

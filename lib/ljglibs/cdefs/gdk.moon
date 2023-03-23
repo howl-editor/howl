@@ -272,13 +272,26 @@ ffi.cdef [[
                                const gchar *text,
                                gint len);
 
-  /* display */
+
+  /* GdkMonitor */
+  typedef struct {} GdkMonitor;
+
+  void gdk_monitor_get_geometry(GdkMonitor* monitor, GdkRectangle* geometry);
+
+  /* GdkSurface */
+  typedef struct {} GdkSurface;
+
+  /* GdkDisplay */
   typedef struct {} GdkDisplay;
   void gdk_display_sync (GdkDisplay *display);
   gboolean gdk_display_has_pending (GdkDisplay *display);
   GdkDisplay * gdk_display_get_default (void);
   GdkClipboard* gdk_display_get_clipboard (GdkDisplay* display);
   GdkClipboard* gdk_display_get_primary_clipboard(GdkDisplay* display);
+  GdkMonitor* gdk_display_get_monitor_at_surface(
+    GdkDisplay* display,
+    GdkSurface* surface
+  );
 
   /* GdkWindow */
   typedef struct {} GdkWindow;

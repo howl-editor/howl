@@ -511,7 +511,8 @@ command.register
       editor.buffer = buf
     else
       buf\insert "-- #{title}\n", 1
-      editor\show_popup BufferPopup buf, scrollable: true
+      popup = BufferPopup buf, scrollable: true
+      editor\show_popup popup, position: 'center'
 
 -----------------------------------------------------------------------
 -- Launch commands

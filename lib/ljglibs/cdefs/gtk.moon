@@ -146,6 +146,10 @@ ffi.cdef [[
   typedef struct {} GtkEventControllerMotion;
   GtkEventControllerMotion *gtk_event_controller_motion_new (void);
 
+  /* GtkNative */
+  typedef struct {} GtkNative;
+  GdkSurface* gtk_native_get_surface (GtkNative* self);
+
   /* GtkWidget */
   typedef struct {} GtkWidget;
 
@@ -155,13 +159,17 @@ ffi.cdef [[
   void gtk_widget_show (GtkWidget *widget);
   void gtk_widget_hide (GtkWidget *widget);
   GdkDisplay* gtk_widget_get_display (GtkWidget* widget);
+  GtkNative* gtk_widget_get_native (GtkWidget* widget);
+
   void gtk_widget_grab_focus (GtkWidget *widget);
   void gtk_widget_get_allocation (GtkWidget* widget, GtkAllocation* allocation);
   int gtk_widget_get_allocated_width (GtkWidget *widget);
   int gtk_widget_get_allocated_height (GtkWidget *widget);
+  int gtk_widget_get_height (GtkWidget *widget);
   void gtk_widget_set_size_request (GtkWidget *widget,
                                     gint width,
                                     gint height);
+  GdkDisplay* gtk_widget_get_display(GtkWidget* widget);
 
   gboolean gtk_widget_translate_coordinates(
     GtkWidget* src_widget,

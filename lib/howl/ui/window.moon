@@ -185,6 +185,9 @@ class Window extends PropertyObject
   remember_focus: =>
     @data.focus_child = @grid.focus_child
 
+  show_popup: (popup, opts) =>
+    popup\show @win, opts
+
   get_screenshot: (opts={}) =>
     x, y, w, h = 0, 0, @allocated_width, @allocated_height
     window = @window
