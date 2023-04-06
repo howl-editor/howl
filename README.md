@@ -30,6 +30,7 @@ how to install Howl from source.
 based system).
 - `C compiler`: Howl has a very small C core itself, and it embeds
 dependencies written in C.
+- `pkg-config`: Helper tool to find libraries on the system.
 
 ### Build && install
 
