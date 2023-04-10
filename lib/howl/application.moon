@@ -437,6 +437,10 @@ class Application extends PropertyObject
       if howl.sys.info.is_flatpak
         append bundle.dirs, File '/app/bundles'
 
+      for dir in *bundle.dirs
+        package.path = tostring(dir) .. '/?/init.lua;' .. package.path
+        package.path = tostring(dir) .. '/?.lua;' .. package.path
+
       bundle.load_all!
 
       unless @args.no_profile
