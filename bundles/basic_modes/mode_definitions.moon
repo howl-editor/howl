@@ -262,6 +262,13 @@ common_auto_pairs = {
     auto_pairs: common_auto_pairs
     parent: 'curly_mode'
 
+  pkgbuild:
+    patterns: { 'PKGBUILD$' }
+    comment_syntax: '#'
+    auto_pairs: common_auto_pairs
+    parent: 'curly_mode'
+
+
   postscript:
     extensions: { 'ps', 'eps' }
     comment_syntax: '%'
