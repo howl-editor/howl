@@ -199,9 +199,7 @@ command.register
   name: 'cursor-goto-brace'
   description: 'Go to the brace matching the current brace, if any'
   handler: ->
-    cursor = app.editor.cursor
-    pos = app.editor\get_matching_brace cursor.pos
-    cursor\move_to(:pos) if pos
+    app.editor.cursor\goto_matching_brace!
 
 command.register
   name: 'editor-replace-exec'

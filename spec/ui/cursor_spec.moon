@@ -673,3 +673,11 @@ And hƏre's line twʘ
       assert.equal 'L', sel.text
       cursor.line = 2
       assert.equals 'Liñe 1 ʘf tƏxt\nA', sel.text
+
+  describe 'goto_matching_brace', ->
+    it 'moves to the matching brace', ->
+      editor.buffer.mode.auto_pairs = {'[': ']'}
+      editor.buffer.text = '[foo]'
+      cursor.pos = 1
+      cursor\goto_matching_brace!
+      assert.equal 5, cursor.pos

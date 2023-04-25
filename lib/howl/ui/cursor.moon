@@ -211,6 +211,10 @@ class Cursor extends PropertyObject
     else
       @cursor\end_of_file :extend
 
+  goto_matching_brace: () =>
+    pos = @container\get_matching_brace @pos
+    @move_to(:pos) if pos
+
   -- private
 
   @property _line: get: =>
