@@ -1,0 +1,7 @@
+; This is a comment
+# as is this
+
+[*{.py?,[abc],[!def]}] invalid chars here
+indent_style = 1
+multi line values =
+  are not supported here = 2
