@@ -12,14 +12,24 @@ close_buffers = ->
     app\close_buffer b, true
 
 describe 'janitor', ->
-  before_each ->
+  local existing_buffer
+
+  setup ->
     config.autoclose_single_buffer = false
+    app.editor = nil
+
+  before_each ->
     close_buffers!
+    existing_buffer = app.buffers[1]
 
   after_each ->
     config.cleanup_min_buffers_open = cleanup_min_buffers_open
     config.cleanup_close_buffers_after = cleanup_close_buffers_after
     close_buffers!
+
+  buffers = ->
+    return app.buffers unless existing_buffer
+    [b for b in *app.buffers when b != existing_buffer]
 
   describe 'clean_up_buffers', ->
     local now, one_hour_ago
@@ -35,7 +45,7 @@ describe 'janitor', ->
       b.last_shown = one_hour_ago - 60
       b.modified = true
       janitor.clean_up_buffers!
-      assert.equals 1, #app.buffers
+      assert.equals 1, #buffers!
 
     it 'does not leave less than <cleanup_min_buffers_open> buffers', ->
       config.cleanup_min_buffers_open = 2
@@ -61,9 +71,9 @@ describe 'janitor', ->
       config.cleanup_close_buffers_after = 1
       janitor.clean_up_buffers!
 
-      assert.equals 2, #app.buffers
+      assert.equals 2, #buffers!
 
-      for b in *app.buffers
+      for b in *buffers!
         assert.match b.title, 'keep'
 
     it 'neves closes buffers viewed more recently than the limit', ->
@@ -76,7 +86,7 @@ describe 'janitor', ->
       config.cleanup_close_buffers_after = 1
       janitor.clean_up_buffers!
 
-      assert.equals 4, #app.buffers
+      assert.equals 4, #buffers!
 
     it 'closes buffers in a least-recently-shown order', ->
       b = app\new_buffer!
@@ -95,5 +105,5 @@ describe 'janitor', ->
       config.cleanup_close_buffers_after = 1
       janitor.clean_up_buffers!
 
-      assert.same {'15-min-old'}, [_b.title for _b in *app.buffers]
+      assert.same {'15-min-old'}, [_b.title for _b in *buffers!]
 

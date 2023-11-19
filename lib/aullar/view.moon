@@ -37,6 +37,7 @@ text_cursor = Gdk.Cursor.new_from_name('text')
 
 View = {
   new: (buffer = Buffer('')) =>
+    -- @debug = true
     @_handlers = {}
 
     @_base_x = 0
@@ -367,7 +368,6 @@ View = {
           else
             adjustment\configure @base_x, 1, upper, 10, width, width
 
-          print "showing horizontal_scrollbar"
           @horizontal_scrollbar\show!
 
     @_updating_scrolling = false
@@ -566,6 +566,7 @@ View = {
 
   _on_draw: (cr, width, height) =>
     if not @_cairo_ctx
+      print "create cairo surface"
       @_surface = cairo.Surface.create_similar(
         cr.target,
         cairo.CONTENT_COLOR_ALPHA,
@@ -574,12 +575,22 @@ View = {
       )
       @_cairo_ctx = cairo.Context @_surface
       @_do_draw cr.clip_extents
+      @_redraw_rect = nil
     elseif @_redraw_rect
       @_do_draw @_redraw_rect
 
+    -- rdr = @_redraw_rect
     with cr
+      print "redraw #{0, 0, #{width}, #{height}}"
+      moon.p cr.clip_extents
+      moon.p cr.fill_extents
+      moon.p @_redraw_rect
       .operator = cairo.OPERATOR_SOURCE
       \set_source_surface @_surface, 0, 0
+      -- if rdr
+        -- \rectangle rdr.x1, rdr.y1, rdr.x2, rdr.y2
+      -- else
+        -- \rectangle 0, 0, width, height
       \rectangle 0, 0, width, height
       \fill!
 
@@ -667,7 +678,6 @@ View = {
       cr\move_to 0, y
 
   _reset_display: =>
-    print "_reset_display"
     @_last_visible_line = nil
     p_ctx = @area.pango_context
     tm = @text_dimensions(' ')
@@ -691,8 +701,8 @@ View = {
     @_buffer\remove_listener(@_buffer_listener) if @_buffer
 
     -- disconnect signal handlers
-    for h in *@_handlers
-      signal.disconnect h
+    -- for h in *@_handlers
+    --   signal.disconnect h
 
   _on_buffer_styled: (buffer, args) =>
     return unless @showing

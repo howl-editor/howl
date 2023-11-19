@@ -59,7 +59,7 @@ apply_global_variable = (name, value) ->
   aullar_config[name] = value
 
 apply_variable = (name, _v, is_local) ->
-  print "apply #{name}, is_local: #{is_local}"
+  -- print "apply #{name}, is_local: #{is_local}"
   for e in *editors!
     e\refresh_variable name
 
@@ -678,7 +678,6 @@ class Editor extends PropertyObject
   refresh_variable: (name) =>
     value = @buffer.config[name]
     if aullar_config_vars[name]
-      print "set aullar_config_vars #{name} to #{value}"
       if @view.config[aullar_config_vars[name]] != value
         @view.config[aullar_config_vars[name]] = value
     elseif editor_config_vars[name]
@@ -764,11 +763,11 @@ class Editor extends PropertyObject
 
   _on_destroy: =>
     print "editor on destroy"
-    for h in *@_handlers
-      gobject_signal.disconnect h
+    -- for h in *@_handlers
+    --   gobject_signal.disconnect h
 
     @buffer\remove_view_ref!
-    @completion_popup\destroy!
+    -- @completion_popup\destroy!
     @view\destroy!
     @view = nil
     @buffer.last_shown = sys.time! unless @_is_previewing
@@ -776,7 +775,7 @@ class Editor extends PropertyObject
     signal.emit 'editor-destroyed', editor: self
 
   _on_key_press: (view, event) =>
-    print "editor keypress"
+    -- print "editor keypress"
     @remove_popup! if event.key_name == 'escape'
 
     if @popup

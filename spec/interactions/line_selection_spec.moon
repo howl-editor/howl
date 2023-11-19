@@ -18,11 +18,16 @@ describe 'select_line', ->
   local buffer, editor
 
   before_each ->
-    app.window = Window!
-    app.window\realize!
     buffer = Buffer!
     buffer.text = 'one\ntwo\nthree'
     editor = Editor buffer
+    app.window = Window window: test_window!
+
+  after_each ->
+    app.editor = nil
+    if app.window
+      app.window\destroy!
+      app.window = nil
 
   it "registers interactions", ->
     assert.not_nil interact.select_line
@@ -36,6 +41,7 @@ describe 'select_line', ->
 
     it 'filters lines to match text entered', ->
       lines = {}
+      print '-------------------------------------------------------------------'
       within_command_line (-> interact.select_line(:editor, lines: buffer.lines)), (command_line) ->
         append lines, list_items command_line, 2
         command_line\write 'o'

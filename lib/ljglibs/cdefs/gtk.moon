@@ -275,6 +275,12 @@ ffi.cdef [[
   void gtk_box_append (GtkBox *box, GtkWidget *child);
   void gtk_box_prepend (GtkBox *box, GtkWidget *child);
   void gtk_box_remove (GtkBox* box, GtkWidget* child);
+  void gtk_box_insert_child_after (
+    GtkBox* box,
+    GtkWidget* child,
+    GtkWidget* sibling
+  );
+
 
   /* GtkWindow */
   typedef struct {} GtkWindow;

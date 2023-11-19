@@ -197,14 +197,19 @@ class CommandLine extends PropertyObject
 
     @remove_widget name
 
-    local pack
-    if pos == 'bottom'
-        pack = @box\append
-    elseif pos == 'top'
-        pack = @box\prepend
+    -- we always keep our two base components at the bottom
+    children = @box.children
+    print "add widget #{name} at pos #{pos}, #children: #{#children}"
+    if pos == 'bottom' and #children > 2
+      print "insert after #{children[#children - 2]}"
+      -- @box\insert_child_after widget\to_gobject!, children[#children - 2]
+      @box\prepend widget\to_gobject!
+
+      -- pack = @box\append
     else
-        error "Invalid pos #{pos}"
-    pack widget\to_gobject!, false, 0, 0
+      print "prepend widget"
+      @box\prepend widget\to_gobject!
+
     @_widgets[name] = widget
 
     widget\show!
@@ -321,6 +326,7 @@ class CommandLine extends PropertyObject
     dispatch.launch -> @text = opts.text or ''
 
     result = dispatch.wait @parking
+    print "result: #{result}"
     @close!
     return result
 

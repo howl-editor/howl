@@ -10,9 +10,6 @@ class MenuPopup extends Popup
     error('Missing argument #2: callback', 3) if not @callback
 
     @list = List -> @items
-    print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-    print 'MENU POPUP'
-    print "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     @list_widget = ListWidget @list, auto_fit_width: true
 
     @highlight_matches_for = ''
@@ -35,7 +32,6 @@ class MenuPopup extends Popup
   resize: =>
     h_margin = @child.margin_start + @child.margin_end
     v_margin = @child.margin_top + @child.margin_bottom
-    print "menu resize: #{@list_widget.width} x #{@list_widget.height}"
     super @list_widget.width + h_margin, @list_widget.height + v_margin
 
   choose: =>

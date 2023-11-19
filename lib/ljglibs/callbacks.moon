@@ -57,6 +57,7 @@ do_dispatch = (data, ...) ->
 
       status, ret = pcall handler, unpack(args, 1, args.n + handler_args.n)
       return ret == true if status
+      moon.p ret
       options.on_error "callbacks: error in '#{handle.description}' handler: '#{ret}'"
     else
       unregister handle

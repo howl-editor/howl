@@ -204,7 +204,8 @@
       'with_tmpdir',
       'trimmed_text',
       'test_window',
-      'pending'
+      'pending',
+      'use_test_buffers'
    },
 
     sandboxed_loader_spec: {

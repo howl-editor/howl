@@ -120,25 +120,52 @@ export trimmed_text = (s) ->
   adj_lines = [l\gsub("^#{indentation}", '') for l in *lines]
   table.concat adj_lines, '\n'
 
+export test_window = (child) ->
+  Gtk = require 'ljglibs.gtk'
+  window = Gtk.Window default_width: 840, default_height: 640
+  window.title = 'howl-test'
+  window.css_classes = {'test-window'}
+  window.child = child if child
+  window\show!
+  watched = child or window
+  while watched.allocated_height <= 0
+    howl.app\pump_mainloop!
+  window
+
+export use_test_buffers = (...) ->
+  app = howl.app
+
+  for b in *app.buffers
+    app\close_buffer b
+
+  existing_buffer = app.buffers[1]
+
+  buffers = {}
+  for b_info in *{...}
+    b = app\new_buffer!
+
+    if type(b_info) == 'string'
+      b.title = b_info
+    elseif type(b_info) == 'table'
+      for k, v in pairs b_info
+        print "set #{k} to #{v}"
+        b[k] = v
+
+    table.insert buffers, b
+
+  if existing_buffer
+    app\close_buffer existing_buffer
+
+  buffers
+
 export within_command_line = (interaction, f) ->
   -- invoke interaction function and call f with topmost command_line
   with howl.app
     unless .window
-      .window = Window!
+      .window = Window window: test_window!
       .window\realize!
   command_panel = howl.app.window.command_panel
   wrapped = coroutine.wrap interaction
   wrapped!  -- this invokes the interaction and activates the command line
   command_line = command_panel.command_lines[#command_panel.command_lines]
   f command_line
-
-export test_window = (child) ->
-  Gtk = require 'ljglibs.gtk'
-  window = Gtk.Window default_width: 840, default_height: 640
-  window.title = 'howl-test'
-  window.css_classes = {'test-window'}
-  window.child = child
-  window\show!
-  while child.allocated_height <= 0
-    howl.app\pump_mainloop!
-  window
