@@ -159,8 +159,6 @@ View = {
 
     append @_handlers, @bin\on_destroy self\_on_destroy
     append @_handlers, @area\on_resize self\_on_resize
-    -- append @_handlers, @bin\on_realize =>
-    --   print "realize: #{@edit_area_x}"
 
     append @_handlers, @bin\on_show =>
       print "view show"
@@ -579,12 +577,12 @@ View = {
     elseif @_redraw_rect
       @_do_draw @_redraw_rect
 
-    -- rdr = @_redraw_rect
+    rdr = @_redraw_rect
     with cr
-      print "redraw #{0, 0, #{width}, #{height}}"
-      moon.p cr.clip_extents
-      moon.p cr.fill_extents
-      moon.p @_redraw_rect
+      -- print "redraw #{0, 0, #{width}, #{height}}"
+      -- moon.p cr.clip_extents
+      -- moon.p cr.fill_extents
+      -- moon.p @_redraw_rect
       .operator = cairo.OPERATOR_SOURCE
       \set_source_surface @_surface, 0, 0
       -- if rdr
@@ -653,8 +651,7 @@ View = {
     for line_info in *lines
       {:display_line, :line} = line_info
       line_draw_opts.line = line
-      if @debug
-        print "view draw line #{line.nr} at #{y}"
+      -- print "view draw line #{line.nr} at #{y}"
 
       if line.nr == current_line and conf.view_highlight_current_line
         @current_line_marker\draw_before 0, y, display_line, cr, cursor_col

@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2023 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
@@ -7,10 +7,11 @@ Pango = require 'ljglibs.pango'
 class IndicatorBar
   new: (cls) =>
     error('Missing argument #1 (id)', 2) if not cls
-    @box = Gtk.Box {
+    middle_spacer = Gtk.Box Gtk.ORIENTATION_HORIZONTAL, hexpand: true
+    @box = Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
       height_request: 20
-      -- spacing: 10
     }
+    @box\append middle_spacer
     @box.css_classes = {'indicator-bar', cls}
     @indics = {}
 
