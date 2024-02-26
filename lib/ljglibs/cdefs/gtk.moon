@@ -123,6 +123,8 @@ ffi.cdef [[
   typedef struct {} GtkEventController;
 
   GdkEvent * gtk_event_controller_get_current_event(GtkEventController* controller);
+  GdkModifierType gtk_event_controller_get_current_event_state (GtkEventController* controller);
+
 
     /* Key controller */
   typedef struct {} GtkEventControllerKey;
@@ -139,12 +141,29 @@ ffi.cdef [[
     /* Gesture controller */
   typedef struct {} GtkGesture;
   typedef struct {} GtkGestureSingle;
+
+  guint gtk_gesture_single_get_current_button (GtkGestureSingle* gesture);
+
   typedef struct {} GtkGestureClick;
   GtkGestureClick* gtk_gesture_click_new(void);
 
   /* Motion controller */
   typedef struct {} GtkEventControllerMotion;
   GtkEventControllerMotion *gtk_event_controller_motion_new (void);
+
+  /* Scroll controller */
+  typedef struct {} GtkEventControllerScroll;
+
+  typedef enum {
+    GTK_EVENT_CONTROLLER_SCROLL_NONE       = 0,
+    GTK_EVENT_CONTROLLER_SCROLL_VERTICAL   = 1 << 0,
+    GTK_EVENT_CONTROLLER_SCROLL_HORIZONTAL = 1 << 1,
+    GTK_EVENT_CONTROLLER_SCROLL_DISCRETE   = 1 << 2,
+    GTK_EVENT_CONTROLLER_SCROLL_KINETIC    = 1 << 3,
+    GTK_EVENT_CONTROLLER_SCROLL_BOTH_AXES  = (GTK_EVENT_CONTROLLER_SCROLL_VERTICAL | GTK_EVENT_CONTROLLER_SCROLL_HORIZONTAL),
+  } GtkEventControllerScrollFlags;
+
+  GtkEventControllerScroll *gtk_event_controller_scroll_new (GtkEventControllerScrollFlags flags);
 
   /* GtkNative */
   typedef struct {} GtkNative;

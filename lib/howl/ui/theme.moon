@@ -58,6 +58,10 @@ scrollbar {
   padding-right: 0.5em;
 }
 
+.htextview {
+  padding-left: 0.5em;
+}
+
 .content-box > .header {
   padding: 5px;
 }

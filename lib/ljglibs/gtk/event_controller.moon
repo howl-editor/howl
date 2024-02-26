@@ -13,4 +13,8 @@ core.define 'GtkEventController < GObject', {
 
   get_current_event: =>
     C.gtk_event_controller_get_current_event @
+
+  get_current_event_state: =>
+    C.gtk_event_controller_get_current_event_state @
+
 }

@@ -240,7 +240,7 @@ DisplayLine = define_class {
     WRAP_LIMIT = 2000 -- xxx replace
     if wrap != 'none' and @size <= WRAP_LIMIT
       wrap_indicator = @display_lines.wrap_indicator
-      width = view.edit_area_width - wrap_indicator.width - @width_of_space
+      width = view.width - wrap_indicator.width - @width_of_space
       @layout.width = width * SCALE
       wrap_mode = wrap == 'word' and Pango.WRAP_WORD or Pango.WRAP_CHAR
       @layout.wrap = wrap_mode

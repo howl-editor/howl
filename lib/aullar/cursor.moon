@@ -261,7 +261,7 @@ Cursor = {
     vscroll = @view.vertical_scrollbar
     vscroll_width = vscroll.visible and @view.vertical_scrollbar.allocated_width or 0
     if @view.width and (x_pos + char_width + vscroll_width) > @view.width -- scroll to the right
-      @view.base_x = (col_pos - @view.edit_area_width) +
+      @view.base_x = (col_pos - @view.width) +
         char_width + @width + vscroll_width
     elseif x_pos < 0 -- scroll to the left
       @view.base_x = col_pos

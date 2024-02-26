@@ -3,6 +3,7 @@
 
 ffi = require 'ffi'
 {string: ffi_string, cast: ffi_cast} = ffi
+{:band} = require 'bit'
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
@@ -33,6 +34,21 @@ notify = (view, event, ...) ->
 
   false
 
+translate_mouse_event = (g_click, n_press, x, y) ->
+  state = g_click\get_current_event_state!
+  {
+    shift: band(state, Gdk.SHIFT_MASK) != 0
+    control: band(state, Gdk.CONTROL_MASK) != 0
+    alt: band(state, Gdk.ALT_MASK) != 0
+    super: band(state, Gdk.SUPER_MASK) != 0
+    hyper: band(state, Gdk.HYPER_MASK) != 0
+    meta: band(state, Gdk.META_MASK) != 0
+    button: g_click\get_current_button!,
+    nr_presses: n_press,
+    x: tonumber x,
+    y: tonumber y
+  }
+
 text_cursor = Gdk.Cursor.new_from_name('text')
 
 View = {
@@ -45,6 +61,7 @@ View = {
     @_last_visible_line = nil
     @_cur_mouse_cursor = text_cursor
     @_y_scroll_offset = 0
+    @width = 0
     @config = config.local_proxy!
 
     @area = Gtk.DrawingArea {hexpand: true, vexpand: true}
@@ -57,19 +74,17 @@ View = {
 
     @motion_controller = Gtk.EventControllerMotion!
     with @motion_controller
-      .propagation_phase = Gtk.PHASE_BUBBLE
-      -- \on_enter -> print 'on_enter'
-      -- \on_leave -> print 'on_leave'
-      -- append @_handlers, \on_motion (_c, x, y) -> print "on_motion: #{tonumber x} #{tonumber y}"
+      append @_handlers, \on_motion self\_on_motion_event
 
-      -- append @_handlers, \on_motion self\_on_motion_event
-      -- ffi.cdef 'void connect_motion(gpointer controller);'
-      -- ffi.C.connect_motion(@motion_controller)
+    @scroll_controller = Gtk.EventControllerScroll Gtk.EventControllerScroll.BOTH_AXES
+    with @scroll_controller
+      append @_handlers, \on_scroll self\_on_scroll
 
     @area\add_controller @key_controller
     @area\add_controller @focus_controller
     @area\add_controller @gesture_controller
     @area\add_controller @motion_controller
+    @area\add_controller @scroll_controller
 
     @selection = Selection @
     @cursor = Cursor @, @selection
@@ -280,16 +295,6 @@ View = {
         -- @area\queue_draw!
     }
 
-    edit_area_x: =>
-      area_x, area_y = @area\translate_coordinates @bin, 0, 0
-      print "edit_area_x: #{area_x}, #{area_y}"
-      area_x
-
-    edit_area_width: =>
-      @width or 0
-      -- return 0 unless @width
-      -- @width - @edit_area_x
-
     buffer: {
       get: => @_buffer
       set: (buffer) =>
@@ -351,12 +356,11 @@ View = {
 
       max_width += @width_of_space if @config.view_show_cursor
 
-      if max_width <= @edit_area_width and @base_x == 0
+      if max_width <= @width and @base_x == 0
         @horizontal_scrollbar\hide!
       else
         adjustment = @horizontal_scrollbar.adjustment
         if adjustment
-          width = @edit_area_width
           upper = max_width
 
           if @_scrolling_vertically
@@ -364,7 +368,7 @@ View = {
             -- but ensure we expand the scrollbar if necessary
             adjustment.upper = upper if upper > adjustment.upper
           else
-            adjustment\configure @base_x, 1, upper, 10, width, width
+            adjustment\configure @base_x, 1, upper, 10, @width, @width
 
           @horizontal_scrollbar\show!
 
@@ -481,12 +485,12 @@ View = {
 
     if matched_line
       line = @_buffer\get_line(matched_line.nr)
-      pango_x = (x - @edit_area_x + @base_x) * Pango.SCALE
+      pango_x = (x - @base_x) * Pango.SCALE
       line_y = max(0, min(y - cur_y, matched_line.text_height - 1)) * Pango.SCALE
       inside, index = matched_line.layout\xy_to_index pango_x, line_y
       if not inside
         -- left of the area, point it to first char in line
-        return line.start_offset if x < @edit_area_x
+        return line.start_offset if x <= 0
 
         -- right of the area, point to end
         if matched_line.is_wrapped
@@ -510,7 +514,7 @@ View = {
     return nil unless line
     return nil if line.nr < @_first_visible_line
     y = 0
-    x = @edit_area_x
+    x = 0
 
     for line_nr = @_first_visible_line, @buffer.nr_lines
       d_line = @display_lines[line_nr]
@@ -577,18 +581,9 @@ View = {
     elseif @_redraw_rect
       @_do_draw @_redraw_rect
 
-    rdr = @_redraw_rect
     with cr
-      -- print "redraw #{0, 0, #{width}, #{height}}"
-      -- moon.p cr.clip_extents
-      -- moon.p cr.fill_extents
-      -- moon.p @_redraw_rect
       .operator = cairo.OPERATOR_SOURCE
       \set_source_surface @_surface, 0, 0
-      -- if rdr
-        -- \rectangle rdr.x1, rdr.y1, rdr.x2, rdr.y2
-      -- else
-        -- \rectangle 0, 0, width, height
       \rectangle 0, 0, width, height
       \fill!
 
@@ -624,8 +619,6 @@ View = {
     conf = @config
     line_draw_opts = config: conf, buffer: @_buffer
 
-    -- edit_area_x, y = @edit_area_x, @margin
-    -- cr\move_to edit_area_x, y
     y = 0
     cr\move_to 0, y
     cr\set_source_rgb 0, 0, 0
@@ -873,55 +866,42 @@ View = {
 
     true
 
-  _on_button_press: (_, event) =>
-    print "view on_button_press"
+  _on_button_press: (g_click, n_press, x, y) =>
+    event = translate_mouse_event g_click, n_press, x, y
+
     @area\grab_focus! unless @area.has_focus
 
-    -- event = ffi_cast('GdkEventButton *', event)
+    return true if notify @, 'on_button_press', event
 
-    -- return false if event.x <= @gutter_width
-    -- return true if notify @, 'on_button_press', event
-
-    -- return false if event.button != 1 or event.type != Gdk.BUTTON_PRESS
-
-    -- extend = bit.band(event.state, Gdk.SHIFT_MASK) != 0
-
-    -- pos = @position_from_coordinates(event.x, event.y, fuzzy: true)
-    -- if pos
-    --   @selection.persistent = false
-
-    --   if pos != @cursor.pos
-    --     @cursor\move_to :pos, :extend
-    --   else
-    --     @selection\clear!
-
-    --   @_selection_active = true
-
-  _on_button_release: (_, event) =>
-    print "view on_button_release"
-    -- event = ffi_cast('GdkEventButton *', event)
-    -- return true if notify @, 'on_button_release', event
-    -- return if event.button != 1
-    -- @_selection_active = false
-
-  _on_motion_event: (_, x, y) =>
-    -- print "on_motion_event: #{x} x #{y}"
-    event = ffi_cast('GdkEventMotion *', event)
-    return true if notify @, 'on_motion_event', event
-    unless @_selection_active
-      if @_cur_mouse_cursor != text_cursor
-        @area.cursor = text_cursor
-        @_cur_mouse_cursor = text_cursor
-      else
-        @area.cursor = nil
-        @_cur_mouse_cursor = nil
-
-      return
+    return false if event.button != 1
 
     pos = @position_from_coordinates(event.x, event.y, fuzzy: true)
     if pos
+      @selection.persistent = false
+
+      if pos != @cursor.pos
+        @cursor\move_to :pos, extend: event.shift
+      else
+        @selection\clear!
+
+      @_selection_active = true
+
+  _on_button_release: (g_click, n_press, x, y) =>
+    event = translate_mouse_event g_click, n_press, x, y
+    return true if notify @, 'on_button_release', event
+    return if event.button != 1
+    @_selection_active = false
+
+  _on_motion_event: (_, x, y) =>
+    x, y = tonumber(x), tonumber(y)
+    event = :x, :y
+    return true if notify @, 'on_motion_event', event
+    return unless @_selection_active
+
+    pos = @position_from_coordinates(x, y, fuzzy: true)
+    if pos
       @cursor\move_to :pos, extend: true
-    elseif event.y < 0
+    elseif y < 0
       if @first_visible_line == 1
         @cursor\move_to pos:1, extend: true
       else
@@ -949,23 +929,14 @@ View = {
   _scroll_y: (value) =>
     @y_scroll_offset += value * (@scroll_speed_y / 100)
 
-  _on_scroll: (_, event) =>
-    event = ffi_cast('GdkEventScroll *', event)
-    if event.direction == Gdk.SCROLL_UP
-      @_scroll_y -1
-    elseif event.direction == Gdk.SCROLL_DOWN
-      @_scroll_y 1
-    elseif event.direction == Gdk.SCROLL_RIGHT
-      @_scroll_x 1
-    elseif event.direction == Gdk.SCROLL_LEFT
-      @_scroll_x -1
-    elseif event.direction == Gdk.SCROLL_SMOOTH
-      @_scroll_y event.delta_y
-      @_scroll_x event.delta_x
+  _on_scroll: (_, delta_x, delta_y) =>
+    delta_x, delta_y = tonumber(delta_x), tonumber(delta_y)
+
+    @_scroll_x delta_x if delta_x != 0
+    @_scroll_y delta_y if delta_y != 0
 
   _on_resize: (_, width, height) =>
     width, height = tonumber(width), tonumber(height)
-    -- print "view on_resize: #{width}x#{height}: x: #{@edit_area_x}"
     resized = (not @height or @height != height) or
       (not @width or @width != width)
     return unless resized
@@ -977,11 +948,6 @@ View = {
     @_cairo_ctx = nil
     @_surface = nil
 
-    -- GTK4: gone
-    -- gdk_window = @area.window
-    -- if gdk_window != nil
-      -- gdk_window.cursor = @_cur_mouse_cursor
-    print "view set cursor: #{@_cur_mouse_cursor}"
     @area.cursor = @_cur_mouse_cursor
 
     getting_taller = @height and height > @height

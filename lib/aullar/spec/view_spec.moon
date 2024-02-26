@@ -54,41 +54,41 @@ describe 'View', ->
       it 'returns the matching buffer position', ->
         buffer.text = '1234\n67890'
         line_height = view.display_lines[1].height
-        assert.equals 2, view\position_from_coordinates(view.edit_area_x + dim.width + 1, 0)
-        assert.equals 8, view\position_from_coordinates(view.edit_area_x + (dim.width * 2) + 1, line_height + 1)
+        assert.equals 2, view\position_from_coordinates(dim.width + 1, 0)
+        assert.equals 8, view\position_from_coordinates((dim.width * 2) + 1, line_height + 1)
 
       it 'favours the preceeding character slightly when in doubt', ->
         buffer.text = '1234'
-        assert.equals 1, view\position_from_coordinates(view.edit_area_x + dim.width / 2, 0)
-        assert.equals 1, view\position_from_coordinates(view.edit_area_x + dim.width * 0.6, 0)
-        assert.equals 2, view\position_from_coordinates(view.edit_area_x + dim.width * 0.8, 0)
+        assert.equals 1, view\position_from_coordinates(dim.width / 2, 0)
+        assert.equals 1, view\position_from_coordinates(dim.width * 0.6, 0)
+        assert.equals 2, view\position_from_coordinates(dim.width * 0.8, 0)
 
       it 'returns nil for out of bounds coordinates', ->
         assert.is_nil view\position_from_coordinates(100, 100)
 
       it 'returns the position of the end-of-line when outside to the right', ->
         buffer.text = '1234\n6789'
-        assert.equals 5, view\position_from_coordinates(view.edit_area_x + dim.width * 6, 0)
+        assert.equals 5, view\position_from_coordinates(dim.width * 6, 0)
 
       it 'returns the position of the start-of-line when outside to the left', ->
         buffer.text = '1234\n6789'
-        assert.equals 1, view\position_from_coordinates(view.edit_area_x - dim.width, 0)
+        assert.equals 1, view\position_from_coordinates(-1, 0)
         line_height = view.display_lines[1].height
-        assert.equals 6, view\position_from_coordinates(view.edit_area_x - dim.width, line_height + 1)
+        assert.equals 6, view\position_from_coordinates(dim.width, line_height + 1)
 
       it 'returns the correct position when in the line padding', ->
         view.config.view_line_padding = 4
         buffer.text = '1234'
-        assert.equals 3, view\position_from_coordinates(view.edit_area_x + dim.width * 2, 0)
+        assert.equals 3, view\position_from_coordinates(dim.width * 2, 0)
         line_height = view.display_lines[1].height
-        assert.equals 3, view\position_from_coordinates(view.edit_area_x + dim.width * 2, line_height - 1)
+        assert.equals 3, view\position_from_coordinates(dim.width * 2, line_height - 1)
 
       context 'when opts.fuzzy is set', ->
         it 'returns the closest position in the last line', ->
           buffer.text = '1234\n6789'
           line_height = view.display_lines[1].height
           assert.equals 8, view\position_from_coordinates(
-            view.edit_area_x + (dim.width * 2) + 1,
+            (dim.width * 2) + 1,
             (line_height * 2) + 1,
             fuzzy: true
           )
@@ -97,15 +97,15 @@ describe 'View', ->
       it 'returns the bounding rectangle for the character at pos', ->
         buffer.text = '1234\n6789'
         assert.same {
-          x: view.edit_area_x + dim.width
-          x2: view.edit_area_x + (dim.width * 2)
+          x: dim.width
+          x2: dim.width * 2
           y: 0
           y2: dim.height
         }, view\coordinates_from_position(2)
 
         assert.same {
-          x: view.edit_area_x + (dim.width * 2)
-          x2: view.edit_area_x + (dim.width * 3)
+          x: dim.width * 2
+          x2: dim.width * 3
           y: dim.height
           y2: dim.height + dim.height
         }, view\coordinates_from_position(8)

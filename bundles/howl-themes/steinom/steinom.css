@@ -1,5 +1,5 @@
 /*
-  Copyright 2016 - 2023 The Howl Developers
+  Copyright 2016 - 2024 The Howl Developers
   License: MIT (see LICENSE.md at the top-level directory of the distribution)
 */
 
@@ -52,10 +52,6 @@ popover contents {
 
   background-color: alpha(#555555, 0.95);
   border: 1px solid grey;
-}
-
-.htextview {
-  /* padding-left: 0.5em; */
 }
 
 .gutter {

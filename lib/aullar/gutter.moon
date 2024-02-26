@@ -1,4 +1,4 @@
--- Copyright 2014-2022 The Howl Developers
+-- Copyright 2014-2023 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:define_class} = require 'aullar.util'
@@ -43,7 +43,7 @@ define_class {
     return unless @area.visible
     lines_text = tostring(buffer.nr_lines)
     num_chars = #lines_text
-    return if @number_chars == num_chars
+    return true if not opts.force and @number_chars == num_chars
     @_text_width = @view\text_dimensions(lines_text).width + 2
     @area.content_width = @_text_width
     @number_chars = num_chars

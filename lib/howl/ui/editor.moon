@@ -800,10 +800,10 @@ class Editor extends PropertyObject
     return false if event.button == 3
 
     if event.button == 1
-      @drag_press_type = event.type
+      @drag_press_nr_presses = event.nr_presses
       @drag_press_pos = @_pos_from_coordinates(event.x, event.y)
 
-      if event.type == Gdk.GDK_2BUTTON_PRESS
+      if event.nr_presses == 2
         group = @current_context.word
         group = @current_context.token if group.empty
 
@@ -811,7 +811,7 @@ class Editor extends PropertyObject
           @selection\set group.start_pos, group.end_pos + 1
           true
 
-      elseif event.type == Gdk.GDK_3BUTTON_PRESS
+      elseif event.nr_presses == 3
         @selection\set @current_line.start_pos, @_next_line_start(@current_line)
 
     elseif event.button == 2
@@ -824,16 +824,16 @@ class Editor extends PropertyObject
         clipboard.primary.text = text
 
   _on_button_release: (view, event) =>
-    @drag_press_type = nil
+    @drag_press_nr_presses = nil
 
   _on_motion_event: (view, event) =>
-    if @drag_press_type == Gdk.GDK_2BUTTON_PRESS or @drag_press_type == Gdk.GDK_3BUTTON_PRESS
+    if @drag_press_nr_presses == 2 or @drag_press_nr_presses == 3
       pos = @_pos_from_coordinates(event.x, event.y)
       if pos
         sel_start, sel_end = @drag_press_pos, pos
-        if @drag_press_type == Gdk.GDK_2BUTTON_PRESS
+        if @drag_press_nr_presses == 2
           sel_start, sel_end = @_expand_to_word_token_boundaries sel_start, sel_end
-        elseif @drag_press_type == Gdk.GDK_3BUTTON_PRESS
+        elseif @drag_press_nr_presses == 3
           sel_start, sel_end = @_expand_to_line_starts sel_start, sel_end
 
         unless sel_start == sel_end
