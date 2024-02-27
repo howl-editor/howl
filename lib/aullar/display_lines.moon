@@ -238,7 +238,7 @@ DisplayLine = define_class {
     wrap = config.view_line_wrap
 
     WRAP_LIMIT = 2000 -- xxx replace
-    if wrap != 'none' and @size <= WRAP_LIMIT
+    if wrap != 'none' and @size <= WRAP_LIMIT and view.width
       wrap_indicator = @display_lines.wrap_indicator
       width = view.width - wrap_indicator.width - @width_of_space
       @layout.width = width * SCALE
@@ -342,8 +342,6 @@ DisplayLine = define_class {
       flair.draw bg_flair, @, bg_range.start_offset, bg_range.end_offset, x, y, cr
 
     if base_x > 0
-      print "base_x: #{base_x}"
-      moon.p clip
       cr\save!
       cr\rectangle x, y, clip.x2 - x, clip.y2
       cr\clip!

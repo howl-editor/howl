@@ -67,7 +67,7 @@ root = howl.app.root_dir
 support_files = root / 'spec' / 'support'
 
 -- load basic theme for specs
-theme.register('spec_theme', support_files / 'spec_theme.moon')
+theme.register('spec_theme', support_files / 'spec_theme.css')
 config.theme = 'spec_theme'
 theme.apply!
 

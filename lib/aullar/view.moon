@@ -61,7 +61,7 @@ View = {
     @_last_visible_line = nil
     @_cur_mouse_cursor = text_cursor
     @_y_scroll_offset = 0
-    @width = 0
+    @width = nil
     @config = config.local_proxy!
 
     @area = Gtk.DrawingArea {hexpand: true, vexpand: true}
@@ -120,10 +120,6 @@ View = {
       .can_focus = true
       .focusable = true
 
-
-      -- append @_handlers, \on_scroll_event self\_on_scroll
-      -- append @_handlers, \on_screen_changed self\_on_screen_changed
-
     @_draw_handler = @area\set_draw_func self\_on_draw
 
     with @key_controller
@@ -150,7 +146,6 @@ View = {
     -- }
     -- @horizontal_scrollbar_alignment.no_show_all = not config.view_show_h_scrollbar
     @horizontal_scrollbar.visible = config.view_show_h_scrollbar
-    print "@horizontal_scrollbar.visible = #{config.view_show_h_scrollbar}"
 
     @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
     @vertical_scrollbar.visible = config.view_show_v_scrollbar
@@ -198,6 +193,7 @@ View = {
     @config\add_listener self\_on_config_changed
 
   destroy: =>
+    -- @bin\unref!
     @bin\clear_object!
     @bin = nil
 
@@ -287,12 +283,12 @@ View = {
     base_x: {
       get: => @_base_x
       set: (x) =>
+        return if @width == 0
         x = floor max(0, x)
         return if x == @_base_x
         @_base_x = x
         @_sync_scrollbars horizontal: true
         @_draw!
-        -- @area\queue_draw!
     }
 
     buffer: {
@@ -317,7 +313,6 @@ View = {
   }
 
   grab_focus: =>
-    print "view grab_focus"
     @area\grab_focus!
 
   scroll_to: (line) =>
@@ -514,22 +509,20 @@ View = {
     return nil unless line
     return nil if line.nr < @_first_visible_line
     y = 0
-    x = 0
 
     for line_nr = @_first_visible_line, @buffer.nr_lines
       d_line = @display_lines[line_nr]
 
       if d_line.nr == line.nr or (d_line.nr > line.nr and not line.has_eol)
         -- it's somewhere within this line..
-        print "within line #{line.nr}, x: #{x}"
         layout = d_line.layout
         index = pos - line.start_offset -- <-- at this byte index
         rect =  layout\index_to_pos index
-        bottom = y + ((rect.y + rect.height) / Pango.SCALE) + @config.view_line_padding
+        bottom = y + floor((rect.y + rect.height) / Pango.SCALE) + @config.view_line_padding
         return {
-          x: x + (rect.x / Pango.SCALE) - @base_x
-          x2: x + ((rect.x + rect.width) / Pango.SCALE) - @base_x
-          y: y + (rect.y / Pango.SCALE)
+          x: floor(rect.x / Pango.SCALE) - @base_x
+          x2: floor((rect.x + rect.width) / Pango.SCALE) - @base_x
+          y: y + floor(rect.y / Pango.SCALE)
           y2: max(bottom, y + d_line.height)
         }
 
@@ -550,7 +543,6 @@ View = {
     for nr = start_line, end_line
       d_line = @display_lines[nr]
       break unless d_line
-      -- print "width #{d_line.width} for '#{d_line.text}'"
       width = max width, d_line.width
       height += d_line.height
 
@@ -568,7 +560,6 @@ View = {
 
   _on_draw: (cr, width, height) =>
     if not @_cairo_ctx
-      print "create cairo surface"
       @_surface = cairo.Surface.create_similar(
         cr.target,
         cairo.CONTENT_COLOR_ALPHA,
@@ -644,7 +635,6 @@ View = {
     for line_info in *lines
       {:display_line, :line} = line_info
       line_draw_opts.line = line
-      -- print "view draw line #{line.nr} at #{y}"
 
       if line.nr == current_line and conf.view_highlight_current_line
         @current_line_marker\draw_before 0, y, display_line, cr, cursor_col
@@ -691,8 +681,9 @@ View = {
     @_buffer\remove_listener(@_buffer_listener) if @_buffer
 
     -- disconnect signal handlers
-    -- for h in *@_handlers
-    --   signal.disconnect h
+    for h in *@_handlers
+      signal.disconnect h
+    print "view on_destroy done"
 
   _on_buffer_styled: (buffer, args) =>
     return unless @showing
@@ -840,13 +831,11 @@ View = {
     @cursor.pos = pos
 
   _on_focus_in: =>
-    print "view on focus_in"
     @im_context\focus_in!
     @cursor.active = true
     notify @, 'on_focus_in'
 
   _on_focus_out: =>
-    print "view on focus_out"
     @im_context\focus_out!
     @cursor.active = false
     notify @, 'on_focus_out'
@@ -953,7 +942,6 @@ View = {
     getting_taller = @height and height > @height
     @width = width
     @height = height
-    -- print "assigned height = #{height}"
     @_reset_display!
 
     if getting_taller and @last_visible_line == @buffer.nr_lines

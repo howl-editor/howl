@@ -42,7 +42,7 @@ class Popup extends PropertyObject
   close: =>
     print "popup close!"
     @popover\popdown!
-    @popover\set_parent nil
+    -- @popover\set_parent nil
     @showing = false
     @widget = nil
 

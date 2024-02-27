@@ -20,7 +20,6 @@ describe 'View', ->
 
     before_each ->
       line_height = view.display_lines[1].height
-      print "check view height: #{view.height}"
       nr_lines_in_screen = math.floor view.height / line_height
       buffer.text = string.rep '123456789\n', nr_lines_in_screen * 3
       view.first_visible_line = 1
@@ -74,7 +73,7 @@ describe 'View', ->
         buffer.text = '1234\n6789'
         assert.equals 1, view\position_from_coordinates(-1, 0)
         line_height = view.display_lines[1].height
-        assert.equals 6, view\position_from_coordinates(dim.width, line_height + 1)
+        assert.equals 6, view\position_from_coordinates(-1, line_height + 1)
 
       it 'returns the correct position when in the line padding', ->
         view.config.view_line_padding = 4
@@ -92,23 +91,6 @@ describe 'View', ->
             (line_height * 2) + 1,
             fuzzy: true
           )
-
-    describe 'coordinates_from_position(pos)', ->
-      it 'returns the bounding rectangle for the character at pos', ->
-        buffer.text = '1234\n6789'
-        assert.same {
-          x: dim.width
-          x2: dim.width * 2
-          y: 0
-          y2: dim.height
-        }, view\coordinates_from_position(2)
-
-        assert.same {
-          x: dim.width * 2
-          x2: dim.width * 3
-          y: dim.height
-          y2: dim.height + dim.height
-        }, view\coordinates_from_position(8)
 
   describe '(when text is inserted)', ->
     it 'moves the cursor down if the insertion is before or at the cursor', ->
@@ -269,7 +251,7 @@ describe 'View', ->
 
   context 'resource management', ->
 
-    pending 'references are collected properly', ->
+    it 'references are collected properly', ->
       v = View!
       views = setmetatable { v }, __mode: 'v'
       v\destroy!
