@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
-{string: ffi_string, cast: ffi_cast} = ffi
+{string: ffi_string} = ffi
 {:band} = require 'bit'
 
 Gdk = require 'ljglibs.gdk'
@@ -67,18 +67,11 @@ View = {
     @area = Gtk.DrawingArea {hexpand: true, vexpand: true}
     @area\add_css_class 'htextview'
     @key_controller = Gtk.EventControllerKey!
-
     @focus_controller = Gtk.EventControllerFocus!
     @gesture_controller = Gtk.GestureClick!
     @gesture_controller.button = 0
-
     @motion_controller = Gtk.EventControllerMotion!
-    with @motion_controller
-      append @_handlers, \on_motion self\_on_motion_event
-
     @scroll_controller = Gtk.EventControllerScroll Gtk.EventControllerScroll.BOTH_AXES
-    with @scroll_controller
-      append @_handlers, \on_scroll self\_on_scroll
 
     @area\add_controller @key_controller
     @area\add_controller @focus_controller
@@ -133,6 +126,12 @@ View = {
       append @_handlers, \on_pressed self\_on_button_press
       append @_handlers, \on_released self\_on_button_release
 
+    with @motion_controller
+      append @_handlers, \on_motion self\_on_motion_event
+
+    with @scroll_controller
+      append @_handlers, \on_scroll self\_on_scroll
+
     @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_HORIZONTAL
     append @_handlers, @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
       return if @_updating_scrolling
@@ -167,7 +166,6 @@ View = {
       @vertical_scrollbar
     }
 
-    append @_handlers, @bin\on_destroy self\_on_destroy
     append @_handlers, @area\on_resize self\_on_resize
 
     append @_handlers, @bin\on_show =>
@@ -548,6 +546,19 @@ View = {
 
     width, height
 
+  release: =>
+    @area\unset_draw_func @_draw_handler
+    @listener = nil
+    @selection = nil
+    @cursor = nil
+    @config\detach!
+    @_buffer\remove_listener(@_buffer_listener) if @_buffer
+    @gutter\release!
+
+    -- disconnect signal handlers
+    for h in *@_handlers
+      signal.disconnect h
+
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width
 
@@ -669,21 +680,6 @@ View = {
     @gutter\sync_dimensions @buffer, force: true
     @gutter\sync @
     @refresh_display from_line: 1, invalidate: true
-
-  _on_destroy: =>
-    print "view on_destroy"
-    @area\unset_draw_func @_draw_handler
-    @listener = nil
-    @selection = nil
-    @cursor\destroy!
-    @cursor = nil
-    @config\detach!
-    @_buffer\remove_listener(@_buffer_listener) if @_buffer
-
-    -- disconnect signal handlers
-    for h in *@_handlers
-      signal.disconnect h
-    print "view on_destroy done"
 
   _on_buffer_styled: (buffer, args) =>
     return unless @showing

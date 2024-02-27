@@ -14,7 +14,7 @@ define_class {
     @first_line = 0
     @last_line = 0
     @area = Gtk.DrawingArea {vexpand: true, css_classes: {'gutter'}}
-    @area\set_draw_func self\_draw
+    @_draw_handler = @area\set_draw_func self\_draw
     @reconfigure config
     @sync view
 
@@ -35,6 +35,9 @@ define_class {
       @area\queue_draw!
 
   to_gobject: => @area
+
+  release: =>
+    @area\unset_draw_func @_draw_handler
 
   reconfigure: (config) =>
     @foreground = RGBA(config.gutter_color)
