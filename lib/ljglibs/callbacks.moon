@@ -6,11 +6,6 @@ ffi_cast = ffi.cast
 {:unpack, :pack, :insert} = table
 {match: string_match, gsub: string_gsub} = string
 
--- ffi.cdef "
--- typedef void (*hcb_void_gpointer_gpointer) (gpointer, gpointer);
--- typedef gboolean (*hcb_gboolean_gpointer_gpointer) (gpointer, gpointer);
--- "
-
 ref_id_cnt = 123
 weak_handler_id_cnt = 0
 handles = {}
@@ -19,7 +14,7 @@ unrefed_args = setmetatable {}, __mode: 'k'
 options = {
   dispatch_in_coroutine: false
   on_error: (e) ->
-    print "callbacks err: #{e}"
+    -- print "callbacks err: #{e}"
     error e
 }
 
@@ -57,12 +52,9 @@ do_dispatch = (data, ...) ->
 
       status, ret = pcall handler, unpack(args, 1, args.n + handler_args.n)
       return ret == true if status
-      moon.p ret
       options.on_error "callbacks: error in '#{handle.description}' handler: '#{ret}'"
     else
       unregister handle
-  else
-    print "Unknown handle id: #{ref_id}"
 
   false
 

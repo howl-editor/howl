@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 require 'ljglibs.cdefs.gtk'
@@ -62,28 +62,10 @@ describe 'signal', ->
       C.gtk_widget_hide widget
       assert.spy(handler).was_called!
 
-    it 'handles incoming callbacks if the handler is garbage collected', ->
-      holder = setmetatable { handler: -> }, __mode: 'v'
-      handle = signal.connect(widget, 'hide', holder.handler, 'myarg', nil, 123)
-      signal.unref_handle handle
-      collectgarbage!
-      C.gtk_widget_hide widget
-      C.gtk_widget_hide widget
-      C.gtk_widget_hide widget
-
     it 'returns the unrefed callback function', ->
       handler = ->
       handle = signal.connect(widget, 'hide', handler)
       assert.equal handler, signal.unref_handle handle
-
-  -- describe 'emit_by_name(instance, signal, ...)', ->
-  --   it 'allows emitting custom signals', ->
-  --     called_with = nil
-  --     handler = (...) -> called_with = {...}
-  --     handle = signal.connect(widget, 'event-after', handler)
-  --     signal.emit_by_name widget, 'event-after', 'event', handle.id
-  --     assert.equal 2, #called_with
-  --     assert.same { widget, 'event' }, { called_with[1], ffi.string(called_with[2]) }
 
   describe 'lookup(name, gtype)', ->
     it 'returns a signal id for the given name and gtype', ->
@@ -105,9 +87,3 @@ describe 'signal', ->
       assert.is_not_nil info
       assert.equal Type.from_name('void'), info.return_type
       assert.equal 0, info.n_params
-
-      -- info = signal.query signal.lookup 'focus', gtype
-      -- assert.is_not_nil info
-      -- assert.equal Type.from_name('gboolean'), info.return_type
-      -- assert.equal 1, info.n_params
-      -- assert.same { Type.from_name('GtkDirectionType') }, info.param_types

@@ -99,7 +99,6 @@ class Application extends PropertyObject
     callbacks.configure {
       :dispatcher,
       on_error: (e) ->
-        print "add err: #{e}"
         _G.log.error e
     }
 
@@ -347,7 +346,7 @@ class Application extends PropertyObject
         app\activate!
 
     signal.connect 'window-focused', self\synchronize
-    signal.connect 'editor-destroyed', (s_args) ->
+    signal.connect 'editor-released', (s_args) ->
       @_editors =  [e for e in *@_editors when e != s_args.editor]
 
     breadcrumbs.init!

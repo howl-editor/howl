@@ -897,10 +897,7 @@ describe 'Editor', ->
     it 'editors are collected as they should', ->
       e = Editor Buffer {}
       editors = setmetatable {e}, __mode: 'v'
-      io.stderr\write "spec unref\n"
-
-      e\to_gobject!\unref!
-      io.stderr\write "spec unref done\n"
+      e\release!
       e = nil
       collect_memory!
       assert.is_true editors[1] == nil
@@ -912,19 +909,19 @@ describe 'Editor', ->
       buffers = setmetatable { b1 }, __mode: 'v'
       editors = setmetatable { e }, __mode: 'v'
       e.buffer = b2
-      e\to_gobject!\unref!
+      e\release!
       e = nil
       b1 = nil
       collectgarbage!
       assert.is_true editors[1] == nil
       assert.is_true buffers[1] == nil
 
-    pending 'releases a buffer when destroyed', ->
+    it 'releases a buffer when destroyed', ->
       b1 = Buffer {}
       e = Editor b1
       buffers = setmetatable { b1 }, __mode: 'v'
       editors = setmetatable { e }, __mode: 'v'
-      e\to_gobject!\unref!
+      e\release!
       e = nil
       b1 = nil
       collectgarbage!

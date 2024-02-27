@@ -199,15 +199,10 @@ class CommandLine extends PropertyObject
 
     -- we always keep our two base components at the bottom
     children = @box.children
-    print "add widget #{name} at pos #{pos}, #children: #{#children}"
     if pos == 'bottom' and #children > 2
-      print "insert after #{children[#children - 2]}"
-      -- @box\insert_child_after widget\to_gobject!, children[#children - 2]
       @box\prepend widget\to_gobject!
 
-      -- pack = @box\append
     else
-      print "prepend widget"
       @box\prepend widget\to_gobject!
 
     @_widgets[name] = widget
@@ -217,6 +212,7 @@ class CommandLine extends PropertyObject
   remove_widget: (name) =>
     widget = @_widgets[name]
     return unless widget
+    -- XXX
     -- widget\to_gobject!\unref!
     @_widgets[name] = nil
 
@@ -326,7 +322,6 @@ class CommandLine extends PropertyObject
     dispatch.launch -> @text = opts.text or ''
 
     result = dispatch.wait @parking
-    print "result: #{result}"
     @close!
     return result
 

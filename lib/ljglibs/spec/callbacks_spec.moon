@@ -65,10 +65,8 @@ describe 'callbacks', ->
       assert.is_true callbacks.unregister handle
       assert.is_false callbacks.unregister handle
 
-
   describe 'unref_handle(handle)', ->
     collect = ->
-      -- twice to allow for multiple levels of weak refs to be collected
       collect_memory!
 
     it 'un-anchors a handle, allowing the handler to be garbage collected', ->
@@ -142,4 +140,3 @@ describe 'callbacks', ->
   describe 'callback creation', ->
     it 'automatically creates callbacks as needed', ->
       assert.is_not_nil callbacks['void(gpointer)']
-      -- assert.is_not_nil ffi.C.hcb_void_gpointer

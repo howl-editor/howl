@@ -190,11 +190,6 @@ View = {
     @buffer = buffer
     @config\add_listener self\_on_config_changed
 
-  destroy: =>
-    -- @bin\unref!
-    @bin\clear_object!
-    @bin = nil
-
   properties: {
 
     showing: => @height != nil
@@ -969,7 +964,8 @@ View = {
     elseif option == 'view_show_h_scrollbar'
       @horizontal_scrollbar.visible = val
       @horizontal_scrollbar\hide!
-      print "set horizontal_scrollbar.visible to #{val}"
+      -- XXX
+      -- print "set horizontal_scrollbar.visible to #{val}"
       -- @horizontal_scrollbar_alignment.left_padding = @gutter_width
 
     elseif option == 'view_show_line_numbers'

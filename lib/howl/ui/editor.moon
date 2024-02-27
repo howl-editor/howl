@@ -1,10 +1,9 @@
--- Copyright 2012-2022 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
-gobject_signal = require 'ljglibs.gobject.signal'
+-- gobject_signal = require 'ljglibs.gobject.signal'
 {:signal, :bindings, :config, :command, :clipboard, :sys} = howl
 aullar_config = aullar.config
 {:PropertyObject} = howl.util.moon
@@ -146,8 +145,7 @@ class Editor extends PropertyObject
     @bin.can_focus = true
 
     @_handlers = {}
-    append @_handlers, @bin\on_destroy self\_on_destroy
-    -- -- append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
+    -- XXX append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
 
     @buffer = buffer
     @_is_previewing = false
@@ -761,18 +759,17 @@ class Editor extends PropertyObject
     else
       line.end_pos
 
-  _on_destroy: =>
-    print "editor on destroy"
+  release: =>
     -- for h in *@_handlers
     --   gobject_signal.disconnect h
 
+    @buffer.last_shown = sys.time! unless @_is_previewing
     @buffer\remove_view_ref!
     -- @completion_popup\destroy!
-    @view\destroy!
+    @view\release!
     @view = nil
-    @buffer.last_shown = sys.time! unless @_is_previewing
     @_buf = nil
-    signal.emit 'editor-destroyed', editor: self
+    signal.emit 'editor-released', editor: self
 
   _on_key_press: (view, event) =>
     -- print "editor keypress"
@@ -1233,8 +1230,8 @@ signal.register 'editor-defocused',
   parameters:
     editor: 'The editor that lost focus'
 
-signal.register 'editor-destroyed',
-  description: 'Signaled right after an editor was destroyed'
+signal.register 'editor-released',
+  description: 'Signaled right after an editor was released'
   parameters:
     editor: 'The editor that is being destroyed'
 

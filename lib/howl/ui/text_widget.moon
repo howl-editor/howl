@@ -14,6 +14,7 @@ class TextWidget extends PropertyObject
 
     @buffer = ActionBuffer!
     @buffer.title = 'TextWidget'
+
     @view = View @buffer._buffer
     with @view.config
       .view_show_inactive_cursor = false
@@ -99,6 +100,9 @@ class TextWidget extends PropertyObject
   insert: (...) => @buffer\insert ...
 
   delete: (...) => @buffer\delete ...
+
+  release: =>
+    @view.listener = nil
 
   _set_height: (height) =>
     return if @_height == height
