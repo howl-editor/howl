@@ -50,9 +50,13 @@ class Window extends PropertyObject
 
     @win[k] = v for k,v in pairs properties
 
-    -- append @_handlers, @win\on_focus_in_event self\_on_focus
-    -- append @_handlers, @win\on_focus_out_event self\_on_focus_lost
-    -- append @_handlers, @win\on_destroy self\_on_destroy
+    append @_handlers, @win\on_destroy self\_on_destroy
+
+    @focus_controller = Gtk.EventControllerFocus!
+    @win\add_controller @focus_controller
+    with @focus_controller
+      append @_handlers, \on_enter self\_on_focus_in
+      append @_handlers, \on_leave self\_on_focus_out
 
     @win.child = @box
 
@@ -290,12 +294,12 @@ class Window extends PropertyObject
 
     signal.disconnect 'theme-changed', @_theme_changed
 
-  _on_focus: =>
+  _on_focus_in: =>
     howl.app.window = self
     signal.emit 'window-focused', window: self
     false
 
-  _on_focus_lost: =>
+  _on_focus_out: =>
     signal.emit 'window-defocused', window: self
     false
 

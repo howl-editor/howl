@@ -794,6 +794,7 @@ class Editor extends PropertyObject
     return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
+    @remove_popup!
     return false if event.button == 3
 
     if event.button == 1
@@ -926,7 +927,6 @@ class Editor extends PropertyObject
 
     x = coordinates.x
     y = coordinates.y2 + 2
-    print "coordinates: #{x}, #{y} for pos #{pos}"
     x, y
 
   _on_focus: (args) =>

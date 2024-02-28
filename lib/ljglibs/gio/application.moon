@@ -1,4 +1,4 @@
--- Copyright 2014-2022 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -65,15 +65,6 @@ Application = core.define 'GApplication < GObject', {
         gfiles[#gfiles + 1] = gc_ptr object.ref files[i - 1]
 
       handler app, gfiles, ffi_string hint
-
-  -- on_command_line: (handler, ...) =>
-  --   require 'ljglibs.gio.application_command_line'
-  --   signal.connect 'int3', @, 'command-line', (app, command_line) ->
-  --     exit_code = handler(
-  --       ffi_cast('GApplication *', app),
-  --       ffi_cast('GApplicationCommandLine *', command_line)
-  --     )
-  --     exit_code or 0
 
 },  (t, application_id, flags = t.FLAGS_NONE) ->
   gc_ptr(C.g_application_new application_id, flags)

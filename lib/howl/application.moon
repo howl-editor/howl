@@ -1,4 +1,4 @@
--- Copyright 2012-2022 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 import Window, Editor, theme from howl.ui
@@ -16,8 +16,8 @@ coro_create, coro_status = coroutine.create, coroutine.status
 
 non_idle_dispatches = {
   '^signal motion%-',
-  '^signal key%-press%-event',
-  '^signal button%-',
+  '^signal key%-pressed',
+  '^signal pressed',
 }
 
 is_idle_dispatch = (desc) ->
@@ -28,7 +28,6 @@ is_idle_dispatch = (desc) ->
 last_activity = get_monotonic_time!
 
 dispatcher = (f, description, ...) ->
-
   unless is_idle_dispatch(description)
     last_activity = get_monotonic_time!
 
@@ -324,6 +323,10 @@ class Application extends PropertyObject
     -- by default we'll not open files in the same instance,
     -- but this can be toggled via the --reuse command line parameter
     if @g_app.is_remote and not @args.reuse
+      -- well, this it not particularly intuitive, but we "run" this instance
+      -- of the app, causing it to finish off correctly without warning
+      @g_app\run {}
+
       @g_app = Gtk.Application "#{app_base}-#{os.time!}", bit.bor(
         flags,
         Gtk.Application.NON_UNIQUE

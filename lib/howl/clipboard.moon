@@ -65,6 +65,7 @@ Clipboard = {
     registers = {}
 
   synchronize: (done) ->
+    print "clipboard synchronize"
     sync_id = sync_counter
     system_clipboard\read_text_async (res) ->
       text = system_clipboard\read_text_finish res
