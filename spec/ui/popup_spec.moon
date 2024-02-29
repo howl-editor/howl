@@ -11,7 +11,7 @@ describe 'Popup', ->
     it 'widgets are collected as they should', ->
       o = Popup child
       list = setmetatable {o}, __mode: 'v'
-      o\destroy!
+      o\release!
       o = nil
       collectgarbage!
       assert.is_true list[1] == nil, 'Popup still lives'

@@ -554,8 +554,8 @@ class Editor extends PropertyObject
   show_popup: (popup, options = {}) =>
     @remove_popup!
     if options.position != 'center'
-      x, y = @_get_popup_coordinates options.position
-      popup\show @view\to_gobject!, :x, :y
+      coords = @_get_popup_coordinates options.position
+      popup\show @view\to_gobject!, pointing_to: coords
     else
       popup\show @view\to_gobject!, options
 
@@ -765,7 +765,7 @@ class Editor extends PropertyObject
 
     @buffer.last_shown = sys.time! unless @_is_previewing
     @buffer\remove_view_ref!
-    -- @completion_popup\destroy!
+    @completion_popup\release!
     @view\release!
     @view = nil
     @_buf = nil
@@ -925,9 +925,7 @@ class Editor extends PropertyObject
       pos = @buffer.lines[@line_at_top].start_pos
       coordinates = @view\coordinates_from_position pos
 
-    x = coordinates.x
-    y = coordinates.y2 + 2
-    x, y
+    coordinates
 
   _on_focus: (args) =>
     howl.app.editor = self
@@ -970,8 +968,8 @@ class Editor extends PropertyObject
 
   _on_scroll: =>
     return unless @popup and @popup.showing
-    x, y = @_get_popup_coordinates @popup.options.position
-    @popup.window\move_to x, y
+    coords = @_get_popup_coordinates @popup.options.position
+    @popup.window\move_to coords.x, coords.y
 
 -- Default indicators
 

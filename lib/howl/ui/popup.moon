@@ -1,9 +1,8 @@
--- Copyright 2012-2023 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
 Popover = Gtk.Popover
-gobject_signal = require 'ljglibs.gobject.signal'
 gobject_type = require 'ljglibs.gobject.type'
 {:PropertyObject} = howl.util.moon
 {:floor} = math
@@ -32,37 +31,34 @@ class Popup extends PropertyObject
     @widget = widget
     @showing = true
 
-    if options.x
-      @move_to options.x, options.y
+    if options.pointing_to
+      @move_to options.pointing_to
     else
       @center!
 
     @popover\popup!
 
   close: =>
-    print "popup close!"
     @popover\popdown!
-    -- @popover\set_parent nil
     @showing = false
     @widget = nil
 
-  destroy: =>
+  release: =>
     @close!
-    -- @popover\unref!
-    print "popup destroy!"
-    -- @window\destroy!
+    @child = nil
+    @popover = nil
 
-  move_to: (x, y) =>
+  move_to: (pointing_to) =>
     error('Attempt to move a closed popup', 2) if not @showing
 
     if @popover.parent != @widget
       @popover\set_parent @widget
 
-    @x, @y = x, y
+    @x, @y = pointing_to.x, pointing_to.y
+    pointing_to.width = 1
     @popover.position = Gtk.POS_BOTTOM
-    @pointing_to = {:x, :y, width: 1, height: 1}
+    @pointing_to = pointing_to
     @popover.pointing_to = @pointing_to
-    moon.p @popover.pointing_to
     @_set_offset @popover.width_request
     @resize @popover.width_request, @popover.height_request
 
@@ -129,11 +125,5 @@ class Popup extends PropertyObject
     @pointing_to = {:x, :y, width: 1, height: 1}
     @popover.pointing_to = @pointing_to
     @popover\set_offset(width / 2, 0)
-
-  _on_destroy: =>
-    print "popup on destroy"
-    -- disconnect signal handlers
-    for h in *@_handlers
-      gobject_signal.disconnect h
 
 return Popup
