@@ -59,8 +59,8 @@ Clipboard = {
   synchronize: (done) ->
     sync_id = sync_counter
     system_clipboard\read_text_async (res) ->
-      text = system_clipboard\read_text_finish res
-      if sync_id == sync_counter and text
+      status, text = pcall system_clipboard\read_text_finish, res
+      if status and sync_id == sync_counter and text
         cur = clips[1]
         if not cur or cur.text != text
           Clipboard.push text, no_sync: true

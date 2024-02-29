@@ -299,7 +299,6 @@ View = {
         @_first_visible_line = 1
         @_base_x = 0
         @_reset_display!
-        -- @area\queue_draw!
         buffer\ensure_styled_to line: @last_visible_line + 1
         @_draw!
     }
@@ -512,8 +511,11 @@ View = {
         index = pos - line.start_offset -- <-- at this byte index
         rect =  layout\index_to_pos index
         bottom = y + floor((rect.y + rect.height) / Pango.SCALE) + @config.view_line_padding
+
+        area_offset_x = @area\translate_coordinates @bin, 0, 0
+
         return {
-          x: floor(rect.x / Pango.SCALE) - @base_x
+          x: (floor(rect.x / Pango.SCALE) + area_offset_x) - @base_x
           x2: floor((rect.x + rect.width) / Pango.SCALE) - @base_x
           y: y + floor(rect.y / Pango.SCALE)
           y2: max(bottom, y + d_line.height)
