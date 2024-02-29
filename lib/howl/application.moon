@@ -372,8 +372,6 @@ class Application extends PropertyObject
         win.command_panel\cancel!
         win\destroy!
 
-      -- howl.clipboard.store!
-
   save_session: =>
     return if @args.no_profile or #@args > 1
 

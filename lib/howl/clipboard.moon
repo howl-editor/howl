@@ -1,4 +1,4 @@
--- Copyright 2014-2021 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 GdkDisplay = require 'ljglibs.gdk.display'
@@ -26,11 +26,7 @@ primary = PropertyTable {
   clear: -> system_primary\set_text ''
   text:
     set: (v) =>
-      if callable(v)
-        error "NYI"
-        -- system_primary\set UTF8_TARGET, 1, v
-      else
-        system_primary\set_text v
+      system_primary\set_text v
 
     get: =>
       handle = dispatch.park 'primary-clipboard-get'
@@ -52,29 +48,25 @@ Clipboard = {
     else
       table.insert clips, 1, item
       clips[config.clipboard_max_items + 1] = nil
-      system_clipboard\set_text item.text
-      -- system_clipboard\set_can_store nil, 0
+      unless opts.no_sync == true
+        system_clipboard\set_text item.text
       sync_counter += 1
-
-  store: ->
-    print "GTK4: not supported"
-    --   system_clipboard\store!
 
   clear: ->
     clips = {}
     registers = {}
 
   synchronize: (done) ->
-    print "clipboard synchronize"
     sync_id = sync_counter
     system_clipboard\read_text_async (res) ->
       text = system_clipboard\read_text_finish res
       if sync_id == sync_counter and text
         cur = clips[1]
         if not cur or cur.text != text
-          Clipboard.push text
+          Clipboard.push text, no_sync: true
 
       done! if done
+
 
   current: get: ->
     clips[1]
