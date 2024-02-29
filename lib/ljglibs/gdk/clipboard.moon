@@ -30,7 +30,7 @@ core.define 'GdkClipboard < GObject', {
     C.gdk_clipboard_read_text_async @, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
 
   read_text_finish: (res) =>
-    g_string catch_error C.gdk_clipboard_read_text_finish, @, res
+    g_string catch_error(C.gdk_clipboard_read_text_finish, @, res)
 
   set_text: (text) =>
     C.gdk_clipboard_set_text @, text, #text

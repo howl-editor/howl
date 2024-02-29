@@ -219,6 +219,8 @@ ffi.cdef [[
   GtkWidget * gtk_widget_get_ancestor(GtkWidget* widget, GType widget_type);
   void gtk_widget_set_parent (GtkWidget* widget, GtkWidget* parent);
   GtkWidget * gtk_widget_get_focus_child (GtkWidget* widget);
+  GdkClipboard *gtk_widget_get_clipboard (GtkWidget* widget);
+
 
   void gtk_widget_set_css_classes (GtkWidget* widget, const char** classes);
   char** gtk_widget_get_css_classes(GtkWidget* widget);

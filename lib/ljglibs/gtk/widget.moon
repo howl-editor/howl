@@ -45,7 +45,6 @@ core.define 'GtkWidget < GObject', {
     overflow: 'GtkOverflow'
     parent: 'GtkWidget*'
     receives_default: 'gboolean'
-    -- NYI: root
     scale_factor: 'int'
     sensitive: 'gboolean'
     tooltip_markup: 'gchar*'
@@ -81,6 +80,7 @@ core.define 'GtkWidget < GObject', {
     allocation: => @get_allocation!
     allocated_width: => C.gtk_widget_get_allocated_width @
     allocated_height: => C.gtk_widget_get_allocated_height @
+    clipboard: => @get_clipboard!
 
     first_child: => @get_first_child!
     last_child: => @get_last_child!
@@ -95,6 +95,7 @@ core.define 'GtkWidget < GObject', {
         append r, child
         child = child.next_sibling
       r
+
   }
 
   realize: => C.gtk_widget_realize @
@@ -126,6 +127,9 @@ core.define 'GtkWidget < GObject', {
   get_focus_child: =>
     w = C.gtk_widget_get_focus_child @
     w != nil and w or nil
+
+  get_clipboard: =>
+    return C.gtk_widget_get_clipboard @
 
   get_allocation: =>
     alloc = ffi.new('GtkAllocation')
@@ -170,12 +174,4 @@ core.define 'GtkWidget < GObject', {
 
   queue_draw_area: (x, y, width, height) =>
     C.gtk_widget_queue_draw_area @, x, y, width, height
-
-  on_draw: (handler, ...) =>
-    error "GTK4: no draw signal"
-
-  add: (child) =>
-    error "GTK4 deprecation: no add for container widget"
-    @child = child
-
 }

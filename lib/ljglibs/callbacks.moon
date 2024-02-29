@@ -137,11 +137,7 @@ callbacks = {
   -- void1: cb_cast 'GVCallback1', (data) -> dispatch data
   void2: cb_cast 'GVCallback2', (a1, data) -> dispatch data, a1
   void3: cb_cast 'GVCallback3', (a1, a2, data) -> dispatch data, a1, a2
-  void4: cb_cast 'GVCallback4', (a1, a2, a3, data) -> dispatch data, a1, a2, a3
   void5: cb_cast 'GVCallback5', (a1, a2, a3, a4, data) -> dispatch data, a1, a2, a3, a4
-  void6: cb_cast 'GVCallback6', (a1, a2, a3, a4, a5, data) -> dispatch data, a1, a2, a3, a4, a5
-  void7: cb_cast 'GVCallback7', (a1, a2, a3, a4, a5, a6, data) -> dispatch data, a1, a2, a3, a4, a5, a6
-  bool1: cb_cast 'GBCallback1', (data) -> dispatch data
   bool2: cb_cast 'GBCallback2', (a1, data) -> dispatch data, a1
   bool3: cb_cast 'GBCallback3', (a1, a2, data) -> dispatch data, a1, a2
   bool4: cb_cast 'GBCallback4', (a1, a2, a3, data) -> dispatch data, a1, a2, a3
