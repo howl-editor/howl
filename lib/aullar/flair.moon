@@ -1,4 +1,4 @@
--- Copyright 2015 The Howl Developers
+-- Copyright 2015-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:RGBA} = require 'ljglibs.gdk'

@@ -338,6 +338,7 @@ DisplayLine = define_class {
         background: bg_range.style.background
         background_alpha: bg_range.style.alpha
         :width
+        height: @height
       }
       flair.draw bg_flair, @, bg_range.start_offset, bg_range.end_offset, x, y, cr
 
