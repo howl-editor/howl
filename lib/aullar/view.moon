@@ -579,6 +579,10 @@ View = {
     elseif @_redraw_rect
       @_do_draw @_redraw_rect
 
+    s_status = @_surface\status!
+    if s_status != 0
+      print "Error for surface: #{s_status}"
+
     with cr
       .operator = cairo.OPERATOR_SOURCE
       \set_source_surface @_surface, 0, 0

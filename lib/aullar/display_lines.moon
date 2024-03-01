@@ -217,15 +217,9 @@ LinesMt = {
 }
 
 DisplayLine = define_class {
-  new: (@display_lines, @view, buffer, @pango_context, line, width) =>
+  new: (@display_lines, @view, buffer, @pango_context, line, width, default_font_desc) =>
     @layout = Layout pango_context
-
-    -- XXX
-    font_desc = Pango.FontDescription {
-      family: 'Liberation Mono',
-      size: 12 * Pango.SCALE
-    }
-    @layout.font_description = font_desc
+    @layout.font_description = default_font_desc
 
     @layout\set_text line.ptr, line.size
     @layout.tabs = display_lines.tab_array
@@ -392,6 +386,11 @@ get_wrap_indicator = (pango_context, view) ->
   :layout, :width, :height
 
 (view, tab_array, buffer, pango_context) ->
+  default_font_desc = Pango.FontDescription {
+    family: view.config.view_font_name,
+    size: view.config.view_font_size * Pango.SCALE
+  }
+
   setmetatable {
     min: math.huge
     max: 0
@@ -432,7 +431,7 @@ get_wrap_indicator = (pango_context, view) ->
     __index: (nr) =>
       line = buffer\get_line nr
       return nil unless line
-      d_line = DisplayLine @, view, buffer, pango_context, line
+      d_line = DisplayLine @, view, buffer, pango_context, line, default_font_desc
       @min = min @min, nr
       @max = max @max, nr
       outside = @window.size and (nr < @window.first or nr > @window.last)

@@ -21,7 +21,6 @@ class MenuPopup extends Popup
     @list_widget\show!
 
   refresh: =>
-    print "menu refresh"
     @list\update @highlight_matches_for
 
   show: (...) =>
