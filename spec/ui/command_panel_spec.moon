@@ -116,11 +116,9 @@ describe 'CommandPanel', ->
     it 'add_widget calls to_gobject and show on the added widget', ->
       widget = {
         to_gobject: spy.new -> Gtk.Box!
-        show: spy.new ->
       }
       command_line\add_widget 'name', widget
       assert.spy(widget.to_gobject).was_called 1
-      assert.spy(widget.show).was_called 1
 
     it 'changing the text invokes def.on_text_changed', ->
       def.on_text_changed = spy.new ->

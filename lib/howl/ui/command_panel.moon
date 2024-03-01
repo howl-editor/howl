@@ -1,4 +1,4 @@
--- Copyright 2012-2022 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
@@ -17,6 +17,7 @@ class CommandLine extends PropertyObject
     @def = {}
 
     @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL
+    @bin.visible = false
     @bin.vexpand = false
     @box = nil
     @command_widget = nil
@@ -207,13 +208,9 @@ class CommandLine extends PropertyObject
 
     @_widgets[name] = widget
 
-    widget\show!
-
   remove_widget: (name) =>
     widget = @_widgets[name]
     return unless widget
-    -- XXX
-    -- widget\to_gobject!\unref!
     @_widgets[name] = nil
 
   get_widget: (name) => @_widgets[name]
@@ -222,7 +219,6 @@ class CommandLine extends PropertyObject
     names = [name for name, _ in pairs @_widgets]
     for name in *names
       @remove_widget name
-
 
   load_help: =>
     -- merge help provided by @def and @opts
@@ -249,7 +245,6 @@ class CommandLine extends PropertyObject
 
     @indic_info.label = text
 
-
   show_help: =>
     help_buffer = @_help_context\get_buffer!
     return unless help_buffer and not help_buffer.text.is_blank
@@ -269,8 +264,7 @@ class CommandLine extends PropertyObject
   open: =>
     return if @is_open
 
-    -- GTK4
-    -- @bin\show_all!
+    @bin\show!
     @notification\hide!
     @title = @title
 
@@ -278,6 +272,7 @@ class CommandLine extends PropertyObject
     @is_hidden = false
 
     @command_widget\focus!
+
 
   hide: =>
     @bin\hide!
@@ -334,6 +329,7 @@ class CommandPanel extends PropertyObject
     super!
     @command_lines = {}
     @bin = Gtk.Box Gtk.ORIENTATION_VERTICAL
+    @bin.visible = false
 
   to_gobject: => @bin
 
