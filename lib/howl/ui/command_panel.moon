@@ -258,7 +258,7 @@ class CommandLine extends PropertyObject
 
   close_help: =>
     if @help_popup
-      @help_popup\destroy!
+      @help_popup\release!
       @help_popup = nil
 
   open: =>

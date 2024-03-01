@@ -566,7 +566,7 @@ class Editor extends PropertyObject
       if @popup.options.keep_alive
         @popup.window\close!
       else
-        @popup.window\destroy!
+        @popup.window\release!
 
       @popup = nil
 
@@ -1231,7 +1231,7 @@ signal.register 'editor-defocused',
 signal.register 'editor-released',
   description: 'Signaled right after an editor was released'
   parameters:
-    editor: 'The editor that is being destroyed'
+    editor: 'The editor that is being released'
 
 signal.register 'insert-at-cursor',
   description: 'Signaled right after text has been inserted into an editor at the cursor position'
