@@ -101,7 +101,7 @@ core.define 'GtkWidget < GObject', {
   realize: => C.gtk_widget_realize @
   show: => C.gtk_widget_show @
   hide: => C.gtk_widget_hide @
-  grab_focus: => C.gtk_widget_grab_focus @
+  grab_focus: => C.gtk_widget_grab_focus(@) != 0
 
   get_display: => C.gtk_widget_get_display @
   get_native: =>

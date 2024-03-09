@@ -180,7 +180,7 @@ ffi.cdef [[
   GdkDisplay* gtk_widget_get_display (GtkWidget* widget);
   GtkNative* gtk_widget_get_native (GtkWidget* widget);
 
-  void gtk_widget_grab_focus (GtkWidget *widget);
+  gboolean gtk_widget_grab_focus (GtkWidget *widget);
   void gtk_widget_get_allocation (GtkWidget* widget, GtkAllocation* allocation);
   int gtk_widget_get_allocated_width (GtkWidget *widget);
   int gtk_widget_get_allocated_height (GtkWidget *widget);
