@@ -6,9 +6,9 @@ howl.util.lpeg_lexer ->
 
   keyword = c 'keyword', -B'.' * word {
     "and", "assert", "async", "as", "await",
-    "break", "class", "continue", "def", "del", "elif",
+    "break", "case", "class", "continue", "def", "del", "elif",
     "else", "except", "exec", "finally", "for", "from", "global", "if", "import",
-    "in", "is", "lambda", "not", "or", "pass", "print", "raise", "return", "try",
+    "in", "is", "lambda", "match", "not", "or", "pass", "print", "raise", "return", "try",
     "while", "with", "yield"
   }
 
