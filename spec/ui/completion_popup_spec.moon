@@ -11,7 +11,7 @@ describe 'CompletionPopup', ->
     it 'popups are collected as they should', ->
       o = CompletionPopup editor
       list = setmetatable {o}, __mode: 'v'
-      o\destroy!
+      o\release!
       o = nil
       collectgarbage!
       assert.is_true list[1] == nil, 'Object still lives'
