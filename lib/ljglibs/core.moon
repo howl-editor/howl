@@ -7,7 +7,6 @@ Type = require 'ljglibs.gobject.type'
 ffi = require 'ffi'
 bit = require 'bit'
 C, ffi_cast = ffi.C, ffi.cast
-pack, unpack = table.pack, table.unpack
 
 defs = {}
 
@@ -66,7 +65,11 @@ set_constants = (def) ->
       def[c] = C[full]
       def[full] = C[full]
 
-setup_signals = (name, def, gtype, instance_cast) ->
+setup_signals = (def, gtype, instance_cast) ->
+  def['connect_for'] = (g_instance, lua_ref, signal_name, handler, ...) ->
+    signal.connect_for lua_ref, g_instance, signal_name, handler, ...
+
+  -- deprecated below
   ids = signal.list_ids gtype
   for id in *ids
     info = signal.query id, gtype
@@ -74,21 +77,11 @@ setup_signals = (name, def, gtype, instance_cast) ->
     name = 'on_' .. info.signal_name\gsub '-', '_'
     unless def[name]
       def[name] = (instance, handler, ...) ->
+        print " XXX deprecated signal handler: #{name}"
         unless handler
           error "`nil` handler passed as handler for '#{name}'"
 
-        cb_handle = nil
-
-        casting_handler = (...) ->
-          args = pack ...
-          args[1] = instance_cast args[1]
-
-          for i = 2, info.n_params + 1
-            args[i] = types.cast info.param_types[i - 1], args[i]
-
-          handler unpack(args, 1, args.n)
-
-        cb_handle = signal.connect_by_info instance, info, casting_handler, ...
+        cb_handle = signal.connect_by_info instance, info, handler, ...
         cb_handle
 
 construct = (spec, no_container, constructor, ...) ->
@@ -117,7 +110,7 @@ construct = (spec, no_container, constructor, ...) ->
         error "Unknown base '#{base_name}' specified for '#{name}'"
 
     gtype = force_type_init name
-    -- gtype = Type.from_name(name)
+    gtype = Type.from_name(name)
     ctype = ffi.typeof "#{name} *"
 
     if gtype
@@ -133,10 +126,11 @@ construct = (spec, no_container, constructor, ...) ->
     spec.properties or= {}
     set_constants spec
     spec.__type = name
+    spec.__cast = cast
 
     if gtype and Type.query(gtype).class_size != 0
       type_class = Type.class_ref gtype
-      setup_signals name, spec, gtype, cast
+      setup_signals spec, gtype, cast
       Type.class_unref type_class
 
     mt = __index: base and base.def

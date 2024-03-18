@@ -3,7 +3,7 @@
 
 Gtk = require 'ljglibs.gtk'
 require 'howl.ui.icons.font_awesome'
-import bindings, config, dispatch from howl
+import bindings, config, dispatch, timer from howl
 import PropertyObject from howl.util.moon
 import NotificationWidget, BufferPopup, TextWidget, IndicatorBar, ContentBox, HelpContext, style from howl.ui
 
@@ -50,8 +50,10 @@ class CommandLine extends PropertyObject
       on_focus_lost: ->
         -- don't let focus leave command line, even if user clicks the editor, we'll grab focus back while open
         if @is_open and not @is_hidden and howl.activities.nr_visible == 0
-          @command_widget\focus!
+          timer.asap -> -- done in a timer to avoid any races
+            @command_widget\focus!
 
+    @command_widget.can_focus = true
     @command_widget.visible_rows = 1
     -- reset blink interval since each view has its own
     @command_widget.view.config.cursor_blink_interval = config.cursor_blink_interval
@@ -71,9 +73,6 @@ class CommandLine extends PropertyObject
       header: @header\to_gobject!
     }
     @bin\add c_box\to_gobject!
-
-  _destroy_box: =>
-    @box = nil
 
   @property title:
     get: => @_title
@@ -115,7 +114,8 @@ class CommandLine extends PropertyObject
     @command_widget.cursor\eof!
 
   post_keypress: =>
-    @_enforce_left_pos!
+    if @command_widget
+      @_enforce_left_pos!
 
   _enforce_left_pos: =>
     -- don't allow cursor to go left into prompt
@@ -211,6 +211,7 @@ class CommandLine extends PropertyObject
   remove_widget: (name) =>
     widget = @_widgets[name]
     return unless widget
+    widget\release! if widget.release
     @_widgets[name] = nil
 
   get_widget: (name) => @_widgets[name]
@@ -273,7 +274,6 @@ class CommandLine extends PropertyObject
 
     @command_widget\focus!
 
-
   hide: =>
     @bin\hide!
     @is_hidden = true
@@ -284,21 +284,21 @@ class CommandLine extends PropertyObject
     @command_widget\focus!
 
   close: =>
-    return if not @box
+    return if not @is_open
     if @def.on_close
       @def\on_close!
-    @reset!
-    if @is_open
-      @bin\hide!
-      @_destroy_box!
-      @is_open = false
 
-  reset: =>
-    @def = {}
-    @parking = nil
-    @title = ''
-    @prompt = ''
-    @text = ''
+    @clear_widgets!
+
+    if @command_widget
+      @command_widget\release!
+      @command_widget = nil
+
+      @notification\release!
+
+    @bin\hide!
+    @box = nil
+    @is_open = false
 
   run: (def, opts={}) =>
     error 'def not provided' unless def
@@ -335,18 +335,6 @@ class CommandPanel extends PropertyObject
 
   @property is_active: get: => #@command_lines > 0
   @property active_command_line: get: => @command_lines[#@command_lines]
-
-  _push: (command_line) =>
-    @bin\append command_line\to_gobject!
-    append @command_lines, command_line
-
-  _remove: (command_line) =>
-    before_count = #@command_lines
-    @command_lines = [cl for cl in *@command_lines when cl != command_line]
-    after_count = #@command_lines
-    if after_count < before_count
-      @bin\remove command_line\to_gobject!
-      return command_line
 
   run: (def, opts={}) =>
     current_command_line = @command_lines[#@command_lines]  -- currently active command line
@@ -396,6 +384,18 @@ class CommandPanel extends PropertyObject
     dispatch.launch ->
       for idx = #command_lines, 1, -1
         command_lines[idx]\finish!
+
+  _push: (command_line) =>
+    @bin\append command_line\to_gobject!
+    append @command_lines, command_line
+
+  _remove: (command_line) =>
+    before_count = #@command_lines
+    @command_lines = [cl for cl in *@command_lines when cl != command_line]
+    after_count = #@command_lines
+    if after_count < before_count
+      @bin\remove command_line\to_gobject!
+      return command_line
 
 return CommandPanel
 

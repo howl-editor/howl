@@ -1,4 +1,4 @@
--- Copyright 2014-2022 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -6,8 +6,9 @@ jit = require 'jit'
 require 'ljglibs.cdefs.gobject'
 {name: type_name, parent: type_parent, from_name: type_from_name} = require 'ljglibs.gobject.type'
 callbacks = require 'ljglibs.callbacks'
+{cast: types_cast} = require 'ljglibs.types'
 C, ffi_string, ffi_cast = ffi.C, ffi.string, ffi.cast
-{insert: append, :concat} = table
+{insert: append, :concat, :pack} = table
 
 GEnumType = type_from_name('GEnum')
 callbacks_by_id = {}
@@ -39,7 +40,8 @@ cb_for_info = (info) ->
   cb
 
 signal_lookup = (name, gtype) ->
-  C.g_signal_lookup name, gtype
+  id = C.g_signal_lookup name, gtype
+  return id != 0 and id or nil
 
 signal_query = (signal_id) ->
   query = ffi.new 'GSignalQuery'
@@ -61,15 +63,38 @@ signal_query = (signal_id) ->
   }
   info
 
-connect_by_info = (instance, info, handler, ...) ->
+create_casting_handler = (instance, signal_info, handler) ->
+  (...) ->
+    args = pack ...
+    args[1] = instance.__cast args[1]
+
+    for i = 2, signal_info.n_params + 1
+      args[i] = types_cast signal_info.param_types[i - 1], args[i]
+
+    handler unpack(args, 1, args.n)
+
+create_casting_handler_for_lua_ref = (lua_ref, instance, signal_info, handler) ->
+  (...) ->
+    args = pack ...
+    args[2] = instance.__cast args[2]
+
+    for i = 2, signal_info.n_params + 1
+      args[i + 1] = types_cast signal_info.param_types[i - 1], args[i + 1]
+
+    handler unpack(args, 1, args.n)
+
+_connect = (instance, info, cb_handle) ->
   cb = cb_for_info info
-  sig_id = info.signal_id
   signal = info.signal_name
-  handle = callbacks.register handler, "signal #{signal}(#{sig_id})", ...
-  handler_id = C.g_signal_connect_data(instance, signal, cb, callbacks.cast_arg(handle.id), nil, 0)
-  handle.signal_handler_id = handler_id
-  handle.signal_object_instance = instance
-  handle
+  handler_id = C.g_signal_connect_data(instance, signal, cb, callbacks.cast_arg(cb_handle.id), nil, 0)
+  cb_handle.signal_handler_id = handler_id
+  cb_handle.signal_object_instance = instance
+  cb_handle
+
+connect_by_info = (instance, info, handler, ...) ->
+  casting_handler = create_casting_handler(instance, info, handler)
+  handle = callbacks.register casting_handler, "signal #{info.signal_name}(#{info.signal_id})", ...
+  _connect instance, info, handle
 
 signal = {
   :callbacks
@@ -93,20 +118,27 @@ signal = {
   DEPRECATED: C.G_SIGNAL_DEPRECATED
 
   connect: (instance, signal, handler, ...) ->
-    if type(instance) == 'string'
-      print debug.traceback!
-      error "GTK4: removed! #{handler}"
-
+    error "connect: no handler specified for '#{signal}'" unless handler
     signal_id = signal_lookup signal, ffi_cast('GType', instance.gtype)
+    if not signal_id
+      error "Unknown signal '#{signal}'"
     info = signal_query signal_id
     connect_by_info instance, info, handler, ...
+
+  connect_for: (lua_ref, instance, signal, handler, ...) ->
+    error "connect_for: no handler specified for '#{signal}'" unless handler
+    signal_id = signal_lookup signal, ffi_cast('GType', instance.gtype)
+    if not signal_id
+      error "Unknown signal '#{signal}'"
+
+    info = signal_query signal_id
+    casting_handler = create_casting_handler_for_lua_ref(lua_ref, instance, info, handler)
+    handle = callbacks.register_for_instance lua_ref, casting_handler, "signal #{info.signal_name}(#{info.signal_id})", ...
+    _connect instance, info, handle
 
   disconnect: (handle) ->
     callbacks.unregister handle
     C.g_signal_handler_disconnect handle.signal_object_instance, handle.signal_handler_id
-
-  unref_handle: (handle) ->
-    callbacks.unref_handle handle
 
   emit_by_name: (instance, signal, ...) ->
     ret = ffi.new 'gboolean [1]'

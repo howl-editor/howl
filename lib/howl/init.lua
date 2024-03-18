@@ -183,8 +183,8 @@ local function main()
     lint(args)
   elseif args.version then
     -- Change version here
-    print("howl version 0.6-dev\n")
-    print("Copyright 2012-2019 The Howl Developers\nLicense: MIT License")
+    print("howl version 1.0-alpha-1\n")
+    print("Copyright 2012-2024 The Howl Developers\nLicense: MIT License")
     os.exit(0)
   else
     require 'howl.cdefs.fontconfig'

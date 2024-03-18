@@ -141,21 +141,8 @@ class Application extends PropertyObject
     props[k] = v for k, v in pairs(properties)
     window = Window props
     window\set_default_size 1024, 768
-
-    window\on_close_request ->
-      if #@windows == 1
-        modified = [b for b in *@_buffers when b.modified]
-        if #modified > 0
-          -- postpone the quit check, since we really need to prevent
-          -- the close right away by returning true
-          timer.asap -> @quit!
-        else
-          @quit!
-
-        true
-
-    window\on_destroy (destroy_window) ->
-      @windows = [w for w in *@windows when w\to_gobject! != destroy_window]
+    window\connect_for @, 'close-request', self._on_window_close_request
+    window\connect_for @, 'destroy', self._on_window_destroyed
 
     @g_app\add_window window\to_gobject!
 
@@ -333,20 +320,14 @@ class Application extends PropertyObject
       )
       @g_app\register!
 
-    @g_app\on_activate ->
-      @_load!
+    @g_app\connect_for @, 'activate', self._on_activate
 
+    -- XXX GTK4 change this as well to use connect_for
     @g_app\on_open (_, files, hint) ->
       hints = [h for h in hint\gmatch '[^,]+']
       @_load files, hints
 
-    @g_app\on_command_line (app, command_line) ->
-      paths = [v for v in *command_line.arguments[2, ] when not v\match('^-')]
-      files, hints = parse_path_args paths, command_line.cwd
-      if #files > 0
-        app\open files, table.concat(hints, ',')
-      else
-        app\activate!
+    @g_app\connect_for @, 'command_line', self._on_command_line
 
     signal.connect 'window-focused', self\synchronize
     signal.connect 'editor-released', (s_args) ->
@@ -513,6 +494,34 @@ class Application extends PropertyObject
       config.broadcast_config!
       signal.emit 'app-ready'
       @_set_initial_status window
+
+  _on_window_close_request: =>
+    if #@windows == 1
+      modified = [b for b in *@_buffers when b.modified]
+      if #modified > 0
+        -- postpone the quit check, since we really need to prevent
+        -- the close right away by returning true
+        timer.asap -> @quit!
+      else
+        @quit!
+
+      return true
+
+    false
+
+  _on_window_destroyed: (destroy_window) =>
+    @windows = [w for w in *@windows when w\to_gobject! != destroy_window]
+
+  _on_activate: (app) =>
+    @_load!
+
+  _on_command_line: (app, command_line) =>
+    paths = [v for v in *command_line.arguments[2, ] when not v\match('^-')]
+    files, hints = parse_path_args paths, command_line.cwd
+    if #files > 0
+      app\open files, table.concat(hints, ',')
+    else
+      app\activate!
 
   _should_abort_quit: =>
     modified = [b for b in *@_buffers when b.modified]

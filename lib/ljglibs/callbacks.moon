@@ -1,4 +1,4 @@
--- Copyright 2014-2022 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -6,15 +6,17 @@ ffi_cast = ffi.cast
 {:unpack, :pack, :insert} = table
 {match: string_match, gsub: string_gsub} = string
 
-ref_id_cnt = 123
-weak_handler_id_cnt = 0
+ref_id_cnt = 1
 handles = {}
-unrefed_handlers = setmetatable {}, __mode: 'v'
-unrefed_args = setmetatable {}, __mode: 'k'
+handle_count = 0
+
+destructor_t = ffi.typeof('struct {}')
+destructor = (f) ->
+  v = destructor_t()
+  ffi.gc(v, f)
+
 options = {
-  dispatch_in_coroutine: false
   on_error: (e) ->
-    -- print "callbacks err: #{e}"
     error e
 }
 
@@ -23,39 +25,49 @@ cb_cast = (cb_type, handler) -> ffi_cast('GCallback', ffi_cast(cb_type, handler)
 unregister = (handle) ->
   error "callbacks.unregister(): Missing argument #1 (handle)", 2 unless handle
   return false unless handles[handle.id]
-  unrefed_handlers[handle.handler] = nil if type(handle.handler) == 'number'
+  handle_count -= 1
   handles[handle.id] = nil
   true
 
 do_dispatch = (data, ...) ->
   ref_id = tonumber ffi_cast('gint', data)
   handle = handles[ref_id]
-  if handle
-    handler = handle.handler
-    handler_args = handle.args
+  unless handle
+    print "no handler found for #{ref_id}"
+    return false
 
-    if type(handler) == 'number'
-      handler = unrefed_handlers[handler]
-      handler_args = unrefed_args[handler]
+  instance = nil
 
-    if handler
-      args = pack ...
+  if handle.instance
+    instance = next(handle.instance)
 
-      if options.dispatcher
-        insert args, 1, handler
-        insert args, 2, handle.description
-        args.n += 2
-        handler = options.dispatcher
-
-      for i = 1, handler_args.n
-        args[args.n + i] = handler_args[i]
-
-      status, ret = pcall handler, unpack(args, 1, args.n + handler_args.n)
-      return ret == true if status
-      options.on_error "callbacks: error in '#{handle.description}' handler: '#{ret}'"
-    else
+    unless instance
       unregister handle
+      return false
 
+  handler = handle.handler
+  handler_args = handle.args
+
+  args = pack ...
+
+  if instance
+    insert args, 1, instance
+    args.n += 1
+
+  if options.dispatcher
+    insert args, 1, handler
+    insert args, 2, handle.description
+    args.n += 2
+    handler = options.dispatcher
+
+  for i = 1, handler_args.n
+    args[args.n + i] = handler_args[i]
+
+  status, ret = pcall handler, unpack(args, 1, args.n + handler_args.n)
+  return ret == true if status
+  print "error: #{ret}"
+  moon.p debug.traceback!
+  options.on_error "callbacks: error in '#{handle.description}' handler: '#{ret}'"
   false
 
 dispatch = (data, ...) ->
@@ -91,31 +103,38 @@ create_callback = (t, orig_signature) ->
 
   cb
 
+register = (handler, description, ...) ->
+  if not handler
+    error "Missing handler for #{description}"
+
+  handle_count += 1
+  ref_id_cnt += 1
+  handle = {
+    :handler,
+    :description,
+    id: ref_id_cnt,
+    args: pack ...
+  }
+  handles[ref_id_cnt] = handle
+  handle
+
 callbacks = {
   :dispatch
+  :register
 
-  register: (handler, description, ...) ->
-    ref_id_cnt += 1
-    handle = {
-      :handler,
-      :description,
-      id: ref_id_cnt,
-      args: pack ...
-    }
-    handles[ref_id_cnt] = handle
+  count: -> handle_count
+
+  register_for_instance: (instance, handler, description, ...) ->
+    handle = register handler, description, ...
+    handle.instance = setmetatable {
+      [instance]: destructor(->
+        -- print "destructor, unregister #{handle.description}"
+        unregister handle
+      )
+    }, __mode: 'k'
     handle
 
   :unregister
-
-  unref_handle: (handle) ->
-    handler = handle.handler
-    if type(handler) != 'number'
-      weak_handler_id_cnt += 1
-      unrefed_handlers[weak_handler_id_cnt] = handler
-      unrefed_args[handler] = handle.args
-      handle.handler = weak_handler_id_cnt
-      handle.args = nil
-      handler
 
   cast_arg: (arg) -> ffi.cast('gpointer', arg)
 
@@ -123,18 +142,6 @@ callbacks = {
     options = moon.copy opts
 
   -- predefined callbacks
-  -- hcb_void_gpointer_gpointer: cb_cast(
-  --   'hs_void_gpointer_gpointer',
-  --   (ptr, data) ->  dispatch data, ptr
-  -- ),
-
-  -- 'hcb_gboolean_gpointer_gpointer': cb_cast(
-  --   'hs_gboolean_gpointer_gpointer',
-  --   (instance, data) ->  callbacks.dispatch data, instance
-  -- )
-
-
-  -- void1: cb_cast 'GVCallback1', (data) -> dispatch data
   void2: cb_cast 'GVCallback2', (a1, data) -> dispatch data, a1
   void3: cb_cast 'GVCallback3', (a1, a2, data) -> dispatch data, a1, a2
   void5: cb_cast 'GVCallback5', (a1, a2, a3, a4, data) -> dispatch data, a1, a2, a3, a4

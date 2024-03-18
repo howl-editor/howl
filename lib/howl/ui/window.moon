@@ -50,13 +50,12 @@ class Window extends PropertyObject
 
     @win[k] = v for k,v in pairs properties
 
-    append @_handlers, @win\on_destroy self\_on_destroy
+    @win\connect_for @, 'destroy', self._on_destroy
 
     @focus_controller = Gtk.EventControllerFocus!
     @win\add_controller @focus_controller
-    with @focus_controller
-      append @_handlers, \on_enter self\_on_focus_in
-      append @_handlers, \on_leave self\_on_focus_out
+    @focus_controller\connect_for @, 'enter', self._on_focus_in
+    @focus_controller\connect_for @, 'leave', self._on_focus_out
 
     @win.child = @box
 
@@ -288,10 +287,6 @@ class Window extends PropertyObject
     @win\queue_draw!
 
   _on_destroy: =>
-    -- disconnect signal handlers
-    for h in *@_handlers
-      gobject_signal.disconnect h
-
     signal.disconnect 'theme-changed', @_theme_changed
 
   _on_focus_in: =>

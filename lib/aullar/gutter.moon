@@ -1,6 +1,7 @@
--- Copyright 2014-2023 The Howl Developers
+-- Copyright 20222-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
+ffi = require 'ffi'
 {:define_class} = require 'aullar.util'
 Pango = require 'ljglibs.pango'
 {:RGBA} = require 'ljglibs.gdk'
@@ -8,13 +9,18 @@ Layout = Pango.Layout
 Gtk = require 'ljglibs.gtk'
 pango_cairo = Pango.cairo
 
+ffi_cast = ffi.cast
+int_t = ffi.typeof 'int'
+cairo_t = ffi.typeof 'cairo_t *'
+
 define_class {
+
   new: (@view, config) =>
     @number_chars = 0
     @first_line = 0
     @last_line = 0
     @area = Gtk.DrawingArea {vexpand: true, css_classes: {'gutter'}}
-    @_draw_handler = @area\set_draw_func self\_draw
+    @area\set_draw_func_for @, self._draw
     @reconfigure config
     @sync view
 
@@ -37,7 +43,6 @@ define_class {
   to_gobject: => @area
 
   release: =>
-    @area\unset_draw_func @_draw_handler
 
   reconfigure: (config) =>
     @foreground = RGBA(config.gutter_color)
@@ -51,7 +56,11 @@ define_class {
     @area.content_width = @_text_width
     @number_chars = num_chars
 
-  _draw: (cr, width, height) =>
+  _draw: (_, cr, width, height) =>
+    cr = ffi_cast cairo_t, cr
+    width = tonumber(ffi_cast int_t, width)
+    height = tonumber(ffi_cast int_t, height)
+
     return if not @view.showing or not @area.visible
 
     p_ctx = @area.pango_context

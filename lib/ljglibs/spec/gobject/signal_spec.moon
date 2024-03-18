@@ -29,12 +29,61 @@ describe 'signal', ->
       C.gtk_widget_hide widget
       assert.spy(handler).was_called_with widget, 'myarg', nil, 123
 
+    it 'casts arguments of known types', ->
+      box = Gtk.Box.new!
+      called_instance = nil
+      handler = spy.new (signal_box) -> called_instance = signal_box
+      signal.connect(box, 'hide', handler)
+      ffi.cast('GtkWidget *', box)\hide!
+      assert.spy(handler).was_called(1)
+      assert.equal Gtk.Box.append, called_instance.append
+
     context '(gc lifecycle management)', ->
       it 'anchors a handler, preventing it from being garbage collected', ->
         holder = setmetatable { handler: -> }, __mode: 'v'
         signal.connect(widget, 'hide', holder.handler, 'myarg', nil, 123)
         collectgarbage!
         assert.is_not_nil holder.handler
+
+  describe 'connect_for(lua_ref, cb_type, instance, signal, handler, ...)', ->
+    it 'allows connecting a handler with a given type', ->
+      lua_ref = {}
+      handler = spy.new ->
+      signal.connect_for(lua_ref, widget, 'hide', handler)
+      C.gtk_widget_hide widget
+      assert.spy(handler).was_called_with lua_ref, widget
+
+    it 'passes along any additional arguments to the handler after the callback parameters', ->
+      handler = spy.new ->
+      lua_ref = {}
+      signal.connect_for(lua_ref, widget, 'hide', handler, 'myarg', nil, 123)
+      C.gtk_widget_hide widget
+      assert.spy(handler).was_called_with lua_ref, widget, 'myarg', nil, 123
+
+    it 'casts arguments of known types', ->
+      box = Gtk.Box.new!
+      lua_ref = {}
+      called_instance = nil
+      handler = spy.new (_lua_ref, signal_box) -> called_instance = signal_box
+      signal.connect_for(lua_ref, box, 'hide', handler)
+      ffi.cast('GtkWidget *', box)\hide!
+      assert.spy(handler).was_called(1)
+      assert.equal Gtk.Box.append, called_instance.append
+
+    context '(gc lifecycle management)', ->
+      it 'anchors the handler, preventing it from being garbage collected', ->
+        lua_ref = {}
+        holder = setmetatable { handler: -> }, __mode: 'v'
+        signal.connect_for(lua_ref, widget, 'hide', holder.handler)
+        collectgarbage!
+        assert.is_not_nil holder.handler
+
+      it 'does not anchor the lua_ref, allowing it to be garbage collected', ->
+        handler = ->
+        holder = setmetatable { {} }, __mode: 'v'
+        signal.connect_for(holder[1], widget, 'hide', handler)
+        collectgarbage!
+        assert.is_nil holder[1]
 
   describe 'disconnect(handle)', ->
     local handler, handle
@@ -46,26 +95,6 @@ describe 'signal', ->
       signal.disconnect handle
       C.gtk_widget_hide widget
       assert.spy(handler).was_not_called!
-
-  describe 'unref_handle(handle)', ->
-    it 'un-anchors a handle, allowing the handler to be garbage collected', ->
-      holder = setmetatable { handler: -> }, __mode: 'v'
-      handle = signal.connect(widget, 'hide', holder.handler, 'myarg', nil, 123)
-      signal.unref_handle handle
-      collectgarbage!
-      assert.is_nil holder.handler
-
-    it 'still dispatches callbacks as long as the handler is alive', ->
-      handler = spy.new ->
-      handle = signal.connect(widget, 'hide', handler, 'myarg', nil, 123)
-      signal.unref_handle handle
-      C.gtk_widget_hide widget
-      assert.spy(handler).was_called!
-
-    it 'returns the unrefed callback function', ->
-      handler = ->
-      handle = signal.connect(widget, 'hide', handler)
-      assert.equal handler, signal.unref_handle handle
 
   describe 'lookup(name, gtype)', ->
     it 'returns a signal id for the given name and gtype', ->

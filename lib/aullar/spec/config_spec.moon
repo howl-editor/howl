@@ -1,4 +1,4 @@
--- Copyright 2014 The Howl Developers
+-- Copyright 2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 config = require 'aullar.config'
@@ -69,6 +69,11 @@ describe 'config', ->
     local proxy
 
     before_each -> proxy = config.local_proxy!
+
+    it 'does not anchor local proxies', ->
+      holder = setmetatable {config.local_proxy!}, __mode: 'v'
+      collectgarbage!
+      assert.is_nil holder[1]
 
     it 'returns the globally set value when no local value exists', ->
       config.view_font_size = 22

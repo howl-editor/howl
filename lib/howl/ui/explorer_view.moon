@@ -210,7 +210,11 @@ class ExplorerView
     return true
 
   on_close: =>
+    print "ExplorerView on_close"
     @_cancel_preview!
+    @list_widget\release!
+    @list_widget = nil
+    @list = nil
 
   keymap:
     enter: =>

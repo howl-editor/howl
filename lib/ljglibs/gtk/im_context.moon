@@ -1,4 +1,4 @@
--- Copyright 2015 The Howl Developers
+-- Copyright 2015-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -6,11 +6,8 @@ core = require 'ljglibs.core'
 {:g_string} = require 'ljglibs.glib'
 require 'ljglibs.cdefs.gtk'
 require 'ljglibs.gobject.object'
-gobject = require 'ljglibs.gobject'
 
-signal = gobject.signal
-C, ffi_string, ffi_new, ffi_gc, ffi_cast = ffi.C, ffi.string, ffi.new, ffi.gc, ffi.cast
-pack, unpack = table.pack, table.unpack
+C, ffi_new, ffi_gc, ffi_cast = ffi.C, ffi.string, ffi.new, ffi.gc, ffi.cast
 
 jit.off true, true
 
@@ -19,7 +16,11 @@ widget_t = ffi.typeof 'GtkWidget *'
 core.define 'GtkIMContext < GObject', {
   properties: {
     client_widget:
-      set: (widget) => @set_client_widget ffi_cast(widget_t, widget)
+      set: (widget) =>
+        print "widget_t: #{widget_t}"
+        print "type: #{ffi.typeof 'GtkWidget *'}"
+        print "widget: #{widget}"
+        @set_client_widget ffi_cast(widget_t, widget)
 
     use_preedit:
       set: (v) => @set_use_preedit v
@@ -49,42 +50,4 @@ core.define 'GtkIMContext < GObject', {
 
   set_use_preedit: (v) =>
     C.gtk_im_context_set_use_preedit @, v
-
-  -- Alas, no introspection support for these signal
-  -- on_commit: (handler, ...) =>
-  --   this = @
-  --   args = pack(...)
-  --   signal.connect 'bool3', @, 'commit', (ctx, str) ->
-  --     handler this, ffi_string(str), unpack(args, args.n)
-
-  -- on_preedit_start: (handler, ...) =>
-  --   this = @
-  --   args = pack(...)
-  --   signal.connect 'void2', @, 'preedit-start', (ctx) ->
-  --     handler this, unpack(args, args.n)
-
-  -- on_preedit_changed: (handler, ...) =>
-  --   this = @
-  --   args = pack(...)
-  --   signal.connect 'void2', @, 'preedit-changed', (ctx) ->
-  --     handler this, unpack(args, args.n)
-
-  -- on_preedit_end: (handler, ...) =>
-  --   this = @
-  --   args = pack(...)
-  --   signal.connect 'void2', @, 'preedit-end', (ctx) ->
-  --     handler this, unpack(args, args.n)
-
-  -- on_retrieve_surrounding: (handler, ...) =>
-  --   this = @
-  --   args = pack(...)
-  --   signal.connect 'bool2', @, 'retrieve-surrounding', (ctx) ->
-  --     handler this, unpack(args, args.n)
-
-  -- on_delete_surrounding: (handler, ...) =>
-  --   this = @
-  --   args = pack(...)
-  --   signal.connect 'bool4', @, 'delete-surrounding', (ctx, offset, n_chars) ->
-  --     handler this, tonumber(offset), tonumber(n_chars), unpack(args, args.n)
-
 }

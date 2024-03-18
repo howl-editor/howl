@@ -84,7 +84,7 @@ change_sink = (start_offset, count) ->
 
 Buffer = {
   new: (text = '') =>
-    @listeners = {}
+    @listeners = setmetatable {}, __mode: 'v'
     @_style_listener = on_changed: self\_on_style_changed
     @revisions = Revisions!
     @markers = Markers {
@@ -162,9 +162,12 @@ Buffer = {
   }
 
   add_listener: (listener) =>
+    @_clean_listeners!
     @listeners[#@listeners + 1] = listener
+    listener
 
   remove_listener: (listener) =>
+    @_clean_listeners!
     @listeners = [l for l in *@listeners when l != listener]
 
   insert: (offset, text, size = #text, opts = {}) =>
@@ -495,11 +498,15 @@ Buffer = {
     return @revisions.revision_id
 
   notify: (event, parameters) =>
+    @_clean_listeners!
     for listener in *@listeners
       callback = listener["on_#{event}"]
       if callback
         status, ret = pcall callback, listener, @, parameters
         print "Error emitting '#{event}': #{ret}" unless status
+
+  _clean_listeners: =>
+    @listeners = setmetatable [l for _, l in pairs(@listeners) when l], __mode: 'v'
 
   _scan_lines_to: (to) =>
     tb = @text_buffer

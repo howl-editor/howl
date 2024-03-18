@@ -25,6 +25,10 @@ class NotificationWidget
 
   show: => @text_widget\show!
 
+  release: =>
+    @text_widget\release!
+    @text_widget = nil
+
   to_gobject: => @text_widget\to_gobject!
 
 return NotificationWidget

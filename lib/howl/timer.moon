@@ -27,7 +27,6 @@ check_for_idle = ->
 
   last_idle = idle
   return unless idle >= 0.5
-
   fired = {}
   for i = 1, #idle_handlers
     h = idle_handlers[i]

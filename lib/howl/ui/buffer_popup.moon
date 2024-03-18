@@ -58,6 +58,10 @@ class BufferPopup extends Popup
     dimensions = @_get_dimensions!
     super dimensions.width, dimensions.height
 
+  release: =>
+    print "BufferPopup release, remove XXX"
+    super!
+
   _get_dimensions: =>
     first_line = @view.first_visible_line
     local nr_lines
@@ -74,8 +78,8 @@ class BufferPopup extends Popup
     width += margin * 2
     height += margin * 2
 
-    print "buffer popup _get_dimensions"
-    moon.p width: ceil(width), height: ceil(height)
+    -- print "buffer popup _get_dimensions"
+    -- moon.p width: ceil(width), height: ceil(height)
     return width: ceil(width), height: ceil(height)
 
 return BufferPopup

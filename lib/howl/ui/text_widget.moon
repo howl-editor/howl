@@ -66,8 +66,8 @@ class TextWidget extends PropertyObject
     set: (text) => @buffer.text = text
 
   @property can_focus:
-    get: => @view_gobject.can_focus
-    set: (v) => @view_gobject.can_focus = v
+    get: => @view.can_focus
+    set: (v) => @view.can_focus = v
 
   adjust_width_to_fit: =>
     width = @view\block_dimensions 1, @visible_rows
@@ -102,7 +102,8 @@ class TextWidget extends PropertyObject
   delete: (...) => @buffer\delete ...
 
   release: =>
-    @view.listener = nil
+    print "TextWidget release"
+    @view\release!
 
   _set_height: (height) =>
     return if @_height == height

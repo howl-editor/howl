@@ -330,6 +330,7 @@ class Editor extends PropertyObject
       @_pre_preview_line_at_top = @line_at_top
 
     @_show_buffer buffer, preview: true
+    @view.can_focus = false
 
     signal.emit 'preview-opened', {
       editor: self,
@@ -339,6 +340,7 @@ class Editor extends PropertyObject
 
   cancel_preview: =>
     if @_is_previewing and @_pre_preview_buffer
+      @view.can_focus = true
       preview_buffer = @buffer
       @_show_buffer @_pre_preview_buffer
       @line_at_top = @_pre_preview_line_at_top

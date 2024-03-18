@@ -2,6 +2,7 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.gobject'
 core = require 'ljglibs.core'
 types = require 'ljglibs.types'
+signal = require 'ljglibs.gobject.signal'
 
 C, ffi_cast, ffi_new = ffi.C, ffi.cast, ffi.new
 lua_value = types.lua_value
@@ -55,6 +56,9 @@ core.define 'GObject', {
 
   set_typed: (k, type, v) =>
     C.g_object_set @, k, ffi_cast(type, v), nil
+
+  connect: (signal_name, handler, ...) =>
+    signal.connect @, signal_name, handler, ...
 
 }, (spec, type) -> spec.new type
 

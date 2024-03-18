@@ -23,6 +23,11 @@ class MenuPopup extends Popup
   refresh: =>
     @list\update @highlight_matches_for
 
+  release: =>
+    print "MenuPopup release"
+    @list_widget\release!
+    super!
+
   show: (...) =>
     @refresh!
     super ...

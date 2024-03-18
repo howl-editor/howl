@@ -9,7 +9,6 @@ require 'ljglibs.cdefs.glib'
 C, ffi_string, ffi_cast = ffi.C, ffi.string, ffi.cast
 band = bit.band
 gchar_arr = ffi.typeof 'gchar [?]'
-guint_t = ffi.typeof 'guint'
 modifier_t = ffi.typeof 'GdkModifierType'
 
 explain_key_code = (code, event) ->
@@ -31,7 +30,7 @@ explain_key_code = (code, event) ->
 
 {
   construct_key_event: (keyval, state) ->
-    keyval = ffi_cast guint_t, keyval
+    keyval = tonumber keyval
     state = ffi_cast modifier_t, state
     event = {
       shift: band(state, C.GDK_SHIFT_MASK) != 0,

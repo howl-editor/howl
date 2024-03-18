@@ -17,7 +17,7 @@ aullar_config = require 'aullar.config'
 local loading_css
 
 css_provider = Gtk.CssProvider!
-css_provider\on_parsing_error (provider, section, err)->
+css_provider\connect 'parsing_error', (provider, section, err)->
   err = cast 'GError *', err
   section = cast 'GtkCssSection *', section
   err_s = ffi_string err.message

@@ -11,7 +11,7 @@ C = ffi.C
 
 jit.off true, true
 
-core.define 'GtkCssProvider', {
+core.define 'GtkCssProvider < GObject', {
   new: -> C.gtk_css_provider_new!
 
   load_from_data: (data) =>

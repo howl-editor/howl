@@ -143,25 +143,6 @@ describe 'core', ->
           o = MyPropType { foo: 123 }
           assert.not_equal 123, o.foo
 
-    context '(signals)', ->
-
-      it 'sets up signal hook functions automatically based on the gtype', ->
-        box = Box!
-        show_handler = spy.new ->
-        box\on_show show_handler, nil, 123
-        box\hide!
-        box\show!
-        assert.spy(show_handler).was_called_with box, nil, 123
-
-      it 'casts arguments of known types', (done) ->
-        box = Box!
-        show_handler = (signal_box) ->
-          assert.equal Box.show, signal_box.show
-
-        box\on_show show_handler
-        box\hide!
-        box\show!
-
   describe 'bit_flags(def, prefix, value)', ->
     it 'offers a convinient way of accessing bit flags using string constants', ->
       def = {

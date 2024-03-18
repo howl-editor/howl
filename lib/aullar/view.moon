@@ -5,11 +5,14 @@ ffi = require 'ffi'
 {string: ffi_string} = ffi
 {:band} = require 'bit'
 
+ffi_cast = ffi.cast
+int_t = ffi.typeof 'int'
+cairo_t = ffi.typeof 'cairo_t *'
+
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 Pango = require 'ljglibs.pango'
 cairo = require 'ljglibs.cairo'
-signal = require 'ljglibs.gobject.signal'
 require 'ljglibs.cairo.context'
 DisplayLines = require 'aullar.display_lines'
 Cursor = require 'aullar.cursor'
@@ -22,7 +25,6 @@ config = require 'aullar.config'
 {:define_class} = require 'aullar.util'
 {:construct_key_event} = require 'ljglibs.util'
 {:max, :min, :floor} = math
-append = table.insert
 
 jit.off true, true
 
@@ -64,8 +66,10 @@ View = {
     @width = nil
     @config = config.local_proxy!
 
-    @area = Gtk.DrawingArea {hexpand: true, vexpand: true}
-    @area\add_css_class 'htextview'
+    @d_area = Gtk.DrawingArea {hexpand: true, vexpand: true}
+    @d_area\add_css_class 'htextview'
+    @d_area\connect_for @, 'resize', self._on_resize
+
     @key_controller = Gtk.EventControllerKey!
     @focus_controller = Gtk.EventControllerFocus!
     @gesture_controller = Gtk.GestureClick!
@@ -73,11 +77,11 @@ View = {
     @motion_controller = Gtk.EventControllerMotion!
     @scroll_controller = Gtk.EventControllerScroll Gtk.EventControllerScroll.BOTH_AXES
 
-    @area\add_controller @key_controller
-    @area\add_controller @focus_controller
-    @area\add_controller @gesture_controller
-    @area\add_controller @motion_controller
-    @area\add_controller @scroll_controller
+    @d_area\add_controller @key_controller
+    @d_area\add_controller @focus_controller
+    @d_area\add_controller @gesture_controller
+    @d_area\add_controller @motion_controller
+    @d_area\add_controller @scroll_controller
 
     @selection = Selection @
     @cursor = Cursor @, @selection
@@ -92,84 +96,42 @@ View = {
     @scroll_speed_x = config.scroll_speed_x
 
     @im_context = Gtk.ImContextSimple!
-    with @im_context
-      .client_widget = @area
-      append @_handlers, \on_commit (ctx, s) ->
-        @insert ffi_string(s), allow_coalescing: true
+    -- @im_context.client_widget = @d_area
+    @im_context\connect_for @, 'commit', self._on_im_commit
+    @im_context\connect_for @, 'preedit-start', self._on_im_preedit_start
+    @im_context\connect_for @, 'preedit-changed', self._on_im_preedit_changed
+    @im_context\connect_for @, 'preedit-end', self._on_im_preedit_end
 
-      append @_handlers, \on_preedit_start ->
-        @in_preedit = true
-        notify @, 'on_preedit_start'
-
-      append @_handlers, \on_preedit_changed (ctx) ->
-        str, attr_list, cursor_pos = ctx\get_preedit_string!
-        notify @, 'on_preedit_change', :str, :attr_list, :cursor_pos
-
-      append @_handlers, \on_preedit_end ->
-        @in_preedit = false
-        notify @, 'on_preedit_end'
-
-    with @area
+    with @d_area
       .can_focus = true
       .focusable = true
 
-    @_draw_handler = @area\set_draw_func self\_on_draw
-
-    with @key_controller
-      append @_handlers, \on_key_pressed self\_on_key_pressed
-
-    with @focus_controller
-      append @_handlers, \on_enter self\_on_focus_in
-      append @_handlers, \on_leave self\_on_focus_out
-
-    with @gesture_controller
-      append @_handlers, \on_pressed self\_on_button_press
-      append @_handlers, \on_released self\_on_button_release
-
-    with @motion_controller
-      append @_handlers, \on_motion self\_on_motion_event
-
-    with @scroll_controller
-      append @_handlers, \on_scroll self\_on_scroll
+    @d_area\set_draw_func_for @, self._on_draw
+    @key_controller\connect_for @, 'key-pressed', self._on_key_pressed
+    @focus_controller\connect_for @, 'enter', self._on_focus_in
+    @focus_controller\connect_for @, 'leave', self._on_focus_out
+    @gesture_controller\connect_for @, 'pressed', self._on_button_press
+    @gesture_controller\connect_for @, 'released', self._on_button_release
+    @motion_controller\connect_for @, 'motion', self._on_motion_event
+    @scroll_controller\connect_for @, 'scroll', self._on_scroll
 
     @horizontal_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_HORIZONTAL
-    append @_handlers, @horizontal_scrollbar.adjustment\on_value_changed (adjustment) ->
-      return if @_updating_scrolling
-      @base_x = floor adjustment.value
-      @_draw!
-      -- @area\queue_draw!
-
-    -- @horizontal_scrollbar_alignment = Gtk.Alignment {
-    --   left_padding: @gutter_width,
-    --   @horizontal_scrollbar
-    -- }
-    -- @horizontal_scrollbar_alignment.no_show_all = not config.view_show_h_scrollbar
+    @horizontal_scrollbar.adjustment\connect_for @, 'value-changed', self._on_hscroll_changed
     @horizontal_scrollbar.visible = config.view_show_h_scrollbar
 
     @vertical_scrollbar = Gtk.Scrollbar Gtk.ORIENTATION_VERTICAL
     @vertical_scrollbar.visible = config.view_show_v_scrollbar
-
-    append @_handlers, @vertical_scrollbar.adjustment\on_value_changed (adjustment) ->
-      return if @_updating_scrolling
-      @_scrolling_vertically = true
-      line = floor adjustment.value + 0.5
-      @scroll_to line
-      @_scrolling_vertically = false
+    @vertical_scrollbar.adjustment\connect_for @, 'value-changed', self._on_vscroll_changed
 
     @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
       @gutter\to_gobject!,
       Gtk.Box(Gtk.ORIENTATION_VERTICAL, {
         vexpand: true, hexpand: true
-        @area,
+        @d_area,
         @horizontal_scrollbar
       }),
       @vertical_scrollbar
     }
-
-    append @_handlers, @area\on_resize self\_on_resize
-
-    append @_handlers, @bin\on_show =>
-      print "view show"
 
     @_buffer_listener = {
       on_inserted: (_, b, args) -> self\_on_buffer_modified b, args, 'inserted'
@@ -194,7 +156,15 @@ View = {
 
     showing: => @height != nil
     has_focus: => @focus_controller.contains_focus
-    gutter_width: =>  @config.view_show_line_numbers and @gutter.width or 0
+
+    can_focus: {
+      get: => @d_area.can_focus
+      set: (v) =>
+        @d_area.can_focus = v
+        @d_area.focusable = v
+    }
+
+    gutter_width: => @config.view_show_line_numbers and @gutter.width or 0
 
     first_visible_line: {
       get: => @_first_visible_line
@@ -305,7 +275,7 @@ View = {
   }
 
   grab_focus: =>
-    @area\grab_focus!
+    @d_area\grab_focus!
 
   scroll_to: (line) =>
     return if line < 1 or not @showing
@@ -511,7 +481,7 @@ View = {
         index = pos - line.start_offset -- <-- at this byte index
         rect =  layout\index_to_pos index
 
-        area_offset_x = @area\translate_coordinates @bin, 0, 0
+        area_offset_x = @d_area\translate_coordinates @bin, 0, 0
 
         return {
           x: (floor(rect.x / Pango.SCALE) + area_offset_x) - @base_x
@@ -525,7 +495,7 @@ View = {
     nil
 
   text_dimensions: (text) =>
-    p_ctx = @area.pango_context
+    p_ctx = @d_area.pango_context
     layout = Pango.Layout p_ctx
     layout.text = text
     width, height = layout\get_pixel_size!
@@ -543,17 +513,7 @@ View = {
     width, height
 
   release: =>
-    @area\unset_draw_func @_draw_handler
-    @listener = nil
-    @selection = nil
-    @cursor = nil
-    @config\detach!
-    @_buffer\remove_listener(@_buffer_listener) if @_buffer
-    @gutter\release!
-
-    -- disconnect signal handlers
-    for h in *@_handlers
-      signal.disconnect h
+    print "XXX: remove view release"
 
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width
@@ -565,7 +525,11 @@ View = {
     for line_nr = from_line, to_line
       @display_lines[line_nr] = nil
 
-  _on_draw: (cr, width, height) =>
+  _on_draw: (_, cr, width, height) =>
+    cr = ffi_cast cairo_t, cr
+    width = tonumber(ffi_cast int_t, width)
+    height = tonumber(ffi_cast int_t, height)
+
     if not @_cairo_ctx
       @_surface = cairo.Surface.create_similar(
         cr.target,
@@ -603,7 +567,7 @@ View = {
     else
       @_redraw_rect = clip or {y1: 0, y2: @height, x1: 0, x2: @width}
 
-    @area\queue_draw!
+    @d_area\queue_draw!
 
   _do_draw: (clip) =>
     return unless @_cairo_ctx
@@ -670,7 +634,7 @@ View = {
 
   _reset_display: =>
     @_last_visible_line = nil
-    p_ctx = @area.pango_context
+    p_ctx = @d_area.pango_context
     tm = @text_dimensions(' ')
     @width_of_space = tm.width
     @default_line_height = tm.height + floor @config.view_line_padding
@@ -735,6 +699,30 @@ View = {
     update_block(start_dline.width == prev_block_width)
     @_sync_scrollbars!
 
+  _on_im_commit: (ctx, s) => @insert ffi_string(s), allow_coalescing: true
+
+  _on_im_preedit_start: (ctx, s) =>
+      @in_preedit = true
+      notify @, 'on_preedit_start'
+
+  _on_im_preedit_changed: (ctx) =>
+      str, attr_list, cursor_pos = ctx\get_preedit_string!
+      notify @, 'on_preedit_change', :str, :attr_list, :cursor_pos
+
+  _on_im_preedit_end: =>
+      notify @, 'on_preedit_end'
+
+  _on_hscroll_changed: (adjustment) =>
+    return if @_updating_scrolling
+    @base_x = floor adjustment.value
+
+  _on_vscroll_changed: (adjustment) =>
+    return if @_updating_scrolling
+    @_scrolling_vertically = true
+    line = floor adjustment.value + 0.5
+    @scroll_to line
+    @_scrolling_vertically = false
+
   _on_buffer_modified: (buffer, args, type) =>
     cur_pos = @cursor.pos
     sel_anchor, sel_end = @selection.anchor, @selection.end_pos
@@ -775,8 +763,8 @@ View = {
 
       @gutter\sync! if lines_changed
       @gutter\sync_dimensions @_buffer
-      -- if lines_changed and not @gutter\sync_dimensions buffer
-      --   @area\queue_draw!
+      if lines_changed and not @gutter\sync_dimensions buffer
+        @d_area\queue_draw!
 
     -- adjust cursor to correctly reflect the change
     changes = { { :type, offset: args.offset, size: args.size } }
@@ -835,9 +823,6 @@ View = {
     @im_context\focus_out!
     @cursor.active = false
     notify @, 'on_focus_out'
-
-  _on_screen_changed: =>
-    @_reset_display!
 
   _on_key_pressed: (_, keyval, keycode, state) =>
     e = @key_controller\get_current_event!
@@ -922,9 +907,6 @@ View = {
 
   _on_resize: (_, width, height) =>
     width, height = tonumber(width), tonumber(height)
-    resized = (not @height or @height != height) or
-      (not @width or @width != width)
-    return unless resized
 
     -- For resizes we always recreate our cached surface.
     -- Attempts at keeping cached surfaces with larger sizes only caused
@@ -933,7 +915,7 @@ View = {
     @_cairo_ctx = nil
     @_surface = nil
 
-    @area.cursor = @_cur_mouse_cursor
+    @d_area.cursor = @_cur_mouse_cursor
 
     getting_taller = @height and height > @height
     @width = width
@@ -961,14 +943,13 @@ View = {
 
     elseif option == 'gutter_color'
       @gutter\reconfigure @config
-      -- @_reset_display!
 
     elseif option == 'view_show_v_scrollbar'
       @vertical_scrollbar.visible = val
 
     elseif option == 'view_show_h_scrollbar'
       @horizontal_scrollbar.visible = val
-      @horizontal_scrollbar\hide!
+      -- @horizontal_scrollbar\hide!
       -- XXX
       -- print "set horizontal_scrollbar.visible to #{val}"
       -- @horizontal_scrollbar_alignment.left_padding = @gutter_width
