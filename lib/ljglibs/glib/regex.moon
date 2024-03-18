@@ -129,7 +129,6 @@ core.define 'GRegex', {
 
   meta: {
     __tostring: => @pattern
-    __is_container: false
   }
 
 }, (def, pattern, compile_options = 0, match_options = 0) ->

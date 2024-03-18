@@ -84,18 +84,13 @@ setup_signals = (def, gtype, instance_cast) ->
         cb_handle = signal.connect_by_info instance, info, handler, ...
         cb_handle
 
-construct = (spec, no_container, constructor, ...) ->
+construct = (spec, constructor, ...) ->
   args = {...}
   last = args[#args]
-  if type(last) == 'table' and not no_container
+  if type(last) == 'table'
     inst = constructor spec, unpack(args, 1, #args - 1)
     -- assign any eventual properties
     inst[k] = v for k,v in pairs last when type(k) != 'number'
-
-    -- add any children
-    for child in *last
-      inst\add child
-
     inst
   else
     constructor spec, ...
@@ -135,8 +130,7 @@ construct = (spec, no_container, constructor, ...) ->
 
     mt = __index: base and base.def
     if constructor
-      no_container = meta_t.__is_container == false
-      mt.__call = (t, ...) -> construct t, no_container, constructor, ...
+      mt.__call = (t, ...) -> construct t, constructor, ...
 
     spec = setmetatable(spec, mt)
 

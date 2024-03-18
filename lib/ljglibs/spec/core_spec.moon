@@ -117,32 +117,6 @@ describe 'core', ->
           assert.equal 123, o.foo
           assert.same { 'one', 2 }, first_args
 
-        describe 'with positional (array part) parameters', ->
-          it 'adds them as children', ->
-            child_box = Box!
-            box = Box {
-              child_box
-            }
-            assert.equal child_box, box.last_child
-
-        it 'does nothing if the type is specified as a no-container', ->
-          ffi.cdef 'typedef struct { int foo; } my_final_type;'
-          MyPropType = core.define 'my_final_type', {
-            properties: {
-              foo: {
-                get: => @foo
-                set: (v) => @.foo = v
-              }
-            },
-            meta: {
-              __is_container: false
-            }
-          }, (spec, ...) ->
-            ffi.new 'my_prop_type'
-
-          o = MyPropType { foo: 123 }
-          assert.not_equal 123, o.foo
-
   describe 'bit_flags(def, prefix, value)', ->
     it 'offers a convinient way of accessing bit flags using string constants', ->
       def = {

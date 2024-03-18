@@ -1,9 +1,8 @@
--- Copyright 2012-2022 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
-gobject_signal = require 'ljglibs.gobject.signal'
 {:PropertyObject} = howl.util.moon
 {:Activity, :CommandPanel, :Status, :theme} = howl.ui
 {:signal} = howl
@@ -38,12 +37,11 @@ class Window extends PropertyObject
     @activity = Activity!
 
     @widgets = Gtk.Box Gtk.ORIENTATION_VERTICAL
-    @box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
-      @grid,
-      @command_panel\to_gobject!
-      @widgets,
-      @status\to_gobject!,
-    }
+    @box = Gtk.Box Gtk.ORIENTATION_VERTICAL
+    @box\append @grid
+    @box\append @command_panel\to_gobject!
+    @box\append @widgets
+    @box\append @status\to_gobject!
 
     @win = properties.window or Gtk.Window!
     @win\add_css_class 'main-window'

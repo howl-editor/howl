@@ -123,15 +123,16 @@ View = {
     @vertical_scrollbar.visible = config.view_show_v_scrollbar
     @vertical_scrollbar.adjustment\connect_for @, 'value-changed', self._on_vscroll_changed
 
-    @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL, {
-      @gutter\to_gobject!,
-      Gtk.Box(Gtk.ORIENTATION_VERTICAL, {
-        vexpand: true, hexpand: true
-        @d_area,
-        @horizontal_scrollbar
-      }),
-      @vertical_scrollbar
-    }
+    -- edit area is text area, with the horizontal scrollbar on the bottom
+    edit_area = Gtk.Box Gtk.ORIENTATION_VERTICAL, vexpand: true, hexpand: true
+    edit_area\append @d_area
+    edit_area\append @horizontal_scrollbar
+
+    -- the whole thing is gutter -> edit area -> vertical scrollbar
+    @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL
+    @bin\append @gutter\to_gobject!
+    @bin\append edit_area
+    @bin\append @vertical_scrollbar
 
     @_buffer_listener = {
       on_inserted: (_, b, args) -> self\_on_buffer_modified b, args, 'inserted'
