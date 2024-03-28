@@ -7,7 +7,7 @@ GRegex = require 'ljglibs.glib.regex'
 max = math.max
 {:type, :tostring, :tonumber} = _G
 {:escape_string} = GRegex
-{:C} = ffi
+{:C, gc: ffi_gc} = ffi
 
 separator = ' \t-_:/'
 sep_p = "[#{separator}]+"
@@ -76,8 +76,9 @@ create_matcher = (search, reverse) ->
 
   do_match = (p, text) ->
     matched = C.g_regex_match(p, text, 0, mi) != 0
-    return empty unless matched
     info = mi[0]
+    ffi_gc info, C.g_match_info_free
+    return empty unless matched
     count = C.g_match_info_get_match_count(info)
     return empty unless count > 0
     match = {}
@@ -88,7 +89,6 @@ create_matcher = (search, reverse) ->
       if s_pos != -1
         append match, tonumber(s_pos) + 1
 
-    C.g_match_info_unref info
     match
 
   last_char = search\usub(search.ulen, search.ulen).ulower
