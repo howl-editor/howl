@@ -28,6 +28,9 @@ class Popup extends PropertyObject
   show: (widget, options = {position: 'center'}) =>
     error('Missing argument #1: widget', 2) if not widget
 
+    if @popover.parent != widget
+      @popover\set_parent widget
+
     @widget = widget
     @showing = true
 
@@ -45,14 +48,12 @@ class Popup extends PropertyObject
 
   release: =>
     @close!
+    @popover\unparent!
     @child = nil
     @popover = nil
 
   move_to: (pointing_to) =>
     error('Attempt to move a closed popup', 2) if not @showing
-
-    if @popover.parent != @widget
-      @popover\set_parent @widget
 
     @x, @y = pointing_to.x, pointing_to.y
     pointing_to.width = 1
