@@ -60,6 +60,9 @@ static gchar *get_app_root(const gchar *invocation_path)
     g_object_unref(root);
     root = share_dir;
   }
+  else {
+    g_object_unref(share_dir);
+  }
 
   path = g_file_get_path(root);
   g_free(called_as);
