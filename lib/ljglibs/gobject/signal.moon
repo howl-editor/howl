@@ -152,6 +152,7 @@ signal = {
     ids = {}
     for i = 0, n_ids[0] - 1
       ids[#ids + 1] = (id_ptr + i)[0]
+    C.g_free id_ptr
     ids
 }
 
