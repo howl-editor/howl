@@ -108,7 +108,7 @@ core.define 'PangoLayout', {
     }
 
     tabs: {
-      get: => C.pango_layout_get_tabs @
+      get: => ffi_gc(C.pango_layout_get_tabs(@), C.pango_tab_array_free)
       set: (tabs) => C.pango_layout_set_tabs @, tabs
     }
 
