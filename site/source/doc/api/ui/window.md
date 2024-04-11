@@ -26,7 +26,7 @@ example:
 
 ```lua
 howl.app.window.accept_focus -- => true
-howl.app.window:get_size() -- => 1920, 1056
+howl.app.window:get_default_size() -- => 1920, 1056
 ```
 
 _See also_:

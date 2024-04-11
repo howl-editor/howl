@@ -221,6 +221,8 @@ ffi.cdef [[
   GtkWidget * gtk_widget_get_focus_child (GtkWidget* widget);
   GdkClipboard *gtk_widget_get_clipboard (GtkWidget* widget);
 
+  void gtk_widget_unparent (GtkWidget* widget);
+
 
   void gtk_widget_set_css_classes (GtkWidget* widget, const char** classes);
   char** gtk_widget_get_css_classes(GtkWidget* widget);
@@ -312,12 +314,11 @@ ffi.cdef [[
   const gchar * gtk_window_get_title (GtkWindow *window);
   void gtk_window_set_title (GtkWindow *window, const gchar *title);
 
+  void gtk_window_get_default_size (GtkWindow* window, int* width, int* height);
   void gtk_window_set_default_size (GtkWindow *window,
                                     gint width,
                                     gint height);
 
-  void gtk_window_get_size (GtkWindow *window, gint *width, gint *height);
-  void gtk_window_resize (GtkWindow *window, gint width, gint height);
   GtkWidget * gtk_window_get_focus (GtkWindow *window);
   void gtk_window_set_focus (GtkWindow *window, GtkWidget *focus);
 

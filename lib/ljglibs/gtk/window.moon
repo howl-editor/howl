@@ -26,7 +26,6 @@ core.define 'GtkWindow < GtkWidget', {
     decorated: 'gboolean'
     default_height: 'gint'
     default_width: 'gint'
-    default_widget: 'GtkWidget*'
     deletable: 'gboolean'
     destroy_with_parent: 'gboolean'
     display: 'GdkDisplay*'
@@ -55,16 +54,16 @@ core.define 'GtkWindow < GtkWidget', {
   destroy: => C.gtk_window_destroy @
 
   set_default_size: (width, height) => C.gtk_window_set_default_size @, width, height
-  resize: (width, height) => C.gtk_window_resize @, width, height
+
+  get_default_size: =>
+    sizes = ffi.new 'gint [2]'
+    C.gtk_window_get_default_size @, sizes, sizes + 1
+    sizes[0], sizes[1]
+
   fullscreen: => C.gtk_window_fullscreen @
   unfullscreen: => C.gtk_window_unfullscreen @
   maximize: => C.gtk_window_maximize @
   unmaximize: => C.gtk_window_unmaximize @
-
-  get_size: =>
-    sizes = ffi.new 'gint [2]'
-    C.gtk_window_get_size @, sizes, sizes + 1
-    sizes[0], sizes[1]
 
   set_default_icon_from_file: (filename) ->
     catch_error(C.gtk_window_set_default_icon_from_file, filename) != 0
