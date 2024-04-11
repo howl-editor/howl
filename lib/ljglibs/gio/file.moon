@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 gio = require 'ljglibs.gio'
@@ -22,7 +22,7 @@ to_i = (o) -> ffi_cast info_t, o
 core.define 'GFileEnumerator', {
   next_file: => gc_ptr catch_error C.g_file_enumerator_next_file, @, nil
   close: => catch_error C.g_file_enumerator_close, @, nil
-  get_child: (info) => C.g_file_enumerator_get_child @, info
+  get_child: (info) => gc_ptr C.g_file_enumerator_get_child @, info
 
   next_files_async: (num_files, priority = glib.PRIORITY_DEFAULT, callback) =>
     local handle
@@ -114,7 +114,7 @@ core.define 'GFile', {
       if not status
         callback false, ret, err_code
       else
-        callback true, ret
+        callback true, gc_ptr(ret)
 
     handle = callbacks.register handler, 'enumerate-children-async'
     C.g_file_enumerate_children_async @, attributes, flags, priority, nil, async_ready_callback, callbacks.cast_arg(handle.id)
