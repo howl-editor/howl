@@ -23,11 +23,6 @@ class MenuPopup extends Popup
   refresh: =>
     @list\update @highlight_matches_for
 
-  release: =>
-    print "MenuPopup release"
-    @list_widget\release!
-    super!
-
   show: (...) =>
     @refresh!
     super ...
@@ -41,6 +36,11 @@ class MenuPopup extends Popup
   choose: =>
     if self.callback @list.selection
       @close!
+
+  on_insert_at_cursor: (editor, args) =>
+    print 'menu close'
+    @close!
+    return
 
   keymap: {
     down: => @list\select_next!

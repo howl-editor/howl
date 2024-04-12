@@ -21,6 +21,7 @@ core.define 'GtkPopover < GtkWidget', {
     child: 'GtkWidget *'
     has_arrow: 'gboolean'
     position: 'GtkPositionType'
+    default_widget: 'GtkWidget*'
 
     pointing_to: {
       get: =>
@@ -42,7 +43,6 @@ core.define 'GtkPopover < GtkWidget', {
         g_rect[0].height = rect.height
         C.gtk_popover_set_pointing_to @, g_rect
     }
-
   }
 
 

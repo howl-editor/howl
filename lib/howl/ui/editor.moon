@@ -554,6 +554,7 @@ class Editor extends PropertyObject
     @cursor.column_index = (rev_line.ulen - pos) + 1 if pos
 
   show_popup: (popup, options = {}) =>
+    error "Missing `popup` arg" unless popup
     @remove_popup!
     if options.position != 'center'
       coords = @_get_popup_coordinates options.position
@@ -561,16 +562,16 @@ class Editor extends PropertyObject
     else
       popup\show @view\to_gobject!, options
 
-    @popup = window: popup, :options
+    @pop = :popup, :options
 
   remove_popup: =>
-    if @popup
-      if @popup.options.keep_alive
-        @popup.window\close!
+    if @pop
+      if @pop.options.keep_alive
+        @pop.popup\close!
       else
-        @popup.window\release!
+        @pop.popup\release!
 
-      @popup = nil
+      @pop = nil
 
   complete: =>
     return if @completion_popup.active
@@ -762,13 +763,9 @@ class Editor extends PropertyObject
       line.end_pos
 
   release: =>
-    -- for h in *@_handlers
-    --   gobject_signal.disconnect h
-
     @buffer.last_shown = sys.time! unless @_is_previewing
     @buffer\remove_view_ref!
     @completion_popup\release!
-    @view\release!
     @view = nil
     @_buf = nil
     signal.emit 'editor-released', editor: self
@@ -777,14 +774,14 @@ class Editor extends PropertyObject
     -- print "editor keypress"
     @remove_popup! if event.key_name == 'escape'
 
-    if @popup
-      if not @popup.window.showing
+    if @pop
+      if not @pop.popup.showing
         @remove_popup!
       else
-        if @popup.window.keymap
-          return true if bindings.dispatch(event, 'popup', { @popup.window.keymap }, @popup.window)
+        if @pop.popup.keymap
+          return true if bindings.dispatch(event, 'popup', { @pop.popup.keymap }, @pop.popup)
 
-        @remove_popup! if not @popup.options.persistent
+        @remove_popup! if not @pop.options.persistent
     else
       @searcher\cancel!
 
@@ -843,8 +840,8 @@ class Editor extends PropertyObject
   _on_pos_changed: =>
     @_update_position!
     @_brace_highlight!
-    if @popup and @popup.window.on_pos_changed
-      @popup.window\on_pos_changed @cursor
+    if @pop and @pop.popup.on_pos_changed
+      @pop.popup\on_pos_changed @cursor
 
     signal.emit 'cursor-changed', editor: self, cursor: @cursor
     mode = @mode_at_cursor
@@ -947,8 +944,8 @@ class Editor extends PropertyObject
     return if signal.emit('insert-at-cursor', params) == signal.abort
     return if @mode_at_cursor.on_insert_at_cursor and @mode_at_cursor\on_insert_at_cursor(params, self)
 
-    if @popup
-      @popup.window\on_insert_at_cursor(self, params) if @popup.window.on_insert_at_cursor
+    if @pop
+      @pop.popup\on_insert_at_cursor(self, params) if @pop.popup.on_insert_at_cursor
     elseif args.text.ulen == 1
       config = @config_at_cursor
       return unless config.complete != 'manual'
@@ -964,14 +961,14 @@ class Editor extends PropertyObject
       true
 
   _on_delete_back: (_, args) =>
-    if @popup
+    if @pop
       params = text: args.text, editor: self, at_pos: @buffer\char_offset(args.pos)
-      @popup.window\on_delete_back self, params if @popup.window.on_delete_back
+      @pop.popup\on_delete_back self, params if @pop.popup.on_delete_back
 
   _on_scroll: =>
-    return unless @popup and @popup.showing
-    coords = @_get_popup_coordinates @popup.options.position
-    @popup.window\move_to coords.x, coords.y
+    -- return unless @pop and @pop.popup.showing
+    -- coords = @_get_popup_coordinates @pop.options.position
+    -- @pop.popup\move_to coords.x, coords.y
 
 -- Default indicators
 

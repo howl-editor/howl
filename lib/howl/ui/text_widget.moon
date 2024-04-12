@@ -101,10 +101,6 @@ class TextWidget extends PropertyObject
 
   delete: (...) => @buffer\delete ...
 
-  release: =>
-    print "TextWidget release"
-    @view\release!
-
   _set_height: (height) =>
     return if @_height == height
     @_height = height

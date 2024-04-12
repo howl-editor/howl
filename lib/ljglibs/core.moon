@@ -1,4 +1,4 @@
--- Copyright 2014-2022 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 signal = require 'ljglibs.gobject.signal'
@@ -105,7 +105,7 @@ construct = (spec, constructor, ...) ->
         error "Unknown base '#{base_name}' specified for '#{name}'"
 
     gtype = force_type_init name
-    gtype = Type.from_name(name)
+    gtype or= Type.from_name(name)
     ctype = ffi.typeof "#{name} *"
 
     if gtype

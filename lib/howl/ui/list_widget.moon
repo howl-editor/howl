@@ -55,14 +55,6 @@ class ListWidget extends PropertyObject
 
   hide: => @text_widget\hide!
 
-  release: =>
-    if @text_widget
-      @text_widget\release!
-      @text_widget = nil
-      @list = nil
-    else
-      print "double release"
-
   _on_refresh: =>
     if @text_widget.showing
       @_adjust_height!

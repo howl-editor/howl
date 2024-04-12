@@ -211,7 +211,6 @@ class CommandLine extends PropertyObject
   remove_widget: (name) =>
     widget = @_widgets[name]
     return unless widget
-    widget\release! if widget.release
     @_widgets[name] = nil
 
   get_widget: (name) => @_widgets[name]
@@ -291,10 +290,7 @@ class CommandLine extends PropertyObject
     @clear_widgets!
 
     if @command_widget
-      @command_widget\release!
       @command_widget = nil
-
-      @notification\release!
 
     @bin\hide!
     @box = nil

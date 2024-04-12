@@ -342,7 +342,7 @@ level to the right.
 ### show_popup (popup, options = {})
 
 Display the [popup][Popup] for the specific editor. The popup is displayed at
-the current cursor position, unless otherwise specified in `options`. The can
+the current cursor position, unless otherwise specified in `options`. There can
 only be one popup for a given editor at one time, invoking `show_popup` when an
 existing popup is active will cause that popup to close.
 

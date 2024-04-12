@@ -174,4 +174,8 @@ core.define 'GtkWidget < GObject', {
 
   queue_draw_area: (x, y, width, height) =>
     C.gtk_widget_queue_draw_area @, x, y, width, height
+
+  unparent: =>
+    C.gtk_widget_unparent @
+
 }

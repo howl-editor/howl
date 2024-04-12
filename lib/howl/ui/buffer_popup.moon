@@ -1,10 +1,10 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 aullar = require 'aullar'
 import View from aullar
 import Popup, style from howl.ui
-{:ceil, :max} = math
+{:ceil} = math
 
 keymap = {
   down: =>
@@ -57,10 +57,6 @@ class BufferPopup extends Popup
   resize: =>
     dimensions = @_get_dimensions!
     super dimensions.width, dimensions.height
-
-  release: =>
-    print "BufferPopup release, remove XXX"
-    super!
 
   _get_dimensions: =>
     first_line = @view.first_visible_line

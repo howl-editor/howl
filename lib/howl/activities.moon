@@ -62,7 +62,7 @@ update = ->
       widget.shortcuts.text = ''
 
   -- what should we show? we can use up to half of the window height
-  _, win_height = howl.app.window\get_size!
+  _, win_height = howl.app.window\get_default_size!
   available_height = win_height / 2
   used = 0
 

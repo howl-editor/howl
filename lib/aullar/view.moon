@@ -515,9 +515,6 @@ View = {
 
     width, height
 
-  release: =>
-    print "XXX: remove view release"
-
   _invalidate_display: (from_offset, to_offset) =>
     return unless @width
 

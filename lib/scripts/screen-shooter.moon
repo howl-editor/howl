@@ -409,7 +409,7 @@ run = (theme_name, only) ->
     for_themes = [n for n in pairs theme.all]
 
   print "- Taking screenshots.."
-  app.window\resize 1048, 480
+  app.window\set_default_size 1048, 480
   for cur_theme in *for_themes
     howl.config.theme = cur_theme
     wait_a_bit!
