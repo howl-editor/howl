@@ -295,7 +295,9 @@ View = {
       @last_visible_line = @last_visible_line
 
     @gutter\sync!
-    -- @area\queue_draw!
+    -- wut?
+    -- @d_area\queue_draw!
+
     @_draw!
 
   _sync_scrollbars: (opts = { horizontal: true, vertical: true })=>
@@ -840,7 +842,7 @@ View = {
   _on_button_press: (g_click, n_press, x, y) =>
     event = translate_mouse_event g_click, n_press, x, y
 
-    @area\grab_focus! unless @area.has_focus
+    @d_area\grab_focus! unless @d_area.has_focus
 
     return true if notify @, 'on_button_press', event
 
