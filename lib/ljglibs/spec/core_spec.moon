@@ -1,7 +1,5 @@
 ffi = require 'ffi'
 core = require 'ljglibs.core'
-Gtk = require 'ljglibs.gtk'
-import Box from Gtk
 
 describe 'core', ->
   describe 'define(name, spec, constructor)', ->
@@ -116,6 +114,24 @@ describe 'core', ->
           o = MyPropType 'one', 2, { foo: 123 }
           assert.equal 123, o.foo
           assert.same { 'one', 2 }, first_args
+
+        it 'does not set any properties if meta.__plain_constructor is true', ->
+          ffi.cdef 'typedef struct { int foo; } my_final_type;'
+          MyPropType = core.define 'my_final_type', {
+            properties: {
+              foo: {
+                get: => @foo
+                set: (v) => @.foo = v
+              }
+            },
+            meta: {
+              __plain_constructor: true
+            }
+          }, (spec, ...) ->
+            ffi.new 'my_prop_type'
+
+          o = MyPropType { foo: 123 }
+          assert.not_equal 123, o.foo
 
   describe 'bit_flags(def, prefix, value)', ->
     it 'offers a convinient way of accessing bit flags using string constants', ->

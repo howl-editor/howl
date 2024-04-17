@@ -84,10 +84,10 @@ setup_signals = (def, gtype, instance_cast) ->
         cb_handle = signal.connect_by_info instance, info, handler, ...
         cb_handle
 
-construct = (spec, constructor, ...) ->
+construct = (spec, auto_properties, constructor, ...) ->
   args = {...}
   last = args[#args]
-  if type(last) == 'table'
+  if type(last) == 'table' and auto_properties
     inst = constructor spec, unpack(args, 1, #args - 1)
     -- assign any eventual properties
     inst[k] = v for k,v in pairs last when type(k) != 'number'
@@ -130,7 +130,8 @@ construct = (spec, constructor, ...) ->
 
     mt = __index: base and base.def
     if constructor
-      mt.__call = (t, ...) -> construct t, constructor, ...
+      auto_properties = not meta_t.__plain_constructor == true
+      mt.__call = (t, ...) -> construct t, auto_properties, constructor, ...
 
     spec = setmetatable(spec, mt)
 

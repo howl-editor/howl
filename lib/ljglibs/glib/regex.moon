@@ -129,6 +129,7 @@ core.define 'GRegex', {
 
   meta: {
     __tostring: => @pattern
+    __plain_constructor: true
   }
 
 }, (def, pattern, compile_options = 0, match_options = 0) ->
@@ -145,5 +146,5 @@ core.define 'GRegex', {
     C.g_error_free err[0]
     error "#{err_s} (code: #{code})", 2
 
-  ffi.gc regex, C.g_regex_unref
+  ffi_gc regex, C.g_regex_unref
   return regex
