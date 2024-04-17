@@ -254,7 +254,6 @@ describe 'View', ->
     it 'references are collected properly', ->
       v = View!
       views = setmetatable { v }, __mode: 'v'
-      v\release!
       v = nil
       collect_memory!
       assert.is_true views[1] == nil
