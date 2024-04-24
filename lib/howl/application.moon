@@ -276,7 +276,7 @@ class Application extends PropertyObject
     true
 
   synchronize: =>
-    clipboard.synchronize!
+    timer.after_exactly 0.2, -> clipboard.synchronize!
 
     reload_count = 0
     changed_count = 0

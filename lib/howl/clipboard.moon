@@ -31,7 +31,8 @@ primary = PropertyTable {
     get: =>
       handle = dispatch.park 'primary-clipboard-get'
       system_primary\read_text_async (res) ->
-        text = system_primary\read_text_finish res
+        status, text = pcall system_primary\read_text_finish, res
+        text = '' unless status
         dispatch.resume handle, text
 
       dispatch.wait handle
