@@ -248,6 +248,15 @@ class Buffer extends PropertyObject
     @_associate_with_file file
     @save!
 
+  rename: (file) =>
+    old_file = @file
+    @_associate_with_file file
+    @save!
+    if @file != old_file
+      status, err = pcall old_file\delete
+      if not status
+          log.warn "Failed to delete old alias #{old_file} for #{@file}: #{err}"
+
   as_one_undo: (f) => @_buffer\as_one_undo f
 
   undo: =>

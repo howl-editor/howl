@@ -149,6 +149,36 @@ command.register
       #buffer.lines, #buffer
 
 command.register
+  name: 'rename',
+  description: 'Rename the current buffer\'s file'
+  input: (opts) ->
+    parent = app.editor.buffer.file and app.editor.buffer.file.parent
+    file = interact.select_file prompt: ':rename ', text: opts.text, allow_new: true, path: parent and parent.path
+    return unless file
+
+    if file.exists
+      unless interact.yes_or_no prompt: "File '#{file}' already exists, overwrite? "
+        log.info "Not overwriting; buffer not renamed"
+        return
+
+    unless auto_mkdir file.parent
+      log.info "Parent directory doesn't exist; buffer not renamed"
+      return
+
+    return file
+
+  handler: (file) ->
+    buffer = app.editor.buffer
+    if not buffer.file
+      command.run 'save-as'
+      return
+
+    buffer\rename file
+    buffer.mode = mode.for_file file
+    log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
+      #buffer.lines, #buffer
+
+command.register
   name: 'buffer-close',
   description: 'Close the current buffer'
   handler: ->
