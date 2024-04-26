@@ -173,10 +173,31 @@ command.register
       command.run 'save-as'
       return
 
-    buffer\rename file
+    buffer\rename_file file
     buffer.mode = mode.for_file file
     log.info ("%s: %d lines, %d bytes written")\format buffer.file.basename,
       #buffer.lines, #buffer
+
+command.register
+  name: 'delete',
+  description: 'Delete the file associated with the current buffer'
+  handler: ->
+    buffer = app.editor.buffer
+    if not buffer.file
+      log.info "Not deleting; buffer not associated with a file"
+      return
+
+    if buffer.modified_on_disk
+      overwrite = interact.yes_or_no
+        prompt: "Buffer '#{buffer}' has changed on disk, delete anyway? "
+        default: false
+      unless overwrite
+        log.info "Not deleting; buffer not saved"
+        return
+
+    old_name = buffer.file.basename
+    buffer\delete_file!
+    log.info ("%s has been deleted")\format old_name
 
 command.register
   name: 'buffer-close',
