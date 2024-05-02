@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
- <id>howl.desktop</id>
+ <id>io.howl.Editor</id>
  <metadata_license>CC0-1.0</metadata_license>
  <project_license>MIT</project_license>
  <name>Howl</name>
+ <developer id="io.howl">
+  <name translate="no">Howl Developers</name>
+ </developer>
  <summary>Lightweight editor with keyboard-centric minimalistic interface</summary>
  <description>
   <p>
@@ -16,10 +19,17 @@
  <screenshots>
   <screenshot type="default">
    <image width="1048" height="480">
-    http://howl.io/images/screenshots/monokai/buffer-replace.png
+    https://howl.io/images/screenshots/monokai/buffer-replace.png
    </image>
   </screenshot>
  </screenshots>
- <url type="homepage">http://howl.io</url>
- <updatecontact>nino at nordman.org</updatecontact>
+ <content_rating type="oars-1.0" />
+ <releases>
+  <release version="0.6" date="2019-04-05" />
+ </releases>
+ <url type="homepage">https://howl.io</url>
+ <url type="bugtracker">https://github.com/howl-editor/howl/issues</url>
+ <url type="vcs-browser">https://github.com/howl-editor/howl</url>
+ <update_contact>nino at nordman.org</update_contact>
+ <launchable type="desktop-id">io.howl.Editor.desktop</launchable>
 </component>
