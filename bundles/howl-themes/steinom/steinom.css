@@ -150,6 +150,7 @@ flair.search {
   border-color: cyan;
   color: white;
   background-color: alpha(cyan, 0.5);
+  height: text;
 }
 
 flair.search-secondary {
@@ -157,6 +158,8 @@ flair.search-secondary {
   border-color: cyan;
   color: white;
   background-color: alpha(lightgrey, 0.3);
+  height: text;
+
 }
 
 flair.replace-strikeout {
@@ -214,7 +217,6 @@ flair.block-cursor {
 
 flair.selection {
   shape: rounded_rectangle;
-  color: var(--base);
   background-color: alpha(var(--darkblue), 0.3);
   height: text;
 }
@@ -274,7 +276,7 @@ style.class {
 
 style.type-def {
   font-weight: bold;
-  font-size: large;
+  font-size: x-large;
   font-family: 'Purisa';
   color: var(--yellow);
 }
