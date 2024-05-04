@@ -7,7 +7,7 @@ require 'ljglibs.cairo.context'
 
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
-{:min, :max, :pi, :ceil} = math
+{:min, :max, :pi, :ceil, :floor} = math
 copy = moon.copy
 
 flairs = {}
@@ -182,15 +182,14 @@ get_text_object = (display_line, start_offset, end_offset, flair) ->
 
   -- need to set the correct attributes when we have a different text color
   -- or need to determine the height of the text object correctly
-  if flair.text_color or flair.height == 'text'
-    styling = Styling.sub display_line.styling, start_offset, end_offset
-    exclude = flair.text_color and {color: true} or {}
-    attributes = styles.get_attributes styling, text_size, :exclude
+  styling = Styling.sub display_line.styling, start_offset, end_offset
+  exclude = flair.text_color and {color: true} or {}
+  attributes = styles.get_attributes styling, text_size, :exclude
 
-    if flair.text_color
-      color = Color flair.text_color
-      attributes\insert_before Attribute.Foreground(color.red, color.green, color.blue)
-    layout.attributes = attributes
+  if flair.text_color
+    color = Color flair.text_color
+    attributes\insert_before Attribute.Foreground(color.red, color.green, color.blue)
+  layout.attributes = attributes
 
   width, height = layout\get_pixel_size!
   :layout, :width, :height
@@ -249,10 +248,11 @@ need_text_object = (flair) ->
 
     for nr = 1, #lines
       line = lines[nr]
+      line_height = line.extents.height
 
       off_line = start_offset > line.line_end or end_offset < line.line_start
       if off_line or end_offset == line.line_start and (start_offset != end_offset)
-        line_y_offset += line.extents.height
+        line_y_offset += line_height
         continue -- flair not within this layout line
 
       f_start_offset = max start_offset, line.line_start
@@ -278,40 +278,41 @@ need_text_object = (flair) ->
       -- why draw a zero-width flair?
       return if width <= 0
 
-      text_object = flair.text_object
+      -- y will point to the beginning of the line
+      flair_y = y + line_y_offset
 
+      height = type(flair.height) == 'number' and flair.height or line_height
+
+      text_object = flair.text_object
       if not text_object and need_text_object(flair)
         ft_end_offset = min line.line_end + 1, end_offset
         text_object = get_text_object display_line, f_start_offset, ft_end_offset, flair
 
-      -- height calculations
-      height = type(flair.height) == 'number' and flair.height or line.height
+      text_object_y = if text_object
+        to_y = y + (start_rect.y / SCALE)
+        start_c_height = start_rect.height / SCALE
+        text_diff = floor(text_object.height - start_c_height)
+        to_y = max(to_y - text_diff, line_y_offset)
+        to_y + display_line.y_offset
 
-      flair_y = if nr == 1
-         y + line_y_offset
-      else
-        y + start_rect.y / SCALE
-
-      if (flair.height == 'text' or flair.text_color)
-        flair_y = y + (start_rect.y / SCALE) + display_line.y_offset
+      if flair.height == 'text'
         height = text_object.height
+        flair_y = text_object_y
 
       cr\save!
-      if flair.debug
-        print "draw(#{start_x}, #{flair_y}, #{width}, #{height})"
       flair.draw flair, start_x, flair_y, width, height, cr
       cr\restore!
 
       if flair.text_color
         cr\save!
         if base_x > 0
-          cr\rectangle x, flair_y, clip.x2 - x, clip.y2
+          cr\rectangle x, text_object_y, clip.x2 - x, clip.y2
           cr\clip!
 
-        cr\move_to text_start_x, flair_y
+        cr\move_to text_start_x, text_object_y
         cairo.show_layout cr, text_object.layout
         cr\restore!
 
-      line_y_offset += line.height
+      line_y_offset += line_height
 
 }
