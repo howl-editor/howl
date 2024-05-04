@@ -217,6 +217,7 @@ criticize = (buffer, criticisms, opts = {}) ->
 update_buffer = (buffer, editor, scope) ->
   return if buffer.read_only
   return if buffer.data.is_preview
+  return if editor.completion_popup.active
   data = buffer.data
   if data.last_inspect
     li = data.last_inspect
