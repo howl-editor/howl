@@ -14,6 +14,7 @@ $(function() {
   }
 
   $('.howl-theme-selector').show();
+
   $('.set-howl-theme').on('click', function(e) {
     var l = $(e.target);
     var theme = l.data('key');

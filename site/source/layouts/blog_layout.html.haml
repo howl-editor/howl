@@ -1,4 +1,4 @@
-- wrap_layout :layout do
+= wrap_layout :layout do
   - if is_blog_article?
     .article
       .date
@@ -7,7 +7,7 @@
         - puts current_resource.metadata
       %h1= current_resource.metadata[:page]['title']
 
-      = preserve yield
+      = yield
 
     .comments
       %div#disqus_thread
@@ -15,4 +15,4 @@
     ! <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
   - else
-    = preserve yield
+    =  yield

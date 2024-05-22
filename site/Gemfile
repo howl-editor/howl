@@ -1,15 +1,15 @@
 source 'https://rubygems.org'
-gem "middleman", "~>3.1.5"
+gem "middleman", "~>4.5.1"
 
-gem "rouge", "~> 1.3.1"
+gem "rouge"
 
 # middleman-syntax from git just for good measure and more alignment with rouge
 gem "middleman-syntax", git: 'https://github.com/middleman/middleman-syntax.git'
 
 # redcarpet from git to get github-style anchors
-gem "redcarpet", git: 'https://github.com/vmg/redcarpet.git'
+gem "redcarpet"
 
-gem "middleman-livereload", "~> 3.1.0"
+gem "middleman-livereload"
 gem 'middleman-s3_sync'
 gem 'middleman-blog'
 

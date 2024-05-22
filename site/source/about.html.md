@@ -106,6 +106,6 @@ learning curve. Used in Howl for lexers and other matching purposes.
 "Scintillua adds dynamic Lua LPeg lexers to Scintilla.". While Howl does not strictly
 speaking use Scintillua, it reuses a lot of its lexers.
 
-#### [Busted](http://olivinelabs.com/busted/)
+#### [Busted](https://lunarmodules.github.io/busted/)
 
 "Elegant Lua unit testing". Used in Howl for its specs.

@@ -13,14 +13,14 @@ class BlogAdjustments
     status, headers, response = @app.call(env)
     return [status, headers, response] unless status == 200 and env['PATH_INFO'] =~ %r|^/blog/.+/.+\.html$|
     content = content response
-    content = fix_absolut_links content
+    content = fix_absolute_links content
     content = auto_link_issues content
     return [status, headers, [content]]
   end
 
   private
 
-  def fix_absolut_links(content)
+  def fix_absolute_links(content)
     content.gsub %r|<a href="(\.\./)+|, '<a href="/'
   end
 
