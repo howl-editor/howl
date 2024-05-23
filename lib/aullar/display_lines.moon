@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 flair = require 'aullar.flair'
@@ -217,7 +217,7 @@ LinesMt = {
 }
 
 DisplayLine = define_class {
-  new: (@display_lines, @view, buffer, @pango_context, line, width, default_font_desc) =>
+  new: (@display_lines, @view, buffer, @pango_context, line, default_font_desc) =>
     @layout = Layout pango_context
     @layout.font_description = default_font_desc
 
