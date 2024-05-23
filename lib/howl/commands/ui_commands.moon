@@ -31,7 +31,6 @@ command.register
     buf\append "\n\n"
     def_s = serpent.block def, comment: false
     lua_mode = mode.by_name 'lua'
-    moon.p def_s
 
     if lua_mode
       styles = lua_mode.lexer(def_s)

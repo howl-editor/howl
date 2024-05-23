@@ -124,6 +124,7 @@ class CommandLine extends PropertyObject
       @command_widget.cursor.pos = left_pos
 
   handle_text_change: =>
+    return unless @command_widget
     @command_widget\adjust_height! -- expand or contract on wrapping
     return unless @def.on_text_changed
     -- avoid deep recursive calls to short circuit cyclic bugs in the code
