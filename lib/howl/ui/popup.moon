@@ -3,10 +3,8 @@
 
 Gtk = require 'ljglibs.gtk'
 Popover = Gtk.Popover
-gobject_type = require 'ljglibs.gobject.type'
 {:PropertyObject} = howl.util.moon
 {:floor} = math
-ffi = require 'ffi'
 
 class Popup extends PropertyObject
   comfort_zone: 10
@@ -29,6 +27,9 @@ class Popup extends PropertyObject
     error('Missing argument #1: widget', 2) if not widget
 
     if @popover.parent != widget
+      if @popover.parent != nil
+        @popover\unparent!
+
       @popover\set_parent widget
 
     @widget = widget
@@ -98,23 +99,15 @@ class Popup extends PropertyObject
     width = @width
     comfort = @comfort_zone * 2
 
-    win_type = gobject_type.from_name('GtkWindow')
-    win = ffi.cast 'GtkWindow *', @widget\get_ancestor(win_type)
-
-    if @popover.parent != win
-      @popover\set_parent win
-
-    w_width, w_height = win.allocated_width, win.allocated_height
+    w_width, w_height = @widget.allocated_width, @widget.allocated_height
 
     -- are we too wide?
     if width + comfort > w_width
       width = w_width - comfort
-      print "center: width set to #{width}"
 
     -- -- are we too tall?
     if height + comfort > w_height
       height = w_height - comfort
-      print "center: height set to #{height}, w_height: #{w_height}"
 
     @popover\set_size_request width, height
 

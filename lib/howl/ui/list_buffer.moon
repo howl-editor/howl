@@ -104,10 +104,12 @@ class ListBuffer extends ActionBuffer
       ed = app\editor_for_buffer @
       if ed
         highlight.remove_all 'search', preview_buf
-        popup = BufferPopup(preview_buf, show_lines: 10, show_line_numbers: true)
+        popup = BufferPopup(preview_buf, {
+          show_lines: 10,
+          show_line_numbers: true,
+          middle_visible_line: item.line_nr
+        })
         ed\show_popup popup
-        popup.view.middle_visible_line = item.line_nr
-        popup\resize!
 
         if item.highlights
           for hl in *item.highlights

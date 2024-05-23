@@ -54,9 +54,14 @@ translate_mouse_event = (g_click, n_press, x, y) ->
 text_cursor = Gdk.Cursor.new_from_name('text')
 
 View = {
-  new: (buffer = Buffer('')) =>
+  new: (buffer = Buffer(''), @opts = {}) =>
     -- @debug = true
     @_handlers = {}
+
+    focusable = if opts['focusable'] != nil
+      opts['focusable']
+    else
+      true
 
     @_base_x = 0
     @_first_visible_line = 1
@@ -103,8 +108,8 @@ View = {
     @im_context\connect_for @, 'preedit-end', self._on_im_preedit_end
 
     with @d_area
-      .can_focus = true
-      .focusable = true
+      .can_focus = focusable
+      .focusable = focusable
 
     @d_area\set_draw_func_for @, self._on_draw
     @key_controller\connect_for @, 'key-pressed', self._on_key_pressed
@@ -174,7 +179,7 @@ View = {
 
     middle_visible_line: {
       get: =>
-        return 0 unless @height
+        return @_first_visible_line unless @height
         y = 0
         middle = @height / 2
 
@@ -199,7 +204,7 @@ View = {
     last_visible_line: {
       get: =>
         unless @_last_visible_line
-          return 0 unless @height
+          return @_first_visible_line unless @height
           @_last_visible_line = 1
 
           y = 0
@@ -276,16 +281,18 @@ View = {
   }
 
   grab_focus: =>
-    @d_area\grab_focus!
+    @d_area\grab_focus! if @d_area.can_focus
 
   scroll_to: (line) =>
-    return if line < 1 or not @showing
+    return if line < 1
     line = max(1, line)
     line = min(line, @buffer.nr_lines)
     return if @first_visible_line == line
 
     @_first_visible_line = line
     @_last_visible_line = nil
+    return if not @showing
+
     @_sync_scrollbars!
     @buffer\ensure_styled_to line: @last_visible_line + 1
 
@@ -839,7 +846,7 @@ View = {
   _on_button_press: (g_click, n_press, x, y) =>
     event = translate_mouse_event g_click, n_press, x, y
 
-    @d_area\grab_focus! unless @d_area.has_focus
+    @grab_focus!
 
     return true if notify @, 'on_button_press', event
 

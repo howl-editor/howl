@@ -35,12 +35,19 @@ class BufferPopup extends Popup
     error('Missing argument #1: buffer', 3) if not buffer
     @_buffer = buffer
     @default_style = style.popup and style.popup.background and 'popup' or 'default'
-    @view = View buffer._buffer
+    @view = View buffer._buffer, focusable: false
     with @view.config
       .view_show_line_numbers = opts.show_line_numbers or false
       .view_show_cursor = false
       .view_show_h_scrollbar = false
       .view_show_v_scrollbar = false
+
+    @view.listener = {
+      on_resized: (view) ->
+        for opt in *{'first_visible_line', 'middle_visible_line', 'last_visible_line'}
+          if opts[opt]
+            view[opt] = opts[opt]
+    }
 
     @bin = @view\to_gobject!
     if opts.scrollable
@@ -74,8 +81,6 @@ class BufferPopup extends Popup
     width += margin * 2
     height += margin * 2
 
-    -- print "buffer popup _get_dimensions"
-    -- moon.p width: ceil(width), height: ceil(height)
     return width: ceil(width), height: ceil(height)
 
 return BufferPopup
