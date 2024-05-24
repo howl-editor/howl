@@ -167,4 +167,16 @@ core.define 'PangoLayout', {
     return nil if line == nil
     ffi_gc(C.pango_layout_line_ref(line), C.pango_layout_line_unref)
 
+  -- custom addon
+  index_to_pos_for_largest: (s_index, e_index) =>
+    max_rect = PangoRectangle!
+    rect = PangoRectangle!
+    C.pango_layout_index_to_pos @, s_index, max_rect
+    for idx = s_index + 1, e_index
+      C.pango_layout_index_to_pos @, idx, rect
+      if rect.height > max_rect.height
+        rect, max_rect = max_rect, rect
+    max_rect
+
+
 }, (t, ...) -> t.new ...

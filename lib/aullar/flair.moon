@@ -175,6 +175,8 @@ define = (name, opts) ->
 get_text_object = (display_line, start_offset, end_offset, flair) ->
   layout = Layout display_line.pango_context
   dline_layout = display_line.layout
+  layout.font_description = dline_layout.font_description
+
   text_size = end_offset - start_offset
   t_ptr = dline_layout\get_text!
   layout\set_text t_ptr + start_offset - 1, text_size
@@ -252,7 +254,7 @@ need_text_object = (flair) ->
 
       off_line = start_offset > line.line_end or end_offset < line.line_start
       if off_line or end_offset == line.line_start and (start_offset != end_offset)
-        line_y_offset += line_height
+        line_y_offset += line_height + display_line.y_offset
         continue -- flair not within this layout line
 
       f_start_offset = max start_offset, line.line_start
@@ -289,11 +291,13 @@ need_text_object = (flair) ->
         text_object = get_text_object display_line, f_start_offset, ft_end_offset, flair
 
       text_object_y = if text_object
-        to_y = y + (start_rect.y / SCALE)
         start_c_height = start_rect.height / SCALE
         text_diff = floor(text_object.height - start_c_height)
-        to_y = max(to_y - text_diff, line_y_offset)
-        to_y + display_line.y_offset
+        if text_diff > 0
+          max_rect = layout\index_to_pos_for_largest f_start_offset - 1, f_end_offset - 1
+          y + (max_rect.y / SCALE) + display_line.y_offset
+        else
+          y + (start_rect.y / SCALE) + display_line.y_offset
 
       if flair.height == 'text'
         height = text_object.height
@@ -313,6 +317,5 @@ need_text_object = (flair) ->
         cairo.show_layout cr, text_object.layout
         cr\restore!
 
-      line_y_offset += line_height
-
+      line_y_offset += line_height + display_line.y_offset
 }
