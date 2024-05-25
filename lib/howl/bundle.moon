@@ -99,7 +99,7 @@ export load_from_dir = (dir) ->
     load_from_dir dir
 
   loading[mod_name] = true
-  status, ret = pcall loader, -> bundle_load 'init'
+  status, ret = pcall loader, -> bundle_load 'init', dir.basename
   loading[mod_name] = nil
   error(ret) unless status
 
