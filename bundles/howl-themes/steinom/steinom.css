@@ -28,6 +28,10 @@ window {
   background-image: theme-url('footer_lodyas.png');
 }
 
+window .container {
+  margin: 2px;
+}
+
 window .status {
   font-weight: bold;
   font-style: italic;
@@ -38,8 +42,8 @@ window .status.info { color: var(--lightblue); }
 window .status.warning { color: var(--orange); }
 window .status.error { color: var(--red); }
 
-scrollbar {
-  color: slategrey;
+scrollbar range trough slider {
+  background-color: slategrey;
 }
 
 popover {
@@ -65,6 +69,7 @@ popover contents {
 }
 
 .content-box {
+  margin: 1px;
   border: 2px solid alpha(slategrey, 0.3);
   border-radius: 15px;
 }
@@ -208,7 +213,8 @@ flair.cursor {
 
 flair.block-cursor {
   shape: rounded-rectangle;
-  color: var(--base);
+  /* color: var(--base); */
+  color: red;
   background-color: var(--foreground);
   height: text;
   minimum-width: letter;

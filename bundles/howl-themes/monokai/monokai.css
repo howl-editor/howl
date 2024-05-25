@@ -1,0 +1,341 @@
+:root {
+  --background: #272822;
+  --current: #75715e;
+  --selection: #759557;
+  --foreground: #ffffff;
+  --comment: #75715e;
+  --red: #ff9da4;
+  --darkred: #8b0000;
+  --orange: #ffc58f;
+  --yellow: #e6db74;
+  --yellow-dark: #75715E;
+  --green: #a6e22a;
+  --aqua: #99ffff;
+  --blue: #89bdff;
+  --purple: #ae81ff;
+  --magenta: #f92672;
+  --grey: #595959;
+  --grey-darker: #383830;
+  --grey-darkest: #303024;
+  --grey-light: #a6a6a6;
+  --embedded-bg: #484848;
+  --border-color: #333333;
+}
+
+window {
+  background-color: var(--background);
+}
+
+window .container {
+  margin: 2px;
+}
+
+window .status {
+  font-weight: bold;
+  font-style: italic;
+  color: var(--grey);
+}
+
+window .status.info { color: var(--grey-light); }
+window .status.warning { color: var(--orange); }
+window .status.error { color: var(--red); }
+
+scrollbar range trough slider {
+  background-color: var(--magenta);
+}
+
+popover contents {
+  background-color: var(--grey-darkest);
+  border: 1px solid var(--grey);
+}
+
+ /* General styling for context boxes (editor, command_line) */
+.content-box {
+  margin: 1px;
+  background-color: var(--background);
+
+  border: 1px solid var(--border-color);
+  border-right: 3px solid var(--border-color);
+  border-bottom: 3px solid var(--border-color);
+}
+
+.gutter {
+  color: var(--comment);
+  background-color: alpha(var(--grey-darkest), 0.6);
+}
+
+.content-box .header {
+  background-color: var(--grey-darkest);
+  border-bottom: 1px solid var(--grey-darker);
+
+  color: white;
+  font-weight: bold;
+  padding: 1px;
+}
+
+.content-box .footer {
+  color: var(--grey);
+  background-color: var(--grey-darkest);
+  font-weight: bold;
+  padding: 1px;
+  border-top: 1px solid var(--grey-darker);
+}
+
+
+.indicator {
+  color: var(--grey-light);
+}
+
+.indicator.title {
+  font-weight: bold;
+}
+
+.indicator.vi {
+  font-weight: bold;
+}
+
+/********************************* Flairs *************************************/
+flair.indentation-guide {
+  shape: pipe;
+  border-color: var(--comment);
+  width: 1;
+}
+
+flair.indentation-guide-1 {
+  shape: pipe;
+  border-color: var(--grey-darker);
+  width: 1;
+}
+
+flair.indentation-guide-2 {
+  shape: pipe;
+  border-color: var(--grey-darker);
+  width: 1;
+}
+
+flair.indentation-guide-3 {
+  shape: pipe;
+  border-color: var(--grey-darker);
+  width: 1;
+}
+
+flair.edge-line {
+  shape: pipe;
+  border-color: alpha(var(--blue), 0.5);
+  width: 0.5;
+}
+
+flair.search {
+  shape: rounded-rectangle;
+  border-color: black;
+  background-color: var(--yellow);
+  color: var(--grey-darkest);
+  height: text;
+}
+
+flair.search-secondary {
+  shape: rounded-rectangle;
+  background-color: var(--yellow-dark);
+  color: var(--grey-darkest);
+  height: text;
+}
+
+flair.replace-strikeout {
+  shape: rounded-rectangle;
+  border-color: : black;
+  background-color: : var(--red);
+  color: black;
+  height: text;
+}
+
+flair.brace-highlight {
+  shape: rectangle;
+  color: var(--foreground);
+  background-color: #0064b1;
+  height: text;
+}
+
+flair.brace-highlight-secondary {
+  shape: rectangle;
+  border-color: #0064b1;
+  color: var(--foreground);
+  width: 1;
+  height: text;
+}
+
+flair.list-selection {
+  shape: rectangle;
+  background-color: alpha(var(--current), 0.3);
+}
+
+flair.list-highlight {
+  shape: underline;
+  border-color: white;
+  color: white;
+  width: 2;
+}
+
+flair.cursor {
+  shape: rectangle;
+  background-color: var(--foreground);
+  width: 2;
+  height: text;
+}
+
+flair.block-cursor {
+  shape: rounded-rectangle;
+  background-color: var(--foreground);
+  color: var(--background);
+  height: text;
+  min_width: letter;
+}
+
+flair.selection {
+  shape: rounded-rectangle;
+  background-color: alpha(var(--selection), 0.4);
+  min_width: letter;
+}
+
+/********************************* Styles *************************************/
+
+style.default {
+  color: var(--foreground);
+}
+
+style.red { color: var(--red); }
+style.green { color: var(--green); }
+style.yellow { color: var(--yellow); }
+style.blue { color: var(--blue); }
+style.magenta { color: var(--purple); }
+style.cyan { color: var(--aqua); }
+
+style.popup {
+  background-color: var(--grey-darkest);
+  color: var(--foreground);
+}
+
+style.comment {
+  font-style: italic;
+  color: var(--comment);
+}
+
+style.variable {
+  color: var(--yellow);
+}
+
+style.label {
+  color: var(--orange);
+  font-style: italic;
+}
+
+style.key {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+style.fdecl {
+  color: var(--green);
+  font-weight: bold;
+}
+
+style.keyword {
+  color: var(--magenta);
+  font-weight: bold;
+}
+
+style.class {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+style.type_def {
+  color: var(--green);
+  font-weight: bold;
+}
+
+style.definition {
+  color: var(--yellow);
+}
+
+style.function {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+style.type {
+  color: var(--blue);
+  font-style: italic;
+}
+
+style.char { color: var(--green); }
+style.number { color: var(--purple); }
+style.operator { color: var(--magenta); }
+style.preproc { color: var(--aqua); }
+style.special { color: var(--purple); }
+style.tag { color: var(--purple); }
+style.member { color: var(--red); }
+style.info { color: var(--blue); }
+
+style.constant {
+  color: var(--yellow);
+}
+
+style.string {
+  color: var(--yellow);
+}
+
+style.regex {
+  color: var(--green);
+  background-color: var(--embedded-bg);
+}
+
+style.embedded {
+  color: var(--blue);
+  background-color: var(--embedded-bg);
+}
+
+style.error {
+  font-style: italic;
+  color: var(--white);
+  background-color: var(--darkred);
+}
+
+style.warning {
+  font-style: italic;
+  color: var(--orange);
+}
+
+style.h1 {
+  font-weight: bold;
+  color: var(--magenta);
+}
+
+style.h2 {
+  font-weight: bold;
+  color: var(--aqua);
+}
+
+style.h3 {
+  font-style: italic;
+  color: var(--purple);
+}
+
+style.emphasis {
+  font:
+    bold: true
+    italic: true
+}
+
+style.strong { font-style: italic; }
+style.link_label { color: var(--aqua); }
+style.link_url { color: var(--comment); }
+
+style.table {
+  color: var(--blue);
+  background-color: var(--embedded-bg);
+  underline: true
+}
+
+style.addition { color: var(--green); }
+style.deletion { color: var(--red); }
+style.change { color: var(--yellow); }
