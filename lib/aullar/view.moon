@@ -66,13 +66,13 @@ View = {
     @_base_x = 0
     @_first_visible_line = 1
     @_last_visible_line = nil
-    @_cur_mouse_cursor = text_cursor
     @_y_scroll_offset = 0
     @width = nil
     @config = config.local_proxy!
 
     @d_area = Gtk.DrawingArea {hexpand: true, vexpand: true}
     @d_area\add_css_class 'htextview'
+    @d_area.cursor = text_cursor
     @d_area\connect_for @, 'resize', self._on_resize
 
     @key_controller = Gtk.EventControllerKey!
@@ -921,8 +921,6 @@ View = {
     -- or something
     @_cairo_ctx = nil
     @_surface = nil
-
-    @d_area.cursor = @_cur_mouse_cursor
 
     getting_taller = @height and height > @height
     @width = width
