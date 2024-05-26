@@ -51,15 +51,21 @@ define_class {
     return unless @area.visible
     lines_text = tostring(buffer.nr_lines)
     num_chars = #lines_text
-    return true if not opts.force and @number_chars == num_chars
+    changed = @number_chars != num_chars
+    return true if not opts.force and not changed
     @_text_width = @view\text_dimensions(lines_text).width + 2
     @area.content_width = @_text_width
     @number_chars = num_chars
+    not changed
 
   _draw: (_, cr, width, height) =>
     cr = ffi_cast cairo_t, cr
     width = tonumber(ffi_cast int_t, width)
     height = tonumber(ffi_cast int_t, height)
+
+    if width != @_text_width
+      @area\queue_resize!
+      return
 
     return if not @view.showing or not @area.visible
 
