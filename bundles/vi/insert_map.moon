@@ -14,6 +14,12 @@ get_edit = (editor) ->
     if text and #text > 0
       (editor) -> editor\insert text
 
+exit_insert_mode = (editor) ->
+    state.insert_edit = get_edit editor
+    insert_pos = nil
+    state.change_mode editor, 'command'
+    editor.cursor.column = math.max 1, editor.cursor.column - 1
+
 insert_map = {
   __meta: {
 
@@ -27,16 +33,11 @@ insert_map = {
       blink_interval: -> config.cursor_blink_interval
   }
 
-  escape: (editor) ->
-    state.insert_edit = get_edit editor
-    insert_pos = nil
-    state.change_mode editor, 'command'
-    editor.cursor.column = math.max 1, editor.cursor.column - 1
-
+  escape: exit_insert_mode
+  'ctrl_[': exit_insert_mode
   ctrl_i: (editor) -> editor\shift_right!
   ctrl_d: (editor) -> editor\shift_left!
 }
-
 setmetatable insert_map, {
   __call: (_, editor) ->
     state.enter_edit_mode editor
