@@ -1,0 +1,23 @@
+; This is a comment
+# this is not a comment
+
+[-NegativePrefix]
+
+[\Path\1-2-3\]
+"string"="string"
+"delete"=-
+"dword"=dword:c0fee
+"hex"=hex:01,02,ab
+"hex2"=hex(2):01,02,03
+"hex7"=hex(7):01,02,03
+"hex-multiline"=hex:12,34,\
+  34,65,46
+
+"invalid-basic"=abc
+"invalid-type"=type:123
+"invalid-dword-bad-digit"=dword:az3
+"invalid-dword-no-colon"=dword az3
+"invalid-hex-bad-digit"=hex:az,01
+"invalid-hex-extra-comma-digit"=hex:ab,,cd,ef1
+"invalid-hex-no-type-digit"=hex():12
+"invalid-hex-bad-type-digit"=hex(5):12
