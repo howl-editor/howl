@@ -89,6 +89,17 @@ expand_css_functions = (css_file) ->
     "url(\"file://#{path}\")"
   content
 
+lookup_var = (var, vars) ->
+    v = vars[var]
+    unless v
+      error "Undefined variable '#{var}'"
+
+    var_ref = v\match('var%(%-%-([^)]+)%)')
+    if var_ref
+      lookup_var var_ref, vars
+    else
+      v
+
 expand_css_variables = (css) ->
   vars = {}
   -- collect root variables
@@ -99,11 +110,7 @@ expand_css_variables = (css) ->
 
   -- expand root variables
   css = css\gsub 'var%(%-%-([^)]+)%)', (var) ->
-    v = vars[var]
-    unless v
-      print "Undefined variable '#{var}'"
-      var
-    v
+    lookup_var var, vars
 
   css
 

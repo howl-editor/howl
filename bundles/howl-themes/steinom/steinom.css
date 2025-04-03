@@ -14,7 +14,7 @@
   --lightblue: #81A7C9;
   --red: #D67C73;
   --foreground: #dddddd;
-  --embedded_bg: #dddddd16;
+  --embedded-bg: #dddddd16;
   --comment: grey;
 
   --border-flair: #808080;
@@ -44,11 +44,6 @@ window .status.error { color: var(--red); }
 
 scrollbar range trough slider {
   background-color: slategrey;
-}
-
-popover {
-  padding: 0;
-  border-radius: 0;
 }
 
 popover contents {
@@ -205,16 +200,14 @@ flair.list-highlight {
 flair.cursor {
   shape: pipe;
   border-color: var(--foreground);
-  background-color: var(--foreground);
   width: 2;
+  minimum-width: 2;
   height: text;
-  minimum-width: letter;
 }
 
 flair.block-cursor {
   shape: rounded-rectangle;
-  /* color: var(--base); */
-  color: red;
+  color: var(--base);
   background-color: var(--foreground);
   height: text;
   minimum-width: letter;
@@ -299,7 +292,7 @@ style.special {
 
 style.regex {
   color: var(--green);
-  background-color: var(--embedded_bg);
+  background-color: var(--embedded-bg);
 }
 
 style.embedded {
@@ -347,7 +340,7 @@ style.strong {
 
 style.table {
   color: var(--lightblue);
-  background-color: alpha(var(--embedded_bg), 0.2);
+  background-color: alpha(var(--embedded-bg), 0.2);
   font-decoration: underline;
 }
 

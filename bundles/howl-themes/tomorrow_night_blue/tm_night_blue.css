@@ -1,29 +1,32 @@
+/*
+  Copyright 2025 The Howl Developers
+  License: MIT (see LICENSE.md at the top-level directory of the distribution)
+*/
+
 :root {
-  --background: #272822;
-  --current: #75715e;
-  --selection: #759557;
+  --background: #002451;
+  --current: #00346e;
+  --selection: #0066cc;
   --foreground: #ffffff;
-  --comment: #75715e;
+  --comment: #7285b7;
   --red: #ff9da4;
   --darkred: #8b0000;
   --orange: #ffc58f;
-  --yellow: #e6db74;
-  --yellow-dark: #75715E;
-  --green: #a6e22a;
+  --yellow: #ffeead;
+  --green: #d1f1a9;
   --aqua: #99ffff;
-  --blue: #89bdff;
-  --purple: #ae81ff;
-  --magenta: #f92672;
-  --grey: #595959;
-  --grey-darker: #383830;
-  --grey-darkest: #303024;
-  --grey-light: #a6a6a6;
-  --embedded-bg: #484848;
+  --blue: #bbdaff;
+  --purple: #ebbbff;
   --border-color: #333333;
+  --embedded-bg: #25384f;
+  --grey: #7285b7;
+  --lightblue: #bbdaff;
+  --darkgreen: #006400;
 }
 
 window {
   background-color: var(--background);
+  background-image: theme-url('dark_back.png');
 }
 
 window .container {
@@ -36,62 +39,58 @@ window .status {
   color: var(--grey);
 }
 
-window .status.info { color: var(--grey-light); }
+window .status.info { color: var(--blue); }
 window .status.warning { color: var(--orange); }
 window .status.error { color: var(--red); }
 
 scrollbar range trough slider {
-  background-color: var(--magenta);
+  background-color: #00549e;
 }
 
 popover contents {
-  background-color: var(--grey-darkest);
-  border: 1px solid var(--grey);
+  background-color: #00346e;
 }
 
- /* General styling for context boxes (editor, command_line) */
 .content-box {
   margin: 1px;
   background-color: var(--background);
-
   border: 1px solid var(--border-color);
   border-right: 3px solid var(--border-color);
   border-bottom: 3px solid var(--border-color);
 }
 
-.gutter {
-  color: var(--comment);
-  background-color: alpha(var(--grey-darkest), 0.6);
-}
-
 .content-box .header {
-  background-color: var(--grey-darkest);
-  border-bottom: 1px solid var(--grey-darker);
-
-  color: white;
+  background: linear-gradient(to right, #000022, #003080);
+  border-bottom: 1px solid var(--border-color);
+  color: brown;
   font-weight: bold;
   padding: 1px;
 }
 
 .content-box .footer {
-  color: var(--grey);
-  background-color: var(--grey-darkest);
+  background-color: #002471;
+  border-top: 1px solid var(--border-color);
+  color: brown;
   font-weight: bold;
   padding: 1px;
-  border-top: 1px solid var(--grey-darker);
 }
 
+.gutter {
+  color: var(--comment);
+  background-color: alpha(var(--background), 0.4);
+}
 
 .indicator {
-  color: var(--grey-light);
+  color: var(--blue);
 }
 
 .indicator.title {
   font-weight: bold;
+  font-style: italic;
 }
 
 .indicator.vi {
-  font-weight: bold;
+  color: var(--purple);
 }
 
 /********************************* Flairs *************************************/
@@ -103,47 +102,50 @@ flair.indentation-guide {
 
 flair.indentation-guide-1 {
   shape: pipe;
-  border-color: var(--grey-darker);
+  border-color: var(--blue);
+  border-color-alpha: 0.5;
   width: 1;
 }
 
 flair.indentation-guide-2 {
   shape: pipe;
-  border-color: var(--grey-darker);
+  border-color: var(--green);
+  border-color-alpha: 0.5;
   width: 1;
 }
 
 flair.indentation-guide-3 {
   shape: pipe;
-  border-color: var(--grey-darker);
+  border-color: var(--green);
+  border-color-alpha: 0.3;
   width: 1;
 }
 
 flair.edge-line {
   shape: pipe;
-  border-color: alpha(var(--blue), 0.5);
+  border-color: alpha(var(--blue), 0.3);
   width: 0.5;
 }
 
 flair.search {
   shape: rounded-rectangle;
   border-color: black;
-  background-color: var(--yellow);
-  color: var(--grey-darkest);
+  background-color: var(--green);
+  color: var(--darkgreen);
   height: text;
 }
 
 flair.search-secondary {
   shape: rounded-rectangle;
-  background-color: var(--yellow-dark);
-  color: var(--grey-darkest);
+  background-color: var(--lightblue);
+  color: black;
   height: text;
 }
 
 flair.replace-strikeout {
   shape: rounded-rectangle;
-  border-color: : black;
-  background-color: : var(--red);
+  border-color: black;
+  background-color: var(--red);
   color: black;
   height: text;
 }
@@ -165,7 +167,7 @@ flair.brace-highlight-secondary {
 
 flair.list-selection {
   shape: rectangle;
-  background-color: alpha(var(--current), 0.3);
+  background-color: alpha(white, 0.4);
 }
 
 flair.list-highlight {
@@ -177,7 +179,7 @@ flair.list-highlight {
 
 flair.cursor {
   shape: pipe;
-  border-color: white;
+  border-color: var(--foreground);
   width: 2;
   height: text;
   minimum-width: 2;
@@ -193,12 +195,11 @@ flair.block-cursor {
 
 flair.selection {
   shape: rounded-rectangle;
-  background-color: alpha(var(--selection), 0.4);
+  background-color: alpha(var(--selection), 0.6);
   minimum-width: letter;
 }
 
 /********************************* Styles *************************************/
-
 style.default {
   color: var(--foreground);
 }
@@ -211,7 +212,7 @@ style.magenta { color: var(--purple); }
 style.cyan { color: var(--aqua); }
 
 style.popup {
-  background-color: var(--grey-darkest);
+  background-color: #00346e;
   color: var(--foreground);
 }
 
@@ -235,23 +236,25 @@ style.key {
 }
 
 style.fdecl {
-  color: var(--green);
-  font-weight: bold;
-}
-
-style.keyword {
-  color: var(--magenta);
-  font-weight: bold;
-}
-
-style.class {
   color: var(--blue);
   font-weight: bold;
 }
 
-style.type_def {
-  color: var(--green);
+style.keyword {
+  color: var(--purple);
   font-weight: bold;
+}
+
+style.class {
+  color: var(--yellow);
+  font-weight: bold;
+}
+
+style.type-def {
+  color: var(--yellow);
+  font-weight: bold;
+  font-size: large;
+  font-family: Purisa,Latin Modern Sans;
 }
 
 style.definition {
@@ -263,17 +266,13 @@ style.function {
   font-weight: bold;
 }
 
-style.type {
-  color: var(--blue);
-  font-style: italic;
-}
-
 style.char { color: var(--green); }
-style.number { color: var(--purple); }
-style.operator { color: var(--magenta); }
+style.number { color: var(--orange); }
+style.operator { color: var(--aqua); }
 style.preproc { color: var(--aqua); }
 style.special { color: var(--purple); }
 style.tag { color: var(--purple); }
+style.type { color: var(--yellow); }
 style.member { color: var(--red); }
 style.info { color: var(--blue); }
 
@@ -282,7 +281,7 @@ style.constant {
 }
 
 style.string {
-  color: var(--yellow);
+  color: var(--green);
 }
 
 style.regex {
@@ -291,10 +290,11 @@ style.regex {
 }
 
 style.embedded {
-  color: var(--blue);
+  color: #aadaff;
   background-color: var(--embedded-bg);
 }
 
+/* Markup and visual styles */
 style.error {
   font-style: italic;
   color: white;
@@ -307,36 +307,52 @@ style.warning {
 }
 
 style.h1 {
-  font-weight: bold;
-  color: var(--magenta);
+  color: white;
+  background-color: #005491;
 }
 
 style.h2 {
+  color: var(--green);
   font-weight: bold;
-  color: var(--aqua);
 }
 
 style.h3 {
-  font-style: italic;
   color: var(--purple);
+  background-color: var(--current);
+  font-style: italic;
 }
 
 style.emphasis {
-  font:
-    bold: true
-    italic: true
+  font-weight: bold;
+  font-style: italic;
 }
 
-style.strong { font-style: italic; }
-style.link_label { color: var(--aqua); }
-style.link_url { color: var(--comment); }
+style.strong {
+  font-style: italic;
+}
+
+style.link-label {
+  color: var(--aqua);
+}
+
+style.link-url {
+  color: var(--comment);
+}
 
 style.table {
   color: var(--blue);
   background-color: var(--embedded-bg);
-  underline: true
+  text-decoration: underline;
 }
 
-style.addition { color: var(--green); }
-style.deletion { color: var(--red); }
-style.change { color: var(--yellow); }
+style.addition {
+  color: var(--green);
+}
+
+style.deletion {
+  color: var(--red);
+}
+
+style.change {
+  color: var(--yellow);
+}

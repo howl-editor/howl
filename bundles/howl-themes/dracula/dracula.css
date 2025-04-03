@@ -1,33 +1,38 @@
+/*
+  Copyright 2025 The Howl Developers
+  License: MIT (see LICENSE.md at the top-level directory of the distribution)
+*/
+
 :root {
-  --background: #272822;
-  --current: #75715e;
-  --selection: #759557;
-  --foreground: #ffffff;
-  --comment: #75715e;
-  --red: #ff9da4;
-  --darkred: #8b0000;
-  --orange: #ffc58f;
-  --yellow: #e6db74;
-  --yellow-dark: #75715E;
-  --green: #a6e22a;
-  --aqua: #99ffff;
-  --blue: #89bdff;
-  --purple: #ae81ff;
-  --magenta: #f92672;
+  --background: #282a36;
+  --current: #44475a;
+  --selection: #44475a;
+  --foreground: #f8f8f2;
+  --comment: #6272a4;
+  --red: #ff5555;
+  --orange: #ffb86c;
+  --yellow: #f1fa8c;
+  --green: #50fa7b;
+  --aqua: #8be9fd;
+  --blue: #8be9fd;
+  --purple: #bd93f9;
+  --magenta: #ff79c6;
   --grey: #595959;
-  --grey-darker: #383830;
-  --grey-darkest: #303024;
+  --grey-darker: #1c1d23;
+  --grey-darkest: #1c1d23;
   --grey-light: #a6a6a6;
   --embedded-bg: #484848;
-  --border-color: #333333;
+  --border-color: #44475a;
+  --lightblue: #b3d4fc;
+  --lightgray: #d3d3d3;
+  --white: #ffffff;
+  --black: #000000;
+  --brace-highlight: #0064b1;
 }
 
 window {
   background-color: var(--background);
-}
-
-window .container {
-  margin: 2px;
+  padding: 5px;
 }
 
 window .status {
@@ -49,38 +54,41 @@ popover contents {
   border: 1px solid var(--grey);
 }
 
- /* General styling for context boxes (editor, command_line) */
 .content-box {
-  margin: 1px;
   background-color: var(--background);
-
   border: 1px solid var(--border-color);
   border-right: 3px solid var(--border-color);
   border-bottom: 3px solid var(--border-color);
+}
+
+.content-box .header {
+  background-color: var(--grey-darkest);
+  border-bottom: 1px solid var(--grey-darker);
+  color: var(--white);
+  font-weight: bold;
+  padding: 1px;
+}
+
+.content-box .footer {
+  background-color: var(--grey-darkest);
+  border-top: 1px solid var(--grey-darker);
+  color: var(--grey);
+  font-weight: bold;
+  padding: 1px;
+}
+
+.content-box-editor {
+  background-color: var(--background);
+}
+
+.content-box-editor .current-line {
+  background-color: var(--current);
 }
 
 .gutter {
   color: var(--comment);
   background-color: alpha(var(--grey-darkest), 0.6);
 }
-
-.content-box .header {
-  background-color: var(--grey-darkest);
-  border-bottom: 1px solid var(--grey-darker);
-
-  color: white;
-  font-weight: bold;
-  padding: 1px;
-}
-
-.content-box .footer {
-  color: var(--grey);
-  background-color: var(--grey-darkest);
-  font-weight: bold;
-  padding: 1px;
-  border-top: 1px solid var(--grey-darker);
-}
-
 
 .indicator {
   color: var(--grey-light);
@@ -121,13 +129,13 @@ flair.indentation-guide-3 {
 
 flair.edge-line {
   shape: pipe;
-  border-color: alpha(var(--blue), 0.5);
+  border-color: alpha(var(--blue), 0.3);
   width: 0.5;
 }
 
 flair.search {
   shape: rounded-rectangle;
-  border-color: black;
+  border-color: var(--black);
   background-color: var(--yellow);
   color: var(--grey-darkest);
   height: text;
@@ -135,29 +143,29 @@ flair.search {
 
 flair.search-secondary {
   shape: rounded-rectangle;
-  background-color: var(--yellow-dark);
+  background-color: var(--yellow);
   color: var(--grey-darkest);
   height: text;
 }
 
 flair.replace-strikeout {
   shape: rounded-rectangle;
-  border-color: : black;
-  background-color: : var(--red);
-  color: black;
+  border-color: var(--black);
+  background-color: var(--red);
+  color: var(--black);
   height: text;
 }
 
 flair.brace-highlight {
   shape: rectangle;
+  background-color: var(--brace-highlight);
   color: var(--foreground);
-  background-color: #0064b1;
   height: text;
 }
 
 flair.brace-highlight-secondary {
   shape: rectangle;
-  border-color: #0064b1;
+  border-color: var(--brace-highlight);
   color: var(--foreground);
   width: 1;
   height: text;
@@ -170,14 +178,14 @@ flair.list-selection {
 
 flair.list-highlight {
   shape: underline;
-  border-color: white;
-  color: white;
+  border-color: var(--white);
+  color: var(--white);
   width: 2;
 }
 
 flair.cursor {
   shape: pipe;
-  border-color: white;
+  border-color: var(--foreground);
   width: 2;
   height: text;
   minimum-width: 2;
@@ -198,7 +206,6 @@ flair.selection {
 }
 
 /********************************* Styles *************************************/
-
 style.default {
   color: var(--foreground);
 }
@@ -249,7 +256,7 @@ style.class {
   font-weight: bold;
 }
 
-style.type_def {
+style.type-def {
   color: var(--green);
   font-weight: bold;
 }
@@ -295,10 +302,11 @@ style.embedded {
   background-color: var(--embedded-bg);
 }
 
+/* Markup and visual styles */
 style.error {
   font-style: italic;
-  color: white;
-  background-color: var(--darkred);
+  color: var(--white);
+  background-color: var(--red);
 }
 
 style.warning {
@@ -322,21 +330,36 @@ style.h3 {
 }
 
 style.emphasis {
-  font:
-    bold: true
-    italic: true
+  font-weight: bold;
+  font-style: italic;
 }
 
-style.strong { font-style: italic; }
-style.link_label { color: var(--aqua); }
-style.link_url { color: var(--comment); }
+style.strong {
+  font-style: italic;
+}
+
+style.link-label {
+  color: var(--aqua);
+}
+
+style.link-url {
+  color: var(--comment);
+}
 
 style.table {
   color: var(--blue);
   background-color: var(--embedded-bg);
-  underline: true
+  text-decoration: underline;
 }
 
-style.addition { color: var(--green); }
-style.deletion { color: var(--red); }
-style.change { color: var(--yellow); }
+style.addition {
+  color: var(--green);
+}
+
+style.deletion {
+  color: var(--red);
+}
+
+style.change {
+  color: var(--yellow);
+}

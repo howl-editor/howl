@@ -217,6 +217,35 @@ describe 'theme', ->
         '.gutter { color: red; }'
       ).gutter_color
 
+  context 'CSS var declarations', ->
+    load_css = (css) ->
+      File.with_tmpfile (file) ->
+        file.contents = css
+        theme.register 'vars', file
+        config.theme = 'vars'
+        theme.current
+
+    it 'parses vars from :root and allows use of them', ->
+      assert.equal 'green', load_css(
+        '
+        :root {
+          --my-var: green;
+        }
+        style.foo { color: var(--my-var); }
+        '
+      ).styles.foo.color
+
+    it 'allows vars to reference other vars', ->
+      assert.equal 'green', load_css(
+        '
+        :root {
+          --base: green;
+          --sub: var(--base);
+        }
+        style.foo { color: var(--sub); }
+        '
+      ).styles.foo.color
+
 
   -- describe 'life cycle management', ->
     -- it 'automatically applies a theme upon registration if that theme is already set as current', ->
