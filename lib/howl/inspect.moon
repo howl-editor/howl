@@ -251,12 +251,9 @@ popup_text = (inspections) ->
   return howl.ui.markup.howl table.concat items, '\n'
 
 show_popup = (editor, inspections, pos) ->
-  popup or= BufferPopup ActionBuffer!
-  buf = popup.buffer
-
-  buf\as_one_undo ->
-    buf.text = ''
-    buf\append popup_text inspections
+  buf = ActionBuffer!
+  buf\append popup_text inspections
+  popup = BufferPopup buf
 
   with popup.view
     .cursor.line = 1
