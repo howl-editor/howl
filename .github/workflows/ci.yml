@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - gtk-4
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-4-dev at-spi2-core xvfb
+
+    - name: Start xvfb
+      run: Xvfb :99 -screen 0 1024x768x24 &
+
+    - name: Build
+      run: make -C src -j 4
+      env:
+        DISPLAY: :99
+
+    - name: Lint
+      run: ./bin/lint-all
+      env:
+        DISPLAY: :99
+
+    - name: Run Tests
+      run: ./bin/run-all-specs
+      env:
+        DISPLAY: :99
+
+    - name: Notify on Success
+      if: success()
+      run: echo "Build succeeded!"
+
+    - name: Notify on Failure
+      if: failure()
+      run: echo "Build failed!"
