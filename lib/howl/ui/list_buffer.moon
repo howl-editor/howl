@@ -111,10 +111,12 @@ class ListBuffer extends ActionBuffer
         })
         ed\show_popup popup
 
-        if item.highlights
-          for hl in *item.highlights
-            start_p, end_p = preview_buf\resolve_span hl, item.line_nr
-            highlight.apply 'search', preview_buf, start_p, end_p - start_p
+        if item.item_highlights
+          for hl_list in *item.item_highlights
+            if hl_list
+              for hl in *hl_list
+                start_p, end_p = preview_buf\resolve_span hl, item.line_nr
+                highlight.apply 'search', preview_buf, start_p, end_p - start_p
 
         return
 
