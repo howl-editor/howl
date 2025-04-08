@@ -42,6 +42,7 @@ class Window extends PropertyObject
     @box\append @command_panel\to_gobject!
     @box\append @widgets
     @box\append @status\to_gobject!
+    @box\add_css_class "container"
 
     @win = properties.window or Gtk.Window!
     @win\add_css_class 'main-window'

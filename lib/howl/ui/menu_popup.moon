@@ -13,32 +13,21 @@ class MenuPopup extends Popup
     @list_widget = ListWidget @list, auto_fit_width: true
 
     @highlight_matches_for = ''
-    super @list_widget\to_gobject!
-    -- with @child
-    --   .margin_top = 2
-    --   .margin_start = 2
-
     @list_widget\show!
+
+    super @list_widget\to_gobject!, width: @list_widget.width, height: @list_widget.height
 
   refresh: =>
     @list\update @highlight_matches_for
 
-  show: (...) =>
-    @refresh!
-    super ...
-    @resize!
-
   resize: =>
-    h_margin = @child.margin_start + @child.margin_end
-    v_margin = @child.margin_top + @child.margin_bottom
-    super @list_widget.width + h_margin, @list_widget.height + v_margin
+    super @list_widget.width, @list_widget.height
 
   choose: =>
     if self.callback @list.selection
       @close!
 
   on_insert_at_cursor: (editor, args) =>
-    print 'menu close'
     @close!
     return
 

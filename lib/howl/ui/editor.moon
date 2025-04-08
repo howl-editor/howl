@@ -574,7 +574,7 @@ class Editor extends PropertyObject
       @pop = nil
 
   complete: =>
-    return if @completion_popup.active
+    return if @completion_popup.showing -- will handle the update itself
     @completion_popup\complete!
     if not @completion_popup.empty
       @show_popup @completion_popup, {

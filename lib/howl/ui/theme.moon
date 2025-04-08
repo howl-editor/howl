@@ -31,8 +31,9 @@ display = Gdk.Display\get_default!
 Gtk.StyleContext.add_provider_for_display display, css_provider, 7000
 
 base_css = [[
+/* Base settings */
+
 window {
-  /*padding: 0.4em;*/
   font-size: ${font_size}pt;
   font-family: ${font};
 }

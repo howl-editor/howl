@@ -648,6 +648,7 @@ View = {
     tab_size = @config.view_tab_size
     @_tab_array = Pango.TabArray(1, true, @width_of_space * tab_size)
     @display_lines = DisplayLines @, @_tab_array, @buffer, p_ctx
+
     @gutter\sync_dimensions @buffer, force: true
     @gutter\sync @
     @refresh_display from_line: 1, invalidate: true
@@ -769,7 +770,6 @@ View = {
         @_invalidate_display args.invalidate_offset, args.offset - 1
 
       @gutter\sync! if lines_changed
-      @gutter\sync_dimensions @_buffer
       if lines_changed and not @gutter\sync_dimensions buffer
         @d_area\queue_draw!
 

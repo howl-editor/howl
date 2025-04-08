@@ -9,22 +9,27 @@ Popover = Gtk.Popover
 class Popup extends PropertyObject
   comfort_zone: 10
 
-  new: (@child, props = {}) =>
+  new: (@child, opts = {}) =>
     error('Missing argument #1: child', 3) if not child
-    props = {k, v for k, v in pairs props}
-    props.autohide = false
-    props.has_arrow = false
+    props = {
+      autohide: false,
+      has_arrow: false
+    }
+    for k, v in pairs opts
+      props[k] = v
     props.child = @child
-    @width = props.width or 150
-    @height = props.height or 150
+    @width = props.width
+    @height = props.height
     props.width_request = @width
     props.height_request = @height
     @popover = Popover props
     @showing = false
     super!
 
-  show: (widget, options = {position: 'center'}) =>
+  show: (widget, @show_options = {position: 'center'}) =>
     error('Missing argument #1: widget', 2) if not widget
+    if not (@width and @height)
+      error("Can not show a popup without a size")
 
     if @popover.parent != widget
       if @popover.parent != nil
@@ -35,8 +40,8 @@ class Popup extends PropertyObject
     @widget = widget
     @showing = true
 
-    if options.pointing_to
-      @move_to options.pointing_to
+    if show_options.pointing_to
+      @move_to show_options.pointing_to
     else
       @center!
 
@@ -62,14 +67,13 @@ class Popup extends PropertyObject
     @pointing_to = pointing_to
     @popover.pointing_to = @pointing_to
     @_set_offset @popover.width_request
-    @resize @popover.width_request, @popover.height_request
-
-  _set_offset: (width) =>
-    x_off = floor width / 2
-    @popover\set_offset x_off, 0
 
   resize: (width, height) =>
     if not @showing
+      @width = width
+      @height = height
+      @popover.width_request = width
+      @popover.height_request = height
       return
 
     native = @widget\get_native!
@@ -82,11 +86,6 @@ class Popup extends PropertyObject
 
     if @y + height > (geom.height - @comfort_zone)
       height = geom.height - @y - @comfort_zone
-
-    if not @showing
-      @popover.width_request = width
-      @popover.height_request = height
-      return
 
     width, height = floor(width), floor(height)
     @width, @height = width, height
@@ -119,5 +118,9 @@ class Popup extends PropertyObject
     @pointing_to = {:x, :y, width: 1, height: 1}
     @popover.pointing_to = @pointing_to
     @popover\set_offset(width / 2, 0)
+
+  _set_offset: (width) =>
+    x_off = floor width / 2
+    @popover\set_offset x_off, 0
 
 return Popup

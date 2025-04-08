@@ -178,4 +178,21 @@ core.define 'GtkWidget < GObject', {
   unparent: =>
     C.gtk_widget_unparent @
 
+  measure: (orientation, for_size) =>
+    ret = ffi.new 'int[4]'
+    C.gtk_widget_measure(
+      to_w(@),
+      orientation,
+      for_size,
+      ret,
+      ret + 1,
+      ret + 2,
+      ret + 3
+    )
+    {
+      minimum: tonumber(ret[0]),
+      natural: tonumber(ret[1]),
+      minimum_baseline: tonumber(ret[2]),
+      natural_baseline: tonumber(ret[3])
+    }
 }

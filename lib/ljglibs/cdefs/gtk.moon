@@ -229,6 +229,15 @@ ffi.cdef [[
   void gtk_widget_add_css_class(GtkWidget* widget, const char* css_class);
   void gtk_widget_remove_css_class(GtkWidget* widget, const char* css_class);
 
+  void gtk_widget_measure (
+    GtkWidget* widget,
+    GtkOrientation orientation,
+    int for_size,
+    int* minimum,
+    int* natural,
+    int* minimum_baseline,
+    int* natural_baseline
+  );
 
   /* GtkGrid */
   typedef struct {} GtkGrid;
