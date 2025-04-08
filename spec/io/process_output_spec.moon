@@ -11,6 +11,11 @@ describe 'process_output', ->
         { line_nr: 2, message: 'foo' }
       }, parse "2: foo"
 
+    it 'opts.keep_whitespace keeps indentation for messages', ->
+      assert.same {
+        { line_nr: 2, message: '  foo' }
+      }, parse "2:  foo", keep_whitespace: true
+
     context 'when opts.max_message_length is specified', ->
       it 'shortens the messages as neccessary', ->
       assert.same {

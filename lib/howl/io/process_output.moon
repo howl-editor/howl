@@ -7,14 +7,17 @@ glib = require 'ljglibs.glib'
 append = table.insert
 
 line_p = r'(\\d+):(?:(\\d+):)?\\s*(.+)'
+line_p_no_strip = r'(\\d+):(?:(\\d+):)?(.+)'
 
 parse = (output, opts = {}) ->
   locations = {}
   base_dir = opts.directory or File glib.get_current_dir!
   lines = [l for l in output\gmatch('[^\n]+') ]
+  pattern = opts.keep_whitespace and line_p_no_strip or line_p
+
   for i = 1, #lines
     line = lines[i]
-    nr, column, message = line\umatch line_p
+    nr, column, message = line\umatch pattern
 
     continue unless nr
 
