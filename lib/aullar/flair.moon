@@ -254,7 +254,7 @@ need_text_object = (flair) ->
 
       off_line = start_offset > line.line_end or end_offset < line.line_start
       if off_line or end_offset == line.line_start and (start_offset != end_offset)
-        line_y_offset += line_height + display_line.y_offset
+        line_y_offset += line_height
         continue -- flair not within this layout line
 
       f_start_offset = max start_offset, line.line_start
