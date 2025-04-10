@@ -148,7 +148,6 @@ export use_test_buffers = (...) ->
       b.title = b_info
     elseif type(b_info) == 'table'
       for k, v in pairs b_info
-        print "set #{k} to #{v}"
         b[k] = v
 
     table.insert buffers, b

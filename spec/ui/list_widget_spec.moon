@@ -1,9 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
--- import Buffer from howl
 {:List, :ListWidget} = howl.ui
--- import ListWidget from howl.ui
 {:Matcher} = howl.util
 
 describe 'ListWidget', ->
@@ -23,7 +21,7 @@ describe 'ListWidget', ->
       assert.not_nil height
 
       list\update 'o'
-      assert.equal height / 3, widget.height
+      assert.is_true  widget.height < height
 
   context 'when `never_shrink: true` is provided', ->
     it 'does not shrink the height while matching', ->

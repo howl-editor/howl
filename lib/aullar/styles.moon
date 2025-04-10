@@ -74,16 +74,12 @@ create_attributes = (def) ->
 
   if def.font
     font = def.font
-    if font.family
-      print "set family to #{font.family}"
-      append attrs, Attribute.Family(font.family) if font.family
-      -- append attrs, Attribute.Family('monospace')
+    append attrs, Attribute.Family(font.family) if font.family
     append attrs, Attribute.Style(Pango.STYLE_ITALIC) if font.italic
     append attrs, Attribute.Weight(Pango.WEIGHT_BOLD) if font.bold
     append attrs, Attribute.Size(get_font_size(font.size) * SCALE) if font.size
-  -- else
-  --   print 'use default monospace'
-  --   append attrs, Attribute.Family('monospace')
+  else
+    append attrs, Attribute.Family('monospace')
 
   attrs
 

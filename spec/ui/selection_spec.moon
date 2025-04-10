@@ -51,8 +51,9 @@ describe 'Selection', ->
 
     it 'does not change the scroll position', ->
       buffer.text = '1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0'
-      cursor.pos = 1
       editor.view.first_visible_line = 2
+      cursor.pos = 3
+      assert.equal 2, editor.view.first_visible_line
       selection\select_all!
       assert.equal 2, editor.view.first_visible_line
 

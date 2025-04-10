@@ -33,7 +33,6 @@ do_dispatch = (data, ...) ->
   ref_id = tonumber ffi_cast('gint', data)
   handle = handles[ref_id]
   unless handle
-    print "no handler found for #{ref_id}"
     return false
 
   instance = nil
