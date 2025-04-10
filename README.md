@@ -1,6 +1,6 @@
 # The Howl editor
 
-[![Build Status](https://travis-ci.org/howl-editor/howl.png?branch=master)](https://travis-ci.org/howl-editor/howl)
+[![Build Status](https://github.com/howl-editor/howl/actions/workflows/ci.yml/badge.svg?branch=next)](https://github.com/howl-editor/howl/actions/workflows/ci.yml)
 
 ## What is it?
 
