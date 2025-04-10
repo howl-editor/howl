@@ -135,6 +135,7 @@ run_test = (title, units, count, f) ->
 
   for _ = 1, count
     f!
+    collectgarbage!
 
   collect!
   mem = used!
@@ -224,7 +225,7 @@ switch_buffers = ->
       process_events!
 
 split_views = ->
-  run_test 'View splitting', '30Kb', 30, ->
+  run_test 'View splitting', '100Kb', 30, ->
     howl.app\new_editor placement: 'right_of'
     process_events!
     howl.app\new_editor placement: 'left_of'
@@ -236,6 +237,7 @@ split_views = ->
 
     while #app.window.views > 1
       command.view_close!
+      process_events!
 
 show_popups = ->
   editor = howl.app.editor
@@ -272,7 +274,10 @@ buffer_navigation = ->
 
 run_interactive_command = (cmd, f) ->
   howl.timer.after 0.2, ->
-    cmd_line = app.window.command_line
+    cmd_line = app.window.command_panel.active_command_line
+    unless cmd_line
+      print "no cmd_line"
+      return
     view = cmd_line.command_widget.view
 
     view_ctrl = (action, ...) ->
@@ -281,7 +286,7 @@ run_interactive_command = (cmd, f) ->
       os.execute('sleep 0.1')
 
     f view_ctrl
-    cmd_line\abort_all!
+    app.window.command_panel\cancel!
 
   command.run cmd
 
@@ -291,26 +296,26 @@ command_line_invocation = ->
     description: 'I. will. close. you.'
     input: ->
       process_events!
-      app.window.command_line\abort_all!
+      app.window.command_panel\cancel!
       process_events!
     handler: -> error 'foo'
 
   run_test 'Command line open and close', '10Kb', 5, ->
     command.run 'insta-close'
-  -- process_events!
-  -- cmd_line\abort_all!
-  -- process_events!
+    process_events!
+    app.window.command_panel\cancel!
+    process_events!
 
 command_line_project_open = ->
   letters = [l for l in ('abcdefghijklmnopqrstuwvxyz')\gmatch '%w']
-  run_test 'Interactive command: Project open', '10Kb', 5, ->
+  run_test 'Interactive command: Project open', '10Kb', 1, ->
     run_interactive_command 'project-open', (view) ->
       for l in *letters
         view 'insert', l
         view 'delete_back'
 
 command_line_switch_buffer = ->
-  run_test 'Interactive command: Switch buffer', '30Kb', 10, ->
+  run_test 'Interactive command: Switch buffer', '30Kb', 100, ->
     run_interactive_command 'switch-buffer', (view) ->
       view 'insert', 'a'
       view 'insert', 'a'
@@ -336,9 +341,8 @@ howl.signal.connect 'app-ready', ->
 
   status, err = pcall ->
 
-    -- for i = 1, 10
-      -- open_and_close_buffers!
-      -- command_line_project_open!
+    open_and_close_buffers!
+    command_line_project_open!
 
     dispatches!
     buffer_editing!
