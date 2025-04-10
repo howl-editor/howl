@@ -18,14 +18,16 @@ describe 'Window', ->
 
     it 'returns a table containing x, y, width, height and the view', ->
       label = Gtk.Label!
-      assert.same { x: 1, y: 1, width: 1, height: 1, view: label }, win\add_view label
+      assert.same { x: 1, y: 1, width: 1, height: 1, gobject: label },
+        win\add_view label
 
     it 'adds the new view to the right of the currently focused one by default', ->
       entry = Gtk.Entry!
       win\add_view entry
       entry\grab_focus!
       label = Gtk.Label!
-      assert.same { x: 2, y: 1, width: 1, height: 1, view: label }, win\add_view label
+      assert.same { x: 2, y: 1, width: 1, height: 1, gobject: label },
+        win\add_view label
 
     context 'when placement is specified', ->
       local view, entry
@@ -37,27 +39,27 @@ describe 'Window', ->
         view = Gtk.Entry!
 
       it '"right_of" places the view on the right side of the focused child', ->
-        assert.same { x: 2, y: 1, width: 1, height: 1, :view }, win\add_view view, 'right_of'
+        assert.same { x: 2, y: 1, width: 1, height: 1, gobject: view }, win\add_view view, 'right_of'
 
       it '"left_of" places the view on the left side of the focused child', ->
-        assert.same { x: 1, y: 1, width: 1, height: 1, :view }, win\add_view view, 'left_of'
+        assert.same { x: 1, y: 1, width: 1, height: 1, gobject: view }, win\add_view view, 'left_of'
 
       it '"above" places the view above the focused child', ->
-        assert.same { x: 1, y: 1, width: 1, height: 1, :view }, win\add_view view, 'above'
-        assert.same { x: 1, y: 2, width: 1, height: 1, view: entry }, win\get_view entry
+        assert.same { x: 1, y: 1, width: 1, height: 1, gobject: view }, win\add_view view, 'above'
+        assert.same { x: 1, y: 2, width: 1, height: 1, gobject: entry }, win\get_view entry
 
       it '"below" places the view below the focused child', ->
-        assert.same { x: 1, y: 2, width: 1, height: 1, :view }, win\add_view view, 'below'
+        assert.same { x: 1, y: 2, width: 1, height: 1, gobject: view }, win\add_view view, 'below'
 
       it 'allows specifying the relative view to use with placement', ->
         win\add_view view, 'below'
         next_view = Gtk.Label!
-        assert.same { x: 1, y: 2, width: 1, height: 1, view: next_view }, win\add_view next_view, 'left_of', view
+        assert.same { x: 1, y: 2, width: 1, height: 1, gobject: next_view }, win\add_view next_view, 'left_of', view
 
       it 'creates new columns as needed', ->
         win\add_view view, 'right_of'
         next_view = Gtk.Label!
-        assert.same { x: 2, y: 1, width: 1, height: 1, view: next_view }, win\add_view next_view, 'left_of', view
+        assert.same { x: 2, y: 1, width: 1, height: 1, gobject: next_view }, win\add_view next_view, 'left_of', view
         assert.same { 1, 2, 3 }, [v.x for v in *win.views]
 
   describe 'remove_view(view)', ->
@@ -88,7 +90,7 @@ describe 'Window', ->
       win\add_view right
       middle\grab_focus!
       win\remove_view middle
-      assert.equals win.focus_child, right
+      assert.equals right, win.focus_child
 
     it 'set focus on its earlier sibling if no later sibling exists', ->
       left = Gtk.Entry!
@@ -101,11 +103,52 @@ describe 'Window', ->
       win\remove_view right
       assert.equals win.focus_child, middle
 
+    it 'calls release on the view if it exists', ->
+      box = Gtk.Box!
+      view = {
+        to_gobject: -> box
+        release: spy.new ->
+      }
+      win\add_view view
+      win\remove_view view
+      assert.spy(view.release).was_called!
+
+    it 'handles views without a release method', ->
+      w = Gtk.Label!
+      win\add_view w
+      win\remove_view w
+      assert.equals 0, #win.views
+
+      view = {
+        to_gobject: -> w
+      }
+      win\add_view view
+      win\remove_view view
+      assert.equals 0, #win.views
+
+    it 'removes references to the view', ->
+      w = Gtk.Label!
+      win\add_view w
+
+      views = setmetatable { w }, __mode: 'v'
+      win\remove_view w
+      w = nil
+      collectgarbage!
+      assert.is_true views[1] == nil
+
   describe '.views', ->
-    it 'is a table of view tables, containing x, y and the view itself', ->
+    it 'is a table of view tables, containing x, y and the gobject', ->
       label = Gtk.Label!
       win\add_view label
-      assert.same { { x: 1, y: 1, width: 1, height: 1, view: label } }, win.views
+      assert.same { { x: 1, y: 1, width: 1, height: 1, gobject: label } }, win.views
+
+    it 'includes the original view if different from the gobject', ->
+      label = Gtk.Label!
+      view = {
+        to_gobject: -> label
+      }
+      win\add_view view
+      assert.same { { x: 1, y: 1, width: 1, height: 1, gobject: label, view: view } }, win.views
 
     it 'ordered ascendingly', ->
       entry = Gtk.Entry!
@@ -116,7 +159,7 @@ describe 'Window', ->
       l2 = Gtk.Label!
       win\add_view l1, 'left_of'
       win\add_view l2, 'below'
-      assert.same { l1, entry, l2 }, [v.view for v in *win.views]
+      assert.same { l1, entry, l2 }, [v.gobject for v in *win.views]
 
   describe '.current_view', ->
     it 'is nil if no child is currently focused', ->
@@ -129,10 +172,10 @@ describe 'Window', ->
       win\add_view e2
 
       e1\grab_focus!
-      assert.same { x: 1, y: 1, width: 1, height: 1, view: e1 }, win.current_view
+      assert.same { x: 1, y: 1, width: 1, height: 1, gobject: e1 }, win.current_view
 
       e2\grab_focus!
-      assert.same { x: 2, y: 1, width: 1, height: 1, view: e2 }, win.current_view
+      assert.same { x: 2, y: 1, width: 1, height: 1, gobject: e2 }, win.current_view
 
   describe 'siblings(view, wraparound)', ->
     context 'when wraparound is false', ->
@@ -188,28 +231,19 @@ describe 'Window', ->
       win\add_view bottom, 'below'
 
     it 'single columns as expanded as necessary', ->
-      assert.same { x: 1, y: 2, width: 2, height: 1, view: bottom }, win\get_view bottom
+      assert.same { x: 1, y: 2, width: 2, height: 1, gobject: bottom }, win\get_view bottom
 
     it 'columns to the right are adjusted after a remove of a left column', ->
       win\remove_view left
-      assert.same { x: 1, y: 1, width: 1, height: 1, view: right }, win\get_view right
+      assert.same { x: 1, y: 1, width: 1, height: 1, gobject: right }, win\get_view right
 
     it 'columns to the left are adjusted after a remove of a right column', ->
       win\remove_view right
-      assert.same { x: 1, y: 1, width: 1, height: 1, view: left }, win\get_view left
+      assert.same { x: 1, y: 1, width: 1, height: 1, gobject: left }, win\get_view left
 
     it 'rows are adjusted after removal of a middle column', ->
       middle = Gtk.Entry!
       win\add_view middle, 'right_of', left
       win\remove_view middle
-      assert.same { x: 1, y: 1, width: 1, height: 1, view: left }, win\get_view left
-      assert.same { x: 2, y: 1, width: 1, height: 1, view: right }, win\get_view right
-
-  context 'resource management', ->
-    it 'added views are not anchored', ->
-      v = Gtk.Entry!
-      views = setmetatable {v}, __mode: 'v'
-      win\add_view v
-      v = nil
-      collectgarbage!
-      assert.is_nil views[1]
+      assert.same { x: 1, y: 1, width: 1, height: 1, gobject: left }, win\get_view left
+      assert.same { x: 2, y: 1, width: 1, height: 1, gobject: right }, win\get_view right

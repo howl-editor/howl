@@ -24,6 +24,7 @@ placements = {
 class Window extends PropertyObject
   new: (properties = {}) =>
     @_handlers = {}
+    @_views = {}
     @status = Status!
     @command_panel = CommandPanel self
     @grid = Gtk.Grid
@@ -69,13 +70,18 @@ class Window extends PropertyObject
 
     for c in *@grid.children
       props = @grid\query_child c
-      append views, {
+      data = {
         x: props.column + 1
         y: props.row + 1
         width: props.width
         height: props.height
-        view: c
+        gobject: c,
       }
+      v = @_view_from_gobject c
+      if v != c
+        data.view = v
+
+      append views, data
 
     table.sort views, (a, b) ->
       return a.y < b.y if a.y != b.y
@@ -127,15 +133,15 @@ class Window extends PropertyObject
 
     for i = 1, #views
       v = views[i]
-      if v.view == current.view
+      if v.gobject == current.gobject
         index = i
       elseif v.x <= current.x and v.x + v.width > current.x
         if v.y == current.y - 1
-          up = v.view
+          up = v.gobject
         elseif v.y == current.y + 1
-          down = v.view
+          down = v.gobject
 
-        append vertical_siblings, v.view
+        append vertical_siblings, v.gobject
 
     before = views[index - 1]
     left = if before and before.y == current.y then before
@@ -150,8 +156,8 @@ class Window extends PropertyObject
       down = vertical_siblings[1] unless down
 
     {
-      left: left and left.view
-      right: right and right.view
+      left: left and left.gobject
+      right: right and right.gobject
       :up
       :down
     }
@@ -161,14 +167,18 @@ class Window extends PropertyObject
   add_view: (view, placement = 'right_of', anchor) =>
     gobject = to_gobject view
     @_place gobject, placement, anchor
+    append @_views, {:view, :gobject}
     gobject\show!
     @_reflow!
     @get_view gobject
 
   remove_view: (view = nil) =>
     view = @focus_child unless view
+    error "Missing view to remove", 2 unless view
     gobject = to_gobject view
-    error "Missing view to remove", 2 unless gobject
+
+    view = @_view_from_gobject gobject
+    error "Asked to remove non-existing view", 2 unless view
 
     siblings = @siblings gobject
     focus_target = siblings.right or siblings.left
@@ -177,10 +187,13 @@ class Window extends PropertyObject
     @_reflow!
     focus_target\grab_focus! if focus_target
 
+    view\release! if view.release
+    @_views = [t for t in *@_views when t.gobject != gobject]
+
   get_view: (o) =>
     gobject = to_gobject o
     for v in *@views
-      return v if v.view == gobject
+      return v if v.gobject == gobject
 
     nil
 
@@ -200,6 +213,13 @@ class Window extends PropertyObject
 
     Gdk.Pixbuf.get_from_window window, x, y, w, h
 
+  _view_from_gobject: (gobject) =>
+    for v in *@_views
+      if v.gobject == gobject
+        return v.view
+
+    return nil
+
   _as_rows: (views) =>
     rows = {}
     row = {}
@@ -211,7 +231,7 @@ class Window extends PropertyObject
         row = {}
 
       current = v
-      append row, v.view
+      append row, v.gobject
 
     append rows, row
     rows
@@ -286,6 +306,11 @@ class Window extends PropertyObject
     @win\queue_draw!
 
   _on_destroy: =>
+    for view in *@_views
+      if view and view.release
+        view\release!
+
+    @_views = {}
     signal.disconnect 'theme-changed', @_theme_changed
 
   _on_focus_in: =>
