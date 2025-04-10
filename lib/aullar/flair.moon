@@ -250,7 +250,7 @@ need_text_object = (flair) ->
 
     for nr = 1, #lines
       line = lines[nr]
-      line_height = line.extents.height
+      line_height = line.extents.height + (layout.spacing / SCALE)
 
       off_line = start_offset > line.line_end or end_offset < line.line_start
       if off_line or end_offset == line.line_start and (start_offset != end_offset)
