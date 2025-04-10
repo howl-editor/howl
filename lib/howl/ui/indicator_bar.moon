@@ -30,8 +30,7 @@ class IndicatorBar
     indicator
 
   remove: (id) =>
-    indicator = @indics[id]
-    indicator\destroy! if indicator
+    @indics[id] = nil
 
   to_gobject: => @box
 

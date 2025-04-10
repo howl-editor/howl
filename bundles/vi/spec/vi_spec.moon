@@ -368,10 +368,14 @@ Next LinƏ
 
   describe 'unloading', ->
     before_each ->
-      dispatch.launch -> bundle.unload 'vi'
+      status, err = dispatch.launch -> bundle.unload 'vi'
+      if not status
+        print err
 
     after_each ->
-      dispatch.launch -> bundle.load_by_name 'vi'
+      status, err = dispatch.launch -> bundle.load_by_name 'vi'
+      if not status
+        print err
 
     it 'pops any active keymaps, leaving only the default one', ->
       assert.equals 1, #bindings.keymaps
