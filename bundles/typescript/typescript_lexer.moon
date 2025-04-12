@@ -20,8 +20,8 @@ howl.util.lpeg_lexer ->
   }
 
   operator = c 'operator', any {
-    P'?.',
     P'??',
+    P'?.',
     S'+-*/%=<>&^|!(){}[].,?:;'
   }
 
@@ -51,7 +51,7 @@ howl.util.lpeg_lexer ->
   string = c 'string', str
 
   type = c 'type', upper^1 * (alpha + digit + '_')^0
-  parameter = c 'parameter', sequence { ident, ws^0, P':' }
+  parameter = c 'parameter', any(str, ident) * P':'
 
   regex = sequence {
     c('regex', sequence {
@@ -92,7 +92,6 @@ howl.util.lpeg_lexer ->
     all: any {
       comment,
       V'template',
-      string,
       regex,
       classdef,
       interfacedef,
@@ -104,6 +103,7 @@ howl.util.lpeg_lexer ->
       operator,
       number,
       parameter,
+      string,
       type,
       identifier,
     }
