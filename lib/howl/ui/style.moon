@@ -32,6 +32,7 @@ define 'symbol', 'key'
 define 'global', 'member'
 define 'regex', 'string'
 define 'type_def', 'type'
+define 'parameter', 'key' -- Added alias for parameter
 
 return setmetatable {
   :set_for_theme
