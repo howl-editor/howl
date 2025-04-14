@@ -20,7 +20,7 @@ describe 'View', ->
 
     before_each ->
       line_height = view.display_lines[1].height
-      nr_lines_in_screen = math.floor view.height / line_height
+      nr_lines_in_screen = math.floor view.height / (line_height + 1)
       buffer.text = string.rep '123456789\n', nr_lines_in_screen * 3
       view.first_visible_line = 1
 

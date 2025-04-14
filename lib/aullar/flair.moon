@@ -61,7 +61,7 @@ draw_ops = {
   rectangle: (flair, x, y, width, height, cr) ->
     if flair.background
       set_source_from_color cr, 'background', flair
-      cr\rectangle x, y, width, height
+      cr\rectangle x, y - 0.5, width, height + 1
       cr\fill!
 
     if flair.foreground
@@ -123,8 +123,8 @@ draw_ops = {
     wave_height = flair.wave_height or 2
     line_run = (flair.wave_width or 8) / 2
 
-    runs = math.floor (width / line_run)
-    cr\move_to x, y + height - 0.5
+    runs = floor (width / line_run)
+    cr\move_to x, y + height - (wave_height / 2)
 
     set_source_from_color cr, 'foreground', flair
     set_line_type_from_flair cr, flair
@@ -142,9 +142,10 @@ draw_ops = {
 
   pipe: (flair, x, y, width, height, cr) ->
     if flair.foreground
+      line_width = flair._line_width
       set_source_from_color cr, 'foreground', flair
       set_line_type_from_flair cr, flair
-      cr\move_to x + 0.5, y
+      cr\move_to x + (line_width / 2), y
       cr\rel_line_to 0, height
       cr\stroke!
 
