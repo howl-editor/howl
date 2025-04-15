@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ page_title }}</title>
+    {# This is a Jinja comment #}
+</head>
+<body>
+    <h1>{{ heading }}</h1>
+    <p>Hello, {{ name }}!</p>
+
+    {% if items %}
+    <ul>
+        {% for item in items %}
+        <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No items to display.</p>
+    {% endif %}
+
+    <p>Raw block:</p>
+    {% raw %}
+        This will not be processed by Jinja: {{ variable }}
+    {% endraw %}
+</body>
+</html>
