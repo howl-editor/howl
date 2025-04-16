@@ -585,7 +585,7 @@ View = {
 
     -- clear damaged region, note that fill seemingly does not include the border
     cr.operator = cairo.OPERATOR_CLEAR
-    cr\rectangle 0, clip.y1 - 0.5, @width + 1, draw_height + 1
+    cr\rectangle 0, clip.y1 - 1, @width + 1, draw_height + 2
     cr\fill!
 
     cr.operator = cairo.OPERATOR_OVER
