@@ -329,6 +329,7 @@ DisplayLine = define_class {
 
       bg_flair = flair.build {
         type: flair.RECTANGLE,
+        full_height: true,
         background: bg_range.style.background
         background_alpha: bg_range.style.alpha
         :width

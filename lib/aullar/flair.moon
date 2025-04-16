@@ -61,14 +61,17 @@ draw_ops = {
   rectangle: (flair, x, y, width, height, cr) ->
     if flair.background
       set_source_from_color cr, 'background', flair
-      cr\rectangle x, y - 0.5, width, height + 1
+      if flair.full_height
+        y -= 0.5
+        height += 1
+
+      cr\rectangle x, y, width, height
       cr\fill!
 
     if flair.foreground
       set_source_from_color cr, 'foreground', flair
       set_line_type_from_flair cr, flair
-      line_width = flair._line_width
-      cr\rectangle x, y + (line_width / 2), width, height - line_width
+      cr\rectangle x, y, width, height
       cr\stroke!
 
   rounded_rectangle: (flair, x, y, width, height, cr) ->
@@ -102,20 +105,22 @@ draw_ops = {
   sandwich: (flair, x, y, width, height, cr) ->
     set_source_from_color cr, 'foreground', flair
     set_line_type_from_flair cr, flair
+    y_offset = flair._line_width / 2
 
-    cr\move_to x, y + 0.5
+    cr\move_to x, y + y_offset
     cr\rel_line_to width, 0
     cr\stroke!
 
-    cr\move_to x, y + height - 0.5
+    cr\move_to x, y + height - y_offset
     cr\rel_line_to width, 0
     cr\stroke!
 
   underline: (flair, x, y, width, height, cr) ->
     set_source_from_color cr, 'foreground', flair
     set_line_type_from_flair cr, flair
+    y_offset = flair._line_width / 2
 
-    cr\move_to x, y + height - 0.5
+    cr\move_to x, y + height - y_offset
     cr\rel_line_to width, 0
     cr\stroke!
 
@@ -152,11 +157,11 @@ draw_ops = {
   strike_through: (flair, x, y, width, height, cr) ->
     set_source_from_color cr, 'foreground', flair
     set_line_type_from_flair cr, flair
+    y_offset = flair._line_width / 2
 
-    cr\move_to x, y + (height / 2)
+    cr\move_to x, y + (height / 2) - y_offset
     cr\rel_line_to width, 0
     cr\stroke!
-
 }
 
 build = (params) ->
