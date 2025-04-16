@@ -555,6 +555,9 @@ class Editor extends PropertyObject
 
   show_popup: (popup, options = {}) =>
     error "Missing `popup` arg" unless popup
+    if @completion_popup.showing
+      return
+
     @remove_popup!
     if options.position != 'center'
       coords = @_get_popup_coordinates options.position
