@@ -1,8 +1,8 @@
 -- Copyright 2012-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import dispatch, interact from howl
-import style, markup from howl.ui
+{:dispatch, :interact} = howl
+{:style, :markup} = howl.ui
 
 append = table.insert
 

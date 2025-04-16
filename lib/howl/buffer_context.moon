@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import Chunk from howl
-import PropertyObject from howl.util.moon
-import style from howl.ui
+{:Chunk} = howl
+{:PropertyObject} = howl.util.moon
+{:style} = howl.ui
 
 class Context extends PropertyObject
   new: (@buffer, @pos) =>

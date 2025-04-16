@@ -1,10 +1,10 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, mode from howl
-import ActionBuffer, highlight from howl.ui
-import terminal from howl.ui.markup
-import File from howl.io
+{:app, :mode} = howl
+{:ActionBuffer, :highlight} = howl.ui
+{:terminal} = howl.ui.markup
+{:File} = howl.io
 
 command_activity = (process) ->
   {

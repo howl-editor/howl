@@ -8,10 +8,10 @@ flair = require 'aullar.flair'
 RGBA = Gdk.RGBA
 {string: ffi_string, :cast} = require('ffi')
 
-import config, signal from howl
-import style, colors from howl.ui
+{:config, :signal} = howl
+{:style, :colors} = howl.ui
 {:File} = howl.io
-import PropertyTable from howl.util
+{:PropertyTable} = howl.util
 aullar_config = require 'aullar.config'
 
 local loading_css

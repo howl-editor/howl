@@ -2,8 +2,8 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 aullar = require 'aullar'
-import View from aullar
-import Popup, style from howl.ui
+{:View} = aullar
+{:Popup, :style} = howl.ui
 {:ceil} = math
 
 keymap = {

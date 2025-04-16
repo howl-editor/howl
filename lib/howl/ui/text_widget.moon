@@ -2,10 +2,10 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 aullar = require 'aullar'
-import config from howl
-import View from aullar
-import PropertyObject from howl.util.moon
-import Cursor, Selection, ActionBuffer from howl.ui
+{:config} = howl
+{:View} = aullar
+{:PropertyObject} = howl.util.moon
+{:Cursor, :Selection, :ActionBuffer} = howl.ui
 {:max} = math
 
 class TextWidget extends PropertyObject

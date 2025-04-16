@@ -5,7 +5,7 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.glib'
 core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
-import g_string, catch_error from glib
+{:g_string, :catch_error} = glib
 
 C, ffi_string, ffi_gc = ffi.C, ffi.string, ffi.gc
 {:parse_flags} = core

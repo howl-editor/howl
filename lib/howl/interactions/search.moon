@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, interact from howl
+{:app, :interact} = howl
 
 class SearchInteraction
   new: (@operation, @type, opts={}) =>

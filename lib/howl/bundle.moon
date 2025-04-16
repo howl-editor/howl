@@ -1,12 +1,12 @@
 -- Copyright 2012-2017 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import signal from howl
-import File from howl.io
-import SandboxedLoader from howl.util
+{:signal} = howl
+{:File} = howl.io
+{:SandboxedLoader} = howl.util
 
 _G = _G
-import error, log, type, callable, table, pairs, tostring, typeof, pcall from _G
+{:error, :log, :type, :callable, :table, :pairs, :tostring, :typeof, :pcall} = _G
 
 _G.bundles = {}
 

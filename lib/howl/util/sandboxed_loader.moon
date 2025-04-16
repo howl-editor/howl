@@ -1,8 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import File from howl.io
-import Sandbox from howl.util
+{:File} = howl.io
+{:Sandbox} = howl.util
 
 find_file = (dir, base) ->
   for ext in *{'bc', 'lua', 'moon'}

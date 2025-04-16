@@ -3,9 +3,9 @@
 
 Gtk = require 'ljglibs.gtk'
 require 'howl.ui.icons.font_awesome'
-import bindings, config, dispatch, timer from howl
-import PropertyObject from howl.util.moon
-import NotificationWidget, BufferPopup, TextWidget, IndicatorBar, ContentBox, HelpContext, style from howl.ui
+{:bindings, :config, :dispatch, :timer} = howl
+{:PropertyObject} = howl.util.moon
+{:NotificationWidget, :BufferPopup, :TextWidget, :IndicatorBar, :ContentBox, :HelpContext, :style} = howl.ui
 
 append = table.insert
 
@@ -190,7 +190,7 @@ class CommandLine extends PropertyObject
         @command_widget\delete_back!
 
       ["editor-paste"]: =>
-        import clipboard from howl
+        {:clipboard} = howl
         if clipboard.current
           @write clipboard.current.text
 

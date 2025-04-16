@@ -1,12 +1,12 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import mode from howl
+{:mode} = howl
 lpeg = _G.lpeg
-import P, B, S, Cp, Cc, Ct, Cmt, Cg, Cb from lpeg
-import pairs, setfenv, setmetatable, type, tostring from _G
+{:P, :B, :S, :Cp, :Cc, :Ct, :Cmt, :Cg, :Cb} = lpeg
+{:pairs, :setfenv, :setmetatable, :type, :tostring} = _G
 l = lpeg.locale!
-import alpha from l
+{:alpha} = l
 unpack, append, tinsert = table.unpack, table.insert, table.insert
 
 eol_p = P'\n' + P'\r\n' + P'\r'

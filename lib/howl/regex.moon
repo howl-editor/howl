@@ -2,9 +2,9 @@ ffi = require 'ffi'
 bit = require 'bit'
 GRegex = require 'ljglibs.glib.regex'
 
-import type, tonumber from _G
-import const_char_p from howl.cdefs
-import C from ffi
+{:type, :tonumber} = _G
+{:const_char_p} = howl.cdefs
+{:C} = ffi
 
 {:unpack} = table
 

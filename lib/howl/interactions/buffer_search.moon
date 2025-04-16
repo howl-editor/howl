@@ -1,4 +1,4 @@
-import interact from howl
+{:interact} = howl
 
 -- construct a search function suitable for SearchView from a general find(text, query, start) function
 -- when called the search function returns an iterator of chunks

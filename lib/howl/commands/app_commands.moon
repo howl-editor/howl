@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, activities, breadcrumbs, Buffer, command, config, bindings, bundle, interact, signal, mode, Project from howl
-import ActionBuffer, JournalBuffer, ProcessBuffer, BufferPopup, StyledText from howl.ui
-import Process from howl.io
+{:app, :activities, :breadcrumbs, :Buffer, :command, :config, :bindings, :bundle, :interact, :signal, :mode, :Project} = howl
+{:ActionBuffer, :JournalBuffer, :ProcessBuffer, :BufferPopup, :StyledText} = howl.ui
+{:Process} = howl.io
 
 serpent = require 'serpent'
 

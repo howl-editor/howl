@@ -5,7 +5,7 @@ GFile = require 'ljglibs.gio.file'
 GFileInfo = require 'ljglibs.gio.file_info'
 glib = require 'ljglibs.glib'
 {:park, :resume, :resume_with_error, :wait} = howl.dispatch
-import PropertyObject from howl.util.moon
+{:PropertyObject} = howl.util.moon
 append = table.insert
 
 file_types = {

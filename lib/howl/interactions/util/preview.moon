@@ -1,7 +1,7 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, Buffer, mode from howl
+{:app, :Buffer, :mode} = howl
 
 new_buffer = (title, text, buffer_mode = {}) ->
   buffer = Buffer buffer_mode

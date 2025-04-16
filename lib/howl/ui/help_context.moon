@@ -1,8 +1,8 @@
 -- Copyright 2019 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import bindings from howl
-import ActionBuffer, markup, style from howl.ui
+{:bindings} = howl
+{:ActionBuffer, :markup, :style} = howl.ui
 
 append = table.insert
 

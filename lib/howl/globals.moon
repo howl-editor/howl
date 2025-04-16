@@ -1,4 +1,4 @@
-import type from _G
+{:type} = _G
 
 export *
 

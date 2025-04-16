@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import config, mode from howl
-import formatting from howl.editing
-import style from howl.ui
+{:config, :mode} = howl
+{:formatting} = howl.editing
+{:style} = howl.ui
 append = table.insert
 {:huge, :max, :min} = math
 

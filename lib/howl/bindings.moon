@@ -2,9 +2,9 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 _G = _G
-import table, coroutine, pairs from _G
-import pcall, callable, setmetatable, typeof, tostring from _G
-import signal, command, sys from howl
+{:table, :coroutine, :pairs} = _G
+{:pcall, :callable, :setmetatable, :typeof, :tostring} = _G
+{:signal, :command, :sys} = howl
 append = table.insert
 
 signal.register 'key-press',

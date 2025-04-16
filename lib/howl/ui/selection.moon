@@ -3,9 +3,9 @@
 
 ffi = require 'ffi'
 
-import signal, clipboard from howl
-import PropertyObject from howl.util.moon
-import C from ffi
+{:signal, :clipboard} = howl
+{:PropertyObject} = howl.util.moon
+{:C} = ffi
 {:max, :min} = math
 
 class Selection extends PropertyObject

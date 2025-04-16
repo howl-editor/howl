@@ -1,10 +1,10 @@
 -- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, breadcrumbs, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
-import File, Process from howl.io
-import PropertyObject from howl.util.moon
+{:Window, :Editor, :theme} = howl.ui
+{:Buffer, :Settings, :mode, :breadcrumbs, :bundle, :bindings, :keymap, :signal, :interact, :timer, :clipboard, :config} = howl
+{:File, :Process} = howl.io
+{:PropertyObject} = howl.util.moon
 Gtk = require 'ljglibs.gtk'
 callbacks = require 'ljglibs.callbacks'
 {:get_monotonic_time} = require 'ljglibs.glib'

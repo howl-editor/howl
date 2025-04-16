@@ -8,7 +8,7 @@ gio = require 'ljglibs.gio'
 callbacks = require 'ljglibs.callbacks'
 jit = require 'jit'
 
-import catch_error, get_error from glib
+{:catch_error, :get_error} = glib
 
 C = ffi.C
 ffi_new, ffi_cast = ffi.new, ffi.cast

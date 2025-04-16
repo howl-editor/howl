@@ -10,7 +10,7 @@ require 'ljglibs.gio.file_output_stream'
 core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
 callbacks = require 'ljglibs.callbacks'
-import gc_ptr from require 'ljglibs.gobject'
+{:gc_ptr} = require 'ljglibs.gobject'
 {:g_string, :catch_error, :get_error} = glib
 {:async_ready_callback} = gio
 

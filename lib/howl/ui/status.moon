@@ -2,7 +2,7 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
-import signal from howl
+{:signal} = howl
 
 class Status
   new: =>

@@ -8,8 +8,8 @@ glib = require 'ljglibs.glib'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 require 'ljglibs.gio.application_command_line'
-import gc_ptr, signal, object from gobject
-import catch_error from glib
+{:gc_ptr, :signal, :object} = gobject
+{:catch_error} = glib
 
 C = ffi.C
 ffi_string, ffi_cast = ffi.string, ffi.cast

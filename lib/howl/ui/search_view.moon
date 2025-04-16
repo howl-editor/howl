@@ -1,7 +1,7 @@
 -- Copyright 2019 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import ListWidget, List from howl.ui
+{:ListWidget, :List} = howl.ui
 
 append = table.insert
 

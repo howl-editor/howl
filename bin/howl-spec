@@ -16,16 +16,8 @@ if [ -z "$HOWL" ]; then
   exit 1
 fi
 
-if [ -z "$HOWL_SPEC_SINGLY" ]; then
-  exec $HOWL --spec --pattern=_spec.moon $*
-else
-  for spec in `find $* -name '*_spec.moon'`
-  do
-    echo $spec
-    $HOWL --spec --pattern=_spec.moon $spec
-    exit_code=$?;
-    if [ "$exit_code" != "0" ]; then exit $exit_code; fi
-  done
-  exit 0
-fi
+for f in $*; do
+  echo $f
+  $HOWL --spec --pattern=_spec.moon $f
+done
 

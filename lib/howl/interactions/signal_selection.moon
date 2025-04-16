@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import interact, signal from howl
+{:interact, :signal} = howl
 
 get_signals_list = ->
   signals = {}

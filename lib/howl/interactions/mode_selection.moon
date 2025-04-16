@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import interact, mode from howl
+{:interact, :mode} = howl
 
 interact.register
   name: 'select_mode'

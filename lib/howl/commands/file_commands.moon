@@ -1,8 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, command, mode, interact, Buffer, Project from howl
-import File from howl.io
+{:app, :command, :mode, :interact, :Buffer, :Project} = howl
+{:File} = howl.io
 
 with_vc = (f) ->
   buffer = app.editor.buffer

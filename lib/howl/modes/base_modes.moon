@@ -1,4 +1,4 @@
-import mode from howl
+{:mode} = howl
 
 curly_mode = {
   indentation: {

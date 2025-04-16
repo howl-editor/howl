@@ -1,6 +1,7 @@
 -- Copyright 2012-2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
-import Settings from howl
+
+{:Settings} = howl
 append = table.insert
 
 -- Holds configuration values in a nested table structure.
