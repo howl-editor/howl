@@ -1,125 +1,142 @@
--- Copyright 2016 The Howl Developers
+-- Copyright 2016-2025 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
-
 
 howl.util.lpeg_lexer ->
   c = capture
-  -- shorthand for lexer.word
   ident = (alpha + '_')^1 * (alpha + digit + '_')^0
-
 
   -- Comments.
   line_comment = P'//' * scan_until eol
-  block_comment = span '/*', '*/'
+  block_comment = span '/*', '*/' -- Note: Doesn't handle nested block comments correctly yet
   comment = c 'comment', any {line_comment, block_comment}
 
-
   hex_digit = R'09' + R'af' + R'AF' + '_'
+  binary_digit = S'01' + '_'
+  octal_digit = R'07' + '_'
+  decimal_digit = digit + '_'
 
+  -- Strings & Chars.
+  escape_seq = '\\' * (S'ntr"\\\'0' + P'x' * hex_digit * hex_digit + P'u{' * hex_digit^1 * P'}') -- Corrected escaping and P usage
+  dq_str_content = (escape_seq + P(1) - '"' - '\\')^0
+  dq_str = '"' * dq_str_content * '"'
 
-  -- Strings.
-  dq_str = span  '"', '"', '\\'
   raw_str_start = P'r'^0 * Cg(P'#'^0, 'lvl') * '"'
   raw_str_end = '"' * match_back 'lvl'
   raw_str = raw_str_start * scan_to raw_str_end
-  -- Character.
-  cont = R'\128\191'
-  utf8 = R'\0\127' + R'\194\223' * cont + R'\224\239' * cont * cont + R'\240\244' * cont * cont * cont
-  ascii_esc = '\\' * S'trn\'"\\0'
-  unicode_esc = ('\\u{' * hex_digit^1 * '}')
-  char = P"'" * (unicode_esc + ascii_esc + utf8) * P"'"
-  string  = c 'string', any {dq_str, raw_str, char}
 
+  char_content = escape_seq + (P(1) - '\'' - '\\')
+  char = P"'" * char_content * P"'"
+
+  byte_dq_str_content = (escape_seq + P(1) - '"' - '\\')^0
+  byte_dq_str = P'b"' * byte_dq_str_content * '"'
+
+  byte_raw_str_start = P'br'^0 * Cg(P'#'^0, 'lvl') * '"'
+  byte_raw_str_end = '"' * match_back 'lvl'
+  byte_raw_str = byte_raw_str_start * scan_to byte_raw_str_end
+
+  byte_char_content = escape_seq + (P(1) - '\'' - '\\')
+  byte_char = P"b'" * byte_char_content * P"'"
+
+  string = c 'string', any {byte_raw_str, raw_str, byte_dq_str, dq_str, byte_char, char}
 
   -- Numbers.
-  binary = P'0b' * S'01_'^1
-  oct = P'0o' * S'01234567_'^1
-  hex = P'0x' * hex_digit^1
-  decimal = (digit + '_')^1
-  floats = float * (S'eE' * S'+-'^-1 * decimal)^-1
-  number = c 'number', any {
-    binary,
-    hex,
-    oct,
-    decimal,
-    floats
-  }
+  integer_suffix = (S'iu' * S'8' + S'16' + S'32' + S'64' + S'128' + P'size')^-1
+  float_suffix = (P'f32' + P'f64')^-1
 
+  binary = P'0b' * binary_digit^1 * integer_suffix
+  octal = P'0o' * octal_digit^1 * integer_suffix
+  hex = P'0x' * hex_digit^1 * integer_suffix
+  decimal = decimal_digit^1 * integer_suffix
+
+  float_exp = S'eE' * S'+-'^-1 * decimal_digit^1
+  float_lit = (decimal_digit^1 * '.' * decimal_digit^0 + '.' * decimal_digit^1 + decimal_digit^1) * float_exp^-1
+  floats = float_lit * float_suffix
+
+  number = c 'number', any {
+    hex,
+    binary,
+    octal,
+    floats,
+    decimal, -- Decimal integer must be last to avoid matching prefixes of floats
+  }
 
   -- Keywords.
   keyword = c 'keyword', word {
-    'abstract',   'alignof',    'as',       'become',   'box',
-    'break',      'const',      'continue', 'crate',    'do',
-    'else',       'enum',       'extern',   'final',    'fn',
-    'for',        'if',         'impl',     'in',       'let',
-    'loop',       'macro',      'match',    'mod',      'move',
-    'mut',        'offsetof',   'override', 'priv',     'proc',
-    'pub',        'pure',       'ref',      'return',   'sizeof',
-    'static',     'struct',     'trait',    'typeof',   'type',
-    'unsafe',     'unsized',    'use',      'virtual',  'where',
-    'while',      'yield'
+    'as', 'async', 'await', 'box', 'break', 'const', 'continue', 'crate',
+    'dyn', 'else', 'enum', 'extern', 'fn', 'for', 'if', 'impl',
+    'in', 'let', 'loop', 'match', 'mod', 'move', 'mut', 'pub', 'ref',
+    'return', 'static', 'struct', 'super', 'trait', 'type', 'union', 'unsafe',
+    'use', 'where', 'while'
+    -- 'abstract', 'alignof', 'become', 'do', 'final', 'macro',
+    -- 'offsetof', 'override', 'priv', 'proc', 'pure', 'sizeof',
+    -- 'typeof', 'unsized', 'virtual', 'yield' -- Removed older/unused keywords
   }
   -- Special words
-  special = c 'special', word { 'true', 'false', 'self', 'super' }
+  special = c 'special', word { 'true', 'false', 'self' }
 
-
-  -- Class/module declarations & type aliases
-  struct_def = sequence {
-    c 'keyword', word { 'mod', 'struct', 'enum', 'trait', 'type' }
+  -- Type/Trait/Module/Function declarations
+  def_item = sequence {
+    c 'keyword', word { 'mod', 'struct', 'enum', 'trait', 'type', 'union' }
     c 'whitespace', space^1
     c 'type_def', ident
   }
-  -- Function declarations
+
   fdecl = sequence {
     c 'keyword', 'fn'
     c 'whitespace', space^1
     c 'fdecl', ident
   }
 
-
-   -- Primitive Types.
+  -- Primitive Types.
   primitive = word {
     'bool', 'isize', 'usize', 'char', 'str',
-    'u8', 'u16', 'u32', 'u64', 'i8', 'i16', 'i32', 'i64',
+    'u8', 'u16', 'u32', 'u64', 'u128',
+    'i8', 'i16', 'i32', 'i64', 'i128',
     'f32','f64',
   }
+
   -- Library Types.
-  library = upper^1 * (lower + digit)^1
+  library = upper^1 * (alpha + digit + '_')^0
+
   -- Lifetimes.
-  lifetime = "'" * ident
+  lifetime = "'" * (ident + P'static') -- Allow 'static
   type = c 'type', any {lifetime, primitive}
   type_library = c 'constant', library
 
   -- Identifiers.
   identifier = c 'identifier', ident
 
-
   -- Operators.
-  operator = c 'operator', S'+-/*%<>!=`^~@&|?#~:;,.()[]{}'
-
+  -- Order matters: longest matches first
+  operator = c 'operator', any {
+    '::', '->', '=>', '..', '..=',
+    '==', '!=', '>=', '<=',
+    '&&', '||',
+    '<<', '>>',
+    '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>=',
+    S'+-/*%<>!=^&|?:;,.()[]{}@#~$'
+  }
 
   -- Attributes.
   attribute = c 'preproc', (span (P'#![' + P'#['), P']')
 
-
-  -- Syntax extensions.
+  -- Syntax extensions (macros).
   extension = c 'special', any {ident * S'!'}
-
 
   P {
     'all'
 
     all: any {
-      struct_def,
+      comment,
+      attribute,
+      def_item,
       fdecl,
       special,
       keyword,
       extension,
-      comment,
       string,
       type_library,
       type,
-      attribute,
       number,
       operator,
       identifier,

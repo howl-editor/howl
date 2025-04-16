@@ -271,6 +271,7 @@ display_inspections = ->
   return unless editor.has_focus
 
   pos = editor.view.cursor.pos
+  print editor.current_context.word
 
   -- if we've already displayed the message at this position, punt
   return if pos == last_display_position

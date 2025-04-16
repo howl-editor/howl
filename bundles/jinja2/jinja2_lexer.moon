@@ -52,7 +52,6 @@
 
     jinja_statement_rule = sequence {
       c('operator', P'{%'),
-      -- Lex content up to '%}' using jinja_internal rules
       sub_lex_by_inline('embedded', scan_until('%}'), jinja_internal),
       c('operator', P'%}')
     }

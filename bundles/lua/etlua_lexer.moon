@@ -10,7 +10,6 @@ print = print
 
     lua = P {
       any(V'expansion', V'string')
-      -- any(V'expansion')
 
       expansion: sequence {
         capture('operator', expansion_start),
@@ -33,5 +32,4 @@ print = print
       }
     }
 
-    -- print "base: #{}"
     compose base, lua

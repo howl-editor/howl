@@ -1,8 +1,11 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2025 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {
   lexer: bundle_load('python_lexer')
+
+  default_config:
+    inspectors_on_idle: { 'python-ruff' }
 
   comment_syntax: '#'
   word_pattern: r'\\b[\\pL_][\\pL\\pN_]+\\b'
