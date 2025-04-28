@@ -6,8 +6,8 @@ glib = require 'ljglibs.glib'
 
 append = table.insert
 
-line_p = r'(\\d+):(?:(\\d+):)?\\s*(.+)'
-line_p_no_strip = r'(\\d+):(?:(\\d+):)?(.+)'
+line_p = r'(?:^|\\W)(\\d+):(?:(\\d+):)?\\s*(.+)'
+line_p_no_strip = r'(?:^|\\W)(\\d+):(?:(\\d+):)?(.+)'
 
 parse = (output, opts = {}) ->
   locations = {}
