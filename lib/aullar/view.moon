@@ -507,8 +507,15 @@ View = {
   text_dimensions: (text) =>
     p_ctx = @d_area.pango_context
     layout = Pango.Layout p_ctx
+    font_desc = Pango.FontDescription {
+      family: @config.view_font_name,
+      size: @config.view_font_size * Pango.SCALE
+    }
+    layout.font_description = font_desc
     layout.text = text
-    width, height = layout\get_pixel_size!
+    _, logical = layout\get_extents!
+    width, height = logical.width / Pango.SCALE, logical.height / Pango.SCALE
+
     :width, height: height + (@config.view_line_padding * 2)
 
   block_dimensions: (start_line, end_line) =>

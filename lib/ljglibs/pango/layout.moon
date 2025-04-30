@@ -132,10 +132,27 @@ core.define 'PangoLayout', {
   set_text: (text, length = -1) =>
     C.pango_layout_set_text @, text, length
 
+  get_size: =>
+    arr = ffi_new 'int[2]'
+    C.pango_layout_get_size @, arr, arr + 1
+    tonumber(arr[0]), tonumber(arr[1])
+
   get_pixel_size: =>
     arr = ffi_new 'int[2]'
     C.pango_layout_get_pixel_size @, arr, arr + 1
     tonumber(arr[0]), tonumber(arr[1])
+
+  get_extents: =>
+    ink = PangoRectangle!
+    logical = PangoRectangle!
+    C.pango_layout_get_extents @, ink, logical
+    ink, logical
+
+  get_pixel_extents: =>
+    ink = PangoRectangle!
+    logical = PangoRectangle!
+    C.pango_layout_get_pixel_extents @, ink, logical
+    ink, logical
 
   index_to_pos: (index) =>
     rect = PangoRectangle!

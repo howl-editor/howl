@@ -53,7 +53,7 @@ define_class {
     num_chars = #lines_text
     changed = @number_chars != num_chars
     return true if not opts.force and not changed
-    @_text_width = @view\text_dimensions(lines_text).width + 2
+    @_text_width = math.ceil(@view\text_dimensions(lines_text).width) + 2
     @area.content_width = @_text_width
     @number_chars = num_chars
     not changed
@@ -97,5 +97,5 @@ define_class {
 
       cr\move_to 0, y + (line_height - text_height) / 2
       pango_cairo.show_layout cr, layout
-      y += total_height
+      y += total_height + 1
 }

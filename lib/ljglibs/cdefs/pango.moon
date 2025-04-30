@@ -315,6 +315,7 @@ ffi.cdef [[
   void pango_layout_set_text (PangoLayout *layout, const char *text, int length);
   const char *pango_layout_get_text (PangoLayout *layout);
   void pango_layout_get_pixel_size (PangoLayout *layout, int *width, int *height);
+  void pango_layout_get_size (PangoLayout *layout, int *width, int *height);
   void pango_layout_set_alignment (PangoLayout *layout, PangoAlignment alignment);
   PangoAlignment pango_layout_get_alignment (PangoLayout *layout);
   void pango_layout_set_width (PangoLayout *layout, int width);
@@ -335,6 +336,12 @@ ffi.cdef [[
   int pango_layout_get_line_count (PangoLayout *layout);
   void pango_layout_set_indent (PangoLayout *layout, int indent);
   int pango_layout_get_indent (PangoLayout *layout);
+  void pango_layout_get_extents (PangoLayout* layout,
+                                 PangoRectangle* ink_rect,
+                                 PangoRectangle* logical_rect);
+  void pango_layout_get_pixel_extents (PangoLayout* layout,
+                                       PangoRectangle* ink_rect,
+                                       PangoRectangle* logical_rect);
 
   gboolean pango_layout_xy_to_index (PangoLayout *layout,
                                      int x,
