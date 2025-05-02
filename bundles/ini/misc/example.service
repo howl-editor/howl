@@ -1,0 +1,8 @@
+# This is a comment
+; this is an invalid key
+
+[Section] invalid chars here
+key.invalid=true
+locales[are invalid for systemd]=123
+ExecStart=env vars: ${var1} $var2 escaped: %% special: %i invalid: %Z as is: %
+ExecStart=

@@ -1,0 +1,9 @@
+# This is a comment
+; this is an invalid key
+
+[Section] invalid chars here
+key.invalid = true
+key[locale] = string \
+  multline should not work here
+a = 2
+X-Another-Key = 1.2

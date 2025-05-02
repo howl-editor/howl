@@ -80,13 +80,6 @@ common_auto_pairs = {
     auto_pairs: common_auto_pairs
     parent: 'curly_mode'
 
-  desktop:
-    extensions: 'desktop'
-    comment_syntax: '#'
-    auto_pairs: {
-      '[': ']'
-    }
-
   diff:
     extensions: { 'diff', 'patch' }
     aliases: 'patch'
@@ -169,14 +162,6 @@ common_auto_pairs = {
     extensions: 'hs'
     comment_syntax: '--'
     auto_pairs: common_auto_pairs
-
-  ini:
-    extensions: { 'cfg', 'cnf', 'inf', 'ini', 'reg' }
-    comment_syntax: ';'
-    auto_pairs: {
-      '[': ']'
-      '"': '"'
-    }
 
   io:
     extensions: 'io'
