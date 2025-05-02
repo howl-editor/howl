@@ -35,7 +35,7 @@ local keyword = token(l.KEYWORD, word_match({
   'patch', 'cd', 'make', 'patch', 'mkdir', 'cp', 'sed', 'install', 'rm',
   'if', 'then', 'elif', 'else', 'fi', 'case', 'in', 'esac', 'while', 'for',
   'do', 'done', 'continue', 'local', 'return', 'git', 'svn', 'co', 'clone',
-  'gconf-merge-schema', 'msg', 'echo', 'ln',
+  'gconf-merge-schema', 'msg', 'echo', 'ln', 'chmod', 'find',
   -- Operators.
   '-a', '-b', '-c', '-d', '-e', '-f', '-g', '-h', '-k', '-p', '-r', '-s', '-t',
   '-u', '-w', '-x', '-O', '-G', '-L', '-S', '-N', '-nt', '-ot', '-ef', '-o',
@@ -43,13 +43,13 @@ local keyword = token(l.KEYWORD, word_match({
 }, '-'))
 
 -- Functions.
-local func = token(l.FUNCTION, word_match{'build'})
+local func = token(l.FUNCTION, word_match{'build', 'prepare', 'package', 'check'})
 
 local constant = token(l.CONSTANT, word_match{
   'pkgname', 'pkgver', 'pkgrel', 'pkgdesc', 'arch', 'url',
   'license', 'optdepends', 'depends', 'makedepends', 'provides',
   'conflicts', 'replaces', 'install', 'source', 'md5sums',
-  'pkgdir', 'srcdir'
+  'pkgdir', 'srcdir', 'sha256sums', 'options', 'groups'
 })
 
 -- Identifiers.
