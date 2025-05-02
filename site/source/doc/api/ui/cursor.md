@@ -240,5 +240,9 @@ selection, or extends the selection if already present.
 Moves the cursor one paragraph up. If `extend` is true, creates a new selection,
 or extends the selection if already present.
 
+### goto_matching_brace ()
+
+Moves the cursor to brace matching the current brace if any.
+
 [Editor]: editor.html
 [Selection]: selection.html
