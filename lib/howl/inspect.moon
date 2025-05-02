@@ -32,12 +32,16 @@ resolve_inspector = (name, inspector, buffer) ->
 
       return nil
 
-  return inspector unless inspector.cmd\find '<file>', 1, true
-  return nil if not buffer.file or buffer.modified
-  copy = {k,v for k, v in pairs inspector}
-  copy.cmd = copy.cmd\gsub '<file>', buffer.file.path
-  copy.write_stdin = false
-  copy
+  -- TODO <file> gets only replaced if cmd is a string. replace it in list of strings as well.
+  if type(inspector.cmd) == 'string'
+    return inspector unless inspector.cmd\find '<file>', 1, true
+    return nil if not buffer.file or buffer.modified
+    copy = {k,v for k, v in pairs inspector}
+    copy.cmd = copy.cmd\gsub '<file>', buffer.file.path
+    copy.write_stdin = false
+    return copy
+  else
+    inspector
 
 load_inspectors = (buffer, scope = 'idle') ->
   to_load = if scope == 'all'
@@ -163,12 +167,14 @@ parse_errors = (out, inspector) ->
 
 launch_inspector_process = (opts, buffer) ->
   write_stdin = true unless opts.write_stdin == false
+  read_stdout = true unless opts.read_stdout == false
+  read_stderr = true unless opts.read_stderr == false
 
   p = Process {
     cmd: opts.cmd,
-    read_stdout: true,
-    read_stderr: true,
-    write_stdin: write_stdin
+    read_stdout: read_stdout,
+    read_stderr: read_stderr,
+    write_stdin: write_stdin,
     env: opts.env,
     shell: opts.shell,
     working_directory: opts.working_directory
@@ -202,6 +208,7 @@ inspect = (buffer, opts = {}) ->
     buf = out
     buf ..= "\n#{err}" unless err.is_blank
     inspections = parse_errors buf, p.inspector
+
     merge(inspections, criticisms)
 
   criticisms
