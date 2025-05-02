@@ -1,0 +1,48 @@
+trigger:
+- master
+
+jobs:
+  - job: FlatpakBuild
+    container:
+      image: 'registry.gitlab.gnome.org/gnome/gnome-runtime-images/gnome:3.30'
+      options: --privileged
+
+    pool:
+      vmImage: 'Ubuntu-16.04'
+
+    steps:
+      - script: |
+          flatpak-builder --disable-rofiles-fuse --repo repo build src/io.howl.Editor.yaml
+          flatpak build-bundle repo howl.flatpak io.howl.Editor
+        displayName: Flatpak Build
+      - task: PublishPipelineArtifact@0
+        inputs:
+          artifactName: 'Flatpak bundle'
+          targetPath: 'howl.flatpak'
+
+  - job: FlatpakRepoDeploy
+    dependsOn: FlatpakBuild
+    condition: eq(variables['Build.Reason'], 'Schedule')
+    container:
+      image: 'quay.io/refi64/gcloud-flatpak'
+
+    pool:
+      vmImage: 'Ubuntu-16.04'
+
+    steps:
+      - task: DownloadPipelineArtifact@0
+        inputs:
+          artifactName: 'Flatpak bundle'
+          targetPath: $(System.DefaultWorkingDirectory)
+      - task: DownloadSecureFile@1
+        inputs:
+          secureFile: gc-account.json
+      - script: |
+          gcloud auth activate-service-account --key-file $DOWNLOADSECUREFILE_SECUREFILEPATH
+          gsutil -m cp -r gs://howl-dl/repo .
+          ostree init --repo=repo --mode=archive
+          flatpak build-import-bundle repo howl.flatpak
+          flatpak build-sign repo
+          flatpak build-update-repo --generate-static-deltas --prune --prune-depth=2 repo
+          gsutil -m cp -r repo gs://howl-dl/
+        displayName: 'Push to Google Cloud Storage'
