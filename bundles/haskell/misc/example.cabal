@@ -1,0 +1,101 @@
+name:            example
+version:         1.0.0.0
+license:         MIT license
+license-file:    LICENSE.md
+category:        Text, Web
+copyright:       (c) 2012-2020 Howl developers
+author:          John Author <author@example.com>
+maintainer:      John Author <author@example.com>
+stability:       experimental
+tested-with:     GHC == 8.4.4, GHC == 8.6.5, GHC == 8.8.3, GHC == 8.10.1
+synopsis:        Some synopsis
+cabal-version:   >= 1.10
+homepage:        https://github.com/author/example
+bug-reports:     https://github.com/author/example/issues
+build-type:      Simple
+description:
+    A text parsing and encoding library optimized for ease of use
+    and high performance.
+
+extra-source-files:
+    README.markdown
+    changelog.md
+
+-- Enable the 'fast' flag to speed up compilation
+flag fast
+  description: compile without optimizations
+  default: False
+  manual: True
+
+library
+  default-language: Haskell2010
+  hs-source-dirs: . another-source-dir/
+
+  exposed-modules:
+    Data.Example
+    Data.Example.Encoding
+    Data.Example.Parser
+    Data.Example.Text
+    Data.Example.Types
+
+  other-modules:
+    Data.Example.Encoding.Builder
+    Data.Example.Internal.Functions
+    Data.Example.Parser.Unescape
+    Data.Example.Parser.Time
+
+  build-depends:
+    base             >= 4.7.0.0 && < 5,
+    bytestring       >= 0.10.4.0 && < 0.11,
+    containers       == 0.5.5.1
+
+  if impl(ghc >= 8.0)
+    build-depends: bytestring >= 0.10.8.1
+
+  if !impl(ghc >= 8.6)
+    build-depends:
+      contravariant >=1.4.1 && <1.6
+
+  ghc-options: -Wall
+
+  if flag(fast)
+    ghc-options: -O0
+  else
+    ghc-options: -O2
+
+test-suite example-tests
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
+  hs-source-dirs: tests pure
+  main-is: Tests.hs
+  ghc-options: -Wall -threaded -rtsopts
+
+  other-modules:
+    Encoders
+    ErrorMessages
+    Instances
+    Options
+    Types
+    UnitTests
+    UnitTests.NullaryConstructors
+
+  build-depends:
+    QuickCheck >= 2.10.0.1 && < 2.15,
+    example,
+    integer-logarithms >= 1 && <1.1,
+    base,
+    base-compat,
+    base-orphans >= 0.5.3 && <0.9,
+    base16-bytestring,
+    containers,
+    data-fix,
+    directory,
+    dlist,
+    Diff >= 0.4 && < 0.5,
+    filepath,
+    generic-deriving >= 1.10 && < 1.14,
+    ghc-prim >= 0.2
+
+source-repository head
+  type:     git
+  location: git://github.com/author/example.git

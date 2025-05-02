@@ -165,11 +165,6 @@ common_auto_pairs = {
     auto_pairs: common_auto_pairs
     parent: 'curly_mode'
 
-  haskell:
-    extensions: 'hs'
-    comment_syntax: '--'
-    auto_pairs: common_auto_pairs
-
   ini:
     extensions: { 'cfg', 'cnf', 'inf', 'ini', 'reg' }
     comment_syntax: ';'
