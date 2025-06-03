@@ -89,8 +89,13 @@ asap = (f, ...) ->
 
 after_exactly = (seconds, f, ...) ->
   t_handle = type: 'sys'
+
+  handler = (...) ->
+    cancel t_handle
+    f ...
+
   interval = seconds * 1000
-  t_handle.cb = callbacks.register f, "timer-after-#{seconds}", ...
+  t_handle.cb = callbacks.register handler, "timer-after-#{seconds}", ...
   t_handle.tag = C.g_timeout_add_full C.G_PRIORITY_LOW,
     interval,
     timer_callback,
