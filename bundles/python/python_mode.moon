@@ -6,6 +6,7 @@
 
   default_config:
     inspectors_on_idle: { 'python-ruff' }
+    edge_column: 88
 
   comment_syntax: '#'
   word_pattern: r'\\b[\\pL_][\\pL\\pN_]+\\b'
@@ -31,5 +32,10 @@
   }
 
   structure: (editor) =>
-    [l for l in *editor.buffer.lines when l\match('^%s*class%s') or l\match('^%s*def%s')]
+    is_def = (l) ->
+      l\match('^%s*class%s') or
+      l\match('^%s*def%s') or
+      l\match('^%s*async def%s')
+
+    [l for l in *editor.buffer.lines when is_def(l)]
 }

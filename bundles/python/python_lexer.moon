@@ -8,38 +8,39 @@ howl.util.lpeg_lexer ->
     "and", "assert", "async", "as", "await",
     "break", "case", "class", "continue", "def", "del", "elif",
     "else", "except", "exec", "finally", "for", "from", "global", "if", "import",
-    "in", "is", "lambda", "match", "not", "or", "pass", "print", "raise", "return", "try",
-    "while", "with", "yield"
+    "in", "is", "lambda", "match", "nonlocal", "not", "or", "pass", "print",
+    "raise", "return", "try", "while", "with", "yield"
   }
 
   functions = c 'function', -B'.' * word {
     "abs", "all", "any", "apply", "basestring", "bin",
-    "bool", "buffer", "bytearray", "bytes", "callable", "chr", "classmethod", "cmp",
-    "coerce", "compile", "complex", "copyright", "credits", "delattr", "dict",
-    "dir", "divmod", "enumerate", "eval", "execfile", "exit", "file", "filter",
-    "float", "format", "frozenset", "getattr", "globals", "hasattr", "hash", "help",
-    "hex", "id", "input", "intern", "int", "isinstance", "issubclass", "iter",
-    "len", "license", "list", "locals", "long", "map", "max", "memoryview", "min",
-    "next", "object", "oct", "open", "ord", "pow", "property", "quit",
-    "range", "raw_input", "reduce", "reload", "repr", "reversed", "round", "setattr",
-    "set", "slice", "sorted", "staticmethod", "str", "sum", "super", "tuple",
-    "type", "unichr", "unicode", "vars", "xrange", "zip"
+    "bool", "buffer", "bytearray", "bytes", "callable", "chr", "classmethod",
+    "cmp", "coerce", "compile", "complex", "copyright", "credits", "delattr",
+    "dict", "dir", "divmod", "enumerate", "eval", "execfile", "exit", "file",
+    "filter", "float", "format", "frozenset", "getattr", "globals", "hasattr",
+    "hash", "help", "hex", "id", "input", "intern", "int", "isinstance",
+    "issubclass", "iter", "len", "license", "list", "locals", "long", "map",
+    "max", "memoryview", "min", "next", "object", "oct", "open", "ord", "pow",
+    "property", "quit", "range", "raw_input", "reduce", "reload", "repr",
+    "reversed", "round", "setattr", "set", "slice", "sorted", "staticmethod",
+    "str", "sum", "super", "tuple", "type", "unichr", "unicode", "vars",
+    "xrange", "zip"
     }
 
   constant = c 'constant', word {
     'ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException',
-    'BufferError', 'BytesWarning',
-    'DeprecationWarning', 'EOFError', 'Ellipsis', 'EnvironmentError', 'Exception',
-    'False', 'FloatingPointError', 'FutureWarning', 'GeneratorExit', 'IOError',
-    'ImportError', 'ImportWarning', 'IndentationError', 'IndexError', 'KeyError',
-    'KeyboardInterrupt', 'LookupError', 'MemoryError', 'NameError', 'None',
-    'NotImplementedError', 'NotImplemented', 'OSError', 'OverflowError',
-    'PendingDeprecationWarning', 'ReferenceError', 'RuntimeError',
-    'RuntimeWarning', 'StandardError', 'StopIteration', 'SyntaxError',
-    'SyntaxWarning', 'SystemError', 'SystemExit', 'TabError', 'True', 'TypeError',
-    'UnboundLocalError', 'UnicodeDecodeError', 'UnicodeEncodeError',
-    'UnicodeError', 'UnicodeTranslateError', 'UnicodeWarning', 'UserWarning',
-    'ValueError', 'Warning', 'ZeroDivisionError'
+    'BufferError', 'BytesWarning', 'DeprecationWarning', 'EOFError', 'Ellipsis',
+    'EnvironmentError', 'Exception', 'False', 'FloatingPointError',
+    'FutureWarning', 'GeneratorExit', 'IOError', 'ImportError', 'ImportWarning',
+    'IndentationError', 'IndexError', 'KeyError', 'KeyboardInterrupt',
+    'LookupError', 'MemoryError', 'NameError', 'None', 'NotImplementedError',
+    'NotImplemented', 'OSError', 'OverflowError', 'PendingDeprecationWarning',
+    'ReferenceError', 'RuntimeError', 'RuntimeWarning', 'StandardError',
+    'StopIteration', 'SyntaxError', 'SyntaxWarning', 'SystemError', '
+    SystemExit', 'TabError', 'True', 'TypeError', 'UnboundLocalError',
+    'UnicodeDecodeError', 'UnicodeEncodeError', 'UnicodeError',
+    'UnicodeTranslateError', 'UnicodeWarning', 'UserWarning', 'ValueError',
+    'Warning', 'ZeroDivisionError'
   }
 
   comment = c 'comment', P'#' * scan_until(eol)
