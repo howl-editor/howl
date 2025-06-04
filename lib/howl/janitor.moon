@@ -1,8 +1,10 @@
 -- Copyright 2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:config, :timer, :sys} = howl
+{:config, :timer, :sys, :dispatch} = howl
+gobject = require 'ljglibs.gobject'
 ffi = require 'ffi'
+callbacks = require 'ljglibs.callbacks'
 
 config.define
   name: 'cleanup_min_buffers_open'
@@ -67,6 +69,35 @@ release_memory = ->
   if sys.info.os == 'linux'
     ffi.C.malloc_trim(1024 * 128)
 
+print_usages = ->
+  g_allocs = gobject.get_allocations()
+  print("\nG allocations")
+  print("==========================================")
+  for i, alloc in ipairs(g_allocs)
+    print("#{alloc[1]}: #{alloc[2]}")
+
+  print!
+  print("\nCallbacks (#{callbacks.count!})")
+  print("==========================================")
+  for i, cb in ipairs(callbacks.summarize!)
+    print("#{cb[1]}: #{cb[2]}")
+
+  if dispatch.nr_parked! > 0
+    print!
+    print("\nParked dispatches (#{dispatch.nr_parked!})")
+    print("==========================================")
+    for i, cb in ipairs(dispatch.summarize!)
+      print("#{cb[1]}: #{cb[2]}")
+
+  print("------------------------------------------")
+  _keys = {k for k in pairs howl.io.Process.running}
+  print("#{#_keys} processes running")
+  -- print("#{dispatch.nr_parked!} dispatches parked")
+  eds = howl.ui.Editor.editors!
+  print("#{#eds} editors alive")
+
+  print!
+
 run = ->
   if timer_handle
     timer_handle = timer.on_idle 30, run
@@ -74,14 +105,16 @@ run = ->
   window = howl.app.window
   if window and not window.command_panel.is_active
     clean_up_buffers!
-
     howl.app\save_session!
 
   release_memory!
 
+  print_usages!
+
 start = ->
   return if timer_handle
-  timer_handle = timer.on_idle 30, run
+  -- timer_handle = timer.on_idle 30, run
+  timer_handle = timer.on_idle 3, run
 
 stop = ->
   return unless timer_handle

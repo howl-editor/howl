@@ -39,7 +39,6 @@ core.define 'GObject', {
     arr = ffi_new 'GObject *[1]'
     arr[0] = o
     C.g_clear_object arr
-    print "o: #{o}"
 
   get_typed: (k, type) =>
     ret = ffi_new "#{type}[1]"

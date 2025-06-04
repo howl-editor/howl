@@ -85,6 +85,9 @@ signal.connect 'buffer-title-set', (args) ->
 signal.connect 'buffer-modified', (args) ->
   refresh_title args.buffer
 
+signal.connect 'buffer-reloaded', (args) ->
+  refresh_title args.buffer
+
 signal.connect 'buffer-mode-set', (args) ->
   buffer = args.buffer
   for e in *editors!
@@ -92,6 +95,7 @@ signal.connect 'buffer-mode-set', (args) ->
       e\_set_config_settings!
 
 class Editor extends PropertyObject
+  editors: editors
 
   register_indicator: (id, placement = 'bottom_right', factory) ->
     if not indicator_placements[placement]

@@ -123,6 +123,18 @@ callbacks = {
 
   count: -> handle_count
 
+  summarize: ->
+    counts = {}
+    for _, h in pairs handles
+      count = counts[h.description] or 0
+      count += 1
+      counts[h.description] = count
+
+    sorted = [{desc, count} for desc, count in pairs counts]
+    table.sort sorted, (a, b) -> a[2] > b[2]
+    return sorted
+
+
   register_for_instance: (instance, handler, description, ...) ->
     handle = register handler, description, ...
     handle.instance = setmetatable {

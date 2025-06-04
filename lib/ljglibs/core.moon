@@ -70,19 +70,19 @@ setup_signals = (def, gtype, instance_cast) ->
     signal.connect_for lua_ref, g_instance, signal_name, handler, ...
 
   -- deprecated below
-  ids = signal.list_ids gtype
-  for id in *ids
-    info = signal.query id, gtype
+  -- ids = signal.list_ids gtype
+  -- for id in *ids
+  --   info = signal.query id, gtype
 
-    name = 'on_' .. info.signal_name\gsub '-', '_'
-    unless def[name]
-      def[name] = (instance, handler, ...) ->
-        print " XXX deprecated signal handler: #{name}"
-        unless handler
-          error "`nil` handler passed as handler for '#{name}'"
+  --   name = 'on_' .. info.signal_name\gsub '-', '_'
+  --   unless def[name]
+  --     def[name] = (instance, handler, ...) ->
+  --       print " XXX deprecated signal handler: #{name}"
+  --       unless handler
+  --         error "`nil` handler passed as handler for '#{name}'"
 
-        cb_handle = signal.connect_by_info instance, info, handler, ...
-        cb_handle
+  --       cb_handle = signal.connect_by_info instance, info, handler, ...
+  --       cb_handle
 
 construct = (spec, auto_properties, constructor, ...) ->
   args = {...}

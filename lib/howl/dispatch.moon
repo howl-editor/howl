@@ -20,6 +20,26 @@ _resume = (handle, ...) ->
   ret
 
 {
+
+  nr_parked: ->
+    count = 0
+    for _, _ in pairs parked
+      count += 1
+
+    return count
+
+  summarize: ->
+    counts = {}
+    for _, p in pairs parked
+      count = counts[p.description] or 0
+      count += 1
+      counts[p.description] = count
+
+    sorted = [{desc, count} for desc, count in pairs counts]
+    table.sort sorted, (a, b) -> a[2] > b[2]
+    return sorted
+
+
   park: (description) ->
     id_counter += 1
     parked[id_counter] = { id: id_counter, :description }
