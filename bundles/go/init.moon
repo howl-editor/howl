@@ -1,7 +1,7 @@
 -- Copyright 2016-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :command, :config, :mode, :inspection, :sys} = howl
+{:app, :command, :config, :mode, :inspection, :sys, :Project} = howl
 
 {:fmt} = bundle_load 'go_fmt'
 
@@ -14,11 +14,18 @@ register_inspections = ->
       is_available: -> sys.find_executable('golint'), "`golint` command not found"
     }
   inspection.register
-    name: 'gotoolvet'
-    factory: -> {
-      cmd: 'go tool vet <file>',
-      type: 'error',
-      is_available: -> sys.find_executable('go'), "`go` command not found"
+    name: 'govet'
+    factory: (buffer) ->
+      cwd = nil
+      if buffer.file
+        project = Project.for_file buffer.file
+        if project
+          cwd = project.root
+      {
+        cmd: 'go vet <file>',
+        type: 'error',
+        is_available: -> sys.find_executable('go'), "`go` command not found"
+        working_directory: cwd
     }
 
 register_mode = ->
