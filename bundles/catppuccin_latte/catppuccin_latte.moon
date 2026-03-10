@@ -187,19 +187,20 @@ return {
 
     list_highlight:
       type: highlight.UNDERLINE
-      foreground: white
+      foreground: peach
+      foreground_alpha: 0.3
       text_color:
       line_width: 2
 
     cursor:
       type: flair.RECTANGLE
-      background: foreground
+      background: text
       width: 2
       height: 'text'
 
     block_cursor:
       type: flair.ROUNDED_RECTANGLE,
-      background: foreground
+      background: text
       text_color:
       height: 'text',
       min_width: 'letter'
@@ -212,107 +213,125 @@ return {
 
   styles:
     default:
-      color:
+      color: text
 
-    red: color:
-    green: color:
-    yellow: color:
-    blue: color:
-    magenta: color:
-    cyan: color:
+    red: color: red
+    green: color: green
+    yellow: color: yellow
+    blue: color: blue
+    magenta: color: pink
+    cyan: color: teal
 
     popup:
-      background: grey_darkest
-      color:
+      background: surface0
+      color: text
 
     comment:
       font: italic: true
-      color:
+      color: overlay2
 
     variable:
-      color:
+      color: blue
 
     label:
-      color:
+      color: subtext0
       font: italic: true
 
     key:
-      color:
+      color: blue
       font: bold: true
 
     fdecl:
-      color:
+      color: yellow
       font: bold: true
 
     keyword:
-      color:
+      color: mauve
       font: bold: true
 
     class:
-      color:
+      color: yellow
       font: bold: true
 
     type_def:
-      color:
+      color: yellow
       font:
         bold: true
 
     definition:
-      color:
+      color: yellow
 
     function:
-      color:
+      color: blue
       font: bold: true
 
     type:
-      color:
+      color: yellow
       font: italic: true
 
-    char: color:
-    number: color:
-    operator: color:
-    preproc: color:
-    special: color:
-    tag: color:
-    member: color:
-    info: color:
+    char: color: green
+    number: color: peach
+    operator: color: sky
+    preproc: color: rosewater
+    special: color: red
+    tag: color: maroon
+    member: color: blue
+    info: color: teal
 
     constant:
-      color:
+      color: peach
 
     string:
-      color:
+      color: green
 
     regex:
-      color:
-      background: embedded_bg
+      color: pink
 
     embedded:
-      color:
-      background: embedded_bg
+      color: red
 
     -- Markup and visual styles
 
     error:
       font: italic: true
-      color:
+      color: red
       background: red
+      background_alpha: 0.3
 
     warning:
       font: italic: true
-      color:
+      color: peach
+      background: peach
+      background_alpha: 0.3
+
+    info:
+      font: italic: true
+      color: teal
+      background: teal
+      background_alpha: 0.3
+
 
     h1:
       font: bold: true
-      color:
+      color: red
 
     h2:
       font: bold: true
-      color:
+      color: peach
 
     h3:
       font: italic: true
-      color:
+      color: yellow
+
+    h4:
+      font: italic: true
+      color: green
+    h5:
+      font: italic: true
+      color: sapphire
+    h6:
+      font: italic: true
+      color: lavender
 
     emphasis:
       font:
@@ -320,15 +339,24 @@ return {
         italic: true
 
     strong: font: italic: true
-    link_label: color:
-    link_url: color:
+    link_label: color: green
+    link_url: color: blue
 
     table:
-      color:
-      background: embedded_bg
+      color: text
+      background: mantle
       underline: true
 
-    addition: color:
-    deletion: color:
-    change: color:
+    addition:
+      color: green
+      background: green
+      background_alpha: 0.2
+    deletion:
+      color: red
+      background: red
+      background_alpha: 0.2
+    change:
+      color: blue
+      background: blue
+      background_alpha: 0.2
   }
