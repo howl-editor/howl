@@ -1,63 +1,69 @@
-{:delegate_to} = howl.util.table
+{:delegate_to}  = howl.util.table
 
-background   = '#282a36'
-current      = '#44475a'
-selection    = '#44475a'
-foreground   = '#f8f8f2'
-comment      = '#6272a4'
+rosewater       = '#f2d5cf'
+flamingo        = '#eebebe'
+pink            = '#f4b8e4'
+mauve           = '#ca9ee6'
+red             = '#e78284'
+peach           = '#ef9f76'
+yellow          = '#e5c890'
+green           = '#a6d189'
+teal            = '#81c8be'
+sky             = '#99d1db'
+sapphire        = '#85c1dc'
+blue            = '#8caaee'
+lavender        = '#babbf1'
+text            = '#c6d0f5'
+subtext1        = '#b5bfe2'
+subtext0        = '#a5adce'
+overlay2        = '#949cbb'
+overlay1        = '#838ba7'
+overlay0        = '#737994'
+surface2        = '#626880'
+surface1        = '#51576d'
+surface0        = '#414559'
+base            = '#303446'
+mantle          = '#292c3c'
+crust           = '#232634'
 
-red          = '#ff5555'
-orange       = '#ffb86c'
-yellow       = '#f1fa8c'
-green        = '#50fa7b'
-aqua         = '#8be9fd'
-blue         = '#8be9fd'
-purple       = '#bd93f9'
-magenta      = '#ff79c6'
-grey         = '#595959'
-
-grey_darker  = '#1c1d23'
-grey_darkest = '#1c1d23'
-grey_light   = '#a6a6a6'
-embedded_bg  = '#484848'
-border_color = '#44475a'
+black           = '#232634'
 
 -- General styling for context boxes (editor, command_line)
 content_box = {
   background:
-    color: background
+    color: base
 
   border:
     width: 1
-    color: border_color
+    color: overlay0
 
   border_right:
     width: 3
-    color: border_color
+    color: overlay0
 
   border_bottom:
     width: 3
-    color: border_color
+    color: overlay0
 
   header:
     background:
-      color: grey_darkest
+      color: mantle
 
     border_bottom:
-      color: grey_darker
+      color: overlay0
 
-    color: white
+    color: text
     font: bold: true
     padding: 1
 
   footer:
     background:
-      color: grey_darkest
+      color: mantle
 
     border_top:
-      color: grey_darker
+      color: overlay0
 
-    color: grey
+    color: text
     font: bold: true
     padding: 1
 }
@@ -65,32 +71,32 @@ content_box = {
 return {
   window:
     background:
-      color: background
+      color: base
 
     status:
       font: bold: true, italic: true
-      color: grey
+      color: subtext0
 
-      info: color: grey_light
-      warning: color: orange
+      info: color: teal
+      warning: color: peach
       'error': color: red
 
   :content_box
 
   popup:
     background:
-      color: grey_darkest
+      color: surface0
     border:
-      color: grey
+      color: lavender
 
   editor: delegate_to content_box, {
     scrollbars:
       slider:
-        color: magenta
+        color: overlay2
 
     indicators:
       default:
-        color: grey_light
+        color: subtext0
 
       title:
         font: bold: true
@@ -99,135 +105,137 @@ return {
         font: bold: true
 
     caret:
-      color: grey_light
+      color: rosewater
       width: 2
 
     current_line:
-      background: current
+      background: overlay2
 
     gutter:
-      color: comment
+      color: subtext1
       background:
-        color: grey_darkest
+        color: mantle
         alpha: 0.6
   }
 
   flairs:
     indentation_guide:
       type: flair.PIPE,
-      foreground: comment,
-      :background,
+      foreground: overlay2,
       line_width: 1
 
     indentation_guide_1:
       type: flair.PIPE,
-      foreground: grey_darker,
+      foreground: surface1,
       line_width: 1
 
     indentation_guide_2:
       type: flair.PIPE,
-      foreground: grey_darker,
+      foreground: surface1,
       line_width: 1
 
     indentation_guide_3:
       type: flair.PIPE,
-      foreground: grey_darker,
+      foreground: surface1,
       line_width: 1
 
     edge_line:
       type: flair.PIPE,
-      foreground: blue,
-      foreground_alpha: 0.3,
+      foreground: overlay0,
       line_width: 0.5
 
     search:
       type: highlight.ROUNDED_RECTANGLE
-      foreground: black
-      foreground_alpha: 1
-      background: yellow
-      text_color: grey_darkest
+      background: red
+      background_alpha: 0.3
+      text_color: text
       height: 'text'
 
     search_secondary:
       type: flair.ROUNDED_RECTANGLE
-      background: yellow
-      text_color: grey_darkest
+      background: teal
+      background_alpha: 0.3
+      text_color: text
       height: 'text'
 
     replace_strikeout:
       type: flair.ROUNDED_RECTANGLE
-      foreground: black
+      foreground: text
       background: red
-      text_color: black
+      background_alpha: 0.3
+      text_color: subtext0
       height: 'text'
 
     brace_highlight:
       type: flair.RECTANGLE
-      text_color: foreground
-      background: '#0064b1'
+      background: overlay2
+      background_alpha: 0.3
+      text_color: red
       height: 'text'
 
     brace_highlight_secondary:
       type: flair.RECTANGLE
-      foreground: '#0064b1'
-      text_color: foreground
+      background: overlay2
+      background_alpha: 0.3
+      text_color: teal
       line_width: 1
       height: 'text'
 
     list_selection:
       type: flair.RECTANGLE
-      background: current
+      background: overlay2
       background_alpha: 0.3
 
     list_highlight:
       type: highlight.UNDERLINE
-      foreground: white
-      text_color: white
+      foreground: peach
+      foreground_alpha: 0.3
+      text_color: peach
       line_width: 2
 
     cursor:
       type: flair.RECTANGLE
-      background: foreground
+      background: text
       width: 2
       height: 'text'
 
     block_cursor:
       type: flair.ROUNDED_RECTANGLE,
-      background: foreground
-      text_color: background
+      background: text
+      text_color: black
       height: 'text',
       min_width: 'letter'
 
     selection:
       type: highlight.ROUNDED_RECTANGLE
-      background: selection
-      background_alpha: 0.4
+      background: overlay2
+      background_alpha: 0.3
       min_width: 'letter'
 
   styles:
     default:
-      color: foreground
+      color: text
 
     red: color: red
     green: color: green
     yellow: color: yellow
     blue: color: blue
-    magenta: color: purple
-    cyan: color: aqua
+    magenta: color: pink
+    cyan: color: teal
 
     popup:
-      background: grey_darkest
-      color: foreground
+      background: surface0
+      color: text
 
     comment:
       font: italic: true
-      color: comment
+      color: overlay2
 
     variable:
-      color: yellow
+      color: blue
 
     label:
-      color: orange
+      color: subtext0
       font: italic: true
 
     key:
@@ -235,19 +243,19 @@ return {
       font: bold: true
 
     fdecl:
-      color: green
+      color: yellow
       font: bold: true
 
     keyword:
-      color: magenta
+      color: mauve
       font: bold: true
 
     class:
-      color: blue
+      color: yellow
       font: bold: true
 
     type_def:
-      color: green
+      color: yellow
       font:
         bold: true
 
@@ -259,54 +267,72 @@ return {
       font: bold: true
 
     type:
-      color: blue
+      color: yellow
       font: italic: true
 
     char: color: green
-    number: color: purple
-    operator: color: magenta
-    preproc: color: aqua
-    special: color: purple
-    tag: color: purple
-    member: color: red
-    info: color: blue
+    number: color: peach
+    operator: color: sky
+    preproc: color: rosewater
+    special: color: red
+    tag: color: maroon
+    member: color: blue
+    info: color: teal
 
     constant:
-      color: yellow
+      color: peach
 
     string:
-      color: yellow
+      color: green
 
     regex:
-      color: green
-      background: embedded_bg
+      color: pink
 
     embedded:
-      color: blue
-      background: embedded_bg
+      color: red
 
     -- Markup and visual styles
 
     error:
       font: italic: true
-      color: white
+      color: red
       background: red
+      background_alpha: 0.3
 
     warning:
       font: italic: true
-      color: orange
+      color: peach
+      background: peach
+      background_alpha: 0.3
+
+    info:
+      font: italic: true
+      color: teal
+      background: teal
+      background_alpha: 0.3
+
 
     h1:
       font: bold: true
-      color: magenta
+      color: red
 
     h2:
       font: bold: true
-      color: aqua
+      color: peach
 
     h3:
       font: italic: true
-      color: purple
+      color: yellow
+
+    h4:
+      font: italic: true
+      color: green
+    h5:
+      font: italic: true
+      color: sapphire
+    h6:
+      font: italic: true
+      color: lavender
 
     emphasis:
       font:
@@ -314,15 +340,24 @@ return {
         italic: true
 
     strong: font: italic: true
-    link_label: color: aqua
-    link_url: color: comment
+    link_label: color: green
+    link_url: color: blue
 
     table:
-      color: blue
-      background: embedded_bg
+      color: text
+      background: mantle
       underline: true
 
-    addition: color: green
-    deletion: color: red
-    change: color: yellow
+    addition:
+      color: green
+      background: green
+      background_alpha: 0.2
+    deletion:
+      color: red
+      background: red
+      background_alpha: 0.2
+    change:
+      color: blue
+      background: blue
+      background_alpha: 0.2
   }

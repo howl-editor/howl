@@ -3,7 +3,7 @@ whiskers:
   version: ^2.5.1
   matrix:
     - flavor
-  filename: bundles/catppuccin_{{ flavor.identifier }}/catppuccin_{{ flavor.identifier }}.moon
+  filename: bundles/howl-themes/catppuccin/catppuccin_{{ flavor.identifier }}.moon
   hex_format: "#{{r}}{{g}}{{b}}"
 ---
 {:delegate_to}  = howl.util.table
