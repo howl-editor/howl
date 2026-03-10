@@ -88,6 +88,7 @@ return {
       color: surface0
     border:
       color: lavender
+      width: 2
 
   editor: delegate_to content_box, {
     scrollbars:
@@ -148,12 +149,16 @@ return {
     search:
       type: highlight.ROUNDED_RECTANGLE
       foreground: red
-      foreground_alpha: 0.3
+      foreground_alpha: 1
+      background: red
+      background_alpha: 0.3
       text_color: text
       height: 'text'
 
     search_secondary:
       type: flair.ROUNDED_RECTANGLE
+      foreground: teal
+      foreground_alpha: 1
       background: teal
       background_alpha: 0.3
       text_color: text
@@ -297,21 +302,14 @@ return {
     error:
       font: italic: true
       color: red
-      background: red
-      background_alpha: 0.3
 
     warning:
       font: italic: true
       color: peach
-      background: peach
-      background_alpha: 0.3
 
     info:
       font: italic: true
       color: teal
-      background: teal
-      background_alpha: 0.3
-
 
     h1:
       font: bold: true
