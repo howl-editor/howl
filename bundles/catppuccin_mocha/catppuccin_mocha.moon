@@ -26,6 +26,8 @@ base            = '#1e1e2e'
 mantle          = '#181825'
 crust           = '#11111b'
 
+black           = '#11111b'
+
 -- General styling for context boxes (editor, command_line)
 content_box = {
   background:
@@ -103,7 +105,7 @@ return {
         font: bold: true
 
     caret:
-      color:
+      color: rosewater
       width: 2
 
     current_line:
@@ -120,7 +122,6 @@ return {
     indentation_guide:
       type: flair.PIPE,
       foreground: overlay2,
-      :background,
       line_width: 1
 
     indentation_guide_1:
@@ -145,38 +146,38 @@ return {
 
     search:
       type: highlight.ROUNDED_RECTANGLE
-      foreground: text
-      foreground_alpha: 1
       background: red
+      background_alpha: 0.3
       text_color: text
       height: 'text'
 
     search_secondary:
       type: flair.ROUNDED_RECTANGLE
-      background: yellow
-      text_color:
+      background: teal
+      background_alpha: 0.3
+      text_color: text
       height: 'text'
 
     replace_strikeout:
       type: flair.ROUNDED_RECTANGLE
-      foreground: black
+      foreground: text
       background: red
-      text_color:
+      background_alpha: 0.3
+      text_color: subtext0
       height: 'text'
 
     brace_highlight:
       type: flair.RECTANGLE
-      text_color:
       background: overlay2
       background_alpha: 0.3
+      text_color: red
       height: 'text'
 
     brace_highlight_secondary:
       type: flair.RECTANGLE
-      foreground:
-      text_color:
       background: overlay2
       background_alpha: 0.3
+      text_color: teal
       line_width: 1
       height: 'text'
 
@@ -189,7 +190,7 @@ return {
       type: highlight.UNDERLINE
       foreground: peach
       foreground_alpha: 0.3
-      text_color:
+      text_color: peach
       line_width: 2
 
     cursor:
@@ -201,7 +202,7 @@ return {
     block_cursor:
       type: flair.ROUNDED_RECTANGLE,
       background: text
-      text_color:
+      text_color: black
       height: 'text',
       min_width: 'letter'
 
