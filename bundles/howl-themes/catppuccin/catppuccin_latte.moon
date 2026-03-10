@@ -122,6 +122,7 @@ return {
     indentation_guide:
       type: flair.PIPE,
       foreground: overlay2,
+      :background,
       line_width: 1
 
     indentation_guide_1:
@@ -146,8 +147,8 @@ return {
 
     search:
       type: highlight.ROUNDED_RECTANGLE
-      background: red
-      background_alpha: 0.3
+      foreground: red
+      foreground_alpha: 0.3
       text_color: text
       height: 'text'
 
