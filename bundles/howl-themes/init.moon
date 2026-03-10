@@ -10,6 +10,11 @@ themes = {
   'Monokai': bundle_file('monokai/monokai.moon')
   'Blueberry Blend': bundle_file('blueberry_blend/blueberry_blend.moon')
   'Dracula': bundle_file('dracula/dracula.moon')
+  'Catppuccin Latte': bundle_file('catppuccin/catppuccin_latte.moon')
+  'Catppuccin Frappe': bundle_file('catppuccin/catppuccin_frappe.moon')
+  'Catppuccin Macchiato': bundle_file('catppuccin/catppuccin_macchiato.moon')
+  'Catppuccin Mocha': bundle_file('catppuccin/catppuccin_mocha.moon')
+
 }
 
 for name, file in pairs themes

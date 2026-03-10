@@ -1,0 +1,419 @@
+{:delegate_to}  = howl.util.table
+
+rosewater       = '#f5e0dc'
+flamingo        = '#f2cdcd'
+pink            = '#f5c2e7'
+mauve           = '#cba6f7'
+red             = '#f38ba8'
+peach           = '#fab387'
+yellow          = '#f9e2af'
+green           = '#a6e3a1'
+teal            = '#94e2d5'
+sky             = '#89dceb'
+sapphire        = '#74c7ec'
+blue            = '#89b4fa'
+lavender        = '#b4befe'
+text            = '#cdd6f4'
+subtext1        = '#bac2de'
+subtext0        = '#a6adc8'
+overlay2        = '#9399b2'
+overlay1        = '#7f849c'
+overlay0        = '#6c7086'
+surface2        = '#585b70'
+surface1        = '#45475a'
+surface0        = '#313244'
+base            = '#1e1e2e'
+mantle          = '#181825'
+crust           = '#11111b'
+
+black           = '#11111b'
+
+-- General styling for context boxes (editor, command_line)
+content_box = {
+  background:
+    color: base
+
+  border:
+    width: 1
+    color: overlay0
+
+  border_right:
+    width: 3
+    color: overlay0
+
+  border_bottom:
+    width: 3
+    color: overlay0
+
+  header:
+    background:
+      color: mantle
+    border_bottom:
+      color: overlay0
+    color: text
+    font:
+      bold: true
+    padding: 1
+
+  footer:
+    background:
+      color: mantle
+    border_top:
+      color: overlay0
+    color: text
+    font:
+      bold: true
+    padding: 1
+}
+
+return {
+  window:
+    background:
+      color: crust
+
+    status:
+      font:
+        bold: true
+        italic: true
+      color: subtext0
+
+      info:
+        color: teal
+
+      warning:
+        color: peach
+
+      error:
+        color: red
+
+  :content_box
+
+  popup:
+    background:
+      color: surface0
+      alpha: 0.9
+
+  editor: delegate_to content_box, {
+    scrollbars:
+      slider:
+        color: overlay2
+
+    indicators:
+      default:
+        color: subtext0
+
+      title:
+        font:
+          bold: true
+
+      vi:
+        font:
+          bold: true
+
+    caret:
+      color: rosewater
+      width: 2
+
+    current_line:
+      background: overlay2
+
+    gutter:
+      color: subtext1
+      background:
+        color: mantle
+        alpha: 0.6
+  }
+
+  flairs:
+    indentation_guide:
+      type: flair.PIPE
+      foreground: overlay2
+      :background
+      line_width: 1
+
+    indentation_guide_1:
+      type: flair.PIPE
+      foreground: surface1
+      line_width: 1
+
+    indentation_guide_2:
+      type: flair.PIPE
+      foreground: surface1
+      line_width: 1
+
+    indentation_guide_3:
+      type: flair.PIPE
+      foreground: surface1
+      line_width: 1
+
+    edge_line:
+      type: flair.PIPE
+      foreground: overlay0
+      line_width: 0.5
+
+    search:
+      type: highlight.ROUNDED_RECTANGLE
+      foreground: red
+      foreground_alpha: 1
+      background: red
+      background_alpha: 0.3
+      text_color: red
+      height: 'text'
+
+    search_secondary:
+      type: flair.ROUNDED_RECTANGLE
+      background: teal
+      background_alpha: 0.3
+      text_color: teal
+      height: 'text'
+
+    replace_strikeout:
+      type: flair.ROUNDED_RECTANGLE
+      foreground: red
+      foreground_alpha: 1
+      background: red
+      background_alpha: 0.3
+      text_color: red
+      height: 'text'
+
+    brace_highlight:
+      type: flair.RECTANGLE
+      background: overlay2
+      background_alpha: 0.3
+      text_color: red
+      height: 'text'
+
+    brace_highlight_secondary:
+      type: flair.RECTANGLE
+      background: overlay2
+      background_alpha: 0.3
+      text_color: teal
+      line_width: 1
+      height: 'text'
+
+    list_selection:
+      type: flair.RECTANGLE
+      background: overlay2
+      background_alpha: 0.3
+
+    list_highlight:
+      type: highlight.UNDERLINE
+      foreground: peach
+      foreground_alpha: 0.3
+      text_color: peach
+      line_width: 2
+
+    cursor:
+      type: flair.RECTANGLE
+      background: rosewater
+      width: 2
+      height: 'text'
+
+    block_cursor:
+      type: flair.ROUNDED_RECTANGLE
+      background: rosewater
+      text_color: black
+      height: 'text'
+      min_width: 'letter'
+
+    selection:
+      type: highlight.ROUNDED_RECTANGLE
+      background: overlay2
+      background_alpha: 0.3
+      min_width: 'letter'
+
+  styles:
+    default:
+      color: text
+
+    red:
+      color: red
+
+    green:
+      color: green
+
+    yellow:
+      color: yellow
+
+    blue:
+      color: blue
+
+    magenta:
+      color: pink
+
+    cyan:
+      color: teal
+
+    popup:
+      background: surface0
+      color: text
+
+    comment:
+      font:
+        italic: true
+      color: overlay2
+
+    variable:
+      color: blue
+
+    label:
+      color: subtext0
+      font:
+        italic: true
+
+    key:
+      color: blue
+      font:
+        bold: true
+
+    fdecl:
+      color: yellow
+      font:
+        bold: true
+
+    keyword:
+      color: mauve
+      font:
+        bold: true
+
+    class:
+      color: yellow
+      font:
+        bold: true
+
+    type_def:
+      color: yellow
+      font:
+        bold: true
+
+    definition:
+      color: yellow
+
+    function:
+      color: blue
+      font:
+        bold: true
+
+    type:
+      color: yellow
+      font:
+        italic: true
+
+    char:
+      color: green
+
+    number:
+      color: peach
+
+    operator:
+      color: sky
+
+    preproc:
+      color: rosewater
+
+    special:
+      color: red
+
+    tag:
+      color: maroon
+
+    member:
+      color: blue
+
+    info:
+      color: teal
+
+    constant:
+      color: peach
+
+    string:
+      color: green
+
+    regex:
+      color: pink
+
+    embedded:
+      color: red
+
+    -- Markup and visual styles
+
+    error:
+      font:
+        italic: true
+      color: red
+
+    warning:
+      font:
+        italic: true
+      color: peach
+
+    info:
+      font:
+        italic: true
+      color: teal
+
+    h1:
+      font:
+        bold: true
+      color: red
+
+    h2:
+      font:
+        bold: true
+      color: peach
+
+    h3:
+      font:
+        italic: true
+      color: yellow
+
+    h4:
+      font:
+        italic: true
+      color: green
+
+    h5:
+      font:
+        italic: true
+      color: sapphire
+
+    h6:
+      font:
+        italic: true
+      color: lavender
+
+    emphasis:
+      font:
+        bold: true
+        italic: true
+
+    strong:
+      font:
+        italic: true
+
+    link_label:
+      color: green
+
+    link_url:
+      color: blue
+
+    table:
+      color: text
+      background: mantle
+      underline: true
+
+    addition:
+      color: green
+      background: green
+      background_alpha: 0.2
+
+    deletion:
+      color: red
+      background: red
+      background_alpha: 0.2
+
+    change:
+      color: blue
+      background: blue
+      background_alpha: 0.2
+  }
