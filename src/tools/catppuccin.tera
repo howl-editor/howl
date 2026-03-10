@@ -56,47 +56,50 @@ content_box = {
   header:
     background:
       color: mantle
-
     border_bottom:
       color: overlay0
-
     color: text
-    font: bold: true
+    font:
+      bold: true
     padding: 1
 
   footer:
     background:
       color: mantle
-
     border_top:
       color: overlay0
-
     color: text
-    font: bold: true
+    font:
+      bold: true
     padding: 1
 }
 
 return {
   window:
     background:
-      color: base
+      color: crust
 
     status:
-      font: bold: true, italic: true
+      font:
+        bold: true
+        italic: true
       color: subtext0
 
-      info: color: teal
-      warning: color: peach
-      'error': color: red
+      info:
+        color: teal
+
+      warning:
+        color: peach
+
+      error:
+        color: red
 
   :content_box
 
   popup:
     background:
       color: surface0
-    border:
-      color: lavender
-      width: 2
+      alpha: 0.9
 
   editor: delegate_to content_box, {
     scrollbars:
@@ -108,10 +111,12 @@ return {
         color: subtext0
 
       title:
-        font: bold: true
+        font:
+          bold: true
 
       vi:
-        font: bold: true
+        font:
+          bold: true
 
     caret:
       color: rosewater
@@ -129,29 +134,29 @@ return {
 
   flairs:
     indentation_guide:
-      type: flair.PIPE,
-      foreground: overlay2,
-      :background,
+      type: flair.PIPE
+      foreground: overlay2
+      :background
       line_width: 1
 
     indentation_guide_1:
-      type: flair.PIPE,
-      foreground: surface1,
+      type: flair.PIPE
+      foreground: surface1
       line_width: 1
 
     indentation_guide_2:
-      type: flair.PIPE,
-      foreground: surface1,
+      type: flair.PIPE
+      foreground: surface1
       line_width: 1
 
     indentation_guide_3:
-      type: flair.PIPE,
-      foreground: surface1,
+      type: flair.PIPE
+      foreground: surface1
       line_width: 1
 
     edge_line:
-      type: flair.PIPE,
-      foreground: overlay0,
+      type: flair.PIPE
+      foreground: overlay0
       line_width: 0.5
 
     search:
@@ -160,24 +165,23 @@ return {
       foreground_alpha: 1
       background: red
       background_alpha: 0.3
-      text_color: text
+      text_color: red
       height: 'text'
 
     search_secondary:
       type: flair.ROUNDED_RECTANGLE
-      foreground: teal
-      foreground_alpha: 1
       background: teal
       background_alpha: 0.3
-      text_color: text
+      text_color: teal
       height: 'text'
 
     replace_strikeout:
       type: flair.ROUNDED_RECTANGLE
-      foreground: text
+      foreground: red
+      foreground_alpha: 1
       background: red
       background_alpha: 0.3
-      text_color: subtext0
+      text_color: red
       height: 'text'
 
     brace_highlight:
@@ -209,15 +213,15 @@ return {
 
     cursor:
       type: flair.RECTANGLE
-      background: text
+      background: rosewater
       width: 2
       height: 'text'
 
     block_cursor:
-      type: flair.ROUNDED_RECTANGLE,
-      background: text
+      type: flair.ROUNDED_RECTANGLE
+      background: rosewater
       text_color: black
-      height: 'text',
+      height: 'text'
       min_width: 'letter'
 
     selection:
@@ -230,19 +234,31 @@ return {
     default:
       color: text
 
-    red: color: red
-    green: color: green
-    yellow: color: yellow
-    blue: color: blue
-    magenta: color: pink
-    cyan: color: teal
+    red:
+      color: red
+
+    green:
+      color: green
+
+    yellow:
+      color: yellow
+
+    blue:
+      color: blue
+
+    magenta:
+      color: pink
+
+    cyan:
+      color: teal
 
     popup:
       background: surface0
       color: text
 
     comment:
-      font: italic: true
+      font:
+        italic: true
       color: overlay2
 
     variable:
@@ -250,23 +266,28 @@ return {
 
     label:
       color: subtext0
-      font: italic: true
+      font:
+        italic: true
 
     key:
       color: blue
-      font: bold: true
+      font:
+        bold: true
 
     fdecl:
       color: yellow
-      font: bold: true
+      font:
+        bold: true
 
     keyword:
       color: mauve
-      font: bold: true
+      font:
+        bold: true
 
     class:
       color: yellow
-      font: bold: true
+      font:
+        bold: true
 
     type_def:
       color: yellow
@@ -278,20 +299,37 @@ return {
 
     function:
       color: blue
-      font: bold: true
+      font:
+        bold: true
 
     type:
       color: yellow
-      font: italic: true
+      font:
+        italic: true
 
-    char: color: green
-    number: color: peach
-    operator: color: sky
-    preproc: color: rosewater
-    special: color: red
-    tag: color: maroon
-    member: color: blue
-    info: color: teal
+    char:
+      color: green
+
+    number:
+      color: peach
+
+    operator:
+      color: sky
+
+    preproc:
+      color: rosewater
+
+    special:
+      color: red
+
+    tag:
+      color: maroon
+
+    member:
+      color: blue
+
+    info:
+      color: teal
 
     constant:
       color: peach
@@ -308,37 +346,48 @@ return {
     -- Markup and visual styles
 
     error:
-      font: italic: true
+      font:
+        italic: true
       color: red
 
     warning:
-      font: italic: true
+      font:
+        italic: true
       color: peach
 
     info:
-      font: italic: true
+      font:
+        italic: true
       color: teal
 
     h1:
-      font: bold: true
+      font:
+        bold: true
       color: red
 
     h2:
-      font: bold: true
+      font:
+        bold: true
       color: peach
 
     h3:
-      font: italic: true
+      font:
+        italic: true
       color: yellow
 
     h4:
-      font: italic: true
+      font:
+        italic: true
       color: green
+
     h5:
-      font: italic: true
+      font:
+        italic: true
       color: sapphire
+
     h6:
-      font: italic: true
+      font:
+        italic: true
       color: lavender
 
     emphasis:
@@ -346,9 +395,15 @@ return {
         bold: true
         italic: true
 
-    strong: font: italic: true
-    link_label: color: green
-    link_url: color: blue
+    strong:
+      font:
+        italic: true
+
+    link_label:
+      color: green
+
+    link_url:
+      color: blue
 
     table:
       color: text
@@ -359,10 +414,12 @@ return {
       color: green
       background: green
       background_alpha: 0.2
+
     deletion:
       color: red
       background: red
       background_alpha: 0.2
+
     change:
       color: blue
       background: blue
