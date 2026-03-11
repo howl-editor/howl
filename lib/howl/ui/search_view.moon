@@ -73,7 +73,6 @@ class BufferSearcher
       print("BufferSearcher launch failed: #{err}")
 
   cancel_query: =>
-    print "cancel_query: running = #{@running}"
     if @running
       @stop = true
       howl.dispatch.wait @running

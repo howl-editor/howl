@@ -188,7 +188,7 @@ class Application extends PropertyObject
       elseif buffer.activity and buffer.activity\is_running!
         prompt = "Buffer has a running activity (#{buffer.activity.name}), close anyway? "
 
-      if prompt
+      if prompt and @editor
         @editor.buffer = buffer
         return unless interact.yes_or_no :prompt
 

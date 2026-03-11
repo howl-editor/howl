@@ -69,6 +69,32 @@ describe 'inspect', ->
            }, res
           done!
 
+      it 'ignores output for other files', (done) ->
+        buffer.file = File '/my/file'
+        idle_inspector = 'echo "/my/file:1: warning: foo\n/other/file:2: wrong val \\`foo\\`"'
+        howl_async ->
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
+          res = inspect.inspect(buffer)
+          assert.same {
+            [1]: {
+              { message: 'warning: foo', type: 'warning' },
+            }
+           }, res
+          done!
+
+      it 'keeps output for entries without a file', (done) ->
+        buffer.file = File '/my/file'
+        idle_inspector = 'echo 1: foo'
+        howl_async ->
+          buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
+          res = inspect.inspect(buffer)
+          assert.same {
+            [1]: {
+              { message: 'foo' },
+            }
+           }, res
+          done!
+
     context 'when the returned inspector is a table', ->
       it 'uses the `cmd` key as the external command to run', (done) ->
         idle_inspector = cmd: 'echo "foo:1: some warning"'
@@ -158,7 +184,7 @@ describe 'inspect', ->
       it "is expanded with the buffer's file's path", (done) ->
         file = File '/foo/bar'
         buffer.file = file
-        idle_inspector = cmd: 'echo "foo:1: <file>"'
+        idle_inspector = cmd: 'echo "/foo/bar:1: <file>"'
         howl_async ->
           buffer.mode.config.inspectors_on_idle = {'test-idle-inspector'}
           res = inspect.inspect(buffer)
