@@ -123,6 +123,21 @@ class File extends PropertyObject
         \write tostring contents
         \close!
 
+  @property lines:
+    get: =>
+      content = @contents
+      return {} if #content == 0
+      -- Normalize line endings to just LF for a consistent split
+      normalized = content\gsub('\r\n', '\n')
+      normalized = normalized\gsub('\r', '\n')
+
+      lines = normalized\split '\n'
+
+      if lines[#lines] == ''
+        table.remove lines
+
+      lines
+
   @property parent:
     get: =>
       parent = @gfile.parent

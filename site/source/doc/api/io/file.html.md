@@ -46,6 +46,10 @@ The contents of the file. Provides an easy way of reading a file's content in
 one go. This is also writeable - assigning to this causes the file's content on
 disk to be replaced with the assigned value.
 
+### lines
+
+A table of the file contents split by the line separator.
+
 ### display_name
 
 The basename of the file, but with a trailing separator for directories.
