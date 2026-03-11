@@ -72,16 +72,50 @@ describe 'dispatch', ->
       assert.raises 'boom', -> dispatch.resume handle
 
     context 'when nothing is yet waiting on the parking', ->
-      it 'blocks until released by a wait', (done) ->
-        howl_async ->
-          handle = dispatch.park 'out-of-order'
-          launched, status = dispatch.launch -> dispatch.resume handle, 'resume-now!'
-          assert.is_true launched
-          assert.equals "suspended", status
+      it 'blocks until released by a wait', ->
+        handle = dispatch.park 'out-of-order'
+        launched, status = dispatch.launch -> dispatch.resume handle, 'resume-now!'
+        assert.is_true launched
+        assert.equals "suspended", status
 
-          launched, status = dispatch.launch ->
-            assert.equals 'resume-now!', dispatch.wait handle
-            done!
+        local result
+        launched, status = dispatch.launch ->
+          result = dispatch.wait handle
 
-          assert.is_true launched
-          assert.equals "dead", status
+        assert.is_true launched
+        assert.equals "dead", status
+        assert.equals 'resume-now!', result
+
+  describe 'resume_or_clear()', ->
+    context 'when a coroutine is waiting on the handle', ->
+      it 'resumes the coroutine, passing along any arguments', ->
+        handle = dispatch.park 'test'
+        local res
+
+        dispatch.launch ->
+          res = { dispatch.wait handle }
+
+        dispatch.resume_or_clear handle, 1, 'two'
+        assert.same { 1, 'two' }, res
+
+      it 'propagates any error occurring during resuming', ->
+        handle = dispatch.park 'test'
+
+        dispatch.launch ->
+          dispatch.wait handle
+          error 'boom'
+
+        assert.raises 'boom', -> dispatch.resume_or_clear handle
+
+    context 'when no coroutine is waiting on the handle', ->
+      it 'clears the handle', ->
+        initial_parked = dispatch.nr_parked!
+        handle = dispatch.park 'test'
+        assert.equals initial_parked + 1, dispatch.nr_parked!
+        dispatch.resume_or_clear handle
+        assert.equals initial_parked, dispatch.nr_parked!
+
+    context 'when the handle does not exist', ->
+      it 'does nothing and does not error', ->
+        assert.has_no.errors ->
+          dispatch.resume_or_clear 'non-existent-handle'
