@@ -21,19 +21,19 @@ class TerraformMode
 
   indentation:
     more_after: {
-      r'{\s*$',           -- Opening brace
-      r'=\s*\{\s*$',      -- Assignment to block
-      r'=\s*\[\s*$'       -- Assignment to list
+      r'{\\s*$',           -- Opening brace
+      r'=\\s*\\{\\s*$',      -- Assignment to block
+      r'=\\s*\\[\\s*$'       -- Assignment to list
     }
     less_for: {
-      r'^\s*}',          -- Closing brace
-      r'^\s*]'           -- Closing bracket
+      r'^\\s*}',          -- Closing brace
+      r'^\\s*]'           -- Closing bracket
     }
 
   code_blocks:
     multiline: {
-      { r'\{\s*$', r'^\s*}', '}' },         -- Block delimited by braces
-      { r'\[\s*$', r'^\s*]', ']' }         -- List delimited by brackets
+      { r'\\{\\s*$', r'^\\s*}', '}' },         -- Block delimited by braces
+      { r'\\[\\s*$', r'^\\s*]', ']' }         -- List delimited by brackets
     }
 
   structure: (editor) =>
