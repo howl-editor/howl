@@ -176,7 +176,7 @@ setmetatable {
         @listeners = remove_listener listener, @listeners
 
       detach: =>
-        proxies = [p for p in *proxies when p != @]
+        proxies = setmetatable [p for _, p in pairs proxies when p != @], __mode: 'v'
 
      }, {
       __index: (k) =>
@@ -197,8 +197,9 @@ setmetatable {
     new_v, old_v = set_value t, k, v, values, defs, listeners
     return if new_v == old_v
 
-    -- bubble up notification to local proxies
-    for proxy in *proxies
+    -- bubble up notification to local proxies. `proxies` is weak, so collected
+    -- entries leave holes - iterate with pairs, which only sees live ones.
+    for _, proxy in pairs proxies
       if proxy.values[k] == nil -- no local value set
         notify_listeners proxy.listeners, k, new_v, old_v
 }

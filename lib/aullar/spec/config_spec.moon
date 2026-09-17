@@ -75,6 +75,12 @@ describe 'config', ->
       collectgarbage!
       assert.is_nil holder[1]
 
+    it 'bubbles notifications past collected proxies', ->
+      config.local_proxy!
+      collectgarbage!
+      ok, err = pcall -> config.view_font_size = 22
+      assert.is_true ok, tostring err
+
     it 'returns the globally set value when no local value exists', ->
       config.view_font_size = 22
       assert.equals 22, proxy.view_font_size
