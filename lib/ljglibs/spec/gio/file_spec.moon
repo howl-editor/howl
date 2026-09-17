@@ -80,12 +80,12 @@ describe 'GFile', ->
 
     context 'for an existing file', ->
       it 'returns an info object', ->
-        f = GFile '/bin/ls'
-        info = f\query_info '*', GFile.QUERY_INFO_NONE
-        assert.is_false info.is_hidden
-        assert.is_false info.is_symlink
-        assert.equal info.TYPE_REGULAR, info.filetype
-        assert.is_true info\get_attribute_boolean 'access::can-read'
+        with_tmpfile 'some content', (p) ->
+          info = GFile(p)\query_info '*', GFile.QUERY_INFO_NONE
+          assert.is_false info.is_hidden
+          assert.is_false info.is_symlink
+          assert.equal info.TYPE_REGULAR, info.filetype
+          assert.is_true info\get_attribute_boolean 'access::can-read'
 
   describe 'load_contents()', ->
     it 'returns the contents of the file', ->
