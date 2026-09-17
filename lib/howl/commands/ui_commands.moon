@@ -1,8 +1,8 @@
 -- Copyright 2012-2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, breadcrumbs, command, config, mode from howl
-import style, ActionBuffer, BufferPopup, StyledText from howl.ui
+{:app, :breadcrumbs, :command, :config, :mode} = howl
+{:style, :ActionBuffer, :BufferPopup, :StyledText} = howl.ui
 serpent = require 'serpent'
 
 command.register

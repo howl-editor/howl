@@ -1,8 +1,8 @@
 -- Copyright 2012-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import dispatch, interact from howl
-import style, markup from howl.ui
+{:dispatch, :interact} = howl
+{:style, :markup} = howl.ui
 
 append = table.insert
 
@@ -127,8 +127,9 @@ ensure_command_can_run = (cmd) ->
 
 launch_cmd = (cmd, args) ->
   dispatch.launch ->
-    ok, err = pcall -> cmd.handler table.unpack args
+    ok, err = pcall cmd.handler, table.unpack args
     if not ok
+      print "command err: #{err}"
       log.error err
 
 run = (cmd_text=nil) ->

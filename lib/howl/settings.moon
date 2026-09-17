@@ -1,8 +1,8 @@
 serpent = require 'serpent'
 
-import File from howl.io
-import SandboxedLoader from howl.util
-import sys from howl
+{:File} = howl.io
+{:SandboxedLoader} = howl.util
+{:sys} = howl
 
 default_dir = ->
   return File(sys.env.XDG_DATA_HOME) if sys.info.is_flatpak

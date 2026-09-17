@@ -1,4 +1,4 @@
--- Copyright 2015 The Howl Developers
+-- Copyright 2015-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:RGBA} = require 'ljglibs.gdk'
@@ -7,7 +7,7 @@ require 'ljglibs.cairo.context'
 
 styles = require 'aullar.styles'
 Styling = require 'aullar.styling'
-{:min, :max, :floor, :pi} = math
+{:min, :max, :pi, :ceil, :floor} = math
 copy = moon.copy
 
 flairs = {}
@@ -18,13 +18,15 @@ parse_color = (color) ->
 set_source_from_color = (cr, name, opts) ->
   color = opts["_#{name}"]
   alpha = opts["#{name}_alpha"]
+
   if color
+    alpha = color.alpha unless color\is_opaque!
     if alpha
       cr\set_source_rgba color.red, color.green, color.blue, alpha
     else
       cr\set_source_rgb color.red, color.green, color.blue
   else
-    cr\set_source_rgba 0, 0, 0, 0, 0
+    cr\set_source_rgba 0, 0, 0, 0
 
 set_line_type_from_flair = (cr, flair) ->
   cr.line_width = flair._line_width
@@ -59,29 +61,39 @@ draw_ops = {
   rectangle: (flair, x, y, width, height, cr) ->
     if flair.background
       set_source_from_color cr, 'background', flair
+      if flair.full_height
+        y -= 0.5
+        height += 1
+
       cr\rectangle x, y, width, height
       cr\fill!
 
     if flair.foreground
       set_source_from_color cr, 'foreground', flair
       set_line_type_from_flair cr, flair
-      line_width = flair._line_width
-      cr\rectangle x, y + (line_width / 2), width, height - line_width
+      cr\rectangle x, y, width, height
       cr\stroke!
 
   rounded_rectangle: (flair, x, y, width, height, cr) ->
-    radius = flair.corner_radius or 3
+    radius = flair.corner_radius or 2
 
     if width < radius * 3 or height < radius * 3
       radius = min(width, height) / 3
 
     quadrant = pi / 2
-    right, bottom, left, top = 0, quadrant - 0.5, quadrant * 2, (quadrant * 3) + 0.5
+    right, bottom, left, top = 0, quadrant, quadrant * 2, (quadrant * 3)
+    lw = ceil flair._line_width
+
     cr\move_to x, y + radius
-    cr\arc x + radius, y + radius, radius, left, top
-    cr\arc x + width - radius, y + radius, radius, top, right
-    cr\arc x + width - radius, y + height - radius, radius, right, bottom
-    cr\arc x + radius, y + height - radius, radius, bottom, left
+
+    -- top left
+    cr\arc x + radius + lw, y + radius + lw, radius, left, top
+    -- top right
+    cr\arc x + width - radius - lw, y + radius + lw, radius, top, right
+    -- bottom right
+    cr\arc x + width - radius - lw, y + height - radius - lw, radius, right, bottom
+    -- bottom left
+    cr\arc x + radius + lw, y + height - radius - lw, radius, bottom, left
     cr\close_path!
 
     set_source_from_color cr, 'background', flair
@@ -93,20 +105,22 @@ draw_ops = {
   sandwich: (flair, x, y, width, height, cr) ->
     set_source_from_color cr, 'foreground', flair
     set_line_type_from_flair cr, flair
+    y_offset = flair._line_width / 2
 
-    cr\move_to x, y + 0.5
+    cr\move_to x, y + y_offset
     cr\rel_line_to width, 0
     cr\stroke!
 
-    cr\move_to x, y + height - 0.5
+    cr\move_to x, y + height - y_offset
     cr\rel_line_to width, 0
     cr\stroke!
 
   underline: (flair, x, y, width, height, cr) ->
     set_source_from_color cr, 'foreground', flair
     set_line_type_from_flair cr, flair
+    y_offset = flair._line_width / 2
 
-    cr\move_to x, y + height - 0.5
+    cr\move_to x, y + height - y_offset
     cr\rel_line_to width, 0
     cr\stroke!
 
@@ -114,8 +128,8 @@ draw_ops = {
     wave_height = flair.wave_height or 2
     line_run = (flair.wave_width or 8) / 2
 
-    runs = math.floor (width / line_run)
-    cr\move_to x, y + height - 0.5
+    runs = floor (width / line_run)
+    cr\move_to x, y + height - (wave_height / 2)
 
     set_source_from_color cr, 'foreground', flair
     set_line_type_from_flair cr, flair
@@ -133,20 +147,21 @@ draw_ops = {
 
   pipe: (flair, x, y, width, height, cr) ->
     if flair.foreground
+      line_width = flair._line_width
       set_source_from_color cr, 'foreground', flair
       set_line_type_from_flair cr, flair
-      cr\move_to x + 0.5, y
+      cr\move_to x + (line_width / 2), y
       cr\rel_line_to 0, height
       cr\stroke!
 
   strike_through: (flair, x, y, width, height, cr) ->
     set_source_from_color cr, 'foreground', flair
     set_line_type_from_flair cr, flair
+    y_offset = flair._line_width / 2
 
-    cr\move_to x, y + (height / 2)
+    cr\move_to x, y + (height / 2) - y_offset
     cr\rel_line_to width, 0
     cr\stroke!
-
 }
 
 build = (params) ->
@@ -160,28 +175,29 @@ build = (params) ->
 
 define = (name, opts) ->
   flair = build opts
+  flair.name = name
   flairs[name] = flair
 
 get_text_object = (display_line, start_offset, end_offset, flair) ->
   layout = Layout display_line.pango_context
   dline_layout = display_line.layout
+  layout.font_description = dline_layout.font_description
+
   text_size = end_offset - start_offset
   t_ptr = dline_layout\get_text!
   layout\set_text t_ptr + start_offset - 1, text_size
   layout.tabs = dline_layout.tabs
 
-
   -- need to set the correct attributes when we have a different text color
   -- or need to determine the height of the text object correctly
-  if flair.text_color or flair.height == 'text'
-    styling = Styling.sub display_line.styling, start_offset, end_offset
-    exclude = flair.text_color and {color: true} or {}
-    attributes = styles.get_attributes styling, text_size, :exclude
+  styling = Styling.sub display_line.styling, start_offset, end_offset
+  exclude = flair.text_color and {color: true} or {}
+  attributes = styles.get_attributes styling, text_size, :exclude
 
-    if flair.text_color
-      color = Color flair.text_color
-      attributes\insert_before Attribute.Foreground(color.red, color.green, color.blue)
-    layout.attributes = attributes
+  if flair.text_color
+    color = Color flair.text_color
+    attributes\insert_before Attribute.Foreground(color.red, color.green, color.blue)
+  layout.attributes = attributes
 
   width, height = layout\get_pixel_size!
   :layout, :width, :height
@@ -224,7 +240,6 @@ need_text_object = (flair) ->
     flair
 
   draw: (flair, display_line, start_offset, end_offset, x, y, cr) ->
-
     get_defined_width = (at_x, f, clip) ->
       return f.width if type(f.width) == 'number'
       if f.width == 'full'
@@ -241,18 +256,18 @@ need_text_object = (flair) ->
 
     for nr = 1, #lines
       line = lines[nr]
+      line_height = line.extents.height + (layout.spacing / SCALE)
 
       off_line = start_offset > line.line_end or end_offset < line.line_start
       if off_line or end_offset == line.line_start and (start_offset != end_offset)
-        line_y_offset += line.height
+        line_y_offset += line_height
         continue -- flair not within this layout line
 
       f_start_offset = max start_offset, line.line_start
       f_end_offset = min line.line_end, end_offset
       start_rect = layout\index_to_pos f_start_offset - 1
-      flair_y = y + start_rect.y / SCALE
       text_start_x = x + max((start_rect.x / SCALE), 0) - base_x
-      start_x = max(text_start_x, view.edit_area_x)
+      start_x = max(text_start_x, 0)
 
       width = get_defined_width(start_x, flair, clip)
       unless width
@@ -263,31 +278,36 @@ need_text_object = (flair) ->
       if flair.min_width
         flair_min_width = flair.min_width
         if flair_min_width == 'letter'
-          width = max(width_of_space, width)
+          if width <= 0
+            width = max(width_of_space, width)
         else
           width = max(flair_min_width - base_x, width)
 
       -- why draw a zero-width flair?
       return if width <= 0
 
-      text_object = flair.text_object
+      -- y will point to the beginning of the line
+      flair_y = y + line_y_offset
 
+      height = type(flair.height) == 'number' and flair.height or line_height
+
+      text_object = flair.text_object
       if not text_object and need_text_object(flair)
         ft_end_offset = min line.line_end + 1, end_offset
         text_object = get_text_object display_line, f_start_offset, ft_end_offset, flair
 
-      -- height calculations
-      height = type(flair.height) == 'number' and flair.height or line.height
+      text_object_y = if text_object
+        start_c_height = start_rect.height / SCALE
+        text_diff = floor(text_object.height - start_c_height)
+        if text_diff > 0
+          max_rect = layout\index_to_pos_for_largest f_start_offset - 1, f_end_offset - 1
+          y + (max_rect.y / SCALE) + display_line.y_offset
+        else
+          y + (start_rect.y / SCALE) + display_line.y_offset
 
-      if (flair.height == 'text' or flair.text_color) and height > text_object.height
-        flair_y += display_line.y_offset
+      if flair.height == 'text'
         height = text_object.height
-        l_baseline = line.baseline - line_y_offset
-        bl_diff = floor (l_baseline - (text_object.layout.baseline / SCALE))
-
-        if bl_diff > 0
-          flair_y += bl_diff
-
+        flair_y = text_object_y
 
       cr\save!
       flair.draw flair, start_x, flair_y, width, height, cr
@@ -296,13 +316,12 @@ need_text_object = (flair) ->
       if flair.text_color
         cr\save!
         if base_x > 0
-          cr\rectangle x, flair_y, clip.x2 - x, clip.y2
+          cr\rectangle x, text_object_y, clip.x2 - x, clip.y2
           cr\clip!
 
-        cr\move_to text_start_x, flair_y
+        cr\move_to text_start_x, text_object_y
         cairo.show_layout cr, text_object.layout
         cr\restore!
 
-      line_y_offset += line.height
-
+      line_y_offset += line_height + display_line.y_offset
 }

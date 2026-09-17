@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -11,11 +11,11 @@ require 'ljglibs.pango.context'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 
-C, ffi_cast = ffi.C, ffi.cast
-ref_ptr, gc_ptr, signal = gobject.ref_ptr, gobject.gc_ptr, gobject.signal
+C, ffi_cast, ffi_string = ffi.C, ffi.cast, ffi.string
+gc_ptr = gobject.gc_ptr
 widget_t = ffi.typeof 'GtkWidget *'
-cairo_t = ffi.typeof 'cairo_t *'
-pack, unpack = table.pack, table.unpack
+controller_t = ffi.typeof 'GtkEventController *'
+{insert: append} = table
 
 to_w = (o) -> ffi_cast widget_t, o
 
@@ -23,13 +23,12 @@ jit.off true, true
 
 core.define 'GtkWidget < GObject', {
   properties: {
-    app_paintable: 'gboolean'
-    can_default: 'gboolean'
     can_focus: 'gboolean'
-    composite_child: 'gboolean'
-    double_buffered: 'gboolean'
-    events: 'GdkEventMask'
-    expand: 'gboolean'
+    can_target: 'gboolean'
+    css_name: 'gchar*'
+    cursor: 'GdkCursor *'
+    focus_on_click: 'gboolean'
+    focusable: 'gboolean'
     halign: 'GtkAlign'
     has_default: 'gboolean'
     has_focus: 'gboolean'
@@ -37,19 +36,17 @@ core.define 'GtkWidget < GObject', {
     height_request: 'gint'
     hexpand: 'gboolean'
     hexpand_set: 'gboolean'
-    is_focus: 'gboolean'
-    margin: 'gint'
     margin_bottom: 'gint'
-    margin_left: 'gint'
-    margin_right: 'gint'
+    margin_end: 'gint'
+    margin_start: 'gint'
     margin_top: 'gint'
     name: 'gchar*'
-    no_show_all: 'gboolean'
     opacity: 'gdouble'
-    parent: 'GtkContainer*'
+    overflow: 'GtkOverflow'
+    parent: 'GtkWidget*'
     receives_default: 'gboolean'
+    scale_factor: 'int'
     sensitive: 'gboolean'
-    style: 'GtkStyle*'
     tooltip_markup: 'gchar*'
     tooltip_text: 'gchar*'
     valign: 'GtkAlign'
@@ -57,45 +54,117 @@ core.define 'GtkWidget < GObject', {
     vexpand_set: 'gboolean'
     visible: 'gboolean'
     width_request: 'gint'
-    window: 'GdkWindow*'
+
+    css_classes: {
+      get: =>
+        classes = C.gtk_widget_get_css_classes @
+        t = {}
+        i = 0
+        while classes[i] != nil
+          append t, ffi_string(classes[i])
+          i += 1
+
+        C.g_strfreev classes
+        t
+
+      set: (classes) =>
+        a = ffi.new "const char *[?]", #classes + 1
+        for i, c in ipairs classes
+          a[i - 1] = c
+        a[#classes] = nil
+        C.gtk_widget_set_css_classes @, a
+    }
 
     -- Added properties
-    in_destruction: => C.gtk_widget_in_destruction(@) != 0
-    screen: => ref_ptr C.gtk_widget_get_screen @
-    style_context: => ref_ptr C.gtk_widget_get_style_context @
     pango_context: => C.gtk_widget_get_pango_context @
+    allocation: => @get_allocation!
     allocated_width: => C.gtk_widget_get_allocated_width @
     allocated_height: => C.gtk_widget_get_allocated_height @
-    toplevel: => ref_ptr C.gtk_widget_get_toplevel @
-    visual:
-      get: => C.gtk_widget_get_visual @
-      set: (visual) => C.gtk_widget_set_visual @, visual
-   }
+    clipboard: => @get_clipboard!
+
+    first_child: => @get_first_child!
+    last_child: => @get_last_child!
+    next_sibling: => @get_next_sibling!
+    prev_sibling: => @get_prev_sibling!
+    focus_child: => @get_focus_child!
+
+    children: =>
+      r = {}
+      child = @first_child
+      while child
+        append r, child
+        child = child.next_sibling
+      r
+
+  }
 
   realize: => C.gtk_widget_realize @
   show: => C.gtk_widget_show @
-  show_all: => C.gtk_widget_show_all @
   hide: => C.gtk_widget_hide @
-  grab_focus: => C.gtk_widget_grab_focus @
-  destroy: => C.gtk_widget_destroy @
+  grab_focus: => C.gtk_widget_grab_focus(@) != 0
+
+  get_display: => C.gtk_widget_get_display @
+  get_native: =>
+    require 'ljglibs.gtk.native'
+    C.gtk_widget_get_native @
+
+  get_first_child: =>
+    c = C.gtk_widget_get_first_child @
+    c != nil and c or nil
+
+  get_last_child: =>
+    c = C.gtk_widget_get_last_child @
+    c != nil and c or nil
+
+  get_next_sibling: =>
+    w = C.gtk_widget_get_next_sibling @
+    w != nil and w or nil
+
+  get_prev_sibling: =>
+    w = C.gtk_widget_get_prev_sibling @
+    w != nil and w or nil
+
+  get_focus_child: =>
+    w = C.gtk_widget_get_focus_child @
+    w != nil and w or nil
+
+  get_clipboard: =>
+    return C.gtk_widget_get_clipboard @
+
+  get_allocation: =>
+    alloc = ffi.new('GtkAllocation')
+    C.gtk_widget_get_allocation @, alloc
+    {
+      x: alloc.x,
+      y: alloc.y,
+      width: alloc.width,
+      height: alloc.height,
+    }
 
   translate_coordinates: (dest_widget, src_x, src_y) =>
-    ret = ffi.new 'gint [2]'
+    ret = ffi.new 'double [2]'
     status = C.gtk_widget_translate_coordinates @, to_w(dest_widget), src_x, src_y, ret, ret + 1
     error "Failed to translate coordinates" if status == 0
     ret[0], ret[1]
 
   set_size_request: (width, height) => C.gtk_widget_set_size_request @, width, height
 
-  override_background_color: (state, color) =>
-    C.gtk_widget_override_background_color @, state, color
-
-  override_font: (font_description) =>
-    C.gtk_widget_override_font @, font_description
-
   create_pango_context: => gc_ptr C.gtk_widget_create_pango_context @
 
-  add_events: (events) => C.gtk_widget_add_events @, events
+  add_controller: (controller) =>
+    C.gtk_widget_add_controller @, ffi_cast(controller_t,  controller)
+
+  add_css_class: (cls) =>
+    C.gtk_widget_add_css_class @, cls
+
+  remove_css_class: (cls) =>
+    C.gtk_widget_remove_css_class @, cls
+
+  get_ancestor: (type) =>
+    C.gtk_widget_get_ancestor @, type
+
+  set_parent: (p) =>
+    C.gtk_widget_set_parent @, to_w(p)
 
   queue_allocate: => C.gtk_widget_queue_allocate @
 
@@ -106,10 +175,24 @@ core.define 'GtkWidget < GObject', {
   queue_draw_area: (x, y, width, height) =>
     C.gtk_widget_queue_draw_area @, x, y, width, height
 
-  on_draw: (handler, ...) =>
-    this = @
-    args = pack(...)
-    signal.connect 'bool3', @, 'draw', (widget, cr) ->
-      handler this, cairo_t(cr), unpack(args, args.n)
+  unparent: =>
+    C.gtk_widget_unparent @
 
+  measure: (orientation, for_size) =>
+    ret = ffi.new 'int[4]'
+    C.gtk_widget_measure(
+      to_w(@),
+      orientation,
+      for_size,
+      ret,
+      ret + 1,
+      ret + 2,
+      ret + 3
+    )
+    {
+      minimum: tonumber(ret[0]),
+      natural: tonumber(ret[1]),
+      minimum_baseline: tonumber(ret[2]),
+      natural_baseline: tonumber(ret[3])
+    }
 }

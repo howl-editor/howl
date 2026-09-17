@@ -1,7 +1,7 @@
 -- Copyright 2019 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import ListWidget, List from howl.ui
+{:ListWidget, :List} = howl.ui
 
 append = table.insert
 
@@ -44,8 +44,10 @@ class BufferSearcher
     -- process the query in a separate coroutine and call opts.on_error or .on_success
     -- if called when a query is still running, we cancel current query and launch a new coroutine
     @cancel_query!
-    howl.dispatch.launch ->
-      @running = howl.dispatch.park 'BufferSearcher.run_query'
+    status, err = howl.dispatch.launch ->
+      -- use a local handle so it can't be overwritten by a subsequent run_query call
+      local_handle = howl.dispatch.park "BufferSearcher.run_query '#{query}'"
+      @running = local_handle
       self.on_yield = opts.on_yield
 
       status, r = pcall -> @\handle_query query
@@ -60,10 +62,15 @@ class BufferSearcher
           else
             opts.on_error(r) if opts.on_error
 
-      running = @running
       @running = nil
       self.on_yield = nil
-      howl.dispatch.resume running
+      -- resume_or_clear is used instead of resume: if cancel_query has called wait() on this
+      -- handle, resume_or_clear resumes it; if not (fast searches that complete synchronously),
+      -- it just removes the park entry without yielding, preventing a leaked parked dispatch.
+      howl.dispatch.resume_or_clear local_handle
+
+    if not status
+      print("BufferSearcher launch failed: #{err}")
 
   cancel_query: =>
     if @running
@@ -448,7 +455,7 @@ Start with a character other than <string>"/"</> to use it as the separator betw
     for vmatch in *visible_matches
       howl.ui.highlight.apply highlighter_for_match(vmatch), buffer, {{vmatch.start_pos, vmatch.end_pos - vmatch.start_pos + 1}}
 
-    -- deterine the currently selected match
+    -- determine the currently selected match
     match = if selection.marker then selection.marker else selection.line.chunk
 
     -- remove the current highlight made for visible_matches and add a new highlight

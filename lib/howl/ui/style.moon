@@ -1,7 +1,7 @@
 -- Copyright 2012-2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import colors from howl.ui
+{:colors} = howl.ui
 aullar_styles = require 'aullar.styles'
 {:define, :define_default} = aullar_styles
 
@@ -32,6 +32,7 @@ define 'symbol', 'key'
 define 'global', 'member'
 define 'regex', 'string'
 define 'type_def', 'type'
+define 'parameter', 'key' -- Added alias for parameter
 
 return setmetatable {
   :set_for_theme

@@ -193,10 +193,9 @@ howl.util.lpeg_lexer ->
     heredoc_dq: c('constant', S'`"' * Cg(scan_until(S'`"'), 'hd_del') * S'`"') * V'heredoc_tail' * V'heredoc_chunk'
     heredoc_bare: c('constant', Cg(scan_until(space + S',.'), 'hd_del')) * V'heredoc_tail' * V('heredoc_chunk')
     heredoc: sequence {
-      -B(':'),
       c('operator', '<<'),
       #complement(space),
-      c('constant', S'-~')^-1,
+      -P'self' * c('constant', S'-~')^-1,
       any(V'heredoc_sq', V'heredoc_dq', V'heredoc_bare'),
       V('heredoc_end')^0,
       Cg('', 'hd_del') -- cancel out any outside (stacked) heredocs

@@ -1,16 +1,17 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
-import signal from howl
+{:signal} = howl
 
 class Status
   new: =>
     @label = Gtk.Label {
-      xalign: 0
-      wrap: true
+      wrap: true,
+      hexpand: true,
+      halign: Gtk.ALIGN_START
     }
-    @label.style_context\add_class 'status'
+    @label\add_css_class 'status'
     @level = nil
     signal.connect 'key-press', self\clear
 
@@ -24,7 +25,7 @@ class Status
   clear: =>
     if @text
       if @level
-        @label.style_context\remove_class 'status_' .. @level
+        @label\remove_css_class 'status_' .. @level
 
       @label.label = ''
       @level = nil
@@ -32,15 +33,15 @@ class Status
 
   hide: =>
     @label.visible = false
+
   show: =>
     @label.visible = true
 
   _set: (level, text) =>
     if @level and level != @level
-        @label.style_context\remove_class 'status_' .. @level if @level
+      @label\remove_css_class 'status_' .. @level
 
-    @label.style_context\add_class 'status_' .. level
-
+    @label\add_css_class 'status_' .. level
     @label.label = text
     @text = text
     @level = level

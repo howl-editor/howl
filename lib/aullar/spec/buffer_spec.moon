@@ -1078,3 +1078,12 @@ describe 'Buffer', ->
       b = nil
       collect_memory!
       assert.is_nil buffers[1]
+
+    it 'listeners are not anchored', ->
+      b = Buffer 'foobar'
+      listener = setmetatable { {} }, __mode: 'v'
+      b\add_listener listener[1]
+      listener[1] = nil
+      collect_memory!
+      assert.is_nil listener[1]
+      b.text = 'noerror'

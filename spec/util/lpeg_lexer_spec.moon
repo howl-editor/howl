@@ -219,7 +219,7 @@ describe 'lpeg_lexer', ->
       assert.equals 1, #{ p\match 'xyxzx' }
 
   describe 'scan_until(stop_p [, escape_p])', ->
-    it 'matches until the specified pattern or <EOF>', ->
+    it 'matches until the specified pattern or <EOF> but does not consume stop_p', ->
       assert.equals 3, (l.scan_until('x') * Cp!)\match '12x'
       assert.equals 4, (l.scan_until('x') * Cp!)\match '123'
 
@@ -228,7 +228,7 @@ describe 'lpeg_lexer', ->
       assert.equals 4, p\match '{\\}}'
 
   describe 'scan_to(stop_p [, escape_p])', ->
-    it 'matches until the specified pattern or <EOF>', ->
+    it 'matches until the specified pattern or <EOF> and consumes stop_p', ->
       assert.equals 4, (l.scan_to('x') * Cp!)\match '12x'
       assert.equals 4, (l.scan_to('x') * Cp!)\match '123'
 

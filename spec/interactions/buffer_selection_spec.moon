@@ -1,9 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import app, bindings, config, interact, Project from howl
-import File from howl.io
-import Window from howl.ui
+{:app, :bindings, :config, :interact, :Project} = howl
+{:File} = howl.io
 
 require 'howl.ui.icons.font_awesome'
 require 'howl.interactions.explorer'
@@ -16,25 +15,25 @@ list_items = (command_line, col=1) ->
 
 describe 'buffer_selection', ->
   local editor, preview_title
-  buffers = {}
+  -- buffers = {}
 
   before_each ->
-    app.window = Window!
-    app.window\realize!
+    config.autoclose_single_buffer = false
     preview_title = '<no-preview-buffer>'
     editor = {
       preview: (buffer) => preview_title = buffer.title
     }
 
-    config.autoclose_single_buffer = false
+    use_test_buffers 'a1-buffer', 'b-buffer', 'c-buffer', 'a2-buffer'
 
-    for b in *app.buffers
-      app\close_buffer b
+  after_each ->
+    for buf in *app.buffers
+      app\close_buffer buf
 
-    for title in *{'a1-buffer', 'b-buffer', 'c-buffer', 'a2-buffer'}
-      b = app\new_buffer!
-      b.title = title
-      table.insert buffers, b
+    app.editor = nil
+    if app.window
+      app.window\destroy!
+      app.window = nil
 
   it "registers interactions", ->
     assert.not_nil interact.select_buffer
@@ -108,10 +107,12 @@ describe 'buffer_selection', ->
         for b in *app.buffers
           app\close_buffer b
 
-        paths = {'/project1/some/file1', '/project2/some/file1', '/project2/path1/file2', '/project2/path2/file2'}
-        for path in *paths
-          b = app\new_buffer!
-          b.file = File path
+        use_test_buffers(
+          {file: File '/project1/some/file1'},
+          {file: File '/project2/some/file1'},
+          {file: File '/project2/path1/file2'},
+          {file: File '/project2/path2/file2'}
+        )
 
         Project.add_root File '/project1'
         Project.add_root File '/project2'

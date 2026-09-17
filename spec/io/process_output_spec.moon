@@ -11,6 +11,11 @@ describe 'process_output', ->
         { line_nr: 2, message: 'foo' }
       }, parse "2: foo"
 
+    it 'opts.keep_whitespace keeps indentation for messages', ->
+      assert.same {
+        { line_nr: 2, message: '  foo' }
+      }, parse "2:  foo", keep_whitespace: true
+
     context 'when opts.max_message_length is specified', ->
       it 'shortens the messages as neccessary', ->
       assert.same {
@@ -65,3 +70,29 @@ describe 'process_output', ->
         assert.same {
           {line_nr: 3, column: 2, message: 'foo'}
         }, parse "3:2:foo"
+
+      it 'handles files ending with a number', ->
+        exp = {
+          {
+            file: File('foo.yml.j2'),
+            path: 'foo.yml.j2',
+            line_nr: 10,
+            column: 12,
+            message: 'foo'
+          }
+        }
+        assert.same exp, parse "foo.yml.j2:10:12:  foo"
+
+      it 'handles files ending with a number when keeping keep_whitespace', ->
+        exp = {
+          {
+            file: File('foo.yml.j2'),
+            path: 'foo.yml.j2',
+            line_nr: 10,
+            column: 12,
+            message: '  foo'
+          }
+        }
+        assert.same exp, parse("foo.yml.j2:10:12:  foo", {
+            keep_whitespace: true
+        })

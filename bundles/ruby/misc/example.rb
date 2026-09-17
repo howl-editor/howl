@@ -150,5 +150,13 @@ foo
   Ok #$boy ?
 bar
 
+# no, these are not heredocs!
+sym = :<<
+other_var = 1
+
+class <<self
+  alias_method :orig_relevant_model, :relevant_model
+end
+
 puts ['All', 'legal', 'Ruby.'].join '. '
 [other_symbols, r]

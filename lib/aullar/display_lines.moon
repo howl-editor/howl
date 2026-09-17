@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 flair = require 'aullar.flair'
@@ -217,8 +217,10 @@ LinesMt = {
 }
 
 DisplayLine = define_class {
-  new: (@display_lines, @view, buffer, @pango_context, line, width) =>
+  new: (@display_lines, @view, buffer, @pango_context, line, default_font_desc) =>
     @layout = Layout pango_context
+    @layout.font_description = default_font_desc
+
     @layout\set_text line.ptr, line.size
     @layout.tabs = display_lines.tab_array
     @nr = line.nr
@@ -230,9 +232,9 @@ DisplayLine = define_class {
     wrap = config.view_line_wrap
 
     WRAP_LIMIT = 2000 -- xxx replace
-    if wrap != 'none' and @size <= WRAP_LIMIT
+    if wrap != 'none' and @size <= WRAP_LIMIT and view.width
       wrap_indicator = @display_lines.wrap_indicator
-      width = view.edit_area_width - wrap_indicator.width - @width_of_space
+      width = view.width - wrap_indicator.width - @width_of_space
       @layout.width = width * SCALE
       wrap_mode = wrap == 'word' and Pango.WRAP_WORD or Pango.WRAP_CHAR
       @layout.wrap = wrap_mode
@@ -301,7 +303,8 @@ DisplayLine = define_class {
             :line_end,
             :extents,
             baseline: iter.baseline / SCALE
-            height: extents.height + @y_offset * 2
+            height: layout_line\get_height! / SCALE
+
           }
           nr += 1
           break unless iter\next_line!
@@ -326,6 +329,7 @@ DisplayLine = define_class {
 
       bg_flair = flair.build {
         type: flair.RECTANGLE,
+        full_height: true,
         background: bg_range.style.background
         background_alpha: bg_range.style.alpha
         :width
@@ -382,6 +386,11 @@ get_wrap_indicator = (pango_context, view) ->
   :layout, :width, :height
 
 (view, tab_array, buffer, pango_context) ->
+  default_font_desc = Pango.FontDescription {
+    family: view.config.view_font_name,
+    size: view.config.view_font_size * Pango.SCALE
+  }
+
   setmetatable {
     min: math.huge
     max: 0
@@ -422,7 +431,7 @@ get_wrap_indicator = (pango_context, view) ->
     __index: (nr) =>
       line = buffer\get_line nr
       return nil unless line
-      d_line = DisplayLine @, view, buffer, pango_context, line
+      d_line = DisplayLine @, view, buffer, pango_context, line, default_font_desc
       @min = min @min, nr
       @max = max @max, nr
       outside = @window.size and (nr < @window.first or nr > @window.last)

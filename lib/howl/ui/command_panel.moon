@@ -1,11 +1,11 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gtk = require 'ljglibs.gtk'
 require 'howl.ui.icons.font_awesome'
-import bindings, config, dispatch from howl
-import PropertyObject from howl.util.moon
-import NotificationWidget, BufferPopup, TextWidget, IndicatorBar, ContentBox, HelpContext, style from howl.ui
+{:bindings, :config, :dispatch, :timer} = howl
+{:PropertyObject} = howl.util.moon
+{:NotificationWidget, :BufferPopup, :TextWidget, :IndicatorBar, :ContentBox, :HelpContext, :style} = howl.ui
 
 append = table.insert
 
@@ -17,6 +17,8 @@ class CommandLine extends PropertyObject
     @def = {}
 
     @bin = Gtk.Box Gtk.ORIENTATION_HORIZONTAL
+    @bin.visible = false
+    @bin.vexpand = false
     @box = nil
     @command_widget = nil
     @header = nil
@@ -48,31 +50,29 @@ class CommandLine extends PropertyObject
       on_focus_lost: ->
         -- don't let focus leave command line, even if user clicks the editor, we'll grab focus back while open
         if @is_open and not @is_hidden and howl.activities.nr_visible == 0
-          @command_widget\focus!
+          timer.asap -> -- done in a timer to avoid any races
+            @command_widget\focus!
 
+    @command_widget.can_focus = true
     @command_widget.visible_rows = 1
     -- reset blink interval since each view has its own
     @command_widget.view.config.cursor_blink_interval = config.cursor_blink_interval
 
-    @box\pack_end @command_widget\to_gobject!, false, 0, 0
+    @box\append @command_widget\to_gobject!
 
     @notification = NotificationWidget!
-    @box\pack_end @notification\to_gobject!, false, 0, 0
+    @box\append @notification\to_gobject!
 
     @header = IndicatorBar 'header'
     @indic_title = @header\add 'left', 'title'
     @indic_info = @header\add 'right', 'info'
 
-    @box.margin_left = 2
+    @box.margin_start = 2
     @box.margin_top = 2
     c_box = ContentBox 'command_line', @box, {
       header: @header\to_gobject!
     }
     @bin\add c_box\to_gobject!
-
-  _destroy_box: =>
-    @box\destroy!
-    @box = nil
 
   @property title:
     get: => @_title
@@ -114,7 +114,8 @@ class CommandLine extends PropertyObject
     @command_widget.cursor\eof!
 
   post_keypress: =>
-    @_enforce_left_pos!
+    if @command_widget
+      @_enforce_left_pos!
 
   _enforce_left_pos: =>
     -- don't allow cursor to go left into prompt
@@ -123,6 +124,7 @@ class CommandLine extends PropertyObject
       @command_widget.cursor.pos = left_pos
 
   handle_text_change: =>
+    return unless @command_widget
     @command_widget\adjust_height! -- expand or contract on wrapping
     return unless @def.on_text_changed
     -- avoid deep recursive calls to short circuit cyclic bugs in the code
@@ -188,7 +190,7 @@ class CommandLine extends PropertyObject
         @command_widget\delete_back!
 
       ["editor-paste"]: =>
-        import clipboard from howl
+        {:clipboard} = howl
         if clipboard.current
           @write clipboard.current.text
 
@@ -197,22 +199,19 @@ class CommandLine extends PropertyObject
 
     @remove_widget name
 
-    local pack
-    if pos == 'bottom'
-        pack = @box\pack_end
-    elseif pos == 'top'
-        pack = @box\pack_start
-    else
-        error "Invalid pos #{pos}"
-    pack widget\to_gobject!, false, 0, 0
-    @_widgets[name] = widget
+    -- we always keep our two base components at the bottom
+    children = @box.children
+    if pos == 'bottom' and #children > 2
+      @box\prepend widget\to_gobject!
 
-    widget\show!
+    else
+      @box\prepend widget\to_gobject!
+
+    @_widgets[name] = widget
 
   remove_widget: (name) =>
     widget = @_widgets[name]
     return unless widget
-    widget\to_gobject!\destroy!
     @_widgets[name] = nil
 
   get_widget: (name) => @_widgets[name]
@@ -221,7 +220,6 @@ class CommandLine extends PropertyObject
     names = [name for name, _ in pairs @_widgets]
     for name in *names
       @remove_widget name
-
 
   load_help: =>
     -- merge help provided by @def and @opts
@@ -248,7 +246,6 @@ class CommandLine extends PropertyObject
 
     @indic_info.label = text
 
-
   show_help: =>
     help_buffer = @_help_context\get_buffer!
     return unless help_buffer and not help_buffer.text.is_blank
@@ -262,13 +259,13 @@ class CommandLine extends PropertyObject
 
   close_help: =>
     if @help_popup
-      @help_popup\destroy!
+      @help_popup\release!
       @help_popup = nil
 
   open: =>
     return if @is_open
 
-    @bin\show_all!
+    @bin\show!
     @notification\hide!
     @title = @title
 
@@ -287,21 +284,18 @@ class CommandLine extends PropertyObject
     @command_widget\focus!
 
   close: =>
-    return if not @box
+    return if not @is_open
     if @def.on_close
       @def\on_close!
-    @reset!
-    if @is_open
-      @bin\hide!
-      @_destroy_box!
-      @is_open = false
 
-  reset: =>
-    @def = {}
-    @parking = nil
-    @title = ''
-    @prompt = ''
-    @text = ''
+    @clear_widgets!
+
+    if @command_widget
+      @command_widget = nil
+
+    @bin\hide!
+    @box = nil
+    @is_open = false
 
   run: (def, opts={}) =>
     error 'def not provided' unless def
@@ -332,23 +326,12 @@ class CommandPanel extends PropertyObject
     super!
     @command_lines = {}
     @bin = Gtk.Box Gtk.ORIENTATION_VERTICAL
+    @bin.visible = false
 
   to_gobject: => @bin
 
   @property is_active: get: => #@command_lines > 0
   @property active_command_line: get: => @command_lines[#@command_lines]
-
-  _push: (command_line) =>
-    @bin\pack_end command_line\to_gobject!, false, 0, 0
-    append @command_lines, command_line
-
-  _remove: (command_line) =>
-    before_count = #@command_lines
-    @command_lines = [cl for cl in *@command_lines when cl != command_line]
-    after_count = #@command_lines
-    if after_count < before_count
-      @bin\remove command_line\to_gobject!
-      return command_line
 
   run: (def, opts={}) =>
     current_command_line = @command_lines[#@command_lines]  -- currently active command line
@@ -398,6 +381,18 @@ class CommandPanel extends PropertyObject
     dispatch.launch ->
       for idx = #command_lines, 1, -1
         command_lines[idx]\finish!
+
+  _push: (command_line) =>
+    @bin\append command_line\to_gobject!
+    append @command_lines, command_line
+
+  _remove: (command_line) =>
+    before_count = #@command_lines
+    @command_lines = [cl for cl in *@command_lines when cl != command_line]
+    after_count = #@command_lines
+    if after_count < before_count
+      @bin\remove command_line\to_gobject!
+      return command_line
 
 return CommandPanel
 

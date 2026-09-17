@@ -5,7 +5,7 @@ require 'ljglibs.core'
 require 'ljglibs.cdefs.pango'
 require 'ljglibs.pango.layout'
 ffi = require 'ffi'
-import gc_ptr from require 'ljglibs.gobject'
+{:gc_ptr} = require 'ljglibs.gobject'
 C = ffi.C
 
 {

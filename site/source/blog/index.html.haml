@@ -14,10 +14,9 @@ per_page: 5
       %h2
         %span= article.date.strftime('%b %e %Y')
         —
-        -# = link_to article.title, article
         = article.title
 
-      = article.summary
+      != article.summary
       .read-more= link_to '➥ Read more..', article, :find_resource => true
 
   - if paginate && num_pages > 1

@@ -20,6 +20,17 @@ rvm_ruby = (version) ->
         if c.basename\find version
           return c\join('ruby').path
 
+rbenv_ruby = (version) ->
+  for rbenv_dir in *{
+    File(sys.env.HOME)\join('.rbenv'),
+    File('/usr/local/rbenv'),
+  }
+    versions = rbenv_dir\join('versions')
+    if versions.exists
+      for c in *versions.children
+        if c.basename == version
+          return c\join('bin', 'ruby').path
+
 ruby_version_for = (file) ->
   version_file = version_file_for file
   return nil unless version_file
@@ -30,6 +41,8 @@ ruby_command_for = (path) ->
   version = path and ruby_version_for(path)
   if version
     cmd = rvm_ruby(version)
+    return cmd if cmd
+    cmd = rbenv_ruby(version)
     return cmd if cmd
 
   cmd = sys.find_executable 'ruby'

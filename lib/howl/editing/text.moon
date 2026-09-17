@@ -1,8 +1,8 @@
 -- Copyright 2014-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import signal, timer, config, command from howl
-import style from howl.ui
+{:signal, :timer, :config, :command} = howl
+{:style} = howl.ui
 tinsert = table.insert
 
 paragraph_break_line = (line) ->

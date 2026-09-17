@@ -1,25 +1,50 @@
 -- Copyright 2016-2018 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-{:app, :command, :config, :mode, :inspection, :sys} = howl
+{:app, :command, :config, :mode, :inspection, :sys, :Project} = howl
 
 {:fmt} = bundle_load 'go_fmt'
 
+get_go_package = (buffer) ->
+  return unless buffer.file
+  project = Project.for_file buffer.file
+  return unless project
+  go_mod = project.root / 'go.mod'
+  return unless go_mod.exists
+  module_line = go_mod.lines[1]
+  return unless module_line
+  module_path = module_line\gmatch('module (.+)')!
+  return unless module_path
+  package_line = buffer.lines[1]
+  package_name = package_line\gmatch('package (.+)')!
+  return unless package_name
+  package_path = buffer.file.parent\relative_to_parent(project.root)
+  return project.root, "#{module_path}/#{package_path}"
+
 register_inspections = ->
   inspection.register
-    name: 'golint'
-    factory: -> {
-      cmd: 'golint <file>',
-      type: 'warning',
-      is_available: -> sys.find_executable('golint'), "`golint` command not found"
-    }
+    name: 'staticcheck'
+    factory: (buffer) ->
+      cwd, package = get_go_package buffer
+      return nil if not package
+      {
+        cmd: "staticcheck #{package}",
+        type: 'warning',
+        working_directory: cwd
+        is_available: -> sys.find_executable('staticcheck'), "`staticcheck` command not found"
+      }
+
   inspection.register
-    name: 'gotoolvet'
-    factory: -> {
-      cmd: 'go tool vet <file>',
-      type: 'error',
-      is_available: -> sys.find_executable('go'), "`go` command not found"
-    }
+    name: 'govet'
+    factory: (buffer) ->
+      cwd, package = get_go_package buffer
+      return nil if not package
+      {
+        cmd: package and "go vet #{package}",
+        type: 'error',
+        working_directory: cwd
+        is_available: -> sys.find_executable('go'), "`go` command not found"
+      }
 
 register_mode = ->
   mode_reg =

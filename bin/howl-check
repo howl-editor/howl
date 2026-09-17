@@ -1,0 +1,86 @@
+#! /bin/sh
+#
+# Copyright 2026 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
+#
+# The whole change loop for a source file, in one command: recompile it if its .bc is
+# stale, lint it, and run its spec.
+#
+# The source-to-spec mapping mirrors the one in Spookfile.
+
+. "$(dirname "$0")/_howl_env.sh"
+
+cd "$ROOT" || exit 1
+
+if [ $# -eq 0 ]; then
+  cat <<'EOF'
+Usage: howl-check <file.moon>...
+
+For each file: recompile it if it has a stale .bc, lint it, and run its spec.
+Stops at the first failing step and reports which one it was.
+
+  lib/howl/X.moon           -> spec/X_spec.moon
+  lib/aullar/X.moon         -> lib/aullar/spec/X_spec.moon
+  lib/ljglibs/X.moon        -> lib/ljglibs/spec/X_spec.moon
+  bundles/<b>/<d>/X.moon    -> bundles/<b>/<d>/spec/X_spec.moon
+  *_spec.moon               -> itself
+EOF
+  exit 1
+fi
+
+# Echoes the spec path for a source file, or nothing if there is no mapping.
+spec_for() {
+  case "$1" in
+    *_spec.moon) printf '%s\n' "$1" ;;
+    lib/howl/*.moon)
+      base=${1#lib/howl/}; printf '%s\n' "spec/${base%.moon}_spec.moon" ;;
+    lib/aullar/*.moon)
+      base=${1#lib/aullar/}; printf '%s\n' "lib/aullar/spec/${base%.moon}_spec.moon" ;;
+    lib/ljglibs/*.moon)
+      base=${1#lib/ljglibs/}; printf '%s\n' "lib/ljglibs/spec/${base%.moon}_spec.moon" ;;
+    bundles/*.moon)
+      dir=$(dirname "$1"); base=$(basename "$1" .moon)
+      printf '%s\n' "$dir/spec/${base}_spec.moon" ;;
+  esac
+}
+
+status=0
+
+for f in "$@"; do
+  # Accept absolute paths and paths relative to the caller's original directory.
+  case "$f" in
+    "$ROOT"/*) f=${f#"$ROOT"/} ;;
+  esac
+
+  if [ ! -e "$f" ]; then
+    echo "howl-check: no such file: $f" >&2
+    status=1
+    continue
+  fi
+
+  echo "== $f"
+
+  bc="${f%.moon}.bc"
+  case "$f" in
+    *_spec.moon) ;;  # never compiled
+    *)
+      if [ -e "$bc" ] && [ "$f" -nt "$bc" ]; then
+        "$HOWL" --compile "$f" || { echo "howl-check: compile failed" >&2; status=1; continue; }
+      fi
+      ;;
+  esac
+
+  "$ROOT/bin/howl-lint" "$f" || { echo "howl-check: lint failed" >&2; status=1; continue; }
+  echo "   lint ok"
+
+  spec=$(spec_for "$f")
+  if [ -z "$spec" ]; then
+    echo "   no spec mapping for $f"
+  elif [ ! -e "$spec" ]; then
+    echo "   no spec at $spec"
+  else
+    "$ROOT/bin/howl-spec" "$spec" || { echo "howl-check: specs failed" >&2; status=1; continue; }
+  fi
+done
+
+exit $status

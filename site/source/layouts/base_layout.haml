@@ -13,7 +13,8 @@
 
     = javascript_include_tag 'https://code.jquery.com/jquery-1.12.3.min.js'
     = javascript_include_tag "bootstrap.min"
-    = preserve yield_content(:javascript)
+
+    = yield_content(:javascript)
 
     %link(href='//fonts.googleapis.com/css?family=Josefin+Slab' rel='stylesheet' type='text/css')
     %link(href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css')
@@ -34,7 +35,7 @@
           %a(href="/contact.html")
             CONTACT
     .content
-      = preserve yield
+      = yield
 
     .footer.text-muted
       .container
@@ -59,7 +60,7 @@
           .footer-blurb
             %div The Howl editor.
             %div
-              Copyright 2012-2019
+              Copyright 2012-2024
               %a.alert-link(href='https://github.com/howl-editor/howl/contributors')
                 The Howl Developers.
 

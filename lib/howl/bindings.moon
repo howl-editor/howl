@@ -2,9 +2,9 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 _G = _G
-import table, coroutine, pairs from _G
-import pcall, callable, setmetatable, typeof, tostring from _G
-import signal, command, sys from howl
+{:table, :coroutine, :pairs} = _G
+{:pcall, :callable, :setmetatable, :typeof, :tostring} = _G
+{:signal, :command, :sys} = howl
 append = table.insert
 
 signal.register 'key-press',
@@ -203,7 +203,7 @@ export translate_key = (event) ->
       append translations, modifiers .. a
   elseif alternate
     append translations, modifiers .. alternate
-  append translations, modifiers .. event.key_code
+  append translations, modifiers .. tostring(event.key_code)
 
   translations
 

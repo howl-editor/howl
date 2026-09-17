@@ -1,18 +1,14 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
-ffi = require 'ffi'
-gobject_signal = require 'ljglibs.gobject.signal'
-Background = require 'ljglibs.aux.background'
 {:PropertyObject} = howl.util.moon
 {:Activity, :CommandPanel, :Status, :theme} = howl.ui
 {:signal} = howl
-{:config, :signal} = howl
+{:signal} = howl
 
 append = table.insert
-ffi_cast = ffi.cast
 
 to_gobject = (o) ->
   status, gobject = pcall -> o\to_gobject!
@@ -25,49 +21,43 @@ placements = {
   below: 'POS_BOTTOM'
 }
 
-GTK_SUPPORTS_HIDDEN_TITLEBAR = not Gtk.check_version(3, 4)
-
 class Window extends PropertyObject
   new: (properties = {}) =>
     @_handlers = {}
+    @_views = {}
     @status = Status!
     @command_panel = CommandPanel self
-    @background = Background "window_bg", 0, 0
     @grid = Gtk.Grid
       column_homogeneous: true
       row_homogeneous: true
+      valign: Gtk.ALIGN_FILL
+      vexpand: true
+
+    @grid.can_focus = true
 
     @activity = Activity!
-    @widgets = Gtk.Box Gtk.ORIENTATION_VERTICAL
-    @box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
-      { expand: true, @grid },
-      @command_panel\to_gobject!
-      @widgets,
-      @status\to_gobject!,
-    }
-    @bg_box = Gtk.Box Gtk.ORIENTATION_VERTICAL, {
-      { expand: true, @box }
-    }
 
-    @win = Gtk.Window Gtk.Window.TOPLEVEL
+    @widgets = Gtk.Box Gtk.ORIENTATION_VERTICAL
+    @box = Gtk.Box Gtk.ORIENTATION_VERTICAL
+    @box\append @grid
+    @box\append @command_panel\to_gobject!
+    @box\append @widgets
+    @box\append @status\to_gobject!
+    @box\add_css_class "container"
+
+    @win = properties.window or Gtk.Window!
+    @win\add_css_class 'main-window'
+
     @win[k] = v for k,v in pairs properties
 
-    if GTK_SUPPORTS_HIDDEN_TITLEBAR
-      @win.hide_titlebar_when_maximized = config.hide_titlebar_when_maximized
+    @win\connect_for @, 'destroy', self._on_destroy
 
-      config.watch 'hide_titlebar_when_maximized', (_, value) ->
-        @win.hide_titlebar_when_maximized = value
+    @focus_controller = Gtk.EventControllerFocus!
+    @win\add_controller @focus_controller
+    @focus_controller\connect_for @, 'enter', self._on_focus_in
+    @focus_controller\connect_for @, 'leave', self._on_focus_out
 
-    append @_handlers, @bg_box\on_size_allocate self\_on_bg_size_allocate
-    append @_handlers, @bg_box\on_draw self\_on_bg_draw
-    append @_handlers, @win\on_focus_in_event self\_on_focus
-    append @_handlers, @win\on_focus_out_event self\_on_focus_lost
-    append @_handlers, @win\on_destroy self\_on_destroy
-    append @_handlers, @win\on_screen_changed self\_on_screen_changed
-    @win.app_paintable = true
-    @_set_alpha!
-
-    @win\add @bg_box
+    @win.child = @box
 
     @_theme_changed = self\_on_theme_changed
     signal.connect 'theme-changed', @_theme_changed
@@ -79,14 +69,19 @@ class Window extends PropertyObject
     views = {}
 
     for c in *@grid.children
-      props = @grid\properties_for c
-      append views, {
-        x: props.left_attach + 1
-        y: props.top_attach + 1
+      props = @grid\query_child c
+      data = {
+        x: props.column + 1
+        y: props.row + 1
         width: props.width
         height: props.height
-        view: c
+        gobject: c,
       }
+      v = @_view_from_gobject c
+      if v != c
+        data.view = v
+
+      append views, data
 
     table.sort views, (a, b) ->
       return a.y < b.y if a.y != b.y
@@ -123,7 +118,7 @@ class Window extends PropertyObject
         @win\unmaximize!
 
   add_widget: (widget) =>
-    @widgets\pack_end widget, true, true, 0
+    @widgets\append widget
 
   remove_widget: (widget) =>
     @widgets\remove widget
@@ -138,15 +133,15 @@ class Window extends PropertyObject
 
     for i = 1, #views
       v = views[i]
-      if v.view == current.view
+      if v.gobject == current.gobject
         index = i
       elseif v.x <= current.x and v.x + v.width > current.x
         if v.y == current.y - 1
-          up = v.view
+          up = v.gobject
         elseif v.y == current.y + 1
-          down = v.view
+          down = v.gobject
 
-        append vertical_siblings, v.view
+        append vertical_siblings, v.gobject
 
     before = views[index - 1]
     left = if before and before.y == current.y then before
@@ -161,8 +156,8 @@ class Window extends PropertyObject
       down = vertical_siblings[1] unless down
 
     {
-      left: left and left.view
-      right: right and right.view
+      left: left and left.gobject
+      right: right and right.gobject
       :up
       :down
     }
@@ -172,31 +167,41 @@ class Window extends PropertyObject
   add_view: (view, placement = 'right_of', anchor) =>
     gobject = to_gobject view
     @_place gobject, placement, anchor
-    gobject\show_all!
+    append @_views, {:view, :gobject}
+    gobject\show!
     @_reflow!
     @get_view gobject
 
   remove_view: (view = nil) =>
     view = @focus_child unless view
+    error "Missing view to remove", 2 unless view
     gobject = to_gobject view
-    error "Missing view to remove", 2 unless gobject
+
+    view = @_view_from_gobject gobject
+    error "Asked to remove non-existing view", 2 unless view
 
     siblings = @siblings gobject
     focus_target = siblings.right or siblings.left
     focus_target or= @siblings(gobject, true).left
-    gobject\destroy!
+    @grid\remove gobject
     @_reflow!
     focus_target\grab_focus! if focus_target
+
+    view\release! if view.release
+    @_views = [t for t in *@_views when t.gobject != gobject]
 
   get_view: (o) =>
     gobject = to_gobject o
     for v in *@views
-      return v if v.view == gobject
+      return v if v.gobject == gobject
 
     nil
 
   remember_focus: =>
     @data.focus_child = @grid.focus_child
+
+  show_popup: (popup, opts) =>
+    popup\show @win, opts
 
   get_screenshot: (opts={}) =>
     x, y, w, h = 0, 0, @allocated_width, @allocated_height
@@ -207,6 +212,13 @@ class Window extends PropertyObject
       window = @screen.root_window
 
     Gdk.Pixbuf.get_from_window window, x, y, w, h
+
+  _view_from_gobject: (gobject) =>
+    for v in *@_views
+      if v.gobject == gobject
+        return v.view
+
+    return nil
 
   _as_rows: (views) =>
     rows = {}
@@ -219,7 +231,7 @@ class Window extends PropertyObject
         row = {}
 
       current = v
-      append row, v.view
+      append row, v.gobject
 
     append rows, row
     rows
@@ -238,33 +250,42 @@ class Window extends PropertyObject
       col_size = math.floor max_columns / #row
       extra = max_columns % #row
       for i = 0, #row - 1
-        width = col_size
-        width += extra if i == #row - 1
+        w_width = col_size
+        w_width += extra if i == #row - 1
+        w_row = y - 1
+        w_col = i * col_size
         widget = row[i + 1]
-
-        with @grid\properties_for(widget)
-          .left_attach = i * col_size
-          .top_attach = y - 1
-          .width = width
+        props = @grid\query_child(widget)
+        if props.row != w_row or props.column != w_col or props.width != w_width
+          @grid\remove widget
+          @grid\attach widget, w_col, w_row, w_width, 1
 
   _insert_column: (anchor, where) =>
-    rel_column = @grid\properties_for(anchor).left_attach
+    rel_column = @grid\query_child(anchor).column
     if where == 'left_of'
       @grid\insert_column rel_column
     else
       @grid\insert_column rel_column + 1
 
+  _insert_row: (anchor, where) =>
+    rel_row = @grid\query_child(anchor).row
+    if where == 'above'
+      @grid\insert_row rel_row
+    else
+      @grid\insert_row rel_row + 1
+
   _place: (gobject, placement, anchor) =>
     where = placements[placement]
     error "Unknown placement '#{placement}' specified", 2 unless where
+    sibling = to_gobject(anchor) or @focus_child
 
-    anchor = to_gobject(anchor) or @focus_child
-    unless anchor
-      @grid\add gobject
-      return
+    if sibling
+      if placement == 'left_of' or placement == 'right_of'
+        @_insert_column sibling, placement
+      else
+        @_insert_row sibling, placement
 
-    @_insert_column anchor, placement if placement == 'left_of' or placement == 'right_of'
-    @grid\attach_next_to gobject, anchor, Gtk[where], 1, 1
+    @grid\attach_next_to gobject, sibling, Gtk[where], 1, 1
 
   _on_theme_changed: (opts) =>
     def = {}
@@ -282,51 +303,24 @@ class Window extends PropertyObject
       .row_spacing = inner_padding
       .column_spacing = inner_padding
 
-    @background\reconfigure def
     @win\queue_draw!
 
-  _on_bg_size_allocate: (_, alloc) =>
-    alloc = ffi_cast('GdkRectangle *', alloc)
-    @background\resize alloc.width, alloc.height
-
   _on_destroy: =>
-    -- disconnect signal handlers
-    for h in *@_handlers
-      gobject_signal.disconnect h
+    for view in *@_views
+      if view and view.release
+        view\release!
 
+    @_views = {}
     signal.disconnect 'theme-changed', @_theme_changed
 
-  _on_bg_draw: (_, cr) =>
-    cr\save!
-    @background\draw cr
-    cr\restore!
-    false
-
-  _on_focus: =>
+  _on_focus_in: =>
     howl.app.window = self
     signal.emit 'window-focused', window: self
     false
 
-  _on_focus_lost: =>
+  _on_focus_out: =>
     signal.emit 'window-defocused', window: self
     false
-
-  _set_alpha: =>
-    screen = @win.screen
-    if screen.is_composited
-      visual = screen.rgba_visual
-      @win.visual = visual if visual
-
-  _on_screen_changed: =>
-    @_set_alpha!
-
-if GTK_SUPPORTS_HIDDEN_TITLEBAR
-  config.define
-    name: 'hide_titlebar_when_maximized'
-    description: 'Whether to hide the titlebar when maximized'
-    scope: 'global'
-    type_of: 'boolean'
-    default: true
 
 -- Signals
 signal.register 'window-focused',

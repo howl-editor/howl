@@ -12,7 +12,7 @@ interact.register
   handler: (opts={}) ->
     interact.explore
       title: opts.title
-      prompt: opts.prompt
+      prompt: opts.prompt or '> '
       text: opts.text
       path: {LocationExplorer opts.items, opts.selection, opts.columns, opts.preserve_order}
       transform_result: (location_item) -> location_item.location

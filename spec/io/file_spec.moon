@@ -138,6 +138,31 @@ describe 'File', ->
         f\close!
         assert.equal file.contents, 'hello world'
 
+  describe '.lines', ->
+    it 'returns an empty table for an empty file', ->
+      File.with_tmpfile (file) ->
+        assert.same {}, file.lines
+
+    it 'returns a table of lines', ->
+      File.with_tmpfile (file) ->
+        file.contents = 'line one\nline two\nline three'
+        assert.same {'line one', 'line two', 'line three'}, file.lines
+
+    it 'handles CRLF newlines', ->
+      File.with_tmpfile (file) ->
+        file.contents = 'line one\r\nline two'
+        assert.same {'line one', 'line two'}, file.lines
+
+    it 'handles files not ending in a newline', ->
+      File.with_tmpfile (file) ->
+        file.contents = 'line one\nline two'
+        assert.same {'line one', 'line two'}, file.lines
+
+    it 'handles files ending in a newline', ->
+      File.with_tmpfile (file) ->
+        file.contents = 'line one\nline two\n'
+        assert.same {'line one', 'line two'}, file.lines
+
   it '.parent return the parent of the file', ->
     assert.equal File('/bin/ls').parent.path, '/bin'
 

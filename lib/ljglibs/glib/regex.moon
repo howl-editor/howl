@@ -5,7 +5,9 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.glib'
 core = require 'ljglibs.core'
 glib = require 'ljglibs.glib'
-import g_string, catch_error from glib
+gobject = require 'ljglibs.gobject'
+
+{:g_string, :catch_error} = glib
 
 C, ffi_string, ffi_gc = ffi.C, ffi.string, ffi.gc
 {:parse_flags} = core
@@ -29,6 +31,10 @@ core.define 'GMatchInfo', {
 
     start_pos[0], end_pos[0]
 }
+
+release_regex = (r) ->
+  gobject.register_deallocation 'GRegex'
+  C.g_regex_unref(r)
 
 core.define 'GRegex', {
   constants: {
@@ -129,7 +135,7 @@ core.define 'GRegex', {
 
   meta: {
     __tostring: => @pattern
-    __is_container: false
+    __plain_constructor: true
   }
 
 }, (def, pattern, compile_options = 0, match_options = 0) ->
@@ -146,5 +152,7 @@ core.define 'GRegex', {
     C.g_error_free err[0]
     error "#{err_s} (code: #{code})", 2
 
-  ffi.gc regex, C.g_regex_unref
+  -- ffi_gc regex, C.g_regex_unref
+  gobject.register_allocation 'GRegex'
+  ffi_gc regex, release_regex
   return regex

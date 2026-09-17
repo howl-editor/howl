@@ -11,6 +11,7 @@
       'bundle_load',
       'bundles',
       'callable',
+      'nr_active_coroutines',
       'howl',
       'jit',
       'log',
@@ -202,7 +203,10 @@
       'within_command_line',
       'with_signal_handler',
       'with_tmpdir',
-      'trimmed_text'
+      'trimmed_text',
+      'test_window',
+      'pending',
+      'use_test_buffers'
    },
 
     sandboxed_loader_spec: {

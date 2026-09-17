@@ -78,6 +78,8 @@ create_attributes = (def) ->
     append attrs, Attribute.Style(Pango.STYLE_ITALIC) if font.italic
     append attrs, Attribute.Weight(Pango.WEIGHT_BOLD) if font.bold
     append attrs, Attribute.Size(get_font_size(font.size) * SCALE) if font.size
+  else
+    append attrs, Attribute.Family('monospace')
 
   attrs
 

@@ -16,6 +16,7 @@ Where options can be any of:
   --run-async   Loads and runs the specified file from within a async Howl context
   --no-profile  Starts Howl without loading any user profile (settings, etc)
   --spec        Runs the specified Howl spec file(s)
+  --debug       Enable debug output (e.g. memory/callback usage reports)
   -h, --help    This help
   -v, --version Shows version
 ]=]
@@ -34,7 +35,8 @@ local function parse_args(arg_vector)
     ['--run'] = 'run',
     ['--run-async'] = 'run_async',
     ['-v'] = 'version',
-    ['--version'] = 'version'
+    ['--version'] = 'version',
+    ['--debug'] = 'debug'
   }
   local args = {}
 
@@ -183,8 +185,8 @@ local function main()
     lint(args)
   elseif args.version then
     -- Change version here
-    print("howl version 0.6-dev\n")
-    print("Copyright 2012-2019 The Howl Developers\nLicense: MIT License")
+    print("howl version 1.0-alpha-1\n")
+    print("Copyright 2012-2024 The Howl Developers\nLicense: MIT License")
     os.exit(0)
   else
     require 'howl.cdefs.fontconfig'

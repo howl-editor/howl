@@ -2,11 +2,20 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.gobject'
 core = require 'ljglibs.core'
 types = require 'ljglibs.types'
+signal = require 'ljglibs.gobject.signal'
 
 C, ffi_cast, ffi_new = ffi.C, ffi.cast, ffi.new
 lua_value = types.lua_value
 
+ffi.cdef "
+GType howl_gobject_type_from_instance(gpointer instance)
+"
+
 core.define 'GObject', {
+  properties: {
+    gtype: => C.howl_gobject_type_from_instance(@)
+  }
+
   new: (type) ->
     error 'Undefined gtype passed in', 2 if type == 0 or type == nil
     C.g_object_new type
@@ -26,6 +35,11 @@ core.define 'GObject', {
     C.g_object_unref o
     nil
 
+  clear_object: (o) ->
+    arr = ffi_new 'GObject *[1]'
+    arr[0] = o
+    C.g_clear_object arr
+
   get_typed: (k, type) =>
     ret = ffi_new "#{type}[1]"
     C.g_object_get @, k, ret, nil
@@ -41,6 +55,9 @@ core.define 'GObject', {
 
   set_typed: (k, type, v) =>
     C.g_object_set @, k, ffi_cast(type, v), nil
+
+  connect: (signal_name, handler, ...) =>
+    signal.connect @, signal_name, handler, ...
 
 }, (spec, type) -> spec.new type
 

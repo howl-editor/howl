@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:BufferContext, :BufferLines, :BufferMarkers, :Chunk, :config, :mode, :signal, :sys} = howl
@@ -40,7 +40,7 @@ class Buffer extends PropertyObject
     @sync_revision_id = @_buffer\get_revision_id true
     @last_changed = sys.time!
 
-    @_buffer\add_listener
+    @_buffer_listener = @_buffer\add_listener
       on_inserted: self\_on_text_inserted
       on_deleted: self\_on_text_deleted
       on_changed: self\_on_text_changed

@@ -1,0 +1,403 @@
+/*
+  Copyright 2025 The Howl Developers
+  License: MIT (see LICENSE.md at the top-level directory of the distribution)
+*/
+
+:root {
+  --base1: #93a1a1;
+  --base2: #eee8d5;
+  --base3: #fdf6e3;
+  --base00: #657b83;
+  --base01: #586e75;
+  --base02: #073642;
+  --yellow: #b58900;
+  --orange: #cb4b16;
+  --red: #dc322f;
+  --magenta: #d33682;
+  --violet: #6c71c4;
+  --blue: #268bd2;
+  --cyan: #2aa198;
+  --green: #859900;
+  --lightblue: #b3d4fc;
+  --wheat: #f5deb3;
+  --darkgreen: #006400;
+  --lightgray: #d3d3d3;
+  --black: #000000;
+  --white: #ffffff;
+  --brown: #a52a2a;
+  
+  /* Theme variables */
+  --background: var(--base3);
+  --current: var(--base2);
+  --selection: var(--lightblue);
+  --comment: var(--base1);
+  --string: var(--cyan);
+  --number: var(--blue);
+  --keyword: var(--green);
+  --class-name: var(--yellow);
+  --operator: var(--base00);
+  --member: var(--base02);
+  --key: var(--blue);
+}
+
+window {
+  background-color: var(--background);
+  background-image: theme-url('lightpaperfibers.png');
+}
+
+window .container {
+  margin: 2px;
+}
+
+window .status {
+  font-weight: bold;
+  font-style: italic;
+  color: var(--blue);
+}
+
+window .status.info { color: var(--green); }
+window .status.warning { color: var(--orange); }
+window .status.error { color: var(--red); }
+
+scrollbar range trough slider {
+  background-color: var(--yellow);
+}
+
+popover contents {
+  background-color: var(--current);
+  border: 1px solid alpha(var(--base1), 0.5);
+}
+
+.content-box {
+  margin: 1px;
+  background-color: var(--background);
+  border: 1px solid var(--base1);
+  border-right: 3px solid var(--base1);
+  border-bottom: 3px solid var(--base1);
+}
+
+.content-box .header {
+  background-image: theme-url('sprinkles.png');
+  border-bottom: 1px solid var(--base1);
+  color: var(--brown);
+  font-weight: bold;
+  padding: 1px;
+}
+
+.content-box .footer {
+  background-color: var(--base2);
+  border-top: 1px solid var(--base1);
+  color: var(--brown);
+  font-weight: bold;
+  padding: 1px;
+}
+
+.gutter {
+  color: var(--base1);
+  background-color: alpha(var(--base2), 0.7);
+}
+
+.indicator {
+  color: var(--yellow);
+}
+
+.indicator.title {
+  color: var(--yellow);
+  font-weight: bold;
+  font-style: italic;
+}
+
+/********************************* Flairs *************************************/
+flair.indentation-guide {
+  shape: pipe;
+  border-color: #aaaaaa;
+  border-style: dotted;
+  width: 1;
+}
+
+flair.indentation-guide-1 {
+  shape: pipe;
+  border-color: alpha(var(--blue), 0.3);
+  width: 1;
+}
+
+flair.indentation-guide-2 {
+  shape: pipe;
+  border-color: alpha(var(--green), 0.4);
+  width: 1;
+}
+
+flair.indentation-guide-3 {
+  shape: pipe;
+  border-color: var(--green);
+  border-style: dotted;
+  width: 1;
+}
+
+flair.edge-line {
+  shape: pipe;
+  border-color: alpha(var(--green), 0.3);
+  border-style: solid;
+  width: 0.5;
+}
+
+flair.search {
+  shape: rounded-rectangle;
+  border-color: var(--darkgreen);
+  background-color: var(--blue);
+  color: var(--white);
+  height: text;
+}
+
+flair.search-secondary {
+  shape: rounded-rectangle;
+  border-color: var(--lightblue);
+  background-color: alpha(var(--black), 0.6);
+  color: var(--white);
+  height: text;
+}
+
+flair.replace-strikeout {
+  shape: rounded-rectangle;
+  border-color: var(--black);
+  background-color: alpha(var(--red), 0.7);
+  color: var(--lightgray);
+  height: text;
+}
+
+flair.brace-highlight {
+  shape: rounded-rectangle;
+  color: var(--white);
+  background-color: alpha(var(--blue), 0.6);
+  height: text;
+}
+
+flair.brace-highlight-secondary {
+  shape: rectangle;
+  border-color: var(--blue);
+  width: 1;
+  height: text;
+}
+
+flair.list-selection {
+  shape: rectangle;
+  border-color: alpha(var(--blue), 0.5);
+  background-color: alpha(var(--blue), 0.2);
+}
+
+flair.list-highlight {
+  shape: underline;
+  color: var(--black);
+  width: 2;
+}
+
+flair.cursor {
+  shape: pipe;
+  border-color: var(--base01);
+  width: 2;
+  height: text;
+  minimum-width: 2;
+}
+
+flair.block-cursor {
+  shape: rectangle;
+  background-color: var(--base01);
+  color: var(--background);
+  height: text;
+  minimum-width: letter;
+}
+
+flair.selection {
+  shape: rounded-rectangle;
+  background-color: alpha(var(--selection), 0.6);
+  minimum-width: letter;
+}
+
+/********************************* Styles *************************************/
+style.default {
+  color: var(--black);
+}
+
+style.red { color: var(--red); }
+style.green { color: var(--green); }
+style.yellow { color: var(--yellow); }
+style.blue { color: var(--blue); }
+style.magenta { color: var(--magenta); }
+style.cyan { color: var(--cyan); }
+
+style.comment {
+  font-style: italic;
+  color: var(--comment);
+}
+
+style.variable {
+  color: var(--yellow);
+}
+
+style.label {
+  color: var(--orange);
+  font-style: italic;
+}
+
+style.line-number {
+  color: var(--base1);
+  background-color: var(--base2);
+}
+
+style.key {
+  color: var(--key);
+  font-weight: bold;
+}
+
+style.char { color: var(--green); }
+style.wrap-indicator { color: var(--blue); }
+
+style.fdecl {
+  color: var(--key);
+  font-weight: bold;
+}
+
+style.keyword {
+  color: var(--keyword);
+  font-weight: bold;
+}
+
+style.class {
+  color: var(--class-name);
+  font-weight: bold;
+}
+
+style.type-def {
+  color: var(--class-name);
+  font-weight: bold;
+  font-size: large;
+  font-family: Purisa,Latin Modern Sans;
+}
+
+style.definition {
+  color: var(--yellow);
+}
+
+style.function {
+  color: var(--blue);
+}
+
+style.number {
+  color: var(--number);
+  font-weight: bold;
+}
+
+style.operator {
+  color: var(--operator);
+  font-weight: bold;
+}
+
+style.preproc {
+  color: var(--red);
+}
+
+style.special {
+  color: var(--cyan);
+  font-weight: bold;
+}
+
+style.tag {
+  color: var(--violet);
+}
+
+style.type {
+  color: var(--class-name);
+  font-weight: bold;
+}
+
+style.member {
+  color: var(--member);
+  font-weight: bold;
+}
+
+style.info {
+  color: var(--blue);
+}
+
+style.constant {
+  color: var(--orange);
+}
+
+style.string {
+  color: var(--string);
+}
+
+style.regex {
+  color: var(--green);
+  background-color: var(--wheat);
+}
+
+style.embedded {
+  color: var(--black);
+  background-color: var(--wheat);
+}
+
+/* Markup and visual styles */
+style.error {
+  font-style: italic;
+  font-weight: bold;
+  color: var(--red);
+}
+
+style.warning {
+  font-style: italic;
+  color: var(--orange);
+}
+
+style.h1 {
+  color: var(--white);
+  background-color: var(--yellow);
+  font-weight: bold;
+}
+
+style.h2 {
+  color: var(--white);
+  background-color: var(--comment);
+}
+
+style.h3 {
+  color: var(--violet);
+  background-color: var(--current);
+  font-style: italic;
+}
+
+style.emphasis {
+  font-weight: bold;
+  font-style: italic;
+}
+
+style.strong {
+  font-style: italic;
+}
+
+style.link-label {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+style.link-url {
+  color: var(--comment);
+}
+
+style.table {
+  color: var(--black);
+  background-color: var(--wheat);
+  text-decoration: underline;
+}
+
+style.addition {
+  color: var(--green);
+}
+
+style.deletion {
+  color: var(--red);
+}
+
+style.change {
+  color: var(--yellow);
+} 

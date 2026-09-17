@@ -106,6 +106,7 @@ get_line_segment = (line, criticism) ->
 
   if not start_col and not line.is_empty
     start_col = 1 + line.indentation
+    start_col = line\real_column(start_col)
 
   -- check spec coverage end_pos
   start_pos = start_col and line.start_pos + start_col - 1 or line.start_pos
@@ -138,13 +139,17 @@ mark_criticisms = (buffer, criticisms) ->
 
   return #ms
 
-parse_errors = (out, inspector) ->
+parse_errors = (out, inspector, buffer) ->
   if inspector.parse
     return inspector.parse out
 
   inspections = {}
+  current_file = buffer and buffer.file
 
   for loc in *process_output.parse(out)
+    if loc.file and current_file and loc.file != current_file
+      continue
+
     complaint = {
       line: loc.line_nr,
       message: loc.message,
@@ -201,7 +206,7 @@ inspect = (buffer, opts = {}) ->
     out, err = activities.run_process {title: 'Reading inspection results'}, p.process
     buf = out
     buf ..= "\n#{err}" unless err.is_blank
-    inspections = parse_errors buf, p.inspector
+    inspections = parse_errors buf, p.inspector, buffer
     merge(inspections, criticisms)
 
   criticisms
@@ -217,6 +222,10 @@ criticize = (buffer, criticisms, opts = {}) ->
 update_buffer = (buffer, editor, scope) ->
   return if buffer.read_only
   return if buffer.data.is_preview
+
+  editor or= app\editor_for_buffer buffer
+
+  return if editor and editor.completion_popup.active
   data = buffer.data
   if data.last_inspect
     li = data.last_inspect
@@ -236,7 +245,6 @@ update_buffer = (buffer, editor, scope) ->
   criticize buffer, criticisms
   buffer.data.last_inspect = ts: buffer.last_changed, :scope
 
-  editor or= app\editor_for_buffer buffer
   if editor
     update_inspections_display editor
 
@@ -250,12 +258,9 @@ popup_text = (inspections) ->
   return howl.ui.markup.howl table.concat items, '\n'
 
 show_popup = (editor, inspections, pos) ->
-  popup or= BufferPopup ActionBuffer!
-  buf = popup.buffer
-
-  buf\as_one_undo ->
-    buf.text = ''
-    buf\append popup_text inspections
+  buf = ActionBuffer!
+  buf\append popup_text inspections
+  popup = BufferPopup buf
 
   with popup.view
     .cursor.line = 1

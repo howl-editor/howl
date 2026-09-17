@@ -20,7 +20,7 @@ describe 'Application', ->
     it 'accepts a table of strings as parameter', ->
       app = Application 'my.RunGApp'
       on_activate = spy.new ->
-      app\on_activate on_activate
+      app\connect 'activate', on_activate
       app\register!
 
       app\run {'foo'}

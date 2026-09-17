@@ -130,3 +130,40 @@ describe 'offsets', ->
         offsets\adjust_for_delete del_start_pos, size, 5
 
         glib_gb\compact!
+
+  describe 'boundary conditions', ->
+    local gb
+
+    before_each ->
+      gb = gap_b 'äåö'
+
+    it 'handles start of buffer', ->
+      assert.equal 0, offsets\char_offset gb, 0
+      assert.equal 0, offsets\byte_offset gb, 0
+
+    it 'handles end of buffer', ->
+      assert.equal 3, offsets\char_offset gb, 6
+      assert.equal 6, offsets\byte_offset gb, 3
+
+  describe 'edge cases', ->
+    local gb
+
+    it 'handles empty buffer', ->
+      gb = gap_b ''
+      assert.equal 0, offsets\char_offset gb, 0
+      assert.equal 0, offsets\byte_offset gb, 0
+
+    it 'handles buffer with only continuation bytes', ->
+      gb = gap_b '\x80\x80\x80'
+      assert.equal 0, offsets\char_offset gb, 0
+      assert.equal 0, offsets\byte_offset gb, 0
+
+  describe 'large data sets', ->
+    local gb
+
+    before_each ->
+      gb = gap_b string.rep('äåö', 10000)
+
+    it 'handles large buffer', ->
+      assert.equal 30000, offsets\char_offset gb, 60000
+      assert.equal 60000, offsets\byte_offset gb, 30000

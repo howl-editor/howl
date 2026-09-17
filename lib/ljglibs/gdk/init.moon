@@ -1,4 +1,4 @@
--- Copyright 2013-2014-2015 The Howl Developers
+-- Copyright 2013-2023 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 core = require 'ljglibs.core'
@@ -82,36 +82,15 @@ def = {
     'SHIFT_MASK',
     'LOCK_MASK',
     'CONTROL_MASK',
-    'MOD1_MASK',
-    'MOD2_MASK',
-    'MOD3_MASK',
-    'MOD4_MASK',
-    'MOD5_MASK',
+    'ALT_MASK',
+    'SUPER_MASK',
+    'HYPER_MASK',
+    'META_MASK',
     'BUTTON1_MASK',
     'BUTTON2_MASK',
     'BUTTON3_MASK',
     'BUTTON4_MASK',
     'BUTTON5_MASK',
-
-    'MODIFIER_RESERVED_13_MASK',
-    'MODIFIER_RESERVED_14_MASK',
-    'MODIFIER_RESERVED_15_MASK',
-    'MODIFIER_RESERVED_16_MASK',
-    'MODIFIER_RESERVED_17_MASK',
-    'MODIFIER_RESERVED_18_MASK',
-    'MODIFIER_RESERVED_19_MASK',
-    'MODIFIER_RESERVED_20_MASK',
-    'MODIFIER_RESERVED_21_MASK',
-    'MODIFIER_RESERVED_22_MASK',
-    'MODIFIER_RESERVED_23_MASK',
-    'MODIFIER_RESERVED_24_MASK',
-    'MODIFIER_RESERVED_25_MASK',
-    'SUPER_MASK',
-    'HYPER_MASK',
-    'META_MASK',
-    'MODIFIER_RESERVED_29_MASK',
-    'RELEASE_MASK',
-    'MODIFIER_MASK',
 
     -- GdkScrollDirection;
     'SCROLL_UP',

@@ -1,4 +1,4 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 {:List, :ListWidget, :Popup} = howl.ui
@@ -13,29 +13,23 @@ class MenuPopup extends Popup
     @list_widget = ListWidget @list, auto_fit_width: true
 
     @highlight_matches_for = ''
-    super @list_widget\to_gobject!
-    with @child
-      .margin_top = 2
-      .margin_left = 2
-
     @list_widget\show!
+
+    super @list_widget\to_gobject!, width: @list_widget.width, height: @list_widget.height
 
   refresh: =>
     @list\update @highlight_matches_for
 
-  show: (...) =>
-    @refresh!
-    super ...
-    @resize!
-
   resize: =>
-    h_margin = @child.margin_left + @child.margin_right
-    v_margin = @child.margin_top + @child.margin_bottom
-    super @list_widget.width + h_margin, @list_widget.height + v_margin
+    super @list_widget.width, @list_widget.height
 
   choose: =>
     if self.callback @list.selection
       @close!
+
+  on_insert_at_cursor: (editor, args) =>
+    @close!
+    return
 
   keymap: {
     down: => @list\select_next!

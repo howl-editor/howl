@@ -921,4 +921,5 @@ describe 'Buffer', ->
       buffers = setmetatable { b }, __mode: 'v'
       b = nil
       collectgarbage!
+      collectgarbage!
       assert.is_nil buffers[1]

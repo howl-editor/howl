@@ -48,12 +48,16 @@ describe 'CommandPanel', ->
         run_in_coroutine -> command_panel\run def, text: 'initial'
         assert.spy(def.on_text_changed).was_called_with def, 'initial'
 
-  context "cancel", ->
+  context "cancel", (done) ->
     it "cancels running command lines", ->
+      print '------------------'
       result = '<unset>'
-      run_in_coroutine -> result = command_panel\run {init: ->}
+      run_in_coroutine ->
+        result = command_panel\run {init: ->}
+        assert.is_nil result
+        done!
       command_panel\cancel!
-      assert.is_nil result
+
 
     it "invokes on_close", ->
       def = {
@@ -109,16 +113,12 @@ describe 'CommandPanel', ->
       command_line.prompt = ''
       assert.same 1, text_widget.cursor.pos
 
-
-
     it 'add_widget calls to_gobject and show on the added widget', ->
       widget = {
         to_gobject: spy.new -> Gtk.Box!
-        show: spy.new ->
       }
       command_line\add_widget 'name', widget
       assert.spy(widget.to_gobject).was_called 1
-      assert.spy(widget.show).was_called 1
 
     it 'changing the text invokes def.on_text_changed', ->
       def.on_text_changed = spy.new ->

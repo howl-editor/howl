@@ -1,7 +1,5 @@
 ffi = require 'ffi'
 core = require 'ljglibs.core'
-Gtk = require 'ljglibs.gtk'
-import OffscreenWindow, Window, Box from Gtk
 
 describe 'core', ->
   describe 'define(name, spec, constructor)', ->
@@ -117,21 +115,7 @@ describe 'core', ->
           assert.equal 123, o.foo
           assert.same { 'one', 2 }, first_args
 
-        describe 'with positional (array part) parameters', ->
-          it 'adds them as children', ->
-            child_box = Box!
-            box = Box {
-              {
-                padding: 123,
-                child_box
-              }
-            }
-            assert.equal 123, box\properties_for(child_box).padding
-            children = box.children
-            assert.equal 1, #children
-            assert.equal child_box, children[1]
-
-        it 'does nothing if the type is specified as a no-container', ->
+        it 'does not set any properties if meta.__plain_constructor is true', ->
           ffi.cdef 'typedef struct { int foo; } my_final_type;'
           MyPropType = core.define 'my_final_type', {
             properties: {
@@ -141,29 +125,13 @@ describe 'core', ->
               }
             },
             meta: {
-              __is_container: false
+              __plain_constructor: true
             }
           }, (spec, ...) ->
             ffi.new 'my_prop_type'
 
           o = MyPropType { foo: 123 }
           assert.not_equal 123, o.foo
-
-    context '(signals)', ->
-
-      it 'sets up signal hook functions automatically based on the gtype', ->
-        win = OffscreenWindow!
-        show_handler = spy.new ->
-        win\on_show show_handler, nil, 123
-        win\show!
-        assert.spy(show_handler).was_called_with win, nil, 123
-
-      it 'casts arguments of known types', ->
-        win = OffscreenWindow!
-        show_handler = (signal_win) ->
-          assert.equal Window.show, signal_win.show
-        win\on_show show_handler
-        win\show!
 
   describe 'bit_flags(def, prefix, value)', ->
     it 'offers a convinient way of accessing bit flags using string constants', ->

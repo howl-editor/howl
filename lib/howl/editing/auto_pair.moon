@@ -1,7 +1,7 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import config from howl
+{:config} = howl
 
 uneven_count = (s, character) ->
   count = 0

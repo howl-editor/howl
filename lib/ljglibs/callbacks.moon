@@ -1,18 +1,23 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
 ffi_cast = ffi.cast
 {:unpack, :pack, :insert} = table
+{match: string_match, gsub: string_gsub} = string
 
-ref_id_cnt = 0
-weak_handler_id_cnt = 0
+ref_id_cnt = 1
 handles = {}
-unrefed_handlers = setmetatable {}, __mode: 'v'
-unrefed_args = setmetatable {}, __mode: 'k'
+handle_count = 0
+
+destructor_t = ffi.typeof('struct {}')
+destructor = (f) ->
+  v = destructor_t()
+  ffi.gc(v, f)
+
 options = {
-  dispatch_in_coroutine: false
-  on_error: error
+  on_error: (e) ->
+    error e
 }
 
 cb_cast = (cb_type, handler) -> ffi_cast('GCallback', ffi_cast(cb_type, handler))
@@ -20,88 +25,137 @@ cb_cast = (cb_type, handler) -> ffi_cast('GCallback', ffi_cast(cb_type, handler)
 unregister = (handle) ->
   error "callbacks.unregister(): Missing argument #1 (handle)", 2 unless handle
   return false unless handles[handle.id]
-  unrefed_handlers[handle.handler] = nil if type(handle.handler) == 'number'
+  handle_count -= 1
   handles[handle.id] = nil
   true
 
 do_dispatch = (data, ...) ->
   ref_id = tonumber ffi_cast('gint', data)
   handle = handles[ref_id]
-  if handle
-    handler = handle.handler
-    handler_args = handle.args
+  unless handle
+    return false
 
-    if type(handler) == 'number'
-      handler = unrefed_handlers[handler]
-      handler_args = unrefed_args[handler]
+  instance = nil
 
-    if handler
-      args = pack ...
+  if handle.instance
+    instance = next(handle.instance)
 
-      if options.dispatcher
-        insert args, 1, handler
-        insert args, 2, handle.description
-        args.n += 2
-        handler = options.dispatcher
-
-      for i = 1, handler_args.n
-        args[args.n + i] = handler_args[i]
-
-      status, ret = pcall handler, unpack(args, 1, args.n + handler_args.n)
-      return ret == true if status
-      options.on_error "callbacks: error in '#{handle.description}' handler: '#{ret}'"
-    else
+    unless instance
       unregister handle
+      return false
 
+  handler = handle.handler
+  handler_args = handle.args
+
+  args = pack ...
+
+  if instance
+    insert args, 1, instance
+    args.n += 1
+
+  if options.dispatcher
+    insert args, 1, handler
+    insert args, 2, handle.description
+    args.n += 2
+    handler = options.dispatcher
+
+  for i = 1, handler_args.n
+    args[args.n + i] = handler_args[i]
+
+  status, ret = pcall handler, unpack(args, 1, args.n + handler_args.n)
+  return ret == true if status
+  print "error: #{ret}"
+  moon.p debug.traceback!
+  options.on_error "callbacks: error in '#{handle.description}' handler: '#{ret}'"
   false
 
 dispatch = (data, ...) ->
   status, ret = pcall do_dispatch, data, ...
+
   unless status
+    print "callbacks err: #{ret}"
     options.on_error "callbacks: error in dispatch: '#{ret}'"
     return false
 
   ret
 
-{
+create_callback = (t, orig_signature) ->
+  signature = string_gsub orig_signature, '%s+', ''
+  -- print "Create callback: #{signature}"
+  ret, arg_list = string_match signature, '^([^(]+)%(([^)]+)%)$'
+  simple_args = string_gsub(arg_list, '%s*%*', '')
+  simple_args = string_gsub(simple_args, ',', '_')
+  def_name = "hcb_#{ret}_#{simple_args}"
+  cdef = "typedef #{ret} (*#{def_name})(#{arg_list});"
+  ffi.cdef cdef
 
-  register: (handler, description, ...) ->
-    ref_id_cnt += 1
-    handle = {
-      :handler,
-      :description,
-      id: ref_id_cnt,
-      args: pack ...
-    }
-    handles[ref_id_cnt] = handle
+  cb = cb_cast(
+    def_name,
+    (...) ->
+      args = pack ...
+      user_data = args[args.n]
+      dispatch user_data, unpack(args, 1, args.n - 1)
+  )
+  rawset t, signature, cb
+  if signature != orig_signature
+    rawset t, orig_signature, cb
+
+  cb
+
+register = (handler, description, ...) ->
+  if not handler
+    error "Missing handler for #{description}"
+
+  handle_count += 1
+  ref_id_cnt += 1
+  handle = {
+    :handler,
+    :description,
+    id: ref_id_cnt,
+    args: pack ...
+  }
+  handles[ref_id_cnt] = handle
+  handle
+
+callbacks = {
+  :dispatch
+  :register
+
+  count: -> handle_count
+
+  summarize: ->
+    counts = {}
+    for _, h in pairs handles
+      count = counts[h.description] or 0
+      count += 1
+      counts[h.description] = count
+
+    sorted = [{desc, count} for desc, count in pairs counts]
+    table.sort sorted, (a, b) -> a[2] > b[2]
+    return sorted
+
+
+  register_for_instance: (instance, handler, description, ...) ->
+    handle = register handler, description, ...
+    handle.instance = setmetatable {
+      [instance]: destructor(->
+        -- print "destructor, unregister #{handle.description}"
+        unregister handle
+      )
+    }, __mode: 'k'
     handle
 
   :unregister
-
-  unref_handle: (handle) ->
-    handler = handle.handler
-    if type(handler) != 'number'
-      weak_handler_id_cnt += 1
-      unrefed_handlers[weak_handler_id_cnt] = handler
-      unrefed_args[handler] = handle.args
-      handle.handler = weak_handler_id_cnt
-      handle.args = nil
-      handler
 
   cast_arg: (arg) -> ffi.cast('gpointer', arg)
 
   configure: (opts) ->
     options = moon.copy opts
 
-  -- different callbacks
-  void1: cb_cast 'GVCallback1', (data) -> dispatch data
+  -- predefined callbacks
   void2: cb_cast 'GVCallback2', (a1, data) -> dispatch data, a1
   void3: cb_cast 'GVCallback3', (a1, a2, data) -> dispatch data, a1, a2
-  void4: cb_cast 'GVCallback4', (a1, a2, a3, data) -> dispatch data, a1, a2, a3
   void5: cb_cast 'GVCallback5', (a1, a2, a3, a4, data) -> dispatch data, a1, a2, a3, a4
-  void6: cb_cast 'GVCallback6', (a1, a2, a3, a4, a5, data) -> dispatch data, a1, a2, a3, a4, a5
-  void7: cb_cast 'GVCallback7', (a1, a2, a3, a4, a5, a6, data) -> dispatch data, a1, a2, a3, a4, a5, a6
-  bool1: cb_cast 'GBCallback1', (data) -> dispatch data
   bool2: cb_cast 'GBCallback2', (a1, data) -> dispatch data, a1
   bool3: cb_cast 'GBCallback3', (a1, a2, data) -> dispatch data, a1, a2
   bool4: cb_cast 'GBCallback4', (a1, a2, a3, data) -> dispatch data, a1, a2, a3
@@ -111,3 +165,6 @@ dispatch = (data, ...) ->
   int3:  cb_cast 'GICallback3', (a1, a2, data) -> dispatch data, a1, a2
   source_func: ffi_cast 'GSourceFunc', (data) -> dispatch data
 }
+setmetatable callbacks, __index: create_callback
+
+callbacks

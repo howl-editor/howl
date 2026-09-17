@@ -123,6 +123,28 @@ describe 'SearchView', ->
       assert.spy(search).was_not_called!
 
   context 'searching', ->
+    it 'does not leak parked dispatches when multiple queries are fired rapidly', ->
+      buffer.text = 'content-line1\ncontent-line2\n'
+      search_view = SearchView
+        :editor
+        :buffer
+        :search
+      search_view\init command_line, max_height: 100
+
+      parked_before = howl.dispatch.nr_parked!
+
+      -- fire multiple queries without waiting between them, simulating fast typing
+      for query in *{'l', 'li', 'lin', 'line'}
+        command_line.text = query
+        search_view\on_text_changed query
+
+      -- wait for the last query to settle
+      if search_view.searcher.running
+        howl.dispatch.wait search_view.searcher.running
+      howl.app\pump_mainloop!
+
+      assert.same parked_before, howl.dispatch.nr_parked!
+
     it 'calls search(query) iterator when text is updated', ->
       buffer.text = 'buffer-content'
       search_view = SearchView

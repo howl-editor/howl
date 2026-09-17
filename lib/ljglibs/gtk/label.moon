@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2022 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -6,7 +6,7 @@ jit = require 'jit'
 require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
-require 'ljglibs.gtk.misc'
+require 'ljglibs.gtk.widget'
 
 ffi_string = ffi.string
 gc_ptr = gobject.gc_ptr
@@ -15,7 +15,7 @@ C = ffi.C
 
 jit.off true, true
 
-core.define 'GtkLabel < GtkMisc', {
+core.define 'GtkLabel < GtkWidget', {
   properties: {
     angle: 'gdouble'
     cursor_position: 'gint'
@@ -43,5 +43,8 @@ core.define 'GtkLabel < GtkMisc', {
 
   new: (str) ->
     gc_ptr C.gtk_label_new str
+
+  get_layout: =>
+    C.gtk_label_get_layout @
 
 }, (spec, ...) -> spec.new ...

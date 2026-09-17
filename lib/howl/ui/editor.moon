@@ -1,10 +1,9 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Gdk = require 'ljglibs.gdk'
 Gtk = require 'ljglibs.gtk'
 aullar = require 'aullar'
-gobject_signal = require 'ljglibs.gobject.signal'
+-- gobject_signal = require 'ljglibs.gobject.signal'
 {:signal, :bindings, :config, :command, :clipboard, :sys} = howl
 aullar_config = aullar.config
 {:PropertyObject} = howl.util.moon
@@ -55,9 +54,11 @@ aullar_config_vars = {
 }
 
 apply_global_variable = (name, value) ->
+  name = aullar_config_vars[name] or name
   aullar_config[name] = value
 
-apply_variable = (name) ->
+apply_variable = (name, _v, is_local) ->
+  -- print "apply #{name}, is_local: #{is_local}"
   for e in *editors!
     e\refresh_variable name
 
@@ -84,6 +85,9 @@ signal.connect 'buffer-title-set', (args) ->
 signal.connect 'buffer-modified', (args) ->
   refresh_title args.buffer
 
+signal.connect 'buffer-reloaded', (args) ->
+  refresh_title args.buffer
+
 signal.connect 'buffer-mode-set', (args) ->
   buffer = args.buffer
   for e in *editors!
@@ -91,6 +95,7 @@ signal.connect 'buffer-mode-set', (args) ->
       e\_set_config_settings!
 
 class Editor extends PropertyObject
+  editors: editors
 
   register_indicator: (id, placement = 'bottom_right', factory) ->
     if not indicator_placements[placement]
@@ -144,8 +149,7 @@ class Editor extends PropertyObject
     @bin.can_focus = true
 
     @_handlers = {}
-    append @_handlers, @bin\on_destroy self\_on_destroy
-    append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
+    -- XXX append @_handlers, @bin\on_focus_in_event -> @view\grab_focus!
 
     @buffer = buffer
     @_is_previewing = false
@@ -223,10 +227,6 @@ class Editor extends PropertyObject
     get: => @view.config.view_show_v_scrollbar
     set: (flag) =>
       @view.config.view_show_v_scrollbar = flag
-
-  -- @property overtype:
-  --   get: => @sci\get_overtype!
-  --   set: (flag) => @sci\set_overtype flag
 
   @property lines_on_screen:
     get: => @view.lines_showing
@@ -334,6 +334,7 @@ class Editor extends PropertyObject
       @_pre_preview_line_at_top = @line_at_top
 
     @_show_buffer buffer, preview: true
+    @view.can_focus = false
 
     signal.emit 'preview-opened', {
       editor: self,
@@ -343,6 +344,7 @@ class Editor extends PropertyObject
 
   cancel_preview: =>
     if @_is_previewing and @_pre_preview_buffer
+      @view.can_focus = true
       preview_buffer = @buffer
       @_show_buffer @_pre_preview_buffer
       @line_at_top = @_pre_preview_line_at_top
@@ -556,23 +558,30 @@ class Editor extends PropertyObject
     @cursor.column_index = (rev_line.ulen - pos) + 1 if pos
 
   show_popup: (popup, options = {}) =>
-    @remove_popup!
-    x, y = @_get_popup_coordinates options.position
+    error "Missing `popup` arg" unless popup
+    if @completion_popup.showing
+      return
 
-    popup\show @view\to_gobject!, :x, :y
-    @popup = window: popup, :options
+    @remove_popup!
+    if options.position != 'center'
+      coords = @_get_popup_coordinates options.position
+      popup\show @view\to_gobject!, pointing_to: coords
+    else
+      popup\show @view\to_gobject!, options
+
+    @pop = :popup, :options
 
   remove_popup: =>
-    if @popup
-      if @popup.options.keep_alive
-        @popup.window\close!
+    if @pop
+      if @pop.options.keep_alive
+        @pop.popup\close!
       else
-        @popup.window\destroy!
+        @pop.popup\release!
 
-      @popup = nil
+      @pop = nil
 
   complete: =>
-    return if @completion_popup.active
+    return if @completion_popup.showing -- will handle the update itself
     @completion_popup\complete!
     if not @completion_popup.empty
       @show_popup @completion_popup, {
@@ -760,27 +769,26 @@ class Editor extends PropertyObject
     else
       line.end_pos
 
-  _on_destroy: =>
-    for h in *@_handlers
-      gobject_signal.disconnect h
-
-    @buffer\remove_view_ref!
-    @completion_popup\destroy!
-    @view\destroy!
+  release: =>
     @buffer.last_shown = sys.time! unless @_is_previewing
-    signal.emit 'editor-destroyed', editor: self
+    @buffer\remove_view_ref!
+    @completion_popup\release!
+    @view = nil
+    @_buf = nil
+    signal.emit 'editor-released', editor: self
 
   _on_key_press: (view, event) =>
+    -- print "editor keypress"
     @remove_popup! if event.key_name == 'escape'
 
-    if @popup
-      if not @popup.window.showing
+    if @pop
+      if not @pop.popup.showing
         @remove_popup!
       else
-        if @popup.window.keymap
-          return true if bindings.dispatch(event, 'popup', { @popup.window.keymap }, @popup.window)
+        if @pop.popup.keymap
+          return true if bindings.dispatch(event, 'popup', { @pop.popup.keymap }, @pop.popup)
 
-        @remove_popup! if not @popup.options.persistent
+        @remove_popup! if not @pop.options.persistent
     else
       @searcher\cancel!
 
@@ -792,13 +800,14 @@ class Editor extends PropertyObject
     return true if bindings.process event, 'editor', maps, self
 
   _on_button_press: (view, event) =>
+    @remove_popup!
     return false if event.button == 3
 
     if event.button == 1
-      @drag_press_type = event.type
+      @drag_press_nr_presses = event.nr_presses
       @drag_press_pos = @_pos_from_coordinates(event.x, event.y)
 
-      if event.type == Gdk.GDK_2BUTTON_PRESS
+      if event.nr_presses == 2
         group = @current_context.word
         group = @current_context.token if group.empty
 
@@ -806,7 +815,7 @@ class Editor extends PropertyObject
           @selection\set group.start_pos, group.end_pos + 1
           true
 
-      elseif event.type == Gdk.GDK_3BUTTON_PRESS
+      elseif event.nr_presses == 3
         @selection\set @current_line.start_pos, @_next_line_start(@current_line)
 
     elseif event.button == 2
@@ -819,16 +828,16 @@ class Editor extends PropertyObject
         clipboard.primary.text = text
 
   _on_button_release: (view, event) =>
-    @drag_press_type = nil
+    @drag_press_nr_presses = nil
 
   _on_motion_event: (view, event) =>
-    if @drag_press_type == Gdk.GDK_2BUTTON_PRESS or @drag_press_type == Gdk.GDK_3BUTTON_PRESS
+    if @drag_press_nr_presses == 2 or @drag_press_nr_presses == 3
       pos = @_pos_from_coordinates(event.x, event.y)
       if pos
         sel_start, sel_end = @drag_press_pos, pos
-        if @drag_press_type == Gdk.GDK_2BUTTON_PRESS
+        if @drag_press_nr_presses == 2
           sel_start, sel_end = @_expand_to_word_token_boundaries sel_start, sel_end
-        elseif @drag_press_type == Gdk.GDK_3BUTTON_PRESS
+        elseif @drag_press_nr_presses == 3
           sel_start, sel_end = @_expand_to_line_starts sel_start, sel_end
 
         unless sel_start == sel_end
@@ -838,8 +847,8 @@ class Editor extends PropertyObject
   _on_pos_changed: =>
     @_update_position!
     @_brace_highlight!
-    if @popup and @popup.window.on_pos_changed
-      @popup.window\on_pos_changed @cursor
+    if @pop and @pop.popup.on_pos_changed
+      @pop.popup\on_pos_changed @cursor
 
     signal.emit 'cursor-changed', editor: self, cursor: @cursor
     mode = @mode_at_cursor
@@ -915,16 +924,14 @@ class Editor extends PropertyObject
     pos = @cursor.line .. ':' .. @cursor.column
     @indicator.position.label = pos
 
-  _get_popup_coordinates: (pos=@cursor.pos) =>
+  _get_popup_coordinates: (pos = @cursor.pos) =>
     pos = @buffer\byte_offset pos
     coordinates = @view\coordinates_from_position pos
     unless coordinates
       pos = @buffer.lines[@line_at_top].start_pos
       coordinates = @view\coordinates_from_position pos
 
-    x = coordinates.x
-    y = coordinates.y2 + 2
-    x, y
+    coordinates
 
   _on_focus: (args) =>
     howl.app.editor = self
@@ -944,8 +951,8 @@ class Editor extends PropertyObject
     return if signal.emit('insert-at-cursor', params) == signal.abort
     return if @mode_at_cursor.on_insert_at_cursor and @mode_at_cursor\on_insert_at_cursor(params, self)
 
-    if @popup
-      @popup.window\on_insert_at_cursor(self, params) if @popup.window.on_insert_at_cursor
+    if @pop
+      @pop.popup\on_insert_at_cursor(self, params) if @pop.popup.on_insert_at_cursor
     elseif args.text.ulen == 1
       config = @config_at_cursor
       return unless config.complete != 'manual'
@@ -961,14 +968,14 @@ class Editor extends PropertyObject
       true
 
   _on_delete_back: (_, args) =>
-    if @popup
+    if @pop
       params = text: args.text, editor: self, at_pos: @buffer\char_offset(args.pos)
-      @popup.window\on_delete_back self, params if @popup.window.on_delete_back
+      @pop.popup\on_delete_back self, params if @pop.popup.on_delete_back
 
   _on_scroll: =>
-    return unless @popup and @popup.showing
-    x, y = @_get_popup_coordinates @popup.options.position
-    @popup.window\move_to x, y
+    -- return unless @pop and @pop.popup.showing
+    -- coords = @_get_popup_coordinates @pop.options.position
+    -- @pop.popup\move_to coords.x, coords.y
 
 -- Default indicators
 
@@ -1136,7 +1143,8 @@ with config
     .watch watched_property, apply_variable
 
   for global_var in *{
-    'undo_limit'
+    'undo_limit',
+    'font_size'
   }
     .watch global_var, apply_global_variable
 
@@ -1226,10 +1234,10 @@ signal.register 'editor-defocused',
   parameters:
     editor: 'The editor that lost focus'
 
-signal.register 'editor-destroyed',
-  description: 'Signaled right after an editor was destroyed'
+signal.register 'editor-released',
+  description: 'Signaled right after an editor was released'
   parameters:
-    editor: 'The editor that is being destroyed'
+    editor: 'The editor that is being released'
 
 signal.register 'insert-at-cursor',
   description: 'Signaled right after text has been inserted into an editor at the cursor position'

@@ -24,7 +24,8 @@ run_search_command = (process, directory, query, searcher) ->
   if process.successful
     process_output.parse out, {
       :directory,
-      max_message_length: MAX_MESSAGE_LENGTH
+      max_message_length: MAX_MESSAGE_LENGTH,
+      keep_whitespace: searcher.keep_whitespace
     }
   else
     {}
@@ -199,6 +200,7 @@ config.define
 register_searcher {
   name: 'ag'
   description: 'The Silver Searcher'
+  keep_whitespace: true
 
   is_available: (directory) ->
     cfg = config.for_file directory
@@ -230,6 +232,7 @@ config.define
 register_searcher {
   name: 'rg'
   description: 'Ripgrep'
+  keep_whitespace: true
 
   is_available: (directory) ->
     cfg = config.for_file directory

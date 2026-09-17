@@ -14,6 +14,7 @@ class ListWidget extends PropertyObject
     @opts = moon.copy opts
     @text_widget = TextWidget @opts
     @text_widget.visible_rows = 15
+    @text_widget.can_focus = false
     list\insert @text_widget.buffer
     list.max_rows = @text_widget.visible_rows
     list\on_refresh self\_on_refresh

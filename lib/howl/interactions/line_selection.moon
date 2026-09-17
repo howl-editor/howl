@@ -1,9 +1,9 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import interact from howl
-import highlight from howl.ui
-import Matcher from howl.util
+{:interact} = howl
+{:highlight} = howl.ui
+{:Matcher} = howl.util
 
 append = table.insert
 

@@ -2,8 +2,8 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 _G = _G
-import table from _G
-import config, signal from howl
+{:table} = _G
+{:config, :signal} = howl
 
 append = table.insert
 

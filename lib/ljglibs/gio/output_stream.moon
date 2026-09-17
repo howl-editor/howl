@@ -8,7 +8,7 @@ gio = require 'ljglibs.gio'
 callbacks = require 'ljglibs.callbacks'
 jit = require 'jit'
 
-import catch_error, get_error from glib
+{:catch_error, :get_error} = glib
 
 C = ffi.C
 ffi_new, ffi_cast = ffi.new, ffi.cast
@@ -61,6 +61,23 @@ OutputStream = core.define 'GOutputStream < GObject', {
 
     handle = callbacks.register handler, 'output-close-async'
     C.g_output_stream_close_async @, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
+
+  flush_async: (callback) =>
+    local handle
+
+    handler = (source, res) ->
+      print "async flush handler"
+      callbacks.unregister handle
+      status, ret, err_code = get_error C.g_output_stream_flush_finish, @, res
+      if not status
+        callback false, ret, err_code
+      else
+        callback true
+
+    handle = callbacks.register handler, 'output-flush-async'
+    C.g_output_stream_flush_async @, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
+
+
  }
 
 jit.off OutputStream.write_async

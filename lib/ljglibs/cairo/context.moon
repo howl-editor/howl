@@ -29,6 +29,11 @@ core.define 'cairo_t', {
       C.cairo_fill_extents @, a, a + 1, a + 2, a + 3
       { x1: tonumber(a[0]), y1: tonumber(a[1]), x2: tonumber(a[2]), y2: tonumber(a[3]) }
 
+    fill_rule: {
+      get: => C.cairo_get_fill_rule @
+      set: (rule) => C.cairo_set_fill_rule @, rule
+    }
+
     status: => C.cairo_status @
 
     operator: {
@@ -99,6 +104,7 @@ core.define 'cairo_t', {
   stroke_preserve: => C.cairo_stroke_preserve @
   fill: => C.cairo_fill @
   fill_preserve: => C.cairo_fill_preserve @
+  paint: => C.cairo_paint @
   paint_with_alpha: (alpha) => C.cairo_paint_with_alpha @, alpha
   line_to: (x, y) => C.cairo_line_to @, x, y
   rel_line_to: (dx, dy) => C.cairo_rel_line_to @, dx, dy

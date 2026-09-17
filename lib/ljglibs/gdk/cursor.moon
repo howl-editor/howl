@@ -15,6 +15,6 @@ core.define 'GdkCursor < GObject', {
     cursor_type: 'GdkCursorType'
   }
 
-  new: (cursor_type) -> ref_ptr C.gdk_cursor_new(cursor_type)
+  new_from_name: (name, fallback) -> ref_ptr C.gdk_cursor_new_from_name(name, fallback)
 }, (spec, ...) -> spec.new ...
 

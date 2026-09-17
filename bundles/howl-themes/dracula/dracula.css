@@ -1,0 +1,365 @@
+/*
+  Copyright 2025 The Howl Developers
+  License: MIT (see LICENSE.md at the top-level directory of the distribution)
+*/
+
+:root {
+  --background: #282a36;
+  --current: #44475a;
+  --selection: #44475a;
+  --foreground: #f8f8f2;
+  --comment: #6272a4;
+  --red: #ff5555;
+  --orange: #ffb86c;
+  --yellow: #f1fa8c;
+  --green: #50fa7b;
+  --aqua: #8be9fd;
+  --blue: #8be9fd;
+  --purple: #bd93f9;
+  --magenta: #ff79c6;
+  --grey: #595959;
+  --grey-darker: #1c1d23;
+  --grey-darkest: #1c1d23;
+  --grey-light: #a6a6a6;
+  --embedded-bg: #484848;
+  --border-color: #44475a;
+  --lightblue: #b3d4fc;
+  --lightgray: #d3d3d3;
+  --white: #ffffff;
+  --black: #000000;
+  --brace-highlight: #0064b1;
+}
+
+window {
+  background-color: var(--background);
+  padding: 5px;
+}
+
+window .status {
+  font-weight: bold;
+  font-style: italic;
+  color: var(--grey);
+}
+
+window .status.info { color: var(--grey-light); }
+window .status.warning { color: var(--orange); }
+window .status.error { color: var(--red); }
+
+scrollbar range trough slider {
+  background-color: var(--magenta);
+}
+
+popover contents {
+  background-color: var(--grey-darkest);
+  border: 1px solid var(--grey);
+}
+
+.content-box {
+  background-color: var(--background);
+  border: 1px solid var(--border-color);
+  border-right: 3px solid var(--border-color);
+  border-bottom: 3px solid var(--border-color);
+}
+
+.content-box .header {
+  background-color: var(--grey-darkest);
+  border-bottom: 1px solid var(--grey-darker);
+  color: var(--white);
+  font-weight: bold;
+  padding: 1px;
+}
+
+.content-box .footer {
+  background-color: var(--grey-darkest);
+  border-top: 1px solid var(--grey-darker);
+  color: var(--grey);
+  font-weight: bold;
+  padding: 1px;
+}
+
+.content-box-editor {
+  background-color: var(--background);
+}
+
+.content-box-editor .current-line {
+  background-color: var(--current);
+}
+
+.gutter {
+  color: var(--comment);
+  background-color: alpha(var(--grey-darkest), 0.6);
+}
+
+.indicator {
+  color: var(--grey-light);
+}
+
+.indicator.title {
+  font-weight: bold;
+}
+
+.indicator.vi {
+  font-weight: bold;
+}
+
+/********************************* Flairs *************************************/
+flair.indentation-guide {
+  shape: pipe;
+  border-color: var(--comment);
+  width: 1;
+}
+
+flair.indentation-guide-1 {
+  shape: pipe;
+  border-color: var(--grey-darker);
+  width: 1;
+}
+
+flair.indentation-guide-2 {
+  shape: pipe;
+  border-color: var(--grey-darker);
+  width: 1;
+}
+
+flair.indentation-guide-3 {
+  shape: pipe;
+  border-color: var(--grey-darker);
+  width: 1;
+}
+
+flair.edge-line {
+  shape: pipe;
+  border-color: alpha(var(--blue), 0.3);
+  width: 0.5;
+}
+
+flair.search {
+  shape: rounded-rectangle;
+  border-color: var(--black);
+  background-color: var(--yellow);
+  color: var(--grey-darkest);
+  height: text;
+}
+
+flair.search-secondary {
+  shape: rounded-rectangle;
+  background-color: var(--yellow);
+  color: var(--grey-darkest);
+  height: text;
+}
+
+flair.replace-strikeout {
+  shape: rounded-rectangle;
+  border-color: var(--black);
+  background-color: var(--red);
+  color: var(--black);
+  height: text;
+}
+
+flair.brace-highlight {
+  shape: rectangle;
+  background-color: var(--brace-highlight);
+  color: var(--foreground);
+  height: text;
+}
+
+flair.brace-highlight-secondary {
+  shape: rectangle;
+  border-color: var(--brace-highlight);
+  color: var(--foreground);
+  width: 1;
+  height: text;
+}
+
+flair.list-selection {
+  shape: rectangle;
+  background-color: alpha(var(--current), 0.3);
+}
+
+flair.list-highlight {
+  shape: underline;
+  border-color: var(--white);
+  color: var(--white);
+  width: 2;
+}
+
+flair.cursor {
+  shape: pipe;
+  border-color: var(--foreground);
+  width: 2;
+  height: text;
+  minimum-width: 2;
+}
+
+flair.block-cursor {
+  shape: rounded-rectangle;
+  background-color: var(--foreground);
+  color: var(--background);
+  height: text;
+  minimum-width: letter;
+}
+
+flair.selection {
+  shape: rounded-rectangle;
+  background-color: alpha(var(--selection), 0.4);
+  minimum-width: letter;
+}
+
+/********************************* Styles *************************************/
+style.default {
+  color: var(--foreground);
+}
+
+style.red { color: var(--red); }
+style.green { color: var(--green); }
+style.yellow { color: var(--yellow); }
+style.blue { color: var(--blue); }
+style.magenta { color: var(--purple); }
+style.cyan { color: var(--aqua); }
+
+style.popup {
+  background-color: var(--grey-darkest);
+  color: var(--foreground);
+}
+
+style.comment {
+  font-style: italic;
+  color: var(--comment);
+}
+
+style.variable {
+  color: var(--yellow);
+}
+
+style.label {
+  color: var(--orange);
+  font-style: italic;
+}
+
+style.key {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+style.fdecl {
+  color: var(--green);
+  font-weight: bold;
+}
+
+style.keyword {
+  color: var(--magenta);
+  font-weight: bold;
+}
+
+style.class {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+style.type-def {
+  color: var(--green);
+  font-weight: bold;
+}
+
+style.definition {
+  color: var(--yellow);
+}
+
+style.function {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+style.type {
+  color: var(--blue);
+  font-style: italic;
+}
+
+style.char { color: var(--green); }
+style.number { color: var(--purple); }
+style.operator { color: var(--magenta); }
+style.preproc { color: var(--aqua); }
+style.special { color: var(--purple); }
+style.tag { color: var(--purple); }
+style.member { color: var(--red); }
+style.info { color: var(--blue); }
+
+style.constant {
+  color: var(--yellow);
+}
+
+style.string {
+  color: var(--yellow);
+}
+
+style.regex {
+  color: var(--green);
+  background-color: var(--embedded-bg);
+}
+
+style.embedded {
+  color: var(--blue);
+  background-color: var(--embedded-bg);
+}
+
+/* Markup and visual styles */
+style.error {
+  font-style: italic;
+  color: var(--white);
+  background-color: var(--red);
+}
+
+style.warning {
+  font-style: italic;
+  color: var(--orange);
+}
+
+style.h1 {
+  font-weight: bold;
+  color: var(--magenta);
+}
+
+style.h2 {
+  font-weight: bold;
+  color: var(--aqua);
+}
+
+style.h3 {
+  font-style: italic;
+  color: var(--purple);
+}
+
+style.emphasis {
+  font-weight: bold;
+  font-style: italic;
+}
+
+style.strong {
+  font-style: italic;
+}
+
+style.link-label {
+  color: var(--aqua);
+}
+
+style.link-url {
+  color: var(--comment);
+}
+
+style.table {
+  color: var(--blue);
+  background-color: var(--embedded-bg);
+  text-decoration: underline;
+}
+
+style.addition {
+  color: var(--green);
+}
+
+style.deletion {
+  color: var(--red);
+}
+
+style.change {
+  color: var(--yellow);
+}

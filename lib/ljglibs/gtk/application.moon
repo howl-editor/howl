@@ -7,7 +7,7 @@ require 'ljglibs.cdefs.gtk'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 require 'ljglibs.gio.application'
-import gc_ptr from gobject
+{:gc_ptr} = gobject
 
 C = ffi.C
 

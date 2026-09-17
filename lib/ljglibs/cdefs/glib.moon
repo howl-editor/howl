@@ -29,6 +29,7 @@ ffi.cdef [[
   typedef float         gfloat;
   typedef const void *  gconstpointer;
   typedef int GPid;
+  typedef const char * gchararray;
 
   /* version definitions */
   extern const guint glib_major_version;
@@ -74,6 +75,8 @@ ffi.cdef [[
   typedef void (*GVCallback5) (gpointer, gpointer, gpointer, gpointer, gpointer);
   typedef void (*GVCallback6) (gpointer, gpointer, gpointer, gpointer, gpointer, gpointer);
   typedef void (*GVCallback7) (gpointer, gpointer, gpointer, gpointer, gpointer, gpointer, gpointer);
+
+  typedef void (*GVCallback4X) (gpointer, double, double, gpointer);
 
   typedef gboolean (*GBCallback1) (gpointer);
   typedef gboolean (*GBCallback2) (gpointer, gpointer);

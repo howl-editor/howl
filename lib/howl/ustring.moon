@@ -1,14 +1,14 @@
 -- Copyright 2012-2016 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import const_char_p from howl.cdefs
-import g_string from howl.cdefs.glib
-import string, type from _G
+{:const_char_p} = howl.cdefs
+{:g_string} = howl.cdefs.glib
+{:string, :type} = _G
 
 ffi = require 'ffi'
 bit = require 'bit'
 
-import C from ffi
+{:C} = ffi
 append = table.insert
 {:min} = math
 

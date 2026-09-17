@@ -1,10 +1,10 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 aullar = require 'aullar'
-import View from aullar
-import Popup, style from howl.ui
-{:ceil, :max} = math
+{:View} = aullar
+{:Popup, :style} = howl.ui
+{:ceil} = math
 
 keymap = {
   down: =>
@@ -35,12 +35,19 @@ class BufferPopup extends Popup
     error('Missing argument #1: buffer', 3) if not buffer
     @_buffer = buffer
     @default_style = style.popup and style.popup.background and 'popup' or 'default'
-    @view = View buffer._buffer
+    @view = View buffer._buffer, focusable: false
     with @view.config
       .view_show_line_numbers = opts.show_line_numbers or false
       .view_show_cursor = false
       .view_show_h_scrollbar = false
       .view_show_v_scrollbar = false
+
+    @view.listener = {
+      on_resized: (view) ->
+        for opt in *{'first_visible_line', 'middle_visible_line', 'last_visible_line'}
+          if opts[opt]
+            view[opt] = opts[opt]
+    }
 
     @bin = @view\to_gobject!
     if opts.scrollable
@@ -70,7 +77,7 @@ class BufferPopup extends Popup
         nr_lines -= 1
 
     width, height = @view\block_dimensions first_line, first_line + nr_lines - 1
-    margin = max @view.margin, 3
+    margin = 3
     width += margin * 2
     height += margin * 2
 

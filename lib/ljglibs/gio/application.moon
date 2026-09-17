@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
@@ -7,8 +7,9 @@ require 'ljglibs.cdefs.gio'
 glib = require 'ljglibs.glib'
 core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
-import gc_ptr, signal, object from gobject
-import catch_error from glib
+require 'ljglibs.gio.application_command_line'
+{:gc_ptr, :signal, :object} = gobject
+{:catch_error} = glib
 
 C = ffi.C
 ffi_string, ffi_cast = ffi.string, ffi.cast
@@ -54,8 +55,9 @@ Application = core.define 'GApplication < GObject', {
 
     C.g_application_run @, #args, argv
 
+  -- override
   on_open: (handler, ...) =>
-    signal.connect 'void5', @, 'open', (app, files, n_files, hint) ->
+    signal.connect @, 'open', (app, files, n_files, hint) ->
       gfiles = {}
       n_files = tonumber ffi_cast('gint', n_files)
       files = ffi_cast 'GFile **', files
@@ -63,15 +65,6 @@ Application = core.define 'GApplication < GObject', {
         gfiles[#gfiles + 1] = gc_ptr object.ref files[i - 1]
 
       handler app, gfiles, ffi_string hint
-
-  on_command_line: (handler, ...) =>
-    require 'ljglibs.gio.application_command_line'
-    signal.connect 'int3', @, 'command-line', (app, command_line) ->
-      exit_code = handler(
-        ffi_cast('GApplication *', app),
-        ffi_cast('GApplicationCommandLine *', command_line)
-      )
-      exit_code or 0
 
 },  (t, application_id, flags = t.FLAGS_NONE) ->
   gc_ptr(C.g_application_new application_id, flags)

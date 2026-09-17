@@ -6,7 +6,7 @@ require 'ljglibs.cdefs.pango'
 core = require 'ljglibs.core'
 require 'ljglibs.pango.font_description'
 require 'ljglibs.pango.tab_array'
-import gc_ptr from require 'ljglibs.gobject'
+{:gc_ptr} = require 'ljglibs.gobject'
 
 C, ffi_new, ffi_string, ffi_gc = ffi.C, ffi.new, ffi.string, ffi.gc
 
@@ -28,6 +28,11 @@ core.define 'PangoLayoutLine', {
     arr = ffi_new 'int[2]'
     outside = C.pango_layout_line_x_to_index @, x_pos, arr, arr + 1
     outside == 1, tonumber(arr[0]), tonumber(arr[1])
+
+  get_height: =>
+    res = ffi_new 'int[1]'
+    C.pango_layout_line_get_height @, res
+    tonumber res[0]
 }
 
 core.define 'PangoLayoutIter', {
@@ -103,7 +108,7 @@ core.define 'PangoLayout', {
     }
 
     tabs: {
-      get: => C.pango_layout_get_tabs @
+      get: => ffi_gc(C.pango_layout_get_tabs(@), C.pango_tab_array_free)
       set: (tabs) => C.pango_layout_set_tabs @, tabs
     }
 
@@ -127,10 +132,27 @@ core.define 'PangoLayout', {
   set_text: (text, length = -1) =>
     C.pango_layout_set_text @, text, length
 
+  get_size: =>
+    arr = ffi_new 'int[2]'
+    C.pango_layout_get_size @, arr, arr + 1
+    tonumber(arr[0]), tonumber(arr[1])
+
   get_pixel_size: =>
     arr = ffi_new 'int[2]'
     C.pango_layout_get_pixel_size @, arr, arr + 1
     tonumber(arr[0]), tonumber(arr[1])
+
+  get_extents: =>
+    ink = PangoRectangle!
+    logical = PangoRectangle!
+    C.pango_layout_get_extents @, ink, logical
+    ink, logical
+
+  get_pixel_extents: =>
+    ink = PangoRectangle!
+    logical = PangoRectangle!
+    C.pango_layout_get_pixel_extents @, ink, logical
+    ink, logical
 
   index_to_pos: (index) =>
     rect = PangoRectangle!
@@ -161,5 +183,17 @@ core.define 'PangoLayout', {
     line = C.pango_layout_get_line_readonly @, nr
     return nil if line == nil
     ffi_gc(C.pango_layout_line_ref(line), C.pango_layout_line_unref)
+
+  -- custom addon
+  index_to_pos_for_largest: (s_index, e_index) =>
+    max_rect = PangoRectangle!
+    rect = PangoRectangle!
+    C.pango_layout_index_to_pos @, s_index, max_rect
+    for idx = s_index + 1, e_index
+      C.pango_layout_index_to_pos @, idx, rect
+      if rect.height > max_rect.height
+        rect, max_rect = max_rect, rect
+    max_rect
+
 
 }, (t, ...) -> t.new ...

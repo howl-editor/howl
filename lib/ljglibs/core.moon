@@ -1,4 +1,4 @@
--- Copyright 2014-2015 The Howl Developers
+-- Copyright 2014-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 signal = require 'ljglibs.gobject.signal'
@@ -7,14 +7,14 @@ Type = require 'ljglibs.gobject.type'
 ffi = require 'ffi'
 bit = require 'bit'
 C, ffi_cast = ffi.C, ffi.cast
-pack, unpack = table.pack, table.unpack
 
 defs = {}
 
 snake_case = (s) ->
   s = s\gsub '%l%u', (match) ->
     match\gsub '%u', (upper) -> '_' .. upper\lower!
-  s = s\gsub '^%u%u%l', (pfx) -> pfx\sub(1,1)\lower! .. '_' .. pfx\sub(2)
+  s = s\gsub '%u%u+%l', (match) ->
+    match\match('%u')\lower! .. '_' .. match\sub(#match - 1)
   s\lower!
 
 auto_require = (module, name) ->
@@ -65,45 +65,32 @@ set_constants = (def) ->
       def[c] = C[full]
       def[full] = C[full]
 
-setup_signals = (name, def, gtype, instance_cast) ->
-  ids = signal.list_ids gtype
-  for id in *ids
-    info = signal.query id, gtype
-    name = 'on_' .. info.signal_name\gsub '-', '_'
-    unless def[name]
-      ret_type = info.return_type == types.base_types.gboolean and 'bool' or 'void'
-      cb_type = "#{ret_type}#{info.n_params + 2}"
-      def[name] = (instance, handler, ...) ->
-        unless handler
-          error "`nil` handler passed as handler for '#{name}'"
+setup_signals = (def, gtype, instance_cast) ->
+  def['connect_for'] = (g_instance, lua_ref, signal_name, handler, ...) ->
+    signal.connect_for lua_ref, g_instance, signal_name, handler, ...
 
-        casting_handler = (...) ->
-          args = pack ...
-          args[1] = instance_cast args[1]
-          for i = 2, info.n_params + 1
-            args[i] = types.cast info.param_types[i], args[i]
+  -- deprecated below
+  -- ids = signal.list_ids gtype
+  -- for id in *ids
+  --   info = signal.query id, gtype
 
-          handler unpack(args, 1, args.n)
+  --   name = 'on_' .. info.signal_name\gsub '-', '_'
+  --   unless def[name]
+  --     def[name] = (instance, handler, ...) ->
+  --       print " XXX deprecated signal handler: #{name}"
+  --       unless handler
+  --         error "`nil` handler passed as handler for '#{name}'"
 
-        signal.connect cb_type, instance, info.signal_name, casting_handler, ...
+  --       cb_handle = signal.connect_by_info instance, info, handler, ...
+  --       cb_handle
 
-construct = (spec, no_container, constructor, ...) ->
+construct = (spec, auto_properties, constructor, ...) ->
   args = {...}
   last = args[#args]
-  if type(last) == 'table' and not no_container
+  if type(last) == 'table' and auto_properties
     inst = constructor spec, unpack(args, 1, #args - 1)
+    -- assign any eventual properties
     inst[k] = v for k,v in pairs last when type(k) != 'number'
-    for child in *last
-      properties = nil
-      if type(child) == 'table'
-        properties = child
-        child = child[1]
-
-      inst\add child
-
-      if properties
-        props = inst\properties_for(child)
-        props[k] = v for k, v in pairs properties when type(k) != 'number'
     inst
   else
     constructor spec, ...
@@ -118,9 +105,14 @@ construct = (spec, no_container, constructor, ...) ->
         error "Unknown base '#{base_name}' specified for '#{name}'"
 
     gtype = force_type_init name
+    gtype or= Type.from_name(name)
     ctype = ffi.typeof "#{name} *"
+
+    if gtype
+      Type.ensure(gtype)
+      types.register_cast name, gtype, ctype if gtype
+    -- print "core: #{name} = #{gtype}, #{other_type}"
     cast = (o) -> ffi_cast(ctype, o)
-    types.register_cast name, gtype, ctype if gtype
 
     meta_t = spec.meta or {}
     meta_t.__index = (o, k) -> dispatch spec, base, o, k
@@ -129,16 +121,17 @@ construct = (spec, no_container, constructor, ...) ->
     spec.properties or= {}
     set_constants spec
     spec.__type = name
+    spec.__cast = cast
 
     if gtype and Type.query(gtype).class_size != 0
       type_class = Type.class_ref gtype
-      setup_signals name, spec, gtype, cast
+      setup_signals spec, gtype, cast
       Type.class_unref type_class
 
     mt = __index: base and base.def
     if constructor
-      no_container = meta_t.__is_container == false
-      mt.__call = (t, ...) -> construct t, no_container, constructor, ...
+      auto_properties = not meta_t.__plain_constructor == true
+      mt.__call = (t, ...) -> construct t, auto_properties, constructor, ...
 
     spec = setmetatable(spec, mt)
 

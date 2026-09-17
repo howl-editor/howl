@@ -1,10 +1,6 @@
 # The Howl editor
 
-## NOTE
-
-It's been a while since the master branch has been updated. There is much more
-recent development in the `next` branch, which among other things uses Gtk-4. If
-you're interested in keeping up with the latest then check out that branch instead.
+[![Build Status](https://github.com/howl-editor/howl/actions/workflows/ci.yml/badge.svg?branch=next)](https://github.com/howl-editor/howl/actions/workflows/ci.yml)
 
 ## What is it?
 
@@ -30,7 +26,7 @@ how to install Howl from source.
 ### Build requirements
 
 - `wget`: For auto-downloading build dependencies.
-- `GTK+`: Version >= 3, with development files (e.g. `libgtk-3-dev` on Debian
+- `GTK+`: Version >= 4, with development files (e.g. `libgtk-4-dev` on Debian
 based system).
 - `C compiler`: Howl has a very small C core itself, and it embeds
 dependencies written in C.

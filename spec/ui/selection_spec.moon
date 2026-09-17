@@ -1,4 +1,3 @@
-Gtk = require 'ljglibs.gtk'
 {:Buffer, :clipboard} =  howl
 {:Editor} = howl.ui
 
@@ -8,10 +7,7 @@ describe 'Selection', ->
   editor = Editor buffer
   selection = editor.selection
   cursor = editor.cursor
-  window = Gtk.OffscreenWindow!
-  window\add editor\to_gobject!
-  window\show_all!
-  howl.app\pump_mainloop!
+  test_window editor\to_gobject!
 
   before_each ->
     editor.view.selection\clear!
@@ -55,8 +51,9 @@ describe 'Selection', ->
 
     it 'does not change the scroll position', ->
       buffer.text = '1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0'
-      cursor.pos = 1
       editor.view.first_visible_line = 2
+      cursor.pos = 3
+      assert.equal 2, editor.view.first_visible_line
       selection\select_all!
       assert.equal 2, editor.view.first_visible_line
 

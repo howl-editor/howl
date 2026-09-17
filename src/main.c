@@ -60,6 +60,9 @@ static gchar *get_app_root(const gchar *invocation_path)
     g_object_unref(root);
     root = share_dir;
   }
+  else {
+    g_object_unref(share_dir);
+  }
 
   path = g_file_get_path(root);
   g_free(called_as);
@@ -81,6 +84,11 @@ static lua_State *open_lua_state(const gchar *app_root)
   return l;
 }
 
+#include <glib-object.h>
+GType howl_gobject_type_from_instance(gpointer instance) {
+  return G_TYPE_FROM_INSTANCE(instance);
+}
+
 int main(int argc, char *argv[])
 {
   if (argc >= 2 && strcmp(argv[1], "--compile") == 0) {
@@ -89,8 +97,9 @@ int main(int argc, char *argv[])
 #endif
   }
   else {
-    gtk_init(&argc, &argv);
+    gtk_init();
   }
+
   gchar *app_root = get_app_root(argv[0]);
   lua_State *L = open_lua_state(app_root);
   lua_run(argc, argv, app_root, L);

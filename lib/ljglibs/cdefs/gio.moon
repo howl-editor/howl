@@ -1,8 +1,9 @@
--- Copyright 2013, 2014-2015 The Howl Developers
+-- Copyright 2013-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 ffi = require 'ffi'
 require 'ljglibs.cdefs.glib'
+require 'ljglibs.cdefs.gobject'
 
 ffi.cdef [[
   typedef void GCancellable;
@@ -98,6 +99,20 @@ ffi.cdef [[
   gboolean g_output_stream_flush (GOutputStream *stream,
                                   GCancellable *cancellable,
                                   GError **error);
+
+  void g_output_stream_flush_async (
+    GOutputStream* stream,
+    int io_priority,
+    GCancellable* cancellable,
+    GAsyncReadyCallback callback,
+    gpointer user_data
+  );
+
+  gboolean g_output_stream_flush_finish (
+    GOutputStream* stream,
+    GAsyncResult* result,
+    GError** error
+  );
 
   gboolean g_output_stream_has_pending (GOutputStream *stream);
   gboolean g_output_stream_is_closed (GOutputStream *stream);

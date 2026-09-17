@@ -1,5 +1,5 @@
-import log, signal from howl
-import ActionBuffer from howl.ui
+{:log, :signal} = howl
+{:ActionBuffer} = howl.ui
 
 append = table.insert
 

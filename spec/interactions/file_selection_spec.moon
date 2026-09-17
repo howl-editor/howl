@@ -18,8 +18,8 @@ describe 'file_selection', ->
     for buf in *app.buffers
       app\close_buffer buf
 
-    app.window = Window!
-    app.window\realize!
+    app.window = Window window: test_window!
+    app.window\show!
     app.editor = app\new_editor!
     tmpdir = File.tmpdir!
     howl.config.file_icons = true

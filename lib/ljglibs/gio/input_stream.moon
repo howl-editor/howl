@@ -9,7 +9,7 @@ require 'ljglibs.gobject.object'
 callbacks = require 'ljglibs.callbacks'
 jit = require 'jit'
 
-import catch_error, get_error from glib
+{:catch_error, :get_error} = glib
 
 C = ffi.C
 ffi_string, ffi_new = ffi.string, ffi.new

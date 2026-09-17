@@ -15,8 +15,8 @@ core = require 'ljglibs.core'
 gobject = require 'ljglibs.gobject'
 callbacks = require 'ljglibs.callbacks'
 
-import ref_ptr from gobject
-import get_error, catch_error, Bytes from glib
+{:ref_ptr} = gobject
+{:get_error, :catch_error, :Bytes} = glib
 C = ffi.C
 ffi_cast = ffi.cast
 

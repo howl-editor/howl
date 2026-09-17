@@ -2,10 +2,10 @@
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 aullar = require 'aullar'
-import config from howl
-import View from aullar
-import PropertyObject from howl.util.moon
-import Cursor, Selection, ActionBuffer from howl.ui
+{:config} = howl
+{:View} = aullar
+{:PropertyObject} = howl.util.moon
+{:Cursor, :Selection, :ActionBuffer} = howl.ui
 {:max} = math
 
 class TextWidget extends PropertyObject
@@ -14,8 +14,8 @@ class TextWidget extends PropertyObject
 
     @buffer = ActionBuffer!
     @buffer.title = 'TextWidget'
+
     @view = View @buffer._buffer
-    @view.margin = 0
     with @view.config
       .view_show_inactive_cursor = false
       .view_line_padding = config.line_padding
@@ -66,8 +66,8 @@ class TextWidget extends PropertyObject
     set: (text) => @buffer.text = text
 
   @property can_focus:
-    get: => @view_gobject.can_focus
-    set: (v) => @view_gobject.can_focus = v
+    get: => @view.can_focus
+    set: (v) => @view.can_focus = v
 
   adjust_width_to_fit: =>
     width = @view\block_dimensions 1, @visible_rows
@@ -89,7 +89,7 @@ class TextWidget extends PropertyObject
     @text = @opts.text if @opts.text
     @showing = true
     @adjust_height!
-    @to_gobject!\show_all!
+    @to_gobject!\show!
 
   hide: =>
     @to_gobject!\hide!

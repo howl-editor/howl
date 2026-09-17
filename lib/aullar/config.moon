@@ -104,12 +104,9 @@ define_options = ->
       default: 250
     }
 
-    gutter_styling: {
-      type: 'table',
-      default:
-        color: '#008000'
-        background:
-          color: '#ff69b4'
+    gutter_color: {
+      type: 'string',
+      default: 'blue'
     },
 
     undo_limit: {
@@ -157,7 +154,10 @@ remove_listener = (listener, listeners) ->
 values = {}
 defs = define_options!
 listeners = {}
-proxies = {}
+proxies = setmetatable {}, __mode: 'v'
+
+clean_proxies = ->
+  proxies = setmetatable [p for _, p in pairs proxies when p], __mode: 'v'
 
 setmetatable {
   add_listener: (listener) -> add_listener listener, listeners
@@ -187,6 +187,7 @@ setmetatable {
       __newindex: (k, v) =>
         set_value @, k, v, @values, defs, @listeners
     }
+    clean_proxies!
     proxies[#proxies + 1] = proxy
     proxy
 

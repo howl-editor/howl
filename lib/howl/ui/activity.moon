@@ -35,7 +35,7 @@ class Activity extends PropertyObject
       header: @header\to_gobject!
     }
     with @text_widget.view\to_gobject!
-      .margin_left = 10
+      .margin_start = 10
       .margin_top = 5
       .margin_bottom = 5
 
@@ -61,7 +61,7 @@ class Activity extends PropertyObject
     get: => @to_gobject!.visible
     set: (v) =>
       if v
-        @to_gobject!\show_all!
+        @to_gobject!\show!
       else
         @to_gobject!.visible = false
 

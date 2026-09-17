@@ -211,6 +211,8 @@ class ExplorerView
 
   on_close: =>
     @_cancel_preview!
+    @list_widget = nil
+    @list = nil
 
   keymap:
     enter: =>

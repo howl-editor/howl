@@ -20,6 +20,27 @@ _resume = (handle, ...) ->
   ret
 
 {
+
+  nr_active: -> nr_active_coroutines!
+
+  nr_parked: ->
+    count = 0
+    for _, _ in pairs parked
+      count += 1
+
+    return count
+
+  summarize: ->
+    counts = {}
+    for _, p in pairs parked
+      count = counts[p.description] or 0
+      count += 1
+      counts[p.description] = count
+
+    sorted = [{desc, count} for desc, count in pairs counts]
+    table.sort sorted, (a, b) -> a[2] > b[2]
+    return sorted
+
   park: (description) ->
     id_counter += 1
     parked[id_counter] = { id: id_counter, :description }
@@ -32,6 +53,15 @@ _resume = (handle, ...) ->
 
   resume_with_error: (handle, err, level = 1) ->
     _resume handle, false, err, level
+
+  resume_or_clear: (handle, ...) ->
+    parking = parked[handle]
+    if parking and parking.co
+      ret = _resume handle, true, ...
+      error(ret[2], ret[3]) unless ret[1]
+      unpack ret, 2, ret.n
+    else if parking
+      parked[handle] = nil
 
   wait: (handle) ->
     parking = parked[handle]

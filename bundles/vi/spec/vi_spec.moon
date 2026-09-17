@@ -1,8 +1,6 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-Gtk = require 'ljglibs.gtk'
-
 import app, Buffer, bindings, bundle, dispatch from howl
 import Editor, Window from howl.ui
 
@@ -20,9 +18,7 @@ describe 'VI', ->
   editor = Editor Buffer!
   cursor = editor.cursor
   selection = editor.selection
-  window = Gtk.OffscreenWindow default_width: 800, default_height: 640
-  window\add editor\to_gobject!
-  window\show_all!
+  test_window editor\to_gobject!
 
   before_each ->
     howl.app.window = window: Window!
@@ -372,10 +368,14 @@ Next LinƏ
 
   describe 'unloading', ->
     before_each ->
-      dispatch.launch -> bundle.unload 'vi'
+      status, err = dispatch.launch -> bundle.unload 'vi'
+      if not status
+        print err
 
     after_each ->
-      dispatch.launch -> bundle.load_by_name 'vi'
+      status, err = dispatch.launch -> bundle.load_by_name 'vi'
+      if not status
+        print err
 
     it 'pops any active keymaps, leaving only the default one', ->
       assert.equals 1, #bindings.keymaps

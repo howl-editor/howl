@@ -5,6 +5,10 @@ ffi = require 'ffi'
 require 'ljglibs.cdefs.glib'
 
 ffi.cdef [[
+  typedef enum {
+    VAL = 0
+  } GEnum;
+
   /* GType */
   typedef gsize GType;
 
@@ -23,6 +27,8 @@ ffi.cdef [[
   gpointer g_type_default_interface_ref (GType g_type);
   void g_type_default_interface_unref (gpointer g_iface);
   void g_type_query (GType type, GTypeQuery *query);
+  GType g_type_parent (GType type);
+  void g_type_ensure (GType type);
 
   /* GObject */
   typedef struct {} GObject;
@@ -39,6 +45,8 @@ ffi.cdef [[
   void g_object_get (gpointer object,
                      const gchar *first_property_name,
                      ...);
+
+  void g_clear_object (GObject** object_ptr);
 
   typedef struct {
     volatile       	guint	 in_marshal : 1;

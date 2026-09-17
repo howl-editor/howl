@@ -1,5 +1,5 @@
-import config, signal from howl
-import PropertyTable from howl.util
+{:config, :signal} = howl
+{:PropertyTable} = howl.util
 
 by_extension = {}
 by_pattern = {}

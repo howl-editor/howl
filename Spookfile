@@ -33,12 +33,11 @@ spec = command "./bin/howl-spec"
 
 run_spec = (path, event) ->
   print "\027[1m\027[34m-> \027[22m(#{path}..)\027[0m"
-  until_success ->
-    notifies path, event,
-      task_list(
-        spec, path
-        lint, event.path
-      )
+  notifies path, event,
+    task_list(
+      spec, path
+      lint, event.path
+    )
 
 watch "lib", "spec", ->
   on_changed "_spec%.moon", (event) ->

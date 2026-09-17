@@ -7,7 +7,6 @@ describe 'TextWidget', ->
     it 'widgets are collected as they should', ->
       w = TextWidget!
       list = setmetatable {w}, __mode: 'v'
-      w\to_gobject!\destroy!
       w = nil
       collectgarbage!
-      assert.is_nil list[1]
+      assert.is_true list[1] == nil

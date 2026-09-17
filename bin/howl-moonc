@@ -1,0 +1,32 @@
+#! /bin/sh
+#
+# Copyright 2026 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
+#
+# Prints the Lua generated for MoonScript sources, snippets or stdin.
+
+. "$(dirname "$0")/_howl_env.sh"
+
+for a in "$@"; do
+  case "$a" in
+    -h|--help)
+      cat <<'EOF'
+Usage: howl-moonc [-e <code>] [<file>|-]...
+
+Prints the Lua that each input compiles to. With no arguments, reads stdin.
+
+  -e, --eval <code>  compile <code> given on the command line
+  -                  compile stdin
+  -h, --help         this help
+
+Examples:
+  howl-moonc lib/howl/ustring.moon
+  howl-moonc -e 'f = (a) -> a + 1'
+  echo 'x = 1' | howl-moonc
+EOF
+      exit 0
+      ;;
+  esac
+done
+
+exec "$HOWL" --no-profile --run "$ROOT/lib/scripts/to_lua.moon" "$@"

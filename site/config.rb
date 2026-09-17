@@ -6,6 +6,10 @@ set :js_dir, 'javascripts'
 set :images_dir, 'images'
 set :relative_links, true
 
+class << File
+  alias_method :exists?, :exist?
+end
+
 ignore '*.bak'
 
 # Reload the browser automatically whenever files change
@@ -15,17 +19,17 @@ activate :syntax
 
 activate :blog do |blog|
   blog.prefix = 'blog'
+  blog.layout = 'blog_layout'
   blog.paginate = true
 end
 
 page "index.html", :layout => :base_layout
-page "blog/*", :layout => :blog_layout
 page "doc/manual/*", :layout => :manual_layout
 page "versions/*", :layout => :manual_layout
 
 activate :s3_sync do |s3_sync|
   auth_file = File.expand_path('~/.howl-auth')
-  if File.exists?(auth_file)
+  if File.exist?(auth_file)
     if File.stat(auth_file).world_readable?
       raise "'#{auth_file}' is world readable, please fix"
     end
@@ -38,8 +42,10 @@ activate :s3_sync do |s3_sync|
 
   s3_sync.bucket = 'howl.io'
   s3_sync.region = 'eu-west-1'
-  s3_sync.add_caching_policy :default, max_age: 60 * 30
+  default_caching_policy max_age: 60 * 30
 end
+
+set :haml, { :format => :html5 }
 
 require "redcarpet"
 set :markdown_engine, :redcarpet
@@ -73,9 +79,9 @@ helpers do
     parts.each do |part|
       path = path.join part
       resource = sitemap.find_resource_by_path(path.to_s) || sitemap.find_resource_by_path("#{path}/index.html")
-      title = resource && (resource.metadata[:locals][:page_title] || resource.metadata[:page]['title'])
+      title = resource && (resource.metadata[:locals][:page_title] || resource.metadata[:page][:title])
       title ||= part =~ /([^.]+(?:\.\d+))/ && $1.capitalize
-      components << component.new(path.relative_path_from(base), (title or part), !!resource)
+      components << component.new(path.relative_path_from(base), (title or part).capitalize, !!resource)
     end
 
     return '' if components.empty?

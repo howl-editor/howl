@@ -1,0 +1,358 @@
+/*
+  Copyright 2025 The Howl Developers
+  License: MIT (see LICENSE.md at the top-level directory of the distribution)
+*/
+
+:root {
+  --background: #002451;
+  --current: #00346e;
+  --selection: #0066cc;
+  --foreground: #ffffff;
+  --comment: #7285b7;
+  --red: #ff9da4;
+  --darkred: #8b0000;
+  --orange: #ffc58f;
+  --yellow: #ffeead;
+  --green: #d1f1a9;
+  --aqua: #99ffff;
+  --blue: #bbdaff;
+  --purple: #ebbbff;
+  --border-color: #333333;
+  --embedded-bg: #25384f;
+  --grey: #7285b7;
+  --lightblue: #bbdaff;
+  --darkgreen: #006400;
+}
+
+window {
+  background-color: var(--background);
+  background-image: theme-url('dark_back.png');
+}
+
+window .container {
+  margin: 2px;
+}
+
+window .status {
+  font-weight: bold;
+  font-style: italic;
+  color: var(--grey);
+}
+
+window .status.info { color: var(--blue); }
+window .status.warning { color: var(--orange); }
+window .status.error { color: var(--red); }
+
+scrollbar range trough slider {
+  background-color: #00549e;
+}
+
+popover contents {
+  background-color: #00346e;
+}
+
+.content-box {
+  margin: 1px;
+  background-color: var(--background);
+  border: 1px solid var(--border-color);
+  border-right: 3px solid var(--border-color);
+  border-bottom: 3px solid var(--border-color);
+}
+
+.content-box .header {
+  background: linear-gradient(to right, #000022, #003080);
+  border-bottom: 1px solid var(--border-color);
+  color: brown;
+  font-weight: bold;
+  padding: 1px;
+}
+
+.content-box .footer {
+  background-color: #002471;
+  border-top: 1px solid var(--border-color);
+  color: brown;
+  font-weight: bold;
+  padding: 1px;
+}
+
+.gutter {
+  color: var(--comment);
+  background-color: alpha(var(--background), 0.4);
+}
+
+.indicator {
+  color: var(--blue);
+}
+
+.indicator.title {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.indicator.vi {
+  color: var(--purple);
+}
+
+/********************************* Flairs *************************************/
+flair.indentation-guide {
+  shape: pipe;
+  border-color: var(--comment);
+  width: 1;
+}
+
+flair.indentation-guide-1 {
+  shape: pipe;
+  border-color: var(--blue);
+  border-color-alpha: 0.5;
+  width: 1;
+}
+
+flair.indentation-guide-2 {
+  shape: pipe;
+  border-color: var(--green);
+  border-color-alpha: 0.5;
+  width: 1;
+}
+
+flair.indentation-guide-3 {
+  shape: pipe;
+  border-color: var(--green);
+  border-color-alpha: 0.3;
+  width: 1;
+}
+
+flair.edge-line {
+  shape: pipe;
+  border-color: alpha(var(--blue), 0.3);
+  width: 0.5;
+}
+
+flair.search {
+  shape: rounded-rectangle;
+  border-color: black;
+  background-color: var(--green);
+  color: var(--darkgreen);
+  height: text;
+}
+
+flair.search-secondary {
+  shape: rounded-rectangle;
+  background-color: var(--lightblue);
+  color: black;
+  height: text;
+}
+
+flair.replace-strikeout {
+  shape: rounded-rectangle;
+  border-color: black;
+  background-color: var(--red);
+  color: black;
+  height: text;
+}
+
+flair.brace-highlight {
+  shape: rectangle;
+  color: var(--foreground);
+  background-color: #0064b1;
+  height: text;
+}
+
+flair.brace-highlight-secondary {
+  shape: rectangle;
+  border-color: #0064b1;
+  color: var(--foreground);
+  width: 1;
+  height: text;
+}
+
+flair.list-selection {
+  shape: rectangle;
+  background-color: alpha(white, 0.4);
+}
+
+flair.list-highlight {
+  shape: underline;
+  border-color: white;
+  color: white;
+  width: 2;
+}
+
+flair.cursor {
+  shape: pipe;
+  border-color: var(--foreground);
+  width: 2;
+  height: text;
+  minimum-width: 2;
+}
+
+flair.block-cursor {
+  shape: rounded-rectangle;
+  background-color: var(--foreground);
+  color: var(--background);
+  height: text;
+  minimum-width: letter;
+}
+
+flair.selection {
+  shape: rounded-rectangle;
+  background-color: alpha(var(--selection), 0.6);
+  minimum-width: letter;
+}
+
+/********************************* Styles *************************************/
+style.default {
+  color: var(--foreground);
+}
+
+style.red { color: var(--red); }
+style.green { color: var(--green); }
+style.yellow { color: var(--yellow); }
+style.blue { color: var(--blue); }
+style.magenta { color: var(--purple); }
+style.cyan { color: var(--aqua); }
+
+style.popup {
+  background-color: #00346e;
+  color: var(--foreground);
+}
+
+style.comment {
+  font-style: italic;
+  color: var(--comment);
+}
+
+style.variable {
+  color: var(--yellow);
+}
+
+style.label {
+  color: var(--orange);
+  font-style: italic;
+}
+
+style.key {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+style.fdecl {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+style.keyword {
+  color: var(--purple);
+  font-weight: bold;
+}
+
+style.class {
+  color: var(--yellow);
+  font-weight: bold;
+}
+
+style.type-def {
+  color: var(--yellow);
+  font-weight: bold;
+  font-size: large;
+  font-family: Purisa,Latin Modern Sans;
+}
+
+style.definition {
+  color: var(--yellow);
+}
+
+style.function {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+style.char { color: var(--green); }
+style.number { color: var(--orange); }
+style.operator { color: var(--aqua); }
+style.preproc { color: var(--aqua); }
+style.special { color: var(--purple); }
+style.tag { color: var(--purple); }
+style.type { color: var(--yellow); }
+style.member { color: var(--red); }
+style.info { color: var(--blue); }
+
+style.constant {
+  color: var(--yellow);
+}
+
+style.string {
+  color: var(--green);
+}
+
+style.regex {
+  color: var(--green);
+  background-color: var(--embedded-bg);
+}
+
+style.embedded {
+  color: #aadaff;
+  background-color: var(--embedded-bg);
+}
+
+/* Markup and visual styles */
+style.error {
+  font-style: italic;
+  color: white;
+  background-color: var(--darkred);
+}
+
+style.warning {
+  font-style: italic;
+  color: var(--orange);
+}
+
+style.h1 {
+  color: white;
+  background-color: #005491;
+}
+
+style.h2 {
+  color: var(--green);
+  font-weight: bold;
+}
+
+style.h3 {
+  color: var(--purple);
+  background-color: var(--current);
+  font-style: italic;
+}
+
+style.emphasis {
+  font-weight: bold;
+  font-style: italic;
+}
+
+style.strong {
+  font-style: italic;
+}
+
+style.link-label {
+  color: var(--aqua);
+}
+
+style.link-url {
+  color: var(--comment);
+}
+
+style.table {
+  color: var(--blue);
+  background-color: var(--embedded-bg);
+  text-decoration: underline;
+}
+
+style.addition {
+  color: var(--green);
+}
+
+style.deletion {
+  color: var(--red);
+}
+
+style.change {
+  color: var(--yellow);
+}

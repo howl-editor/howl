@@ -5,7 +5,7 @@ GFile = require 'ljglibs.gio.file'
 GFileInfo = require 'ljglibs.gio.file_info'
 glib = require 'ljglibs.glib'
 {:park, :resume, :resume_with_error, :wait} = howl.dispatch
-import PropertyObject from howl.util.moon
+{:PropertyObject} = howl.util.moon
 append = table.insert
 
 file_types = {
@@ -122,6 +122,21 @@ class File extends PropertyObject
       with @_assert io.open @path, 'wb'
         \write tostring contents
         \close!
+
+  @property lines:
+    get: =>
+      content = @contents
+      return {} if #content == 0
+      -- Normalize line endings to just LF for a consistent split
+      normalized = content\gsub('\r\n', '\n')
+      normalized = normalized\gsub('\r', '\n')
+
+      lines = normalized\split '\n'
+
+      if lines[#lines] == ''
+        table.remove lines
+
+      lines
 
   @property parent:
     get: =>

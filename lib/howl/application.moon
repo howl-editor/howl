@@ -1,10 +1,10 @@
--- Copyright 2012-2015 The Howl Developers
+-- Copyright 2012-2024 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import Window, Editor, theme from howl.ui
-import Buffer, Settings, mode, breadcrumbs, bundle, bindings, keymap, signal, interact, timer, clipboard, config from howl
-import File, Process from howl.io
-import PropertyObject from howl.util.moon
+{:Window, :Editor, :theme} = howl.ui
+{:Buffer, :Settings, :mode, :breadcrumbs, :bundle, :bindings, :keymap, :signal, :interact, :timer, :clipboard, :config} = howl
+{:File, :Process} = howl.io
+{:PropertyObject} = howl.util.moon
 Gtk = require 'ljglibs.gtk'
 callbacks = require 'ljglibs.callbacks'
 {:get_monotonic_time} = require 'ljglibs.glib'
@@ -16,8 +16,8 @@ coro_create, coro_status = coroutine.create, coroutine.status
 
 non_idle_dispatches = {
   '^signal motion%-',
-  '^signal key%-press%-event',
-  '^signal button%-',
+  '^signal key%-pressed',
+  '^signal pressed',
 }
 
 is_idle_dispatch = (desc) ->
@@ -28,7 +28,6 @@ is_idle_dispatch = (desc) ->
 last_activity = get_monotonic_time!
 
 dispatcher = (f, description, ...) ->
-
   unless is_idle_dispatch(description)
     last_activity = get_monotonic_time!
 
@@ -39,7 +38,7 @@ dispatcher = (f, description, ...) ->
     if coro_status(co) == 'dead'
       return ret
   else
-    error ret
+    error ret, 2
 
   false
 
@@ -98,7 +97,8 @@ class Application extends PropertyObject
 
     callbacks.configure {
       :dispatcher,
-      on_error: _G.log.error
+      on_error: (e) ->
+        _G.log.error e
     }
 
     signal.connect 'log-entry-appended', (entry) ->
@@ -140,22 +140,9 @@ class Application extends PropertyObject
     props = title: @title
     props[k] = v for k, v in pairs(properties)
     window = Window props
-    window\set_default_size 800, 640
-
-    window\on_delete_event ->
-      if #@windows == 1
-        modified = [b for b in *@_buffers when b.modified]
-        if #modified > 0
-          -- postpone the quit check, since we really need to prevent
-          -- the close right away by returning true
-          timer.asap -> @quit!
-        else
-          @quit!
-
-        true
-
-    window\on_destroy (destroy_window) ->
-      @windows = [w for w in *@windows when w\to_gobject! != destroy_window]
+    window\set_default_size 1024, 768
+    window\connect_for @, 'close-request', self._on_window_close_request
+    window\connect_for @, 'destroy', self._on_window_destroyed
 
     @g_app\add_window window\to_gobject!
 
@@ -201,7 +188,7 @@ class Application extends PropertyObject
       elseif buffer.activity and buffer.activity\is_running!
         prompt = "Buffer has a running activity (#{buffer.activity.name}), close anyway? "
 
-      if prompt
+      if prompt and @editor
         @editor.buffer = buffer
         return unless interact.yes_or_no :prompt
 
@@ -289,7 +276,7 @@ class Application extends PropertyObject
     true
 
   synchronize: =>
-    clipboard.synchronize!
+    timer.after_exactly 0.2, -> clipboard.synchronize!
 
     reload_count = 0
     changed_count = 0
@@ -323,29 +310,27 @@ class Application extends PropertyObject
     -- by default we'll not open files in the same instance,
     -- but this can be toggled via the --reuse command line parameter
     if @g_app.is_remote and not @args.reuse
+      -- well, this it not particularly intuitive, but we "run" this instance
+      -- of the app, causing it to finish off correctly without warning
+      @g_app\run {}
+
       @g_app = Gtk.Application "#{app_base}-#{os.time!}", bit.bor(
         flags,
         Gtk.Application.NON_UNIQUE
       )
       @g_app\register!
 
-    @g_app\on_activate ->
-      @_load!
+    @g_app\connect_for @, 'activate', self._on_activate
 
+    -- XXX GTK4 change this as well to use connect_for
     @g_app\on_open (_, files, hint) ->
       hints = [h for h in hint\gmatch '[^,]+']
       @_load files, hints
 
-    @g_app\on_command_line (app, command_line) ->
-      paths = [v for v in *command_line.arguments[2, ] when not v\match('^-')]
-      files, hints = parse_path_args paths, command_line.cwd
-      if #files > 0
-        app\open files, table.concat(hints, ',')
-      else
-        app\activate!
+    @g_app\connect_for @, 'command_line', self._on_command_line
 
     signal.connect 'window-focused', self\synchronize
-    signal.connect 'editor-destroyed', (s_args) ->
+    signal.connect 'editor-released', (s_args) ->
       @_editors =  [e for e in *@_editors when e != s_args.editor]
 
     breadcrumbs.init!
@@ -367,8 +352,6 @@ class Application extends PropertyObject
       for win in * moon.copy @windows
         win.command_panel\cancel!
         win\destroy!
-
-      howl.clipboard.store!
 
   save_session: =>
     return if @args.no_profile or #@args > 1
@@ -504,13 +487,41 @@ class Application extends PropertyObject
       signal.emit 'file-opened', file: b.file, buffer: b
 
     unless @_loaded
-      window\show_all! if window
+      window\show! if window
       @editor.line_at_center = @editor.cursor.line
       @_loaded = true
       howl.io.File.async = true
       config.broadcast_config!
       signal.emit 'app-ready'
       @_set_initial_status window
+
+  _on_window_close_request: =>
+    if #@windows == 1
+      modified = [b for b in *@_buffers when b.modified]
+      if #modified > 0
+        -- postpone the quit check, since we really need to prevent
+        -- the close right away by returning true
+        timer.asap -> @quit!
+      else
+        @quit!
+
+      return true
+
+    false
+
+  _on_window_destroyed: (destroy_window) =>
+    @windows = [w for w in *@windows when w\to_gobject! != destroy_window]
+
+  _on_activate: (app) =>
+    @_load!
+
+  _on_command_line: (app, command_line) =>
+    paths = [v for v in *command_line.arguments[2, ] when not v\match('^-')]
+    files, hints = parse_path_args paths, command_line.cwd
+    if #files > 0
+      app\open files, table.concat(hints, ',')
+    else
+      app\activate!
 
   _should_abort_quit: =>
     modified = [b for b in *@_buffers when b.modified]
@@ -606,17 +617,18 @@ class Application extends PropertyObject
     require 'howl.file_search'
 
   _load_application_icon: =>
-    dir = @root_dir
-    while dir
-      icon = dir\join('share/icons/hicolor/scalable/apps/howl.svg')
-      if icon.exists
-        status, err = pcall Gtk.Window.set_default_icon_from_file, icon.path
-        log.error "Failed to load application icon: #{err}" unless status
-        return
+    -- GTK4: remove?
+    -- dir = @root_dir
+    -- while dir
+    --   icon = dir\join('share/icons/hicolor/scalable/apps/howl.svg')
+    --   if icon.exists
+    --     status, err = pcall Gtk.Window.set_default_icon_from_file, icon.path
+    --     log.error "Failed to load application icon: #{err}" unless status
+    --     return
 
-      dir = dir.parent
+    --   dir = dir.parent
 
-    log.warn "Failed to find application icon"
+    -- log.warn "Failed to find application icon"
 
   _add_recently_closed: (buffer) =>
     @_recently_closed = [file_info for file_info in *@_recently_closed when file_info.file != buffer.file]

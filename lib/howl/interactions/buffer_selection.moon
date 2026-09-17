@@ -1,8 +1,8 @@
 -- Copyright 2012-2015 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
-import interact from howl
-import BufferExplorer from howl.explorers
+{:interact} = howl
+{:BufferExplorer} = howl.explorers
 
 
 interact.register

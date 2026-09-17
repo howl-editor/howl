@@ -2,30 +2,69 @@
 #
 # Copyright 2016 The Howl Developers
 # License: MIT (see LICENSE.md at the top-level directory of the distribution)
+#
+# Runs the given spec files or directories. Exits non-zero if any of them fail.
+#
+# Output defaults to the interactive progress display when stdout is a terminal, and to
+# a concise summary otherwise - so captured or piped runs stay readable.
 
-ROOT=$(cd $(dirname $0)/.. && pwd)
-for howl in $ROOT/bin/howl $ROOT/src/howl; do
-  if [ -e $howl ]; then
-    HOWL=$howl
-    break
-  fi
+. "$(dirname "$0")/_howl_env.sh"
+
+if [ -t 1 ]; then
+  CONCISE=no
+else
+  CONCISE=yes
+fi
+
+usage() {
+  cat <<'EOF'
+Usage: howl-spec [--concise|--interactive] <paths...>
+
+Runs each path with busted. Exits non-zero if any of them failed.
+
+  --concise      one summary line per path, details only for failures (the default
+                 when stdout is not a terminal)
+  --interactive  the progress display (the default when stdout is a terminal)
+  -h, --help     this help
+
+Anything else is taken as a path. For other busted options, call the binary directly:
+./src/howl --spec <busted args...>
+EOF
+}
+
+# Consume our own flags, rotating everything else back onto "$@" so that paths keep
+# their quoting.
+argc=$#
+i=0
+while [ $i -lt $argc ]; do
+  arg=$1
+  shift
+  i=$((i + 1))
+  case "$arg" in
+    -h|--help) usage; exit 0 ;;
+    --concise) CONCISE=yes ;;
+    --interactive) CONCISE=no ;;
+    *) set -- "$@" "$arg" ;;
+  esac
 done
 
-if [ -z "$HOWL" ]; then
-  echo "Could not locate howl executable"
+if [ $# -eq 0 ]; then
+  echo "howl-spec: no spec paths given (try --help)" >&2
   exit 1
 fi
 
-if [ -z "$HOWL_SPEC_SINGLY" ]; then
-  exec $HOWL --spec --pattern=_spec.moon $*
+# --defer-print suppresses both the per-test progress callback and the header line.
+if [ "$CONCISE" = yes ]; then
+  OUT="--defer-print --output=$ROOT/spec/support/concise_output.lua"
 else
-  for spec in `find $* -name '*_spec.moon'`
-  do
-    echo $spec
-    $HOWL --spec --pattern=_spec.moon $spec
-    exit_code=$?;
-    if [ "$exit_code" != "0" ]; then exit $exit_code; fi
-  done
-  exit 0
+  OUT=
 fi
 
+status=0
+for f in "$@"; do
+  # Only label each run when there is more than one path to tell apart.
+  [ $# -gt 1 ] && echo "$f"
+  "$HOWL" --spec $OUT --pattern=_spec.moon "$f" || status=1
+done
+
+exit $status
