@@ -31,9 +31,6 @@
         %li
           %a(href="/blog/")
             BLOG
-        %li
-          %a(href="/contact.html")
-            CONTACT
     .content
       = yield
 
@@ -42,25 +39,10 @@
         .row
           %a(href="/")
             = image_tag "howl.png", width: "50", height: "50", class: 'footer-logo'
-          .footer-follow
-            %p
-              %a.twitter-follow-button(href="https://twitter.com/howleditor"
-                                        data-show-count="false" data-lang="en"
-                                        rel="me")
-                Follow @howleditor
-
-            %p
-              %a.twitter-share-button(href="https://twitter.com/share"
-                                      data-lang="en"
-                                      data-url="http://howl.io"
-                                      data-hashtags="howleditor"
-                                      data-count="none"
-                                      data-text="The Howl Editor, a general purpose, light-weight customizable editor." )
-                Tweet
           .footer-blurb
             %div The Howl editor.
             %div
-              Copyright 2012-2024
+              Copyright 2012-#{Time.now.year}
               %a.alert-link(href='https://github.com/howl-editor/howl/contributors')
                 The Howl Developers.
 
@@ -73,9 +55,3 @@
 
       ga('create', 'UA-45283282-1', 'howl.io');
       ga('send', 'pageview');
-
-      // Twitter
-      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];
-      if(!d.getElementById(id)){js=d.createElement(s);js.id=id;
-      js.src="//platform.twitter.com/widgets.js";
-      fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");

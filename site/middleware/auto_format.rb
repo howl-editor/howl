@@ -14,7 +14,7 @@ class AutoFormat
     want_toc = (classes.include?(:doc) && !classes.include?(:doc_spec)) ||
       (classes.include?(:versions) && !env['PATH_INFO'].include?('/spec/'))
     content = generate_toc(content) if want_toc
-    content = separate_arglists(content) if classes & [:doc_api, :doc_spec]
+    content = separate_arglists(content) if (classes & [:doc_api, :doc_spec]).any?
     headers["Content-Length"] = content.bytesize.to_s
     return [status, headers, [content]]
   end

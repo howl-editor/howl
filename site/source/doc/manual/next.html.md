@@ -12,7 +12,7 @@ Unfortunately there are only so many hours in a day.
 Meanwhile, if this looks interesting to you, then dive in! Don't be afraid of
 browsing through the source to see what's there. If you're wondering about how
 something works, have a look to see if there's any [spec](../#howl-specs) that
-covers it. And you can always [get in contact](/contact.html).
+covers it. Questions and feedback can be shared on [GitHub](https://github.com/howl-editor/howl).
 
 ---
 

@@ -10,12 +10,16 @@ work). It should be possible to port to OSX or Windows, should any brave soul be
 willing to put in the work.
 
 You can install Howl by building it from source, either from a release or by
-cloning the repository from Github.
+cloning the repository from GitHub.
 
-## Latest release
+The last official release of Howl is version 0.6, released on 2019-04-05. This
+was quite some time ago. The [master branch on GitHub](https://github.com/howl-editor/howl/tree/master)
+contains an unreleased version targeting GTK 4 and is where any recent
+development will happen.
 
-The latest release of Howl is 0.6. It was released at 2019-04-05, and is
-available for download from:
+## Howl 0.6 release
+
+Howl 0.6 is available for download from:
 
 [https://github.com/howl-editor/howl/releases/download/0.6/howl-0.6.tgz](https://github.com/howl-editor/howl/releases/download/0.6/howl-0.6.tgz)
 
