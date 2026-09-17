@@ -37,7 +37,7 @@ how to install Howl from source.
 
 ### Build requirements
 
-- `wget`: For auto-downloading build dependencies.
+- `curl` or `wget`: For auto-downloading build dependencies.
 - `GTK+`: Version >= 4, with development files (e.g. `libgtk-4-dev` on Debian
 based system).
 - `C compiler`: Howl has a very small C core itself, and it embeds

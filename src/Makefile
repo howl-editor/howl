@@ -54,7 +54,8 @@ $(LPEG_OBJECT): $(LPEG) $(LUAJIT)
 
 $(LUAJIT):
 	@tools/download $(LUAJIT_URL) $(LUAJIT_CHECKSUM) tar xzf {file} -C deps
-	@perl -piorig -e 's/LUA_IDSIZE\s*\d+/LUA_IDSIZE 120/' $(LUAJIT)/src/luaconf.h
+	@sed -e 's/LUA_IDSIZE[[:space:]]*[0-9][0-9]*/LUA_IDSIZE 120/' $(LUAJIT)/src/luaconf.h > $(LUAJIT)/src/luaconf.h.new
+	@mv $(LUAJIT)/src/luaconf.h.new $(LUAJIT)/src/luaconf.h
 
 $(LUAJIT_ARCHIVE): $(LUAJIT)
 	cd ${LUAJIT} && $(MAKE) XCFLAGS="-DLUAJIT_ENABLE_LUA52COMPAT"
