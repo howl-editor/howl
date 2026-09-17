@@ -2,6 +2,19 @@
 
 [![Build Status](https://github.com/howl-editor/howl/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/howl-editor/howl/actions/workflows/ci.yml)
 
+## NOTE
+
+The master branch is now an unreleased version, built on Gtk-4. It has not been
+through a release, and the documentation at [howl.io](http://howl.io) still
+describes 0.6.
+
+If you want the last released version, check out the `0.6` tag:
+
+    git checkout 0.6
+
+The last state of master before the Gtk-4 work landed is commit `0ca4ffa2`, if
+you need something more recent than 0.6 but still on Gtk-3.
+
 ## What is it?
 
 Howl is a general purpose editor that aims to be both lightweight
@@ -45,14 +58,12 @@ details).
 
 ## Contribute
 
-Any feedback, be it patches, feature request or bug reports, is most welcome.
+Howl is a spare-time project, and I'm not actively looking for contributions.
 
-If you want to provide patches, the preferred way of doing so would be as a pull
-request via GitHub, or as a pull request from some other Git server. Should that
-not be an option, I'll gladly accept patches through other means as well.
+The [issue tracker](https://github.com/howl-editor/howl/issues) and pull
+requests remain open on GitHub, so feel free to use them. Please do so knowing
+that I make no promises about responding to, reviewing or merging anything, and
+that issues and pull requests may sit untouched indefinitely.
 
-If you have any bug reports or feature requests, please submit them to the
-[Github issue tracker](https://github.com/howl-editor/howl/issues). As with
-patches, I'll be happy to receive these through other means as well.
-
-You can also contact me directly at \<nino at nordman.org\>.
+GitHub is the only channel. Please don't send patches or bug reports by any
+other means.
