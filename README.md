@@ -1,6 +1,6 @@
 # The Howl editor
 
-[![Build Status](https://github.com/howl-editor/howl/actions/workflows/ci.yml/badge.svg?branch=next)](https://github.com/howl-editor/howl/actions/workflows/ci.yml)
+[![Build Status](https://github.com/howl-editor/howl/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/howl-editor/howl/actions/workflows/ci.yml)
 
 ## What is it?
 
