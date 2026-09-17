@@ -10,23 +10,31 @@
 
 usage() {
   cat <<'EOF'
-Usage: howl-eval [-a] [--profile] (-e <code> | <file> | -) [-- <args>...]
+Usage: howl-eval [-a] [-b] [--profile] (-e <code> | <file> | -) [-- <args>...]
 
-Runs MoonScript inside a live Howl context (bundles, keymap and signals loaded, but
-no window - howl.app.window and howl.app.editor are nil).
+Runs MoonScript inside a live Howl context, with no window - howl.app.window and
+howl.app.editor are nil. The keymap and signals are set up, but bundles and the
+built-in commands and interactions are not loaded unless you pass -b.
 
   -e, --eval <code>  the code to run; with no -e and no file, reads stdin
   -                  read the code from stdin
   -a, --async        run via --run-async, with the GLib main loop pumped
-  --profile          load the user profile (settings, user bundles, session)
+  -b, --bundles      load all bundles, plus core commands and interactions
+                     (slower startup; without it only the default and curly_mode
+                     modes are registered)
+  --profile          load the user profile (settings and user bundles; implies -b)
   -h, --help         this help
   -- <args>...       passed on to the snippet as ...
 
 Use -a for anything that parks a coroutine - howl.io.Process, howl.dispatch.park /
 wait / launch, howl.timer.after, async file searches. Without it those block forever.
 
+MoonScript has no statement separator, so -e takes a single statement - semicolons
+will not parse. For more than one statement use a file, or pipe to -.
+
 Examples:
   howl-eval -e 'print howl.io.File(".").path'
+  howl-eval -b -e 'print howl.mode.for_file(howl.io.File("x.py")).name'
   howl-eval -a -e 'print howl.io.Process(cmd: "echo hi", read_stdout: true)\pump!'
   howl-eval script.moon -- some-arg
 EOF
@@ -34,6 +42,7 @@ EOF
 
 MODE=--run
 PROFILE=--no-profile
+BUNDLES=
 CODE=
 SRC=
 ARGS_AFTER=
@@ -42,7 +51,9 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -h|--help) usage; exit 0 ;;
     -a|--async) MODE=--run-async ;;
-    --profile) PROFILE= ;;
+    -b|--bundles) BUNDLES=--bundles ;;
+    # The profile is only meaningful once bundles load, so opt into those as well.
+    --profile) PROFILE=; BUNDLES=--bundles ;;
     -e|--eval)
       shift
       [ $# -gt 0 ] || { echo "howl-eval: -e requires an argument" >&2; exit 1; }
@@ -58,9 +69,9 @@ done
 # A real file is handed to howl directly, so tracebacks point at the actual source.
 if [ -n "$SRC" ] && [ "$SRC" != - ] && [ -z "$CODE" ]; then
   if [ "$ARGS_AFTER" = yes ]; then
-    exec "$HOWL" $MODE "$SRC" $PROFILE "$@"
+    exec "$HOWL" $MODE "$SRC" $PROFILE $BUNDLES "$@"
   else
-    exec "$HOWL" $MODE "$SRC" $PROFILE
+    exec "$HOWL" $MODE "$SRC" $PROFILE $BUNDLES
   fi
 fi
 
@@ -72,9 +83,9 @@ TMP=$(mktemp "${TMPDIR:-/tmp}/howl-eval-XXXXXX.moon") || exit 1
 printf '%s\n' "$CODE" > "$TMP"
 
 if [ "$ARGS_AFTER" = yes ]; then
-  "$HOWL" $MODE "$TMP" $PROFILE "$@"
+  "$HOWL" $MODE "$TMP" $PROFILE $BUNDLES "$@"
 else
-  "$HOWL" $MODE "$TMP" $PROFILE
+  "$HOWL" $MODE "$TMP" $PROFILE $BUNDLES
 fi
 status=$?
 

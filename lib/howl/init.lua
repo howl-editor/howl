@@ -14,6 +14,7 @@ Where options can be any of:
   --lint        Lints the given files
   --run         Loads and runs the specified file from within a Howl context
   --run-async   Loads and runs the specified file from within a async Howl context
+  --bundles     Loads bundles and core modules for --run / --run-async
   --no-profile  Starts Howl without loading any user profile (settings, etc)
   --spec        Runs the specified Howl spec file(s)
   --debug       Enable debug output (e.g. memory/callback usage reports)
@@ -34,6 +35,7 @@ local function parse_args(arg_vector)
     ['--spec'] = 'spec',
     ['--run'] = 'run',
     ['--run-async'] = 'run_async',
+    ['--bundles'] = 'bundles',
     ['-v'] = 'version',
     ['--version'] = 'version',
     ['--debug'] = 'debug'
@@ -208,6 +210,7 @@ local function main()
       support()
       busted()
     elseif args.run or args.run_async then
+      if args.bundles then howl.app:load_headless() end
       local chunk = assert(loadfile(args[2]))
       if args.run then
         chunk(table.unpack(args, 3))

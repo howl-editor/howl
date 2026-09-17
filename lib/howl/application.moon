@@ -583,6 +583,29 @@ class Application extends PropertyObject
     else
       window.status\info 'Howl ready.'
 
+  -- Bootstraps as much of the application as makes sense without a window, for
+  -- --run and --run-async. This is the non-GUI half of _load: no theme, no
+  -- window, no janitor and no session, but core modules, config and bundles.
+  load_headless: =>
+    return if @_headless_loaded
+    @_headless_loaded = true
+
+    @settings = Settings!
+    config.load_config!
+    @_load_core!
+
+    if @settings.dir and not @args.no_profile
+      append bundle.dirs, @settings.dir\join 'bundles'
+
+    if howl.sys.info.is_flatpak
+      append bundle.dirs, File '/app/bundles'
+
+    bundle.load_all!
+
+    unless @args.no_profile
+      status, ret = pcall @settings.load_user, @settings
+      log.error "Failed to load user settings: #{ret}" unless status
+
   _load_base: =>
     require 'howl.variables.core_variables'
     require 'howl.modes'
