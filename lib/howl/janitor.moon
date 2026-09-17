@@ -82,19 +82,24 @@ print_usages = ->
   for i, cb in ipairs(callbacks.summarize!)
     print("#{cb[1]}: #{cb[2]}")
 
+
   if dispatch.nr_parked! > 0
     print!
     print("\nParked dispatches (#{dispatch.nr_parked!})")
     print("==========================================")
     for i, cb in ipairs(dispatch.summarize!)
       print("#{cb[1]}: #{cb[2]}")
+    print!
 
   print("------------------------------------------")
   _keys = {k for k in pairs howl.io.Process.running}
   print("#{#_keys} processes running")
-  -- print("#{dispatch.nr_parked!} dispatches parked")
+  print("#{dispatch.nr_active!} active coroutines")
   eds = howl.ui.Editor.editors!
   print("#{#eds} editors alive")
+
+  lua_mem_mb = string.format("%.1f", collectgarbage("count") / 1024)
+  print("#{lua_mem_mb} Mb of Lua memory used")
 
   print!
 
@@ -109,7 +114,8 @@ run = ->
 
   release_memory!
 
-  print_usages!
+  if howl.app.args.debug or sys.env.DEBUG == '1'
+    print_usages!
 
 start = ->
   return if timer_handle

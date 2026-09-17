@@ -21,6 +21,8 @@ _resume = (handle, ...) ->
 
 {
 
+  nr_active: -> nr_active_coroutines!
+
   nr_parked: ->
     count = 0
     for _, _ in pairs parked

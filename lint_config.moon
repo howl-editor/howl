@@ -11,6 +11,7 @@
       'bundle_load',
       'bundles',
       'callable',
+      'nr_active_coroutines',
       'howl',
       'jit',
       'log',
