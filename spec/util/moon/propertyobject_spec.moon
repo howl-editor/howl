@@ -82,6 +82,30 @@ describe 'PropertyObject', ->
 
       assert.equal SubClass!\foo!, 'sub'
 
+    it 'overriding a property leaves the parent, and its siblings, alone', ->
+      class Parent extends PropertyObject
+        @property foo: get: => 'parent'
+
+      class SubClass extends Parent
+        @property foo: get: => 'sub'
+
+      class Sibling extends Parent
+        true
+
+      assert.equal 'parent', Parent!.foo
+      assert.equal 'sub', SubClass!.foo
+      assert.equal 'parent', Sibling!.foo
+
+    it 'overriding a meta method leaves the parent alone', ->
+      class Parent extends PropertyObject
+        @meta __tostring: => 'parent'
+
+      class SubClass extends Parent
+        @meta __tostring: => 'sub'
+
+      assert.equal 'parent', tostring Parent!
+      assert.equal 'sub', tostring SubClass!
+
     it 'write to read-only properties are detected', ->
       class Parent extends PropertyObject
         @property foo: get: => 1
