@@ -7,3 +7,4 @@ src/howl
 site/build/
 site/source/doc/spec/
 site/.bundle/
+tmp/
