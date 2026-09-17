@@ -517,12 +517,13 @@ describe 'Buffer', ->
       b\insert 1, 'x'
       b\delete 1, 1
 
-      b\add_listener {
+      listener = {
         on_inserted: (_, buffer, args) ->
           append(flags, args.part_of_revision or 'fail')
         on_deleted: (_, buffer, args) ->
           append(flags, args.part_of_revision or 'fail')
       }
+      b\add_listener listener
 
       b\undo!
       b\undo!
@@ -537,11 +538,15 @@ describe 'Buffer', ->
 
   describe 'change(offset, count, f)', ->
     local buffer, notified, notified_styled, notified_markers
+    -- held here rather than in before_each, as buffer listeners are weak refs
+    local listener
 
     before_each ->
       buffer = Buffer ''
       notified = nil
-      l = {
+      notified_styled = nil
+      notified_markers = nil
+      listener = {
         on_changed: (_, args) =>
           notified = args
 
@@ -552,7 +557,7 @@ describe 'Buffer', ->
           notified_markers = args
       }
 
-      buffer\add_listener l
+      buffer\add_listener listener
 
     it 'invokes <f>, grouping all modification as one revision', ->
       buffer.text = '123456789'
@@ -831,12 +836,13 @@ describe 'Buffer', ->
       b\undo!
 
       flags = {}
-      b\add_listener {
+      listener = {
         on_inserted: (_, buffer, args) ->
           append(flags, args.part_of_revision or 'fail')
         on_deleted: (_, buffer, args) ->
           append(flags, args.part_of_revision or 'fail')
       }
+      b\add_listener listener
 
       b\redo!
       b\redo!
