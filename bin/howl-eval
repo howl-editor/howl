@@ -1,0 +1,88 @@
+#! /bin/sh
+#
+# Copyright 2026 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
+#
+# Runs a MoonScript snippet inside a live Howl context, without a window and without
+# having to create a scratch file first.
+
+. "$(dirname "$0")/_howl_env.sh"
+
+usage() {
+  cat <<'EOF'
+Usage: howl-eval [-a] [--profile] (-e <code> | <file> | -) [-- <args>...]
+
+Runs MoonScript inside a live Howl context (bundles, keymap and signals loaded, but
+no window - howl.app.window and howl.app.editor are nil).
+
+  -e, --eval <code>  the code to run; with no -e and no file, reads stdin
+  -                  read the code from stdin
+  -a, --async        run via --run-async, with the GLib main loop pumped
+  --profile          load the user profile (settings, user bundles, session)
+  -h, --help         this help
+  -- <args>...       passed on to the snippet as ...
+
+Use -a for anything that parks a coroutine - howl.io.Process, howl.dispatch.park /
+wait / launch, howl.timer.after, async file searches. Without it those block forever.
+
+Examples:
+  howl-eval -e 'print howl.io.File(".").path'
+  howl-eval -a -e 'print howl.io.Process(cmd: "echo hi", read_stdout: true)\pump!'
+  howl-eval script.moon -- some-arg
+EOF
+}
+
+MODE=--run
+PROFILE=--no-profile
+CODE=
+SRC=
+ARGS_AFTER=
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    -a|--async) MODE=--run-async ;;
+    --profile) PROFILE= ;;
+    -e|--eval)
+      shift
+      [ $# -gt 0 ] || { echo "howl-eval: -e requires an argument" >&2; exit 1; }
+      CODE=$1
+      ;;
+    --) shift; ARGS_AFTER=yes; break ;;
+    -) SRC=- ;;
+    *) SRC=$1 ;;
+  esac
+  shift
+done
+
+# A real file is handed to howl directly, so tracebacks point at the actual source.
+if [ -n "$SRC" ] && [ "$SRC" != - ] && [ -z "$CODE" ]; then
+  if [ "$ARGS_AFTER" = yes ]; then
+    exec "$HOWL" $MODE "$SRC" $PROFILE "$@"
+  else
+    exec "$HOWL" $MODE "$SRC" $PROFILE
+  fi
+fi
+
+[ -n "$CODE" ] || CODE=$(cat)
+
+# The .moon extension is required: the loadfile hook in lib/howl/moonscript_support.lua
+# dispatches on it, and a temp file without it would be parsed as Lua.
+TMP=$(mktemp "${TMPDIR:-/tmp}/howl-eval-XXXXXX.moon") || exit 1
+printf '%s\n' "$CODE" > "$TMP"
+
+if [ "$ARGS_AFTER" = yes ]; then
+  "$HOWL" $MODE "$TMP" $PROFILE "$@"
+else
+  "$HOWL" $MODE "$TMP" $PROFILE
+fi
+status=$?
+
+# Keep the file on failure - tracebacks reference it by path.
+if [ $status -eq 0 ]; then
+  rm -f "$TMP"
+else
+  echo "howl-eval: snippet kept at $TMP" >&2
+fi
+
+exit $status

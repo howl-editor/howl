@@ -1,0 +1,72 @@
+#! /bin/sh
+#
+# Copyright 2026 The Howl Developers
+# License: MIT (see LICENSE.md at the top-level directory of the distribution)
+#
+# Recompiles exactly those .moon files whose sibling .bc is out of date.
+#
+# The .bc always wins over the .moon when a module is require'd, and staleness is
+# never checked anywhere (lib/howl/init.lua, lib/howl/util/sandboxed_loader.moon), so
+# a stale .bc means specs silently test the old code. Run this after editing.
+#
+# Follows the project rules mechanically: files without an existing .bc are left alone,
+# and *_spec.moon is never compiled.
+
+. "$(dirname "$0")/_howl_env.sh"
+
+cd "$ROOT" || exit 1
+
+PRUNE=no
+PATHS=
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help)
+      cat <<'EOF'
+Usage: howl-compile-stale [--prune] [<file>|<dir>...]
+
+Recompiles every .moon file that has a sibling .bc older than itself. With no
+arguments, sweeps lib/ and bundles/. Exits 0 when there was nothing to do.
+
+  --prune      also delete stray *_spec.bc files (left behind by 'make -C src bytecode';
+               harmless, since the spec runner loadfile's the .moon, but noise)
+  -h, --help   this help
+EOF
+      exit 0
+      ;;
+    --prune) PRUNE=yes ;;
+    *) PATHS="$PATHS $1" ;;
+  esac
+  shift
+done
+
+[ -n "$PATHS" ] || PATHS="lib bundles"
+
+if [ "$PRUNE" = yes ]; then
+  pruned=$(find $PATHS -name '*_spec.bc' -print -delete 2>/dev/null | wc -l)
+  echo "pruned $pruned stray *_spec.bc file(s)"
+fi
+
+STALE=$(mktemp "${TMPDIR:-/tmp}/howl-stale-XXXXXX") || exit 1
+trap 'rm -f "$STALE"' EXIT
+
+# -nt is not in POSIX but is supported by dash, bash, zsh and busybox ash; it beats
+# spawning a 'find -newer' per file across ~500 sources.
+find $PATHS -name '*.moon' ! -name '*_spec.moon' -type f -print | while read -r src; do
+  bc="${src%.moon}.bc"
+  [ -e "$bc" ] || continue
+  [ "$src" -nt "$bc" ] && printf '%s\n' "$src"
+done > "$STALE"
+
+count=$(wc -l < "$STALE")
+
+if [ "$count" -eq 0 ]; then
+  echo "bytecode up to date"
+  exit 0
+fi
+
+# --compile must be argv[1], and xargs puts the file names after it. xargs also keeps
+# a full-tree rebuild under ARG_MAX.
+xargs "$HOWL" --compile < "$STALE" || exit 1
+
+echo "recompiled $count file(s)"
