@@ -85,12 +85,6 @@ with config
     scope: 'global'
 
   .define
-    name: 'go_complete'
-    description: 'Whether to use gocode completions in go mode'
-    default: true
-    type_of: 'boolean'
-
-  .define
     name: 'gogetdoc_path',
     description: 'Path to gogetdoc executable'
     default: 'gogetdoc'
@@ -99,8 +93,8 @@ with config
 unload = ->
   mode.unregister 'go'
   command.unregister 'go-fmt'
-  inspection.unregister 'golint'
-  inspection.unregister 'gotoolvet'
+  inspection.unregister 'staticcheck'
+  inspection.unregister 'govet'
 
 return {
   info:

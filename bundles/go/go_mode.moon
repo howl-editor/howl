@@ -3,7 +3,6 @@
 {:activities, :Buffer, :config, :mode, :sys} = howl
 {:Process} = howl.io
 
-bundle_load 'go_completer'
 {:fmt} = bundle_load 'go_fmt'
 
 {
@@ -18,7 +17,7 @@ bundle_load 'go_completer'
 
   comment_syntax: '//'
 
-  completers: { 'in_buffer', 'go_completer' }
+  completers: { 'in_buffer' }
 
   default_config:
     use_tabs: true
