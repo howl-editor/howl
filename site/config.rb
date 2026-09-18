@@ -66,7 +66,8 @@ use BlogAdjustments
 
 helpers do
   def hdr_link(idx, title, path)
-    "<h4><span class=\"hdr-idx\">#{idx}</span> <a href=\"#{path}\">#{title}</a></h4>"
+    # html_safe so that callers using Haml's `=` get markup rather than escaped text
+    "<h4><span class=\"hdr-idx\">#{idx}</span> #{link_to title, path}</h4>".html_safe
   end
 
   def breadcrumbs
