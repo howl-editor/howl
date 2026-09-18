@@ -11,6 +11,17 @@ source, e.g.
 
 ## Functions
 
+<div class="alert alert-info" role="alert">
+  <strong>Master branch only:</strong>
+  Accepting a gio stream and the <code>cancellable</code> argument were added
+  after the 0.6 release, and are available only when running Howl from the
+  <a class="alert-link" href="https://github.com/howl-editor/howl/tree/master">master branch</a>.
+  In 0.6 the constructor took a file descriptor only.
+  <a class="alert-link" href="#write-data">write</a> also behaves differently:
+  it previously issued a single write, so it could return having written fewer
+  bytes than it was given. It now retries until all of the data is out.
+</div>
+
 ### OutputStream (target, cancellable = nil)
 
 Creates an output stream for `target`, which is either a file descriptor as a

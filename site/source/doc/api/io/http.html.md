@@ -4,6 +4,14 @@ title: howl.io.http
 
 # howl.io.http
 
+<div class="alert alert-info" role="alert">
+  <strong>Master branch only:</strong>
+  This module was added after the 0.6 release. It is available only when running
+  Howl from the
+  <a class="alert-link" href="https://github.com/howl-editor/howl/tree/master">master branch</a>,
+  not in 0.6.
+</div>
+
 ## Overview
 
 `howl.io.http` is an HTTP/1.1 client, supporting both `http` and `https`, with

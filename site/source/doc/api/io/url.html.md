@@ -4,6 +4,14 @@ title: howl.io.url
 
 # howl.io.url
 
+<div class="alert alert-info" role="alert">
+  <strong>Master branch only:</strong>
+  This module was added after the 0.6 release. It is available only when running
+  Howl from the
+  <a class="alert-link" href="https://github.com/howl-editor/howl/tree/master">master branch</a>,
+  not in 0.6.
+</div>
+
 ## Overview
 
 `howl.io.url` parses and manipulates URLs. It is a thin layer over GLib's

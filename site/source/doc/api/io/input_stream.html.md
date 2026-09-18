@@ -10,6 +10,13 @@ input stream yourself, but instead get one from an another source, e.g.
 
 ## Functions
 
+<div class="alert alert-info" role="alert">
+  <strong>Master branch only:</strong>
+  The <code>cancellable</code> argument below was added after the 0.6 release,
+  and is available only when running Howl from the
+  <a class="alert-link" href="https://github.com/howl-editor/howl/tree/master">master branch</a>.
+</div>
+
 ### InputStream (source, priority = nil, cancellable = nil)
 
 Creates an input stream for `source`, which is either a file descriptor as a
