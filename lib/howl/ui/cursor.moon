@@ -129,7 +129,7 @@ class Cursor extends PropertyObject
         if not end_pos or start_pos != i -- no
           _, end_pos = text\ufind('^%p+', i)
           _, end_pos = text\ufind('^%w+', i) unless end_pos
-          end_pos or= #text
+          end_pos or= text.ulen
 
         @move_to column_index: end_pos + @column_index, :extend
 
@@ -175,6 +175,7 @@ class Cursor extends PropertyObject
     else
       i = text\ufind '%p+$' -- prev block is punctuation?
       i or= text\ufind '%w[%w_]*$' -- other word token?
+      i or= text\ufind r'[\\pP\\pS]+$' -- non-ASCII punctuation or symbols?
 
     text = text\usub(1, i - 1) if i
     i = text\umatch '%S+()%s+$' -- previous blank with something before?
@@ -189,7 +190,7 @@ class Cursor extends PropertyObject
         col = prev_line\ufind('%s*$') or 1
         @move_to line: prev_line.nr, column_index: col, :extend
     else
-      @move_to column_index: #text + 1, :extend
+      @move_to column_index: text.ulen + 1, :extend
 
   para_up: (extend = false) =>
     line = @_line

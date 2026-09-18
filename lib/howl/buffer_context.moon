@@ -30,7 +30,7 @@ class Context extends PropertyObject
 
     if pfx_p
       i = prefix\ufind pfx_p
-      start_pos = @pos - (#prefix - i + 1) if i
+      start_pos = @pos - (prefix.ulen - i + 1) if i
 
     if sfx_p
       _, i = suffix\ufind sfx_p

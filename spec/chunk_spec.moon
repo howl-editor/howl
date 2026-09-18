@@ -38,6 +38,12 @@ describe 'Chunk', ->
       assert.equal 3, chunk.end_pos
       assert.equal 'Zen', chunk.text
 
+    it 'counts characters, not bytes, when updating .end_pos', ->
+      chunk = Chunk(buffer, 1, 6)
+      chunk.text = 'Zøñ'
+      assert.equal 3, chunk.end_pos
+      assert.equal 'Zøñ', chunk.text
+
   describe '.styles', ->
     it 'is a table of offsets and styles, { start, "style", end [,..]}', ->
       styles = { 1, 'keyword', 3 }

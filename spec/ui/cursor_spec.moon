@@ -358,6 +358,18 @@ And hƏre's line twʘ
       cursor\word_right_end!
       assert.equal 5, cursor.pos
 
+    it 'handles unicode symbols that are neither word nor ASCII punctuation', ->
+      buffer.text = 'åäöƏ⏱🍨'
+      cursor.pos = 1
+      cursor\word_right_end!
+      assert.equal 5, cursor.pos -- after 'Ə'
+
+      cursor\word_right_end!
+      assert.equal 7, cursor.pos -- after '🍨'
+
+      cursor\word_right_end!
+      assert.equal 7, cursor.pos
+
     it 'handles single stand-alone punctuation', ->
       buffer.text = ' { foo'
       cursor.pos = 1
@@ -514,6 +526,18 @@ And hƏre's line twʘ
 
       cursor\word_left_end!
       assert.equal 5, cursor.pos
+
+      cursor\word_left_end!
+      assert.equal 1, cursor.pos
+
+    it 'handles unicode symbols that are neither word nor ASCII punctuation', ->
+      buffer.text = 'åäöƏ⏱🍨'
+      cursor.pos = 7
+      cursor\word_left_end!
+      assert.equal 5, cursor.pos -- after 'Ə'
+
+      cursor\word_left_end!
+      assert.equal 1, cursor.pos
 
       cursor\word_left_end!
       assert.equal 1, cursor.pos

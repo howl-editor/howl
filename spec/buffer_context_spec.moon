@@ -51,6 +51,10 @@ describe 'BufferContext', ->
       assert.equal '@!?', context_at(3).token.text
       assert.equal '45xx', context_at(4).token.text
 
+    it 'is unaffected by multibyte characters before the token', ->
+      b.text = 'åäö@!?'
+      assert.equal '@!?', context_at(5).token.text
+
     it 'is empty when looking at a blank', ->
       b.text = ' 2 '
       assert.is_true context_at(1).token.empty

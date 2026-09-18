@@ -18,7 +18,7 @@ class Chunk extends PropertyObject
       @buffer\as_one_undo ->
         @delete!
         @buffer\insert text, @start_pos
-        @end_pos = @start_pos + #text - 1
+        @end_pos = @start_pos + tostring(text).ulen - 1
 
   @property styles:
     get: =>
