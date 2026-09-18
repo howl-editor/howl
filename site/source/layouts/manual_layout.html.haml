@@ -1,8 +1,6 @@
 = wrap_layout :layout do
 
-  .shutup(style='display:none')
-    - content_for :javascript do
-      = javascript_include_tag "manual"
+  - content_for(:javascript) { javascript_include_tag "manual" }
 
   .howl-theme-selector(style='display:none')
     .dropdown
