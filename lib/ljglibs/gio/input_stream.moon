@@ -39,7 +39,10 @@ InputStream = core.define 'GInputStream < GObject', {
     return nil if read[0] == 0
     ffi_string buf, read[0]
 
-  read_async: (count = 4096, priority = glib.PRIORITY_DEFAULT, callback) =>
+  -- The trailing cancellable is optional and defaults to nil, so existing
+  -- callers are unaffected. Without it there is no way to abort an outstanding
+  -- read, which is what a timeout needs.
+  read_async: (count = 4096, priority = glib.PRIORITY_DEFAULT, callback, cancellable) =>
     if count == 0
       callback true, ''
       return
@@ -50,30 +53,30 @@ InputStream = core.define 'GInputStream < GObject', {
 
     handler = (source, res) ->
       callbacks.unregister handle
-      status, ret, err_code = get_error C.g_input_stream_read_finish, @, res
+      status, ret, err_code, domain = get_error C.g_input_stream_read_finish, @, res
       if not status
-        callback false, ret, err_code
+        callback false, ret, err_code, domain
       else
         read = ret
         val = read != 0 and ffi_string(buf, read) or nil
         callback true, val
 
     handle = callbacks.register handler, 'input-read-async'
-    C.g_input_stream_read_async @, buf, count, priority, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
+    C.g_input_stream_read_async @, buf, count, priority, cancellable, gio.async_ready_callback, callbacks.cast_arg(handle.id)
 
-  close_async: (callback) =>
+  close_async: (callback, cancellable) =>
     local handle
 
     handler = (source, res) ->
       callbacks.unregister handle
-      status, ret, err_code = get_error C.g_input_stream_close_finish, @, res
+      status, ret, err_code, domain = get_error C.g_input_stream_close_finish, @, res
       if not status
-        callback false, ret, err_code
+        callback false, ret, err_code, domain
       else
         callback true
 
     handle = callbacks.register handler, 'input-close-async'
-    C.g_input_stream_close_async @, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
+    C.g_input_stream_close_async @, 0, cancellable, gio.async_ready_callback, callbacks.cast_arg(handle.id)
 }
 
 jit.off InputStream.read_async

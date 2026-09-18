@@ -6,23 +6,37 @@ dispatch = howl.dispatch
 {:PropertyObject} = howl.util.moon
 
 class OutputStream extends PropertyObject
-  new: (fd) =>
-    @stream = UnixOutputStream fd
+  -- Accepts a file descriptor or an already-constructed gio output stream, so a
+  -- socket connection's output stream can be used directly. Mirrors InputStream.
+  new: (stream, @cancellable) =>
+    @stream = type(stream) == 'number' and UnixOutputStream(stream) or stream
     super!
 
   @property is_closed: get: => @stream.is_closed
 
+  -- g_output_stream_write_async may write fewer bytes than asked, so loop until
+  -- everything is out rather than silently truncating.
   write: (contents) =>
-    return if #contents == 0
-    handle = dispatch.park 'output-stream-write'
+    total = #contents
+    return 0 if total == 0
+    written = 0
 
-    @stream\write_async contents, nil, (status, ret, err_code) ->
-      if status
-        dispatch.resume handle, ret
-      else
-        dispatch.resume_with_error handle, "#{ret} (#{err_code})"
+    while written < total
+      handle = dispatch.park 'output-stream-write'
+      remaining = written == 0 and contents or contents\sub(written + 1)
 
-    dispatch.wait handle
+      @stream\write_async remaining, nil, ((status, ret, err_code) ->
+        if status
+          dispatch.resume handle, ret
+        else
+          dispatch.resume_with_error handle, "#{ret} (#{err_code})"), @cancellable
+
+      n = dispatch.wait handle
+      n = tonumber(n) or 0
+      error 'output stream accepted no data', 2 if n <= 0
+      written += n
+
+    written
 
   flush: =>
     handle = dispatch.park 'output-stream-flush'

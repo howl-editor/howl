@@ -8,7 +8,9 @@ glib = require 'ljglibs.glib'
 append = table.insert
 
 class InputStream extends PropertyObject
-  new: (@stream, @priority = glib.PRIORITY_LOW) =>
+  -- An optional cancellable makes reads abortable, which is what lets a caller
+  -- impose a deadline (see howl.io.http).
+  new: (@stream, @priority = glib.PRIORITY_LOW, @cancellable) =>
     @stream = UnixInputStream(@stream) if type(@stream) == 'number'
     super!
 
@@ -17,16 +19,16 @@ class InputStream extends PropertyObject
   read: (num = 4096) =>
     handle = dispatch.park 'input-stream-read'
 
-    @stream\read_async num, @priority, (status, ret, err_code) ->
+    @stream\read_async num, @priority, ((status, ret, err_code) ->
       if status
         dispatch.resume handle, ret
       else
-        dispatch.resume_with_error handle, "#{ret} (#{err_code})"
+        dispatch.resume_with_error handle, "#{ret} (#{err_code})"), @cancellable
 
     dispatch.wait handle
 
   read_async: (num = 4096, handler) =>
-    @stream\read_async num, @priority, handler
+    @stream\read_async num, @priority, handler, @cancellable
 
   read_all: =>
     contents = {}
@@ -41,10 +43,10 @@ class InputStream extends PropertyObject
     return if @stream.is_closed
     handle = dispatch.park 'input-stream-close'
 
-    @stream\close_async (status, ret, err_code) ->
+    @stream\close_async ((status, ret, err_code) ->
       if status
         dispatch.resume handle
       else
-        dispatch.resume_with_error handle, "#{ret} (#{err_code})"
+        dispatch.resume_with_error handle, "#{ret} (#{err_code})"), @cancellable
 
     dispatch.wait handle

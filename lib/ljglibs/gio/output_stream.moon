@@ -30,7 +30,9 @@ OutputStream = core.define 'GOutputStream < GObject', {
     written = ffi_new 'gsize[1]'
     catch_error C.g_output_stream_write_all, @, ffi_cast(const_void_p, data), count, written, nil
 
-  write_async: (data, count = #data, callback) =>
+  -- The trailing cancellable is optional and defaults to nil, so existing
+  -- callers are unaffected.
+  write_async: (data, count = #data, callback, cancellable) =>
     if count <= 0
       callback true, 0
       return
@@ -39,28 +41,28 @@ OutputStream = core.define 'GOutputStream < GObject', {
 
     handler = (source, res) ->
       callbacks.unregister handle
-      status, ret, err_code = get_error C.g_output_stream_write_finish, @, res
+      status, ret, err_code, domain = get_error C.g_output_stream_write_finish, @, res
       if not status
-        callback false, ret, err_code
+        callback false, ret, err_code, domain
       else
         callback true, tonumber ret
 
     handle = callbacks.register handler, 'output-write-async'
-    C.g_output_stream_write_async @, ffi_cast(const_void_p, data), count, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
+    C.g_output_stream_write_async @, ffi_cast(const_void_p, data), count, 0, cancellable, gio.async_ready_callback, callbacks.cast_arg(handle.id)
 
-  close_async: (callback) =>
+  close_async: (callback, cancellable) =>
     local handle
 
     handler = (source, res) ->
       callbacks.unregister handle
-      status, ret, err_code = get_error C.g_output_stream_close_finish, @, res
+      status, ret, err_code, domain = get_error C.g_output_stream_close_finish, @, res
       if not status
-        callback false, ret, err_code
+        callback false, ret, err_code, domain
       else
         callback true
 
     handle = callbacks.register handler, 'output-close-async'
-    C.g_output_stream_close_async @, 0, nil, gio.async_ready_callback, callbacks.cast_arg(handle.id)
+    C.g_output_stream_close_async @, 0, cancellable, gio.async_ready_callback, callbacks.cast_arg(handle.id)
 
   flush_async: (callback) =>
     local handle
