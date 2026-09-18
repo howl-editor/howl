@@ -308,4 +308,40 @@ ffi.cdef [[
   gsize g_mapped_file_get_length (GMappedFile *file);
   gchar * g_mapped_file_get_contents (GMappedFile *file);
 
+  /* GUri - RFC 3986 parsing, including relative resolution.
+     Refcounted but not a GObject: g_uri_get_type is not exported, so this must
+     never go through core.define. Declared incomplete since we only ever hold
+     a GUri *. */
+  typedef struct _GUri GUri;
+
+  typedef enum {
+    G_URI_FLAGS_NONE             = 0,
+    G_URI_FLAGS_PARSE_RELAXED    = 1 << 0,
+    G_URI_FLAGS_HAS_PASSWORD     = 1 << 1,
+    G_URI_FLAGS_HAS_AUTH_PARAMS  = 1 << 2,
+    G_URI_FLAGS_ENCODED          = 1 << 3,
+    G_URI_FLAGS_NON_DNS          = 1 << 4,
+    G_URI_FLAGS_ENCODED_QUERY    = 1 << 5,
+    G_URI_FLAGS_ENCODED_PATH     = 1 << 6,
+    G_URI_FLAGS_SCHEME_NORMALIZE = 1 << 7
+  } GUriFlags;
+
+  GUri * g_uri_parse (const gchar *uri_string, GUriFlags flags, GError **error);
+  GUri * g_uri_parse_relative (GUri *base, const gchar *uri_ref, GUriFlags flags, GError **error);
+  const gchar * g_uri_get_scheme (GUri *uri);
+  const gchar * g_uri_get_userinfo (GUri *uri);
+  const gchar * g_uri_get_host (GUri *uri);
+  gint          g_uri_get_port (GUri *uri);
+  const gchar * g_uri_get_path (GUri *uri);
+  const gchar * g_uri_get_query (GUri *uri);
+  const gchar * g_uri_get_fragment (GUri *uri);
+  gchar * g_uri_to_string (GUri *uri);
+  GUri *  g_uri_ref (GUri *uri);
+  void    g_uri_unref (GUri *uri);
+  gchar * g_uri_escape_string (const gchar *unescaped,
+                               const gchar *reserved_chars_allowed,
+                               gboolean allow_utf8);
+  gchar * g_uri_unescape_string (const gchar *escaped_string,
+                                 const gchar *illegal_characters);
+
 ]]

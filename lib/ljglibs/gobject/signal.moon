@@ -24,7 +24,12 @@ signal_cb_signature = (info) ->
       'GEnum'
     else
       name = type_name param_type
-      parent == 0 and name or "#{name}*"
+      -- A zero parent normally means a fundamental type passed by value, but
+      -- GObject is the root of the object hierarchy and is always passed as a
+      -- pointer. Without this, a signal carrying a plain GObject parameter
+      -- (GSocketService's 'incoming', for one) builds a callback signature with
+      -- a struct-by-value argument, which the FFI cannot cast.
+      (parent == 0 and name != 'GObject') and name or "#{name}*"
 
     append parameters, type
 

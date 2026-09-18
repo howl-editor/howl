@@ -423,4 +423,136 @@ ffi.cdef [[
                                                  GBytes **stdout_buf,
                                                  GBytes **stderr_buf,
                                                  GError **error);
+
+  /* GCancellable.
+     Note the 'typedef void GCancellable' at the top of this file: it cannot be
+     redefined as a struct without breaking every cdef above, which also means it
+     can never be core.define'd (no ffi.metatype on void). See
+     ljglibs/gio/cancellable.moon. */
+  GCancellable * g_cancellable_new (void);
+  void     g_cancellable_cancel (GCancellable *cancellable);
+  gboolean g_cancellable_is_cancelled (GCancellable *cancellable);
+  void     g_cancellable_reset (GCancellable *cancellable);
+
+  /* GSocketConnectable / GNetworkAddress */
+  typedef struct {} GSocketConnectable;
+  typedef struct {} GNetworkAddress;
+  typedef struct {} GSocketAddress;
+
+  GSocketConnectable * g_network_address_new (const gchar *hostname, guint16 port);
+  GSocketConnectable * g_network_address_new_loopback (guint16 port);
+  GSocketConnectable * g_network_address_parse_uri (const gchar *uri,
+                                                    guint16 default_port,
+                                                    GError **error);
+  const gchar * g_network_address_get_hostname (GNetworkAddress *addr);
+  guint16       g_network_address_get_port (GNetworkAddress *addr);
+  const gchar * g_network_address_get_scheme (GNetworkAddress *addr);
+
+  /* GIOStream */
+  typedef struct {} GIOStream;
+  GInputStream  * g_io_stream_get_input_stream  (GIOStream *stream);
+  GOutputStream * g_io_stream_get_output_stream (GIOStream *stream);
+  gboolean g_io_stream_is_closed (GIOStream *stream);
+  gboolean g_io_stream_close (GIOStream *stream,
+                              GCancellable *cancellable,
+                              GError **error);
+  void     g_io_stream_close_async (GIOStream *stream,
+                                    int io_priority,
+                                    GCancellable *cancellable,
+                                    GAsyncReadyCallback callback,
+                                    gpointer user_data);
+  gboolean g_io_stream_close_finish (GIOStream *stream,
+                                     GAsyncResult *result,
+                                     GError **error);
+
+  /* GSocketConnection */
+  typedef struct {} GSocketConnection;
+  gboolean g_socket_connection_is_connected (GSocketConnection *connection);
+  GSocketAddress * g_socket_connection_get_remote_address (GSocketConnection *connection,
+                                                           GError **error);
+
+  /* TLS */
+  typedef enum {
+    G_TLS_CERTIFICATE_NO_FLAGS      = 0,
+    G_TLS_CERTIFICATE_UNKNOWN_CA    = 1 << 0,
+    G_TLS_CERTIFICATE_BAD_IDENTITY  = 1 << 1,
+    G_TLS_CERTIFICATE_NOT_ACTIVATED = 1 << 2,
+    G_TLS_CERTIFICATE_EXPIRED       = 1 << 3,
+    G_TLS_CERTIFICATE_REVOKED       = 1 << 4,
+    G_TLS_CERTIFICATE_INSECURE      = 1 << 5,
+    G_TLS_CERTIFICATE_GENERIC_ERROR = 1 << 6,
+    G_TLS_CERTIFICATE_VALIDATE_ALL  = 0x007f
+  } GTlsCertificateFlags;
+
+  typedef struct {} GTlsBackend;
+  GTlsBackend * g_tls_backend_get_default (void);
+  gboolean      g_tls_backend_supports_tls (GTlsBackend *backend);
+
+  /* Error domains. A GError code only means something paired with its domain -
+     G_IO_ERROR_CANCELLED and a TLS error can share a number. */
+  GQuark g_io_error_quark (void);
+  GQuark g_tls_error_quark (void);
+  GQuark g_resolver_error_quark (void);
+
+  typedef enum {
+    G_IO_ERROR_FAILED = 0,
+    G_IO_ERROR_NOT_FOUND = 1,
+    G_IO_ERROR_CANCELLED = 19,
+    G_IO_ERROR_TIMED_OUT = 24,
+    G_IO_ERROR_HOST_NOT_FOUND = 34,
+    G_IO_ERROR_CONNECTION_REFUSED = 39,
+    G_IO_ERROR_HOST_UNREACHABLE = 41,
+    G_IO_ERROR_NETWORK_UNREACHABLE = 42,
+    G_IO_ERROR_CONNECTION_CLOSED = 44
+  } GIOErrorEnum;
+
+  /* GSocketClient.
+     Deliberately no g_socket_client_set_tls_validation_flags: the default is
+     already VALIDATE_ALL and the setter is deprecated precisely because it was
+     used to turn validation off. */
+  typedef struct {} GSocketClient;
+
+  GSocketClient * g_socket_client_new (void);
+  void     g_socket_client_set_tls (GSocketClient *client, gboolean tls);
+  gboolean g_socket_client_get_tls (GSocketClient *client);
+  void     g_socket_client_set_timeout (GSocketClient *client, guint timeout);
+  guint    g_socket_client_get_timeout (GSocketClient *client);
+  void     g_socket_client_set_enable_proxy (GSocketClient *client, gboolean enable);
+  gboolean g_socket_client_get_enable_proxy (GSocketClient *client);
+
+  void g_socket_client_connect_async (GSocketClient *client,
+                                      GSocketConnectable *connectable,
+                                      GCancellable *cancellable,
+                                      GAsyncReadyCallback callback,
+                                      gpointer user_data);
+  GSocketConnection * g_socket_client_connect_finish (GSocketClient *client,
+                                                      GAsyncResult *result,
+                                                      GError **error);
+  void g_socket_client_connect_to_uri_async (GSocketClient *client,
+                                             const gchar *uri,
+                                             guint16 default_port,
+                                             GCancellable *cancellable,
+                                             GAsyncReadyCallback callback,
+                                             gpointer user_data);
+  GSocketConnection * g_socket_client_connect_to_uri_finish (GSocketClient *client,
+                                                             GAsyncResult *result,
+                                                             GError **error);
+
+  /* GProxyResolver - consulted automatically by GSocketClient */
+  typedef struct {} GProxyResolver;
+  GProxyResolver * g_proxy_resolver_get_default (void);
+  gboolean         g_proxy_resolver_is_supported (GProxyResolver *resolver);
+
+  /* Server side - used by the spec test server, not by the client */
+  typedef struct {} GSocketListener;
+  typedef struct {} GSocketService;
+
+  GSocketService * g_socket_service_new (void);
+  void     g_socket_service_start (GSocketService *service);
+  void     g_socket_service_stop (GSocketService *service);
+  gboolean g_socket_service_is_active (GSocketService *service);
+  guint16  g_socket_listener_add_any_inet_port (GSocketListener *listener,
+                                                GObject *source_object,
+                                                GError **error);
+  void     g_socket_listener_close (GSocketListener *listener);
 ]]

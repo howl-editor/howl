@@ -25,8 +25,12 @@ get_error = (f, ...) ->
   if err[0] != nil
     err_s = ffi_string err[0].message
     code = err[0].code
+    -- The domain is what disambiguates the code: G_TLS_ERROR and G_IO_ERROR
+    -- numbering overlaps, so without it a cancelled read and a bad certificate
+    -- are indistinguishable. Returned last so existing callers are unaffected.
+    domain = err[0].domain
     C.g_error_free err[0]
-    return false, err_s, code
+    return false, err_s, code, domain
 
   true, ret
 
