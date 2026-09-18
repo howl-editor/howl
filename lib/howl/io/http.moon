@@ -1,4 +1,4 @@
--- Copyright 2025 The Howl Developers
+-- Copyright 2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 -- An HTTP/1.1 client built on GIO. No new dependency: libgio is already linked

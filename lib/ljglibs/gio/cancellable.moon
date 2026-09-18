@@ -1,4 +1,4 @@
--- Copyright 2025 The Howl Developers
+-- Copyright 2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 -- GCancellable is declared as `typedef void GCancellable` in ljglibs/cdefs/gio.moon,

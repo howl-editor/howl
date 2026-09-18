@@ -1,4 +1,4 @@
--- Copyright 2025 The Howl Developers
+-- Copyright 2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 -- HTTP/1.1 response parsing: status line, header block, body framing and the

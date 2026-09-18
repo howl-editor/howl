@@ -1,4 +1,4 @@
--- Copyright 2025 The Howl Developers
+-- Copyright 2026 The Howl Developers
 -- License: MIT (see LICENSE.md at the top-level directory of the distribution)
 
 -- A minimal HTTP server for specs, built on GSocketService so it runs on the
