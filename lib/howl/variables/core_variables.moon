@@ -79,6 +79,45 @@ config.define {
 }
 
 config.define {
+  name: 'http_timeout'
+  description: 'Seconds before an HTTP request is abandoned'
+  type_of: 'number'
+  default: 30
+  scope: 'global'
+}
+
+config.define {
+  name: 'http_max_redirects'
+  description: 'How many HTTP redirects to follow before giving up (0 to not follow any)'
+  type_of: 'number'
+  default: 5
+  scope: 'global'
+}
+
+config.define {
+  name: 'http_max_response_size'
+  description: 'Maximum number of bytes accepted for an HTTP response body (0 for no limit)'
+  type_of: 'number'
+  default: 25 * 1024 * 1024
+  scope: 'global'
+}
+
+config.define {
+  name: 'http_user_agent'
+  description: 'The User-Agent header sent with HTTP requests'
+  default: 'Howl'
+  scope: 'global'
+}
+
+config.define {
+  name: 'http_proxy_enabled'
+  description: 'Whether HTTP requests honour the system proxy configuration'
+  type_of: 'boolean'
+  default: true
+  scope: 'global'
+}
+
+config.define {
   name: 'popup_menu_accept_key'
   description: 'What key should be used for accepting the current option of a popup menu?'
   default: 'enter'

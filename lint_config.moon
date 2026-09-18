@@ -192,6 +192,7 @@
       'get_ui_list_widget_column',
       'howl_async',
       'howl_main_ctx'
+      'HttpServer',
       'it',
       'moon',
       'set_howl_loop',

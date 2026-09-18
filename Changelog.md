@@ -21,6 +21,32 @@ grows vertically and wraps text if it is too long.
 
 ### API changes
 
+- Added `howl.io.http`, an HTTP/1.1 client supporting HTTPS. It provides `get`,
+`post`, `head`, `request` and `download`, with request and response headers,
+string/JSON/form bodies, redirect following, timeouts and streaming a response
+straight to a file. Like `howl.io.Process` it looks synchronous but parks its
+coroutine, so it never blocks the UI and must be called from within one.
+
+  It is built entirely on GIO, which is already linked in, so it adds no new
+build or runtime dependency. TLS comes from glib-networking and certificate
+validation is strict with no opt-out. Redirects will not downgrade from https to
+http, and `Authorization` and `Cookie` are dropped when a redirect crosses
+origins. gzip, keep-alive and cookies are deliberately not implemented.
+
+  New supporting modules: `howl.io.url` (URL parsing and relative resolution, on
+GLib's `GUri`), `howl.io.headers` and `howl.io.http_message`. New configuration
+variables: `http_timeout`, `http_max_redirects`, `http_max_response_size`,
+`http_user_agent` and `http_proxy_enabled`.
+
+- `howl.io.OutputStream` now accepts an already-constructed gio output stream in
+addition to a file descriptor, mirroring `howl.io.InputStream`, and its `write`
+loops until everything has been written rather than stopping at a short write.
+
+- `howl.io.InputStream` and `howl.io.OutputStream` accept an optional
+`GCancellable`, so a pending read or write can be aborted. New ljglibs bindings:
+`ljglibs.gio.socket_client`, `socket_connection`, `io_stream`, `socket_service`,
+`socket_listener` and `cancellable`.
+
 - A major rewrite of the command line and interaction modules has been
 implemented. The new system internals are describe here:
 https://github.com/howl-editor/howl/wiki/The-Command-Interaction-Refactor. The

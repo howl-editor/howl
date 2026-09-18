@@ -50,6 +50,12 @@ say\set("assertion.raises.negative", "Function did raise an error matching '%s'"
 assert\register("assertion", "raises", raises, "assertion.raises.positive", "assertion.raises.negative")
 
 -- helpers
+
+-- An in-process HTTP server on an ephemeral loopback port, for specs that
+-- exercise howl.io.http without touching the network. See
+-- spec/support/http_server.moon.
+export HttpServer = loadfile("#{howl.app.root_dir}/spec/support/http_server.moon")!
+
 export with_tmpdir = (f) ->
   dir = File.tmpdir!
   status, err = pcall f, dir
