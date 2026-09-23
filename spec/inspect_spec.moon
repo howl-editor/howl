@@ -371,3 +371,68 @@ describe 'inspect', ->
         marker = buffer.markers.all[1]
         assert.equal 2, marker.start_offset
         assert.equal 5, marker.end_offset
+
+  describe 'publish(buffer, source, items)', ->
+    before_each ->
+      buffer.text = 'åäö 1\nline 2\nline 3'
+
+    lsp_markers = -> buffer.markers\find name: 'inspection', source: 'lsp'
+
+    it 'marks the items, tagged with the source', ->
+      inspect.publish buffer, 'lsp', {
+        { line: 1, byte_start_col: 3, byte_end_col: 7, type: 'warning', message: 'bar' }
+      }
+      assert.same {
+        {
+          start_offset: 2,
+          end_offset: 4,
+          name: 'inspection',
+          flair: 'warning',
+          message: 'bar',
+          source: 'lsp'
+        }
+      }, buffer.markers.all
+
+    it 'ends the marker on .end_line if given, clamped to the last line', ->
+      inspect.publish buffer, 'lsp', {
+        { line: 1, byte_start_col: 1, end_line: 2, byte_end_col: 3, message: 'a' }
+        { line: 2, byte_start_col: 1, end_line: 9, byte_end_col: 3, message: 'b' }
+      }
+      markers = lsp_markers!
+      assert.same {1, 9}, {markers[1].start_offset, markers[1].end_offset}
+      assert.same {7, 16}, {markers[2].start_offset, markers[2].end_offset}
+
+    it 'clamps byte columns to the line', ->
+      inspect.publish buffer, 'lsp', {
+        { line: 2, byte_start_col: 3, byte_end_col: 42, message: 'a' }
+      }
+      marker = lsp_markers![1]
+      assert.same {9, 13}, {marker.start_offset, marker.end_offset}
+
+    it 'widens empty ranges to one character', ->
+      inspect.publish buffer, 'lsp', {
+        { line: 2, byte_start_col: 3, byte_end_col: 3, message: 'a' }
+        { line: 2, byte_start_col: 7, byte_end_col: 7, message: 'b' }
+      }
+      markers = lsp_markers!
+      assert.same {9, 10}, {markers[1].start_offset, markers[1].end_offset}
+      assert.same {12, 13}, {markers[2].start_offset, markers[2].end_offset}
+
+    it 'replaces previous markers from the same source only', ->
+      inspect.criticize buffer, { [1]: { {message: 'pulled'} } }
+      inspect.publish buffer, 'other', { {line: 3, message: 'other'} }
+      inspect.publish buffer, 'lsp', { {line: 1, message: 'old'} }
+      inspect.publish buffer, 'lsp', { {line: 2, message: 'new'} }
+      messages = [m.message for m in *buffer.markers.all]
+      table.sort messages
+      assert.same {'new', 'other', 'pulled'}, messages
+
+    it 'clears the markers from the source when given no items', ->
+      inspect.publish buffer, 'lsp', { {line: 1, message: 'old'} }
+      inspect.publish buffer, 'lsp', {}
+      assert.same {}, buffer.markers.all
+
+    it 'adds no markers when auto_inspect is off', ->
+      buffer.config.auto_inspect = 'off'
+      inspect.publish buffer, 'lsp', { {line: 1, message: 'old'} }
+      assert.same {}, buffer.markers.all

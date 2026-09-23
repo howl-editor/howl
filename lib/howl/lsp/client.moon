@@ -28,6 +28,9 @@ client_capabilities = -> {
       }
       contextSupport: true
     }
+    publishDiagnostics: {
+      versionSupport: true
+    }
   }
   workspace: {
     workspaceFolders: true

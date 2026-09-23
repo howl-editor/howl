@@ -19,9 +19,9 @@ grows vertically and wraps text if it is too long.
 
 - Added buffer status indicators in titlebar as a quick indicator of when the buffer is modified. These are only shown if config.buffer_icons is true.
 
-- Initial support for language servers (LSP): completions are provided by the
-server configured in the new `lsp_command` variable. Python defaults to
-`zuban server`.
+- Initial support for language servers (LSP): completions and diagnostics are
+provided by the server configured in the new `lsp_command` variable. Python
+defaults to `zuban server`.
 
 ### API changes
 

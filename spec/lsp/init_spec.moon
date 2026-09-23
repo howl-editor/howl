@@ -55,3 +55,62 @@ describe 'lsp', ->
         textDocument: { uri: 'file:///tmp/x.py' }
       }
       assert.is_nil buffer.data.lsp
+
+    it 'clears the diagnostics for the buffer', ->
+      buffer.text = 'hello'
+      buffer.markers\add {
+        { name: 'inspection', source: 'lsp', start_offset: 1, end_offset: 3 }
+      }
+      buffer.data.lsp = state
+      lsp.detach buffer
+      assert.same {}, buffer.markers.all
+
+  describe 'on_diagnostics(client, params)', ->
+    local params
+
+    lsp_markers = -> buffer.markers\find name: 'inspection', source: 'lsp'
+
+    before_each ->
+      buffer = howl.app\new_buffer!
+      buffer.text = 'hello\nworld'
+      buffer.data.lsp = state
+      params = {
+        uri: state.uri,
+        diagnostics: {
+          {
+            range: { start: { line: 1, character: 1 }, ['end']: { line: 1, character: 3 } },
+            message: 'oops'
+          }
+        }
+      }
+
+    after_each ->
+      buffer.data.lsp = nil
+      howl.app\close_buffer buffer, true
+
+    it 'marks the diagnostics in the buffer with the matching uri', ->
+      lsp.on_diagnostics client, params
+      markers = lsp_markers!
+      assert.equals 1, #markers
+      assert.same {8, 10, 'oops', 'error'}, {
+        markers[1].start_offset, markers[1].end_offset, markers[1].message, markers[1].flair
+      }
+
+    it 'ignores diagnostics for another client or uri', ->
+      lsp.on_diagnostics {}, params
+      params.uri = 'file:///tmp/other.py'
+      lsp.on_diagnostics client, params
+      assert.same {}, lsp_markers!
+
+    it 'ignores diagnostics while the buffer has unsynced changes', ->
+      state.dirty = true
+      lsp.on_diagnostics client, params
+      assert.same {}, lsp_markers!
+
+    it 'ignores diagnostics for another version of the document', ->
+      params.version = 7
+      lsp.on_diagnostics client, params
+      assert.same {}, lsp_markers!
+      params.version = 1
+      lsp.on_diagnostics client, params
+      assert.equals 1, #lsp_markers!

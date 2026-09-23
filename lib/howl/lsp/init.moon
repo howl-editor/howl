@@ -3,6 +3,8 @@
 
 Client = require 'howl.lsp.client'
 uri = require 'howl.lsp.uri'
+diagnostics = require 'howl.lsp.diagnostics'
+inspect = require 'howl.inspect'
 {:config, :signal, :sys, :timer, :Project} = howl
 
 -- don't restart a server that exited less than this many seconds ago
@@ -35,7 +37,18 @@ detach = (buffer) ->
   buffer.data.lsp = nil
   buffer.completion_triggers = nil if buffer.completion_triggers == state.client.completion_triggers
   timer.cancel state.sync_timer if state.sync_timer
+  inspect.publish buffer, 'lsp', {}
   state.client\notify 'textDocument/didClose', textDocument: { uri: state.uri }
+
+on_diagnostics = (client, params) ->
+  for buffer in *howl.app.buffers
+    state = buffer.data.lsp
+    if state and state.client == client and state.uri == params.uri
+      -- skip diagnostics for text that has since changed
+      return if state.dirty
+      return if params.version and params.version != state.version
+      inspect.publish buffer, 'lsp', diagnostics.to_items(params.diagnostics)
+      return
 
 on_exit = (client) ->
   clients[client.key] = nil if clients[client.key] == client
@@ -73,6 +86,8 @@ client_for = (buffer) ->
     :on_exit,
     on_initialized: on_initialized
   }
+  client.notification_handlers['textDocument/publishDiagnostics'] = (params) ->
+    on_diagnostics client, params
   client.key = key
   client.completion_triggers = {}
   clients[key] = client
@@ -161,5 +176,6 @@ signal.connect 'app-ready', ->
   :client_for
   :sync
   :position
+  :on_diagnostics
   clients: -> [c for _, c in pairs clients]
 }

@@ -6,6 +6,7 @@
 {:Process, :process_output} = howl.io
 {:pcall} = _G
 {:sort} = table
+{:min, :max} = math
 append = table.insert
 
 local popup, last_display_position
@@ -80,22 +81,31 @@ merge = (found, criticisms) ->
       end_col: c.end_col,
       byte_start_col: c.byte_start_col,
       byte_end_col: c.byte_end_col,
+      end_line: c.end_line,
     }
 
-get_line_segment = (line, criticism) ->
+-- byte columns may be stale or overlong, so they're clamped to the line
+char_col = (text, byte_col) ->
+  text\char_offset max(1, min(byte_col, #text + 1))
+
+get_line_segment = (lines, line, criticism) ->
   start_col = criticism.start_col
   end_col = criticism.end_col
   line_text = nil
 
+  -- the end columns are relative to end_line, if given
+  end_line = line
+  if criticism.end_line and criticism.end_line > line.nr
+    end_line = lines[min(criticism.end_line, #lines)]
+
   if not start_col and criticism.byte_start_col
     line_text or= line.text
-    start_col = line_text\char_offset criticism.byte_start_col
+    start_col = char_col line_text, criticism.byte_start_col
 
   if not end_col and criticism.byte_end_col
-    line_text or= line.text
-    end_col = line_text\char_offset criticism.byte_end_col
+    end_col = char_col end_line.text, criticism.byte_end_col
 
-  if not (start_col and end_col) and criticism.search
+  if not (start_col and end_col) and end_line == line and criticism.search
     p = r"\\b#{r.escape(criticism.search)}\\b"
     line_text or= line.text
     s, e = line_text\ufind p, start_col or 1
@@ -110,10 +120,19 @@ get_line_segment = (line, criticism) ->
 
   -- check spec coverage end_pos
   start_pos = start_col and line.start_pos + start_col - 1 or line.start_pos
-  end_pos = end_col and line.start_pos + end_col - 1 or line.end_pos
+  end_pos = end_col and end_line.start_pos + end_col - 1 or end_line.end_pos
+
+  -- an empty range would not be visible, so widen it to a character
+  if end_pos <= start_pos
+    if start_pos < line.end_pos
+      end_pos = start_pos + 1
+    elseif start_pos > line.start_pos
+      end_pos = start_pos
+      start_pos -= 1
+
   start_pos, end_pos
 
-mark_criticisms = (buffer, criticisms) ->
+mark_criticisms = (buffer, criticisms, source) ->
   {:lines, :markers} = buffer
   ms = {}
   line_nrs = [nr for nr in pairs criticisms]
@@ -124,7 +143,7 @@ mark_criticisms = (buffer, criticisms) ->
     list = criticisms[nr]
     continue unless line and #list > 0
     for c in *list
-      start_pos, end_pos = get_line_segment line, c
+      start_pos, end_pos = get_line_segment lines, line, c
 
       ms[#ms + 1] = {
         name: 'inspection',
@@ -132,6 +151,7 @@ mark_criticisms = (buffer, criticisms) ->
         start_offset: start_pos,
         end_offset: end_pos
         message: c.message
+        :source
       }
 
   if #ms > 0
@@ -218,6 +238,20 @@ criticize = (buffer, criticisms, opts = {}) ->
     buffer.markers\remove name: 'inspection'
 
   mark_criticisms buffer, criticisms
+
+-- replaces the inspections from `source` (e.g. a language server) with
+-- `items`, which have the same shape as those returned by inspectors
+publish = (buffer, source, items) ->
+  buffer.markers\remove name: 'inspection', :source
+
+  unless buffer.config.auto_inspect == 'off'
+    criticisms = {}
+    merge items, criticisms
+    mark_criticisms buffer, criticisms, source
+
+  editor = app\editor_for_buffer buffer
+  if editor
+    update_inspections_display editor
 
 update_buffer = (buffer, editor, scope) ->
   return if buffer.read_only
@@ -407,4 +441,4 @@ command.register
       app.editor.cursor.pos = chunk.start_pos
       app.editor\highlight start_pos: chunk.start_pos, end_pos: chunk.end_pos
 
-:inspect, :criticize
+:inspect, :criticize, :publish
