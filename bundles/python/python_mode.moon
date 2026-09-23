@@ -5,7 +5,6 @@
   lexer: bundle_load('python_lexer')
 
   default_config:
-    inspectors_on_idle: { 'python-ruff' }
     edge_column: 88
     lsp_command: 'zuban server'
   comment_syntax: '#'
