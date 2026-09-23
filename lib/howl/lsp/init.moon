@@ -16,16 +16,29 @@ MAX_CHANGES = 100
 -- TextDocumentSyncKind.Incremental
 INCREMENTAL = 2
 
+-- how often, in seconds, to look for idle servers
+IDLE_CHECK_INTERVAL = 60
+
 clients = {}
 exited_at = {}
 executables = {}
 warned = {}
+-- commands that failed to initialize, which aren't started again
+failed = {}
+local idle_check
 
 config.define
   name: 'lsp_command'
   description: "The command used to start a language server (LSP) for a buffer,
 overriding the servers known by the mode. A blank value disables LSP."
   type_of: 'string'
+
+config.define
+  name: 'lsp_server_idle_stop'
+  description: 'Minutes a language server may go unused before it is stopped (0 = never)'
+  type_of: 'positive_number'
+  scope: 'global'
+  default: 30
 
 -- returns the path of cmd's executable, or nil if it's not installed
 executable_for = (cmd) ->
@@ -40,17 +53,18 @@ executable_for = (cmd) ->
 command_for = (buffer) ->
   cmd = buffer.config.lsp_command
   if cmd != nil
-    return not cmd.is_blank and cmd or nil
+    return not (cmd.is_blank or failed[cmd]) and cmd or nil
 
   servers = buffer.mode and buffer.mode.lsp_servers
   return nil unless servers
   for server in *servers
-    return server if executable_for server
+    return server if not failed[server] and executable_for server
   nil
 
+-- servers are only started for files within a project
 root_for = (file) ->
   project = Project.for_file file
-  project and project.root or file.parent
+  project and project.root
 
 -- a buffer's `completion_triggers` is shared with its client, and filled in
 -- once the server has told us its trigger characters
@@ -79,12 +93,33 @@ on_diagnostics = (client, params) ->
       inspect.publish buffer, 'lsp', diagnostics.to_items(params.diagnostics)
       return
 
+-- buffers are attached again on their next edit, possibly to another server
 on_exit = (client) ->
   clients[client.key] = nil if clients[client.key] == client
-  exited_at[client.key] = sys.time!
+  if client.failure
+    failed[client.cmd] = true
+  elseif not client.stopping
+    exited_at[client.key] = sys.time!
+
   for buffer in *howl.app.buffers
     state = buffer.data.lsp
-    detach buffer if state and state.client == client
+    if state and state.client == client
+      detach buffer
+      buffer.data.lsp_reattach = true
+
+-- stops the servers that haven't been used for `lsp_server_idle_stop` minutes
+stop_idle = (now = sys.time!) ->
+  limit = config.lsp_server_idle_stop * 60
+  return if limit <= 0
+  for _, client in pairs clients
+    client\stop! if now - client.last_used >= limit
+
+schedule_idle_check = ->
+  return if idle_check
+  idle_check = timer.after IDLE_CHECK_INTERVAL, ->
+    idle_check = nil
+    stop_idle!
+    schedule_idle_check! if next clients
 
 client_for = (buffer) ->
   state = buffer.data.lsp
@@ -96,6 +131,7 @@ client_for = (buffer) ->
   return nil unless cmd
 
   root = root_for file
+  return nil unless root
   key = "#{cmd}@#{root.path}"
   client = clients[key]
   return client if client
@@ -122,6 +158,7 @@ client_for = (buffer) ->
   client.key = key
   client.completion_triggers = {}
   clients[key] = client
+  schedule_idle_check!
   client\start!
   log.info "LSP: started '#{cmd}' for #{root}"
   client
@@ -140,6 +177,7 @@ attach = (buffer) ->
     full: false
   }
   buffer.data.lsp = state
+  buffer.data.lsp_reattach = nil
   buffer.completion_triggers = client.completion_triggers
   client\notify 'textDocument/didOpen', textDocument: {
     uri: state.uri,
@@ -206,7 +244,13 @@ splits_crlf = (buffer, at_pos, removed, inserted) ->
 record_change = (what, args) ->
   buffer = args.buffer
   state = buffer.data.lsp
-  return unless state
+  unless state
+    -- the opened document includes this change
+    if buffer.data.lsp_reattach
+      buffer.data.lsp_reattach = nil
+      attach buffer
+    return
+
   state.dirty = true
   unless state.sync_timer
     state.sync_timer = timer.on_idle 1, ->
@@ -266,8 +310,11 @@ signal.connect 'app-ready', ->
   :detach
   :client_for
   :command_for
+  :on_exit
+  :stop_idle
   :sync
   :position
   :on_diagnostics
   clients: -> [c for _, c in pairs clients]
+  _clients: clients
 }

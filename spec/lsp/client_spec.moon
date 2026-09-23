@@ -73,6 +73,38 @@ describe 'lsp.Client', ->
       assert.is_false client.initialized
       assert.is_true client.dead
       assert.same { 'TERM' }, process.signals
+      assert.match client.failure, 'utf%-8'
+
+  describe 'last_used', ->
+    before_each ->
+      initialize!
+      client.last_used = 0
+
+    it 'is updated when sending a message', ->
+      client\notify 'foo', {}
+      assert.is_true client.last_used > 0
+
+    it 'is not updated when receiving a message', ->
+      process\emit { jsonrpc: '2.0', method: 'foo', params: {} }
+      assert.equals 0, client.last_used
+
+  describe 'stop()', ->
+    before_each -> initialize!
+
+    it 'sends shutdown followed by exit', ->
+      client\stop!
+      shutdown = process\last_message!
+      assert.equals 'shutdown', shutdown.method
+      process\emit { jsonrpc: '2.0', id: shutdown.id, result: json_rpc.null }
+      assert.equals 'exit', process\last_message!.method
+
+    it 'does not warn when the server then exits', ->
+      warn = spy.on log, 'warn'
+      client\stop!
+      process\exit!
+      log.warn\revert!
+      assert.spy(warn).was_not_called!
+      assert.is_nil client.failure
 
   describe 'send_request(method, params, callback)', ->
     before_each -> initialize!

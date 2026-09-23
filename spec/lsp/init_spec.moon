@@ -43,6 +43,11 @@ describe 'lsp', ->
       buffer.config.lsp_command = ''
       assert.is_nil lsp.command_for buffer
 
+    it 'skips servers that failed to initialize', ->
+      use_servers { 'true --failing', 'false' }
+      lsp.on_exit { cmd: 'true --failing', key: 'true --failing@/x', failure: 'bad' }
+      assert.equals 'false', lsp.command_for buffer
+
   describe 'client_for(buffer)', ->
     it 'returns nil when no lsp_command is set', ->
       assert.is_nil lsp.client_for buffer
@@ -51,9 +56,55 @@ describe 'lsp', ->
       buffer.config.lsp_command = 'true'
       assert.is_nil lsp.client_for buffer
 
+    it 'returns nil for a file outside of any project', ->
+      with_tmpdir (dir) ->
+        file = dir / 'x.py'
+        file.contents = ''
+        buffer.file = file
+        buffer.config.lsp_command = 'true'
+        assert.is_nil lsp.client_for buffer
+
     it 'returns the client of an attached buffer', ->
       buffer.data.lsp = state
       assert.equals client, lsp.client_for buffer
+
+  describe 'on_exit(client)', ->
+    it 'detaches the buffers of client, and attaches them again on their next edit', ->
+      app_buffer = howl.app\new_buffer!
+      client.key = 'exit-test'
+      app_buffer.data.lsp = state
+      lsp.on_exit client
+      assert.is_nil app_buffer.data.lsp
+      assert.is_true app_buffer.data.lsp_reattach
+      app_buffer\append 'x'
+      -- the buffer has no file, so attaching again gives no state
+      assert.is_nil app_buffer.data.lsp_reattach
+      howl.app\close_buffer app_buffer, true
+
+  describe 'stop_idle(now)', ->
+    local idle, busy
+
+    before_each ->
+      idle = stop: spy.new(->), last_used: 0
+      busy = stop: spy.new(->), last_used: 100 * 60
+      lsp._clients.idle = idle
+      lsp._clients.busy = busy
+
+    after_each ->
+      lsp._clients.idle = nil
+      lsp._clients.busy = nil
+      howl.config.lsp_server_idle_stop = nil
+
+    it 'stops clients not used for lsp_server_idle_stop minutes', ->
+      howl.config.lsp_server_idle_stop = 30
+      lsp.stop_idle 100 * 60 + 1
+      assert.spy(idle.stop).was_called(1)
+      assert.spy(busy.stop).was_not_called!
+
+    it 'stops nothing when lsp_server_idle_stop is 0', ->
+      howl.config.lsp_server_idle_stop = 0
+      lsp.stop_idle 100 * 60 + 1
+      assert.spy(idle.stop).was_not_called!
 
   describe 'sync(buffer)', ->
     sent_changes = ->

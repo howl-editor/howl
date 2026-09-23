@@ -50,6 +50,11 @@ class Client
     @notification_handlers = opts.notification_handlers or {}
     @initialized = false
     @dead = false
+    -- set when the client is deliberately stopped, or failed to initialize
+    @stopping = false
+    @failure = nil
+    -- the time of the last message sent to the server
+    @last_used = sys.time!
     @capabilities = {}
     @stderr = {}
 
@@ -131,6 +136,7 @@ class Client
 
   stop: =>
     return if @dead
+    @stopping = true
     @send_request 'shutdown', nil, ->
       @notify 'exit'
     timer.after 2, ->
@@ -151,6 +157,7 @@ class Client
     id
 
   _send: (msg) =>
+    @last_used = sys.time!
     if @initialized or msg.method == 'initialize' or not msg.method
       @_write msg
     else
@@ -228,12 +235,13 @@ class Client
       @_write json_rpc.error_response(msg.id, -32601, "Method not supported: #{msg.method}")
 
   _fail: (reason) =>
+    @failure = reason
     log.warn "LSP (#{@cmd}): #{reason}"
     @_shut_down!
     @process\send_signal 'TERM' unless @process.exited
 
   _on_exited: (err) =>
-    unless @dead
+    unless @dead or @stopping
       msg = err or @process.exit_status_string or 'exited'
       log.warn "LSP (#{@cmd}): server exited (#{msg})"
       for i = math.max(1, #@stderr - 4), #@stderr
