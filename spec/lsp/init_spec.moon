@@ -7,7 +7,7 @@ describe 'lsp', ->
   before_each ->
     buffer = Buffer {}
     client = notify: spy.new ->
-    state = { :client, uri: 'file:///tmp/x.py', version: 1, dirty: false }
+    state = { :client, uri: 'file:///tmp/x.py', version: 1, dirty: false, changes: {}, full: false }
 
   describe 'position(buffer, pos)', ->
     it 'returns the zero-based line and utf-8 byte column for pos', ->
@@ -29,7 +29,29 @@ describe 'lsp', ->
       assert.equals client, lsp.client_for buffer
 
   describe 'sync(buffer)', ->
-    it 'sends the full text with a new version once the buffer is modified', ->
+    sent_changes = ->
+      assert.spy(client.notify).was_called(1)
+      method, params = client.notify.calls[1].vals[2], client.notify.calls[1].vals[3]
+      assert.equals 'textDocument/didChange', method
+      params.contentChanges
+
+    range = (l1, c1, l2, c2) ->
+      { start: { line: l1, character: c1 }, ['end']: { line: l2, character: c2 } }
+
+    -- applies LSP content changes to text, the way a server would
+    apply = (text, changes) ->
+      doc = Buffer {}
+      doc.text = text
+      pos_for = (p) ->
+        line = doc.lines[p.line + 1]
+        doc\char_offset line.byte_start_pos + p.character
+      for c in *changes
+        start_pos = pos_for c.range.start
+        doc\delete start_pos, pos_for(c.range['end']) - 1
+        doc\insert c.text, start_pos
+      doc.text
+
+    it 'sends the full text with a new version when the server lacks incremental sync', ->
       buffer.text = 'hello'
       buffer.data.lsp = state
       lsp.sync buffer
@@ -46,6 +68,75 @@ describe 'lsp', ->
 
       lsp.sync buffer
       assert.spy(client.notify).was_called(1)
+
+    it 'sends the full text when the sync kind is given as a number', ->
+      client.capabilities = textDocumentSync: 1
+      buffer.text = 'hello'
+      buffer.data.lsp = state
+      buffer\append '!'
+      lsp.sync buffer
+      assert.same { { text: 'hello!' } }, sent_changes!
+
+    context 'when the server supports incremental sync', ->
+      before_each ->
+        client.capabilities = textDocumentSync: { change: 2 }
+        buffer.text = 'åäö\nxÅy'
+        buffer.data.lsp = state
+
+      it 'sends inserts as empty ranges with utf-8 byte columns', ->
+        buffer\insert 'Z', 3
+        lsp.sync buffer
+        assert.same { { range: range(0, 4, 0, 4), text: 'Z' } }, sent_changes!
+
+      it 'sends deletes as ranges with empty text', ->
+        buffer\delete 6, 7
+        lsp.sync buffer
+        assert.same { { range: range(1, 1, 1, 4), text: '' } }, sent_changes!
+
+      it 'sends replacements as a single change', ->
+        buffer\change 2, 3, ->
+          buffer\delete 2, 3
+          buffer\insert 'bc', 2
+        lsp.sync buffer
+        assert.same { { range: range(0, 2, 0, 6), text: 'bc' } }, sent_changes!
+
+      it 'handles changes spanning lines', ->
+        buffer\delete 3, 6
+        buffer\insert '1\n22\r\n3', 3
+        lsp.sync buffer
+        assert.same {
+          { range: range(0, 4, 1, 3), text: '' },
+          { range: range(0, 4, 0, 4), text: '1\n22\r\n3' }
+        }, sent_changes!
+
+      it 'sends all pending changes in order, once', ->
+        old_text = buffer.text
+        buffer\insert 'a\nb', 1
+        buffer\delete 4, 6
+        buffer\append '\nend'
+        buffer\change 1, 2, ->
+          buffer\delete 1, 2
+          buffer\insert 'X', 1
+        buffer\undo!
+        lsp.sync buffer
+        assert.equals buffer.text, apply(old_text, sent_changes!)
+
+        lsp.sync buffer
+        assert.spy(client.notify).was_called(1)
+
+      it 'sends the full text when there are too many pending changes', ->
+        buffer\append 'x' for _ = 1, 101
+        lsp.sync buffer
+        assert.same { { text: buffer.text } }, sent_changes!
+        assert.same {}, state.changes
+
+      it 'sends the full text when an edit splits a "\\r\\n" pair', ->
+        buffer.text = 'a\rb'
+        lsp.sync buffer
+        client.notify\clear!
+        buffer\insert '\n', 3
+        lsp.sync buffer
+        assert.same { { text: 'a\r\nb' } }, sent_changes!
 
   describe 'detach(buffer)', ->
     it 'sends didClose and forgets the buffer', ->

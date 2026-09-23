@@ -10,6 +10,12 @@ inspect = require 'howl.inspect'
 -- don't restart a server that exited less than this many seconds ago
 RESTART_THROTTLE = 30
 
+-- beyond this many pending changes the full text is sent instead
+MAX_CHANGES = 100
+
+-- TextDocumentSyncKind.Incremental
+INCREMENTAL = 2
+
 clients = {}
 exited_at = {}
 missing_executables = {}
@@ -104,7 +110,9 @@ attach = (buffer) ->
     :client,
     uri: uri.for_file(buffer.file),
     version: 1,
-    dirty: false
+    dirty: false,
+    changes: {},
+    full: false
   }
   buffer.data.lsp = state
   buffer.completion_triggers = client.completion_triggers
@@ -120,11 +128,14 @@ attach = (buffer) ->
 sync = (buffer) ->
   state = buffer.data.lsp
   return unless state and state.dirty
+  changes = state.full and { { text: buffer.text } } or state.changes
   state.dirty = false
+  state.full = false
+  state.changes = {}
   state.version += 1
   state.client\notify 'textDocument/didChange', {
     textDocument: { uri: state.uri, version: state.version },
-    contentChanges: { { text: buffer.text } }
+    contentChanges: changes
   }
 
 -- converts a buffer position to a LSP position, using the utf-8 encoding
@@ -133,6 +144,67 @@ position = (buffer, pos) ->
   {
     line: line.nr - 1,
     character: buffer\byte_offset(pos) - line.byte_start_pos
+  }
+
+sync_kind = (client) ->
+  kind = client.capabilities and client.capabilities.textDocumentSync
+  kind = kind.change if type(kind) == 'table'
+  kind or 0
+
+-- returns the position reached by moving past text from start
+end_of = (start, text) ->
+  breaks, after = 0, nil
+  pos = text\find '[\r\n]'
+  while pos
+    pos += 1 if text\byte(pos) == 13 and text\byte(pos + 1) == 10
+    breaks += 1
+    after = pos + 1
+    pos = text\find '[\r\n]', after
+
+  if breaks == 0
+    { line: start.line, character: start.character + #text }
+  else
+    { line: start.line + breaks, character: #text - after + 1 }
+
+-- an edit that joins or splits a "\r\n" pair changes the line numbering
+-- around it in a way a range can't express
+splits_crlf = (buffer, at_pos, removed, inserted) ->
+  if at_pos > 1 and buffer\sub(at_pos - 1, at_pos - 1) == '\r'
+    return true if removed\byte(1) == 10 or inserted\byte(1) == 10
+
+  if removed\byte(-1) == 13 or inserted\byte(-1) == 13
+    next_pos = at_pos + inserted.ulen
+    return true if buffer\sub(next_pos, next_pos) == '\n'
+
+  false
+
+record_change = (what, args) ->
+  buffer = args.buffer
+  state = buffer.data.lsp
+  return unless state
+  state.dirty = true
+  unless state.sync_timer
+    state.sync_timer = timer.on_idle 1, ->
+      state.sync_timer = nil
+      sync buffer if buffer.data.lsp == state
+
+  return if state.full
+  removed, inserted = switch what
+    when 'inserted' then '', args.text
+    when 'deleted' then args.text, ''
+    else args.prev_text, args.text
+
+  if sync_kind(state.client) != INCREMENTAL or
+      #state.changes >= MAX_CHANGES or
+      splits_crlf(buffer, args.at_pos, removed, inserted)
+    state.full = true
+    state.changes = {}
+    return
+
+  start = position buffer, args.at_pos
+  table.insert state.changes, {
+    range: { :start, ['end']: end_of(start, removed) },
+    text: inserted
   }
 
 signal.connect 'file-opened', (args) -> attach args.buffer
@@ -145,15 +217,9 @@ signal.connect 'buffer-mode-set', (args) ->
 
 signal.connect 'buffer-closed', (args) -> detach args.buffer
 
-signal.connect 'buffer-modified', (args) ->
-  buffer = args.buffer
-  state = buffer.data.lsp
-  return unless state
-  state.dirty = true
-  unless state.sync_timer
-    state.sync_timer = timer.on_idle 1, ->
-      state.sync_timer = nil
-      sync buffer if buffer.data.lsp == state
+signal.connect 'text-inserted', (args) -> record_change 'inserted', args
+signal.connect 'text-deleted', (args) -> record_change 'deleted', args
+signal.connect 'text-changed', (args) -> record_change 'changed', args
 
 signal.connect 'buffer-saved', (args) ->
   buffer = args.buffer
