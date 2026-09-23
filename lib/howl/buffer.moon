@@ -183,7 +183,7 @@ class Buffer extends PropertyObject
       break unless start_pos
 
       -- only replace the match within pattern if present
-      end_pos = match and (start_pos + #match - 1) or end_pos
+      end_pos = match and (start_pos + match.ulen - 1) or end_pos
 
       append matches, start_pos
       append matches, end_pos
@@ -192,7 +192,12 @@ class Buffer extends PropertyObject
     return if #matches == 0
 
     if @multibyte
-      matches = [@_buffer\byte_offset(p) for p in *matches]
+      -- a match ends at the last byte of its last character
+      matches = for i, p in ipairs matches
+        if i % 2 == 1
+          @_buffer\byte_offset p
+        else
+          @_buffer\byte_offset(p + 1) - 1
 
     offset = matches[1]
     count = matches[#matches] - offset + 1
