@@ -13,15 +13,26 @@ describe 'Completer', ->
 
   describe '.complete(pos [, limit])', ->
 
-    it 'instantiates completers once with (buffer, context)', ->
+    it 'instantiates completers once with (buffer, context, on_update)', ->
       buffer.text = 'mr.cat'
       factory = spy.new -> nil
       append buffer.completers, factory
       completer = Completer(buffer, 6)
       completer\complete 6
-      assert.spy(factory).was.called_with match.is_ref(buffer), buffer\context_at 6
+      assert.spy(factory).was.called_with match.is_ref(buffer), buffer\context_at(6), match.is_function!
       completer\complete 6
       assert.spy(factory).was.called(1)
+
+    it 'invokes .on_update when a completer calls the passed on_update', ->
+      local notify
+      append buffer.completers, (_, _, on_update) ->
+        notify = on_update
+        complete: -> {}
+      completer = Completer(buffer, 1)
+      notify! -- no .on_update set, nothing happens
+      completer.on_update = spy.new ->
+      notify!
+      assert.spy(completer.on_update).was_called(1)
 
     it 'lookups completers in completion when they are specified as strings', ->
       buffer.text = 'yowser'
@@ -75,6 +86,12 @@ describe 'Completer', ->
       append buffer.completers, -> complete: -> { 'yes' }
       completions = Completer(buffer, 1)\complete 1
       assert.same { 'yes' }, completions
+
+    it 'merges completions with the same completion text, keeping the first', ->
+      append buffer.completers, -> complete: -> { {'yes', completion: 'yes'}, {'no'} }
+      append buffer.completers, -> complete: -> { 'yes', 'no', 'maybe' }
+      completions = Completer(buffer, 1)\complete 1
+      assert.same { {'yes', completion: 'yes'}, {'no'}, 'maybe' }, completions
 
     it 'gives a final boost to case-matching completions, all else equal', ->
       buffer.text = 'he'

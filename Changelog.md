@@ -19,6 +19,10 @@ grows vertically and wraps text if it is too long.
 
 - Added buffer status indicators in titlebar as a quick indicator of when the buffer is modified. These are only shown if config.buffer_icons is true.
 
+- Initial support for language servers (LSP): completions are provided by the
+server configured in the new `lsp_command` variable. Python defaults to
+`zuban server`.
+
 ### API changes
 
 - A major rewrite of the command line and interaction modules has been
@@ -26,6 +30,10 @@ implemented. The new system internals are describe here:
 https://github.com/howl-editor/howl/wiki/The-Command-Interaction-Refactor. The
 changes are backwards incompatible. An upgrade guide is available at
 doc/upgrading.md.
+
+- Completer factories receive an `on_update` function as a third argument,
+which asynchronous completers call when they have new completions. A buffer's
+`completion_triggers` set lists characters that start completion when typed.
 
 ## 0.6 (2019-04-05)
 

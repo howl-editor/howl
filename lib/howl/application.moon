@@ -614,6 +614,7 @@ class Application extends PropertyObject
     require 'howl.ui.icons.font_awesome'
     require 'howl.completion.in_buffer_completer'
     require 'howl.completion.api_completer'
+    require 'howl.lsp.completer'
     require 'howl.interactions.basic'
     require 'howl.interactions.buffer_selection'
     require 'howl.interactions.buffer_search'

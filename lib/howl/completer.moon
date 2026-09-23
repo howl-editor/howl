@@ -4,7 +4,10 @@
 {:completion, :config} = howl
 append = table.insert
 
-load_completers = (buffer, context, mode = {}) ->
+-- factories are invoked with (buffer, context, on_update), where
+-- on_update can be called by asynchronous completers to signal that
+-- they have new completions available
+load_completers = (buffer, context, mode = {}, on_update) ->
   completers = {}
 
   for factories in *{buffer.completers, mode.completers}
@@ -19,7 +22,7 @@ load_completers = (buffer, context, mode = {}) ->
           f = completer.factory
 
         error "`nil` completer set for #{buffer}" if not f
-        completer = f(buffer, context)
+        completer = f(buffer, context, on_update)
         append(completers, completer) if completer
 
   completers
@@ -57,8 +60,9 @@ class Completer
     @config = buffer\config_at pos
     @context = buffer\context_at pos
     @start_pos = @context.word.start_pos
+    @_notify_update = -> @.on_update! if @on_update
     @completers =
-      [buffer.mode]: load_completers buffer, @context, buffer.mode
+      [buffer.mode]: load_completers buffer, @context, buffer.mode, @_notify_update
 
   complete: (pos, limit = @config.completion_max_shown) =>
     context = @context.start_pos == pos and @context or @buffer\context_at pos
@@ -68,7 +72,7 @@ class Completer
 
     mode = @buffer\mode_at pos
     if not @completers[mode]
-      @completers[mode] = load_completers @buffer, context, mode
+      @completers[mode] = load_completers @buffer, context, mode, @_notify_update
     completers = @completers[mode]
 
     for completer in *completers
@@ -79,9 +83,10 @@ class Completer
           break
 
         for comp in *comps
-          unless seen[comp]
+          text = completion_text comp
+          unless seen[text]
             append completions, comp
-            seen[comp] = true
+            seen[text] = true
 
     prefix = context.word_prefix
     return differentiate_by_case(prefix, at_most(limit, completions)), prefix

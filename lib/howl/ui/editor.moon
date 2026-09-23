@@ -583,6 +583,9 @@ class Editor extends PropertyObject
   complete: =>
     return if @completion_popup.showing -- will handle the update itself
     @completion_popup\complete!
+    @show_completion_popup!
+
+  show_completion_popup: =>
     if not @completion_popup.empty
       @show_popup @completion_popup, {
         position: @completion_popup.position,
@@ -951,12 +954,22 @@ class Editor extends PropertyObject
     return if signal.emit('insert-at-cursor', params) == signal.abort
     return if @mode_at_cursor.on_insert_at_cursor and @mode_at_cursor\on_insert_at_cursor(params, self)
 
+    triggers = @buffer.completion_triggers
+    is_trigger = triggers and triggers[args.text]
+
     if @pop
-      @pop.popup\on_insert_at_cursor(self, params) if @pop.popup.on_insert_at_cursor
-    elseif args.text.ulen == 1
+      popup = @pop.popup
+      popup\on_insert_at_cursor(self, params) if popup.on_insert_at_cursor
+      -- a trigger character closes an open completion popup, but should
+      -- also start a new completion
+      return unless is_trigger and popup == @completion_popup and not popup.showing
+      @remove_popup!
+
+    if args.text.ulen == 1
       config = @config_at_cursor
       return unless config.complete != 'manual'
-      return unless #@current_context.word_prefix >= config.completion_popup_after
+      unless is_trigger
+        return unless #@current_context.word_prefix >= config.completion_popup_after
       skip_styles = config.completion_skip_auto_within
       if skip_styles
         cur_style = @current_context.style

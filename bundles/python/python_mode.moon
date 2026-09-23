@@ -7,7 +7,7 @@
   default_config:
     inspectors_on_idle: { 'python-ruff' }
     edge_column: 88
-
+    lsp_command: 'zuban server'
   comment_syntax: '#'
   word_pattern: r'\\b[\\pL_][\\pL\\pN_]+\\b'
 

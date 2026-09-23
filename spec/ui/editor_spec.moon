@@ -857,6 +857,32 @@ describe 'Editor', ->
       editor.buffer.text = '([]]'
       assert.same nil, editor\get_matching_brace 4
 
+  context 'automatic completion', ->
+    before_each ->
+      editor.complete = spy.new ->
+
+    after_each ->
+      editor.complete = nil
+
+    insert = (text) ->
+      buffer.text = text
+      cursor.pos = text.ulen + 1
+      editor\_on_insert_at_cursor nil, text: text\usub(-1)
+
+    it 'completes once the word prefix is long enough', ->
+      buffer.config.completion_popup_after = 2
+      insert 'a'
+      assert.spy(editor.complete).was_not_called!
+      insert 'ab'
+      assert.spy(editor.complete).was_called(1)
+
+    it 'completes after a character in buffer.completion_triggers, regardless of prefix', ->
+      insert 'foo.'
+      assert.spy(editor.complete).was_not_called!
+      buffer.completion_triggers = { ['.']: true }
+      insert 'foo.'
+      assert.spy(editor.complete).was_called(1)
+
   context 'config updates', ->
     local editor2
     before_each ->

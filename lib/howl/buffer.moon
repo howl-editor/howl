@@ -27,6 +27,8 @@ class Buffer extends PropertyObject
     @_buffer = aullar.Buffer!
     @markers = BufferMarkers @_buffer
     @completers = {}
+    -- characters that, when typed, trigger completion (a set, or nil)
+    @completion_triggers = nil
     @inspectors = {}
     @mode = b_mode
     @_set_config!
