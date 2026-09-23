@@ -11,6 +11,7 @@ class TerraformMode
     cursor_line_highlighted: true
 
   comment_syntax: '#'
+  lsp_servers: { 'terraform-ls serve' }
 
   auto_pairs: {
     '(': ')',

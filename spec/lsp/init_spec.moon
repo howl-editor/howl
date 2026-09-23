@@ -1,5 +1,5 @@
 lsp = require 'howl.lsp'
-{:Buffer} = howl
+{:Buffer, :mode} = howl
 
 describe 'lsp', ->
   local buffer, client, state
@@ -15,6 +15,33 @@ describe 'lsp', ->
       assert.same { line: 0, character: 0 }, lsp.position(buffer, 1)
       assert.same { line: 0, character: 4 }, lsp.position(buffer, 3)
       assert.same { line: 1, character: 3 }, lsp.position(buffer, 7)
+
+  describe 'command_for(buffer)', ->
+    use_servers = (servers) ->
+      mode.register name: 'lsp-test', create: -> lsp_servers: servers
+      buffer.mode = mode.by_name 'lsp-test'
+
+    before_each -> use_servers { 'howl-no-such-server --stdio', 'true', 'false' }
+    after_each -> mode.unregister 'lsp-test'
+
+    it "returns the first installed server of the mode's lsp_servers", ->
+      assert.equals 'true', lsp.command_for buffer
+
+    it 'returns nil when none of the servers are installed', ->
+      use_servers { 'howl-no-such-server' }
+      assert.is_nil lsp.command_for buffer
+
+    it 'returns nil when the mode has no lsp_servers', ->
+      buffer.mode = mode.by_name 'default'
+      assert.is_nil lsp.command_for buffer
+
+    it 'returns a configured lsp_command even when not installed', ->
+      buffer.config.lsp_command = 'howl-no-such-server --stdio'
+      assert.equals 'howl-no-such-server --stdio', lsp.command_for buffer
+
+    it 'returns nil when lsp_command is blank', ->
+      buffer.config.lsp_command = ''
+      assert.is_nil lsp.command_for buffer
 
   describe 'client_for(buffer)', ->
     it 'returns nil when no lsp_command is set', ->

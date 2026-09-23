@@ -4,6 +4,7 @@
 {
   lexer: bundle_load('zig_lexer')
   comment_syntax: '//'
+  lsp_servers: { 'zls' }
   auto_pairs: {
     '(': ')'
     '[': ']'

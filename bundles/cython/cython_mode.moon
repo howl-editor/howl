@@ -3,6 +3,8 @@
 
 {
   lexer: bundle_load('cython_lexer')
+  -- don't inherit the Python servers, which don't understand Cython
+  lsp_servers: {}
   structure: (editor) =>
     [l for l in *editor.buffer.lines when l\match('^%s*class%s') or l\match('^%s*def%s') or l\match("^%s*cdef%s") or l\match("^%s*cpdef%s")]
 }

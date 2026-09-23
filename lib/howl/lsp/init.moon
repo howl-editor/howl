@@ -18,12 +18,35 @@ INCREMENTAL = 2
 
 clients = {}
 exited_at = {}
-missing_executables = {}
+executables = {}
+warned = {}
 
 config.define
   name: 'lsp_command'
-  description: 'The command used to start a language server (LSP) for a buffer'
+  description: "The command used to start a language server (LSP) for a buffer,
+overriding the servers known by the mode. A blank value disables LSP."
   type_of: 'string'
+
+-- returns the path of cmd's executable, or nil if it's not installed
+executable_for = (cmd) ->
+  name = cmd\match '^%s*(%S+)'
+  if executables[name] == nil
+    executables[name] = sys.find_executable(name) or false
+  executables[name] or nil, name
+
+-- returns the command to start a server for buffer with, if any. Without a
+-- configured `lsp_command` it's the first installed server from the mode's
+-- `lsp_servers`.
+command_for = (buffer) ->
+  cmd = buffer.config.lsp_command
+  if cmd != nil
+    return not cmd.is_blank and cmd or nil
+
+  servers = buffer.mode and buffer.mode.lsp_servers
+  return nil unless servers
+  for server in *servers
+    return server if executable_for server
+  nil
 
 root_for = (file) ->
   project = Project.for_file file
@@ -67,9 +90,10 @@ client_for = (buffer) ->
   state = buffer.data.lsp
   return state.client if state
 
-  cmd = buffer.config.lsp_command
   file = buffer.file
-  return nil unless cmd and not cmd.is_blank and file
+  return nil unless file
+  cmd = command_for buffer
+  return nil unless cmd
 
   root = root_for file
   key = "#{cmd}@#{root.path}"
@@ -79,11 +103,12 @@ client_for = (buffer) ->
   last_exit = exited_at[key]
   return nil if last_exit and sys.time! - last_exit < RESTART_THROTTLE
 
-  executable = cmd\match '^%s*(%S+)'
-  unless sys.find_executable executable
-    unless missing_executables[executable]
+  -- only explicitly configured commands can be missing here
+  found, executable = executable_for cmd
+  unless found
+    unless warned[executable]
       log.warn "LSP: '#{executable}' not found, language server not started"
-      missing_executables[executable] = true
+      warned[executable] = true
     return nil
 
   client = Client {
@@ -240,6 +265,7 @@ signal.connect 'app-ready', ->
   :attach
   :detach
   :client_for
+  :command_for
   :sync
   :position
   :on_diagnostics
