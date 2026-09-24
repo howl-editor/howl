@@ -349,8 +349,9 @@ existing popup is active will cause that popup to close.
 `options` can contain the
 following keys:
 
-- `position`: The character position at which to show the popup.
+- `position`: The character position at which to show the popup, or `'center'` to center it in the editor.
 - `persistent`: A boolean indicating whether the popup should remain shown as the user types. The default behaviour is to automatically remove the popup in response to a key press.
+- `keep_alive`: A boolean indicating whether the popup should only be closed when removed, so that it can be shown again. The default behaviour is to release the popup when it's removed.
 
 ### smart_tab ()
 
